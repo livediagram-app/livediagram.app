@@ -139,6 +139,26 @@ describe('the handoff', () => {
     expect(guestTokenNeedsRefresh(t.readGuestToken())).toBe(false);
   });
 
+  // A Community post's preview frames the app's /embed: a handoff there took the frame to /auth/guest, which refuses
+  // to be framed, so a signed-out visitor saw the browser's "refused to connect" page instead of the post.
+  it('never leaves from inside a frame, and carries on with no token as a link visitor', async () => {
+    Object.assign(w.win, { self: w.win, top: {} });
+    const t = tokens();
+    expect(await t.ensureGuestToken()).toBeNull();
+    vi.runAllTimers();
+    expect(w.replace).not.toHaveBeenCalled();
+    expect(w.win.sessionStorage.getItem('app:guest-handoff')).toBeNull();
+    // A frame on another origin, whose top cannot be read, is one too.
+    Object.defineProperty(w.win, 'top', {
+      get: () => {
+        throw new DOMException('Blocked', 'SecurityError');
+      },
+    });
+    expect(await tokens().ensureGuestToken()).toBeNull();
+    vi.runAllTimers();
+    expect(w.replace).not.toHaveBeenCalled();
+  });
+
   it('answers the kept token without leaving while it has time left, and forgets it when cleared', async () => {
     const t = tokens();
     w.win.localStorage.setItem(KEY, guestTokenFor('guest_kept'));

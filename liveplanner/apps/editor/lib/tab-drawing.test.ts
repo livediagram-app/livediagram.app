@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import type { Element, Tab } from '@liveplanner/project';
 import { blankQuestion, type FormDefinition } from '@liveplanner/forms';
 import { renderTabToSvg } from './export-tab';
-import { renderTabDrawingSvg, tabDrawingFontIdsOf } from './tab-drawing';
+import { renderTabDrawingSvg } from './tab-drawing';
 
-// docs/specs/009-elements/tab-window.md "The drawing": every mode is drawn, a Form tab as its form.
+// docs/specs/007-editor/split-view.md "The other pane": every mode is drawn, a Form tab as its form.
 
 const box = (id: string, label: string, at: { x: number; y: number }): Element => ({
   id,
@@ -45,11 +45,5 @@ describe('renderTabDrawingSvg', () => {
   it('draws a Form tab whose form cannot be read as its canvas', () => {
     const t = tab({ kind: 'form', form: [] as never });
     expect(renderTabDrawingSvg(t)).toBe(renderTabToSvg(t));
-  });
-});
-
-describe('tabDrawingFontIdsOf', () => {
-  it("names a form's typeface and its elements'", () => {
-    expect(tabDrawingFontIdsOf(tab({ kind: 'form', form, font: 'marker' }))).toContain('marker');
   });
 });

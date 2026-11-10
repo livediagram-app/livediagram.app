@@ -36,6 +36,7 @@ import type {
   ShapeKind,
   ShapeMarker,
   TablePreset,
+  TextPresetId,
   TextSize,
   TextSizePreset,
 } from '@livedesign/design';
@@ -276,6 +277,10 @@ export type EditorContextMenuProps = {
   onMirrorCopy?: () => void;
   onSetWordmark?: (patch: WordmarkPatch) => void;
   onPreviewWordmark?: (patch: WordmarkPatch) => void;
+  // Text Style (docs/specs/008-canvas/canvas-and-palette.md "Text styles"): restyles every text in the selection as a
+  // Write text style, its box re-hugged to its words; a row previews, a press commits.
+  onSetTextStyle?: (id: TextPresetId) => void;
+  onPreviewTextStyle?: (id: TextPresetId) => void;
   // Arrow Line + Pointer controls (docs/specs/008-canvas/canvas-and-palette.md), surfaced for arrows via the
   // shared ArrowLine / Pointer controls.
   onSetArrowThickness: (v: ArrowThickness) => void;

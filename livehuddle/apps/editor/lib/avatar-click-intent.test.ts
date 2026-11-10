@@ -9,6 +9,8 @@ import {
 } from '@livehuddle/document';
 import { FENCE_REACH } from '@livehuddle/avatar/collision';
 import { officeFootprint } from '@livehuddle/avatar/office-geometry';
+import { catchArea, lecternSpot } from '@livehuddle/avatar/lectern';
+import { elementUnderFeet, sitsOnEntry } from '@livehuddle/avatar/walk';
 import { arcadeAt } from '@/components/canvas/collab/useSocialPieces';
 import { receptionAt } from '@/lib/office/useWorkdayPieces';
 import {
@@ -306,6 +308,38 @@ describe('walkPointFor', () => {
         to.x > foot.x && to.x < foot.x + foot.width && to.y > foot.y && to.y < foot.y + foot.height;
       expect(onCounter, chairFacing).toBe(false);
       expect(receptionAt(to, [{ ...el, chairFacing }]), chairFacing).toBe('rec');
+    }
+  });
+
+  // venue-pieces.md "Speaking from the Podium": a click anywhere on it walks you to its speaker spot, at every facing,
+  // and arriving there is arriving at it.
+  it('walks a click anywhere on a Podium to its speaker spot, turned or not', () => {
+    for (const chairFacing of ['n', 'e', 's', 'w'] as const) {
+      const placed = { ...createShape('podium', 100, 100), id: 'pod', chairFacing: 'n' as const };
+      const el = (
+        chairFacing === 'n' ? placed : turnPiece(placed, chairFacing)
+      ) as CanvasElement & {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        shape: 'podium';
+        chairFacing?: 'n' | 'e' | 's' | 'w';
+      };
+      const spot = lecternSpot(el);
+      for (const click of [
+        { x: el.x + 2, y: el.y + 2 },
+        { x: el.x + el.width / 2, y: el.y + el.height - 4 },
+      ]) {
+        expect(walkPointFor(el, click), chairFacing).toEqual({ x: spot.x, y: spot.y });
+        // A rotation stored before furniture lost free rotation changes nothing.
+        expect(walkPointFor({ ...el, rotation: 37 } as typeof el, click), chairFacing).toEqual({
+          x: spot.x,
+          y: spot.y,
+        });
+      }
+      expect(elementUnderFeet([el], spot), chairFacing).toBe('pod');
+      expect(sitsOnEntry(catchArea(el), spot), chairFacing).toBe(true);
     }
   });
 

@@ -14,9 +14,17 @@ import TelemetryDashboard from './page';
 // what this checks.
 vi.mock('@/components/Header', () => ({ Header: () => <header data-testid="header" /> }));
 vi.mock('@/components/Footer', () => ({ Footer: () => <footer /> }));
+// Each app's Body stands in with the window the page handed it.
 vi.mock('./livediagram/Body', () => ({
-  Body: ({ summary }: { summary: TelemetrySummary }) => (
-    <p data-testid="livediagram-body">{summary.windows.today.total} today</p>
+  Body: ({ summary, active }: { summary: TelemetrySummary; active: string }) => (
+    <p data-testid="livediagram-body" data-window={active}>
+      {summary.windows.today.total} today
+    </p>
+  ),
+}));
+vi.mock('./liveplanner/Body', () => ({
+  Body: ({ active }: { active: string }) => (
+    <p data-testid="liveplanner-body" data-window={active} />
   ),
 }));
 
@@ -88,13 +96,13 @@ describe('the telemetry dashboard while it loads', () => {
     expect(skeleton()).not.toBeNull();
     expect(skeleton()!.getAttribute('aria-busy')).toBe('true');
     // Shaped like All apps: its section titles and a card per app.
-    expect(skeleton()!.textContent).toContain('By app');
-    expect(skeleton()!.textContent).toContain('Busiest events');
+    expect(skeleton()!.textContent).toContain('Apps Compared');
+    expect(skeleton()!.textContent).toContain('Busiest Events');
     expect(pending).toHaveLength(1);
 
     await answer(0, summary(7));
     expect(skeleton()).toBeNull();
-    expect(host!.textContent).toContain('Open its dashboard');
+    expect(host!.textContent).toContain('Events by App');
   });
 
   it('keeps the chrome and shows the app skeleton while a switch loads, then the app', async () => {
@@ -119,6 +127,43 @@ describe('the telemetry dashboard while it loads', () => {
     act(() => chip('All apps')!.click());
     expect(skeleton()).toBeNull();
     expect(pending).toHaveLength(2);
-    expect(host!.textContent).toContain('Open its dashboard');
+    expect(host!.textContent).toContain('Events by App');
+  });
+});
+
+// The window picked stays when the app changes (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard",
+// The window): the page holds it, not each dashboard, so a switch never starts again at Last 7 days.
+describe('the window across app switches', () => {
+  const windowTile = (label: string) =>
+    [...host!.querySelectorAll<HTMLButtonElement>('button[aria-pressed]')].find((b) =>
+      b.textContent?.includes(label),
+    );
+
+  it('keeps the window when switching from All apps to an app, between apps, and back', async () => {
+    act(() => root!.render(<TelemetryDashboard />));
+    await answer(0, summary(7));
+    act(() => windowTile('Last 30 days')!.click());
+    expect(windowTile('Last 30 days')!.getAttribute('aria-pressed')).toBe('true');
+
+    act(() => chip('livediagram.app')!.click());
+    await answer(1, summary(42));
+    const diagram = () => host!.querySelector('[data-testid="livediagram-body"]');
+    expect(diagram()?.getAttribute('data-window')).toBe('last30');
+
+    act(() => chip('liveplanner.app')!.click());
+    await answer(2, summary(3));
+    expect(
+      host!.querySelector('[data-testid="liveplanner-body"]')?.getAttribute('data-window'),
+    ).toBe('last30');
+
+    act(() => chip('All apps')!.click());
+    expect(windowTile('Last 30 days')!.getAttribute('aria-pressed')).toBe('true');
+    expect(windowTile('Last 7 days')!.getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('starts at Last 7 days on a fresh load', async () => {
+    act(() => root!.render(<TelemetryDashboard />));
+    await answer(0, summary(7));
+    expect(windowTile('Last 7 days')!.getAttribute('aria-pressed')).toBe('true');
   });
 });

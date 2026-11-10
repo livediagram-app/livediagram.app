@@ -4,7 +4,7 @@ import { BRAND_APP } from './brand-app';
 import { REPO_URL } from './site';
 
 // The public site footer (the marketing pages, the help centre, the telemetry dashboard): @liveworkspace/ui's
-// SiteFooter with this product's logo, tagline and first link, carrying its Community link, the GitHub link and the contributors' credits.
+// SiteFooter with this product's logo, tagline and first link, carrying its Community link, the GitHub link.
 export function SiteFooter() {
   return (
     <SharedFooter

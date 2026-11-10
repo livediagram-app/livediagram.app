@@ -101,7 +101,7 @@ export const categories: Category[] = [
     slug: 'pages',
     title: 'Pages',
     description: 'Design logos, wireframes and photos on pages, with backgrounds and exports.',
-    articleCount: 7,
+    articleCount: 6,
     kind: 'feature',
     groups: ['Basics', 'Kinds of Page'],
   },
@@ -869,9 +869,9 @@ export const articles: Article[] = [
   {
     slug: 'write',
     title: 'Write Elements',
-    description: 'Text, Sticky note and Pointer note: the elements made of words.',
+    description: 'Text styles, Sticky note and Pointer note: the elements made of words.',
     keywords:
-      'write writing text words wordy label caption title heading sticky note post-it remark comment copy typing type compose pointer note leader',
+      'write writing text words wordy label caption title subtitle heading subheading paragraph quote body copy small print text style text styles text type sticky note post-it remark comment copy typing type compose pointer note leader',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1119,7 +1119,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start a design from a ready-made template instead of a blank page.',
     keywords:
-      'template templates starter scaffold quick start prebuilt blank logo blank tab blank illustration empty page artboard wireframe phone tablet website laptop watch app logo design photo edit photo editor picture search find a template start making pages recommended blank pages categories branding shopping websites social messaging travel music video fitness onboarding sign up work productivity store blog delivery ride lockup wordmark emblem badge',
+      'template templates starter scaffold quick start prebuilt blank logo blank tab empty page artboard wireframe phone tablet website laptop watch app logo design photo edit photo editor picture search find a template start making pages recommended blank pages categories branding shopping websites social messaging travel music video fitness onboarding sign up work productivity store blog delivery ride lockup wordmark emblem badge',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -1185,16 +1185,6 @@ export const articles: Article[] = [
     description: 'Every page or one page as a PDF, PNG or SVG, a logo kit or a photo.',
     keywords:
       'export download pdf png svg image zip all pages one page import json print printable pages page pages logo kit photo jpeg webp psd',
-    category: 'Pages',
-    categorySlug: 'pages',
-    group: 'Basics',
-  },
-  {
-    slug: 'tab-windows',
-    title: 'Tab Windows',
-    description: 'Another tab, live, fitted inside a page.',
-    keywords:
-      'tab window windows live view embed mirror show another tab on a page reference up to date stale copy paste sync linked picture choose a tab open',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',

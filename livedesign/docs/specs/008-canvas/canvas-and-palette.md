@@ -238,7 +238,7 @@ Not in history: selection, edit mode entry, panel positions, format-painter mode
 
 The strip leads with the canvas-tool picker, then the **category picker** ([Toolbar layout](../007-editor/toolbar-layout.md)). Which categories it offers follows the page kind ([Pages mode](../007-editor/pages-mode.md#the-palettes-kind), `palette-layouts.ts`). A blank page or a photo page (the palette's **Design** kind) offers **Popular** (a fixed pick of twelve tiles from across the others, listed first), **Shapes**, **Write**, **Concepts** (the concept graphics, the Timeline and the Sankey), **Components**, **Devices**, **Icons**, **Stickers** ([Stickers](../010-palette/stickers.md)), **Media** and **Data** (the charts and meters, then the Table); a wireframe and a logo page each offer their own set. The strip shows them as a **category bar**, each category opening a flyout of its tiles ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)), divided into the bands of [Palette top-level categories and bands](../010-palette/palette-top-level-categories.md): **Common** (Shapes / Write) / **Structure** (Concepts / Components / Devices) / **Decorate** (Icons / Stickers / Media) / **Dynamic** (Data), and a wireframe's own **Screen** band. There is no **Tools** category: each group is a top-level category of its own. Every fixed creation tile (every category but Icons and Stickers, which come from the icon catalogues) is defined once in the shared catalogue `palette-tile-defs.tsx` and rendered through `PaletteTileGrid` or `PaletteToolRows`, so a tile's glyph / behaviour can't drift between its home category and Popular. One category shows at a time: the strip carries its first tiles and More its full body. The editor palette **always opens on its kind's landing category** (Popular; Elements on a wireframe, Draw on a logo) when a design loads; it deliberately does **not** persist the last-used category across designs (no `storageKey`).
 
-**Most categories are rows, not tiles.** A palette is ~256px wide, so a 3-column grid leaves room for a caption and nothing else. That works for **Shapes**, **Icons** and **Stickers**, where the picture IS the explanation, and fails everywhere else: six device outlines are six grey rectangles, and two picture frames at 18px don't distinguish an image from an avatar. So every other category renders **as rows**: glyph, name, and a one-line description of what the thing is (`blurb` on the tile def, kept to about 35 characters; a test fails if a tile in any row-rendered section lacks one or just repeats its caption). Density is affordable because [Palette top-level categories and bands](../010-palette/palette-top-level-categories.md) flattened the palette: you arrive at a category of three to ten tiles rather than all 28 tools. That flattening also retired the **Tools** tab and the drill-in navigation it used (a grid of category tiles, then that group's rows under a `‹ Tools › Write` breadcrumb): every group became a top-level category, so there is nothing left to drill into. The same drill-in **is still used by Icons and Stickers** ([Browsing the palette by category](../010-palette/palette-category-browse.md)), where the catalogue is 183 glyphs (or ~190 stickers) rather than a handful. Category tiles carry **no tooltip** (a hover card restating the label is a delay for nothing). Group membership still lives on the tile defs (`toolGroup` in `palette-tile-defs.tsx`, with the ordered `TOOL_GROUPS` catalogue) for the groups that share the `tools` section: **Write** (Text, Note) and **Draw** ([Polygon](polygon-tool.md), Arrow, Line); the rest are their own catalogue section. Tile **ids are unchanged** by any of this, so palette layouts and the search panel, which address tiles by id, are untouched. Sub-categories remain available for a panel that needs them: a collapsible row (`PaletteTileGroup`) that opens in place, for a category holding a handful of tiles that belong together, and the drill-in (`PaletteCategoryBrowser`) where the sections multiply. A flat always-visible heading was the third option and has been retired; the surface it was written for, the since-removed Favourites edit grid, turned out not to group its tiles at all.
+**Most categories are rows, not tiles.** A palette is ~256px wide, so a 3-column grid leaves room for a caption and nothing else. That works for **Shapes**, **Icons** and **Stickers**, where the picture IS the explanation, and fails everywhere else: six device outlines are six grey rectangles, and two picture frames at 18px don't distinguish an image from an avatar. So every other category renders **as rows**: glyph, name, and a one-line description of what the thing is (`blurb` on the tile def, kept to about 35 characters; a test fails if a tile in any row-rendered section lacks one or just repeats its caption). Density is affordable because [Palette top-level categories and bands](../010-palette/palette-top-level-categories.md) flattened the palette: you arrive at a category of three to ten tiles rather than all 28 tools. That flattening also retired the **Tools** tab and the drill-in navigation it used (a grid of category tiles, then that group's rows under a `‹ Tools › Write` breadcrumb): every group became a top-level category, so there is nothing left to drill into. The same drill-in **is still used by Icons and Stickers** ([Browsing the palette by category](../010-palette/palette-category-browse.md)), where the catalogue is 183 glyphs (or ~190 stickers) rather than a handful. Category tiles carry **no tooltip** (a hover card restating the label is a delay for nothing). Group membership still lives on the tile defs (`toolGroup` in `palette-tile-defs.tsx`, with the ordered `TOOL_GROUPS` catalogue) for the groups that share the `tools` section: **Write** (the text styles, Note) and **Draw** ([Polygon](polygon-tool.md), Arrow, Line); the rest are their own catalogue section. Tile **ids are unchanged** by any of this, so palette layouts and the search panel, which address tiles by id, are untouched. Sub-categories remain available for a panel that needs them: a collapsible row (`PaletteTileGroup`) that opens in place, for a category holding a handful of tiles that belong together, and the drill-in (`PaletteCategoryBrowser`) where the sections multiply. A flat always-visible heading was the third option and has been retired; the surface it was written for, the since-removed Favourites edit grid, turned out not to group its tiles at all.
 
 **Palette tiles preview the active tab theme.** Picking a theme tints the palette so the tiles look like what they'll drop. The **boxed-shape tiles** (every Shapes tile, and every Devices tile) render as **filled mini-previews** in the theme's `elementFill` + `elementStroke`, mirroring how a new boxed element is coloured (`deriveNewBoxedColours`). The **line-art tools** (Text, Arrow, Table, User, Frame, Polygon, Checklist) and the **Icons** grid **tint** their stroke to the theme's `elementStroke` (matching the on-canvas behaviour where an icon is tinted by the element's stroke colour). Tiles whose colours are fixed regardless of theme stay untinted: the **sticky note** (always amber), the **code block** (its dark card is its identity, [Code block](../009-elements/code-block.md)), the **image** placeholder and **link card** (neutral chrome), and the colour-emoji **Stickers**, which simply ignore the tint ([Stickers](../010-palette/stickers.md)). Under the **Default** scheme (`elementStroke` / `elementFill` are `null` in BOTH its halves, which is what lets it paint nothing onto an element and still read on either canvas; see [Live app](../007-editor/live-app.md)) nothing is tinted and the palette keeps its default slate look. The pressed (queued draw-to-size) tile keeps its brand highlight so it still reads as selected. Mechanically: `CanvasChrome` derives a `themeTint` (`{ stroke, fill }`, undefined for Default) from `getTheme(tabThemeId)` and passes it to `ToolbarPalette`, which exposes it via `PaletteTintProvider`; `IconButton` consumes the context and applies the stroke as the glyph's `color` (so every `stroke="currentColor"` SVG follows) plus, on `filled` tiles, a `--tile-fill` CSS variable that the `.palette-tile-filled` rule in `globals.css` paints into the otherwise-hollow `fill="none"` paths. Caption text stays on the neutral slate tone so labels keep their contrast on the app's light/dark surface (the strip does **not** adopt the canvas backdrop). Tiles opt out with `noTint` and into the filled preview with `filled`.
 
@@ -290,7 +290,8 @@ A **Frame** (`frame`) is a 360×260 transparent outlined container with a "Frame
 
 **Tools tab** (other element kinds):
 
-- **Text**: adds a free-floating text element (see [Text element](#text-element)).
+- **Text styles** (Write): Title, Subtitle, Heading, Subheading, Paragraph, Quote and Caption, each a tile that adds
+  a free-floating text element already set as that style (see [Text element](#text-element) "Text styles").
 - **Arrow** ("Add Arrow"): drops / draws a straight connector **with a pointer at its end**, OR, with a shape selected, arms click-to-connect (see [Adding an arrow](#adding-an-arrow)).
 - **Line**: the same tool without the heads (`arrowEnds: 'none'`): the same element, gesture and click-to-connect, so a plain line and an arrow are both one tile away. No key (`A` is the Arrow). Its pointers are added in the Pointer accordion like any arrow's. Telemetry: `Element·Added·Line`.
 - **Sticky note**: adds a sticky-note element (see [Sticky note element](#sticky-note-element)).
@@ -501,7 +502,7 @@ type Element = ShapeElement | ArrowElement;
 
 ## Shape primitives
 
-Twenty general-purpose and device shape kinds are covered here, all rendered as absolutely positioned elements on the canvas. `ShapeKind` itself is larger because every later family of element reused the shape type rather than inventing its own: the web components (`banner`, `callout` (read-only, migrated to `card`), `stat-row`, `process`, `site-header`, [Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)), the self-drawing data shapes (`progress-bar`, `progress-ring`, `timeline-rail`, `rating`, the three charts, `code-block`, `checklist`, `legend`), the [Sankey diagram](../009-elements/sankey.md) (`sankey`), the [Card](../009-elements/card.md) (`card`), the [Badge](../009-elements/badge.md) and [Step number](../009-elements/step-number.md) (`badge`, `step`), the [Pointer note](../009-elements/pointer-note.md) (`pointer-note`), the [Stack](../009-elements/stack.md) (`stack`), the [concept graphics](../009-elements/concept-graphics.md) (`layer-stack`, `pyramid`, `cycle`, `hub`, `onion`, `chevrons`), the [Tab window](../009-elements/tab-window.md) (`tab-window`), the [component instance](../009-elements/components.md) (`instance`) and `icon` / `sticker`. Each of those has its own spec; this section is the general-purpose set. The table below covers the seven general-purpose primitives the spec originally shipped with; the rest (general shapes (`stadium`, `cloud`, `triangle`, `trapezoid`, `star`, `speech-bubble`), the `frame` container, and seven UI device frames (`browser`, `monitor`, `laptop`, `phone`, `tablet`, `foldable`, `smartwatch`)) are documented under **Devices tab** in the Palette section above. The canonical list is `ShapeKind` in `@livedesign/design` (declared in `src/shape-kind.ts`).
+Twenty general-purpose and device shape kinds are covered here, all rendered as absolutely positioned elements on the canvas. `ShapeKind` itself is larger because every later family of element reused the shape type rather than inventing its own: the web components (`banner`, `callout` (read-only, migrated to `card`), `stat-row`, `process`, `site-header`, [Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)), the self-drawing data shapes (`progress-bar`, `progress-ring`, `timeline-rail`, `rating`, the three charts, `code-block`, `checklist`, `legend`), the [Sankey diagram](../009-elements/sankey.md) (`sankey`), the [Card](../009-elements/card.md) (`card`), the [Badge](../009-elements/badge.md) and [Step number](../009-elements/step-number.md) (`badge`, `step`), the [Pointer note](../009-elements/pointer-note.md) (`pointer-note`), the [Stack](../009-elements/stack.md) (`stack`), the [concept graphics](../009-elements/concept-graphics.md) (`layer-stack`, `pyramid`, `cycle`, `hub`, `onion`, `chevrons`), the retired [Tab window](../009-elements/tab-window.md) (`tab-window`, stored ones only), the [component instance](../009-elements/components.md) (`instance`) and `icon` / `sticker`. Each of those has its own spec; this section is the general-purpose set. The table below covers the seven general-purpose primitives the spec originally shipped with; the rest (general shapes (`stadium`, `cloud`, `triangle`, `trapezoid`, `star`, `speech-bubble`), the `frame` container, and seven UI device frames (`browser`, `monitor`, `laptop`, `phone`, `tablet`, `foldable`, `smartwatch`)) are documented under **Devices tab** in the Palette section above. The canonical list is `ShapeKind` in `@livedesign/design` (declared in `src/shape-kind.ts`).
 
 | Kind            | Rendering                                                                                                                                                                                                                          | Aspect lock |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
@@ -615,7 +616,7 @@ has a home). Every picker shows them alphabetically by label.
 | Websites               | Website Wireframe, Online Store Wireframe, Blog Wireframe, Company Site Wireframe                |                        |
 | Work and Productivity  | Web App Wireframe, Project Tool Wireframe, Team Inbox Wireframe                                  |                        |
 
-The blanks (Blank Illustration, Blank Logo and the five blank wireframes) are in no category: they lead Popular, the
+The blanks (Blank Logo and the five blank wireframes) are in no category: they lead Popular, the
 landing gallery's Blank Slate and the template start's Blank Pages group. A new template joins the category of the
 job it does; a category is added when a job has no home, rather than stretching one that reads wrong.
 
@@ -935,9 +936,63 @@ Any boxed element (shape / text / sticky / image / polygon) can be rotated about
 
 A free-floating text element. The text **is** the element; there is no border or fill.
 
-- Added from the **Text** palette button.
-- Default content: `"Text"`. Default size: 220 × 64.
-- **Drag** to move; **resize** via the same four corner handles as shapes. Text auto-scales to fit the box (same SVG-based fit-to-bounds technique as shape labels).
+- Added from one of Write's **text style** tiles (below), by **T** (a Paragraph), by double-clicking empty canvas (a
+  Paragraph, opened for typing) and by a node's quick add Text (a Paragraph).
+- **Left aligned by default**: every text element the editor makes starts `textAlignX: 'left'`, `textAlignY: 'top'`,
+  whatever made it (a style tile, T, a double-click, quick add). The context menu's Alignment changes it as before.
+  An element with no alignment stored still draws centred, so nothing made before this moves, and an agent's `add
+text` keeps its own default (centred, Small) until it sets the fields.
+- **It hugs its words**: a style's box fits its text (`sizing: 'fit'`, a heading's) or wraps at a set width
+  (`sizing: 'wrap'`, a paragraph's), its height always the text's ([Design structure](../006-design/design-structure.md)).
+- **Drag** to move; **resize** via the same handles as shapes: a side handle sets the width, so the text wraps.
+
+**Text styles.** Write's text tiles are the kinds of text a screen or a mark is set in, each a plain `text` element
+whose fields are set as the style says (no style is stored: it is a starting point, and the Text Style section below
+or any text control restyles it). The sizes are a screen's, not a printed page's: livedocuments' styles run 24 to
+72 px for a written page, livedesign's sit inside the Size slider's 6 to 48 px, so a style stores no `textScale` and
+the slider reads it exactly. Body text wraps at 320 px (`TEXT_STYLE_WRAP_WIDTH`), a phone screen's column (390 wide,
+less its margins), so a Paragraph dropped on any device reads as a block; a drag sets a wider one. Its words are the
+style's name, selected for typing over. livedesign has a **Caption**, which livedocuments leaves out (a Caption under
+its 24 px floor would be a Paragraph): a screen's small print (a picture's caption, a field's hint, a footer) is a
+style of its own at 12 px.
+
+| Style      | Size  | Weight / face | Box             | Icon             |
+| ---------- | ----- | ------------- | --------------- | ---------------- |
+| Title      | 40 px | Bold          | Fits its words  | Type (T)         |
+| Subtitle   | 24 px | Regular       | Fits its words  | Letter Text      |
+| Heading    | 32 px | Bold          | Fits its words  | Heading 1        |
+| Subheading | 20 px | Bold          | Fits its words  | Heading 2        |
+| Paragraph  | 16 px | Regular       | Wraps at 320 px | Pilcrow          |
+| Quote      | 20 px | Italic        | Wraps at 320 px | Quote            |
+| Caption    | 12 px | Regular       | Fits its words  | Picture and line |
+
+No two styles share a size, weight and slant, so the style a text wears can be read back from its fields
+(`textPresetOfElement`); a text set by hand to a size, weight or slant of its own wears none. A tap drops the style's
+box centred on the tap (never the selected element's size); a drag sets its width, so it wraps there. The tab's
+default text size does not apply to a style: the style is the size asked for. Telemetry stays `Element · Added ·
+Text` for every style. The table is `packages/design/src/text-presets.ts`; how a style becomes an element's fields, a
+restyle and the read-back are `@liveworkspace/element-model/text-presets`, shared with livedocuments, which binds the
+same helpers to its own table.
+
+Which styles each palette offers follows the page kind ([Pages mode](../007-editor/pages-mode.md#the-palettes-kind)):
+a wireframe and a blank page offer all seven in Write, with the Heading in Popular; a logo page offers the Title (a
+wordmark) and the Subtitle (its tagline), with the Title in Popular. A Participant's Text tile is the Paragraph.
+
+**Text Style** (the Text menu). A text's right-click menu opens its **Text** flyout on a **Text Style** section, above
+Font, Size and Padding, since the style sets the size and weight they fine-tune. It lists the seven styles as rows,
+each name set in its own weight and slant at a size that keeps their order (10 px for the Caption, a px more for every
+4 px of the style's size, so the Title is 17 px), with its size in px beside it, the way a word processor lists its
+styles; each row's hover card gives its size, weight, wrap and use. Hovering a row previews the style on the canvas;
+pressing it switches the text to it in one undo step: the style's size (dropping any Shift-resize scale), its weight
+(a wordmark weight gives way to it) and slant, and its box (a wrapping style wraps at 320 px unless the text already
+wraps, keeping its width; a fitting style fits its words), then the box hugs the words at the new size in the same
+step (`restyleTextAs`, `lib/text-style.ts`). The words, colour, font and alignment stay. The row of the style the text
+wears is pressed. In a multi-selection the section shows when any member is a text with words, restyles every text in
+the selection and leaves the rest, the pressed row read off the first text. Telemetry: `Element · Changed ·
+TextStyle`. The change is ordinary element fields, so undo, collaboration sync and every export (SVG, PNG, PDF) carry
+it as they carry any size or weight. An Editor restyles; a Participant and a Viewer never reach the element menu's
+Text flyout ([Share roles](../013-workspace/share-roles.md)).
+
 - **Double-click** to edit content; **Enter** and **Escape** commit (see [Labels](#labels) "Escape keeps what you typed").
 - A faint dashed outline appears when selected so the bounds are visible.
 - **Colour.** The text takes the theme's label colour, and can be recoloured like any other element:
@@ -1433,6 +1488,8 @@ in `Canvas` rather than in the clipboard hook.
 
 - **Slide decks and presenting**: no Slide Deck tool, Slides button or Present button. How a design's stored deck
   still loads is in [Presentation mode](../012-collaboration/presentation-mode.md).
+- **The Tab Window**: no palette tile, menu, tour or agent `add`; a stored window draws as a still frame named for
+  its tab ([The tab window](../009-elements/tab-window.md)).
 - **The isometric view**: no Isometric canvas tool, orbiting or isometric export; every image export is flat and
   top-down (livediagram has it). Nothing a design stores is isometric, so nothing migrates.
 - **The Isometric background pattern**: the shared `BackgroundPattern` (`@liveworkspace/model-core/basics`) does

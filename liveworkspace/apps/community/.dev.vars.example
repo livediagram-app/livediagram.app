@@ -6,3 +6,10 @@ COMMUNITY_KEY_LIVEPLANNER=dev-liveplanner-community-key
 COMMUNITY_KEY_LIVEDOCUMENTS=dev-livedocuments-community-key
 COMMUNITY_KEY_LIVEDESIGN=dev-livedesign-community-key
 COMMUNITY_KEY_LIVEHUDDLE=dev-livehuddle-community-key
+# The sweep's app doors (community.md "The sweep"): blank locally, so a triggered cron never calls a deployed app.
+# Point one at a local api (e.g. livediagram's http://localhost:8687) to try the sweep against it.
+APP_ORIGIN_LIVEDIAGRAM=
+APP_ORIGIN_LIVEPLANNER=
+APP_ORIGIN_LIVEDOCUMENTS=
+APP_ORIGIN_LIVEDESIGN=
+APP_ORIGIN_LIVEHUDDLE=

@@ -56,6 +56,12 @@ describe('runOnce', () => {
     // A fully up day isn't listed: only days under 100% are.
     expect(site.u).toEqual([]);
     expect(site.p).toBe(100);
+    // Every group's uptime, and the page's: every check answered.
+    expect(history.uptime!.all).toBe(100);
+    expect(Object.keys(history.uptime!.groups)).toEqual(
+      statusGroups('production').map((g) => g.id),
+    );
+    for (const p of Object.values(history.uptime!.groups)) expect(p).toBe(100);
   });
 
   it('rolls today up again on every run, from all of today’s checks', async () => {
@@ -84,6 +90,14 @@ describe('runOnce', () => {
     expect(history.services['livediagram:api']!.u).toEqual([[89, 667]]);
     expect(history.services['livediagram:api']!.w.at(-1)).toBe('d');
     expect(history.services['livediagram:api']!.p).toBe(66.67);
+    // The group pools its services' checks: the API's and the rooms' one down each, out of all its checks.
+    const diagram = Object.keys(history.services).filter((id) => id.startsWith('livediagram:'));
+    const checks = diagram.length * 3;
+    expect(history.uptime!.groups.livediagram).toBe(
+      Math.round(((checks - 2) * 10_000) / checks) / 100,
+    );
+    expect(history.uptime!.groups.liveplanner).toBe(100);
+    expect(history.uptime!.all).toBeLessThan(100);
   });
 
   it('turns consecutive checks that weren’t up into one incident, closed by the next up check', async () => {
@@ -175,6 +189,14 @@ describe('runOnce', () => {
     expect(site.w[0]).toBe('d');
     // 23 of 24 that day, and today’s one: 24 of 25.
     expect(site.p).toBe(96);
+    // The uptime comes from the days, not the incidents: with every incident deleted, the down day still counts.
+    env.raw.exec('DELETE FROM incidents');
+    await runOnce(env, T0 + HOUR, { results: results() });
+    const after = snapshot<StatusHistory>(env, 'history');
+    expect(after.incidents).toEqual([]);
+    expect(after.services['liveworkspace:site']!.p).toBeLessThan(100);
+    expect(after.uptime!.groups.liveworkspace).toBeLessThan(100);
+    expect(after.uptime!.groups.livediagram).toBe(100);
   });
 
   it('leaves yesterday alone after midnight, and starts today afresh', async () => {

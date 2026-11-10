@@ -1,17 +1,18 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { TextStyleMenu, WriteTextStyles } from '@/components/illustrations/text-styles';
 
 export const metadata = helpMetadata({
   title: 'Write Elements',
   description:
-    'Pick the right Write element: a Text label, a Sticky note or a Pointer note, by how much you have to say and where it belongs.',
+    'Pick the right Write element: a text style from Title to Caption, a Sticky note or a Pointer note, by what the words are and where they belong.',
   path: '/help/palette/write/',
 });
 
 <ArticleLayout
   title="Write Elements"
-  description="The three elements whose content is words rather than a picture."
+  description="The text styles, from Title to Caption, and the notes: the elements whose content is words rather than a picture."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles('write')}
@@ -23,11 +24,37 @@ There is no Page element among them: on a tab of pages the page itself is the ca
 
 ## What the category contains
 
-- A **Text** element is a free-standing label with no box around it: just words on the page. `T` drops one. Use it for titles, column headings, and anything that labels a _region_ rather than an element, since a shape's own label is the better way to name a shape. See [Text and Fonts](/help/canvas/text-and-fonts/).
+- The **text styles** are free-standing text with no box around it, already set as the kind of text it is: **Title**, **Subtitle**, **Heading**, **Subheading**, **Paragraph**, **Quote** and **Caption**. `T` drops a Paragraph. Use them for a screen's words, and for anything that labels a _region_ rather than an element, since a shape's own label is the better way to name a shape. See [Text Styles](#text-styles) below and [Text and Fonts](/help/canvas/text-and-fonts/).
 - A **Sticky note** is a coloured note card, the one that reads as somebody's contribution rather than the author's structure. `N` drops one. See [Sticky Notes](/help/palette/tools/sticky-notes/).
 - A **Pointer note** is a short note with a line out to a dot. Drag the dot onto a corner or edge of a shape and the note follows that shape wherever it moves: use it for "this is where it fails" remarks. See [Pointer Notes](/help/palette/pointer-notes/).
 
-On a logo page, Write holds just Text, for a wordmark, and the Sticky note, for a comment on the design.
+On a logo page, Write holds the **Title**, for a wordmark, the **Subtitle**, for its tagline, and the Sticky note, for a comment on the design.
+
+## Text Styles
+
+Each text style drops a text already set as that kind of text, so a wireframe's headings, body copy and small print take one step each and read as a hierarchy from the start. Every style starts left aligned, with its own name as the words, selected so you can type straight over it.
+
+| Style      | Size  | Look    | Box             |
+| ---------- | ----- | ------- | --------------- |
+| Title      | 40 px | Bold    | Fits its words  |
+| Subtitle   | 24 px | Regular | Fits its words  |
+| Heading    | 32 px | Bold    | Fits its words  |
+| Subheading | 20 px | Bold    | Fits its words  |
+| Paragraph  | 16 px | Regular | Wraps at 320 px |
+| Quote      | 20 px | Italic  | Wraps at 320 px |
+| Caption    | 12 px | Regular | Fits its words  |
+
+Click the page to drop a style at its own size, or drag across it to set the width it wraps at. The sizes are a screen's: a Paragraph wraps at a phone's column, so it reads as a block on any device.
+
+<Figure caption="Write's text styles, and a phone screen set in them from Title to Caption.">
+  <WriteTextStyles />
+</Figure>
+
+To switch a text to another style, right-click it, open **Text** and pick one under **Text Style**. Each row shows the style in its own weight with its size beside it; rest the pointer on a row to see the text change, and click to keep it. The words, colour, font and alignment stay as they were, and undo takes the change back in one step. The row of the style a text wears is highlighted; a text you have resized or restyled by hand wears none until you pick one. Select several texts to restyle them all at once.
+
+<Figure caption="Right-click a text, open Text, and pick a style under Text Style; the one it wears is highlighted.">
+  <TextStyleMenu />
+</Figure>
 
 ## Picking between them
 
@@ -52,7 +79,7 @@ Each behaves like any other element once placed: select, restyle, lock, [rotate]
 Text styling is shared with the rest of the canvas rather than special to this category: font, size, weight and alignment all come from the same controls that style a shape's label. See [Text and Fonts](/help/canvas/text-and-fonts/).
 
 <Tip>
-  `T` and `N` drop a text label and a sticky note without opening the palette at all: type, `N`,
+  `T` and `N` drop a Paragraph and a sticky note without opening the palette at all: type, `N`,
   type, `N`.
 </Tip>
 

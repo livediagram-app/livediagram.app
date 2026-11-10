@@ -59,6 +59,14 @@ export type IncidentEntry = [
   error: CheckError | null,
 ];
 
+// The window's uptime per group and over every service on the page, pooled over the services' checks: percent to
+// two places (`uptimePercent`), null for a group with no checks in the window.
+export type WindowUptime = {
+  all: number | null;
+  // Keyed by the group's id (`groupOfService`).
+  groups: Record<string, number | null>;
+};
+
 export type StatusHistory = {
   v: 1;
   at: number | null;
@@ -67,11 +75,66 @@ export type StatusHistory = {
   days: number;
   latest: Record<string, LatestEntry>;
   services: Record<string, ServiceHistory>;
+  // Absent from an answer stored before it was added: the page then shows no group or page uptime.
+  uptime?: WindowUptime;
   // Newest first.
   incidents: IncidentEntry[];
 };
 
 const DAY_MS = 86_400_000;
+
+/** The answered checks over all of them, in percent to two places: null with no checks, 100 only when every check
+ *  answered, and never rounded up to 100 otherwise (one down check in 75,000 is 99.99, not 100). */
+export function uptimePercent(answered: number, checks: number): number | null {
+  if (checks <= 0) return null;
+  if (answered >= checks) return 100;
+  return Math.min(99.99, Math.round((answered * 10_000) / checks) / 100);
+}
+
+/** A service's group: its id up to the colon (`livediagram:api` is livediagram's). */
+export function groupOfService(serviceId: string): string {
+  const colon = serviceId.indexOf(':');
+  return colon < 0 ? serviceId : serviceId.slice(0, colon);
+}
+
+export type CheckTotals = { checks: number; answered: number };
+
+/** Each group's uptime and the page's, from each service's totals over the window, pooled: a group's answered
+ *  checks over its checks, so a service checked more often weighs more, as in its own bars. */
+export function poolUptime(
+  totals: Iterable<readonly [serviceId: string, totals: CheckTotals]>,
+): WindowUptime {
+  const groups = new Map<string, CheckTotals>();
+  const all: CheckTotals = { checks: 0, answered: 0 };
+  for (const [id, t] of totals) {
+    const g = groupOfService(id);
+    const sum = groups.get(g) ?? { checks: 0, answered: 0 };
+    sum.checks += t.checks;
+    sum.answered += t.answered;
+    groups.set(g, sum);
+    all.checks += t.checks;
+    all.answered += t.answered;
+  }
+  return {
+    all: uptimePercent(all.answered, all.checks),
+    groups: Object.fromEntries(
+      [...groups].map(([g, t]) => [g, uptimePercent(t.answered, t.checks)]),
+    ),
+  };
+}
+
+// A service's days as totals: each day with checks counts as 1000 checks with its tenths answered, the only
+// measure a sliced window keeps (every full day has the same 24 checks).
+function dayTotals(s: ServiceHistory): CheckTotals {
+  const t: CheckTotals = { checks: 0, answered: 0 };
+  for (let i = 0; i < s.w.length; i++) {
+    const tenths = dayUptime(s, i);
+    if (tenths === null) continue;
+    t.checks += 1000;
+    t.answered += tenths;
+  }
+  return t;
+}
 
 /** A time's UTC day, as YYYY-MM-DD. */
 export function dayOf(ms: number): string {
@@ -106,6 +169,9 @@ export function sliceHistory(history: StatusHistory, days: number): StatusHistor
     from,
     days: keep,
     services,
+    uptime: poolUptime(
+      Object.entries(services).map(([id, s]): [string, CheckTotals] => [id, dayTotals(s)]),
+    ),
     incidents: history.incidents.filter(([, , ended]) => ended === null || ended >= since),
   };
 }
@@ -113,15 +179,8 @@ export function sliceHistory(history: StatusHistory, days: number): StatusHistor
 // The uptime over the days with checks, unweighted by how many checks each day had (a sliced window has only the
 // days' uptimes, and every full day has the same 24 checks).
 function meanUptime(s: ServiceHistory): number | null {
-  let days = 0;
-  let sum = 0;
-  for (let i = 0; i < s.w.length; i++) {
-    const t = dayUptime(s, i);
-    if (t === null) continue;
-    days++;
-    sum += t;
-  }
-  return days === 0 ? null : Math.round((sum / days) * 10) / 100;
+  const t = dayTotals(s);
+  return uptimePercent(t.answered, t.checks);
 }
 
 const LETTERS = new Set(['u', 's', 'd']);
@@ -144,9 +203,29 @@ export function parseStatusHistory(body: unknown): StatusHistory | null {
       !s.u.every((d) => Array.isArray(d) && d.length === 2)
     )
       return null;
-  for (const e of Object.values(h.latest))
-    if (!Array.isArray(e) || !LETTERS.has(e[0])) return null;
+  for (const e of Object.values(h.latest)) if (!Array.isArray(e) || !LETTERS.has(e[0])) return null;
+  // A bad uptime costs only the uptime figures, never the bars.
+  if (h.uptime !== undefined && !isWindowUptime(h.uptime)) {
+    const rest = { ...h };
+    delete rest.uptime;
+    return rest as StatusHistory;
+  }
   return h as StatusHistory;
+}
+
+const isPercent = (v: unknown): boolean =>
+  v === null || (typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100);
+
+function isWindowUptime(u: unknown): u is WindowUptime {
+  if (!u || typeof u !== 'object') return false;
+  const { all, groups } = u as Partial<WindowUptime>;
+  return (
+    isPercent(all) &&
+    !!groups &&
+    typeof groups === 'object' &&
+    !Array.isArray(groups) &&
+    Object.values(groups).every(isPercent)
+  );
 }
 
 /** An empty answer, for before the first run. */

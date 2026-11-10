@@ -24,6 +24,19 @@ describe('elementSchemaDoc', () => {
     expect(doc).toContain('"e"'.replace(/"/g, '')); // anchor 'e' from packages/design
     expect(doc).toContain('Do NOT set colours');
   });
+
+  // docs/specs/008-canvas/canvas-and-palette.md "Text styles": the palette's own table, read out for an agent.
+  it("names the palette's text styles in the sizes and weights the editor places them", () => {
+    const doc = elementSchemaDoc();
+    const styles = [
+      'Title 40 bold',
+      'Heading 32 bold',
+      'Paragraph 16',
+      'Quote 20 italic',
+      'Caption 12',
+    ];
+    for (const style of styles) expect(doc).toContain(style);
+  });
 });
 
 describe('tool input shapes', () => {
@@ -164,8 +177,8 @@ describe('SERVER_INSTRUCTIONS template examples', () => {
       .filter((s) => s && s !== '...');
     expect(examples.length).toBeGreaterThan(3);
     for (const kind of examples) expect(resolveTemplate(kind), kind).not.toBeNull();
-    // The blank templates it starts each kind of design from.
-    const blanks = [...SERVER_INSTRUCTIONS.matchAll(/"(blank-[a-z-]+)"/g)].map((m) => m[1]!);
+    // The blank templates it starts each kind of design from, the plain "blank" tab among them.
+    const blanks = [...SERVER_INSTRUCTIONS.matchAll(/"(blank(?:-[a-z-]+)?)"/g)].map((m) => m[1]!);
     expect(blanks.length).toBeGreaterThan(3);
     for (const kind of blanks) expect(resolveTemplate(kind), kind).not.toBeNull();
   });

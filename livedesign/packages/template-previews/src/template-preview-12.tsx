@@ -2,8 +2,8 @@ import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livedesign/templates';
 import { pv } from '@liveworkspace/template-previews/motion';
 
-// Group 12: the blanks (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Tab and Blank
-// Illustration, each drawn as its sheet. Static SVG preview tiles (one
+// Group 12: the blanks (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Tab, drawn as
+// its sheet. Static SVG preview tiles (one
 // branch per TemplateKind; see template-preview.tsx for who renders them); TemplatePreview chains
 // the groups with ??.
 
@@ -11,9 +11,8 @@ const SLATE = 'rgb(148 163 184)';
 
 export function templatePreviewGroup12(kind: TemplateKind): ReactElement | null {
   switch (kind) {
-    // Blank Tab is an empty Pages tab: the one unchosen page Blank Illustration opens on.
+    // Blank Tab is an empty Pages tab: the one unchosen page that asks what it is for.
     case 'blank':
-    case 'blank-illustration':
       // One empty page with a dashed edge, a faint chart on its top half and faint lines of
       // writing below: a page to fill, either way. Hover story: the two halves take turns to
       // light up, the choice the page asks for.

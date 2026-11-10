@@ -153,7 +153,9 @@ through to a Blank Space.
 
 The hero's words, pills, search and tiles are the same in every app; the **backdrop** behind them tells the apps apart
 (`HeroBackdrop` in `@liveworkspace/explorer`). It follows the app the list is filtered to: under All Apps, and on
-liveworkspace.app in no app, the hero keeps the dotted band.
+liveworkspace.app in no app, the hero keeps the dotted band. Which backdrop is whose, the heading's face and the
+textures' measures are one theme (`@liveworkspace/explorer/hero-theme`, `APP_BACKDROP`), which every editor's start
+header reads too ([The start header](#the-start-header-wears-the-same-theme)).
 
 | App           | Backdrop                                                                                                                                                                                                                                                                                                                             |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -162,12 +164,63 @@ liveworkspace.app in no app, the hero keeps the dotted band.
 | livediagram   | **Blueprint**: engineering paper, a fine 24 px grid with a heavier line every five squares, crop marks in the band's corners, a dimension line in the gap between the words and the tiles, and a drawing's title block ("HOME · SHEET 1 OF 1", "1:1") in the bottom right. Navy in dark.                                             |
 | livedocuments | **Typesetter**: warm paper with an 8 px baseline grid, the heading set in serif, and a large pilcrow (¶) behind the tiles' edge.                                                                                                                                                                                                     |
 | livedesign    | **Shape kit**: a few bold primitives placed like a composition in progress: a circle (selected, with handles) and a square turned on its corner in the gap, a triangle beside the pills, a quarter disc in the bottom left and a ring in the bottom right.                                                                           |
+| livehuddle    | **Huddle**: a room's voice: rings every 28 px spread from the band's top right corner, fading into the paper as they go; in the gap a round table seen from above, its seats taken and the one speaking ringed, a speech bubble over them, and a pill in the bottom right ("LIVE · 5 HERE").                                         |
 
-The textures (dots, lanes, grid, baseline grid) and the corner pieces run the band's full width at every size. The pieces
+The textures (dots, lanes, grid, baseline grid, rings) and the corner pieces run the band's full width at every size. The pieces
 drawn in the gap between the words and the tiles show only from `xl`, where that gap is wide enough that they never
-touch the words; the title block and the triangle show from `lg`. The serif heading is the system's serif (`ui-serif`,
+touch the words; the title block, the triangle and the huddle's pill show from `lg`. The serif heading is the system's serif (`ui-serif`,
 Georgia, Times New Roman), so no font is fetched for it. Every backdrop is static SVG and CSS in the brand ramp, with no
 motion and nothing fetched; it is hidden from screen readers and takes no pointer events.
+
+#### The start header wears the same theme
+
+Every editor's start panel (each product's start spec, "The header band") draws its header over the app's own
+backdrop, redrawn at a header's height (`StartHeaderBand` in `@liveworkspace/workbench`): the same texture at the
+same measures (the huddle's rings at half their pitch, to fit), the corner pieces, and one gap piece (the dragged card, the dimension line, the pilcrow, the selected
+circle, the round table), with a title mark before the title holding the motif as one glyph and the title in the
+hero's face (`startHeadingFace`: serif for the Typesetter). It reads the theme, never the hero's art: the hero paints
+in the brand ramp under the chrome's light or dark class, the start header in the start palette (the app's own
+light or dark colours, never the tab's theme). The All Apps dots are no app's, so no start header shows
+them.
+
+#### Spaces, on Home
+
+Directly under Jump Back In (its Most Used and Recent), Home lists the person's **Spaces**: the places that hold
+their work, the same ones the sidebar's Spaces group lists, each a tile that goes straight to that space's list
+(`HomeSpaces` in `@liveworkspace/explorer`). The same in every app's Explorer and on liveworkspace.app; the editors'
+panel keeps its own Home without it, and a first run shows its starting points in its place, as it does for the rest.
+
+- **Which, and in what order.** My Work first, then each team the person is in: the one changed most recently
+  first, then those holding nothing yet by name (`orderSpaces`). Up to eight show (two rows of four on a desktop);
+  with more, a last tile **Show All N Spaces** shows the rest in place, and **Show Fewer** folds them again.
+- **A tile** is one link to the space's list (My Work's view, a team's page), drawn as Home's large cards are (the
+  same surface, radius, hover lift and focus ring): a mosaic of the space's four newest items, each its own card's
+  picture (the folder cards' `FolderMosaic`, "+N" past four, the empty state's art when it holds nothing), over the
+  space's disc, its name and a quiet line. My Work's disc is the sidebar's sky glyph; a team's is its initials on
+  one of six tones picked from its id (`spaceTone`), so a team keeps its colour on every visit. The line says how
+  many items it holds ("12 plans", "1000+ plans" at the index's cap, "No plans yet"; "files" under All Apps) and
+  when the newest changed ("Edited 2 hours ago"). A team's tile adds its member count ("4 members", from the teams
+  list the page already reads, once there is more than the person) and the faces of up to three people behind its
+  newest items (their Google pictures from the people store, initials otherwise), their names its tooltip.
+- **The filter.** Filtered to one app, the counts, the mosaic and the line are that app's items; under All Apps,
+  every app's.
+- **No teams yet.** Signed in where teams can be run, a dashed **Create a Team** tile follows My Work ("Work
+  together on shared plans."): it opens New Team, and goes to the team once made. A guest has My Work, then a
+  **Sign In to Work in Teams** tile where the host says where signing in is; a deployment without accounts shows My
+  Work alone.
+- **Loading** draws tile-shaped placeholders in the same grid, one per space known (at most eight). **A failed
+  read** keeps every tile, since names and links need nothing from it, without its mosaic or line, and says
+  "Couldn’t load what’s in your spaces." with **Try again**, as Jump Back In does.
+- **Phones.** Below `md` the tiles are one horizontal strip that snaps tile by tile, as Jump Back In's does, each
+  15rem wide with the next one peeking; from `md` a grid of two, of four from `lg`.
+- **Screen readers and keys.** The section is labelled by its heading, and its tiles are a list of links, each named
+  by its space and described by its line; Tab walks them in order. The disc, the mosaic and the faces are hidden from
+  screen readers.
+- **On livehuddle**, whose items are themselves Spaces, the section is titled **Workspaces** (and its button **Show
+  All N Workspaces**), so "Spaces" never heads tiles that each count "3 spaces". The tiles, their links and their
+  order are the same as everywhere else.
+- **The read.** One `GET /spaces/previews` ([contracts](one-explorer-contracts.md#folders-favourites-defaults)) per
+  filter, asked with Home's other reads and again whenever they are (an epoch), never per space.
 
 What a browser keeps offline belongs to its app's origin. On the app's address it is a view of the Explorer, This
 Browser, in the page and in the editor's panel alike; on liveworkspace.app, which can't read it, the sidebar links to
@@ -214,6 +267,19 @@ changes (`rowsForView`, `useOpenCurrentRows`).
 **A drag opens the Library.** A drag of an item, a folder or a This Browser item resting on the folded Library row
 for half a second (`LIBRARY_HOVER_OPEN_MS`) opens it, so the Trash inside is in reach; the Library itself takes no
 drop. A folded folder or space opens the same way after `DRAG_HOVER_OPEN_MS`, as it did.
+
+**On a phone** (below `sm`, 640 px) the sidebar folds into a drawer, and one bar is the way in (owner, 2026-11-10:
+the menu button beside the page title was "too hidden"). The **sections bar** runs the full width under the page's
+header and stays stuck under it as the page scrolls: the header and the bar share one sticky block, so they never
+overlap or jump, with no scroll listener (`explorer/PhoneSections.tsx`). It shows the menu glyph, the current view's
+name (the title its heading shows: Home, Inbox, Shared With Me, Timeline, a folder's or a team's name, Search
+results, Archived, the Trash; cut with an ellipsis when long) and a chevron pointing right, the way the sidebar slides in from the left. The whole row is one button, 48 px tall,
+named "Open Menu, Current: Inbox", with `aria-expanded` and `aria-controls`; the page title and Home's hero carry
+no menu button of their own. It opens the sidebar as a drawer the full width of the screen (over the header too),
+sliding in from the left (under reduced motion it appears): a top row naming it, **Menu**, with its close, then
+the sidebar's groups. The drawer traps focus, locks the page's scroll behind it, closes on Escape, its close, a pick
+or any change of view (Back included), and gives focus back to the bar. The editor's panel has no such bar: its rail
+is its way round.
 
 **The editor's panel** has no accordion: its rail lists Home, Inbox and Shared With Me under Overview, the spaces,
 then under More the Library's order (Timeline, Favourites, the Library's pages, Archived, the Trash) and This

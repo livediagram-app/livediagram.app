@@ -9,6 +9,9 @@ import {
   incidentsByService,
   loadHistory,
   stripSummary,
+  uptimeLabel,
+  windowUptime,
+  windowWords,
 } from './history';
 
 // liveworkspace/docs/specs/010-site/site.md "Status": what the page makes of the stored history.
@@ -150,5 +153,28 @@ describe('formatting', () => {
     expect(formatDuration(45 * 60_000)).toBe('45 min');
     expect(formatDuration(2 * H + 5 * 60_000)).toBe('2 h 5 min');
     expect(formatDuration(76 * H)).toBe('3 d 4 h');
+  });
+});
+
+describe('the uptime figures', () => {
+  it('names a figure with its window, in Title Case', () => {
+    expect(uptimeLabel(99.95, 90)).toBe('99.95% Uptime, Last 90 Days');
+    expect(uptimeLabel(99.5, 30)).toBe('99.5% Uptime, Last 30 Days');
+    expect(uptimeLabel(100, 90)).toBe('100% Uptime, Last 90 Days');
+    expect(windowWords(1)).toBe('Last Day');
+  });
+
+  it('reads a group’s uptime and the page’s, and nothing when the answer has none', () => {
+    const h: StatusHistory = {
+      ...sampleHistory(),
+      uptime: { all: 99.9, groups: { livediagram: 99.17, liveplanner: null } },
+    };
+    expect(windowUptime(h, 'livediagram')).toBe(99.17);
+    expect(windowUptime(h, 'all')).toBe(99.9);
+    // No checks in the window, a group the answer doesn't know, an answer stored before uptime, no history: no figure.
+    expect(windowUptime(h, 'liveplanner')).toBeNull();
+    expect(windowUptime(h, 'livedesign')).toBeNull();
+    expect(windowUptime(sampleHistory(), 'livediagram')).toBeNull();
+    expect(windowUptime(null, 'all')).toBeNull();
   });
 });

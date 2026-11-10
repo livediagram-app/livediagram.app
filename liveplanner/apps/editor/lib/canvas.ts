@@ -66,8 +66,9 @@ export function inheritedSizeFor(
     return { width: base.width, height: base.height };
   }
   // And the kinds drawn to their own proportions or placed around other things: a step number (a disc), a container
-  // (a boundary, a stack: a box to put things in), a concept graphic, a sequence diagram, a Diagram key and a tab
-  // window. A step tapped while a 300 x 150 card is selected came out a 300 x 150 "disc".
+  // (a boundary, a stack: a box to put things in), a concept graphic, a sequence diagram, a Diagram key and a stored
+  // tab window (docs/specs/009-elements/tab-window.md, retired). A step tapped while a 300 x 150 card is selected came
+  // out a 300 x 150 "disc".
   if (
     base.type === 'shape' &&
     (isChipShape(base.shape) ||

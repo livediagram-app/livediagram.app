@@ -62,6 +62,23 @@ describe('add with an element', () => {
     }
   });
 
+  // docs/specs/009-elements/tab-window.md: a retired kind is never made, though a stored one loads.
+  it('refuses a tab window', () => {
+    const element = {
+      id: 'w',
+      type: 'shape',
+      shape: 'tab-window',
+      x: 0,
+      y: 0,
+      width: 640,
+      height: 360,
+      windowTabId: 'board-1',
+    };
+    const rejection = refused(run([{ op: 'add', element }]));
+    expect(rejection.code).toBe('invalid_value');
+    expect(rejection.details[0]).toMatch(/is not an element a liveplanner tab holds$/);
+  });
+
   it('refuses a chart that reads no Sheet', () => {
     const chart = {
       id: 'b2',

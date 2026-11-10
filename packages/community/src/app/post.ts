@@ -6,7 +6,9 @@
 //
 // Where the post's document stands is the index's (its Trash, its team, its share password, its owner): the document
 // asks it as the post's author (checkCommunityPost), from its own alarm, every COMMUNITY_CHECK_MS while it has a
-// post, and sends the service what changed. The same check hears whether the service hid the post after reports.
+// post, and sends the service what changed. The same check hears whether the service hid the post after reports, or
+// no longer holds it (the document went away, or the service's sweep removed it): then the post is withdrawn, its
+// link removed at the index, and its row goes once the link has.
 
 import { ANONYMISED_PERSON } from '@liveworkspace/index-client';
 import {
@@ -77,7 +79,9 @@ export type CommunityPost = {
   title: string;
   anonymous: boolean;
   hiddenAt: number | null;
-  sentState: CommunityDocumentState | 'gone' | null;
+  // `withdrawn`: the service no longer holds the post, and the community link is still to be removed at the index.
+  // A withdrawn row opens nothing.
+  sentState: CommunityDocumentState | 'gone' | 'withdrawn' | null;
   checkedAt: number;
 };
 
@@ -121,7 +125,8 @@ export async function ownerCommunityState(
   db: CommunityPostDb,
 ): Promise<'listed' | 'hidden' | null> {
   const post = await readCommunityPost(db);
-  return post ? (post.hiddenAt === null ? 'listed' : 'hidden') : null;
+  if (!post || post.sentState === 'withdrawn') return null;
+  return post.hiddenAt === null ? 'listed' : 'hidden';
 }
 
 // The share code that opens the document as its Community post right now, or null: the Community switched on, a post
@@ -133,7 +138,7 @@ export function openCommunityCode(
   meta: CommunityDocumentMeta | null,
 ): string | null {
   if (!post || !meta || !communityEnabled(env)) return null;
-  if (post.hiddenAt !== null) return null;
+  if (post.hiddenAt !== null || post.sentState === 'withdrawn') return null;
   if (meta.ownerId !== post.authorId || meta.teamId !== null) return null;
   return post.shareCode;
 }
@@ -247,6 +252,10 @@ export async function checkCommunityPost(check: CommunityCheck): Promise<Communi
   // COMMUNITY_CHECK_MS on, never at the stale `checkedAt`, which would put its alarm in the past on every ring.
   if (!communityServiceConfigured(env)) return { ...post, checkedAt: now };
   const index = meta ? check.indexAs(post.authorId, meta.teamId) : null;
+  // The link is removed as whoever owns the document now (its author, unless it changed hands), who may manage it.
+  const owner = () => (meta ? check.indexAs(meta.ownerId, meta.teamId) : null);
+  // Withdrawn already: only its link is left to remove.
+  if (post.sentState === 'withdrawn' && meta) return withdrawCommunityPost(db, owner(), post, now);
   const state = await communityStateOf(index, documentId, post, meta);
   if (state !== post.sentState) {
     const sync =
@@ -264,7 +273,10 @@ export async function checkCommunityPost(check: CommunityCheck): Promise<Communi
   let hiddenAt = post.hiddenAt;
   if (hiddenAt === null) {
     const found = await service.getPost(env, documentId, post.authorId);
-    if (found?.state === 'hidden') hiddenAt = now;
+    // The service no longer holds it: away (the Trash, another owner) removed it, or the sweep did. Restoring the
+    // document must not reopen it through its old link.
+    if (!found) return withdrawCommunityPost(db, owner(), post, now);
+    if (found.state === 'hidden') hiddenAt = now;
   }
   await db
     .prepare('UPDATE community_post SET sent_state = ?, hidden_at = ?, checked_at = ?')
@@ -273,7 +285,38 @@ export async function checkCommunityPost(check: CommunityCheck): Promise<Communi
   return { ...post, sentState: state, hiddenAt, checkedAt: now };
 }
 
-// A document going for good takes its post with it: the service hears it is gone. Best effort.
+// A post the service no longer holds is withdrawn: its row says so at once (so it opens nothing), its community link is
+// removed at the index, and the row goes once the index has let the link go (or answers 404: it is already gone). Until
+// then it stays withdrawn, and the next check tries the link again: without the row the link would open the document
+// as a plain view link. Answers the post as it now is (null once it is gone).
+export async function withdrawCommunityPost(
+  db: CommunityPostDb,
+  index: CommunityIndex | null,
+  post: CommunityPost,
+  now: number,
+): Promise<CommunityPost | null> {
+  await db
+    .prepare("UPDATE community_post SET sent_state = 'withdrawn', checked_at = ?")
+    .bind(now)
+    .run();
+  const kept: CommunityPost = { ...post, sentState: 'withdrawn', checkedAt: now };
+  if (!index) return kept;
+  try {
+    await index.revokeShareLink(post.shareCode);
+  } catch (err) {
+    const status = (err as { status?: unknown } | null)?.status;
+    if (!(err instanceof Error && err.name === 'IndexError' && status === 404)) {
+      console.warn('[community] link not removed yet', { error: String(err) });
+      return kept;
+    }
+  }
+  await deleteCommunityPost(db);
+  console.info('[community] withdrawn');
+  return null;
+}
+
+// A document going for good takes its post with it: the service hears it is gone. Best effort: a send that fails is
+// caught by the service's sweep (community.md "The sweep"), which finds the document gone at the index.
 export async function leaveCommunity(
   env: CommunityAppEnv,
   db: CommunityPostDb,

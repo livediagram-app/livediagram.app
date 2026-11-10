@@ -199,22 +199,50 @@ export async function deletePost(env: Env, postId: string): Promise<void> {
   await env.COMMUNITY_DB.prepare('DELETE FROM posts WHERE id = ?').bind(postId).run();
 }
 
+// An account closed: every post it made in the app goes, its tags, likes, copies and reports with it (hidden ones
+// too: no one can publish as a closed account, so nothing is left for hiding to guard).
+export async function deleteOwnerPosts(env: Env, app: CommunityApp, owner: string): Promise<void> {
+  await env.COMMUNITY_DB.prepare('DELETE FROM posts WHERE app = ? AND owner = ?')
+    .bind(app, owner)
+    .run();
+}
+
 // What an app says changed about its posts' documents: each one's state, and the ones deleted for
 // good. One batch, so a sync lands whole or not at all, and one statement per state rather than per
 // document: D1 counts statements against a Worker invocation's query limit, so a sync of 500 documents
-// is at most 4 statements, not 500.
+// is at most 5 statements, not 500. A document gone `away` (the Trash, another owner) removes its post, unless
+// hidden after reports: that one stays, set `away`, so hiding stays final (community.md "What lives where").
 export async function syncDocuments(
   env: Env,
   app: CommunityApp,
   sync: CommunityAppSync,
 ): Promise<void> {
+  const statements = syncStatements(env, app, sync);
+  if (statements.length > 0) await env.COMMUNITY_DB.batch(statements);
+}
+
+// The sync's statements, for a caller that batches them with its own (the sweep).
+export function syncStatements(
+  env: Env,
+  app: CommunityApp,
+  sync: CommunityAppSync,
+): D1PreparedStatement[] {
   const byState = new Map<string, string[]>();
   for (const { document, state } of sync.documents) {
     const documents = byState.get(state) ?? [];
     documents.push(document);
     byState.set(state, documents);
   }
+  const away = byState.get('away');
   const statements = [
+    ...(away
+      ? [
+          env.COMMUNITY_DB.prepare(
+            `DELETE FROM posts WHERE app = ? AND state = 'listed'
+              AND document IN (SELECT value FROM json_each(?))`,
+          ).bind(app, JSON.stringify(away)),
+        ]
+      : []),
     ...[...byState].map(([state, documents]) =>
       env.COMMUNITY_DB.prepare(
         `UPDATE posts SET document_state = ?
@@ -229,7 +257,7 @@ export async function syncDocuments(
         ]
       : []),
   ];
-  if (statements.length > 0) await env.COMMUNITY_DB.batch(statements);
+  return statements;
 }
 
 // The app's posts hidden after reports at or after `since`.

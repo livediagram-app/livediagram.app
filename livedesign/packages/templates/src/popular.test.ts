@@ -13,14 +13,16 @@ import { TEMPLATES } from './templates';
 describe('Popular', () => {
   const kinds = new Set(TEMPLATES.map((t) => t.kind));
 
-  it("leads Everything with the mode's blank", () => {
+  // docs/specs/007-editor/start-diagramming.md "Recommended and groups": the mode's blank is hidden, since the ×
+  // leaves the same tab, so no shelf offers it.
+  it("lists Everything without the mode's blank", () => {
     expect(popularKindsFor('all')).toEqual([...POPULAR_TEMPLATE_KINDS]);
-    expect(POPULAR_TEMPLATE_KINDS.slice(0, EDITOR_MODES.length)).toEqual(
-      EDITOR_MODES.map((mode) => BLANK_TEMPLATE_FOR_MODE[mode]),
-    );
+    for (const mode of EDITOR_MODES) {
+      expect(POPULAR_TEMPLATE_KINDS).not.toContain(BLANK_TEMPLATE_FOR_MODE[mode]);
+    }
   });
 
-  it('gives every mode a short list of its own, its blank first, each once, every kind real', () => {
+  it('gives every mode a short list of its own, each once, every kind real', () => {
     for (const [choice, list] of Object.entries(POPULAR_BY_MODE)) {
       expect(list.length, choice).toBeGreaterThanOrEqual(POPULAR_PER_MODE);
       expect(list.length, choice).toBeLessThanOrEqual(13);
@@ -28,7 +30,6 @@ describe('Popular', () => {
       for (const k of list) expect(kinds.has(k), k).toBe(true);
       if (choice === 'all') continue;
       const mode = choice as keyof typeof BLANK_TEMPLATE_FOR_MODE;
-      expect(list[0], choice).toBe(BLANK_TEMPLATE_FOR_MODE[mode]);
       for (const k of list) expect(templateEditorMode(k), k).toBe(mode);
     }
   });

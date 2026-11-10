@@ -22,11 +22,6 @@ export { SLOW_MS, TIMEOUT_MS };
 //  - skipped: not checked here, with the reason.
 export type ServiceState = 'up' | 'reached' | 'slow' | 'down' | 'checking' | 'skipped';
 
-// After a round, Check now rests this long before it runs another: every round asks every service at once.
-export const CHECK_COOLDOWN_MS = 30_000;
-// How many past checks each service keeps for its strip: this visit's only, in memory.
-export const HISTORY_MAX = 30;
-
 export type CheckResult = {
   state: Exclude<ServiceState, 'checking' | 'skipped'>;
   // How long the answer took, or until the check gave up.
@@ -100,7 +95,6 @@ function judge(
 export type ServiceView = {
   state: ServiceState;
   latest: CheckResult | null;
-  history: readonly CheckResult[];
   // For a derived service: which check stood for it, for the detail line.
   via?: string;
 };
@@ -115,13 +109,12 @@ export function viewServices(
   const own = (id: string): ServiceView => {
     const list = history.get(id) ?? [];
     const latest = list.at(-1) ?? null;
-    return { state: latest?.state ?? 'checking', latest, history: list };
+    return { state: latest?.state ?? 'checking', latest };
   };
   const views = new Map<string, ServiceView>();
   for (const s of services) {
     if (s.check.mode === 'probe') views.set(s.id, own(s.id));
-    else if (s.check.mode === 'skipped')
-      views.set(s.id, { state: 'skipped', latest: null, history: [] });
+    else if (s.check.mode === 'skipped') views.set(s.id, { state: 'skipped', latest: null });
   }
   for (const s of services) {
     if (s.check.mode !== 'derived') continue;
@@ -144,7 +137,6 @@ export function viewServices(
     views.set(s.id, {
       state,
       latest: fastest?.latest ?? sources.find((v) => v.latest)?.latest ?? null,
-      history: [],
       via: `${answered.length} of ${sources.length} checks answered`,
     });
   }
@@ -214,22 +206,6 @@ export function median(values: readonly number[]): number | null {
   const sorted = values.toSorted((a, b) => a - b);
   const mid = sorted.length >> 1;
   return sorted.length % 2 ? sorted[mid]! : Math.round((sorted[mid - 1]! + sorted[mid]!) / 2);
-}
-
-/** Add a round's results to the history, keeping at most HISTORY_MAX per service. */
-export function appendHistory(
-  history: ReadonlyMap<string, readonly CheckResult[]>,
-  results: ReadonlyMap<string, CheckResult>,
-): Map<string, CheckResult[]> {
-  const next = new Map<string, CheckResult[]>();
-  for (const [id, list] of history) next.set(id, [...list]);
-  for (const [id, result] of results) {
-    const list = next.get(id) ?? [];
-    list.push(result);
-    if (list.length > HISTORY_MAX) list.splice(0, list.length - HISTORY_MAX);
-    next.set(id, list);
-  }
-  return next;
 }
 
 /** Every probe on the page, run at once. */

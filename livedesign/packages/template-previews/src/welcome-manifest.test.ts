@@ -11,7 +11,6 @@ import {
   TEMPLATES,
   isBlankTemplate,
   templateCreateHref,
-  BLANK_TEMPLATE_FOR_MODE,
   EXTRA_BLANK_TEMPLATES,
   type TemplateKind,
 } from '@livedesign/templates';
@@ -21,7 +20,8 @@ import { TemplatePreview } from './template-preview';
 const FILE = new URL('../../templates/welcome.json', import.meta.url);
 const WELCOME_TEMPLATES_MAX = 8;
 const WELCOME_BLANKS_MAX = 5;
-const BLANKS: readonly TemplateKind[] = [BLANK_TEMPLATE_FOR_MODE.pages, ...EXTRA_BLANK_TEMPLATES];
+// The blanks of a page kind: the empty page that asks what it is for is the start's ×, offered on no shelf.
+const BLANKS: readonly TemplateKind[] = EXTRA_BLANK_TEMPLATES;
 const FAN: readonly TemplateKind[] = ['logo-design', 'wireframe-mobile-app', 'wireframe-website'];
 
 function start(kind: TemplateKind) {

@@ -36,6 +36,9 @@ import {
   noteStartPanelLeft,
   startPanelJustLeft,
 } from '@liveworkspace/workbench/components/start/start-panel-open';
+import { StartHeaderBand } from '@liveworkspace/workbench/components/start/StartHeaderBand';
+import { StartTitleMark } from '@liveworkspace/workbench/components/start/StartTitleMark';
+import { useStartHeaderTheme } from '@liveworkspace/workbench/components/start/useStartHeaderTheme';
 import { usePalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
 import { focusIsFree } from '@liveworkspace/workbench/lib/focus-is-free';
 import { ConnectRailEntry } from '@liveworkspace/workbench/components/connect/ConnectRailEntry';
@@ -103,6 +106,8 @@ export function StartPanel<C extends string>({
 }) {
   // A category's flyout, More or Search hangs from the palette: the start steps aside for it (palette-popover-open).
   const paletteOpen = usePalettePopoverOpen();
+  // The header wears this app's Explorer hero backdrop, in the panel's own colours (start-diagramming.md "The header band").
+  const header = useStartHeaderTheme('livedocuments', palette);
   // Another start panel was on screen a moment ago: the tab changed under it (one empty tab for another). The frame
   // stays put (no fly-up) and its content arrives whole, nothing fading up from nothing or cascading in, so the change
   // never blinks. `calm` lasts until the category or search changes.
@@ -272,24 +277,29 @@ export function StartPanel<C extends string>({
         <header
           // Room on the right for the help link pinned in the corner. On a phone only the title's row needs it: the
           // search below runs the full width, so a long placeholder fits.
-          className="relative flex flex-wrap items-center gap-x-4 gap-y-3 border-b py-4 pl-5 pr-14 sm:pl-6 max-sm:pr-5"
+          className="relative isolate flex flex-wrap items-center gap-x-4 gap-y-3 border-b py-4 pl-5 pr-14 sm:pl-6 max-sm:pr-5"
           style={{ borderColor: palette.border }}
         >
-          <div className="min-w-0 flex-1 max-sm:pr-10">
-            <h2
-              id={titleId}
-              className="text-[20px] font-semibold tracking-tight max-sm:text-[18px]"
-            >
-              {title}
-            </h2>
-            {/* On a phone the line is left out, for room. */}
-            <p className="mt-0.5 text-[13px] max-sm:hidden" style={{ color: palette.muted }}>
-              {line}
-            </p>
+          <StartHeaderBand kind={header.kind} band={header.band} />
+          {/* The title mark, the app's motif as one glyph, then the title and its line. */}
+          <div className="flex min-w-0 flex-1 items-center gap-3 max-sm:pr-10">
+            <StartTitleMark kind={header.kind} band={header.band} />
+            <div className="min-w-0">
+              <h2
+                id={titleId}
+                className={`text-[20px] leading-tight max-sm:text-[18px] ${header.face}`}
+              >
+                {title}
+              </h2>
+              {/* On a phone the line is left out, for room. */}
+              <p className="mt-0.5 text-[13px] max-sm:hidden" style={{ color: header.band.muted }}>
+                {line}
+              </p>
+            </div>
           </div>
           <label
             // On a phone the search takes its own row under the title, the help link staying beside the title.
-            className="flex h-9 w-full items-center gap-2 rounded-xl border px-3 transition focus-within:ring-2 focus-within:ring-[var(--start-accent)] max-sm:order-last sm:w-68"
+            className="flex h-9 w-full items-center gap-2 rounded-xl border px-3 shadow-sm transition focus-within:ring-2 focus-within:ring-[var(--start-accent)] max-sm:order-last sm:w-68"
             style={{
               borderColor: palette.border,
               backgroundColor: palette.surface,

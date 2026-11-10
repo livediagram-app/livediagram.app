@@ -22,7 +22,7 @@ import { PaneHeader } from './PaneHeader';
 
 const members = (n: number) => `${n} ${n === 1 ? 'member' : 'members'}`;
 
-export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
+export function InvitesPane() {
   const { words, navigate } = useExplorer();
   const { myTeams, myTeamsFailed, retryMyTeams, canRun, answer } = useTeams();
   const toast = useToast();
@@ -60,7 +60,7 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
           onMade={(team) => navigate({ kind: 'team', id: team.id })}
         />
       ) : null}
-      <PaneHeader title={SIDEBAR_LABELS.invites} onOpenNav={onOpenNav} showFilter={false} />
+      <PaneHeader title={SIDEBAR_LABELS.invites} showFilter={false} />
       {!canRun ? (
         <EmptyPane view={{ kind: 'invites' }} words={words} />
       ) : invites === null && myTeamsFailed ? (

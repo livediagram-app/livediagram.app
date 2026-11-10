@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { SHAPE_KINDS, type Element } from '@liveplanner/project';
+import { RETIRED_SHAPE_KINDS, SHAPE_KINDS, type Element } from '@liveplanner/project';
 import { ALL_PALETTE_TELEMETRY_TYPES } from '@liveplanner/api-schema';
 
 const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
@@ -86,6 +86,15 @@ describe('trackDuplicated', () => {
   // The gesture token belongs on the single Duplicated event only: the
   // per-element Added events must stay comparable with the paths that
   // create an element from scratch.
+  // A stored tab window (docs/specs/009-elements/tab-window.md) is retired: its copy counts as a copy, not as a kind.
+  it('counts no Added for a copy of a retired kind', () => {
+    trackDuplicated([box({ shape: 'tab-window' }), box()]);
+    expect(trackMock.mock.calls).toEqual([
+      ['Element', 'Duplicated', undefined],
+      ['Element', 'Added', 'Square'],
+    ]);
+  });
+
   it('puts the gesture type on Duplicated, never on Added', () => {
     trackDuplicated([box()], 'ShiftDrag');
     expect(trackMock.mock.calls).toEqual([
@@ -99,9 +108,12 @@ describe('shapeTelemetryToken', () => {
   // Every shape kind reports a token the Palette tab ranks. A kind whose token
   // is missing from the catalogue is counted nowhere on the dashboard: that is
   // how 'Session-button' and friends read zero while being drawn every day.
+  // A retired kind (a tab window) is never added, so it has no token (docs/specs/009-elements/tab-window.md).
   it('maps every shape kind to a token the palette catalogue knows', () => {
     const known = new Set(ALL_PALETTE_TELEMETRY_TYPES);
-    const unknown = [...SHAPE_KINDS].filter((k) => !known.has(shapeTelemetryToken(k)));
+    const unknown = [...SHAPE_KINDS]
+      .filter((k) => !RETIRED_SHAPE_KINDS.has(k))
+      .filter((k) => !known.has(shapeTelemetryToken(k)));
     expect(unknown).toEqual([]);
   });
 });

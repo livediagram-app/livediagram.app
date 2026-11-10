@@ -19,7 +19,6 @@ const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
   timeline: createShape('timeline-rail', 0, 0),
   chart: createShape('line-chart', 0, 0),
   stack: createShape('stack', 0, 0),
-  'tab-window': createShape('tab-window', 0, 0),
 };
 
 describe('ELEMENT_TOUR_DEFS', () => {

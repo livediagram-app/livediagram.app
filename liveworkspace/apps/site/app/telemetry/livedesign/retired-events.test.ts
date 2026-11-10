@@ -136,6 +136,19 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Error', 'Client', 'Render.Canvas.TypeError')).toBe(false);
   });
 
+  it('retires the Tab Window, its tour and its help article, not the other tours', () => {
+    expect(isRetiredEvent('Element', 'Added', 'TabWindow')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'TabWindowTab')).toBe(true);
+    expect(isRetiredEvent('UI', 'Used', 'TabWindowOpen')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'TabWindowTourOffer')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'TabWindowTourStepOpen')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'TabWindowTourSeenOff')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'tab-windows')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'tab-windows')).toBe(true);
+    expect(isRetiredEvent('Element', 'Added', 'Stack')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'StackTourOffer')).toBe(false);
+  });
+
   it('keeps everything that still exists', () => {
     expect(isRetiredEvent('Document', 'Undone', null)).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);

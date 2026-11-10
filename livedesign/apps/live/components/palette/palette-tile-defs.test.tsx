@@ -94,7 +94,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   popular: 0,
   shapes: 13,
   build: 4,
-  write: 5,
+  write: 11,
   draw: 6,
   // A screen's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette"); the layout
   // adds the Badge, the Card and the Checklist.
@@ -103,7 +103,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   icons: 0,
   stickers: 0,
   technology: 0,
-  media: 10,
+  media: 9,
   components: 11,
   concepts: 8,
   data: 7,

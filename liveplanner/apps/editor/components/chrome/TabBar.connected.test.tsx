@@ -36,7 +36,7 @@ describe('TabBar: a connected tab', () => {
     render(<TabBar {...props({ tabs: TABS, activeId: 'c1', onConnectAgain, onDelete })} />);
     expect(
       screen.getByRole('button', {
-        name: 'Architecture, connected livediagram file, opens in a new tab',
+        name: 'Architecture, connected livediagram file',
       }),
     ).toBeTruthy();
     act(() => setConnectedTabBroken(CONNECTION.id, true));

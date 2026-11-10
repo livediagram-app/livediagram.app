@@ -78,7 +78,7 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'shapes:cylinder': 'Flowchart',
   'shapes:cloud': 'More Shapes',
   'tools:page': 'Text',
-  'tools:text': 'Text',
+  'tools:text-title': 'Text',
   'tools:sticky': 'Notes',
   'tools:pencil': 'Pens',
   // Logo's Draw (palette-layouts PAGES_LOGO): the Pen first, then each person's markers as a group.

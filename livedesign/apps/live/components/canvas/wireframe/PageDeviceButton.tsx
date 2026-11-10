@@ -1,7 +1,8 @@
 'use client';
 
-// A wireframe page's Device (docs/specs/007-editor/wireframe-pages.md "Choosing the device"): the
-// button beside its cog, showing its device, opening the Device popover (WireframeDeviceSettings).
+// A wireframe page's Frame (docs/specs/007-editor/wireframe-pages.md "Choosing the device"): the
+// button beside its cog, its device's glyph (named Frame on a desktop, its device after the name in
+// its tooltip), opening the Frame popover (WireframeDeviceSettings).
 import type { LaidOutPage } from '@livedesign/design';
 import { WIREFRAME_DEVICES } from '@livedesign/design';
 import type { WireframeDevicePatch, WireframeFrameTheme } from '@livedesign/design';
@@ -10,9 +11,10 @@ import { DeviceGlyph } from './DeviceGlyph';
 import { WireframeDeviceSettings } from './WireframeDeviceSettings';
 
 const POPOVER_WIDTH = 344;
-// The title-bar room it takes: the cog's size and a gap, or named beside its icon.
+// The title-bar room it takes: the cog's size and a gap, or named beside its icon ("Frame" is
+// narrower than Layout's "Layout", so it takes Layout's 78).
 const DEVICE_ROOM = 28;
-const DEVICE_LABELLED_ROOM = 112;
+const DEVICE_LABELLED_ROOM = 78;
 
 export function pageDeviceRoom(labelled: boolean): number {
   return labelled ? DEVICE_LABELLED_ROOM : DEVICE_ROOM;
@@ -38,7 +40,8 @@ export function PageDeviceButton({
   const device = page.device ?? 'iphone';
   const popover = (
     <TitlePopoverButton
-      name={labelled ? WIREFRAME_DEVICES[device].label : 'Device'}
+      name="Frame"
+      detail={WIREFRAME_DEVICES[device].label}
       labelled={labelled}
       openRequest={openRequest}
       headless={headless}

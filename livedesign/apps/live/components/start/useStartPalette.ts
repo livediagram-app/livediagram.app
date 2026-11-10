@@ -1,16 +1,10 @@
-import { useOptionalEditorContext } from '@/app/design/[id]/EditorContext';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { getTheme, resolveTabBackdrop } from '@/lib/themes';
-import { startPalette, startPanelColours, type StartPalette } from './start-palette';
+import { useAppearance } from '@livedesign/ui';
+import { startPalette, type StartPalette } from './start-palette';
 
-// The active tab's colours for its start panel and the tours (start-palette.ts), in its light or dark surface.
-// Outside an editor there is no tab: the app's own light or dark look.
+// The start panel's colours and the tours' (start-palette.ts): the app's own light or dark look, never the tab's
+// theme (owner, 2026-11-10), so every app's start keeps its own header theme whatever the tab wears. Light or dark
+// follows Appearance, not the tab's paper.
 export function useStartPalette(): StartPalette {
-  const surface = useCanvasSurface();
-  // Outside an editor (a surface mounted on its own, as some tests mount a tour) there is no tab.
-  const tab = useOptionalEditorContext()?.activeTab;
-  if (!tab) return startPalette(surface, {});
-  // The paper is the tab's canvas as this viewer sees it (its theme's half, docs/specs/011-theme/light-and-dark.md).
-  const paper = resolveTabBackdrop(tab).backgroundColor;
-  return startPalette(surface, startPanelColours({ backgroundColor: paper }, getTheme(tab.theme)));
+  const { appearance } = useAppearance();
+  return startPalette(appearance, {});
 }

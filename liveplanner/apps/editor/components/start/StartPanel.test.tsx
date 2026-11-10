@@ -1,15 +1,21 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { contrastRatio, hexToRgb, planPalette, type CanvasSurface } from '@liveplanner/project';
+import { contrastRatio, hexToRgb, planPalette } from '@liveplanner/project';
 import { PlanBoardPicker } from '@/components/plan/PlanBoardPicker';
-import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 
 vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => null }));
+// The start's colours follow the app's Appearance (start spec "Look"), never the tab's surface.
+const appearance = vi.hoisted(() => ({ value: 'light' as 'light' | 'dark' }));
+vi.mock('@liveplanner/ui', async (actual) => ({
+  ...(await actual<typeof import('@liveplanner/ui')>()),
+  useAppearance: () => ({ appearance: appearance.value }),
+}));
 
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  appearance.value = 'light';
 });
 
 function startPlanning() {
@@ -68,13 +74,10 @@ describe('the chosen rail count', () => {
     return `#${mix(p.r, c.r)}${mix(p.g, c.g)}${mix(p.b, c.b)}`;
   };
 
-  it.each<CanvasSurface>(['dark', 'light'])('reads at AA in %s', (surface) => {
-    render(
-      <CanvasSurfaceProvider surface={surface}>
-        <PlanBoardPicker onPick={vi.fn()} />
-      </CanvasSurfaceProvider>,
-    );
-    const palette = planPalette(surface, {});
+  it.each(['dark', 'light'] as const)('reads at AA in %s', (mode) => {
+    appearance.value = mode;
+    render(<PlanBoardPicker onPick={vi.fn()} />);
+    const palette = planPalette(mode, {});
     const chosen = document.querySelector<HTMLElement>('[data-rail][aria-current="true"]')!;
     const badge = chosen.lastElementChild as HTMLElement;
     const { r, g, b } = hexToRgb(palette.text)!;
@@ -139,5 +142,20 @@ describe('the search taking focus as the panel opens', () => {
     pointer(false);
     startPlanning();
     expect(document.activeElement).toBe(document.body);
+  });
+});
+
+// docs/specs/007-editor/start-panel.md "The header band": the header wears the app's own Explorer hero backdrop, in the panel's colours.
+describe('the start header band', () => {
+  it("draws the app's own band and title mark behind the header, hidden from screen readers", () => {
+    startPlanning();
+    const band = document.querySelector('header [data-start-band]');
+    expect(band?.getAttribute('data-start-band')).toBe('lanes');
+    expect(band?.getAttribute('aria-hidden')).toBe('true');
+    const mark = document.querySelector('header [data-start-title-mark]');
+    expect(mark?.getAttribute('data-start-title-mark')).toBe('lanes');
+    // The title in the hero's face: serif for the Typesetter alone.
+    const title = document.querySelector('header h2')!;
+    expect(title.className.includes('font-serif')).toBe(false);
   });
 });

@@ -6,9 +6,6 @@ import { UNTITLED_DESIGN_NAME, isUntitledDesignName } from './legacy-untitled';
 export type TemplateKind =
   // Blank Tab: an empty tab, made by name (an agent's add_tab, a `/new?blank` link); in no category.
   | 'blank'
-  // Blank Illustration (docs/specs/008-canvas/canvas-and-palette.md "Templates"): one empty page, which asks what
-  // it is for. A quick-pick, never inside a category grid.
-  | 'blank-illustration'
   // The blanks of a page kind (docs/specs/007-editor/start-diagramming.md "Recommended and groups"): one empty
   // page whose kind is already chosen (blank-page-templates.ts), so it never asks what it is for.
   | 'blank-logo'
@@ -70,12 +67,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank',
     title: 'Blank Tab',
     description: 'An empty tab: one page that asks what it is for.',
-  },
-  {
-    kind: 'blank-illustration',
-    title: 'Blank Illustration',
-    description: 'An empty page that becomes a logo or a wireframe.',
-    extra: true,
   },
   {
     kind: 'blank-logo',
@@ -298,6 +289,9 @@ const RETIRED_TEMPLATE_KINDS: Readonly<Record<string, TemplateKind>> = {
   'mobile-wireframe': 'wireframe-mobile-app',
   'laptop-wireframe': 'wireframe-dashboard',
   'browser-wireframe': 'wireframe-website',
+  // Blank Illustration was one empty page that asks what it is for: Blank Tab, the tab the start's × leaves
+  // (docs/specs/007-editor/start-diagramming.md "Recommended and groups").
+  'blank-illustration': 'blank',
 };
 
 /** The template a kind names: itself, a retired kind's replacement, else null. For a kind that
@@ -330,14 +324,19 @@ export function untitledNameForTemplate(kind: TemplateKind | null): string {
 }
 
 // Every name a design is given before anyone names it: each template's untitled name, plus "Untitled design" and
-// its legacy spelling. Built once, at first use.
+// its legacy spelling, and the names retired templates gave (a design made from one is still unnamed). Built once,
+// at first use.
 let DEFAULT_NAMES: ReadonlySet<string> | null = null;
+const RETIRED_UNTITLED_NAMES: readonly string[] = ['Untitled Illustration'];
 
 /**
  * Whether a design still has a default name (docs/specs/007-editor/new-design-route.md "What `/new` makes"), so a
  * template picked on its first tab may name it after itself. A name someone gave it is never default.
  */
 export function isDefaultDesignName(name: string): boolean {
-  DEFAULT_NAMES ??= new Set(TEMPLATES.map((t) => untitledNameForTemplate(t.kind)));
+  DEFAULT_NAMES ??= new Set([
+    ...TEMPLATES.map((t) => untitledNameForTemplate(t.kind)),
+    ...RETIRED_UNTITLED_NAMES,
+  ]);
   return isUntitledDesignName(name) || DEFAULT_NAMES.has(name);
 }

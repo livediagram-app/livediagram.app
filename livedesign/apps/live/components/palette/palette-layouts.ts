@@ -87,10 +87,11 @@ const PAGES: PaletteLayout = {
     {
       // Twelve tiles a page is most often built from, in the order they are reached for:
       // words and simple marks, a picture and a speech bubble, the charts, then the ready-made
-      // blocks. Each is also in one of the categories below.
+      // blocks. Each is also in one of the categories below. The Heading stands for Write's text styles: T places
+      // a Paragraph without opening the palette.
       id: 'popular',
       tiles: [
-        'tools:text',
+        'tools:text-heading',
         'shapes:square',
         'shapes:circle',
         'tools:image',
@@ -174,7 +175,7 @@ const PAGES_WIREFRAME: PaletteLayout = {
 };
 
 // A logo (docs/specs/007-editor/logo-pages.md "The Logo palette"): what a mark is drawn and set with. Draw (the Pen,
-// the Pencil, the Shape Pen, the Polygon, then each person's markers, useLogoMarkerTiles), Shapes, Text, glyphs to
+// the Pencil, the Shape Pen, the Polygon, then each person's markers, useLogoMarkerTiles), Shapes, Write, glyphs to
 // start from, the Library, and a picture to trace; no charts, blocks, frames, stickers or embeds.
 const PAGES_LOGO: PaletteLayout = {
   landing: 'draw',
@@ -185,7 +186,7 @@ const PAGES_LOGO: PaletteLayout = {
       tiles: [
         'logo:pen',
         'tools:pencil',
-        'tools:text',
+        'tools:text-title',
         'shapes:square',
         'shapes:circle',
         'shapes:triangle',
@@ -199,8 +200,9 @@ const PAGES_LOGO: PaletteLayout = {
       tiles: ['logo:pen', 'tools:pencil', 'tools:shape-pen', DIVIDE, 'tools:polygon'],
     },
     { id: 'shapes' },
-    // Text for a wordmark, and a sticky note for a comment on the design.
-    { id: 'write', tiles: ['tools:text', DIVIDE, 'tools:sticky'] },
+    // A Title for a wordmark and a Subtitle for its tagline (the text styles a mark is set in), and a sticky note
+    // for a comment on the design.
+    { id: 'write', tiles: ['tools:text-title', 'tools:text-subtitle', DIVIDE, 'tools:sticky'] },
     { id: 'icons' },
     // A picture to trace or to set the mark beside.
     { id: 'media', tiles: ['tools:image'] },
@@ -283,7 +285,7 @@ export function paletteLandingCategory(mode: EditorMode): string {
 // A Participant's palette (docs/specs/013-workspace/share-roles.md "What a Participant changes"): one category,
 // Participate, holding only what it may add, as the full palette's own tiles: the Sticky and Text tiles (whatever a
 // mode's Popular holds), then the Image tile. Mind-map branches grow from a node (Tab, Enter), not from a tile.
-const PARTICIPANT_TILES = ['tools:sticky', 'tools:text'] as const;
+const PARTICIPANT_TILES = ['tools:sticky', 'tools:text-paragraph'] as const;
 const PARTICIPANT_IMAGE_TILE = 'tools:image';
 
 export function participantTiles(): PaletteTileDef[] {

@@ -93,7 +93,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 - **Every other face is drawn by hand too.** Whatever an element draws beyond its sketched body is split into two
   layers: charts, legends, progress, rating, checklists, code blocks, concept graphics, Sankey,
   badges, steps, cards, pointer notes, stacks, boundaries, diagram keys, people, web components, Plan boards,
-  cards, views and sheets, collaboration panels, buttons, pickers, portals, a tab window's frame, link cards, a video's frame, annotation markers, a table's grid, a lane's gutter, a record's
+  cards, views and sheets, collaboration panels, buttons, pickers, portals, a stored tab window's frame, link cards, a video's frame, annotation markers, a table's grid, a lane's gutter, a record's
   rows, a page's fold, a browser's chrome and an inline icon beside a label.
   - Its **ink** (fills, outlines, bars, discs, rules, glyphs) is drawn through the same wobble as icons.
   - Its **words** sit above the ink, crisp, in the element's font. The wobble mangles small figures ("4,000" reads
@@ -103,8 +103,8 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   into as before. The ink is a still copy of the face, so a hover or press tint on a face's own control is not
   drawn on a Sketch tab. A face's own animations (a picker's spin) play in the copy in
   step with the live face: each new copy picks up each animation where the live one is, never from the start, so a
-  face that keeps changing (a timer's countdown) does not drag its moving parts back. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled,
-  and a tab window's content keeps the finish of the tab it shows. Exports draw the same two layers. The
+  face that keeps changing (a timer's countdown) does not drag its moving parts back. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled.
+  Exports draw the same two layers. The
   hand-drawn body under a face is drawn once, as the body is: the face's pencil shading never shades it again, and
   every export stays well-formed SVG whatever the face holds.
   A Plan board, view or sheet that fills its tab or is maximised is drawn over the canvas, outside its element's
@@ -173,8 +173,7 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
     reads every part as it rests, never part way through easing its line in or out (a card's edge fading back from
     the marker's hidden line read as no line at all, so each redraw skipped every card the last one drew and its
     border went plain until the next).
-- **Not affected:** freehand pen strokes and highlights, images, photos inside a face, and a tab window's content (it keeps the
-  finish of the tab it shows).
+- **Not affected:** freehand pen strokes and highlights, images and photos inside a face.
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, as under Sketch.
 
 ### Every hand-drawn finish

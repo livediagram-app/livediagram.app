@@ -144,7 +144,7 @@ and 8 values per filter.
 ## The field
 
 The top-bar search is the lens field on every Explorer view; on Home it is the hero's. Its placeholder reads "Search
-or filter plans" (the host's word for its items).
+your work" (owner, 2026-11-10), the same in every app and on liveworkspace.app.
 
 - Each token renders as a **pill** inside the field: "Template: Retrospective, Kanban", "Space: Acme". The free text
   follows the pills. A pill that does not apply (a Space pill on a scoped view) is muted and says why.

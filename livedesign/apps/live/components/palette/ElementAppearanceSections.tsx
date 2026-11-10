@@ -30,6 +30,7 @@ import {
   supportsBorderControls,
   supportsColours,
   supportsShadow,
+  textPresetOfElement,
   type IconSize,
   type IconWeight,
   DEFAULT_ICON_WEIGHT,
@@ -54,6 +55,7 @@ import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitive
 import { TypographySections } from './TypographySections';
 import { presetPxFor } from './TextSizeControl';
 import { WordmarkSection } from './WordmarkSection';
+import { TextStyleSection } from './TextStyleSection';
 
 import { IconSizeTiles, IconWeightTiles } from '@/components/palette/context-menu-tiles';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
@@ -322,6 +324,20 @@ export function ElementAppearanceSections({
             (no separator of its own), beside Style + Animation. ── */}
       {showMarkers || showAlignment ? (
         <MenuFlyoutSection title="Text" icon={<TextGlyph />} {...flyoutProps('text')}>
+          {/* Text Style (docs/specs/008-canvas/canvas-and-palette.md "Text styles"): a text's Write style, first,
+              since it sets the size and weight the sections below fine-tune. */}
+          {showAlignment &&
+          target.type === 'text' &&
+          props.onSetTextStyle &&
+          props.onPreviewTextStyle ? (
+            <TextStyleSection
+              current={textPresetOfElement(target)}
+              section={sectionProps('text-style')}
+              onSet={props.onSetTextStyle}
+              onPreview={props.onPreviewTextStyle}
+              onPreviewEnd={props.onPreviewStyleEnd}
+            />
+          ) : null}
           {/* Typography — Font / Size / Padding, shared with the rich-text
               toolbar's overflow menu. Applies to the element's whole label. */}
           {showAlignment ? (

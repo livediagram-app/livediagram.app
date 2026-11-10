@@ -97,6 +97,24 @@
     animation-duration: 1ms;
   }
 }
+/* The phone's sidebar drawer (src/explorer/PhoneSections.tsx): the whole screen slides in from the left, as the
+   apps' drawers do. Under reduced motion it appears. */
+@keyframes lw-drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.lw-drawer-in {
+  animation: lw-drawer-in 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lw-drawer-in {
+    animation: none;
+  }
+}
 /* A list's rows arriving (liveplanner's lvd-cascade): each rises in a beat after the one above, capped so the
    whole list settles within 250ms. Only on a list's first paint (useCascade), never on rows scrolled into view. */
 @keyframes lw-row-in {

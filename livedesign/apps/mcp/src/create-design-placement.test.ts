@@ -77,7 +77,7 @@ describe('create_design intent', () => {
     expect(posted[0]!.intent).toEqual({ mode: 'pages', tabKind: 'diagram' });
   });
 
-  it.each(['blank-logo', 'blank-illustration', 'logo-design', 'wireframe-mobile-app'])(
+  it.each(['blank-logo', 'blank', 'logo-design', 'wireframe-mobile-app'])(
     'sends pages for a %s template tab',
     async (template) => {
       const { run, posted } = harness(undefined);

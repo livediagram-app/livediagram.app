@@ -8,6 +8,7 @@ import { handleApp } from './app-routes';
 import { communityEnabled, type Env } from './env';
 import { json, notFound, preflight, withCors } from './http';
 import { handlePublic } from './public-routes';
+import { sweepCommunity } from './sweep';
 import { under } from '@liveworkspace/index-app/worker-http';
 import { guardRequest } from '@liveworkspace/api-kit/request-failure';
 import { createApiRouteLabel } from '@liveworkspace/telemetry/error-tokens';
@@ -66,6 +67,12 @@ const worker = {
         },
       }),
     );
+  },
+  // The cron (every five minutes): the sweep checks each app's posts against the index (community.md "The sweep").
+  // Switched off, there is nothing to keep in step.
+  scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): void {
+    if (!communityEnabled(env)) return;
+    ctx.waitUntil(sweepCommunity(env));
   },
 };
 

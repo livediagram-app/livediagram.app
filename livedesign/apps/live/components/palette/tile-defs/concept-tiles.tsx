@@ -195,7 +195,7 @@ export const CONCEPT_TILES: PaletteTileDef[] = [
   {
     id: 'tools:link-card',
     blurb: 'A clickable preview of a link',
-    // Media, beside the Tab Window: both show another page inside this one. It sat under Components, which groups by
+    // Media, beside the embeds: each shows another page inside this one. It sat under Components, which groups by
     // what a thing looks like — a ready-made composite you recolour — and a link card is neither composite nor
     // decoration.
     section: 'media',

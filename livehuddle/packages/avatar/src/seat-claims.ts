@@ -7,6 +7,7 @@ import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 import { seatsACharacter } from './office-geometry';
 import { isSceneShape, type AvatarSceneElement } from './scene';
 import { seatPoints, type Seat, type SeatedBox } from './seats';
+import { isLecternShape, lecternAside } from './lectern';
 import type { AvatarFacing, AvatarPoint } from './walk';
 
 /** Which seat a sitter holds (its `seatPoints` index), when they sat (their epoch ms) and their random tiebreak. */
@@ -90,6 +91,14 @@ export function besideBox(box: Rect, from: AvatarPoint, gap = BESIDE_GAP): Avata
   return best.at;
 }
 
+/**
+ * Where a character stops when it cannot have a piece's seat: a step to the speaker's side at a Podium (venue-pieces.md
+ * "Speaking from the Podium"), beside the piece off the edge nearest `from` for every other piece.
+ */
+function stopBeside(el: SeatedBox, seat: Seat, from: AvatarPoint): AvatarPoint {
+  return isLecternShape(el.shape) ? lecternAside(seat, from) : besideBox(el, from);
+}
+
 /** Where a character sits: a seat's feet point, the way it then faces, and which seat it is. */
 export type SeatChoice = { x: number; y: number; facing: AvatarFacing; index: number };
 
@@ -106,7 +115,7 @@ export function seatOnArrival(
   const seats = seatPoints(el);
   const taken = takenSeats(el, peers);
   const index = nearestIndex(seats, feet, (i) => !taken.has(i));
-  if (index < 0) return { stopAt: besideBox(el, feet) };
+  if (index < 0) return { stopAt: stopBeside(el, seats[0]!, feet) };
   const seat = seats[index]!;
   return {
     sit: {
@@ -133,7 +142,7 @@ export function seatToYield(
     const theirs = claimOf(seats, peer);
     // A peer's claim always names a seat the piece has, so a match is our seat too.
     if (theirs.index === own.index && claimBeats(theirs, own))
-      return besideBox(el, seats[own.index]!);
+      return stopBeside(el, seats[own.index]!, seats[own.index]!);
   }
   return null;
 }

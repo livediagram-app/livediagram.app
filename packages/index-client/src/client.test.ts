@@ -276,4 +276,24 @@ describe('createIndexAppClient', () => {
     const app = createIndexAppClient({ app: 'livedesign', key: 'k', fetch: doFetch });
     await expect(app.removeConnection('h1', 'cn_1', 't')).rejects.toMatchObject({ status: 401 });
   });
+
+  it("asks where Community posts' items stand, with the app's key, and throws a refusal", async () => {
+    const posts = [{ id: 'i1', code: 'ABC', owner: 'user_a' }];
+    const { seen, doFetch } = fakeFetch(() =>
+      Response.json({ states: [{ id: 'i1', state: 'away' }] }),
+    );
+    const app = createIndexAppClient({ app: 'livediagram', key: 'k', fetch: doFetch });
+    expect(await app.communityStates(posts)).toEqual([{ id: 'i1', state: 'away' }]);
+    expect(seen[0]).toMatchObject({
+      method: 'POST',
+      url: 'https://www.liveworkspace.app/api/index/app/community/states',
+      body: { posts },
+    });
+    expect(seen[0]!.headers.get('Authorization')).toBe('Bearer k');
+    expect(seen[0]!.headers.get('X-Index-App')).toBe('livediagram');
+
+    const refused = fakeFetch(() => Response.json({ error: 'unauthorized' }, { status: 401 }));
+    const other = createIndexAppClient({ app: 'livediagram', key: 'k', fetch: refused.doFetch });
+    await expect(other.communityStates(posts)).rejects.toMatchObject({ status: 401 });
+  });
 });

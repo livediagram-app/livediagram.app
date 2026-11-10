@@ -173,7 +173,7 @@ function NewPill() {
 
 /** A person's Google picture where they have one, over their initials on a quiet disc; the index keeps no names, so
  *  someone unnamed wears the person glyph. The picture comes with their name from the one people store. */
-function Avatar({ person, size }: { person: WhatHappenedPerson | undefined; size: number }) {
+export function Avatar({ person, size }: { person: WhatHappenedPerson | undefined; size: number }) {
   const { people } = useExtras();
   const picture = usePersonPicture(people, person?.id);
   const letters = person ? initials(person.name) : null;

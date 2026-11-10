@@ -2,6 +2,7 @@
 // text box, and a text or shape a page re-fit scaled with its page, store `textScale`. Every label
 // renderer (the canvas, the exports, the thumbnails, the lint) reads it here, so they agree.
 import { labelFontPx, TEXT_PX_MAX, TEXT_PX_MIN } from '@liveworkspace/model-core/label-font';
+import { splitTextPx } from '@liveworkspace/element-model/text-presets';
 import type { Element, TextSize } from './index';
 
 type Scaled = { type: Element['type']; textScale?: number };
@@ -28,12 +29,9 @@ export function textPxRangeFor(type: string): TextPxRange {
     : { min: TEXT_PX_MIN, max: TEXT_PX_MAX };
 }
 
-/** A px as a text or a shape stores it: whole px up to the model's most, the rest as `textScale`. */
-export function splitTextPx(px: number): { textSize: number; textScale?: number } {
-  const whole = Math.max(1, Math.round(px));
-  if (whole <= TEXT_PX_MAX) return { textSize: whole };
-  return { textSize: TEXT_PX_MAX, textScale: Math.round((whole / TEXT_PX_MAX) * 1000) / 1000 };
-}
+// A px as a text or a shape stores it (whole px up to the model's most, the rest as `textScale`): the text styles'
+// rule, shared with every product that offers them.
+export { splitTextPx };
 
 /** The size an element's words draw at, for its Size slider: its stored size times its scale, as a px where there
  *  is a scale; else the size as stored. A stored size is never rewritten to fit the slider. */

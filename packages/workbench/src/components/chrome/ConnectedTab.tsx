@@ -3,14 +3,15 @@
 // A connected tab in the footer (liveworkspace/docs/specs/004-index/connected-tabs.md "How it looks"): a TabFrame like
 // its neighbours, led by the target app's logo. Another app's carries a small arrow (it opens in a new browser tab);
 // one that opens nothing carries an amber dot instead. Its name follows the target's, so it is never renamed by hand
-// (IDX26): no double-click rename. Everything else (the menu, avatars, dragging, folders) passes through.
+// (IDX26): no double-click rename. A press selects it like any tab and never opens the file (its page's Open does).
+// Everything else (the menu, avatars, dragging, folders) passes through.
 import type { App, TabConnection } from '@liveworkspace/index-client';
 import { BrandMark } from '@liveworkspace/brand';
 import { lucideArrowUpRight } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveworkspace/ui';
 import { TabFrame, type TabFrameProps } from './TabFrame';
 import { connectedTabPhrase } from '../connect/connect-words';
-import { pickConnectedTab, useConnectedTabBroken } from '../connect/connected-tab-store';
+import { useConnectedTabBroken } from '../connect/connected-tab-store';
 
 const ArrowGlyph = lucideGlyph(lucideArrowUpRight, 11);
 
@@ -35,15 +36,10 @@ export function ConnectedTab({
   const sameApp = connection.app === hostApp;
   const brokenSeen = useConnectedTabBroken(connection.id);
   const broken = brokenProp ?? brokenSeen;
-  const { onSelect, id } = frame;
   return (
     <TabFrame
+      // A press only selects the tab: its page shows the file's preview, and Open there opens the file.
       {...frame}
-      // A press is the person asking: the tab's page opens the file (the open tab included, which opens it again).
-      onSelect={() => {
-        pickConnectedTab(id);
-        onSelect();
-      }}
       lead={<BrandMark app={connection.app} className="size-3.5" />}
       afterName={
         <>
@@ -58,7 +54,7 @@ export function ConnectedTab({
               <ArrowGlyph />
             </span>
           )}
-          <span className="sr-only">{connectedTabPhrase(connection.app, sameApp, broken)}</span>
+          <span className="sr-only">{connectedTabPhrase(connection.app, broken)}</span>
         </>
       }
     />

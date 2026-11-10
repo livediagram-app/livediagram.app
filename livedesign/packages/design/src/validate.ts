@@ -121,7 +121,7 @@ export const SHAPE_KINDS = new Set<string>([
   'stat-row',
   'process',
   'site-header',
-  // Tab window (docs/specs/009-elements/tab-window.md): another tab of the design drawn inside it.
+  // Tab window (docs/specs/009-elements/tab-window.md, retired): a stored one still validates and loads.
   'tab-window',
   // Instance (docs/specs/009-elements/components.md): one element drawing a main of the component library.
   'instance',

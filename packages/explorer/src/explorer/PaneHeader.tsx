@@ -15,7 +15,6 @@ import {
   DetailsViewIcon,
   FolderOutlineIcon,
   GridViewIcon,
-  HamburgerIcon,
   ItemIcon,
   ListViewIcon,
   PlusIcon,
@@ -38,7 +37,6 @@ export function PaneHeader({
   onCreateItem,
   onCreateFolder,
   folderLabel = 'New Folder',
-  onOpenNav,
   actions,
   viewMode,
   onSetViewMode,
@@ -50,7 +48,6 @@ export function PaneHeader({
   onCreateItem?: (app?: App) => void;
   onCreateFolder?: () => void;
   folderLabel?: string;
-  onOpenNav?: () => void;
   actions?: ReactNode;
   viewMode?: ViewMode;
   onSetViewMode?: (mode: ViewMode) => void;
@@ -74,16 +71,6 @@ export function PaneHeader({
     <div className="mb-4">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <div className="flex min-w-[10rem] flex-1 items-center gap-2">
-          {onOpenNav ? (
-            <button
-              type="button"
-              onClick={onOpenNav}
-              aria-label="Browse sections"
-              className="-ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 sm:hidden dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            >
-              <HamburgerIcon />
-            </button>
-          ) : null}
           <h1 className="min-w-0 truncate text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
             {title}
           </h1>

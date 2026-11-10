@@ -6,6 +6,13 @@ import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext'
 import { startPalette } from './start-palette';
 import { StartFromTemplates } from './StartFromTemplates';
 
+// The start wears the app's Appearance, never the tab's paper (start-diagramming.md "Look").
+const appearance = vi.hoisted(() => ({ value: 'light' as CanvasSurface }));
+vi.mock('@livedesign/ui', async (actual) => ({
+  ...(await actual<typeof import('@livedesign/ui')>()),
+  useAppearance: () => ({ appearance: appearance.value }),
+}));
+
 afterEach(() => {
   cleanup();
   localStorage.clear();
@@ -99,6 +106,7 @@ describe('the chosen rail count', () => {
   };
 
   it.each<CanvasSurface>(['dark', 'light'])('reads at AA in %s', (surface) => {
+    appearance.value = surface;
     render(
       <CanvasSurfaceProvider surface={surface}>
         <StartFromTemplates mode="pages" tabId="t1" onTemplate={vi.fn()} />
@@ -117,6 +125,7 @@ describe('the chosen rail count', () => {
 
   // The chosen row's name: the accent on its 14% tint over the card. Brand blue there read 3.4:1 in light.
   it.each<CanvasSurface>(['dark', 'light'])('names the chosen group at AA in %s', (surface) => {
+    appearance.value = surface;
     render(
       <CanvasSurfaceProvider surface={surface}>
         <StartFromTemplates mode="pages" tabId="t1" onTemplate={vi.fn()} />

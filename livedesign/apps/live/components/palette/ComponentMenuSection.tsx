@@ -3,7 +3,7 @@
 // The Component section of an element's menu (docs/specs/009-elements/components.md "The menu"). On an instance: its
 // main's name (an Editor renames it), Edit Component, Detach, Reset Overrides, Remove from Library, and Overrides, one
 // row per element of the main that takes one (text, colours, icon). On anything else: Make Component, greyed with
-// its reason when the selection cannot be made into one. Read from the editor itself, as the Tab Window section is.
+// its reason when the selection cannot be made into one. Read from the editor itself.
 import { useState } from 'react';
 import {
   componentOverrideTargets,

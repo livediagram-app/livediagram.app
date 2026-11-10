@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  lucideEyeOff,
-  lucideGift,
-  lucideGitFork,
-  lucideUsers,
-  lucideUserX,
-} from '@liveworkspace/icons/lucide';
+import { lucideEyeOff, lucideGitFork, lucideUsers, lucideUserX } from '@liveworkspace/icons/lucide';
 import { BrandMark, ChevronRightIcon, lucideGlyph, REPO_URL, type IconProps } from '@livedesign/ui';
 import {
   useEffect,
@@ -21,11 +15,11 @@ import { PROMISES, type Promise, type PromiseId } from '@/lib/promises';
 // The promises (docs/specs/019-marketing/marketing-site.md "Promises"), straight after the template
 // gallery: "Built with your values in mind", told through the brand mark. The mark is a prism (drawn
 // large, without its inner diagram, and opening and turning on hover as the header's does), so a
-// beam of white light runs into it and leaves as five coloured beams, each landing on one promise
+// beam of white light runs into it and leaves as four coloured beams, each landing on one promise
 // (Completely Free, No Account Needed, Open Source, Private by Design, Real-Time Collaboration). On a
 // deep indigo band in either appearance, so the light reads.
 //
-// When the stage scrolls into view the white beam draws in, the prism glows, the five beams fan out one
+// When the stage scrolls into view the white beam draws in, the prism glows, the four beams fan out one
 // after another and each promise lights as its beam lands; a soft pulse then keeps running along every
 // beam. Pointing at (or focusing) a promise brightens its beam and dims the rest. The beams are measured
 // from the page (the prism and each card), so they meet the cards at any width; below lg the copy and
@@ -36,7 +30,6 @@ type Look = { Icon: ComponentType<IconProps>; hue: string };
 
 // Each promise's light: bright enough to read as a value on the indigo band (4.5:1 and up).
 const LOOK: Record<PromiseId, Look> = {
-  free: { Icon: lucideGlyph(lucideGift, 18), hue: '#34d399' },
   'no-account': { Icon: lucideGlyph(lucideUserX, 18), hue: '#fbbf24' },
   'open-source': { Icon: lucideGlyph(lucideGitFork, 18), hue: '#38bdf8' },
   private: { Icon: lucideGlyph(lucideEyeOff, 18), hue: '#fb7185' },
@@ -141,7 +134,7 @@ export function PromisePrism() {
           </h2>
           <p className="mt-5 text-pretty text-lg leading-relaxed text-slate-300">
             livedesign is free, open and private for everyone, and it stays that way. One light,
-            five promises, kept in the open.
+            four promises, kept in the open.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
             <a

@@ -10,7 +10,7 @@ where the work begins instead of in a step before it. The New Design route asks 
 `StartPanel` (`apps/live/components/start/StartPanel.tsx`) draws the start; the start says what its groups and cards
 are, the panel draws them.
 
-- **Header:** the title ("Start Making Pages"), one line under it, the search box, and in the top right corner the
+- **Header:** over the app's own band ([The header band](#the-header-band)), a title mark, then the title ("Start Making Pages"), one line under it, the search box, and in the top right corner the
   **Help** link and **Close** (×). On a phone the search takes its own row under the title, the help and × staying
   beside the title.
 - **Rail:** **Recommended**, then the groups, each with its glyph and count; long names wrap beside the glyph on a
@@ -58,15 +58,16 @@ are, the panel draws them.
 
 ### Recommended and groups
 
-Recommended is the Popular shelf (`popularKindsFor`, the picks the marketing gallery leads with), **its blank
-first**. Then **Blank Pages**: Blank Logo and the five blank wireframes, one empty page of the kind meant. Then
+Recommended is the Popular shelf (`popularKindsFor`, the picks the marketing gallery leads with). Then **Blank Pages**: Blank Logo and the five blank wireframes, one empty page of the kind meant. Then
 one group per catalogue category, in the same alphabetical order and with the same names as every other picker
 ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)), each template under its primary
 category (`components/start/start-template-items.ts` derives them, so a new template or category needs no change
 there).
 
-Every listed template is in exactly one group, so every one is reachable. Blank
-Illustration is not offered: closing the panel leaves the same empty tab.
+Every listed template is in exactly one group, so every one is reachable. There is no Blank Illustration: an empty
+page that asks what it is for is what closing the panel leaves, so a card for it would only repeat the ×. Its kind
+(`blank-illustration`) is retired to Blank Tab, the same tab, so
+old `/new?template=blank-illustration` links and agents that name it keep working.
 
 ### From the Community
 
@@ -126,12 +127,17 @@ closed list is shared state: the panel and the tray read the same key and follow
 ## The first page
 
 The tab's first page is drawn only once the start is done: while Start Making Pages is open there is no page behind
-it (`EditorCanvasHost` passes no pages), so nothing waits under the panel. Picking a template lands its pages;
+it (`EditorCanvasHost` passes no pages), so nothing waits under the panel. That holds from the tab's first frame:
+the canvas reads the same rule the panel does (`useTemplateStartShown`), not the panel's mount, so a new tab never
+flashes an empty page while the panel's code is still loading. A start closed for the tab (the ×, an explicit blank,
+"Bringing it back") is not open: the canvas reads `useTemplateStartOpen`, the rule and the tab's closed key together,
+so the page is drawn at once, asking What Is This Page For? Picking a template lands its pages;
 closing the panel shows the first page with its own **What Is This Page For?** ([Pages](pages-mode.md)). A blank of
 a page kind (Blank Logo, a blank wireframe) lands one page of that kind, already chosen, so it asks nothing and the
-start does not come back over it. **Blank Illustration** lands nothing (its one page is the unchosen page that asks
-what it is for), so picking it closes the start as the × does (`closeStartForBlank`): the tab would otherwise still
-read as empty, and the start would stay over it with the pick saved nowhere. Picking any blank closes it the same way.
+start does not come back over it. Picking any blank closes the start the same way (`closeStartForBlank`). An old
+`/new?template=blank-illustration` link lands nothing (its one page is the unchosen page that asks what it is for),
+so it opens with the start closed, as the × leaves it: the tab would otherwise still read as empty, and the start
+would stay over it with the pick saved nowhere.
 
 **The last page can be deleted.** Deleting it clears the tab, its pages and its elements, as one edit that Undo puts back, and brings Start Making Pages back even if it was closed. The tab is read again as the delete lands: a page a peer added since takes only this page away, and a lock or delete a peer made since takes nothing. The agents'
 page edits keep their own rule (`pageRemoved` refuses the last page, `last_page`).
@@ -163,12 +169,41 @@ says what that means, and the switch to move it while it is still empty
 It shows only on a fresh design that is the reader's alone; anywhere else the strip is not drawn. The panel draws it
 through its `footer`, in the panel's own colours.
 
+## The header band
+
+The header is drawn over the app's own band: its Explorer hero backdrop ([The start header wears the same
+theme](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-start-header-wears-the-same-theme)), redrawn
+at a header's height by the shared `StartHeaderBand`
+(`../packages/workbench/src/components/start/StartHeaderBand.tsx`), which the panel asks for with
+`useStartHeaderTheme('livedesign', palette)`. Which backdrop is whose, the title's face and the textures' measures are
+the hero's own theme (`@liveworkspace/explorer/hero-theme`), so the start and the Explorer read as one app.
+
+- **The motif.** **Shape kit**: a quarter disc in the bottom left, a ring rising from the bottom right under the
+  corner's buttons (from `sm`), and from `xl` a circle in the gap, selected with its four handles, a triangle beside
+  it. The title mark is a circle, a triangle and a square.
+- **In the panel's colours.** The band paints in the start palette, never the brand ramp: each of its colours is the
+  palette's accent mixed into its card (`start-band-colours.ts`), so it follows the app's light or dark look; a tab's
+  theme never reaches it. The ground leans back until the title and the line read at WCAG AA
+  (4.5:1) on every patch they can sit over (the paper and its two deeper shades); the line keeps the palette's muted
+  where it reads there, else leans toward the ink. The × takes the band's muted.
+- **The title.** A title mark leads it: a 36px tile (32px on a phone) in the band's deeper shade, holding the motif as
+  one glyph in the accent (`StartTitleMark`). The title is set in the hero's face at 20px (18px on a phone): the heavy
+  face, tracked in (`startHeadingFace`).
+- **Where the pieces show.** The texture and the corner pieces at every size; the gap piece only from `xl`, where the
+  panel is at its widest and the gap between the line and the search is wide enough that it never meets the words.
+- **The search** keeps its own paper and border over the band, lifted by a small shadow, so it still reads as the
+  field.
+- **On a phone** the band runs up under the grab handle, so the sheet's top is the band's colour, the handle
+  standing over it. The header stays as compact as before: the title row with its mark, then the search.
+- **Hidden and cheap.** The band is `aria-hidden` and takes no pointer events. It is CSS gradients and a few small
+  inline SVGs: no image, font, filter or blur, nothing fetched, painted once. No motion.
+
 ## Look
 
-- **The tab's colours.** The panel's paper is the tab's canvas colour, its accent (the chosen category, the focus
-  ring, a card's hover) the theme's stroke and its ink the theme's text, kept readable on the paper
-  (`start-palette.ts`, `useStartPalette`). A theme with no colours of its own (Default) leaves the app's light or dark
-  look, its accent the app's brand colour (`BRAND_APPS` in `../packages/brand/src/apps.ts`). The Pages tour wears the same palette.
+- **The app's colours, never the tab's.** The panel wears the app's own light or dark look (Appearance, not the
+  tab's paper), its accent the app's brand colour, whatever theme the tab wears (owner, 2026-11-10: a tab's theme must
+  never reach the start, so each app's themed header band stays its own). `useStartPalette` reads only Appearance.
+  The tours wear the same palette.
 - **Entrance.** The panel rises in with the dialog entrance (`animate-dialog-in`; a fade alone under reduced
   motion), and its cards and rail cascade in after it (`lvd-cascade`).
 - **On a phone** the panel is a sheet risen from the bottom (`animate-sheet-up`), full width below the top bar,
@@ -187,12 +222,20 @@ A template chosen fires `Template · Used · <kind>` through `chooseTemplate`. A
 
 ## Tests
 
+- `../packages/workbench/src/components/start/start-band-colours.test.ts`: the band's title and line read at AA on
+  every ground, light, dark and themed; a palette that is not plain hex keeps a flat band.
+- `../packages/workbench/src/components/start/StartHeaderBand.test.tsx`: each app's band and title mark, hidden from
+  screen readers; the gap piece only from `xl`; the band under the grab handle on a phone.
+- `../packages/explorer/src/hero/hero-theme.test.ts`: every app its own backdrop, none the All Apps dots; only the
+  Typesetter in serif.
 - `components/start/start-template-items.test.ts`: Recommended, groups and search, and every listed template
   reachable from the start.
 - `components/start/StartPanel.test.tsx`: Down from the search, Best Match leading, the arrow keys among the cards.
 - `../packages/workbench/src/components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
 - `../packages/workbench/src/components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
 - `components/start/template-start-mode.test.ts`: when the start shows.
+- `components/start/useTemplateStartShown.test.tsx`: a new tab's first page waits for the start from its first frame,
+  before the panel's code has loaded; a start closed for the tab lets the page draw.
 - `components/start/StartFromTemplates.test.tsx`: the title, choosing, the close, scroll to top; from the
   Community: tiles after a category's templates with their badge, none in Recommended or Blank Pages, the rail's
   counts unchanged, search, choosing one (the telemetry and the copy link), nothing while closed or switched off.

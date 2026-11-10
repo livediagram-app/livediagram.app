@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SHAPE_KINDS } from '@liveplanner/project';
+import { RETIRED_SHAPE_KINDS, SHAPE_KINDS } from '@liveplanner/project';
 import {
   ALL_PALETTE_TELEMETRY_TYPES,
   PALETTE_TELEMETRY_TYPES,
@@ -40,7 +40,9 @@ const tokenForShapeKind = (kind: string) =>
 
 describe('palette telemetry coverage', () => {
   it('gives every shape kind a bucket in the dashboard catalogue', () => {
+    // A retired kind (a tab window) is never added, so it has no bucket (docs/specs/009-elements/tab-window.md).
     const missing = [...SHAPE_KINDS]
+      .filter((kind) => !RETIRED_SHAPE_KINDS.has(kind))
       .map(tokenForShapeKind)
       .filter((token) => !ALL_PALETTE_TELEMETRY_TYPES.includes(token));
     // A failure here means the editor can emit an Element·Added type the

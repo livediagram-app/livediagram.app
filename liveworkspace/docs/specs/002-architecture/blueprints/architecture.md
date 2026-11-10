@@ -306,6 +306,12 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
   kinds). New generics: `settleChips`, `settleStacks`, `dropUnturnableRotation`, `autoLayoutElements`,
   `tidyLayoutElements`, `withOrthogonalBends`, `withFacingBends`, `settleDiagramKeys`, `migrateLegacyCallouts`,
   `isChip`, `renumberSteps`, `withStepSequence`, `fillStrokeLoop` and the path reshapers.
+- `text-presets` (livedocuments' Write text styles, moved when livedesign took them too): the `TextPreset` shape and
+  `TextPresetId` vocabulary (title, subtitle, heading, subheading, paragraph, quote, caption), `presetTextFields`,
+  `splitTextPx`, `textBoxFor`, `NEW_TEXT_ALIGN`, and the generic `restyleText<E>` and `textPresetOf`. A style is data:
+  each product keeps its own table and factory in its `text-presets.ts` (livedocuments' six at a written page's 24 to
+  72 px, livedesign's seven at a screen's 12 to 40 px) and binds the helpers to it; livedocuments'
+  `label-text-scale.ts` re-exports `splitTextPx`. Nothing a product stores changed.
 - Settled, then moved (part 4, each behaviour a product gained in its own specs): the element defaults
   (`element-colours`, out of each `colors.ts`: every product's kinds, the control skin of the buttons, picker and
   reveal cover; livediagram's `colors.ts` wraps the three defaults for its retired pieces, livediagram's and
@@ -316,7 +322,7 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
   `table-header-colours` D's, `svg-render-table` D's with O's comparison tables behind `{ comparison: true }`, which
   only O's `svg-render-table.ts` passes, and their `table-marks`; `progress-colours`, `page-ink-rules` S's with O's
   quote, OS); arrows in the
-  export (`svg-render-arrows` with O's line motion and D's `finishArrowEnds`, `stock-colours` D's, `mind-flow`,
+  export (`svg-render-arrows` with D's `finishArrowEnds` (O's line motion retired with the tab window), `stock-colours` D's, `mind-flow`,
   `mind-connector-route` DP); and the charts (`chart-types`, `chart-marks` D's below-zero layout with O's
   not-a-number guard, `chart-values` D's with O's decimals, `chart-axis` O's tick decimals, `chart-frame` and
   `svg-render-charts` O's page ground, `chart-mark-ink` the pure half of O's and S's `chart-ink`, `sankey-layout`,

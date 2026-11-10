@@ -237,10 +237,11 @@ The sidebar follows the WAI-ARIA tree pattern, one tree per group:
 
 ## Mobile drawer
 
-Below the `sm` breakpoint the sidebar is hidden and the pane header's menu button opens it as a drawer from the left:
-the same groups, rows, rules and keyboard model. Picking a view, or New Team, closes the drawer; so do its Close button,
-the backdrop and Escape. It is a modal dialog named Sections: focus moves into it, Tab stays inside, and closing it
-hands focus back to the button that opened it.
+Below the `sm` breakpoint the sidebar is hidden and the **sections bar**, a full-width bar stuck under the page's
+header that names the view on screen, opens it as a drawer the whole screen wide, from the left ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)
+"The sidebar", On a phone): the same groups, rows, rules and keyboard model. Picking a view, New Team or any change of
+view closes the drawer; so do its Close button and Escape. It is a modal dialog named Sidebar: focus moves into it, Tab
+stays inside, the page behind it does not scroll, and closing it hands focus back to the bar.
 
 ## The editor's Explorer
 

@@ -81,7 +81,6 @@ import { arrowLabelFontStack, svgArrow } from './svg-render-arrows';
 import { arrowLabelPass, arrowRoutePoints, type ArrowLabelPass } from './arrow-label-layout';
 
 export { arrowLabelFontStack, svgArrow, svgArrowhead } from './svg-render-arrows';
-export type { ArrowLineMotion } from './svg-render-arrows';
 import type { BoxedElement, Element, Tab } from './index';
 import { layerBands, layerOpacityOf, visibleLayerElements } from './layers';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): gate + deterministic filter defs.
@@ -188,7 +187,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
   const face = exportFontFamily(source, opts.tabFont, opts.tabFinish);
   const drawn = svgBoxedFace(source, opts);
   const out = face ? drawn.replace(/^<g/, `<g font-family="${xmlEscape(face)}"`) : drawn;
-  // A tab window shows another tab in that tab's own finish: only its frame follows this one.
+  // A stored tab window draws its own hand-drawn frame (svgTabWindow): nothing more follows the finish.
   if (source.type === 'shape' && source.shape === 'tab-window') return out;
   const finish = faceFinishOf(source, resolveFinish(finishOf(source), opts.tabFinish));
   const open = out.indexOf('>') + 1;
@@ -294,8 +293,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
     return `<g${opAttr}${rotAttr}${shadowAttr}>${body}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'tab-window') {
-    // Another tab of the project, fitted inside its frame (docs/specs/009-elements/tab-window.md "Exports"); its frame
-    // named for its tab where the caller has no drawing.
+    // A stored tab window (docs/specs/009-elements/tab-window.md, retired): its frame named for its tab.
     return `<g${opAttr}${rotAttr}${shadowAttr}>${svgTabWindow(el, opts.resolveTabWindow?.(el), el.strokeColor, surface, finish === 'sketch', fontFamily)}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'checklist' && shape.kind === 'rect') {
@@ -609,7 +607,7 @@ export function renderElementsToSvg(
     // A plan view's or placeholder's picture (a Dashboard laid out, @liveplanner/plan-art); its labelled box when
     // absent or answering nothing.
     resolvePlanArt?: ResolvePlanArt;
-    // Each tab window's tab (docs/specs/009-elements/tab-window.md "Exports"); its frame named for its tab without.
+    // Each stored tab window's tab name (docs/specs/009-elements/tab-window.md); "Tab Window" without.
     resolveTabWindow?: ResolveTabWindow;
   } = {},
 ): string {

@@ -14,14 +14,13 @@ import { ShapeLibrariesPane } from './ShapeLibrariesPane';
 import { HelpButton } from '../explorer/HomeHero';
 import { ImportToolbar } from './ImportToolbar';
 
-export function GalleryView({ onOpenNav }: { onOpenNav?: () => void }) {
+export function GalleryView() {
   const { kind } = useExplorer();
   const { gallery } = useLibraryHost();
   return (
     <div data-explorer-view="gallery">
       <PaneHeader
         title={SIDEBAR_LABELS.gallery}
-        onOpenNav={onOpenNav}
         showFilter={false}
         actions={gallery?.helpHref ? <HelpButton href={gallery.helpHref} /> : undefined}
       />
@@ -40,14 +39,13 @@ export function GalleryView({ onOpenNav }: { onOpenNav?: () => void }) {
 
 const ROOT = { folderId: null, teamId: null };
 
-export function ShapeLibrariesView({ onOpenNav }: { onOpenNav?: () => void }) {
+export function ShapeLibrariesView() {
   const { kind } = useExplorer();
   const { shapeLibraries } = useLibraryHost();
   return (
     <div data-explorer-view="shape-libraries">
       <PaneHeader
         title={SIDEBAR_LABELS.shapeLibraries}
-        onOpenNav={onOpenNav}
         showFilter={false}
         actions={
           <>

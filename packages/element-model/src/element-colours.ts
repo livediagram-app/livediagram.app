@@ -310,7 +310,7 @@ export function supportsFillColor(element: Element): boolean {
   // The control was inert on both, and picking a colour still wrote to the
   // element, autosaved, logged a change and broadcast an op for nothing.
   if (element.type === 'shape' && element.shape === 'icon') return false;
-  // A tab window's ground is the paper of the tab it shows (docs/specs/009-elements/tab-window.md).
+  // A stored tab window draws its own still frame (docs/specs/009-elements/tab-window.md, retired).
   if (element.type === 'shape' && element.shape === 'tab-window') return false;
   return element.type !== 'text' && element.type !== 'image';
 }

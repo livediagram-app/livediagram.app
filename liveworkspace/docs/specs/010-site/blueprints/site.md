@@ -45,11 +45,27 @@ The app the person came from: `?from=<app>`, else the referrer's site, else none
 kept in `localStorage` (`liveworkspace:explorer-app`): what New makes and whose welcome Home shows in no app; it never
 filters the lists. On an app's address the app is the host's. Settings opens through `?settings=<section>`.
 
+### Appearance (`lib/appearance/`)
+
+One store for the whole site (`SITE_APPEARANCE_STORE`, `createAppearanceStore` from `@liveworkspace/ui`), under the
+key `appearanceKeyForHost` names for the page's own address when the module loads: the app's own
+(`APP_APPEARANCE_KEYS`, each the `APPEARANCE_STORAGE_KEY` of `<app>/packages/ui/src/appearance/appearance-storage.ts`)
+when `appOfPageHost` finds one, else `PLATFORM_APPEARANCE_KEY` (`livediagram:v2:ui-mode`). The root layout inlines
+`siteAppearanceBootScript()` at the top of `<body>`: a `{host: key}` map built from `appHosts()`, the bare host
+looked up, or locally `localhost:` plus the first port of its block (`PORT_BLOCK`), falling back to the platform's
+key, then the shared rule (`dark` paints dark, `light` stays light, anything else follows `DARK_MEDIA_QUERY`), all in
+one `try`. The rail's and the Explorer bar's `SiteAppearanceToggle`, `useSiteAppearance` (previews, telemetry
+colours) and the root error page read this store alone; no product UI package's store is read
+(`appearance-guard.test.ts`). The boot does not read an E2E stack's `liveworkspace-app` meta; the store does
+(through `appOfPageHost`) and repaints on hydration.
+
 ### The site switcher's logo tap (`packages/ui/src/SiteSwitcher.tsx`, `packages/ui/src/touch-tap.ts`)
 
 The switcher wraps the header's logo in a `display: contents` span with a capture-phase click handler. A click on a
-link inside it, while the card is shut, is a tap when `isTouchTap(event)` says so: never a keyboard click
-(`detail === 0`), a `pointerType` of `touch` when the browser gives one, and otherwise
+link inside it, while the card is shut, is a tap when `isTouchTap(event, pressedWith)` says so: never a keyboard
+click (`detail === 0`), else the `pointerType` of the `pointerdown` that started it (`pressedWith`, kept by a
+capture-phase `pointerdown` handler on the same span and cleared by each click, since iOS Safari's click from a tap
+can name a `mouse` pointer), else the click's own `pointerType` when the browser gives one, and otherwise
 `matchMedia('(pointer: coarse)')` (SITE4). A tap cancels the navigation, keeps the link's `href` and opens the card
 (`openMenu('checked')`, as a chevron click does). While that `href` is kept, the current site's row links to it in
 place of its usual address, so home is still reachable; until then (and always, with a mouse or the keyboard) every
@@ -160,6 +176,9 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `liveworkspace/apps/site/lib/account-settings.ts`                | The account's own settings on this site (liveworkspace/docs/specs/010-site/site.md "Settings", accounts.md "Settings")                                                                                                                                                   |
 | `liveworkspace/apps/site/lib/accounts.ts`                        | The sign-in pages' side of the accounts API (liveworkspace/apps/accounts), which answers on this same origin under /api/auth                                                                                                                                             |
 | `liveworkspace/apps/site/lib/app-settings.ts`                    | The Settings panel's reach into the account's settings from this site (liveworkspace/docs/specs/010-site/site.md "Settings"): `/api/account/settings…` with the session on liveworkspace.…                                                                               |
+| `liveworkspace/apps/site/lib/appearance/appearance-keys.ts`      | Whose Appearance setting a page reads (liveworkspace/docs/specs/010-site/site.md "Behaviour"): each app's key, the platform's, the key for a host and the pre-paint boot script                                                                                          |
+| `liveworkspace/apps/site/lib/appearance/appearance-store.ts`     | The site's one Appearance store, under the page's address's key                                                                                                                                                                                                          |
+| `liveworkspace/apps/site/lib/appearance/appearance-hooks.tsx`    | `useSiteAppearance` and `SiteAppearanceToggle` on the site's store                                                                                                                                                                                                       |
 | `liveworkspace/apps/site/lib/apps.ts`                            | The page's own words for each app (liveworkspace/docs/specs/010-site/site.md "The apps"): what the card says beyond the shared name and pitch in @liveworkspace/sites                                                                                                    |
 | `liveworkspace/apps/site/lib/drive/client.ts`                    | The Drive service as this site's pages call it (liveworkspace/docs/specs/005-drive/drive.md "The service"): `/api/drive` on this origin, liveworkspace.app or an app's router, with the pe…                                                                              |
 | `liveworkspace/apps/site/lib/drive/pages.ts`                     | What liveworkspace's three Drive pages decide (liveworkspace/docs/specs/005-drive/drive.md "Connecting", "Open with"), pure so every outcome is tested: /drive/connect asks for a consent …                                                                              |
@@ -369,8 +388,6 @@ Every access is wrapped so a blocked storage reads as empty.
 | `EMBEDDED_WORKS`                | `(object or list, see file)`                                    | `embedded-works.ts`         |
 | `OVERRIDES`                     | `(object or list, see file)`                                    | `overrides.ts`              |
 | `HISTORY_REFRESH_MS`            | `5 * 60_000`                                                    | `history.ts`                |
-| `CHECK_COOLDOWN_MS`             | `30_000`                                                        | `probe.ts`                  |
-| `HISTORY_MAX`                   | `30`                                                            | `probe.ts`                  |
 | `OVERALL_COPY`                  | `(object or list, see file)`                                    | `probe.ts`                  |
 | `INVITES_PATH`                  | `'/explorer/invites'`                                           | `teams.ts`                  |
 | `AVATAR_TONES`                  | `(object or list, see file)`                                    | `teams.ts`                  |
@@ -445,21 +462,23 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 
 | Area                                                                                                                                                                             | Files    | Pins                                                                                                    |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
-| `app/telemetry/**`                                                                                                                                                               | 50       | the telemetry dashboard: each app's emitters, series, funnels, rankings, retired events, shared views   |
+| `app/telemetry/**`                                                                                                                                                               | 51       | the telemetry dashboard: each app's emitters, series, funnels, rankings, retired events, shared views   |
 | `lib/explorer/**`                                                                                                                                                                | 15       | the Explorer's host: arrival, addresses, app sessions, telemetry                                        |
 | `lib/*.test.ts`                                                                                                                                                                  | 10       | sign-in helpers, session, redirects, settings, teams, apps                                              |
+| `lib/appearance/**`                                                                                                                                                              | 2        | the site's Appearance: each app's key on its address, the boot script, the store                        |
 | `lib/status`, `components/status`                                                                                                                                                | 4        | the status page                                                                                         |
 | `lib/drive`, `components/drive`                                                                                                                                                  | 2        | Drive connect pages and switch dialog                                                                   |
 | root guards (`appearance-guard`, `optical-guard`, `touch-target-guard`, `trusted-types-guard`, `motion-budget`, `asset-prefix`, `cache-headers`) and `e2e/trusted-types.spec.ts` | 8        | site-wide rules: themes, optics, touch targets, Trusted Types, motion, the asset prefix and its caching |
 | `packages/sites`, `packages/account-menu`, `packages/settings-ui`                                                                                                                | the rest | the shared pieces the site renders                                                                      |
 
-124 test files:
+127 test files:
 
 - `liveworkspace/apps/site/app/error.test.tsx`
 - `liveworkspace/apps/site/app/global-error.test.tsx`
 - `liveworkspace/apps/site/app/not-found.test.ts`
 - `liveworkspace/apps/site/app/seo-pages.test.ts`
-- `liveworkspace/apps/site/app/telemetry/AllApps.test.ts`
+- `liveworkspace/apps/site/app/telemetry/AllApps.test.tsx`
+- `liveworkspace/apps/site/app/telemetry/_all/apps-compared.test.ts`
 - `liveworkspace/apps/site/app/telemetry/_shared/CardColumns.test.ts`
 - `liveworkspace/apps/site/app/telemetry/_shared/LeaderTag.test.ts`
 - `liveworkspace/apps/site/app/telemetry/_shared/MetricBreadcrumb.test.ts`
@@ -530,6 +549,8 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 - `liveworkspace/apps/site/lib/account-settings.test.ts`
 - `liveworkspace/apps/site/lib/accounts.test.ts`
 - `liveworkspace/apps/site/lib/app-settings.test.ts`
+- `liveworkspace/apps/site/lib/appearance/appearance-keys.test.ts`
+- `liveworkspace/apps/site/lib/appearance/appearance-store.test.ts`
 - `liveworkspace/apps/site/lib/apps.test.ts`
 - `liveworkspace/apps/site/lib/comparison-redirects.test.ts`
 - `liveworkspace/apps/site/lib/drive/pages.test.ts`
@@ -603,4 +624,4 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 - `SITE1`: a sign-in's `return` path is honoured only when it is a path on this site; anything else goes home.
 - `SITE2`: the site asks who is signed in once per page load.
 - `SITE3`: the last app a browser came from picks what New makes, never what the lists show.
-- `SITE4`: a click is a touch tap on a `touch` pointer, or on a coarse primary pointer when the click names none; a keyboard click never is.
+- `SITE4`: a click is a touch tap when the press that started it was a `touch` pointer, else when the click names a `touch` pointer, or on a coarse primary pointer when neither names one; a keyboard click never is.

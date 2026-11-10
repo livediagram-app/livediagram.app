@@ -1,8 +1,8 @@
 'use client';
 
 // A wireframe page's device settings (docs/specs/007-editor/wireframe-pages.md "Choosing the
-// device"): the page's device (fixed once made), then Orientation while it turns, the Frame look, and
-// System Bars while it has them. The Device popover's body and the page panel's Device tab.
+// device"): the page's device (fixed once made), then Orientation while it turns, the frame's Look, and
+// System Bars while it has them. The Frame popover's body and the page panel's Device tab.
 import {
   WIREFRAME_DEVICES,
   WIREFRAME_FRAME_LOOKS,
@@ -79,9 +79,9 @@ export function WireframeDeviceSettings({
         </div>
       ) : null}
       <div>
-        <p className={HEADING}>Frame</p>
+        <p className={HEADING}>Look</p>
         <SegmentedRadio
-          label="Frame"
+          label="Look"
           options={LOOKS}
           value={look}
           onChange={(frameLook) => onDevice({ frameLook })}

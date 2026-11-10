@@ -304,12 +304,12 @@ Each step is its own PR, and both products build and pass their tests after ever
      the appearance machinery (`AppearanceIcon`, the cycle, `createAppearanceStore`, `appearanceBootScript`,
      `useAppearanceStore` and the toggle), `browser-repair`'s checks, its repair walk and its panel (each
      bound to a product's probe name, kept keys and words), and the site chrome drawn from a product's facts: `SiteSwitcher` (the app), `ShareRail` (the URL, pitch and
-     Appearance card), `SiteFooter` (the tagline, the first link, the Community and GitHub links, the credits),
+     Appearance card), `SiteFooter` (the tagline, the first link, the Community and GitHub links),
      `ProductNavLinks` (the Community link, when there is one) and `ExplorerLink` (its Explorer Home, and whether
      the hint cookie says signed in). Where copies differed it was a comment, or one side behind: livediagram's
      `SiteAppearanceToggle` `labelFrom`, livediagram's and livedesign's extra glyphs, livediagram's
      `SnapCarousel` `itemNoun`; the newer side won. The real differences became parameters, so every product
-     renders what it did: liveplanner's footer still has no GitHub link and no credits, only livediagram's
+     renders what it did: liveplanner's footer still has no GitHub link, only livediagram's
      has the Community link, and each footer keeps its own tagline and first link. `ProductNavLinks` lost
      its unused `desc` lines. Each `@<product>/ui` keeps a thin binding of the same name for each of these
      (`export *` would otherwise hand callers the parameterised one), so callers did not change.

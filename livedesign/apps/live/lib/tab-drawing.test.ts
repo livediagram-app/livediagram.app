@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { laidOutPagesOf, type Element, type Page, type Tab } from '@livedesign/design';
-import { pageElements, renderTabDrawingSvg, tabDrawingFontIdsOf } from './tab-drawing';
+import { pageElements, renderTabDrawingSvg } from './tab-drawing';
 import { svgFrameOf } from '@liveworkspace/workbench/lib/svg-frame';
 
-// docs/specs/009-elements/tab-window.md "The drawing": a tab is drawn as its pages.
+// docs/specs/007-editor/split-view.md "The other pane": a tab is drawn as its pages.
 
 const box = (id: string, label: string, at: { x: number; y: number }): Element => ({
   id,
@@ -52,14 +52,6 @@ describe('renderTabDrawingSvg', () => {
   it('draws a blank Pages tab as its blank page', () => {
     const svg = renderTabDrawingSvg(tab({ opensIn: 'pages' }));
     expect(svg).toContain('<svg x="');
-  });
-});
-
-describe('tabDrawingFontIdsOf', () => {
-  it("names the tab's typeface", () => {
-    expect(
-      tabDrawingFontIdsOf(tab({ font: 'caveat', elements: [box('a', 'A', { x: 0, y: 0 })] })),
-    ).toContain('caveat');
   });
 });
 

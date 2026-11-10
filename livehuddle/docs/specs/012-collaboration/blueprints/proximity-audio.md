@@ -43,7 +43,16 @@ blueprint: `nextHeard`'s optional `zoning` hears a shared room whole and never a
 `nextHeard(prev, self, peers)` keeps a peer already heard while its
 distance is ≤ `RELEASE_RADIUS_PX` and adds one at ≤ `HEARING_RADIUS_PX`; only peers with a locator are candidates.
 `gainAt(d)`: 1 at ≤ `FULL_VOLUME_RADIUS_PX`, `cos(π/2 · (d − full)/(release − full))` to 0 at the release radius.
-`panAt(dx)`: `clamp(dx / HEARING_RADIUS_PX, −1, 1) · MAX_PAN`. `barsOpacity(d, heard)`: 1 when heard, else linear from
+`panAt(dx)`: `clamp(dx / HEARING_RADIUS_PX, −1, 1) · MAX_PAN`.
+**A Podium's reach** (venue-pieces.md "Speaking from the Podium"): `Point.reach` (absent: 1) is how far a walker's
+voice carries; `withVoiceReach(at, lecterns)` sets it from `voiceReach` (`@livehuddle/document` call-geometry.ts:
+`LECTERN_VOICE_REACH` = 3 when `at.seatedOn` is one of the board's Podiums, `callLecterns(elements)`, else 1).
+`useCanvasCall` applies it to every walker and to you, from `callPlacesOf(elements).lecterns` (cached per board). Each
+open-floor rule divides the distance by the speaker's reach: `nextHeard` measures `distance / reachOf(at)` against both
+radii, `placeFor`'s gain is `gainAt(distance / reachOf(at))`, and `inEarshot(self, …)` and the hearing ring
+(`hearingRing`, its `r`) use your own reach. `togetherWith` (walls, stages) is decided first and never reads it. The
+server's `hearingVerdict` allows a publisher at a Podium `(CALL_RELEASE_RADIUS_PX + HEARING_MARGIN_PX) · voiceReach(p)`,
+with `TabCalls.lecterns` from `tabCallsOf` (room-calls.ts); the positions it holds already carry `seatedOn`. `barsOpacity(d, heard)`: 1 when heard, else linear from
 `BARS_FAR_OPACITY_NEAR` at the release radius to `BARS_FAR_OPACITY_MIN` at `BARS_FADE_END_PX`.
 
 **Voice detection** (`lib/calls/voice-detector.ts`, pure): `stepVoice(state, rms, now)` returns the next state and the
@@ -221,30 +230,31 @@ token. The editor logs through `debugLog('calls', …)`.
 
 ## Testing
 
-| Rule                                                          | Test                                                                |
-| ------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Secrets unset refuses; production open once they are set      | `apps/api/src/calls/calls-gate.test.ts`                             |
-| Tokens bind Space, session and role                           | `apps/api/src/calls/call-tokens.test.ts`                            |
-| Routes: grant, gate, listener publish, bad token, upstream    | `apps/api/src/routes/calls.test.ts` (Realtime mocked)               |
-| Room drops a Viewer's voice and track ops, and malformed ones | `apps/api/src/room-op-gate.test.ts`                                 |
-| Voice is tab-scoped and coalesced; 100 talking walkers bound  | `apps/api/src/document-room-fanout.test.ts`                         |
-| Parsers                                                       | `packages/api-schema/src/call-voice.test.ts`                        |
-| Hearing, gain, pan, hysteresis, bars fade                     | `apps/editor/lib/calls/hearing.test.ts`                             |
-| Detector: threshold, hangover, quantise, rate, refresh, mute  | `apps/editor/lib/calls/voice-detector.test.ts`                      |
-| Store: receive, stale, prune                                  | `apps/editor/lib/calls/calls-store.test.ts`                         |
-| Button states per role; bars hover text and walk              | `apps/editor/components/calls/*.test.tsx`                           |
-| The call: mint, publish, earshot, mute, idle close, errors    | `apps/editor/lib/calls/proximity-call.test.ts`                      |
-| One queue, batches, refused locators, closes                  | `apps/editor/lib/calls/sfu-session.test.ts`                         |
-| Session gone: renew, republish, prove, cap                    | `apps/editor/lib/calls/proximity-call.test.ts`                      |
-| Editor allows camera, microphone and screen for self          | `apps/editor/src/worker.test.ts`                                    |
-| Join, leave with the mode or tab, rejoin after failure        | `apps/editor/lib/calls/useProximityCall.test.tsx`                   |
-| Held sound resumes on a voice, a show, a focus, a press       | `apps/editor/lib/calls/audio-wake.test.ts`                          |
-| A failed connection renews, within the budget                 | `apps/editor/lib/calls/proximity-call.test.ts`                      |
-| Characters committed while the page is hidden                 | `apps/editor/app/document/[id]/presence-coalescer.test.ts`          |
-| Click to Hear while held and someone is heard                 | `apps/editor/components/calls/CallStripGroup.test.tsx`              |
-| A voice moved less than `PLACE_EPSILON` is left; 0 and 1 land | `apps/editor/lib/calls/audio-graph.test.ts`                         |
-| 20 heard voices: AudioParam events a second, bounded          | `apps/editor/lib/calls/call-receiver.perf.test.ts`                  |
-| 50 walkers: the call's scene about 10 a second                | `apps/editor/components/canvas/CanvasCharactersLayer.perf.test.tsx` |
+| Rule                                                           | Test                                                                                 |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Secrets unset refuses; production open once they are set       | `apps/api/src/calls/calls-gate.test.ts`                                              |
+| Tokens bind Space, session and role                            | `apps/api/src/calls/call-tokens.test.ts`                                             |
+| Routes: grant, gate, listener publish, bad token, upstream     | `apps/api/src/routes/calls.test.ts` (Realtime mocked)                                |
+| Room drops a Viewer's voice and track ops, and malformed ones  | `apps/api/src/room-op-gate.test.ts`                                                  |
+| Voice is tab-scoped and coalesced; 100 talking walkers bound   | `apps/api/src/document-room-fanout.test.ts`                                          |
+| Parsers                                                        | `packages/api-schema/src/call-voice.test.ts`                                         |
+| Hearing, gain, pan, hysteresis, bars fade                      | `apps/editor/lib/calls/hearing.test.ts`                                              |
+| A Podium's voice: 3x reach, walls still block, ends on leaving | `hearing.test.ts`, `hearing-ring.test.ts`, `apps/api/src/calls/call-hearing.test.ts` |
+| Detector: threshold, hangover, quantise, rate, refresh, mute   | `apps/editor/lib/calls/voice-detector.test.ts`                                       |
+| Store: receive, stale, prune                                   | `apps/editor/lib/calls/calls-store.test.ts`                                          |
+| Button states per role; bars hover text and walk               | `apps/editor/components/calls/*.test.tsx`                                            |
+| The call: mint, publish, earshot, mute, idle close, errors     | `apps/editor/lib/calls/proximity-call.test.ts`                                       |
+| One queue, batches, refused locators, closes                   | `apps/editor/lib/calls/sfu-session.test.ts`                                          |
+| Session gone: renew, republish, prove, cap                     | `apps/editor/lib/calls/proximity-call.test.ts`                                       |
+| Editor allows camera, microphone and screen for self           | `apps/editor/src/worker.test.ts`                                                     |
+| Join, leave with the mode or tab, rejoin after failure         | `apps/editor/lib/calls/useProximityCall.test.tsx`                                    |
+| Held sound resumes on a voice, a show, a focus, a press        | `apps/editor/lib/calls/audio-wake.test.ts`                                           |
+| A failed connection renews, within the budget                  | `apps/editor/lib/calls/proximity-call.test.ts`                                       |
+| Characters committed while the page is hidden                  | `apps/editor/app/document/[id]/presence-coalescer.test.ts`                           |
+| Click to Hear while held and someone is heard                  | `apps/editor/components/calls/CallStripGroup.test.tsx`                               |
+| A voice moved less than `PLACE_EPSILON` is left; 0 and 1 land  | `apps/editor/lib/calls/audio-graph.test.ts`                                          |
+| 20 heard voices: AudioParam events a second, bounded           | `apps/editor/lib/calls/call-receiver.perf.test.ts`                                   |
+| 50 walkers: the call's scene about 10 a second                 | `apps/editor/components/canvas/CanvasCharactersLayer.perf.test.tsx`                  |
 
 ## Constants and configuration
 
@@ -254,6 +264,7 @@ token. The editor logs through `debugLog('calls', …)`.
 | `RELEASE_RADIUS_PX`      | 300       | About 15% more, so the edge does not flicker       |
 | `FULL_VOLUME_RADIUS_PX`  | 90        | Two or three characters side by side               |
 | `MAX_PAN`                | 0.8       | Never hard left or right                           |
+| `LECTERN_VOICE_REACH`    | 3         | Owner, 2026-11-10: a Podium carries 3x as far      |
 | `GLIDE_S`                | 0.12      | Gain and pan changes are never heard as steps      |
 | `PLACE_EPSILON`          | 0.005     | Half a percent of volume or side: never heard      |
 | `BARS_FADE_END_PX`       | 1500      | About a screen away at 100%                        |

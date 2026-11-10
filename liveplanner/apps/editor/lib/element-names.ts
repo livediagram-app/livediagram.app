@@ -138,7 +138,8 @@ export function elementAriaLabel(el: Element): string {
 
 // The kinds whose face carries controls of its own: a timer's Start, a checklist's ticks, a temperature check's
 // readings, a picker's draw, a decision record's settings, a comment pin's reply field, an action card's Add Action, a
-// page's title and subtitle lines and a tab window's Show a Tab and Open.
+// page's title and subtitle lines. A stored tab window (docs/specs/009-elements/tab-window.md, retired) is a still
+// frame, so a picture.
 const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
   'session-button',
   'checklist',
@@ -148,7 +149,6 @@ const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
   'comment-pin',
   'action-card',
   'page',
-  'tab-window',
 ]);
 
 /** The wrapper's role (docs/specs/004-interface-design/canvas-accessibility.md "Names on elements"): a picture

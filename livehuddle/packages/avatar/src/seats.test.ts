@@ -40,6 +40,7 @@ describe('facings', () => {
       'ping-pong-table': 'n',
       bench: 'n',
       'picnic-table': 'n',
+      podium: 'n',
       hammock: 'n',
       'bean-bag': 'n',
       'reading-nook': 'n',

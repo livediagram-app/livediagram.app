@@ -5,6 +5,7 @@
 
 import type { ReactNode } from 'react';
 import { Scene, Label, TextBar, Tabs } from '@liveworkspace/help-site/art/primitives';
+import { StartBandLanes, StartTitleMarkLanes } from './start-band';
 
 // --- Start Planning: Visualisations ------------------------------------------
 
@@ -181,7 +182,10 @@ export function PlanVisualisationsPickerScene() {
         className="fill-white stroke-slate-200"
         strokeWidth={2}
       />
-      <Label x={24} y={30} size={13} weight={700} tone="strong">
+      {/* The header band: the board lanes, then the title mark and the title. */}
+      <StartBandLanes x={13} y={13} w={394} h={33} />
+      <StartTitleMarkLanes x={20} y={20} />
+      <Label x={44} y={33} size={13} weight={800} tone="strong">
         Start Planning
       </Label>
       {/* The search, at the header's right. */}

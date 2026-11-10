@@ -30,9 +30,7 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return [];
     case 'logo-design':
       return buildLogoDesign(cx, cy);
-    // A blank illustration is its one empty page, which asks what it is for, and a blank of a page kind its one
-    // empty page of that kind (blank-page-templates.ts).
-    case 'blank-illustration':
+    // A blank of a page kind is its one empty page of that kind (blank-page-templates.ts).
     case 'blank-logo':
     case 'blank-wireframe-phone':
     case 'blank-wireframe-tablet':

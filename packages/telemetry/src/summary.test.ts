@@ -193,3 +193,86 @@ describe('summary cost', () => {
     expect(ms).toBeLessThan(1500);
   });
 });
+
+describe('the audience numbers', () => {
+  // One audience event on a day, for an app.
+  const ev = (
+    ts: number,
+    category: string,
+    action: string,
+    type: string | null,
+    app: TelemetryApp,
+    count = 1,
+  ): TelemetryDailyRow => ({ day: iso(ts), app, category, action, type, count });
+
+  it('keeps new and returning visitors, sign-ups and sign-ins per app, not merged', () => {
+    const s = build([
+      ev(MIDNIGHT, 'Participant', 'Created', null, 'livediagram.app', 4),
+      ev(MIDNIGHT, 'Participant', 'Created', null, 'liveplanner.app', 2),
+      ev(MIDNIGHT, 'Participant', 'Returned', 'Anonymous', 'livediagram.app', 3),
+      ev(MIDNIGHT, 'Participant', 'Returned', 'Authenticated', 'livediagram.app', 5),
+      ev(MIDNIGHT, 'Session', 'SignedUp', null, 'liveplanner.app', 1),
+      ev(MIDNIGHT, 'Session', 'SignedIn', null, 'livediagram.app', 6),
+    ]);
+    const today = s.audience!.windows.today;
+    expect(today['livediagram.app']).toEqual({
+      newVisitors: 4,
+      returningGuests: 3,
+      returningSignedIn: 5,
+      signUps: 0,
+      signIns: 6,
+    });
+    expect(today['liveplanner.app']).toMatchObject({ newVisitors: 2, signUps: 1 });
+    expect(today['livehuddle.app']).toEqual({
+      newVisitors: 0,
+      returningGuests: 0,
+      returningSignedIn: 0,
+      signUps: 0,
+      signIns: 0,
+    });
+    expect(s.audience!.daily['livediagram.app']!.newVisitors.at(-1)).toBe(4);
+    expect(s.audience!.daily['livediagram.app']!.newVisitors).toHaveLength(30);
+    // The events still count as events too.
+    expect(s.windows.today.total).toBe(21);
+  });
+
+  it('ignores other events, and an audience event with a type the table does not name', () => {
+    const s = build([
+      at(MIDNIGHT),
+      ev(MIDNIGHT, 'Participant', 'Moved', 'LegacyGuest', 'livediagram.app'),
+      ev(MIDNIGHT, 'Session', 'SignedIn', 'Google', 'livediagram.app'),
+      ev(MIDNIGHT, 'Participant', 'Returned', null, 'livediagram.app'),
+    ]);
+    expect(Object.values(s.audience!.windows.today['livediagram.app']!)).toEqual([0, 0, 0, 0, 0]);
+  });
+
+  it('counts each window and the span before it, inside and before the series', () => {
+    const s = build([
+      ev(MIDNIGHT, 'Session', 'SignedUp', null, 'livedesign.app'),
+      ev(MIDNIGHT - DAY, 'Session', 'SignedUp', null, 'livedesign.app', 2),
+      ev(MIDNIGHT - 7 * DAY, 'Session', 'SignedUp', null, 'livedesign.app', 3),
+      ev(MIDNIGHT - 31 * DAY, 'Session', 'SignedUp', null, 'livedesign.app', 4),
+    ]);
+    const a = s.audience!;
+    expect(a.windows.today['livedesign.app']!.signUps).toBe(1);
+    expect(a.previousWindows.today['livedesign.app']!.signUps).toBe(2);
+    expect(a.windows.last7['livedesign.app']!.signUps).toBe(3);
+    expect(a.previousWindows.last7['livedesign.app']!.signUps).toBe(3);
+    expect(a.windows.last30['livedesign.app']!.signUps).toBe(6);
+    expect(a.previousWindows.last30['livedesign.app']!.signUps).toBe(4);
+    // The day before the series is in no series.
+    expect(a.daily['livedesign.app']!.signUps.reduce((n, v) => n + v, 0)).toBe(6);
+  });
+
+  it('gives a sender outside the list its own row rather than dropping it', () => {
+    const s = buildTelemetrySummary(
+      NOW,
+      'liveplanner.app',
+      ['liveplanner.app'],
+      [ev(MIDNIGHT, 'Participant', 'Created', null, 'livediagram.app')],
+    );
+    expect(s.audience!.windows.today['livediagram.app']!.newVisitors).toBe(1);
+    expect(s.audience!.daily['livediagram.app']!.newVisitors.at(-1)).toBe(1);
+    expect(Object.keys(s.audience!.windows.last7)).toEqual(['liveplanner.app', 'livediagram.app']);
+  });
+});

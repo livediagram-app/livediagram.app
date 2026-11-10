@@ -3,7 +3,7 @@
 // all read one answer. Walls come first (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Rooms are calls"):
 // a room's walls block sound, and inside a room, as in the open, distance decides. A stage reaches the whole tab, and
 // its speakers hear each other as one call (the same spec's "The stage").
-import { CALL_RELEASE_RADIUS_PX } from '@livehuddle/document';
+import { CALL_RELEASE_RADIUS_PX, voiceReach } from '@livehuddle/document';
 import type { CallZoning } from './zones';
 
 /** A speaker within this many canvas px of you, feet to feet, is subscribed. */
@@ -19,10 +19,28 @@ export const BARS_FADE_END_PX = 1500;
 export const BARS_FAR_OPACITY_NEAR = 0.9;
 export const BARS_FAR_OPACITY_MIN = 0.3;
 
-// A walker's feet, and the seat they sit on (a Phone Booth's call is only its sitter's: call-geometry's CallPoint).
-export type Point = { x: number; y: number; seatedOn?: string | null };
+// A walker's feet, and the seat they sit on (a Phone Booth's call is only its sitter's: call-geometry's CallPoint), and
+// how far their voice carries as a multiple of the open floor's: LECTERN_VOICE_REACH while they stand at a Podium
+// (venue-pieces.md "Speaking from the Podium"), worked out from that seat and the board (withVoiceReach), absent as 1.
+export type Point = { x: number; y: number; seatedOn?: string | null; reach?: number };
 
 export const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
+
+/** How far a walker's voice carries, as a multiple of the open floor's. */
+export const reachOf = (p: Point): number => p.reach ?? 1;
+
+/**
+ * A walker with their voice's reach, read off the seat their shared presence names and the board's Podiums
+ * (call-geometry's voiceReach), so every listener works it out the same way. The point itself when it carries as far
+ * as anyone's.
+ */
+export function withVoiceReach<P extends Point>(
+  at: P,
+  lecterns: ReadonlySet<string> | undefined,
+): P {
+  const reach = voiceReach(at, lecterns);
+  return reach === 1 ? at : { ...at, reach };
+}
 
 /**
  * Where a peer stands relative to you: 'room' speaks from the stage you speak from (one call, full volume), 'open'
@@ -48,8 +66,8 @@ export function togetherWith(id: string, zoning: CallZoning | undefined): Togeth
 
 /**
  * The speakers heard next. Nobody across a wall is ever heard; in your room or the open floor, one already heard
- * stays while within the release radius, a new one joins within the hearing radius, and a stage's speakers are heard
- * wherever they stand. `peers` maps a presence id to its feet; only peers in it (walking, on this tab, with a microphone
+ * stays while within the release radius, a new one joins within the hearing radius (both times their reach: three
+ * times as far from a Podium), and a stage's speakers are heard wherever they stand. `peers` maps a presence id to its feet; only peers in it (walking, on this tab, with a microphone
  * to hear) are candidates. Returns `prev` itself when nothing changed, so a caller can compare by identity.
  */
 export function nextHeard(
@@ -67,7 +85,7 @@ export function nextHeard(
         next.add(id);
         continue;
       }
-      const d = distance(self, at);
+      const d = distance(self, at) / reachOf(at);
       if (d <= HEARING_RADIUS_PX || (prev.has(id) && d <= RELEASE_RADIUS_PX)) next.add(id);
     }
   }
@@ -76,12 +94,12 @@ export function nextHeard(
 }
 
 /**
- * Whether a peer would hear you now: your room, or the hearing radius in the open. A speaker on a stage you are not on
- * does not hear you (the stage hears nobody in its audience).
+ * Whether a peer would hear you now: your room, or the hearing radius (times your reach) in the open. A speaker on a
+ * stage you are not on does not hear you (the stage hears nobody in its audience).
  */
 export function inEarshot(self: Point, at: Point, together: Together): boolean {
   if (together === 'apart' || together === 'stage') return false;
-  return together === 'room' || distance(self, at) <= HEARING_RADIUS_PX;
+  return together === 'room' || distance(self, at) <= HEARING_RADIUS_PX * reachOf(self);
 }
 
 /** Whether anyone hears you now (the mic indicator's Live). On a stage, everyone walking the tab does. */
@@ -97,8 +115,9 @@ export function someoneHears(
 }
 
 /**
- * How a heard speaker is placed: by distance in your room or the open, full volume beside you on a stage, panned by
- * side either way; a stage speaker you are not beside at full volume, centred.
+ * How a heard speaker is placed: by distance in your room or the open (a Podium's speaker as if a third as far: their
+ * whole fade stretched by their reach), full volume beside you on a stage, panned by side either way; a stage speaker
+ * you are not beside at full volume, centred.
  */
 export function placeFor(
   self: Point,
@@ -107,7 +126,7 @@ export function placeFor(
 ): { gain: number; pan: number } {
   if (together === 'stage') return { gain: 1, pan: 0 };
   return {
-    gain: together === 'room' ? 1 : gainAt(distance(self, at)),
+    gain: together === 'room' ? 1 : gainAt(distance(self, at) / reachOf(at)),
     pan: panAt(at.x - self.x),
   };
 }

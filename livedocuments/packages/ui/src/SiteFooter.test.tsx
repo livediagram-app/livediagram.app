@@ -44,13 +44,14 @@ describe('SiteFooter', () => {
   });
 });
 
-describe('SiteFooter credits', () => {
-  it('credits each human contributor by an inlined avatar, never a GitHub-hosted image', () => {
-    for (const login of ['tommcclean', 'webbertakken']) {
-      expect(html).toContain(`href="https://github.com/${login}"`);
-    }
-    expect(html.match(/<img src="data:image\/jpeg;base64,/g)).toHaveLength(2);
-    expect(html).not.toContain('githubusercontent');
+describe('SiteFooter legal strip, no credits', () => {
+  // Each product's marketing-site.md "Footer": no Built by line; Part of liveworkspace sits on the right.
+  it('credits no one and puts Part of liveworkspace after the copyright', () => {
+    expect(html).not.toContain('Built by');
+    expect(html).not.toContain('https://github.com/tommcclean');
+    expect(html).not.toContain('data:image/jpeg;base64,');
+    const strip = html.slice(html.indexOf('</nav>'));
+    expect(strip.indexOf('MIT licensed.')).toBeLessThan(strip.indexOf('Part of'));
   });
 });
 

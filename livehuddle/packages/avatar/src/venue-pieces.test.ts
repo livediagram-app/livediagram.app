@@ -114,8 +114,10 @@ describe('the venue pieces', () => {
     expect(Math.round(end.y)).toBe(60);
   });
 
-  it('seats nobody', () => {
-    for (const shape of [...SCENERY.map(([s]) => s), 'swimming-pool', 'stage-curtains']) {
+  // The Podium alone is held, stood at (lectern.test.ts; venue-pieces.md "Speaking from the Podium").
+  it('seats nobody but the podium’s speaker', () => {
+    const others = SCENERY.map(([s]) => s).filter((s) => s !== 'podium');
+    for (const shape of [...others, 'swimming-pool', 'stage-curtains']) {
       expect(isFixedSeatShape(shape), shape).toBe(false);
       expect(seatsACharacter(shape), shape).toBe(false);
     }

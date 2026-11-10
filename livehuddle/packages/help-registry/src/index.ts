@@ -1103,7 +1103,7 @@ export const articles: Article[] = [
     title: 'Proximity Audio',
     description: 'Talk with the people your character is near, and see who is talking further off.',
     keywords:
-      'audio voice call calls talk talking speak speaker microphone mic mute unmute listen listen in join audio leave proximity nearby earshot hearing headphones equaliser equalizer bars walk over muted blocked nobody near huddle raise hand lower hand let speak stage do not disturb dnd',
+      'audio voice call calls talk talking speak speaker microphone mic mute unmute listen listen in join audio leave proximity nearby earshot hearing headphones equaliser equalizer bars walk over muted blocked nobody near huddle raise hand lower hand let speak stage podium lectern further reach do not disturb dnd',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },

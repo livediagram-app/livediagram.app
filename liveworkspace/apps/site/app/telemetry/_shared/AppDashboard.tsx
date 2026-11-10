@@ -44,13 +44,20 @@ const AFTER_COMMUNITY: View[] = [
   { key: 'search', label: 'Search', icon: <SearchGlyph /> },
 ];
 
+// What the page hands each app's Body, and the Body hands on: the summary, and the window, which the page holds so
+// that switching app keeps it (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard", The window).
+export type AppBodyProps = {
+  summary: TelemetrySummary;
+  active: TelemetryWindowKey;
+  onSelect: (key: TelemetryWindowKey) => void;
+};
+
 export function AppDashboard({
   app,
   summary: raw,
-}: {
-  app: TelemetryAppConfig;
-  summary: TelemetrySummary;
-}) {
+  active,
+  onSelect: setActive,
+}: AppBodyProps & { app: TelemetryAppConfig }) {
   const views = useMemo(
     () => [...BEFORE_COMMUNITY, ...(app.community ? [COMMUNITY] : []), ...AFTER_COMMUNITY],
     [app],
@@ -70,7 +77,6 @@ export function AppDashboard({
     setFocus(null);
     setView(next);
   };
-  const [active, setActive] = useState<TelemetryWindowKey>('last7');
   // The tab redraws for a new window in the background (see ActiveView), so the
   // click paints the selector straight away; the tab dims until it catches up.
   const shownWindow = useDeferredValue(active);

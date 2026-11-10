@@ -471,16 +471,28 @@ If the MCP refuses a change, report it and carry on with the other cards.
   them something: an unanswered question, a FAILED card's unblock options, an answer it can't act on. Everything
   else it posts is a notice and is resolved in the same `change_threads` call that posts it: build plans and
   their part PR links, "Built in", "Decided", merged, cancelled, moved, blocked-by and status notes. A reply in a
-  resolved thread leaves it resolved. Each pass, before step 4, resolves any of the loop's own open threads on
-  the board that ask nothing, or whose question a person has answered and the loop has built (one
-  `change_threads` batch). Never resolve a thread a person started.
+  resolved thread leaves it resolved. Each pass, before step 4, sweeps the board in one `change_threads` batch
+  (owner, 2026-11-10, again: the Inbox was still cluttered) and resolves every open thread a loop started (first
+  comment `ai: true`, from this loop, review-loop or any other) that:
+  - asks nothing, whatever column its card is in;
+  - asked something a person has answered and the loop has built;
+  - is on a card in **Cancelled**, **Done** or **Implemented**, or a card whose Pull Request link is set: nothing
+    on such a card waits on the owner any more (an owner-only step lives on the PR's Owner checklist, never in a
+    thread), so even an unanswered question there is moot. Reply first in one line saying why it closes
+    ("Cancelled", "Merged in <PR url>", "Built in <PR url>"), then resolve it.
+  Open after the sweep means exactly two things: a question waiting on the owner, or a person's own thread. Never
+  resolve a thread a person started.
+- **Every post is checked.** When a `change_threads` call starts a notice or replies with one, the same call
+  resolves it (`{"op": "resolve", ...}` after the `start`/`reply`); never post and resolve in separate passes. The
+  report lists how many threads the pass resolved and which stay open, each with the question it waits on.
 
 - On the board, only ever do these: move Work Items from Selected for Development to Under Review or In
   Progress, from In Progress to Implemented or Development Failure, set their Pull Request link, start question threads on those cards, reply in the loop's own threads and resolve
   them once their answers are built, take a Large card's next part from In Progress, and add follow-up Work
   Items to Under Review (step 4). Never
   edit titles, descriptions or other fields, never add Question cards, never resolve, edit or
-  delete a thread or comment a person wrote, and never touch cards in any other column.
+  delete a thread or comment a person wrote, and never touch cards in any other column, except the step-4 sweep's
+  one-line reply and resolve on a loop's own threads.
 - One open PR per Work Item, or per group of closely related ones (per part, for a Large card): rework goes onto it, and a follow-up opens only once
   it has merged. Never open a PR for anything that isn't a selected card. Merging is the
   pr-loop's job.

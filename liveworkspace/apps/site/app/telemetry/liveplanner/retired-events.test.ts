@@ -23,6 +23,15 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Tab', 'Changed', 'PageBackgroundAnimated')).toBe(false);
   });
 
+  it('retires the Tab Window, its tour and opening its tab, keeping the other elements', () => {
+    expect(isRetiredEvent('Element', 'Added', 'TabWindow')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'TabWindowTab')).toBe(true);
+    expect(isRetiredEvent('UI', 'Used', 'TabWindowOpen')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'TabWindowTourOffer')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'TabWindowTourStepOpen')).toBe(true);
+    expect(isRetiredEvent('Element', 'Added', 'PlanBoard')).toBe(false);
+  });
+
   it('retires the diagram lint view, keeping the other agent views', () => {
     expect(isRetiredEvent('Agent', 'Viewed', 'Lint')).toBe(true);
     expect(isRetiredEvent('Cli', 'Used', 'TabLint')).toBe(true);

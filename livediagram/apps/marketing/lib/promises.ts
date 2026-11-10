@@ -1,11 +1,11 @@
 import { REPO_URL } from '@livediagram/ui';
 
-// The landing page's promises (docs/specs/019-marketing/marketing-site.md "Promises"): five things
+// The landing page's promises (docs/specs/019-marketing/marketing-site.md "Promises"): four things
 // that are true of livediagram today, under the page's golden rule (no claim the product does not
 // keep). The site is international, so no value names a currency. Each has a short value set large, a title, one line, and, where there is more to read, a
 // link. The art and hues live with the component (components/PromiseCanvas.tsx).
 
-export type PromiseId = 'free' | 'no-account' | 'open-source' | 'private' | 'live';
+export type PromiseId = 'no-account' | 'open-source' | 'private' | 'live';
 
 export type Promise = {
   id: PromiseId;
@@ -16,12 +16,6 @@ export type Promise = {
 };
 
 export const PROMISES: readonly Promise[] = [
-  {
-    id: 'free',
-    value: '0 paywalls',
-    title: 'Completely Free',
-    line: 'Every feature, for everyone. No paid tier and no trial clock.',
-  },
   {
     id: 'no-account',
     value: '0 forms',

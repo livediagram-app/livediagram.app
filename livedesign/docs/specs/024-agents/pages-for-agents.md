@@ -23,7 +23,7 @@ is never told a change worked when it shows on no page.
 - **CLI**: `page ls` (the `pages` view) and `page set` (`change_pages`) ([CLI](../015-api/cli.md)).
 - Both go through one api route, `POST /api/designs/:id/tabs/:tabId/pages`, over one pure engine shared with
   the editor, so an agent's page edit is exactly the edit the page panel makes.
-- `create_design` and `add_tab` with a Pages template (`logo-design`, a wireframe flow, `blank-illustration`, ...)
+- `create_design` and `add_tab` with a Pages template (`logo-design`, a wireframe flow, `blank-logo`, ...)
   still make a tab on its pages; `change_pages` then changes it.
 
 ## Which tab

@@ -41,8 +41,8 @@ describe('blanks of a page kind', () => {
   });
 
   it('answers nothing for any other template', () => {
-    expect(blankPageTemplateOverrides('blank-illustration')).toBeUndefined();
+    expect(blankPageTemplateOverrides('blank')).toBeUndefined();
     expect(blankPageTemplateOverrides('logo-design')).toBeUndefined();
-    expect(templateCanvasOverrides('blank-illustration').pages).toBeUndefined();
+    expect(templateCanvasOverrides('blank').pages).toBeUndefined();
   });
 });

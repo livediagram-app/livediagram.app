@@ -12,8 +12,9 @@ import { type CSSProperties, memo } from 'react';
 import { AppLogo } from '@/components/landing/AppLogo';
 import { Wordmark } from '@/components/Wordmark';
 import { listedApps } from '@/lib/apps';
+import { windowUptime } from '@/lib/status/history';
 import { summarise, type ServiceView } from '@/lib/status/probe';
-import { formatAgo, formatMs, HistoryStrip, ServiceIcon, StateBadge } from './status-ui';
+import { formatAgo, formatMs, ServiceIcon, StateBadge, UptimeFigure } from './status-ui';
 import { UptimeBars } from './UptimeBars';
 
 const ArrowIcon = lucideGlyph(lucideArrowUpRight, 14);
@@ -21,8 +22,9 @@ const BrowserIcon = lucideGlyph(lucideUser, 13);
 const HourlyIcon = lucideGlyph(lucideCloud, 13);
 
 // One group of services (liveworkspace/docs/specs/010-site/site.md "Status"): liveworkspace's under its wordmark, or an app's under
-// its own logo (never a coloured dot), with the group's own summary and a row per service. Each row has this visit's
-// check and, when the hourly history is in, liveworkspace's last check and the service's 90 days.
+// its own logo (never a coloured dot), with the group's uptime over the stored window and its own summary, and a row
+// per service. Each row has this visit's check and, when the hourly history is in, liveworkspace's last check and the
+// service's 90 days.
 // Memoised, with a clock that moves once a minute: the board's one-second tick re-renders none of it.
 export const ServiceGroupCard = memo(function ServiceGroupCard({
   group,
@@ -60,6 +62,8 @@ export const ServiceGroupCard = memo(function ServiceGroupCard({
         : summary.slow > 0
           ? `${summary.slow} of ${summary.total} slow`
           : `All ${summary.total} up`;
+  // None without the history, an answer stored before uptime, or no checks in the window: never a default 100%.
+  const uptime = history && history.at !== null ? windowUptime(history, group.id) : null;
   return (
     <section
       id={group.id}
@@ -81,7 +85,10 @@ export const ServiceGroupCard = memo(function ServiceGroupCard({
           </h2>
           <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-400">{group.blurb}</p>
         </div>
-        <div className="relative flex items-center gap-2">
+        <div className="relative flex flex-wrap items-center gap-2">
+          {uptime !== null && history ? (
+            <UptimeFigure percent={uptime} days={history.days} />
+          ) : null}
           <StateBadge state={groupState} word={groupWords} />
           <a
             href={group.site.url}
@@ -186,11 +193,6 @@ function ServiceRow({
             {latest && state !== 'skipped' ? formatMs(latest.ms) : '—'}
           </span>
           <span className="min-w-0 flex-1 leading-snug">{evidence}</span>
-          {service.check.mode === 'probe' ? (
-            <span className="ml-auto w-20 shrink-0 sm:w-28">
-              <HistoryStrip history={view?.history ?? []} />
-            </span>
-          ) : null}
         </div>
         {history && history.at !== null ? (
           <>

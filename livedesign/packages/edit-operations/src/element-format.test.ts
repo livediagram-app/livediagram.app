@@ -17,6 +17,10 @@ describe('the element format', () => {
     for (const kind of addableKinds()) expect(text).toContain(kind);
     expect(text).toContain('arrow: connect <a> -> <b>');
     expect(text).toContain('image, video, freehand, path: made in the editor');
+    // docs/specs/009-elements/tab-window.md: retired, so neither offered nor described.
+    expect(addableKinds()).not.toContain('tab-window');
+    expect(text).not.toContain('tab-window');
+    expect(elementFormatText('tab-window')).toBeNull();
   });
 
   it('keeps every kind within its budget', () => {

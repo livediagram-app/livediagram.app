@@ -17,6 +17,14 @@ import { DEFAULT_STAGE_SPEAKERS, isStageSpeakers, stageTop, type StageSpeakers }
 export const CALL_RELEASE_RADIUS_PX = 300;
 
 /**
+ * How much further a voice carries from a Podium's speaker spot (venue-pieces.md "Speaking from the Podium", owner
+ * 2026-11-10: "From the lectern my audio should be 3 times further, but still blocked by walls"): every open-floor
+ * distance to the speaker counts as a third of itself. Walls and stages are decided before distance, so they are
+ * untouched.
+ */
+export const LECTERN_VOICE_REACH = 3;
+
+/**
  * A point in canvas px: a character's feet, and the seat they sit on, if any. Only a seated character is in a Phone
  * Booth's call (`CallZone.seat`); someone crossing its floor stays in the room's.
  */
@@ -139,6 +147,21 @@ export function roomZones(elements: readonly CallElementSource[]): CallZone[] {
     });
   }
   return zones;
+}
+
+/**
+ * The ids of every Podium among `elements` (the caller passes only what is on visible layers): standing at one
+ * (`CallPoint.seatedOn`, from the presence everyone shares) carries a voice LECTERN_VOICE_REACH times as far.
+ */
+export function callLecterns(elements: readonly CallElementSource[]): ReadonlySet<string> {
+  const ids = new Set<string>();
+  for (const el of elements) if (boxOf(el, 'podium')) ids.add(el.id);
+  return ids;
+}
+
+/** How far `at`'s voice carries, as a multiple of the open floor's: LECTERN_VOICE_REACH at a Podium, else 1. */
+export function voiceReach(at: CallPoint, lecterns: ReadonlySet<string> | undefined): number {
+  return at.seatedOn && lecterns?.has(at.seatedOn) ? LECTERN_VOICE_REACH : 1;
 }
 
 /** The smallest box `at` is strictly inside, then the lower id; null for none. */

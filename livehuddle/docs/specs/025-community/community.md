@@ -296,11 +296,14 @@ API), the link closes and answers 404, never a password prompt, and the next che
 
 ## Document lifecycle
 
-- **Trash**: a post whose document is in the Trash is not listed, and its post page shows not-found. Restoring the
-  document lists it again.
-- **Permanent delete**: deletes the post with it.
+- **Trash**: moving a document to the Trash removes its post (its likes, copies and reports with it), unless reports
+  hid it, which stays final; its post page shows not-found. Restoring the document does not bring the post back: its
+  author shares it to the Community again ([liveworkspace community.md](../../../../liveworkspace/docs/specs/007-community/community.md#what-lives-where)).
+- **Archiving** removes the post the same way (Archived drops every link), and unarchiving does not bring it back.
+- **Permanent delete**: deletes the post with it. The gallery catches up within one Community sweep at most (about
+  fifteen minutes); the post's link, card image and copy close at once.
 - **Moving into a team library**: the post stops being listed, since team documents cannot be published.
-- **Deleting an account**: deletes the account's posts with its documents, and the record of copies it took of other
+- **Deleting an account**: deletes the account's posts at once, with its documents, and the record of copies it took of other
   people's posts (their copy counts drop by one).
 - **Copying** a published document does not publish the copy.
 

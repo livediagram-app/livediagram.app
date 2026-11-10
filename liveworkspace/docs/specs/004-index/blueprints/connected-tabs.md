@@ -243,13 +243,13 @@ Every editor mounts the shared UI through thin doors of its own; the shared part
   changes. `connectionOf(tab)` reads exactly `{ id, app, itemId }` (`readTabConnection`), `withConnection` puts one
   on, `carryConnection(tab, summary)` brings a summary's onto a placeholder or a local tab (a summary without one, an
   agent's rename relay, leaves the tab's own), `connectedTargets(tabs)` is the Connect list's Connected map.
-- **`connected-tab-store.ts`**: one page-wide store. `pickConnectedTab(tabId)` records a person's press on a connected
-  tab (`ConnectedTab` calls it before the bar's select, so pressing the open tab opens it again); a page acts on a
-  press it has not seen, or on one made under `CONNECTED_PICK_FRESH_MS` (10 s) before it mounted (its code loads on the
-  first one). `setConnectedTabBroken(connectionId, broken)` holds what the last open found, for the tab's amber dot
-  (`ConnectedTab` reads it when no `broken` is passed) and its menu's Connect Again (`connectedTabBroken`).
-- **`ConnectedTabPage.tsx`**: in the canvas's place while the open tab is connected. Starts `ready` (Open), or
-  `opening` for a fresh press, or `offline` for a This Browser host. Each open aborts the one before, asks the host's
+- **`connected-tab-store.ts`**: one page-wide store. `setConnectedTabBroken(connectionId, broken)` holds what the
+  last open found, for the tab's amber dot (`ConnectedTab` reads it when no `broken` is passed) and its menu's Connect
+  Again (`connectedTabBroken`). A press on the tab is the bar's plain select: it tells the page nothing, so it never
+  opens the file.
+- **`ConnectedTabPage.tsx`**: in the canvas's place while the open tab is connected. Starts `ready` (the preview and
+  Open, however the tab became the open one), or `offline` for a This Browser host; only the card's Open (and Try
+  Again) runs an open. Each open aborts the one before, asks the host's
   grant, runs `openConnectedTab`, marks the tab broken or mended, shows the answer's view and, for an Editor
   (`canEdit`: may change the tabs), renames the tab to the answered name (IDX26). Keyed by tab and connection id, so
   Connect Again starts it afresh. `Tab·Opened·Connected` per open.
@@ -281,7 +281,7 @@ sm:mt-auto` inside the rail's scroller), every app's logo fanned where its icon 
   and Connect Again (when broken); its Duplicate refuses a connected tab.
 
 Part 5's tests: the shared modules' (`tab-connection.test.ts`, `connected-tab-store.test.ts`,
-`ConnectedTabPage.test.tsx`: ready, a fresh and a stale press, the rename for an Editor only, broken and mended,
+`ConnectedTabPage.test.tsx`: ready, a press on the tab opening nothing, Open opening, the rename for an Editor only, broken and mended,
 offline, `ConnectFilePanel.test.tsx`, `ConnectRailEntry.test.tsx`, `useConnectedTabActions.test.tsx`: the add, the
 replace, the toast, Connect Again and its failure) and each editor's (the outline op keeps and carries a connection,
 the tab menu's connected mode for an Editor, nothing for a Viewer).
@@ -372,8 +372,8 @@ staging 2109). No new secret: the reverse write uses each app's `INDEX_KEY`, as 
 - `IDX25`: Connect Again on a tab that still has a connection replaces it, deleting the old pass.
 - `IDX26`: a connected tab's name follows the target's title on open; it is not renamed by hand.
 - `IDX27`: a connection unconfirmed an hour after it was made is swept with its pass, at most 200 every 15 minutes.
-- `IDX36`: a connected tab opens its file only on a person's press (its tab, or Open on its page); shown any other
-  way it waits, ready.
+- `IDX36`: a connected tab opens its file only on a person's press of Open on its page, under the preview; selecting
+  the tab, or showing it any other way, waits, ready.
 - `IDX38`: a connected tab's page asks the index where it leads once per connection per page (`useConnectedPreview`,
   a page-wide cache of `CONNECTED_PREVIEW_CACHE_MAX` answers, blob URLs revoked as they go) to draw the target's
   preview, and never goes there by itself (IDX36); offline it asks nothing.

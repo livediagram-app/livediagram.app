@@ -4,7 +4,9 @@ import { useCallback } from 'react';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import dynamic from 'next/dynamic';
-import { logoPageAt, tagColoursOf } from '@livedesign/design';
+import { logoPageAt, tagColoursOf, type TextPresetId } from '@livedesign/design';
+import { restyleTextAs } from '@/lib/text-style';
+import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
@@ -225,6 +227,11 @@ export function EditorContextMenuHost() {
       y: ctxSelectedEl.y + ctxSelectedEl.height / 2,
     });
 
+  // Text Style (docs/specs/008-canvas/canvas-and-palette.md "Text styles"): the style, then the box hugged to the
+  // words at it, measured in the tab's font.
+  const restyleAs = (id: TextPresetId) =>
+    restyleTextAs(id, measureDrawnText(activeTab.font, activeTab.finish));
+
   return (
     <EditorContextMenu
       // Remount when the menu changes target: a right-click on a DIFFERENT
@@ -388,6 +395,8 @@ export function EditorContextMenuHost() {
       onMirrorCopy={pagesMode?.logo?.canMirrorCopy() ? pagesMode.logo.mirrorCopy : undefined}
       onSetWordmark={commitWordmark}
       onPreviewWordmark={previewWordmark}
+      onSetTextStyle={(id) => commitElementStyle(restyleAs(id), 'TextStyle')}
+      onPreviewTextStyle={(id) => previewElementStyle(restyleAs(id))}
       onSetFont={commitFont}
       onPreviewFont={previewFont}
       onSetPadding={commitPadding}

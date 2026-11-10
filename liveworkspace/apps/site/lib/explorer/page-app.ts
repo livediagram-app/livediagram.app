@@ -40,7 +40,7 @@ export function appHosts(): Record<string, AppName> {
 // first, its other apps and its E2E stack the rest (`:3102`, `:3115`). The page on any of them is the app's; read as
 // liveworkspace.app, it asked for a session token no app serves and showed "couldn't reach your account". Only the
 // page's own address is read this way: appOfHost (which vets return addresses) still knows each router's port alone.
-const PORT_BLOCK = 100;
+export const PORT_BLOCK = 100;
 
 function appOfLocalPort(host: string): AppName | null {
   const match = /^(?:localhost|127\.0\.0\.1):(\d+)$/.exec(host);

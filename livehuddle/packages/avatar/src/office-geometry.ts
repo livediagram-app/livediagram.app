@@ -54,7 +54,10 @@ export type FixedSeatKind =
   | 'weight-bench'
   | 'phone-booth'
   | 'standing-desk'
-  | 'hot-desk';
+  | 'hot-desk'
+  // livehuddle's Podium (its docs/specs/009-elements/venue-pieces.md "Speaking from the Podium"): one speaker spot,
+  // stood at.
+  | 'podium';
 
 const FIXED_SEAT_KINDS: readonly string[] = [
   'office-pod',
@@ -71,6 +74,7 @@ const FIXED_SEAT_KINDS: readonly string[] = [
   'phone-booth',
   'standing-desk',
   'hot-desk',
+  'podium',
 ];
 
 export function isFixedSeatShape(kind: string): kind is FixedSeatKind {
@@ -78,8 +82,8 @@ export function isFixedSeatShape(kind: string): kind is FixedSeatKind {
 }
 
 // Seats you stand at rather than sit in (livehuddle's workday-pieces.md "How each one walks"): held like any seat, the
-// character there drawn standing.
-const STANDING_SEAT_KINDS: readonly string[] = ['treadmill', 'standing-desk'];
+// character there drawn standing. The Podium's speaker stands too (venue-pieces.md "Speaking from the Podium").
+const STANDING_SEAT_KINDS: readonly string[] = ['treadmill', 'standing-desk', 'podium'];
 export function isStandingSeatShape(kind: string): boolean {
   return STANDING_SEAT_KINDS.includes(kind);
 }
@@ -256,7 +260,10 @@ export function poolDeck(width: number, height: number): number {
 }
 const INSET_FOOTPRINT_KINDS: readonly string[] = ['swimming-pool'];
 
-/** Scenery: blocks with its footprint and is never a destination (walking up to it rings nothing). */
+/**
+ * Scenery: blocks with its footprint and is never a destination (walking up to it rings nothing), but for the one that
+ * also holds a character, the Podium, whose speaker spot is walked to (venue-pieces.md "Speaking from the Podium").
+ */
 export function isSceneryShape(kind: string): boolean {
   return kind in OFFICE_FOOTPRINT || INSET_FOOTPRINT_KINDS.includes(kind);
 }

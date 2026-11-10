@@ -47,8 +47,8 @@ export type CommunityAppPostResponse = { post: CommunityAppPost | null };
 //   - 'public': it passes the app's public rule, so the post is listed (unless hidden after reports);
 //   - 'closed': it is in a team library or has a share password. Not listed, but still its author's, so
 //     still in their My Shares;
-//   - 'away': it is in the Trash, or now belongs to someone other than the post's author. Not listed,
-//     and not in My Shares either.
+//   - 'away': it is in the Trash, or now belongs to someone other than the post's author. The post is removed,
+//     unless hidden after reports: that one stays, not listed and not in My Shares, so hiding stays final.
 export const COMMUNITY_DOCUMENT_STATES = ['public', 'closed', 'away'] as const;
 export type CommunityDocumentState = (typeof COMMUNITY_DOCUMENT_STATES)[number];
 
@@ -94,9 +94,16 @@ export type CommunityAppMineResponse = CommunityMineResponse;
 export type CommunityAppCopy = { document: string; copier: string; ip: string };
 
 // `POST /app/copiers/forget` (an account was deleted) and `/app/copiers/merge` (a guest's work moved
-// to their new account): copies are counted per person, so the person's copies follow them.
-export type CommunityAppForget = { copier: string };
+// to their new account): copies are counted per person, so the person's copies follow them. A forget naming the
+// `owner` also removes every post that account made in the app ("What lives where").
+export type CommunityAppForget = { copier: string; owner?: string };
 export type CommunityAppMerge = { from: string; to: string };
 
 // The most a sync carries: a bigger backlog goes over several.
 export const COMMUNITY_SYNC_MAX = 500;
+
+// The sweep (community.md "The sweep"): this many of an app's posts a run, as many as the index answers at once
+// (@liveworkspace/index-client `COMMUNITY_STATES_MAX`, kept equal by a test; not imported, so no page that loads this
+// contract loads the index client), and the app's door that asks it.
+export const COMMUNITY_SWEEP_BATCH = 100;
+export const COMMUNITY_STATES_DOOR = '/api/internal/items/community-states';

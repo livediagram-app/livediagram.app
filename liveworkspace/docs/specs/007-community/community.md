@@ -76,7 +76,12 @@ A bare `category:` word or `?category=` on All Apps reads as no category; on an 
 reads as none, and the app's own written with its app reads bare. The switch carries a chosen category across: to
 All Apps it gains the app's name, and back on the app its own reads bare again while another app's is left out.
 
-**A post opens on its own app's address**, where its viewer, embed, copy and session live. A card for the page's own
+**A post opens on its own app's address**, where its viewer, embed, copy and session live. Its viewer and the
+embed its page frames are view-only for everyone, its author and their team included: the index opens the post's
+community link at its own level whoever sends it ([one-explorer-contracts.md](../004-index/one-explorer-contracts.md#sharing-and-access)),
+and the author edits from their own document (Edit Your Document). The embed opens for a signed-out visitor too: a
+frame never leaves for a guest token ([Guests](../004-index/one-explorer-contracts.md#guests)), so it reads the post as
+a link visitor (owner, 2026-11-10: in a private window every post's preview read "refused to connect"). A card for the page's own
 app opens in place; a card for another app's post (All Apps, or anything on liveworkspace.app) is a full link to
 `<that app>/community/post?id=`. liveworkspace.app has no post pages of its own: `/community/post?id=…&app=<app>`
 there moves to that app's address, and without `app` shows not-found.
@@ -231,12 +236,28 @@ document stands, one of three states:
   no share password). Listed, unless hidden after reports.
 - **closed**: in a team library or behind a share password. Not listed, but still the author's, so
   still in their My Shares.
-- **away**: in the Trash, or now someone else's. Not listed, and not in My Shares.
+- **away**: in the Trash, or now someone else's. The post is **removed**, with its likes, copies and reports, the
+  moment the service hears it (owner, 2026-11-10: the Community never shows what its author put away). A post hidden
+  after reports is the one exception: it stays, not listed and not in My Shares, so hiding stays final for whoever
+  owns the document next.
 
-A document deleted for good, or whose link went with its author's account, is **gone**: its post is
-deleted with everything on it. So is a document whose owner's account closed and that a team keeps (the index names
-its owner `deleted`, [one-explorer-contracts.md](../004-index/one-explorer-contracts.md#closing-an-account)): no one
-could list that post again, and it would keep the closed account's id.
+A document deleted for good (one item, an emptied Trash, the Trash's 30 days), archived (Archived drops every link
+the document had, the community link with them), or whose link went with its author's account, is **gone**: its post
+is deleted with everything on it. So is a document whose owner's account closed and that a team keeps (the index
+names its owner `deleted`, [one-explorer-contracts.md](../004-index/one-explorer-contracts.md#closing-an-account)):
+no one could list that post again, and it would keep the closed account's id. Closing an account also removes every
+post its author made in the app at once (`POST /app/copiers/forget` with the `owner`).
+
+**Restoring never republishes.** A document restored from the Trash, moved out of Archived, or handed back to its
+author comes back without a post: its author shares it to the Community again from the Share dialog, as a new post.
+Only **closed** is undone by itself (leaving the team library or clearing the share password lists the post again),
+since the document stayed its author's own and nothing was put away.
+
+While a post is gone, nothing it showed is reachable: the card image, the read-only viewer and Make a Copy all open
+through the community link, which the index refuses for a document in the Trash, archived or deleted
+([previews.md](../006-media/previews.md#the-addresses): a public link's image is cached 30
+seconds at most, with no stale window), and the document's room closes it for a post the service no longer holds
+("Keeping in step"). A purged document's stored previews go with it.
 
 The service never sees a document, and never shows an owner id or an app document id to the public.
 
@@ -285,7 +306,8 @@ time; a key only speaks for its own app. These routes send no CORS headers.
 | `GET /app/hidden?since=<ms>`         | The posts hidden after reports since then, for the app to close links    |
 | `GET /app/mine?owner=&…`             | My Shares: the owner's posts and totals; passes on `X-Community-Key`     |
 | `POST /app/copies`                   | `{ document, copier, ip }`: someone copied the document through its link |
-| `POST /app/copiers/forget`, `/merge` | An account deleted; a guest's copies moving to their account             |
+| `POST /app/copiers/forget`           | An account deleted: `{ copier, owner? }`, its copies and its posts go    |
+| `POST /app/copiers/merge`            | A guest's copies moving to their account                                 |
 
 A publish carries the owner, the community link's code, the document's state, how the author is
 shown, and the post itself. The app has already checked what only it can: the caller owns the
@@ -312,16 +334,49 @@ Each published document keeps its post in its own room (the Durable Object that 
 `community_post` row with the state it last sent. Where the document stands is the index's (its Trash, its team,
 its share password, its owner), so the room asks it as the post's author, and sends the service whatever differs:
 
-- **Right after a change** the room hears of (a share password set, the document moved or trashed), off the
+- **Right after a change** the room hears of (a share password set through the app, its links revoked), off the
   response path.
 - **Every ten minutes** while it has a post, from the room's own alarm, which also reads the post back and hears
   whether the service hid it after reports, closing its link if so.
 
-So the gallery can lag a document by up to ten minutes when the inline send fails, and a post hidden after reports
-keeps its link open for up to ten minutes. A failed send is retried by the next check.
+When the read back finds the service no longer holds the post (the document went away, or the sweep below removed
+it), the room **withdraws** it: its row's `sent_state` becomes `withdrawn`, which opens nothing (the link's doors
+answer 404, and the document's summary no longer counts it listed), and it removes the community link at the index.
+Once the index has let the link go (or says it is already gone) the row goes too; until then each check tries again.
+So a document restored from the Trash never reopens through its old community link.
+
+A post whose document is purged takes it with it (the room sends `gone` before its storage is dropped). That send
+does not hold the purge up: a failed one is caught by the sweep.
+
+### The sweep
+
+The rooms only know the posts they made. A post can outlive its room's knowledge of it: one carried over by the
+migration (docs/migration.md step 5, which wrote the service's rows but no room row), one whose room's `gone` was
+lost in a purge, or one whose document was trashed or archived from the Explorer, which talks to the index alone.
+So the service checks every post against the index itself, from its own cron, **every five minutes**:
+
+1. For each app with a key and an origin, it takes the app's `COMMUNITY_SWEEP_BATCH` (100) posts checked longest ago
+   (`checked_at` older than `COMMUNITY_SWEEP_EVERY_MS`, 10 minutes), oldest first.
+2. It asks the app's door, `POST <app origin>/api/internal/items/community-states` with the app's own community key
+   as the bearer (the key both already hold, so nothing new is shared), `{ posts: [{ id, code, owner }] }`.
+3. The app's door asks the index's `POST /app/community/states` (the app's index key) and answers
+   `{ states: [{ id, state }] }`: `gone` for an item that is missing, another app's, archived, owned by a closed
+   account (`deleted`), or no longer holding the post's link; `away` in the Trash, or now someone other than the
+   post's owner's (a guest's post, which only the migration made, follows its guest into the account it became);
+   `closed` in a team or behind a share password; else `public`. Two indexed reads whatever the batch.
+4. The service applies the answers as one sync (the rules above: `gone` removes the post, `away` removes it unless
+   hidden after reports, `closed` and `public` set its state) and stamps the batch `checked_at`. An app that does not
+   answer is asked again on the next run, and nothing is changed for it.
+
+So the Community catches up with any document within about fifteen minutes while an app has at most 200 posts (each
+re-checked every 10 minutes, 100 per run, two runs in 10 minutes); past that, a full pass takes `posts / 100 x 5`
+minutes (an hour for 1,200 posts). A post whose room has a row is also checked by that room every ten minutes. Every
+post starts with `checked_at` 0, so every existing orphan in production is checked on the first runs after the
+deploy (100 per app per five minutes) and removed with no manual write.
 
 The link's own doors never wait for the service: whether a community link opens is decided in the app, from its
-document and its `community_post` row, so a trashed document's link closes at once.
+document and its `community_post` row, and the index refuses the link of a document in the Trash, archived or
+deleted, so those links close at once. Only the gallery's card lags, by up to one sweep (or one room check).
 
 ## Configuring an app
 
@@ -331,6 +386,8 @@ document and its `community_post` row, so a trashed document's link closes at on
 | Browser builds | `NEXT_PUBLIC_COMMUNITY_API` (same default)                                                          |
 | App router     | `COMMUNITY_URL` var, for the Community page's head and the sitemap                                  |
 | Both           | The app's own `COMMUNITY_ENABLED` still switches its Community off                                  |
+| api Worker     | The sweep's door (`/api/internal/items/community-states`) takes the same `COMMUNITY_KEY` as bearer  |
+| The service    | `APP_ORIGIN_<APP>` vars: where each app answers the sweep's door. Unset, that app is not swept      |
 
 Without `COMMUNITY_KEY`, an app has no Community: it reports `communityEnabled: false`, and publishing
 answers 404. The service's own `COMMUNITY_ENABLED` (`false`, `0` or `off`) answers every route 404.
@@ -366,6 +423,10 @@ Secrets are set once per environment with `wrangler secret put` and survive ever
 `COMMUNITY_KEY_LIVEDESIGN` and `COMMUNITY_KEY_LIVEHUDDLE` (each `openssl rand -hex 32`), with the same value as that app's api Worker's
 `COMMUNITY_KEY`. An app whose key is not set yet answers its app routes 401 and has no Community, the others are
 unaffected.
+
+Its cron (`*/5 * * * *`, staging too) runs the sweep. The apps' origins it calls are plain vars in
+`apps/community/wrangler.toml` (`APP_ORIGIN_LIVEDIAGRAM` and the rest, each app's `www.` origin, staging's
+`staging.` ones), as the index's and the media service's are.
 
 ## Shared pieces
 
@@ -455,7 +516,8 @@ Measured against the real schema in SQLite, with 1,000 posts by 40 owners:
 | Like                  | 4 (one batch)                    | 28 B    |
 | Report                | 3                                | 0       |
 | Publish               | 6                                | 370 B   |
-| Sync of 500 documents | 1 batch of at most 4             | 0       |
+| Sync of 500 documents | 1 batch of at most 5             | 0       |
+| Sweep, per app        | 1 read, 1 batch of at most 6     | 0       |
 | Hidden since          | 1                                | 13 B    |
 
 - Every list and count is one indexed query per app (`posts (app, …, state, document_state, …)`). All Apps' list
@@ -475,6 +537,10 @@ Measured against the real schema in SQLite, with 1,000 posts by 40 owners:
 - The sync writes one statement per state, not per document, so a batch of 500 stays far inside D1's
   per-invocation query limit.
 - The app's minute cron is one indexed D1 read and one request when nothing changed.
+- **The sweep** (every five minutes) is, per app, one read of at most 100 posts on `idx_posts_checked (app,
+checked_at)` (migration 0006), one request to the app's door, whose index read is two statements of one bound
+  parameter each (`items` and `share_links` by primary key through `json_each`), and one batch: at most five sync
+  statements and one stamp, whatever the batch. Five apps make five subrequests a run, far inside a cron's budget.
 - **Cross-site**: the pages now read another origin. A read with a community key sends a custom
   header, so the browser preflights it once per URL (cached for a day by `Access-Control-Max-Age`);
   anonymous reads need none. Featured and facets are the same for everyone and served from the edge.

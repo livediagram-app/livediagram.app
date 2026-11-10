@@ -80,7 +80,6 @@ export const HELP_ARTICLES = {
   sankeyDiagram: 'palette/concept-graphics/sankey-diagram',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
   stacks: 'palette/stacks',
-  tabWindows: 'pages/tab-windows',
   conceptGraphics: 'palette/concept-graphics',
   palette: 'palette',
   // Settings
@@ -285,10 +284,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   stacks: {
     title: 'Learn about stacks',
     description: 'Rows, columns and grids that lay out what you drop in them.',
-  },
-  tabWindows: {
-    title: 'Learn about tab windows',
-    description: 'Show another tab live on a page, and keep it up to date.',
   },
   conceptGraphics: {
     title: 'Learn about concept graphics',

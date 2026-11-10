@@ -54,8 +54,9 @@ tools are where they belong.
   each in the colour and width the person gave it, [Drawing tools](../023-draw-mode/drawing-tools.md))
   and **Fill** (the **Fill** tool, a paint bucket in the colour the person gave it,
   [Drawing tools](../023-draw-mode/drawing-tools.md) "The Fill tool").
-- **Shapes**, every one; **Write**, **Text** for a wordmark and a **Sticky Note** for a comment on
-  the design; **Icons**, a glyph to start from; and **Media**, an **Image** to trace
+- **Shapes**, every one; **Write**, the **Title** and **Subtitle** text styles for a wordmark and
+  its tagline ([Canvas and palette](../008-canvas/canvas-and-palette.md#text-element) "Text styles") and a
+  **Sticky Note** for a comment on the design; **Icons**, a glyph to start from; and **Media**, an **Image** to trace
   or set the mark beside.
 - No charts, blocks, device frames, stickers or embeds: a logo has no use for them.
 

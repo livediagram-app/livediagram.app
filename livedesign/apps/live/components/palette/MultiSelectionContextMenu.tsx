@@ -17,6 +17,7 @@ import {
   supportsBorderRadius,
   supportsColours,
   supportsShadow,
+  textPresetOfElement,
   type BorderStroke,
   type BorderStyle,
   type ElementShadow,
@@ -62,6 +63,7 @@ import {
 } from '@/components/palette/context-menu-rows';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { TypographySections } from './TypographySections';
+import { TextStyleSection } from './TextStyleSection';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { ArrowPresetsSection, ShapePresetsSection, shapeSupportsPresets } from './PresetSections';
 import { MultiPlacementSections } from './MultiPlacementSections';
@@ -215,6 +217,11 @@ export function MultiSelectionContextMenu({
             // Only offer alignment when a member actually has text.
             ((el as { label?: string }).label ?? '').trim().length > 0,
         );
+        // Text Style (docs/specs/008-canvas/canvas-and-palette.md "Text styles") restyles the selection's texts;
+        // its pressed row reads off the first text with words.
+        const textStyleSrc = sel.find(
+          (el) => el.type === 'text' && (el.label ?? '').trim().length > 0,
+        );
         // The Style flyout shows when any of its children would — the
         // preset sections, Colours, or Border (docs/specs/008-canvas/canvas-and-palette.md, mirroring the
         // single-element menu's Style band).
@@ -313,6 +320,15 @@ export function MultiSelectionContextMenu({
                   the style band (no separator) like its single counterpart. ── */}
             {showTextFlyout ? (
               <MenuFlyoutSection title="Text" icon={<TextGlyph />} {...flyoutProps('text')}>
+                {textStyleSrc && props.onSetTextStyle && props.onPreviewTextStyle ? (
+                  <TextStyleSection
+                    current={textPresetOfElement(textStyleSrc)}
+                    section={sectionProps('m-text-style')}
+                    onSet={props.onSetTextStyle}
+                    onPreview={props.onPreviewTextStyle}
+                    onPreviewEnd={props.onPreviewStyleEnd}
+                  />
+                ) : null}
                 {alignSrc ? (
                   <TypographySections
                     currentFont={(alignSrc as { font?: string }).font ?? null}

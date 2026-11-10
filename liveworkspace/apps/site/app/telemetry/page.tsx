@@ -9,6 +9,7 @@ import {
   type TelemetryAppFilter,
   type TelemetryDisabled,
   type TelemetrySummary,
+  type TelemetryWindowKey,
 } from '@liveworkspace/telemetry';
 import { Footer } from '@/components/Footer';
 import { AppLogo, brandAppOf } from '@/components/landing/AppLogo';
@@ -60,6 +61,10 @@ export default function TelemetryDashboard() {
   // The filter rides in the URL (`?app=…`), so a link opens on it.
   const app = useSyncExternalStore(subscribeAppFilter, appFilterSnapshot, appFilterServerSnapshot);
   const pick = setAppFilter;
+  // The window (Today, Last 7 days, Last 30 days) lives here, above every dashboard, so picking another app keeps
+  // it: each dashboard below is a different component, and one holding its own window started again at Last 7
+  // days on every switch. A reload starts there too; the window is not in the URL.
+  const [period, setPeriod] = useState<TelemetryWindowKey>('last7');
   // Each filter's summary, once fetched: switching back is instant, and the service caches for
   // minutes anyway.
   const [summaries, setSummaries] = useState<Partial<Record<TelemetryAppFilter, Loaded>>>({});
@@ -163,17 +168,17 @@ export default function TelemetryDashboard() {
               />
             </div>
           ) : app === 'livediagram.app' ? (
-            <LivediagramBody summary={loaded} />
+            <LivediagramBody summary={loaded} active={period} onSelect={setPeriod} />
           ) : app === 'liveplanner.app' ? (
-            <LiveplannerBody summary={loaded} />
+            <LiveplannerBody summary={loaded} active={period} onSelect={setPeriod} />
           ) : app === 'livedocuments.app' ? (
-            <LivedocumentsBody summary={loaded} />
+            <LivedocumentsBody summary={loaded} active={period} onSelect={setPeriod} />
           ) : app === 'livedesign.app' ? (
-            <LivedesignBody summary={loaded} />
+            <LivedesignBody summary={loaded} active={period} onSelect={setPeriod} />
           ) : app === 'livehuddle.app' ? (
-            <LivehuddleBody summary={loaded} />
+            <LivehuddleBody summary={loaded} active={period} onSelect={setPeriod} />
           ) : (
-            <AllApps summary={loaded} onPickApp={pick} />
+            <AllApps summary={loaded} onPickApp={pick} active={period} onSelect={setPeriod} />
           )}
 
           <p className="mt-10 text-xs text-slate-500 dark:text-slate-400">

@@ -27,7 +27,9 @@ import {
 import type { Item } from '@liveworkspace/index-client';
 import { ItemIcon, type RenderThumbnail } from '@liveworkspace/explorer';
 import { PREVIEWS_PATH } from '@liveworkspace/sites/workspace-proxy';
-import { getResolvedAppearance, useAppearance, type Appearance } from '@livediagram/ui';
+import type { Appearance } from '@liveworkspace/ui/appearance-store';
+import { getResolvedAppearance } from '../appearance/appearance-store';
+import { useSiteAppearance } from '../appearance/appearance-hooks';
 import { workspaceToken } from './token';
 
 export const PREVIEW_CACHE_MAX = 200;
@@ -209,7 +211,7 @@ export function resetPreviews() {
 
 function Preview({ item, size }: { item: Item; size: 'row' | 'card' }) {
   // Redrawn when the reader switches appearance: its key (the address) names the other half then.
-  useAppearance();
+  useSiteAppearance();
   const key = keyOf(item);
   const listen = useCallback((l: () => void) => subscribe(key, l), [key]);
   const read = () => entries.get(key);

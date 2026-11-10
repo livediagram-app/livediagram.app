@@ -403,7 +403,9 @@ async function resolveShare(ctx: RouteContext, code: string): Promise<Response> 
   if (!row || row.trashed_at !== null) return notFound();
   const person = caller.person;
   if (person?.app && person.app !== row.app) return notFound();
-  let access: Access | Response | null = directAccess(row, person);
+  // A public link (a Community post's) opens at its own level for everyone, its author and their team included
+  // (access.ts accessTo).
+  let access: Access | Response | null = link.public ? null : directAccess(row, person);
   if (!access) {
     // The code is in the path, so the password header may come alone.
     const password = ctx.request.headers.get(SHARE_PASSWORD_HEADER) || null;

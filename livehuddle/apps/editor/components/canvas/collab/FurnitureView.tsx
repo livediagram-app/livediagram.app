@@ -239,11 +239,16 @@ export function FurnitureView({
         className="absolute inset-0 h-full w-full overflow-visible"
         role="img"
         aria-label={
-          !sits
-            ? noun
-            : occupied
-              ? `${noun}, ${sitters.map((s) => s.name).join(' and ')} sitting`
-              : `Empty ${noun.toLowerCase()}`
+          // A Podium is stood at, and named as before while nobody does (venue-pieces.md "Speaking from the Podium").
+          kind === 'podium'
+            ? occupied
+              ? `${noun}, ${sitters.map((s) => s.name).join(' and ')} speaking`
+              : noun
+            : !sits
+              ? noun
+              : occupied
+                ? `${noun}, ${sitters.map((s) => s.name).join(' and ')} sitting`
+                : `Empty ${noun.toLowerCase()}`
         }
       >
         {/* The ring rides inside the drawing's own frame, so a mirrored side mirrors it too. A moment kind's drawing

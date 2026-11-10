@@ -224,6 +224,9 @@ so a new page load starts on the page kind's landing.
 - A click (a tap) on it renames the tab in place, for someone who may change the
   design's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
 - Not on a phone: the top row is the strip's there.
+- The editor publishes the open tab's name and its rename to the box as the tab opens or is renamed, and clears
+  them as the editor closes (`usePublishTabName` and `usePublishTabRename` in `app/design/[id]/editor-state/useEditorTabs.ts`,
+  from `@liveworkspace/workbench`'s `active-tab-name-store`), as livedocuments does.
 
 ## The Explorer and the other panels
 

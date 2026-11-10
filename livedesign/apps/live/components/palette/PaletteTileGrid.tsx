@@ -1,5 +1,10 @@
 import { requestPaletteCategory } from '@/lib/palette-category-request';
-import type { ComponentKind, ShapeKind } from '@livedesign/design';
+import {
+  DEFAULT_TEXT_PRESET,
+  type ComponentKind,
+  type ShapeKind,
+  type TextPresetId,
+} from '@livedesign/design';
 import type { EmbedProvider } from '@livedesign/design';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
 import { tileCaption } from './tile-caption';
@@ -18,7 +23,7 @@ import { MarkerPaletteTile } from './MarkerPaletteTile';
 // to every grid.
 export type PaletteTileActions = {
   addShape: (kind: ShapeKind, opts?: AddShapeOptions) => void;
-  addText: () => void;
+  addText: (preset?: TextPresetId) => void;
   beginFreehand: () => void;
   beginHighlighter: () => void;
   beginShapePen: () => void;
@@ -70,7 +75,8 @@ export function tileHandler(
           name: tileCaption(def.label, def.caption),
         });
     case 'text':
-      return actions.addText;
+      // The style rides the intent, so a Heading tile places a heading.
+      return () => actions.addText(a.preset);
     case 'freehand':
       return actions.beginFreehand;
     case 'highlighter':
@@ -152,6 +158,12 @@ export function tileActive(
       return pendingDraw.type === 'video' && pendingDraw.provider === a.provider;
     case 'sticky':
       return pendingDraw.type === 'sticky';
+    // Every text style arms one `text` intent: matched on the style, or all seven would light up together.
+    case 'text':
+      return (
+        pendingDraw.type === 'text' &&
+        (pendingDraw.preset ?? DEFAULT_TEXT_PRESET) === (a.preset ?? DEFAULT_TEXT_PRESET)
+      );
     // Icon / sticker tiles DO arm (they ride the shape intent carrying their
     // glyph id), but their catalogues are open-ended and the picker tabs
     // render thousands of tiles, so pressed-state matching per glyph buys

@@ -45,11 +45,6 @@
  * broadcast), and every rule below is disabled under prefers-reduced-motion (see the media query at the end).
  */
 
-/* A window off screen holds still (TabWindowDrawing's useHoldOffscreen). */
-[data-tab-window-drawing][data-held] * {
-  animation-play-state: paused !important;
-}
-
 /* Vote-results walkthrough focus (docs/specs/012-collaboration/session-tools.md): the currently-reviewed top pick
  * pulses an amber halo so it stands out even on a busy canvas. Rides the
  * winner-ring overlay div (ring-2 amber), adding the breathing glow. */

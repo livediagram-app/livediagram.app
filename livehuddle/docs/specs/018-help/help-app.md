@@ -273,8 +273,8 @@ live. The pitch it opens with is the product's: a team **meets in a shared Space
 - **About and Getting Started** (Work Tracker #423 part 5) say what livehuddle is today: a Space a team walks into
   as characters, with rooms, presence and status, speech bubbles and reactions, comments, the Spaces templates and Blank
   Space, the Timer and Stopwatch, the facilitator, Bring Focus, Follow, and share links. They
-  name no workshop, retro, poll, quiz, deck, diagram or drawing tool, and they never say calls are on: proximity
-  audio is mentioned only as built and not switched on everywhere, linking to its article.
+  name no workshop, retro, poll, quiz, deck, diagram or drawing tool, and calls are described as on (switched
+  on in production 2026-11-05, [Proximity Audio](../012-collaboration/proximity-audio.md)), linking to its article.
 
 - **What was cut, and when.** Each cut in the [Build plan](../005-project-roadmap/build-plan.md) removed its feature's
   articles with its code: Diagram and Draw modes and their mode-only elements (step 5.1), Event Storming and

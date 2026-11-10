@@ -7,8 +7,8 @@
 // Opens three ways: hover on a pointer (CSS group-hover, the chevron fading in to say so), a tap on
 // the logo or the chevron on touch (the chevron always shown there, since nothing hovers), and the
 // chevron as a menu button from the keyboard (docs/specs/004-interface-design/menus.md). A tap on the
-// logo opens the card instead of following it, and the current site's row then leads where the logo
-// did, so home is two taps; a mouse click or Enter on the logo still follows it. Links are plain <a> to each site's
+// logo (a touch press, told by its pointerdown, so an iPad's trackpad still clicks) opens the card instead
+// of following it, and the current site's row then leads where the logo did, so home is two taps; a mouse click or Enter on the logo still follows it. Links are plain <a> to each site's
 // own origin: every site is a different one, at its home unless the header says where (`hrefFor`: the Explorer's
 // header keeps the person on the Explorer, @liveworkspace/sites explorerSwitchHref). Each product binds it to its app (its SiteSwitcher), whose
 // prism every row's mark is drawn in, tinted with that row's accent.
@@ -27,6 +27,7 @@ import {
   useSyncExternalStore,
   type CSSProperties,
   type MouseEvent,
+  type PointerEvent,
   type ReactNode,
 } from 'react';
 import { ChevronDownIcon } from './icons/navigation';
@@ -64,6 +65,8 @@ export function SiteSwitcher({
   // Where the logo leads, kept once a tap on it opened the card: the current site's row goes there instead.
   const [logoHref, setLogoHref] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  // The pointer that pressed the logo last, read at its click: iOS Safari's click from a tap can name a mouse.
+  const pressedWith = useRef<string | null>(null);
   const { attach, surfaceProps } = useMenu({
     open,
     onClose: close,
@@ -81,8 +84,13 @@ export function SiteSwitcher({
       : siteHrefFrom(site, hrefFor ? hrefFor(site) : site.url, host);
   // Captured before the logo's own handlers, so a framework link never starts its navigation. With the card open
   // the tap is left alone and follows the logo.
+  const onLogoPointerDown = (e: PointerEvent<HTMLElement>) => {
+    pressedWith.current = e.pointerType;
+  };
   const onLogoClick = (e: MouseEvent<HTMLElement>) => {
-    if (open || !isTouchTap(e.nativeEvent)) return;
+    const pointer = pressedWith.current;
+    pressedWith.current = null;
+    if (open || !isTouchTap(e.nativeEvent, pointer)) return;
     const link = e.target instanceof Element ? e.target.closest('a[href]') : null;
     if (!link || !e.currentTarget.contains(link)) return;
     e.preventDefault();
@@ -94,7 +102,7 @@ export function SiteSwitcher({
   return (
     <div ref={ref} className={`group/sites relative flex items-center ${className}`}>
       {/* No box of its own (an inline style, so no app's stylesheet has to generate it): the logo stays the flex item. */}
-      <span style={LOGO_SLOT} onClickCapture={onLogoClick}>
+      <span style={LOGO_SLOT} onPointerDownCapture={onLogoPointerDown} onClickCapture={onLogoClick}>
         {children}
       </span>
       <button

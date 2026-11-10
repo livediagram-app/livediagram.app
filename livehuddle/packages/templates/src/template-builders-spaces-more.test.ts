@@ -294,7 +294,8 @@ describe.each(TABS)('the %s Space', (_name, kind, build, first) => {
   it('keeps every aisle between seats wide enough to walk', () => {
     // The ten Spaces respaced for it; a Space added since adopts the rule when it is laid out.
     if (!ROOMY.includes(kind)) return;
-    const seats = all.filter((e) => seatsACharacter(e.shape));
+    // A Podium is held like a seat but stands on a stage, not in a row (venue-pieces.md "Speaking from the Podium").
+    const seats = all.filter((e) => seatsACharacter(e.shape) && e.shape !== 'podium');
     for (const [i, a] of seats.entries())
       for (const b of seats.slice(i + 1)) {
         const gx = Math.max(b.x - (a.x + a.width), a.x - (b.x + b.width));

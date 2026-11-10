@@ -108,6 +108,23 @@ export function formatUptime(percent: number): string {
   return `${Number(percent.toFixed(2))}%`;
 }
 
+/** "Last 90 Days": the stored window, for the uptime figures' names. */
+export function windowWords(days: number): string {
+  return days === 1 ? 'Last Day' : `Last ${days} Days`;
+}
+
+/** "99.95% Uptime, Last 90 Days": an uptime figure's name and tooltip. */
+export function uptimeLabel(percent: number, days: number): string {
+  return `${formatUptime(percent)} Uptime, ${windowWords(days)}`;
+}
+
+/** A group's uptime over the window, or the page's (`'all'`); null when the answer has none or no checks. */
+export function windowUptime(history: StatusHistory | null, groupId: string): number | null {
+  const u = history?.uptime;
+  if (!u) return null;
+  return (groupId === 'all' ? u.all : u.groups[groupId]) ?? null;
+}
+
 /** "45 min", "2 h 5 min", "3 d 4 h". */
 export function formatDuration(ms: number): string {
   const minutes = Math.max(1, Math.round(ms / 60_000));

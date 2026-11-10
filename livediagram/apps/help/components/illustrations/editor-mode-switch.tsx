@@ -4,7 +4,7 @@
 // across the top of the canvas (canvas/whiteboard/WhiteboardDock.tsx). Real labels throughout: the
 // three modes, a mode's description and tools, ⇧D in the preview, the dock's tools and their keys.
 
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { Scene, Label } from '@liveworkspace/help-site/art/primitives';
 import { ModeMark, type Mode } from './mode-mark';
 
@@ -19,6 +19,7 @@ const MODES: { mode: Mode; tile: string; mark: string }[] = [
  *  list of the three modes (the current one checked) and
  *  the preview of the one under the pointer, Draw: its picture, name with ⇧D, description and tools. */
 export function ModeSwitchScene() {
+  const band = `start-band-${useId().replace(/:/g, '')}`;
   const mx = 13;
   const my = 54;
   const listW = 118;
@@ -40,7 +41,49 @@ export function ModeSwitchScene() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
+      {/* The header band (docs/specs/007-editor/start-diagramming.md "The header band"): blueprint paper, a fine
+          grid with a heavier line every five squares, behind the title. */}
+      <clipPath id={band}>
+        <rect x={listW + 16} y={9} width={407 - listW - 16} height={38} rx={9} />
+      </clipPath>
+      <g aria-hidden clipPath={`url(#${band})`}>
+        <rect x={listW + 16} y={9} width={407 - listW - 16} height={38} className="fill-brand-50" />
+        {Array.from({ length: 24 }, (_, i) => (
+          <line
+            key={`v${i}`}
+            x1={listW + 16 + i * 12}
+            y1={9}
+            x2={listW + 16 + i * 12}
+            y2={47}
+            className={i % 5 ? 'stroke-brand-100' : 'stroke-brand-200'}
+            strokeWidth={i % 5 ? 0.6 : 1}
+          />
+        ))}
+        {[0, 1, 2, 3].map((i) => (
+          <line
+            key={`h${i}`}
+            x1={listW + 16}
+            y1={9 + i * 12}
+            x2={407}
+            y2={9 + i * 12}
+            className="stroke-brand-100"
+            strokeWidth={0.6}
+          />
+        ))}
+      </g>
       <rect x={13} y={9} width={listW + 12} height={38} rx={9} className="fill-slate-50" />
+      {/* The title mark: a registration mark. */}
+      <g aria-hidden transform={`translate(${listW + 34} 17)`}>
+        <rect width={22} height={22} rx={6} className="fill-brand-100 stroke-brand-200" />
+        <circle cx={11} cy={11} r={5} fill="none" className="stroke-brand-600" strokeWidth={1.4} />
+        <path
+          d="M11 3v4.5M11 14.5V19M3 11h4.5M14.5 11H19"
+          fill="none"
+          className="stroke-brand-600"
+          strokeWidth={1.4}
+          strokeLinecap="round"
+        />
+      </g>
       <g transform="translate(29 28)">
         <ModeMark mode="Diagram" className="stroke-brand-600" scale={0.5} />
       </g>
@@ -55,10 +98,10 @@ export function ModeSwitchScene() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <Label x={listW + 40} y={23} size={11.5} weight={600} tone="strong">
+      <Label x={listW + 64} y={23} size={11.5} weight={800} tone="strong">
         Start Diagramming
       </Label>
-      <Label x={listW + 40} y={37} size={9} tone="muted">
+      <Label x={listW + 64} y={37} size={9} tone="muted">
         Pick a template, or close this to start blank.
       </Label>
       {/* The menu, hanging below the switch */}

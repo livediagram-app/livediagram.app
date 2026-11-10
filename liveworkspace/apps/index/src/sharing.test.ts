@@ -805,6 +805,50 @@ describe('what a link opens, and Shared with me', () => {
     );
   });
 
+  // A Community post's link is a viewing surface for its author too: their own access does not open the post's
+  // view (the embed on the post's page, the viewer) for editing.
+  it('opens a public link at its own level for the owner, and for a signed-out visitor', async () => {
+    const ada = await person('user_a');
+    const item = await makeItem(ada.auth);
+    const link = await share(ada.auth, item.id, { level: 'view', public: true });
+    const viaLink = { 'X-Share-Code': link.code };
+    const grantOf = async (auth: string | undefined, headers: Record<string, string> = {}) => {
+      const res = await call(`/items/${item.id}/grant`, { method: 'POST', auth, headers });
+      expect(res.status).toBe(200);
+      return decodeJwt((await body<{ grant: string }>(res)).grant);
+    };
+    expect(await grantOf(ada.auth, viaLink)).toMatchObject({
+      sub: 'user_a',
+      level: 'view',
+      link: link.code,
+    });
+    expect(await grantOf(undefined, viaLink)).toMatchObject({
+      sub: `link:${link.code}`,
+      level: 'view',
+    });
+    expect(
+      await body<{ level: string; item: Item }>(
+        await call(`/share/${link.code}`, { auth: ada.auth }),
+      ),
+    ).toMatchObject({ level: 'view', public: true, item: { access: 'view' } });
+    // An edit through the link is refused, even the owner's.
+    const rename = await call(`/items/${item.id}`, {
+      method: 'PATCH',
+      auth: ada.auth,
+      headers: viaLink,
+      body: { title: 'Changed' },
+    });
+    expect(rename.status).toBe(403);
+    // Their own document, without the link, is theirs to edit as ever.
+    expect(await grantOf(ada.auth)).toMatchObject({ level: 'edit' });
+    expect(await grantOf(ada.auth)).not.toHaveProperty('link');
+    // An ordinary link of theirs still opens as their own.
+    const plain = await share(ada.auth, item.id, { level: 'view' });
+    expect(await grantOf(ada.auth, { 'X-Share-Code': plain.code })).toMatchObject({
+      level: 'edit',
+    });
+  });
+
   it('forgets a shared item on request', async () => {
     const ada = await person('user_a');
     const bob = await person('user_b');

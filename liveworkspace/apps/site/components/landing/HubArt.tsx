@@ -21,37 +21,38 @@ const HUB: Point = { x: 300, y: 250 };
 // hold on a liveplanner board (which draws no cursors), a character walking a livehuddle Space.
 type Worker = { name: string; colour: string; at: string; shows: 'cursor' | 'card' | 'character' };
 
-// Where each app sits, what it makes, and who is at work in it.
+// Where each app sits, what it makes, and who is at work in it. `glow` places the soft wash of the app's colour
+// behind its corner: a box twice the old blurred disc's size, centred where that disc was, that GLOW fades out.
 const PLACES: Partial<Record<SiteId, { at: Point; makes: string; glow: string; worker: Worker }>> =
   {
     'livediagram.app': {
       at: { x: 300, y: 62 },
       makes: 'Diagrams · whiteboards · mind maps',
-      glow: 'top-[-6%] left-[29%] bg-sky-400/25 dark:bg-sky-500/20',
+      glow: 'top-[-27%] left-[8%] from-sky-400/22 dark:from-sky-500/17',
       worker: { name: 'Ada', colour: '#0369a1', at: 'top-[20%] left-[56%]', shows: 'cursor' },
     },
     'liveplanner.app': {
       at: { x: 506, y: 200 },
       makes: 'Boards · sheets · forms',
-      glow: 'top-[18%] right-[-4%] bg-violet-400/25 dark:bg-violet-500/20',
+      glow: 'top-[-3%] right-[-25%] from-violet-400/22 dark:from-violet-500/17',
       worker: { name: 'Sam', colour: '#7c3aed', at: 'top-[55%] left-[77%]', shows: 'card' },
     },
     'livedocuments.app': {
       at: { x: 430, y: 420 },
       makes: 'Articles · slides · infographics',
-      glow: 'right-[4%] bottom-[-4%] bg-amber-400/25 dark:bg-amber-500/15',
+      glow: 'right-[-17%] bottom-[-25%] from-amber-400/22 dark:from-amber-500/13',
       worker: { name: 'Lena', colour: '#b45309', at: 'top-[66%] left-[60%]', shows: 'cursor' },
     },
     'livedesign.app': {
       at: { x: 170, y: 420 },
       makes: 'Logos · wireframes · photos',
-      glow: 'bottom-[-4%] left-[4%] bg-rose-400/25 dark:bg-rose-500/15',
+      glow: 'bottom-[-25%] left-[-17%] from-rose-400/22 dark:from-rose-500/13',
       worker: { name: 'Kai', colour: '#be123c', at: 'top-[66%] left-[22%]', shows: 'cursor' },
     },
     'livehuddle.app': {
       at: { x: 94, y: 200 },
       makes: 'Spaces · rooms · calls',
-      glow: 'top-[18%] left-[-4%] bg-emerald-400/25 dark:bg-emerald-500/20',
+      glow: 'top-[-3%] left-[-25%] from-emerald-400/22 dark:from-emerald-500/17',
       worker: { name: 'Ana', colour: '#047857', at: 'top-[52%] left-[12%]', shows: 'character' },
     },
   };
@@ -68,9 +69,16 @@ function curve(from: Point, to: Point) {
 
 // Each app's card, a link to its site. It lifts a little and rings in the app's accent (`--lw-accent`)
 // on hover, and stops floating while pointed at or focused (landing-motion.css), so it holds still
-// under the pointer.
+// under the pointer. Near-opaque rather than frosted: nothing over the art takes a `backdrop-filter`, whose layers
+// re-sample the art when iPad Safari repaints under a touch (site.md "The front door", Paint).
 const CARD =
-  'lw-float group absolute -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/70 bg-white/85 px-4 py-3 shadow-xl shadow-slate-900/10 backdrop-blur-md transition-[scale,box-shadow] max-sm:px-2.5 max-sm:py-2 duration-micro ease-out hover:scale-[1.04] hover:shadow-2xl hover:ring-2 hover:ring-[var(--lw-accent)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--lw-accent)] motion-reduce:hover:scale-100 dark:border-slate-700/80 dark:bg-slate-900/85 dark:shadow-black/40';
+  'lw-float group absolute -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/70 bg-white/95 px-4 py-3 shadow-xl shadow-slate-900/10 transition-[scale,box-shadow] max-sm:px-2.5 max-sm:py-2 duration-micro ease-out hover:scale-[1.04] hover:shadow-2xl hover:ring-2 hover:ring-[var(--lw-accent)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--lw-accent)] motion-reduce:hover:scale-100 dark:border-slate-700/80 dark:bg-slate-900/95 dark:shadow-black/40';
+
+// Each app's glow: a radial gradient from its colour to nothing at the box's edge. Never a `filter` blur: iPad Safari
+// re-rasterises a large blur in tiles when it repaints under a touch (a long press, a press-and-drag scroll), and
+// its colours broke there (liveworkspace/docs/specs/010-site/site.md "The front door", Paint). A gradient paints the
+// same in every layer, and costs a fill rather than a 64px blur.
+const GLOW = 'pointer-events-none absolute size-[84%] bg-radial-[closest-side] to-transparent';
 
 export function HubArt() {
   const apps = listedApps().flatMap((app) => {
@@ -83,11 +91,7 @@ export function HubArt() {
       className="relative mx-auto aspect-[6/5] w-full max-w-xl select-none"
     >
       {apps.map(({ app, place }) => (
-        <div
-          key={app.id}
-          aria-hidden
-          className={`absolute size-[42%] rounded-full blur-3xl ${place.glow}`}
-        />
+        <div key={app.id} aria-hidden data-hero-glow className={`${GLOW} ${place.glow}`} />
       ))}
 
       <svg

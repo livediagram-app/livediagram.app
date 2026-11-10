@@ -1,13 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  appendHistory,
-  type CheckResult,
-  HISTORY_MAX,
-  median,
-  runProbe,
-  summarise,
-  viewServices,
-} from './probe';
+import { type CheckResult, median, runProbe, summarise, viewServices } from './probe';
 import { allServices, statusGroups, type Probe } from '@liveworkspace/status';
 
 // liveworkspace/docs/specs/010-site/site.md "Status": what each answer means.
@@ -132,14 +124,6 @@ describe('the page’s reading of the results', () => {
     const slow = everything('up');
     slow.set('livedesign:api', [result('slow', 2000)]);
     expect(summarise(services, viewServices(services, slow)).overall).toBe('slow');
-  });
-
-  it('keeps at most HISTORY_MAX checks per service', () => {
-    let history: Map<string, CheckResult[]> = new Map();
-    for (let i = 0; i < HISTORY_MAX + 5; i++)
-      history = appendHistory(history, new Map([['a', { ...result('up'), at: i }]]));
-    expect(history.get('a')).toHaveLength(HISTORY_MAX);
-    expect(history.get('a')?.[0]?.at).toBe(5);
   });
 
   it('takes the median answer time', () => {

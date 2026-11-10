@@ -7,6 +7,7 @@ import {
   buildDrawnBoxed,
   buildDrawnComponent,
   NEW_ARROW_THEME_STROKE_FALLBACK,
+  presetTextAt,
 } from './draw-commit';
 
 // Only the fields the builders read; the full ThemeDefinition carries a
@@ -116,7 +117,8 @@ describe('buildDrawnComponent', () => {
 describe('buildDrawnBoxed', () => {
   const shapeIntent = { type: 'shape', kind: 'square' } as const;
 
-  it('keeps a text box at its default size, whatever the tab opens in', () => {
+  // docs/specs/008-canvas/canvas-and-palette.md "Text styles".
+  it('taps a text down as a left-aligned Paragraph centred on the tap, whatever the tab opens in', () => {
     const out = buildDrawnBoxed(
       { type: 'text' },
       500,
@@ -126,8 +128,58 @@ describe('buildDrawnBoxed', () => {
       null,
       tab({ opensIn: 'pages' }),
     );
-    expect(out).toMatchObject({ label: 'Text', width: 220, height: 64 });
-    expect(out).not.toHaveProperty('sizing');
+    expect(out).toMatchObject({
+      label: 'Paragraph',
+      width: 320,
+      textSize: 16,
+      sizing: 'wrap',
+      textAlignX: 'left',
+      textAlignY: 'top',
+    });
+    expect(out.x).toBe(500 - 160);
+  });
+
+  it("taps a style down at its own size: never the selection's, never the tab's", () => {
+    const sized = {
+      id: 's',
+      type: 'shape',
+      shape: 'square',
+      x: 0,
+      y: 0,
+      width: 50,
+      height: 20,
+    } as Element;
+    const out = buildDrawnBoxed(
+      { type: 'text', preset: 'heading' },
+      0,
+      0,
+      1,
+      1,
+      sized,
+      tab({ defaultTextSize: 'sm' }),
+    );
+    expect(out).toMatchObject({ label: 'Heading', textSize: 32, textBold: true, sizing: 'fit' });
+    expect(out.width).not.toBe(50);
+  });
+
+  it('wraps a dragged style at the dragged width', () => {
+    const out = buildDrawnBoxed({ type: 'text', preset: 'title' }, 10, 20, 410, 200, null, tab());
+    expect(out).toMatchObject({
+      x: 10,
+      y: 20,
+      width: 400,
+      sizing: 'wrap',
+      textSize: 40,
+      textAlignX: 'left',
+    });
+  });
+
+  it('places a text style centred on a point, a Paragraph by default', () => {
+    const caption = presetTextAt(100, 100, 'caption');
+    expect(caption).toMatchObject({ label: 'Caption', textSize: 12, sizing: 'fit' });
+    expect(caption.x + caption.width / 2).toBe(100);
+    expect(caption.y + caption.height / 2).toBe(100);
+    expect(presetTextAt(0, 0)).toMatchObject({ label: 'Paragraph' });
   });
 
   it('centres the factory-default size on a tap', () => {

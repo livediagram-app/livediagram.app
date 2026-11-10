@@ -40,7 +40,8 @@ it fades), and the page under it slides up; returning to Home unfolds it again, 
 once. While folding away it takes no focus.
 
 The hero's top right holds Home's **Help** link ([Contextual help links](../018-help/contextual-help-links.md)). On a
-phone (below `sm`) its top left holds the menu button that opens the sections drawer.
+phone (below `sm`) the sections bar above the hero opens the sidebar's drawer, and the hero has no menu button of its
+own ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "The sidebar", On a phone).
 
 ## Hiding the banner
 
@@ -51,8 +52,7 @@ in on. It folds away as it does on leaving Home. **Settings > Explorer > Show Ho
 Either flip reports `UI / Toggled / HomeBannerOff` or `HomeBannerOn` before the preference is written.
 
 With the banner hidden, Home is drawn like every other Explorer page: the header's search field is drawn on Home too,
-and Home takes the ordinary page header (the title "Home", its Help link and, on a phone, the menu button), so it
-keeps its `h1`.
+and Home takes the ordinary page header (the title "Home" and its Help link), so it keeps its `h1`.
 
 ## What Happened
 

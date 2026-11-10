@@ -3,6 +3,13 @@
 // query stays simple and the response is cacheable.
 
 import type { TelemetryAppFilter, TelemetrySender } from './apps';
+import {
+  addAudienceCount,
+  addAudienceDay,
+  audienceKeyOf,
+  emptyAudience,
+  type TelemetryAudience,
+} from './audience';
 
 export type TelemetryWindowKey = 'today' | 'last7' | 'last30';
 
@@ -55,6 +62,9 @@ export type TelemetrySummary = {
   previousWindows?: Record<TelemetryWindowKey, TelemetryWindow>;
   // Present whenever `enabled` is true.
   daily?: TelemetryDaily;
+  // New and returning visitors, sign-ups and sign-ins, per app (audience.ts). Optional for the same reason as
+  // `byApp`.
+  audience?: TelemetryAudience<TelemetryWindowKey>;
 };
 
 // The disabled answer: the service is up but storing and serving nothing.
@@ -124,6 +134,7 @@ export function buildTelemetrySummary(
     ) as Record<TelemetryWindowKey, Bucket>;
   const windowRows = emptyBuckets();
   const previousRows = emptyBuckets();
+  const audience = emptyAudience(apps, keys, SERIES_DAYS);
   const addTo = (bucket: Bucket, key: string, row: TelemetryDailyRow) => {
     bucket.byApp[row.app] = (bucket.byApp[row.app] ?? 0) + row.count;
     const prev = bucket.rows.get(key);
@@ -147,14 +158,18 @@ export function buildTelemetrySummary(
 
   for (const row of dailyRows) {
     const key = metricKey(row.category, row.action, row.type);
+    // One map lookup a row; only the five audience events go further.
+    const aud = audienceKeyOf(row.category, row.action, row.type);
     // Days from the series start: 0..29 inside the series, negative before it.
     const offset = Math.round((Date.parse(`${row.day}T00:00:00Z`) - since) / DAY_MS);
     if (offset < 0) {
       // Only the span just before each window, for the trend arrows.
       for (const k of keys) {
         const n = TELEMETRY_WINDOW_DAYS[k];
-        if (offset >= SERIES_DAYS - 2 * n && offset < SERIES_DAYS - n)
+        if (offset >= SERIES_DAYS - 2 * n && offset < SERIES_DAYS - n) {
           addTo(previousRows[k], key, row);
+          if (aud) addAudienceCount(audience.previousWindows[k], row.app, aud, row.count);
+        }
       }
       continue;
     }
@@ -164,11 +179,18 @@ export function buildTelemetrySummary(
     bump(byCategory, row.category, idx, row.count);
     bump(byMetric, key, idx, row.count);
     bump(byApp, row.app, idx, row.count);
+    if (aud) addAudienceDay(audience, row.app, aud, idx, row.count, SERIES_DAYS);
     for (const k of keys) {
       const n = TELEMETRY_WINDOW_DAYS[k];
-      if (idx >= SERIES_DAYS - n) addTo(windowRows[k], key, row);
+      if (idx >= SERIES_DAYS - n) {
+        addTo(windowRows[k], key, row);
+        if (aud) addAudienceCount(audience.windows[k], row.app, aud, row.count);
+      }
       // The previous span of a short window sits inside the series.
-      else if (idx >= SERIES_DAYS - 2 * n) addTo(previousRows[k], key, row);
+      else if (idx >= SERIES_DAYS - 2 * n) {
+        addTo(previousRows[k], key, row);
+        if (aud) addAudienceCount(audience.previousWindows[k], row.app, aud, row.count);
+      }
     }
   }
 
@@ -192,5 +214,6 @@ export function buildTelemetrySummary(
     windows: windows(windowRows),
     previousWindows: windows(previousRows),
     daily: { days, totals, byCategory, byMetric, byApp },
+    audience,
   };
 }

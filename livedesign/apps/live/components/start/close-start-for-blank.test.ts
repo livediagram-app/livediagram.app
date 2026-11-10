@@ -8,7 +8,7 @@ afterEach(() => localStorage.clear());
 
 describe('closeStartForBlank', () => {
   it('closes the start of a blank', () => {
-    expect(closeStartForBlank('t', 'blank-illustration')).toBe(true);
+    expect(closeStartForBlank('t', 'blank')).toBe(true);
     expect(emptyCardDismissed('t:pages')).toBe(true);
     expect(closeStartForBlank('u', 'blank-wireframe-phone')).toBe(true);
     expect(emptyCardDismissed('u:pages')).toBe(true);

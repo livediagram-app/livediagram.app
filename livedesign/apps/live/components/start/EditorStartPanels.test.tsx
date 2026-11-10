@@ -6,7 +6,7 @@ import { emptyCardDismissed } from '@liveworkspace/workbench/components/canvas/e
 import type { TemplateKind } from '@livedesign/templates';
 import { EditorStartPanels } from './EditorStartPanels';
 
-// docs/specs/007-editor/start-diagramming.md "The first page": Blank Illustration lands nothing, so picking it closes
+// docs/specs/007-editor/start-diagramming.md "The first page": picking a blank closes
 // the start as the × does; a template with content leaves the start to go with the emptiness.
 
 const chooseTemplate = vi.fn(async (_kind: TemplateKind) => {});
@@ -38,7 +38,7 @@ vi.mock('next/dynamic', () => ({
     function Start(props: { onTemplate: (kind: TemplateKind) => void }): ReactNode {
       return (
         <>
-          <button onClick={() => props.onTemplate('blank-illustration')}>Blank Illustration</button>
+          <button onClick={() => props.onTemplate('blank-logo')}>Blank Logo</button>
           <button onClick={() => props.onTemplate('logo-design')}>Logo Design</button>
         </>
       );
@@ -52,11 +52,11 @@ afterEach(() => {
 });
 
 describe('EditorStartPanels picking a template', () => {
-  it('Blank Illustration closes the start and still applies the pick', () => {
+  it('a blank closes the start and still applies the pick', () => {
     render(<EditorStartPanels />);
-    fireEvent.click(screen.getByText('Blank Illustration'));
+    fireEvent.click(screen.getByText('Blank Logo'));
     expect(emptyCardDismissed('t1:pages')).toBe(true);
-    expect(chooseTemplate).toHaveBeenCalledWith('blank-illustration');
+    expect(chooseTemplate).toHaveBeenCalledWith('blank-logo');
   });
 
   it('a template with content leaves the start open, for its content to close', () => {

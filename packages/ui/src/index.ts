@@ -71,7 +71,6 @@ export {
   SOLID_BRAND_DARK,
   SOLID_BRAND_DARK_CONTROL,
 } from './brand-classes';
-export { CONTRIBUTORS } from './contributors';
 export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from './relative-time';
 export * from './random-uuid-boot';
 export { useMediaQuery, PREFERS_REDUCED_MOTION } from './useMediaQuery';

@@ -11,7 +11,13 @@ import {
   parseCallTrack,
   parseStoredLevel,
 } from '@livehuddle/api-schema';
-import { callStages, roomZones, type CallLevel, type Element } from '@livehuddle/document';
+import {
+  callLecterns,
+  callStages,
+  roomZones,
+  type CallLevel,
+  type Element,
+} from '@livehuddle/document';
 import {
   hearingVerdict,
   mayLetSpeakNow,
@@ -67,7 +73,7 @@ export function tabCallsOf(data: string): TabCalls {
   // No layers (docs/specs/006-document/layers.md): a room saved on a hidden layer counts like any other.
   const elements = tab.elements as Element[];
   const zones = roomZones(elements);
-  return { zones, stages: callStages(elements, zones) };
+  return { zones, stages: callStages(elements, zones), lecterns: callLecterns(elements) };
 }
 
 const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);

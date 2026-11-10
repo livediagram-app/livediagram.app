@@ -4,6 +4,11 @@ import {
   lucideStickyNote,
   lucideTable,
   lucideType,
+  lucideLetterText,
+  lucideHeading1,
+  lucideHeading2,
+  lucidePilcrow,
+  lucideQuote,
 } from '@liveworkspace/icons/lucide';
 import { Glyph, Prims } from '@livedesign/ui';
 import { CodeBlockTileArt } from '@liveworkspace/workbench/components/palette/embed-tile-art';
@@ -42,19 +47,107 @@ export const TOOL_TILES: PaletteTileDef[] = [
       </Glyph>
     ),
   },
+  // --- Write: the text styles (docs/specs/008-canvas/canvas-and-palette.md "Text styles") ---------------
   {
-    id: 'tools:text',
-    blurb: 'A free-standing text label',
+    id: 'tools:text-title',
+    blurb: 'The name at the top of a screen',
     section: 'tools',
     toolGroup: 'write',
-    label: 'Add Text',
-    description: 'Text element. Double-click to edit.',
-    shortcut: 'T',
-    dividerAfter: true,
-    action: { type: 'text' },
+    label: 'Add Title',
+    description: 'Title text. Large and bold, left aligned. Double-click to edit.',
+    action: { type: 'text', preset: 'title' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
         <Prims prims={lucideType} />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'tools:text-subtitle',
+    blurb: 'A line under the title',
+    section: 'tools',
+    toolGroup: 'write',
+    label: 'Add Subtitle',
+    description: 'Subtitle text. A quieter line under a title, left aligned.',
+    action: { type: 'text', preset: 'subtitle' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideLetterText} />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'tools:text-heading',
+    blurb: 'Starts a section',
+    section: 'tools',
+    toolGroup: 'write',
+    label: 'Add Heading',
+    description: 'Heading text. Bold, to start a section, left aligned.',
+    action: { type: 'text', preset: 'heading' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideHeading1} />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'tools:text-subheading',
+    blurb: 'Splits a section up',
+    section: 'tools',
+    toolGroup: 'write',
+    label: 'Add Subheading',
+    description: 'Subheading text. Smaller and bold, within a section, left aligned.',
+    action: { type: 'text', preset: 'subheading' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideHeading2} />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'tools:text-paragraph',
+    blurb: 'Body text that wraps',
+    section: 'tools',
+    toolGroup: 'write',
+    label: 'Add Paragraph',
+    description: 'Paragraph text. Body copy that wraps at its width, left aligned.',
+    shortcut: 'T',
+    action: { type: 'text', preset: 'paragraph' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucidePilcrow} />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'tools:text-quote',
+    blurb: 'A line worth pulling out',
+    section: 'tools',
+    toolGroup: 'write',
+    label: 'Add Quote',
+    description: 'Quote text. Italic, to pull a line out of the body, left aligned.',
+    action: { type: 'text', preset: 'quote' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideQuote} />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'tools:text-caption',
+    blurb: 'Small print under a picture',
+    section: 'tools',
+    toolGroup: 'write',
+    label: 'Add Caption',
+    description: 'Caption text. Small print for a picture, a field or a footer, left aligned.',
+    dividerAfter: true,
+    action: { type: 'text', preset: 'caption' },
+    icon: (
+      // A picture with its line of small print beneath, on Lucide's 24 grid.
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <rect x="3" y="3" width="18" height="12" rx="2" />
+        <path d="m3 13 5-4.5 4 3.5 3-2.5 6 4.5" />
+        <path d="M6 19.5h12" />
       </Glyph>
     ),
   },

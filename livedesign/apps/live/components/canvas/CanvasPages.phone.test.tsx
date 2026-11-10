@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // A page's title bar on a phone (docs/specs/007-editor/pages-mode.md "Beside the cog", "On a phone"): a wireframe
-// page's Device, Layout and Background gather under Appearance, whose rows open each control's own sheet; no lock and
+// page's Frame, Layout and Background gather under Appearance, whose rows open each control's own sheet; no lock and
 // no page label. A desktop keeps the full bar; a Participant or Viewer sees no controls.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -58,7 +58,7 @@ describe("a wireframe page's title bar on a phone", () => {
     expect(label(container)?.className).toContain('hidden');
   });
 
-  it("opens Device, Layout or Background from Appearance's rows", () => {
+  it("opens Frame, Layout or Background from Appearance's rows", () => {
     render(<CanvasPages view={view(true)} zoom={1} />);
     fireEvent.click(screen.getByRole('button', { name: 'Appearance' }));
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'PageAppearance');
@@ -68,6 +68,7 @@ describe("a wireframe page's title bar on a phone", () => {
         r.getAttribute('data-appearance-row'),
       ),
     ).toEqual(['device', 'layout', 'background']);
+    expect(sheet.querySelector('[data-appearance-row="device"]')?.textContent).toContain('Frame');
     fireEvent.click(sheet.querySelector('[data-appearance-row="background"]')!);
     expect(screen.queryByRole('dialog', { name: 'Appearance' })).toBeNull();
     expect(screen.getByRole('dialog', { name: 'Background' })).toBeTruthy();
@@ -106,13 +107,13 @@ describe("a phone's Appearance for a selection", () => {
 });
 
 describe("a wireframe page's title bar on a desktop", () => {
-  it('keeps Device, Layout, Background and the lock, with no Appearance', () => {
+  it('keeps Frame, Layout, Background and the lock, with no Appearance', () => {
     phone.on = false;
     const { container } = render(<CanvasPages view={view(true)} zoom={1} />);
     expect(label(container)?.className ?? 'missing').not.toMatch(/\bhidden\b|missing/);
     const shown = names();
     expect(shown).not.toContain('Appearance');
-    for (const name of ['Layout', 'Background', 'Lock page', 'Page settings'])
+    for (const name of ['Frame: iPhone', 'Layout', 'Background', 'Lock page', 'Page settings'])
       expect(shown).toContain(name);
   });
 });

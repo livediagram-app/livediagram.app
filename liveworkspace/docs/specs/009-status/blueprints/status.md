@@ -6,22 +6,22 @@ ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `STn`. Paths are relative to
 
 Scope, by file:
 
-| File                                                   | Role                                                                                                                                |
-| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/status/src/index.ts`               | The Worker: `fetch` hands `/api/status*` to `handleRead`, 404 elsewhere; `scheduled` runs `runOnce`                                 |
-| `liveworkspace/apps/status/src/config.ts`              | `DAY_MS`, `RETENTION_DAYS`, `RETENTION_MS`, `PROBE_CONCURRENCY`, `CACHE_SECONDS`, `USER_AGENT`                                      |
-| `liveworkspace/apps/status/src/env.ts`                 | `Env`: `ENVIRONMENT`, `PLATFORM_ORIGIN`, `STATUS_DB`, `READ_RATE_LIMITER`                                                           |
-| `liveworkspace/apps/status/src/run.ts`                 | `runOnce`: probe, one read batch, the fold, one write batch; `probeTargets`, `environmentOfWorker`                                  |
-| `liveworkspace/apps/status/src/probe.ts`               | `probeOne` (timeout, never a body), `pooled`, `probeAll`                                                                            |
-| `liveworkspace/apps/status/src/rollup.ts`              | `rollupDay`, `percentile` (nearest rank), `uptimeTenths`                                                                            |
-| `liveworkspace/apps/status/src/incidents.ts`           | `stepIncidents`: open, extend, close                                                                                                |
-| `liveworkspace/apps/status/src/snapshot.ts`            | `buildLatest`, `buildHistory`, `latestEntry`                                                                                        |
-| `liveworkspace/apps/status/src/api.ts`                 | `handleRead`, `parseDays`: the two reads, the edge cache, the limiter                                                               |
-| `liveworkspace/apps/status/scripts/seed.ts`            | `seed:local`: 90 made-up days through the Worker's own code, into the local D1 only                                                 |
-| `liveworkspace/apps/status/migrations/0001_status.sql` | `checks`, `daily`, `incidents`, `snapshots`                                                                                         |
-| `liveworkspace/packages/status/src/services.ts`        | `statusGroups`, `allServices`, `probedServices`, `resolveProbeUrl`, `appOrigin`, `mcpOrigin`, `environmentOf`                       |
-| `liveworkspace/packages/status/src/judge.ts`           | `SLOW_MS`, `TIMEOUT_MS`, `judgeAnswer`, `stateOf`, `deriveResults`, `worse`                                                         |
-| `liveworkspace/packages/status/src/wire.ts`            | Paths, `HISTORY_DAYS`, `INCIDENTS_MAX`, `LETTER`, the wire types, day helpers, `sliceHistory`, `parseStatusHistory`, `emptyHistory` |
+| File                                                   | Role                                                                                                                                                                                 |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `liveworkspace/apps/status/src/index.ts`               | The Worker: `fetch` hands `/api/status*` to `handleRead`, 404 elsewhere; `scheduled` runs `runOnce`                                                                                  |
+| `liveworkspace/apps/status/src/config.ts`              | `DAY_MS`, `RETENTION_DAYS`, `RETENTION_MS`, `PROBE_CONCURRENCY`, `CACHE_SECONDS`, `USER_AGENT`                                                                                       |
+| `liveworkspace/apps/status/src/env.ts`                 | `Env`: `ENVIRONMENT`, `PLATFORM_ORIGIN`, `STATUS_DB`, `READ_RATE_LIMITER`                                                                                                            |
+| `liveworkspace/apps/status/src/run.ts`                 | `runOnce`: probe, one read batch, the fold, one write batch; `probeTargets`, `environmentOfWorker`                                                                                   |
+| `liveworkspace/apps/status/src/probe.ts`               | `probeOne` (timeout, never a body), `pooled`, `probeAll`                                                                                                                             |
+| `liveworkspace/apps/status/src/rollup.ts`              | `rollupDay`, `percentile` (nearest rank), `uptimeTenths`                                                                                                                             |
+| `liveworkspace/apps/status/src/incidents.ts`           | `stepIncidents`: open, extend, close                                                                                                                                                 |
+| `liveworkspace/apps/status/src/snapshot.ts`            | `buildLatest`, `buildHistory`, `latestEntry`                                                                                                                                         |
+| `liveworkspace/apps/status/src/api.ts`                 | `handleRead`, `parseDays`: the two reads, the edge cache, the limiter                                                                                                                |
+| `liveworkspace/apps/status/scripts/seed.ts`            | `seed:local`: 90 made-up days through the Worker's own code, into the local D1 only                                                                                                  |
+| `liveworkspace/apps/status/migrations/0001_status.sql` | `checks`, `daily`, `incidents`, `snapshots`                                                                                                                                          |
+| `liveworkspace/packages/status/src/services.ts`        | `statusGroups`, `allServices`, `probedServices`, `resolveProbeUrl`, `appOrigin`, `mcpOrigin`, `environmentOf`                                                                        |
+| `liveworkspace/packages/status/src/judge.ts`           | `SLOW_MS`, `TIMEOUT_MS`, `judgeAnswer`, `stateOf`, `deriveResults`, `worse`                                                                                                          |
+| `liveworkspace/packages/status/src/wire.ts`            | Paths, `HISTORY_DAYS`, `INCIDENTS_MAX`, `LETTER`, the wire types, day helpers, `uptimePercent`, `poolUptime`, `groupOfService`, `sliceHistory`, `parseStatusHistory`, `emptyHistory` |
 
 ## Domain and naming
 
@@ -120,7 +120,10 @@ none answered); `worst` by `down > slow > up`; an empty day is `up` with no time
 ### The history snapshot (`buildHistory`)
 
 For each service: `w` is one letter per day (`-` without checks), oldest first; `u` lists `[dayIndex, tenths]` for
-days under 1000; `p` is answered over checked across the window, to two decimals. Incidents of the listed services
+days under 1000; `p` is `uptimePercent(answered, checked)` across the window. `uptime` is `poolUptime` of the same
+per-service totals: `groups[groupOfService(id)]` and `all` each sum `answered` and `checks` over their services, then
+`uptimePercent`. `uptimePercent(a, n)` is null when `n` is 0, `100` when `a >= n`, else
+`min(99.99, round(a * 10000 / n) / 100)`. Incidents of the listed services
 open or ended inside the window, newest first, at most `INCIDENTS_MAX` (50), as `[service, started, ended, letter,
 checks, error]`.
 
@@ -141,7 +144,8 @@ checks, error]`.
 put failed`).
 
 `sliceHistory` keeps the last `keep = clamp(days, 1, history.days)` days, re-indexes `u`, recomputes `p` as the mean
-of the days' uptimes, and keeps incidents open or ended inside the new window.
+of the days' uptimes (`uptimePercent(sum of tenths, days * 1000)`), recomputes `uptime` the same way with each day of
+each service as 1000 checks and its tenths answered, and keeps incidents open or ended inside the new window.
 
 ## Interfaces and contracts
 
@@ -210,15 +214,15 @@ them apart.
 
 ## Testing
 
-| Test                                   | Pins                                                                                                                                                                                                                                                                                  |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/status/src/run.test.ts`          | a row per service, the rollup and both snapshots; today re-rolled each run; consecutive non-up checks as one incident closed by the next up; a retired service's incident closed and unsent; the 90-day prune; midnight; probing when no results are given; one batch, all or nothing |
-| `apps/status/src/probe.test.ts`        | up with code and time; slow past 1.5 s; wrong code and HTML-for-JSON down; reach 2xx/3xx up, 4xx/5xx down; network and timeout down with no code; no body read, the method and user agent; six at a time, in order; targets per environment, every app by URL                         |
-| `apps/status/src/api.test.ts`          | empty before a run; the last run, cacheable; slicing and `bad_days`; repeats from the edge without D1; HEAD from the edge without a body; no cache in development; GET/HEAD and two paths only; bad stored JSON; the per-network limit on misses; the worst-case size                 |
-| `apps/status/src/rollup.test.ts`       | counts, percentiles, worst; empty days; nearest rank; the worst-case speed; incidents open, extend (first error kept), close on slow or up, untouched when unchecked, closed once unlisted                                                                                            |
-| `packages/status/src/judge.test.ts`    | expected codes and JSON; reach on the server; down, slow, up; state order; derived rooms and router; router down only when nothing answered                                                                                                                                           |
-| `packages/status/src/services.test.ts` | group order; each app's seven services; unique ids, derived on real checks; read only own origin or CORS routes; addresses per environment; path resolution; 27 requests a round                                                                                                      |
-| `packages/status/src/wire.test.ts`     | day uptime; UTC days; slicing (never widening, at least a day, null uptime without checks); the parser's accept and reject; the empty window                                                                                                                                          |
+| Test                                   | Pins                                                                                                                                                                                                                                                                                                                      |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/status/src/run.test.ts`          | a row per service, the rollup and both snapshots; each group's and the page's uptime; today re-rolled each run; consecutive non-up checks as one incident closed by the next up; a retired service's incident closed and unsent; the 90-day prune; midnight; probing when no results are given; one batch, all or nothing |
+| `apps/status/src/probe.test.ts`        | up with code and time; slow past 1.5 s; wrong code and HTML-for-JSON down; reach 2xx/3xx up, 4xx/5xx down; network and timeout down with no code; no body read, the method and user agent; six at a time, in order; targets per environment, every app by URL                                                             |
+| `apps/status/src/api.test.ts`          | empty before a run; the last run, cacheable; slicing and `bad_days`; repeats from the edge without D1; HEAD from the edge without a body; no cache in development; GET/HEAD and two paths only; bad stored JSON; the per-network limit on misses; the worst-case size                                                     |
+| `apps/status/src/rollup.test.ts`       | counts, percentiles, worst; empty days; nearest rank; the worst-case speed; incidents open, extend (first error kept), close on slow or up, untouched when unchecked, closed once unlisted                                                                                                                                |
+| `packages/status/src/judge.test.ts`    | expected codes and JSON; reach on the server; down, slow, up; state order; derived rooms and router; router down only when nothing answered                                                                                                                                                                               |
+| `packages/status/src/services.test.ts` | group order; each app's seven services; unique ids, derived on real checks; read only own origin or CORS routes; addresses per environment; path resolution; 27 requests a round                                                                                                                                          |
+| `packages/status/src/wire.test.ts`     | day uptime; UTC days; the uptime rounding (never a rounded-up 100, null without checks); pooled group and page uptime; slicing (never widening, at least a day, null uptime without checks, group uptime recomputed); the parser's accept, reject and a bad `uptime` dropped; the empty window                            |
 
 ## Constants and configuration
 

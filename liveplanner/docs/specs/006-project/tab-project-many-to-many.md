@@ -113,7 +113,7 @@ a drain sends at most 50 messages, and a body goes once per drain however many h
 
 `POST /api/projects/:id/copy` copies the tab bodies into fresh tab rows of the new plan, shared with nothing, in one transaction in
 the new plan's object (`importPlanCopy`, `apps/api/src/plan-room/plan-content.ts`), and re-points
-any tab or element link, and any Tab Window's tab, from the source tab id to its copy's (`remapTabLinks`,
+any tab or element link, and any stored Tab Window's tab ([retired](../009-elements/tab-window.md)), from the source tab id to its copy's (`remapTabLinks`,
 `@liveplanner/project`).
 
 ## Cross-references

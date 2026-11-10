@@ -4,11 +4,12 @@ import { SITE_URL } from '@livehuddle/ui';
 // livehuddle's comparisons, drawn by @liveworkspace/comparisons (packages/comparisons/README.md
 // "livehuddle"). The hub, every page, their metadata and the sitemap read this list, so adding a
 // competitor is a one-place change. Bump the date with any change to them. Each competes on the
-// competitor's own ground: the virtual office and spatial meeting place a remote team meets in. Each
-// says plainly that livehuddle has no voice or video of its own in production yet (proximity audio and
-// calls are built but off, docs/specs/012-collaboration/proximity-audio.md), so a team runs its usual
-// call alongside. The retired Miro and FigJam pages redirect to the hub (public/_redirects).
-const UPDATED = new Date('2026-11-05');
+// competitor's own ground: the virtual office and spatial meeting place a remote team meets in. Talking
+// is shared ground: livehuddle's proximity voice, camera and screen bubbles, private rooms and the stage
+// are on at livehuddle.app (docs/specs/012-collaboration/proximity-audio.md "Turning calls on"), so no
+// page says it has no voice or video. The retired Miro and FigJam pages redirect to the hub
+// (public/_redirects).
+const UPDATED = new Date('2026-11-10');
 
 const LIST: Alternative[] = [
   {
@@ -19,7 +20,7 @@ const LIST: Alternative[] = [
     description:
       'A free, open-source Gather alternative: walk your team round a virtual office as characters, meet in rooms, no account, no install and no per-seat plan.',
     h1: 'The free, open-source Gather alternative',
-    lede: 'Gather made the pixel-art virtual office popular: walk up to a teammate and the call starts. livehuddle is a virtual office in the same spirit, free and open source, that anyone opens from a link without an account. It has no voice or video of its own yet, so a team keeps its usual call open beside the Space.',
+    lede: 'Gather made the pixel-art virtual office popular: walk up to a teammate and the call starts. livehuddle is a virtual office in the same spirit, free and open source, that anyone opens from a link without an account: walk up to someone and you hear each other, turn on a camera or share a screen, and step into a room for a private word.',
     rows: [
       { label: 'Price', us: 'Free, every feature', them: 'Free for small teams, then paid plans' },
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
@@ -30,7 +31,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Voice and video',
-        us: 'Not yet: run your usual call alongside',
+        us: 'Built in: proximity voice, cameras and screen shares that follow where you walk',
         them: 'Built in, and it follows where you walk',
       },
       {
@@ -50,17 +51,17 @@ const LIST: Alternative[] = [
       },
     ],
     themBest: [
-      'Voice and video built in: walk up to someone and you are talking, walk away and the call ends. livehuddle has no voice or video in production yet.',
-      'Screen sharing inside the office, so a quick look at someone’s work needs no second tool.',
+      'Years of polish on its calls, from the video grid to the meeting tools around them, for teams that live in the office all day.',
       'Desktop apps that keep the office open all day, with notifications when someone comes over.',
       'A deep map maker and object library for building an office that looks exactly like yours.',
       'Calendar integration, so a scheduled meeting opens in the right room.',
     ],
     usBest: [
       'Free for everyone and MIT-licensed, with no per-seat pricing, no team-size limit on a plan, and nothing to upgrade to.',
-      'Open a link and you are in, with no sign-up, even to create a Space, and nothing to install.',
+      'Open a link and you are in, with no sign-up, even to create a Space or to talk, and nothing to install.',
+      'Walk up to someone and you hear them: voices fade as you walk away, a camera or a shared screen shows as a bubble above your character, and a room’s walls keep its call private.',
       '26 templates: a blank Space, and offices, halls, bars, gardens, games rooms, houses and whole campuses to walk round, each ready to walk into.',
-      'Your own character with outfits, a status (Available, Focusing, Out to Lunch, Angry and seven more, each worn on the character), speech bubbles and five moves, and Follow to go wherever a teammate goes.',
+      'Your own character with outfits, a status (Available, Focusing, Out to Lunch, Angry and nine more, each worn on the character), speech bubbles and five moves, and Follow to go wherever a teammate goes.',
       'A Space is also a board: sticky notes, text and stickers on the walls, and a Timer or a Stopwatch in any room.',
       'Share links for each role: an Editor reshapes the office, and a Participant, the default, walks, talks, comments and reacts without moving a thing. Add a password or an expiry, or revoke a link at any time.',
       'A free REST API, so your own scripts can set up and change your Spaces.',
@@ -75,9 +76,10 @@ const LIST: Alternative[] = [
         ],
       },
       {
-        heading: 'Where Gather goes further: talking',
+        heading: 'Talking as you walk',
         paragraphs: [
-          'Gather’s heart is proximity video and audio: the people near you are the people you hear. livehuddle has proximity audio and calls built, but they are switched off in production while they are finished, so today a team keeps its usual call (Meet, Zoom, Teams or anything else) open beside the Space. If talking inside the office itself is what you need, Gather is the better pick for now.',
+          'Gather’s heart is proximity video and audio: the people near you are the people you hear, and livehuddle works the same way. Walk up to a teammate and you hear each other, the voice fading as you walk apart; a little equaliser over a character shows who is talking further off. Your microphone starts muted, a camera or a shared screen shows as a bubble above your head to the people in earshot, and anyone can press a bubble to make it bigger.',
+          'A meeting room is a call of its own: nobody outside its walls hears a word, so a glass-walled room shows who is in a meeting without letting it be heard. Knock before you walk in, set Do Not Disturb when you need quiet, and speak from the All-Hands Hall’s stage to be heard by everyone in the hall, with raised hands for questions. Where Gather goes further is the years of polish around its calls, its desktop apps and its calendar integration.',
         ],
       },
       {
@@ -96,7 +98,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Can we talk by voice or video in livehuddle like we do in Gather?',
-        a: 'Not yet. Proximity audio and calls are built but switched off in production, so for now run your usual call beside the Space. Everything else, the characters, rooms, statuses, speech bubbles and timer, works live for everyone in the Space.',
+        a: 'Yes. Walk up to someone and you hear each other, and turn on a camera or share a screen to show it as a bubble above your character. A meeting room’s walls keep its call private, and whoever stands on a stage is heard by everyone on its tab. Guests on a Participant link talk too, with no sign-in.',
       },
       {
         q: 'Can I bring my Gather office across?',
@@ -120,7 +122,7 @@ const LIST: Alternative[] = [
     description:
       'A free, open-source Teamflow alternative: a virtual office in the browser where your team walks between rooms as characters, with notes on the walls.',
     h1: 'The free, open-source Teamflow alternative',
-    lede: 'Teamflow is a virtual office built round video: the team’s faces float in rooms you move between, with shared apps beside the call. livehuddle is a virtual office too, where everyone walks between rooms as a character and the walls hold the meeting. It is free, open source and needs no install, but it has no voice or video of its own yet, so the call stays in your usual tool.',
+    lede: 'Teamflow is a virtual office built round video: the team’s faces float in rooms you move between, with shared apps beside the call. livehuddle is a virtual office too, where everyone walks between rooms as a character, talks to whoever is near, and the walls hold the meeting. It is free, open source and needs no install.',
     rows: [
       { label: 'Price', us: 'Free, every feature', them: 'Paid plans per user' },
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
@@ -131,7 +133,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Voice and video',
-        us: 'Not yet: run your usual call alongside',
+        us: 'Built in: proximity voice, camera and screen bubbles over your character',
         them: 'Built in, video bubbles that move with you',
       },
       {
@@ -151,15 +153,16 @@ const LIST: Alternative[] = [
       },
     ],
     themBest: [
-      'Video first: everyone’s face is on the floor, and moving next to someone starts the conversation. livehuddle has no voice or video in production yet.',
+      'Video first: everyone’s face is on the floor, rather than a character with a camera bubble above it.',
       'Several screen shares at once in a room, so a group can compare work side by side.',
       'Apps that sit beside the call in a room, so notes and shared documents live where the conversation is.',
       'A desktop app that keeps the office running in the background all day.',
     ],
     usBest: [
       'Free for everyone and MIT-licensed, with no per-seat pricing and nothing to upgrade to.',
-      'Open a link and walk in from any modern browser, with nothing to install and no sign-up, even to create a Space.',
-      'A place you can see: everyone is a character in their own colour and outfit, with a status (Available, Focusing, Out to Lunch, Angry and seven more, each worn on the character), speech bubbles and five moves.',
+      'Open a link and walk in from any modern browser, with nothing to install and no sign-up, even to create a Space or to talk.',
+      'Walk up to someone and you hear them, with a camera or a shared screen as a bubble above your character, and a meeting room’s walls keeping its call private.',
+      'A place you can see: everyone is a character in their own colour and outfit, with a status (Available, Focusing, Out to Lunch, Angry and nine more, each worn on the character), speech bubbles and five moves.',
       '26 templates: a blank Space, and offices, halls, bars, gardens, games rooms, houses and whole campuses to walk round, and office pieces to build more rooms.',
       'The walls hold the meeting: sticky notes, text and stickers, and a Timer or a Stopwatch in any room.',
       'Bring Focus and follow-me to walk the room through something, and a burst of confetti, sparkles, hearts, applause or fireworks round your character when it goes well.',
@@ -171,7 +174,7 @@ const LIST: Alternative[] = [
         heading: 'Two kinds of virtual office',
         paragraphs: [
           'Teamflow puts the team’s video on a shared floor: you drag yourself next to someone and the conversation starts, with screen shares and apps beside you. livehuddle puts the team’s characters on a floor plan: you walk into a room, sit at the meeting table or a desk, and everyone can see where everyone is and what they are up to from their status.',
-          'The difference that matters most today is the call. livehuddle has proximity audio and calls built but switched off in production, so a team runs its usual call alongside the Space. If you want the video in the office itself, Teamflow is the better pick for now.',
+          'Both put the call in the office. In livehuddle you hear the people near you, a camera or a shared screen shows as a bubble above your character to whoever is in earshot, and a meeting room is a call of its own that nobody outside hears. If you want everyone’s face on the floor all day, or several screens shared side by side, Teamflow’s video-first floor is the better fit.',
         ],
       },
       {
@@ -191,11 +194,11 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Does livehuddle have video like Teamflow?',
-        a: 'Not yet. Proximity audio and calls are built but switched off in production, so for now keep your usual call open beside the Space. Characters, rooms, statuses, speech bubbles and the timer all work live.',
+        a: 'Yes, as bubbles over the characters rather than faces on the floor. Walk up to someone and you hear each other; turn on your camera or share a screen and it shows above your character to the people in earshot, who can press it to make it bigger.',
       },
       {
         q: 'Do I need to install anything?',
-        a: 'No. livehuddle runs in any modern browser on a laptop, desktop or tablet, and a phone can join to look and walk. There is no desktop app to install.',
+        a: 'No. livehuddle runs in any modern browser on a laptop, desktop or tablet, and a phone can join to look and walk. If you like, it installs to a computer’s or phone’s home screen like an app, straight from the browser.',
       },
       {
         q: 'Can I move my Teamflow office over?',
@@ -215,7 +218,7 @@ const LIST: Alternative[] = [
     description:
       'A free, open-source Kumospace alternative: a virtual office and all-hands hall your team walks round as characters, from a link, with no account needed.',
     h1: 'The free, open-source Kumospace alternative',
-    lede: 'Kumospace is a polished virtual office with spatial audio and video, built for a team’s everyday office and for bigger gatherings. livehuddle gives a team the same sense of place, rooms to walk into and people to find, as free, open-source software anyone opens from a link. It has no voice or video of its own yet, so a team keeps its usual call beside the Space.',
+    lede: 'Kumospace is a polished virtual office with spatial audio and video, built for a team’s everyday office and for bigger gatherings. livehuddle gives a team the same sense of place, rooms to walk into, people to find and voices that grow louder as you walk closer, as free, open-source software anyone opens from a link.',
     rows: [
       { label: 'Price', us: 'Free, every feature', them: 'Free plan with limits, then paid plans' },
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
@@ -226,12 +229,12 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Voice and video',
-        us: 'Not yet: run your usual call alongside',
+        us: 'Proximity voice, cameras and screen shares built in',
         them: 'Spatial audio and video built in',
       },
       {
         label: 'Big gatherings',
-        us: 'An All-Hands Hall with a stage to meet in',
+        us: 'An All-Hands Hall whose stage everyone in the hall hears',
         them: 'Event spaces and broadcasting to a crowd',
       },
       {
@@ -246,16 +249,16 @@ const LIST: Alternative[] = [
       },
     ],
     themBest: [
-      'Spatial audio and video built in: voices get louder as you walk closer. livehuddle has no voice or video in production yet.',
-      'Large events: a stage that broadcasts to a big audience, and spaces built for parties and conferences.',
-      'Screen sharing and music in the room.',
+      'Large events: broadcasting to a big audience, and spaces built for parties and conferences.',
+      'Music in the room.',
       'A desktop app, and a rich furniture and decor library for an office that looks its best.',
     ],
     usBest: [
       'Free for everyone and MIT-licensed: no plan limits on people or rooms, and nothing to upgrade to.',
-      'Open a link and walk in, with no sign-up, even to create a Space, and nothing to install.',
+      'Open a link and walk in, with no sign-up, even to create a Space or to talk, and nothing to install.',
+      'Voices fade as you walk away, cameras and shared screens show as bubbles above the characters, and a meeting room’s walls keep its call private.',
       '26 templates: a blank Space, and offices, halls, bars, gardens, games rooms, houses and whole campuses to walk round.',
-      'Everyone is a character with outfits, a status (Available, Focusing, Out to Lunch, Angry and seven more, each worn on the character), speech bubbles and five moves, and Follow takes you wherever a teammate goes.',
+      'Everyone is a character with outfits, a status (Available, Focusing, Out to Lunch, Angry and nine more, each worn on the character), speech bubbles and five moves, and Follow takes you wherever a teammate goes.',
       'The walls hold the meeting: sticky notes, text and stickers, with a Timer or a Stopwatch in any room.',
       'Participant links let people walk, talk, comment and react without moving the furniture.',
       'A free REST API, so a script can set up a Space and share it for you.',
@@ -266,13 +269,13 @@ const LIST: Alternative[] = [
         heading: 'A place for the team to be',
         paragraphs: [
           'Kumospace and livehuddle both turn a remote team’s day into a place: an office with rooms, desks and a corner to chat in, where you can see who is around. In livehuddle that place is a Space. Walk in as your own character, sit at your desk, set your status to Focusing when you need quiet, and walk over to the meeting table when it is time to talk.',
-          'For the whole company there is the All-Hands Hall, with a stage at the front, or a Conference Venue and an Expo Hall for the bigger day, and everyone can throw a burst of confetti, sparkles, hearts, applause or fireworks when the news lands.',
+          'For the whole company there is the All-Hands Hall, with a stage at the front that everyone in the hall hears, and raised hands for the audience to ask to speak, or a Conference Venue and an Expo Hall for the bigger day, and everyone can throw a burst of confetti, sparkles, hearts, applause or fireworks when the news lands.',
         ],
       },
       {
-        heading: 'What livehuddle does not do yet',
+        heading: 'Talking in the office',
         paragraphs: [
-          'Kumospace is built on spatial audio and video. livehuddle has proximity audio and calls built, but they are switched off in production, so a team runs its usual call beside the Space for now. For a large event broadcast to a crowd, or a meeting that must happen entirely inside the office, Kumospace is the better pick.',
+          'Kumospace is built on spatial audio and video, and so is livehuddle: you hear the people near you, louder as you walk closer, and a camera or a shared screen shows as a bubble above your character to whoever is in earshot. A meeting room is a call of its own, so nobody in the corridor hears it, and Do Not Disturb stops voices reaching you when you need to focus. For a large event broadcast to a crowd, Kumospace is the better pick.',
         ],
       },
       {
@@ -291,11 +294,11 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Can we talk in livehuddle the way we do in Kumospace?',
-        a: 'Not yet. Proximity audio and calls are built but switched off in production, so for now run your usual call beside the Space. Characters, rooms, statuses, speech bubbles and the timer all work live.',
+        a: 'Yes. Walk up to someone and you hear each other, louder as you get closer; turn on a camera or share a screen and it shows as a bubble above your character. Step into a meeting room and only the people inside hear you.',
       },
       {
         q: 'Can I hold an all-hands in livehuddle?',
-        a: 'Yes, as a place to gather: the All-Hands Hall has a stage at the front and room for the whole team to walk in, where everyone can throw applause and confetti. The talking happens on your usual call for now, and Kumospace is the better pick for broadcasting to a large audience.',
+        a: 'Yes. The All-Hands Hall has a stage at the front and room for the whole team to walk in: whoever stands on the stage is heard by everyone in the hall, the audience raises a hand to ask to speak, and everyone can throw applause and confetti. Kumospace is the better pick for broadcasting to a very large audience.',
       },
       {
         q: 'Can I import my Kumospace office?',

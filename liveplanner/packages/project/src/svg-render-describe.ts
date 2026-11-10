@@ -105,8 +105,8 @@ export type BoxedExportOptions = {
   // A plan view's picture at its box (docs/specs/026-plan/plan-tabs.md "Export"), from a caller that has the charts'
   // models (the editor); undefined, or no resolver, draws the labelled box.
   resolvePlanArt?: ResolvePlanArt;
-  // A tab window's tab (docs/specs/009-elements/tab-window.md "Exports"): its drawing to fit inside, from a caller
-  // that has the project's tabs (the editor's export); without one a window draws its frame named for its tab.
+  // A stored tab window's tab name (docs/specs/009-elements/tab-window.md, retired), from a caller that has the
+  // project's tabs (the editor's export); without one its frame reads "Tab Window".
   resolveTabWindow?: ResolveTabWindow;
 };
 

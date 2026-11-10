@@ -15,6 +15,7 @@ Scope, by file:
 | `liveworkspace/apps/index/src/rows.ts`                          | `ItemRow`, `ITEM_COLUMNS`, `directAccess`, `toItem`, `LIVE_LINK`, `decorate`                                                                                                                                    |
 | `liveworkspace/apps/index/src/folders.ts`                       | Folder routes, `reachableFolder`, `teamFilter`, `readName`                                                                                                                                                      |
 | `liveworkspace/apps/index/src/folder-previews.ts`               | `GET /folders/previews`                                                                                                                                                                                         |
+| `liveworkspace/apps/index/src/space-previews.ts`                | `GET /spaces/previews`                                                                                                                                                                                          |
 | `liveworkspace/apps/index/src/lookup.ts`                        | `POST /items/lookup`                                                                                                                                                                                            |
 | `liveworkspace/apps/index/src/personal.ts`                      | Favourites, Hide from Recent (placement defaults: [default-folders.md](default-folders.md))                                                                                                                     |
 | `liveworkspace/apps/index/src/visitors.ts`                      | Opened and Copied by a Visitor                                                                                                                                                                                  |
@@ -118,6 +119,7 @@ each once; ids missing or out of reach are left out.
 | `PATCH /folders/:id`                | the whole body checked first; a move's cycle check is inside its `UPDATE` (a recursive walk up), `409 cycle`; then the name                                             |
 | `DELETE /folders/:id`               | its folders and items move up to its parent, then it goes; `204`                                                                                                        |
 | `GET /folders/previews?ids=&app=`   | ≤ 60 ids of the person's folders; per folder its 4 newest live items and a count capped at 1000; one batch                                                              |
+| `GET /spaces/previews?app=`         | the person's own space then each team in the token (≤ 50); per space its 4 newest live items and a count capped at 1000; one batch over `json_each` of the scopes       |
 
 Every folder route needs a folder the person can file into (their own scope or a joined team's), else `404`.
 
@@ -210,6 +212,7 @@ A folder preview is two statements for up to 60 folders; a lookup is one read an
 | `liveworkspace/apps/index/src/most-used.test.ts` (8)             | recording use days; Most Used beside Recent; the bound; Hide from Recent                                                            |
 | `liveworkspace/apps/index/src/personal.test.ts` (9)              | folders, tags, favourites, placement defaults                                                                                       |
 | `liveworkspace/apps/index/src/folder-previews.test.ts` (4)       | `GET /folders/previews`                                                                                                             |
+| `liveworkspace/apps/index/src/space-previews.test.ts` (4)        | `GET /spaces/previews`: per space, the app filter, the query plan, 51 spaces of 1,200 items within budget                           |
 | `liveworkspace/apps/index/src/lookup.test.ts` (6)                | `POST /items/lookup`: the access rule per item, its bound, one decoration                                                           |
 | `liveworkspace/apps/index/src/visitors.test.ts` (2)              | visitors on the Timeline                                                                                                            |
 | `liveworkspace/apps/index/src/notices.test.ts` (6)               | notices; a person's count of items made                                                                                             |

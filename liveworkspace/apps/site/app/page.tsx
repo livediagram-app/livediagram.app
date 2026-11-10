@@ -16,7 +16,7 @@ const CheckIcon = lucideGlyph(lucideCheck, 14);
 
 export const metadata: Metadata = { alternates: { canonical: '/' } };
 
-// What each app is for, in the order work moves through them, for the hero's one sentence.
+// What each app is for, in the order work moves through them, for the hero's first paragraph.
 const STEPS: Partial<Record<SiteId, string>> = {
   'livediagram.app': 'Sketch the idea',
   'liveplanner.app': 'plan the work',
@@ -25,7 +25,8 @@ const STEPS: Partial<Record<SiteId, string>> = {
   'livehuddle.app': 'talk it through',
 };
 
-const PROMISES = ['Completely free', 'No sign-up needed', 'No trackers or ads'];
+// Every app is open source (each product's LICENSE).
+const PROMISES = ['Open source', 'No sign-up needed', 'No trackers or ads'];
 
 // liveworkspace.app's front door (liveworkspace/docs/specs/010-site/site.md "The front door"): what liveworkspace
 // is, the apps in it and how they join up, and the one account that ties them together.
@@ -42,7 +43,7 @@ export default function Home() {
           />
           <div className="relative mx-auto grid w-full max-w-7xl flex-1 content-center items-center gap-12 px-4 pt-14 pb-20 sm:px-6 sm:pt-20 lg:grid-cols-[1fr_1.05fr] lg:gap-8 lg:pt-24 lg:pb-28">
             <div className="lw-rise text-center sm:text-left">
-              <p className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 py-1 pr-3.5 pl-1.5 text-sm font-medium text-slate-600 backdrop-blur dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
+              <p className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 py-1 pr-3.5 pl-1.5 text-sm font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
                 <span className="flex size-6 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
                   <BrandMark accentColor={PLATFORM_SITE.accent} className="size-4" />
                 </span>
@@ -70,8 +71,11 @@ export default function Home() {
                     </a>
                   </Fragment>
                 ))}
-                , all with one account. Every link opens straight into the work, with everyone
-                already in it.
+                .
+              </p>
+              <p className="mx-auto mt-4 max-w-xl text-lg leading-relaxed sm:mx-0 text-slate-600 sm:text-xl dark:text-slate-300">
+                One account opens them all, and every link opens straight into the work, with
+                everyone already in it.
               </p>
               <HeroActions />
               <ul className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm sm:justify-start text-slate-500 dark:text-slate-400">

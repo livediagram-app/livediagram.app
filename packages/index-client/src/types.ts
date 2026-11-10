@@ -257,6 +257,10 @@ export type InboxForm = {
 // FOLDER_PREVIEW_COUNT_CAP.
 export type FolderPreview = { folderId: string; itemCount: number; items: Item[] };
 
+// A space's newest items (at most FOLDER_PREVIEW_ITEMS) and how many live items it holds in all, counted up to
+// FOLDER_PREVIEW_COUNT_CAP: the person's own (`teamId: null`) or a team's.
+export type SpacePreview = { teamId: string | null; itemCount: number; items: Item[] };
+
 export type InboxResponse = {
   threads: InboxThread[];
   actions: InboxAction[];

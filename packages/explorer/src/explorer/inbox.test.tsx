@@ -576,6 +576,40 @@ describe('the verbs', () => {
     expect(screen.getByRole('option', { name: 'Comments (1)' })).toBeTruthy();
   });
 
+  // one-explorer-contracts.md "Inbox": a row done from the pane moves the pane on to the next row, not the first.
+  it('moves on to the next row after a resolve, never back to the first', async () => {
+    const actions = host(['reply', 'resolve']);
+    renderInbox(everyKind(), { inbox: { actions } });
+    await screen.findByRole('listbox');
+    const before = titles();
+    fireEvent.click(options()[2]!);
+    fireEvent.click(within(pane()).getByRole('button', { name: /Resolve/ }));
+    await waitFor(() => expect(titles()).not.toContain('Budget'));
+    // Rows can share a title (an action and a card on the same issue), so the place is checked, not the words:
+    // the row after Budget now stands where Budget did.
+    const at = options().findIndex((o) => o.getAttribute('aria-selected') === 'true');
+    expect(at).toBe(2);
+    expect(titles()[at]).toBe(before[3]);
+  });
+
+  it('keeps the pane open on the next row on a phone after a resolve', async () => {
+    asPhone();
+    const actions = host(['reply', 'resolve']);
+    renderInbox(everyKind(), { inbox: { actions } });
+    await screen.findByRole('listbox');
+    const before = titles();
+    fireEvent.click(options()[2]!);
+    fireEvent.click(within(pane()).getByRole('button', { name: /Resolve/ }));
+    // A phone shows the pane alone, so the list is gone while it is open: the pane stays open on the next row
+    // (which one is pinned above, on the two columns), and Budget has left it.
+    // The title reads in two parts (its key, then its words), so the pane is matched on the words.
+    expect(before[3]).toBe('#12Login fails');
+    await waitFor(() =>
+      expect(within(pane()).getAllByText(/Login fails/).length).toBeGreaterThan(0),
+    );
+    expect(within(pane()).queryByText('Budget')).toBeNull();
+  });
+
   it('marks an action done where offered, and says so when it can’t', async () => {
     const onTelemetry = vi.fn();
     const actions = host(['done'], {

@@ -25,7 +25,7 @@ import { useEditorWorkbench } from './editor-state/useEditorWorkbench';
 //
 // Each concern is a hook in editor-state/ that takes the slices before it and returns the values the ones after it
 // read. They run in this order and no other: a hook's effects run in call order, and some rely on another's having
-// run first (the tabs ref is current before the room seeds from it and before a tab window asks for its tab).
+// run first (the tabs ref is current before the room seeds from it and before the split view asks for its tab).
 // Dependencies flow one way, down this list; a value a hook needs from one further down reaches it through a ref
 // declared up the list and filled further down (the active layer's stamp, the changeset reveal, the mention notify,
 // the tool put down).

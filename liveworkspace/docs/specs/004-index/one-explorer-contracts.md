@@ -80,6 +80,11 @@ A guest's id lives on liveworkspace.app, so it is the same in every app.
    stopping on an error page.
 3. The app keeps the token (local storage) and sends it as the Bearer token.
 
+A page inside a frame (an embed, a Community post's preview) never hands off: the round trip would take the frame to
+the app's `/auth/guest`, which refuses to be framed (`X-Frame-Options: DENY`), and the visitor would see the browser's
+"refused to connect" page instead of the item. Without a token it carries on as a link visitor, its share code enough
+for a grant (`@liveworkspace/index-client/browser` `createGuestTokens`; owner, 2026-11-10).
+
 Guest token: a JWT signed with accounts' keys, `iss` the accounts issuer, `aud` the client's API
 resource, `sub: guest_<uuid>`, `kind: "guest"`, valid for 45 days (a year before 2026-11). A newer one replaces it
 silently. The app hands off again on the first page load that needs it once it has fewer than 15 days left
@@ -310,6 +315,14 @@ updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and 
 - `GET /folders/previews?ids=a,b,…&app=`: what folder cards show of their insides: for each of up to 60 folders
   the person reaches, `{folderId, itemCount, items}` with its 4 newest live items (of `app`, when given) and a count
   that stops at 1000. One batch however many folders; folders out of reach are left out.
+- `GET /spaces/previews?app=`: what Home's Spaces tiles show of each space the person is in
+  ([one-explorer.md "Spaces, on Home"](one-explorer.md#spaces-on-home)): `{spaces: [{teamId, itemCount, items}]}`,
+  their own (`teamId: null`) first, then each team their token names (at most 50) in its order, each with its 4
+  newest live items (of `app`, when given) and a count that stops at 1000. One batch of two statements whatever the
+  number of teams: the scopes go in as one `json_each` parameter (no `UNION`, two bound parameters at most), and each
+  space is one walk of `items_live` (`items_live_app` with `app`), its count stopping at the cap. A team made since
+  the token was minted is left out until the token is renewed; the Explorer shows it as holding nothing yet. An app
+  acting for a person sees its own items only; the Drive mirror and the data export cannot reach it (404).
 - `GET /favourites`, `PUT/DELETE /favourites/:itemId`. A `PUT` here or on `/recent-hidden/:itemId` for an item the
   person doesn't reach (not theirs, not their team's, no live link they opened) is 404, the same answer as a missing
   one, and writes nothing.
@@ -377,7 +390,11 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   `GET /connections/:id` ([connected-tabs.md](connected-tabs.md)).
 
 Who gets what, the rule the grant applies: the owner of a personal item, and every joined member of a team item's
-team, edit everything; anyone else needs a live share link (its level, and its tab when it is scoped to one). A team
+team, edit everything; anyone else needs a live share link (its level, and its tab when it is scoped to one). A
+request that comes in through a public link (a Community post's, its code sent) opens at the link's level for everyone,
+the owner and the team's members included: the post's viewer and embed are a viewing surface, so its author never
+edits there, and the grant, `GET /share/:code` and every door read `view` (owner, 2026-11-10). Without the code their
+own access stands, and an ordinary link of theirs opens as their own. A team
 item is the team's: the person who made it (its `ownerId`) reaches it as a member like anyone else, so when they leave
 or are removed from the team it stops answering to them as owner, in reads, grants, lists and the Inbox alike, and
 the team's remaining members (its admins among them) run it. Team membership comes from the `teams` claim of the
@@ -618,6 +635,18 @@ logged and dropped; an email is best-effort. Types and helpers are in `@livework
   app, the Trash's included, counted up to `limit` (1 to 1000, default 1000) → `{count}`. One walk of the
   owner index that stops at the limit, so an app asking whether the tenth was just made (`limit=10`) pays the
   same however many the person has. `countOwnedItems` makes the call.
+- `POST /app/community/states`, with the app's key, `{posts: [{id, code, owner}]}` (1 to `COMMUNITY_STATES_MAX`,
+  100): where each Community post's item stands, for the Community's sweep
+  ([community.md](../007-community/community.md#the-sweep)) → `{states: [{id, state}]}`, one per post asked, in
+  order. `gone`: no such item, another app's, archived, owned by a closed account (`deleted`), or its link `code` is
+  no longer the item's; `away`: in the Trash, or its owner is not `owner` (unless `owner` is a guest: only the
+  migration made guests' posts, and the index re-owns a guest's items to the account it becomes); `closed`: in a team or behind a share
+  password; else `public`. Two reads (`items` and `share_links` by primary key, each one `json_each` parameter),
+  whatever the number asked; nothing is written. The app's `communityStates` makes the call.
+- `POST <app>/api/internal/items/community-states`, with the app's `COMMUNITY_KEY` (and no other key): the same
+  question, from the Community service, which holds that key but no index key. The app's door
+  (`@liveworkspace/index-app` `handleInternalItems`, `communityKey` and the `communityStates` handler) checks the body
+  and passes it to the call above; an app without the key or the handler answers `404`.
 
 ## Timeline
 
@@ -755,6 +784,10 @@ component on the page and in every editor's panel:
   - Nothing on a This Browser row (no page here reaches the offline store but the editor, which has no verbs for it
     yet), on another app's row where the token can't write, or on a Plan card (done is its board's column).
     A row whose work is done here leaves the list at once, though the index may list it until the app's next push.
+    The pane moves on to the next row (the one below it, or the one above when it was the last), never back to the
+    first, so a run of resolves works down the list; with nothing left the list shows its empty state. On a phone
+    and in the panel the pane stays open on that next row (Back still returns to the list), and closes only when
+    no row is left.
     The Inbox keeps no read state: no Seen, Later or Done of its own (one-explorer.md "Open questions").
 - **Keys.** j/k or ↑/↓ move, Home and End jump, ↵ opens the row in its app (where the pane stands beside the list) or
   opens the pane (where it stands in for the list), r replies, e resolves or marks done, Esc returns from the pane.

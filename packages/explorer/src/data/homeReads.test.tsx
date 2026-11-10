@@ -59,6 +59,7 @@ describe('Home’s requests', () => {
     expect(counts).toEqual({
       listItems: 1,
       listShared: 1,
+      spacePreviews: 1,
       listFolders: 1,
       listPlacementDefaults: 1,
       timeline: 1,

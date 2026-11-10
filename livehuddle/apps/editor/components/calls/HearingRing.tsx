@@ -51,9 +51,12 @@ export function HearingRing(props: {
   const x = self?.at.x ?? 0;
   const y = self?.at.y ?? 0;
   const seatedOn = self?.at.seatedOn ?? null;
+  // How far your voice carries: three times as far from a Podium (venue-pieces.md "Speaking from the Podium").
+  const reach = self?.at.reach ?? 1;
   const ring = useMemo(
-    () => (shown ? hearingRing({ x, y, seatedOn }, props.zones, props.stages, props.level) : null),
-    [shown, x, y, seatedOn, props.zones, props.stages, props.level],
+    () =>
+      shown ? hearingRing({ x, y, seatedOn, reach }, props.zones, props.stages, props.level) : null,
+    [shown, x, y, seatedOn, reach, props.zones, props.stages, props.level],
   );
   if (!ring || !self) return null;
 

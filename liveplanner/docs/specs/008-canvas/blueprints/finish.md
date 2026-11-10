@@ -297,9 +297,9 @@ a `data-finish="sketch"` body is lifted out (`markedGroup`, which counts nested 
 (every `<text>`, `<image>` and `<foreignObject>` removed) goes in `<g filter="url(#lvd-sketch-face)">`; the words
 copy (every `rect`, `circle`, `ellipse`, `path`, `line`, `polyline`, `polygon` and `use` given
 `visibility="hidden"`, `clipPath`, `mask`, `defs`, `pattern` and `marker` blocks left whole) follows when the face
-has words or photos. `svgTabWindow(..., sketched, fontFamily)` puts only its hairline through the filter.
+has words or photos. `svgTabWindow(..., sketched, fontFamily)` (a stored, retired tab window) puts only its hairline through the filter.
 `svgSketchArtDefs` emits the art filter when an icon or sticker is sketched and the face filter when a split face
-is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the element's face.
+is. `svgChecklistShape`, `svgLegendShape` and a stored tab window's frame letter in the element's face.
 
 ### Faces in their finish (spec "Faces", "Faces: frames and shapes")
 

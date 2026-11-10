@@ -7,16 +7,14 @@
 // Explorer does: the host's header (with the search field in its middle), Home's hero across the full width
 // under it, then the sidebar and the pane.
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { useEscape, useFocusTrap } from '@liveworkspace/ui';
-import { CloseIcon } from '../ui/icons';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { EXPLORER_MAIN } from '../ui/classes';
 import { useItemCount } from '../data/useItemCount';
 import type { App, IndexClient, Item } from '@liveworkspace/index-client';
 import { ToastProvider } from '../ui/Toasts';
 import { LibraryHostProvider } from '../library/context';
 import type { LibraryHostProps } from '../library/types';
-import type { ExplorerView } from '../views';
+import { explorerPath, type ExplorerView } from '../views';
 import type { AppFilter, HeroWords } from '../words';
 import type {
   ItemHref,
@@ -57,6 +55,7 @@ import {
 import { ItemsPane } from './ItemsPane';
 import { SearchField } from './SearchField';
 import { Sidebar } from './Sidebar';
+import { SectionsBar, SectionsDrawer } from './PhoneSections';
 import { useHeroPresence } from './useHeroPresence';
 import { HostExtrasProvider, type SidebarLink } from './host';
 import { ThisBrowserPane, useThisBrowserItems, type ThisBrowserHost } from './ThisBrowser';
@@ -341,16 +340,22 @@ function ExplorerInner({
   const [heroHidden, hideHero] = useHeroHidden(app, controlledHeroHidden, onHideHero);
   const heroOnHome = view.kind === 'home' && !heroHidden;
   const hero = useHeroPresence(heroOnHome);
-  const [navOpen, setNavOpen] = useState(false);
+  // The phone's sidebar drawer, open for the view it was opened on: any change of view (a pick, Back, an address)
+  // closes it, with no effect to run.
+  const viewKey = explorerPath(view);
+  const [navOpenAt, setNavOpenAt] = useState<string | null>(null);
+  const navOpen = navOpenAt === viewKey;
+  const drawerId = useId();
   const navigate = useCallback(
     (v: ExplorerView, href: string, options?: NavigateOptions) => {
-      setNavOpen(false);
+      setNavOpenAt(null);
       if (options) onNavigate(v, href, options);
       else onNavigate(v, href);
     },
     [onNavigate],
   );
-  const openNav = useCallback(() => setNavOpen(true), []);
+  const openNav = useCallback(() => setNavOpenAt(viewKey), [viewKey]);
+  const closeNav = useCallback(() => setNavOpenAt(null), []);
   const driveMarks = useDriveMarks(drive);
   const renderItemMark = useMemo(
     () => withDriveMarks(hostItemMark, driveMarks),
@@ -388,7 +393,6 @@ function ExplorerInner({
       shareHost={share}
       inboxHost={inboxHost}
       tokensUrl={tokensUrl}
-      openNav={openNav}
       helpHref={helpHref}
       heroWords={heroWords}
       onTimeline={onTimeline}
@@ -410,15 +414,20 @@ function ExplorerInner({
         <HostExtrasProvider value={extras}>
           <WelcomeProvider welcome={welcome} active={view.kind === 'home'}>
             <div data-explorer="" className="flex min-w-0 flex-1 flex-col">
-              {header ? (
-                header({ search: heroOnHome ? null : <BarSearch toolbar={toolbar} /> })
-              ) : heroOnHome ? null : (
-                <div className="sticky top-0 z-30 flex h-12 shrink-0 items-center border-b border-slate-200 bg-white/85 px-4 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
-                  <div className="w-full sm:mx-auto sm:max-w-md">
-                    <BarSearch toolbar={toolbar} />
+              {/* The header and, on a phone, the sections bar under it: one sticky block, so they stay at the top
+                  together as the page scrolls, never overlapping, whatever the host's header measures. */}
+              <div data-explorer-top="" className="sticky top-0 z-40 shrink-0">
+                {header ? (
+                  header({ search: heroOnHome ? null : <BarSearch toolbar={toolbar} /> })
+                ) : heroOnHome ? null : (
+                  <div className="flex h-12 shrink-0 items-center border-b border-slate-200 bg-white/85 px-4 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
+                    <div className="w-full sm:mx-auto sm:max-w-md">
+                      <BarSearch toolbar={toolbar} />
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+                <SectionsBar open={navOpen} drawerId={drawerId} onOpen={openNav} />
+              </div>
               {hero.mounted ? (
                 <div
                   data-home-hero-fold={hero.open ? 'open' : 'closed'}
@@ -440,9 +449,9 @@ function ExplorerInner({
                     <Sidebar />
                   </div>
                 </aside>
-                {navOpen ? <SectionsDrawer onClose={() => setNavOpen(false)} /> : null}
+                {navOpen ? <SectionsDrawer id={drawerId} onClose={closeNav} /> : null}
                 <section className="min-w-0 flex-1">
-                  <Pane view={view} onOpenNav={openNav} hero={heroOnHome} />
+                  <Pane view={view} hero={heroOnHome} />
                 </section>
               </main>
               {signInBanner && signedIn === false && signInHref ? (
@@ -535,72 +544,25 @@ function HeroWithCount({
   return <HomeHero items={items} kinds={kinds} onHide={onHide} />;
 }
 
-function Pane({
-  view,
-  onOpenNav,
-  hero,
-}: {
-  view: ExplorerView;
-  onOpenNav: () => void;
-  hero: boolean;
-}) {
+function Pane({ view, hero }: { view: ExplorerView; hero: boolean }) {
   // The other sections' code, fetched once the page is idle so a move to one draws at once (lazy-panes.ts).
   useEffect(() => preloadExplorerPanesWhenIdle(), []);
   switch (view.kind) {
     case 'home':
-      return <HomePane onOpenNav={onOpenNav} hero={hero} />;
+      return <HomePane hero={hero} />;
     case 'inbox':
-      return <InboxPane onOpenNav={onOpenNav} />;
+      return <InboxPane />;
     case 'timeline':
-      return <TimelinePane onOpenNav={onOpenNav} />;
+      return <TimelinePane />;
     case 'invites':
-      return <InvitesPane onOpenNav={onOpenNav} />;
+      return <InvitesPane />;
     case 'gallery':
-      return <GalleryView onOpenNav={onOpenNav} />;
+      return <GalleryView />;
     case 'shape-libraries':
-      return <ShapeLibrariesView onOpenNav={onOpenNav} />;
+      return <ShapeLibrariesView />;
     case 'offline':
-      return <ThisBrowserPane onOpenNav={onOpenNav} />;
+      return <ThisBrowserPane />;
     default:
-      return <ItemsPane view={view} onOpenNav={onOpenNav} />;
+      return <ItemsPane view={view} />;
   }
-}
-
-function SectionsDrawer({ onClose }: { onClose: () => void }) {
-  const panel = useRef<HTMLDivElement>(null);
-  // Focus goes to the panel once, as it opens, stays inside while it is open and goes back to "Browse sections" when
-  // it closes. Escape reads the latest onClose: keyed on it, as a fresh arrow each render, the panel took focus back
-  // from whatever row was focused every time the Explorer rendered.
-  useFocusTrap(panel, true, 'container');
-  useEscape(onClose, { preventDefault: true });
-  return (
-    <div className="fixed inset-0 z-40 sm:hidden">
-      <div
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-        onClick={onClose}
-        aria-hidden
-      />
-      <div
-        ref={panel}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Sections"
-        tabIndex={-1}
-        className="absolute inset-y-0 left-0 flex w-72 max-w-[85%] animate-slide-in-left flex-col overflow-y-auto border-r border-slate-200 bg-white px-3 py-4 shadow-xl outline-none dark:border-slate-700 dark:bg-slate-800"
-      >
-        <div className="mb-1 flex items-center justify-between pl-1">
-          <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Sections</span>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          >
-            <CloseIcon size={11} />
-          </button>
-        </div>
-        <Sidebar />
-      </div>
-    </div>
-  );
 }

@@ -8,8 +8,10 @@ import { WINDOW_META } from './_shared/windows';
 
 const PULSE = 'animate-pulse bg-slate-200/70 motion-reduce:animate-none dark:bg-slate-800/70';
 const CARD = 'rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900';
-// The window "All apps" opens on (AllApps' and AppDashboard's first state).
-const FIRST_WINDOW = WINDOW_META.find((w) => w.key === 'last7')?.label.toLowerCase() ?? '';
+// The window the page opens on (its first state, which every dashboard then shares).
+const FIRST = WINDOW_META.find((w) => w.key === 'last7');
+const FIRST_WINDOW = FIRST?.label.toLowerCase() ?? '';
+const FIRST_WINDOW_DAYS = FIRST?.days ?? 7;
 
 // A placeholder for one line of text: the block keeps the text's line height (its `text` classes), so
 // the skeleton stands exactly as tall as the words it stands in for.
@@ -61,29 +63,62 @@ function WindowPanelSkeleton() {
   );
 }
 
-// "All apps": the panel, one card per app under "By app", and the busiest events' rows.
+// "All apps": the panel, Apps Compared (the events chart and its table, then the visitors card's tiles and two
+// charts), and the busiest events' rows.
 function AllAppsSkeleton() {
   return (
     <>
       <div className="mt-10">
         <WindowPanelSkeleton />
       </div>
-      <h2 className="mt-12 text-lg font-semibold text-slate-900 dark:text-slate-100">By app</h2>
-      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-        Events each app sent in the {FIRST_WINDOW}, against the same span before it.
-      </p>
-      <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {TELEMETRY_APPS.map((app) => (
-          <li key={app} className={`${CARD} p-5`}>
-            <Bone text="text-sm" width="w-32" />
-            <Bone text="text-3xl" width="w-24" className="mt-2" />
-            <Bone text="text-sm" width="w-44" className="mt-1" />
-            <Bone text="text-sm" width="w-36" className="mt-3" />
-          </li>
-        ))}
-      </ul>
       <h2 className="mt-12 text-lg font-semibold text-slate-900 dark:text-slate-100">
-        Busiest events
+        Apps Compared
+      </h2>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        Each app in the {FIRST_WINDOW}, against the {FIRST_WINDOW_DAYS} days before. The window
+        above sets the span.
+      </p>
+      <div className={`${CARD} mt-4 p-5`}>
+        <Bone text="text-sm" width="w-56" />
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {[...TELEMETRY_APPS, 'total'].map((key) => (
+            <span key={key} className={`h-8 w-28 rounded-full ${PULSE}`} />
+          ))}
+        </div>
+        <div className={`mt-4 h-44 rounded-xl ${PULSE}`} />
+        <div className="mt-5 space-y-3">
+          {[...TELEMETRY_APPS, 'total'].map((key) => (
+            <div key={key} className="flex justify-between gap-4">
+              <Bone text="text-sm" width="w-32" />
+              <Bone text="text-sm" width="w-48" />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className={`${CARD} mt-4 p-5`}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Bone text="text-sm" width="w-40" />
+          <span className={`h-9 w-72 max-w-full rounded-lg ${PULSE}`} />
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+              <Bone text="text-[10px]" width="w-20" />
+              <Bone text="text-xl" width="w-14" className="mt-1" />
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {[0, 1].map((i) => (
+            <div key={i}>
+              <Bone text="text-xs" width="w-48" />
+              <div className={`mt-3 h-32 rounded-xl ${PULSE}`} />
+            </div>
+          ))}
+        </div>
+      </div>
+      <h2 className="mt-12 text-lg font-semibold text-slate-900 dark:text-slate-100">
+        Busiest Events
       </h2>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         The same event from several apps counts once here, added up.

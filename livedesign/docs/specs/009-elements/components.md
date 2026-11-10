@@ -181,7 +181,7 @@ the instance keep their end as a free point where it was. One undo step. Detachi
 
 ## Exports, thumbnails and agents
 
-- **Every export** (PNG, SVG, PDF, the logo kit, page exports, layout thumbnails, tab windows showing a tab) expands
+- **Every export** (PNG, SVG, PDF, the logo kit, page exports, layout thumbnails) expands
   each instance into its resolved elements before drawing (`expandInstances`), so an instance exports exactly as the
   same elements would. An instance itself draws nothing in an export; it stays only as the box arrows pin to.
 - **Thumbnails and the API's tab render** expand with the library read from the design's store.

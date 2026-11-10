@@ -4,6 +4,7 @@
 
 import { SUMMARY_MAX_BYTES, type App } from '@liveworkspace/index-client';
 import { callerApp } from './auth';
+import { handleCommunityStates } from './community-states';
 import { handleAppConnection } from './connection-doors';
 import { formByCode, formSeen, pushCollab, pushForm, pushFormSeen } from './collab-push';
 import { isId, isPartId } from './codec';
@@ -40,6 +41,11 @@ export async function handleApp(
     const body = await readObject(request);
     if (!body) return badRequest();
     return pushPersonEvents(env, app, body);
+  }
+  // /app/community/states: where Community posts' items stand, for the Community's sweep (community-states.ts).
+  if (segments[1] === 'community' && segments[2] === 'states' && segments.length === 3) {
+    if (request.method !== 'POST') return notFound();
+    return handleCommunityStates(request, env, app);
   }
   // /app/people/:id/count (notices.ts).
   if (segments[1] === 'people') return handleAppPeople(request, env, app, segments);

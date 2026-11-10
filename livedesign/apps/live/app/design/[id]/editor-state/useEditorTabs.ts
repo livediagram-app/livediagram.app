@@ -1,4 +1,7 @@
-import { usePublishTabRename } from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
+import {
+  usePublishTabName,
+  usePublishTabRename,
+} from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
 import { useRef } from 'react';
 import type { Tab } from '@livedesign/design';
 import { useDesignActions } from '@/hooks/canvas/useDesignActions';
@@ -140,7 +143,8 @@ export function useEditorTabs({
     },
     toast,
   });
-  // The menu box renames the open tab on a click on its name (active-tab-name-store).
+  // The menu box shows the open tab's name, and renames it on a click (active-tab-name-store).
+  usePublishTabName(activeTab.name);
   usePublishTabRename(activeId, renameTab, !isStructureReadOnly);
 
   // Tab-folder membership (docs/specs/006-design/tab-folders.md), kept separate from the busy

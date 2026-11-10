@@ -10,7 +10,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import type { ItemCount } from '../data/useItemCount';
 import { inboxTotal } from './inbox/sections';
-import { CloseIcon, HamburgerIcon, HelpMarkIcon, PlusIcon } from '../ui/icons';
+import { CloseIcon, HelpMarkIcon, PlusIcon } from '../ui/icons';
 import { NewItemButton } from './NewChoices';
 import { FOCUS_RING } from '../ui/classes';
 import type { ExplorerView } from '../views';
@@ -26,7 +26,6 @@ import { LENS_VALUE_SEPARATOR, SPACE_TEAM_PREFIX } from '../lens/dimensions';
 const HEADING_ID = 'explorer-home-hero';
 
 export const HERO_COPY = {
-  openNav: 'Browse sections',
   hideBanner: 'Hide Home Banner',
   help: 'Help',
 } as const;
@@ -122,7 +121,6 @@ export function HomeHero({
     viewHref,
     navigate,
     onCreate,
-    openNav,
     heroWords,
     teams,
   } = useExplorer();
@@ -171,19 +169,11 @@ export function HomeHero({
       className="relative overflow-hidden border-b border-slate-200 dark:border-slate-800"
     >
       <HeroBackdrop kind={backdrop} />
-      <div className="relative mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-10 gap-y-8 px-4 pb-12 pt-6 sm:px-6 lg:pb-14">
+      <div className="relative mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-10 gap-y-8 px-4 pb-16 pt-9 sm:px-6 lg:pb-[5.75rem] lg:pt-12">
         <div className="flex min-w-0 flex-[999_1_32rem] flex-col gap-5">
-          {/* A phone: the menu button and the corner share their own row, so the pills never push Help onto
-              a line of its own. */}
-          <div className="-mb-2 flex items-center justify-between sm:hidden">
-            <button
-              type="button"
-              onClick={openNav}
-              aria-label={HERO_COPY.openNav}
-              className={`-ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-600 transition hover:bg-white hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white ${FOCUS_RING}`}
-            >
-              <HamburgerIcon />
-            </button>
+          {/* A phone: the corner has its own row, so the pills never push Help onto a line of its own (the
+              sections bar above the hero opens the sidebar). */}
+          <div className="-mb-2 flex items-center justify-end sm:hidden">
             <HeroCorner onHide={onHide} />
           </div>
           {/* Holds a pill's height before the counts arrive, so nothing under it moves when they do. */}
@@ -212,7 +202,7 @@ export function HomeHero({
               ),
             )}
             {/* Help and the close end the pills' row from `sm` to `lg`; from `lg` they stand at the hero's
-                top right, above the tiles; on a phone they sit beside the menu button above. */}
+                top right, above the tiles; on a phone they have their own row above. */}
             <span className="ml-auto hidden sm:inline-flex lg:hidden">
               <HeroCorner onHide={onHide} />
             </span>

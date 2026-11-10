@@ -12,7 +12,7 @@
 // title-cased `Code-Block`), `TechIcon` for a brand mark, `Highlighter`
 // for the highlighter pen.
 
-import type { ComponentKind, Element } from '@livedesign/design';
+import { RETIRED_SHAPE_KINDS, type ComponentKind, type Element } from '@livedesign/design';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { titleCaseType, track } from '@/lib/telemetry';
 
@@ -41,8 +41,16 @@ import { titleCaseType, track } from '@/lib/telemetry';
 export function trackDuplicated(created: Element[], gestureType?: string): void {
   if (created.length === 0) return;
   track('Element', 'Duplicated', gestureType);
-  for (const element of created) track('Element', 'Added', elementTelemetryType(element));
+  for (const element of created) {
+    if (isRetiredKind(element)) continue;
+    track('Element', 'Added', elementTelemetryType(element));
+  }
 }
+
+// A kind no surface adds any more, kept only so stored ones load (docs/specs/009-elements/tab-window.md): a copy of
+// one is no element kind on the dashboard, whose census counts what people can place.
+const isRetiredKind = (element: Element) =>
+  element.type === 'shape' && RETIRED_SHAPE_KINDS.has(element.shape);
 
 // Hyphenated shape kinds whose token is spelled out rather than left to
 // titleCaseType, which only upper-cases the first character: 'code-block'
@@ -51,8 +59,6 @@ export function trackDuplicated(created: Element[], gestureType?: string): void 
 // This map is for kinds whose OTHER events already chose the camel-case spelling.
 const SHAPE_TOKENS: Record<string, string> = {
   'code-block': 'CodeBlock',
-  // The tab window (docs/specs/009-elements/tab-window.md).
-  'tab-window': 'TabWindow',
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md) report as their palette component, so a
   // copied stat row lands in the same dashboard row as a dropped one.
   banner: 'Banner',

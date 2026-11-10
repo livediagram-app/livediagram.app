@@ -43,8 +43,29 @@ export const FOLDER_PREVIEW_IDS_MAX = 60;
 export const FOLDER_PREVIEW_ITEMS = 4;
 export const FOLDER_PREVIEW_COUNT_CAP = 1000;
 
+// Home's Spaces tiles (`GET /spaces/previews`): the person's own space and at most this many teams (a token's
+// `teams` claim holds no more), each with as many newest items and as capped a count as a folder card's.
+export const SPACE_PREVIEW_TEAMS_MAX = 50;
+
 // Many items looked up at once (`POST /items/lookup`): at most this many ids a request.
 export const ITEM_LOOKUP_IDS_MAX = 200;
+
+// Where Community posts' items stand (`POST /app/community/states`, the Community's sweep,
+// liveworkspace/docs/specs/007-community/community.md "The sweep"): at most this many posts a request.
+export const COMMUNITY_STATES_MAX = 100;
+
+// Where a Community post's item stands, as the index reads it: `gone` (missing, another app's, archived, a closed
+// account's, or its link no longer the item's), `away` (in the Trash, or not the post owner's), `closed` (in a team or
+// behind a share password) or `public`.
+export const ITEM_COMMUNITY_STATES = ['public', 'closed', 'away', 'gone'] as const;
+export type ItemCommunityState = (typeof ITEM_COMMUNITY_STATES)[number];
+
+export const isItemCommunityState = (value: unknown): value is ItemCommunityState =>
+  typeof value === 'string' && (ITEM_COMMUNITY_STATES as readonly string[]).includes(value);
+
+// One post asked about: its item, its community link's code, and who made it.
+export type CommunityStateAsk = { id: string; code: string; owner: string };
+export type CommunityStateAnswer = { id: string; state: ItemCommunityState };
 
 // Where the index lives. Each app's router forwards `/api/index/*` on its own origin here, so a browser
 // calls its own origin.

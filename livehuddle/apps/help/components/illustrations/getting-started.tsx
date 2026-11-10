@@ -2,6 +2,7 @@
 // guest vs account, and the essential keyboard shortcuts. Composed only from
 // the shared primitives so the house style holds.
 
+import { useId } from 'react';
 import { lucideCloud } from '@liveworkspace/icons/lucide';
 import { Prims } from '@livehuddle/ui';
 import { Scene, Shape, Arrow, Label, Avatar } from '@liveworkspace/help-site/art/primitives';
@@ -178,6 +179,7 @@ const START_CARDS = ['Blank Space', 'Virtual Office', 'Team Pod', 'Coworking Spa
 /** Start a Space over a new Space's empty board (apps/editor/components/start/StartFromTemplates.tsx): the title, the
  *  search, the rail open on Recommended, its first template cards, and the Sync Space to Server switch in the footer. */
 export function StartASpace() {
+  const band = `start-band-${useId().replace(/:/g, '')}`;
   const x = 20;
   const w = 380;
   const inX = x + 16;
@@ -197,11 +199,58 @@ export function StartASpace() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
+      {/* The header band (docs/specs/007-editor/start-diagramming.md "The header band"): voice rings spreading
+          from the corner where Help and Close sit, then the title mark, a table with its seats. */}
+      <clipPath id={band}>
+        <rect x={x + 1} y={11} width={w - 2} height={78} rx={13} />
+      </clipPath>
+      <g aria-hidden clipPath={`url(#${band})`}>
+        <rect x={x + 1} y={11} width={w - 2} height={78} className="fill-brand-50" />
+        {[14, 28, 42, 56, 70, 84, 98].map((r) => (
+          <circle
+            key={r}
+            cx={x + w - 32}
+            cy={30}
+            r={r}
+            fill="none"
+            className="stroke-brand-200"
+            strokeWidth={1}
+            opacity={1 - r / 120}
+          />
+        ))}
+      </g>
+      <g aria-hidden transform={`translate(${inX} 26)`}>
+        <rect width={22} height={22} rx={6} className="fill-brand-100 stroke-brand-200" />
+        <circle
+          cx={11}
+          cy={11}
+          r={3.4}
+          fill="none"
+          className="stroke-brand-600"
+          strokeWidth={1.4}
+          opacity={0.6}
+        />
+        <circle cx={11} cy={4.6} r={2.3} className="fill-brand-600" />
+        {[
+          [17.4, 11],
+          [11, 17.4],
+          [4.6, 11],
+        ].map(([cx, cy]) => (
+          <circle
+            key={`${cx}-${cy}`}
+            cx={cx}
+            cy={cy}
+            r={2.3}
+            className="fill-brand-600"
+            opacity={0.6}
+          />
+        ))}
+      </g>
       {/* Header: the title and its line, then Help and Close. */}
-      <Label x={inX} y={34} size={15} weight={700} tone="strong">
+      <Label x={inX + 30} y={34} size={15} weight={800} tone="strong">
         Start a Space
       </Label>
-      <Label x={inX} y={52} size={9.5} tone="muted">
+      <Label x={inX + 30} y={52} size={9.5} tone="muted">
         Walk into an office, a hall, a bar or a garden.
       </Label>
       <Label x={x + w - 44} y={33} anchor="middle" size={12} weight={700} tone="muted">

@@ -1,31 +1,23 @@
 // Home's hero backdrop: what tells the apps apart behind the same words, pills, search and tiles
 // (liveworkspace/docs/specs/004-index/one-explorer.md "Each app's backdrop, on Home's hero"). It follows the app the list is filtered
-// to; All Apps keeps the dots. Static SVG and CSS in the host's brand ramp: no motion, nothing fetched.
+// to; All Apps keeps the dots. Static SVG and CSS in the host's brand ramp: no motion, nothing fetched. Which backdrop
+// is whose, and the textures' measures, live in hero-theme.ts, which every editor's start header reads too.
 
 import { useId } from 'react';
 import type { App } from '@liveworkspace/index-client';
 import type { AppFilter } from '../words';
+import {
+  APP_BACKDROP,
+  BLUEPRINT_MAJOR_PX,
+  BLUEPRINT_MINOR_PX,
+  LANE_NAMES,
+  type HeroBackdropKind,
+} from './hero-theme';
 
-export type HeroBackdropKind = 'dots' | 'lanes' | 'blueprint' | 'typesetter' | 'shapes';
-
-const BY_APP: Record<App, HeroBackdropKind> = {
-  liveplanner: 'lanes',
-  livediagram: 'blueprint',
-  livedocuments: 'typesetter',
-  livedesign: 'shapes',
-  // Registered before its launch, so no Explorer shows it yet: its own backdrop comes with its fork.
-  livehuddle: 'dots',
-};
+export { heroHeadingFace, type HeroBackdropKind } from './hero-theme';
 
 export function heroBackdropOf(app: App, filter: AppFilter): HeroBackdropKind {
-  return filter === 'all' ? 'dots' : BY_APP[app];
-}
-
-/** The heading's face: the Typesetter sets it in the system's serif, the others in the page's own. */
-export function heroHeadingFace(backdrop: HeroBackdropKind): string {
-  return backdrop === 'typesetter'
-    ? 'font-serif font-semibold tracking-[-0.02em]'
-    : 'font-extrabold tracking-[-0.04em]';
+  return filter === 'all' ? 'dots' : APP_BACKDROP[app];
 }
 
 const LAYER = 'pointer-events-none absolute inset-0';
@@ -39,6 +31,7 @@ export function HeroBackdrop({ kind }: { kind: HeroBackdropKind }) {
   if (kind === 'typesetter') return <Typesetter />;
   if (kind === 'shapes') return <Shapes />;
   if (kind === 'lanes') return <Lanes />;
+  if (kind === 'huddle') return <Huddle />;
   return <Dots />;
 }
 
@@ -54,8 +47,6 @@ function Dots() {
   );
 }
 
-const LANES = ['To do · 4', 'Doing · 2/3', 'Review · 1', 'Done · 12'];
-
 function Lanes() {
   return (
     <div
@@ -64,7 +55,7 @@ function Lanes() {
       className={`${LAYER} bg-[color:color-mix(in_oklab,var(--color-brand-50)_60%,white)] dark:bg-slate-900`}
     >
       <div className="absolute inset-1.5 flex gap-3">
-        {LANES.map((lane, i) => (
+        {LANE_NAMES.map((lane, i) => (
           <div
             key={lane}
             className={`relative min-w-0 flex-1 rounded-[14px] ${i % 2 ? 'bg-brand-100/60 dark:bg-brand-900/30' : 'bg-brand-100/35 dark:bg-brand-900/15'}`}
@@ -127,18 +118,28 @@ function Blueprint({ id }: { id: string }) {
     <div aria-hidden data-hero-backdrop="blueprint" className={`${LAYER} ${BLUEPRINT_BG}`}>
       <svg className="absolute inset-0 h-full w-full">
         <defs>
-          <pattern id={minor} width="24" height="24" patternUnits="userSpaceOnUse">
+          <pattern
+            id={minor}
+            width={BLUEPRINT_MINOR_PX}
+            height={BLUEPRINT_MINOR_PX}
+            patternUnits="userSpaceOnUse"
+          >
             <path
-              d="M24 0H0V24"
+              d={`M${BLUEPRINT_MINOR_PX} 0H0V${BLUEPRINT_MINOR_PX}`}
               fill="none"
               strokeWidth="0.7"
               className="stroke-brand-200/60 dark:stroke-brand-800/50"
             />
           </pattern>
-          <pattern id={major} width="120" height="120" patternUnits="userSpaceOnUse">
-            <rect width="120" height="120" fill={`url(#${minor})`} />
+          <pattern
+            id={major}
+            width={BLUEPRINT_MAJOR_PX}
+            height={BLUEPRINT_MAJOR_PX}
+            patternUnits="userSpaceOnUse"
+          >
+            <rect width={BLUEPRINT_MAJOR_PX} height={BLUEPRINT_MAJOR_PX} fill={`url(#${minor})`} />
             <path
-              d="M120 0H0V120"
+              d={`M${BLUEPRINT_MAJOR_PX} 0H0V${BLUEPRINT_MAJOR_PX}`}
               fill="none"
               strokeWidth="1.6"
               className="stroke-brand-200 dark:stroke-brand-800/80"
@@ -280,6 +281,88 @@ function Shapes() {
           />
           <circle cx="874" cy="386" r="9" className="fill-brand-500" />
         </svg>
+      </div>
+    </div>
+  );
+}
+
+// Huddle: a room's voice. Rings spread from the top right corner across the band, fading as they go, and in the gap
+// a round table seen from above, its seats taken, the one speaking ringed, a few words in a bubble over them.
+const HUDDLE_PAPER =
+  '[--huddle-paper:color-mix(in_oklab,var(--color-brand-50)_60%,white)] dark:[--huddle-paper:var(--color-slate-900)]';
+const HUDDLE_RINGS =
+  'bg-[radial-gradient(circle_at_100%_0%,transparent_0_240px,var(--huddle-paper)_640px),repeating-radial-gradient(circle_at_100%_0%,var(--color-brand-200)_0_1px,transparent_1px_28px)] dark:bg-[radial-gradient(circle_at_100%_0%,transparent_0_240px,var(--huddle-paper)_640px),repeating-radial-gradient(circle_at_100%_0%,color-mix(in_oklab,var(--color-brand-800)_55%,transparent)_0_1px,transparent_1px_28px)]';
+// The seats round the table, as [x, y, tone]: the first is the one speaking.
+const SEATS: readonly [number, number, 'speaker' | 'deep' | 'soft' | 'open'][] = [
+  [858, 146, 'speaker'],
+  [905, 173, 'soft'],
+  [905, 227, 'deep'],
+  [858, 254, 'open'],
+  [811, 227, 'soft'],
+  [811, 173, 'deep'],
+];
+const SEAT_TONE = {
+  speaker: 'fill-brand-600',
+  deep: 'fill-brand-300 dark:fill-brand-700',
+  soft: 'fill-brand-200 dark:fill-brand-800',
+  open: 'fill-white stroke-brand-300 dark:fill-slate-800 dark:stroke-brand-700',
+} as const;
+
+function Huddle() {
+  return (
+    <div
+      aria-hidden
+      data-hero-backdrop="huddle"
+      className={`${LAYER} ${HUDDLE_PAPER} bg-[var(--huddle-paper)]`}
+    >
+      <span className={`absolute inset-0 ${HUDDLE_RINGS}`} />
+      <div className="relative mx-auto h-full max-w-7xl">
+        <svg className={XL_ART}>
+          <circle
+            cx="858"
+            cy="200"
+            r="34"
+            strokeWidth="1.5"
+            className="fill-brand-100 stroke-brand-200 dark:fill-brand-900/40 dark:stroke-brand-800"
+          />
+          <circle
+            cx="858"
+            cy="146"
+            r="18"
+            fill="none"
+            strokeWidth="2"
+            className="stroke-brand-400/70"
+          />
+          {SEATS.map(([x, y, tone]) => (
+            <circle
+              key={`${x}-${y}`}
+              cx={x}
+              cy={y}
+              r="11"
+              strokeWidth="1.5"
+              className={SEAT_TONE[tone]}
+            />
+          ))}
+          <g>
+            <rect
+              x="874"
+              y="104"
+              width="38"
+              height="20"
+              rx="10"
+              strokeWidth="1.2"
+              className="fill-white stroke-brand-200 dark:fill-slate-800 dark:stroke-slate-700"
+            />
+            {[885, 893, 901].map((x) => (
+              <circle key={x} cx={x} cy="114" r="2" className="fill-brand-400" />
+            ))}
+          </g>
+        </svg>
+        {/* Who is in the room, in the band's own colour so the rings stop at its edge. */}
+        <div className="absolute bottom-3 right-6 hidden h-[22px] items-center gap-2 rounded-full border border-brand-300 bg-[var(--huddle-paper)] px-2.5 font-mono text-[10px] tracking-[0.1em] text-brand-600 lg:flex dark:border-brand-700/70 dark:text-brand-400">
+          <span className="size-1.5 rounded-full bg-brand-500" />
+          LIVE · 5 HERE
+        </div>
       </div>
     </div>
   );

@@ -254,6 +254,7 @@ describe('Home’s hero', () => {
     ['livediagram', 'blueprint'],
     ['livedocuments', 'typesetter'],
     ['livedesign', 'shapes'],
+    ['livehuddle', 'huddle'],
   ] as const)('draws %s’s own backdrop behind the band', async (app, backdrop) => {
     renderHome(createFakeIndex(), { app, filter: 'app' });
     const heading = await screen.findByRole('heading', { level: 1 });
