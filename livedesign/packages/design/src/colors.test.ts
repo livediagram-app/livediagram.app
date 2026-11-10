@@ -323,10 +323,11 @@ describe('contrastRatio', () => {
     expect(contrastRatio('#767676', '#ffffff')).toBeCloseTo(4.54, 2);
   });
 
-  it('is NaN for anything but a # hex colour, so no threshold check can pass', () => {
-    expect(contrastRatio('red', '#ffffff')).toBeNaN();
-    // Shorthand reads like its six digits.
+  // Agents write `#fff` and `red` (docs/specs/011-theme/light-and-dark.md "Colours an agent writes").
+  it('reads shorthand and named colours, and is NaN for anything else, so no threshold check can pass', () => {
     expect(contrastRatio('#fff', '#000000')).toBe(21);
+    expect(contrastRatio('white', 'black')).toBeCloseTo(21, 5);
+    expect(contrastRatio('nope', '#ffffff')).toBeNaN();
   });
 
   it('names the AA threshold for normal text', () => {

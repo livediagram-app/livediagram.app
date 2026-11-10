@@ -42,7 +42,7 @@ To ground the rest, a 15-node, 16-edge e-commerce architecture was run through t
 `layoutGraph` (`graph-input.ts`), rendered with `renderElementsToSvg`
 (`packages/design`) and rasterised with `@resvg/resvg-wasm` and the embedded Inter, exactly
 as the MCP does. Crossings and box hits were counted with the existing `arrowPolyline`,
-`pathsCross` and `pathPassesThrough` (`packages/design/src/arrow-path-hits.ts`).
+`pathsCross` and `pathPassesThrough` (`../packages/element-model/src/arrow-path-hits.ts`).
 
 Nodes: web app, mobile app, CDN, API gateway, auth, orders, payments, inventory,
 notifications, event bus, orders DB, inventory DB, Redis cache, Stripe, email provider.
@@ -143,7 +143,7 @@ What livedesign has, by file:
 - `packages/templates`: 68 hand-tuned templates materialised server-side.
 - `packages/design/src/svg-render*.ts` and `../packages/mcp-kit/src/render.ts`: one SVG renderer for
   editor export, MCP preview and api snapshots; resvg rasterisation.
-- `packages/design/src/arrow-path-hits.ts`: path-through-shape and path-crossing geometry,
+- `../packages/element-model/src/arrow-path-hits.ts`: path-through-shape and path-crossing geometry,
   written for arrow rebinding, directly reusable for a lint.
 
 What is missing for the CLI: layout hints (same rank, order within a rank, an edge that does

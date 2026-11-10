@@ -18,7 +18,8 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   multi-colour palette and its root, and each shape kind's colours in a per-shape theme (UML).
 - **Contrast.** Both halves meet WCAG 2.2 AA: text on its fill at 4.5:1 or more, outlines and arrows against the canvas
   at 3:1 or more. Where a derived (or a native) colour falls short, its lightness is moved away from what it sits on
-  until it passes, keeping its hue.
+  until it passes, keeping its hue; where the range runs out first (white on a mid grey just darker than the turn,
+  #777777, stuck at 4.48:1), it is walked the other way, past what it sits on.
   `packages/project/src/theme-halves-contrast.test.ts` checks every theme in both halves, and
   `apps/editor/lib/tab-looks-contrast.test.ts` every look as a light- and a dark-mode viewer sees it (box text, outline
   and arrow).
@@ -26,7 +27,18 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   of every theme, and every table preset's header title on its band. Bold stays white text, so its fill darkens until
   white reads on it; any other short label (Solid's white on a mid accent, the Border tier's accent on white) is walked
   away from its fill. A preset that already read is unchanged. The shared walk lives in
-  `packages/project/src/readable-colour.ts`; `packages/project/src/theme-presets.test.ts` checks every preset.
+  `../packages/element-model/src/readable-colour.ts`; `packages/project/src/theme-presets.test.ts` checks every preset.
+
+## Colours an agent writes
+
+The editor's pickers store `#rrggbb`, but agents and imports write colours the way CSS does: `#fff`, `#fff8`,
+`#0ea5e980`, `red`, `SlateGray`. Every readability rule above reads all of them as the colour they name
+(`hexToRgb` in the shared element model, `../packages/element-model/src/colour-math.ts`, over the parser every
+product's model shares, `@liveworkspace/model-core/css-colour`): the shorthand `#rgb` and `#rgba`, `#rrggbbaa` (the
+`#` optional throughout, surrounding spaces ignored), and the CSS named colours (any case, trimmed). An alpha digit is
+set aside when an ink is judged. `transparent`, `rgb()` strings and anything else stay unread, and an unread colour is
+drawn as written with its label left alone. So a box an agent fills `#fff` gets the deep label a `#ffffff` box gets,
+and one filled `navy` gets white. The stored value is never rewritten.
 
 ## What a viewer sees
 

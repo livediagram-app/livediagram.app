@@ -11,14 +11,14 @@ Scope, by file:
 | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `packages/project/src/arrow-types.ts`                           | `Anchor` (16 ids), `ALL_ANCHORS`, `Endpoint`                                                       |
 | `../packages/element-model/src/anchors.ts`                      | The anchor table: side, position class, box fraction, outward vector                               |
-| `packages/project/src/shape-outline.ts`                         | Anchoring outlines, outline projection, point-inside test                                          |
+| `../packages/element-model/src/shape-outline.ts`                | Anchoring outlines, outline projection, point-inside test                                          |
 | `../packages/model-core/src/svg-path-outline.ts`                | `sampleSvgPath`: an outline polygon from a drawn path (cloud, project)                             |
-| `packages/project/src/anchor-layouts.ts`                        | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |
-| `packages/project/src/shape-geometry.ts`                        | `ACTOR_HULL`, the actor's anchoring hull (D8)                                                      |
-| `packages/project/src/geometry.ts`                              | `anchorPosition`                                                                                   |
-| `packages/project/src/anchor-choice.ts`                         | `exitSideTowards`, `facingSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                      |
-| `packages/project/src/arrow-path.ts`                            | `arrowPathPolyline` (exported centreline), side-aware curve/elbow rules                            |
-| `packages/project/src/arrow-path-hits.ts`                       | `arrowPolyline`, `pathPassesThrough`, `pathsCross`, `pinnedBoxedElement`, `passesThroughOwnShapes` |
+| `../packages/element-model/src/anchor-layouts.ts`               | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |
+| `../packages/element-model/src/shape-geometry.ts`               | `ACTOR_HULL`, the actor's anchoring hull (D8)                                                      |
+| `../packages/element-model/src/geometry.ts`                     | `anchorPosition`                                                                                   |
+| `../packages/element-model/src/anchor-choice.ts`                | `exitSideTowards`, `facingSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                      |
+| `../packages/element-model/src/arrow-path.ts`                   | `arrowPathPolyline` (exported centreline), side-aware curve/elbow rules                            |
+| `../packages/element-model/src/arrow-path-hits.ts`              | `arrowPolyline`, `pathPassesThrough`, `pathsCross`, `pinnedBoxedElement`, `passesThroughOwnShapes` |
 | `packages/project/src/arrow-rebind.ts`                          | `rebindArrowAnchorsAfterMove`, `arrowReferencesAny`                                                |
 | `packages/project/src/arrow-rebind-swap.ts`                     | `swapCrossingEnds`                                                                                 |
 | `packages/project/src/arrow-endpoint-spread.ts`                 | Quarter fans                                                                                       |

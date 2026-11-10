@@ -168,6 +168,15 @@ shape kinds, its fields. Code that reads elements the same way in two or more pr
 - What still differs per product (its union and factories, its parsers and stored-data migrations that name its
   kinds, its vocabulary) stays in its model package. Where a product's copy differed only in an entry for a kind it
   does not have, it took the entry and moved; nothing a product draws or stores changed shape.
+- **Drift is settled before a module moves.** Where the copies differ, each difference is one of three: a fix or
+  improvement one product got and the others did not, which every product then takes (a product change, written in
+  that product's specs first); a real product difference, which the shared module takes as data rather than by asking
+  which product it is in; or wording, which is made one. A kind table (a shape's drawn geometry, its outline, its
+  anchors) holds every product's kinds, each product naming the kinds it holds where it lists them
+  (`SHAPE_GEOMETRY_KINDS` in its `shape-kind.ts`); a module that mixes shared rules with a product's own is split on
+  cohesion (the colour maths is shared, each product's element defaults stay in its `colors.ts`).
+- A generic shared type a product reads under its own union is bound in that product's index
+  (`ElementGrid = ElementGrid<Element>`, `ElementIndex = ElementIndex<Element>`), and its modules import it from there.
 - `@liveworkspace/model-core` stays the vocabulary below it, with nothing of an element union.
 
 ## Adding an app
