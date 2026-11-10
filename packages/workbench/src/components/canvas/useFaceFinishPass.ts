@@ -16,15 +16,8 @@ import {
 import type { Finish } from '@liveworkspace/element-model/finish';
 import { isPillRect } from '@liveworkspace/model-core/face-finish';
 import { builtMarkup, setHtml } from '@liveworkspace/trusted-types';
-import {
-  scheduleFaceTake,
-  type FaceTake,
-  type FaceTakeWhen,
-} from './face-take-batch';
-import {
-  watchUntilSettled,
-  type SettleWatch,
-} from './settle-watch';
+import { scheduleFaceTake, type FaceTake, type FaceTakeWhen } from './face-take-batch';
+import { watchUntilSettled, type SettleWatch } from './settle-watch';
 
 // A face's own parts in its finish on the canvas. Under Marker (docs/specs/008-canvas/finish.md "Marker", "Faces: frames and shapes"):
 // once the face has settled, its frames (outlined HTML boxes) and its SVG shapes are read from the live DOM and

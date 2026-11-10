@@ -163,10 +163,10 @@ log of its own.
 
 | Rule                                                        | File                                                     |
 | ----------------------------------------------------------- | -------------------------------------------------------- |
-| Even slots, spine through the middle, short of the head     | `packages/document/src/concept-timeline.test.ts`         |
-| Turns above and below; stem from the dot to the when        | `packages/document/src/concept-timeline.test.ts`         |
-| Words stay inside the element, centred on the dot           | `packages/document/src/concept-timeline.test.ts`         |
-| Whole when squeezed or given one milestone                  | `packages/document/src/concept-timeline.test.ts`         |
+| Even slots, spine through the middle, short of the head     | `../packages/element-model/src/concept-timeline.test.ts`         |
+| Turns above and below; stem from the dot to the when        | `../packages/element-model/src/concept-timeline.test.ts`         |
+| Words stay inside the element, centred on the dot           | `../packages/element-model/src/concept-timeline.test.ts`         |
+| Whole when squeezed or given one milestone                  | `../packages/element-model/src/concept-timeline.test.ts`         |
 | Made with four milestones and their whens                   | `packages/document/src/concept-timeline-element.test.ts` |
 | Point fields open as milestones, unnamed ones numbered (I1) | `packages/document/src/concept-timeline-element.test.ts` |
 | A read keeps the range                                      | `packages/document/src/concept-timeline-element.test.ts` |

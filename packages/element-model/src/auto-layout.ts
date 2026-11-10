@@ -337,7 +337,10 @@ export function nodesLookUnplaced(elements: Element[]): boolean {
 // Re-lay-out a self-contained set of elements (the nodes + the arrows between
 // them). Non-boxed, non-arrow elements, edgeless boxed content, and arrows with
 // free / external endpoints pass through with only their position untouched.
-export function autoLayoutElements<E extends Element>(elements: E[], opts: AutoLayoutOptions = {}): E[] {
+export function autoLayoutElements<E extends Element>(
+  elements: E[],
+  opts: AutoLayoutOptions = {},
+): E[] {
   // Each element comes back as it was or moved (and an arrow re-routed): still an E.
   return autoLayoutOf(elements, opts) as E[];
 }

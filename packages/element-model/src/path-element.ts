@@ -153,7 +153,10 @@ export function reshapeContour<P extends PathElement>(
   if (placed.length === 0) return null;
   const { subpaths: _subpaths, ...rest } = el;
   // The box and nodes in `rest` are replaced by the contours' own.
-  const next = pathOfContours<P>(rest as Omit<P, 'x' | 'y' | 'width' | 'height' | 'nodes' | 'subpaths'>, placed);
+  const next = pathOfContours<P>(
+    rest as Omit<P, 'x' | 'y' | 'width' | 'height' | 'nodes' | 'subpaths'>,
+    placed,
+  );
   const g = keptInPlace(el, { x: next.x, y: next.y, width: next.width, height: next.height });
   return { ...next, ...g };
 }

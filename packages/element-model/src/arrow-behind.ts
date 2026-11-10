@@ -25,7 +25,13 @@ import {
   rectsIntersect,
   type Rect,
 } from '@liveworkspace/model-core/geometry-primitives';
-import { isBoxed, isDrawnPath, type ArrowElement, type BoxedElement, type Element } from './element';
+import {
+  isBoxed,
+  isDrawnPath,
+  type ArrowElement,
+  type BoxedElement,
+  type Element,
+} from './element';
 
 // How far the break extends beyond the box, in canvas units. Fixed rather
 // than scaled to the box or the stroke: every arrow crossing a given box

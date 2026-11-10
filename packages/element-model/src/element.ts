@@ -15,7 +15,11 @@ import type {
   TextSize,
 } from '@liveworkspace/model-core/basics';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
-import type { BorderRadius, BorderStroke, BorderStyle } from '@liveworkspace/model-core/border-style';
+import type {
+  BorderRadius,
+  BorderStroke,
+  BorderStyle,
+} from '@liveworkspace/model-core/border-style';
 import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
 import type { AttachPoint } from './attachment';
 import type { BoundaryStyle } from './boundary';

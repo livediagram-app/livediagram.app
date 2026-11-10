@@ -301,4 +301,8 @@ export function browserChromeLayout(): { dotX: number[]; navX: number; pillX: nu
 
 /** The parts that take the element's fill: a kind's body (`main`), a frame's outline and a figure's head. A kind
  *  table: each role's kinds are listed above, and a product holding none of them never meets it. */
-export const FILLED_ROLES: ReadonlySet<ShapePartRole> = new Set<ShapePartRole>(['main', 'outline', 'head']);
+export const FILLED_ROLES: ReadonlySet<ShapePartRole> = new Set<ShapePartRole>([
+  'main',
+  'outline',
+  'head',
+]);

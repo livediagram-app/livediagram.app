@@ -510,12 +510,12 @@ per command letter.
 | Rule                                                         | Test                                                                                                         |
 | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
 | resolve order, unknown values, Professional fallbacks, font  | `packages/document/src/finish.test.ts`                                                                       |
-| determinism, seeds differ, outlines, hatching bounds/caps    | `packages/document/src/sketch.test.ts`                                                                       |
+| determinism, seeds differ, outlines, hatching bounds/caps    | `../packages/element-model/src/sketch.test.ts`                                                                       |
 | budgets                                                      | `packages/document/src/sketch.perf.test.ts`                                                                  |
 | export draws sketch strokes / hatching / Professional radius | `packages/document/src/svg-render-finish.test.ts`                                                            |
 | variant drops shadow / peel / border per finish              | `apps/editor/components/canvas/element-variant.test.ts`                                                      |
 | menu rows commit, preview, Follow Tab clears                 | `apps/editor/components/palette/FinishSection.test.tsx`                                                      |
-| backdrops: what sits on a shape, order, finish, speed        | `packages/document/src/sketch-backdrop.test.ts`                                                              |
+| backdrops: what sits on a shape, order, finish, speed        | `../packages/element-model/src/sketch-backdrop.test.ts`                                                              |
 | Professional new arrows angled; avoidance per finish         | `apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                                     |
 | which palette tiles take the finish                          | `apps/editor/components/palette/palette-tile-finish.test.ts`                                                 |
 | applyFinishToEl                                              | `apps/editor/lib/style-presets.test.ts`                                                                      |
@@ -524,7 +524,7 @@ per command letter.
 | Participant cannot write `finish`                            | `packages/document/src/participant-content.leak.test.ts`                                                     |
 | which elements split their face                              | `packages/document/src/finish.test.ts`                                                                       |
 | Marker: finish rules, font, widths, icon weight, sticky      | `packages/document/src/finish.test.ts`                                                                       |
-| Marker: strokes, layers, gestures, pins, trim, heads, rows   | `packages/document/src/marker.test.ts`                                                                       |
+| Marker: strokes, layers, gestures, pins, trim, heads, rows   | `../packages/element-model/src/marker.test.ts`                                                                       |
 | Marker: budgets                                              | `packages/document/src/marker.perf.test.ts`                                                                  |
 | one door to both pens; Marker in the export; backdrops       | `packages/document/src/hand-drawn.test.ts`                                                                   |
 | export split, body placement, defs, fonts                    | `packages/document/src/svg-render-sketch.test.ts`                                                            |
