@@ -742,6 +742,13 @@ granted for. Asking for a `www.` resource with one of those refresh tokens is re
 out, so `RESOURCES` and each app's `API_RESOURCE` stay as they are. Verification already accepts the `www.` twin, so
 a later move needs only the clients' resources re-bound.
 
+**Every client holds its app's resource.** Each client is bound to its app's API as `RESOURCES` names it for that
+environment; a host move re-binds its resources with its redirect URIs, never one without the other. A client whose
+redirect URIs moved but whose resource didn't passes the redirect check and then refuses every guest hand-off and
+sign-in as `invalid_resource`. Staging's livediagram client was left that way by the zone move (2026-10-26), bound
+only to its workers.dev router's API; migration `0022_staging_livediagram_resource.sql` binds it to
+`https://staging.livediagram.app/api` too.
+
 **The session.** In production every cookie this Worker sets (Better Auth's session and `dont_remember`, the
 `lw_guest` guest cookie and the hand-off nonce) is scoped to `Domain=liveworkspace.app`, so one session is valid on
 both hosts. A session made before the move is a host-only cookie on the bare domain: the bare domain's redirect
