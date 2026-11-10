@@ -7106,8 +7106,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       color: {
         type: 'string',
       },
+      gradient: {
+        type: 'string',
+      },
       heading: {
         $ref: '#/components/schemas/RunHeading',
+      },
+      highlight: {
+        type: 'string',
       },
       italic: {
         type: 'boolean',
