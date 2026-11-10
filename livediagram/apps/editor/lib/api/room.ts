@@ -85,6 +85,8 @@ type RoomConnectOptions = {
   ticket?: string | null;
   // A ticket is spent by the upgrade it admits (ws-tickets.ts deletes it), so a reconnect that sent the
   // first one again was refused, and the session lost the room for good. Called before every reconnect.
+  // Null when the api refused the mint (that upgrade is then refused, and the refusal path runs); throws when the
+  // mint never got an answer, which opens no socket and waits out the backoff.
   mintTicket?: () => Promise<string | null>;
   // Who we follow, read at every (re)connect: the room keeps a follow on the socket, so a new socket says it again.
   readFollowing?: () => string | null;
@@ -434,23 +436,36 @@ export function connectRoom(
       // A live session dropped by itself: time the outage until the roster is back.
       if (socketOpened && connectTiming === null)
         reconnectTiming ??= startEditorTiming('RoomReconnect');
-      if (attempts >= MAX_RECONNECT_ATTEMPTS) {
-        settleTimings(false);
-        parked = true;
-        debugLog('[room] reconnect attempts used up; waiting for the network or the tab');
-        return;
-      }
-      const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** attempts);
-      attempts++;
-      reconnectTimer = setTimeout(() => void reopen(), delay);
+      backOff();
     };
     socket.addEventListener('close', onClose);
   };
-  // A reconnect, with a fresh ticket: the room spends each one it admits.
+  // The next attempt after the backoff's wait, or, out of attempts, parked until the network or the tab is back.
+  const backOff = () => {
+    if (attempts >= MAX_RECONNECT_ATTEMPTS) {
+      settleTimings(false);
+      parked = true;
+      debugLog('[room] reconnect attempts used up; waiting for the network or the tab');
+      return;
+    }
+    const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** attempts);
+    attempts++;
+    reconnectTimer = setTimeout(() => void reopen(), delay);
+  };
+  // A reconnect, with a fresh ticket: the room spends each one it admits. A mint that throws never reached the api
+  // (see mintTicket), so no socket opens: one without a ticket is always refused, and a refusal sends the editor
+  // off to ask whether the document was trashed. The attempt waits out the backoff instead.
   const reopen = async () => {
     reconnectTimer = null;
     if (options.mintTicket) {
-      ticket = await options.mintTicket();
+      try {
+        ticket = await options.mintTicket();
+      } catch {
+        if (closed) return;
+        debugLog('[room] ticket mint unreachable; backing off');
+        backOff();
+        return;
+      }
       if (closed) return;
     }
     open();
