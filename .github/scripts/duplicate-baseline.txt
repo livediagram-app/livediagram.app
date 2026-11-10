@@ -122,11 +122,7 @@ livedesign/packages/agent-verbs/src/define.ts	livediagram/packages/agent-verbs/s
 livedesign/packages/agent-verbs/src/folders.ts	livediagram/packages/agent-verbs/src/folders.ts	livedocuments/packages/agent-verbs/src/folders.ts	liveplanner/packages/agent-verbs/src/folders.ts
 livedesign/packages/agent-verbs/src/verbs/image.ts	livediagram/packages/agent-verbs/src/verbs/image.ts	livedocuments/packages/agent-verbs/src/verbs/image.ts
 livedesign/packages/design/src/accent-edge.ts	livedocuments/packages/document/src/accent-edge.ts
-livedesign/packages/design/src/cell-colours.ts	livedocuments/packages/document/src/cell-colours.ts
-livedesign/packages/design/src/chart-axis.ts	livediagram/packages/document/src/chart-axis.ts	liveplanner/packages/project/src/chart-axis.ts
 livedesign/packages/design/src/chart-ink.ts	livedocuments/packages/document/src/chart-ink.ts
-livedesign/packages/design/src/chart-marks.ts	livedocuments/packages/document/src/chart-marks.ts
-livedesign/packages/design/src/chart-types.ts	livediagram/packages/document/src/chart-types.ts	livedocuments/packages/document/src/chart-types.ts	liveplanner/packages/project/src/chart-types.ts
 livedesign/packages/design/src/comment-thread.ts	livedocuments/packages/document/src/comment-thread.ts	liveplanner/packages/project/src/comment-thread.ts
 livedesign/packages/design/src/element-field-values.ts	livedocuments/packages/document/src/element-field-values.ts
 livedesign/packages/design/src/element-fingerprint.ts	livediagram/packages/document/src/element-fingerprint.ts	livedocuments/packages/document/src/element-fingerprint.ts	livehuddle/packages/document/src/element-fingerprint.ts	liveplanner/packages/project/src/element-fingerprint.ts
@@ -136,22 +132,15 @@ livedesign/packages/design/src/page-ink-ground.ts	livedocuments/packages/documen
 livedesign/packages/design/src/page-lock.ts	livedocuments/packages/document/src/page-lock.ts
 livedesign/packages/design/src/page-of.ts	livedocuments/packages/document/src/page-of.ts
 livedesign/packages/design/src/page-paint.ts	livedocuments/packages/document/src/page-paint.ts
-livedesign/packages/design/src/progress-colours.ts	livediagram/packages/document/src/progress-colours.ts	livedocuments/packages/document/src/progress-colours.ts	liveplanner/packages/project/src/progress-colours.ts
 livedesign/packages/design/src/quick-swatch-rederive.ts	livediagram/packages/document/src/quick-swatch-rederive.ts	livedocuments/packages/document/src/quick-swatch-rederive.ts	liveplanner/packages/project/src/quick-swatch-rederive.ts
-livedesign/packages/design/src/quick-swatches.ts	livediagram/packages/document/src/quick-swatches.ts	livedocuments/packages/document/src/quick-swatches.ts	livehuddle/packages/document/src/quick-swatches.ts	liveplanner/packages/project/src/quick-swatches.ts
 livedesign/packages/design/src/retired-patterns.ts	livedocuments/packages/document/src/retired-patterns.ts	liveplanner/packages/project/src/retired-patterns.ts
 livedesign/packages/design/src/sankey-frame.ts	livedocuments/packages/document/src/sankey-frame.ts
 livedesign/packages/design/src/savable.ts	livedocuments/packages/document/src/savable.ts	liveplanner/packages/project/src/savable.ts
-livedesign/packages/design/src/svg-render-charts.ts	livedocuments/packages/document/src/svg-render-charts.ts
 livedesign/packages/design/src/svg-render-image-icon.ts	livediagram/packages/document/src/svg-render-image-icon.ts	livehuddle/packages/document/src/svg-render-image-icon.ts	liveplanner/packages/project/src/svg-render-image-icon.ts
 livedesign/packages/design/src/svg-render-inline-icon.ts	livedocuments/packages/document/src/svg-render-inline-icon.ts
 livedesign/packages/design/src/svg-render-sankey.ts	livedocuments/packages/document/src/svg-render-sankey.ts
-livedesign/packages/design/src/svg-render-table.ts	livediagram/packages/document/src/svg-render-table.ts	livedocuments/packages/document/src/svg-render-table.ts
-livedesign/packages/design/src/table-header-colours.ts	livedocuments/packages/document/src/table-header-colours.ts
 livedesign/packages/design/src/table.ts	livediagram/packages/document/src/table.ts	livedocuments/packages/document/src/table.ts	liveplanner/packages/project/src/table.ts
 livedesign/packages/design/src/theme-graph.ts	livediagram/packages/document/src/theme-graph.ts	livedocuments/packages/document/src/theme-graph.ts
-livedesign/packages/design/src/theme-halves.ts	livedocuments/packages/document/src/theme-halves.ts
-livedesign/packages/design/src/theme-presets.ts	livedocuments/packages/document/src/theme-presets.ts
 livedesign/packages/help-registry/src/telemetry.ts	livediagram/packages/help-registry/src/telemetry.ts	livedocuments/packages/help-registry/src/telemetry.ts	livehuddle/packages/help-registry/src/telemetry.ts
 livedesign/packages/licences/src/overrides.ts	livedocuments/packages/licences/src/overrides.ts	livehuddle/packages/licences/src/overrides.ts	liveplanner/packages/licences/src/overrides.ts
 livedesign/packages/licences/src/product.ts	livediagram/packages/licences/src/product.ts	livedocuments/packages/licences/src/product.ts	livehuddle/packages/licences/src/product.ts	liveplanner/packages/licences/src/product.ts
@@ -313,7 +302,6 @@ livediagram/packages/document/src/legacy-links.ts	livehuddle/packages/document/s
 livediagram/packages/document/src/legacy-text-sizing.ts	livehuddle/packages/document/src/legacy-text-sizing.ts
 livediagram/packages/document/src/malformed-ids.ts	liveplanner/packages/project/src/malformed-ids.ts
 livediagram/packages/document/src/malformed-styles.ts	livehuddle/packages/document/src/malformed-styles.ts
-livediagram/packages/document/src/mind-connector-route.ts	liveplanner/packages/project/src/mind-connector-route.ts
 livediagram/packages/document/src/mind-grow.ts	liveplanner/packages/project/src/mind-grow.ts
 livediagram/packages/document/src/retired-custom-themes.ts	livehuddle/packages/document/src/retired-custom-themes.ts
 livediagram/packages/document/src/retired-themes.ts	livehuddle/packages/document/src/retired-themes.ts
@@ -323,8 +311,6 @@ livediagram/packages/document/src/sequence-element.ts	liveplanner/packages/proje
 livediagram/packages/document/src/sequence-text.ts	liveplanner/packages/project/src/sequence-text.ts
 livediagram/packages/document/src/shape-variants.ts	liveplanner/packages/project/src/shape-variants.ts
 livediagram/packages/document/src/slug.ts	livehuddle/packages/document/src/slug.ts
-livediagram/packages/document/src/svg-render-charts.ts	liveplanner/packages/project/src/svg-render-charts.ts
-livediagram/packages/document/src/svg-render-data.ts	livedocuments/packages/document/src/svg-render-data.ts
 livediagram/packages/document/src/svg-render-entity.ts	liveplanner/packages/project/src/svg-render-entity.ts
 livediagram/packages/document/src/svg-render-inline-icon.ts	livehuddle/packages/document/src/svg-render-inline-icon.ts	liveplanner/packages/project/src/svg-render-inline-icon.ts
 livediagram/packages/document/src/svg-render-sankey.ts	liveplanner/packages/project/src/svg-render-sankey.ts
@@ -333,8 +319,6 @@ livediagram/packages/document/src/svg-render-temperature.ts	liveplanner/packages
 livediagram/packages/document/src/svg-render-wordmark.ts	livehuddle/packages/document/src/svg-render-wordmark.ts
 livediagram/packages/document/src/tab-as-seen.ts	livehuddle/packages/document/src/tab-as-seen.ts
 livediagram/packages/document/src/tab-has-drawing.ts	livehuddle/packages/document/src/tab-has-drawing.ts
-livediagram/packages/document/src/theme-halves.ts	livehuddle/packages/document/src/theme-halves.ts	liveplanner/packages/project/src/theme-halves.ts
-livediagram/packages/document/src/themes-data.ts	livehuddle/packages/document/src/themes-data.ts
 livediagram/packages/document/src/whiteboard.ts	livehuddle/packages/document/src/whiteboard.ts
 livediagram/packages/document/src/wordmark.ts	livehuddle/packages/document/src/wordmark.ts
 livediagram/packages/licences/src/apps.ts	livedocuments/packages/licences/src/apps.ts	liveplanner/packages/licences/src/apps.ts
