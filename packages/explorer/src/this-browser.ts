@@ -12,6 +12,8 @@ import { quoted } from './quoted';
 
 // The Inbox's rows from the same items, kept beside the list for the page (this-browser-inbox.ts).
 export * from './this-browser-inbox';
+// This Browser's folders, kept in the same list (this-browser-folders.ts).
+export * from './this-browser-folders';
 
 export type ThisBrowserItem = {
   id: string;
@@ -28,6 +30,25 @@ export type ThisBrowserItem = {
   // while it is not. The mark lives only in this list: the app's own record never hears of it, so every write of the
   // list carries the marks it already held (writeThisBrowser), and the editor reads it here before it opens one.
   archivedAt?: number | null;
+  // The local folder it sits in (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser, a Space"); absent
+  // or null at This Browser's root. Like the archive mark it lives only in this list, so every write keeps it.
+  folderId?: string | null;
+};
+
+/** One of This Browser's folders: kept only in this list, beside the items, never content. */
+export type ThisBrowserFolder = {
+  id: string;
+  name: string;
+  // Null at This Browser's root.
+  parentId: string | null;
+  createdAt: number;
+  updatedAt: number;
+};
+
+/** The whole stored list: the items and This Browser's folders. */
+export type ThisBrowserStore = {
+  items: ThisBrowserItem[];
+  folders: ThisBrowserFolder[];
 };
 
 /** The This Browser pill's words: its label, and the sentence it gives on hover and to assistive technology. */
@@ -53,14 +74,18 @@ export const THIS_BROWSER_FOCUS =
 // The list is cut at this many, newest change first: a few dozen offline items is a heavy user, and the whole list
 // is parsed on every change.
 export const THIS_BROWSER_MAX = 500;
-const VERSION = 1;
+// Folders are made by hand, one at a time: a couple of hundred is far past any real tree.
+export const THIS_BROWSER_FOLDER_MAX = 200;
+// Version 2 added the folders; a version 1 list (items alone) reads as version 2 with none, every item at the root.
+const VERSION = 2;
+const READS = new Set([1, 2]);
 
 export const thisBrowserKey = (app: App) => `liveworkspace:this-browser:${app}`;
 
 // The same tab's writes: a `storage` event only reaches other tabs.
 const SAME_TAB_EVENT = 'liveworkspace:this-browser';
 
-type Stored = { v: number; items: ThisBrowserItem[] };
+type Stored = { v: number; items: ThisBrowserItem[]; folders?: ThisBrowserFolder[] };
 
 function storage(): Storage | null {
   try {
@@ -90,49 +115,81 @@ function clean(raw: unknown): ThisBrowserItem | null {
     favourite: r.favourite === true,
     // Only an archived one carries the mark, so the list stays as it was for every other.
     ...(archivedAt !== null ? { archivedAt } : {}),
+    // Only one in a folder carries it.
+    ...(typeof r.folderId === 'string' && r.folderId ? { folderId: r.folderId } : {}),
   };
 }
 
-/** The list as this app last wrote it: newest change first, never more than THIS_BROWSER_MAX. */
-export function readThisBrowser(app: App, store: Storage | null = storage()): ThisBrowserItem[] {
-  let raw: string | null = null;
-  try {
-    raw = store?.getItem(thisBrowserKey(app)) ?? null;
-  } catch {
-    return [];
-  }
-  if (!raw) return [];
+function cleanFolder(raw: unknown): ThisBrowserFolder | null {
+  const r = raw as Partial<Record<keyof ThisBrowserFolder, unknown>> | null;
+  if (!r || typeof r.id !== 'string' || !r.id || typeof r.name !== 'string') return null;
+  const updatedAt = num(r.updatedAt, 0);
+  return {
+    id: r.id,
+    name: r.name,
+    parentId: typeof r.parentId === 'string' && r.parentId ? r.parentId : null,
+    createdAt: num(r.createdAt, updatedAt),
+    updatedAt,
+  };
+}
+
+const EMPTY_STORE = (): ThisBrowserStore => ({ items: [], folders: [] });
+
+/** The stored list, items and folders, as last written: a version 1 list (before folders) reads with none. An item
+ *  whose folder is gone reads at the root, and so does a folder whose parent is gone. */
+export function parseThisBrowserStore(raw: string | null): ThisBrowserStore {
+  if (!raw) return EMPTY_STORE();
   try {
     const parsed = JSON.parse(raw) as Partial<Stored>;
-    if (parsed.v !== VERSION || !Array.isArray(parsed.items)) return [];
-    return parsed.items.flatMap((item) => clean(item) ?? []);
+    if (typeof parsed.v !== 'number' || !READS.has(parsed.v) || !Array.isArray(parsed.items))
+      return EMPTY_STORE();
+    const folders = Array.isArray(parsed.folders)
+      ? parsed.folders.flatMap((f) => cleanFolder(f) ?? [])
+      : [];
+    const ids = new Set(folders.map((f) => f.id));
+    return {
+      folders: folders.map((f) =>
+        f.parentId && (!ids.has(f.parentId) || f.parentId === f.id) ? { ...f, parentId: null } : f,
+      ),
+      items: parsed.items.flatMap((item) => {
+        const kept = clean(item);
+        if (!kept) return [];
+        if (kept.folderId && !ids.has(kept.folderId)) {
+          const { folderId: _gone, ...atRoot } = kept;
+          return [atRoot];
+        }
+        return [kept];
+      }),
+    };
   } catch {
-    return [];
+    return EMPTY_STORE();
   }
 }
 
-const newestFirst = (a: ThisBrowserItem, b: ThisBrowserItem) => b.updatedAt - a.updatedAt;
-
-/** Replaces the whole list (the app's offline store, read once as it starts). */
-export function writeThisBrowser(
+/** The stored list, items and folders (parseThisBrowserStore), read from this browser. */
+export function readThisBrowserStore(
   app: App,
-  items: readonly ThisBrowserItem[],
+  store: Storage | null = storage(),
+): ThisBrowserStore {
+  try {
+    return parseThisBrowserStore(store?.getItem(thisBrowserKey(app)) ?? null);
+  } catch {
+    return EMPTY_STORE();
+  }
+}
+
+/** Writes the whole list, items and folders, as they are given, and tells this tab's readers. Removed when empty. */
+export function writeThisBrowserStore(
+  app: App,
+  next: ThisBrowserStore,
   store: Storage | null = storage(),
 ): void {
-  // The archive marks the list already held stay on their items: the app republishes its records, which carry none.
-  const marks = new Map(
-    readThisBrowser(app, store).flatMap((i) => (i.archivedAt ? [[i.id, i.archivedAt]] : [])),
-  );
-  const kept = [...items]
-    .map((i) =>
-      i.archivedAt === undefined && marks.has(i.id) ? { ...i, archivedAt: marks.get(i.id)! } : i,
-    )
-    .sort(newestFirst)
-    .slice(0, THIS_BROWSER_MAX);
+  const items = [...next.items].sort(newestFirst).slice(0, THIS_BROWSER_MAX);
+  const folders = next.folders.slice(0, THIS_BROWSER_FOLDER_MAX);
   try {
     if (!store) return;
-    if (kept.length === 0) store.removeItem(thisBrowserKey(app));
-    else store.setItem(thisBrowserKey(app), JSON.stringify({ v: VERSION, items: kept }));
+    if (items.length === 0 && folders.length === 0) store.removeItem(thisBrowserKey(app));
+    else store.setItem(thisBrowserKey(app), JSON.stringify({ v: VERSION, items, folders }));
   } catch {
     // Storage full or blocked: the Explorer goes without This Browser, the app's own view still lists them.
     return;
@@ -142,6 +199,37 @@ export function writeThisBrowser(
   }
 }
 
+/** The list as this app last wrote it: newest change first, never more than THIS_BROWSER_MAX. */
+export function readThisBrowser(app: App, store: Storage | null = storage()): ThisBrowserItem[] {
+  return readThisBrowserStore(app, store).items;
+}
+
+function newestFirst(a: ThisBrowserItem, b: ThisBrowserItem) {
+  return b.updatedAt - a.updatedAt;
+}
+
+/** Replaces the whole list (the app's offline store, read once as it starts). */
+export function writeThisBrowser(
+  app: App,
+  items: readonly ThisBrowserItem[],
+  store: Storage | null = storage(),
+): void {
+  // The archive marks and folders the list already held stay on their items, and the folders stay: the app
+  // republishes its records, which carry none of them.
+  const before = readThisBrowserStore(app, store);
+  const held = new Map(before.items.map((i) => [i.id, i]));
+  const kept = items.map((i) => {
+    const was = held.get(i.id);
+    if (!was) return i;
+    let next = i;
+    if (i.archivedAt === undefined && was.archivedAt)
+      next = { ...next, archivedAt: was.archivedAt };
+    if (i.folderId === undefined && was.folderId) next = { ...next, folderId: was.folderId };
+    return next;
+  });
+  writeThisBrowserStore(app, { items: kept, folders: before.folders }, store);
+}
+
 const sameItem = (a: ThisBrowserItem, b: ThisBrowserItem) =>
   a.title === b.title &&
   a.createdAt === b.createdAt &&
@@ -149,7 +237,9 @@ const sameItem = (a: ThisBrowserItem, b: ThisBrowserItem) =>
   a.lastOpenedAt === b.lastOpenedAt &&
   a.trashedAt === b.trashedAt &&
   a.favourite === b.favourite &&
-  (a.archivedAt ?? null) === (b.archivedAt ?? null);
+  (a.archivedAt ?? null) === (b.archivedAt ?? null) &&
+  // The app's records carry no folder: only a write that names one changes it.
+  (b.folderId === undefined || (a.folderId ?? null) === (b.folderId ?? null));
 
 /** One item changed (written, renamed, trashed, restored, opened). */
 export function putThisBrowserItem(

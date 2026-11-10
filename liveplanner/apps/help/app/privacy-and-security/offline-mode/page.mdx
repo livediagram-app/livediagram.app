@@ -18,7 +18,7 @@ Plans are saved to liveplanner so you can reach them from any device and share t
 - **Once you've signed in**, new plans go to your account.
 - **A plan made inside a folder or a team** goes to liveplanner, whoever makes it, because that is where the folder or team lives.
 
-A plan in This Browser is written to your browser's own storage (IndexedDB) and opens like any other. A **This Browser** badge next to its name in the editor marks it, so you always know which plans live only in this browser. Hover or focus the badge to read that clearing this browser's site data deletes the plan. The [Explorer](/help/explorer/explorer-page/) lists them under **This Browser**, in its sidebar, with how many there are, and their own page, [This Browser](/offline), lists them too.
+A plan in This Browser is written to your browser's own storage (IndexedDB) and opens like any other. A **This Browser** badge next to its name in the editor marks it, so you always know which plans live only in this browser. Hover or focus the badge to read that clearing this browser's site data deletes the plan. The [Explorer](/help/explorer/explorer-page/) lists them under **This Browser**, a space of its own in its sidebar's **Spaces** group, with how many there are, and their own page, [This Browser](/offline), lists them too.
 
 <Note>
   A plan in This Browser is **not synced and not backed up**. It lives only in this browser:
@@ -34,6 +34,10 @@ A plan in This Browser is a normal plan: every editor feature works, including b
 - **Live collaboration** and **teams** don't apply; a plan in This Browser is yours alone. Comments still work, but only you see them.
 - **Add to Plan** is unavailable for a plan in This Browser in either direction.
 
+## Folders in This Browser
+
+**New Folder** on the This Browser page, or the **⋯** menu on its row in the sidebar, makes a folder that lives in this browser too, and folders can hold folders, as in My Work. **Move to Folder** on a plan's menu, or a drag onto a folder, files it. A folder's menu has **Rename**, **New Subfolder**, **Move Folder** and **Delete Folder**; deleting a folder never deletes what is in it, which moves up a level. The folders are kept in this browser alone, like the plans in them.
+
 ## Archiving a plan in This Browser
 
 **Move to Archived** works on a plan in This Browser too. It never leaves this browser: it moves out of the This Browser list into **Archived**, and it won't open until you move it out. Opening it shows a **Plan Archived** card with **Change Folder**, which puts it back in This Browser (or, when you are signed in, moves it into your account). Clearing this browser's data removes it like any other plan kept here.
@@ -42,5 +46,6 @@ A plan in This Browser is a normal plan: every editor feature works, including b
 
 - **When you sign in** with plans in This Browser, we offer to move them to your account in a **Move Plans in This Browser to Your Account?** dialog. Every one is ticked; untick any you want to keep in this browser, then **Move**. **Not Now** leaves them where they are, and we only ask again when there are more.
 - **Sync Plan**, from the Share dialog, uploads a plan in This Browser to liveplanner, signed in or not. It becomes a normal plan, shareable and listed in your space in the Explorer, and the copy in this browser is removed. A guest's synced plans move to the account when they sign in, like the rest of their work.
+- **A plan in a folder keeps its place.** Sync Plan offers the My Work folder with the same name (or My Work itself when there is none) and says where it will go. The folder in this browser stays, empty, until you delete it.
 
 </ArticleLayout>

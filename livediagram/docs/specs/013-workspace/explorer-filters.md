@@ -51,7 +51,7 @@ Which apps' items a list holds is the **Canvases / All** switch in the page head
   from a subfolder names its folder.
 - The old Generated view's address, `/explorer/generated`, opens Search results filtered by `made-by:ai`.
 - **This Browser** (`/explorer/offline`) takes the lens too: the field and chip row narrow the canvases kept only in
-  this browser. The index never sees them, so the Explorer matches them itself (`thisBrowserSubject`, `compileLens`):
+  this browser at the level shown, and its local folders there by name. The index never sees them, so the Explorer matches them itself (`thisBrowserSubject`, `compileLens`):
   the words against the name, Edited against the last change, Opens in against this app, People as the reader's
   own and Space as My Work (a Space token is inert here, as on any scoped view). Template, Made by AI and Mode are
   not kept in this browser's list, so the chip row offers no chip for them there; a typed token for one still reads,

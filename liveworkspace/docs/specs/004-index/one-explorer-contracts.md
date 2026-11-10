@@ -806,6 +806,23 @@ Work I handed out, threads I replied in and form responses are listed but not co
 every 30 seconds), keeping the list if that read fails. An app may add rows the index never sees (an app's items in
 This Browser) through the Explorer's `inbox` prop; they carry the This Browser pill.
 
+## This Browser's list (in the browser, never the index)
+
+Not an index contract: the shape every app's offline store and the Explorer on its address share in localStorage
+([one-explorer.md "This Browser, a Space"](one-explorer.md#this-browser-a-space)), `@liveworkspace/explorer/this-browser`.
+
+- **`liveworkspace:this-browser:<app>`**: `{ v: 2, items: ThisBrowserItem[], folders: ThisBrowserFolder[] }`.
+  `ThisBrowserItem` is `{ id, title, createdAt, updatedAt, lastOpenedAt, trashedAt, favourite, archivedAt?,
+folderId? }`; `ThisBrowserFolder` is `{ id, name, parentId, createdAt, updatedAt }` (`parentId` null at the root).
+  Items newest change first, at most 500; folders at most 200. Never content.
+- **Version 1** (`{ v: 1, items }`, before folders) reads as version 2 with `folders: []` and every item at the root;
+  the next write stores version 2. Any other version, or a garbled value, reads as empty.
+- **Writes keep what the app doesn't know.** A write of the items (the app's `publish` and `note`) keeps the folders
+  and each item's `folderId` and `archivedAt` the list already held. The key is removed only when there are no items
+  and no folders.
+- **`liveworkspace:this-browser-sync-place:<app>`**: `{ [itemId]: { folderId, at } }`, where a page's handed-over
+  Sync should land in the account (an account folder id), kept at most a day and dropped once used.
+
 ## What goes away in each app, as it moves
 
 Its tables for folders, favourites, opens, Trash state, share links, shared-with, placement

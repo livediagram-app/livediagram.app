@@ -38,6 +38,8 @@ export type MoveToFolderDialogProps = {
   spaces?: readonly PlacementSpace[];
   currentSpace?: string | null;
   onPickSpace?: (value: string) => void;
+  // The line under the title, where the default ("Pick a destination folder or team.") would mislead.
+  subtitle?: string;
 };
 
 export function MoveToFolderDialog({
@@ -54,6 +56,7 @@ export function MoveToFolderDialog({
   spaces,
   currentSpace = null,
   onPickSpace,
+  subtitle,
 }: MoveToFolderDialogProps) {
   const current = currentSpace ?? placementValue(currentTeamId, currentFolderId);
   const [placement, setPlacement] = useState(current);
@@ -69,11 +72,12 @@ export function MoveToFolderDialog({
       <DialogHeader
         title={`Move “${subjectName}”`}
         subtitle={
-          subjectKind === 'folder'
+          subtitle ??
+          (subjectKind === 'folder'
             ? 'Pick the folder it should live inside.'
             : teamList.length > 0 || onCreateTeam
               ? 'Pick a destination folder or team.'
-              : 'Pick a destination folder.'
+              : 'Pick a destination folder.')
         }
       >
         <DialogCloseButton onClick={onClose} />

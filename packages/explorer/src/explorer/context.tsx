@@ -95,6 +95,12 @@ export type DialogTarget =
   | { kind: 'archived-local'; item: ThisBrowserItem }
   // Change Folder for an archived This Browser item: back to This Browser, or (signed in) into the account.
   | { kind: 'move-local'; item: ThisBrowserItem }
+  // Move to Folder for a live This Browser item: one of This Browser's folders, or (signed in) the account's places
+  // through Sync (one-explorer.md "This Browser, a Space").
+  | { kind: 'move-local-item'; item: ThisBrowserItem }
+  // One of This Browser's own folders: moved within This Browser, or deleted (its contents up a level).
+  | { kind: 'move-local-folder'; folderId: string }
+  | { kind: 'delete-local-folder'; folderId: string }
   | null;
 
 export type ExplorerContextValue = {

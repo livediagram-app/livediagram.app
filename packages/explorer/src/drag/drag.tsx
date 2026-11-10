@@ -30,7 +30,8 @@ import { useExplorer } from '../explorer/context';
 import { useHostExtras } from '../explorer/host';
 import { canManage } from '../explorer/menus';
 import { openThisBrowserItem } from '../explorer/ThisBrowser';
-import type { ThisBrowserItem } from '../this-browser';
+import { moveThisBrowserItem, readThisBrowserStore, type ThisBrowserItem } from '../this-browser';
+import { SIDEBAR_LABELS } from '../views';
 import { useDragging, useDragStore } from './store';
 import { quoted } from '../quoted';
 
@@ -48,6 +49,11 @@ export const TRASH_GULP_MS = 250;
 export const TRASH_DROP_COPY = { waiting: 'Drop to Trash', over: 'Let go to trash it' } as const;
 
 export type DropPlace = { teamId: string | null; folderId: string | null };
+/** A place in This Browser (one-explorer.md "This Browser, a Space"): one of its folders, or its root (null). Only an
+ *  item kept in this browser drops there. */
+export type LocalDropPlace = { local: string | null };
+
+const isLocalPlace = (to: DropPlace | LocalDropPlace): to is LocalDropPlace => 'local' in to;
 
 type SourceProps = {
   draggable?: true;
@@ -106,13 +112,36 @@ export const THIS_BROWSER_DROP_COPY = {
     `${quoted(name)} is kept only in this browser. Sign in and sync it to your account to put it in a folder.`,
 } as const;
 
+/** Moves an item kept in this browser into one of This Browser's folders (null: its root), saying where with an
+ *  Undo, as an account item's move does. The menu's Move to Folder and a drop both come here. */
+export function useMoveLocal(): (item: ThisBrowserItem, folderId: string | null) => void {
+  const { app, toast } = useExplorer();
+  return useCallback(
+    (item: ThisBrowserItem, folderId: string | null) => {
+      const from = readThisBrowserStore(app).items.find((i) => i.id === item.id)?.folderId ?? null;
+      if (!moveThisBrowserItem(app, item.id, folderId)) return;
+      const folders = readThisBrowserStore(app).folders;
+      const where = folderId
+        ? (folders.find((f) => f.id === folderId)?.name ?? 'the folder')
+        : SIDEBAR_LABELS.thisBrowser;
+      toast.show(`Moved ${quoted(item.title || 'Untitled')} to ${where}.`, {
+        tone: 'success',
+        action: { label: 'Undo', run: () => void moveThisBrowserItem(app, item.id, from) },
+      });
+    },
+    [app, toast],
+  );
+}
+
 /** What a drop does with an item kept only in this browser, through This Browser's own verbs: the Trash asks before
  *  deleting it for good (`remove`), and a place asks to sync it into the account first (`sync`, or `syncHref` on
  *  the page). Where the host has neither, the drop says why, rather than doing nothing. */
 function useThisBrowserDrop() {
   const { openDialog, toast } = useExplorer();
   const { thisBrowser } = useHostExtras();
+  const moveLocal = useMoveLocal();
   return {
+    toLocal: moveLocal,
     toTrash: (item: ThisBrowserItem) => {
       if (thisBrowser?.remove) return openDialog({ kind: 'delete-local', item });
       toast.show(THIS_BROWSER_DROP_COPY.trash(item.title || 'Untitled'), {
@@ -194,7 +223,7 @@ export function useDropMove() {
  * row opens under it), and again only after the drag has left and come back.
  */
 export function useDropTarget(
-  to: DropPlace | null,
+  to: DropPlace | LocalDropPlace | null,
   { onLongHover }: { onLongHover?: () => void } = {},
 ): { over: boolean; handlers: DropHandlers | Record<string, never> } {
   const store = useDragStore();
@@ -202,7 +231,15 @@ export function useDropTarget(
   const local = useThisBrowserDrop();
   const accepts = (e: DragEvent) => {
     if (to === null) return false;
-    const kind = store.get()?.kind;
+    const payload = store.get();
+    const kind = payload?.kind;
+    // A place in This Browser takes only its own items, and not where one already is.
+    if (isLocalPlace(to))
+      return (
+        payload?.kind === 'local' &&
+        hasType(e, THIS_BROWSER_DRAG_MIME) &&
+        (payload.item.folderId ?? null) !== to.local
+      );
     return (
       (kind === 'item' && hasType(e, ITEM_DRAG_MIME)) ||
       (kind === 'local' && hasType(e, THIS_BROWSER_DRAG_MIME))
@@ -265,7 +302,9 @@ export function useDropTarget(
         opened.current = false;
         reset();
         store.set(null);
-        if (payload?.kind === 'item') void move(payload.item, to);
+        if (isLocalPlace(to)) {
+          if (payload?.kind === 'local') local.toLocal(payload.item, to.local);
+        } else if (payload?.kind === 'item') void move(payload.item, to);
         else if (payload?.kind === 'local') local.toPlace(payload.item, to);
       },
     },

@@ -47,7 +47,7 @@ The sidebar shares Home's front-page language ([Explorer Home](explorer-home.md#
   slate wash.
 - **Tiles.** Every top-level row of Overview and Spaces carries its icon on a small rounded **tile** (24 px, radius
   8 px) tinted in the row's **tone**: Home and My Work sky, Inbox violet, Timeline amber, Shared With Me emerald,
-  a team indigo, Invites rose. New Team and the rows of More (This Browser, Tags, Library, Trash) keep a bare slate
+  a team indigo, This Browser teal, Invites rose. New Team and the rows of More (Tags, Library, Trash) keep a bare slate
   icon, so the places and views people go to most read first. Nested rows (folders, a team's folders, the Library
   pages, tags) keep a bare icon too.
 - **The current row** is a raised pill in the brand's rose: white, a hairline rose edge and a soft rose shadow, its
@@ -82,13 +82,20 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 
 ### Spaces
 
-| Row       | Opens                             | Children                | Badge                      |
-| --------- | --------------------------------- | ----------------------- | -------------------------- |
-| My Work   | `/explorer/all`, the My Work root | The root folders        | None                       |
-| Each team | `/explorer/team?id=<id>`          | The team's root folders | Member count, when above 1 |
-| Invites   | `/explorer/invites`               | None                    | Pending invites            |
-| New Team  | The team dialog, then the team    | None                    | None                       |
+| Row          | Opens                             | Children                | Badge                      |
+| ------------ | --------------------------------- | ----------------------- | -------------------------- |
+| My Work      | `/explorer/all`, the My Work root | The root folders        | None                       |
+| Each team    | `/explorer/team?id=<id>`          | The team's root folders | Member count, when above 1 |
+| This Browser | `/explorer/offline`               | Its local root folders  | Designs in this browser    |
+| Invites      | `/explorer/invites`               | None                    | Pending invites            |
+| New Team     | The team dialog, then the team    | None                    | None                       |
 
+- **This Browser** is a Space of its own ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#this-browser-a-space) "This Browser, a Space"). It shows only
+  while this browser holds at least one live offline design or one local folder, or while its view is the current
+  one (so the highlighted row never vanishes under the reader). It has local folders (New Folder, Rename, Move to
+  Folder, Delete Folder, nesting as My Work's do), each at `/explorer/offline?folder=<id>`; its view shows the
+  folders as cards, then the designs. Sync Design of a design in a local folder offers the My Work folder of the same
+  name. Its designs are the reader's own ([designs in This Browser](#designs-in-this-browser)).
 - **The My Work root** lists its root folders, then its root designs, newest first. A team's root does the
   same for the team. The old Unsorted, Generated and Dynamic addresses still answer: `/explorer/unsorted` and
   `/explorer/dynamic` open the My Work root, `/explorer/generated` opens Search results filtered by
@@ -111,15 +118,11 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 
 ### More
 
-| Row          | Opens                                  | Children                          | Badge                   |
-| ------------ | -------------------------------------- | --------------------------------- | ----------------------- |
-| Library      | Nothing: the row expands and collapses | Recent, Favourites, Image Gallery | None                    |
-| This Browser | `/explorer/offline`                    | None                              | Designs in this browser |
-| Trash        | `/explorer/trash` ([Trash](trash.md))  | None                              | None                    |
+| Row     | Opens                                  | Children                          | Badge |
+| ------- | -------------------------------------- | --------------------------------- | ----- |
+| Library | Nothing: the row expands and collapses | Recent, Favourites, Image Gallery | None  |
+| Trash   | `/explorer/trash` ([Trash](trash.md))  | None                              | None  |
 
-- **This Browser** shows only while this browser holds at least one offline design, or while its view is the current
-  one (so the highlighted row never vanishes under the reader). Its designs are the reader's own
-  ([designs in This Browser](#designs-in-this-browser)).
 - **Library** has no view of its own: activating it expands or collapses it. It opens by itself when one of its
   pages is the current view. Its **Image Gallery** is the person's images, read from livedesign's API
   (`/api/images`) with the designs each is used in; images are uploaded and deleted there.
@@ -180,10 +183,10 @@ its own (**Timeline**).
 | Overview      | All four               | All four               |
 | My Work       | Yes                    | Yes                    |
 | Teams         | None                   | One row per team       |
+| This Browser  | While it holds designs | While it holds designs |
 | Invites       | No                     | While one is pending   |
 | New Team      | No                     | Yes                    |
 | Sign-in nudge | Yes                    | No                     |
-| This Browser  | While it holds designs | While it holds designs |
 | Library       | Yes                    | Yes                    |
 | Trash         | Yes                    | Yes                    |
 
@@ -294,8 +297,8 @@ aside: the panel reaches under the strip and they would cover its header.
 
 The rail opens with **New Design** (one click to a new design; a "New" chip first in the row on a phone), then the
 sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox, Timeline,
-Shared With Me; My Work, each team and New Team (signed in); Favourites, This Browser (while this browser holds
-designs, with their count), Library and Trash. Shared With Me carries its count (the panel reads no other feed until
+Shared With Me; My Work, each team, This Browser (while this browser holds designs or a local folder, with their
+count) and New Team (signed in); Favourites, Library and Trash. Shared With Me carries its count (the panel reads no other feed until
 its section is shown). No
 Invites or sign-in nudge: those are the Explorer page's. A team's pane has a **Members** button that opens the
 team's card in a dialog, where the team is run as on the page.
@@ -324,7 +327,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 | Timeline       | The Timeline ([Timeline](timeline.md)) as a list: each event a row (its glyph, its subject, its reason and time) under its day, **Show Earlier** to page back                                                                                                                                                                                                                                                | None       |
 | Shared With Me | The designs shared with the reader, as rows                                                                                                                                                                                                                                                                                                                                                                  | None       |
 | My Work        | The root folders as preview cards (their counts on the picture), then the root designs as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it                                                                                         | New Folder |
-| This Browser   | The designs kept only in this browser, each a row with a compact mark, opening in the editor; signed in, **Sync Design** runs in place                                                                                                                                                                                                                                                                       | None       |
+| This Browser   | Its local folders as cards, then the designs kept only in this browser, each a row with a compact mark, opening in the editor; signed in, **Sync Design** runs in place                                                                                                                                                                                                                                      | None       |
 | A team         | The team's folders, then its designs, the same way                                                                                                                                                                                                                                                                                                                                                           | New Folder |
 | Library        | The Image Gallery, read over livedesign's own API (`/api/images`, the sites registry's `imagesPath`) with the person's Bearer (`apps/live/lib/explorer-library.ts`)                                                                                                                                                                                                                                          | None       |
 | Trash          | A line on the 30 days, then each deleted design as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                                                                                                                                                        | None       |
