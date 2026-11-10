@@ -1,0 +1,282 @@
+'use client';
+
+import { ROOM_FULL_NOTICE } from '@/lib/api/room';
+import { useCallback, useRef, useState } from 'react';
+import { useFacilitator } from '@/hooks/collab/useFacilitator';
+import { usePerTabLoad } from '../usePerTabLoad';
+import { useRoomConnection } from '../useRoomConnection';
+import { useRoomResync } from '../useRoomResync';
+import { usePresenceBroadcast } from '../usePresenceBroadcast';
+import { useChangesetFeed } from '../useChangesetFeed';
+import type { EditorDocumentSlice } from './useEditorDocument';
+import type { EditorHistorySlice } from './useEditorUndoState';
+import type { EditorSelectionSlice } from './useEditorSelection';
+import type { EditorCollaborationSlice } from './useEditorCollaboration';
+import type { EditorPersistenceSlice } from './useEditorPersistence';
+
+// The realtime room's connection and everything it feeds: resync, relayed changesets, avatar pushes, the
+// facilitator, the presence broadcast and the per-tab lazy load. A slice of useEditorState
+// (../useEditorState.ts): it takes the slices composed before it and returns its own, with `view`, its part of
+// the editor's view-model.
+export function useEditorRoom({
+  fromDocument,
+  fromHistory,
+  fromSelection,
+  fromCollaboration,
+  fromPersistence,
+}: {
+  fromDocument: EditorDocumentSlice;
+  fromHistory: EditorHistorySlice;
+  fromSelection: EditorSelectionSlice;
+  fromCollaboration: EditorCollaborationSlice;
+  fromPersistence: EditorPersistenceSlice;
+}) {
+  const {
+    countAppliedOp,
+    documentId,
+    hydrated,
+    lastSavedNameRef,
+    lastSavedTabsRef,
+    loadedTabIdsRef,
+    markTabLoaded,
+    ownWrites,
+    remoteOpJournalRef,
+    selfParticipant,
+    setLoadedTabIds,
+    setSelfParticipant,
+    setTabLoadErrors,
+    setTabLoadRetryNonce,
+    tabLoadRetryNonce,
+    toast,
+  } = fromDocument;
+  const { applyRemoteOp, applyRemoteTabs } = fromHistory;
+  const {
+    activeId,
+    selectionStore,
+    sessionTabScope,
+    setEditingId,
+    setMultiSelectedIds,
+    setSelectedId,
+  } = fromSelection;
+  const {
+    canEdit,
+    documentTeamId,
+    followingRef,
+    lastSeenRef,
+    livePresence,
+    markSeen,
+    participant,
+    realtime,
+    roomRef,
+    sessionShareCode,
+    sessionShareCodeRef,
+    setFollowerIds,
+    setLiveAgents,
+    setLivePresence,
+    setRemoteAvatars,
+    setRemoteCursors,
+    setRemoteSelections,
+    setRemoteTabFocus,
+    setRemoteViewports,
+  } = fromCollaboration;
+  const { documentTrashed, selfParticipantRef, setDocumentName, tabsRef } = fromPersistence;
+  // Filled in useEditorFollowing, once the viewport they navigate through exists: the changeset feed and the
+  // room read them at call time.
+  const revealChangesetRef = useRef<((tabId: string, ids: readonly string[]) => void) | null>(null);
+  const receiveFocusRef = useRef<
+    ((from: string, tabId: string, at: { x: number; y: number }) => void) | null
+  >(null);
+  // In-place recovery when the room can't replay our reconnect gap
+  // (docs/specs/012-collaboration/resync-without-reload.md), in place of the page reload this used to do.
+  const resyncFromServer = useRoomResync({
+    documentId,
+    selfId: selfParticipant.id,
+    sessionShareCode,
+    tabsRef,
+    loadedTabIdsRef,
+    applyRemoteTabs,
+    lastSavedTabsRef,
+    setTabLoadErrors,
+    noteChangesetSeen: realtime.changesetSeen.noteSeen,
+  });
+  // Agent changesets relayed through the room (docs/specs/024-agents/agent-changesets.md "In the
+  // editor"): applied, outlined, toasted. See useChangesetFeed.
+  const changesetFeed = useChangesetFeed({
+    documentId,
+    selfId: selfParticipant.id,
+    sessionShareCodeRef,
+    seenRef: realtime.changesetSeen.seenRef,
+    noteSeen: realtime.changesetSeen.noteSeen,
+    loadedTabIdsRef,
+    markTabLoaded,
+    applyRemoteOp,
+    saveBaseline: { tabs: lastSavedTabsRef, name: lastSavedNameRef, journal: remoteOpJournalRef },
+    countAppliedOp,
+    refetchTabs: resyncFromServer,
+    // Declared with the viewport, further down.
+    revealInView: (tabId, ids) => revealChangesetRef.current?.(tabId, ids),
+    toast,
+    canUndo: canEdit,
+  });
+  // Realtime room: WebSocket per shared document (presence + ops). See
+  // useRoomConnection.
+  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a shove somebody sent us, bumped by a sequence
+  // number so two identical pushes both land. Canvas replays it onto our own
+  // character — a push is a request to its owner, never a remote write.
+  const [avatarShove, setAvatarShove] = useState<{ dx: number; dy: number; seq: number } | null>(
+    null,
+  );
+  const receiveAvatarPush = useCallback((dx: number, dy: number) => {
+    setAvatarShove((prev) => ({ dx, dy, seq: (prev?.seq ?? 0) + 1 }));
+  }, []);
+
+  // Who is running this session (docs/specs/012-collaboration/facilitator.md). Declared before the room
+  // connection because the socket hands it every answer and asks it for the
+  // token on each hello.
+  const facilitator = useFacilitator({
+    documentId,
+    send: (msg) => roomRef.current?.send(msg),
+    // toast.info, so the Show notifications preference (docs/specs/007-editor/user-preferences.md) governs these
+    // exactly as it governs every other announcement.
+    onNotice: (message) => toast.info(message),
+    // Names come from the roster we already hold, so a renamed participant's
+    // announcement reads correctly.
+    nameOf: (presenceId) => livePresence.find((p) => p.id === presenceId)?.name ?? null,
+  });
+
+  // The facilitator has freed an element we were holding (docs/specs/007-editor/editor-app.md lock,
+  // docs/specs/012-collaboration/facilitator.md). Only our socket is sent this, so there is no target id to check.
+  //
+  // Clearing `selectedId` is the whole of it: usePresenceBroadcast already
+  // fires a `select` op on every change, so peers' locks fall away through the
+  // path that was there before this feature, and the room announces nothing to
+  // anyone else. Editing is dropped too — the lock exists precisely so two
+  // people don't type into one element, and leaving an open editor behind
+  // would hand back the thing the release was meant to take away.
+  const receiveSelectionReleased = useCallback(
+    ({ elementId }: { elementId: string; by: string }) => {
+      setSelectedId((current) => (current === elementId ? null : current));
+      setEditingId((current) => (current === elementId ? null : current));
+      setMultiSelectedIds((prev) => {
+        if (!prev.has(elementId)) return prev;
+        const next = new Set(prev);
+        next.delete(elementId);
+        return next;
+      });
+      // Said plainly, because an element vanishing from under you with no
+      // explanation reads as a bug rather than as somebody running a session.
+      toast.info('The facilitator freed an element you were holding');
+    },
+    [setSelectedId, setEditingId, setMultiSelectedIds, toast],
+  );
+
+  useRoomConnection({
+    onAdderKey: participant.setAdderKey,
+    hydrated,
+    documentId,
+    documentServerStored: realtime.documentServerStored,
+    enabled: realtime.sessionCommunity === null,
+    // docs/specs/015-api/api.md "A room holds at most 100 connections": said once; editing carries on alone.
+    onRoomFull: () => toast.warning(ROOM_FULL_NOTICE),
+    documentTeamId,
+    selfParticipant,
+    sessionShareCode,
+    lastSeenRef,
+    markSeen,
+    selfParticipantRef,
+    saveBaseline: { tabs: lastSavedTabsRef, name: lastSavedNameRef, journal: remoteOpJournalRef },
+    ownWrites,
+    countAppliedOp,
+    sessionShareCodeRef,
+    roomRef,
+    applyRemoteOp,
+    loadedTabIdsRef,
+    markTabLoaded,
+    setLivePresence,
+    setLiveAgents,
+    setRemoteSelections,
+    setRemoteCursors,
+    setRemoteTabFocus,
+    setRemoteAvatars,
+    setRemoteViewports,
+    setDocumentName,
+    setSelfParticipant,
+    receiveAvatarPush,
+    // Filled by the hook below, which cannot be declared up here because
+    // taking an invitation navigates through the viewport (declared later
+    // still). Same knot, and the same ref, as the portal's travel callback.
+    receiveFocusHere: (from, tabId, at) => receiveFocusRef.current?.(from, tabId, at),
+    receiveFacilitator: facilitator.receiveFacilitator,
+    receiveSelectionReleased,
+    readFacilitatorToken: facilitator.readFacilitatorToken,
+    setFollowerIds,
+    readFollowing: () => followingRef.current,
+    receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
+    resyncFromServer,
+    receiveChangeset: changesetFeed.receiveChangeset,
+    onRoomJoined: () => {
+      void changesetFeed.checkSinceLoad();
+    },
+  });
+
+  // Broadcast local selection + active-tab focus to peers (presence
+  // indicators + TabBar avatars). See usePresenceBroadcast.
+  usePresenceBroadcast({
+    hydrated,
+    documentId,
+    documentServerStored: realtime.documentServerStored,
+    selection: selectionStore,
+    activeId,
+    roomRef,
+  });
+
+  // Lazy fetch the active tab's full payload on first open, plus the
+  // search panel's load-everything prefetch. See usePerTabLoad.
+  const { loadAllTabs } = usePerTabLoad({
+    hydrated,
+    documentId,
+    activeId,
+    selfId: selfParticipant.id,
+    sessionShareCode,
+    sessionTabScope,
+    tabsRef,
+    loadedTabIdsRef,
+    setLoadedTabIds,
+    setTabLoadErrors,
+    retryNonce: tabLoadRetryNonce,
+    lastSavedTabsRef,
+    applyLoaded: applyRemoteOp,
+    noteChangesetSeen: realtime.changesetSeen.noteSeen,
+  });
+
+  // Re-attempt the active tab's failed lazy fetch. Clear its error so
+  // the overlay swaps from the error card to the spinner, drop it from
+  // the loaded-set so the effect actually refetches, then bump the nonce
+  // to re-run that effect even though activeId hasn't changed.
+  const retryActiveTabLoad = () => {
+    loadedTabIdsRef.current.delete(activeId);
+    setTabLoadErrors((prev) => {
+      if (!prev.has(activeId)) return prev;
+      const next = new Set(prev);
+      next.delete(activeId);
+      return next;
+    });
+    setTabLoadRetryNonce((n) => n + 1);
+  };
+  return {
+    loadAllTabs,
+    receiveFocusRef,
+    revealChangesetRef,
+    view: {
+      // The outlines relayed changesets draw (useChangesetFeed), for the canvas overlay.
+      changesetReveals: changesetFeed.reveals,
+      // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running this session.
+      facilitator,
+      avatarShove,
+      loadAllTabs,
+      retryActiveTabLoad,
+    },
+  };
+}
+
+export type EditorRoomSlice = ReturnType<typeof useEditorRoom>;

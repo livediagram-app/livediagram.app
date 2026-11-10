@@ -54,11 +54,32 @@ marketing/      off-site copy + media for listings and promotion (see docs/specs
 
 The editor route (`apps/editor/app/project/[id]/`) is split three ways so no file becomes a god component:
 
-- `useEditorState.ts` is the orchestration hook: it calls each domain sub-hook, threads their dependencies, and assembles the return view-model.
+- `useEditorState.ts` is the composer: it calls the editor's state slices in a fixed order, hands each the slices before it, and returns the view-model `app/project/[id]/editor-state/editor-view.ts` assembles from them.
 - `EditorContext.tsx` carries that view-model as `EditorContextValue = ReturnType<typeof useEditorState>`.
 - `EditorView.tsx` renders the JSX, leaving `editor-page.tsx` a thin page shell.
 
-`useEditorState.ts` is large by design: what remains in it is wiring, not logic, so it is exempt from the ~400-line soft target ([AGENTS.md](../../AGENTS.md#core-principle-no-god-files-plan-placement-first)). New behaviour goes into its own sub-hook, not into it.
+The slices live in `app/project/[id]/editor-state/`, one hook per file, in the order the composer calls them:
+
+| Slice                    | What it holds                                                                                                                   |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `useEditorEnv`           | Where the editor runs (the surface, a workbench's session) and who is signed in                                                 |
+| `useEditorSelection`     | The active tab, the selection, the edit in progress, a tab-scoped session's tab                                                 |
+| `useEditorProject`       | The tabs and their undo timeline, the commit and tick choke points, the load state, the local participant, the save baseline    |
+| `useEditorDialogs`       | Panel layout, the dialogs, the canvas tool, the shortcuts switch                                                                |
+| `useEditorCollaboration` | Sharing and the session's role, comment threads, preferences, the context menu, the persistence state, presence, the Trash      |
+| `useEditorPersistence`   | Autosave, Sync and Take Offline in place, the identity and project load, the room's resync, agent changesets                    |
+| `useEditorPlanData`      | Cards, card threads, card types, sheets, the room connection, the per-tab load, teams and mentions, the active tab              |
+| `useEditorViewport`      | Pan, zoom and fitting, a changeset's Show, the tab-entry effects                                                                |
+| `useEditorComments`      | Presence rows, comment and action rows, assigned actions, the join screen                                                       |
+| `useEditorEditing`       | What may be edited now and the commit paths built on it, style memory, layers                                                   |
+| `useEditorPlan`          | Plan statuses, the Actions board, Board, Sheet, Dashboard and Form tabs, the Plan slice, the open card's address, the Plan tour |
+| `useEditorTabs`          | Undo and redo, placement, tab and project actions, tracker import, starting from a template                                     |
+| `useEditorTabTools`      | The tab's look, session tools, behaviour elements, notes, element creation, the delete guards                                   |
+| `useEditorStyle`         | Selection actions, element style, portal links, hover previews                                                                  |
+| `useEditorInteraction`   | Element links, label editing, canvas accessibility, vote review, nudging and dragging                                           |
+| `useEditorShortcuts`     | The clipboard, Zen mode, keyboard shortcuts, the workbench's messages, Focus                                                    |
+
+A slice takes the slices composed before it, never one after it, and returns what later slices and the view read. The few values a slice reads from a later one (the active layer's stamp, a changeset's Show, the Plan slice) are read only inside callbacks, through the getters typed in `app/project/[id]/editor-state/editor-late.ts`. Slices run in the same order every render, which is the order their effects run in, so a new hook goes into the slice its concern belongs to, at the point its inputs exist. A spec that says a hook is "composed in `useEditorState`" means in one of these slices. No file is past ~500 lines; new behaviour goes into its own sub-hook, composed into its slice.
 
 ## The shared packages
 
