@@ -77,6 +77,11 @@ is the whole of what the repo enforces.
   line goes through `debugLog` ([Console logging](console-logging.md)), a Worker's event is `console.info`.
   Tests (`*.test.*`, `*.spec.*`, `e2e/`) and scripts (`scripts/`, `eval/`) print to the terminal freely
   (the monorepo's `docs/ci.md` "Lint disables and console.log").
+- **No explicit `any`** (`typescript/no-explicit-any`), in source and tests alike: a value of unknown shape is
+  `unknown`, narrowed where it is read; otherwise a generic or the library's own type. A function type that must
+  accept every signature is `(...args: never[]) => unknown`, and a forwarder that calls one with its own arguments
+  casts it to `(...args: unknown[]) => unknown`. There is no `any` in the repo and no disable of the rule; one would
+  need a reason a typed alternative cannot meet (the monorepo's `docs/ci.md` "Lint disables and console.log").
 - **No formatting rules.** Prettier owns formatting.
 
 ## Type-aware rules

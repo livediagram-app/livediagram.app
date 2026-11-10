@@ -9,12 +9,12 @@
 import { useState } from 'react';
 import { useLatest } from './useLatest';
 
-// oxlint-disable-next-line typescript/no-explicit-any -- any function signature must fit; the forwarders call it with its own arguments
-type AnyFn = (...args: any[]) => unknown;
+// A forwarder, and the newest function it calls with the arguments it was called with.
+type Forward = (...args: unknown[]) => unknown;
 
 // The hook's render-time memo: the forwarders it has handed out and the object it returned last.
 class StableObjectCache {
-  private readonly forwarders = new Map<string, AnyFn>();
+  private readonly forwarders = new Map<string, Forward>();
   private last: Record<string, unknown> | null = null;
 
   resolve(value: object, latest: { current: Record<string, unknown> }): Record<string, unknown> {
@@ -26,7 +26,7 @@ class StableObjectCache {
       }
       let forwarder = this.forwarders.get(key);
       if (!forwarder) {
-        forwarder = (...args: unknown[]) => (latest.current[key] as AnyFn | undefined)?.(...args);
+        forwarder = (...args: unknown[]) => (latest.current[key] as Forward | undefined)?.(...args);
         this.forwarders.set(key, forwarder);
       }
       next[key] = forwarder;
