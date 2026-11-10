@@ -141,7 +141,10 @@ tray read the same key and follow each other as it changes.
 
 The rail is led by the editor's mode switch, named and full width (`StartModeSwitch`, `ModeMenuChip`), so a tab
 begun in the wrong mode changes before anything is made. It is the same switch as the one beside the menu button,
-which stays the way to change mode once the tab has content. Its menu is the list of modes and the preview of one ([Editor modes](editor-modes.md) "The mode switch"), with the same rules. On a
+which stays the way to change mode once the tab has content. It is drawn as a control, not a band: a field inset in the rail's
+top (12px round it, 16px from `sm`, in line with the categories), on its own paper with a border and a small shadow
+like the header's search, its icon and name in the brand ink, so it never blends into the header band above it
+(owner, 2026-11-10). Its menu is the list of modes and the preview of one ([Editor modes](editor-modes.md) "The mode switch"), with the same rules. On a
 phone its menu spans the row it opens from, each mode a roomy row with its description across the full width.
 
 A mode change swaps one start for another. The new one **turns in place**: the frame stays still and the old content
@@ -229,8 +232,11 @@ are the hero's own theme (`@liveworkspace/explorer/hero-theme`), so the start an
 - **The title.** A title mark leads it: a 36px tile (32px on a phone) in the band's deeper shade, holding the motif as
   one glyph in the accent (`StartTitleMark`). The title is set in the hero's face at 20px (18px on a phone): the heavy
   face, tracked in (`startHeadingFace`).
+- **Its height.** From `sm` the header stands 100px tall (owner, 2026-11-10), its row centred in it, so the band has
+  room to show its texture and pieces; on a phone it stays compact (below).
 - **Where the pieces show.** The texture and the corner pieces at every size; the gap piece only from `xl`, where the
-  panel is at its widest and the gap between the line and the search is wide enough that it never meets the words.
+  panel is at its widest; there the line wraps at 30rem, two lines inside the 100px, so it ends short of the piece
+  and the two never meet.
 - **The search** keeps its own paper and border over the band, lifted by a small shadow, so it still reads as the
   field.
 - **On a phone** the band runs up under the grab handle, so the sheet's top is the band's colour, the handle

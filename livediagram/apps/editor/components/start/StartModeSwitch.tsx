@@ -14,7 +14,10 @@ export function StartModeSwitch() {
   const editorMode = useEditorModeState();
   if (!editorMode?.canEdit || !editorMode.canSwitch) return null;
   return (
-    <div data-start-mode-switch className="flex w-full shrink-0 sm:w-auto">
+    <div
+      data-start-mode-switch
+      className="flex w-full shrink-0 p-3 sm:w-auto sm:px-4 sm:pt-4 sm:pb-3"
+    >
       <ModeMenuChip
         mode={editorMode.mode}
         onChange={(mode) =>
