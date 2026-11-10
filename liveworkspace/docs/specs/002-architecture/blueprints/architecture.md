@@ -306,6 +306,29 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
   kinds). New generics: `settleChips`, `settleStacks`, `dropUnturnableRotation`, `autoLayoutElements`,
   `tidyLayoutElements`, `withOrthogonalBends`, `withFacingBends`, `settleDiagramKeys`, `migrateLegacyCallouts`,
   `isChip`, `renumberSteps`, `withStepSequence`, `fillStrokeLoop` and the path reshapers.
+- Settled, then moved (part 4, each behaviour a product gained in its own specs): the element defaults
+  (`element-colours`, out of each `colors.ts`: every product's kinds, the control skin of the buttons, picker and
+  reveal cover; livediagram's `colors.ts` wraps the three defaults for its retired pieces, livediagram's and
+  liveplanner's pass `hasOwnFace` to `acceptsInlineIcon` and `positionsInlineIcon`); the themes (`themes`,
+  `themes-data`, `theme-halves`, `theme-presets`, `quick-swatches`; O's `themedForTab` and page-paper read,
+  `ThemedElement`, `switchThemeBackdrop` generic over a product's patterns; livehuddle binds `themes-data` only, its
+  retired tables keep its own); tables and readouts (`cell-colours` with D's shorthand-safe `readableInk`,
+  `table-header-colours` D's, `svg-render-table` D's with O's comparison tables behind `{ comparison: true }`, which
+  only O's `svg-render-table.ts` passes, and their `table-marks`; `progress-colours`, `page-ink-rules` S's with O's
+  quote, OS); arrows in the
+  export (`svg-render-arrows` with O's line motion and D's `finishArrowEnds`, `stock-colours` D's, `mind-flow`,
+  `mind-connector-route` DP); and the charts (`chart-types`, `chart-marks` D's below-zero layout with O's
+  not-a-number guard, `chart-values` D's with O's decimals, `chart-axis` O's tick decimals, `chart-frame` and
+  `svg-render-charts` O's page ground, `chart-mark-ink` the pure half of O's and S's `chart-ink`, `sankey-layout`,
+  `svg-render-data`, `glyph-width` P's; S and P bind `sankey-model`). New shared types: `TableElement` and
+  `TableCellLook`; a chart's, a progress element's and a rating's fields on `ShapeElement`; an arrow's `finish`,
+  `font`, `textColor` and `labelFill`; a path's `closed`. `arrow-types` (each product's own `ArrowElement`, with
+  D's and P's entity `field` and S's `componentMember`) and `svg-render-describe` (each product's faces, retired and
+  Collaborate kinds) stay per product.
+- `src/testing/elements.ts`: product-neutral builders for the package's own tests (`createShape` at the products'
+  default sizes, `createText`, `createTable`, `createSticky`, `createFreehand`, `createArrow`, `createPinnedArrow`).
+  With them, 24 tests moved in from the products (one copy each, the identical copies deleted); the package's floor
+  is what they reach.
 - `@liveworkspace/workbench/components/canvas/useFaceFinishPass` is the canvas finish pass of livediagram,
   livedocuments, livedesign and livehuddle; liveplanner keeps its own (its Plan boards spend a frame budget).
 

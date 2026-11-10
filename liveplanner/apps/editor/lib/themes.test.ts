@@ -368,14 +368,14 @@ describe('recolourElementForTheme', () => {
   };
 
   it('writes fill, stroke, and text on shapes when the theme overrides each', () => {
-    const out = recolourElementForTheme(shape, themed) as ShapeElement;
+    const out = recolourElementForTheme(shape, themed);
     expect(out.fillColor).toBe('#e2e8f0');
     expect(out.strokeColor).toBe('#475569');
     expect(out.textColor).toBe('#0f172a');
   });
 
   it('writes only the text colour on text elements', () => {
-    const out = recolourElementForTheme(text, themed) as TextElement;
+    const out = recolourElementForTheme(text, themed);
     expect(out.textColor).toBe('#0f172a');
     // Spot-check: no rogue fill / stroke fields appear on a text element.
     expect((out as unknown as Record<string, unknown>).fillColor).toBeUndefined();
@@ -386,7 +386,7 @@ describe('recolourElementForTheme', () => {
     // This is the path that the in-editor "Browse templates" picker
     // previously skipped, leaving arrows in mindmap / flowchart /
     // flywheel templates stuck at the brand default.
-    const out = recolourElementForTheme(arrow, themed) as ArrowElement;
+    const out = recolourElementForTheme(arrow, themed);
     expect(out.strokeColor).toBe('#475569');
   });
 
@@ -399,7 +399,7 @@ describe('recolourElementForTheme', () => {
     // Regression: all three theme transforms used to skip freehand,
     // leaving sketches stuck at their creation-time colours when the
     // user themed the tab. Sketches carry fill + stroke (no text).
-    const out = recolourElementForTheme(freehand, themed) as FreehandElement;
+    const out = recolourElementForTheme(freehand, themed);
     expect(out.fillColor).toBe('#e2e8f0');
     expect(out.strokeColor).toBe('#475569');
     // No text colour: freehand renders no inline label.
@@ -419,7 +419,7 @@ describe('recolourElementForTheme', () => {
     // would merge all six distinct bars into one block, so the bar fill is
     // pinned while stroke + text still follow the theme.
     const locked: ShapeElement = { ...shape, fillColor: '#bdc8d6', themeLockFill: true };
-    const out = recolourElementForTheme(locked, themed) as ShapeElement;
+    const out = recolourElementForTheme(locked, themed);
     expect(out.fillColor).toBe('#bdc8d6');
     expect(out.strokeColor).toBe('#475569');
     expect(out.textColor).toBe('#0f172a');
@@ -533,7 +533,7 @@ describe('switchThemeElement', () => {
       strokeColor: prev.elementStroke ?? undefined,
       textColor: prev.elementText ?? undefined,
     };
-    const out = switchThemeElement(el, prev, next) as ShapeElement;
+    const out = switchThemeElement(el, prev, next);
     expect(out.fillColor).toBe(next.elementFill);
     expect(out.strokeColor).toBe(next.elementStroke);
     expect(out.textColor).toBe(next.elementText);
@@ -552,7 +552,7 @@ describe('switchThemeElement', () => {
       strokeColor: prev.elementStroke ?? undefined,
       textColor: prev.elementText ?? undefined,
     };
-    const out = switchThemeElement(el, prev, next) as ShapeElement;
+    const out = switchThemeElement(el, prev, next);
     // Custom fill is kept.
     expect(out.fillColor).toBe('#ff00ff');
     // The two un-customised fields still flip.
@@ -570,7 +570,7 @@ describe('switchThemeElement', () => {
       width: 100,
       height: 50,
     };
-    const out = switchThemeElement(el, prev, next) as ShapeElement;
+    const out = switchThemeElement(el, prev, next);
     expect(out.fillColor).toBe(next.elementFill);
     expect(out.strokeColor).toBe(next.elementStroke);
     expect(out.textColor).toBe(next.elementText);
@@ -589,7 +589,7 @@ describe('switchThemeElement', () => {
       strokeColor: prev.elementStroke ?? undefined,
       themeLockFill: true,
     };
-    const out = switchThemeElement(bar, prev, next) as ShapeElement;
+    const out = switchThemeElement(bar, prev, next);
     expect(out.fillColor).toBe('#bdc8d6');
     expect(out.strokeColor).toBe(next.elementStroke);
   });
@@ -605,7 +605,7 @@ describe('switchThemeElement', () => {
       label: 'x',
       textColor: prev.elementText ?? undefined,
     };
-    expect((switchThemeElement(tEl, prev, next) as TextElement).textColor).toBe(next.elementText);
+    expect(switchThemeElement(tEl, prev, next).textColor).toBe(next.elementText);
     const sNote: StickyElement = { id: 'n', type: 'sticky', x: 0, y: 0, width: 200, height: 200 };
     expect(switchThemeElement(sNote, prev, next)).toEqual(sNote);
   });
@@ -618,9 +618,7 @@ describe('switchThemeElement', () => {
       to: { kind: 'free', x: 10, y: 10 },
       strokeColor: prev.elementStroke ?? undefined,
     };
-    expect((switchThemeElement(a, prev, next) as ArrowElement).strokeColor).toBe(
-      next.elementStroke,
-    );
+    expect(switchThemeElement(a, prev, next).strokeColor).toBe(next.elementStroke);
   });
 
   it('flips uncustomised fill + stroke on freehand sketches but keeps a customised one', () => {
@@ -639,7 +637,7 @@ describe('switchThemeElement', () => {
       fillColor: '#ff00ff', // customised: must survive
       strokeColor: prev.elementStroke ?? undefined, // on old theme: must flip
     };
-    const out = switchThemeElement(f, prev, next) as FreehandElement;
+    const out = switchThemeElement(f, prev, next);
     expect(out.fillColor).toBe('#ff00ff');
     expect(out.strokeColor).toBe(next.elementStroke);
   });
@@ -668,7 +666,7 @@ describe('switchThemeElement', () => {
     const midnight = getTheme('midnight'); // dark bg, light elementText
     // As deriveNewBoxedColours leaves it on brand: fill = bg, text = contrast.
     const el = table({ fillColor: brand.backgroundColor, textColor: '#1e293b' });
-    const out = switchThemeElement(el, brand, midnight) as TableElement;
+    const out = switchThemeElement(el, brand, midnight);
     expect(out.fillColor).toBe(midnight.backgroundColor); // cells follow the dark canvas
     expect(out.textColor).toBe(midnight.elementText); // light, readable
   });
@@ -677,7 +675,7 @@ describe('switchThemeElement', () => {
     const brand = getTheme('brand');
     const midnight = getTheme('midnight');
     const el = table({ fillColor: '#ff0000', textColor: '#ffff00' });
-    const out = switchThemeElement(el, brand, midnight) as TableElement;
+    const out = switchThemeElement(el, brand, midnight);
     expect(out.fillColor).toBe('#ff0000');
     expect(out.textColor).toBe('#ffff00');
   });
@@ -718,7 +716,7 @@ describe('resetThemeElement', () => {
       strokeColor: '#003366',
       textColor: '#222222',
     };
-    const out = resetThemeElement(el, theme) as ShapeElement;
+    const out = resetThemeElement(el, theme);
     expect(out.fillColor).toBe(theme.elementFill);
     expect(out.strokeColor).toBe(theme.elementStroke);
     expect(out.textColor).toBe(theme.elementText);
@@ -741,7 +739,7 @@ describe('resetThemeElement', () => {
       textColor: '#222222',
       themeLockFill: true,
     };
-    const out = resetThemeElement(bar, theme) as ShapeElement;
+    const out = resetThemeElement(bar, theme);
     expect(out.fillColor).toBe('#bdc8d6');
     expect(out.strokeColor).toBe(theme.elementStroke);
     expect(out.textColor).toBe(theme.elementText);
@@ -760,7 +758,7 @@ describe('resetThemeElement', () => {
       strokeColor: '#003366',
       textColor: '#222222',
     };
-    const out = resetThemeElement(el, passthrough) as ShapeElement;
+    const out = resetThemeElement(el, passthrough);
     expect(out.fillColor).toBeUndefined();
     expect(out.strokeColor).toBeUndefined();
     expect(out.textColor).toBeUndefined();
@@ -777,7 +775,7 @@ describe('resetThemeElement', () => {
       label: 'x',
       textColor: '#222',
     };
-    expect((resetThemeElement(tEl, theme) as TextElement).textColor).toBe(theme.elementText);
+    expect(resetThemeElement(tEl, theme).textColor).toBe(theme.elementText);
     const a: ArrowElement = {
       id: 'a',
       type: 'arrow',
@@ -785,7 +783,7 @@ describe('resetThemeElement', () => {
       to: { kind: 'free', x: 10, y: 10 },
       strokeColor: '#abc',
     };
-    expect((resetThemeElement(a, theme) as ArrowElement).strokeColor).toBe(theme.elementStroke);
+    expect(resetThemeElement(a, theme).strokeColor).toBe(theme.elementStroke);
   });
 
   it('overwrites fill + stroke on freehand sketches, blanking them on a null theme', () => {
@@ -804,10 +802,10 @@ describe('resetThemeElement', () => {
       fillColor: '#ff00ff',
       strokeColor: '#003366',
     };
-    const themed = resetThemeElement(f, theme) as FreehandElement;
+    const themed = resetThemeElement(f, theme);
     expect(themed.fillColor).toBe(theme.elementFill);
     expect(themed.strokeColor).toBe(theme.elementStroke);
-    const blanked = resetThemeElement(f, passthrough) as FreehandElement;
+    const blanked = resetThemeElement(f, passthrough);
     expect(blanked.fillColor).toBeUndefined();
     expect(blanked.strokeColor).toBeUndefined();
   });

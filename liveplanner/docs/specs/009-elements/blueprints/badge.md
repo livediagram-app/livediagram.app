@@ -49,7 +49,7 @@ once, each considered for attaching: 2,000 boxes and 200 badges settle within a 
 
 ## Testing
 
-- `packages/project/src/attachment.test.ts`: fit, numbering, follow, detach, delete with the host, attach on drop.
+- `../packages/element-model/src/attachment.test.ts`: fit, numbering, follow, detach, delete with the host, attach on drop.
 - `packages/project/src/attachment.perf.test.ts`: the budget above.
 - `packages/templates/src/template-settled.test.ts`: a template lands settled.
 

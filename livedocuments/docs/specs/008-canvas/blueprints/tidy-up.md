@@ -110,7 +110,7 @@ element moves trimmed away by `applyParticipantOp`, which takes text fields only
 | Checkout survives Auto-align, Smart, Down                                                                   | `tidy-verdict.test.ts`                                                                       |
 | A second press finds a template tidy                                                                        | `tidy-verdict.test.ts`                                                                       |
 | Auto-align keeps lines, spacing, no overlap                                                                 | `auto-align-lines.test.ts`, `auto-align.test.ts`                                             |
-| Tidy profile: spine, side steps, square routes clear of boxes, title, settled, units, riders, dashed arrows | `packages/document/src/auto-layout-tidy.test.ts`                                             |
+| Tidy profile: spine, side steps, square routes clear of boxes, title, settled, units, riders, dashed arrows | `../packages/element-model/src/auto-layout-tidy.test.ts`                                     |
 | The route grid misses no box a leg could hit; crossings match a pair-by-pair count                          | `../packages/model-core/src/auto-layout-route-grid.test.ts`, `auto-layout-crossings.test.ts` |
 
 ## Constants and configuration
