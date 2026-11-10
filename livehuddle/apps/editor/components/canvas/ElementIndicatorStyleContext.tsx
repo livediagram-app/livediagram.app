@@ -5,7 +5,7 @@
 // re-renders only the elements that carry an indicator. Outside a provider it is Top.
 
 import { createContext, useContext, type ReactNode } from 'react';
-import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
+import type { ElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';
 
 const ElementIndicatorStyleContext = createContext<ElementIndicatorStyle>('top');
 

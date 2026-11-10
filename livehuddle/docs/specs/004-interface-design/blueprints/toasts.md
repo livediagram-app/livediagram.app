@@ -181,9 +181,9 @@ move and unmount, the new-version prompt when it shows or hides.
 | Dedupe, limit, upsert in place, retire oldest timed out   | `../packages/workbench/src/components/toast/toast-queue.test.ts`    |
 | Floor: column, overlap, off-column chrome, phone          | `../packages/workbench/src/components/toast/toast-floor.test.ts`    |
 | Timeouts per tone, pause and resume with the remainder    | `../packages/workbench/src/components/toast/useToastTimer.test.tsx` |
-| Gate (warning and error ignore it), roles, Escape, exit   | `apps/editor/hooks/ui/useToast.test.tsx`                            |
+| Gate (warning and error ignore it), roles, Escape, exit   | `../packages/workbench/src/hooks/ui/useToast.test.tsx`              |
 | One row: icon, message, actions, close in order           | `../packages/workbench/src/components/toast/ToastCard.test.tsx`     |
-| Offer and action toasts time out after the answer time    | `apps/editor/hooks/ui/useToast.test.tsx`                            |
+| Offer and action toasts time out after the answer time    | `../packages/workbench/src/hooks/ui/useToast.test.tsx`              |
 | Names quoted, cut, fallen back; copy stays under 90 chars | `apps/editor/lib/toast-name.test.ts`                                |
 
 ## Observability

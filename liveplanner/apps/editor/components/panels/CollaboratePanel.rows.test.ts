@@ -6,7 +6,7 @@ import {
   type ElementAction,
 } from '@liveplanner/project';
 import { actionRowsFromElements } from './CollaboratePanel';
-import { rowsFor } from './collaborate/collaborate-model';
+import { rowsFor } from '@liveworkspace/workbench/components/panels/collaborate/collaborate-model';
 
 // Every action on the tab is a row (docs/specs/012-collaboration/assigned-actions.md §5), read through
 // elementActions: an Action panel card's list (docs/specs/012-collaboration/action-panel.md) and an ordinary

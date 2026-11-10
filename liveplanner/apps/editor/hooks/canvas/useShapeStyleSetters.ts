@@ -1,3 +1,4 @@
+import { MAX_SIZE_PX, MIN_SIZE_PX } from '@liveworkspace/workbench/lib/element-size-bounds';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import {
   isBoxed,
@@ -31,13 +32,8 @@ type ShapeStyleSetterDeps = {
   readSelection: () => Selection;
 };
 
-/**
- * Bounds for a typed-in size (docs/specs/008-canvas/element-size.md). A zero or negative box is not a
- * shape, and a runaway one (a stray extra digit) is a canvas nobody can pan
- * out of, so the box is clamped rather than trusted.
- */
-export const MIN_SIZE_PX = 8;
-export const MAX_SIZE_PX = 20000;
+// Bounds for a typed-in size (docs/specs/008-canvas/element-size.md), shared with the Size section.
+export { MAX_SIZE_PX, MIN_SIZE_PX };
 const clampSizePx = (n: number): number =>
   Math.round(Math.min(MAX_SIZE_PX, Math.max(MIN_SIZE_PX, Number.isFinite(n) ? n : MIN_SIZE_PX)));
 

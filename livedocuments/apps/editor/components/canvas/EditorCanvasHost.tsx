@@ -3,7 +3,7 @@
 import { goToElement } from '@/lib/go-to-element';
 import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
-import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
+import { SuppressElementIndicators } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 import { PresentingProvider } from '@/components/canvas/PresentingContext';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';

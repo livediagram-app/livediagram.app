@@ -43,7 +43,7 @@ import { ShadowSection } from '@/components/palette/ShadowSection';
 import { FinishSection, resolveOwnFinish } from '@/components/palette/FinishSection';
 import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
-import type { useContextMenuScaffold } from './useContextMenuScaffold';
+import type { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { inkSwatch, shownColour } from '@/components/palette/ink-row';
 
