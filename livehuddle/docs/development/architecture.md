@@ -48,11 +48,11 @@ marketing/      off-site copy + media for listings and promotion (see docs/specs
 
 The editor route (`apps/editor/app/document/[id]/`) is split three ways so no file becomes a god component:
 
-- `useEditorState.ts` is the orchestration hook: it calls each domain sub-hook, threads their dependencies, and assembles the return view-model.
+- `useEditorState.ts` is the orchestration hook: it calls the slices in `app/document/[id]/editor-state/` in order (one hook per concern, `useEditorDocument`, `useEditorUndoState`, `useEditorSelection` and the rest), hands each the slices before it, and returns their view-models spread into one ([Editor state](../specs/003-system-architecture/blueprints/editor-state.md)).
 - `EditorContext.tsx` carries that view-model as `EditorContextValue = ReturnType<typeof useEditorState>`.
 - `EditorView.tsx` renders the JSX, leaving `editor-page.tsx` a thin page shell.
 
-`useEditorState.ts` is large by design: what remains in it is wiring, not logic, so it is exempt from the ~400-line soft target ([AGENTS.md](../../AGENTS.md#core-principle-no-god-files-plan-placement-first)). New behaviour goes into its own sub-hook, not into it.
+`useEditorState.ts` is a short composer and holds no logic; each slice keeps to one concern and to the ~400-line soft target where it can ([AGENTS.md](../../AGENTS.md#core-principle-no-god-files-plan-placement-first)). New behaviour goes into its own sub-hook, composed into the slice whose concern it is, or into a new slice placed where its effects belong.
 
 ## The shared packages
 
