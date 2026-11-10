@@ -1,22 +1,22 @@
 {
   "livedesign": {
-    "lines": 75.1,
-    "branches": 64.9
+    "lines": 74.8,
+    "branches": 64.6
   },
   "livediagram": {
-    "lines": 76.8,
-    "branches": 67.1
+    "lines": 76.5,
+    "branches": 66.8
   },
   "livedocuments": {
-    "lines": 75.2,
-    "branches": 65.9
+    "lines": 74.9,
+    "branches": 65.6
   },
   "livehuddle": {
-    "lines": 80.2,
-    "branches": 72.6
+    "lines": 79.9,
+    "branches": 72.3
   },
   "liveplanner": {
-    "lines": 81,
-    "branches": 72.6
+    "lines": 80.7,
+    "branches": 72.3
   }
 }

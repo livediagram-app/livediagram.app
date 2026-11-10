@@ -10,6 +10,8 @@ import { fileURLToPath } from 'node:url';
 import {
   FLOORS_FILE,
   RAISE_HINT,
+  SLACK,
+  floorFor,
   floorOf,
   judge,
   measure,
@@ -58,6 +60,14 @@ test('floors round down to one decimal, never up past what was measured', () => 
   assert.equal(floorOf((2 / 3) * 100), 66.6);
 });
 
+test('a floor sits the slack below what was measured, then rounds down', () => {
+  assert.equal(SLACK, 0.3);
+  assert.equal(floorFor(75.16), 74.8);
+  assert.equal(floorFor(80.29), 79.9);
+  assert.equal(floorFor(81.04), 80.7);
+  assert.equal(floorFor(80.3), 80);
+});
+
 test('judge: below a floor fails, at it passes, well above it only notes', () => {
   const floors = { a: { lines: 70, branches: 60 }, b: { lines: 70 } };
   const below = judge(new Map([['a', { lines: 69.99, branches: 60 }]]), floors);
@@ -67,11 +77,15 @@ test('judge: below a floor fails, at it passes, well above it only notes', () =>
   const at = judge(new Map([['a', { lines: 70, branches: 60.4 }]]), floors);
   assert.deepEqual([at.failures, at.notes], [[], []]);
 
-  const above = judge(new Map([['a', { lines: 70 + RAISE_HINT, branches: 59 }]]), floors);
+  // Within the slack plus the hint, nothing to say: the floor was set the slack below coverage.
+  const within = judge(new Map([['a', { lines: 70.79, branches: 60 }]]), floors);
+  assert.deepEqual([within.failures, within.notes], [[], []]);
+
+  const above = judge(new Map([['a', { lines: 70 + RAISE_HINT + SLACK, branches: 59 }]]), floors);
   assert.equal(above.failures.length, 1, 'branches below their floor still fail');
   assert.match(above.failures[0], /branches/);
   assert.equal(above.notes.length, 1);
-  assert.match(above.notes[0], /a: lines coverage 70\.50% beats its floor of 70% by 0\.50 points/);
+  assert.match(above.notes[0], /a: lines coverage 70\.80% beats its floor of 70% by 0\.80 points/);
 
   // A floor without branches checks lines alone.
   assert.deepEqual(judge(new Map([['b', { lines: 71, branches: 1 }]]), floors).failures, []);
@@ -86,14 +100,15 @@ test('judge: an editor without a floor fails, so a new editor gets one', () => {
 test('raise: floors only rise, and an editor without one gets one', () => {
   const floors = { a: { lines: 70, branches: 60 }, b: { lines: 50, branches: 40 } };
   const measured = new Map([
-    ['a', { lines: 72.38, branches: 55 }],
+    ['a', { lines: 72.38, branches: 60.2 }],
     ['b', { lines: 49, branches: null }],
     ['c', { lines: 10.05, branches: 5.99 }],
   ]);
+  // Each new floor is the slack below what was measured, never below the floor it replaces.
   assert.deepEqual(raise(floors, measured), {
-    a: { lines: 72.3, branches: 60 },
+    a: { lines: 72, branches: 60 },
     b: { lines: 50, branches: 40 },
-    c: { lines: 10, branches: 5.9 },
+    c: { lines: 9.7, branches: 5.6 },
   });
   assert.deepEqual(floors.a, { lines: 70, branches: 60 }, 'the input is left alone');
 });

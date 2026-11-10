@@ -1,10 +1,12 @@
 // Holds each product editor's coverage to a floor that only rises (docs/ci.md "Editor coverage
 // floors"). The editors run in shards, each covering a slice, so the floor judges the merged result:
 // this run's `coverage-<group>-editor-<shard>` artifacts, merged per editor, against
-// coverage-floors.json. It fails below a floor, and notes (without failing) a floor worth raising.
+// coverage-floors.json. Each floor sits SLACK points below what was measured, so code moving between
+// files never turns it red at random. It fails below a floor, and notes (without failing) a floor worth
+// raising.
 //
 //   node .github/scripts/coverage-floors.mjs <dir>            check the editors whose shards are in <dir>
-//   node .github/scripts/coverage-floors.mjs --update <dir>   raise the floors to what <dir> measures
+//   node .github/scripts/coverage-floors.mjs --update <dir>   raise the floors to what <dir> measures, less SLACK
 //
 // <dir> holds one folder per artifact, as `gh run download --pattern 'coverage-*-editor-*'` or
 // actions/download-artifact leave them. On CI, EDITORS (ci-plan's `editors` output) names the shards the
@@ -22,7 +24,16 @@ import { coverageIn } from './lcov.mjs';
 
 export const FLOORS_FILE = fileURLToPath(new URL('./coverage-floors.json', import.meta.url));
 
-/** How far above its floor an editor must be before the check suggests raising it, in points. */
+/**
+ * How far below the measured coverage a floor sits, in points: code moving between files shifts
+ * coverage a little from run to run, and a floor at the measured value would fail at random.
+ */
+export const SLACK = 0.3;
+
+/**
+ * How far coverage must rise past where its floor was set before the check suggests raising it, in
+ * points: a note fires when coverage beats the floor by this plus the slack.
+ */
 export const RAISE_HINT = 0.5;
 
 const SHARD = /^coverage-([a-z]+)-editor-(\d+)$/;
@@ -61,6 +72,11 @@ export function floorOf(/** @type {number} */ pct) {
   return Math.floor(pct * 10 + 1e-9) / 10;
 }
 
+/** The floor for a measured percentage: the slack below it, rounded down to one decimal. */
+export function floorFor(/** @type {number} */ pct) {
+  return floorOf(pct - SLACK);
+}
+
 /**
  * Each editor against its floor. `failures` fail the check; `notes` only suggest raising a floor.
  * @param {Map<string, Measured>} measured
@@ -90,7 +106,7 @@ export function judge(measured, floors) {
         failures.push(
           `${group}: ${metric} coverage ${value.toFixed(2)}% is below its floor of ${min}%. Add tests for the code this change brought in or left untested.`,
         );
-      } else if (value - min >= RAISE_HINT) {
+      } else if (value - min + 1e-9 >= RAISE_HINT + SLACK) {
         notes.push(
           `${group}: ${metric} coverage ${value.toFixed(2)}% beats its floor of ${min}% by ${(value - min).toFixed(2)} points; raise it with \`node .github/scripts/coverage-floors.mjs --update <dir>\`.`,
         );
@@ -112,8 +128,8 @@ export function raise(floors, measured) {
   for (const [group, m] of measured) {
     const was = out[group];
     /** @type {Floor} */
-    const next = { lines: Math.max(was?.lines ?? 0, floorOf(m.lines)) };
-    if (m.branches !== null) next.branches = Math.max(was?.branches ?? 0, floorOf(m.branches));
+    const next = { lines: Math.max(was?.lines ?? 0, floorFor(m.lines)) };
+    if (m.branches !== null) next.branches = Math.max(was?.branches ?? 0, floorFor(m.branches));
     else if (was?.branches !== undefined) next.branches = was.branches;
     out[group] = next;
   }
