@@ -216,7 +216,7 @@ in a `wall-clock:` comment.
 ## Lint disables and console.log
 
 The shared lint config (`packages/oxlint-config`, each product's `docs/specs/003-system-architecture/linting.md`)
-holds two hygiene lines in every workspace's `lint`, so the Checks job and the pre-push hook keep them without a
+holds three hygiene lines in every workspace's `lint`, so the Checks job and the pre-push hook keep them without a
 script of their own:
 
 - **Every disable says why.** A directive names the rule it turns off and ends in a reason:
@@ -226,6 +226,9 @@ script of their own:
   so an `eslint-disable` suppresses nothing while looking as if it does. A disable that suppresses nothing is
   already an error (`reportUnusedDisableDirectives`), so a stale one is deleted, not explained. Where a small
   change to the code removes the need (a stable value, a truer type), that change comes first.
+- **No explicit `any`.** `typescript/no-explicit-any` is an error in source and tests alike, and the repo holds
+  none and no disable of it. A value of unknown shape is `unknown`, narrowed where it is read; a function type that
+  must fit every signature is `(...args: never[]) => unknown`.
 - **console.log is a command line tool's stdout.** Shipped code writes each line with its intent:
   - an app's trace lines go through `debugLog` (`packages/workbench/src/lib/debug-log.ts`, each product's
     `docs/specs/003-system-architecture/console-logging.md`);

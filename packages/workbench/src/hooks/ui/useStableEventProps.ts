@@ -9,15 +9,15 @@
 import { useState } from 'react';
 import { useLatest } from './useLatest';
 
-// oxlint-disable-next-line typescript/no-explicit-any -- any handler signature must fit; the forwarders call it with its own arguments
-type AnyFn = (...args: any[]) => unknown;
+// A forwarder, and the newest handler it calls with the arguments it was called with.
+type Forward = (...args: unknown[]) => unknown;
 
 const EVENT_PROP = /^on[A-Z]/;
 
 export function useStableEventProps<T extends object>(props: T): T {
   const latest = useLatest(props as Record<string, unknown>);
   // One forwarder per key for the hook's lifetime, created the first time the key holds a handler.
-  const [forwarders] = useState(() => new Map<string, AnyFn>());
+  const [forwarders] = useState(() => new Map<string, Forward>());
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(props)) {
     if (!EVENT_PROP.test(key) || typeof value !== 'function') {
@@ -26,7 +26,7 @@ export function useStableEventProps<T extends object>(props: T): T {
     }
     let forwarder = forwarders.get(key);
     if (!forwarder) {
-      forwarder = (...args: unknown[]) => (latest.current[key] as AnyFn | undefined)?.(...args);
+      forwarder = (...args: unknown[]) => (latest.current[key] as Forward | undefined)?.(...args);
       forwarders.set(key, forwarder);
     }
     out[key] = forwarder;
