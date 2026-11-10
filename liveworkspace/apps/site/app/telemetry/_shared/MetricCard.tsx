@@ -80,6 +80,7 @@ export function MetricCard({
             color={color}
             highlightFromIndex={highlightFromIndex}
             heightClassName="h-20"
+            label={m.title}
           />
         </div>
       ) : null}

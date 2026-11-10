@@ -19,13 +19,16 @@ import {
   type Comparison,
   type ComparedRow,
 } from './apps-compared';
-import { SeriesChart, Swatch } from './SeriesChart';
+import { SeriesChart } from './SeriesChart';
+import { Swatch } from '../_shared/chart-hover/Swatch';
+import { emphasisProps, useEmphasisStore } from '../_shared/chart-hover/emphasis';
 import { CARD, TABLE_CELL, TABLE_HEAD, TOTAL_ROW } from './styles';
 
 // The neutral Total line: dashed, in slate, so it reads as the sum and not as one more app.
-const TOTAL_SERIES: Pick<StackSeries, 'className' | 'dashed'> = {
+const TOTAL_SERIES: Pick<StackSeries, 'className' | 'dashed' | 'total'> = {
   className: 'text-slate-500 dark:text-slate-400',
   dashed: true,
+  total: true,
 };
 
 // Events by App (liveworkspace/docs/specs/008-telemetry/telemetry.md "Apps Compared"): every app's daily events on
@@ -43,6 +46,8 @@ export function EventsByApp({
   onPickApp: (app: TelemetryApp) => void;
 }) {
   const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
+  // Hovering or focusing a legend entry emphasises its line in the chart (telemetry.md "Tooltips").
+  const emphasis = useEmphasisStore();
   const toggle = (key: string) =>
     setHidden((prev) => {
       const next = new Set(prev);
@@ -94,6 +99,7 @@ export function EventsByApp({
                   type="button"
                   aria-pressed={!hidden.has(s.key)}
                   onClick={() => toggle(s.key)}
+                  {...emphasisProps(emphasis, s.key)}
                   className={
                     'relative flex min-h-8 cursor-pointer items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ' +
                     (hidden.has(s.key)
@@ -113,6 +119,7 @@ export function EventsByApp({
               days={daily.days}
               series={shown}
               highlightFromIndex={windowHighlightFrom(daily, active)}
+              emphasis={emphasis}
             />
           </div>
         </>

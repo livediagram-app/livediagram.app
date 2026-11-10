@@ -51,6 +51,7 @@ export { HoverCard, type HoverCardProps } from './HoverCard';
 // The "this app or All Apps" switch the Explorer and the Community page share (AppScopeToggle.tsx).
 export { AppScopeToggle, type AppScope, type AppScopeOption } from './AppScopeToggle';
 export { placeHint, type HintLayout, type HintPlacement } from './hint/place-hint';
+export { HINT_CARD_SURFACE } from './hint/hint-constants';
 export { Dialog, type DialogProps } from './dialog/Dialog';
 export { DialogHeader } from './dialog/DialogHeader';
 // The one way back out of a drill-in, and the one breadcrumb (BackBar.tsx).

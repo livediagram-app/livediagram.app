@@ -26,7 +26,9 @@ import {
   type ComparedRow,
   type Comparison,
 } from './apps-compared';
-import { SeriesChart, Swatch } from './SeriesChart';
+import { SeriesChart } from './SeriesChart';
+import { Swatch } from '../_shared/chart-hover/Swatch';
+import { emphasisProps, useEmphasisStore } from '../_shared/chart-hover/emphasis';
 import { CARD, TABLE_CELL, TABLE_HEAD, TOTAL_ROW } from './styles';
 
 // The second line of each chart: neutral slate, dashed, so the two read apart by shape as well as colour.
@@ -144,6 +146,7 @@ export function VisitorsAndAccounts({
               caption="New and returning visitors per day, last 30 days (UTC)"
               days={daily.days}
               highlight={highlight}
+              totalLabel="Visits"
               series={[
                 { label: 'New', color: 'var(--color-brand-500)', values: charts.newVisitors },
                 { label: 'Returning', color: 'currentColor', values: charts.returning, ...SECOND },
@@ -284,20 +287,27 @@ function ChartBlock({
   days,
   highlight,
   series,
+  totalLabel,
 }: {
   title: string;
   caption: string;
   days: number[];
   highlight: number;
   series: StackSeries[];
+  totalLabel?: string;
 }) {
+  const emphasis = useEmphasisStore();
   return (
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-200">{title}</h4>
         <ul className="flex gap-3 text-[11px] text-slate-500 dark:text-slate-400">
           {series.map((s) => (
-            <li key={s.label} className="flex items-center gap-1.5">
+            <li
+              key={s.label}
+              className="flex items-center gap-1.5"
+              {...emphasisProps(emphasis, s.label)}
+            >
               <Swatch series={s} />
               {s.label}
             </li>
@@ -311,6 +321,8 @@ function ChartBlock({
           series={series}
           highlightFromIndex={highlight}
           heightClassName="h-32"
+          totalLabel={totalLabel}
+          emphasis={emphasis}
         />
       </div>
     </div>

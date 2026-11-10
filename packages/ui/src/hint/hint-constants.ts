@@ -26,3 +26,8 @@ export const TOOLTIP_GAP_PX = 6;
 export const TOOLTIP_ARROW_PX = 8;
 export const HOVER_CARD_GAP_PX = 10;
 export const HOVER_CARD_ARROW_PX = 10;
+
+// The hover card's surface without its size or padding: a card that sizes itself to its content (a chart's tooltip)
+// wears the same colours, border and shadow. A plain string here, so a caller takes it without the surface component.
+export const HINT_CARD_SURFACE =
+  'rounded-lg border border-slate-200 bg-white text-left shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-slate-950/40';
