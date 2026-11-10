@@ -14,7 +14,9 @@ vi.mock('./useTabSvg', () => ({
       ? { markup: '<svg/>', width: 10, height: 10, origin: { x: 0, y: 0 }, background: '#fff' }
       : null,
 }));
-vi.mock('./TabSvgViewport', () => ({ TabSvgViewport: () => <div data-testid="drawing" /> }));
+vi.mock('@liveworkspace/workbench/components/split/TabSvgViewport', () => ({
+  TabSvgViewport: () => <div data-testid="drawing" />,
+}));
 
 const tab = { id: 't2', name: 'Roadmap', elements: [] } as unknown as Tab;
 

@@ -10,7 +10,10 @@ import { SPLIT_HOVER_FOCUS_MS } from '@/lib/split-view';
 import type { CanvasAnchor } from '@liveworkspace/workbench/lib/split-pane-view';
 import { legibleTabAccent } from '@/lib/tab-accent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
-import { TabSvgViewport, type TabSvgViewportHandle } from './TabSvgViewport';
+import {
+  TabSvgViewport,
+  type TabSvgViewportHandle,
+} from '@liveworkspace/workbench/components/split/TabSvgViewport';
 import { useTabSvg } from './useTabSvg';
 import { useTabBackdropPaint } from './useTabBackdropPaint';
 

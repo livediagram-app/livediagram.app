@@ -3,6 +3,7 @@
 // once here; each app's `@<app>/ui/trusted-types` re-exports it with the header its pages send. Nothing else of ours
 // creates a policy.
 import { INERT_PARSE_POLICY, MARKUP_POLICY } from './csp';
+import { htmlPolicy, resetPolicies } from './policies';
 
 export {
   INERT_PARSE_POLICY,
@@ -12,35 +13,19 @@ export {
   trustedTypesCsp,
 } from './csp';
 
-type HtmlPolicy = { createHTML(input: string): TrustedHTML };
-type TrustedTypesFactory = {
-  createPolicy(name: string, rules: { createHTML: (input: string) => string }): HtmlPolicy;
-};
-
-// One policy per name per page (a second createPolicy with the same name throws); null where the browser has no
-// Trusted Types. One module for every app's UI, so a page that renders two apps' components still creates each once.
-const policies = new Map<string, HtmlPolicy | null>();
-function htmlPolicy(name: string): HtmlPolicy | null {
-  if (!policies.has(name)) {
-    const factory = (globalThis as { trustedTypes?: TrustedTypesFactory }).trustedTypes;
-    policies.set(
-      name,
-      factory ? factory.createPolicy(name, { createHTML: (input) => input }) : null,
-    );
-  }
-  return policies.get(name)!;
-}
-
 /** Forgets the policies made so far, so each test starts from a fresh page. */
 export function resetTrustedTypesForTests(): void {
-  policies.clear();
+  resetPolicies();
 }
 
 /**
- * Markup one of our own builders produced (each escapes what it places), as `TrustedHTML` for
- * `dangerouslySetInnerHTML`. Only those builders' output may come through here; it is not a sanitiser. Call it in
- * the browser (a client component, or a root layout): in a server component it runs in the prerender, where there
- * are no Trusted Types, and a client render then meets a plain string.
+ * The escape hatch: markup that is static, or that one of our own builders produced from typed data (each escapes
+ * what it places), as `TrustedHTML` for `dangerouslySetInnerHTML`, with no sanitising. Anything carrying people's
+ * content (a document, an import, a paste, the network) goes through `sanitizedHtml`
+ * (`@liveworkspace/trusted-types/sanitize`) instead; the sinks test allows this one only in a root layout and the
+ * files each product lists as builder markup. Call it in the browser (a client component, or a root layout): in a
+ * server component it runs in the prerender, where there are no Trusted Types, and a client render then meets a
+ * plain string.
  */
 export function trustedHtml(markup: string): TrustedHTML | string {
   return htmlPolicy(MARKUP_POLICY)?.createHTML(markup) ?? markup;

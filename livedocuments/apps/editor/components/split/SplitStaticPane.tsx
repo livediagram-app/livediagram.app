@@ -7,7 +7,10 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { SPLIT_HOVER_FOCUS_MS } from '@/lib/split-view';
 import type { CanvasAnchor } from '@liveworkspace/workbench/lib/split-pane-view';
-import { TabSvgViewport, type TabSvgViewportHandle } from './TabSvgViewport';
+import {
+  TabSvgViewport,
+  type TabSvgViewportHandle,
+} from '@liveworkspace/workbench/components/split/TabSvgViewport';
 import { useTabSvg } from './useTabSvg';
 import { useTabBackdropPaint } from './useTabBackdropPaint';
 

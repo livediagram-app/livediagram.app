@@ -4,9 +4,9 @@
 // overrides applied, drawn inside its box by the export's own element drawers; or, while the library loads, a quiet
 // Loading frame; or, with no main, the dashed Missing Component frame the exports draw too. The box is the element:
 // it selects, drags, turns and resizes like any shape, and nothing inside it is picked on its own.
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { memo, useMemo } from 'react';
 import { prefixSvgIds, type CanvasSurface, type ShapeElement } from '@livedesign/design';
-import { trustedHtml } from '@livedesign/ui';
 import { instanceMarkup } from '@/lib/instance-svg';
 import { useComponentFaces } from './component-face-context';
 
@@ -62,7 +62,7 @@ export const InstanceFace = memo(function InstanceFace({
       aria-hidden="true"
       style={{ display: 'block' }}
       // Our own renderer's output (every label is xmlEscaped inside it).
-      dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
+      dangerouslySetInnerHTML={{ __html: sanitizedHtml(markup, 'svg-content') }}
     />
   );
 });
