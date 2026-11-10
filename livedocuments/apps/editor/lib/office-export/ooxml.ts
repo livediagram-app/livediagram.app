@@ -43,7 +43,7 @@ export const REL = {
 // surrogates, U+FFFE and U+FFFF): dropped, so a stray control character pasted into a label never makes a file an app
 // refuses to open.
 const INVALID_XML =
-  // oxlint-disable-next-line no-control-regex
+  // oxlint-disable-next-line no-control-regex -- matching the control characters XML refuses is the point
   /[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
 
 /** Text or an attribute value made safe for XML: invalid characters dropped, the five specials escaped. */

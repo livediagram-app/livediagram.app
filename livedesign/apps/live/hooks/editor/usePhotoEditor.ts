@@ -270,8 +270,7 @@ export function usePhotoEditor<V extends PagesModeView>({
       setSession(null);
       void s.settled().then(() => s.dispose());
     };
-    // A new session per page in focus (and per tab); the tab's photo reaches it below.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- a new session per page in focus (and per tab); the tab's photo reaches it below
   }, [focusId, tabId, store, rt]);
 
   const focusPage = pagesModeView?.focusPage;
@@ -306,8 +305,7 @@ export function usePhotoEditor<V extends PagesModeView>({
   const tabPhoto = focusId ? activeTab.photos?.[focusId] : undefined;
   useEffect(() => {
     if (session && tabPhoto) session.setPhoto(photoOfPage(activeTab, session.pageId));
-    // Only the photo's own change matters.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- only the photo's own change matters
   }, [session, tabPhoto]);
 
   // The session's changes re-render what reads it (the panel, the rail).
@@ -360,8 +358,7 @@ export function usePhotoEditor<V extends PagesModeView>({
 
   const photos = useMemo(
     () => photosOf(activeTab),
-    // The photos alone matter.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the photos alone matter
     [activeTab.photos],
   );
   // Edit as Photo: the new page's picture, put in once that page's session is in hand.

@@ -4,8 +4,8 @@
 // enough, so an account left signed in on a shared machine can't be closed by whoever sits down at it.
 //
 // Deleting the user takes everything else with it: sessions and linked Google accounts through
-// Better Auth, and the OAuth tokens and consents through their foreign keys; teams, settings and
-// the profile are cleared first, explicitly. Every app's refresh token stops working at once; an access token
+// Better Auth, and the OAuth tokens and consents through their foreign keys; teams (their inviter ids too), the
+// old livediagram guests it claimed, settings and the profile are cleared first, explicitly. Every app's refresh token stops working at once; an access token
 // already issued runs out on its own (minutes). Then the index is told to purge everything it holds
 // for the person (index-purge.ts): recorded before the user goes, so it can't be lost, and sent again
 // by the cron if the index doesn't take it now (and only once the user is gone). Its workbench goes last: pairings, sessions and the rooms they had
@@ -14,6 +14,7 @@
 import { introspectCaller, type CallerConfig } from './app-caller.ts';
 import { checkDeletionCode, underCheckLimit } from './deletion-code.ts';
 import { pendingPurgeStatement, purgeFromIndex, type IndexPurgeConfig } from './index-purge.ts';
+import { legacyGuestCloseStatements } from './legacy-guests.ts';
 import { deleteProfile } from './profiles.ts';
 import { deleteSettings } from './settings.ts';
 import { leaveAllTeams } from './teams.ts';
@@ -51,9 +52,11 @@ export async function deleteAccount(
 
   // Teams first, so the apps hear that the account left each one and a team it ran passes on. The purge request is
   // recorded in the same batch, naming the teams that closed: should a later step fail, the retry finds them gone and
-  // the request still names them (the cron sends it only once the user is deleted).
+  // the request still names them (the cron sends it only once the user is deleted). The old livediagram guests it
+  // claimed lose its id in the same batch (legacy_guest has no foreign key to the user).
   await leaveAllTeams(db, userId, Date.now(), (closed) => [
     pendingPurgeStatement(db, userId, closed),
+    ...legacyGuestCloseStatements(db, userId),
   ]);
   // Settings and the profile have no foreign key to the account (a guest's rows have no account), so
   // they go here.

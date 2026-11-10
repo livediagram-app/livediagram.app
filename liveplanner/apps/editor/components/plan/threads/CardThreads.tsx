@@ -84,7 +84,7 @@ function CardThreadsOf({ item, type, field = COMMENTS_FIELD, heading }: CardThre
     if (!focusedThread || !ctx) return;
     // A one-shot request from outside the panel (the link), taken once and let go: keeping the thread open past it
     // is this panel's own state.
-    // oxlint-disable-next-line react/set-state-in-effect
+    // oxlint-disable-next-line react/set-state-in-effect -- a one-shot request from outside the panel, taken once
     setExpanded((prev) => new Set([...prev, focusedThread.id]));
     if (focusedThread.resolved) setShowResolved(true);
     const id = focusedThread.id;

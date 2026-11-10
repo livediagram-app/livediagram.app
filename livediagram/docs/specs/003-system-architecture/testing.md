@@ -70,18 +70,29 @@ export default defineProject({ test: { environment: 'jsdom' } });
   `sentJson(init)` and `sentText(init)` read a string body, `sentForm(init)` a form, and
   `sentUrl(input)` the URL of a string, a URL or a Request. A body of any other kind fails the
   test rather than read as `[object Blob]`.
-- **A tight budget is written for a developer's machine and widened on CI and under coverage.** CI's
-  shared runners, under coverage, run the same work about 4x slower than an
-  M-series Mac (the Tidy Up hover: 24 ms locally, 101 to 104 ms on CI), so a
-  budget set for a person's device sits at the line there and fails at random;
-  coverage alone slows it too (the pre-push hook's coverage run read a 16 ms
-  drag frame at 20 ms). Such a test asserts `cpuBudgetMs(ms)`: `ms` in a plain
-  run, `ms x CI_CPU_HEADROOM` (3) when `CI` is `true` or `1` (`CI=false` or
-  `CI=0` is a developer's machine) or the run collects coverage (the shared
-  Vitest config passes `LIVEWORKSPACE_COVERAGE` to its workers). Three is enough
-  beside a 4x slower runner because each budget keeps its own room over the
-  local timing (Tidy Up: 100 ms against 24). A loose regression guard (a budget many times what the
-  work measures) needs neither.
+- **A tight budget is written for a developer's machine, widened on CI, and checked without coverage.**
+  CI's shared runners run the same work about 4x slower than an M-series Mac (the Tidy Up hover: 24 ms
+  locally, 101 to 104 ms on CI), so a budget set for a person's device sits at the line there and fails
+  at random. Such a test asserts `cpuBudgetMs(ms)`: `ms` in a plain run, and `ms x CI_CPU_HEADROOM` (3)
+  when `CI` is `true` or `1` (`CI=false` or `CI=0` is a developer's machine). Three is enough beside a
+  4x slower runner because each budget keeps its own room over the local timing (Tidy Up: 100 ms
+  against 24). A loose regression guard (a budget many times what the work measures) needs neither.
+- **Coverage never judges a budget.** Coverage instruments every line, so the same work runs several
+  times slower and a budget read under it failed at random: 15 of 25 failed CI runs in November 2026
+  were budgets missed by 1% to 50% under coverage. In a coverage run (the shared Vitest config passes
+  `LIVEWORKSPACE_COVERAGE` to its workers) `cpuBudgetMs` is unbounded, so the test still runs and
+  counts its lines but cannot fail on time. `vitest-budgets` (from `@liveworkspace/vitest-config`)
+  then runs every test file that imports `@liveworkspace/vitest-config/cpu-time` once more, without
+  coverage, where the budget holds: each workspace's `test:coverage` runs it after its coverage run,
+  and CI's editor shards run it beside theirs. A budget used as a test timeout is not a CPU budget and
+  never goes through `cpuBudgetMs`.
+- **A growth check keeps its larger input under a million characters.** A test that holds a scan linear
+  compares the CPU time of two input sizes four times apart, against a ceiling of 8 where a quadratic
+  scan reads 16. Past about a million characters V8's memory handling alone grows faster than the text
+  (the same linear label scan took 3.2 times the CPU for twice the text), so the label-cap ReDoS checks,
+  whose larger input was 1.28 million characters, read a median 6.9 for four times the text and failed
+  CI at 8.4 (livedesign, 2026-11-09). They compare two and eight times their sweep's length now: 4.1,
+  worst 4.7 of 20 runs.
 - **A test never pays a cold module load.** When the code under test imports
   a module lazily (`await import(...)`), the test file also imports it
   statically, so its transform happens at collection, outside every test's

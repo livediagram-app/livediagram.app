@@ -273,6 +273,11 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
+      # Coverage never judges a budget (docs/ci.md "Speed budgets"): this shard's share of the files with speed
+      # budgets runs again here, without coverage, after the coverage is kept.
+      - name: Speed budgets
+        run: pnpm --filter ${{ matrix.editor }} exec vitest-budgets --shard=${{ matrix.shard }}/${{ matrix.total }}
+
       # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
       - name: Cancel on failure
         if: failure() && github.event_name == 'pull_request'

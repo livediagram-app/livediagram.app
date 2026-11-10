@@ -31,7 +31,8 @@ function dropAsk(): void {
   const url = new URL(window.location.href);
   url.searchParams.delete(ARCHIVED_MOVE_PARAM);
   url.searchParams.delete(ARCHIVED_OPEN_PARAM);
-  window.history.replaceState(window.history.state, '', url);
+  // null, never history.state: Next skips its own state, which would leave useSearchParams stale (next-config/history-state.test.js).
+  window.history.replaceState(null, '', url);
 }
 
 export function useArchivedAsk(

@@ -29,7 +29,7 @@ import {
 } from './arrow-style';
 import { isErShape } from './er-heads';
 import { arrowPolyline } from './arrow-path-hits';
-import { elementIndexFor, endpointPosition, type ElementIndex } from './geometry';
+import { elementIndexFor, endpointPosition } from './geometry';
 import { rectsIntersect, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 import {
   addToRectGrid,
@@ -44,6 +44,7 @@ import {
   type BoxedElement,
   type Element,
   type ElementId,
+  type ElementIndex,
 } from './index';
 import { LABEL_LINE_HEIGHT, labelMeasure } from './svg-render-primitives';
 

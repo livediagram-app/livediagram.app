@@ -123,9 +123,9 @@ function arrange() {
   }
   run(
     `INSERT INTO collab_actions (app, item_id, tab_id, element_id, action_id, element_label, name, status,
-       assignee_id, assigner_id, created_at, updated_at)
-     VALUES ('liveplanner', 'bea-1', 'tab', 'el', 'a1', 'Box', 'Do it', 'open', ?, ?, 1, 1),
-            ('liveplanner', 'bea-1', 'tab', 'el', 'a2', 'Box', 'And this', 'open', ?, ?, 1, 1)`,
+       assignee_id, assignee_name, assigner_id, assigner_name, created_at, updated_at)
+     VALUES ('liveplanner', 'bea-1', 'tab', 'el', 'a1', 'Box', 'Do it', 'open', ?, 'Ada', ?, 'Bea', 1, 1),
+            ('liveplanner', 'bea-1', 'tab', 'el', 'a2', 'Box', 'And this', 'open', ?, 'Bea', ?, 'Ada', 1, 1)`,
     ADA,
     BEA,
     BEA,
@@ -227,10 +227,25 @@ describe('POST /internal/purge-person', () => {
       },
     ]);
     expect(
-      rows('SELECT action_id, assignee_id, assigner_id FROM collab_actions ORDER BY action_id'),
+      rows(
+        `SELECT action_id, assignee_id, assignee_name, assigner_id, assigner_name FROM collab_actions
+         ORDER BY action_id`,
+      ),
     ).toEqual([
-      { action_id: 'a1', assignee_id: ANONYMISED_PERSON, assigner_id: BEA },
-      { action_id: 'a2', assignee_id: BEA, assigner_id: ANONYMISED_PERSON },
+      {
+        action_id: 'a1',
+        assignee_id: ANONYMISED_PERSON,
+        assignee_name: null,
+        assigner_id: BEA,
+        assigner_name: 'Bea',
+      },
+      {
+        action_id: 'a2',
+        assignee_id: BEA,
+        assignee_name: 'Bea',
+        assigner_id: ANONYMISED_PERSON,
+        assigner_name: null,
+      },
     ]);
 
     // Bea's own things are untouched.
@@ -305,6 +320,115 @@ describe('POST /internal/purge-person', () => {
       { scope: 't:T', event_id: 'e-team' },
     ]);
     expect(rows('SELECT person_id FROM timeline_scope_state')).toEqual([{ person_id: BEA }]);
+  });
+
+  it("takes their id off a team's account events about them, and off webhook deliveries they did", async () => {
+    // Team events (no item) that the team still sees: Bea removed Ada, Ada joined, Bea joined; and one whose detail
+    // is not JSON, which must not stop the purge.
+    const accountEvent = (id: string, actor: string, detail: string | null) => {
+      run(
+        `INSERT INTO timeline_events (id, app, item_id, actor_id, actor_name, type, title, detail, occurred_at)
+         VALUES (?, 'liveworkspace', NULL, ?, 'X', 'team_member_removed', 'Team', ?, 1)`,
+        id,
+        actor,
+        detail,
+      );
+      run(
+        `INSERT INTO timeline_event_scopes (scope, event_id, app, occurred_at) VALUES ('t:T', ?, 'liveworkspace', 1)`,
+        id,
+      );
+    };
+    const about = (person: string, name: string) =>
+      JSON.stringify({ teamId: 'T', personId: person, memberName: name });
+    accountEvent('t-removed', BEA, about(ADA, 'ada@example.com'));
+    accountEvent('t-joined', ADA, about(ADA, 'Ada'));
+    accountEvent('t-bea', BEA, about(BEA, 'Bea'));
+    accountEvent('t-odd', BEA, 'not json');
+    accountEvent('t-none', BEA, null);
+    addItem('bea-hooked', BEA);
+    // Bea gave Ada an action and Cy one: the event's detail names the assignee.
+    const assigned = (assignee: string, name: string) =>
+      JSON.stringify({ action: 'Do it', assigneeId: assignee, assigneeName: name });
+    for (const [id, assignee, name] of [
+      [`aa:bea-hooked:tab:el:a1:${ADA}`, ADA, 'Ada'],
+      ['aa:bea-hooked:tab:el:a2:user_cy', 'user_cy', 'Cy'],
+    ] as const) {
+      run(
+        `INSERT INTO timeline_events (id, app, item_id, actor_id, actor_name, type, title, detail, occurred_at)
+         VALUES (?, 'liveplanner', 'bea-hooked', ?, 'Bea', 'action_assigned', 'Plan', ?, 1)`,
+        id,
+        BEA,
+        assigned(assignee, name),
+      );
+    }
+    // Bea's webhook on her plan, with a delivery of Ada's edit and one of her own.
+    run(
+      `INSERT INTO webhooks (id, item_id, kind, name, url_sealed, host, events, created_by, created_at)
+       VALUES ('wh-1', 'bea-hooked', 'json', 'Hook', 's', 'example.com', 'all', ?, 1)`,
+      BEA,
+    );
+    for (const [event, actor, state, type, detail] of [
+      ['ev-ada', ADA, 'delivered', 'edited', null],
+      ['ev-ada-2', ADA, 'pending', 'edited', null],
+      ['ev-bea', BEA, 'delivered', 'edited', null],
+      ['ev-assigned', BEA, 'delivered', 'action_assigned', assigned(ADA, 'Ada')],
+    ] as const) {
+      run(
+        `INSERT INTO webhook_deliveries (webhook_id, event_id, type, app, item_id, title, actor_id, actor_name,
+           detail, occurred_at, state, next_at)
+         VALUES ('wh-1', ?, ?, 'liveplanner', 'bea-hooked', 'Plan', ?, ?, ?, 1, ?, 1)`,
+        event,
+        type,
+        actor,
+        actor === ADA ? 'Ada' : 'Bea',
+        detail,
+        state,
+      );
+    }
+
+    expect((await purge({ personId: ADA, teamIds: [] })).status).toBe(200);
+    await settle();
+    const detailOf = (id: string) =>
+      rows('SELECT detail FROM timeline_events WHERE id = ?', id)[0]?.detail as string | null;
+    expect(JSON.parse(detailOf('t-removed')!)).toEqual({
+      teamId: 'T',
+      personId: ANONYMISED_PERSON,
+      memberName: null,
+    });
+    expect(JSON.parse(detailOf('t-joined')!)).toEqual({
+      teamId: 'T',
+      personId: ANONYMISED_PERSON,
+      memberName: null,
+    });
+    expect(detailOf('t-bea')).toBe(about(BEA, 'Bea'));
+    expect(detailOf('t-odd')).toBe('not json');
+    expect(detailOf('t-none')).toBeNull();
+    expect(
+      rows('SELECT event_id, actor_id, actor_name FROM webhook_deliveries ORDER BY event_id'),
+    ).toEqual([
+      { event_id: 'ev-ada', actor_id: ANONYMISED_PERSON, actor_name: null },
+      { event_id: 'ev-ada-2', actor_id: ANONYMISED_PERSON, actor_name: null },
+      { event_id: 'ev-assigned', actor_id: BEA, actor_name: 'Bea' },
+      { event_id: 'ev-bea', actor_id: BEA, actor_name: 'Bea' },
+    ]);
+    // The actions given to her keep their events, her name off their detail; Cy's stays his.
+    const anonymous = { action: 'Do it', assigneeId: ANONYMISED_PERSON, assigneeName: null };
+    expect(JSON.parse(detailOf(`aa:bea-hooked:tab:el:a1:${ADA}`)!)).toEqual(anonymous);
+    expect(detailOf('aa:bea-hooked:tab:el:a2:user_cy')).toBe(assigned('user_cy', 'Cy'));
+    expect(
+      JSON.parse(
+        rows(`SELECT detail FROM webhook_deliveries WHERE event_id = 'ev-assigned'`)[0]!
+          .detail as string,
+      ),
+    ).toEqual(anonymous);
+    // Nothing on an account event or a delivery still names her.
+    expect(
+      count(
+        `SELECT COUNT(*) AS n FROM timeline_events WHERE item_id IS NULL AND (actor_id = ?1 OR detail LIKE '%' || ?1 || '%')`,
+        ADA,
+      ),
+    ).toBe(0);
+    expect(count('SELECT COUNT(*) AS n FROM webhook_deliveries WHERE actor_id = ?', ADA)).toBe(0);
   });
 
   it('is safe to run again, and remembers the request until the linger window ends', async () => {

@@ -446,6 +446,15 @@ BEGIN
 END;
 `;
 
+// Who resolved a card thread, by hashed person id (db/card-threads.ts; docs/specs/026-plan/items.md "Created and Last
+// Edited"), beside `resolved_by`'s name, so a closed account's anonymising finds them. Asks first, as V10 does; every
+// thread already there reads as resolved by a name alone.
+const V17 = (exec: Exec) => {
+  const columns = exec('PRAGMA table_info(card_threads)').toArray();
+  if (!columns.some((c) => c.name === 'resolved_by_id'))
+    exec('ALTER TABLE card_threads ADD COLUMN resolved_by_id TEXT NULL');
+};
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -463,6 +472,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V14,
   V15,
   V16,
+  V17,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

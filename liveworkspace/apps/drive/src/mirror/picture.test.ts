@@ -18,7 +18,7 @@ const PAST_SLACK = DRIVE_PICTURE_SLACK_MS + 60_000;
 let h: Harness;
 
 beforeEach(() => {
-  vi.spyOn(console, 'log').mockImplementation(() => {});
+  vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   h = harness();
 });

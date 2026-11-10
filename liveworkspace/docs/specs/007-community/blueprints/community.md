@@ -277,6 +277,7 @@ hidden_at IS NOT NULL`.
 | Load More past offset 2400                      | `nextOffset: null`, so the last page never repeats           |
 | An edge-cached answer (immutable headers)       | copied before CORS headers are set                           |
 | A report that hid the post                      | the same `204` as one that did not                           |
+| The document's owner closed their account       | the room's next check sends it `gone` (`communityStateOf`)   |
 
 ## Security and trust
 

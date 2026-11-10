@@ -198,6 +198,7 @@
     "./components/providers/ui-scale": "./src/components/providers/ui-scale.tsx",
     "./components/rich-text/rich-text-toolbar-icons": "./src/components/rich-text/rich-text-toolbar-icons.tsx",
     "./components/split/SplitSeamControls": "./src/components/split/SplitSeamControls.tsx",
+    "./components/split/TabSvgViewport": "./src/components/split/TabSvgViewport.tsx",
     "./components/start/best-match": "./src/components/start/best-match.ts",
     "./components/start/start-card-keys": "./src/components/start/start-card-keys.ts",
     "./components/start/start-panel-open": "./src/components/start/start-panel-open.ts",

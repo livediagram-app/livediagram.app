@@ -17,7 +17,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/editor/components/canvas/arrow-view-frame.ts`                    | `ArrowViewFrame` and `sameArrowViewFrame`                                                                       |
 | `apps/editor/components/canvas/ArrowView.tsx`                          | Takes `frame` + `holes`, no `elementIndex` / `occluders`                                                        |
 | `apps/editor/components/canvas/BoxedElementView.tsx`                   | No `zoom` prop; counter-scaled children read `useCanvasZoom()`                                                  |
-| `packages/project/src/element-grid.ts`                                 | `ElementGrid`: build, update, query, `elementGridFor`, `createElementGridTracker`                               |
+| `../packages/element-model/src/element-grid.ts`                        | `ElementGrid`: build, update, query, `elementGridFor`, `createElementGridTracker`                               |
 | `packages/project/src/arrow-behind.ts`                                 | `routeBehindHoles` unchanged in contract; callers pass grid candidates                                          |
 | `packages/project/src/svg-render-arrows.ts`                            | The export builds one grid per render and queries it                                                            |
 | `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`                     | `draftLayout` identity-stable across passes                                                                     |
@@ -388,7 +388,7 @@ export function resetCanvasGesturesForTests(): void;
 export function gestureOfDrag(drag: DragState): CanvasGesture;
 export function dragWaitsToEngage(drag: DragState): boolean;
 
-// packages/project/src/element-grid.ts
+// ../packages/element-model/src/element-grid.ts
 export const ELEMENT_GRID_CELL = 256;
 export const ELEMENT_GRID_MAX_CELLS = 64;
 export type ElementGrid;

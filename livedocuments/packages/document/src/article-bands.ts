@@ -20,8 +20,7 @@ export const ARTICLE_BAND_FIELDS = [
   { token: '{date}', label: 'Date' },
 ] as const;
 
-// Control characters (a pasted tab or newline) read as a space: a part is one line.
-// oxlint-disable-next-line no-control-regex
+// oxlint-disable-next-line no-control-regex -- control characters (a pasted tab or newline) read as a space: a part is one line
 const CONTROL = /[\u0000-\u001f\u007f]+/g;
 
 /** A stored header or footer read defensively: each part a string, one line, at most ARTICLE_BAND_MAX

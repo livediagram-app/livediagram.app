@@ -7,7 +7,7 @@ Scope, by file:
 
 | File                                                | Role                                                              |
 | --------------------------------------------------- | ----------------------------------------------------------------- |
-| `packages/document/src/hierarchy.ts`                | The branch walk: `assignBranches`, `branchOfArrow`, `ROOT_BRANCH` |
+| `../packages/element-model/src/hierarchy.ts`        | The branch walk: `assignBranches`, `branchOfArrow`, `ROOT_BRANCH` |
 | `packages/document/src/theme-graph.ts`              | The four wrappers and the per-element branch resolution           |
 | `packages/document/src/themes-data.ts`              | The five built-in multi-colour themes                             |
 | `packages/document/src/colors.ts`                   | `contrastRatio`, the WCAG contrast helper (D3)                    |

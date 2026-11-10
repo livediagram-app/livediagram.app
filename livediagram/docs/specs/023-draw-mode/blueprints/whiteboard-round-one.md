@@ -285,7 +285,7 @@ Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whitebo
 
 ### Marker colours
 
-Spec: draw-mode.md "The colour picker". Pure data in `packages/document/src/pen-colours.ts` (a leaf
+Spec: draw-mode.md "The colour picker". Pure data in `../packages/element-model/src/pen-colours.ts` (a leaf
 module: no value imports).
 
 - Stock colours: Ink (`null`, `WHITEBOARD_INK`), Grey (`GREY_PEN_COLOUR`, OKLCH chroma 0, tuned like the

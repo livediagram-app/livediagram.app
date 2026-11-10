@@ -21,9 +21,9 @@ import { actorFigureRect } from './actor-figure';
 import { defaultFillColor } from './colors';
 import { rotatePoint, type Point } from '@liveworkspace/model-core/geometry-primitives';
 import type { Element, ShapeElement } from './index';
+import { SHAPE_GEOMETRY_KINDS } from './shape-kind';
 import {
   BROWSER_CHROME,
-  SHAPE_GEOMETRY_KINDS,
   shapeGeometry,
   type ShapePart,
   type ShapePartRole,

@@ -125,7 +125,8 @@ person's `p:<id>`; a deleted team's go to each former member's `p:`. Detail alwa
 For each joined row: a team where it is the only joined member closes (`deletedAt`, link cleared, open rows
 `removed`); a sole admin's role passes to the longest-standing joined member; the row `removed`. Then every row with
 its id, and declined or removed rows with its address, take the email `Deleted account`. Open invitations to its
-address stay. Answers the teams that closed.
+address stay. Every row it invited has `invitedBy` `deleted` (`ANONYMISED_PERSON`; not in the change feed, so no
+`rev`). Answers the teams that closed.
 
 ## Data and persistence
 

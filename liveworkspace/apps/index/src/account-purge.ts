@@ -10,7 +10,8 @@
 // - Their folders, favourites, opens (Recent), use days (Most Used), Shared with me rows, placement
 //   defaults and Timeline rows only they see go.
 // - Rows on other people's items that only name them (comment threads they are in, actions assigned to
-//   or by them, Timeline events they did) keep the row but name ANONYMISED_PERSON instead.
+//   or by them, Timeline events they did or a team's are about, webhook deliveries of what they did) keep
+//   the row but name ANONYMISED_PERSON instead.
 // - The team audit log (team-audit.ts): a closed team's goes; rows they did, or that a team event is about them,
 //   name ANONYMISED_PERSON instead, with no name.
 //
@@ -22,6 +23,7 @@
 // runs the purge again over it, so anything written with an access token issued before the account
 // closed (they live an hour) goes too.
 
+import { ANONYMISED_PERSON } from '@liveworkspace/index-client';
 import { isMergeCaller } from './auth';
 import { isId } from './codec';
 import { PURGE_NOW_MAX } from './config';
@@ -31,11 +33,11 @@ import { badRequest, json, notFound, readObject, unauthorized } from './http';
 import { drainPersonNotices, recordPersonNotices } from './person-notices';
 import { drainTombstones, drainTombstonesSoon } from './purge';
 import { teamAuditPurgeStatements } from './team-audit';
-import { webhookPurgeStatements } from './webhooks/purge';
+import { webhookDeliveryPurgeStatement, webhookPurgeStatements } from './webhooks/purge';
 
-// What a reference to a closed account becomes. Shaped like neither an account (`user_…`) nor a guest
-// (`guest_…`), so it can never match anyone.
-export const ANONYMISED_PERSON = 'deleted';
+// What a reference to a closed account becomes (@liveworkspace/index-client): shaped like neither an account
+// (`user_…`) nor a guest (`guest_…`), so it can never match anyone.
+export { ANONYMISED_PERSON };
 
 // Rows per statement.
 export const CHUNK = 500;
@@ -148,13 +150,26 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
         `DELETE FROM ${table} WHERE rowid IN (SELECT rowid FROM ${table} WHERE person_id = ? LIMIT ?)`,
       )
       .bind(person, CHUNK);
-  const anonymiseAction = (column: 'assignee_id' | 'assigner_id') => () =>
+  // The id and the name kept beside it (`assignee_name`, `assigner_name`).
+  const anonymiseAction = (role: 'assignee' | 'assigner') => () =>
     db
       .prepare(
-        `UPDATE collab_actions SET ${column} = ? WHERE rowid IN (
-           SELECT rowid FROM collab_actions WHERE ${column} = ? LIMIT ?)`,
+        `UPDATE collab_actions SET ${role}_id = ?, ${role}_name = NULL WHERE rowid IN (
+           SELECT rowid FROM collab_actions WHERE ${role}_id = ? LIMIT ?)`,
       )
       .bind(ANONYMISED_PERSON, person, CHUNK);
+  // An action given to them: the event's detail names them (`assigneeId`, `assigneeName`), on the Timeline and in
+  // the webhook deliveries made of it. `action_assigned` events are `aa:` ids, so the primary key's range keeps the
+  // scan to them.
+  const anonymiseAssigned =
+    (table: 'timeline_events' | 'webhook_deliveries', range: string) => () =>
+      db
+        .prepare(
+          `UPDATE ${table} SET detail = json_set(detail, '$.assigneeId', ?, '$.assigneeName', NULL)
+         WHERE rowid IN (SELECT rowid FROM ${table} WHERE ${range} AND type = 'action_assigned'
+           AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.assigneeId') END = ? LIMIT ?)`,
+        )
+        .bind(ANONYMISED_PERSON, person, CHUNK);
   return [
     // Their folders: personal ones, and those in a team that closed with them (their items are gone by
     // now; anyone else's in them move to the root). Placement defaults pointing at them cascade.
@@ -192,6 +207,18 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
              SELECT rowid FROM timeline_events WHERE actor_id = ? LIMIT ?)`,
         )
         .bind(ANONYMISED_PERSON, person, CHUNK),
+    // Account events (teams; no item) about them keep their row for the team, the person in their detail
+    // anonymised as the team audit log's is. `json_valid` first, as a detail that isn't JSON makes json_extract
+    // throw; the `item_id IS NULL` range of timeline_events_item keeps the scan to account events.
+    () =>
+      db
+        .prepare(
+          `UPDATE timeline_events SET detail = json_set(detail, '$.personId', ?, '$.memberName', NULL)
+           WHERE rowid IN (
+             SELECT rowid FROM timeline_events WHERE item_id IS NULL
+               AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.personId') END = ? LIMIT ?)`,
+        )
+        .bind(ANONYMISED_PERSON, person, CHUNK),
     byPerson('timeline_scope_state'),
     byPerson('timeline_dismissals'),
     byPerson('shared_with'),
@@ -199,8 +226,12 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
     byPerson('collab_form_reads'),
     // Their Drive mirror's flag (liveworkspace/docs/specs/005-drive/drive.md): accounts tells the service itself.
     byPerson('drive_people'),
-    anonymiseAction('assignee_id'),
-    anonymiseAction('assigner_id'),
+    anonymiseAction('assignee'),
+    anonymiseAction('assigner'),
+    anonymiseAssigned('timeline_events', "id >= 'aa:' AND id < 'aa;'"),
+    anonymiseAssigned('webhook_deliveries', 'true'),
+    // The deliveries of events they did, on webhooks that outlive them (webhooks/purge.ts).
+    webhookDeliveryPurgeStatement(db, person, ANONYMISED_PERSON, CHUNK),
   ];
 }
 
@@ -364,7 +395,7 @@ export async function handlePersonPurge(
       console.warn('[index] person notices', String(err)),
     ),
   );
-  console.log('[index] purged a closed account', { items: outcome.items, done: outcome.done });
+  console.info('[index] purged a closed account', { items: outcome.items, done: outcome.done });
   return json({ done: outcome.done, items: outcome.items });
 }
 

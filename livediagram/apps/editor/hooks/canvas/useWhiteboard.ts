@@ -152,8 +152,7 @@ export function useWhiteboard(deps: Deps) {
     if (canvasTool !== 'select' && canvasTool !== 'pan' && !heldElsewhere) return;
     if (activeTab.elements.length > 0) return;
     armPen(prefs);
-    // Runs on a tab change only; the rest is read at that moment.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- runs on a tab change only; the rest is read at that moment
   }, [activeTab.id, whiteboard, editsBlocked]);
 
   const pickSelect = () => {

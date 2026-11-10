@@ -127,7 +127,20 @@ export function ShapeSvgOverlay({
       vectorEffect: 'non-scaling-stroke',
       strokeLinejoin: 'round',
     },
+    // The limb and head roles draw the actor and the final state, which are other products' kinds: the shared
+    // geometry table (@liveworkspace/element-model/shape-geometry) holds every product's, so each role has its paint.
+    limb: {
+      fill: 'none',
+      stroke,
+      strokeWidth,
+      strokeDasharray: dash,
+      strokeLinecap: 'round',
+      strokeLinejoin: 'round',
+      vectorEffect: 'non-scaling-stroke',
+    },
+    head: {},
   };
+  paint.head = { ...paint.limb, fill: effectiveFill };
   return (
     <svg
       className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"

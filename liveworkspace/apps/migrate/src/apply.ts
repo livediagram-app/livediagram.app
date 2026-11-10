@@ -286,6 +286,7 @@ const readLedgerEntries = (bundleDir: string, db: Db, sqlFile: string): LedgerRo
 };
 
 export async function apply(o: ApplyOptions): Promise<ApplySummary> {
+  // oxlint-disable-next-line no-console -- the migrate CLI's progress lines, printed to stdout
   const log = o.log ?? ((line: string) => console.log(line));
   const manifest = JSON.parse(readFileSync(join(o.bundleDir, 'manifest.json'), 'utf8')) as Manifest;
   const wrangler = o.wrangler ?? defaultWrangler();

@@ -58,8 +58,7 @@ export function useSketchPaint(
   };
   return useMemo(
     () => handDrawnElementPaint(element, finish, fill, backdrop),
-    // The fields the paint reads, so moving the element keeps the drawing.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the fields the paint reads, so moving the element keeps the drawing
     [
       element.id,
       element.type,

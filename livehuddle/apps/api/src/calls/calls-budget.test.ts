@@ -53,7 +53,7 @@ beforeEach(() => {
   resetCallsModeCache();
   resetCallsBudgetLog();
   fetchSpy = vi.spyOn(globalThis, 'fetch');
-  vi.spyOn(console, 'log').mockImplementation(() => {});
+  vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });
 
@@ -108,7 +108,7 @@ describe('pollCallsBudget', () => {
     const { env } = setup({ env: { CALLS_SWITCH: undefined } });
     expect(await pollCallsBudget(env)).toBe('inert');
     expect(await pollCallsBudget(env)).toBe('inert');
-    expect(console.log).toHaveBeenCalledOnce();
+    expect(console.info).toHaveBeenCalledOnce();
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 

@@ -186,7 +186,7 @@ export async function handleApp(
       } catch (err) {
         console.error('[media] R2 delete failed after the row went', { id }, err);
       }
-      console.log('[media] deleted', { app, id });
+      console.info('[media] deleted', { app, id });
       return ok();
     }
     return notFound();
@@ -222,7 +222,7 @@ export async function handleApp(
         return badRequest('invalid_body');
       }
       const merged = await mergeOwner(env, body.from, body.to);
-      console.log('[media] merged a guest', {
+      console.info('[media] merged a guest', {
         app,
         moved: merged.moved.length,
         kept: merged.kept.length,
@@ -239,7 +239,7 @@ export async function handleApp(
           console.error('[media] R2 delete failed for a deleted owner', err);
         }
       }
-      console.log('[media] forgot an owner', { app, deleted: ids.length });
+      console.info('[media] forgot an owner', { app, deleted: ids.length });
       return json({ deleted: ids.length });
     }
   }
@@ -389,7 +389,7 @@ async function upload(
       json({ error: 'upload_conflict' }, { status: 409 })
     );
   }
-  console.log('[media] stored', { app, id, bytes: stored.byteLength });
+  console.info('[media] stored', { app, id, bytes: stored.byteLength });
   return answer(image, false);
 }
 
