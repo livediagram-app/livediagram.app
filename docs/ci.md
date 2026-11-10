@@ -198,6 +198,13 @@ coverage run `cpuBudgetMs` is unbounded: the test still runs and its lines still
 (`vitest-budgets --shard=n/3`). A budget used as a test timeout is a wall-clock limit, not a CPU budget, and
 never goes through `cpuBudgetMs`.
 
+A growth check (a scan held linear by comparing the CPU time of two input sizes, not by a budget) keeps its
+larger input under about a million characters. Past that, V8's memory handling alone grows faster than the
+text: the label-cap ReDoS checks in the four document packages compared 320,000 and 1.28 million characters,
+read a median 6.9 for four times the text against a ceiling of 8, and failed `main` at 8.4 under coverage
+(2026-11-09). At two and eight times their sweep's length they read 4.1 (worst 4.7 of 20 runs), and a
+quadratic scan still reads 16.
+
 The Checks job's **Speed budgets use CPU time** step (`.github/scripts/cpu-budget-guard.mjs`, also in
 the pre-push hook) fails a change that adds `performance.now()` to a test file. Older budgets are left
 for a pass of their own, and so is a copy of one: a line another product already has at the same path

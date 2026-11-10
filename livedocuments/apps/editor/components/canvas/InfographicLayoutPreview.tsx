@@ -1,6 +1,6 @@
 'use client';
 
-import { builtMarkup, htmlProps } from '@livedocuments/ui';
+import { htmlProps } from '@livedocuments/ui';
 
 // A layout previewed on its page while its tile is hovered (docs/specs/007-editor/
 // pages-mode.md "Layouts"): the layout built for the page, drawn over the whole sheet in the
@@ -9,6 +9,7 @@ import { builtMarkup, htmlProps } from '@livedocuments/ui';
 // does. The page's own words and pictures are carried into it as placing it would carry them
 // (buildPageLayoutOver), so the preview shows exactly what a press lands. Above the element
 // layer, taking no presses.
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { useEffect, useMemo, useState } from 'react';
 import {
   arrowLabelFontStack,
@@ -104,7 +105,7 @@ function LayoutLayer({
       height={rect.height}
       viewBox={`${rect.x} ${rect.y} ${rect.width} ${rect.height}`}
       // Our own renderer's output (every label is xmlEscaped inside it).
-      {...htmlProps(builtMarkup(markup))}
+      {...htmlProps(sanitizedHtml(markup, 'svg-content'))}
     />
   );
 }

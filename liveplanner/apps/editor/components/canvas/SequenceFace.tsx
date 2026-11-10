@@ -1,4 +1,5 @@
-import { builtMarkup, htmlProps } from '@liveplanner/ui';
+import { htmlProps } from '@liveplanner/ui';
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { memo, useMemo, type CSSProperties } from 'react';
 import {
   ANIMATION_SPEED_FACTOR,
@@ -76,7 +77,7 @@ export const SequenceFace = memo(function SequenceFace({
         play ? (element.sequenceAnimRepeat ? 'lvd-seq-play-loop' : 'lvd-seq-play') : ''
       }`}
       style={style}
-      {...htmlProps(builtMarkup(html))}
+      {...htmlProps(sanitizedHtml(html))}
     />
   );
 });

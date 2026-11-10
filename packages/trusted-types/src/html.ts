@@ -1,9 +1,11 @@
 // The one path markup takes into a page (livediagram/docs/specs/016-platform/trusted-types.md "One path for markup").
 // Every raw HTML sink of ours lives in this module and nowhere else: `htmlProps` for a React element, `setHtml` and
-// `setSrcdoc` for the DOM. Each takes a `SafeHtml`, which only the three constructors below make, so a plain string
-// never type-checks at a sink and every place markup enters is one named call to review. The raw HTML guard
+// `setSrcdoc` for the DOM. Each takes a `SafeHtml`, which only the three constructors below and the sanitiser
+// (sanitize.ts's `sanitizedHtml`, for markup carrying people's content) make, so a plain string never type-checks at
+// a sink and every place markup enters is one named call to review. The raw HTML guard
 // (.github/scripts/raw-html-guard.mjs) fails CI on a sink anywhere else.
 import { INERT_PARSE_POLICY, MARKUP_POLICY } from './csp';
+import { htmlPolicy, resetPolicies } from './policies';
 
 declare const vetted: unique symbol;
 
@@ -35,28 +37,9 @@ export function jsonScript(data: unknown): SafeHtml {
   return JSON.stringify(data).replace(/</g, '\\u003c') as SafeHtml;
 }
 
-type HtmlPolicy = { createHTML(input: string): TrustedHTML };
-type TrustedTypesFactory = {
-  createPolicy(name: string, rules: { createHTML: (input: string) => string }): HtmlPolicy;
-};
-
-// One policy per name per page (a second createPolicy with the same name throws); null where the browser has no
-// Trusted Types. One module for every app's UI, so a page that renders two apps' components still creates each once.
-const policies = new Map<string, HtmlPolicy | null>();
-function htmlPolicy(name: string): HtmlPolicy | null {
-  if (!policies.has(name)) {
-    const factory = (globalThis as { trustedTypes?: TrustedTypesFactory }).trustedTypes;
-    policies.set(
-      name,
-      factory ? factory.createPolicy(name, { createHTML: (input) => input }) : null,
-    );
-  }
-  return policies.get(name)!;
-}
-
 /** Forgets the policies made so far, so each test starts from a fresh page. */
 export function resetTrustedTypesForTests(): void {
-  policies.clear();
+  resetPolicies();
 }
 
 /**

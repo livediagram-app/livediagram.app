@@ -1,6 +1,8 @@
 // The Trusted Types sink checks every app runs over its own sources (livediagram/docs/specs/016-platform/trusted-types.md):
 // every sink mints its TrustedHTML in the browser, every page boots the default policy first, and every app sends the
-// header. That every sink goes through html.ts at all is the repository's raw HTML guard (.github/scripts/raw-html-guard.mjs). Written once here; each app's `packages/ui/src/trusted-types-sinks.test.ts` calls it with its own layout.
+// header, and markup goes in unsanitised only from the files a product lists. That every sink goes through html.ts at
+// all is the repository's raw HTML guard (.github/scripts/raw-html-guard.mjs). Written once here; each app's
+// `packages/ui/src/trusted-types-sinks.test.ts` calls it with its own layout.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
@@ -15,6 +17,13 @@ export type TrustedTypesSinkOptions = {
   csp: string;
   /** Files (by path suffix) that may call `new DOMParser()` themselves: the inert parse policy's own module. */
   domParserAllowed?: readonly string[];
+  /**
+   * Files (by path, from the product root) that may use the escape hatch (`trustedConstant`, `builtMarkup`) besides
+   * a layout: our own build-time scripts and constants, and markup built by our own escaping builders from typed data
+   * (catalogue icons and stickers, device frames, a look's sample preview, the face-finish ink). Everything else goes
+   * through `sanitizedHtml`.
+   */
+  builderMarkup?: readonly string[];
 };
 
 const SKIPPED_DIRS = ['node_modules', 'out', 'dist', 'e2e', 'test-results', 'scripts'];
@@ -32,8 +41,33 @@ function sources(dir: string, out: string[] = []): string[] {
 // The markup sinks a file feeds (html.ts's htmlProps, the one way a React element is given markup).
 const htmlExpressions = (source: string) => [...source.matchAll(/\{\.\.\.htmlProps\(/g)];
 
+// The escape hatch: the `SafeHtml` constructors that vet nothing (html.ts), for our own constants and our escaping
+// builders' output. `jsonScript` escapes what it holds and `sanitizedHtml` sanitises, so neither is one.
+const ESCAPE_HATCH = /\b(?:trustedConstant|builtMarkup)\(/;
+// A layout's inline boot scripts are static text of ours, written into a <script>: never sanitised (they are script).
+// A layout is a layout.tsx under an app/ folder at any depth, checked segment by segment (linear in the path's
+// length; a regex over the path backtracks polynomially on many app/ segments).
+export function isLayoutFile(file: string): boolean {
+  const segments = file.split('/');
+  return segments.pop() === 'layout.tsx' && segments.includes('app');
+}
+
+/** Whether a file uses the escape hatch (`trustedConstant`, `builtMarkup`). */
+export function usesEscapeHatch(source: string): boolean {
+  return ESCAPE_HATCH.test(source);
+}
+
+/** Whether a file uses the escape hatch where it may not: outside a layout and the listed builders. */
+export function escapesUnlisted(
+  file: string,
+  source: string,
+  builders: readonly string[],
+): boolean {
+  return usesEscapeHatch(source) && !isLayoutFile(file) && !builders.includes(file);
+}
+
 export function describeTrustedTypesSinks(options: TrustedTypesSinkOptions): void {
-  const { root, apps, editorApp, csp, domParserAllowed = [] } = options;
+  const { root, apps, editorApp, csp, domParserAllowed = [], builderMarkup = [] } = options;
   const cache = new Map<string, string>();
   const read = (path: string) => {
     let text = cache.get(path);
@@ -46,6 +80,17 @@ export function describeTrustedTypesSinks(options: TrustedTypesSinkOptions): voi
     .map((f) => f.slice(root.length));
 
   describe('Trusted Types sinks', () => {
+    // The policy only proves markup went through it; the sanitiser is what makes people's markup safe. So the
+    // escape hatch stays with the layouts' boot scripts and the files listed as our own or builder markup, and a new
+    // sink of a document's drawing, an import or anything from the network has to be sanitised.
+    it('use the escape hatch (trustedConstant, builtMarkup) only in a layout or a listed builder file', () => {
+      expect(files.filter((f) => escapesUnlisted(f, read(f), builderMarkup))).toEqual([]);
+      // A listed file that no longer uses it comes off the list, so the list never allows more than it needs.
+      expect(builderMarkup.filter((f) => !files.includes(f) || !usesEscapeHatch(read(f)))).toEqual(
+        [],
+      );
+    });
+
     // A server component's `htmlProps` runs in the prerender, where there is no Trusted Types, so the RSC payload
     // carries a plain string; a client navigation then writes it through innerHTML and the default policy refuses
     // it, crashing the page to blank (the help centre's breadcrumbs did this to every page). So outside the editor

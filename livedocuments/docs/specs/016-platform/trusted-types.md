@@ -34,10 +34,13 @@ in its header.
   For HTML it allows exactly `<script></script>`, the empty script React DOM parses to create a `<script>` element on
   a client render (a script inserted through `innerHTML` never runs); any other HTML string is refused.
 - **`liveworkspace-markup`** turns markup that livedocuments's own builders produced into `TrustedHTML`
-  (`trustedHtml(markup)`, reached only through "One path for markup" below). Its callers are the builders that escape every piece of content they place: the icon,
+  (`trustedHtml(markup)`, reached only through [One path for markup](#one-path-for-markup) below). Its callers are
+  the builders that escape every piece of content they place: the icon,
   sticker and template SVG builders (`@liveworkspace/icons`, `@livedocuments/templates`), the headless tab renderer's
-  thumbnails, the JSON-LD block, and the inline boot scripts in each layout. It does not sanitise; the trust is that
-  the markup came from one of those builders, which is why nothing else may call it.
+  thumbnails, the JSON-LD block, and the inline boot scripts in each layout, and the sanitiser's output. The policy
+  itself does not sanitise: the trust is that the markup came from one of those builders, so the escape hatch
+  (`trustedConstant`, `builtMarkup`) may be used only in a layout and the files listed as builder markup. Markup that
+  carries people's content goes through the sanitiser instead ([The sanitiser](#the-sanitiser)).
 - **`liveworkspace-inert-parse`** lets `DOMParser` read HTML pasted into an article (a table copied from a
   spreadsheet, a web page or a document) through `parseInert(source, type)`. A parsed document is inert: nothing in
   it runs; its cells are rebuilt as plain elements and handed back to ProseMirror's own paste parser.
@@ -67,22 +70,56 @@ nothing else of ours writes one:
   `setSrcdoc(frame, markup)`; no other file assigns `innerHTML`, `outerHTML` or `srcdoc`, or calls
   `insertAdjacentHTML`, `createContextualFragment`, `setHTMLUnsafe` or `document.write`.
 - **The markup is a `SafeHtml`**, a branded string, so the type system shows where each one was vetted. A plain
-  string does not type-check. It is made one of three ways, and each is a line to review:
+  string does not type-check. It is made one of four ways, and each is a line to review:
   - `trustedConstant(source)`: markup or an inline script written in our own source and fixed at build time (the
     boot scripts in each layout, the pre-hydration scripts, an authored SVG string), its only inputs our own
     constants.
-  - `builtMarkup(markup)`: what one of our builders produced, a builder that escapes every piece of content it
-    places (the icon, sticker and template SVG builders, the headless tab renderer and its thumbnails and previews).
-    Content from a document reaches a sink only this way.
+  - `builtMarkup(markup)`: what one of our builders produced from our own typed data, a builder that escapes every
+    piece of content it places (the icon, sticker and template SVG builders, a look's sample preview, the face-finish
+    ink).
   - `jsonScript(data)`: a JSON payload for an inline `<script>` (the JSON-LD block), with every `<` escaped so
     nothing in it can close the script.
+  - `sanitizedHtml(markup, profile)`: markup that carries people's content, a document's drawing above all, run through
+    [the sanitiser](#the-sanitiser). That content reaches a sink only this way.
 - **Markup that needs no injection is JSX.** A fixed SVG picture is written as elements, not as a string.
-- **Nothing sanitises arbitrary HTML**, because nothing takes it: a file or paste a person brings is read through
-  `parseInert` and only its text and attributes are used. A feature that must show HTML from outside adds a
-  sanitising constructor to `html.ts` first, with its own tests.
+- **The escape hatch is reviewed.** `trustedConstant` and `builtMarkup` vet nothing, so the sinks test lets them be
+  used only in a layout and the files each product lists as builder markup; a new sink of people's content has to
+  use `sanitizedHtml`. A file or paste a person brings is read through `parseInert`, and only its text and
+  attributes are used.
 - **CI refuses a new raw sink.** The raw HTML guard (`raw-html-guard.mjs` in the CI scripts folder, run by the Checks
   job and the pre-push hook; [docs/ci.md](../../../../docs/ci.md) "One path for markup") scans every tracked non-test
   source file in the repository and fails on any of those sinks outside `html.ts`.
+
+## The sanitiser
+
+The policies prove markup went through one of ours; they do not make it safe. Markup that carries people's content
+(their text, links and pictures, arriving from imports, pastes, the server and other people over the room) is
+sanitised before any sink shows it.
+
+- **`sanitizedHtml(markup, profile)`** (`@liveworkspace/trusted-types/sanitize`) runs it through DOMPurify, in an
+  instance of our own with our rules, and answers a `SafeHtml` that the sinks above mint through `liveworkspace-markup` like any
+  other, so no header names another policy. DOMPurify parses through the same policy and creates none of its own.
+- **Every sink of a document's drawing goes through it**: the export and Office previews, the split view's other pane, the infographic layout preview (it carries the page's own elements), the page contents thumbnails, and the print document.
+- **Profiles**: `svg`, a whole drawing set into an HTML element; `svg-content`, an `<svg>`'s or `<g>`'s children,
+  sanitised inside an `<svg>` so they parse as SVG; `document`, a whole page for an iframe's `srcdoc`.
+- **What it removes**: `<script>`, every event handler, `javascript:` and every other scheme but http(s), mailto, tel
+  and the like, `<foreignObject>`, `<use>`, `<animate>` and `<set>`, frames and embeds, and any `href` that would load
+  from outside the drawing other than a link's or a picture's; a `blob:` URL is kept on a picture alone.
+- **What it keeps**: everything our renderers draw, unchanged: gradients, clips, masks, markers, patterns, filters,
+  `<style>` (the export's webfont import), text, links (http(s) and `#`), pictures (`data:`, `blob:`, http(s) and
+  same-origin paths), `class`, `style`, `role`, `aria-*` and `data-*`. Every template's drawing parses the same
+  before and after.
+- **What stays on the escape hatch** (`trustedConstant`, `builtMarkup`, unsanitised): each layout's inline boot
+  scripts and our other build-time scripts, and markup that is static or that
+  our builders make from typed data alone: the catalogue's icons and stickers, a look's sample preview, device
+  frames, and the face-finish ink (`useFaceFinishPass`), drawn per element from its geometry and the colours
+  `dropUnsafeColours` already checked on the way in. That ink is a hot path (every element, every frame of a
+  redraw), so it stays off the sanitiser.
+- **Cost**: each result is cached by its markup (least recently used out first, at most 256 results and 4 million
+  characters held), so a re-render that hands back the same drawing costs a lookup. DOMPurify lives in a module of
+  its own, so it reaches only the chunks that render such markup, never a page that has none.
+- **Outside the browser** (the prerender, a test without a DOM) it answers an empty string, never the markup
+  unsanitised.
 
 ## Third parties
 

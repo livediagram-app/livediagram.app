@@ -1,5 +1,6 @@
 'use client';
 
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { isLayerLocked, isLayerVisible, layerOpacityOf, type Layer } from '@livediagram/document';
 import {
@@ -27,7 +28,6 @@ import {
   useClickOutside,
   useControlMenu,
   Portal,
-  builtMarkup,
   htmlProps,
 } from '@livediagram/ui';
 
@@ -176,7 +176,7 @@ export function LayerRowMenu({
                   preserveAspectRatio="xMidYMid meet"
                   className="h-full w-full"
                   aria-hidden
-                  {...htmlProps(builtMarkup(thumbMarkup))}
+                  {...htmlProps(sanitizedHtml(thumbMarkup, 'svg-content'))}
                 />
               ) : null}
             </span>

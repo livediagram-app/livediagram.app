@@ -26,7 +26,7 @@ import { SplitDivider } from './SplitDivider';
 import { SplitSeamControls } from '@liveworkspace/workbench/components/split/SplitSeamControls';
 import { SplitDropZone } from './SplitDropZone';
 import { SplitViewContext } from './SplitViewContext';
-import type { TabSvgViewportHandle } from './TabSvgViewport';
+import type { TabSvgViewportHandle } from '@liveworkspace/workbench/components/split/TabSvgViewport';
 
 // The other pane loads with the first split: the SVG renderer and icon catalogues it draws with
 // stay out of the editor's first load.

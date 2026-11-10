@@ -1,4 +1,5 @@
-import { builtMarkup, htmlProps } from '@liveplanner/ui';
+import { htmlProps } from '@liveplanner/ui';
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import type { Element, Layer } from '@liveplanner/project';
 import { LayersGlyph } from '@/components/palette/context-menu-icons';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
@@ -57,7 +58,7 @@ export function MoveToLayerRow({
                       preserveAspectRatio="xMidYMid meet"
                       className="h-full w-full"
                       aria-hidden
-                      {...htmlProps(builtMarkup(thumbMarkup.get(layer.id)!))}
+                      {...htmlProps(sanitizedHtml(thumbMarkup.get(layer.id)!, 'svg-content'))}
                     />
                   ) : null}
                 </span>
