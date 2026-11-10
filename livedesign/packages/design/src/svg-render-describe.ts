@@ -90,8 +90,8 @@ export type BoxedExportOptions = {
   // are drawn adapted to it, as the canvas draws them (docs/specs/007-editor/pages-mode.md
   // "Charts adapt as they are drawn"). Absent, a chart is drawn in its colours as they are.
   chartGrounds?: ReadonlyMap<string, readonly string[]>;
-  // A tab window's tab (docs/specs/009-elements/tab-window.md "Exports"): its drawing to fit inside, from a caller
-  // that has the design's tabs (the editor's export); without one a window draws its frame named for its tab.
+  // A stored tab window's tab name (docs/specs/009-elements/tab-window.md, retired), from a caller that has the
+  // design's tabs (the editor's export); without one its frame reads "Tab Window".
   resolveTabWindow?: ResolveTabWindow;
 };
 

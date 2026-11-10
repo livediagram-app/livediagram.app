@@ -18,6 +18,13 @@ export interface Env {
   COMMUNITY_KEY_LIVEDOCUMENTS?: string;
   COMMUNITY_KEY_LIVEDESIGN?: string;
   COMMUNITY_KEY_LIVEHUDDLE?: string;
+  // Where each app answers the sweep's door (`<origin>/api/internal/items/community-states`), called with that app's
+  // key above. Unset, that app is not swept (community.md "The sweep").
+  APP_ORIGIN_LIVEDIAGRAM?: string;
+  APP_ORIGIN_LIVEPLANNER?: string;
+  APP_ORIGIN_LIVEDOCUMENTS?: string;
+  APP_ORIGIN_LIVEDESIGN?: string;
+  APP_ORIGIN_LIVEHUDDLE?: string;
 }
 
 // Each app's key by name, exhaustive over the apps, so a new app can never fall through to another's key.
@@ -31,6 +38,20 @@ const APP_KEY = {
 
 export function appKey(env: Env, app: CommunityApp): string | undefined {
   return env[APP_KEY[app]];
+}
+
+const APP_ORIGIN = {
+  'livediagram.app': 'APP_ORIGIN_LIVEDIAGRAM',
+  'liveplanner.app': 'APP_ORIGIN_LIVEPLANNER',
+  'livedocuments.app': 'APP_ORIGIN_LIVEDOCUMENTS',
+  'livedesign.app': 'APP_ORIGIN_LIVEDESIGN',
+  'livehuddle.app': 'APP_ORIGIN_LIVEHUDDLE',
+} as const satisfies Record<CommunityApp, keyof Env>;
+
+// Where the app answers the sweep's door, without a trailing slash, or undefined when it is not set.
+export function appOrigin(env: Env, app: CommunityApp): string | undefined {
+  const origin = env[APP_ORIGIN[app]]?.trim().replace(/\/+$/, '');
+  return origin ? origin : undefined;
 }
 
 const OFF = new Set(['false', '0', 'off']);

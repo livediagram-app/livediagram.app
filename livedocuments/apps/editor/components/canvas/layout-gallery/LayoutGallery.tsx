@@ -7,7 +7,7 @@
 // back); hovering or focusing a tile previews it on the page where the host shows one. One gallery
 // for every place a layout is chosen: the empty page's card, the title bar's Layout popover, the
 // page panel's Layouts tab and a phone's sheet.
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { lucideDices } from '@liveworkspace/icons/lucide';
 import { pageKindOf, type LaidOutPage } from '@livedocuments/document';
 import {
@@ -17,6 +17,7 @@ import {
 } from '@livedocuments/templates';
 import { lucideGlyph, NoMatches, Tooltip } from '@livedocuments/ui';
 import { FilterSearchBox } from '@liveworkspace/workbench/components/primitives/FilterSearchBox';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
 import { track } from '@/lib/telemetry';
 import { LayoutTile } from './LayoutTile';
@@ -72,6 +73,9 @@ export function LayoutGallery({
   const [category, setCategory] = useState<string>(ALL_LAYOUTS);
   const [query, setQuery] = useState('');
   const [rolling, setRolling] = useState(false);
+  // The layout last placed from here while the gallery stays open (Surprise Me, or a press where
+  // the host keeps it): its tile shows as Placed.
+  const [placed, setPlaced] = useState<PageLayoutId | null>(null);
   const lastSurprise = useRef<PageLayoutId | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   useEffect(() => prefetchWhenIdle([warmPlaceholders]), []);
@@ -87,7 +91,21 @@ export function LayoutGallery({
     tileWidth,
   } = useTileWidth(portrait ? MIN_TILE_PORTRAIT : MIN_TILE_LANDSCAPE, TILE_GAP);
   const thumbWidth = Math.max(40, Math.floor(tileWidth - TILE_PAD));
-  const pick = (id: PageLayoutId) => onApply(id);
+  // Steady across renders (the host's handlers are fresh closures), so a roll or a press re-renders
+  // only the tiles whose Placed mark changes, not every memoised tile.
+  const latestApply = useLatest(onApply);
+  const latestPreview = useLatest(onPreview);
+  const pick = useCallback(
+    (id: PageLayoutId) => {
+      setPlaced(id);
+      latestApply.current(id);
+    },
+    [latestApply],
+  );
+  const preview = useCallback(
+    (id: PageLayoutId | null) => latestPreview.current(id),
+    [latestPreview],
+  );
   // A new choice of what to show starts at the top of it.
   const toTop = () => {
     if (scroller.current) scroller.current.scrollTop = 0;
@@ -104,6 +122,7 @@ export function LayoutGallery({
     );
     if (!id) return;
     lastSurprise.current = id;
+    setPlaced(id);
     track('Tab', 'Changed', 'PageLayoutSurprise');
     setRolling(true);
     onPreview(null);
@@ -215,9 +234,10 @@ export function LayoutGallery({
                         page={page}
                         width={thumbWidth}
                         described={described}
+                        current={l.id === placed}
                         scrollRoot={scroller}
                         onPick={pick}
-                        onPreview={onPreview}
+                        onPreview={preview}
                       />
                     ))}
                   </div>

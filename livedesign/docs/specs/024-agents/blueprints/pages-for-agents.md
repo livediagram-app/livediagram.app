@@ -129,7 +129,7 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 - `read_design` `view` enum gains `pages`.
 - The server instructions (`packages/agent-verbs/src/mcp/schema.ts`) gain a paragraph: what Pages tabs hold,
   which page makes what (a logo → a logo page, a screen → a wireframe page, a picture to edit → a photo page), how a design
-  for pages starts (`create_design` with template `blank-illustration`), and that a layout's sample text is
+  for pages starts (`create_design` with a blank of the page kind, or template `blank` when the kind is not known yet), and that a layout's sample text is
   found in the `pages` view and replaced with `update_design`.
 
 ### CLI

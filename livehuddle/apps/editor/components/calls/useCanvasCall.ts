@@ -12,7 +12,7 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { RemoteAvatarRow } from '@/lib/presence-rows';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import type { ViewRect } from '@/lib/calls/bubbles';
-import { walkTowards, type Point } from '@/lib/calls/hearing';
+import { walkTowards, withVoiceReach, type Point } from '@/lib/calls/hearing';
 import { useProximityCall } from '@/lib/calls/useProximityCall';
 import { mayLetSpeakSelf } from '@/lib/calls/stage';
 import { callPlacesOf } from '@/lib/calls/call-places';
@@ -59,45 +59,55 @@ export function useCanvasCall(deps: {
   const documentId = props.imageContext?.documentId;
   const shareCode = props.imageContext?.shareCode ?? null;
 
+  // Each Office room is a call of its own (meeting-rooms-and-stage.md "Rooms are calls"): the rooms the walk
+  // collides with, worked out only when the board changes, never on a step.
+  // And each stage, with the room it stands in (the same spec's "The stage"), and each Podium, whose speaker's voice
+  // carries three times as far (venue-pieces.md "Speaking from the Podium"): read off everyone's shared seat.
+  // callPlacesOf is cached per board; the memo tells the compiler the places are stable between boards.
+  const elements = props.elements;
+  const { zones, stages, lecterns } = useMemo(() => callPlacesOf(elements), [elements]);
+
   const peers: TalkingBarsPeer[] = useMemo(
     () =>
       remoteAvatars.map((p) => ({
         id: p.id,
         name: p.name,
         color: p.color,
-        // The seat too: only a seated character is in a Phone Booth's call (workday-pieces.md "Phone Booth").
-        at: { x: p.avatar.x, y: p.avatar.y, seatedOn: p.avatar.seatedOn ?? null },
+        // The seat too: only a seated character is in a Phone Booth's call (workday-pieces.md "Phone Booth"), and a
+        // Podium's speaker carries further.
+        at: withVoiceReach(
+          { x: p.avatar.x, y: p.avatar.y, seatedOn: p.avatar.seatedOn ?? null },
+          lecterns,
+        ),
         scale: avatarScale(peerAvatarConfig(p.avatar.config).size),
         glideMs: p.glideMs,
         walking: p.avatar.walking,
       })),
-    [remoteAvatars],
+    [remoteAvatars, lecterns],
   );
   const caller = useMemo(
     () => (ownerId && documentId ? { ownerId, documentId, shareCode } : null),
     [ownerId, documentId, shareCode],
   );
 
-  // Each Office room is a call of its own (meeting-rooms-and-stage.md "Rooms are calls"): the rooms the walk
-  // collides with, worked out only when the board changes, never on a step.
-  // And each stage, with the room it stands in (the same spec's "The stage").
-  const { zones, stages } = callPlacesOf(props.elements);
-
   const self = inMode ? avatar.pos : null;
   const selfSeat = avatar.seatedOn ?? null;
   const seatedSelf = useMemo(
-    () => (self ? { ...self, seatedOn: selfSeat } : null),
-    [self, selfSeat],
+    () => (self ? withVoiceReach({ ...self, seatedOn: selfSeat }, lecterns) : null),
+    [self, selfSeat, lecterns],
   );
   // What follows positions as a fact reads the coarse copy (canvas-performance.md "Walking renders the characters").
   const coarseRows = deps.coarse?.remoteAvatars;
   const factWalkers = coarseRows ?? remoteAvatars;
   const factSelf = inMode ? (deps.coarse ? deps.coarse.pos : avatar.pos) : null;
   const callSelfAt = useMemo(
-    () => (factSelf ? { ...factSelf, seatedOn: selfSeat } : null),
-    [factSelf, selfSeat],
+    () => (factSelf ? withVoiceReach({ ...factSelf, seatedOn: selfSeat }, lecterns) : null),
+    [factSelf, selfSeat, lecterns],
   );
-  const coarseWalkers = useMemo(() => (coarseRows ? walkersOf(coarseRows) : null), [coarseRows]);
+  const coarseWalkers = useMemo(
+    () => (coarseRows ? walkersOf(coarseRows, lecterns) : null),
+    [coarseRows, lecterns],
+  );
   const callWalkers = coarseWalkers ?? peers;
   // The Screens' and Room Signs' rooms, Knock (docs/specs/009-elements/screen-and-room-sign.md,
   // docs/specs/012-collaboration/knock.md).
@@ -208,11 +218,18 @@ export function useCanvasCall(deps: {
   };
 }
 
-// Where each peer stands, as the call's scene reads it (the seat too: a Phone Booth's call is the seated).
-function walkersOf(rows: readonly RemoteAvatarRow[]): { id: string; at: Point }[] {
+// Where each peer stands, as the call's scene reads it (the seat too: a Phone Booth's call is the seated, and a
+// Podium's speaker carries three times as far).
+function walkersOf(
+  rows: readonly RemoteAvatarRow[],
+  lecterns: ReadonlySet<string> | undefined,
+): { id: string; at: Point }[] {
   return rows.map((p) => ({
     id: p.id,
-    at: { x: p.avatar.x, y: p.avatar.y, seatedOn: p.avatar.seatedOn ?? null },
+    at: withVoiceReach(
+      { x: p.avatar.x, y: p.avatar.y, seatedOn: p.avatar.seatedOn ?? null },
+      lecterns,
+    ),
   }));
 }
 

@@ -51,7 +51,9 @@ export function ChairMenuSection({
 }) {
   const facing = target ? pieceFacing(target) : 'n';
   const noun = target ? elementKindLabel(target) : 'Chair';
-  const seats = !!target && seatsACharacter(target.shape);
+  // A Podium is stood at, and its speaker faces its front, so it keeps the front's line (venue-pieces.md "Speaking from
+  // the Podium").
+  const seats = !!target && seatsACharacter(target.shape) && target.shape !== 'podium';
   return (
     <MenuAccordionSection title={noun} icon={<ToolsMenuGlyph />} {...sectionProps('chair')}>
       {/* Tiles rather than a list: the arrow IS the answer here, which is the

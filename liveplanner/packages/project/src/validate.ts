@@ -115,7 +115,7 @@ export const SHAPE_KINDS = new Set<string>([
   'site-header',
   // Portal (docs/specs/009-elements/portal-element.md): a portal to the portal it is paired with.
   'portal',
-  // Tab window (docs/specs/009-elements/tab-window.md): another tab of the project drawn inside it.
+  // Tab window (docs/specs/009-elements/tab-window.md, retired): kept so a stored one validates and loads.
   'tab-window',
   // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / stopwatch / vote for the room.
   'session-button',

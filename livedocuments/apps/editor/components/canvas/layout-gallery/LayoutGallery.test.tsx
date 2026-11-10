@@ -73,6 +73,20 @@ describe('LayoutGallery', () => {
     const picked = onSurprise.mock.calls[0]![0];
     expect(SLIDE_LAYOUTS.find((l) => l.id === picked)!.category).toBe('slide-pictures');
   });
+
+  it('marks the layout it last placed as Placed, and moves the mark with the next one', () => {
+    const onApply = vi.fn();
+    render(<LayoutGallery page={slide!} onApply={onApply} onPreview={vi.fn()} />);
+    const placed = () => [...document.querySelectorAll('[data-layout-tile][aria-current="true"]')];
+    expect(placed()).toHaveLength(0);
+    fireEvent.click(screen.getByRole('button', { name: /Surprise Me/ }));
+    const first = onApply.mock.calls[0]![0];
+    expect(placed().map((t) => t.getAttribute('data-layout-tile'))).toEqual([first]);
+    expect(within(placed()[0] as HTMLElement).getByText('Placed')).not.toBeNull();
+    const other = [...tiles()].find((t) => t.getAttribute('data-layout-tile') !== first)!;
+    fireEvent.click(other);
+    expect(placed()).toEqual([other]);
+  });
 });
 
 describe('LayoutTile', () => {

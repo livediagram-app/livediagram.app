@@ -290,7 +290,7 @@ function LocalRow({
 }
 
 /** `/explorer/offline`: every live item kept only in this browser, newest change first, narrowed by the lens. */
-export function ThisBrowserPane({ onOpenNav }: { onOpenNav?: () => void }) {
+export function ThisBrowserPane() {
   const { words, view, app, navigate, lensSubjects } = useExplorer();
   const { host, live } = useThisBrowserItems();
   useHandOver(host);
@@ -311,7 +311,7 @@ export function ThisBrowserPane({ onOpenNav }: { onOpenNav?: () => void }) {
   const filteredEmpty = Boolean(host) && live.length > 0 && items.length === 0;
   return (
     <div data-explorer-view="offline">
-      <PaneHeader title={THIS_BROWSER_COPY.label} onOpenNav={onOpenNav} showFilter={false} />
+      <PaneHeader title={THIS_BROWSER_COPY.label} showFilter={false} />
       <p className={`mb-5 text-sm ${MUTED}`}>
         {words.many} kept only in this browser. They aren’t in your account and don’t sync to other
         devices.

@@ -2,13 +2,14 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-// The site has one Appearance setting: livediagram's store, which the boot script and the header's
-// toggle use (liveworkspace/docs/specs/010-site/site.md "Behaviour"). liveplanner's, livedocuments' and livedesign's UI
-// packages each keep their own store under their own key and paint <html> from it once anything subscribes,
-// so the dashboard flipped between light and dark when liveplanner was picked. Nothing here may
-// read appearance from either.
+// The site has one Appearance setting: its own store (lib/appearance/), under the key of the app whose address the
+// page is on, or the platform's on liveworkspace.app, which the boot script, the rail's and the Explorer bar's
+// toggles and every colour decision read (liveworkspace/docs/specs/010-site/site.md "Behaviour"). Each product's UI
+// package keeps its own store under its own key and paints <html> from it once anything subscribes: liveplanner's
+// once flipped the dashboard between light and dark, and livediagram's made the Explorer on every other app's
+// address ignore that app's choice. Nothing here may read appearance from any of them.
 const OTHER_APPEARANCE =
-  /import\s*\{[^}]*\b(useAppearance|setAppearance|subscribeAppearance|applyAppearance|getResolvedAppearance|SiteAppearanceToggle|APPEARANCE_BOOT_SCRIPT)\b[^}]*\}\s*from\s*'@(liveplanner|livedocuments|livedesign)\/ui'/;
+  /import\s*\{[^}]*\b(useAppearance|setAppearance|subscribeAppearance|applyAppearance|getResolvedAppearance|SiteAppearanceToggle|APPEARANCE_BOOT_SCRIPT)\b[^}]*\}\s*from\s*'@(livediagram|liveplanner|livedocuments|livedesign|livehuddle)\/ui'/;
 
 function sources(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -20,7 +21,7 @@ function sources(dir: string): string[] {
 }
 
 describe('site appearance', () => {
-  it("reads appearance only from livediagram's store", () => {
+  it("reads appearance only from the site's own store", () => {
     const offenders = ['app', 'components', 'lib']
       .flatMap((dir) => sources(join(import.meta.dirname, dir)))
       .filter((path) => OTHER_APPEARANCE.test(readFileSync(path, 'utf8')));

@@ -227,16 +227,35 @@ describe('public reads', () => {
     expect((await facets(db.env, LD)).total).toBe(1);
   });
 
-  it('hide a post whose document is not public, and show it again when it is', async () => {
+  it('hide a post whose document is closed, and show it again when it opens', async () => {
     const postId = await publish('d1');
-    for (const state of ['closed', 'away'] as const) {
-      await syncDocuments(db.env, LD, { documents: [{ document: 'd1', state }], gone: [] });
-      expect(await getPublicPost(db.env, LD, postId)).toBeNull();
-      expect(await list()).toEqual([]);
-      expect((await facets(db.env, LD)).total).toBe(0);
-    }
+    await syncDocuments(db.env, LD, { documents: [{ document: 'd1', state: 'closed' }], gone: [] });
+    expect(await getPublicPost(db.env, LD, postId)).toBeNull();
+    expect(await list()).toEqual([]);
+    expect((await facets(db.env, LD)).total).toBe(0);
     await syncDocuments(db.env, LD, { documents: [{ document: 'd1', state: 'public' }], gone: [] });
     expect(await list()).toEqual(['Payments platform']);
+  });
+
+  it('remove a post whose document went away (the Trash, another owner), never to come back by a sync', async () => {
+    const postId = await publish('d1');
+    await setLike(db.env, postId, 'k1', true, 'n1');
+    await syncDocuments(db.env, LD, { documents: [{ document: 'd1', state: 'away' }], gone: [] });
+    expect(await getPostForDocument(db.env, LD, 'd1')).toBeNull();
+    expect(count('likes')).toBe(0);
+    // Restored from the Trash: nothing to list again until its author shares it anew.
+    await syncDocuments(db.env, LD, { documents: [{ document: 'd1', state: 'public' }], gone: [] });
+    expect(await list()).toEqual([]);
+  });
+
+  it('keep a hidden post whose document went away, away and unlisted, so hiding stays final', async () => {
+    const postId = await publish('d1');
+    db.sql.prepare("UPDATE posts SET state = 'hidden' WHERE id = ?").run(postId);
+    await syncDocuments(db.env, LD, { documents: [{ document: 'd1', state: 'away' }], gone: [] });
+    expect(db.sql.prepare('SELECT document_state, state FROM posts').get()).toEqual({
+      document_state: 'away',
+      state: 'hidden',
+    });
   });
 
   it('hide a hidden post', async () => {

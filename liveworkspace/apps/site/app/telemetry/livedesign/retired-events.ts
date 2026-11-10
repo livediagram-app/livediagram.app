@@ -171,7 +171,27 @@ function isRetiredLayersPanel(category: string, action: string, type: string | n
   return category === 'UI' && LAYERS_PANEL_UI.has(`${action}|${type ?? ''}`);
 }
 
+// The Tab Window (removed 2026-11-10, livedesign docs/specs/009-elements/tab-window.md): one added, its tab chosen,
+// the tab opened from it, its element tour (offer, start, steps, end and Settings switch, each carrying the
+// `TabWindowTour` token as its type or its prefix) and its help article.
+const TAB_WINDOW_EVENTS = new Set([
+  'Element|Added|TabWindow',
+  'Element|Changed|TabWindowTab',
+  'UI|Used|TabWindowOpen',
+]);
+const TAB_WINDOW_HELP_ID = 'tab-windows';
+
+function isRetiredTabWindow(category: string, action: string, type: string | null): boolean {
+  if (TAB_WINDOW_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
+  if (category === 'UI' && (type ?? '').startsWith('TabWindowTour')) return true;
+  return (
+    (category === 'Help' || (category === 'UI' && action === 'Opened')) &&
+    type === TAB_WINDOW_HELP_ID
+  );
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
+  if (isRetiredTabWindow(category, action, type)) return true;
   if (isRetiredLayersPanel(category, action, type)) return true;
   if (ISOMETRIC_VIEW.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (

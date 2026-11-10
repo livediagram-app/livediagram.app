@@ -12,7 +12,6 @@ export const ELEMENT_TOUR_KINDS = [
   { token: 'TimelineTour', title: 'Timeline' },
   { token: 'ChartTour', title: 'Chart' },
   { token: 'StackTour', title: 'Stack' },
-  { token: 'TabWindowTour', title: 'Tab Window' },
 ] as const;
 
 export const elementTourTokens = (suffix = ''): string[] =>

@@ -3,7 +3,6 @@
 // start groups them as the catalogue does, by what each design is for, after Blank Pages (OWN_GROUPS). Drawn from the template catalogue, so a new template joins its group with no change here. Pure: the
 // panel draws what these return.
 import {
-  BLANK_TEMPLATE_FOR_MODE,
   EXTRA_BLANK_TEMPLATES,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
@@ -65,13 +64,9 @@ const byKind = new Map(TEMPLATES.map((t) => [t.kind, t]));
 export const templateOf = (kind: TemplateKind): TemplateDescriptor => byKind.get(kind)!;
 
 function build(mode: EditorMode): TemplateStart {
-  // The mode's blank leaves the same empty tab the × does, so it is offered nowhere. Blank Tab is made by name only (an agent's add_tab, a `/new?blank` link), in no category, so on no start either.
+  // Blank Tab, the mode's blank, leaves the same empty tab the × does, so it is made by name only (an agent's add_tab, a `/new?blank` link), in no category, so on no start either.
   const listed = TEMPLATES.filter(
-    (t) =>
-      !t.hidden &&
-      t.kind !== BLANK_TEMPLATE_FOR_MODE[mode] &&
-      t.kind !== 'blank' &&
-      templateEditorMode(t.kind) === mode,
+    (t) => !t.hidden && t.kind !== 'blank' && templateEditorMode(t.kind) === mode,
   ).map((t) => t.kind);
   const recommended: TemplateStartGroup = {
     id: 'recommended',

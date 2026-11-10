@@ -70,7 +70,9 @@ the isolate.
 ### The access rule (`access.ts`, `rows.ts`)
 
 1. `directAccess`: the owner of a personal item (`team_id IS NULL`) or a member of its team (from the claim): `edit`,
-   no tab. A team item's maker reaches it only as a member.
+   no tab. A team item's maker reaches it only as a member. With a code sent that is the item's public link, step 1 and
+   2 give way to steps 4 and 5: the link's level, as any visitor's (the Community's viewer and embed are view-only for
+   their author too). An ordinary link's code leaves their own access standing.
 2. A team the claim lacks: `inTeamNow` asks accounts (`POST ${ACCOUNTS_URL}/api/account/index/teams { userId }`,
    `MERGE_KEY`, 3 s), remembered by `@liveworkspace/index-app` `createTeamAccess` (an answer lacking the team reused for
    2 s, one holding it for 30 s); accounts unreachable leaves the claim standing. Only for accounts, never a delegate or the mirror.
@@ -123,6 +125,7 @@ is `{}`).
 | `/jwks`                                                                                                                                | GET                           | this file                                        |
 | `/items`, `/items/lookup`, `/items/:id`, `/items/:id/{restore,copy,open,grant}`                                                        | GET, POST, PATCH, DELETE      | [items.md](items.md)                             |
 | `/folders`, `/folders/:id`, `/folders/previews`                                                                                        | GET, POST, PATCH, DELETE      | [items.md](items.md)                             |
+| `/spaces/previews`                                                                                                                     | GET                           | [items.md](items.md)                             |
 | `/favourites`, `/favourites/:itemId`, `/recent-hidden/:itemId`                                                                         | GET, PUT, DELETE              | [items.md](items.md)                             |
 | `/items/:id/share`, `/items/:id/share-password`, `/share/:code`, `/share/:code/extend`, `/shared`, `/shared/:itemId`                   | GET, POST, PUT, PATCH, DELETE | [sharing.md](sharing.md)                         |
 | `/inbox`                                                                                                                               | GET                           | [inbox.md](inbox.md)                             |
@@ -135,6 +138,7 @@ is `{}`).
 | `/app/items/:id/{summary,events,collab/:tab,forms/:tab,forms/:tab/seen}`, `/app/forms/:code`, `/app/items/:id/forms/:tab/seen/:person` | PUT, GET                      | [inbox.md](inbox.md), [timeline.md](timeline.md) |
 | `/app/people/events`                                                                                                                   | PUT                           | [timeline.md](timeline.md)                       |
 | `/app/people/:id/count`                                                                                                                | GET                           | [sharing.md](sharing.md) (notices)               |
+| `/app/community/states`                                                                                                                | POST                          | [sharing.md](sharing.md)                         |
 | `/app/people/:id/drive`                                                                                                                | GET, PUT, DELETE              | this file                                        |
 | `/app/migration/handoff`                                                                                                               | POST                          | [guest-merge.md](guest-merge.md)                 |
 | `/internal/merge`                                                                                                                      | POST                          | [guest-merge.md](guest-merge.md)                 |
@@ -293,6 +297,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/index/src/share-expiry.ts`      | Share Link Expiring (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): a warning on an item owner's Timeline before its share links stop working                        |
 | `liveworkspace/apps/index/src/share-guesses.ts`     | Share-password guesses (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access"): each try at an item's password that this isolate hasn't already found right is…     |
 | `liveworkspace/apps/index/src/sharing.ts`           | Sharing (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access"): share links, the share password, what a link opens, and Shared with me                             |
+| `liveworkspace/apps/index/src/space-previews.ts`    | What Home's Spaces tiles show of each space the person is in (`GET /spaces/previews`): its newest few items and how many it holds                                                               |
 | `liveworkspace/apps/index/src/event-key.ts`         | The person part of a Timeline event id made per person: a one-way key, never their id                                                                                                           |
 | `liveworkspace/apps/index/src/timeline.ts`          | The Timeline (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): what happened to the items a person reaches as owner or team member, newest first, in every app or…     |
 | `liveworkspace/apps/index/src/visitors.ts`          | Opened by a Visitor and Copied by a Visitor (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): who came in to an item through one of its share links, on its owner…     |

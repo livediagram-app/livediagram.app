@@ -83,7 +83,9 @@ untitled.
   `TEMPLATE_AISLE`, 120 canvas px: two Regular characters' footprints (2 x 40 px x 1.5) side by side, plus the
   distance at which a seat catches a character, which is none, since a character sits only once its feet are inside
   a seat it was going to ([Chair](../009-elements/chair.md) "Only the chair you are going to"). Rooms grew to fit
-  (`template-builders-spaces-more.test.ts` "keeps every aisle between seats wide enough to walk").
+  (`template-builders-spaces-more.test.ts` "keeps every aisle between seats wide enough to walk"). A Podium is held
+  like a seat but stands on a stage, not in a row, so the rule leaves it out
+  ([Venue pieces](../009-elements/venue-pieces.md#speaking-from-the-podium)).
 - Every Campus Space is joined up (`template-builders-campus.test.ts`): every room is closed with exactly one Door on
   its walls and a Garden Path outside it, the first 96 px inside each Door is clear, every room has a Room Sign that
   reads it, the Directory waits inside the gate above the Avatar Pad, the aisles are roomy and the hall's centre aisle is

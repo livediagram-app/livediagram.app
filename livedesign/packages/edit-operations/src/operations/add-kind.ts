@@ -7,6 +7,7 @@ import type { EditRejection } from '@livedesign/api-schema';
 import {
   INSTANCE_SHAPE,
   SHAPE_DEFAULT_SIZE,
+  RETIRED_SHAPE_KINDS,
   SHAPE_KINDS,
   coerceShapeKind,
   createAnnotation,
@@ -64,6 +65,8 @@ export type Built = { el: BoxedElement; coerced: string | null };
 export function buildKind(kind: string): Built | { refusal: string } {
   const refused = NOT_ADDED[kind];
   if (refused !== undefined) return { refusal: refused };
+  // A retired kind (a tab window, docs/specs/009-elements/tab-window.md): stored ones load, nothing makes one.
+  if (RETIRED_SHAPE_KINDS.has(kind)) return { refusal: 'tab windows are retired' };
   const factory = FACTORIES[kind];
   if (factory) return { el: { ...factory(), textSize: 'sm' }, coerced: null };
   const shape = kind === 'shape' ? 'square' : coerceShapeKind(kind);

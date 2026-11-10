@@ -22,7 +22,6 @@ import { buildTemplate, buildTemplatedTab } from './template-builders';
 // other direction. `logo-design` slipped past the check that way.
 const ALL_KINDS = [
   'blank',
-  'blank-illustration',
   'blank-logo',
   'blank-wireframe-phone',
   'blank-wireframe-tablet',

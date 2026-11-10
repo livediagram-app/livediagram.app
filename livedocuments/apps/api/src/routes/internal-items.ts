@@ -13,6 +13,7 @@
 // (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps", routes/internal-file.ts), and its comment threads
 // for liveworkspace's data export, which calls with DATA_EXPORT_KEY (liveworkspace/docs/specs/003-accounts/data-export.md).
 import {
+  askIndexCommunityStates,
   JOINED_TELEMETRY_TYPE,
   checkMigrationTabSizes,
   handleInternalItems as handle,
@@ -28,6 +29,7 @@ import { documentRoom } from '../document-client';
 import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
+import { indexAppClient } from '../index-service';
 import type { Env } from '../types';
 
 export function handleInternalItems(
@@ -42,8 +44,12 @@ export function handleInternalItems(
     dataExportKey: env.DATA_EXPORT_KEY,
     app: 'livedocuments',
     migrationKey: env.MIGRATION_KEY,
+    // The Community's sweep calls its door with the same key this api publishes with (liveworkspace community.md).
+    communityKey: env.COMMUNITY_KEY,
     waitUntil,
     handlers: {
+      // Where Community posts' items stand, as the index reads them, for the Community's sweep.
+      communityStates: (posts) => askIndexCommunityStates(indexAppClient(env), posts),
       purge: async (id) => {
         await documentRoom(env, id).purge();
         // The media service hears the document places nothing now, so an image only it placed can be swept.

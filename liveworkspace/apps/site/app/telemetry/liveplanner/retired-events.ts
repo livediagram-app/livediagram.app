@@ -157,7 +157,7 @@ function isRetiredWorkshopEvent(category: string, action: string, type: string |
 const NEW_PROJECT_WIZARD_UI = new Set(['Closed|NewProject', 'Used|JustDraw']);
 // Pages mode (removed 2026-10-22, docs/specs/017-telemetry/telemetry.md "Retired features"): its pages, slide pages,
 // articles, logos, wireframes and infographics, their exports, tours and settings, and the agent tools that wrote
-// them. A form cover's moving background and Tab Windows carry on.
+// them. A form cover's moving background carries on.
 const PAGES_MODE_EVENTS = new Set([
   'Agent|Viewed|Pages',
   'Cli|Used|PageLs',
@@ -348,6 +348,9 @@ const DRAW_MODE_EVENTS = new Set([
   'UI|Used|TabWindowOpen',
   'UI|Changed|ToolbarCategory',
 ]);
+// The Tab Window (retired 2026-11-10, liveplanner docs/specs/009-elements/tab-window.md): one added, its tab chosen.
+// Opening its tab (above) and its tour (RETIRED_TOUR_TOKENS) went earlier.
+const TAB_WINDOW_EVENTS = new Set(['Element|Added|TabWindow', 'Element|Changed|TabWindowTab']);
 const isRetiredDrawModeEvent = (category: string, action: string, type: string | null) =>
   DRAW_MODE_EVENTS.has(`${category}|${action}|${type ?? ''}`) ||
   (category === 'Tab' && action === 'Changed' && (type ?? '').startsWith('OpensIn')) ||
@@ -448,6 +451,7 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   if (AGENT_ICON_SEARCH.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isElementUsedInPlace(category, action)) return true;
   if (isRetiredDrawModeEvent(category, action, type)) return true;
+  if (TAB_WINDOW_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (DIAGRAM_LINT_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredWorkshopEvent(category, action, type)) return true;
   if (category === 'Project' && action === 'Reverted') return true;

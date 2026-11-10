@@ -141,3 +141,18 @@ describe('the search taking focus as the panel opens', () => {
     expect(document.activeElement).toBe(document.body);
   });
 });
+
+// docs/specs/007-editor/start-panel.md "The header band": the header wears the app's own Explorer hero backdrop, in the panel's colours.
+describe('the start header band', () => {
+  it("draws the app's own band and title mark behind the header, hidden from screen readers", () => {
+    startPlanning();
+    const band = document.querySelector('header [data-start-band]');
+    expect(band?.getAttribute('data-start-band')).toBe('lanes');
+    expect(band?.getAttribute('aria-hidden')).toBe('true');
+    const mark = document.querySelector('header [data-start-title-mark]');
+    expect(mark?.getAttribute('data-start-title-mark')).toBe('lanes');
+    // The title in the hero's face: serif for the Typesetter alone.
+    const title = document.querySelector('header h2')!;
+    expect(title.className.includes('font-serif')).toBe(false);
+  });
+});

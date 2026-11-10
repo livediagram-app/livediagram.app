@@ -15,6 +15,18 @@ describe('isTouchTap', () => {
     expect(isTouchTap({ detail: 1, pointerType: 'pen' })).toBe(false);
   });
 
+  it('follows the pointer that pressed first, whatever the click names', () => {
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: false }) });
+    // iOS Safari: a finger's press, then a click that names a mouse.
+    expect(isTouchTap({ detail: 1, pointerType: 'mouse' }, 'touch')).toBe(true);
+    // An iPad's trackpad on a coarse screen.
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: true }) });
+    expect(isTouchTap({ detail: 1 }, 'mouse')).toBe(false);
+    expect(isTouchTap({ detail: 1, pointerType: 'touch' }, 'mouse')).toBe(false);
+    // A keyboard click is still never a tap.
+    expect(isTouchTap({ detail: 0 }, 'touch')).toBe(false);
+  });
+
   it('asks whether the main pointer is coarse when the click names none', () => {
     vi.stubGlobal('window', {
       matchMedia: (q: string) => ({ matches: q === '(pointer: coarse)' }),

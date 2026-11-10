@@ -34,7 +34,6 @@ describe('TEMPLATES catalogue', () => {
   // either direction.
   const ALL_KINDS: TemplateKind[] = [
     'blank',
-    'blank-illustration',
     'blank-logo',
     'blank-wireframe-phone',
     'blank-wireframe-tablet',
@@ -73,15 +72,15 @@ describe('TEMPLATES catalogue', () => {
   // The mechanism is generic; nothing ships hidden today.
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 33 templates (1 default + 32 extra)', () => {
-    expect(listed).toHaveLength(33);
+  it('lists exactly 32 templates (1 default + 31 extra)', () => {
+    expect(listed).toHaveLength(32);
   });
 
-  it('splits cleanly into 1 default + 32 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 1 default + 31 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(1);
-    expect(extras).toHaveLength(32);
+    expect(extras).toHaveLength(31);
   });
 
   it('ships no hidden templates', () => {

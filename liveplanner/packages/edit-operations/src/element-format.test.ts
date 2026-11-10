@@ -24,6 +24,9 @@ describe('the element format', () => {
     for (const kind of addableKinds()) expect(text).toContain(`  ${kind}: `);
     for (const word of ['sticky', 'arrow', 'sankey', 'square', 'connect'])
       expect(text).not.toContain(word);
+    // docs/specs/009-elements/tab-window.md: retired, so neither offered nor described.
+    expect(text).not.toContain('tab-window');
+    expect(elementFormatText('tab-window')).toBeNull();
   });
 
   it('keeps every kind within its budget', () => {

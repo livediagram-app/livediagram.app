@@ -6,7 +6,8 @@
 // hints are portalled and open upward.
 // The toasts and a guest's sign-in banner stand on it (`--explorer-floor`, EXPLORER_FLOOR).
 
-import { SearchIcon, SettingsIcon, SiteAppearanceToggle } from '@livediagram/ui';
+import { SearchIcon, SettingsIcon } from '@livediagram/ui';
+import { SiteAppearanceToggle } from '@/lib/appearance/appearance-hooks';
 import { HoverCard } from '@liveworkspace/ui';
 
 /** The bar's height, which the page hands the Explorer as `--explorer-floor`. */

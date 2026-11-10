@@ -38,11 +38,12 @@ import { SharedList } from './SharedList';
 import { TeamPage } from './TeamPane';
 import { NotFoundCard } from './NotFoundCard';
 import { PaneHeader, type Crumb } from './PaneHeader';
+import { viewTitle } from './view-title';
 import { ImportToolbar } from '../library/ImportToolbar';
 import { useViewMode } from './useViewMode';
 import type { RowOptions } from './rows';
 
-export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: () => void }) {
+export function ItemsPane({ view }: { view: ItemsView }) {
   const ctx = useExplorer();
   const { client, app, filter, overlay, epoch, folders, words, onCreate, viewerId } = ctx;
   const [mode, setMode] = useViewMode();
@@ -213,7 +214,6 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
       <PaneHeader
         title={title}
         crumbs={crumbs}
-        onOpenNav={onOpenNav}
         onCreateItem={createItem}
         onCreateFolder={createFolder}
         // Imports land where New files an item, so they sit beside it: in the person's own space, as livediagram's.
@@ -330,6 +330,7 @@ function heading(
         ),
     })),
   ];
+  const title = viewTitle(view, folders, teamName);
   switch (view.kind) {
     case 'folder': {
       const f = folders.byId.get(view.id);
@@ -339,10 +340,10 @@ function heading(
           name,
           onClick: () => navigate({ kind: 'team', id: f.teamId! }),
         });
-        return { title: f.name, crumbs };
+        return { title, crumbs };
       }
       return {
-        title: f?.name ?? 'Folder',
+        title,
         crumbs: crumbsFor(view.id, {
           name: SIDEBAR_LABELS.myWork,
           onClick: () => navigate({ kind: 'all' }),
@@ -350,11 +351,10 @@ function heading(
       };
     }
     case 'team': {
+      if (!view.folderId) return { title, crumbs: [] };
       const name = teamName(view.id) ?? 'Team';
-      if (!view.folderId) return { title: name, crumbs: [] };
-      const f = folders.byId.get(view.folderId);
       return {
-        title: f?.name ?? 'Folder',
+        title,
         crumbs: crumbsFor(view.folderId, {
           name,
           onClick: () => navigate({ kind: 'team', id: view.id }),
@@ -364,13 +364,13 @@ function heading(
     case 'recent':
       // Reached from Home (Jump Back In's See All), and leads back to it.
       return {
-        title: VIEW_TITLES.recent,
+        title,
         crumbs: [
           { name: VIEW_TITLES.home, onClick: () => navigate({ kind: 'home' }) },
           { name: VIEW_TITLES.recent },
         ],
       };
     default:
-      return { title: VIEW_TITLES[view.kind], crumbs: [] };
+      return { title, crumbs: [] };
   }
 }

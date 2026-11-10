@@ -6,6 +6,13 @@ import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext'
 import { startPalette } from './start-palette';
 import { StartFromTemplates } from './StartFromTemplates';
 
+// The start wears the app's Appearance, never the tab's paper (start-diagramming.md "Look").
+const appearance = vi.hoisted(() => ({ value: 'light' as CanvasSurface }));
+vi.mock('@livedocuments/ui', async (actual) => ({
+  ...(await actual<typeof import('@livedocuments/ui')>()),
+  useAppearance: () => ({ appearance: appearance.value }),
+}));
+
 afterEach(() => {
   cleanup();
   localStorage.clear();
@@ -99,6 +106,7 @@ describe('the chosen rail count', () => {
   };
 
   it.each<CanvasSurface>(['dark', 'light'])('reads at AA in %s', (surface) => {
+    appearance.value = surface;
     render(
       <CanvasSurfaceProvider surface={surface}>
         <StartFromTemplates tabId="t1" onTemplate={vi.fn()} />
@@ -115,6 +123,7 @@ describe('the chosen rail count', () => {
 
   // The chosen row's name: the accent on its 14% tint over the card. Brand blue there read 3.4:1 in light.
   it.each<CanvasSurface>(['dark', 'light'])('names the chosen group at AA in %s', (surface) => {
+    appearance.value = surface;
     render(
       <CanvasSurfaceProvider surface={surface}>
         <StartFromTemplates tabId="t1" onTemplate={vi.fn()} />
@@ -132,5 +141,20 @@ describe('the chosen rail count', () => {
         .map((n) => Number(n).toString(16).padStart(2, '0'))
         .join('');
     expect(contrastRatio(hexOf(ink), row)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+// docs/specs/007-editor/start-diagramming.md "The header band": the header wears the app's own Explorer hero backdrop, in the panel's colours.
+describe('the start header band', () => {
+  it("draws the app's own band and title mark behind the header, hidden from screen readers", () => {
+    pages();
+    const band = document.querySelector('header [data-start-band]');
+    expect(band?.getAttribute('data-start-band')).toBe('typesetter');
+    expect(band?.getAttribute('aria-hidden')).toBe('true');
+    const mark = document.querySelector('header [data-start-title-mark]');
+    expect(mark?.getAttribute('data-start-title-mark')).toBe('typesetter');
+    // The title in the hero's face: serif for the Typesetter alone.
+    const title = document.querySelector('header h2')!;
+    expect(title.className.includes('font-serif')).toBe(true);
   });
 });

@@ -73,7 +73,7 @@ frame turns with it (the iPhone's Dynamic Island and the Android camera then sit
   watch **10:09**), signal, Wi-Fi and battery (the watch the time alone), in ink that reads on the
   screen's background (white on a dark one). The home indicator is a short rounded bar centred at
   the screen's foot. A phone turned landscape shows no status bar (as phones hide it) but keeps
-  the home indicator. **System Bars** (the Device popover) turns them off on that page.
+  the home indicator. **System Bars** (the Frame popover) turns them off on that page.
 - **Browser toolbar**: a browser page's toolbar is part of the frame, above the screen: the traffic
   lights, back and forward, a reload, the address field (a lock and the page's address) and a
   menu. The address is `example.com` on an unnamed page and `example.com/<the page's name, in lower
@@ -99,12 +99,13 @@ case with dashes>` on a named one, so naming the page names the screen.
 - A new wireframe page takes the device and frame look of the page it is like (the +), or of the last
   wireframe page when the device was just chosen (its device the one chosen); on the plain paper, with
   its system bars shown.
-- **Beside the cog**: a wireframe page's title bar holds, for someone who may edit it, a **Device**
-  button (the device's glyph, and on a desktop its name) opening the **Device popover** anchored to
-  it:
+- **Beside the cog**: a wireframe page's title bar holds, for someone who may edit it, a **Frame**
+  button (the device's glyph, and on a desktop the word **Frame** beside it; its accessible name and
+  tooltip say the device too, **Frame: iPhone**) opening the **Frame popover** anchored to it. On a
+  phone it is the **Frame** row of the page's Appearance ([Pages](pages-mode.md) "On a phone"):
   - **Device**: the page's device, its miniature, name and screen size, shown, not changed.
   - **Orientation**: **Portrait** / **Landscape**, while the device turns.
-  - **Frame**: **Theme**, **Dark**, **Light**, **Outline**.
+  - **Look**: the frame's look, **Theme**, **Dark**, **Light**, **Outline**.
   - **System Bars**: a switch, while the device has them ("The status bar and home indicator").
 
   Each choice is one undoable page edit, synced to everyone. The page's **Layouts** and
@@ -118,7 +119,7 @@ case with dashes>` on a named one, so naming the page names the screen.
 - **Framing**: going to a wireframe page fits the whole device to the screen, zooming in past 100%
   (up to 250%) where it is small, so a watch fills the view as a phone does.
 
-- **The page panel**: a wireframe page's panel holds **Device** (the same sections as the popover),
+- **The page panel**: a wireframe page's panel holds **Device** (the same sections as the Frame popover),
   its one tab; its Background and Layouts are beside its cog.
 
 ## Wireframe layouts
@@ -198,7 +199,8 @@ avatars, badges, cards and lists." Its tiles:
   glass and a placeholder), **Chip**, **Badge** (the [badge](../009-elements/badge.md), with its presets: New,
   Beta, Version, Count, Draft, Warning), **Image Placeholder** (a grey block with the picture
   glyph), **Avatar** (a circle of initials), **Card**, **Checklist** and **Divider** (a thin rule).
-- Each tile is in one category: Text and the Sticky Note are **Write**'s, and while Elements is
+- Each tile is in one category: the text styles (Title to Caption, [Canvas and
+  palette](../008-canvas/canvas-and-palette.md#text-element) "Text styles") and the Sticky Note are **Write**'s, and while Elements is
   offered **Components** leaves out the Card, the Badge and the Checklist it holds. Components
   opens on its **Layout** group (Hero, Header, Banner, Stack), then **Page Blocks**, then **Code
   and Lists**.
@@ -302,7 +304,7 @@ inspect it." With one, under the element's name (its kind, and its words when it
   what it is measured to (an element's kind, or **Screen**).
 - **Colours**: **Fill** and **Border**, each a swatch and its hex, the colour the element is drawn in
   (its own, or the theme's when it keeps none); a part with none reads **None**.
-  An element that paints its own body (a chart, an icon, a progress bar, a concept graphic, a tab window)
+  An element that paints its own body (a chart, an icon, a progress bar, a concept graphic, a stored tab window)
   sits in no box, so it has no **Border** or **Radius**; a chart, a Sankey, an icon and a tab window draw
   nothing in a fill either, so their **Fill** reads **None** too.
 - **Border**: its **Width**, **Style** and **Radius** (the corners as drawn, a pill's half its height).
@@ -330,7 +332,7 @@ inspect it." With one, under the element's name (its kind, and its words when it
 
 A wireframe page is a page: an **Editor** chooses its device, orientation, frame look and system
 bars, places layouts and edits what is on it; a **Participant** may change what is on it as on any
-page and never the device; a **Viewer** sees it, never the Device button, the popover or the
+page and never the device; a **Viewer** sees it, never the Frame button, the popover or the
 panel. Every control is gated on the session's `can` (`can.editPages` for the device), as every
 page control is.
 

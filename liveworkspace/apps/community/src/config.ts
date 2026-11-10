@@ -17,3 +17,8 @@ export const SITEMAP_MAX_AGE_S = 3600;
 // The largest body any route takes: a post's input with its author, or a sync of COMMUNITY_SYNC_MAX
 // documents.
 export const MAX_BODY_BYTES = 64 * 1024;
+
+// The sweep (community.md "The sweep"): a post is checked again once its last check is this old, and an app's door
+// has this long to answer before that app waits for the next run.
+export const COMMUNITY_SWEEP_EVERY_MS = 10 * 60_000;
+export const COMMUNITY_SWEEP_TIMEOUT_MS = 10_000;

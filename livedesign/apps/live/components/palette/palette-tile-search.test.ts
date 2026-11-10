@@ -25,8 +25,8 @@ describe('searchableElementTiles', () => {
   it('lists every tile of the palette once, in layout order', () => {
     const tiles = modeElementTiles('pages');
     expect(new Set(ids(tiles)).size).toBe(tiles.length);
-    // Popular leads, so its Text comes first.
-    expect(tiles[0]?.id).toBe('tools:text');
+    // Popular leads, so its Heading comes first.
+    expect(tiles[0]?.id).toBe('tools:text-heading');
     expect(ids(searchableElementTiles({ mode: 'pages', hasImage: true }))).toEqual(ids(tiles));
     expect(ids(tiles)).toEqual(expect.arrayContaining(['data:pie', 'devices:phone']));
   });

@@ -120,7 +120,7 @@ dashboard on liveworkspace.app shows them under its own app.
 
 - **Compete on their ground**: Trello as a kanban board, Asana, Monday.com and ClickUp as work-management platforms, Notion as a workspace whose databases show as boards, Jira as an issue tracker, Airtable as a spreadsheet-database, and Smartsheet as spreadsheet-style project management. Where a competitor goes further (Jira's sprints and developer integrations, Airtable's relational bases, Asana's portfolios, Notion's docs, automation recipes and marketplaces generally), the page says so plainly, and "they are not a planner" is never a selling point.
 - **Never invent a competitor's price.** Price cells say only "free plan, then paid plans", "paid plans per seat" or similar positioning; no tier names, limits or amounts.
-- **Migration answers are honest.** There is no direct importer for any of these tools. The honest route is the board's CSV/TSV import (each row a card, landing in the column its Status names, with the person its Assignee names) or opening a CSV in a Sheet, and an FAQ says so rather than implying a one-click move (e.g. "there's no direct Trello importer; a CSV with a title column is all a board import needs").
+- **Migration answers are honest.** Trello, Asana and Jira have a direct import ([Importing from another tool](../../liveplanner/docs/specs/026-plan/tracker-import.md): a Trello board's JSON export, an Asana project's CSV export or a Jira issues CSV export becomes a new Board tab in one step, a one-off import, never a sync), and their FAQs say what comes across. For Monday.com, Notion, ClickUp, Airtable and Smartsheet there is no direct importer: the honest route is the board's CSV/TSV import (each row a card, landing in the column its Status names, with the person its Assignee names) or opening a CSV in a Sheet, and an FAQ says so rather than implying a one-click move.
 - **Words**: its tabs are Board, Sheet, Dashboard and Form tabs. Deep dives cover how boards, sheets, dashboards and forms work together, and interop (CSV in and out, embeds, the API, MCP server and CLI for agents).
 
 **The set**: Trello, Asana, Monday.com (`/alternatives/monday`), Notion, Jira, ClickUp, Airtable and Smartsheet, each compared against Plan: Board, Sheet, Dashboard and Form tabs, card types, plan views (Gantt chart, calendars, charts by field), forms whose answers become cards or rows, live collaboration and agent access.
@@ -154,14 +154,17 @@ dashboard on liveworkspace.app shows them under its own app.
 - **Compete on their ground**: Gather, Teamflow and Kumospace as virtual offices and spatial meeting places, where a
   remote team walks between rooms to meet. livehuddle is a place to meet in Spaces (its
   [Purpose](../../livehuddle/docs/specs/001-project-vision/purpose.md)), so these are its ground too.
-- **Talking is their edge, said plainly.** Each of them has voice and video built in; livehuddle's proximity audio and
-  calls are built but off in production ([Proximity audio](../../livehuddle/docs/specs/012-collaboration/proximity-audio.md)).
-  Every page says so in its table, its fairness section and an FAQ, and tells a team to run its usual call beside the
-  Space. Screen sharing, desktop apps and large broadcast events are theirs too. A page never says people can talk by
-  voice or video in livehuddle until calls are on in production.
-- **Our ground**: free with no tiers, MIT open source, no sign-up even to create, any browser with nothing to install,
-  a Space that is also a board (sticky notes, the Session strip's timer and quick vote), the three share roles, the
-  REST API, CLI and MCP server, Google Drive sync and This Browser.
+- **Talking is shared ground, compared fairly.** Each of them has voice and video built in, and so does livehuddle:
+  proximity voice, camera and screen-share bubbles, rooms whose walls keep their call private, and a stage the whole
+  tab hears ([Proximity audio](../../livehuddle/docs/specs/012-collaboration/proximity-audio.md),
+  [Video and screen share bubbles](../../livehuddle/docs/specs/012-collaboration/video-and-screen-bubbles.md),
+  [Meeting rooms and the stage](../../livehuddle/docs/specs/012-collaboration/meeting-rooms-and-stage.md)), on at
+  livehuddle.app since 2026-11-05. A page never says livehuddle has no voice or video, or tells a team to run another
+  call beside the Space. Desktop apps, calendar integrations and large broadcast events stay theirs.
+- **Our ground**: free with no tiers, MIT open source, no sign-up even to create or to talk, any browser with nothing
+  to install, a Space that is also a board (sticky notes, text, stickers, a Timer and a Stopwatch), the three share
+  roles, the REST API, Google Drive sync and This Browser. livehuddle has no MCP server or CLI, so a page never
+  offers one.
 - **Migration answers are honest.** There is no importer for any of them; the answer is a template (Virtual Office,
   Coworking Space) and the office pieces.
 - **Meet-first words** (Work Tracker #423): no workshops, retros, polls, decks or diagrams, pinned by the app's

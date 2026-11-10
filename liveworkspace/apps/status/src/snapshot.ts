@@ -9,9 +9,11 @@ import {
   INCIDENTS_MAX,
   LETTER,
   type LatestEntry,
+  poolUptime,
   type ServiceHistory,
   type StatusHistory,
   type StatusLatest,
+  uptimePercent,
 } from '@liveworkspace/status';
 import type { Incident } from './incidents';
 import { uptimeTenths } from './rollup';
@@ -37,8 +39,8 @@ export function buildLatest(at: number, results: ReadonlyMap<string, CheckResult
   return { v: 1, at, services };
 }
 
-/** `/api/status/history`: each service's bar per day over the `days` up to `today`, its uptime over them, and the
- *  incidents that touch them, newest first. Every service in `serviceIds` gets its bars, with or without checks. */
+/** `/api/status/history`: each service's bar per day over the `days` up to `today`, its uptime over them, each
+ *  group's and the page's (pooled over their services' checks), and the incidents that touch them, newest first. Every service in `serviceIds` gets its bars, with or without checks. */
 export function buildHistory(input: {
   at: number;
   today: string;
@@ -77,8 +79,9 @@ export function buildHistory(input: {
     const t = totals.get(id)!;
     services[id]!.w = worst[id]!.join('');
     services[id]!.u.sort((a, b) => a[0] - b[0]);
-    services[id]!.p = t.checks === 0 ? null : Math.round((t.answered * 10_000) / t.checks) / 100;
+    services[id]!.p = uptimePercent(t.answered, t.checks);
   }
+  const uptime = poolUptime(totals);
 
   const since = dayStart(from);
   // Only the listed services': a retired one's incidents would take a place of the INCIDENTS_MAX for nothing.
@@ -89,5 +92,5 @@ export function buildHistory(input: {
     .slice(0, INCIDENTS_MAX)
     .map((i) => [i.service, i.startedAt, i.endedAt, LETTER[i.worst], i.checks, i.error]);
 
-  return { v: 1, at, from, days, latest: latest.services, services, incidents: entries };
+  return { v: 1, at, from, days, latest: latest.services, services, uptime, incidents: entries };
 }

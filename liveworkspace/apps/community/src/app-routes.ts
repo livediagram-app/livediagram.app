@@ -30,6 +30,7 @@ import { networkHash } from './network';
 import {
   countPostsByOwner,
   createPost,
+  deleteOwnerPosts,
   deletePost,
   getPostForDocument,
   listHiddenSince,
@@ -143,7 +144,13 @@ export async function handleApp(
     const body = (await readJson(request)) as Record<string, unknown> | null;
     if (segments[1] === 'forget') {
       if (!body || !isId(body.copier)) return badRequest('invalid_copier');
+      if (body.owner !== undefined && !isId(body.owner)) return badRequest('invalid_owner');
       await forgetCopier(env, app, body.copier);
+      // An account closed: its posts go with it ("What lives where").
+      if (body.owner !== undefined) {
+        await deleteOwnerPosts(env, app, body.owner);
+        console.info('[community] owner forgotten', { app });
+      }
       return noContent();
     }
     if (segments[1] === 'merge') {

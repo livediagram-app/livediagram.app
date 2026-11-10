@@ -1,5 +1,5 @@
 import type { EmbedProvider } from '@livedesign/design';
-import type { ShapeKind } from '@livedesign/design';
+import type { ShapeKind, TextPresetId } from '@livedesign/design';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTint } from '@/components/palette/palette-controls';
 
@@ -39,7 +39,8 @@ export type PaletteProps = {
   // element carrying the chosen tech-catalogue id. Picked from the
   // Technology tab's searchable grid; never dropped inside a shape.
   onAddTechIcon: (iconId: string) => void;
-  onAddText: () => void;
+  // A Write text style; none, a Paragraph.
+  onAddText: (preset?: TextPresetId) => void;
   onAddSticky: () => void;
   // Drop a 3x3 editable table at the viewport centre.
   onAddTable: () => void;

@@ -164,13 +164,14 @@ the app's to report, so each change is counted once.
 its tabs, catalogues and explanations. Picking an app on the page updates the link.
 
 - **All apps** adds every app's events together. It shows the three windows (today, last 7 days,
-  last 30 days) and the 30-day trend line, each app's share against the span before it, and the
-  busiest events. The same event from two apps counts as one row, added up.
+  last 30 days) and the 30-day trend line, then **Apps Compared** (its own section, below), then the busiest events.
+  The same event from two apps counts as one busiest-events row, added up.
 - **One app** shows the dashboard that app had before. Every app's dashboard is the same views, in
   `_shared/` in the dashboard's folder (a private folder, so it is no route), filled from that app's
   data in `<app>/`, which only loads when that app is picked.
 
 ```
+app/telemetry/_all        All apps' Apps Compared: its figures (apps-compared.ts), charts and tables
 app/telemetry/_shared     the views and their logic, once: AppDashboard, the tabs, cards, charts, rankings
 app/telemetry/<app>       the app's data: config.ts, its catalogue, event explanations, retired events, tests
 ```
@@ -190,11 +191,16 @@ rather than falling back to the default sky (Work Tracker #588). The views draw 
 through `@livediagram/ui`. The shared views are tested against
 every app's config (`_shared/test-apps.ts`).
 
+**The window.** Today, Last 7 days and Last 30 days are the three windows, picked on the panel at the top, and
+every number under it follows the one picked. The page holds the window, not each dashboard, so picking another
+app (or All apps) keeps it: a switch never starts again at Last 7 days. A reload does, since the window is in
+neither the URL nor storage. There is no 90-day window: the events are kept 60 days.
+
 **Loading.** The page never goes blank while numbers load: on the first visit, on picking an app
 whose summary hasn't come yet, and while that app's own dashboard code downloads. The header, the
 app chips and the closing note stay put, and where the numbers go a skeleton holds their shapes in
-the layout they will take: the three window tiles and the trend chart, then for All apps the "By
-app" cards and the busiest-event rows under their real titles, and for one app the tab row and a
+the layout they will take: the three window tiles and the trend chart, then for All apps Apps
+Compared's charts, tiles and table rows and the busiest-event rows under their real titles, and for one app the tab row and a
 grid of metric cards. The skeleton reserves the heights of the panel and tabs above the fold, so
 nothing above the cards moves when the data lands. It is static markup with a gentle pulse that
 stops under reduced motion, and it is marked busy for assistive tech. An app's earlier numbers are
@@ -206,9 +212,56 @@ keeps its own message.
 The numbers come from `GET /api/telemetry/summary?app=all|<an app in TELEMETRY_APPS>`, built from
 one read of the day counts over the last 59 days (the last 30, and the 30 before them for the trend
 arrows). It reads one row per day and event, never the events themselves, so its cost follows how
-many kinds of event arrive, not how many. Each window carries `byApp`, and the daily series carries `byApp` too. The response is
+many kinds of event arrive, not how many. Each window carries `byApp`, and the daily series carries `byApp` too. `audience` keeps the five audience
+events per app, not merged (`packages/telemetry/src/audience.ts`): each app's 30-day series of each, and each
+window's and its previous span's counts, folded in the same pass. The response is
 cached at the edge for 5 minutes per filter, so a traffic spike on the public page is answered from
 the cache, not D1. In development the cache is off.
+
+### Apps Compared
+
+All apps' comparison of the apps, in place of the per-app cards it had until November 2026. Each block reads the
+window above and compares it with the same number of days just before it.
+
+1. **Events by App.** One chart of every app's daily events over the 30 days, each app's line in its own accent,
+   with a dashed Total; the window is shaded. A legend entry per line hides or shows it (hiding the Total spreads
+   the apps' lines over the chart). Under it, a table: each app's events in the window, its share of them, its
+   change against the span before, and its events per visit, then liveworkspace.app's own events (the Explorer and
+   Settings on All apps) when it has any, and the Total. An app's name opens its dashboard.
+2. **Visitors and Accounts.** For All Apps (every app added up) or one app, picked beside the title: six tiles
+   (Avg Daily Visitors, New Visitors, Returning Share, Sign-Ups, Sign-Ins, Sign-Ups per 100 New), each with its
+   arrow against the span before where it has one; a chart of new and returning visitors per day and one of
+   sign-ups and sign-ins per day, the window shaded; and a table comparing every app, whatever the pick: Avg Daily
+   Visitors, New, Returning, Returning Share, Signed In of Returning, Sign-Ups, Sign-Ins and Sign-Ups per New, with
+   the Total. A "What These Count" note under it says what each number is, as below.
+
+Every chart hides its drawing from a screen reader and carries the same numbers as a table of its days; each day's
+hover card lists every line's count. With nothing counted in the 30 days, a block says so instead of drawing flat
+lines. On a phone the tiles go two to a row and the tables scroll sideways inside their card.
+
+What the numbers are, all from events every app already sends, per app:
+
+| Number               | From                                                                                                                                                                      |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| New visitor          | `Participant·Created`: a browser new to the app (a guest identity it has not had)                                                                                         |
+| Returning visitor    | `Participant·Returned·Anonymous` / `Authenticated`: a browser that has been before, on a later UTC day, at most once a day (`createDailyReturn`), as a guest or signed in |
+| Visit                | New plus returning: one browser on one UTC day. A day's visits are the browsers that opened the app that day; over 7 or 30 days a browser counts once a day               |
+| Avg Daily Visitors   | Visits over the window's days. Today is a day still running                                                                                                               |
+| Returning Share      | Returning visits of all visits                                                                                                                                            |
+| Sign-up              | `Session·SignedUp`, from the app's api: an account the app has never seen finishing sign-in (one made on another app counts as new here)                                  |
+| Sign-in              | `Session·SignedIn`, from the app's api: any other finished sign-in, never a token refresh                                                                                 |
+| Sign-Ups per 100 New | Sign-ups for each 100 new visitors: a rough conversion, which can pass 100, since a returning guest may sign up too                                                       |
+| Events per Visit     | The app's events over its visits: how much each visit does                                                                                                                |
+
+The Total adds the apps: a person who joins two apps is two sign-ups, and a browser using two apps is a visitor to
+each. Browsers that turned telemetry off or ask sites not to track send no visits, while the apps' servers still
+count sign-ups and sign-ins, so the ratios lean high; clearing a browser's storage makes it new again.
+
+**No unique people, by design.** There are no weekly or monthly unique visitors and no DAU/MAU stickiness: telling
+two days' visits from the same browser apart from two browsers would need an id kept per person (or per browser)
+across days, and events carry no identity (What an event is). Returning Share stands in for stickiness: how much
+of the traffic is browsers coming back. Nothing new is collected for this section, and no table is added: the
+summary reads these five events from the day counts it already reads.
 
 ## Retention
 
@@ -305,6 +358,11 @@ out livehuddle's `apps/mcp`, `apps/cli` and `packages/agent-verbs`: livehuddle d
   row read per event. The counts make it a few milliseconds, whatever the traffic (blueprint
   "Performance and limits" has the numbers). Folding the rows is linear; a test folds a worst case
   (59 days × 2 apps × 1,500 events) inside a time budget.
+- **Apps Compared** adds no query, statement or table: the five audience events are found with one map lookup
+  per day-count row in the fold the summary already makes, and add about 1,000 numbers (a few KB, before gzip) to
+  the All apps answer: six senders (the five apps and liveworkspace.app, whose stay 0), five numbers, 30 days,
+  plus three windows twice. The page works them out once per window or scope pick (memoised), and draws three
+  charts of at most six 30-point lines.
 - **Index**: `events` keeps `(ts)` for the sweep and for counting a day again; the day counts' key starts
   with the app, so one app's read is a range of it.
 - **The counts' first fill**: the migration that adds them counts every event already stored, in one

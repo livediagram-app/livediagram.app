@@ -36,7 +36,7 @@ describe('TabBar: a connected tab', () => {
     render(<TabBar {...props({ tabs: TABS, activeId: 'c1', onConnectAgain, onDelete })} />);
     expect(
       screen.getByRole('button', {
-        name: 'Launch plan, connected liveplanner file, opens in a new tab',
+        name: 'Launch plan, connected liveplanner file',
       }),
     ).toBeTruthy();
     act(() => setConnectedTabBroken(CONNECTION.id, true));

@@ -146,8 +146,8 @@ export function usePerTabLoad(opts: {
   // stamp in commitTabs) save the empty placeholder over the real row while the Plan sweep was in flight.
   const fetchingTabIdsRef = useRef<Set<string>>(new Set());
   // How each fetch under way ends, by tab: so a caller asking for a tab another fetch is already loading waits for
-  // that one and hears how it went, rather than answering at once with neither the tab nor a failure (which left
-  // the Tab Window and its export asking again on a timer, docs/specs/009-elements/tab-window.md).
+  // that one and hears how it went, rather than answering at once with neither the tab nor a failure (which left a
+  // caller asking again on a timer).
   const inFlightRef = useRef<Map<string, Promise<TabFetchEnd>>>(new Map());
   // Note a fetch under way and how it ends; forgotten once it has.
   const noteInFlight = useCallback((targetId: string, run: Promise<TabFetchEnd>) => {

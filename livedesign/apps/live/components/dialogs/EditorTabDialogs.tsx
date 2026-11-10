@@ -49,7 +49,6 @@ export function EditorTabDialogs() {
     pagesMode,
     activeTab,
     tabs,
-    loadAllTabs,
     designName,
     imageContext,
     setExportOpen,
@@ -106,9 +105,8 @@ export function EditorTabDialogs() {
           // (docs/specs/007-editor/pages-mode.md "Export").
           pages={exportScope === 'tab' ? pagesMode?.pages : undefined}
           designName={designName}
-          // A tab window draws the tab it shows (docs/specs/009-elements/tab-window.md "Exports").
+          // A stored tab window's frame is named for its tab (docs/specs/009-elements/tab-window.md).
           designTabs={tabs}
-          loadTabs={loadAllTabs}
           imageContext={imageContext}
           onClose={() => setExportOpen(false)}
         />

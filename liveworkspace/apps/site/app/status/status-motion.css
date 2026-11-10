@@ -1,5 +1,5 @@
 /* The status page's motion (liveworkspace/docs/specs/010-site/site.md "Status"): a slow pulse behind the overall state, the cards
- * rising as the page opens, each new check settling into its strip, and the checking glyph turning. Paced as
+ * rising as the page opens, and the checking glyph turning. Paced as
  * content, not chrome (motion-budget.test.ts lists this file), and all of it stops for reduced motion. */
 
 @keyframes lw-status-ping {
@@ -21,13 +21,6 @@
   }
 }
 
-@keyframes lw-status-settle {
-  from {
-    transform: scaleY(0.2);
-    opacity: 0;
-  }
-}
-
 @keyframes lw-status-spin {
   to {
     transform: rotate(360deg);
@@ -42,11 +35,6 @@
   animation: lw-status-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.lw-status-bar {
-  transform-origin: bottom;
-  animation: lw-status-settle 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
 .lw-status-spin {
   animation: lw-status-spin 1.2s linear infinite;
 }
@@ -54,7 +42,6 @@
 @media (prefers-reduced-motion: reduce) {
   .lw-status-ping,
   .lw-status-rise,
-  .lw-status-bar,
   .lw-status-spin {
     animation: none;
   }

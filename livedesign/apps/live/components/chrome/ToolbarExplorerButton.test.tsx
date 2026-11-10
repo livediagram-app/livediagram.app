@@ -2,7 +2,10 @@
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md): it toggles the Explorer and
 // hands itself over as the popover's anchor.
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { setActiveTabName } from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
+import {
+  setActiveTabName,
+  usePublishTabName,
+} from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ToolbarExplorerButton } from './ToolbarExplorerButton';
 
@@ -97,5 +100,32 @@ describe('the menu box joined to the Contents sidebar', () => {
   it('never joins inline in the strip’s row', () => {
     render(<ToolbarExplorerButton open={false} inline onToggle={vi.fn()} joinedWidth={236} />);
     expect(card().hasAttribute('data-menu-joined')).toBe(false);
+  });
+});
+
+// docs/specs/007-editor/toolbar-layout.md "The tab's name": the editor publishes the open tab's name, and the box shows
+// it beside the menu button on a desktop, following a rename, and drops it as the editor closes.
+describe("the open tab's name in the menu box", () => {
+  function Editor({ tabName }: { tabName: string }) {
+    usePublishTabName(tabName);
+    return null;
+  }
+  const shownName = () => document.querySelector('[data-tab-name-in-box]')?.textContent ?? null;
+
+  it('shows the name the editor publishes, follows a rename, and clears as the editor goes', () => {
+    render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} />);
+    expect(shownName()).toBeNull();
+    const editor = render(<Editor tabName="Logo" />);
+    expect(shownName()).toBe('Logo');
+    editor.rerender(<Editor tabName="Logo Final" />);
+    expect(shownName()).toBe('Logo Final');
+    editor.unmount();
+    expect(shownName()).toBeNull();
+  });
+
+  it('shows no name inline in the strip’s row (a phone)', () => {
+    render(<Editor tabName="Logo" />);
+    render(<ToolbarExplorerButton open={false} inline onToggle={vi.fn()} />);
+    expect(shownName()).toBeNull();
   });
 });

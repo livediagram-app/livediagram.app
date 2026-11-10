@@ -37,6 +37,9 @@ export const ICON_ART_ALLOWLIST = [
   '**/components/photo/option-pictures.tsx',
   // A plan's Add Field tiles: each field kind drawn as the idea it holds (a card and its child cards, a sum).
   '**/components/plan/AddFieldTileArt.tsx',
+  // A start header's band and title mark: the app's Explorer hero motif, drawn in the start palette.
+  '**/components/start/StartHeaderBand.tsx',
+  '**/components/start/StartTitleMark.tsx',
   // Canvas content: a checklist tick and a collaborator's cursor.
   '**/components/canvas/ChecklistView.tsx',
   '**/components/canvas/RemoteCursor.tsx',

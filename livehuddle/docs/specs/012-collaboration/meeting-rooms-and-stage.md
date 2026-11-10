@@ -87,6 +87,11 @@ and its hearing, and part 4 gives it its tile, its settings and the hall
   a stage, who hear them as one room; the audience hears without seeing.
 - Walking off the stage ends it at once: you are back to your room's call. Hearing re-decides on the next scene, as
   it does for a room.
+- **A Podium on a stage** ([Venue pieces](../009-elements/venue-pieces.md#speaking-from-the-podium)): a click on it
+  stands you at its speaker spot, which lies on the stage's top in every template, so you speak from the stage by
+  standing there, exactly as by standing anywhere else on it. The Podium grants nothing of its own: on a stage that
+  lets you speak the stage already reaches the whole tab, and on one that does not, you are its audience and your
+  voice carries three times as far within the stage's room, walls as ever.
 - **The mic indicator** reads **Live** on the stage while anyone else walks the tab (they all hear you).
 - **The stage shows who is on it, to everyone.** While anyone stands on a stage, the stage lights up for everyone on
   the tab: a soft spotlight falls on its top, and an **On Stage** badge with a red dot hangs from its plate, with a
@@ -225,8 +230,9 @@ Hearing is decided in each browser, from positions every walker already shares, 
   `call-session` op, [Proximity audio](proximity-audio.md#the-wire)), so the room knows which session is whose. Every
   subscribe asks the room, for each track, whether the subscriber may hear its publisher now: from both people's last
   shared positions on the same tab, the tab's visible rooms and stages as last saved, and the hands let speak.
-- **Allowed** when the two share a room, or both stand in the open within earshot, or the publisher speaks from a
-  stage that lets them, or has been let speak by someone who still may. A camera or screen follows the same answer
+- **Allowed** when the two share a room, or both stand in the open within earshot (three times as far for a
+  publisher whose shared position stands them at a Podium, [Proximity audio](proximity-audio.md#hearing)), or the
+  publisher speaks from a stage that lets them, or has been let speak by someone who still may. A camera or screen follows the same answer
   (bubbles follow hearing).
 - **Conservative, so nobody is silenced by mistake.** Positions on the server lag the screen by a step or two, so the
   check allows a margin: 160 canvas px beyond the release radius in the open, and 64 canvas px either side of a wall

@@ -13,7 +13,17 @@ import { linePath, plot, VIEW_H, VIEW_W } from './TrendChart';
 // are drawn thinner and faded rather than greyed, since grey would lose which
 // line is which.
 
-export type StackSeries = { label: string; color: string; values: number[] };
+// `app` scopes the series to an app's accent: its group carries `data-app`, so a `color` of
+// `var(--color-brand-500)` is that app's (telemetry.css), as All apps' comparison draws each app. `className` styles
+// the group (a neutral Total in `currentColor`), and `dashed` draws the line dashed.
+export type StackSeries = {
+  label: string;
+  color: string;
+  values: number[];
+  app?: string;
+  className?: string;
+  dashed?: boolean;
+};
 
 export function StackTrendChart({
   days,
@@ -52,12 +62,13 @@ export function StackTrendChart({
           />
         ) : null}
         {plotted.map((s) => (
-          <g key={s.label}>
+          <g key={s.label} data-app={s.app} className={s.className}>
             <path
               d={linePath(s.points)}
               fill="none"
               stroke={s.color}
               strokeWidth={1.25}
+              strokeDasharray={s.dashed ? '4 3' : undefined}
               opacity={0.4}
               vectorEffect="non-scaling-stroke"
             />
@@ -66,6 +77,7 @@ export function StackTrendChart({
               fill="none"
               stroke={s.color}
               strokeWidth={2}
+              strokeDasharray={s.dashed ? '4 3' : undefined}
               strokeLinecap="round"
               strokeLinejoin="round"
               vectorEffect="non-scaling-stroke"

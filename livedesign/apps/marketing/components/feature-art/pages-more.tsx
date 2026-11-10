@@ -1,10 +1,7 @@
 // Feature illustrations for Pages mode's pages beyond layouts (docs/specs/007-editor/pages-mode.md):
-// a live window onto another tab and the Contents sidebar.
+// the Contents sidebar.
 
 import {
-  ARROW,
-  INK,
-  INK_TEXT,
   PANEL,
   SHADOW,
   Scene,
@@ -20,69 +17,6 @@ function Sheet({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
     <g className={SHADOW}>
       <rect className="fill-white dark:fill-slate-800" x={x} y={y} width={w} height={h} rx="1.5" />
     </g>
-  );
-}
-
-// Tab window: a page holding a window onto the Logo tab, and that tab beside it, the dot just added
-// to the mark on the tab appearing in the window too.
-export function TabWindowArt() {
-  const logo = (s: number, late: boolean) => (
-    <g>
-      <circle
-        className={INK}
-        cx={14 * s}
-        cy={12 * s}
-        r={10 * s}
-        fill="none"
-        strokeWidth={2.6 * s}
-      />
-      <g
-        className={late ? 'fa-d-land' : undefined}
-        style={late ? { animationDelay: '0.6s' } : undefined}
-      >
-        <circle cx={14 * s} cy={12 * s} r={3.6 * s} fill={VIOLET} />
-      </g>
-      <text className={INK_TEXT} x={30 * s} y={15 * s} fontSize={8 * s} fontWeight="800">
-        Bloom
-      </text>
-    </g>
-  );
-  return (
-    <Frame canvas>
-      <Scene>
-        {/* The page, its title and the window. */}
-        <Sheet x={10} y={10} w={136} h={76} />
-        <text className={TEXT_STRONG} x="18" y="24" fontSize="7" fontWeight="800">
-          Brand sheet
-        </text>
-        <rect
-          x="18"
-          y="30"
-          width="120"
-          height="50"
-          rx="2"
-          className="fill-(--art-paper) stroke-slate-300 dark:stroke-slate-600"
-          strokeWidth="0.7"
-          strokeDasharray="2 1.5"
-        />
-        <text className={TEXT_MUTED} x="22" y="37" fontSize="4.6" fontWeight="700">
-          Logo
-        </text>
-        <g transform="translate(48 44)">{logo(1, true)}</g>
-        {/* The tab itself. */}
-        <text className={TEXT_MUTED} x="170" y="18" fontSize="5" fontWeight="700">
-          LOGO TAB
-        </text>
-        <g transform="translate(176 32)">{logo(1.5, true)}</g>
-        <path
-          className={ARROW}
-          d="M164 60 C156 60 152 56 146 56"
-          strokeWidth="0.9"
-          strokeDasharray="2 2"
-          fill="none"
-        />
-      </Scene>
-    </Frame>
   );
 }
 

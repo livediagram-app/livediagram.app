@@ -42,7 +42,8 @@ type PaletteTileAction =
       // A creation-time variant of the kind (packages/design shape-variants.ts): the Callout card, a Funnel.
       variant?: string;
     }
-  | { type: 'text' }
+  // A Write text style (docs/specs/008-canvas/canvas-and-palette.md "Text styles").
+  | { type: 'text'; preset?: import('@livedesign/design').TextPresetId }
   // An opener (palette-openers): stands for a category, or one group of a catalogue, and opens it; places nothing.
   | { type: 'open'; category: string; group?: string }
   | { type: 'freehand' }

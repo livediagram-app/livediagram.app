@@ -19,7 +19,7 @@ function Page(p: { x: number; y: number; width: number; height: number }) {
   );
 }
 
-// The "+" that starts it, as on Blank Illustration's page.
+// The "+" that starts it, as on Blank Tab's page.
 function Plus({ cx, cy }: { cx: number; cy: number }) {
   return (
     <>

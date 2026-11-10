@@ -24,6 +24,19 @@ describe('elementSchemaDoc', () => {
     expect(doc).toContain('"e"'.replace(/"/g, '')); // anchor 'e' from packages/design
     expect(doc).toContain('Do NOT set colours');
   });
+
+  // docs/specs/008-canvas/canvas-and-palette.md "Text styles": the palette's own table, read out for an agent.
+  it("names the palette's text styles in the sizes and weights the editor places them", () => {
+    const doc = elementSchemaDoc();
+    const styles = [
+      'Title 40 bold',
+      'Heading 32 bold',
+      'Paragraph 16',
+      'Quote 20 italic',
+      'Caption 12',
+    ];
+    for (const style of styles) expect(doc).toContain(style);
+  });
 });
 
 describe('tool input shapes', () => {

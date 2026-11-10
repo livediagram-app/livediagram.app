@@ -29,6 +29,7 @@ import { kickWebhooks, queuedCount } from './webhooks/outbox';
 import { handleItemWebhooks, handleWebhooks } from './webhooks/routes';
 import { handleTeamAudit } from './team-audit-read';
 import { handleItemShare, handleShareCode, handleShared } from './sharing';
+import { handleSpacePreviews } from './space-previews';
 import { under } from '@liveworkspace/index-app/worker-http';
 import { guardRequest } from '@liveworkspace/api-kit/request-failure';
 import { createApiRouteLabel } from '@liveworkspace/telemetry/error-tokens';
@@ -50,6 +51,7 @@ const DRIVE_ROUTES = new Set(['items', 'trash', 'folders']);
 // The routes that need a person: anything listing or changing a person's own things.
 const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> = {
   folders: handleFolders,
+  spaces: handleSpacePreviews,
   favourites: handleFavourites,
   'recent-hidden': handleRecentHidden,
   'placement-defaults': handlePlacementDefaults,
@@ -131,6 +133,7 @@ const routeLabel = createApiRouteLabel(
     'share',
     'share-password',
     'folders',
+    'spaces',
     'favourites',
     'recent-hidden',
     'placement-defaults',

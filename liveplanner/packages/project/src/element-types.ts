@@ -243,8 +243,8 @@ export type ShapeElement = {
   // Only meaningful on the 'portal' kind. Absent = an unpaired portal, which is
   // inert and says so — a portal to nowhere shouldn't silently swallow clicks.
   portalTarget?: ElementId;
-  // Tab window (docs/specs/009-elements/tab-window.md): the id of the tab of this project it shows. Only meaningful
-  // on the 'tab-window' kind. Absent until chosen; a tab that is gone (or not shared) shows as unavailable.
+  // Tab window (docs/specs/009-elements/tab-window.md, retired): the id of the tab of this project a stored window
+  // showed, which names its frame. Only meaningful on the 'tab-window' kind; a tab that is gone reads "Tab Window".
   windowTabId?: string;
   // Session button (docs/specs/012-collaboration/session-button.md): which session tool pressing this element starts
   // for the room, and its one setting. Only meaningful on 'session-button';
@@ -1223,7 +1223,7 @@ const UNTYPED_SHAPES = new Set<string>([
   'plan-card',
   'plan-view',
   'plan-sheet',
-  // A tab window shows another tab (docs/specs/009-elements/tab-window.md); there is nothing to write on it.
+  // A stored tab window is a frame named for its tab (docs/specs/009-elements/tab-window.md); nothing to write on it.
   'tab-window',
 ]);
 

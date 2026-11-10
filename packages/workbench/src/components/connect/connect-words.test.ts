@@ -79,12 +79,9 @@ describe('connect words', () => {
     );
   });
 
-  it('tells a screen reader what the tab is and where it opens', () => {
-    expect(connectedTabPhrase('liveplanner', false, false)).toBe(
-      ', connected liveplanner file, opens in a new tab',
-    );
-    expect(connectedTabPhrase('livediagram', true, false)).toBe(', connected livediagram file');
-    expect(connectedTabPhrase('livediagram', false, true)).toBe(
+  it('tells a screen reader what the tab is, never that pressing it opens anything', () => {
+    expect(connectedTabPhrase('liveplanner', false)).toBe(', connected liveplanner file');
+    expect(connectedTabPhrase('livediagram', true)).toBe(
       ', connected livediagram file, needs attention',
     );
   });

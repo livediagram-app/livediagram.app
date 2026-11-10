@@ -50,7 +50,7 @@ describe('TitlePopoverButton', () => {
     );
   });
 
-  // A phone's sheet drew a padded body (the Device popover's Orientation and Frame) flush with the sheet's edges,
+  // A phone's sheet drew a padded body (the Frame popover's Orientation and Look) flush with the sheet's edges,
   // while the sheet's name and an unpadded body's rows sat in from them.
   it.each([
     [true, 'px-4'],
@@ -61,7 +61,7 @@ describe('TitlePopoverButton', () => {
       phone.on = true;
       render(
         <TitlePopoverButton
-          name="Device"
+          name="Frame"
           labelled={false}
           className={titleButtonClass}
           icon={<svg />}
@@ -71,12 +71,43 @@ describe('TitlePopoverButton', () => {
           body
         </TitlePopoverButton>,
       );
-      fireEvent.click(screen.getByRole('button', { name: 'Device' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Frame' }));
       const body = screen
-        .getByRole('dialog', { name: 'Device' })
+        .getByRole('dialog', { name: 'Frame' })
         .querySelector('[data-title-sheet-body]');
       expect(body?.textContent).toBe('body');
       expect(body?.classList.contains('px-4') ?? false).toBe(inset !== null);
     },
   );
+
+  // A wireframe page's Frame: named Frame beside its icon and on its popover, its current device after the name in
+  // its accessible name and tooltip, which stay the same words.
+  it('says what it is set to in its accessible name and tooltip, its label and popover keep the name', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    render(
+      <TitlePopoverButton
+        name="Frame"
+        detail="iPhone"
+        labelled
+        className={titleButtonClass}
+        icon={<svg />}
+        width={240}
+      >
+        body
+      </TitlePopoverButton>,
+    );
+    const button = screen.getByRole('button', { name: 'Frame: iPhone' });
+    expect(button.textContent).toBe('Frame');
+    fireEvent.pointerEnter(button, { pointerType: 'mouse' });
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(screen.getByRole('tooltip').textContent).toBe('Frame: iPhone');
+    expect(warn).not.toHaveBeenCalledWith(
+      '[tooltip] label is not the accessible name',
+      expect.anything(),
+    );
+    fireEvent.click(button);
+    expect(screen.getByRole('dialog', { name: 'Frame' })).toBeTruthy();
+  });
 });

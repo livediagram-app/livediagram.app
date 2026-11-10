@@ -61,6 +61,11 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
     why: 'the editor has no AI assistant of its own',
   },
   {
+    pattern:
+      /no voice or video|voice and video calls[^.]*being built|switched off in production|not switched on at livehuddle|usual call (?:alongside|beside|open)/i,
+    why: 'proximity voice, cameras and screen shares are on at livehuddle.app (docs/specs/012-collaboration/proximity-audio.md "Turning calls on")',
+  },
+  {
     pattern: /\bMCP\b|command[- ]line|\bCLI\b|Build with AI|mcp\.livehuddle/i,
     why: 'livehuddle has no MCP server, CLI or Build with AI page (docs/specs/002-project-scope/not-in-livehuddle.md)',
   },

@@ -27,7 +27,6 @@ import {
   SelectionGlowArt,
   ShareLinksArt,
   SpotlightArt,
-  TabWindowArt,
   TeamsArt,
   ThemesArt,
   TimelineFeedArt,
@@ -142,14 +141,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Backgrounds from your theme',
         description:
           'Paint a page in a tint of your theme, a solid colour or a gradient, with dots, a grid or ruled lines over it. Text keeps reading on a dark page, because the ink follows the page.',
-      },
-      {
-        art: <TabWindowArt />,
-        href: '/help/pages/tab-windows/',
-        group: 'Pages',
-        title: 'A live window onto another tab',
-        description:
-          'Put a window onto another tab on a page. The window follows every change you or a collaborator make there, so there is never a stale copy to paste again. Open jumps straight to the tab.',
       },
       {
         art: <PagesExportArt />,

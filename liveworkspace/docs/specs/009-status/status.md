@@ -69,8 +69,10 @@ truth ([When a request fails](../002-architecture/architecture.md#when-a-request
 Each service is `[state, HTTP code or null, ms, error?]`, the state `u`, `s` or `d`.
 
 **`GET /api/status/history?days=90`**: everything the page shows, in one answer: the latest run, and per service a
-bar per day and its uptime over the window, plus the incidents in the window, newest first (at most 50). `days` is
-1 to 90 (90 when left out).
+bar per day and its uptime over the window, each group's uptime and the whole page's, plus the incidents in the
+window, newest first (at most 50). `days` is 1 to 90 (90 when left out). The page reads the whole 90 days; a
+shorter window is cut from the stored one, its uptimes worked out again as the mean of its days' uptimes (the
+cut window has only those).
 
 ```json
 {
@@ -80,6 +82,7 @@ bar per day and its uptime over the window, plus the incidents in the window, ne
   "days": 90,
   "latest": { "liveworkspace:site": ["u", 200, 84] },
   "services": { "liveworkspace:site": { "p": 99.98, "w": "uu-sd", "u": [[4, 958]] } },
+  "uptime": { "all": 99.97, "groups": { "liveworkspace": 99.98, "livediagram": 99.95 } },
   "incidents": [["livediagram:api", 1761300420000, 1761304020000, "d", 2, "timeout"]]
 }
 ```
@@ -89,6 +92,16 @@ bar per day and its uptime over the window, plus the incidents in the window, ne
 - `u`: the days under 100%, as `[day's index, uptime in tenths of a percent]`. Only a day with a down check can be
   under (a slow answer still answered), so every other day with checks is 100% and isn't sent. This keeps the answer
   small: most days of most services are fully up;
+- `uptime`: the window's uptime per group (`groups`, keyed by the group's id, the part of each service's id before
+  the colon) and over every service on the page (`all`). It pools the checks: the answered checks (up or slow) of
+  every service in the group over all of their checks across the window's days, so a group's figure says the same
+  thing as its services' `p` and its bars, weighted by how many checks each service had. Derived services (the
+  realtime rooms, the router) count like the rest, as their rows and bars do. A group with no checks in the window
+  is null, never 100. It comes from the `daily` rollups the run already reads, so it keeps every past day's
+  non-green bars even when incidents are deleted, and needs no read of its own. An answer stored before this field
+  has none, and the page then shows no figure;
+- rounding, for `p` and `uptime` alike: percent to two places, and `100` only when every check answered. Short of
+  that it is at most `99.99`, so one down check among 75,000 still reads `99.99`, never a rounded-up `100`;
 - an incident is `[service, started, ended or null while open, worst, checks, error]`.
 
 Before the first run, or with no database, both answer `{"v":1,"at":null,…}` with nothing in them, and the page
@@ -160,6 +173,8 @@ Measured locally (`wrangler dev`, D1's own `rows_read` and `rows_written`, Octob
   hour's 35 checks from 90 days before, and once a day 35 days, so about 110 rows written a run. That is about
   93,000 rows read and 2,600 written a day per environment, well inside D1's free allowance.
 - **Rows**: 35 checks an hour, 840 a day, about 75,600 kept; 35 `daily` rows a day, 3,150 kept.
+- **Uptime**: each group's and the page's are summed from the same `daily` rows the snapshot already reads, in the
+  same pass, so they add no query, no row read and no index; about 200 bytes to the stored answer (seven numbers).
 - **A read**: one row by primary key, then the edge cache for 2 minutes. `/api/status/history` for every service
   over 90 days is 7,435 bytes (956 gzipped) with the local seed's realistic history; `/api/status` is 1,265 (346).
   The worst case, every service down two days in three, stays under 24 KB (4 KB gzipped), tested in `api.test.ts`.

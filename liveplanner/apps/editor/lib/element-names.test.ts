@@ -215,10 +215,10 @@ describe('elementRole for a face that shows controls', () => {
     expect(elementRole(face('square'), true)).toBe('group');
     expect(elementRole(face('square'), false)).toBe('img');
   });
-  it('makes every kind with controls on its face a group', () => {
+  it('makes every kind with controls on its face a group, and a stored tab window (a still frame) a picture', () => {
     expect(elementRole(face('comment-pin'))).toBe('group');
     expect(elementRole(face('action-card'))).toBe('group');
     expect(elementRole(face('page'))).toBe('group');
-    expect(elementRole(face('tab-window'))).toBe('group');
+    expect(elementRole(face('tab-window'))).toBe('img');
   });
 });

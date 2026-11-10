@@ -17,5 +17,6 @@ Follow the references below only as needed; never upfront.
 - ./tidy-up.md - when implementing or changing the tidiers (Auto-align, Auto Layout), their verdicts, preview or cost
 - ./finish.md - when implementing or changing finishes: resolution, Professional fallbacks, sketch strokes, hatching, sketched arrowheads, the Finish menu and dialog tab
 - ./accent-edge.md - when implementing or changing the accent edge: kinds, geometry, colour, the Border row or its export
+- ./text-styles.md - when implementing or changing the Write text styles, their tiles and placement, or the Text menu's Text Style
 - ./DEFAULTS.md - when a canvas blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a canvas blueprint covers

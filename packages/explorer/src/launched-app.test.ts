@@ -20,6 +20,6 @@ describe('a launched app (livehuddle) in the Explorer', () => {
     });
     expect(heroWords('livehuddle').question).toBe('who are you meeting today?');
     expect(siteOf('livehuddle')).toMatchObject({ id: 'livehuddle.app', accent: '#10b981' });
-    expect(heroBackdropOf('livehuddle', 'app')).toBe('dots');
+    expect(heroBackdropOf('livehuddle', 'app')).toBe('huddle');
   });
 });

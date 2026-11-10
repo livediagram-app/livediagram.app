@@ -65,7 +65,7 @@ describe('the self-drawing shape family', () => {
     // their own text.
     fromMembers.add('layer-stack');
     fromMembers.add('pyramid');
-    // docs/specs/009-elements/tab-window.md: a tab window draws another tab and takes no label.
+    // docs/specs/009-elements/tab-window.md: a stored tab window is a frame named for its tab and takes no label.
     fromMembers.add('tab-window');
     fromMembers.add('onion');
     fromMembers.add('chevrons');

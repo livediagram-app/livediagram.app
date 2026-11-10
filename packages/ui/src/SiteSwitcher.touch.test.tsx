@@ -34,6 +34,15 @@ function click(
   return event;
 }
 
+// A press as a browser sends it before the click, naming the pointer that made it.
+function press(target: Element, pointerType: string) {
+  const event = new MouseEvent('pointerdown', { bubbles: true, cancelable: true });
+  Object.defineProperty(event, 'pointerType', { value: pointerType });
+  act(() => {
+    target.dispatchEvent(event);
+  });
+}
+
 const menu = () => screen.queryByRole('menu');
 const isOpen = () =>
   screen.getByRole('button', { name: 'Switch site' }).getAttribute('aria-expanded') === 'true';
@@ -91,6 +100,16 @@ describe('a tap on the logo', () => {
     expect(isOpen()).toBe(true);
   });
 
+  it("opens the card when iOS Safari names the finger's click a mouse's", () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: true }));
+    const onLogoClick = renderSwitcher();
+    press(screen.getByText('logo'), 'touch');
+    const event = click(screen.getByText('logo'), { pointerType: 'mouse' });
+    expect(event.defaultPrevented).toBe(true);
+    expect(onLogoClick).not.toHaveBeenCalled();
+    expect(isOpen()).toBe(true);
+  });
+
   it('closes on a tap outside', () => {
     renderSwitcher();
     click(screen.getByText('logo'), { pointerType: 'touch' });
@@ -108,6 +127,28 @@ describe('the logo with a mouse or the keyboard', () => {
     expect(event.defaultPrevented).toBe(false);
     expect(onLogoClick).toHaveBeenCalledTimes(1);
     expect(isOpen()).toBe(false);
+  });
+
+  it("follows an iPad trackpad's click on a touch screen, told by its press", () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: true }));
+    const onLogoClick = renderSwitcher();
+    press(screen.getByText('logo'), 'mouse');
+    const event = click(screen.getByText('logo'), {});
+    expect(event.defaultPrevented).toBe(false);
+    expect(onLogoClick).toHaveBeenCalledTimes(1);
+    expect(isOpen()).toBe(false);
+  });
+
+  it('reads each press once: a later click with no press goes by its own pointer', () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: true }));
+    const onLogoClick = renderSwitcher();
+    press(screen.getByText('logo'), 'mouse');
+    click(screen.getByText('logo'), {});
+    expect(onLogoClick).toHaveBeenCalledTimes(1);
+    expect(isOpen()).toBe(false);
+    click(screen.getByText('logo'), {});
+    expect(onLogoClick).toHaveBeenCalledTimes(1);
+    expect(isOpen()).toBe(true);
   });
 
   it('follows a click that names no pointer on a fine-pointer screen', () => {

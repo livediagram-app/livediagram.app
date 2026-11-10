@@ -4,7 +4,7 @@ import { SITE_URL } from '@liveplanner/ui';
 // liveplanner's comparisons, drawn by @liveworkspace/comparisons (packages/comparisons/README.md
 // "liveplanner"). The hub, every page, their metadata and the sitemap read this list, so adding a
 // competitor is a one-place change. Bump the date with any change to them.
-const UPDATED = new Date('2026-10-21');
+const UPDATED = new Date('2026-11-10');
 
 // Facts liveplanner states on more than one page, kept in one place so every comparison says them
 // the same way.
@@ -18,6 +18,8 @@ const FREE =
   'liveplanner is free for everyone, with no paid tier, no ads and no third-party trackers. A board exports as CSV, an image, a PDF or a Markdown outline and a sheet as CSV, so your work is never locked in.';
 const CSV_IN =
   'A board imports a CSV or TSV file: each row becomes a card, landing in the column its Status names and with the person its Assignee names. Only a title is required, and one undo takes the whole import back.';
+const TRACKER_IN =
+  'The Import dialog reads a Trello board’s JSON export, an Asana project’s CSV export, a Jira issues CSV export or a Linear issues CSV export, and makes a new Board tab from it in one step: its lists or statuses as columns, and each card with its description, assignee, dates, labels and priority, plus Trello’s checklists and comments.';
 
 const LIST: Alternative[] = [
   {
@@ -78,7 +80,7 @@ const LIST: Alternative[] = [
       },
       {
         heading: 'Free, private, and yours to keep',
-        paragraphs: [`${GUEST_START} ${SHARE_LINKS}`, FREE, `Coming from Trello? ${CSV_IN}`],
+        paragraphs: [`${GUEST_START} ${SHARE_LINKS}`, FREE, `Coming from Trello? ${TRACKER_IN}`],
       },
     ],
     faqs: [
@@ -88,7 +90,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Can I move my Trello boards across?',
-        a: 'There is no direct Trello importer. A board imports a CSV or TSV file, though: each row becomes a card in the column its Status names, with the person its Assignee names. If you can get your cards out of Trello as a spreadsheet, a title column is all the import needs.',
+        a: 'Yes. Export the board from Trello as JSON and import it: it becomes a new Board tab, with Trello’s lists as columns and each card keeping its description, members, dates, labels, checklists and comments. Archived lists and cards are left out. It is a one-off import, not a sync.',
       },
       {
         q: 'Does liveplanner have Power-Ups or automations?',
@@ -171,7 +173,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Can I import my Asana projects?',
-        a: 'There is no direct Asana importer. Asana can export a project as a CSV file, and a liveplanner board imports CSV: each row becomes a card in the column its Status names, with the person its Assignee names.',
+        a: 'Yes. Export the project from Asana as CSV and import it: it becomes a new Board tab, with its sections as columns and each task keeping its notes, assignee, start and due dates, tags and priority. It is a one-off import, not a sync.',
       },
       {
         q: 'Does liveplanner have portfolios and goals?',
@@ -414,11 +416,11 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Does liveplanner support sprints?',
-        a: 'Not as a feature of its own: there are no sprint objects, story points or velocity charts. You can run a sprint as a board, with dates on the cards and a Gantt chart of them, but if scrum reporting matters to you, Jira is the better fit.',
+        a: 'Not as a feature of its own: there are no sprint objects or velocity reports. You can run a sprint as a board, as the Project Planner template does, with an Estimate field for story points and a Points widget that adds up how many are done, but if scrum reporting matters to you, Jira is the better fit.',
       },
       {
         q: 'Can I import my Jira issues?',
-        a: 'There is no direct Jira importer. Jira can export issues as CSV, and a liveplanner board imports CSV: each row becomes a card in the column its Status names, with the person its Assignee names.',
+        a: 'Yes. Export your issues from Jira as CSV and import them: they become a new Board tab, with Jira’s statuses as columns and each issue keeping its key, type, description, assignee, reporter, priority, story points, sprint, dates, labels and comments. It is a one-off import, not a sync.',
       },
       {
         q: 'Does liveplanner link to GitHub or my CI?',
@@ -564,7 +566,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Where Airtable goes further',
         paragraphs: [
-          'Airtable is a database first. Linked records between many tables, lookups and rollups, and interfaces built on top of a base are things liveplanner does not try to match. If your work is shaped like a database of related tables, Airtable is the better tool; if it is shaped like a plan with numbers beside it, liveplanner may be the simpler one.',
+          'Airtable is a database first. A base of many related tables, and interfaces and apps built on top of it for other teams, are things liveplanner does not try to match. Cards do link to cards, and Rollup and Lookup fields total or show the fields of the cards they link to, but if your work is shaped like a database of related tables, Airtable is the better tool; if it is shaped like a plan with numbers beside it, liveplanner may be the simpler one.',
         ],
       },
       {
@@ -583,7 +585,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Does liveplanner have linked records between tables?',
-        a: 'Partly. A card can have a field that links to another card, and a Project card and its tasks link to each other. There are no lookups or rollups across many tables, which remain Airtable’s strength.',
+        a: 'Partly. A card can have a field that links to other cards, a Project card and its tasks link to each other, and Rollup and Lookup fields total a card’s linked cards or show one of their fields. There are no separate tables of records, though: every card lives in the plan, and a base of many related tables remains Airtable’s strength.',
       },
       {
         q: 'Do people need an account to fill in a form?',

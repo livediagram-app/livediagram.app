@@ -7,6 +7,7 @@ import { hasSceneBox, isSceneShape, type AvatarSceneElement, type SceneShapeOf }
 import { clearOfFences, fenceReachFor, type FenceSegment } from '../collision';
 import { avatarScale, type AvatarConfig } from '../config';
 import { seatPoints } from '../seats';
+import { catchArea } from '../lectern';
 import type { SeatClaim } from '../seat-claims';
 import { sitsOnEntry, type AvatarFacing, type AvatarPoint } from '../walk';
 import type { RefObject } from 'react';
@@ -123,7 +124,8 @@ export function useAvatarWalkArrivals<E extends AvatarSceneElement>({
       !seatedRef.current &&
       posRef.current &&
       hasSceneBox(el) &&
-      sitsOnEntry(el, destRef.current ?? targetRef.current)
+      // A Podium's walk ends on its speaker spot, which can lie just outside its box (lectern.ts catchArea).
+      sitsOnEntry(catchArea(el), destRef.current ?? targetRef.current)
     ) {
       onWalkIntoChair?.(el, posRef.current);
     }

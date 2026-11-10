@@ -1,5 +1,5 @@
 // The open design's component library for code with no React context to read it from (docs/specs/009-elements/
-// components.md "Exports, thumbnails and agents"): the exporters (PNG, SVG, PDF), the tab drawings a tab window and a
+// components.md "Exports, thumbnails and agents"): the exporters (PNG, SVG, PDF), the tab drawings the split view and a
 // thumbnail paint, and the clipboard. The editor's library hook publishes each change here; with nothing published
 // (no design open, or a page outside the editor) every instance draws as missing.
 import {

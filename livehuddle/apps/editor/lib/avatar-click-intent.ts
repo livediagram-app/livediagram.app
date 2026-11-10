@@ -1,5 +1,6 @@
 import { pieceFacing, type Element as CanvasElement, type ShapeKind } from '@livehuddle/document';
 import { officeFootprint } from '@livehuddle/avatar/office-geometry';
+import { isLecternShape, lecternSpot } from '@livehuddle/avatar/lectern';
 
 // What a click on a piece means in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Clicking a piece"): `walk`
 // walks the character there (and arriving does what it does: sit, drink, travel), `use` does the piece's main action
@@ -221,7 +222,8 @@ export const FRONT_STAND = 16;
 const FRONT_END = 0.12;
 
 /**
- * Where a walking click on `el` at `point` walks to: the point itself, or, on an unturned Reception Desk or Arcade
+ * Where a walking click on `el` at `point` walks to: a Podium's speaker spot; the point itself; or, on an unturned
+ * Reception Desk or Arcade
  * Machine, the floor FRONT_STAND below its box under the click (kept off its ends). One turned to face
  * another way (docs/specs/009-elements/furniture-facing.md) has its front there: the floor FRONT_STAND beyond its
  * footprint on that side, beside the middle of its footprint's depth on its side, under the click from behind.
@@ -230,6 +232,12 @@ export function walkPointFor(
   el: CanvasElement | null,
   point: { x: number; y: number },
 ): { x: number; y: number } {
+  // A Podium walks you to its speaker spot, behind its front at its facing, wherever on it you click (venue-pieces.md
+  // "Speaking from the Podium"); arriving there stands you at it. A rotation stored on it is ignored, as its drawing does.
+  if (el?.type === 'shape' && isLecternShape(el.shape)) {
+    const spot = lecternSpot({ ...el, chairFacing: pieceFacing(el) });
+    return { x: spot.x, y: spot.y };
+  }
   if (!el || el.type !== 'shape' || !FRONT_KINDS.has(el.shape) || (el.rotation ?? 0) % 360 !== 0)
     return point;
   // The arcade's bubble and the Reception Desk's Welcome follow their turned front (useSocialPieces arcadeAt,

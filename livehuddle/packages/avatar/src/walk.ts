@@ -4,7 +4,8 @@
 // keeps it on screen, and what it is standing on. No React, no DOM, so
 // the walk behaviour is unit-testable without a canvas.
 
-import { isFloorShape, isSceneryShape, isWallPieceShape } from './office-geometry';
+import { isFloorShape, isSceneryShape, isWallPieceShape, seatsACharacter } from './office-geometry';
+import { isLecternShape, lecternArea } from './lectern';
 import { hasSceneBox, isSceneShape, type AvatarSceneElement } from './scene';
 
 // Walk speed in CANVAS px per second. Constant on purpose: an eased
@@ -364,13 +365,22 @@ export function elementUnderFeet(
     // Nor is the office's floor and scenery (docs/specs/009-elements/office.md): a room or a rug is where you
     // stand, and a plant or a bookshelf is walked round.
     // Nor is a piece on a wall (a notice board, a world clock): walked past, not to.
-    if (shape !== null && (isFloorShape(shape) || isSceneryShape(shape) || isWallPieceShape(shape)))
-      continue;
+    // Scenery that holds a character (livehuddle's Podium, venue-pieces.md "Speaking from the Podium") is stood at.
     if (
-      feet.x >= el.x &&
-      feet.x <= el.x + el.width &&
-      feet.y >= el.y &&
-      feet.y <= el.y + el.height
+      shape !== null &&
+      (isFloorShape(shape) ||
+        (isSceneryShape(shape) && !seatsACharacter(shape)) ||
+        isWallPieceShape(shape))
+    )
+      continue;
+    // A Podium's feet are on it across its box and round its speaker spot (lectern.ts lecternArea); worked out only
+    // for a Podium, so the per-frame test allocates nothing for the rest.
+    const area = isSceneShape(el) && isLecternShape(el.shape) ? lecternArea(el) : el;
+    if (
+      feet.x >= area.x &&
+      feet.x <= area.x + area.width &&
+      feet.y >= area.y &&
+      feet.y <= area.y + area.height
     ) {
       hit = el.id;
     }

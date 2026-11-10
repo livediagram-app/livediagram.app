@@ -8,6 +8,7 @@ import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 import type { SitKind } from './office-geometry';
 import { facingView, turnedSitterFacing, type SeatFacing, type SeatView } from './facing';
 import type { AvatarFacing } from './walk';
+import { LECTERN_SEATS, LECTERN_SEATS_BACK, LECTERN_SEATS_SIDE } from './lectern-seats';
 
 // The facings and their drawings are every piece's, seats or none (facing.ts); re-exported here where the seats
 // first had them.
@@ -44,6 +45,7 @@ export const DEFAULT_SEATING_FACING: Readonly<Record<SitKind, SeatFacing>> = {
   'phone-booth': 'n',
   'standing-desk': 's',
   'hot-desk': 's',
+  podium: 'n',
 };
 
 export function seatingFacing(el: { shape: SitKind; chairFacing?: SeatFacing }): SeatFacing {
@@ -706,6 +708,13 @@ export const SEAT_VIEWS: Readonly<Record<SitKind, SeatViews>> = {
     STANDING_DESK_SEATS_SIDE,
   ),
   'hot-desk': drawnFromBehind(HOT_DESK_SEATS, HOT_DESK_SEATS_FRONT, HOT_DESK_SEATS_SIDE),
+  // The Podium's one speaker spot (lectern-seats.ts): its speaker faces the way its front does.
+  podium: {
+    facings: LECTERN_SEATS.seats.map((s) => s.facing),
+    front: seatSpots(LECTERN_SEATS),
+    back: LECTERN_SEATS_BACK,
+    side: LECTERN_SEATS_SIDE,
+  },
 };
 
 /** A seating piece as the seat geometry reads it: its box, its kind and where its back is. */

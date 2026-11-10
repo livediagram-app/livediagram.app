@@ -45,6 +45,8 @@
     "./hooks/usePlacingTurnKeys": "./src/hooks/usePlacingTurnKeys.ts",
     "./hooks/useSeatYield": "./src/hooks/useSeatYield.ts",
     "./key-claims": "./src/key-claims.ts",
+    "./lectern": "./src/lectern.ts",
+    "./lectern-seats": "./src/lectern-seats.ts",
     "./office-geometry": "./src/office-geometry.ts",
     "./pad-art": "./src/pad-art.ts",
     "./pad": "./src/pad.ts",

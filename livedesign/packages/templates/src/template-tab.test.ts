@@ -29,10 +29,10 @@ describe('buildTemplateTab', () => {
     }
   });
 
-  // Blank Tab and Blank Illustration open on the one unchosen page every new Pages tab starts on.
+  // Blank Tab opens on the one unchosen page every new Pages tab starts on.
   it('opens every other template on pages of its own', () => {
     for (const { kind } of TEMPLATES) {
-      if (kind === 'blank' || kind === 'blank-illustration') continue;
+      if (kind === 'blank') continue;
       expect(buildTemplateTab('t', kind, kind).pages?.length, kind).toBeGreaterThan(0);
     }
   });

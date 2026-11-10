@@ -4,6 +4,7 @@ import {
   BARS_FAR_OPACITY_MIN,
   BARS_FAR_OPACITY_NEAR,
   barsOpacity,
+  FULL_VOLUME_RADIUS_PX,
   gainAt,
   HEARING_RADIUS_PX,
   inEarshot,
@@ -11,10 +12,13 @@ import {
   nextHeard,
   panAt,
   placeFor,
+  reachOf,
   RELEASE_RADIUS_PX,
   togetherWith,
   walkTowards,
+  withVoiceReach,
 } from './hearing';
+import { LECTERN_VOICE_REACH } from '@livehuddle/document';
 import { roomZones, zoning } from './zones';
 
 const at = (x: number) => ({ x, y: 0 });
@@ -180,5 +184,87 @@ describe('rooms keep their walls', () => {
     expect([...heard]).toEqual(['p0']);
     // 60 scenes, a second of walking: well under a frame each.
     expect(best).toBeLessThan(cpuBudgetMs(30));
+  });
+});
+
+// docs/specs/009-elements/venue-pieces.md "Speaking from the Podium", proximity-audio.md "Hearing": a voice from a
+// Podium's speaker spot carries three times as far, walls block it as before, and it ends on stepping away.
+describe('a voice from the podium', () => {
+  const LECTERNS: ReadonlySet<string> = new Set(['podium']);
+  const atPodium = (x: number, y = 0) => withVoiceReach({ x, y, seatedOn: 'podium' }, LECTERNS);
+
+  it('reads its reach from the seat everyone shares, and only at a podium', () => {
+    expect(LECTERN_VOICE_REACH).toBe(3);
+    expect(reachOf(atPodium(0))).toBe(3);
+    // Standing up, or sitting anywhere else, carries as far as anyone; the point is left as it was.
+    const walking = { x: 0, y: 0, seatedOn: null };
+    expect(withVoiceReach(walking, LECTERNS)).toBe(walking);
+    expect(reachOf(withVoiceReach({ x: 0, y: 0, seatedOn: 'desk' }, LECTERNS))).toBe(1);
+    expect(reachOf(withVoiceReach({ x: 0, y: 0, seatedOn: 'podium' }, undefined))).toBe(1);
+    expect(reachOf(at(0))).toBe(1);
+  });
+
+  it('is heard three times as far: joining at three hearing radii, let go at three release radii', () => {
+    const join = 3 * HEARING_RADIUS_PX;
+    expect([...nextHeard(new Set(), at(0), new Map([['speaker', atPodium(join)]]))]).toEqual([
+      'speaker',
+    ]);
+    expect([...nextHeard(new Set(), at(0), new Map([['speaker', atPodium(join + 1)]]))]).toEqual(
+      [],
+    );
+    // The same spot off the podium is out of earshot.
+    expect([...nextHeard(new Set(), at(0), new Map([['speaker', at(join)]]))]).toEqual([]);
+    const prev = new Set(['speaker']);
+    expect(nextHeard(prev, at(0), new Map([['speaker', atPodium(3 * RELEASE_RADIUS_PX)]]))).toBe(
+      prev,
+    );
+    expect([
+      ...nextHeard(prev, at(0), new Map([['speaker', atPodium(3 * RELEASE_RADIUS_PX + 1)]])),
+    ]).toEqual([]);
+  });
+
+  it('fades over three times the distance, and stays as loud as a voice a third as far', () => {
+    for (const d of [0, 90, 200, 270, 500, 800, 899])
+      expect(placeFor(at(0), atPodium(d), 'open').gain, `${d}`).toBeCloseTo(gainAt(d / 3), 9);
+    expect(placeFor(at(0), atPodium(3 * FULL_VOLUME_RADIUS_PX), 'open').gain).toBe(1);
+    expect(placeFor(at(0), atPodium(3 * RELEASE_RADIUS_PX), 'open').gain).toBe(0);
+    // A listener's own reach never changes how loud others are.
+    expect(placeFor(atPodium(0), at(200), 'open').gain).toBe(gainAt(200));
+  });
+
+  it('tells the speaker they are heard three times as far', () => {
+    const speaker = atPodium(0);
+    expect(inEarshot(speaker, at(3 * HEARING_RADIUS_PX), 'open')).toBe(true);
+    expect(inEarshot(speaker, at(3 * HEARING_RADIUS_PX + 1), 'open')).toBe(false);
+    expect(inEarshot(at(0), at(3 * HEARING_RADIUS_PX), 'open')).toBe(false);
+  });
+
+  it('is still blocked by walls, however close', () => {
+    const zones = roomZones([
+      { id: 'hall', type: 'shape', shape: 'room', x: 0, y: 0, width: 1200, height: 600 },
+    ]);
+    // The speaker at a podium inside the hall; a listener just outside its front wall, well within three radii.
+    const speaker = withVoiceReach({ x: 600, y: 560, seatedOn: 'podium' }, LECTERNS);
+    const outside = { x: 600, y: 700 };
+    const walkers = new Map([['speaker', speaker]]);
+    const z = zoning(outside, walkers, zones);
+    expect(togetherWith('speaker', z)).toBe('apart');
+    expect([...nextHeard(new Set(), outside, walkers, z)]).toEqual([]);
+    // From the speaker's side: the listener outside never hears them.
+    const back = zoning(speaker, new Map([['outside', outside]]), zones);
+    expect(inEarshot(speaker, outside, togetherWith('outside', back))).toBe(false);
+    // Inside the hall, at twice the hearing radius, they are heard.
+    const inside = { x: 600 - 2 * HEARING_RADIUS_PX, y: 560 };
+    expect([...nextHeard(new Set(), inside, walkers, zoning(inside, walkers, zones))]).toEqual([
+      'speaker',
+    ]);
+  });
+
+  it('ends the moment they step away from it', () => {
+    const prev = new Set(['speaker']);
+    const away = withVoiceReach({ x: 700, y: 0, seatedOn: null }, LECTERNS);
+    expect(reachOf(away)).toBe(1);
+    expect([...nextHeard(prev, at(0), new Map([['speaker', away]]))]).toEqual([]);
+    expect(placeFor(at(0), away, 'open').gain).toBe(0);
   });
 });

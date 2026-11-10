@@ -158,7 +158,7 @@ the card. The Pages tour and Show Me leave the page usable, as their steps ask t
 
 - **The spotlight**: the screen dims around the step's target, one full-screen layer with a rounded hole cut out
   of it (`TourSpotlight`); no outline.
-- **Every tour wears the active tab's colours**, as the start panel does (`useStartPalette`; `tour-colours.ts`
+- **Every tour wears the app's own light or dark colours** (never the tab's theme), as the start panel does (`useStartPalette`; `tour-colours.ts`
   reads it into CSS variables). The primary buttons' label is white or near-black, whichever contrasts more with
   the accent. The closing card is a step card like the others.
 - **Arrival**: the dim fades in (250 ms) and the card settles in with it. **Hand-over**: on Next the spotlight and

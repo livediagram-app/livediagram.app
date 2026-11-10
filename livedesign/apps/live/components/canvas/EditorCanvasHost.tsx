@@ -22,12 +22,8 @@ import { InspectSessionContext } from '@/components/canvas/inspect/InspectSessio
 import { useInspectHost } from '@/components/canvas/inspect/useInspectHost';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
+import { useTemplateStartOpen } from '@/components/start/useTemplateStartShown';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
-import {
-  TabWindowContext,
-  useTabWindowContextValue,
-} from '@/components/canvas/tab-window/tab-window-context';
-import { useSelectTab } from '@/app/design/[id]/useSelectTab';
 import { ComponentFaceContext } from './component/component-face-context';
 import { ComponentSessionBar } from './component/ComponentSessionBar';
 import { useDeadPageBrush } from '@liveworkspace/workbench/hooks/editor/useDeadPageBrush';
@@ -79,7 +75,6 @@ export function EditorCanvasHost() {
     isOwner,
     canShareDesign,
     setShareDialogOpen,
-    loadAllTabs,
     releaseSelectionLock,
     isPinchingRef,
     isReadOnly,
@@ -95,7 +90,6 @@ export function EditorCanvasHost() {
     selfParticipant,
     sessionShareCode,
     followMe,
-    tabs,
     setCanvasTool,
     setContextMenu,
     setFormatSourceId,
@@ -110,8 +104,6 @@ export function EditorCanvasHost() {
     editorMode,
     pagesMode,
     loadedTabIds,
-    isOutOfScope,
-    tabLoadErrors,
     componentLibrary,
     componentActions,
     componentSession,
@@ -134,7 +126,10 @@ export function EditorCanvasHost() {
   });
   // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
   const { setPointerTip } = usePointerNoteSetters(commitElements, activeTab.elements);
-  const startPanelOpen = useStartPanelOpen();
+  // Open, or about to open (its code still loading): either way the tab's first page waits. Closed for the tab (the
+  // ×, an explicit blank), it is not open, and the page is drawn to ask its kind (start-diagramming.md "The first page").
+  const templateStartOpen = useTemplateStartOpen();
+  const startPanelOpen = useStartPanelOpen() || templateStartOpen;
 
   // The menu on an element somebody else is holding (docs/specs/007-editor/live-app.md).
   // Null when closed. Holders are captured at open time rather than re-read on
@@ -205,19 +200,6 @@ export function EditorCanvasHost() {
   );
 
   const activeTheme = getTheme(activeTab.theme);
-  // Tab windows (docs/specs/009-elements/tab-window.md): the tabs they show, fetched as they are shown.
-  const selectTab = useSelectTab();
-  const tabWindows = useTabWindowContextValue({
-    tabs,
-    ownTabId: activeTab.id,
-    loadedTabIds,
-    loadTabs: loadAllTabs,
-    openTab: selectTab,
-    canChoose: can.level === 'edit' && !activeTabLocked,
-    commitElements,
-    isOutOfScope,
-    loadErrors: tabLoadErrors,
-  });
   // Instances (docs/specs/009-elements/components.md "How an instance draws"): the library and the tab's look.
   const { font, finish, theme } = activeTab;
   const { lookup: componentLookup, loaded: componentsLoaded } = componentLibrary;
@@ -253,151 +235,149 @@ export function EditorCanvasHost() {
     <CanvasThemeProvider theme={activeTheme}>
       {/* The tab's tag colours (docs/specs/009-elements/tag-colours.md), for the cards that render them. */}
       <TagColoursProvider tab={activeTab}>
-        <TabWindowContext.Provider value={tabWindows}>
-          <ComponentFaceContext.Provider value={componentFaces}>
-            <InspectSessionContext.Provider value={inspectSession}>
-              <Canvas
-                {...menuProps}
-                {...panelProps}
-                {...insertProps}
-                {...editProps}
-                tabName={activeTab.name}
-                tabSummaries={tabSummaries}
-                activeTabId={activeTab.id}
-                activeTabLoaded={loadedTabIds.has(activeTab.id)}
-                tabLocked={activeTabLocked}
-                readOnly={isReadOnly}
-                participantPalette={participating && can.addContent}
-                takePart={can.takePart}
-                canMove={inspecting ? NEVER : can.move}
-                canWriteText={inspecting ? NEVER : can.writeText}
-                canResize={inspecting ? NEVER : can.resize}
-                designName={designName}
-                tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
-                tabBackgroundColor={backdrop.backgroundColor}
-                tabBackgroundOpacity={backdrop.backgroundOpacity ?? 1}
-                tabBackgroundPatternScale={activeTab.backgroundPatternScale ?? 1}
-                tabBackgroundAnimationSpeed={activeTab.backgroundAnimationSpeed ?? 1}
-                tabPatternColor={backdrop.patternColor}
-                tabFont={activeTab.font}
-                tabFinish={activeTab.finish}
-                mainRef={canvasMainRef}
-                isPinchingRef={isPinchingRef}
-                setViewportZoom={setViewportZoom}
-                onFitToScreen={() => {
-                  // In Pages, Fit frames the page you are nearest, not the whole tab.
-                  if (pagesMode) pagesMode.fitPageInView();
-                  else fitToScreen();
-                  track('Canvas', 'Zoomed', 'Fit');
-                }}
-                setViewportOffset={setViewportOffset}
-                elements={canvasElements}
-                projectElement={projectStockColours.one}
-                tabLayers={activeTab.layers}
-                editorMode={editorMode.mode}
-                // No page while Start Making Pages is open (docs/specs/007-editor/start-diagramming.md "Start Making Pages"):
-                // the tab's first page is drawn only once a template is picked or the panel closed, so nothing waits behind it.
-                pagesMode={startPanelOpen || !pagesMode ? null : pagesMode}
-                whiteboardInk={PEN_INK[surface]}
-                previewDrawnArrow={(intent, startX, startY, endX, endY) =>
-                  drawnArrowAsShown(intent, startX, startY, endX, endY, {
-                    elements: activeTab.elements,
-                    theme: activeTheme,
-                    styleNewElement,
-                    surface,
-                  })
+        <ComponentFaceContext.Provider value={componentFaces}>
+          <InspectSessionContext.Provider value={inspectSession}>
+            <Canvas
+              {...menuProps}
+              {...panelProps}
+              {...insertProps}
+              {...editProps}
+              tabName={activeTab.name}
+              tabSummaries={tabSummaries}
+              activeTabId={activeTab.id}
+              activeTabLoaded={loadedTabIds.has(activeTab.id)}
+              tabLocked={activeTabLocked}
+              readOnly={isReadOnly}
+              participantPalette={participating && can.addContent}
+              takePart={can.takePart}
+              canMove={inspecting ? NEVER : can.move}
+              canWriteText={inspecting ? NEVER : can.writeText}
+              canResize={inspecting ? NEVER : can.resize}
+              designName={designName}
+              tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
+              tabBackgroundColor={backdrop.backgroundColor}
+              tabBackgroundOpacity={backdrop.backgroundOpacity ?? 1}
+              tabBackgroundPatternScale={activeTab.backgroundPatternScale ?? 1}
+              tabBackgroundAnimationSpeed={activeTab.backgroundAnimationSpeed ?? 1}
+              tabPatternColor={backdrop.patternColor}
+              tabFont={activeTab.font}
+              tabFinish={activeTab.finish}
+              mainRef={canvasMainRef}
+              isPinchingRef={isPinchingRef}
+              setViewportZoom={setViewportZoom}
+              onFitToScreen={() => {
+                // In Pages, Fit frames the page you are nearest, not the whole tab.
+                if (pagesMode) pagesMode.fitPageInView();
+                else fitToScreen();
+                track('Canvas', 'Zoomed', 'Fit');
+              }}
+              setViewportOffset={setViewportOffset}
+              elements={canvasElements}
+              projectElement={projectStockColours.one}
+              tabLayers={activeTab.layers}
+              editorMode={editorMode.mode}
+              // No page while Start Making Pages is open (docs/specs/007-editor/start-diagramming.md "Start Making Pages"):
+              // the tab's first page is drawn only once a template is picked or the panel closed, so nothing waits behind it.
+              pagesMode={startPanelOpen || !pagesMode ? null : pagesMode}
+              whiteboardInk={PEN_INK[surface]}
+              previewDrawnArrow={(intent, startX, startY, endX, endY) =>
+                drawnArrowAsShown(intent, startX, startY, endX, endY, {
+                  elements: activeTab.elements,
+                  theme: activeTheme,
+                  styleNewElement,
+                  surface,
+                })
+              }
+              layerInertIds={layerInertIds}
+              shiftDupGhostIds={shiftDupGhostIds}
+              snapGuideStore={snapGuideStore}
+              remoteSelectionsByElement={remoteSelectionsByElement}
+              remoteCursors={remoteCursorRows}
+              laserTrails={laserTrailRows}
+              onCanvasPointerMove={(x, y, target) => {
+                canvasPointerRef.current = pastePointer(x, y, target ?? null);
+                if (canvasTool === 'laser' && x !== null && y !== null) {
+                  // The pen rides the sample so peers draw MY laser (docs/specs/008-canvas/laser-panel.md).
+                  broadcastLaser(x, y, laserConfig);
+                  // Laser mode hides the cursor indicator on peer screens:
+                  // the laser dot is the cursor. Clear any prior position.
+                  broadcastCursor(null);
+                  return;
                 }
-                layerInertIds={layerInertIds}
-                shiftDupGhostIds={shiftDupGhostIds}
-                snapGuideStore={snapGuideStore}
-                remoteSelectionsByElement={remoteSelectionsByElement}
-                remoteCursors={remoteCursorRows}
-                laserTrails={laserTrailRows}
-                onCanvasPointerMove={(x, y, target) => {
-                  canvasPointerRef.current = pastePointer(x, y, target ?? null);
-                  if (canvasTool === 'laser' && x !== null && y !== null) {
-                    // The pen rides the sample so peers draw MY laser (docs/specs/008-canvas/laser-panel.md).
-                    broadcastLaser(x, y, laserConfig);
-                    // Laser mode hides the cursor indicator on peer screens:
-                    // the laser dot is the cursor. Clear any prior position.
-                    broadcastCursor(null);
-                    return;
-                  }
-                  broadcastCursor(x !== null && y !== null ? { x, y } : null);
-                }}
-                onSelectMarquee={selectMarquee}
-                canvasTool={canvasTool}
-                onSetCanvasTool={setCanvasTool}
-                // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): resolved to a NAME here, where presence lives,
-                // so the pill doesn't have to look one up.
-                followingName={
-                  followMe.followingId
-                    ? (livePresence.find((p) => p.id === followMe.followingId)?.name ?? 'someone')
-                    : null
-                }
-                onStopFollowing={followMe.stopFollowing}
-                settings={userPreferences}
-                userPreferences={userPreferences}
-                chartPalette={themeChartPalette(activeTheme)}
-                imageContext={imageContext}
-                // The visitor name prompt shows for EVERYONE, view-role visitors included: it only writes their own
-                // participant row, so there's no 403, and they should set a name before others see them in presence.
-                showIdentityPrompt={identityOnlyScreenOpen}
-                hydrated={hydrated}
-                // Visitor on someone else's design + signed in → lock the
-                // identity input to their account name. Owner branch never
-                // shows the identity prompt so `lockedName` is moot there;
-                // pure guests pass null and keep the editable name field.
-                identityLockedName={!isOwner && accountUserId ? accountDisplayName : null}
-                welcomeOpen={anyWelcomeOpen}
-                selfParticipant={selfParticipant}
-                onConfirmIdentity={confirmIdentity}
-                onCancelIdentity={cancelIdentity}
-                tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
-                tabLoadState={tabLoadState}
-                onRetryTabLoad={retryActiveTabLoad}
-                // Embeds (docs/specs/013-workspace/embeds.md) ride the zen chrome-hide gates: every panel
-                // and badge zen hides, embeds hide too. The zen TOGGLE is
-                // withheld so the ZoomControls dock doesn't offer an exit
-                // from a mode the embed can't actually leave.
-                zenMode={zenMode || embedMode}
-                // A phone held sideways has no Explorer at all (docs/specs/007-editor/live-app.md "A phone
-                // held sideways"): too short for it, and no way to bring it back; turn the phone upright.
-                explorerHidden={workbenchMode || landscapePhone}
-                workbenchBack={workbenchFrame}
-                onToggleZen={embedMode ? undefined : toggleZenMode}
-              />
-            </InspectSessionContext.Provider>
-            {lockedMenu ? (
-              <LockedElementMenu
-                at={lockedMenu.at}
-                holders={lockedMenu.holders}
-                onRelease={(presenceId) => releaseSelectionLock(presenceId, lockedMenu.elementId)}
-                onClose={() => setLockedMenu(null)}
-              />
-            ) : null}
-            {sessionMain && componentSession.sessionInstanceId ? (
-              <ComponentSessionBar
-                name={sessionMain.name}
-                nothingSelected={() => {
-                  const s = readSelection();
-                  return s.selectedId === null && s.multiSelectedIds.size === 0;
-                }}
-                onDone={finishSession}
-              />
-            ) : null}
-          </ComponentFaceContext.Provider>
-          {designId !== null && (
-            <ItemWebhooksDialog
-              open={webhooksOpen}
-              onClose={() => setWebhooksOpen(false)}
-              itemId={designId}
-              app="livedesign"
-              title={designName}
-              shareCode={sessionShareCode}
+                broadcastCursor(x !== null && y !== null ? { x, y } : null);
+              }}
+              onSelectMarquee={selectMarquee}
+              canvasTool={canvasTool}
+              onSetCanvasTool={setCanvasTool}
+              // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): resolved to a NAME here, where presence lives,
+              // so the pill doesn't have to look one up.
+              followingName={
+                followMe.followingId
+                  ? (livePresence.find((p) => p.id === followMe.followingId)?.name ?? 'someone')
+                  : null
+              }
+              onStopFollowing={followMe.stopFollowing}
+              settings={userPreferences}
+              userPreferences={userPreferences}
+              chartPalette={themeChartPalette(activeTheme)}
+              imageContext={imageContext}
+              // The visitor name prompt shows for EVERYONE, view-role visitors included: it only writes their own
+              // participant row, so there's no 403, and they should set a name before others see them in presence.
+              showIdentityPrompt={identityOnlyScreenOpen}
+              hydrated={hydrated}
+              // Visitor on someone else's design + signed in → lock the
+              // identity input to their account name. Owner branch never
+              // shows the identity prompt so `lockedName` is moot there;
+              // pure guests pass null and keep the editable name field.
+              identityLockedName={!isOwner && accountUserId ? accountDisplayName : null}
+              welcomeOpen={anyWelcomeOpen}
+              selfParticipant={selfParticipant}
+              onConfirmIdentity={confirmIdentity}
+              onCancelIdentity={cancelIdentity}
+              tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
+              tabLoadState={tabLoadState}
+              onRetryTabLoad={retryActiveTabLoad}
+              // Embeds (docs/specs/013-workspace/embeds.md) ride the zen chrome-hide gates: every panel
+              // and badge zen hides, embeds hide too. The zen TOGGLE is
+              // withheld so the ZoomControls dock doesn't offer an exit
+              // from a mode the embed can't actually leave.
+              zenMode={zenMode || embedMode}
+              // A phone held sideways has no Explorer at all (docs/specs/007-editor/live-app.md "A phone
+              // held sideways"): too short for it, and no way to bring it back; turn the phone upright.
+              explorerHidden={workbenchMode || landscapePhone}
+              workbenchBack={workbenchFrame}
+              onToggleZen={embedMode ? undefined : toggleZenMode}
             />
-          )}
-        </TabWindowContext.Provider>
+          </InspectSessionContext.Provider>
+          {lockedMenu ? (
+            <LockedElementMenu
+              at={lockedMenu.at}
+              holders={lockedMenu.holders}
+              onRelease={(presenceId) => releaseSelectionLock(presenceId, lockedMenu.elementId)}
+              onClose={() => setLockedMenu(null)}
+            />
+          ) : null}
+          {sessionMain && componentSession.sessionInstanceId ? (
+            <ComponentSessionBar
+              name={sessionMain.name}
+              nothingSelected={() => {
+                const s = readSelection();
+                return s.selectedId === null && s.multiSelectedIds.size === 0;
+              }}
+              onDone={finishSession}
+            />
+          ) : null}
+        </ComponentFaceContext.Provider>
+        {designId !== null && (
+          <ItemWebhooksDialog
+            open={webhooksOpen}
+            onClose={() => setWebhooksOpen(false)}
+            itemId={designId}
+            app="livedesign"
+            title={designName}
+            shareCode={sessionShareCode}
+          />
+        )}
       </TagColoursProvider>
     </CanvasThemeProvider>
   );

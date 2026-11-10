@@ -42,12 +42,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             No. Open a Space straight away, with no sign-up. Your work saves in your browser as you
             go, and pressing Share puts it online for others to join. Signing in (also free) keeps
-            your spaces with you across devices and unlocks teams, API tokens and the AI connection.
+            your spaces with you across devices and unlocks teams, API tokens and Google Drive sync.
             See <a href="/help/getting-started/guest-vs-account/">guest vs account</a>.
           </>
         ),
         aText:
-          'No. Open a Space straight away, with no sign-up. Your work saves in your browser as you go, and pressing Share puts it online for others to join. Signing in (also free) keeps your spaces with you across devices and unlocks teams, API tokens and the AI connection. See guest vs account.',
+          'No. Open a Space straight away, with no sign-up. Your work saves in your browser as you go, and pressing Share puts it online for others to join. Signing in (also free) keeps your spaces with you across devices and unlocks teams, API tokens and Google Drive sync. See guest vs account.',
       },
       {
         q: 'How do I open my first Space?',
@@ -259,7 +259,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can we talk by voice or video in a Space?',
-        a: 'Not yet. Voice and video calls between the people near each other are being built, but they are not switched on at livehuddle.app, so for now run your usual call alongside the Space. Speech bubbles, statuses, comments and reactions all work live in the Space itself.',
+        a: 'Yes. Walk up to someone and you hear each other, the voice fading as you walk apart; your microphone starts muted until you unmute. Turn on a camera or share a screen and it shows as a bubble above your character to the people in earshot. A meeting room is a call of its own that nobody outside hears, and whoever stands on a stage is heard by everyone on its tab. Guests on a Participant link talk too, with no sign-in.',
       },
     ],
   },

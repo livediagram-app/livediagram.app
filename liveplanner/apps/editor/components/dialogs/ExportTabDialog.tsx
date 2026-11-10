@@ -17,6 +17,7 @@ import {
   tabToJsonText,
   tabToMarkdownText,
   type TabPlanData,
+  tabWindowNames,
 } from '@liveplanner/project';
 import { downloadBlob, exportTabAsPng, exportTabAsSvg, renderTabToSvg } from '@/lib/export-tab';
 import { exportTabAsPdf } from '@/lib/export-tab-pdf';
@@ -157,6 +158,9 @@ const TEXT_PANELS: Record<
 // (PNG / SVG / PDF) open an options-and-download panel with the
 // background-pattern toggle. The main grid stays clean — no format-specific
 // options bleed onto it.
+// No tabs to name a stored window for: one stable list, so the names stay memoised.
+const NO_TABS: readonly Tab[] = [];
+
 export function ExportTabDialog({
   tab,
   projectName,
@@ -184,6 +188,8 @@ export function ExportTabDialog({
   const planCatalogue = plan?.itemTypes.catalogue ?? null;
   // The plan-wide done columns, for the blocked badge (docs/specs/026-plan/item-types.md "Blocked By").
   const planPhases = plan?.statusPhases;
+  // A stored tab window draws as its frame named for its tab, as on the canvas (docs/specs/009-elements/tab-window.md).
+  const resolveTabWindow = useMemo(() => tabWindowNames(projectTabs ?? NO_TABS), [projectTabs]);
   const planOpts = useMemo(
     () =>
       planItems
@@ -191,9 +197,10 @@ export function ExportTabDialog({
             items: planItems,
             itemTypes: planTypes,
             ...(planPhases ? { itemsDone: donePhase(planPhases) } : {}),
+            resolveTabWindow,
           }
-        : {},
-    [planItems, planTypes, planPhases],
+        : { resolveTabWindow },
+    [planItems, planTypes, planPhases, resolveTabWindow],
   );
   // The text formats' view of the same (docs/specs/026-plan/items.md "Copies and exports").
   const planData = useMemo<TabPlanData | undefined>(
@@ -337,7 +344,7 @@ export function ExportTabDialog({
             label={activeCard!.title}
             // A Plan tab as laid out: no canvas to tilt or pattern.
             pageExport={plain}
-            // Held until each tab window's tab is drawn, so a download never misses one.
+            // Held while a download is drawn.
             busy={busy}
             error={error}
             hasHiddenLayers={

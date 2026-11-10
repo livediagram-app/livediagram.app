@@ -14,6 +14,7 @@ import { useExplorer } from './context';
 import { TeamActivity } from './TeamActivity';
 import { AuditLog } from './audit/AuditLog';
 import { NotFoundCard } from './NotFoundCard';
+import { SECTIONS_BAR_ATTR } from './PhoneSections';
 
 export { initialsOf, teamHeadline } from '../teams/TeamCard';
 export { memberName } from '../teams/rules';
@@ -70,8 +71,8 @@ function auditHelpOf(teamHelp: string | undefined): string | undefined {
 }
 
 /** After leaving or deleting a team its card, and the control that was focused, are gone: the keyboard lands on My
- *  Work's row in the sidebar, where the person now is, or (on a phone, where the sidebar is in its drawer) on Browse
- *  Sections, rather than on the page's body. */
+ *  Work's row in the sidebar, where the person now is, or (on a phone, where the sidebar is in its drawer) on the
+ *  sections bar, rather than on the page's body. */
 export function landOnMyWork(): void {
   const row = document.querySelector<HTMLElement>(
     `[data-explorer] aside [role="treeitem"][data-tree-label="${SIDEBAR_LABELS.myWork}"]`,
@@ -79,7 +80,7 @@ export function landOnMyWork(): void {
   row?.focus({ preventScroll: true });
   if (row && document.activeElement === row) return;
   document
-    .querySelector<HTMLElement>('[data-explorer] button[aria-label="Browse sections"]')
+    .querySelector<HTMLElement>(`[data-explorer] [${SECTIONS_BAR_ATTR}]`)
     ?.focus({ preventScroll: true });
 }
 

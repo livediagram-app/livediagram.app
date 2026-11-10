@@ -18,6 +18,7 @@
     "./search-panel": "./src/search/SearchPanel.tsx",
     "./item-search": "./src/search/item-search.ts",
     "./search-shortcut": "./src/search/useSearchShortcut.ts",
+    "./hero-theme": "./src/hero/hero-theme.ts",
     "./explorer.css": "./explorer.css"
   },
   "scripts": {

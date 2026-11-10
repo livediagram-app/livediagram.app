@@ -1,6 +1,6 @@
 // The blanks of a page kind: Blank Logo, the blank wireframes and Photo Edit, each a tab that opens in Pages on
 // exactly one empty page whose kind is already chosen. The page is made the way the first page's What Is This Page
-// For? makes it (withPageKindChosen on an unchosen page), so a blank of a kind and a chosen Blank Illustration are the same page.
+// For? makes it (withPageKindChosen on an unchosen page), so a blank of a kind and a chosen Blank Tab page are the same page.
 // Pure: merged in by templateCanvasOverrides, so every application path (the picker, /new, the MCP worker) lands it.
 import {
   pagesOf,

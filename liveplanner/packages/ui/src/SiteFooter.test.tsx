@@ -52,10 +52,21 @@ describe('SiteFooter', () => {
   });
 });
 
-describe('SiteFooter credits', () => {
+describe('SiteFooter source link', () => {
   it('links no source repository and makes no third-party image request', () => {
     expect(html).not.toContain('github.com');
     expect(html).not.toContain('<img');
+  });
+});
+
+describe('SiteFooter legal strip, no credits', () => {
+  // Each product's marketing-site.md "Footer": no Built by line; Part of liveworkspace sits on the right.
+  it('credits no one and puts Part of liveworkspace after the copyright', () => {
+    expect(html).not.toContain('Built by');
+    expect(html).not.toContain('https://github.com/tommcclean');
+    expect(html).not.toContain('data:image/jpeg;base64,');
+    const strip = html.slice(html.indexOf('</nav>'));
+    expect(strip.indexOf('MIT licensed.')).toBeLessThan(strip.indexOf('Part of'));
   });
 });
 

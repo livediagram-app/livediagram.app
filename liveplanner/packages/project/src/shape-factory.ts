@@ -151,7 +151,7 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   sankey: { width: 560, height: 300 },
   // Portal (docs/specs/009-elements/portal-element.md): portal-shaped — taller than it is wide, like a portal.
   portal: { width: 72, height: 112 },
-  // Tab window (docs/specs/009-elements/tab-window.md): 16:9, TAB_WINDOW_SIZE.
+  // Tab window (docs/specs/009-elements/tab-window.md, retired): 16:9, TAB_WINDOW_SIZE, for a stored one's kind swap.
   'tab-window': { width: 640, height: 360 },
   // Session button (docs/specs/012-collaboration/session-button.md): a square-ish tile, sized for an icon ABOVE its
   // label — the shape a toolbar button has.

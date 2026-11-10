@@ -73,8 +73,8 @@ export type ShapeKind =
   // Portal (docs/specs/009-elements/portal-element.md): a portal. Clicking one takes you to the portal it is
   // paired with, in `portalTarget`.
   | 'portal'
-  // Tab window (docs/specs/009-elements/tab-window.md): another tab of the project drawn live inside it, fitted;
-  // which tab lives in `windowTabId`.
+  // Tab window (docs/specs/009-elements/tab-window.md, retired): stored ones load as a frame named for the tab in
+  // `windowTabId`; nothing makes one any more (RETIRED_SHAPE_KINDS).
   | 'tab-window'
   // Session button (docs/specs/012-collaboration/session-button.md): pressing it starts a session tool for the room
   // — a timer, a stopwatch or a dot vote. Which one lives in `session`.

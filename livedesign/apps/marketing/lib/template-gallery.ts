@@ -1,6 +1,5 @@
 import { seededRandom } from '@livedesign/design';
 import {
-  BLANK_TEMPLATE_FOR_MODE,
   EXTRA_BLANK_TEMPLATES,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
@@ -63,11 +62,8 @@ const SHOWN_AS_ANOTHER_BLANK: readonly string[] = [
   'blank-wireframe-watch',
 ];
 
-// Blank Slate's blanks: the empty page that asks what it is for, then a blank of each page kind.
-const BLANK_SLATE_KINDS = [
-  BLANK_TEMPLATE_FOR_MODE.pages,
-  ...EXTRA_BLANK_TEMPLATES.filter((k) => !SHOWN_AS_ANOTHER_BLANK.includes(k)),
-];
+// Blank Slate's blanks: a blank of each page kind (the empty page that asks what it is for is the × instead).
+const BLANK_SLATE_KINDS = EXTRA_BLANK_TEMPLATES.filter((k) => !SHOWN_AS_ANOTHER_BLANK.includes(k));
 
 // Blank Slate: every blank and nothing else, in its fixed order.
 export function popularTemplates(): GalleryTemplate[] {
@@ -103,13 +99,21 @@ const SHELF_RANK: ReadonlyMap<string, number> = (() => {
 const byShelfRank = (a: GalleryTemplate, b: GalleryTemplate) =>
   (SHELF_RANK.get(a.kind) ?? 0) - (SHELF_RANK.get(b.kind) ?? 0);
 
+// A shelf in its dealt order; one the deal happened to leave as it was added (a short shelf often is) is turned
+// by one, so no shelf ever reads in the catalogue's order.
+function dealShelf(shelf: GalleryTemplate[]): GalleryTemplate[] {
+  const dealt = [...shelf].sort(byShelfRank);
+  const unchanged = dealt.length > 1 && dealt.every((t, i) => t === shelf[i]);
+  return unchanged ? [...dealt.slice(1), dealt[0]!] : dealt;
+}
+
 // Group in catalogue category order, each shelf in its dealt order, dropping empty categories. A
 // template shows on every category it is listed in (cross-listing).
 export function groupGallery(items: GalleryTemplate[]): GalleryShelf[] {
   return TEMPLATE_CATEGORIES.map((c) => ({
     id: c.id as ShelfId,
     label: c.label,
-    templates: items.filter((t) => t.categories.includes(c.id)).sort(byShelfRank),
+    templates: dealShelf(items.filter((t) => t.categories.includes(c.id))),
   })).filter((g) => g.templates.length > 0);
 }
 

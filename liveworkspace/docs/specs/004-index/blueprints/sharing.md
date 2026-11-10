@@ -7,15 +7,16 @@ to the repository root.
 
 Scope, by file:
 
-| File                                            | Role                                                                                        |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/sharing.ts`       | `/items/:id/share`, `/items/:id/share-password`, `/share/:code…`, `/shared…`; `tellRevoked` |
-| `liveworkspace/apps/index/src/access.ts`        | `linkFor`, `linkAccess`                                                                     |
-| `liveworkspace/apps/index/src/password-hash.ts` | `hashSharePassword`, `verifySharePassword`, `isRememberedSharePassword`                     |
-| `liveworkspace/apps/index/src/share-guesses.ts` | `guessVisitorOf`, `guessRefusal`                                                            |
-| `liveworkspace/apps/index/src/share-expiry.ts`  | Share Link Expiring: `expiringStatements`, `sweepExpiringLinks`                             |
-| `liveworkspace/apps/index/src/notices.ts`       | `tellApp`, `firstVisitStatement`, `GET /app/people/:id/count`                               |
-| `liveworkspace/apps/index/src/codec.ts`         | `generateShareCode`, `isShareCode`                                                          |
+| File                                               | Role                                                                                        |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/sharing.ts`          | `/items/:id/share`, `/items/:id/share-password`, `/share/:code…`, `/shared…`; `tellRevoked` |
+| `liveworkspace/apps/index/src/access.ts`           | `linkFor`, `linkAccess`                                                                     |
+| `liveworkspace/apps/index/src/password-hash.ts`    | `hashSharePassword`, `verifySharePassword`, `isRememberedSharePassword`                     |
+| `liveworkspace/apps/index/src/share-guesses.ts`    | `guessVisitorOf`, `guessRefusal`                                                            |
+| `liveworkspace/apps/index/src/share-expiry.ts`     | Share Link Expiring: `expiringStatements`, `sweepExpiringLinks`                             |
+| `liveworkspace/apps/index/src/notices.ts`          | `tellApp`, `firstVisitStatement`, `GET /app/people/:id/count`                               |
+| `liveworkspace/apps/index/src/community-states.ts` | `POST /app/community/states`: `communityStatesOf`, where each Community post's item stands  |
+| `liveworkspace/apps/index/src/codec.ts`            | `generateShareCode`, `isShareCode`                                                          |
 
 ## Domain and naming
 
@@ -49,7 +50,7 @@ Scope, by file:
 
 1. A malformed code is `404`; the code upper-cased; the link must be live and its item untrashed (`404`).
 2. A delegate of another app: `404`.
-3. The owner or a team member reaches it directly.
+3. The owner or a team member reaches it directly, except through a public link, which opens at its level for them too.
 4. Else `linkAccess` with `X-Share-Password` (the code is in the path): see [index.md](index.md) step 5.
 5. A person through a non-public link: `shared_with` upserted (rewritten only for a new code or after 60 s); the first
    visit tells the app `{ type: 'joined', personId, level }`.
@@ -132,11 +133,11 @@ counts the person's items in that app, Trash included, up to `OWNED_COUNT_MAX` (
 
 ## Testing
 
-| Test                                                    | Pins                                                                                                             |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/sharing.test.ts` (25)     | share links; share passwords; a password on links already opened; guesses; what a link opens, and Shared with me |
-| `liveworkspace/apps/index/src/share-expiry.test.ts` (7) | share link expiring                                                                                              |
-| `liveworkspace/apps/index/src/notices.test.ts` (6)      | notices; a person's count of items made                                                                          |
+| Test                                                    | Pins                                                                                                                                                           |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/sharing.test.ts` (29)     | share links; share passwords; a password on links already opened; guesses; what a link opens, and Shared with me; a public link at its own level for its owner |
+| `liveworkspace/apps/index/src/share-expiry.test.ts` (7) | share link expiring                                                                                                                                            |
+| `liveworkspace/apps/index/src/notices.test.ts` (6)      | notices; a person's count of items made                                                                                                                        |
 
 ## Constants and configuration
 

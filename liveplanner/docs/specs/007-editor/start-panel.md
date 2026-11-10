@@ -11,7 +11,7 @@ Start Planning is the panel's one start: there is no mode switch and no other mo
 
 ## The panel
 
-- **Header:** the title, one line under it, the search box, and in the top right corner the **Help** link. On a
+- **Header:** over the app's own band ([The header band](#the-header-band)), a title mark, then the title, one line under it, the search box, and in the top right corner the **Help** link. On a
   phone the search takes its own row under the title, the help staying beside the title.
 - **Rail:** **Recommended** and the start's groups, each with its glyph and count; long names wrap beside the glyph
   on a wide rail. The chosen group's count sits on a pill tinted with the accent, in the panel's ink: the accent on
@@ -60,12 +60,42 @@ index anything only for a pick on a noted plan, of a template with a family.
 A `/new?q=<words>` link hands its words to the new Project's Start Planning as its search, so the choices it meant are
 the ones shown. They are kept for the browser tab only and read once (`start-query.ts`).
 
+## The header band
+
+The header is drawn over the app's own band: its Explorer hero backdrop ([The start header wears the same
+theme](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-start-header-wears-the-same-theme)), redrawn
+at a header's height by the shared `StartHeaderBand`
+(`../packages/workbench/src/components/start/StartHeaderBand.tsx`), which the panel asks for with
+`useStartHeaderTheme('liveplanner', palette)`. Which backdrop is whose, the title's face and the textures' measures
+are the hero's own theme (`@liveworkspace/explorer/hero-theme`), so the start and the Explorer read as one app.
+
+- **The motif.** **Board lanes**: four lanes the band's full height, alternate ones a shade deeper; from `xl`, a card
+  mid-drag in the gap, tilted, over the dashed slot it will drop into, bobbing twice as the panel arrives (the empty
+  states' float). The title mark is three lanes, as full as a board midweek.
+- **In the panel's colours.** The band paints in the start palette, never the brand ramp: each of its colours is the
+  palette's accent mixed into its card (`start-band-colours.ts`), so it follows the app's light or dark look; a tab's
+  theme never reaches it. The ground leans back until the title and the line read at WCAG AA
+  (4.5:1) on every patch they can sit over (the paper and its two deeper shades); the line keeps the palette's muted
+  where it reads there, else leans toward the ink. The help link keeps its own ink.
+- **The title.** A title mark leads it: a 36px tile (32px on a phone) in the band's deeper shade, holding the motif as
+  one glyph in the accent (`StartTitleMark`). The title is set in the hero's face at 20px (18px on a phone): the heavy
+  face, tracked in (`startHeadingFace`).
+- **Where the pieces show.** The texture and the corner pieces at every size; the gap piece only from `xl`, where the
+  panel is at its widest and the gap between the line and the search is wide enough that it never meets the words.
+- **The search** keeps its own paper and border over the band, lifted by a small shadow, so it still reads as the
+  field.
+- **On a phone** the band runs up under the grab handle, so the sheet's top is the band's colour, the handle
+  standing over it. The header stays as compact as before: the title row with its mark, then the search.
+- **Hidden and cheap.** The band is `aria-hidden` and takes no pointer events. It is CSS gradients and a few small
+  inline SVGs: no image, font, filter or blur, nothing fetched, painted once. At most the one motion above, two or
+  three times over, then still; none under reduced motion.
+
 ## Look
 
-- **The tab's colours.** The panel's paper is the tab's canvas colour, its accent (the chosen category, the focus ring,
-  a card's hover) the theme's stroke and its ink the theme's text, through `planPalette` as a coloured Plan board's,
-  which keeps the ink readable on the paper (`start-palette.ts`, `useStartPalette`). A theme with no colours of its own
-  (Default) leaves the app's light or dark look. The tours wear the same palette ([Editor tours](editor-tour.md#look)).
+- **The app's colours, never the tab's.** The panel wears the app's own light or dark look (Appearance, not the
+  tab's paper), its accent the app's brand colour, whatever theme the tab wears (owner, 2026-11-10: a tab's theme must
+  never reach the start, so each app's themed header band stays its own). `useStartPalette` reads only Appearance.
+  The tours wear the same palette.
 - **Entrance.** The panel rises in with the dialog entrance (`animate-dialog-in`; a fade alone under reduced motion),
   and its cards and rail cascade in after it (`lvd-cascade`). A panel that replaces another start a moment after
   (another empty tab's) arrives whole, without the rise.
@@ -84,6 +114,12 @@ modes' results, so `UI · Used · StartOtherMode` is not sent.
 
 ## Tests
 
+- `../packages/workbench/src/components/start/start-band-colours.test.ts`: the band's title and line read at AA on
+  every ground, light, dark and themed; a palette that is not plain hex keeps a flat band.
+- `../packages/workbench/src/components/start/StartHeaderBand.test.tsx`: each app's band and title mark, hidden from
+  screen readers; the gap piece only from `xl`; the band under the grab handle on a phone.
+- `../packages/explorer/src/hero/hero-theme.test.ts`: every app its own backdrop, none the All Apps dots; only the
+  Typesetter in serif.
 - `components/start/StartPanel.test.tsx`: Down from the search, Best Match leading, the arrow keys among the cards.
 - `../packages/workbench/src/components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
 - `../packages/workbench/src/components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.

@@ -37,9 +37,11 @@ import {
   SANKEY_NAME_MAX,
   SANKEY_UNIT_MAX,
   SANKEY_VALUE_LABELS,
+  RETIRED_SHAPE_KINDS,
   SHAPE_KINDS,
   STEP_LABEL_MAX,
   STICKY_PRESETS,
+  TEXT_PRESET_LIST,
   THEMES,
   truncateName,
 } from '@livedesign/design';
@@ -48,8 +50,14 @@ export const SCHEMA_RESOURCE_URI = 'livedesign://schema/elements';
 
 const types = [...ELEMENT_TYPES].join(', ');
 const anchors = [...ANCHORS].join(', ');
-const shapeKinds = [...SHAPE_KINDS].join(', ');
+// The kinds an agent may write: a retired one (a tab window, docs/specs/009-elements/tab-window.md) is not offered.
+const shapeKinds = [...SHAPE_KINDS].filter((k) => !RETIRED_SHAPE_KINDS.has(k)).join(', ');
 const themeIds = THEMES.map((t) => t.id).join(', ');
+// The palette's text styles (docs/specs/008-canvas/canvas-and-palette.md "Text styles"), from the one table, so an
+// agent sets a screen's text in the sizes and weights the editor's Write tiles place.
+const textStyles = TEXT_PRESET_LIST.map(
+  (p) => `${p.name} ${p.px}${p.bold ? ' bold' : p.italic ? ' italic' : ''}`,
+).join(', ');
 
 // The content fields of the kinds that carry content (docs/specs/015-api/mcp-server.md §4.7a), as
 // facts. One copy, shared by the tool argument and the schema resource; the
@@ -159,7 +167,9 @@ const ELEMENT_SCHEMA_HINT =
   '"diamond" for a decision, "cylinder" for a datastore, "stadium" for start/end. ' +
   'type "text" is BARE text with no box; use it only for a title, caption, or ' +
   'legend, never for a node; it is centred in its box, so a left-aligned heading or caption sets ' +
-  '"textAlignX": "left". type "freehand" is a HAND-DRAWN stroke: give "points" as canvas ' +
+  '"textAlignX": "left". Set a text in the palette\'s text styles by "textSize" in px with "textBold" or ' +
+  `"textItalic" true: ${textStyles}. ` +
+  'type "freehand" is a HAND-DRAWN stroke: give "points" as canvas ' +
   'coordinates, [[x, y], ...] in drawing order (the box is taken from them), with "closed" true to ' +
   'close and fill the shape, and "penColour" (' +
   `${[INK_PEN_COLOUR, GREY_PEN_COLOUR, ...PEN_COLOUR_NAMES].join(', ')}` +
@@ -203,6 +213,8 @@ Boxed elements (shape, text, sticky, table, image, annotation) carry:
     that has a label is a "shape" with a "label" (use shape: "square"), not a
     "text". Defaulting to "text" for nodes makes a page of floating words
     with no boxes; reach for "shape" unless you specifically want loose text.
+    Set it in the palette's text styles with "textSize" (px) and "textBold" or
+    "textItalic": ${textStyles}.
 
 ## Content-carrying kinds
 ${CONTENT_KINDS}
@@ -270,8 +282,8 @@ update_design puts elements. Asked for a logo, add a logo page; asked for a scre
 of a tab is one kind (its first page's): a logo and screens go in tabs of their own (add_tab). A new
 design starts with create_design and one tab whose template is "blank-logo" for a logo (one empty artboard;
 change_pages adds the rest, each change an object such as {"op": "add", "kind": "logo", "layout": ...}),
-"blank-wireframe-phone", "blank-wireframe-browser" or another blank wireframe for screens, or "blank-illustration"
-otherwise; the other templates (logo-design, wireframe-mobile-app, wireframe-website, wireframe-dashboard, ...) start
+"blank-wireframe-phone", "blank-wireframe-browser" or another blank wireframe for screens, or "blank"
+(one empty page that asks what it is for) otherwise; the other templates (logo-design, wireframe-mobile-app, wireframe-website, wireframe-dashboard, ...) start
 from ready-made pages, and list_templates lists them all. A layout's elements hold sample text: read_design with view "pages" lists
 each page's elements with their refs and text, to replace with update_design.
 The calling model produces the elements on a page AND decides their layout; this server validates, persists, and

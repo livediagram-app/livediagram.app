@@ -2,11 +2,12 @@
 
 // Home (livediagram's HomePane): under the hero, Jump Back In as livediagram draws it, Most Used (up to eight large
 // cards, two rows of four on a desktop: the items opened most often in the last 14 days, "Opened N times") then Recent
-// (up to eight more of the same size, the latest opened of the rest), and Shared With You Recently. On a phone Jump Back
+// (up to eight more of the same size, the latest opened of the rest), then Spaces (HomeSpaces: My Work and each team,
+// each a tile into its list), and Shared With You Recently. On a phone Jump Back
 // In is one scrolling strip of up to eight, the two groups alternating. An item kept only in this browser is one card among the rest (LocalCard): the same frame, size, menu
 // and drag, with the This Browser badge on its line and This Browser's own verbs. Last, What Happened: what other people did to the items the person can open, from the index's
-// Timeline. With the hero hidden, Home takes the ordinary page header. Three requests, each one small page: Recent
-// carries Most Used beside it (the index's `used`), Shared, and one Timeline page.
+// Timeline. With the hero hidden, Home takes the ordinary page header. Four requests, each one small page: Recent
+// carries Most Used beside it (the index's `used`), the spaces' previews, Shared, and one Timeline page.
 
 import { memo, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { ShownItem } from '../data/overlay';
@@ -20,17 +21,18 @@ import {
 } from '../data/viewLists';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { EmptyState } from '@liveworkspace/ui';
-import { FOCUS_RING, MUTED, RENAME_INPUT, SECTION_LINK, SKELETON } from '../ui/classes';
+import { FOCUS_RING, MUTED, RENAME_INPUT, SKELETON } from '../ui/classes';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { useItemDrag, useThisBrowserDrag } from '../drag/drag';
 import { ChevronRightIcon, ClockIcon, ItemIcon } from '../ui/icons';
 import { useNow } from '../time';
-import type { ExplorerView } from '../views';
 import { AppMark } from './badges';
 import { useExplorer } from './context';
 import { ItemMenu } from './menus';
 import { PaneHeader } from './PaneHeader';
 import { useItemBits } from './rows';
+import { CARD_NAME, CARD_SURFACE, HomeFailed, HomeSection, THUMB_EDGE } from './HomeSection';
+import { HomeSpaces } from './HomeSpaces';
 import { useFirstRun } from '../welcome/context';
 import { HomeWelcome } from '../welcome/HomeWelcome';
 import type { ThisBrowserItem } from '../this-browser';
@@ -65,17 +67,10 @@ export const HOME_COPY = {
   seeTimeline: 'See Timeline',
 } as const;
 
-const SECTION_HEADING =
-  'text-2xl font-extrabold tracking-[-0.03em] text-[#17153a] dark:text-slate-100';
 const GROUP_LABEL =
   'mb-2.5 h-4 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-slate-500 dark:text-slate-400';
-const PANEL_SURFACE =
-  'border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-800';
-const CARD_SURFACE = `${PANEL_SURFACE} transition duration-micro hover:border-brand-300 hover:shadow-[0_0_0_4px_color-mix(in_oklab,var(--color-brand-300)_25%,transparent),0_18px_36px_-16px_color-mix(in_oklab,var(--color-brand-600)_45%,transparent)] motion-safe:hover:-translate-y-0.5 dark:hover:border-brand-400/60`;
 const LARGE_GRID = 'grid grid-cols-2 gap-4 lg:grid-cols-4';
 const COMPACT_GRID = 'grid grid-cols-2 gap-2.5 lg:grid-cols-4';
-const THUMB_EDGE =
-  'flex items-center justify-center overflow-hidden border border-slate-100 bg-white dark:border-slate-700 dark:bg-slate-900';
 // Readable over a thumbnail: a frosted chip rather than the row button's bare glyph.
 const MENU_CHIP =
   '!absolute bg-white/90 shadow-sm ring-1 ring-slate-200 pointer-fine:group-focus-within:opacity-100 dark:bg-slate-900/90 dark:ring-slate-700';
@@ -96,7 +91,7 @@ function useWide(): boolean {
   return wide;
 }
 
-export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: boolean }) {
+export function HomePane({ hero }: { hero: boolean }) {
   const { client, app, filter, overlay, epoch, onCreate, onHome } = useExplorer();
   const recentLoad = useMemo(() => jumpBackInLoader(client, app, filter), [client, app, filter]);
   const sharedLoad = useMemo(
@@ -151,7 +146,6 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
         {hero ? null : (
           <PaneHeader
             title="Home"
-            onOpenNav={onOpenNav}
             onCreateItem={() => onCreate({ folderId: null, teamId: null })}
           />
         )}
@@ -163,11 +157,7 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
     <div data-explorer-view="home">
       {/* The hero is Home's page header; with the banner hidden, Home takes the ordinary one. */}
       {hero ? null : (
-        <PaneHeader
-          title="Home"
-          onOpenNav={onOpenNav}
-          onCreateItem={() => onCreate({ folderId: null, teamId: null })}
-        />
+        <PaneHeader title="Home" onCreateItem={() => onCreate({ folderId: null, teamId: null })} />
       )}
       <div className="flex flex-col gap-10">
         <HomeSection
@@ -181,15 +171,7 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
           }
         >
           {failed ? (
-            <div
-              role="alert"
-              className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200"
-            >
-              Couldn’t load Home.{' '}
-              <button type="button" className="font-semibold underline" onClick={retry}>
-                Try again
-              </button>
-            </div>
+            <HomeFailed message="Couldn’t load Home." onRetry={retry} />
           ) : recent.loading ? (
             wide ? (
               <GridSkeleton />
@@ -212,6 +194,7 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
             </div>
           )}
         </HomeSection>
+        <HomeSpaces />
         {shared.items.length > 0 ? (
           <HomeSection
             id="shared-recently"
@@ -277,47 +260,6 @@ function HomeEmpty() {
       title={`No ${words.lowerMany} yet`}
       description={`The ${words.lowerMany} you open will gather here.`}
     />
-  );
-}
-
-function HomeSection({
-  id,
-  title,
-  link,
-  busy,
-  children,
-}: {
-  id: string;
-  title: string;
-  link?: { view: ExplorerView; label: string; onFollow?: () => void };
-  busy: boolean;
-  children: ReactNode;
-}) {
-  const { viewHref, navigate } = useExplorer();
-  const headingId = `home-${id}`;
-  return (
-    <section aria-labelledby={headingId} aria-busy={busy} data-home-section={id}>
-      <div className="mb-4 flex items-baseline justify-between gap-4">
-        <h2 id={headingId} className={SECTION_HEADING}>
-          {title}
-        </h2>
-        {link ? (
-          <a
-            href={viewHref(link.view)}
-            onClick={(e) => {
-              link.onFollow?.();
-              if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-              e.preventDefault();
-              navigate(link.view);
-            }}
-            className={`${SECTION_LINK} ${FOCUS_RING}`}
-          >
-            {link.label}
-          </a>
-        ) : null}
-      </div>
-      {children}
-    </section>
   );
 }
 
@@ -468,8 +410,6 @@ function CardFrame({
     </div>
   );
 }
-
-const CARD_NAME = 'block truncate font-semibold text-[#17153a] dark:text-slate-100';
 
 const JumpBackInCard = memo(function JumpBackInCard({
   item,

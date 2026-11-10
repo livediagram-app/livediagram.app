@@ -159,7 +159,8 @@ describe('elementRole', () => {
 
   it('makes an element with controls on its face a group', () => {
     expect(elementRole(shape('checklist'))).toBe('group');
-    expect(elementRole(shape('tab-window'))).toBe('group');
+    // A stored tab window (docs/specs/009-elements/tab-window.md, retired) is a still frame: a picture.
+    expect(elementRole(shape('tab-window'))).toBe('img');
     expect(
       elementRole({
         id: 'i',

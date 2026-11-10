@@ -105,7 +105,7 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Sankey (docs/specs/009-elements/sankey.md): wide, because a Sankey reads left to right across its
   // columns, and the starter budget has four of them, each with a label beside its bar.
   sankey: { width: 560, height: 300 },
-  // Tab window (docs/specs/009-elements/tab-window.md): 16:9, TAB_WINDOW_SIZE.
+  // Tab window (docs/specs/009-elements/tab-window.md, retired): 16:9, TAB_WINDOW_SIZE, for a stored one.
   'tab-window': { width: 640, height: 360 },
   // Instance (docs/specs/009-elements/components.md): placed at its main's frame; this is only the fallback.
   instance: { width: 320, height: 80 },

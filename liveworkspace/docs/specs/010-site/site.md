@@ -48,7 +48,7 @@ As on the apps' sites, a rail is pinned to the page's right edge (`components/Si
 home page it starts with a **Share** card: X, LinkedIn, Facebook, WhatsApp and Email, as plain
 share-intent links with no SDKs or tracking, and Copy link, all for `https://www.liveworkspace.app`.
 Under it, on every page, is the **Appearance** card (Light, Dark, System, as on the apps' sites; the
-boot script applies the choice before paint). The content runs `max-w-7xl` (1280px), so the rail
+boot script applies the choice before paint, the address's app's choice on an app's address, see [Behaviour](#behaviour)). The content runs `max-w-7xl` (1280px), so the rail
 shows from 1400px, where there is a gutter for it. Below that it is left out: the address is
 shareable as it is, and the device's own setting applies through System.
 
@@ -103,8 +103,10 @@ menu once it has, so a visitor who never touches it costs no request.
 The glue between the apps: what liveworkspace is, each app in its own colours, how a piece of work
 moves between them, and the one account that joins them.
 
-1. **Hero**: "Everything your team makes, live in one workspace", one sentence naming each app
-   in its accent and what it is for (sketch, plan, write it up, make it look right, talk it through), and two calls to
+1. **Hero**: "Everything your team makes, live in one workspace", then two short paragraphs, never one block:
+   the first names each app in its accent and what it is for (sketch, plan, write it up, make it look right, talk
+   it through), the second says one account opens them all and every link opens straight into the work. Under the
+   calls to action, three ticked promises: Open source, No sign-up needed, No trackers or ads. Two calls to
    action: **Create your free account** (`/sign-up`, back here after) and **Explore the apps**.
    Signed in, they are hidden. Beside it, the platform's prism
    with the apps' logos round it at the points of a pentagon, each joined to it by a line in its accent, read
@@ -116,7 +118,13 @@ moves between them, and the one account that joins them.
    `sm`) it is left out, and the hero's words, calls to action and promises are centred. **Height:** from `sm`
    it fills the first screen under the 64px header, capped at 72rem and never shorter than its content, the words
    and the prism centred in it (the products' shared `hero-tall` stylesheet from `@liveworkspace/marketing-site`,
-   the header's height handed over as `--hero-tall-header`); a phone keeps its content's height.
+   the header's height handed over as `--hero-tall-header`); a phone keeps its content's height. **Paint:** the
+   soft glow of each app's colour behind the prism is a radial gradient that fades out on its own, never a CSS
+   `filter` blur, and nothing over the art (the app cards, the badge and the calls to action) uses `backdrop-filter`;
+   the cards are near-opaque instead. A large blur repainted in tiles, and backdrop layers sampling it, re-rasterise
+   when iPad Safari repaints under a touch (a long press, a press-and-drag scroll, a link's lift), and the colours
+   broke there. A gradient paints the same in every layer. The legal pages' title glows follow the same rule, and
+   `hero-paint-guard.test.ts` holds both.
 2. **The apps** (`#apps`): one section per app in `@liveworkspace/sites`, in that order, each with
    its own logo, a tagline, its summary, three things it does, a window onto its work with someone in
    it (a flowchart; a board with a card on the move; an article with its slides; a logo, a wireframe
@@ -274,8 +282,8 @@ Each service shows its state as an icon and a word, never colour alone: **Operat
 **Slow** (answered, after more than 1.5 s), **Down** (no answer in 10 s, a network error, or an answer it shouldn't
 give), **Checking**, and **Reached** for the pages above. Beside it: how long the answer took, what it was
 (`HTTP 200`, `Reached`, `Through the API`; where a bare code would mislead, what it means instead: Media's expected
-404 reads "Answers; storage not checked", Telemetry's 204 "Answers; database not checked") and a strip of the checks made since the page was opened (at most 30
-each, kept in memory and gone on reload).
+404 reads "Answers; storage not checked", Telemetry's 204 "Answers; database not checked"). The browser checks once a visit, so there is no strip of past
+checks: the hourly history below is the record.
 
 Under that, each service shows its stored history, from one `GET /api/status/history` on load:
 
@@ -299,17 +307,26 @@ it faster. When the Worker can't be reached or has nothing yet (a dev server wit
 deploy), the page shows its live checks alone and says so quietly, once, above the groups.
 
 On top, the overall state (all operational, some slow, or some down), how many services answered, the median
-answer time, when the last round finished and when the next may run. A round runs once on load; after that the page
-never checks on its own, and **Check now** runs the next. Each round asks every service at once, so after one ends
-**Check now** rests for 30 seconds, showing the seconds left in words and on the ring, so that an open tab or a
-restless finger can't load the services. The rest is the browser's only (a reload starts afresh, with its one round).
-A change of overall state is announced politely to screen readers. A legend explains every state.
+answer time, when the last round finished, and **Uptime**: every service on the page over the stored window
+(`99.98%`, "last 90 days, every service" under it, its tooltip and name "99.98% Uptime, Last 90 Days"), from the
+history's `uptime.all` ([status.md](../009-status/status.md#the-read-api)): the same pooled measure as the groups'.
+It shows the tiles' empty placeholder while the history loads ("reading the history") and when there is none ("no data yet"). One round runs on load, and that is the page's only round: it never checks on its own and has no button
+to check again (a reload makes the next). A change of overall state is announced politely to screen readers. A
+legend explains every state.
+
+**Uptime**, beside each group's summary, to its left ("99.95% Uptime", then "All 7 up"): the group's uptime over
+the stored window, from the history's `uptime.groups`, the share of its services' hourly checks that answered (up or
+slow), pooled over the group's services, so it agrees with their bars and their own `99.98% over 90 days`. Two
+places at most (`99.5%`, `99.95%`), and `100%` only when every check answered. With no history, or no checks in the
+window, the group shows no figure, never a default 100%. The figure and the page's are each focusable, named "99.95%
+Uptime, Last 90 Days" (the window in days, from the history), and show those words in the shared tooltip on hover or
+focus. On a phone the figure wraps with the summary under the group's logo.
 
 Groups: liveworkspace first (its wordmark), then each app in `@liveworkspace/sites` order under its own logo,
 never a coloured dot, each with its own summary and an anchor (`#livediagram`). Under the summary, a jump link per
 group carries the group's state as the rows do, an icon and words ("All up", "1 slow", "2 down"), never a dot. The page follows the site's
 landing design: the tinted radial hero, rounded cards, light and dark, a 16px gutter on a phone. Its motion (the
-live pulse, the strip settling, the countdown ring) is in `app/status/status-motion.css`, paced as content, and
+live pulse, the cards rising) is in `app/status/status-motion.css`, paced as content, and
 stops for reduced motion.
 
 **What it costs**: one round is 6 requests on liveworkspace.app and up to 6 per app (23 for four apps, with
@@ -317,7 +334,8 @@ livediagram's Community pages; 29 in all),
 every one a `HEAD`, an `OPTIONS` or a small JSON `GET` with `cache: no-store`, and only while someone has the page
 open and visible. The history is one more request on load and one every 5 minutes, cached for 2 minutes: 7.4 KB, under 1 KB
 gzipped, for every service over 90 days ([status.md](../009-status/status.md#performance)). The strips and cards are memoised,
-so the countdown's one-second tick doesn't redraw 35 strips of 90 bars. The catalogue is
+so the "last checked" line's one-second tick doesn't redraw 35 strips of 90 bars. The uptimes come worked out in the
+history answer, so the page does no sums over the days for them. The catalogue is
 `@liveworkspace/status`; the browser's checks `lib/status/probe.ts`, the stored history's reader
 `lib/status/history.ts`.
 
@@ -343,12 +361,14 @@ built once here. It is shown here and, through each switched-on app's router, at
 - **The header.** The liveworkspace logo (with the site switcher), a slanted hairline with equal space either
   side, then the app's logo, which leads back to the app. The two logos share one centre line, the header's middle (owner, 2026-11-09: the second "lower than the first one visually"). On a phone, where there is less room, only the app's
   logo shows (the liveworkspace logo shows when no app is). The search field sits in the middle (on Home the hero holds it), the account control on
-  the right. Someone who came straight here sees no app logo.
+  the right. Someone who came straight here sees no app logo. On a phone the Explorer's sections bar sits right
+  under it, full width, and the two stay stuck to the top together as the page scrolls; the bar names the view on
+  screen and opens the sidebar full screen ([one-explorer.md "The sidebar"](../004-index/one-explorer.md#the-sidebar), On a phone).
   On the Explorer, the switcher keeps you on the Explorer: another app's row opens that app's Explorer at the same
   view, liveworkspace's row liveworkspace.app's ([site-switcher.md](site-switcher.md#on-an-explorer-page)).
 - **The bottom bar.** As the apps' own Explorers had it: a bar stuck to the foot of the page
   (`components/explorer/ExplorerBottomBar.tsx`), its controls on the right: **Search**, **Settings** and
-  **Appearance** (Light, Dark or the system's, the site's one switch, `SiteAppearanceToggle`), each named beside its
+  **Appearance** (Light, Dark or the system's, the site's one switch, `SiteAppearanceToggle`; on an app's address it is that app's own setting, [Behaviour](#behaviour)), each named beside its
   icon on a wide screen (`md` up) and an icon alone on a narrow one. Their hover cards open upward, above the bar. Settings shows for a person signed in, and
   opens the Settings panel ([below](#settings)) in a dialog over the Explorer, without leaving the page: filtered to
   the app the person came from (All one click away), or on All from no app. On an app's address it shows for a
@@ -889,7 +909,14 @@ they never meet an app's own `/_next`, and one build serves both addresses.
   accounts API whether someone is signed in; the dashboard, the Explorer and the
   Settings panel also call their APIs. All of it is on this origin, but for Status, which also checks each
   app's own addresses ([Status](#status-status)).
-- Light and dark, following the device (the shared appearance boot script).
+- Light and dark, following the device unless the person picked Light or Dark. The pick is stored in this browser
+  under the key of the app whose address the page is on, the key that app's own pages use (`livehuddle:v2:ui-mode`
+  on livehuddle.app's address, `liveplanner:v2:ui-mode` on liveplanner.app's, and so on), so the Explorer and the
+  other pages served there are light or dark as the app is, and the Appearance switch here changes the app's own
+  setting. On liveworkspace.app, which is no app's, it is the platform's own key, `livediagram:v2:ui-mode` (the
+  key the site has always used; renaming it would reset everyone's pick). Locally an app's whole port block counts
+  as its address. A script in the page applies it before first paint (one lookup of the address, one read of
+  storage), and the page's Appearance switch reads and writes the same key.
 - A page that fails to render never shows the framework's bare error screen. It shows the site's own: the
   title "Something went wrong · liveworkspace", a main landmark holding one card (the shared empty state) with
   the heading "Something went wrong", a line saying nothing was lost, **Try Again** (which renders the page

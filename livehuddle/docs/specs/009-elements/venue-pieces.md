@@ -27,15 +27,15 @@ Shape kinds: `pillar`, `column`, `car-park`, `bike-rack`, `swimming-pool`, `stag
 
 ## How each one walks
 
-| Piece          | Default size | Walking                                                                                             |
-| -------------- | ------------ | --------------------------------------------------------------------------------------------------- |
-| Pillar         | 48 × 152     | Scenery: its base blocks, full width, so you walk round it                                          |
-| Column         | 64 × 168     | Scenery: its plinth blocks                                                                          |
-| Car Park       | 240 × 128    | Scenery: the bays block across the whole width (the parked cars), so a row of them is one barrier   |
-| Bike Rack      | 136 × 80     | Scenery: the stands and the bikes locked to them block                                              |
-| Swimming Pool  | 320 × 200    | Scenery drawn to its size: the water blocks, so you stop at the rim and walk round on the deck      |
-| Stage Curtains | 360 × 120    | Hangs over a stage: never blocks, never a destination (you walk between and in front of the drapes) |
-| Podium         | 56 × 88      | Scenery: its foot blocks; the speaker stands behind it                                              |
+| Piece          | Default size | Walking                                                                                                         |
+| -------------- | ------------ | --------------------------------------------------------------------------------------------------------------- |
+| Pillar         | 48 × 152     | Scenery: its base blocks, full width, so you walk round it                                                      |
+| Column         | 64 × 168     | Scenery: its plinth blocks                                                                                      |
+| Car Park       | 240 × 128    | Scenery: the bays block across the whole width (the parked cars), so a row of them is one barrier               |
+| Bike Rack      | 136 × 80     | Scenery: the stands and the bikes locked to them block                                                          |
+| Swimming Pool  | 320 × 200    | Scenery drawn to its size: the water blocks, so you stop at the rim and walk round on the deck                  |
+| Stage Curtains | 360 × 120    | Hangs over a stage: never blocks, never a destination (you walk between and in front of the drapes)             |
+| Podium         | 56 × 88      | Its foot blocks; a click stands you at its speaker spot ([Speaking from the Podium](#speaking-from-the-podium)) |
 
 - **Scenery** blocks as the [Plant](office.md#plant-bookshelf) does: a solid footprint, a character inside one walks
   out of it and never deeper in. The drawing above the footprint never blocks; a character in front of it is drawn in
@@ -46,8 +46,54 @@ Shape kinds: `pillar`, `column`, `car-park`, `bike-rack`, `swimming-pool`, `stag
 - **Stage Curtains** walk as a wall piece does (the [Notice Board](social-pieces.md#how-each-one-walks)): walked past,
   not to. A click on them walks you to the clicked point, so a click on the stage between the drapes still takes you
   onto the stage.
-- Nobody sits in any of them; none gives a drink. Standing on a stage under its curtains, or behind its podium, is
-  standing on the stage ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md)).
+- Nobody sits in any of them; none gives a drink. The Podium alone is a destination: you stand at it
+  ([Speaking from the Podium](#speaking-from-the-podium)). Standing on a stage under its curtains, or behind its
+  podium, is standing on the stage ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md)).
+
+### Speaking from the Podium
+
+Status: **approved** (owner, 2026-11-10: "the lectern should work like a desk when I click it: make me stand behind it
+at the correct orientation so I can speak from it"; "From the lectern my audio should be 3 times further, but still
+blocked by walls"). The Podium is held like a seat ([Chair](chair.md) "Sitting", "Occupancy is presence"), and its
+one seat is stood at, as a Standing Desk's is ([Workday pieces](workday-pieces.md#how-each-one-walks)).
+
+- **A click or a tap anywhere on it** walks you to its **speaker spot**, and arriving there stands you at it: your
+  feet on the spot, facing the way the Podium's front faces (toward its audience), drawn standing, never seated.
+  Steering into the spot with the arrow keys does the same, as walking into a chair does. A walk that only passes it
+  on the way somewhere else walks on ([Chair](chair.md) "Only the chair you are going to").
+- **The speaker spot is behind its front, at every facing** ([Turning furniture](furniture-facing.md)):
+
+  | Podium faces  | Its front faces | Where the speaker stands                             | The speaker faces |
+  | ------------- | --------------- | ---------------------------------------------------- | ----------------- |
+  | Down (`'n'`)  | down the canvas | behind it, up the canvas, just above its sloping top | down              |
+  | Up (`'s'`)    | up the canvas   | in front of it from the camera, just below its foot  | up                |
+  | Left (`'e'`)  | left            | at its right, at its foot's depth, clear of the foot | left              |
+  | Right (`'w'`) | right           | at its left (the side mirrored)                      | right             |
+
+  The rule: the speaker faces the way the Podium's front faces, and stands on the other side of it. Furniture has no
+  free rotation, so these four are every angle a Podium can stand at; a rotation stored on one before that rule is
+  ignored, as its drawing ignores it. The spot is always clear of the foot that blocks, so standing there and walking
+  off never starts you inside it.
+
+- **Turned or moved while you stand at it**, it carries you with it, onto its new spot and facing its new way.
+- **One speaker at a time.** Somebody already at it holds it, from presence alone, as a taken seat is held. Clicking a
+  Podium somebody stands at walks you there and stops you **a step to the speaker's side**, beside them at the
+  Podium's front line, on the side nearer where you came from. Two people who arrive at
+  once settle it as a seat does: the earlier keeps it and the other steps aside the same way.
+- **Everyone sees it.** Who stands at it, where and facing which way travel in the presence everyone already shares
+  (your feet, your facing, the piece you hold and your claim on it), so every screen draws the speaker on the spot,
+  facing the audience, and marks the Podium taken.
+- **Leaving.** Any movement steps you away from it, as any movement stands you up from a chair: a click or tap
+  elsewhere, or an arrow key. A press on the Podium you stand at keeps you there.
+- **Your voice carries three times as far** ([Proximity audio](../012-collaboration/proximity-audio.md#hearing)):
+  while you stand at a Podium, the people who hear you, and how loudly, are worked out as if every distance to you were
+  a third of what it is. Walls block it exactly as before: nobody across a wall hears you. It ends the moment you step
+  away. On a stage that lets you speak, the stage already reaches the whole tab and the Podium adds nothing; standing at
+  it never makes you a stage speaker you were not (who may speak is the Stage's Who Can Speak).
+- Its name for a screen reader says who is at it: "Podium, Ana speaking". Its element menu's facing line stays "Which
+  way its front faces", since its speaker always faces that way.
+- **Every Space is roomy** leaves it out: it stands on a stage, not in a row of seats
+  ([Templates by mode](../007-editor/templates-by-mode.md)).
 
 ## The pieces
 
@@ -151,5 +197,6 @@ draws to its size with its water in its fill; the Stage draws its boards, lip an
 ## Not in scope
 
 - Swimming, a diving board, or a pool you walk into; cars that drive or arrive; parking a bike.
-- Curtains that open and close, or a podium that grants the floor (who may speak is the Stage's Who Can Speak).
+- Curtains that open and close, or a podium that grants the stage (who may speak from a stage is its Who Can Speak;
+  the Podium only carries your voice further).
 - A round or kidney pool (the pool is a rectangle; the Pond is the free shape).

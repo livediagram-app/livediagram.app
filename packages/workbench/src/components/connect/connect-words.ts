@@ -78,12 +78,12 @@ export function connectErrorWords(error: unknown, hostKind: string): string {
   }
 }
 
-/** The screen reader's phrase after a connected tab's name. */
-export function connectedTabPhrase(app: App, sameApp: boolean, broken: boolean): string {
-  if (broken) return `, connected ${appName(app)} file, needs attention`;
-  return sameApp
-    ? `, connected ${appName(app)} file`
-    : `, connected ${appName(app)} file, opens in a new tab`;
+/** The screen reader's phrase after a connected tab's name. Pressing the tab opens nothing (its page's Open does,
+ *  and that button says where), so the phrase says only what the tab is. */
+export function connectedTabPhrase(app: App, broken: boolean): string {
+  return broken
+    ? `, connected ${appName(app)} file, needs attention`
+    : `, connected ${appName(app)} file`;
 }
 
 /** Case-blind "does this title hold what was typed": a plain substring, never a pattern. */

@@ -576,6 +576,33 @@ describe('the verbs', () => {
     expect(screen.getByRole('option', { name: 'Comments (1)' })).toBeTruthy();
   });
 
+  // one-explorer-contracts.md "Inbox": a row done from the pane moves the pane on to the next row, not the first.
+  it('moves on to the next row after a resolve, never back to the first', async () => {
+    const actions = host(['reply', 'resolve']);
+    renderInbox(everyKind(), { inbox: { actions } });
+    await screen.findByRole('listbox');
+    const before = titles();
+    fireEvent.click(options()[2]!);
+    fireEvent.click(within(pane()).getByRole('button', { name: /Resolve/ }));
+    await waitFor(() => expect(titles()).not.toContain('Budget'));
+    const expected = before[3] ?? before[1];
+    const chosen = options().find((o) => o.getAttribute('aria-selected') === 'true');
+    expect(chosen?.querySelector('[data-inbox-title]')!.textContent).toBe(expected);
+    expect(expected).not.toBe(before[0]);
+  });
+
+  it('keeps the pane open on the next row on a phone after a resolve', async () => {
+    asPhone();
+    const actions = host(['reply', 'resolve']);
+    renderInbox(everyKind(), { inbox: { actions } });
+    await screen.findByRole('listbox');
+    const before = titles();
+    fireEvent.click(options()[2]!);
+    fireEvent.click(within(pane()).getByRole('button', { name: /Resolve/ }));
+    const expected = before[3] ?? before[1];
+    await waitFor(() => expect(within(pane()).getAllByText(expected!).length).toBeGreaterThan(0));
+  });
+
   it('marks an action done where offered, and says so when it can’t', async () => {
     const onTelemetry = vi.fn();
     const actions = host(['done'], {

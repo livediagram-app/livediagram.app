@@ -11,13 +11,6 @@
   ],
   "blanks": [
     {
-      "id": "blank-illustration",
-      "name": "Blank Illustration",
-      "description": "An empty page that becomes a logo or a wireframe.",
-      "href": "/new?template=blank-illustration",
-      "svg": "<svg width=\"80\" height=\"50\" viewBox=\"0 0 80 50\" aria-hidden=\"true\"><rect x=\"25\" y=\"3\" width=\"30\" height=\"44\" rx=\"2\" fill=\"white\" stroke=\"rgb(148 163 184)\" stroke-width=\"0.8\" stroke-dasharray=\"2 1.4\"></rect><g class=\"pv-pulse\" style=\"--pv-at:700ms\"><rect x=\"29\" y=\"8\" width=\"22\" height=\"16\" rx=\"1.5\" style=\"fill:var(--color-brand-50)\"></rect><circle cx=\"35\" cy=\"16\" r=\"4\" fill=\"none\" stroke-width=\"2\" style=\"stroke:var(--color-brand-300)\"></circle><rect x=\"42\" y=\"17\" width=\"2\" height=\"4\" rx=\"0.4\" style=\"fill:var(--color-brand-300)\"></rect><rect x=\"45\" y=\"14\" width=\"2\" height=\"7\" rx=\"0.4\" style=\"fill:var(--color-brand-400)\"></rect></g><g class=\"pv-pulse\" style=\"--pv-at:1500ms\"><rect x=\"29\" y=\"28\" width=\"22\" height=\"1.3\" rx=\"0.6\" fill=\"rgb(203 213 225)\"></rect><rect x=\"29\" y=\"31\" width=\"22\" height=\"1.3\" rx=\"0.6\" fill=\"rgb(203 213 225)\"></rect><rect x=\"29\" y=\"34\" width=\"22\" height=\"1.3\" rx=\"0.6\" fill=\"rgb(203 213 225)\"></rect><rect x=\"29\" y=\"37\" width=\"13\" height=\"1.3\" rx=\"0.6\" fill=\"rgb(203 213 225)\"></rect></g><circle cx=\"40\" cy=\"42.5\" r=\"2\" style=\"fill:var(--color-brand-500)\"></circle><path d=\"M40 41.4 V43.6 M38.9 42.5 H41.1\" stroke=\"white\" stroke-width=\"0.6\"></path></svg>"
-    },
-    {
       "id": "blank-logo",
       "name": "Blank Logo",
       "description": "One empty square artboard for a mark, a wordmark or a lockup.",
@@ -44,6 +37,13 @@
       "description": "One empty browser window to wireframe a web page on.",
       "href": "/new?template=blank-wireframe-browser",
       "svg": "<svg width=\"80\" height=\"50\" viewBox=\"0 0 80 50\" aria-hidden=\"true\"><g><rect x=\"12\" y=\"7\" width=\"56\" height=\"36\" rx=\"2\" fill=\"rgb(241 245 249)\" stroke=\"rgb(203 213 225)\" stroke-width=\"0.5\"></rect><rect x=\"12.3\" y=\"11\" width=\"55.4\" height=\"31.7\" fill=\"white\"></rect><circle cx=\"14\" cy=\"9\" r=\"0.7\" fill=\"rgb(248 113 113)\"></circle><circle cx=\"16\" cy=\"9\" r=\"0.7\" fill=\"rgb(251 191 36)\"></circle><circle cx=\"18\" cy=\"9\" r=\"0.7\" fill=\"rgb(74 222 128)\"></circle><rect x=\"21\" y=\"8.2\" width=\"43\" height=\"1.6\" rx=\"0.8\" fill=\"white\"></rect><circle class=\"pv-pulse\" cx=\"40\" cy=\"27\" r=\"4.5\" fill=\"none\" stroke=\"rgb(14 165 233)\" stroke-width=\"0.6\" stroke-dasharray=\"1.4 1\" style=\"--pv-at:400ms\"></circle><circle cx=\"40\" cy=\"27\" r=\"2\" fill=\"rgb(14 165 233)\"></circle><path d=\"M40 25.9 V28.1 M38.9 27 H41.1\" stroke=\"white\" stroke-width=\"0.6\"></path></g></svg>"
+    },
+    {
+      "id": "blank-wireframe-laptop",
+      "name": "Blank Laptop Wireframe",
+      "description": "One empty laptop screen to wireframe a web or desktop app on.",
+      "href": "/new?template=blank-wireframe-laptop",
+      "svg": "<svg width=\"80\" height=\"50\" viewBox=\"0 0 80 50\" aria-hidden=\"true\"><g><rect x=\"15\" y=\"8\" width=\"50\" height=\"32\" rx=\"1.6\" fill=\"rgb(30 41 59)\"></rect><rect x=\"16.2\" y=\"9.4\" width=\"47.6\" height=\"30\" fill=\"white\"></rect><rect x=\"12\" y=\"40\" width=\"56\" height=\"2\" rx=\"1\" fill=\"rgb(100 116 139)\"></rect><circle class=\"pv-pulse\" cx=\"40\" cy=\"24\" r=\"4.5\" fill=\"none\" stroke=\"rgb(14 165 233)\" stroke-width=\"0.6\" stroke-dasharray=\"1.4 1\" style=\"--pv-at:400ms\"></circle><circle cx=\"40\" cy=\"24\" r=\"2\" fill=\"rgb(14 165 233)\"></circle><path d=\"M40 22.9 V25.1 M38.9 24 H41.1\" stroke=\"white\" stroke-width=\"0.6\"></path></g></svg>"
     }
   ],
   "popular": [
@@ -74,6 +74,13 @@
       "description": "Three laptop screens of a web app: an overview dashboard, an orders table and settings.",
       "href": "/new?template=wireframe-dashboard",
       "svg": "<svg width=\"80\" height=\"50\" viewBox=\"0 0 80 50\" aria-hidden=\"true\"><g><rect x=\"6\" y=\"12\" width=\"30\" height=\"24\" rx=\"1.6\" fill=\"rgb(30 41 59)\"></rect><rect x=\"7.2\" y=\"13.4\" width=\"27.6\" height=\"22\" fill=\"white\"></rect><rect x=\"3\" y=\"36\" width=\"36\" height=\"2\" rx=\"1\" fill=\"rgb(100 116 139)\"></rect><rect x=\"8.6\" y=\"15\" width=\"5\" height=\"17\" rx=\"0.6\" fill=\"rgb(226 232 240)\"></rect><g><rect x=\"15\" y=\"15\" width=\"10.2\" height=\"1.4\" rx=\"0.7\" fill=\"rgb(51 65 85)\"></rect><rect x=\"15\" y=\"18\" width=\"17\" height=\"6.84\" rx=\"0.8\" fill=\"rgb(226 232 240)\"></rect><rect x=\"15\" y=\"25.84\" width=\"15.3\" height=\"1\" rx=\"0.5\" fill=\"rgb(203 213 225)\"></rect><rect x=\"15\" y=\"27.84\" width=\"10.2\" height=\"1\" rx=\"0.5\" fill=\"rgb(203 213 225)\"></rect><rect class=\"pv-pulse\" x=\"15\" y=\"30\" width=\"17\" height=\"2.6\" rx=\"1\" fill=\"rgb(51 65 85)\" style=\"--pv-at:200ms\"></rect></g></g><g><rect x=\"44\" y=\"12\" width=\"30\" height=\"24\" rx=\"1.6\" fill=\"rgb(30 41 59)\"></rect><rect x=\"45.2\" y=\"13.4\" width=\"27.6\" height=\"22\" fill=\"white\"></rect><rect x=\"41\" y=\"36\" width=\"36\" height=\"2\" rx=\"1\" fill=\"rgb(100 116 139)\"></rect><rect x=\"46.6\" y=\"15\" width=\"5\" height=\"17\" rx=\"0.6\" fill=\"rgb(226 232 240)\"></rect><g><rect x=\"53\" y=\"15\" width=\"10.2\" height=\"1.4\" rx=\"0.7\" fill=\"rgb(51 65 85)\"></rect><rect x=\"53\" y=\"18\" width=\"17\" height=\"6.84\" rx=\"0.8\" fill=\"rgb(226 232 240)\"></rect><rect x=\"53\" y=\"25.84\" width=\"15.3\" height=\"1\" rx=\"0.5\" fill=\"rgb(203 213 225)\"></rect><rect x=\"53\" y=\"27.84\" width=\"10.2\" height=\"1\" rx=\"0.5\" fill=\"rgb(203 213 225)\"></rect><rect class=\"pv-pulse\" x=\"53\" y=\"30\" width=\"17\" height=\"2.6\" rx=\"1\" fill=\"rgb(51 65 85)\" style=\"--pv-at:600ms\"></rect></g></g></svg>"
+    },
+    {
+      "id": "photo-edit",
+      "name": "Photo Edit",
+      "description": "One photo page to start: open a picture or make a blank one, then edit it with layers, brushes, adjustments and filters.",
+      "href": "/new?template=photo-edit",
+      "svg": "<svg width=\"80\" height=\"50\" viewBox=\"0 0 80 50\" aria-hidden=\"true\"><rect x=\"12\" y=\"8\" width=\"56\" height=\"34\" rx=\"2\" fill=\"white\" stroke=\"rgb(148 163 184)\" stroke-width=\"0.8\" stroke-dasharray=\"2 1.4\"></rect><path d=\"M14 38 L28 26 L38 33 L48 24 L66 38 Z\" stroke-width=\"0.8\" style=\"fill:var(--color-brand-50);stroke:var(--color-brand-300)\"></path><circle class=\"pv-pulse\" cx=\"56\" cy=\"16\" r=\"3.5\" stroke-width=\"0.8\" style=\"--pv-at:500ms;fill:var(--color-brand-50);stroke:var(--color-brand-300)\"></circle><rect x=\"16\" y=\"12\" width=\"10\" height=\"1.8\" rx=\"0.9\" fill=\"rgb(203 213 225)\"></rect><rect x=\"16\" y=\"15\" width=\"10\" height=\"1.8\" rx=\"0.9\" style=\"fill:var(--color-brand-300)\"></rect><circle cx=\"40\" cy=\"25\" r=\"2\" style=\"fill:var(--color-brand-500)\"></circle><path d=\"M40 23.9 V26.1 M38.9 25 H41.1\" stroke=\"white\" stroke-width=\"0.6\"></path></svg>"
     }
   ]
 }

@@ -98,10 +98,11 @@ a connected tab can only ever lead to one of our apps. A target in another app o
 same app opens in place. When the name the index answers differs from the tab's, an Editor's editor renames the tab
 to match.
 
-A connected tab opens its file only when a person asks: a press on its tab (the open tab included, which opens it
-again), or Open on its page. A connected tab that becomes the open tab any other way (the editor loading on it, the
-tab just connected, a tab closed beside it, undo) shows its page **ready**, with Open, and goes nowhere by itself, so
-reloading a host whose open tab is connected to the same app never sends the reader away in a loop.
+A connected tab opens its file only when a person presses Open on its page, under the file's preview. Pressing the
+tab itself only makes it the open tab: its page shows **ready**, with the preview and Open, and goes nowhere by
+itself, so a person looks at the file's picture first and chooses to go. The same holds however else it becomes the
+open tab (the editor loading on it, the tab just connected, a tab closed beside it, undo), so reloading a host whose
+open tab is connected to the same app never sends the reader away in a loop.
 
 A connected tab that opens nothing says why, in place of the target, with what can be done:
 
@@ -123,8 +124,8 @@ and behave alike everywhere.
 the size of a tab's padlock) before the name. A target in another app carries a small arrow after the name, saying
 it opens in a new browser tab; one in the same app carries none. A tab that opens nothing carries a small amber dot
 in place of the arrow, so a broken connection shows without opening it. Its name is never renamed by hand, so a
-double-click does nothing; a screen reader hears "<name>, connected <app> file, opens in a new tab" (or "connected
-file, needs attention"). It is dragged, foldered and opened like any tab, and its menu offers, as plain rows, Connect Again
+double-click does nothing; a screen reader hears "<name>, connected <app> file" (or "connected
+file, needs attention"); pressing it opens nothing, so it never says where the file opens. It is dragged, foldered and selected like any tab (selecting it shows its page; the file opens from Open there), and its menu offers, as plain rows, Connect Again
 (only when it opens nothing), Organise in Tab Folder and, last under a hairline, Remove Tab; never Duplicate.
 
 **The tab's page.** Opened, a connected tab shows one calm card in place of a canvas: the target's preview (the

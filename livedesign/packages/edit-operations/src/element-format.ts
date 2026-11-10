@@ -6,6 +6,7 @@ import {
   INSTANCE_SHAPE,
   ELEMENT_FIELD_NAMES,
   LIVE_ELEMENT_FIELDS,
+  RETIRED_SHAPE_KINDS,
   SHAPE_KINDS,
   STICKY_PRESETS,
   TEXT_PX_MAX,
@@ -36,9 +37,12 @@ function wrapped(words: readonly string[], indent: string, sep = ' '): string[] 
   return lines.map((line) => `${indent}${line}`);
 }
 
+// The shape kinds `add` makes: all but the retired ones (a tab window, docs/specs/009-elements/tab-window.md).
+const addableShapeKinds = () => [...SHAPE_KINDS].filter((k) => !RETIRED_SHAPE_KINDS.has(k));
+
 // Every kind `add` makes: the boxed kinds, then the shape kinds.
 export function addableKinds(): string[] {
-  return [...OTHER_KINDS, ...SHAPE_KINDS];
+  return [...OTHER_KINDS, ...addableShapeKinds()];
 }
 
 export function elementKindsText(): string {
@@ -46,7 +50,7 @@ export function elementKindsText(): string {
     'Element kinds: add <kind> makes one; livedesign schema <kind> shows its fields.',
     `  ${OTHER_KINDS.join(', ')}`,
     '  shapes:',
-    ...wrapped([...SHAPE_KINDS], '    ', ', '),
+    ...wrapped(addableShapeKinds(), '    ', ', '),
     '  arrow: connect <a> -> <b>',
     `  ${Object.keys(NOT_ADDED)
       .filter((k) => k !== 'arrow')
@@ -149,8 +153,6 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   page: ['pageTitle', 'pageSubtitle'],
   icon: ['iconSize', 'iconWeight'],
   sticker: ['stickerId'],
-  // docs/specs/009-elements/tab-window.md: which tab the window shows.
-  'tab-window': ['windowTabId'],
   // docs/specs/009-elements/components.md: the main it draws and what it changes of it.
   instance: ['componentId', 'componentOverrides'],
 };

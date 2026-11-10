@@ -43,7 +43,7 @@ const LayoutIcon = lucideGlyph(lucidePanelsTopLeft, 16);
 const BackgroundIcon = lucideGlyph(lucidePaintRoller, 16);
 
 const ROWS: Record<AppearanceRow, { name: string; line: string }> = {
-  device: { name: 'Device', line: 'The phone, tablet or screen it is for' },
+  device: { name: 'Frame', line: 'The phone, tablet or screen it is for' },
   layout: { name: 'Layout', line: 'Start the screen from a layout' },
   background: { name: 'Background', line: "The page's colour, picture or pattern" },
 };
@@ -66,7 +66,7 @@ export function PageAppearanceButton({
   // Named beside its icon: a phone's bar while the page on screen has the room.
   labelled?: boolean;
   rows: readonly AppearanceRow[];
-  // The page's device, drawn on its Device row as on its desktop button.
+  // The page's device, drawn on its Frame row as on its desktop button.
   device: WireframeDeviceId;
   // Opens the row's control, once this sheet has closed.
   onPick: (row: AppearanceRow) => void;

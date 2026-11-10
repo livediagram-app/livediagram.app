@@ -1,6 +1,6 @@
 'use client';
 
-import { SiteAppearanceToggle } from '@livediagram/ui';
+import { SiteAppearanceToggle } from '@/lib/appearance/appearance-hooks';
 import { useCopiedFlash } from '@liveworkspace/ui';
 
 // The rail pinned to the page's right edge (liveworkspace/docs/specs/010-site/site.md "The rail"), as on the apps'

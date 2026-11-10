@@ -22,3 +22,7 @@
 /canvas/layers-organising/ /canvas/layers/ 301
 /canvas/layers-visibility-and-locking /canvas/layers/ 301
 /canvas/layers-visibility-and-locking/ /canvas/layers/ 301
+# The Tab Window element was retired on 2026-11-10 (docs/specs/009-elements/tab-window.md); its article's old URL lands
+# on the Pages category, which holds the rest of the page features.
+/pages/tab-windows /pages/ 301
+/pages/tab-windows/ /pages/ 301

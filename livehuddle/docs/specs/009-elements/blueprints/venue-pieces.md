@@ -41,6 +41,25 @@ Derived from [Venue pieces](../venue-pieces.md).
 - The pool's footprint is in px: the box inset by `poolDeck(w, h) = max(0, min(POOL_DECK, min(w, h) / 10))`,
   `POOL_DECK = 14`. `swimmingPoolParts` draws the water at exactly that inset.
 - `isWallPieceShape('stage-curtains')`: no footprint, `elementUnderFeet` skips it.
+- **Speaking from the Podium** (`packages/avatar/src/lectern.ts`, `lectern-seats.ts`). `podium` joins `FixedSeatKind`
+  and `STANDING_SEAT_KINDS` (office-geometry.ts), so it is held, claimed, yielded, carried round and drawn standing
+  by the seat code every seat uses (seat-claims.ts, chair-sitters.ts, useAvatarWalkArrivals followSeat), and keeps its
+  footprint. `SEAT_VIEWS.podium` reads `LECTERN_SEATS` (front, 56 × 88, `u 0.5, v 20/88`, facing down),
+  `LECTERN_SEATS_BACK` (56 × 88, `u 0.5, v 104/88`) and `LECTERN_SEATS_SIDE` (44 × 88, `u 58/44, v 80/88`); the
+  other facings are `turnedSitterFacing('down', facing)`: Left at `'e'`, Up at `'s'`, Right at `'w'` (the side
+  mirrored, `u` read as `1 − u`). Each spot is 18 px or more from the foot at the default size, over a Tall
+  character's reach (15.6). `DEFAULT_SEATING_FACING.podium = 'n'`. Stored `rotation` is never read.
+- `lecternSpot(el)` is `seatPoints(el)[0]`; `lecternArea(el)` is the box grown to take in `LECTERN_CATCH` (16 px)
+  round the spot; `catchArea(el)` is that for a Podium and the box for every other piece. `elementUnderFeet` (walk.ts)
+  no longer skips scenery that `seatsACharacter`, and tests a Podium's feet against `lecternArea` (worked out only for
+  a Podium, so the per-frame test allocates nothing else); the chair arrival's `sitsOnEntry` takes `catchArea(el)`.
+- `walkPointFor` (apps/editor/lib/avatar-click-intent.ts) sends a click anywhere on a Podium to `lecternSpot`.
+- Taken: `seatOnArrival` and `seatToYield` stop a Podium's late comer at `lecternAside(spot, from)`: `LECTERN_ASIDE`
+  (64 px) along x when the speaker faces up or down, along y when they face left or right, toward `from` (ties to +).
+  Every other piece keeps `besideBox`.
+- FurnitureView names it "Podium" empty and "Podium, <names> speaking" held.
+- The voice's reach is the call's ([Proximity audio](../../012-collaboration/blueprints/proximity-audio.md) "Hearing"):
+  `callLecterns`, `voiceReach`, `LECTERN_VOICE_REACH` in `packages/document/src/call-geometry.ts`.
 - Stage drawing (`stageParts`): top panel; one `rail` path of plank lines (rows `min(8, max(1, round(top / 24)))`) and
   each row's joints every 104 px from `30 + STAGE_JOINT_OFFSETS[row % 8]`; a nosing panel 5 + 1 px at `top - 5` in
   `STAGE_TONES.nosing`; the skirt `face` in `STAGE_TONES.skirt`; lamps every `(w - 16) / floor((w - 16) / 40)` px,
@@ -95,7 +114,12 @@ in `PALETTE_TELEMETRY_TYPES`.
   drapes; the pool's water at the deck, its lanes, ladder and CPU budget.
 - `office.test.ts`: the stage's boards, nosing, skirt, footlights clear of the plate, the plank cap.
 - `venue-pieces.test.ts` (avatar): footprints, the pool's inset and a walk stopping at its rim, the curtains walked
-  through, nobody seated.
+  through, nobody seated but the Podium's speaker.
+- `lectern.test.ts` (avatar): the spot and facing at 0, 90, 180 and 270 degrees, a stored rotation at any angle
+  ignored, the spot clear of the foot, feet on the spot counted at the Podium, walking up to it, the free spot, the
+  taken case's step aside and two arriving at once.
+- The template aisle tests (`template-builders-spaces-more.test.ts`, `template-builders-campus.test.ts`) leave the
+  Podium out (templates-by-mode.md "Every Space is roomy").
 - `venue-views.test.tsx` (editor): names, the pool view, click intents.
 - `palette-layouts.test.ts`, `palette-tile-defs.test.tsx`: the tiles and their order.
 - `template-venue.test.ts` (templates): placements; `template-builders-spaces-more.test.ts` lets a Podium stand under

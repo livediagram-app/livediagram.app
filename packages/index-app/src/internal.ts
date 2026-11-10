@@ -33,6 +33,10 @@
 //   PUT    /api/internal/items/:id/migration  MigrationRoomPayload  an old livediagram.app document's part written
 //                                                            into the item's room with its own times (docs/migration.md
 //                                                            "The apps' migration door"). Takes MIGRATION_KEY too.
+//   POST   /api/internal/items/community-states {posts}  where up to COMMUNITY_STATES_MAX Community posts' items stand,
+//                                                            for the Community's sweep (liveworkspace/docs/specs/
+//                                                            007-community/community.md "The sweep"). COMMUNITY_KEY
+//                                                            (`communityKey`) alone.
 //   PUT    /api/internal/people/:id/migration  MigrationPersonPayload  an old livediagram.app person's own data (their
 //                                                            shape libraries) into the app's store for them
 //                                                            (docs/migration.md "The person migration door").
@@ -44,9 +48,14 @@
 // The app supplies what each does to its own content (`InternalItemHandlers`); a door with no handler is a 404.
 
 import {
+  COMMUNITY_STATES_MAX,
+  isItemCommunityState,
   parseItemNotice,
   readConnectedTabWrite,
+  type CommunityStateAnswer,
+  type CommunityStateAsk,
   type ConnectedTabWrite,
+  type IndexAppClient,
   type ItemNotice,
   type Level,
 } from '@liveworkspace/index-client';
@@ -180,6 +189,9 @@ export type InternalItemHandlers = {
   // The index's reverse write of a connected tab (connected-tabs.ts appendConnectedTab): one tab, loose, at the end of
   // the item's tab bar, the same connection id again answering the tab it made. An app without it answers 404.
   connectedTab?: (itemId: string, write: ConnectedTabWrite) => Promise<ConnectedTabOutcome>;
+  // Where Community posts' items stand, as the index reads them (the app's index client `communityStates`), for the
+  // Community's sweep. An app without it answers 404.
+  communityStates?: (posts: CommunityStateAsk[]) => Promise<CommunityStateAnswer[]>;
 } & DataExportHandlers;
 
 // The import door's body (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"): whose item it is (an account id,
@@ -208,6 +220,8 @@ export type InternalItemsOptions = {
   driveKey?: string | undefined;
   // The app's DATA_EXPORT_KEY, which liveworkspace's data export calls with: the export door alone, every format.
   dataExportKey?: string | undefined;
+  // The app's COMMUNITY_KEY, which the Community service's sweep calls with: the community-states door alone.
+  communityKey?: string | undefined;
   handlers: InternalItemHandlers;
   waitUntil?: (promise: Promise<unknown>) => void;
 };
@@ -476,6 +490,58 @@ const EXPORT_PATH = /^\/api\/internal\/items\/[^/]+\/export$/;
 const MIGRATION_PATH = /^\/api\/internal\/items\/[^/]+\/migration$/;
 const PERSON_MIGRATION_PATH = /^\/api\/internal\/people\/[^/]+\/migration$/;
 const IMPORT_PATH = '/api/internal/items/import';
+const COMMUNITY_STATES_PATH = '/api/internal/items/community-states';
+
+const SHARE_CODE = /^[A-Za-z0-9]{4,64}$/;
+
+// An app's `communityStates` handler: the index's answer through the app's own index client, or a throw (the door's
+// 503, which the sweep retries) when the app has no index configured.
+export async function askIndexCommunityStates(
+  client: Pick<IndexAppClient, 'communityStates'> | null,
+  posts: CommunityStateAsk[],
+): Promise<CommunityStateAnswer[]> {
+  if (!client) throw new Error('index_unavailable');
+  return client.communityStates(posts);
+}
+
+// POST /api/internal/items/community-states: the index's answer for up to COMMUNITY_STATES_MAX posts, checked both
+// ways (a malformed answer is the index's failure, never passed on).
+async function communityStates(
+  request: Request,
+  run: NonNullable<InternalItemHandlers['communityStates']>,
+): Promise<Response> {
+  const posts = (await bodyOf(request))?.['posts'];
+  if (!Array.isArray(posts) || posts.length === 0 || posts.length > COMMUNITY_STATES_MAX) {
+    return badRequest(`posts must be 1 to ${COMMUNITY_STATES_MAX} posts`);
+  }
+  const asks: CommunityStateAsk[] = [];
+  for (const post of posts as unknown[]) {
+    const p = post as Partial<CommunityStateAsk> | null;
+    const code = p?.code;
+    if (
+      !p ||
+      !validId(p.id) ||
+      !validId(p.owner) ||
+      typeof code !== 'string' ||
+      !SHARE_CODE.test(code)
+    )
+      return badRequest('each post needs an id, a code and an owner');
+    asks.push({ id: p.id, code, owner: p.owner });
+  }
+  let states: CommunityStateAnswer[];
+  try {
+    states = await run(asks);
+  } catch (err) {
+    // The sweep asks again on its next run.
+    console.warn('[internal] community states failed', { error: String(err) });
+    return json({ error: 'unavailable' }, 503);
+  }
+  if (!states.every((s) => validId(s.id) && isItemCommunityState(s.state))) {
+    console.warn('[internal] community states malformed');
+    return json({ error: 'unavailable' }, 503);
+  }
+  return json({ states });
+}
 
 export async function handleInternalItems(
   request: Request,
@@ -486,6 +552,7 @@ export async function handleInternalItems(
     driveKey,
     dataExportKey,
     migrationKey,
+    communityKey,
     handlers,
     waitUntil = (p) => void p,
   }: InternalItemsOptions,
@@ -500,6 +567,7 @@ export async function handleInternalItems(
   const importing = pathname === IMPORT_PATH && request.method === 'POST';
   const migrating = MIGRATION_PATH.test(pathname) && request.method === 'PUT';
   const migratingPerson = PERSON_MIGRATION_PATH.test(pathname) && request.method === 'PUT';
+  const sweeping = pathname === COMMUNITY_STATES_PATH && request.method === 'POST';
   const dataFormat = exporting ? url.searchParams.get('format') : null;
   const keys = exporting
     ? isDataExportFormat(dataFormat)
@@ -511,7 +579,9 @@ export async function handleInternalItems(
         ? [key, migrationKey]
         : migratingPerson
           ? [migrationKey]
-          : [key];
+          : sweeping
+            ? [communityKey]
+            : [key];
   const present = keys.filter((k): k is string => Boolean(k));
   if (present.length === 0) return notFound();
   let allowed = false;
@@ -534,6 +604,10 @@ export async function handleInternalItems(
   const id = rest[0];
   if (!validId(id)) return notFound();
 
+  if (sweeping)
+    return handlers.communityStates
+      ? communityStates(request, handlers.communityStates)
+      : notFound();
   if (exporting && isDataExportFormat(dataFormat))
     return answerDataExport(id, dataFormat, handlers);
   if (exporting)

@@ -145,7 +145,9 @@ Exclude), **Wordmark**, **Logo Kit**.
   closed path with no outline from its `penColour` per surface.
 - The Pages layout's Logo kind (`components/palette/palette-layouts.ts`, `PAGES_LOGO`) lands on **Draw**:
   `['logo:pen', 'tools:pencil', 'tools:shape-pen', DIVIDE, 'tools:polygon']`, then the person's markers
-  (`useLogoMarkerTiles`, below); its Popular holds `logo:pen`, `tools:pencil`, `tools:text` and five shapes.
+  (`useLogoMarkerTiles`, below); its Popular holds `logo:pen`, `tools:pencil`, `tools:text-title` and five shapes,
+  and its Write `['tools:text-title', 'tools:text-subtitle', DIVIDE, 'tools:sticky']` (the Title and Subtitle text
+  styles, [Canvas and palette](../../008-canvas/canvas-and-palette.md#text-element) "Text styles").
 - `logo:pen` (section `logo`, `ShapePenIcon`): action `{ type: 'path' }`, handled by
   `PaletteTileActions.beginPath`, threaded from `useShapeDrawing.beginPath` (`beginDraw({ type:
 'path' })`) through `useEditorState`, `EditorCanvasHost`, `onBeginPath` and

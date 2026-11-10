@@ -268,7 +268,7 @@ describe('StatusBoard with the hourly history', () => {
   });
 });
 
-describe('Check now', () => {
+describe('one round a visit', () => {
   // The clock and the board's tick are faked; the checks' own timeouts stay real.
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
@@ -277,7 +277,7 @@ describe('Check now', () => {
     vi.useRealTimers();
   });
 
-  it('checks once on load, never again on its own, and rests 30 s after each round', async () => {
+  it('checks once on load, never again on its own, and offers no Check now', async () => {
     const answer = fetchWhere(/$^/);
     let checks = 0;
     await render(async (input, init) => {
@@ -286,36 +286,68 @@ describe('Check now', () => {
     });
     const first = checks;
     expect(first).toBeGreaterThan(0);
-    const button = [...host!.querySelectorAll('button')].find((b) =>
-      b.textContent?.includes('Check now'),
-    )!;
-    // Resting reads as busy, not disabled, so a focused Check now keeps the keyboard (busy-buttons.md).
-    expect(button.getAttribute('aria-disabled')).toBe('true');
-    expect(button.disabled).toBe(false);
-    expect(host!.textContent).toContain('in 30 s');
-
-    // Ten minutes open: no round of its own, and Check now is ready.
+    // Ten minutes open: no round of its own.
     await act(async () => {
       vi.advanceTimersByTime(10 * 60_000);
     });
     expect(checks).toBe(first);
-    expect(button.hasAttribute('aria-disabled')).toBe(false);
-    expect(host!.textContent).toContain('Ready');
+    expect(
+      [...host!.querySelectorAll('button')].some((b) => /Check/.test(b.textContent ?? '')),
+    ).toBe(false);
+    expect(host!.textContent).not.toContain('Check again');
+  });
+});
 
-    // One press, one round, then the rest again; a second press inside it does nothing.
-    button.focus();
-    await act(async () => {
-      button.click();
-      await new Promise((r) => setTimeout(r, 0));
-    });
-    expect(checks).toBe(first * 2);
-    expect(button.getAttribute('aria-disabled')).toBe('true');
-    expect(document.activeElement).toBe(button);
-    await act(async () => {
-      button.click();
-      await new Promise((r) => setTimeout(r, 0));
-    });
-    expect(checks).toBe(first * 2);
+describe('uptime', () => {
+  const WITH_UPTIME: StatusHistory = {
+    ...HISTORY,
+    uptime: { all: 99.9, groups: { liveworkspace: 100, livediagram: 99.95, liveplanner: null } },
+  };
+  const header = (id: string) => host!.querySelector(`#${id} header`)!;
+
+  it('shows each group’s uptime to the left of its summary, named with its window', async () => {
+    await render(withHistory(WITH_UPTIME));
+    const figure = header('livediagram').querySelector<HTMLElement>('[data-uptime]')!;
+    expect(figure.textContent).toBe('99.95% Uptime');
+    expect(figure.getAttribute('aria-label')).toBe('99.95% Uptime, Last 90 Days');
+    // Focusable, so the keyboard reaches its tooltip.
+    expect(figure.tabIndex).toBe(0);
+    const summary = [...header('livediagram').querySelectorAll('span')].find((el) =>
+      /^All \d+ up$/.test(el.textContent ?? ''),
+    )!;
+    expect(summary).toBeDefined();
+    expect(figure.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // 100% only when the answer says every check answered.
+    expect(header('liveworkspace').querySelector('[data-uptime]')?.textContent).toBe('100% Uptime');
+  });
+
+  it('shows no figure for a group without checks, never a default 100%', async () => {
+    await render(withHistory(WITH_UPTIME));
+    // Null in the answer, and missing from it.
+    expect(header('liveplanner').querySelector('[data-uptime]')).toBeNull();
+    expect(header('livedesign').querySelector('[data-uptime]')).toBeNull();
+  });
+
+  it('shows no figures from an answer stored before uptime, nor without the history', async () => {
+    await render(withHistory(HISTORY));
+    expect(host!.querySelector('[data-uptime]')).toBeNull();
+    expect(host!.textContent).toContain('no data yet');
+
+    act(() => root!.unmount());
+    root = createRoot(host!);
+    await render(fetchWhere(/$^/));
+    expect(host!.querySelector('[data-uptime]')).toBeNull();
+  });
+
+  it('puts the page’s uptime where Check again was', async () => {
+    await render(withHistory(WITH_UPTIME));
+    const tile = [...host!.querySelectorAll('dl > div')].find(
+      (d) => d.querySelector('dt')?.textContent === 'Uptime',
+    )!;
+    const figure = tile.querySelector<HTMLElement>('[data-uptime]')!;
+    expect(figure.textContent).toBe('99.9%');
+    expect(figure.getAttribute('aria-label')).toBe('99.9% Uptime, Last 90 Days');
+    expect(tile.textContent).toContain('last 90 days, every service');
   });
 });
 

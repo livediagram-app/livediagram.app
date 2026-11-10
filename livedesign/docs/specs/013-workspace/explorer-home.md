@@ -70,7 +70,8 @@ Landing on Home from outside the Explorer shows it at once, with no animation. U
 goes at once. While folding away it takes no focus.
 
 The hero's top right holds Home's **Help** link ([Contextual help links](../018-help/contextual-help-links.md)). On a
-phone (below `sm`) its top left holds the menu button that opens the [mobile drawer](explorer-structure.md#mobile-drawer).
+phone (below `sm`) the sections bar above the hero opens the [mobile drawer](explorer-structure.md#mobile-drawer), and
+the hero has no menu button of its own.
 
 ## Hiding the banner
 
@@ -85,8 +86,7 @@ With the banner hidden, Home is drawn like every other Explorer page:
 
 - the **header's search field** is drawn on Home too ([Explorer filters](explorer-filters.md#the-field)), so the page
   still has exactly one lens field;
-- Home takes the ordinary **page header** (the title "Home", its Help link, New Design and, on a phone, the menu
-  button), so it keeps its `h1`;
+- Home takes the ordinary **page header** (the title "Home", its Help link and New Design), so it keeps its `h1`;
 - Jump Back In and What Happened, or a first run's sections, follow as before.
 
 One reading, the `homeBanner` preference, which the editor's Explorer host hands the shared Explorer as

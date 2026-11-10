@@ -4,7 +4,8 @@
 // brings its own <html lang>, the stylesheet and the appearance setting (light or dark as the rest of the site).
 // Try Again reloads, since the layout that failed is gone.
 import { useEffect, useLayoutEffect } from 'react';
-import { applyAppearance, getResolvedAppearance } from '@livediagram/ui';
+import { applyAppearance } from '@liveworkspace/ui/appearance-store';
+import { getResolvedAppearance } from '@/lib/appearance/appearance-store';
 import { PageError } from '@/components/PageError';
 import './globals.css';
 

@@ -33,7 +33,7 @@ describe('InfoFooter height', () => {
   it('is the same fixed height with nothing pointed at, a short tile and a long one', () => {
     const expected = { height: `${FLYOUT_FOOTER_HEIGHT}px`, minHeight: '' };
     expect(height(null)).toEqual(expected);
-    expect(height(tileById('tools:text')!)).toEqual(expected);
+    expect(height(tileById('tools:text-paragraph')!)).toEqual(expected);
     expect(height(tileById('data:pie')!)).toEqual(expected);
   });
 

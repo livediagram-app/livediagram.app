@@ -1,17 +1,17 @@
 'use client';
 
 // A connected tab's page, mounted by an editor in the canvas's place (liveworkspace/docs/specs/004-index/connected-tabs.md
-// "Opening", "How it looks"). It opens the file only when a person asks: a press on the tab (connected-tab-store's
-// pick) or Open on the card. Shown any other way (a load, a connect, undo) it waits, ready, so a host whose open tab
-// is connected to its own app never sends a reader away on reload. Each open asks the index with the host's grant;
-// its answer picks the card, marks the tab broken or mended, and renames the tab to the target's title for an Editor.
+// "Opening", "How it looks"). It opens the file only when a person presses Open on the card, under the file's preview.
+// However the tab became the open one (a press on the tab, a load, a connect, undo) it waits, ready, so selecting a
+// connected tab never sends a reader away by itself. Each open asks the index with the host's grant; its answer picks
+// the card, marks the tab broken or mended, and renames the tab to the target's title for an Editor.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { App, IndexClient, TabConnection } from '@liveworkspace/index-client';
 import { indexClient } from '../../lib/index-client';
 import { workbench } from '../../bindings';
 import { ConnectedTabCard } from './ConnectedTabCard';
 import { isBrokenState, type ConnectedTabView } from './connected-tab-view';
-import { pickIsFresh, setConnectedTabBroken, useConnectedTabPick } from './connected-tab-store';
+import { setConnectedTabBroken } from './connected-tab-store';
 import { openConnectedTab, type Navigator } from './open-connected-tab';
 import { useConnectedPreview } from './useConnectedPreview';
 
@@ -43,7 +43,6 @@ export function ConnectedTabPage(props: ConnectedTabPageProps) {
 const isOffline = () => typeof navigator !== 'undefined' && navigator.onLine === false;
 
 function Page({
-  tabId,
   name,
   connection,
   hostApp,
@@ -57,14 +56,10 @@ function Page({
   client = indexClient,
   navigate,
 }: ConnectedTabPageProps) {
-  const pick = useConnectedTabPick(tabId);
   // The target's picture on the card (IDX38): asked once per connection, going nowhere.
   const preview = useConnectedPreview({ connection, grant, offline, client });
-  // A press made just before this page mounted (its code loads on the first connected tab) is still the person's.
-  const [first] = useState(() => ({ fresh: pickIsFresh(pick), nonce: pick?.nonce ?? null }));
-  const handled = useRef<number | null>(first.fresh ? null : first.nonce);
   const [view, setView] = useState<ConnectedTabView>(() =>
-    offline ? { state: 'offline' } : first.fresh ? { state: 'opening' } : { state: 'ready' },
+    offline ? { state: 'offline' } : { state: 'ready' },
   );
   // The latest name and handlers, read when an answer lands rather than when the open began.
   const latest = useRef({ name, canEdit, onRename });
@@ -72,18 +67,8 @@ function Page({
     latest.current = { name, canEdit, onRename };
   });
   const inFlight = useRef<AbortController | null>(null);
-  // The press the open in flight is for, with what had been handled before it.
-  const pressOpening = useRef<{ before: number | null } | null>(null);
-  useEffect(
-    () => () => {
-      inFlight.current?.abort();
-      // A press whose open the unmount cut short went nowhere, so it is not handled: a page mounted again at once
-      // (React's development double mount) takes it, rather than sitting on "Opening" for good.
-      if (pressOpening.current) handled.current = pressOpening.current.before;
-      pressOpening.current = null;
-    },
-    [],
-  );
+  // An answer that lands after the page went goes nowhere.
+  useEffect(() => () => inFlight.current?.abort(), []);
 
   const open = useCallback(async () => {
     inFlight.current?.abort();
@@ -116,17 +101,6 @@ function Page({
     const now = latest.current;
     if (answered && now.canEdit && answered !== now.name) now.onRename(answered);
   }, [client, connection, grant, hostApp, navigate, offline]);
-
-  // A press on the tab the page has not acted on yet: open.
-  useEffect(() => {
-    if (!pick || pick.nonce === handled.current) return;
-    const press = { before: handled.current };
-    pressOpening.current = press;
-    handled.current = pick.nonce;
-    void open().finally(() => {
-      if (pressOpening.current === press) pressOpening.current = null;
-    });
-  }, [pick, open]);
 
   return (
     <div

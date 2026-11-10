@@ -19,6 +19,7 @@ export { titleBarButtonClass as titleButtonClass } from '@liveworkspace/workbenc
 
 export function TitlePopoverButton({
   name,
+  detail,
   on,
   labelled,
   className,
@@ -32,6 +33,9 @@ export function TitlePopoverButton({
 }: {
   // The control's name: its label, its tooltip and the popover's name (on or off is aria-pressed).
   name: string;
+  // What it is set to, after its name in its accessible name and tooltip ("Frame: iPhone"); the label beside its icon
+  // and the popover's name stay `name`.
+  detail?: string;
   // Whether its tool is on for the page (`aria-pressed`); absent, it is a plain opener.
   on?: boolean;
   // Named beside its icon (a desktop).
@@ -63,15 +67,16 @@ export function TitlePopoverButton({
   const mobile = useIsMobileViewport();
   const close = () => setOpen(false);
   const body = typeof children === 'function' ? children(close) : children;
+  const fullName = detail ? `${name}: ${detail}` : name;
   return (
     <>
       {/* Its name: whether it is on is aria-pressed and the pressed look. */}
       {headless ? null : (
-        <Tooltip label={name}>
+        <Tooltip label={fullName}>
           <button
             ref={setAnchor}
             type="button"
-            aria-label={name}
+            aria-label={fullName}
             aria-haspopup="dialog"
             data-title-popover-trigger=""
             aria-expanded={open}

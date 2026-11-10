@@ -4,7 +4,7 @@
 import { zoneAt, type CallZone } from './zones';
 import { mayTakeStage, stageAt, type CallStage } from './stage';
 import type { AccessLevel } from '@livehuddle/api-schema';
-import { HEARING_RADIUS_PX, type Point } from './hearing';
+import { HEARING_RADIUS_PX, reachOf, type Point } from './hearing';
 
 export type HearingRing = {
   readonly cx: number;
@@ -41,7 +41,8 @@ export function hearingRing(
 ): HearingRing | null {
   const stage = stages.length > 0 ? stageAt(self, stages) : null;
   if (stage && mayTakeStage(level, stage.speakers)) return null;
-  const r = HEARING_RADIUS_PX;
+  // Three times as far from a Podium (venue-pieces.md "Speaking from the Podium"); walls still cut it.
+  const r = HEARING_RADIUS_PX * reachOf(self);
   const id = zones.length > 0 ? zoneAt(self, zones) : null;
   const zone = id === null ? undefined : zones.find((z) => z.id === id);
   const holes: (readonly Point[])[] = [];

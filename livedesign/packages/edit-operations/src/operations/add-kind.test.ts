@@ -66,6 +66,8 @@ describe('add <kind>', () => {
     ]);
     expect(refused(run('add arrow')).details).toEqual(['kind="arrow": use connect']);
     expect(refused(run('add image')).code).toBe('invalid_value');
+    // docs/specs/009-elements/tab-window.md: a retired kind is never made, though a stored one loads.
+    expect(refused(run('add tab-window')).details?.join(' ')).toContain('tab windows are retired');
     expect(refused(run('add square id=n3')).code).toBe('id_taken');
     expect(refused(run('add square colour=red')).code).toBe('unknown_field');
     expect(refused(run('add square below:nope')).code).toBe('target_not_found');

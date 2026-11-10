@@ -4,7 +4,7 @@ import { SITE_URL } from '@livediagram/ui';
 // livediagram's comparisons, drawn by @liveworkspace/comparisons (packages/comparisons/README.md
 // "livediagram"). The hub, every page, their metadata and the sitemap read this list, so adding a
 // competitor is a one-place change. Bump the date with any change to them.
-const UPDATED = new Date('2026-10-22');
+const UPDATED = new Date('2026-11-10');
 
 const LIST: Alternative[] = [
   {
@@ -176,7 +176,7 @@ const LIST: Alternative[] = [
         paragraphs: [
           'Miro grew into a broad workspace: boards, workshops, docs, tables, video walkthroughs and a marketplace of apps. livediagram covers the same ground in one canvas with tabs, and each tab works in one of three modes. Diagram for structure, with arrows that stay attached and re-route as you move things. Draw for freehand whiteboarding with pressure-sensitive markers. Workshop for running the session itself: timers, dot votes, polls and reveals.',
           'Every tab also has a finish, the way it is drawn: Flexible by default, Professional for crisp, print-ready work, Sketch for pencil on paper and Marker for felt-tip on a whiteboard. A look sets the theme, finish, font and canvas pattern in one click, and switching it never changes the content underneath.',
-          'Workshops are built in rather than bolted on. A facilitator can run the room with a shared timer, dot-voting, live polls, planning-poker estimate cards, quizzes, a Q&A board and responses kept hidden until the reveal, and templates cover retrospectives, Lean Coffee, town hall Q&A and event storming, including turning a photo of a sticky-note wall into notes. When the session ends, the actions it produced are assigned on the board and the plan picks up on the next tab.',
+          'Workshops are built in rather than bolted on. A facilitator can run the room with a shared timer, dot-voting, live polls, planning-poker estimate cards, quizzes, a Q&A board and responses kept hidden until the reveal, and templates cover retrospectives, Lean Coffee, town hall Q&A and event storming, including turning a photo of a sticky-note wall into notes. When the session ends, the actions it produced are assigned to teammates on the board itself.',
         ],
       },
       {
@@ -323,7 +323,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Is there a desktop or mobile app?',
-        a: 'No. livediagram runs in a modern browser with nothing to install. If you specifically want native desktop and mobile apps, XMind is the better pick there.',
+        a: 'Not a native one. livediagram runs in a modern browser with nothing to install, and you can install it from the browser to a computer’s or phone’s home screen like an app. If you specifically want native desktop and mobile apps, XMind is the better pick there.',
       },
       {
         q: 'Is livediagram really free?',
@@ -415,7 +415,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Presentations, free',
         paragraphs: [
-          'Presenting is one of the things Excalidraw+ adds on its paid plan. In livediagram it is part of the free product. Pick elements on any tab and make them a slide, so the deck points at the real diagram and changes when it does. A Plan board can be a slide too, presented live.',
+          'Presenting is one of the things Excalidraw+ adds on its paid plan. In livediagram it is part of the free product. Pick elements on any tab and make them a slide, so the deck points at the real diagram and changes when it does.',
           'Present full screen with presenter notes, a time budget per slide, Slide or Fade transitions, auto-advance and loop, a laser pointer and a spotlight. Animate an element so a drawing draws itself on or a title types itself in.',
         ],
       },

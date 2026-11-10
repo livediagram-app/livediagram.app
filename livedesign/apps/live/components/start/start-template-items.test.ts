@@ -11,15 +11,17 @@ import { TEMPLATE_STARTS } from './start-template-items';
 // docs/specs/007-editor/start-diagramming.md
 describe('the Pages template start', () => {
   const start = TEMPLATE_STARTS.pages;
-  const listed = TEMPLATES.filter(
-    (t) => !t.hidden && t.kind !== 'blank-illustration' && t.kind !== 'blank',
-  ).map((t) => t.kind);
+  const listed = TEMPLATES.filter((t) => !t.hidden && t.kind !== 'blank').map((t) => t.kind);
 
-  it('leads with Recommended, the Popular shelf, its blank first', () => {
+  it('leads with Recommended, the Popular shelf, with no Blank Tab', () => {
     const recommended = start.groups[0]!;
     expect(recommended.id).toBe('recommended');
     expect(recommended.kinds).toEqual(popularKindsFor('pages'));
-    expect(recommended.kinds[0]).toBe('blank-illustration');
+    expect(recommended.kinds).not.toContain('blank');
+  });
+
+  it('finds no Blank Tab by search', () => {
+    expect(start.search('blank').flatMap((g) => g.kinds)).not.toContain('blank');
   });
 
   it('shows only groups holding a template', () => {
@@ -31,7 +33,7 @@ describe('the Pages template start', () => {
   it('lists every template in a group after Recommended', () => {
     const grouped = new Set(start.groups.slice(1).flatMap((g) => g.kinds));
     for (const k of listed) expect(grouped.has(k), k).toBe(true);
-    expect(grouped.has('blank-illustration')).toBe(false);
+    expect(grouped.has('blank')).toBe(false);
   });
 
   it('searches the catalogue, each match once, and nothing for a blank query', () => {

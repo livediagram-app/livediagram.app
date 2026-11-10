@@ -2,13 +2,12 @@
 
 // A connected tab (connected-tabs.md "How it looks"): the target app's logo before the name, the arrow for another
 // app, the amber dot when it opens nothing, never renamed by hand.
-import { act, cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ConnectedTab, type ConnectedTabProps } from './ConnectedTab';
 import {
   resetConnectedTabStoreForTests,
   setConnectedTabBroken,
-  useConnectedTabPick,
 } from '../connect/connected-tab-store';
 
 afterEach(cleanup);
@@ -25,10 +24,10 @@ const props = (over: Partial<ConnectedTabProps> = {}): ConnectedTabProps => ({
 });
 
 describe('ConnectedTab', () => {
-  it('leads with the target app logo and says it opens in a new tab', () => {
+  it('leads with the target app logo and says what it is', () => {
     const { container } = render(<ConnectedTab {...props()} />);
     const tab = screen.getByRole('button', {
-      name: 'Launch plan, connected liveplanner file, opens in a new tab',
+      name: 'Launch plan, connected liveplanner file',
     });
     expect(tab.querySelector('svg')).not.toBeNull();
     expect(container.querySelector('[data-connected-away]')).not.toBeNull();
@@ -56,7 +55,7 @@ describe('ConnectedTab', () => {
     expect(screen.getByRole('button', { name: /needs attention/ })).toBeTruthy();
   });
 
-  it('opens on a press and is never renamed by a double-click', () => {
+  it('selects on a press and is never renamed by a double-click', () => {
     const onSelect = vi.fn();
     render(<ConnectedTab {...props({ onSelect })} />);
     const tab = screen.getByRole('button', { name: /Launch plan/ });
@@ -71,15 +70,12 @@ describe('ConnectedTab', () => {
     expect(screen.getByRole('button', { name: 'Tab menu' })).toBeTruthy();
   });
 
-  it('shows the dot the last open found, and records a press for its page', () => {
+  it('shows the dot the last open found', () => {
     resetConnectedTabStoreForTests();
-    const pick = renderHook(() => useConnectedTabPick('t1'));
     const { container } = render(<ConnectedTab {...props()} />);
     expect(container.querySelector('[data-connected-broken]')).toBeNull();
     act(() => setConnectedTabBroken('cn_abcdefghijklmnopqrstuvwx', true));
     expect(container.querySelector('[data-connected-broken]')).not.toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /Launch plan/ }));
-    expect(pick.result.current?.nonce).toBe(1);
     resetConnectedTabStoreForTests();
   });
 });

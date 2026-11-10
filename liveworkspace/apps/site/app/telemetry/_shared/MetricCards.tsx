@@ -2,7 +2,8 @@
 
 import { Fragment, useState } from 'react';
 import { cascadeDelayMs } from '@liveworkspace/style-guards/motion';
-import { useAppearance, Glyph } from '@livediagram/ui';
+import { Glyph } from '@livediagram/ui';
+import { useSiteAppearance } from '@/lib/appearance/appearance-hooks';
 import type { TelemetrySummary, TelemetryWindowKey } from '@liveworkspace/telemetry';
 import { MetricCard } from './MetricCard';
 import { MetricStackCard } from './MetricStackCard';
@@ -56,7 +57,7 @@ export function MetricGroups({
   // another stack replaces it. View state only: nothing persists it.
   const [open, setOpen] = useState<OpenStack | null>(null);
   const close = () => setOpen(null);
-  const { appearance } = useAppearance();
+  const { appearance } = useSiteAppearance();
   const { categoryColors } = useTelemetryApp();
 
   return (

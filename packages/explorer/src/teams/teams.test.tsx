@@ -295,14 +295,16 @@ describe('a team’s view', () => {
     expect(document.activeElement).toBe(screen.getByRole('treeitem', { name: 'My Work' }));
   });
 
-  it('lands on Browse Sections when the sidebar is out of reach (a phone, its drawer shut)', () => {
+  it('lands on the sections bar when the sidebar is out of reach (a phone, its drawer shut)', () => {
     render(
       <div data-explorer="">
-        <button type="button" aria-label="Browse sections" />
+        <button type="button" data-sections-bar="" aria-label="Open Sidebar, Current: My Work" />
       </div>,
     );
     landOnMyWork();
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Browse sections' }));
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Open Sidebar, Current: My Work' }),
+    );
   });
 
   it('drops a team the person was removed from elsewhere when its view finds them gone', async () => {

@@ -8,6 +8,7 @@ import {
   CALL_RELEASE_RADIUS_PX,
   mayTakeStage,
   stageAt,
+  voiceReach,
   zoneAt,
   type CallLevel,
   type CallPoint,
@@ -23,10 +24,11 @@ export const EDGE_MARGIN_PX = 64;
 /** Where a walker last said they stand: the tab and their feet. */
 export type Placed = { readonly tabId: string; readonly at: CallPoint };
 
-/** A tab's calls: its visible rooms and stages. */
+/** A tab's calls: its visible rooms and stages, and its Podiums (venue-pieces.md "Speaking from the Podium"). */
 export type TabCalls = {
   readonly zones: readonly CallZone[];
   readonly stages: readonly CallStage[];
+  readonly lecterns?: ReadonlySet<string>;
 };
 
 export type HearingWorld = {
@@ -125,13 +127,16 @@ export function hearingVerdict(
   if (speaksFromStage(world, publisher)) return 'heard';
   const letter = world.letBy.get(publisher);
   if (letter !== undefined && letterMayNow(world, letter)) return 'heard';
-  const { zones } = world.tab(s.tabId);
+  const { zones, lecterns } = world.tab(s.tabId);
   const theirs = possibleZones(p.at, zones);
+  // A publisher at a Podium carries LECTERN_VOICE_REACH times as far, read off the seat their shared position names;
+  // the walls are decided first, exactly as for everyone.
+  const reach = (CALL_RELEASE_RADIUS_PX + HEARING_MARGIN_PX) * voiceReach(p.at, lecterns);
   for (const zone of possibleZones(s.at, zones)) {
     if (!theirs.has(zone)) continue;
     // A shared room, like the open floor, hears by distance; the walls between rooms block it.
     const d = Math.hypot(s.at.x - p.at.x, s.at.y - p.at.y);
-    if (d <= CALL_RELEASE_RADIUS_PX + HEARING_MARGIN_PX) return 'heard';
+    if (d <= reach) return 'heard';
   }
   return 'apart';
 }

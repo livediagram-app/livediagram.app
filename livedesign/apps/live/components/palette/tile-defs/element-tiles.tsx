@@ -5,7 +5,6 @@ import {
   lucideFileText,
   lucideGlobe,
   lucideImage,
-  lucideAppWindow,
   lucidePanelTop,
 } from '@liveworkspace/icons/lucide';
 import { Glyph, Prims } from '@livedesign/ui';
@@ -49,27 +48,11 @@ export const ELEMENT_TILES: PaletteTileDef[] = [
     shortcut: '9',
     noTint: true,
     needsImage: true,
+    dividerAfter: true,
     action: { type: 'image' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
         <Prims prims={lucideImage} />
-      </Glyph>
-    ),
-  },
-  {
-    // The tab window (docs/specs/009-elements/tab-window.md): another tab of the design, live, fitted inside it.
-    id: 'media:tab-window',
-    blurb: 'Another tab, live',
-    caption: 'Tab Window',
-    section: 'media',
-    label: 'Add Tab Window',
-    description:
-      'Tab Window. Shows another tab of this design, live and fitted inside it, so a page stays up to date with the tab it shows.',
-    dividerAfter: true,
-    action: { type: 'shape', kind: 'tab-window' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <Prims prims={lucideAppWindow} />
       </Glyph>
     ),
   },

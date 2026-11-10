@@ -109,7 +109,8 @@ export function usePaletteCatalogue({
   const addIcon = (iconId: string) => armed(() => onAddIcon(iconId))();
   const addSticker = (stickerId: string) => armed(() => onAddSticker(stickerId))();
   const addTechIcon = (iconId: string) => armed(() => onAddTechIcon(iconId))();
-  const addText = armed(onAddText);
+  const addText = (preset?: import('@livedesign/design').TextPresetId) =>
+    armed(() => onAddText(preset))();
   const addSticky = armed(onAddSticky);
   const addTable = armed(onAddTable);
   // The annotation is the ONE tile that still places instantly (docs/specs/009-elements/annotations.md): a

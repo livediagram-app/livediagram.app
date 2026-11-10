@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
+import { RetiredTabWindowFace } from './RetiredTabWindowFace';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@liveplanner/project';
 import {
   PADDING_PX,
@@ -62,6 +63,7 @@ type ElementFaceRouterProps = Pick<
   | 'onSetPageHeading'
   | 'onSetSessionConfig'
   | 'onOpenElementSettings'
+  | 'tabSummaries'
 > & {
   // Derived once by the host and shared with the branches here, rather than
   // recomputed per branch: several of them render the same label node.
@@ -93,6 +95,7 @@ export function ElementFaceRouter({
   onSetPageHeading,
   onSetSessionConfig,
   onOpenElementSettings,
+  tabSummaries,
   label,
   labelNode,
   contentInset,
@@ -128,11 +131,14 @@ export function ElementFaceRouter({
   return (
     <>
       {settingsMenu}
-      {element.type === 'shape' &&
-      element.shape === 'session-button' &&
-      element.session?.tool === 'timer' &&
-      !isEditing &&
-      timerControls ? (
+      {element.type === 'shape' && element.shape === 'tab-window' ? (
+        /* A stored tab window (docs/specs/009-elements/tab-window.md, retired): a still frame named for its tab. */
+        <RetiredTabWindowFace element={element} surface={surface} tabs={tabSummaries} />
+      ) : element.type === 'shape' &&
+        element.shape === 'session-button' &&
+        element.session?.tool === 'timer' &&
+        !isEditing &&
+        timerControls ? (
         /* A TIMER session element is the timer (docs/specs/012-collaboration/session-button.md), not a button that
            starts one elsewhere: same TabTimer, same tab field, same pure
            display maths as the top-of-page pill, so pausing here pauses

@@ -1008,13 +1008,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'With a stack selected.',
         helpArticle: 'stacks',
       }),
-      elementTourSwitch('tab-window', {
-        label: 'Tab Window',
-        event: { category: 'UI', on: 'TabWindowTourSeenOff', off: 'TabWindowTourSeenOn' },
-        keywords: 'tab window live slide embed another tab tour',
-        description: 'With a tab window selected.',
-        helpArticle: 'tabWindows',
-      }),
     ],
   },
   {

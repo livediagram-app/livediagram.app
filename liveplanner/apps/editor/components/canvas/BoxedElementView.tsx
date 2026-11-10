@@ -460,6 +460,7 @@ function BoxedElementViewImpl({
             onSetPageHeading={onSetPageHeading}
             onSetSessionConfig={onSetSessionConfig}
             onOpenElementSettings={onOpenElementSettings}
+            tabSummaries={tabSummaries}
             label={label}
             labelNode={labelNode}
             // Clear of the indicators and on the label body (a cylinder's, under its lid).

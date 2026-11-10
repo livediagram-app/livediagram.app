@@ -4,7 +4,7 @@ import { SITE_URL } from '@livedesign/ui';
 // livedesign's comparisons, drawn by @liveworkspace/comparisons (packages/comparisons/README.md
 // "livedesign"). The hub, every page, their metadata and the sitemap read this list, so adding a
 // competitor is a one-place change. Bump the date with any change to them.
-const UPDATED = new Date('2026-11-01');
+const UPDATED = new Date('2026-11-10');
 
 const LIST: Alternative[] = [
   {
@@ -64,7 +64,7 @@ const LIST: Alternative[] = [
       'A laser pointer, a spotlight and Zen mode for walking people through a design, live.',
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can add logo and wireframe pages for you.',
-      '33 templates to start from, by what you are making: logos and brand marks, app and website wireframes for shopping, travel, social and work, and a photo to edit.',
+      '32 templates to start from, by what you are making: logos and brand marks, app and website wireframes for shopping, travel, social and work, and a photo to edit.',
       'Free and MIT-licensed, with no paid tier.',
     ],
     sections: [

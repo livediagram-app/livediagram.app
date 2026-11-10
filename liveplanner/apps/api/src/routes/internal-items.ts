@@ -14,6 +14,7 @@
 // comment threads through the `csv` and `comments` formats. A notice is worked out off the index's path: a share link made (the first-share milestone),
 // or someone's first time in through a link (the owner's "someone joined" email, and Project·Joined).
 import {
+  askIndexCommunityStates,
   JOINED_TELEMETRY_TYPE,
   checkMigrationTabSizes,
   handleInternalItems as handle,
@@ -28,6 +29,7 @@ import { planRoom } from '../plan-client';
 import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importProjectFileFor } from './internal-file';
+import { indexAppClient } from '../index-service';
 import type { Env } from '../types';
 
 export function handleInternalItems(
@@ -42,8 +44,12 @@ export function handleInternalItems(
     dataExportKey: env.DATA_EXPORT_KEY,
     app: 'liveplanner',
     migrationKey: env.MIGRATION_KEY,
+    // The Community's sweep calls its door with the same key this api publishes with (liveworkspace community.md).
+    communityKey: env.COMMUNITY_KEY,
     waitUntil,
     handlers: {
+      // Where Community posts' items stand, as the index reads them, for the Community's sweep.
+      communityStates: (posts) => askIndexCommunityStates(indexAppClient(env), posts),
       purge: async (id) => {
         await planRoom(env, id).purge();
         await purgePlanPreviews(env, id);

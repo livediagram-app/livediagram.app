@@ -57,9 +57,10 @@ export function LegalPage({
             {apps.map((app, i) => (
               <span
                 key={app.id}
-                className="absolute size-72 rounded-full opacity-25 blur-3xl dark:opacity-15"
+                data-hero-glow
+                className="absolute -m-32 size-[34rem] opacity-25 dark:opacity-15"
                 style={{
-                  background: app.accent,
+                  background: `radial-gradient(closest-side, ${app.accent}, transparent)`,
                   top: `${-20 + (i % 2) * 40}%`,
                   right: `${-6 + i * 12}%`,
                 }}
@@ -69,7 +70,7 @@ export function LegalPage({
           <div className="relative mx-auto max-w-7xl px-4 pt-14 pb-16 sm:px-6 sm:pt-20">
             <nav
               aria-label="Legal"
-              className="inline-flex rounded-full border border-slate-200 bg-white/80 p-1 text-sm font-medium shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80"
+              className="inline-flex rounded-full border border-slate-200 bg-white/80 p-1 text-sm font-medium shadow-sm dark:border-slate-700 dark:bg-slate-900/80"
             >
               {PAGES.map((page) => (
                 <a
@@ -110,7 +111,7 @@ export function LegalPage({
               {highlights.map((highlight) => (
                 <li
                   key={highlight.title}
-                  className="rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/70"
+                  className="rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/70"
                 >
                   <span className="flex size-10 items-center justify-center rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900">
                     {highlight.icon}
@@ -223,7 +224,7 @@ export function LegalPage({
 function Chip({ app, children }: { app?: ListedApp; children: ReactNode }) {
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-sm font-medium text-slate-700 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200"
+      className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-sm font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200"
       style={app ? { borderColor: `${app.accent}55` } : undefined}
     >
       {children}

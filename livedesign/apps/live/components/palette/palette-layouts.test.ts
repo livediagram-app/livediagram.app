@@ -41,10 +41,10 @@ describe('palette layouts', () => {
     expect(tileIds('concepts')).toContain('tools:timeline');
   });
 
-  it('gives a Participant Sticky and Text, and an image', () => {
+  it('gives a Participant Sticky and Text (a Paragraph), and an image', () => {
     expect(participantTiles().map((t) => t.id)).toEqual([
       'tools:sticky',
-      'tools:text',
+      'tools:text-paragraph',
       'tools:image',
     ]);
   });
@@ -68,9 +68,20 @@ describe('palette layouts', () => {
     expect(paletteLandingCategory('pages')).toBe('popular');
   });
 
-  it('files the Sankey last in Concepts, and keeps Write to its notes', () => {
+  it('files the Sankey last in Concepts, and keeps Write to its text styles and notes', () => {
     expect(tileIds('concepts').at(-1)).toBe('tools:sankey');
-    expect(tileIds('write')).toEqual(['tools:text', 'tools:sticky', 'tools:pointer-note']);
+    // docs/specs/008-canvas/canvas-and-palette.md "Text styles".
+    expect(tileIds('write')).toEqual([
+      'tools:text-title',
+      'tools:text-subtitle',
+      'tools:text-heading',
+      'tools:text-subheading',
+      'tools:text-paragraph',
+      'tools:text-quote',
+      'tools:text-caption',
+      'tools:sticky',
+      'tools:pointer-note',
+    ]);
   });
 
   it('leaves mind nodes, lanes, frames, annotations and entities out of Pages', () => {
@@ -118,7 +129,9 @@ describe('palette layouts', () => {
       'tools:shape-pen',
       'tools:polygon',
     ]);
-    expect(tilesOf('write')).toEqual(['tools:text', 'tools:sticky']);
+    // A Title for the wordmark, a Subtitle for its tagline.
+    expect(tilesOf('write')).toEqual(['tools:text-title', 'tools:text-subtitle', 'tools:sticky']);
+    expect(tilesOf('popular')).toContain('tools:text-title');
     expect(tilesOf('media')).toEqual(['tools:image']);
     // No Logo category anywhere: its tools are Draw's.
     for (const kind of ['design', 'wireframe', 'logo'] as const)

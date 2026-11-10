@@ -15,6 +15,8 @@ import {
   SHARE_PASSWORD_HEADER,
   TEAM_AUDIT_NEXT_CURSOR_HEADER,
   type App,
+  type CommunityStateAnswer,
+  type CommunityStateAsk,
   type IndexErrorCode,
 } from './constants';
 import type {
@@ -27,6 +29,7 @@ import type {
   CreateShareLinkInput,
   Folder,
   FolderPreview,
+  SpacePreview,
   GrantResponse,
   InboxResponse,
   Item,
@@ -246,6 +249,12 @@ export function createIndexClient({
     ) =>
       call<{ previews: FolderPreview[] }>('/folders/previews', {
         query: { ids: ids.join(','), app: query.app },
+        signal: options.signal,
+      }),
+    // What Home's Spaces tiles show: the person's own space, then each team they are in, in one request.
+    spacePreviews: (query: { app?: App } = {}, options: RequestOptions = {}) =>
+      call<{ spaces: SpacePreview[] }>('/spaces/previews', {
+        query: { app: query.app },
         signal: options.signal,
       }),
     createFolder: (input: CreateFolderInput) =>
@@ -478,6 +487,23 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
       send('PUT', appConnectionPath(hostId, connectionId, tabId)),
     removeConnection: (hostId: string, connectionId: string, tabId: string) =>
       send('DELETE', appConnectionPath(hostId, connectionId, tabId)),
+    // Where up to COMMUNITY_STATES_MAX Community posts' items stand (the Community's sweep), one answer per post, in
+    // order. Read only.
+    communityStates: async (
+      posts: readonly CommunityStateAsk[],
+    ): Promise<CommunityStateAnswer[]> => {
+      const res = await (doFetch ?? fetch)(`${base}/app/community/states`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${key}`,
+          [INDEX_APP_HEADER]: app,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ posts }),
+      });
+      if (!res.ok) throw await failed(res);
+      return ((await res.json()) as { states: CommunityStateAnswer[] }).states;
+    },
   };
 }
 

@@ -67,10 +67,10 @@ describe('stripTilesFor', () => {
   // "Fixed dividers": each category's groups, between the tiles shown.
   it.each([
     ['shapes', ['shapes:diamond', 'shapes:stadium']],
-    ['write', ['tools:text']],
+    ['write', ['tools:text-caption']],
     ['draw', ['tools:highlighter', 'tools:polygon']],
     ['devices', ['devices:laptop']],
-    ['media', ['media:tab-window', 'media:embed-website']],
+    ['media', ['tools:image', 'media:embed-website']],
     ['data', ['data:legend']],
   ])('divides %s into its groups', (category, after) => {
     expect([...stripTilesFor(category, NONE).dividersAfter]).toEqual(after);

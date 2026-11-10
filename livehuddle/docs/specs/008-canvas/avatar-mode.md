@@ -365,7 +365,8 @@ whose test enumerates both lists, so a new kind cannot ship unclassified):
 - **Walk**: the character walks there, and arriving does what it does (sits, drinks, travels through a portal's or an
   elevator's walk-in, says Insert Coin). Scenery with a footprint (a fountain, a bar, a pond's water) stops the walk
   beside it, on its rim at most, never in it; flat pieces (a rug, grass, a path) are walked onto. Whether passing or arriving seats you is the [Chair](../009-elements/chair.md)'s rule,
-  not this one.
+  not this one. A Podium walks you to its speaker spot wherever on it you click, and arriving stands you at it
+  ([Venue pieces](../009-elements/venue-pieces.md#speaking-from-the-podium)).
 - **Use**: the click does the piece's **main action**, from **anywhere on its footprint**, not only its buttons, with
   no walk, no selection and no drag. The main action is the face control marked `data-piece-main` (the Directory's
   stand, the Notice Board's whole face, the Jukebox's Play). A piece with no main action right now (an idle Screen, a

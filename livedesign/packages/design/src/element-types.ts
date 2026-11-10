@@ -220,8 +220,8 @@ export type ShapeElement = {
   // same slot. Cleared the moment that colour is set any other way.
   strokeSwatch?: QuickSwatchSlot;
   fillSwatch?: QuickSwatchSlot;
-  // Tab window (docs/specs/009-elements/tab-window.md): the id of the tab of this design it shows. Only meaningful
-  // on the 'tab-window' kind. Absent until chosen; a tab that is gone (or not shared) shows as unavailable.
+  // Tab window (docs/specs/009-elements/tab-window.md, retired): the id of the tab of this design a stored one
+  // showed, which names its still frame. Only meaningful on the 'tab-window' kind.
   windowTabId?: string;
   // Instance (docs/specs/009-elements/components.md): the main of the design's component library it draws, its
   // overrides by main element id, and who has its edit session open. Only meaningful on the 'instance' kind.

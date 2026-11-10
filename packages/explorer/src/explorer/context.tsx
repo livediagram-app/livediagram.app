@@ -147,8 +147,6 @@ export type ExplorerContextValue = {
   setRenamingId: (id: string | null) => void;
   dialog: DialogTarget;
   openDialog: (target: DialogTarget) => void;
-  // Opens the sections drawer on a phone (a no-op where there is none, the editor's panel).
-  openNav: () => void;
   // A view's help article, when the host has one; the pane header and Home's hero draw a Help button.
   helpHref?: HelpHref;
   // Home's hero: the question after the greeting, and the lead.
@@ -255,7 +253,6 @@ export type ExplorerProviderProps = {
   shareHost?: ShareHost;
   inboxHost?: InboxHost;
   tokensUrl?: string;
-  openNav?: () => void;
   helpHref?: HelpHref;
   heroWords?: HeroWords;
   onTimeline?: TimelineTelemetry;
@@ -275,8 +272,6 @@ export type ExplorerProviderProps = {
   onFolderShown?: (shown: FolderShown) => void;
   children: ReactNode;
 };
-
-const NO_NAV = () => {};
 
 const NO_TEAMS: TeamRef[] = [];
 const NO_TEMPLATES: readonly LensOption[] = [];
@@ -304,7 +299,6 @@ export function ExplorerProvider({
   shareHost,
   inboxHost,
   tokensUrl,
-  openNav = NO_NAV,
   helpHref,
   heroWords,
   onTimeline,
@@ -467,7 +461,6 @@ export function ExplorerProvider({
       setRenamingId,
       dialog,
       openDialog,
-      openNav,
       helpHref,
       heroWords: heroWords ?? heroWordsFor(app, filter),
       onTimeline,
@@ -514,7 +507,6 @@ export function ExplorerProvider({
       newApps,
       renamingId,
       dialog,
-      openNav,
       helpHref,
       heroWords,
       onTimeline,

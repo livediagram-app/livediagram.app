@@ -23,6 +23,10 @@ export { SOLID_BRAND_DARK_CONTROL } from '@liveworkspace/ui';
 export const FOCUS_RING =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500';
 
+/** FOCUS_RING drawn inside the control, for one that runs edge to edge (the phone's sections bar). */
+export const FOCUS_RING_INSET =
+  'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-500';
+
 export const MUTED = 'text-slate-500 dark:text-slate-400';
 
 /** The Explorer's body under its header: the sidebar and the pane side by side (and its skeleton's, so nothing jumps). */

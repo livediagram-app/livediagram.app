@@ -44,8 +44,10 @@ counted by its own connection. Each router names its environment's platform with
   `TELEMETRY_KEY`), over HTTPS. Each service holds one secret per app (`<SERVICE>_KEY_<APP>`).
 - **A service calls another** over a service binding where both are platform Workers (accounts to the index,
   telemetry and Drive; the index to Drive; Drive and media to the index; status to livediagram's router and MCP).
-- **The index and Drive call an app back** at the app's internal routes (`/api/internal/items/…`): the index with the
-  app's `INDEX_KEY` to copy and purge, Drive with the app's `DRIVE_KEY` to export and import.
+- **The index, Drive and the Community call an app back** at the app's internal routes (`/api/internal/items/…`): the
+  index with the app's `INDEX_KEY` to copy and purge, Drive with the app's `DRIVE_KEY` to export and import, and the
+  Community's sweep with the app's `COMMUNITY_KEY` to ask where its posts' items stand
+  ([community.md](../007-community/community.md#the-sweep)).
 
 ## When a request fails
 

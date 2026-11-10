@@ -2,7 +2,7 @@
 
 // The one option list: a bordered, rounded box holding a row per choice, one to a row, each its icon at the left then
 // its name; the chosen row tinted in the brand colour with a tick at the right. The element menus' style pickers
-// (Finish, a flowchart's or mind map's look, a Sankey's) and the tab window's tab list use it.
+// (Finish, a flowchart's or mind map's look, a Sankey's) use it.
 //
 // Three kinds: `single` (one of a set: a radio group), `multiple` (each row on or off: checkboxes, a box at the
 // right) and `action` (each row does something: buttons). Inside a command menu the rows are its items

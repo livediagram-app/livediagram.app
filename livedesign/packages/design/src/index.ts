@@ -298,6 +298,7 @@ export * from './pages-edits';
 export * from './photo-pages';
 export * from './pages-background-copy';
 export * from './tab-window';
+export * from './svg-id-prefix';
 export * from './components';
 export * from './component-resolve';
 export * from './component-make';
@@ -443,6 +444,7 @@ export * from '@liveworkspace/model-core/icon-weight';
 export * from '@liveworkspace/model-core/rich-text';
 
 export * from './factories';
+export * from './text-presets';
 export * from './whiteboard';
 export * from './segment-geometry';
 export * from './duplicate';

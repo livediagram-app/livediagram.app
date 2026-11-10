@@ -286,6 +286,27 @@ export function createFakeIndex(
         const { slice, next } = page(folders, query.limit, query.cursor);
         return { folders: slice.map((f) => ({ ...f })), nextCursor: next };
       }),
+    // Home's Spaces: My Work (the reader's own, never one reached by a link) then each team the items name, in the
+    // order first met, each its four newest live items and its count.
+    spacePreviews: (query: { app?: App } = {}, options: { signal?: AbortSignal } = {}) =>
+      answer('spacePreviews', [query], options.signal, () => {
+        const live = items.filter(
+          (i) => i.trashedAt === null && !i.archivedAt && (!query.app || i.app === query.app),
+        );
+        const teams = [...new Set(items.flatMap((i) => (i.teamId ? [i.teamId] : [])))];
+        return {
+          spaces: [null, ...teams].map((teamId) => {
+            const inside = live
+              .filter((i) => i.teamId === teamId && (teamId !== null || i.sharedVia === null))
+              .sort((a, b) => b.updatedAt - a.updatedAt);
+            return {
+              teamId,
+              itemCount: inside.length,
+              items: inside.slice(0, 4).map((i) => ({ ...i })),
+            };
+          }),
+        };
+      }),
     folderPreviews: (
       ids: readonly string[],
       query: { app?: App } = {},

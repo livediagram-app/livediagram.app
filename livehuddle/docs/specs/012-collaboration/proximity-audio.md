@@ -74,6 +74,13 @@ inside, and walls block sound fully. Inside a room, as on the open floor, the ru
   each moved by less than half a percent is left where it is.
 - A speaker is heard only on your tab, and only while both of you walk. Someone sitting in a chair is where the chair
   is.
+- **From a Podium, three times as far** ([Venue pieces](../009-elements/venue-pieces.md#speaking-from-the-podium),
+  owner 2026-11-10): while a speaker stands at a Podium's speaker spot, every distance to them counts as a third of
+  itself, so they are heard to 780 px, let go beyond 900 px, at full volume within 270 px, and their hearing ring is
+  three times as wide. Walls come first exactly as before, so nobody across one hears them, and a stage's rules are
+  unchanged. Only their voice carries further: they hear others as anyone does. Everyone works it out from what the
+  room already shares (the piece they stand at, in their `avatar` presence) and the board, so every listener and the
+  room's own check agree; stepping away ends it at once.
 
 ## The microphone
 

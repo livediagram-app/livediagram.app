@@ -9,14 +9,14 @@ export function templateEditorMode(_kind: TemplateKind): EditorMode {
   return 'pages';
 }
 
-/** The mode's blank (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Illustration, one empty page
- *  that asks what it is for. */
+/** The mode's blank (docs/specs/007-editor/start-diagramming.md "Recommended and groups"): Blank Tab, one empty page
+ *  that asks what it is for, which the start's × leaves too, so no shelf offers it. */
 export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<EditorMode, TemplateKind>> = {
-  pages: 'blank-illustration',
+  pages: 'blank',
 };
 
 // The blanks beyond the mode's own (docs/specs/007-editor/start-diagramming.md "Recommended and groups"): one empty
-// page of a chosen kind, beside Blank Illustration, in the order the landing page's Blank Slate lists them.
+// page of a chosen kind, in the order the landing page's Blank Slate lists them.
 export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = [
   'blank-logo',
   'blank-wireframe-phone',

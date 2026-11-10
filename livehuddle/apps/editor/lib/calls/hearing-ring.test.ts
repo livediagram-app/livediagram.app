@@ -53,6 +53,21 @@ describe('hearingRing', () => {
     expect(hearingRing({ x: 3000, y: 3000 }, [])).toMatchObject({ clip: null, holes: [] });
   });
 
+  // venue-pieces.md "Speaking from the Podium": three times as far from a Podium, still cut by every wall.
+  it('reaches three times as far from a podium, cut to your room as ever', () => {
+    const far = hearingRing({ x: 3000, y: 3000, seatedOn: 'podium', reach: 3 }, zones)!;
+    expect(far.r).toBe(3 * HEARING_RADIUS_PX);
+    // Inside the hall at a podium: cut to the hall; the meeting room inside it, and now the room across the corridor
+    // (in reach at three times the radius), are holes.
+    const ring = hearingRing({ x: 300, y: 500, seatedOn: 'podium', reach: 3 }, zones)!;
+    const byId = (id: string) => zoneOutline(zones.find((z) => z.id === id)!);
+    expect(ring.r).toBe(3 * HEARING_RADIUS_PX);
+    expect(ring.clip).toEqual(byId('hall'));
+    expect(ring.holes).toEqual([byId('meeting'), byId('across')]);
+    // Off the podium neither is in reach.
+    expect(hearingRing({ x: 300, y: 500 }, zones)!.holes).toEqual([]);
+  });
+
   it('cuts out a room you stand outside of, as walls block sound both ways', () => {
     const ring = hearingRing({ x: 200, y: 900 }, zones)!;
     expect(ring.clip).toBeNull();

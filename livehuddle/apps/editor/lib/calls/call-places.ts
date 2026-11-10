@@ -1,23 +1,25 @@
 // The tab's rooms and stages as the call and the coarse copy read them (docs/specs/012-collaboration/
 // meeting-rooms-and-stage.md "Rooms are calls", "The stage"; blueprint: peer-motion-store.md "The coarse copy"):
 // worked out once per board, shared by the characters layer, the call hook and the facts the coarse copy watches.
-import type { Element } from '@livehuddle/document';
+import { callLecterns, type Element } from '@livehuddle/document';
 import { callStages, stageAt, type CallStage } from './stage';
 import { roomZones, zoneAt, type CallZone } from './zones';
 
 export type CallPlaces = {
   readonly zones: readonly CallZone[];
   readonly stages: readonly CallStage[];
+  // The Podiums, whose speaker's voice carries three times as far (venue-pieces.md "Speaking from the Podium").
+  readonly lecterns?: ReadonlySet<string>;
 };
 
 const cache = new WeakMap<readonly Element[], CallPlaces>();
 
-/** The rooms and stages among `elements` (the visible ones), the same object for the same board. */
+/** The rooms, stages and Podiums among `elements` (the visible ones), the same object for the same board. */
 export function callPlacesOf(elements: readonly Element[]): CallPlaces {
   const hit = cache.get(elements);
   if (hit) return hit;
   const zones = roomZones(elements);
-  const places = { zones, stages: callStages(elements, zones) };
+  const places = { zones, stages: callStages(elements, zones), lecterns: callLecterns(elements) };
   cache.set(elements, places);
   return places;
 }

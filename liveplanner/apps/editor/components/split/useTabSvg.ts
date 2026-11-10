@@ -4,11 +4,9 @@ import { useThreadStore } from '@/components/plan/threads/CardThreadsContext';
 import { itemsWithCounts } from '@/hooks/plan/thread-store';
 import { donePhase } from '@liveplanner/items';
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
-import { canvasSurface, tabWindowNames, type Tab } from '@liveplanner/project';
+import { tabWindowNames, type Tab } from '@liveplanner/project';
 import { tabAsSeen } from '@/lib/export-as-seen';
-import type { renderTabToSvg } from '@/lib/export-tab';
 import { renderTabDrawingSvg } from '@/lib/tab-drawing';
-import type { SvgMotion } from '@/lib/export-tab';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { svgFrameOf } from '@liveworkspace/workbench/lib/svg-frame';
 import { usePlan } from '@/components/plan/PlanContext';
@@ -29,24 +27,14 @@ export type TabSvg = {
 
 // A tab drawn as the editor would show it (docs/specs/007-editor/split-view.md "The right pane"):
 // the export renderer's SVG, in the viewer's appearance, with the project's Plan items. Re-rendered when the tab changes (an edit, a collaborator's op) at a deferred
-// priority, so a burst of remote edits never competes with the editor beside it.
+// priority, so a burst of remote edits never competes with the editor beside it. A still, as every export is.
 //
-// `motionFor` sets the drawing moving (a tab window, docs/specs/009-elements/tab-window.md "The drawing"): given the
-// drawn tab's surface, it says how each element animates. Without it the drawing is a still, as the side pane's is.
-// Pass a module-level function so its identity is stable.
-//
-// `planOpts` adds what a Plan tab's picture needs beyond its cards (usePlanImageExport): its Sheets' cells and its
-// plan views' pictures. A tab window passes them, so it draws a Board, Sheet or Dashboard tab as laid out.
-//
-// Drawn by renderTabDrawingSvg: a Pages tab as its pages and a Form tab as its form, any other tab as its canvas, so a
-// window, the other pane and a Diagram slot all show a tab the same way.
-export function useTabSvg(
-  tab: Tab | undefined,
-  motionFor?: (surface: ReturnType<typeof canvasSurface>) => SvgMotion,
-  planOpts?: Pick<NonNullable<Parameters<typeof renderTabToSvg>[1]>, 'sheets' | 'resolvePlanArt'>,
-): TabSvg | null {
+// Drawn by renderTabDrawingSvg: a Pages tab as its pages and a Form tab as its form, any other tab as its canvas, so
+// the other pane and a Diagram slot show a tab the same way.
+export function useTabSvg(tab: Tab | undefined): TabSvg | null {
   const { tabs } = useEditorContext();
-  // A window inside this tab is named for the tab it shows, as the export names it. Keyed on the tabs' names, not the
+  // A stored tab window inside this tab (docs/specs/009-elements/tab-window.md, retired) is named for the tab it
+  // showed, as the export names it. Keyed on the tabs' names, not the
   // tabs, so an edit anywhere in the project does not redraw this one.
   const nameKey = tabs.map((t) => `${t.id}\u0000${t.name}`).join('\u0001');
   // oxlint-disable-next-line react/exhaustive-deps -- keyed on the tabs' names, not the tabs
@@ -72,7 +60,6 @@ export function useTabSvg(
     const seen = tabAsSeen(deferredTab, appearance);
     const markup = renderTabDrawingSvg(seen, {
       pattern: false,
-      motion: motionFor?.(canvasSurface(seen.backgroundColor)),
       resolveTabWindow: windowNames,
       // Each card with its comment count, which its threads hold (docs/specs/026-plan/items.md "Comments").
       ...(plan
@@ -83,12 +70,11 @@ export function useTabSvg(
             itemsDone: donePhase(plan.statusPhases),
           }
         : {}),
-      ...planOpts,
     });
     return {
       markup,
       ...svgFrameOf(markup),
       background: seen.backgroundColor ?? '#ffffff',
     };
-  }, [deferredTab, appearance, plan, threadStore, iconsReady, windowNames, motionFor, planOpts]);
+  }, [deferredTab, appearance, plan, threadStore, iconsReady, windowNames]);
 }

@@ -18,8 +18,6 @@ import {
   layerOpacityOf,
   exportFontIds,
   visibleLayerElements,
-  type ArrowElement,
-  type ArrowLineMotion,
   type BoxedElement,
   type ResolvePlanArt,
   type ResolveTabWindow,
@@ -85,19 +83,9 @@ export type ImageExportOpts = {
   // A plan view's picture (docs/specs/026-plan/plan-tabs.md "Export"), drawn by the editor, which has the charts'
   // models; without it a plan view draws as its labelled box.
   resolvePlanArt?: ResolvePlanArt;
-  // Each tab window's tab drawn (docs/specs/009-elements/tab-window.md "Exports"), and the typefaces those tabs write
-  // in, so their words export in their own faces; without it a window draws its frame named for its tab.
+  // A stored tab window's frame named for its tab (docs/specs/009-elements/tab-window.md, retired); without it the
+  // frame reads "Tab Window".
   resolveTabWindow?: ResolveTabWindow;
-  tabWindowFontIds?: readonly string[];
-  // The drawing set moving rather than still (docs/specs/009-elements/tab-window.md "The drawing"): each arrow's
-  // flow, as the canvas draws it, so the page's own motion stylesheets play it. Only a tab window passes it (an
-  // inline SVG on the page); every file export is a still.
-  motion?: SvgMotion;
-};
-
-// How an element moves in a live inline SVG: the moving line for an arrow's flow. Undefined for one that holds still.
-export type SvgMotion = {
-  arrowLine: (el: ArrowElement) => ArrowLineMotion | undefined;
 };
 
 // Webfont embedding for downloads (docs/specs/004-interface-design/fonts.md) — the bytes travel with the file.
@@ -249,10 +237,7 @@ export async function renderTabToCanvas(
   // markup. Fetched once here and inlined into every fragment below.
   const fontCss =
     opts.fontCss ??
-    (await embeddedFontFaceCss([
-      ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
-      ...(opts.tabWindowFontIds ?? []),
-    ]));
+    (await embeddedFontFaceCss(exportFontIds(els, tab.font, opts.sheets, tab.finish)));
   // The canvas drawers paint through the DOM's own font set, so wait for it
   // to settle — rasterising mid-swap bakes the fallback face into the PNG.
   await document.fonts?.ready;
@@ -405,10 +390,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // stylesheet (the live preview, where the page has the faces already).
   const fontDefs = opts.fontCss
     ? `<defs><style type="text/css">${opts.fontCss}</style></defs>`
-    : svgFontDefs([
-        ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
-        ...(opts.tabWindowFontIds ?? []),
-      ]);
+    : svgFontDefs(exportFontIds(els, tab.font, opts.sheets, tab.finish));
   if (fontDefs) parts.push(fontDefs);
   // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(els);
@@ -450,18 +432,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     for (const el of band.elements) {
       if (el.type === 'arrow')
         inner.push(
-          svgArrow(
-            el,
-            tab.elements,
-            surface,
-            tab.font,
-            labels,
-            undefined,
-            els,
-            paper,
-            tab.finish,
-            opts.motion?.arrowLine(el),
-          ),
+          svgArrow(el, tab.elements, surface, tab.font, labels, undefined, els, paper, tab.finish),
         );
     }
     parts.push(wrapBand(layerOpacityOf(band.layer), inner));
@@ -476,10 +447,7 @@ export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Prom
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
   const fontCss =
     opts.fontCss ??
-    (await embeddedFontFaceCss([
-      ...exportFontIds(els, tab.font, opts.sheets, tab.finish),
-      ...(opts.tabWindowFontIds ?? []),
-    ]));
+    (await embeddedFontFaceCss(exportFontIds(els, tab.font, opts.sheets, tab.finish)));
   return new Blob([renderTabToSvg(tab, { ...opts, fontCss })], { type: 'image/svg+xml' });
 }
 

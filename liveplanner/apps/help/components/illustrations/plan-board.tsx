@@ -4,6 +4,7 @@
 
 import { Scene, Label, Cursor } from '@liveworkspace/help-site/art/primitives';
 import { Card, Widget, Cog, Column, Arrow2 } from './plan-parts';
+import { StartBandLanes, StartTitleMarkLanes } from './start-band';
 
 /** A Kanban board in Plan mode: header widgets, a column over its WIP limit (the preset's 3) with its
  *  cog, Task and Action cards (the types Kanban takes) with their type stripes, a card being dragged into the gap it opens, and + Add card. */
@@ -105,7 +106,10 @@ export function PlanBoardPickerScene() {
         className="fill-white stroke-slate-200"
         strokeWidth={2}
       />
-      <Label x={34} y={36} size={13} weight={700} tone="strong">
+      {/* The header band: the board lanes, then the title mark and the title. */}
+      <StartBandLanes x={23} y={15} w={374} h={35} />
+      <StartTitleMarkLanes x={30} y={23} />
+      <Label x={54} y={36} size={13} weight={800} tone="strong">
         Start Planning
       </Label>
       {/* The search, at the header's right. */}

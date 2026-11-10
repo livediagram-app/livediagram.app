@@ -2,12 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { resolveTemplate } from './template-tab';
 import { isTemplateKind, templateKindOf, TEMPLATES } from './templates';
 
-// The retired device wireframes make their wireframe-page replacements.
+// The retired device wireframes make their wireframe-page replacements, and Blank Illustration makes Blank Tab.
 describe('retired templates', () => {
   it.each([
     ['mobile-wireframe', 'wireframe-mobile-app'],
     ['laptop-wireframe', 'wireframe-dashboard'],
     ['browser-wireframe', 'wireframe-website'],
+    // Blank Illustration was the empty page that asks what it is for: Blank Tab.
+    ['blank-illustration', 'blank'],
   ] as const)('%s makes %s', (old, now) => {
     expect(isTemplateKind(old)).toBe(false);
     expect(TEMPLATES.some((t) => (t.kind as string) === old)).toBe(false);

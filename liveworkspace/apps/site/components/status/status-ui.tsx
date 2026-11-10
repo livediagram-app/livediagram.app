@@ -22,13 +22,14 @@ import {
   lucideTriangleAlert,
   lucideUsers,
 } from '@liveworkspace/icons/lucide';
+import { Tooltip } from '@liveworkspace/ui';
 import type { ReactNode } from 'react';
-import type { CheckResult, Overall, ServiceState } from '@/lib/status/probe';
-import { HISTORY_MAX } from '@/lib/status/probe';
+import { formatUptime, uptimeLabel } from '@/lib/status/history';
+import type { Overall, ServiceState } from '@/lib/status/probe';
 import type { IconName } from '@liveworkspace/status';
 
 // The status page's pieces (liveworkspace/docs/specs/010-site/site.md "Status"): every state as an icon and a word, never colour
-// alone, the service icons, the strip of this visit's checks and the legend.
+// alone, the service icons, the uptime figures and the legend.
 
 const ICONS: Record<IconName, ReturnType<typeof lucideGlyph>> = {
   globe: lucideGlyph(lucideGlobe, 18),
@@ -138,6 +139,46 @@ export function StateBadge({
   );
 }
 
+// An uptime over the stored window: "99.95% Uptime" beside a group's summary (`chip`), or the figure alone in the
+// page's Uptime tile (`plain`). Focusable, so the keyboard reaches the tooltip that names its window.
+export function UptimeFigure({
+  percent,
+  days,
+  variant = 'chip',
+}: {
+  percent: number;
+  days: number;
+  variant?: 'chip' | 'plain';
+}) {
+  const label = uptimeLabel(percent, days);
+  return (
+    <Tooltip label={label}>
+      <span
+        role="img"
+        tabIndex={0}
+        aria-label={label}
+        data-uptime={percent}
+        className={
+          variant === 'chip'
+            ? 'inline-flex shrink-0 cursor-default items-center gap-1 rounded-full bg-white/70 px-2.5 py-1 text-xs font-medium whitespace-nowrap text-slate-600 ring-1 ring-slate-200 ring-inset focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--lw-ink)] dark:bg-slate-900/60 dark:text-slate-300 dark:ring-slate-700 dark:focus-visible:outline-[var(--lw-ink-dark)]'
+            : 'cursor-default rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 dark:focus-visible:outline-white'
+        }
+      >
+        <span
+          className={
+            variant === 'chip'
+              ? 'font-mono font-semibold tabular-nums text-slate-900 dark:text-white'
+              : undefined
+          }
+        >
+          {formatUptime(percent)}
+        </span>
+        {variant === 'chip' ? ' Uptime' : null}
+      </span>
+    </Tooltip>
+  );
+}
+
 type OverallLook = { icon: ReturnType<typeof lucideGlyph>; orb: string; glow: string; ink: string };
 
 export const OVERALL_LOOK: Record<Overall, OverallLook> = {
@@ -189,36 +230,6 @@ export function formatAgo(at: number, now: number): string {
   if (h < 24) return `${h} h ago`;
   const d = Math.floor(h / 24);
   return d === 1 ? '1 day ago' : `${d} days ago`;
-}
-
-// The checks made since the page was opened, oldest first, as a row of slots: the empty ones still to come. The
-// strip is a picture of the row's words, so assistive tech hears the summary instead.
-export function HistoryStrip({ history }: { history: readonly CheckResult[] }) {
-  const answered = history.filter((h) => h.state !== 'down').length;
-  const empty = Math.max(0, HISTORY_MAX - history.length);
-  return (
-    <div className="flex min-w-0 items-center gap-2">
-      <span className="sr-only">
-        {history.length === 0
-          ? 'No checks yet.'
-          : `${answered} of ${history.length} checks answered since you opened this page.`}
-      </span>
-      <span aria-hidden className="flex h-5 min-w-0 flex-1 items-end gap-[2px] overflow-hidden">
-        {Array.from({ length: empty }, (_, i) => (
-          <span
-            key={`e${i}`}
-            className="h-1.5 min-w-[3px] flex-1 rounded-full bg-slate-200/80 dark:bg-slate-800"
-          />
-        ))}
-        {history.map((h) => (
-          <span
-            key={h.at}
-            className={`lw-status-bar min-w-[3px] flex-1 rounded-full ${STATE_LOOK[h.state].swatch} ${h.state === 'down' ? 'h-2.5' : h.state === 'slow' ? 'h-4' : 'h-5'}`}
-          />
-        ))}
-      </span>
-    </div>
-  );
 }
 
 const LEGEND: ServiceState[] = ['up', 'reached', 'slow', 'down', 'checking', 'skipped'];

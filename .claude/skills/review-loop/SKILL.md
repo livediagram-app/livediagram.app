@@ -214,8 +214,16 @@ threads (open and resolved), so you never ask the same question twice.
 
 ## 5. Rules
 
+- **Open threads mean a reply is needed** (owner, 2026-11-09 and 2026-11-10: threads that ask nothing "clutter my
+  inbox"). A thread this loop leaves open is the owner's to-do, so only a question waiting on them stays open.
+  Anything else it posts (a move to Reviewed, a Type fix, "Answers acted on", a note) is resolved in the same
+  `change_threads` call that posts it, and an answered question is resolved once acted on (step "Answers acted
+  on"). When a card it asked about is Cancelled, Done or Implemented, or gains a Pull Request link, its open
+  question threads are moot: reply in one line why ("Cancelled", "Built in <PR url>") and resolve them. Never
+  resolve a thread a person started.
 - Only ever do these: move Work Items from **Under Review** to **Reviewed**; start question threads on Under
-  Review Work Items, reply in them and resolve them once their answer is acted on; correct a Work Item's
+  Review Work Items, reply in them and resolve them once their answer is acted on (or, on a card in any column,
+  once moot, as above); correct a Work Item's
   **Type** when it's wrong or missing; and add its missing **labels**. Never edit a card's title, description or other fields. Never move
   cards anywhere else. Never reply to, resolve, edit or delete a thread a person started, or anyone's comment
   but the loop's own. Never touch cards in any other column or on any other board.

@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
-import { APPEARANCE_BOOT_SCRIPT, DARK_READER_LOCK, PUBLIC_VIEWPORT } from '@livediagram/ui';
+import { DARK_READER_LOCK, PUBLIC_VIEWPORT } from '@livediagram/ui';
 import { htmlProps, trustedConstant, trustedTypesBootScript } from '@liveworkspace/trusted-types';
 import { SITE_ASSET_PREFIX } from '@liveworkspace/sites/workspace-proxy';
 import { openExplorerBootScript } from '@liveworkspace/sites/open-explorer';
 import { TURNSTILE_ORIGIN } from '@/lib/turnstile';
+import { siteAppearanceBootScript } from '@/lib/appearance/appearance-keys';
 
 // liveworkspace.app (liveworkspace/docs/specs/010-site/site.md). Trusted Types before anything else: the default
 // policy and the violation log, and this site's own scripts, under its asset prefix (next.config.ts),
@@ -16,6 +17,9 @@ const TRUSTED_TYPES_BOOT = trustedTypesBootScript(SITE_ASSET_PREFIX, [TURNSTILE_
 // static site with no router in front of its homepage, so the homepage's first script opens the Explorer instead,
 // before anything paints, when the person's switch is on. Any other page returns at its first test.
 const OPEN_EXPLORER_BOOT = trustedConstant(openExplorerBootScript());
+// Appearance before first paint (liveworkspace/docs/specs/010-site/site.md "Behaviour"): the setting of the app whose
+// address the page is on, under that app's own key, or liveworkspace.app's own.
+const APPEARANCE_BOOT = trustedConstant(siteAppearanceBootScript());
 
 const TITLE = 'liveworkspace: Live apps for every kind of work';
 const DESCRIPTION =
@@ -56,7 +60,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200">
         {/* Appearance before first paint. */}
-        <script {...htmlProps(APPEARANCE_BOOT_SCRIPT)} />
+        <script {...htmlProps(APPEARANCE_BOOT)} />
         {children}
       </body>
     </html>

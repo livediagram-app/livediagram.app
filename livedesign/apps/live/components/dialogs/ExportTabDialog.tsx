@@ -7,7 +7,7 @@ import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from '@liveworkspace/workbench/components/dialogs/TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
 import { LogoKitPanel } from './LogoKitPanel';
-import { type LaidOutPage, type Tab, tabToJsonText } from '@livedesign/design';
+import { type LaidOutPage, type Tab, tabToJsonText, tabWindowNames } from '@livedesign/design';
 import {
   downloadBlob,
   exportTabAsPng,
@@ -27,7 +27,6 @@ import { ExportPagePicker } from './ExportPagePicker';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { useTabWindowExport } from './useTabWindowExport';
 
 // A photo page's formats (PNG, JPEG, WebP, PSD) and their encoders load only once Photo is picked.
 const PhotoExportPanel = dynamic(
@@ -93,10 +92,8 @@ type ExportTabDialogProps = {
   // Pages mode's pages (docs/specs/007-editor/pages-mode.md "Export"): PDF, PNG and
   // SVG export all pages or one chosen page, each exactly its sheet. Absent elsewhere.
   pages?: LaidOutPage[];
-  // The design's tabs, for the tabs a tab window shows (docs/specs/009-elements/tab-window.md "Exports").
+  // The design's tabs, for the name a stored tab window's frame shows (docs/specs/009-elements/tab-window.md).
   designTabs?: readonly Tab[];
-  // Fetch tabs' content (a tab window's tab, which arrives only when opened or fetched); resolves to the failures.
-  loadTabs?: (only: readonly string[]) => Promise<string[]>;
 };
 
 const NO_DESIGN_TABS: readonly Tab[] = [];
@@ -181,7 +178,6 @@ export function ExportTabDialog({
   imageContext,
   pages,
   designTabs,
-  loadTabs,
 }: ExportTabDialogProps) {
   // null = the format grid; otherwise the picked format's sub-panel.
   const [active, setActive] = useState<Format | null>(null);
@@ -262,24 +258,10 @@ export function ExportTabDialog({
   // Build the preview SVG for the current options — the same SVG the .svg
   // export produces, which PNG / PDF rasterise, so it faithfully previews all
   // three. Stable across renders so the panel can memoise on the toggles.
-  // Each tab window's tab, fetched and drawn once an image format is picked (docs/specs/009-elements/tab-window.md
-  // "Exports").
-  const windows = useTabWindowExport({
-    tab,
-    tabs: designTabs ?? NO_DESIGN_TABS,
-    loadTabs,
-    imageContext,
-    active: !!active && !isTextFormat(active),
-  });
+  // A stored tab window draws as its frame named for its tab, as on the canvas (docs/specs/009-elements/tab-window.md).
   const windowOpts = useMemo(
-    () =>
-      windows.resolveTabWindow
-        ? {
-            resolveTabWindow: windows.resolveTabWindow,
-            tabWindowFontIds: windows.tabWindowFontIds ?? [],
-          }
-        : {},
-    [windows],
+    () => ({ resolveTabWindow: tabWindowNames(designTabs ?? NO_DESIGN_TABS) }),
+    [designTabs],
   );
   const renderPreview = useCallback(
     (opts: { pattern: boolean; hiddenLayers: boolean }) =>
@@ -424,12 +406,11 @@ export function ExportTabDialog({
             label={activeCard!.title}
             // A page: no canvas to tilt or pattern.
             pageExport={!!pages}
-            // Held until each tab window's tab is drawn, so a download never misses one.
-            busy={busy || !windows.ready}
+            busy={busy}
             error={error}
             checkerboard={seeThrough && page?.kind === 'logo'}
             renderPreview={renderPreview}
-            previewReady={previewReady && windows.ready}
+            previewReady={previewReady}
             onExport={(opts) => void runImageExport(active as ImageFormat, opts)}
             onBack={() => {
               setError(null);

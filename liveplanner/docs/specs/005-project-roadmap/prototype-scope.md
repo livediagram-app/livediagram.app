@@ -88,7 +88,7 @@ only small per-browser state, under `liveplanner:*` keys:
 ## Next
 
 - **The diagram model code.** The element routers carry only Plan's kinds. The diagram kinds' model code in
-  `packages/project` (flowcharts, mind maps, Sankey, the concept graphics, code blocks, portals, tab windows) stays where
+  `packages/project` (flowcharts, mind maps, Sankey, the concept graphics, code blocks, portals, a stored tab window's frame) stays where
   exports, validation, the MCP and the CLI use it, and its specs in [Canvas](../008-canvas/README.md),
   [Elements](../009-elements/README.md) and [Palette](../010-palette/README.md) describe it from that use. Code no Plan
   path reaches (flowchart and mind-map growth, Tidy Up, the element-tour dialog handles) is a candidate to remove.

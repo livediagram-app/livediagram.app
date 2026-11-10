@@ -323,15 +323,6 @@ export const PAGE_SWIPES = chart(
   { types: ['PageSwipe'], rising: 'neutral' },
 );
 
-// Tab windows (docs/specs/009-elements/tab-window.md): a window's tab chosen, and the tab opened from it.
-export const TAB_WINDOW_USE = chart(
-  'UI',
-  'Used',
-  'Tab Windows Opened',
-  'A tab opened from a Tab Window showing it, on a page.',
-  { types: ['TabWindowOpen'], rising: 'neutral' },
-);
-
 // Building pages: a layout placed, a page duplicated or moved.
 export const PAGE_BUILDING = chart(
   'Tab',
@@ -373,7 +364,6 @@ export const PAGE_WORK: MetricStack = {
     PAGE_BUILDING,
     PAGE_CONTENTS_JUMPS,
     PAGE_SWIPES,
-    TAB_WINDOW_USE,
     LOGO_TOOLS,
     LOGO_MIRROR_TWINS,
     LOGO_SWITCHES,

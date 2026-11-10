@@ -60,11 +60,9 @@ const isPaneState = (state: unknown) =>
 // mounts: nothing yet; without a slot it sits in a row of its own above the list); on the page, in the pane header's
 // row beside the app filter.
 export function InboxPane({
-  onOpenNav,
   compact = false,
   filterSlot,
 }: {
-  onOpenNav?: () => void;
   compact?: boolean;
   filterSlot?: HTMLElement | null;
 }) {
@@ -246,13 +244,24 @@ export function InboxPane({
     else if (e.key === 'e' && reader.current?.primary()) e.preventDefault();
   };
 
+  // A row done from the pane leaves, and the pane moves on to the row below it (the one above when it was the last),
+  // never back to the first (one-explorer-contracts.md "Inbox"), so a run of resolves works down the list.
   const onGone = useCallback(
     (key: string) => {
       setGone((prev) => new Set(prev).add(key));
-      if (stacked) closePane();
-      else listRef.current?.focus();
+      const at = visible.findIndex((e) => e.key === key);
+      const next = at < 0 ? undefined : (visible[at + 1] ?? visible[at - 1]);
+      if (next) {
+        setSelectedKey(next.key);
+        scrollTo.current = at + 1 < visible.length ? at : at - 1;
+        if (!stacked) listRef.current?.focus();
+      } else {
+        setSelectedKey(null);
+        if (stacked) closePane();
+        else listRef.current?.focus();
+      }
     },
-    [stacked, closePane],
+    [visible, stacked, closePane],
   );
 
   const retry = () => {
@@ -383,7 +392,6 @@ export function InboxPane({
       {compact || paneStands ? null : (
         <PaneHeader
           title="Inbox"
-          onOpenNav={onOpenNav}
           actions={<span ref={setHeaderSlot} className="flex min-w-0 shrink-0" />}
         />
       )}

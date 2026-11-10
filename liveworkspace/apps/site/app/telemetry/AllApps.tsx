@@ -1,32 +1,34 @@
 'use client';
 
-import { useState } from 'react';
-import {
-  TELEMETRY_APPS,
-  type TelemetryApp,
-  type TelemetrySummary,
-  type TelemetryWindowKey,
-} from '@liveworkspace/telemetry';
+import { useMemo } from 'react';
+import type { TelemetryApp, TelemetrySummary, TelemetryWindowKey } from '@liveworkspace/telemetry';
 import { WindowPanel } from './_shared/WindowPanel';
-import { WINDOW_META } from './_shared/windows';
+import { previousSpanLabel, windowLabel } from './_shared/windows';
+import { compareApps } from './_all/apps-compared';
+import { EventsByApp } from './_all/EventsByApp';
+import { VisitorsAndAccounts } from './_all/VisitorsAndAccounts';
 
 // How many of the busiest events the overview lists.
 const TOP_EVENTS = 12;
 
 // "All apps" (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"): every app's events summed. Each app's
-// own tabs read its own vocabulary, so the overview keeps to what every app shares: how much happens,
-// how it splits between the apps, and the busiest events. Picking an app opens its full dashboard.
+// own tabs read its own vocabulary, so the overview keeps to what every app shares: how much happens, how the apps
+// compare on it and on their visitors and sign-ups (Apps Compared), and the busiest events. Picking an app opens its
+// full dashboard. The window is the page's, so it stays when an app is picked.
 export function AllApps({
   summary,
   onPickApp,
+  active,
+  onSelect,
 }: {
   summary: TelemetrySummary;
   onPickApp: (app: TelemetryApp) => void;
+  active: TelemetryWindowKey;
+  onSelect: (key: TelemetryWindowKey) => void;
 }) {
-  const [active, setActive] = useState<TelemetryWindowKey>('last7');
   const window = summary.windows[active];
-  const previous = summary.previousWindows?.[active];
-  const label = WINDOW_META.find((w) => w.key === active)?.label ?? '';
+  const comparison = useMemo(() => compareApps(summary, active), [summary, active]);
+  const against = previousSpanLabel(summary, active);
 
   return (
     <>
@@ -39,47 +41,32 @@ export function AllApps({
           }}
           daily={summary.daily}
           active={active}
-          onSelect={setActive}
+          onSelect={onSelect}
         />
       </div>
 
-      <h2 className="mt-12 text-lg font-semibold text-slate-900 dark:text-slate-100">By app</h2>
-      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-        Events each app sent in the {label.toLowerCase()}, against the same span before it.
-      </p>
-      <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {TELEMETRY_APPS.map((app) => {
-          const count = window.byApp?.[app] ?? 0;
-          const before = previous?.byApp?.[app] ?? 0;
-          const share = window.total > 0 ? Math.round((count / window.total) * 100) : 0;
-          return (
-            <li key={app}>
-              <button
-                type="button"
-                onClick={() => onPickApp(app)}
-                data-app={app}
-                className="flex w-full cursor-pointer flex-col items-start rounded-2xl border border-slate-200 bg-white p-5 text-left transition-colors hover:border-brand-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-500/60"
-              >
-                <span className="text-sm font-medium text-brand-700 dark:text-brand-300">
-                  {app}
-                </span>
-                <span className="mt-2 text-3xl font-semibold tabular-nums text-slate-900 dark:text-slate-100">
-                  {count.toLocaleString('en-GB')}
-                </span>
-                <span className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  {share}% of every app · {changeLabel(count, before)}
-                </span>
-                <span className="mt-3 text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Open its dashboard →
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+      <section aria-labelledby="apps-compared">
+        <h2
+          id="apps-compared"
+          className="mt-12 text-lg font-semibold text-slate-900 dark:text-slate-100"
+        >
+          Apps Compared
+        </h2>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Each app in the {windowLabel(active).toLowerCase()}
+          {against ? `, against ${against}` : ''}. The window above sets the span.
+        </p>
+        <EventsByApp
+          summary={summary}
+          comparison={comparison}
+          active={active}
+          onPickApp={onPickApp}
+        />
+        <VisitorsAndAccounts summary={summary} comparison={comparison} active={active} />
+      </section>
 
       <h2 className="mt-12 text-lg font-semibold text-slate-900 dark:text-slate-100">
-        Busiest events
+        Busiest Events
       </h2>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         The same event from several apps counts once here, added up.
@@ -110,12 +97,4 @@ export function AllApps({
       )}
     </>
   );
-}
-
-// "up 12%", "down 3%", "level" or "new", against the span before.
-export function changeLabel(now: number, before: number): string {
-  if (before === 0) return now === 0 ? 'level' : 'new';
-  const pct = Math.round(((now - before) / before) * 100);
-  if (pct === 0) return 'level';
-  return pct > 0 ? `up ${pct}%` : `down ${-pct}%`;
 }

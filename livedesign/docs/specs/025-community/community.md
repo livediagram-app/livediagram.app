@@ -152,9 +152,13 @@ copy through a Community link is named after the post. Each distinct person who 
 
 ## Design lifecycle
 
-- **Trash**: the post is not listed and its page shows not-found; restoring the design lists it again.
-- **Permanent delete** deletes the post. **Moving into a team library** stops it being listed.
-- **Deleting an account** deletes its posts with its designs, and the copies it took stop counting.
+- **Trash**: moving the design to the Trash removes its post (its likes, copies and reports with it), unless reports
+  hid it, which stays final; its page shows not-found. Restoring the design does not bring the post back: its author
+  shares it to the Community again ([liveworkspace community.md](../../../../liveworkspace/docs/specs/007-community/community.md#what-lives-where)).
+- **Archiving** removes the post the same way, and unarchiving does not bring it back.
+- **Permanent delete** deletes the post. The gallery catches up within one Community sweep at most (about fifteen
+  minutes); the post's link, card image and copy close at once. **Moving into a team library** stops it being listed.
+- **Deleting an account** deletes its posts at once, with its designs, and the copies it took stop counting.
 - **Copying** a published design does not publish the copy.
 
 ## Likes, reports and moderation

@@ -105,7 +105,6 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
 // the categories test pins them together.
 type BlankKind =
   | 'blank'
-  | 'blank-illustration'
   | 'blank-logo'
   | 'blank-wireframe-phone'
   | 'blank-wireframe-tablet'

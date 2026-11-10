@@ -1229,9 +1229,23 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
   - The layouts in **large tiles**, as many columns as the gallery's width holds at 156 px each (a
     tall page's at 112 px), never fewer than two: each tile is the layout's preview, its name and,
     where the gallery is wide (the card from 520 px, the popover and the dialog), its one-line
-    description. Under the pointer a tile lifts and takes the brand ring with a **Use** pill at
-    its corner (the same on keyboard focus); none of the motion under reduced motion. Tiles cascade
-    in as a view opens, and draw their preview once they scroll near view (a soft placeholder of
+    description. A tile's states (one shared card, `LayoutCard` in `@liveworkspace/workbench`):
+    - **Rest**: the preview on a soft surface with a hairline edge and a faint shadow.
+    - **Hover** (a mouse or pen; a touch screen never keeps one) and **keyboard focus** alike: the
+      tile's backing warms to a faint brand wash, the preview lifts 2 px over a soft shadow that
+      fades in under it, its edge takes a thin brand-tinted line (never a solid coloured border), a
+      faint brand glow rises from its foot and a **Use** pill slides up at its corner. Keyboard
+      focus adds the focus ring round the whole tile, offset from it.
+    - **Pressed**: the preview settles back and shrinks a touch, so the press is felt.
+    - **Placed**: the layout last placed from this gallery while it stays open (Surprise Me's
+      roll, or a press where the gallery stays) keeps a brand backing, a 2 px brand edge and a
+      **Placed** badge with a tick at the preview's corner in place of Use, and is scrolled into
+      view; it carries `aria-current`.
+    - Under reduced motion nothing moves (no lift, no slide, no press shrink), and the changes
+      are instant. The lift, shadow, edge and glow move by transform and opacity alone (the shadow
+      is drawn once and faded, never animated), so pointing across the grid stays cheap. Dark mode
+      keeps the same states on the dark surface, the wash and glow fainter.
+  - Tiles cascade in as a view opens, and draw their preview once they scroll near view (a soft placeholder of
     the page's shape until then), so dozens of layouts open without drawing them all.
   - **Surprise Me** places a random layout from those shown (never the one it last landed on while
     there is another), and its dice tumble. In the Layout popover it keeps the popover open, so

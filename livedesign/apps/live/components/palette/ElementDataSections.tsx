@@ -19,7 +19,6 @@ import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
 import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSection';
 import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
 import { StackMenuSection } from '@/components/palette/StackMenuSection';
-import { TabWindowMenuSection } from '@/components/palette/TabWindowMenuSection';
 import { ComponentMenuSection } from '@/components/palette/ComponentMenuSection';
 import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
 import {
@@ -141,9 +140,7 @@ export function ElementDataSections({
     isCodeBlock ||
     isChecklist ||
     isLegend ||
-    isSankey ||
-    // Its Tab Window section (Shows, Open) lives in Tools: without this the menu never offered another tab.
-    shapeTarget?.shape === 'tab-window';
+    isSankey;
   return (
     <>
       {showTools ? (
@@ -233,14 +230,6 @@ export function ElementDataSections({
           {shapeTarget && isConceptShape(shapeTarget.shape) ? (
             <ConceptMenuSection
               target={shapeTarget as ShapeElement & { shape: ConceptShape }}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* A tab window's tab, and opening it (docs/specs/009-elements/tab-window.md). */}
-          {shapeTarget?.shape === 'tab-window' ? (
-            <TabWindowMenuSection
-              target={shapeTarget}
               ops={props.elementStyle}
               sectionProps={sectionProps}
             />

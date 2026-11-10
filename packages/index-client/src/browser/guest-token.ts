@@ -95,6 +95,18 @@ export function guestTokenNeedsRefresh(token: GuestToken | null, now = Date.now(
   return !token || token.expiresAt - now < GUEST_TOKEN_REFRESH_BEFORE_MS;
 }
 
+// A page inside another's frame (an embed, a Community post's preview) never hands off: the round trip would take
+// the frame to the app's /auth/guest page, which refuses to be framed, and the frame would show the browser's
+// "refused to connect" page instead of the item. It carries on as a link visitor, whose share code is enough
+// (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests"). A frame we cannot look out of is one.
+function inFrame(): boolean {
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
+}
+
 function randomState(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(18));
   return btoa(String.fromCharCode(...bytes))
@@ -121,7 +133,9 @@ export function createGuestTokens(opts: GuestTokenOptions): GuestTokens {
   // Send the browser for a guest token, coming back to `returnTo` (this page by default). Resolves only when no
   // handoff is started (one failed a moment ago); otherwise the page is leaving and it never resolves.
   const startGuestHandoff = (returnTo?: string): Promise<void> => {
-    if (typeof window === 'undefined' || recentlyFailed(Date.now())) return Promise.resolve();
+    if (typeof window === 'undefined' || inFrame() || recentlyFailed(Date.now())) {
+      return Promise.resolve();
+    }
     const state = randomState();
     const { pathname, search, hash } = window.location;
     write(

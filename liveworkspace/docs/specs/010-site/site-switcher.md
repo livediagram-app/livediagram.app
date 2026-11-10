@@ -33,8 +33,13 @@ step for the Explorer or a landing page, one click away through the logo (Novemb
   two taps: the card marks the site you're on, and once a tap on the logo has opened the card, that
   row leads where the logo does (the Explorer's to liveworkspace.app's home). A second
   tap on the logo while the card is open follows the logo. A tap outside closes it. A tap is a
-  touch pointer; when the browser doesn't say which pointer clicked, a screen whose main pointer
-  is coarse counts as touch. A mouse or trackpad on a touch screen keeps the pointer behaviour.
+  press by a touch pointer, read from the press itself (its `pointerdown`) rather than from the
+  click that follows it, since iPhone and iPad Safari can name a finger's click a mouse's (that
+  read the tap as a click, so only the chevron opened the card there). When the browser names no
+  pointer at all, a screen whose main pointer is coarse counts as touch. A mouse or trackpad on a
+  touch screen (an iPad with a trackpad) keeps the pointer behaviour, decided by the input each
+  press actually used. The logo and the chevron are each a tap target at least 44px tall
+  (`touch-target-y`), so the logo, its name and the chevron together make one wide target.
 - **Keyboard**: the chevron is a menu button. Tab reaches it after the logo; Enter, Space or an
   arrow opens the card with focus on the first site, arrows move between sites, Escape closes it
   and returns focus to the chevron. Enter on the logo still goes home.

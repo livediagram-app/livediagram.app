@@ -78,7 +78,7 @@ type OpenMenu = {
 // without this view; re-exported for the Timeline's own readers.
 export { actorWords, renderTimelineEvent } from './timeline-event-render';
 
-export function TimelinePane({ onOpenNav }: { onOpenNav?: () => void }) {
+export function TimelinePane() {
   const explorer = useExplorer();
   const {
     client,
@@ -284,11 +284,7 @@ export function TimelinePane({ onOpenNav }: { onOpenNav?: () => void }) {
 
   return (
     <div data-explorer-view="timeline">
-      <PaneHeader
-        title={VIEW_TITLES.timeline}
-        onOpenNav={onOpenNav}
-        actions={<TimelineControls controls={controls} />}
-      />
+      <PaneHeader title={VIEW_TITLES.timeline} actions={<TimelineControls controls={controls} />} />
       <Timeline
         controls={controls}
         viewerId={viewerId}

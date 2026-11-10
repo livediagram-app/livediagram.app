@@ -459,14 +459,21 @@ describe('keeping in step', () => {
     expect(await stateOf()).toBe('hidden');
   });
 
-  it('takes a trashed document’s post out of the gallery, and puts it back on restore', async () => {
+  // liveworkspace community.md "What lives where": the Trash removes the post, and restoring never republishes it.
+  it('removes a trashed document’s post, and does not bring it back on restore', async () => {
     const post = await publish();
     index.trashed.add('d1');
     await check();
     expect(await gallery()).toEqual([]);
+    expect(service.sql.prepare('SELECT COUNT(*) AS n FROM posts').get()).toEqual({ n: 0 });
+    // The room withdrew it: its row and its community link are gone, so the old link reopens nothing.
+    expect(count('SELECT COUNT(*) AS n FROM community_post')).toBe(0);
+    expect(
+      count(`SELECT COUNT(*) AS n FROM test_share_links WHERE code = '${post.shareCode}'`),
+    ).toBe(0);
     index.trashed.delete('d1');
     await check();
-    expect(await gallery()).toEqual([post.id]);
+    expect(await gallery()).toEqual([]);
   });
 
   it('closes a post whose document moved into a team library, and deletes one whose link is gone', async () => {

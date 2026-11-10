@@ -306,6 +306,12 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
   kinds). New generics: `settleChips`, `settleStacks`, `dropUnturnableRotation`, `autoLayoutElements`,
   `tidyLayoutElements`, `withOrthogonalBends`, `withFacingBends`, `settleDiagramKeys`, `migrateLegacyCallouts`,
   `isChip`, `renumberSteps`, `withStepSequence`, `fillStrokeLoop` and the path reshapers.
+- `text-presets` (livedocuments' Write text styles, moved when livedesign took them too): the `TextPreset` shape and
+  `TextPresetId` vocabulary (title, subtitle, heading, subheading, paragraph, quote, caption), `presetTextFields`,
+  `splitTextPx`, `textBoxFor`, `NEW_TEXT_ALIGN`, and the generic `restyleText<E>` and `textPresetOf`. A style is data:
+  each product keeps its own table and factory in its `text-presets.ts` (livedocuments' six at a written page's 24 to
+  72 px, livedesign's seven at a screen's 12 to 40 px) and binds the helpers to it; livedocuments'
+  `label-text-scale.ts` re-exports `splitTextPx`. Nothing a product stores changed.
 - `@liveworkspace/workbench/components/canvas/useFaceFinishPass` is the canvas finish pass of livediagram,
   livedocuments, livedesign and livehuddle; liveplanner keeps its own (its Plan boards spend a frame budget).
 

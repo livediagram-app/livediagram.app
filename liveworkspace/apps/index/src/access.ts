@@ -77,15 +77,15 @@ export async function linkAccess(
 
 // What the caller may do with a row. A trashed item is reached only by its owner and team.
 export async function accessTo(env: Env, row: ItemRow, caller: Caller): Promise<Access | Response> {
-  const direct = directAccess(row, caller.person);
-  if (direct) return direct;
-  // A team made or joined since their token was minted (fresh-teams.ts).
-  if (row.team_id && caller.person && (await inTeamNow(env, caller.person, row.team_id))) {
-    return { level: 'edit', tabId: null, via: 'team', code: null };
-  }
+  const own = await ownAccess(env, row, caller);
+  // The owner's and a member's own access, unless the request comes in through a public link (a Community post's):
+  // that is a viewing surface for everyone, its author and their team included, so it opens at the link's level as
+  // any visitor's does (one-explorer-contracts.md "Sharing and access"). Only a request that names a code asks.
+  if (own && !caller.share) return own;
   if (!caller.person && !caller.share) return unauthorized();
-  if (row.trashed_at !== null) return notFound();
   const link = await linkFor(env, row.id, caller);
+  if (own && !link?.public) return own;
+  if (row.trashed_at !== null) return notFound();
   // An item the caller can't reach answers as missing, revealing nothing.
   if (!link) return notFound();
   return linkAccess(
@@ -95,6 +95,17 @@ export async function accessTo(env: Env, row: ItemRow, caller: Caller): Promise<
     caller.share?.password ?? null,
     caller.share?.visitor ?? null,
   );
+}
+
+// The owner's or a joined member's access, or null for anyone else.
+async function ownAccess(env: Env, row: ItemRow, caller: Caller): Promise<Access | null> {
+  const direct = directAccess(row, caller.person);
+  if (direct) return direct;
+  // A team made or joined since their token was minted (fresh-teams.ts).
+  if (row.team_id && caller.person && (await inTeamNow(env, caller.person, row.team_id))) {
+    return { level: 'edit', tabId: null, via: 'team', code: null };
+  }
+  return null;
 }
 
 export type Loaded = { row: ItemRow; access: Access };

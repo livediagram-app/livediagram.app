@@ -88,7 +88,8 @@ export type CommunityAppClient = {
   // A copy taken through a post's link counts toward its copy count. Best effort and off the response path: a
   // failure is logged, never the copy's.
   countCopy(env: CommunityAppEnv, documentId: string, copierId: string, ip: string): Promise<void>;
-  // An account deleted: the copies it took stop counting. Best effort, like the copy itself.
+  // An account deleted: the copies it took stop counting, and every post it made in the app goes. Best effort, like
+  // the copy itself: a post it misses is found by the service's sweep (its documents are gone at the index).
   forgetCopier(env: CommunityAppEnv, ownerId: string): Promise<void>;
   // A guest's work moved to their account: their copies are the account's, one copier for a post both copied.
   mergeCopier(env: CommunityAppEnv, fromId: string, toId: string): Promise<void>;
@@ -149,6 +150,7 @@ export function communityAppClient(app: CommunityApp): CommunityAppClient {
     forgetCopier: (env, ownerId) =>
       bestEffort(env, 'forget copier', '/copiers/forget', async () => ({
         copier: await copierHash(ownerId),
+        owner: ownerId,
       })),
     mergeCopier: (env, fromId, toId) =>
       bestEffort(env, 'merge copier', '/copiers/merge', async () => ({

@@ -1,12 +1,11 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { pagesOf } from '@livedesign/design';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
 import { StartAgainTray } from '@/components/start/StartAgainTray';
-import { templateStartMode } from '@/components/start/template-start-mode';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
+import { useTemplateStartShown } from '@/components/start/useTemplateStartShown';
 
 // The template start (docs/specs/007-editor/start-diagramming.md) carries every template's preview: loaded the first
 // time an empty tab offers it, never on the editor's first load.
@@ -19,7 +18,7 @@ const StartFromTemplates = dynamic(
 // (useTemplatePickMove) keeps watching the tab.
 export function EditorStartPanels() {
   const ctx = useEditorContext();
-  const { hydrated, zenMode, embedMode, pendingDraw, activeTab, isReadOnly } = ctx;
+  const { activeTab } = ctx;
   // An editor's empty tab: its template start (docs/specs/007-editor/start-diagramming.md). A template picked from it
   // on a design /new just made goes to its default folder (docs/specs/013-workspace/default-folders.md "A template
   // picked after creation").
@@ -28,18 +27,7 @@ export function EditorStartPanels() {
     tabId: activeTab.id,
     tabHasContent: activeTab.elements.length > 0,
   });
-  // A connected tab is empty but shows its own page, never a start (connected-tabs.md "How it looks").
-  const templateStart = templateStartMode({
-    hydrated: hydrated && !ctx.activeTabConnected,
-    zen: zenMode,
-    embed: embedMode,
-    readOnly: isReadOnly,
-    drawToolArmed: !!pendingDraw,
-    mode: ctx.editorMode.mode,
-    elementCount: activeTab.elements.length,
-    // Read only for an empty tab: EditorView renders often, and a tab with content shows no start.
-    pages: activeTab.elements.length === 0 ? pagesOf(activeTab) : [],
-  });
+  const templateStart = useTemplateStartShown();
   return templateStart ? (
     <>
       <StartFromTemplates
@@ -47,7 +35,7 @@ export function EditorStartPanels() {
         mode={templateStart}
         tabId={activeTab.id}
         onTemplate={(kind) => {
-          // A blank closes the start as the × does: Blank Illustration lands nothing, so the tab would still read as
+          // A blank closes the start as the × does: Blank Tab lands nothing, so the tab would still read as
           // empty and the start would stay over it (start-diagramming.md "The first page").
           closeStartForBlank(activeTab.id, kind);
           void ctx.chooseTemplate(kind);

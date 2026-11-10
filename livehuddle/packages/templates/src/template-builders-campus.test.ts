@@ -245,7 +245,8 @@ describe.each(TABS)('the %s site', (_name, kind, els, first) => {
   // docs/specs/007-editor/templates-by-mode.md "Every Space is roomy": seats side by side are one row or an aisle
   // apart, and one behind another share an edge or are an aisle apart.
   it('keeps every aisle between seats wide enough to walk', () => {
-    const seats = all.filter((e) => seatsACharacter(e.shape));
+    // A Podium is held like a seat but stands on a stage, not in a row (venue-pieces.md "Speaking from the Podium").
+    const seats = all.filter((e) => seatsACharacter(e.shape) && e.shape !== 'podium');
     for (const [i, a] of seats.entries())
       for (const b of seats.slice(i + 1)) {
         const gx = Math.max(b.x - (a.x + a.width), a.x - (b.x + b.width));

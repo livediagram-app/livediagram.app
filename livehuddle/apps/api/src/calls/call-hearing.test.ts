@@ -238,3 +238,55 @@ describe('cost', () => {
     expect(ms).toBeLessThan(cpuBudgetMs(60));
   });
 });
+
+// docs/specs/009-elements/venue-pieces.md "Speaking from the Podium": the room lets a Podium's speaker be heard three
+// times as far, read off the seat their shared position names; walls still decide first, and it ends on leaving.
+describe('a voice from the podium, as the server sees it', () => {
+  const LECTERN_TAB: TabCalls = { ...TAB, lecterns: new Set(['podium']) };
+  const placedAt = (entries: Record<string, { x: number; y: number; seatedOn?: string | null }>) =>
+    new Map(Object.entries(entries).map(([id, at]) => [id, { tabId: 't', at }] as const));
+  const podiumWorld = (
+    speaker: { x: number; y: number; seatedOn?: string | null },
+    listener: { x: number; y: number },
+  ) => ({
+    ...world({}, { tab: LECTERN_TAB }),
+    placed: placedAt({ speaker, listener }),
+  });
+  const OPEN_REACH = 300 + HEARING_MARGIN_PX;
+
+  it('lets a podium speaker be heard three times as far across the open floor', () => {
+    const at = (x: number) => ({ x, y: 2000 });
+    const speaker = { ...at(0), seatedOn: 'podium' };
+    expect(hearingVerdict(podiumWorld(speaker, at(3 * OPEN_REACH)), 'listener', 'speaker')).toBe(
+      'heard',
+    );
+    expect(
+      hearingVerdict(podiumWorld(speaker, at(3 * OPEN_REACH + 1)), 'listener', 'speaker'),
+    ).toBe('apart');
+    // The speaker hears the listener only as far as anyone does: the reach is the voice's, not the ears'.
+    expect(hearingVerdict(podiumWorld(speaker, at(2 * OPEN_REACH)), 'speaker', 'listener')).toBe(
+      'apart',
+    );
+  });
+
+  it('still blocks a podium speaker with walls', () => {
+    // A podium in the kitchen, a listener in the boardroom next door, a short way off.
+    const speaker = { x: 1100, y: 300, seatedOn: 'podium' };
+    expect(hearingVerdict(podiumWorld(speaker, { x: 800, y: 300 }), 'listener', 'speaker')).toBe(
+      'apart',
+    );
+  });
+
+  it('ends when they step away, and needs a podium on the tab', () => {
+    const at = (x: number) => ({ x, y: 2000 });
+    const far = at(2 * OPEN_REACH);
+    expect(
+      hearingVerdict(podiumWorld({ ...at(0), seatedOn: null }, far), 'listener', 'speaker'),
+    ).toBe('apart');
+    expect(
+      hearingVerdict(podiumWorld({ ...at(0), seatedOn: 'desk' }, far), 'listener', 'speaker'),
+    ).toBe('apart');
+    const noPodium = { ...podiumWorld({ ...at(0), seatedOn: 'podium' }, far), tab: () => TAB };
+    expect(hearingVerdict(noPodium, 'listener', 'speaker')).toBe('apart');
+  });
+});

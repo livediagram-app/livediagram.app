@@ -138,13 +138,13 @@ Card Types, but it covers it".)
 
 ## Look
 
-- **Every tour wears the active tab's colours**, as the start panels do: the card (step and last) takes
+- **Every tour wears the app's own light or dark colours** (never the tab's theme), as the start panels do: the card (step and last) takes
   the tab's palette (`useStartPalette`, the start panels' hook; `tour-colours.ts` reads it into CSS variables).
   Card background, border, title, copy (muted) and the eyebrow, help link, progress dots and primary buttons
   (the tab's accent) all follow it, so a tour on a dark or coloured tab reads as part of that tab.
 - **The primary buttons stay readable**: their label is white or near-black, whichever contrasts more with the
   accent.
-- **The spotlight** is the dim alone, with no outline in the accent; the step card wears the tab's colours.
+- **The spotlight** is the dim alone, with no outline in the accent; the step card wears the app's colours.
 - This holds for every tour and the card type editor's Show Me, which all draw through `TourStage` and
   `TourPopover`.
 

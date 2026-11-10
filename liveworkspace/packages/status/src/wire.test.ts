@@ -5,9 +5,12 @@ import {
   dayUptime,
   dayStart,
   emptyHistory,
+  groupOfService,
   parseStatusHistory,
+  poolUptime,
   sliceHistory,
   type StatusHistory,
+  uptimePercent,
 } from './wire';
 
 // liveworkspace/docs/specs/009-status/status.md "The read API".
@@ -56,6 +59,50 @@ describe('days', () => {
   });
 });
 
+describe('uptimePercent', () => {
+  it('is null without checks, never a default 100', () => {
+    expect(uptimePercent(0, 0)).toBeNull();
+  });
+
+  it('is 100 only when every check answered', () => {
+    expect(uptimePercent(2160, 2160)).toBe(100);
+    // One down check in 75,600 (every service, 90 days) would round to 100.00; it reads 99.99.
+    expect(uptimePercent(75_599, 75_600)).toBe(99.99);
+    expect(uptimePercent(15_119, 15_120)).toBe(99.99);
+  });
+
+  it('rounds to two places below 100', () => {
+    expect(uptimePercent(2159, 2160)).toBe(99.95);
+    expect(uptimePercent(199, 200)).toBe(99.5);
+    expect(uptimePercent(2, 3)).toBe(66.67);
+    expect(uptimePercent(0, 24)).toBe(0);
+  });
+});
+
+describe('poolUptime', () => {
+  it('pools each group’s checks, and every service’s for the page', () => {
+    const u = poolUptime([
+      ['livediagram:api', { checks: 100, answered: 90 }],
+      ['livediagram:editor', { checks: 300, answered: 300 }],
+      ['liveplanner:api', { checks: 100, answered: 100 }],
+      ['liveplanner:mcp', { checks: 0, answered: 0 }],
+      ['livedesign:api', { checks: 0, answered: 0 }],
+    ]);
+    // Weighted by checks: 390 of 400, not the mean of 90% and 100%.
+    expect(u.groups).toEqual({ livediagram: 97.5, liveplanner: 100, livedesign: null });
+    expect(u.all).toBe(98);
+  });
+
+  it('is null throughout with no checks at all', () => {
+    expect(poolUptime([])).toEqual({ all: null, groups: {} });
+  });
+
+  it('takes a service’s group from its id', () => {
+    expect(groupOfService('liveworkspace:site')).toBe('liveworkspace');
+    expect(groupOfService('odd')).toBe('odd');
+  });
+});
+
 describe('sliceHistory', () => {
   it('keeps the last days, their uptime and the incidents that touch them', () => {
     const sliced = sliceHistory(history(), 2);
@@ -69,6 +116,21 @@ describe('sliceHistory', () => {
       u: [[0, 958]],
     });
     expect(sliced.incidents).toHaveLength(1);
+  });
+
+  it('works each group’s uptime out again from the days it keeps', () => {
+    const h = history();
+    h.services['liveworkspace:accounts'] = { p: 100, w: 'uuuuu', u: [] };
+    h.services['livediagram:api'] = { p: null, w: '-----', u: [] };
+    // Days 1 to 4: site 958, -, 1000, 1000; accounts 1000 four times. 6958 of 7000 tenths.
+    expect(sliceHistory(h, 4).uptime).toEqual({
+      all: 99.4,
+      groups: { liveworkspace: 99.4, livediagram: null },
+    });
+    expect(sliceHistory(h, 2).uptime).toEqual({
+      all: 100,
+      groups: { liveworkspace: 100, livediagram: null },
+    });
   });
 
   it('never widens the window, and keeps at least a day', () => {
@@ -96,6 +158,25 @@ describe('parseStatusHistory', () => {
     const h = history();
     h.services['liveworkspace:site']!.w = 'uu';
     expect(parseStatusHistory(h)).toBeNull();
+  });
+
+  it('keeps a good uptime, and drops a bad one without losing the bars', () => {
+    const good = { ...history(), uptime: { all: 99.5, groups: { liveworkspace: 99.5, x: null } } };
+    expect(parseStatusHistory(good)).toEqual(good);
+    for (const uptime of [
+      null,
+      'x',
+      { all: 101, groups: {} },
+      { all: 1 },
+      { all: 1, groups: [] },
+    ]) {
+      const parsed = parseStatusHistory({ ...history(), uptime });
+      expect(parsed).toEqual(history());
+      expect(parsed && 'uptime' in parsed).toBe(false);
+    }
+    expect(
+      parseStatusHistory({ ...history(), uptime: { all: null, groups: { a: Number.NaN } } }),
+    ).toEqual(history());
   });
 
   it('starts an empty window 89 days back, so it holds 90', () => {
