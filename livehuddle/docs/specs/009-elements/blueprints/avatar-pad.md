@@ -30,7 +30,7 @@ Scope, by file:
 | `packages/avatar/src/components/AvatarPadArrivals.tsx`            | The beam, floor flash and sparks                                          |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`, `Canvas.tsx` | Compose the arrivals; draw them over the characters                       |
 | `apps/editor/app/canvas-motion.css`                               | `avatar-pad-shimmer`, `-beam`, `-flash`, `-spark`; reduced motion         |
-| `apps/editor/components/palette/palette-tile-defs.tsx`            | `tools:avatar-pad` in **Travel** (`tileGroup: 'travel'`)                  |
+| `apps/editor/components/palette/tile-defs/room-tiles.tsx`         | `tools:avatar-pad` in **Travel** (`tileGroup: 'travel'`)                  |
 | `apps/editor/components/palette/palette-icons.tsx`                | `AvatarPadIcon`                                                           |
 | `apps/editor/components/palette/EditWalkToggle.tsx`               | Walk is always on the Edit                                                | Walk toggle |
 | `apps/editor/lib/editor-commands.ts`, `editor-shortcut-keys.ts`   | No `tool:avatar`, no `W`                                                  |

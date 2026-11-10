@@ -126,6 +126,7 @@ always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a r
   - **Speed budgets:** a change may not add `performance.now()` to a test (see [Speed budgets](#speed-budgets)).
   - **Copies across products:** a change may not add a source file byte-identical in two or more products
     (see [Copies across products](#copies-across-products)).
+  - **File size:** a change may not take a source file past 800 lines (see [File size](#file-size)).
   - **One path for markup:** a change may not add a raw HTML sink outside the shared markup module
     (see [One path for markup](#one-path-for-markup)).
   - **Tests:** every affected workspace's suite once. Those with `test:coverage` run that, so their
@@ -216,7 +217,7 @@ in a `wall-clock:` comment.
 ## Lint disables and console.log
 
 The shared lint config (`packages/oxlint-config`, each product's `docs/specs/003-system-architecture/linting.md`)
-holds two hygiene lines in every workspace's `lint`, so the Checks job and the pre-push hook keep them without a
+holds three hygiene lines in every workspace's `lint`, so the Checks job and the pre-push hook keep them without a
 script of their own:
 
 - **Every disable says why.** A directive names the rule it turns off and ends in a reason:
@@ -226,6 +227,9 @@ script of their own:
   so an `eslint-disable` suppresses nothing while looking as if it does. A disable that suppresses nothing is
   already an error (`reportUnusedDisableDirectives`), so a stale one is deleted, not explained. Where a small
   change to the code removes the need (a stable value, a truer type), that change comes first.
+- **No explicit `any`.** `typescript/no-explicit-any` is an error in source and tests alike, and the repo holds
+  none and no disable of it. A value of unknown shape is `unknown`, narrowed where it is read; a function type that
+  must fit every signature is `(...args: never[]) => unknown`.
 - **console.log is a command line tool's stdout.** Shipped code writes each line with its intent:
   - an app's trace lines go through `debugLog` (`packages/workbench/src/lib/debug-log.ts`, each product's
     `docs/specs/003-system-architecture/console-logging.md`);
@@ -261,6 +265,27 @@ new package carries) and a product's thin binding, a file whose only statements 
 - **The baseline only shrinks:** `--update` refuses to write while there is a new group or a new copy.
 - It reads blob hashes from the index (`git ls-files -s`) and opens one copy per identical group, to spot
   a binding: about 0.1 seconds on the whole repository (1,300 files in 450 groups). Its tests run with
+  `node --test .github/scripts/*.test.mjs`.
+
+## File size
+
+A source file over 800 lines holds several concerns, and the rule is no god files: new features go in
+focused modules and a big file splits on cohesion, with the original kept as the entry that re-exports
+its pieces so no importer changes. The Checks job's **No new files over 800 lines** step
+(`.github/scripts/file-size-guard.mjs`, also in the pre-push hook) counts the lines of every tracked,
+non-test source file in the repository (generated files and `.d.ts` declarations aside) and compares the
+ones over 800 with the committed baseline, `.github/scripts/file-size-baseline.txt`: flat data files
+(tables, catalogues, registries of strings), which are exempt, and the real code still waiting for its
+split.
+
+- **It fails** when a file that the baseline doesn't list passes 800 lines: a new file, or one that grew.
+  Split it instead.
+- **It also fails** when a listed file is back at 800 lines or under, or gone. Run
+  `node .github/scripts/file-size-guard.mjs --update` and commit the smaller baseline, so it stays tight.
+- **The baseline only shrinks:** `--update` refuses to write while a file outside it is over the limit.
+  A listed file may grow (a data file gains rows), since the list is the exception, not a size cap.
+- It takes about 1.2 seconds of CPU time on the whole repository, most of it reading the files. Its
+  tests run with
   `node --test .github/scripts/*.test.mjs`.
 
 ## One path for markup
@@ -353,7 +378,7 @@ deterministic failure shows up on the machine in minutes rather than on CI later
   saying so, when `CI` is set or outside a git work tree.
 - `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs`. It takes the merge base with
   `origin/main`, asks CI's planner (`ci-plan.mjs`) which groups the change reaches, and runs each
-  group's steps as `ci.yml` does: the copies guard (once), lint and type check, the format check, the speed-budget guard, `test`, `test:coverage`, then
+  group's steps as `ci.yml` does: the copies guard, the file size guard and the markup guard (once), lint and type check, the format check, the speed-budget guard, `test`, `test:coverage`, then
   each reached editor's suite once (unsharded, without coverage, so no floor is checked). It stops at the first failing step.
 - It checks only a push of the checked-out `HEAD`; a push of any other commit, a tag or a deletion
   passes and is left to CI. Nothing changed since the merge base also passes.

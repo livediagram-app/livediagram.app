@@ -34,7 +34,7 @@ Scope, by file:
 | `apps/live/lib/sankey-edit.ts`                                                        | `canEditSankey`                                                                                                 |
 | `apps/live/hooks/canvas/useSankeySetters.ts`                                          | `setSankeyFlows`, `setSankeyNodeColorSelected`, `setSankeyOptionSelected`                                       |
 | `apps/live/app/canvas-motion.css`                                                     | `lvd-sankey-grow`, `-flow`, `-cascade`, `-pulse`, `-rise`                                                       |
-| `apps/live/components/palette/palette-tile-defs.tsx`                                  | Tile `tools:sankey`, section `build`                                                                            |
+| `apps/live/components/palette/tile-defs/concept-tiles.tsx`                            | Tile `tools:sankey`, section `build`                                                                            |
 
 ## Domain and naming
 

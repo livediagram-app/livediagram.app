@@ -22,7 +22,7 @@ Scope, by file:
 | `packages/document/src/svg-render.ts`                       | Keeps the generic label for `chair` (bottom-aligned under the seat)      |
 | `packages/api-schema/src/room-messages.ts`                  | `AvatarPresence.seatedOn`                                                |
 | `apps/editor/components/canvas/BoxedElementView.tsx`        | Mounts `FurnitureView`; the ordinary label under it                      |
-| `apps/editor/components/palette/palette-tile-defs.tsx`      | `tools:chair` in **Seats** (`tileGroup: 'seating'`)                      |
+| `apps/editor/components/palette/tile-defs/room-tiles.tsx`   | `tools:chair` in **Seats** (`tileGroup: 'seating'`)                      |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts` | Silhouette animations on the drawing                                     |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`         | `onWalkIntoChair` → `sitOn(seatFor)`; `chairSitters` from presence       |
 | `packages/avatar/src/hooks/useAvatarWalk.ts`                | `sitOn`, `standUp`, seated guards, arrival hook, presence packet         |
@@ -33,13 +33,13 @@ Scope, by file:
 
 Desk and sofa (spec "Desk and sofa") add:
 
-| File                                                     | Role                                                                                                                                                                                                                                                                     |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/document/src/seating.ts`                       | `CHAIR_ART`, `DESK_ART`, `SOFA_ART`, `FURNITURE_ART`, `furnitureFrame` (a turn is `turnPiece`, [Turning furniture](furniture-facing.md)); re-exports the package's seat geometry (`isSeatingShape`, `DEFAULT_SEATING_FACING`, `facingView`, `seatPoints`, `nearestSeat`) |
-| `packages/document/src/shape-factory.ts`                 | desk 120x112, sofa 152x85, facing, `aspectLocked`, label bottom                                                                                                                                                                                                          |
-| `apps/editor/components/canvas/collab/FurnitureView.tsx` | The canvas desk and sofa, occupied ring, sitter names                                                                                                                                                                                                                    |
-| `apps/editor/hooks/canvas/useDataShapeSetters.ts`        | `setChairFacingSelected` for all three; quarter turns swap the box                                                                                                                                                                                                       |
-| `apps/editor/components/palette/palette-tile-defs.tsx`   | `tools:desk`, `tools:sofa` after `tools:chair`                                                                                                                                                                                                                           |
+| File                                                      | Role                                                                                                                                                                                                                                                                     |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/document/src/seating.ts`                        | `CHAIR_ART`, `DESK_ART`, `SOFA_ART`, `FURNITURE_ART`, `furnitureFrame` (a turn is `turnPiece`, [Turning furniture](furniture-facing.md)); re-exports the package's seat geometry (`isSeatingShape`, `DEFAULT_SEATING_FACING`, `facingView`, `seatPoints`, `nearestSeat`) |
+| `packages/document/src/shape-factory.ts`                  | desk 120x112, sofa 152x85, facing, `aspectLocked`, label bottom                                                                                                                                                                                                          |
+| `apps/editor/components/canvas/collab/FurnitureView.tsx`  | The canvas desk and sofa, occupied ring, sitter names                                                                                                                                                                                                                    |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`         | `setChairFacingSelected` for all three; quarter turns swap the box                                                                                                                                                                                                       |
+| `apps/editor/components/palette/tile-defs/room-tiles.tsx` | `tools:desk`, `tools:sofa` after `tools:chair`                                                                                                                                                                                                                           |
 
 ## Domain and naming
 

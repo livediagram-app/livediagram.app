@@ -29,7 +29,7 @@ Scope, by file:
 | `apps/editor/components/canvas/useBoxedElementGestures.ts`                     | Double-click → `onEditLink`                                                                                               |
 | `apps/editor/components/canvas/EditorCanvasHost.tsx`                           | `onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}`                                                            |
 | `apps/editor/components/dialogs/LinkPickerDialog.tsx`                          | The shared link editor                                                                                                    |
-| `apps/editor/components/palette/palette-tile-defs.tsx`                         | `tools:link-card` tile                                                                                                    |
+| `apps/editor/components/palette/tile-defs/media-tiles.tsx`                     | `tools:link-card` tile                                                                                                    |
 | `apps/editor/app/document/[id]/useElementCreation.ts`                          | `addLinkCard`: arms the draw gesture                                                                                      |
 | `apps/editor/hooks/canvas/useShapeDrawing.ts`                                  | Commit: `track('Element', 'Added', 'LinkCard')`                                                                           |
 | `apps/editor/lib/search.ts`                                                    | Palette search entry                                                                                                      |

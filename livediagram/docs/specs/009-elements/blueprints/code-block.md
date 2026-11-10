@@ -27,7 +27,7 @@ Scope, by file:
 | `apps/editor/lib/style-presets.ts`                             | `applyCodeThemeToEl`                                                                          |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`              | `setCodeSelected`, `setCodeWrapSelected`                                                      |
 | `apps/editor/hooks/canvas/useStylePreview.ts`                  | `previewCodeTheme`, `commitCodeTheme`                                                         |
-| `apps/editor/components/palette/palette-tile-defs.tsx`         | Tile `tools:code-block`, section `components`                                                 |
+| `apps/editor/components/palette/tile-defs/tool-tiles.tsx`      | Tile `tools:code-block`, section `components`                                                 |
 
 ## Domain and naming
 

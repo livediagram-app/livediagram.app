@@ -41,7 +41,7 @@ min(chroma * SOFT_CHROMA_SCALE, SOFT_MAX_CHROMA), hue)`; grey at chroma 0.
 ### `packages/items` and `packages/agent-verbs`
 
 - `itemColourValue(v)`: any `#rrggbb`, trimmed and lower-cased, else undefined.
-- `type-changes.ts` `colourOf`: any `#rrggbb`, else `type_change_invalid` ("is not a colour").
+- `type-change-parts.ts` `colourOf`: any `#rrggbb`, else `type_change_invalid` ("is not a colour").
 - MCP `plan-schema.ts`: `color` and `colourArg` describe "a #rrggbb colour" with four examples.
 
 ### `apps/editor/components/colour`

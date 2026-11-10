@@ -27,24 +27,24 @@ Derived from [Calls kill switch](../calls-kill-switch.md).
 
 ## Modules
 
-| File                                              | Responsibility                                                                                                                  |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `../packages/api-schema/src/calls-mode.ts`        | `CallsMode`, `CallsMediaKind`, `callsModeAllows`, `callTrackKind`, `CallsModeOp`, `parseCallsModeOp`                            |
-| `apps/api/src/calls/calls-mode.ts`                | `callsMode`, its cache, `parseCallsMode`, `stricterCallsMode`; re-exports the shared rule                                       |
-| `apps/api/src/calls/calls-gate.ts`                | `callsGate(env)`: secrets, then the switch; open answers the mode                                                               |
-| `apps/api/src/calls/calls-mode-watch.ts`          | `CallsModeWatch`: the room's throttled read and its push                                                                        |
-| `apps/api/src/routes/calls.ts`                    | Every session and track checked with `callsModeAllows`; close allowed while paused                                              |
-| `apps/api/src/routes/capabilities.ts`             | `callsEnabled` (gate open or only paused) and `callsMode`                                                                       |
-| `apps/api/src/document-room/document-room.ts`     | Notes each relayed `avatar-voice` / `call-track`, and each consumed `calls-check`, to its `CallsModeWatch`; broadcasts the push |
-| `apps/editor/lib/calls/calls-store.ts`            | `CallSelf.mode`, `receiveCallsMode(op)`, `onCallsMode`                                                                          |
-| `apps/editor/lib/calls/proximity-call.ts`         | Ends the call into the paused state on a push or a `paused` refusal                                                             |
-| `apps/editor/components/calls/CallStripGroup.tsx` | The **Calls Paused** control                                                                                                    |
-| `apps/api/src/calls/realtime-usage.ts`            | `fetchRealtimeEgressBytes`, `monthStartUtc`, `realtimeCostUsd`                                                                  |
-| `apps/api/src/calls/calls-budget.ts`              | `budgetThresholds`, `budgetLevel`, `pollCallsBudget` and the trip record                                                        |
-| `apps/api/src/email/templates.ts`                 | `callsBudgetEmail`, kind `CallsBudget`                                                                                          |
-| `apps/api/src/index.ts`                           | The worker's `scheduled` handler runs `pollCallsBudget`                                                                         |
-| `apps/api/src/types.ts`                           | `CALLS_SWITCH`, the `CALLS_*` vars and secrets on `Env`                                                                         |
-| `apps/api/wrangler.toml`                          | The cron, the thresholds, the account id and the (owner-created) KV binding                                                     |
+| File                                                                                        | Responsibility                                                                                                                  |
+| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `../packages/api-schema/src/calls-mode.ts`                                                  | `CallsMode`, `CallsMediaKind`, `callsModeAllows`, `callTrackKind`, `CallsModeOp`, `parseCallsModeOp`                            |
+| `apps/api/src/calls/calls-mode.ts`                                                          | `callsMode`, its cache, `parseCallsMode`, `stricterCallsMode`; re-exports the shared rule                                       |
+| `apps/api/src/calls/calls-gate.ts`                                                          | `callsGate(env)`: secrets, then the switch; open answers the mode                                                               |
+| `apps/api/src/calls/calls-mode-watch.ts`                                                    | `CallsModeWatch`: the room's throttled read and its push                                                                        |
+| `apps/api/src/routes/calls.ts`                                                              | Every session and track checked with `callsModeAllows`; close allowed while paused                                              |
+| `apps/api/src/routes/capabilities.ts`                                                       | `callsEnabled` (gate open or only paused) and `callsMode`                                                                       |
+| `apps/api/src/document-room/document-room.ts`, `apps/api/src/document-room/room-message.ts` | Notes each relayed `avatar-voice` / `call-track`, and each consumed `calls-check`, to its `CallsModeWatch`; broadcasts the push |
+| `apps/editor/lib/calls/calls-store.ts`                                                      | `CallSelf.mode`, `receiveCallsMode(op)`, `onCallsMode`                                                                          |
+| `apps/editor/lib/calls/proximity-call.ts`                                                   | Ends the call into the paused state on a push or a `paused` refusal                                                             |
+| `apps/editor/components/calls/CallStripGroup.tsx`                                           | The **Calls Paused** control                                                                                                    |
+| `apps/api/src/calls/realtime-usage.ts`                                                      | `fetchRealtimeEgressBytes`, `monthStartUtc`, `realtimeCostUsd`                                                                  |
+| `apps/api/src/calls/calls-budget.ts`                                                        | `budgetThresholds`, `budgetLevel`, `pollCallsBudget` and the trip record                                                        |
+| `apps/api/src/email/templates.ts`                                                           | `callsBudgetEmail`, kind `CallsBudget`                                                                                          |
+| `apps/api/src/index.ts`                                                                     | The worker's `scheduled` handler runs `pollCallsBudget`                                                                         |
+| `apps/api/src/types.ts`                                                                     | `CALLS_SWITCH`, the `CALLS_*` vars and secrets on `Env`                                                                         |
+| `apps/api/wrangler.toml`                                                                    | The cron, the thresholds, the account id and the (owner-created) KV binding                                                     |
 
 ## Constants
 

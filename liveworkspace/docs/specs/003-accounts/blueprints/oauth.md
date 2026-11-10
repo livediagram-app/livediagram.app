@@ -13,7 +13,7 @@ Scope, by file:
 | `liveworkspace/apps/accounts/src/auth-options.ts`                                                 | `oauthProvider` options, `customAccessTokenClaims`, `idTokenClaims`, `signUpClientId`    |
 | `liveworkspace/apps/accounts/src/resources.ts`                                                    | `RESOURCES`: the app APIs a token may be addressed to, per environment                   |
 | `liveworkspace/apps/accounts/src/clients.ts`                                                      | `POST /api/auth/internal/clients`, `clientApp`                                           |
-| `liveworkspace/apps/accounts/src/account-api.ts`                                                  | `verifiedClient`, `vouchedPerson`: client credentials and access tokens by introspection |
+| `liveworkspace/apps/accounts/src/account-api/internal.ts`                                         | `verifiedClient`, `vouchedPerson`: client credentials and access tokens by introspection |
 | `liveworkspace/apps/accounts/scripts/register-client.ts`, `map-clients.ts`                        | Registering a client; mapping existing ones to apps                                      |
 | `liveworkspace/apps/accounts/scripts/local-clients.ts`, `seed-local-clients.ts`                   | Each app's fixed local client, written into the local database by the dev script         |
 | `packages/auth-client/src/oauth.ts`, `silent.ts`, `verify.ts`, `return-path.ts`, `pkce-cookie.ts` | Each app's side: PKCE code flow, `prompt=none`, offline verification, safe returns       |
@@ -182,7 +182,7 @@ Registration (`POST /oauth/register`, RFC 7591) is open, so a registered client'
 ## Constants and configuration
 
 `CLIENTS_PATH` `/api/auth/internal/clients`, `REGISTRAR_EMAIL` (`clients.ts`); `ADMIN_HEADER`
-`x-liveworkspace-admin` (`secrets.ts`); `CLIENT_CHECK_TTL_MS` 5 min (`account-api.ts`); `RESOURCES`
+`x-liveworkspace-admin` (`secrets.ts`); `CLIENT_CHECK_TTL_MS` 5 min (`account-api/internal.ts`); `RESOURCES`
 (`resources.ts`): production `https://livediagram.app/api`, `https://liveplanner.app/api`,
 `https://livedocuments.app/api`, `https://livedesign.app/api`, `https://livehuddle.app/api`; staging their
 `staging.` twins;

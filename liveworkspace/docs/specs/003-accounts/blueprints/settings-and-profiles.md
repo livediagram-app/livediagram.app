@@ -6,13 +6,13 @@ code. Defaults are cited as `ACCn`. Paths are relative to the repository root.
 
 Scope, by file:
 
-| File                                             | Role                                                                                                                                                      |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/accounts/src/settings.ts`    | `checkPatch`, `readSettings`, `writeSettings`, `resetSettings`, `deleteSettings`, `mergeGuestSettings`                                                    |
-| `liveworkspace/apps/accounts/src/profiles.ts`    | `checkProfilePatch`, `readProfiles`, `readOwnProfile`, `writeProfile`, `readProfileLook`, `storeAccountPicture`, `withSessionColour`, `mergeGuestProfile` |
-| `liveworkspace/apps/accounts/src/account-api.ts` | The settings and profile routes on each door                                                                                                              |
-| `packages/settings`                              | The catalogue of settings and their defaults, the common keys, presence colours                                                                           |
-| `packages/sites/src/picture.ts`                  | `profilePictureOf`: which picture URLs the apps draw                                                                                                      |
+| File                                                        | Role                                                                                                                                                      |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/accounts/src/settings.ts`               | `checkPatch`, `readSettings`, `writeSettings`, `resetSettings`, `deleteSettings`, `mergeGuestSettings`                                                    |
+| `liveworkspace/apps/accounts/src/profiles.ts`               | `checkProfilePatch`, `readProfiles`, `readOwnProfile`, `writeProfile`, `readProfileLook`, `storeAccountPicture`, `withSessionColour`, `mergeGuestProfile` |
+| `liveworkspace/apps/accounts/src/account-api/both-doors.ts` | The settings and profile routes on each door                                                                                                              |
+| `packages/settings`                                         | The catalogue of settings and their defaults, the common keys, presence colours                                                                           |
+| `packages/sites/src/picture.ts`                             | `profilePictureOf`: which picture URLs the apps draw                                                                                                      |
 
 ## Domain and naming
 

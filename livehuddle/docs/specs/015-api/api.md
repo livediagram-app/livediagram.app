@@ -537,7 +537,7 @@ Besides the document's content (**Storage**), its key-value storage holds:
 
 Per-session state (presence id, verified role, owner bit, tab scope, admitting share code, presence) lives in each socket's serialized attachment, so it survives hibernation; only the rate-cap windows and the catch-up log reset on a wake.
 
-The room's other parts each have a module of their own in `apps/api/src/`, beside the room (`document-room/document-room.ts`): the session attachment and the verified upgrade headers (`room-session.ts`), the role gate on client ops (`room-op-gate.ts`, the [Share roles](../013-workspace/share-roles.md) level ladder), the worker-only internal endpoints (`room-internal.ts`) and the presence roster each socket is sent (`room-roster.ts` in `@liveworkspace/api-kit`, shared by every product's room).
+The room's other parts each have a module of their own in `apps/api/src/`, beside the room (`document-room/document-room.ts`, whose doors do their work in its `document-room/room-*.ts` siblings): the session attachment and the verified upgrade headers (`room-session.ts`), the role gate on client ops (`room-op-gate.ts`, the [Share roles](../013-workspace/share-roles.md) level ladder), the worker-only internal endpoints (`room-internal.ts`) and the presence roster each socket is sent (`room-roster.ts` in `@liveworkspace/api-kit`, shared by every product's room).
 
 ### What the room writes itself
 

@@ -21,7 +21,7 @@ Scope, by file:
 | `apps/live/components/palette/context-menu-data-rows.tsx` | `RatingPickerRow`, `RatingAnimTiles`, `AnimTiles`, `RatingMenuGlyph`                                                 |
 | `apps/live/components/palette/ElementDataSections.tsx`    | The Rating section inside the Tools flyout                                                                           |
 | `apps/live/hooks/canvas/useChartSetters.ts`               | The four rating setters, via `makeShapePatcher`                                                                      |
-| `apps/live/components/palette/palette-tile-defs.tsx`      | Tile `data:rating`                                                                                                   |
+| `apps/live/components/palette/tile-defs/data-tiles.tsx`   | Tile `data:rating`                                                                                                   |
 
 ## Domain and naming
 

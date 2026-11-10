@@ -12,258 +12,49 @@
 // Idle at no cost: the alarm is set only while a ticket, a pairing request, a session or an allowance use will lapse,
 // for the earliest such moment, and cleared once nothing will. A store left with nothing deletes itself.
 
-// ---------- Constants -----------------------------------------------------------------------------------------
-
-export const WORKBENCH_SESSION_PREFIX = 'lvw_';
-// Random bytes in a ticket, a pairing code and a session secret, before the routing suffix.
-export const WORKBENCH_TICKET_BYTES = 16;
-export const WORKBENCH_PAIRING_CODE_BYTES = 16;
-export const WORKBENCH_SESSION_SECRET_BYTES = 32;
-// A pairing request waits this long for its answer.
-export const WORKBENCH_PAIRING_TTL_MS = 10 * 60 * 1000;
-// A session past its expiry is kept this long, so its refusal reads "expired" rather than "unknown".
-export const WORKBENCH_SESSION_GRACE_MS = 24 * 60 * 60 * 1000;
-// The most uses one allowance counts: a cap above it is refused as a mistake.
-export const WORKBENCH_QUOTA_MAX = 1_000;
-// The most rooms one session notes: more is a runaway frame, and one close call to the index carries this many.
-export const WORKBENCH_SESSION_ROOMS_MAX = 500;
-
-// A store's id as `DurableObjectId.toString()` gives it, after the secret's dot.
-const ROUTE_SUFFIX = /\.([0-9a-f]{64})$/;
-// A ticket: 16 random bytes as base64url, then the store's id.
-export const WORKBENCH_TICKET_PATTERN = /^[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/;
-// A session: `lvw_`, 32 random bytes as base64url, then the store's id.
-export const WORKBENCH_SESSION_PATTERN = /^lvw_[A-Za-z0-9_-]{43}\.[0-9a-f]{64}$/;
-// A pairing code: 16 random bytes as base64url.
-export const WORKBENCH_CODE_PATTERN = /^[A-Za-z0-9_-]{22}$/;
-
-// ---------- Secrets --------------------------------------------------------------------------------------------
-
-export function randomBase64Url(bytes: number): string {
-  const raw = crypto.getRandomValues(new Uint8Array(bytes));
-  let binary = '';
-  for (const b of raw) binary += String.fromCharCode(b);
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-export async function sha256Hex(text: string): Promise<string> {
-  const digest = new Uint8Array(
-    await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)),
-  );
-  let hex = '';
-  for (const b of digest) hex += b.toString(16).padStart(2, '0');
-  return hex;
-}
-
-// The store a routed secret names, or null for a secret with no suffix.
-export function storeIdOfSecret(secret: string): string | null {
-  return ROUTE_SUFFIX.exec(secret)?.[1] ?? null;
-}
-
-// The logged handle of a session: its id's first 8 characters, never the secret.
-export const sessionPrefixOf = (sessionId: string) => sessionId.slice(0, 8);
-
-// ---------- Types ----------------------------------------------------------------------------------------------
-
-export type WorkbenchLevel = 'view' | 'participate' | 'edit';
-export type WorkbenchScope = 'item' | 'workspace';
-
-// What a ticket or session reaches: one item, or the workspace from an optional folder.
-export type WorkbenchReach =
-  | { scope: 'item'; itemId: string; folderId: null }
-  | { scope: 'workspace'; itemId: null; folderId: string | null };
-
-export type WorkbenchPairingRow = {
-  id: string;
-  app: string;
-  tokenId: string;
-  origin: string;
-  name: string | null;
-  scope: WorkbenchScope;
-  pairedAt: number;
-};
-
-export type PairingStatus = 'pending' | 'approved' | 'declined' | 'expired';
-
-export type PairingRequestRead = {
-  app: string;
-  tokenId: string;
-  origin: string;
-  name: string | null;
-  scope: WorkbenchScope;
-  expiresAt: number;
-  status: PairingStatus;
-};
-
-export type PairingAnswer =
-  | { outcome: 'approved'; pairing: WorkbenchPairingRow; asked: WorkbenchScope }
-  | { outcome: 'declined'; tokenId: string; asked: WorkbenchScope }
-  | { outcome: 'missing' }
-  | { outcome: 'answered' }
-  | { outcome: 'expired' };
-
-export type InvalidTicketReason = 'unknown' | 'used' | 'expired';
-
-export type ConsumedTicket = {
-  ownerId: string;
-  app: string;
-  tokenId: string;
-  pairingId: string;
-  tabId: string | null;
-  origin: string;
-  role: WorkbenchLevel;
-} & WorkbenchReach;
-
-export type WorkbenchSessionRead = {
-  id: string;
-  ownerId: string;
-  app: string;
-  tokenId: string;
-  pairingId: string;
-  tabId: string | null;
-  origin: string;
-  role: WorkbenchLevel;
-  createdAt: number;
-  expiresAt: number;
-} & WorkbenchReach;
-
-export type WorkbenchEndTarget = { pairingId: string } | { tokenId: string };
-export type WorkbenchEndReason = 'unpaired' | 'revoked' | 'closed';
-
-// A pairing's rooms to close once its rows are gone: each item a session of it had open.
-export type RoomsToClose = { app: string; pairingId: string; itemIds: string[] };
-
-export type EndedAccess = { pairings: number; sessions: number; rooms: RoomsToClose[] };
-
-// The slice of a Durable Object's storage the store uses.
-export type SqlExec = {
-  exec(query: string, ...bindings: unknown[]): { toArray(): Record<string, unknown>[] };
-};
-export type WorkbenchStorage = {
-  sql: SqlExec;
-  getAlarm(): Promise<number | null>;
-  setAlarm(at: number): Promise<void>;
-  deleteAlarm(): Promise<void>;
-  deleteAll(): Promise<void>;
-};
-
-// ---------- Schema ---------------------------------------------------------------------------------------------
-
-const SCHEMA = `
-CREATE TABLE IF NOT EXISTS wb_pairing_requests (
-  code        TEXT    PRIMARY KEY,
-  app         TEXT    NOT NULL,
-  token_id    TEXT    NOT NULL,
-  origin      TEXT    NOT NULL,
-  name        TEXT,
-  scope       TEXT    NOT NULL CHECK (scope IN ('item', 'workspace')),
-  status      TEXT    NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'declined')),
-  created_at  INTEGER NOT NULL,
-  expires_at  INTEGER NOT NULL,
-  answered_at INTEGER
-);
-CREATE UNIQUE INDEX IF NOT EXISTS wb_pairing_requests_live
-  ON wb_pairing_requests (app, token_id, origin, scope) WHERE status = 'pending';
-CREATE INDEX IF NOT EXISTS wb_pairing_requests_expiry ON wb_pairing_requests (expires_at);
-CREATE TABLE IF NOT EXISTS wb_pairings (
-  id         TEXT    PRIMARY KEY,
-  app        TEXT    NOT NULL,
-  token_id   TEXT    NOT NULL,
-  origin     TEXT    NOT NULL,
-  name       TEXT,
-  scope      TEXT    NOT NULL CHECK (scope IN ('item', 'workspace')),
-  created_at INTEGER NOT NULL,
-  UNIQUE (app, token_id, origin)
-);
-CREATE INDEX IF NOT EXISTS wb_pairings_token ON wb_pairings (token_id);
-CREATE TABLE IF NOT EXISTS wb_tickets (
-  ticket_hash TEXT    PRIMARY KEY,
-  app         TEXT    NOT NULL,
-  token_id    TEXT    NOT NULL,
-  pairing_id  TEXT    NOT NULL REFERENCES wb_pairings (id) ON DELETE CASCADE,
-  scope       TEXT    NOT NULL,
-  item_id     TEXT,
-  folder_id   TEXT,
-  tab_id      TEXT,
-  origin      TEXT    NOT NULL,
-  role        TEXT    NOT NULL,
-  created_at  INTEGER NOT NULL,
-  expires_at  INTEGER NOT NULL,
-  used_at     INTEGER,
-  CHECK ((scope = 'workspace') = (item_id IS NULL)),
-  CHECK (scope = 'workspace' OR folder_id IS NULL)
-);
-CREATE INDEX IF NOT EXISTS wb_tickets_expiry ON wb_tickets (expires_at);
-CREATE INDEX IF NOT EXISTS wb_tickets_pairing ON wb_tickets (pairing_id);
-CREATE TABLE IF NOT EXISTS wb_sessions (
-  id          TEXT    PRIMARY KEY,
-  secret_hash TEXT    NOT NULL UNIQUE,
-  app         TEXT    NOT NULL,
-  token_id    TEXT    NOT NULL,
-  pairing_id  TEXT    NOT NULL REFERENCES wb_pairings (id) ON DELETE CASCADE,
-  scope       TEXT    NOT NULL,
-  item_id     TEXT,
-  folder_id   TEXT,
-  tab_id      TEXT,
-  origin      TEXT    NOT NULL,
-  role        TEXT    NOT NULL,
-  created_at  INTEGER NOT NULL,
-  expires_at  INTEGER NOT NULL,
-  CHECK ((scope = 'workspace') = (item_id IS NULL)),
-  CHECK (scope = 'workspace' OR folder_id IS NULL)
-);
-CREATE INDEX IF NOT EXISTS wb_sessions_pairing ON wb_sessions (pairing_id);
-CREATE INDEX IF NOT EXISTS wb_sessions_expiry ON wb_sessions (expires_at);
-CREATE TABLE IF NOT EXISTS wb_session_rooms (
-  session_id TEXT NOT NULL REFERENCES wb_sessions (id) ON DELETE CASCADE,
-  item_id    TEXT NOT NULL,
-  PRIMARY KEY (session_id, item_id)
-);
-CREATE TABLE IF NOT EXISTS wb_quota (
-  kind  TEXT    NOT NULL,
-  at    INTEGER NOT NULL,
-  until INTEGER NOT NULL
-);
-CREATE INDEX IF NOT EXISTS wb_quota_kind ON wb_quota (kind, at);
-CREATE INDEX IF NOT EXISTS wb_quota_until ON wb_quota (until);
-CREATE TABLE IF NOT EXISTS wb_meta (
-  key   TEXT PRIMARY KEY,
-  value      NOT NULL
-)`;
-
-type Row = Record<string, unknown>;
-
-type ReachColumns = { scope: string; item_id: string | null; folder_id: string | null };
-
-function reachOf(row: ReachColumns): WorkbenchReach {
-  if (row.scope === 'workspace')
-    return { scope: 'workspace', itemId: null, folderId: row.folder_id };
-  if (row.item_id === null) throw new Error('workbench: an item row with no item');
-  return { scope: 'item', itemId: row.item_id, folderId: null };
-}
-
-const toPairing = (row: Row): WorkbenchPairingRow => ({
-  id: row.id as string,
-  app: row.app as string,
-  tokenId: row.token_id as string,
-  origin: row.origin as string,
-  name: (row.name as string | null) ?? null,
-  scope: row.scope as WorkbenchScope,
-  pairedAt: row.created_at as number,
-});
-
-const PAIRING_COLUMNS = 'id, app, token_id, origin, name, scope, created_at';
-
-const effectiveStatus = (status: string, expiresAt: number, now: number): PairingStatus =>
-  status === 'pending' && expiresAt <= now ? 'expired' : (status as PairingStatus);
-
-// A workspace pairing also covers the item scope; an item pairing never covers the workspace.
-export const pairingCovers = (pairing: WorkbenchScope, asked: WorkbenchScope) =>
-  pairing === 'workspace' || asked === 'item';
+import {
+  type ConsumedTicket,
+  type EndedAccess,
+  type InvalidTicketReason,
+  type PairingAnswer,
+  type PairingRequestRead,
+  type PairingStatus,
+  randomBase64Url,
+  type RoomsToClose,
+  sessionPrefixOf,
+  sha256Hex,
+  type SqlExec,
+  WORKBENCH_PAIRING_CODE_BYTES,
+  WORKBENCH_PAIRING_TTL_MS,
+  WORKBENCH_QUOTA_MAX,
+  WORKBENCH_SESSION_GRACE_MS,
+  WORKBENCH_SESSION_PREFIX,
+  WORKBENCH_SESSION_ROOMS_MAX,
+  WORKBENCH_SESSION_SECRET_BYTES,
+  WORKBENCH_TICKET_BYTES,
+  type WorkbenchEndReason,
+  type WorkbenchEndTarget,
+  type WorkbenchLevel,
+  type WorkbenchPairingRow,
+  type WorkbenchReach,
+  type WorkbenchScope,
+  type WorkbenchSessionRead,
+  type WorkbenchStorage,
+} from './store-types.ts';
+import {
+  effectiveStatus,
+  PAIRING_COLUMNS,
+  type ReachColumns,
+  reachOf,
+  type Row,
+  SCHEMA,
+  toPairing,
+} from './store-schema.ts';
 
 // ---------- The store ------------------------------------------------------------------------------------------
 
 // One person's workbench. Every method is async, as it is over the Durable Object's RPC.
+
 export class WorkbenchCore {
   readonly #storage: WorkbenchStorage;
   // The store's own id, the suffix of every secret it issues.
@@ -845,49 +636,43 @@ export class WorkbenchCore {
   }
 }
 
-// The store's methods as the routes call them, on the Durable Object's stub.
-export type WorkbenchStoreApi = Pick<
-  WorkbenchCore,
-  | 'openPairingRequest'
-  | 'readPairingRequest'
-  | 'answerPairingRequest'
-  | 'pairingRequestStatus'
-  | 'findPairing'
-  | 'readPairing'
-  | 'listPairings'
-  | 'mintTicket'
-  | 'consumeTicket'
-  | 'openSession'
-  | 'readSession'
-  | 'endSession'
-  | 'noteSessionRoom'
-  | 'endAccess'
-  | 'takeQuota'
-  | 'close'
->;
-
-// The namespace the Worker binds the class to, as these helpers need it.
-export type WorkbenchNamespace = {
-  idFromName(name: string): DurableObjectId;
-  idFromString(id: string): DurableObjectId;
-  get(id: DurableObjectId): unknown;
-};
-
-// The person's store.
-export function workbenchStoreOf(ns: WorkbenchNamespace, personId: string): WorkbenchStoreApi {
-  return ns.get(ns.idFromName(personId)) as WorkbenchStoreApi;
-}
-
-// The store a ticket or session secret names, or null for a secret with no (or a malformed) suffix.
-export function workbenchStoreOfSecret(
-  ns: WorkbenchNamespace,
-  secret: string,
-): WorkbenchStoreApi | null {
-  const id = storeIdOfSecret(secret);
-  if (!id) return null;
-  try {
-    return ns.get(ns.idFromString(id)) as WorkbenchStoreApi;
-  } catch {
-    return null;
-  }
-}
+export {
+  WORKBENCH_SESSION_PREFIX,
+  WORKBENCH_TICKET_BYTES,
+  WORKBENCH_PAIRING_CODE_BYTES,
+  WORKBENCH_SESSION_SECRET_BYTES,
+  WORKBENCH_PAIRING_TTL_MS,
+  WORKBENCH_SESSION_GRACE_MS,
+  WORKBENCH_QUOTA_MAX,
+  WORKBENCH_SESSION_ROOMS_MAX,
+  WORKBENCH_TICKET_PATTERN,
+  WORKBENCH_SESSION_PATTERN,
+  WORKBENCH_CODE_PATTERN,
+  randomBase64Url,
+  sha256Hex,
+  storeIdOfSecret,
+  sessionPrefixOf,
+  type WorkbenchLevel,
+  type WorkbenchScope,
+  type WorkbenchReach,
+  type WorkbenchPairingRow,
+  type PairingStatus,
+  type PairingRequestRead,
+  type PairingAnswer,
+  type InvalidTicketReason,
+  type ConsumedTicket,
+  type WorkbenchSessionRead,
+  type WorkbenchEndTarget,
+  type WorkbenchEndReason,
+  type RoomsToClose,
+  type EndedAccess,
+  type SqlExec,
+  type WorkbenchStorage,
+} from './store-types.ts';
+export { pairingCovers } from './store-schema.ts';
+export {
+  type WorkbenchStoreApi,
+  type WorkbenchNamespace,
+  workbenchStoreOf,
+  workbenchStoreOfSecret,
+} from './store-stub.ts';

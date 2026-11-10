@@ -112,7 +112,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
     the bag's presence pattern holds. Absent actions give `undefined`, as before.
   - `onSetSessionConfig`, `onOpenElementSettings`, `onEnterPortal`, `onFireReaction`,
     `onReactionBurstDone`: into the layer's `useStableHandlers` bag.
-  - `collab`: `useStableCollab(collab)` in `EditorCanvasHost`: handlers through
+  - `collab`: `useStableCollab(collab)` in `useHostCollab` (EditorCanvasHost): handlers through
     `useStableHandlers` (presence kept; `COLLAB_HANDLERS` is checked against `CollabApi` at compile
     time), `participants` held while what a face reads of them (`id`, `key`, `name`, `color`,
     `status`, `role`, `picture`; not `lastActiveAt`) is unchanged, the rest by value.

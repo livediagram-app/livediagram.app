@@ -44,6 +44,11 @@ export function prePushSteps({ groups, editors }) {
         args: ['.github/scripts/duplicate-guard.mjs'],
       },
       {
+        label: 'no new files over 800 lines',
+        cmd: 'node',
+        args: ['.github/scripts/file-size-guard.mjs'],
+      },
+      {
         label: 'one path for markup',
         cmd: 'node',
         args: ['.github/scripts/raw-html-guard.mjs'],
