@@ -21,7 +21,8 @@ answered invitations and delete it; anyone can leave. A team always keeps an adm
 can't step down or leave while others remain, and the last member leaving deletes the team.
 Closing an account leaves every team first: a team it ran alone goes, and one where it was the only
 admin passes to the longest-standing member. Its address then comes off every team row it had (joined, removed, left
-or declined), which reads "Deleted account" instead, in the members lists and the change feed alike.
+or declined), which reads "Deleted account" instead, in the members lists and the change feed alike, and its id comes
+off every invitation it sent, which then names no inviter.
 
 **How an app and the index know someone's teams.** Neither keeps a copy. Every access token carries the
 person's teams (`teams`, up to an hour old), and so does every API token check. A team made or joined
@@ -323,6 +324,9 @@ When the new editor finds the old id in a browser, livediagram's api forwards it
   Only once the index has answered is the row stamped (`claimedAt`, `claimedBy`, in an update that also requires
   `claimedAt IS NULL`) and the hold cleared, and the answer is `{ merged: true }`. A failed or unconfigured index is
   502 `merge_failed`, stamps nothing and lets the hold go, so the next try merges again.
+- **Closing the account that claimed.** Its id comes off the rows ([Closing an account](#closing-an-account)):
+  `claimedBy` reads `deleted`, so the id stays claimed (by no one) and a later claim is `claimed`; a hold it had is
+  let go (`claimingBy` and `claimingUntil` null).
 
 The route costs one primary-key read of `legacy_guest`, the hold (one primary-key update), the merge, and one
 primary-key update.
@@ -1262,7 +1266,11 @@ nothing happens: the code is sent and checked first, by the same app's server
    the longest-standing member. Then every `team_member` row it had (its own by `userId`, and those addressed to it that
    were declined or removed) has its `email` replaced by "Deleted account" (`DELETED_MEMBER_EMAIL`), in one update
    that moves them on in the change feed (`rev`), so the apps' copies lose the address too. An invitation still
-   waiting is the inviter's, to an address, and keeps it.
+   waiting is the inviter's, to an address, and keeps it. In the same batch its id comes off the rows that name it
+   without a foreign key: every `team_member.invitedBy` it set, and every old livediagram guest it claimed
+   (`legacy_guest.claimedBy`), read `deleted` (`ANONYMISED_PERSON` from `@liveworkspace/index-client`, the index's
+   word for a closed account), and a claim it held part way (`claimingBy`) is let go. The change feed doesn't carry
+   `invitedBy`, so these rows don't move on in it.
 2. Its settings rows and its profile are deleted, and its workbench store is emptied: every pairing ends and the
    rooms its sessions had open are closed ([workbench.md](../011-workbench/workbench.md)).
 3. A purge request for the index is in `pending_purges` (`migrations/0004_pending_purges.sql`), naming the teams
@@ -1282,6 +1290,14 @@ nothing happens: the code is sent and checked first, by the same app's server
 7. After the answer too, the export service deletes the person's latest export and its file
    (`DELETE /internal/exports/personal:<id>` on the `EXPORT` binding, `Bearer ${EXPORT_KEY_ACCOUNTS}`;
    [data-export.md](data-export.md#the-service)), best effort as Drive's is.
+
+After step 4 no accounts row holds the account's id but three that are there to finish the close or are about to
+go: its `pending_purges` row (cleared once the index takes it, step 5), Timeline events in `index_timeline_outbox`
+(cleared once the index takes them), and its deletion code in `verification` (spent by the close itself). Every
+other row naming it either has a foreign key that cascades or sets null with the user (sessions and, through them,
+`sign_in_handoff`; linked sign-ins; OAuth tokens, consents and clients; API tokens; push devices; `account_app`;
+`email_lifecycle`; `team_member.userId`, set null), is deleted in step 2 (settings, the profile), or is rewritten in
+step 1 (`team_member.email` and `invitedBy`, `legacy_guest.claimedBy` and `claimingBy`).
 
 The account is closed whatever the index answers. A request it doesn't take (an error, a timeout, or
 `INDEX_URL` or `INDEX_MERGE_KEY` unset) stays in `pending_purges` with its attempts and last error, and

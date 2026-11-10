@@ -68,8 +68,7 @@ export function usePhotoPreviewUrl(
     return () => {
       live = false;
     };
-    // The scope's identity changes with each render; its values do not here.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the scope's identity changes with each render; its values do not here
   }, [id, tabId, scope?.designId]);
   return url;
 }

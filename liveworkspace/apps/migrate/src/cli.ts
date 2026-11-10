@@ -5,6 +5,7 @@
 //                [--oauth-kv <dump.json>] [--no-pictures] --out <bundle-dir>
 //   migrate apply <bundle> --env staging|production --ledger <ledger.sqlite> [--dry-run] [--concurrency <n>]
 //   migrate verify <bundle> --env staging|production [--out <verify.json>]
+/* oxlint-disable no-console -- a command line tool: its report is what it prints to stdout */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { apply, defaultWrangler } from './apply.ts';

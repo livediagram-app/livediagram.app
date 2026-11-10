@@ -1,5 +1,4 @@
-// An ambient module declaration has nothing to import; the reference makes every Worker compiling this module see it.
-// oxlint-disable-next-line typescript/triple-slash-reference
+// oxlint-disable-next-line typescript/triple-slash-reference -- an ambient module declaration has nothing to import; the reference makes every Worker compiling this module see it
 /// <reference path="./async-hooks.d.ts" />
 // The running request's `waitUntil` (each product's docs/specs/017-telemetry/telemetry.md Mcp and
 // docs/specs/015-api/mcp-server.md §4.12), so a fire-and-forget telemetry post outlives the response.

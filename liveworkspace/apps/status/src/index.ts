@@ -30,7 +30,7 @@ const worker = {
   async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     ctx.waitUntil(
       runOnce(env, event.scheduledTime).then(
-        (report) => console.log(JSON.stringify({ run: 'status', ...report })),
+        (report) => console.info(JSON.stringify({ run: 'status', ...report })),
         (err: unknown) => console.error('status run failed', err),
       ),
     );

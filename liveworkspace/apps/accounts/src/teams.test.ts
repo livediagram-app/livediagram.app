@@ -254,6 +254,38 @@ describe('teams', () => {
     expect(theirs.every((m) => m.email === 'Deleted account')).toBe(true);
     expect((await listMembers(db, current)).map((m) => m.email)).not.toContain(BEA.email);
   });
+
+  it('takes a closed account’s id off every row it invited, the open invitations included', async () => {
+    const team = await teamWith(BEA);
+    // Ada invited Bea (joined) and Cy (still waiting); Bea invites someone else, who stays hers.
+    await inviteMember(db, ADA, team, CY.email, 'member');
+    await setMemberRole(db, ADA, team, await memberId(team, BEA), 'admin');
+    const fromBea = await inviteMember(db, BEA, team, 'dee@example.com', 'member');
+    if (!fromBea.ok) throw new Error(fromBea.error);
+    const before = await teamChanges(db, null);
+
+    await leaveAllTeams(db, ADA.id);
+
+    const inviters = sql
+      .prepare(
+        'SELECT email, invitedBy FROM team_member WHERE invitedBy IS NOT NULL ORDER BY email',
+      )
+      .all() as { email: string; invitedBy: string }[];
+    expect(inviters).toEqual([
+      { email: BEA.email, invitedBy: 'deleted' },
+      { email: CY.email, invitedBy: 'deleted' },
+      { email: 'dee@example.com', invitedBy: BEA.id },
+    ]);
+    expect(
+      sql.prepare('SELECT COUNT(*) AS n FROM team_member WHERE invitedBy = ?').get(ADA.id),
+    ).toEqual({ n: 0 });
+    // Cy's waiting invitation names no inviter now.
+    const [cyInvite] = await listMyInvitations(db, CY.email);
+    expect(cyInvite).toMatchObject({ teamId: team, invitedByName: null });
+    // invitedBy isn't in the change feed: only Ada's own row (removed, address gone) moves on.
+    const after = await teamChanges(db, before.cursor);
+    expect(after.members.map((m) => m.email)).toEqual(['Deleted account']);
+  });
 });
 
 describe('teamChanges', () => {

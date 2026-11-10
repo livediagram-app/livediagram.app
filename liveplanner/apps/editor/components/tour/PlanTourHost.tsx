@@ -197,8 +197,7 @@ export function PlanTourHost() {
     // The start panel only closes: nothing ran, so nothing is recorded.
     if (run.track === null) {
       runRef.current = null;
-      // The panel closes with its ref, as end() does for a run: the tab or rights changed outside it.
-      // oxlint-disable-next-line react/set-state-in-effect
+      // oxlint-disable-next-line react/set-state-in-effect -- the panel closes with its ref, as end() does for a run: the tab or rights changed outside it
       setRun(null);
     } else end('skipped');
   }, [run, canWork, leftTab, boardGone, end]);

@@ -33,7 +33,7 @@ export function SectionedView({
   const asked = focus && sections.some((s) => s.key === focus.section) ? focus : null;
   useEffect(() => {
     if (asked) scrollToSection(asked.section);
-  }, [asked?.section, asked?.n]); // oxlint-disable-line react/exhaustive-deps
+  }, [asked?.section, asked?.n]); // oxlint-disable-line react/exhaustive-deps -- keyed on the ask alone, as above
 
   return (
     <div className="mt-8">

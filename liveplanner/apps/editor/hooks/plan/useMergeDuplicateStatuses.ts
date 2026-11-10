@@ -55,7 +55,6 @@ export function useMergeDuplicateStatuses(opts: {
     const patches = mergedStatusPatches(items.values(), merged);
     if (patches.length) void writeQuiet({ kind: 'patches', patches });
     debugLog('[plan] states.merged', { states: merged.size, cards: patches.length });
-    // Runs once per set of duplicates: the merge empties it, and a new duplicate changes it.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- runs once per set of duplicates: the merge empties it, and a new duplicate changes it
   }, [signature, enabled, itemsReady]);
 }

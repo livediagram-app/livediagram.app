@@ -360,5 +360,5 @@ function nearOccluders(
   to: { x: number; y: number },
 ): Iterable<Element> {
   if (!Array.isArray(occluders)) return occluders;
-  return queryElementGrid(elementGridFor(occluders), routeBehindQueryRect(from, to));
+  return queryElementGrid(elementGridFor<Element>(occluders), routeBehindQueryRect(from, to));
 }

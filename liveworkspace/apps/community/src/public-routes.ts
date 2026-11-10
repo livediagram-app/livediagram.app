@@ -180,7 +180,7 @@ export async function handlePublic(
   const body = await readReport(request);
   if (typeof body === 'string') return badRequest(body);
   const hidden = await recordReport(env, row.id, key, network, body.reason, body.note);
-  if (hidden) console.log('[community] auto-hidden', { app, postId: row.id });
+  if (hidden) console.info('[community] auto-hidden', { app, postId: row.id });
   // The answer is the same whether or not this report hid the post: a reporter learns nothing about
   // the others.
   return noContent();

@@ -9,7 +9,7 @@ import { thisBrowserKey } from '@liveworkspace/explorer/this-browser';
 const run = (path: string) => {
   window.history.replaceState(null, '', path);
   // The script ships as text in the page head; running that text is the test.
-  // oxlint-disable-next-line typescript/no-implied-eval, typescript/no-unsafe-call
+  // oxlint-disable-next-line typescript/no-implied-eval, typescript/no-unsafe-call -- running the shipped script text is the test
   new Function(PLAN_GRANT_BOOT_SCRIPT)();
   return (window as { __lpGrant?: { id: string; share: string } }).__lpGrant;
 };

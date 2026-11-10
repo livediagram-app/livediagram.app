@@ -130,7 +130,7 @@ export async function handleMigrationHandoff(
   }
   // The person's own tree grew: their Drive mirror, if any, catches up (a guest has none).
   if (env.DRIVE) waitUntil(sendDriveSignals(env, [person]));
-  console.log('[index] migration handoff', {
+  console.info('[index] migration handoff', {
     app: target,
     person: person.startsWith('guest_') ? 'guest' : 'account',
   });

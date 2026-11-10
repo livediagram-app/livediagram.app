@@ -40,8 +40,7 @@ export function useSeenRoot(root: RefObject<HTMLElement | null>): Watch | null {
       { root: root.current, rootMargin: SEEN_MARGIN },
     );
     observer.current = obs;
-    // The observer exists only once mounted (it needs the list), so tiles learn of it on the next render.
-    // oxlint-disable-next-line react/set-state-in-effect
+    // oxlint-disable-next-line react/set-state-in-effect -- the observer exists only once mounted (it needs the list), so tiles learn of it on the next render
     setReady(true);
     return () => obs.disconnect();
   }, [root]);

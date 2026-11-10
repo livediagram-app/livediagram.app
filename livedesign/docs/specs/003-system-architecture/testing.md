@@ -89,6 +89,13 @@ export default defineProject({ test: { environment: 'jsdom' } });
   (`packages/photo-engine/src/engine.perf.test.ts`) skip a coverage run instead: v8 slows their
   per-pixel loops 6 to 12 times, past any headroom, so its `test:coverage` runs that file again
   uninstrumented and CI still holds them to `cpuBudgetMs`.
+- **A growth check keeps its larger input under a million characters.** A test that holds a scan linear
+  compares the CPU time of two input sizes four times apart, against a ceiling of 8 where a quadratic
+  scan reads 16. Past about a million characters V8's memory handling alone grows faster than the text
+  (the same linear label scan took 3.2 times the CPU for twice the text), so the label-cap ReDoS checks,
+  whose larger input was 1.28 million characters, read a median 6.9 for four times the text and failed
+  CI at 8.4 (livedesign, 2026-11-09). They compare two and eight times their sweep's length now: 4.1,
+  worst 4.7 of 20 runs.
 - **A test never pays a cold module load.** When the code under test imports
   a module lazily (`await import(...)`), the test file also imports it
   statically, so its transform happens at collection, outside every test's

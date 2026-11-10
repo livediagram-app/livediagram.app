@@ -10,7 +10,7 @@ Scope, by file:
 | File                                                            | Role                                                                                               |
 | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `packages/project/src/arrow-types.ts`                           | `Anchor` (16 ids), `ALL_ANCHORS`, `Endpoint`                                                       |
-| `packages/project/src/anchors.ts`                               | The anchor table: side, position class, box fraction, outward vector                               |
+| `../packages/element-model/src/anchors.ts`                      | The anchor table: side, position class, box fraction, outward vector                               |
 | `packages/project/src/shape-outline.ts`                         | Anchoring outlines, outline projection, point-inside test                                          |
 | `../packages/model-core/src/svg-path-outline.ts`                | `sampleSvgPath`: an outline polygon from a drawn path (cloud, project)                             |
 | `packages/project/src/anchor-layouts.ts`                        | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |

@@ -15,6 +15,7 @@
 // A form push that raises its response count queues a `form_response` for the plan's own webhooks, in the batch that
 // stores the count (webhooks/outbox.ts formResponseStatement).
 
+import { timelinePersonKeys } from './event-key';
 import {
   COLLAB_EVENTS_MAX,
   COLLAB_MAX_ACTIONS,
@@ -282,6 +283,9 @@ export async function pushCollab(
         [...threads.values()],
         [...actions.values()],
         now,
+        await timelinePersonKeys(
+          [...actions.values()].flatMap((a) => (a.assigneeId ? [a.assigneeId] : [])),
+        ),
       )
     : [];
   const retracted =
@@ -461,6 +465,8 @@ export function collabEvents(
   threads: readonly CollabThreadInput[],
   actions: readonly CollabActionInput[],
   now: number,
+  // Each assignee's key for an `action_assigned` event's id (event-key.ts), never their id.
+  personKeys: ReadonlyMap<string, string>,
 ): BulkEvent[] {
   const { app, itemId, tabId } = item;
   const base = { app, itemId, title: item.title, scopes: [item.scope] };
@@ -505,7 +511,7 @@ export function collabEvents(
     if (a.assigneeId && a.status === 'open' && a.assigneeId !== (was?.assignee_id ?? null)) {
       events.push({
         ...base,
-        id: `aa:${itemId}:${tabId}:${a.elementId}:${a.actionId}:${a.assigneeId}`,
+        id: `aa:${itemId}:${tabId}:${a.elementId}:${a.actionId}:${personKeys.get(a.assigneeId)}`,
         type: 'action_assigned',
         actorId: a.assignerId,
         actorName: a.assignerName ?? null,
