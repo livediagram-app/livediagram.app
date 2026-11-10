@@ -316,8 +316,12 @@ export function StartPanel<C extends string>({
               >
                 {title}
               </h2>
-              {/* On a phone the line is left out, for room. */}
-              <p className="mt-0.5 text-[13px] max-sm:hidden" style={{ color: header.band.muted }}>
+              {/* On a phone the line is left out, for room. From `xl` it wraps short of the gap piece, so the two never
+                  meet (start-panel.md "Where the pieces show"). */}
+              <p
+                className="mt-0.5 text-[13px] max-sm:hidden xl:max-w-[30rem]"
+                style={{ color: header.band.muted }}
+              >
                 {line}
               </p>
             </div>
