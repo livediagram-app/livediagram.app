@@ -53,12 +53,12 @@ import {
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
-import { SizeSection } from '@/components/palette/SizeSection';
+import { SizeSection } from '@liveworkspace/workbench/components/palette/SizeSection';
 
 import { OpacityRow } from '@/components/palette/context-menu-rows';
 import { MoveToLayerRow } from '@/components/palette/MoveToLayerRow';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
-import { useContextMenuScaffold } from './useContextMenuScaffold';
+import { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import { ElementContentSections } from './ElementContentSections';
 import { ElementMenuQuickBar } from './ElementMenuQuickBar';

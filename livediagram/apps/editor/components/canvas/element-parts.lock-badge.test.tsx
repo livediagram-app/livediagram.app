@@ -2,7 +2,7 @@
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { LockBadge } from './element-parts';
-import { SuppressElementIndicators } from './ElementIndicatorStyleContext';
+import { SuppressElementIndicators } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 
 // docs/specs/008-canvas/element-indicators.md "Unchanged": a presented slide (and an embed) draws no editor
 // chrome on its elements, the lock badge included.

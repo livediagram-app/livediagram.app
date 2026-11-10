@@ -8,7 +8,7 @@ import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndica
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
 import { buildIndicatorItems, type IndicatorItem } from '@/components/canvas/indicator-items';
 import { placeCluster, useIndicatorLayout } from '@/components/canvas/useIndicatorLayout';
-import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
+import type { ElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';
 
 // docs/specs/008-canvas/element-indicators.md: the element's link / note / action / comments drawn
 // inside it in the person's style, a mind root's commands only when hovered or selected, and the

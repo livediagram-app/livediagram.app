@@ -38,7 +38,7 @@ import { useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSele
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
-import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
+import { readElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';

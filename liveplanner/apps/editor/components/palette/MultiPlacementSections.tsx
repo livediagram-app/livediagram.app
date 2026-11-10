@@ -28,7 +28,7 @@ import { ShapeIcon } from '@/components/primitives/shape-icon';
 import { shapeKindLabel } from '@/lib/element-names';
 import { COMMON_SHAPES, ROTATION_ANGLES } from './context-menu-constants';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
-import type { useContextMenuScaffold } from './useContextMenuScaffold';
+import type { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { Switch } from '@liveplanner/ui';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;

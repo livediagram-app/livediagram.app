@@ -6,7 +6,11 @@
 
 import { lucideCircleCheck, lucideSparkles } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedocuments/ui';
-import { emptyCopy, type CollaborateKind, type CollaborateSide } from './collaborate-model';
+import {
+  emptyCopy,
+  type CollaborateKind,
+  type CollaborateSide,
+} from '@liveworkspace/workbench/components/panels/collaborate/collaborate-model';
 
 const SparklesGlyph = lucideGlyph(lucideSparkles, 18);
 const CircleCheckGlyph = lucideGlyph(lucideCircleCheck, 18);

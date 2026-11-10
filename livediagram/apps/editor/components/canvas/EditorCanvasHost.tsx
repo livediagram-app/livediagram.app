@@ -3,7 +3,7 @@
 import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { sessionToolsForSurface } from '@/components/canvas/SessionClusterStrip';
-import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
+import { SuppressElementIndicators } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
 import { canvasSurface, DEFAULT_BACKGROUND_COLOR, PEN_INK } from '@livediagram/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';

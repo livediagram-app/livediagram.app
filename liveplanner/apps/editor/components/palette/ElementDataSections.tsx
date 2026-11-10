@@ -69,7 +69,7 @@ import {
   RatingPickerRow,
 } from '@/components/palette/context-menu-rows';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
-import { useContextMenuScaffold } from './useContextMenuScaffold';
+import { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { ChartPalettePresets } from './StylePresets';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a project without

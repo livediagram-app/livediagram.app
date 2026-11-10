@@ -67,7 +67,7 @@ import {
   RatingPickerRow,
 } from '@/components/palette/context-menu-rows';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
-import { useContextMenuScaffold } from './useContextMenuScaffold';
+import { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { ChartPalettePresets } from './StylePresets';
 
 // A Sankey's sections (docs/specs/009-elements/sankey.md "The menu") load only when a Sankey's menu opens.

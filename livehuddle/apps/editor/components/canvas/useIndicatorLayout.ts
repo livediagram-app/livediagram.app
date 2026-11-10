@@ -15,7 +15,7 @@ import {
   type IndicatorBox,
 } from '@livehuddle/document';
 import { useElementIndicatorStyle } from '@/components/canvas/ElementIndicatorStyleContext';
-import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
+import type { ElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';
 import { clusterSize, type IndicatorForm, type IndicatorItem } from './indicator-items';
 
 // What the cluster needs to know about the content: everything contentBox reads but the size.

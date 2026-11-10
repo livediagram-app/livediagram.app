@@ -18,7 +18,7 @@ import {
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { initialsOf } from '@/lib/identity';
 import type { ActionRow, CommentRow } from '@/components/panels/CollaboratePanel';
-import { firstName } from './collaborate-model';
+import { firstName } from '@liveworkspace/workbench/components/panels/collaborate/collaborate-model';
 import { useCellRef } from '@/hooks/sheets/sheet-cell-refs';
 
 // A comment author's colour as ink: as chosen on light, lifted toward white on

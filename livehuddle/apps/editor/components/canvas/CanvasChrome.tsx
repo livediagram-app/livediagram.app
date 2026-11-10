@@ -44,7 +44,7 @@ import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHapt
 import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
 import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { EditWalkStrip, EditWalkToggle } from '@/components/palette/EditWalkToggle';
-import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
+import { kindCounts } from '@liveworkspace/workbench/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
