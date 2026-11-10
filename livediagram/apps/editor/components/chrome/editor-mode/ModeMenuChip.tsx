@@ -79,13 +79,14 @@ export function ModeMenuChip({
           if (!open) readZoom();
           onTriggerKeyDown(event);
         }}
-        // Compact: a toolbar-height chip in the menu card. Else a full-bleed row filling the edge it sits on (a start
-        // panel's rail top): square, tall, its focus ring drawn inside so the panel's edge never clips it.
+        // Compact: a toolbar-height chip in the menu card, in the strip's dropdown tint. Else a start panel's rail
+        // switch: a field on its own paper, bordered and lifted like the header's search, so it stands apart from the
+        // tinted band above it (start-diagramming.md "Changing mode").
         className={`flex w-full items-center transition-colors ${
           compact
-            ? `h-9 justify-start gap-1.5 rounded-md px-2 text-[13px] font-medium ${MODE_SWITCH_FOCUS}`
-            : 'h-12 justify-start gap-2.5 rounded-none px-5 text-[13px] font-medium focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600 dark:focus-visible:outline-brand-400'
-        } ${TOOLBAR_TRIGGER_TONE}`}
+            ? `h-9 justify-start gap-1.5 rounded-md px-2 text-[13px] font-medium ${MODE_SWITCH_FOCUS} ${TOOLBAR_TRIGGER_TONE}`
+            : `h-10 cursor-pointer justify-start gap-2.5 rounded-xl border border-brand-200 bg-white px-3 text-[13px] font-semibold text-brand-700 shadow-sm hover:border-brand-300 hover:bg-brand-50 dark:border-brand-400/30 dark:bg-white/5 dark:text-brand-200 dark:hover:bg-brand-500/15 ${MODE_SWITCH_FOCUS}`
+        }`}
       >
         <Icon aria-hidden />
         {iconOnly ? null : <span className="text-optical-line flex-1 text-left">{label}</span>}

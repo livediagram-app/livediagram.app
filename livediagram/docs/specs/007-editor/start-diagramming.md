@@ -141,7 +141,10 @@ tray read the same key and follow each other as it changes.
 
 The rail is led by the editor's mode switch, named and full width (`StartModeSwitch`, `ModeMenuChip`), so a tab
 begun in the wrong mode changes before anything is made. It is the same switch as the one beside the menu button,
-which stays the way to change mode once the tab has content. Its menu is the list of modes and the preview of one ([Editor modes](editor-modes.md) "The mode switch"), with the same rules. On a
+which stays the way to change mode once the tab has content. It is drawn as a control, not a band: a field inset in the rail's
+top (12px round it, 16px from `sm`, in line with the categories), on its own paper with a border and a small shadow
+like the header's search, its icon and name in the brand ink, so it never blends into the header band above it
+(owner, 2026-11-10). Its menu is the list of modes and the preview of one ([Editor modes](editor-modes.md) "The mode switch"), with the same rules. On a
 phone its menu spans the row it opens from, each mode a roomy row with its description across the full width.
 
 A mode change swaps one start for another. The new one **turns in place**: the frame stays still and the old content
