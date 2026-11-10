@@ -66,6 +66,12 @@ id, name, role }`).
    `500 client_app_refused { message }`, naming the app and `db:migrate:local`.
 6. The registrar's session is deleted whatever happened.
 
+Re-binding a registered client (a host move) is a hand-written migration, never the admin route: its rows in
+`oauthClientResource` (`id`, `clientId`, `resourceId` → `oauthResource.identifier`, `createdAt`) change with its
+`redirectUris`. `0022_staging_livediagram_resource.sql` adds `https://staging.livediagram.app/api` to the client
+holding the old staging router's API, matching nothing elsewhere; its tests are
+`liveworkspace/apps/accounts/src/staging-livediagram-resource.test.ts`.
+
 ### Client credentials on the account API (`verifiedClient`)
 
 `Authorization: Basic base64(<client id>:<secret>)` (each part URL-encoded). Checked by posting a dummy token to
