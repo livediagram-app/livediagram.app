@@ -58,7 +58,7 @@ const DeviceOver = memo(function DeviceOver({
         { ...page, rect: { ...page.rect, x: 0, y: 0 } },
         { dark, ...(frameTheme ? { theme: frameTheme } : {}) },
       )?.over ?? '',
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the frame's own fields, not the page object, which changes on every edit
     [page.device, page.orientation, page.frameLook, page.systemBars, dark, frameTheme],
   );
   if (!over) return null;

@@ -110,7 +110,7 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
     ownerId: row.owner_id,
     teamId,
   });
-  console.log('[index] created', {
+  console.info('[index] created', {
     app: row.app,
     team: teamId !== null,
     filed: !('folderId' in body) && folderId !== null ? 'default' : 'given',

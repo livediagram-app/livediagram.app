@@ -294,7 +294,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // The palette arrives as a fresh array each render (themeChartPalette): keyed by its colours, so the views (and a
   // Sheet's charts) re-render only when the colours change.
   const paletteKey = chartPalette?.join('|') ?? '';
-  // oxlint-disable-next-line react/exhaustive-deps
+  // oxlint-disable-next-line react/exhaustive-deps -- keyed on the palette's colours, not the fresh array
   const stablePalette = useMemo(() => chartPalette, [paletteKey]);
   const selfId = participantKey(selfParticipant);
   // What every boxed element view takes from this layer, the same for each element; a chart its Sheet draws takes

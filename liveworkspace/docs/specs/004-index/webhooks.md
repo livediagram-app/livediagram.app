@@ -115,15 +115,57 @@ many new responses and the total, never what anyone answered. A push that doesn'
   response code or the reason none came), listed in Settings.
 - A webhook holds at most 500 pending deliveries; an event past that is not queued for it, and a batch (a plan's card
   moves, a request's events) stops at the cap, never past it.
+- **Card moves arrive within about a minute, by design.** A plan pushes its card moves to the index with the rest of
+  its outbox: 2 seconds after the last write, and at most once a minute (`FLUSH_IDLE_MS`, `FLUSH_MIN_GAP_MS`), so a
+  move reaches its webhook up to about 62 seconds after it happened, then the dispatcher within a second. That is
+  kept: a webhook is a notice in a channel, not a live view, and a faster path would push to the index on every
+  move, multiplying the index's writes for every plan, not only the few with webhooks. Revisit if people ask for it.
+
+### Scale
+
+- **The ceiling, from the code.** One dispatcher sends at most 50 deliveries a run, 6 webhooks at once (also Workers'
+  limit of six connections waiting on headers), each webhook's in order; while a run takes a full batch the next runs
+  straight after, never sooner than a second. A run's wall time is about ceil(webhooks in it / 6) times one webhook's
+  time (its access check, a resolve and a send per delivery, one batch): with endpoints answering in an assumed 300 ms
+  (not yet measured here), 50 deliveries to 50 webhooks take about 9 waves of 0.4 s plus the
+  second's floor, about 4.6 s, so **about 10 deliveries a second (about 900,000 a day)**. When every endpoint is slow
+  to the 10-second timeout it falls to about 0.5 a second (about 45,000 a day). Subrequests are never the limit: a run
+  makes at most about 350 (the due read, per webhook an access check, an accounts call, a write batch and a pause, per
+  delivery two DNS lookups and the send) against the paid plan's 10,000 an invocation.
+- **What to watch after launch.** The dispatcher logs `[webhooks] dispatched` with its counts every run that did
+  something. A run whose counts add up to 50 means more was due than one run sends. **Shard when full runs follow
+  each other for more than 5 minutes at peak**, or the daily deliveries pass 100,000 (a tenth of the fast ceiling,
+  leaving room for slow endpoints).
+- **The shard plan.** Name the dispatcher by webhook, `deliveries-<n>` for n = a hash of the webhook id mod N (N = 4
+  to start), so each webhook's deliveries stay in order on one object. `kickWebhooks` wakes each shard with
+  something due (the due read grouped by shard), the due read gains `AND shard = ?` (a stored column, indexed with
+  `next_at`), and the 15-minute cron wakes every shard. Not built now: no volume is measured yet, the ceiling is about
+  ten times the shard trigger, and one object keeps ordering, pausing and retries simple.
 
 ## Security
 
 - **HTTPS only**, on port 443, with no user name or password in the URL, and a host name, never an IP address.
 - **No private or internal addresses (SSRF).** `localhost` and names under `.local`, `.localhost`, `.internal`,
   `.lan`, `.home.arpa` and single-label names are refused, and the host is resolved (DNS over HTTPS, A and AAAA)
-  when the webhook is added and again before it is sent to: an answer in a private, loopback, link-local, carrier
-  NAT, multicast, documentation or reserved range refuses it (400 `webhook_url_private` when adding; a failed
-  delivery after). Redirects are never followed, so an endpoint can't bounce a delivery inward.
+  when the webhook is added and again right before every delivery is sent: an answer in a private, loopback,
+  link-local, carrier NAT, multicast, documentation or reserved range refuses it (400 `webhook_url_private` when
+  adding; a failed delivery after, and the rest of that run's deliveries for it too). Redirects are never followed, so
+  an endpoint can't bounce a delivery inward.
+- **DNS rebinding: narrowed, and the rest accepted.** A host can answer public to the check and private to the send
+  that follows it. Pinning the checked address for the send isn't possible on Workers: `fetch()` takes only URLs,
+  never an IP address with the name kept for `Host` and TLS, and `resolveOverride` works only inside our own zone
+  ([Workers known issues "Fetch to IP
+  addresses"](https://developers.cloudflare.com/workers/platform/known-issues/#fetch-to-ip-addresses), [Request
+  `cf.resolveOverride`](https://developers.cloudflare.com/workers/runtime-apis/request/)). TCP sockets (`connect()`)
+  could take an address, but would mean speaking HTTP and TLS ourselves. So the gap is narrowed instead: the host is
+  resolved again right before each send, never once a run, so the window is the milliseconds between that answer and
+  the send's own lookup (both Cloudflare's resolver), not a whole run of up to 50 sends. What is left is accepted,
+  because a rebound send can do little harm: the index Worker runs with `global_fetch_strictly_public` and has no
+  private network to reach (no Workers VPC or Tunnel binding; its one service binding, the Drive mirror's, answers
+  only calls made on the binding itself, never a URL the global `fetch()` is given), Cloudflare refuses a Worker's
+  subrequest to its own addresses (error 1024), and the send is blind: a `POST` of our own body, its answer's body
+  never read, only its status kept in Recent deliveries. Revisit if the index ever gains a private network binding:
+  then sends move behind an egress that refuses private ranges.
 - **Payloads are capped** at 16 KiB: the detail's text is shortened first, and dropped if that is not enough.
 - **Secrets and URLs are encrypted at rest** (AES-GCM under the index's `WEBHOOK_KEY`, a 32-byte key set as a
   secret, the webhook's id bound in as additional data, so a value copied to another row doesn't open). The list

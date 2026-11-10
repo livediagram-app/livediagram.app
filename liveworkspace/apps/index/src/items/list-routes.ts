@@ -204,7 +204,7 @@ export async function handleTrash(ctx: PersonContext): Promise<Response> {
     const ids = results.slice(0, PURGE_NOW_MAX).map((r) => r.id);
     ctx.waitUntil(drainTombstonesSoon(env, ids));
   }
-  console.log('[index] emptied trash', {
+  console.info('[index] emptied trash', {
     scope: team ? 'team' : 'personal',
     app: appParam ?? 'all',
     purged: results.length,

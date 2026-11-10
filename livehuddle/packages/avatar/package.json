@@ -75,7 +75,7 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules .turbo coverage",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage && vitest-budgets"
   },
   "peerDependencies": {
     "react": "^19.3.0",

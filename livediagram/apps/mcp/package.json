@@ -10,7 +10,7 @@
     "staging:check": "wrangler deploy --dry-run --env staging",
     "lint": "oxlint",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --coverage && vitest-budgets",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist .wrangler node_modules .turbo coverage"
   },

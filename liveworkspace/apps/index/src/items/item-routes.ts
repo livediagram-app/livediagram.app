@@ -204,7 +204,7 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
     });
     touchItem(ctx.drive, row);
     ctx.waitUntil(drainTombstonesSoon(env, [row.id]));
-    console.log('[index] purged', { app: row.app });
+    console.info('[index] purged', { app: row.app });
     return noContent();
   }
   const reason = url.searchParams.get('reason') === 'empty' ? 'empty' : 'deleted';

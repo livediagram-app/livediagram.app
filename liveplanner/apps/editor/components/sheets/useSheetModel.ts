@@ -273,7 +273,7 @@ export function useSheetModel(
   const types = plan?.types;
   const statusNames = plan?.statusNames;
   const statusPhases = plan?.statusPhases;
-  const usesCards = useMemo(() => workbook.usesCards(), [workbook, version]); // oxlint-disable-line react/exhaustive-deps
+  const usesCards = useMemo(() => workbook.usesCards(), [workbook, version]); // oxlint-disable-line react/exhaustive-deps -- version says when the workbook changed in place
   useEffect(() => {
     if (!usesCards || !items || !types) return;
     store.setCards(

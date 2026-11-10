@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
+    "./disable-reason": "./disable-reason.ts",
     "./native-title": "./native-title.ts",
     "./raw-svg": "./raw-svg.ts"
   },

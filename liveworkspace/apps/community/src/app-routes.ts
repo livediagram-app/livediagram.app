@@ -85,7 +85,7 @@ export async function handleApp(
       if (!found || found.owner !== owner) return notFound();
       if (rowState(found) === 'hidden') return conflict('post_hidden');
       await deletePost(env, found.id);
-      console.log('[community] removed', { app, postId: found.id });
+      console.info('[community] removed', { app, postId: found.id });
       return noContent();
     }
     if (method === 'PUT') return publish(request, env, app, document);
@@ -191,7 +191,7 @@ async function publish(
   if (found && found.owner === input.owner) {
     if (body.create === true) return conflict('already_published');
     await updatePost(env, found.id, input);
-    console.log('[community] updated', { app, postId: found.id });
+    console.info('[community] updated', { app, postId: found.id });
     const row = await getPostForDocument(env, app, document);
     return json({ post: appPost(row!, input.owner) });
   }
@@ -211,8 +211,8 @@ async function publish(
   }
   // Refused at the cap inside the insert: another publish took the last place since the count above.
   if (postId === null) return conflict('post_limit');
-  if (found) console.log('[community] replaced a previous owner post', { app, postId: found.id });
-  console.log('[community] published', { app, postId, category: input.input.category });
+  if (found) console.info('[community] replaced a previous owner post', { app, postId: found.id });
+  console.info('[community] published', { app, postId, category: input.input.category });
   const row = await getPostForDocument(env, app, document);
   return json({ post: appPost(row!, input.owner) }, { status: 201 });
 }

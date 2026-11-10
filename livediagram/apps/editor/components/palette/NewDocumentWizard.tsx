@@ -56,8 +56,7 @@ export function NewDocumentWizard({
   useLayoutEffect(() => {
     const early = takeEarlyModeChoice();
     if (early) create(early);
-    // Once, as the wizard mounts.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- once, as the wizard mounts
   }, []);
   useEscape(() => {
     if (!busy) onBackOut();

@@ -504,7 +504,7 @@ export class WorkbenchCore {
     if (byToken) this.#sql.exec('DELETE FROM wb_pairing_requests WHERE token_id = ?', key);
 
     for (const session of sessions) {
-      console.log('[workbench] session-ended', {
+      console.info('[workbench] session-ended', {
         reason,
         scope: session.scope,
         itemId: session.item_id,
@@ -525,7 +525,7 @@ export class WorkbenchCore {
       if (itemIds.length > 0) {
         rooms.push({ app: pairing.app as string, pairingId: pairing.id as string, itemIds });
       }
-      console.log('[workbench] unpaired', {
+      console.info('[workbench] unpaired', {
         app: pairing.app,
         tokenId: pairing.token_id,
         pairingId: pairing.id,

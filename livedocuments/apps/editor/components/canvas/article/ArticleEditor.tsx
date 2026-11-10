@@ -299,8 +299,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       scheduleReveal,
       publish,
     });
-    // Created once per article: everything it reads is read through refs.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- created once per article: everything it reads is read through refs
   }, []);
 
   // The writing changed on the tab from elsewhere (a collaborator, an undo, a zone settled): merge
@@ -363,7 +362,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     view.dispatch(view.state.tr.setSelection(sel));
     view.focus();
     props.onFocusTaken?.(request.seq);
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- runs once per request, keyed on its seq
   }, [request?.seq]);
 
   return (

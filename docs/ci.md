@@ -188,11 +188,46 @@ test waits for a core and failed at random on `main`, where CPU time barely move
 still catches a real regression. A test that seeds a large fixture sets its own timeout (seeding isn't
 what it measures) and times only the work under test.
 
+Coverage never judges a budget. Instrumentation runs the same work several times slower, and budgets read
+under it were the commonest red on CI (15 of 25 failed runs in November 2026, each a miss of 1% to 50%). In a
+coverage run `cpuBudgetMs` is unbounded: the test still runs and its lines still count. **`vitest-budgets`**
+(from `@liveworkspace/vitest-config`) then reruns, without coverage, every test file that imports
+`@liveworkspace/vitest-config/cpu-time`, where the budget holds. Each workspace's `test:coverage` runs
+`vitest run --coverage && vitest-budgets`, and each editor shard runs its share after its coverage run
+(`vitest-budgets --shard=n/3`). A budget used as a test timeout is a wall-clock limit, not a CPU budget, and
+never goes through `cpuBudgetMs`.
+
 The Checks job's **Speed budgets use CPU time** step (`.github/scripts/cpu-budget-guard.mjs`, also in
 the pre-push hook) fails a change that adds `performance.now()` to a test file. Older budgets are left
 for a pass of their own, and so is a copy of one: a line another product already has at the same path
 (a fork, such as livehuddle's of livediagram) isn't new. A line that truly needs the wall clock says why
 in a `wall-clock:` comment.
+
+## Lint disables and console.log
+
+The shared lint config (`packages/oxlint-config`, each product's `docs/specs/003-system-architecture/linting.md`)
+holds two hygiene lines in every workspace's `lint`, so the Checks job and the pre-push hook keep them without a
+script of their own:
+
+- **Every disable says why.** A directive names the rule it turns off and ends in a reason:
+  `// oxlint-disable-next-line react/exhaustive-deps -- keyed on the rows, not the array`. The same goes for
+  `oxlint-disable-line` and a block's `/* oxlint-disable rule -- reason */`. `liveworkspace/disable-reason` refuses
+  one with no rule or no reason, and refuses an `eslint-disable` outright: the config reads only `oxlint-disable`,
+  so an `eslint-disable` suppresses nothing while looking as if it does. A disable that suppresses nothing is
+  already an error (`reportUnusedDisableDirectives`), so a stale one is deleted, not explained. Where a small
+  change to the code removes the need (a stable value, a truer type), that change comes first.
+- **console.log is a command line tool's stdout.** Shipped code writes each line with its intent:
+  - an app's trace lines go through `debugLog` (`packages/workbench/src/lib/debug-log.ts`, each product's
+    `docs/specs/003-system-architecture/console-logging.md`);
+  - a Worker's event (a sweep's counts, an item created, a pairing) is `console.info`, which Workers Logs and
+    `wrangler tail` record at the info level;
+  - something that went wrong is `console.warn` or `console.error`.
+
+  `eslint/no-console` refuses `console.log` everywhere but tests (`*.test.*`, `*.spec.*`, `e2e/`) and scripts
+  (`scripts/`, the MCP servers' `eval/`), where what a tool prints is its output. A command line tool outside
+  those folders (the migrate CLI) says so in a reasoned `oxlint-disable no-console`. Files outside every
+  workspace (`.github/scripts/`, the root `scripts/`, each product's own `scripts/`) are tools by definition and
+  print freely.
 
 ## Copies across products
 

@@ -130,7 +130,6 @@ describe('GET /folders/previews', () => {
         'Item 1996',
       ]);
     }
-    // eslint-disable-next-line no-console
     console.log(`[folder previews] 60 folders x 2,000 items: ${took.toFixed(1)} ms of CPU`);
     expect(took).toBeLessThan(cpuBudgetMs(500));
     // Seeding 120,000 items outruns the 5s default on a busy runner; the budget above times only the read.

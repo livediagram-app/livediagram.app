@@ -83,7 +83,7 @@ function SheetMetricBody({
   const sheet = read.state === 'ready' ? read.sheet : null;
   const shown = useMemo(
     () => (read.state === 'ready' ? sheetMetricShown(content, read) : null),
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the workbook changes in place; the version says when to read it again
     [content, version, sheet],
   );
   // The slot's own name, else the figure's (plan-tabs.md "A slot's name").

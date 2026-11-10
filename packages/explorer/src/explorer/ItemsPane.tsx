@@ -59,7 +59,6 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
   const viewKey = explorerPath(withLens(view, ''));
   const list = useMemo(
     () => viewList(client, view, app, filter, sharedMeta.current, listLens),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [client, viewKey, app, filter, listLens],
   );
   const state = useItemList({
@@ -94,7 +93,6 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
     }
     if (view.kind === 'team') return folders.childrenOf(view.folderId ?? null, view.id);
     return NO_FOLDERS;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewKey, folders, lensOn]);
 
   const { title, crumbs } = heading(view, ctx);

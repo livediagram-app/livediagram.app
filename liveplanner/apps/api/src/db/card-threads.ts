@@ -19,6 +19,7 @@ type ThreadRow = {
   title: string;
   resolved: number;
   resolved_by: string | null;
+  resolved_by_id: string | null;
   resolved_at: number | null;
   comments: string;
   created_at: number;
@@ -30,7 +31,7 @@ type ThreadRow = {
 };
 
 const COLUMNS =
-  'plan_id, id, title, resolved, resolved_by, resolved_at, comments, created_at, created_by, updated_at, rev, cards, field';
+  'plan_id, id, title, resolved, resolved_by, resolved_by_id, resolved_at, comments, created_at, created_by, updated_at, rev, cards, field';
 
 function parseArray<T>(text: string): T[] {
   try {
@@ -62,6 +63,9 @@ function threadFromRow(row: ThreadRow): CardThread {
     title: row.title || threadTitle({ title: '', createdBy, comments }),
     resolved: row.resolved === 1,
     ...(row.resolved === 1 && row.resolved_by !== null ? { resolvedBy: row.resolved_by } : {}),
+    ...(row.resolved === 1 && row.resolved_by_id !== null
+      ? { resolvedById: row.resolved_by_id }
+      : {}),
     ...(row.resolved === 1 && row.resolved_at !== null ? { resolvedAt: row.resolved_at } : {}),
     comments,
     createdAt: row.created_at,
@@ -119,6 +123,7 @@ const values = (t: CardThread) => [
   t.title,
   t.resolved ? 1 : 0,
   t.resolved ? (t.resolvedBy ?? null) : null,
+  t.resolved ? (t.resolvedById ?? null) : null,
   t.resolved ? (t.resolvedAt ?? null) : null,
   JSON.stringify(t.comments),
   t.createdAt,
@@ -131,9 +136,9 @@ const values = (t: CardThread) => [
 
 export function insertThreadStatement(env: PlanEnv, t: CardThread): D1PreparedStatement {
   return env.PLAN_DB.prepare(
-    `INSERT INTO card_threads (title, resolved, resolved_by, resolved_at, comments, created_at, created_by,
-                               updated_at, rev, cards, field, plan_id, id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO card_threads (title, resolved, resolved_by, resolved_by_id, resolved_at, comments, created_at,
+                               created_by, updated_at, rev, cards, field, plan_id, id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).bind(...values(t), t.home, t.id);
 }
 
@@ -144,7 +149,8 @@ export function updateThreadStatement(
   expectedRev: number,
 ): D1PreparedStatement {
   return env.PLAN_DB.prepare(
-    `UPDATE card_threads SET title = ?, resolved = ?, resolved_by = ?, resolved_at = ?, comments = ?, created_at = ?,
+    `UPDATE card_threads SET title = ?, resolved = ?, resolved_by = ?, resolved_by_id = ?, resolved_at = ?,
+                             comments = ?, created_at = ?,
                              created_by = ?, updated_at = ?, rev = ?, cards = ?, field = ?
       WHERE plan_id = ? AND id = ? AND rev = ?`,
   ).bind(...values(next), next.home, next.id, expectedRev);

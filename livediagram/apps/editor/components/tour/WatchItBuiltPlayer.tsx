@@ -163,8 +163,7 @@ export function WatchItBuiltPlayer({
   useEffect(() => {
     beginRef.current();
     return () => {
-      // The latest teardown on purpose: teardownRef always holds the current render's (useLatest).
-      // oxlint-disable-next-line react/exhaustive-deps
+      // oxlint-disable-next-line react/exhaustive-deps -- the latest teardown on purpose: teardownRef always holds the current render's (useLatest)
       if (replayStore.get().active) teardownRef.current();
     };
   }, [beginRef, teardownRef]);

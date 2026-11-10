@@ -28,7 +28,7 @@ export async function sweepUnusedImages(env: Env, cutoff: number): Promise<numbe
   const keyed = keyedApps(env);
   const pending = await pendingApps(env, keyed);
   if (keyed.length === 0 || pending.length > 1) {
-    console.log('[media] sweep paused: not every app has reported its documents yet');
+    console.info('[media] sweep paused: not every app has reported its documents yet');
     return 0;
   }
   const waiting = JSON.stringify(pending);

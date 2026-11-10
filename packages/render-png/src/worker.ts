@@ -1,6 +1,6 @@
 // The module shapes wrangler hands these imports, declared once here so every Worker that imports this file typechecks
 // it without a declaration of its own. Ambient wildcard modules cannot be imported, so a reference it is.
-// oxlint-disable-next-line typescript/triple-slash-reference
+// oxlint-disable-next-line typescript/triple-slash-reference -- an ambient wildcard module cannot be imported, as above
 /// <reference path="./worker-modules.d.ts" />
 // The renderer as a Cloudflare Worker loads it: wrangler bundles the wasm as a compiled module and the fonts (Inter
 // Regular and Bold, OFL) as raw bytes, so a Worker that imports this needs the `Data` rule for `**/*.ttf` and
