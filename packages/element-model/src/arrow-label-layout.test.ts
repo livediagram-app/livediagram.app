@@ -6,7 +6,7 @@ import {
   layoutArrowLabels,
   type ArrowLabelLayoutOptions,
 } from './arrow-label-layout';
-import type { ArrowElement, Element, ShapeElement } from './index';
+import type { ArrowElement, Element, ShapeElement } from './element';
 
 // 6px per character at 12px, scaled with the font: deterministic stand-in
 // for the canvas measure.

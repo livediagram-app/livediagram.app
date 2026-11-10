@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { sketchBackdropIds } from './sketch-backdrop';
-import type { Element } from './index';
+import type { Element } from './element';
 
 // Sketch backdrops (docs/specs/008-canvas/finish.md "Sketch"): a shape something sits on keeps a solid fill.
 const shape = (id: string, x: number, y: number, w: number, h: number, over = {}): Element => ({

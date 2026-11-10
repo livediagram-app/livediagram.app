@@ -6,7 +6,7 @@ import {
   otherArrowBends,
   planArrowBend,
 } from './arrow-bend';
-import type { ArrowElement } from './index';
+import type { ArrowElement } from './element';
 
 const free = (x: number, y: number) => ({ kind: 'free' as const, x, y });
 const arrow = (
