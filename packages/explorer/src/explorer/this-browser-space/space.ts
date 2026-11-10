@@ -22,7 +22,7 @@ export const LOCAL_SPACE_ID = 'this-browser';
 export const NEW_FOLDER_NAME = 'New Folder';
 
 export const LOCAL_FOLDER_COPY = {
-  full: 'This browser keeps as many folders as it can. Delete one to make another.',
+  full: 'Browser Storage keeps as many folders as it can. Delete one to make another.',
   empty: 'This folder is empty.',
   deleteTitle: (name: string) => `Delete “${name}”?`,
   deleteMessage: (parent: string) =>

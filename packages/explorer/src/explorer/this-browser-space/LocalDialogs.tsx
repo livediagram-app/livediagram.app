@@ -91,7 +91,7 @@ export function LocalSpaceDialog({
           subtitle={
             syncs
               ? 'Pick a folder here, or a place in your account to sync it to.'
-              : 'Pick a folder in this browser.'
+              : 'Pick a folder in Browser Storage.'
           }
           onCreateFolder={createAny}
           onPick={(to) => {

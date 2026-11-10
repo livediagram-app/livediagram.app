@@ -5,7 +5,7 @@ import { OfflineRedirect } from '@liveworkspace/explorer/offline-redirect';
 // Explorer panel and at /explorer/offline (docs/specs/013-workspace/explorer-structure.md "This Browser"). This
 // address only sends people there, its query kept.
 export const metadata: Metadata = {
-  title: 'This Browser | livehuddle',
+  title: 'Browser Storage | livehuddle',
   robots: { index: false, follow: false },
 };
 

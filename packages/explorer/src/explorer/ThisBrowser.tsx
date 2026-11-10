@@ -25,6 +25,7 @@ import {
   setThisBrowserArchived,
   subscribeThisBrowser,
   thisBrowserKey,
+  BROWSER_STORAGE_COPY,
   THIS_BROWSER_COPY,
   THIS_BROWSER_FOCUS,
   THIS_BROWSER_HOVER,
@@ -83,10 +84,10 @@ export type ThisBrowserHost = {
   handOverHref?: (conversion: ThisBrowserConversion, id: string) => string;
 };
 
-export { THIS_BROWSER_COPY };
+export { BROWSER_STORAGE_COPY, THIS_BROWSER_COPY };
 
 /** What This Browser says with nothing kept, on the page and in the panel. */
-export const THIS_BROWSER_EMPTY = 'Nothing is kept only in this browser.';
+export const THIS_BROWSER_EMPTY = 'Nothing is kept in Browser Storage.';
 export { LocalPreview };
 
 // A host's verb that moved an item (Sync, Take Offline) without a page load: the lists load again once it settles,
@@ -211,9 +212,9 @@ export function ThisBrowserPill({ inLink = false }: { inLink?: boolean }) {
   const body = (
     <>
       <BrowserIcon size={11} />
-      <span>{THIS_BROWSER_COPY.label}</span>
+      <span>{BROWSER_STORAGE_COPY.label}</span>
       <span id={id} className="sr-only">
-        {THIS_BROWSER_COPY.sentence}
+        {BROWSER_STORAGE_COPY.sentence}
       </span>
     </>
   );
@@ -223,7 +224,7 @@ export function ThisBrowserPill({ inLink = false }: { inLink?: boolean }) {
       <span
         data-this-browser=""
         aria-describedby={id}
-        title={THIS_BROWSER_COPY.sentence}
+        title={BROWSER_STORAGE_COPY.sentence}
         className={className}
       >
         {body}
@@ -236,7 +237,7 @@ export function ThisBrowserPill({ inLink = false }: { inLink?: boolean }) {
       target="_blank"
       rel="noreferrer"
       aria-describedby={id}
-      title={THIS_BROWSER_COPY.sentence}
+      title={BROWSER_STORAGE_COPY.sentence}
       className={`${className} hover:underline ${THIS_BROWSER_HOVER} ${THIS_BROWSER_FOCUS}`}
     >
       {body}
@@ -386,7 +387,7 @@ export function ThisBrowserPane() {
     Boolean(host) && holdsHere && items.length === 0 && shownFolders.length === 0;
   const spaceEmpty = !host || (live.length === 0 && folders.length === 0);
   const crumbs: Crumb[] = [
-    { name: THIS_BROWSER_COPY.label, onClick: () => navigate({ kind: 'offline' }) },
+    { name: BROWSER_STORAGE_COPY.label, onClick: () => navigate({ kind: 'offline' }) },
     ...path.map((f) => ({
       name: f.name,
       onClick: () => navigate({ kind: 'offline', folder: f.id }),
@@ -395,7 +396,7 @@ export function ThisBrowserPane() {
   return (
     <div data-explorer-view="offline">
       <PaneHeader
-        title={open?.name ?? THIS_BROWSER_COPY.label}
+        title={open?.name ?? BROWSER_STORAGE_COPY.label}
         crumbs={crumbs}
         showFilter={false}
         onCreateFolder={host ? () => create(here, setRenamingId) : undefined}
@@ -515,7 +516,7 @@ export function ThisBrowserTrashGroup() {
           id="trash-this-browser"
           className="min-w-0 truncate text-sm font-semibold text-slate-800 dark:text-slate-100"
         >
-          {THIS_BROWSER_COPY.label}
+          {BROWSER_STORAGE_COPY.label}
         </h2>
         <span className={`text-xs ${MUTED}`}>Open one to restore or delete it.</span>
       </header>

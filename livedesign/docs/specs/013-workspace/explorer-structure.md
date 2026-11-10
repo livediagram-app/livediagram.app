@@ -13,6 +13,12 @@ and run over liveworkspace's account API through the router (`/api/workspace/acc
 livedesign's settings in place, and any `?settings=` address opens them here too. A workbench's
 workspace frame keeps its own copy of the Explorer (`apps/live/app/embed/workbench/ExplorerHost.tsx`).
 
+**Browser Storage.** The owner renamed This Browser to **Browser Storage** in the Explorer on 2026-11-10, for clarity
+([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser, a Space"): its Space
+row and view title, Home's tile, the pill on Explorer rows and cards, the Trash's and Archived's groups, and the
+Explorer's menus, toasts and labels. The editor keeps **This Browser** for its badge on an open item kept only in this
+browser. This spec, like the code and the `/explorer/offline` address, still says This Browser for the place itself.
+
 ## What
 
 The Explorer's sidebar is one navigation tree in three **groups**. It answers two questions at once: where a

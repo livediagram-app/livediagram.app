@@ -3,7 +3,7 @@ import { expect, expectNoPageErrors, test } from './fixtures';
 
 // The shared Explorer (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md) as livedesign hosts it at
 // /explorer: what it lists is the index's, reached through /api/index on this origin, beside this browser's own
-// designs (This Browser). One guest, one design, every verb a person uses on it: make it (in This Browser, a guest's
+// designs (Browser Storage). One guest, one design, every verb a person uses on it: make it (in This Browser, a guest's
 // default), sync it to livedesign, rename it, open it, find it in Recent, star it, file it in a new folder, delete it
 // and restore it.
 
@@ -68,10 +68,10 @@ test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a
   const id = new URL(page.url()).pathname.split('/').pop()!;
   await expect.poll(() => thisBrowserList(page)).toContain(id);
 
-  // The Explorer lists it under This Browser.
+  // The Explorer lists it under Browser Storage.
   await page.goto('/explorer');
   await sidebar(page)
-    .getByRole('button', { name: /^This Browser/ })
+    .getByRole('button', { name: /^Browser Storage/ })
     .click();
   await expect(page.locator(`[data-this-browser-row="${id}"]`)).toBeVisible();
 

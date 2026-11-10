@@ -35,6 +35,7 @@ export {
   explorerPath,
   viewFromLocation,
   DEFAULT_BASE_PATH,
+  SIDEBAR_LABELS,
   VIEW_TITLES,
   type ExplorerView,
   type ExplorerViewKind,

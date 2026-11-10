@@ -321,7 +321,7 @@ describe('Change Folder', () => {
   });
 });
 
-describe('This Browser', () => {
+describe('Browser Storage', () => {
   it('keeps an archive mark through the app’s own writes, and drops it on the way out', () => {
     writeThisBrowser('liveplanner', [local()]);
     setThisBrowserArchived('liveplanner', 'local-1', 9_000);
@@ -345,7 +345,7 @@ describe('This Browser', () => {
   it('lists an archived one in Archived with its pill, closed, and moves it back to This Browser', async () => {
     writeThisBrowser('liveplanner', [local({ archivedAt: 9_000 })]);
     page(createFakeIndex(), { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })] });
-    const group = await screen.findByRole('region', { name: 'This Browser' });
+    const group = await screen.findByRole('region', { name: 'Browser Storage' });
     expect(group.querySelector('[data-this-browser]')).toBeTruthy();
     expect(screen.queryByText('Nothing Archived')).toBeNull();
     fireEvent.click(within(group).getByRole('button', { name: /^Local 1/ }));
@@ -355,10 +355,10 @@ describe('This Browser', () => {
     const move = await screen.findByRole('dialog', { name: 'Move to folder' });
     // Not signed in to sync here: This Browser and Archived alone.
     expect(within(move).queryByRole('button', { name: /My Work/ })).toBeNull();
-    fireEvent.click(within(move).getByRole('button', { name: /This Browser/ }));
+    fireEvent.click(within(move).getByRole('button', { name: /Browser Storage/ }));
     fireEvent.click(within(move).getByRole('button', { name: 'Move Here' }));
     expect(isThisBrowserArchived('liveplanner', 'local-1')).toBe(false);
-    expect(await screen.findByText('Moved “⁨Local 1⁩” to This Browser.')).toBeTruthy();
+    expect(await screen.findByText('Moved “⁨Local 1⁩” to Browser Storage.')).toBeTruthy();
   });
 
   it('renames one archived here in the app’s store and the list, without opening it', async () => {
@@ -379,7 +379,7 @@ describe('This Browser', () => {
     vi.stubGlobal('indexedDB', idb);
     writeThisBrowser('liveplanner', [local({ archivedAt: 9_000 })]);
     page(createFakeIndex(), { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })] });
-    const group = await screen.findByRole('region', { name: 'This Browser' });
+    const group = await screen.findByRole('region', { name: 'Browser Storage' });
     fireEvent.click(within(group).getByRole('button', { name: 'Rename Local 1' }));
     const input = within(group).getByRole('textbox', { name: 'Rename Local 1' });
     fireEvent.change(input, { target: { value: 'Old Launch Plan' } });
@@ -398,7 +398,7 @@ describe('This Browser', () => {
     vi.stubGlobal('indexedDB', undefined);
     writeThisBrowser('liveplanner', [local({ archivedAt: 9_000 })]);
     page(createFakeIndex(), { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })] });
-    const group = await screen.findByRole('region', { name: 'This Browser' });
+    const group = await screen.findByRole('region', { name: 'Browser Storage' });
     fireEvent.click(within(group).getByRole('button', { name: 'Rename Local 1' }));
     const input = within(group).getByRole('textbox', { name: 'Rename Local 1' });
     fireEvent.change(input, { target: { value: 'Other' } });
@@ -411,7 +411,7 @@ describe('This Browser', () => {
   it('keeps the name when a rename here is cancelled', async () => {
     writeThisBrowser('liveplanner', [local({ archivedAt: 9_000 })]);
     page(createFakeIndex(), { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })] });
-    const group = await screen.findByRole('region', { name: 'This Browser' });
+    const group = await screen.findByRole('region', { name: 'Browser Storage' });
     fireEvent.click(within(group).getByRole('button', { name: 'Rename Local 1' }));
     fireEvent.keyDown(within(group).getByRole('textbox', { name: 'Rename Local 1' }), {
       key: 'Escape',
@@ -426,7 +426,7 @@ describe('This Browser', () => {
     index.fail.set('listItems', new IndexError(500, 'unknown'));
     page(index, { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })] });
     expect(await screen.findByText(/Couldn’t load this list/)).toBeTruthy();
-    expect(await screen.findByRole('region', { name: 'This Browser' })).toBeTruthy();
+    expect(await screen.findByRole('region', { name: 'Browser Storage' })).toBeTruthy();
   });
 
   it('syncs one into the account from Change Folder, its mark cleared first', async () => {
@@ -436,7 +436,7 @@ describe('This Browser', () => {
       index.items.push(makeItem(9, { id: 'local-1', title: 'Local 1' }));
     });
     page(index, { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })], sync });
-    const group = await screen.findByRole('region', { name: 'This Browser' });
+    const group = await screen.findByRole('region', { name: 'Browser Storage' });
     fireEvent.click(within(group).getByRole('button', { name: 'Change Folder: Local 1' }));
     const move = await screen.findByRole('dialog', { name: 'Move to folder' });
     fireEvent.click(within(move).getByRole('button', { name: /My Work/ }));
@@ -469,6 +469,6 @@ describe('This Browser', () => {
     );
     expect(await screen.findByText('Local 2')).toBeTruthy();
     expect(screen.queryByText('Local 1')).toBeNull();
-    expect(row('This Browser (1 in this browser)')).toBeTruthy();
+    expect(row('Browser Storage (1 in Browser Storage)')).toBeTruthy();
   });
 });

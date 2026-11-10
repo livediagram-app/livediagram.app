@@ -27,6 +27,7 @@ import { useNow } from '../time';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { TrashIcon } from '../ui/icons';
 import { PaneCard, PaneEmpty, PaneIconButton, PaneList, PaneRow } from './pane-parts';
+import { SIDEBAR_LABELS } from '../views';
 
 // Sync, in words: the one verb a row spells out, since it moves the item somewhere.
 const SYNC_BUTTON =
@@ -50,7 +51,7 @@ export function PanelThisBrowser() {
         {words.many} kept only in this browser. They aren’t in your account and don’t sync to other
         devices.
       </p>
-      <PaneList label="This Browser">
+      <PaneList label={SIDEBAR_LABELS.thisBrowser}>
         {live.map((item) => {
           const name = item.title || `Untitled ${kind.lowerOne}`;
           return (

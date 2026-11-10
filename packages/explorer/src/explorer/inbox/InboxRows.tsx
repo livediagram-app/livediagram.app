@@ -33,6 +33,7 @@ import {
   UserIcon,
 } from '../../ui/icons';
 import { AppMark, CardStatusChip } from '../badges';
+import { SIDEBAR_LABELS } from '../../views';
 import { ThisBrowserPill } from '../ThisBrowser';
 import { useExplorer } from '../context';
 import { useExtras } from '../extras';
@@ -217,7 +218,7 @@ export const InboxRow = memo(function InboxRow({
     f.column ? `Status: ${f.column.name}` : null,
     f.reason?.label,
     f.who,
-    `In ${[f.item, ...f.where].join(', ')}${f.local ? ', This Browser' : ''}`,
+    `In ${[f.item, ...f.where].join(', ')}${f.local ? `, ${SIDEBAR_LABELS.thisBrowser}` : ''}`,
   ]
     .filter(Boolean)
     .join('. ');

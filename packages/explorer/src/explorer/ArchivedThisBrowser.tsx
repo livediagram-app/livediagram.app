@@ -8,7 +8,7 @@
 // on liveworkspace.app, which can't read the app's store.
 
 import { useCallback, useMemo, useState } from 'react';
-import { localArchived, ChangedAgo, ThisBrowserPill, THIS_BROWSER_COPY } from './ThisBrowser';
+import { localArchived, ChangedAgo, ThisBrowserPill, BROWSER_STORAGE_COPY } from './ThisBrowser';
 import type { ThisBrowserItem } from '../this-browser';
 import { LIST_CARD, MUTED } from '../ui/classes';
 import { FolderOutlineIcon, PencilIcon, TrashIcon } from '../ui/icons';
@@ -64,7 +64,7 @@ export function ThisBrowserArchivedGroup({ first = false }: { first?: boolean })
           id="archived-this-browser"
           className="min-w-0 truncate text-sm font-semibold text-slate-800 dark:text-slate-100"
         >
-          {THIS_BROWSER_COPY.label}
+          {BROWSER_STORAGE_COPY.label}
         </h2>
         <span className={`text-xs ${MUTED}`}>Archived here, never uploaded.</span>
       </header>

@@ -125,12 +125,15 @@ The element kinds of the project model that no Plan surface places (the diagram 
 graphics and the rest) keep their own words in their specs ([Elements](../009-elements/README.md)). Where a Plan
 card and the diagram **Card** could meet, the Plan one is always called a **Plan card**.
 
-## This Browser
+## Browser Storage and This Browser
 
-**This Browser** is the one name for a project saved only in this browser ([Offline Mode](../006-project/offline-mode.md)):
-the place it lives (the Explorer's This Browser section, beside My Work and the teams), the pill and badge that
-mark it, and where a new guest's projects start. A project is **in This Browser**; it is never "Local Only",
-"Local Browser" or "offline" in copy. "Offline Mode" stays the name of the feature, and code may say `offline`.
+**Browser Storage** is the Explorer's name for the place a project saved only in this browser lives
+([Offline Mode](../006-project/offline-mode.md)): its Space in the sidebar, beside My Work and the teams, its view and folders, its tile on
+Home, and the pill on its Explorer rows and cards (Archived, the Trash, Jump Back In, the Inbox, the editor's
+Explorer panel). The owner renamed it from "This Browser" on 2026-11-10, for clarity. **This Browser** stays the
+editor's badge on such a project (the pill at the top of an open project, and the editor's own copy). In the
+Explorer a project is **in Browser Storage**, never "This Browser", "Local Only" or "Local Browser", and never
+"offline" in copy. "Offline Mode" stays the name of the feature, and code may say `offline` and `thisBrowser`.
 
 ## Names in a sentence
 

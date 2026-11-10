@@ -46,6 +46,7 @@ import {
   type Placement,
   type RenderAppLogo,
   type SidebarLink,
+  SIDEBAR_LABELS,
   type ThisBrowserHost,
   useThisBrowserList,
   type WelcomeManifest,
@@ -442,7 +443,7 @@ export function ExplorerShell() {
       ? [
           {
             id: 'this-browser',
-            label: 'This Browser',
+            label: SIDEBAR_LABELS.thisBrowser,
             href,
             description: `${APP_ITEMS[app].nouns} kept only in this browser, in ${APP_ITEMS[app].site.replace(/\.app$/, '')}`,
             icon: 'browser',

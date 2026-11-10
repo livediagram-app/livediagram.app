@@ -165,9 +165,9 @@ describe('an Inbox row', () => {
     );
     const row = await screen.findByRole('option', { name: /Ledger/ });
     expect(row.getAttribute('aria-label')).toBe(
-      'Ledger. On your canvas. A teammate. In Offline canvas, Overview, This Browser',
+      'Ledger. On your canvas. A teammate. In Offline canvas, Overview, Browser Storage',
     );
-    expect(row.querySelector('[data-this-browser]')!.textContent).toMatch(/^This Browser/);
+    expect(row.querySelector('[data-this-browser]')!.textContent).toMatch(/^Browser Storage/);
     // No author name: a teammate wrote it.
     expect(row.querySelector('[data-inbox-who]')!.textContent).toBe('A teammate');
   });

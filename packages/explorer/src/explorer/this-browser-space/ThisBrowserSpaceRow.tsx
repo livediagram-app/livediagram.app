@@ -52,7 +52,7 @@ export function ThisBrowserSpaceRow({
       depth={0}
       dropTo={{ local: null }}
       badge={live.length || undefined}
-      badgeLabel={`${live.length} in this browser`}
+      badgeLabel={`${live.length} in Browser Storage`}
       expandable={roots.length > 0}
       expanded={expanded.has(LOCAL_ROW_KEY)}
       onToggleExpand={() => toggle(LOCAL_ROW_KEY)}

@@ -7,6 +7,12 @@ the person's session, This Browser's canvases and livehuddle's colours come alon
 ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "The Explorer on each app's address"). The editor
 serves no `/explorer` page of its own; its links to it go through `explorerHref` (`../packages/workbench/src/lib/explorer-href.ts`).
 
+**Browser Storage.** The owner renamed This Browser to **Browser Storage** in the Explorer on 2026-11-10, for clarity
+([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser, a Space"): its Space
+row and view title, Home's tile, the pill on Explorer rows and cards, the Trash's and Archived's groups, and the
+Explorer's menus, toasts and labels. The editor keeps **This Browser** for its badge on an open item kept only in this
+browser. This spec, like the code and the `/explorer/offline` address, still says This Browser for the place itself.
+
 ## Views
 
 Its views are Home, My Work, Recent, Favourites, Shared With Me, Trash, Inbox, Timeline, Invites, Search,
