@@ -8,16 +8,19 @@ describeTrustedTypesSinks({
   apps: ['editor', 'marketing', 'help'],
   editorApp: 'editor',
   csp: TRUSTED_TYPES_CSP,
-  // Static or builder markup, fed through the trustedHtml escape hatch unsanitised (catalogue icons and stickers,
-  // a look's sample preview, the face-finish ink from geometry and stored colours that dropUnsafeColours checked).
-  // Everything else (a document's drawing, a thumbnail, an export preview) goes through sanitizedHtml.
+  // Markup fed in unsanitised through the escape hatch (trustedConstant, builtMarkup): our own boot scripts and
+  // constants, and builder markup (catalogue icons and stickers, a look's sample preview, the face-finish ink from
+  // geometry and stored colours that dropUnsafeColours checked). Everything else (a document's drawing, a thumbnail,
+  // an export preview) goes through sanitizedHtml.
   builderMarkup: [
+    'apps/editor/app/pre-hydration-scripts.ts',
     'apps/editor/components/canvas/StickerView.tsx',
     'apps/editor/components/canvas/layout-render-thumb.tsx',
     'apps/editor/components/canvas/useFaceFinishPass.ts',
     'apps/editor/components/dialogs/LooksCarousel.tsx',
     'apps/editor/components/dialogs/TabStylePreview.tsx',
-    'apps/editor/components/palette/palette-tile-art.tsx',
     'apps/editor/components/primitives/tech-icon-glyph.tsx',
+    'apps/editor/lib/stale-html-guard.ts',
+    'packages/ui/src/appearance/appearance-storage.ts',
   ],
 });

@@ -16,7 +16,7 @@ import {
   BRAND_ICONS,
   DARK_READER_LOCK,
   RANDOM_UUID_BOOT_SCRIPT,
-  trustedHtml,
+  htmlProps,
   trustedTypesBootScript,
 } from '@livedesign/ui';
 import {
@@ -112,21 +112,18 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en-GB" suppressHydrationWarning>
       <head>
         {/* Trusted Types before anything else (docs/specs/016-platform/trusted-types.md). */}
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(TRUSTED_TYPES_BOOT) }} />
+        <script {...htmlProps(TRUSTED_TYPES_BOOT)} />
         {/* Signing in without a click (liveworkspace/docs/specs/003-accounts/accounts.md): before anything else loads,
             since when it bounces it stops the page. */}
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(SILENT_SIGN_IN_BOOT_SCRIPT) }} />
+        <script {...htmlProps(SILENT_SIGN_IN_BOOT_SCRIPT)} />
         {/* Ids work outside a secure context too (docs/specs/016-platform/secure-context.md), before any app code. */}
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(RANDOM_UUID_BOOT_SCRIPT) }} />
+        <script {...htmlProps(RANDOM_UUID_BOOT_SCRIPT)} />
         {/* A design's grant, asked for while the code loads (lib/api/design-grants.ts). */}
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(DESIGN_GRANT_BOOT_SCRIPT) }} />
+        <script {...htmlProps(DESIGN_GRANT_BOOT_SCRIPT)} />
         {/* Then the stale HTML guard (docs/specs/016-platform/stale-builds.md "The pre-boot
             guard"), listening before any build asset can fail to load. Its source is static; its
             settings ride as data attributes on this element. */}
-        <script
-          {...STALE_HTML_GUARD_ATTRIBUTES}
-          dangerouslySetInnerHTML={{ __html: trustedHtml(STALE_HTML_GUARD_SCRIPT) }}
-        />
+        <script {...STALE_HTML_GUARD_ATTRIBUTES} {...htmlProps(STALE_HTML_GUARD_SCRIPT)} />
         {/* The build this export was made from (docs/specs/016-platform/stale-builds.md), for
             developers, support and the e2e suite; the app itself compares EDITOR_BUILD_ID. */}
         {EDITOR_BUILD_ID ? <meta name="livedesign-build" content={EDITOR_BUILD_ID} /> : null}
@@ -148,7 +145,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           media="print"
           suppressHydrationWarning
         />
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(WEBFONTS_SWAP_SCRIPT) }} />
+        <script {...htmlProps(WEBFONTS_SWAP_SCRIPT)} />
       </head>
       <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100">
         {/* Apply the persisted appearance before first paint, so EVERY route
@@ -157,8 +154,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             useAppearance. Without this they'd render light over the dark body.
             The appearance snippet is shared by every app (@livedesign/ui);
             both are executed by tests against stub globals. */}
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(APPEARANCE_BOOT_SCRIPT) }} />
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(REDUCE_MOTION_BOOT_SCRIPT) }} />
+        <script {...htmlProps(APPEARANCE_BOOT_SCRIPT)} />
+        <script {...htmlProps(REDUCE_MOTION_BOOT_SCRIPT)} />
         <ErrorTelemetryBoot />
         <StaleBuildBoot />
         <PageViewBoot />

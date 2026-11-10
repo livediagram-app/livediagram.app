@@ -1,3 +1,4 @@
+import { htmlProps } from '@livediagram/ui';
 import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import type { Element, Layer } from '@livediagram/document';
 import { LayersGlyph } from '@/components/palette/context-menu-icons';
@@ -57,9 +58,7 @@ export function MoveToLayerRow({
                       preserveAspectRatio="xMidYMid meet"
                       className="h-full w-full"
                       aria-hidden
-                      dangerouslySetInnerHTML={{
-                        __html: sanitizedHtml(thumbMarkup.get(layer.id)!, 'svg-content'),
-                      }}
+                      {...htmlProps(sanitizedHtml(thumbMarkup.get(layer.id)!, 'svg-content'))}
                     />
                   ) : null}
                 </span>

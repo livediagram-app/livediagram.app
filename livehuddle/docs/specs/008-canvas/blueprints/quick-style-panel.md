@@ -30,7 +30,7 @@ Scope, by file:
 | `apps/editor/lib/swatch-overrides.ts`                                         | Pure: apply to a row, the theme-keyed store (set, clear, caps), parse                                            |
 | `apps/editor/hooks/canvas/useSwatchOverrides.ts`                              | The active theme's overrides, read from and written to the synced preferences                                    |
 | apps/editor/components/canvas/SwatchOverridePopover.tsx                       | The right-click popover: picker, hex field, Clear override                                                       |
-| `apps/editor/app/document/[id]/useEditorState.ts`                             | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |
+| `apps/editor/app/document/[id]/editor-state/useEditorStyle.ts`                | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |
 | `apps/editor/app/document/[id]/EditorView.tsx`                                | Mounts the panel                                                                                                 |
 
 ## Domain and naming

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { trustedHtml } from '@livediagram/ui';
+import { htmlProps } from '@livediagram/ui';
 import { EDITOR_VIEWPORT } from '@liveworkspace/workbench/lib/page-viewport';
 import {
   BYPASS_GUARD_SCRIPT,
@@ -18,9 +18,9 @@ export const viewport = EDITOR_VIEWPORT;
 export default function NewLayout({ children }: { children: ReactNode }) {
   return (
     <>
-      <script dangerouslySetInnerHTML={{ __html: trustedHtml(BYPASS_GUARD_SCRIPT) }} />
+      <script {...htmlProps(BYPASS_GUARD_SCRIPT)} />
       <style>{BYPASS_GUARD_STYLE}</style>
-      <script dangerouslySetInnerHTML={{ __html: trustedHtml(EARLY_MODE_SCRIPT) }} />
+      <script {...htmlProps(EARLY_MODE_SCRIPT)} />
       <style>{EARLY_MODE_STYLE}</style>
       {children}
     </>

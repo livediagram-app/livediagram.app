@@ -1,3 +1,4 @@
+import { htmlProps } from '@liveplanner/ui';
 import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { memo, useMemo, type CSSProperties } from 'react';
 import {
@@ -76,7 +77,7 @@ export const SequenceFace = memo(function SequenceFace({
         play ? (element.sequenceAnimRepeat ? 'lvd-seq-play-loop' : 'lvd-seq-play') : ''
       }`}
       style={style}
-      dangerouslySetInnerHTML={{ __html: sanitizedHtml(html) }}
+      {...htmlProps(sanitizedHtml(html))}
     />
   );
 });

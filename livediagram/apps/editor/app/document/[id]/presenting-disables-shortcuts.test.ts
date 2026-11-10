@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 // While a deck is running (docs/specs/012-collaboration/presentation-mode.md) the overlay owns the keyboard. It consumes
@@ -17,7 +17,15 @@ import { describe, expect, it } from 'vitest';
 // prove nothing. What must not silently come back is `enabled:
 // shortcutsEnabled`, which ignores the presentation.
 
-const SOURCE = readFileSync(new URL('./useEditorState.ts', import.meta.url), 'utf8');
+// The wiring is useEditorState and the slices it composes (editor-state/, one hook per concern).
+const SLICES = new URL('./editor-state/', import.meta.url);
+const SOURCE = [
+  readFileSync(new URL('./useEditorState.ts', import.meta.url), 'utf8'),
+  ...readdirSync(SLICES)
+    .filter((f) => f.endsWith('.ts') && !f.includes('.test.'))
+    .sort()
+    .map((f) => readFileSync(new URL(f, SLICES), 'utf8')),
+].join('\n');
 
 describe('presenting disables the editor keyboard', () => {
   it('derives one flag that accounts for the presentation', () => {

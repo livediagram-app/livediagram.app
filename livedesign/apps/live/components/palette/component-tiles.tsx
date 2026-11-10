@@ -15,7 +15,7 @@ import {
   type Tab,
 } from '@livedesign/design';
 import { lucidePackage } from '@liveworkspace/icons/lucide';
-import { lucideGlyph, Tooltip } from '@livedesign/ui';
+import { lucideGlyph, Tooltip, htmlProps } from '@livedesign/ui';
 import { useOptionalEditorContext } from '@/app/design/[id]/EditorContext';
 import { instanceMarkup } from '@/lib/instance-svg';
 
@@ -126,7 +126,7 @@ const ComponentTile = memo(function ComponentTile({
           className="h-12 w-full rounded"
           style={{ background: backgroundColor ?? undefined }}
           aria-hidden="true"
-          dangerouslySetInnerHTML={{ __html: sanitizedHtml(markup, 'svg-content') }}
+          {...htmlProps(sanitizedHtml(markup, 'svg-content'))}
         />
         <span className="truncate px-0.5 text-[11px] font-medium text-slate-700 dark:text-slate-200">
           {main.name}

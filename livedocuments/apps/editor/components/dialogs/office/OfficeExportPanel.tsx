@@ -5,7 +5,7 @@
 // Loaded only when the card opens, with the writers it calls.
 import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import type { Deck, LaidOutPage, Tab } from '@livedocuments/document';
-import { BackBar, Button, CheckIcon } from '@livedocuments/ui';
+import { BackBar, Button, CheckIcon, htmlProps } from '@livedocuments/ui';
 import type { ImageExportOpts } from '@/lib/export-tab';
 import { OFFICE_EXPORT_MESSAGES } from '@/lib/office-export';
 import {
@@ -64,7 +64,7 @@ export default function OfficeExportPanel({
             role="img"
             aria-label="The first page as it will download"
             className="flex max-h-full max-w-full items-center justify-center [&>svg]:max-h-[176px] [&>svg]:w-auto [&>svg]:max-w-full"
-            dangerouslySetInnerHTML={{ __html: sanitizedHtml(previewSvg) }}
+            {...htmlProps(sanitizedHtml(previewSvg))}
           />
         ) : (
           <span className="text-xs text-slate-500 dark:text-slate-400">Preparing preview…</span>

@@ -37,11 +37,18 @@ export function prePushSteps({ groups, editors }) {
   const steps = [];
   // Repo-wide, so once rather than per group, as every Checks job runs it.
   if (groups.length > 0)
-    steps.push({
-      label: 'no new copies across products',
-      cmd: 'node',
-      args: ['.github/scripts/duplicate-guard.mjs'],
-    });
+    steps.push(
+      {
+        label: 'no new copies across products',
+        cmd: 'node',
+        args: ['.github/scripts/duplicate-guard.mjs'],
+      },
+      {
+        label: 'one path for markup',
+        cmd: 'node',
+        args: ['.github/scripts/raw-html-guard.mjs'],
+      },
+    );
   const turbo = (/** @type {string[]} */ ...args) => [
     'exec',
     'turbo',
@@ -84,6 +91,8 @@ export function prePushSteps({ groups, editors }) {
       });
     }
   }
+  // Without coverage: instrumentation would slow every push several times over, so the editors' coverage
+  // floors are CI's alone (docs/ci.md "Editor coverage floors").
   for (const editor of new Set(editors.map((e) => e.editor))) {
     steps.push({
       label: `${editor}: unit tests`,

@@ -126,10 +126,14 @@ always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a r
   - **Speed budgets:** a change may not add `performance.now()` to a test (see [Speed budgets](#speed-budgets)).
   - **Copies across products:** a change may not add a source file byte-identical in two or more products
     (see [Copies across products](#copies-across-products)).
+  - **One path for markup:** a change may not add a raw HTML sink outside the shared markup module
+    (see [One path for markup](#one-path-for-markup)).
   - **Tests:** every affected workspace's suite once. Those with `test:coverage` run that, so their
     per-file thresholds are enforced in CI; the rest run `test`. Coverage goes to Codecov, one flag
     per group, carried forward when a run doesn't reach that group (`codecov.yml`).
   - **Editor unit tests:** a product's editor, when reached, in three shards under coverage.
+  - **Editor coverage floors:** after the shards, each reached editor's merged line and branch coverage
+    against its floor, which only rises (see [Editor coverage floors](#editor-coverage-floors)).
   - **Build:** the affected workspaces' builds (and what they build on), the CLI's `npm pack --dry-run`
     when the CLI is reached, and the staging wrangler config check.
   - **Coverage report** (pull requests only): writes the coverage report into the pull request's
@@ -259,6 +263,18 @@ new package carries) and a product's thin binding, a file whose only statements 
   a binding: about 0.1 seconds on the whole repository (1,300 files in 450 groups). Its tests run with
   `node --test .github/scripts/*.test.mjs`.
 
+## One path for markup
+
+Every raw HTML sink goes through `packages/trusted-types/src/html.ts` (livediagram/docs/specs/016-platform/trusted-types.md,
+"One path for markup"): `htmlProps` for a React element, `setHtml` and `setSrcdoc` for the DOM, each taking a
+`SafeHtml`. The Checks job's **One path for markup** step (`.github/scripts/raw-html-guard.mjs`, also in the
+pre-push hook) reads every tracked non-test source file in the repository and fails on a raw sink anywhere else:
+`dangerouslySetInnerHTML`, an assignment to `innerHTML`, `outerHTML` or `srcdoc`, `insertAdjacentHTML`,
+`createContextualFragment`, `setHTMLUnsafe`, `parseHTMLUnsafe` or `document.write`. It names each file and line.
+There is no baseline: none is left. Tests, e2e specs and CI's own scripts are left out, since they never ship.
+It reads about 14,400 files in about 1.5 seconds of CPU time (measured 2026-11-09), and its tests run with
+`node --test .github/scripts/*.test.mjs`.
+
 ## Drift report
 
 livehuddle was forked in-tree from livediagram and both carry the meeting kit (Avatar mode, the Spaces,
@@ -297,6 +313,36 @@ text around it; an unchanged report writes nothing.
   report from local artifact folders; its pure parts are tested by `node --test
 .github/scripts/*.test.mjs`, which the platform's Checks run.
 
+## Editor coverage floors
+
+The five editors (livediagram, liveplanner, livedocuments and livehuddle's `apps/editor`, livedesign's
+`apps/live`) hold most of each product's tests and have no per-file thresholds. Their coverage is held by a
+ratchet instead: it may never fall, and its floor rises as tests are added.
+
+- **Where it runs:** the `editor-coverage` job in `ci.yml` (**Editor coverage floors**), after the editor
+  shards, on pull requests and pushes to `main`. It is part of the **CI** check. It downloads the reached
+  editors' `coverage-<group>-editor-<shard>` artifacts and runs `.github/scripts/coverage-floors.mjs`, which
+  merges each editor's shards with the lcov reader the coverage report uses (`.github/scripts/lcov.mjs`; a
+  line is covered when any shard hit it, a branch when any shard took it).
+- **Why not in `vitest.config.ts`:** each shard runs a third of the files, so a per-shard threshold
+  would judge a slice. Only the merged result is the editor's coverage.
+- **The floors:** `.github/scripts/coverage-floors.json`, per editor its line and branch coverage in
+  percent, each the measured value less 0.3 points of slack, rounded down to one decimal. The slack is
+  there because moving code between files (a split, a move to `packages/`) shifts coverage a little,
+  and a floor at the measured value would turn red at random. The job fails when either is below its
+  floor, and fails when a shard kept no coverage or an editor has no floor.
+- **Raising them:** when an editor beats a floor by 0.8 points or more (the slack plus half a point
+  gained), the job says so in a notice (it does not fail). Raise it in the same pull request: download
+  the run's editor artifacts into one folder with
+  `gh run download <run> --pattern 'coverage-*-editor-*' --dir <folder>`, then run
+  `node .github/scripts/coverage-floors.mjs --update <folder>`. `--update` sets each floor the same 0.3
+  below what it measures, only ever raises a floor, and adds a floor for an editor that has none.
+- **Lines, not Codecov's hits:** the floors count a line as covered when it ran. The coverage report counts a
+  line with a branch never taken as partial, not hit, so its percentages read a little lower.
+- **Locally:** the pre-push hook runs each reached editor once without coverage and never checks a floor;
+  coverage would slow every push several times over. `node --test .github/scripts/*.test.mjs` tests the
+  script.
+
 ## Before a push
 
 A **pre-push hook** runs, for what a push changes, what CI's Checks and Tests jobs would fail on, so a
@@ -308,7 +354,7 @@ deterministic failure shows up on the machine in minutes rather than on CI later
 - `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs`. It takes the merge base with
   `origin/main`, asks CI's planner (`ci-plan.mjs`) which groups the change reaches, and runs each
   group's steps as `ci.yml` does: the copies guard (once), lint and type check, the format check, the speed-budget guard, `test`, `test:coverage`, then
-  each reached editor's suite once (unsharded). It stops at the first failing step.
+  each reached editor's suite once (unsharded, without coverage, so no floor is checked). It stops at the first failing step.
 - It checks only a push of the checked-out `HEAD`; a push of any other commit, a tag or a deletion
   passes and is left to CI. Nothing changed since the merge base also passes.
 - One run at a time on the machine: a push made while another's checks are running skips its own and
