@@ -17,7 +17,8 @@ const EXTENSIONS = ['', '.ts', '.tsx', '/index.ts', '/index.tsx'];
 
 type Exports = Record<string, string | Record<string, string>>;
 
-// A package's export target for a subpath (`.`, `./hooks/x`), through a single `*` wildcard.
+// A package's export target for a subpath (`.`, `./hooks/x`), through a `*` wildcard (each `*` in the target
+// takes the match, as Node's export maps do).
 export function exportTarget(exports: Exports, subpath: string): string | undefined {
   const pick = (v: Exports[string] | undefined) =>
     typeof v === 'string' ? v : (v?.import ?? v?.default);
@@ -31,7 +32,7 @@ export function exportTarget(exports: Exports, subpath: string): string | undefi
     if (!subpath.startsWith(head) || !subpath.endsWith(tail)) continue;
     const target = pick(value);
     if (target)
-      return target.replace('*', subpath.slice(head.length, subpath.length - tail.length));
+      return target.replaceAll('*', subpath.slice(head.length, subpath.length - tail.length));
   }
   return undefined;
 }
