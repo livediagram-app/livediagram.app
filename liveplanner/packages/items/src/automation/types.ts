@@ -17,6 +17,15 @@ export const AUTOMATION_LOG_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 export const AUTOMATION_TEXT_MAX = 2000;
 export const AUTOMATION_NAME_MAX = 60;
 export const AUTOMATION_CREATED_PER_RUN = 1;
+// Phase 2 (spec "Time triggers", "For Related Cards", "Outgoing actions", "Assign in turn").
+export const AUTOMATION_TIME_CARDS_MAX = 100;
+export const AUTOMATION_BRANCH_CARDS_MAX = 100;
+export const AUTOMATION_BRANCH_ACTIONS_MAX = 10;
+export const AUTOMATION_OUTGOING_MAX = 5;
+export const AUTOMATION_ROTATE_MIN = 2;
+export const AUTOMATION_ROTATE_MAX = 10;
+export const AUTOMATION_DUE_DAYS_MAX = 30;
+export const AUTOMATION_LATE_MAX_MS = 24 * 60 * 60 * 1000;
 
 // Who a rule's changes are by: `name` is the rule's name at the moment it ran, the history tag says it was a rule.
 export const AUTOMATION_PERSON_ID = 'automation';
@@ -27,13 +36,27 @@ export function automationPerson(ruleName: string): ItemPerson {
 
 // ---- Triggers ----------------------------------------------------------------------------------------------------
 
+// A time of day, 'HH:MM' in the rule's time zone, on the quarter hour.
+export type AutomationClock = string;
+
 export type AutomationTrigger =
   | { kind: 'card_created'; status?: string }
   | { kind: 'form_response'; formTab?: string }
   | { kind: 'card_moved'; from?: string[]; to?: string[] }
   | { kind: 'field_changed'; fields: string[] }
   | { kind: 'comment_added' }
-  | { kind: 'manual' };
+  | { kind: 'manual' }
+  | {
+      kind: 'scheduled';
+      every: 'day' | 'weekday' | 'week' | 'month';
+      // week: 0 Sunday … 6 Saturday, at least one.
+      days?: number[];
+      // month: 1 to 31; past the month's end is its last day.
+      dayOfMonth?: number;
+      at: AutomationClock;
+    }
+  | { kind: 'due_in'; days: number; at: AutomationClock }
+  | { kind: 'overdue'; at: AutomationClock };
 
 export type AutomationTriggerKind = AutomationTrigger['kind'];
 export const AUTOMATION_TRIGGER_KINDS: readonly AutomationTriggerKind[] = [
@@ -43,7 +66,15 @@ export const AUTOMATION_TRIGGER_KINDS: readonly AutomationTriggerKind[] = [
   'field_changed',
   'comment_added',
   'manual',
+  'scheduled',
+  'due_in',
+  'overdue',
 ];
+export type AutomationTimeTriggerKind = 'scheduled' | 'due_in' | 'overdue';
+export const isTimeTrigger = (
+  t: AutomationTrigger,
+): t is Extract<AutomationTrigger, { kind: AutomationTimeTriggerKind }> =>
+  t.kind === 'scheduled' || t.kind === 'due_in' || t.kind === 'overdue';
 
 // ---- Conditions --------------------------------------------------------------------------------------------------
 
@@ -89,7 +120,12 @@ export type AutomationSetValue =
   | { date: AutomationDay }
   | { from: string };
 
-export type AutomationAssignee = { person: string } | { trigger: true } | { nobody: true };
+export type AutomationAssignee =
+  | { person: string }
+  | { trigger: true }
+  | { nobody: true }
+  // People in turn: 2 to 10 person ids, in order; the rule keeps its place.
+  | { rotate: string[] };
 export type AutomationRecipient = { assignee: true } | { trigger: true } | { person: string };
 
 export type AutomationAction =
@@ -116,14 +152,39 @@ export type AutomationAction =
 
 export type AutomationActionKind = AutomationAction['kind'];
 
+// Send to Webhook, Post to Slack, Post to Teams: through one of the plan's platform webhooks, by id.
+export type AutomationOutgoing = {
+  kind: 'notify';
+  via: 'webhook' | 'slack' | 'teams';
+  webhook: string;
+  text: string;
+};
+
+// Which cards a branch runs on, from the triggering card.
+export type AutomationRelated =
+  | { kind: 'linked'; field?: string }
+  | { kind: 'blocked_by' }
+  | { kind: 'blocking' }
+  | { kind: 'children' }
+  | { kind: 'saved_filter'; tab: string; filter: string };
+
+export type AutomationIf = {
+  kind: 'if';
+  conditions: AutomationCondition[];
+  then: AutomationAction[];
+  else: AutomationAction[];
+};
+
+// For Related Cards: no If, branch, Create Card or outgoing action inside.
+export type AutomationBranch = {
+  kind: 'for';
+  related: AutomationRelated;
+  conditions: AutomationCondition[];
+  then: AutomationAction[];
+};
+
 export type AutomationStep =
-  | AutomationAction
-  | {
-      kind: 'if';
-      conditions: AutomationCondition[];
-      then: AutomationAction[];
-      else: AutomationAction[];
-    };
+  AutomationAction | AutomationOutgoing | AutomationIf | AutomationBranch;
 
 // ---- A rule ------------------------------------------------------------------------------------------------------
 
@@ -148,7 +209,7 @@ export interface AutomationRule extends AutomationRuleBody {
   id: string;
   enabled: boolean;
   // Set when the rule turned itself off after AUTOMATION_FAILURES_TO_PAUSE failures; cleared by Resume.
-  paused?: { reason: string; at: number };
+  paused?: { reason: string; at: number; webhook?: string };
   made: AutomationStamp;
   edited: AutomationStamp;
 }
@@ -160,7 +221,8 @@ export type AutomationResult = 'done' | 'no_match' | 'skipped' | 'failed';
 export type AutomationStepLine =
   | { kind: 'trigger'; text: string; by?: ItemPerson }
   | { kind: 'condition'; ok: boolean; text: string }
-  | { kind: 'action'; ok: boolean; text: string; already?: true };
+  | { kind: 'action'; ok: boolean; text: string; already?: true }
+  | { kind: 'branch'; ok: boolean; text: string; cards: number };
 
 export interface AutomationRun {
   id: string;
@@ -179,6 +241,8 @@ export interface AutomationRun {
 // One rule's figures for the Rules list.
 export interface AutomationRuleStats {
   lastRunAt: number | null;
+  // A time trigger's next moment (ms), for "Next: Mon 9:00"; null otherwise.
+  nextAt?: number | null;
   runsThisWeek: number;
   failuresInARow: number;
 }
