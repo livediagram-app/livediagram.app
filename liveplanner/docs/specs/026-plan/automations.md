@@ -94,6 +94,12 @@ work. A rule does it every time, at once, and says that it did.
 | **Due In**          | a card's due date is a chosen number of days away (1 to 30), at a time on that day             | the rule's conditions             |
 | **Overdue**         | a card's due date has passed and it is not in a done column, at a time on the day after        | the rule's conditions             |
 
+- **Card Types**: every trigger can be narrowed to one or more of the plan's card types, picked as chips in the
+  When step ("When a **Bug** or **Task** card moves to Done"); none picked is every type. A card of another type
+  starts no run and logs nothing. For Run from a Card it decides which cards offer the rule under Run Rule; for a
+  time trigger, which cards it looks over. A card type that is gone since needs attention, as a condition's does.
+  (A **Card Type** condition still works, for "is not" and inside If / Else.)
+
 ### Time triggers
 
 - **Scheduled, Due In and Overdue** are **time triggers**: at their moment, the rule looks over the plan's cards and
