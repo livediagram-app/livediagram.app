@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AccountMenu, SIGN_OUT_REFUSED } from './AccountMenu';
 import { AppAccountMenu } from './AppAccountMenu';
 import { appAccountOf, appSignOut, resetAppAccount } from './app-account';
+import { ACCOUNT_TRIGGER_BOX } from './face';
 import { avatarColour } from './initials';
 import { SILENT_RETRY_GLOBAL } from '@liveworkspace/auth-client/silent';
 import { AccountMenuPlaceholder, DeferredAccountMenu, type DeferredMenuProps } from './placeholder';
@@ -182,7 +183,7 @@ describe('AppAccountMenu', () => {
       </>,
     );
     // Holding the avatar's place meanwhile.
-    expect(container.querySelectorAll('[aria-hidden="true"]')).toHaveLength(2);
+    expect(container.querySelectorAll(':scope > [aria-hidden="true"]')).toHaveLength(2);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0]![0]).toBe('/api/auth/token');
 
@@ -433,6 +434,27 @@ describe('DeferredAccountMenu (a marketing page’s Guest button)', () => {
       />
     );
   }
+
+  it('takes the placeholder’s footprint, so a visitor’s bar does not move when it arrives', () => {
+    const { container: held } = render(<AccountMenuPlaceholder />);
+    const { container: guest } = render(<DeferredAccountMenu load={vi.fn()} />);
+    const box = held.firstElementChild!;
+    const trigger = guest.querySelector('button')!;
+    // The same box (gap, padding, type), and the same row inside it: a 28px disc, "Guest" hidden below sm, a chevron.
+    for (const token of ACCOUNT_TRIGGER_BOX.split(' ')) {
+      expect(box.classList).toContain(token);
+      expect(trigger.classList).toContain(token);
+    }
+    const [disc, label, chevron] = Array.from(box.children);
+    expect(disc!.classList).toContain('size-7');
+    expect(label!.textContent).toBe(trigger.textContent);
+    expect(label!.className).toContain('max-sm:hidden');
+    expect(chevron!.getAttribute('class')).toContain('size-4');
+    // Held, not shown: nothing of the Guest button reads before it arrives.
+    expect(label!.classList).toContain('invisible');
+    expect(chevron!.getAttribute('class')).toContain('invisible');
+    expect(box.getAttribute('aria-hidden')).toBe('true');
+  });
 
   it('costs nothing until approached: no request, and the menu’s code only on pointer or focus', async () => {
     const load = vi.fn(() => Promise.resolve({ default: Menu }));

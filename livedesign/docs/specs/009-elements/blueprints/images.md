@@ -64,7 +64,7 @@ the media service itself ([liveworkspace/docs/specs/006-media/media.md](../../..
 | Image owner      | `image_owners.owner_id` (the design's) | Whose an image is, as the media service names owners        |
 | Media owner      | `mediaOwner(owner)`                    | The owner as the service knows them; a guest id is hashed   |
 | Dedupe key       | person and `sha256`, in the service    | SHA-256 of the uploaded (pre-strip) bytes, per person       |
-| Gallery cap      | the service's, 100 images and 100 MB   | Per-person count and byte ceilings, across every app        |
+| Gallery cap      | the service's, 500 images and 1 GB     | Per-person count and byte ceilings, across every app        |
 | Metadata strip   | the service's JPEG strip               | Byte-level removal of APPn and COM segments from a JPEG     |
 | Reference        | row of `image_refs` naming the id      | A tab places the image; see the index blueprint             |
 | Reference outbox | the design's `outbox` media key        | The design's images changed since the service last heard    |
@@ -198,9 +198,13 @@ Participant sends no beacon, so nothing else shares it.
   uploaded in another app serves it.
 - `GET /api/images/usage`: owner only; `imageUsage` reads the service's references for the
   owner's images in every app (`media.usage`) and names each item through `@liveworkspace/media`'s `galleryUsage`
-  from the index (at most `IMAGE_USAGE_DESIGNS_MAX`, 200, in one request, `lookupItems`), keeping those whose
-  `app` matches that the caller can open and that are not in the Trash; no tab body read, each item once per image,
-  as `{ id, name, app }` ordered by name. With no references it answers `{ usage: {} }` without asking the index.
+  from the index, keeping those whose `app` matches that the caller can open, in batches of 200 ids, 4 at a time, every item up to 5,000 (`lookupItems`). One in the Trash still counts,
+  marked `trashed`. Answers `{ usage, unchecked }`: `unchecked` lists the images whose items could not be
+  checked (past 5,000, or a failed lookup); with the service or the index unreachable it answers
+  `{ usage: {}, unchecked: [], unknown: true }`, so the Gallery never calls a placed image unused
+  (liveworkspace/docs/specs/006-media/media.md "Usage"). No tab body read,
+  each item once per image, as `{ id, name, app, trashed? }` ordered by name. With no references it answers
+  `{ usage: {}, unchecked: [] }` without asking the index.
 
 ### Retention
 
@@ -416,7 +420,7 @@ account)` (`mergeMediaOwner`; idempotent, and a failure keeps the notice to ask 
 - **Privacy.** The service strips JPEG APPn and COM segments before storage (I2). PNG, WebP and GIF
   pass through (spec, Out of scope).
 - **Abuse.** `WRITE_RATE_LIMITER` (300 per 60 s per owner or token) on POST and DELETE; per-file
-  cap; the media service's per-person caps (100 images, 100 MB, across every app), enforced
+  cap; the media service's per-person caps (500 images, 1 GB, across every app), enforced
   atomically at its insert; the `images` segment answers only a verified Bearer (an account's,
   a guest's or an API token); read-only tokens cannot write. Uploads are off in embeds (D42).
 - **Caching.** `private` only, so no shared cache holds a share-gated image.
@@ -535,7 +539,7 @@ O1 exists. O2 to O5 do not; Observability stays unchecked until GB5 lands.
 | `MAX_BODY_BYTES`           | `8 * 1024 * 1024`                                 | Non-image write cap in `limits.ts`                          |
 | `MEDIA_KEY`                | secret; unset = no images                         | `wrangler secret put`; the service's `MEDIA_KEY_LIVEDESIGN` |
 | `MEDIA_URL`                | unset = `https://www.liveworkspace.app/api/media` | `hosted-vars.json` per environment                          |
-| Gallery caps               | 100 images, 100 MB per person                     | The media service's, across every app                       |
+| Gallery caps               | 500 images, 1 GB per person                       | The media service's, across every app                       |
 | Reference announce cron    | `0 3 * * *`                                       | `wrangler.toml`, production and staging                     |
 | `IMAGE_EMBED_BUDGET_BYTES` | `3 * 1024 * 1024`                                 | Spec; 1 to 8 MiB keeps snapshots streamable                 |
 | Read `Cache-Control`       | `private, max-age=86400`                          | Spec; `private` is load-bearing                             |

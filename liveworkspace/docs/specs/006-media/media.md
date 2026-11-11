@@ -100,8 +100,9 @@ The body is the file's raw bytes. Headers: `Content-Type`, `Content-Length`, `X-
    a bare hash would let them probe the gallery, so they upload the body and still dedupe on its real
    hash.
 4. A full gallery: `403 gallery_full` with `reason` (`count` or `bytes`), `limit` and `current`. The caps
-   are per person across every app (`IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`; 100 images and
-   100 MB in production and staging).
+   are per person across every app (`IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`; 500 images and
+   1 GB in production and staging: a full-window screenshot is 0.3 to 1.1 MB, so 1 GB holds the 500 with
+   room to spare).
 5. Missing or invalid dimensions: `400 invalid_dimensions`.
 6. Bytes whose first bytes aren't the declared format: `415 unsupported_type`. The declared type is never
    trusted alone.
@@ -163,10 +164,20 @@ Gallery lists the owner's images from every app, so its "Used in" badge counts e
 an image uploaded in livediagram and placed only in a livedocuments document reads "Used in 1 item" in any
 app's Gallery, never "Not used". `GET /usage` answers every app's references; each app's
 `GET /api/images/usage` names them through the index (one index holds every app's items) with
-`@liveworkspace/media`'s `galleryUsage`, as `{ id, name, app }`, keeping its own rule on whose and which
-items show (at most 200 named per answer). The names come from one index request for all of them
-(`POST /api/index/items/lookup`), never a read per document; an item the index leaves out, or an answer that
-fails, is left out of the badge rather than failing the Gallery. An item saved only in This Browser has no references: its
+`@liveworkspace/media`'s `galleryUsage`, as `{ id, name, app }`, keeping its own rule on whose items show.
+The names come from the index in requests of 200 ids (`POST /api/index/items/lookup`), at most 4 at a time,
+never a read per document. Every distinct document is looked up, up to a safety bound of 5,000 (25 requests).
+
+The Gallery never calls an image unused without having checked. The answer is
+`{ usage, unchecked }`: `unchecked` lists the images that have references but none named, because their
+documents were past the 5,000 bound or in a lookup that failed. Such an image is neither "Used in" nor "Not
+used": its card says "Couldn't check", and the Unused filter leaves it out. When the usage can't be read at
+all (the service or the index is down, so the answer says `unknown: true`, or the request fails), every image is
+unchecked. A document the index
+answers as gone, or not the caller's to open, is not a use. A document in the owner's Trash is: its
+references stay (the sweep keeps its pictures too), and deleting the picture would leave a broken one on
+restore, so the badge counts it and names it "in the Trash", without a link. An older client that reads only
+`usage` sees the same badges as before. An item saved only in This Browser has no references: its
 pictures are embedded in it, not placed from the gallery, so it never makes a gallery image used.
 
 A document reports its set from its outbox on idle, at most once a minute, so an image placed a moment

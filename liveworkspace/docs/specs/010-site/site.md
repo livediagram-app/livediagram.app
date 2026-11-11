@@ -96,7 +96,10 @@ away already. On an app's own pages Sign out is the app's, and it signs out of e
 (`/api/auth/sign-in?return_to=<the page>`) and Create account the same with `&screen=sign-up`, and the Guest button
 is a stand-in from the package's light entry (`DeferredAccountMenu` in `@liveworkspace/account-menu/placeholder`):
 the menu's code is fetched only when the pointer or focus reaches it, and a press made before it arrives opens the
-menu once it has, so a visitor who never touches it costs no request.
+menu once it has, so a visitor who never touches it costs no request. Until hydration the static HTML holds the
+Guest button's place (`AccountMenuPlaceholder`: the avatar's disc, with the room for "Guest" and the chevron kept
+but unseen), so a visitor's bar never shifts when the Guest button arrives; a signed-in name moves it only by its own
+length.
 
 ### The front door (`/`)
 

@@ -166,9 +166,12 @@ max-age=86400`.
   `rememberMediaOwner` for the listed ids.
 - `GET /api/images/usage`: owner only; `usageOf` asks the service for the owner's references in every app and
   names each item through `@liveworkspace/media`'s `galleryUsage` from the index
-  ([Image reference index](image-reference-index.md#readers)), keeping those whose `app` matches, the owner's and
-  not in the Trash, at most `USAGE_DOCUMENTS_MAX` (200), in one index request (`lookupItems`). No tab body read,
-  each item once per image, as `{ id, name, app }` ordered by name.
+  ([Image reference index](image-reference-index.md#readers)), keeping those whose `app` matches and the owner's,
+  in batches of 200 ids, 4 at a time, every item up to 5,000 (`lookupItems`). One in the Trash still counts,
+  marked `trashed`. Answers `{ usage, unchecked }`: `unchecked` lists the images whose items could not be
+  checked (past 5,000, or a failed lookup); with the service or the index unreachable it answers
+  `{ usage: {}, unchecked: [], unknown: true }`, so the Gallery never calls a placed image unused
+  (liveworkspace/docs/specs/006-media/media.md "Usage"). No tab body read, each item once per image, as `{ id, name, app, trashed? }` ordered by name.
 
 ### Retention
 
@@ -261,7 +264,11 @@ export function embedTabImages(
 ): Promise<Map<string, string>>;
 
 // apps/api/src/routes/images.ts (GET /api/images/usage)
-async function usageOf(ctx: RouteContext, media: MediaClient, owner: string): Promise<ImageUsage>; // @liveworkspace/media: Record<imageId, { id; name; app }[]>, via galleryUsage
+async function usageOf(
+  ctx: RouteContext,
+  media: MediaClient,
+  owner: string,
+): Promise<GalleryUsageAnswer>; // @liveworkspace/media: { usage: Record<imageId, { id; name; app; trashed? }[]>; unchecked: imageId[]; unknown? }, via galleryUsage
 
 // apps/api/src/db/image-grants.ts
 export function documentMayServeImage(
@@ -405,7 +412,7 @@ reads a 503 as `null`.
 - Saves: the index statements in the body's own transaction, in the document's SQLite; nothing is
   written, and nothing pushed, when the set is unchanged. A changed set costs one push (the grants
   and one service request) within about a minute.
-- Usage: one service request and one index lookup for up to `USAGE_DOCUMENTS_MAX` items, no tab
+- Usage: one service request and one index lookup per 200 items, 4 at a time, up to 5,000 items, no tab
   body read; deduped in flight on the client (`dedupeInFlight`).
 - Snapshot: at most `IMAGE_EMBED_BUDGET_BYTES` raw (about 4 MiB base64) per snapshot, read one
   at a time.

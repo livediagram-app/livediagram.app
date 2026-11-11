@@ -518,8 +518,8 @@ Tracked here until answered; each answer moves into a spec.
 1. **Whiteboard picture size:** at the shared 2,048 px limit, handwriting on a
    large board becomes unreadable. Keep it, raise it for whole-board pictures, or
    tile the picture?
-2. **Whiteboard and the image cap:** the hosted cap is 100 images per owner, so
-   more than 100 boards cannot all arrive as pictures. Accept placeholders, or
+2. **Whiteboard and the image cap:** the hosted cap is 500 images per owner, so
+   more than 500 boards cannot all arrive as pictures. Accept placeholders, or
    treat board pictures differently?
 3. **Whiteboard Zip:** once the operator's Zips are in, specify a structured
    import of them (editable ink and notes)?
