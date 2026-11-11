@@ -1,6 +1,7 @@
 # Automations blueprint
 
-Derived from [Automations](../automations.md). Phase 1 (#711).
+Derived from [Automations](../automations.md). Phase 1 (#711), Phase 2 (#712), and Phase 3's agent and CLI rule
+tools (#713).
 
 ## Domain and naming
 
@@ -67,7 +68,7 @@ apps/api/src/routes/automation-routes.ts   the routes below, dispatched from pro
 apps/api/src/routes/automation-source.ts   writeSource(ctx) (who made a route's write, worked out only when a rule
                                            hears it) and queueComment
 
-apps/api/src/routes/automation-routes.ts   the routes below; gate: whole-plan edit, signed-in person, no API token
+apps/api/src/routes/automation-routes.ts   the routes below; gate: whole-plan edit, signed-in person or their token
 apps/editor/components/automations/
   AutomationsButton.tsx       the footer button (in ChromeControls between Search and Settings), amber dot
   AutomationsDialog.tsx       the screen: tabs, meter, Rules and Audit Trail views, phone sheet
@@ -174,7 +175,8 @@ error logged.
 | `POST   /automations/:ruleId/run`       | `{ item }` → `AutomationRunResponse` (manual rules only)       | 404, 409 `automation_not_manual`    |
 | `GET    /automations/runs`              | `?rule&result&since&limit≤200` → `AutomationRunsResponse`      | 403                                 |
 
-Gate on every route: `gateEdit` for the whole plan, a signed-in caller, no API token, not a tab-scoped link
+Gate on every route: `gateEdit` for the whole plan, a signed-in caller or an API token of one (Phase 3, "Agents and
+the CLI" below, which also sets what a read-only token may do), never a workbench session, not a tab-scoped link
 (403 `automations_need_editor`). A Browser Storage plan never calls them. An unknown path under `/automations` is
 not routed (the OpenAPI drift probe's clean 404), and every route is in the OpenAPI manifest under the tag
 **Automations**. Run Rule past the day's budget answers 429 `automation_budget_spent` and runs nothing.
@@ -404,6 +406,103 @@ What the editor does, where it differs from or adds to the Editor list above (ea
   `planPalette` of the app's appearance, as the setup steps do.
 - **Labels.** The branch values' chips read Trigger Title, Trigger Number and Trigger Link
   (`AUTOMATION_BRANCH_VALUE_LABELS`).
+
+## Agents and the CLI (Phase 3, Work Item #713)
+
+Derived from the spec's "Agents and the CLI" and the API token bullet of "Who may do what".
+
+### The api door (`apps/api/src/routes/automation-routes.ts`)
+
+`gate(ctx, projectId)` lets a caller through when all of these hold, else 403 `automations_need_editor`:
+
+| Caller                                        | Through                                                        |
+| --------------------------------------------- | -------------------------------------------------------------- |
+| signed in (`accountUserId`), no token         | when `gateEdit` passes for the whole plan (as Phase 1)         |
+| API token (`ctx.token`, `verifiedUserId` set) | the same `gateEdit`, as the token's account                    |
+| read-only API token                           | `GET` only (the list and `/runs`); any other method 403        |
+|                                               | `read_only_token`, as the worker's choke point already answers |
+| workbench session (`ctx.workbench`)           | never                                                          |
+| guest, link visitor with no account           | never                                                          |
+| tab-scoped grant, Participant, Viewer         | never (`gateEdit` for the whole plan fails)                    |
+
+- `Gated` gains `ai: boolean` (`!!ctx.token`). A stamp made by a token is `{ by, at, ai: true }`
+  (`AutomationStamp.ai?: true`, packages/items types.ts), on `made` for create and duplicate and on `edited` for
+  create, save and duplicate; toggle and order write no stamp (as Phase 1). A person's save after an agent's writes
+  a stamp without `ai`.
+- Run Rule's and Test on a Card's manual event is `role: 'agent'` for a token, `'editor'` otherwise, so Who Did It's
+  `{ role: 'agent' }` holds for an agent's Run Rule.
+- `AutomationsListResponse` gains `people: { id, name }[]` (the plan's people as rules name them,
+  `readAutomationPlan(…).outline.people`, read once by the list already): what an agent needs to name a person by
+  name and to word a rule's people in its sentence. The editor ignores it.
+- An outgoing action still needs an Editor of the whole plan: the gate is the one door, and a token's account is
+  held to it as the person is. The webhooks themselves are the index's, listed only by that account.
+- The editor's builder reads "Edited by <name> (Agent)" when `edited.ai` is set (`RuleBuilder.tsx`).
+
+### The engine (`packages/agent-verbs/src/rules/`)
+
+```
+rule-state.ts      readRulesState(api, projectId) → { list: AutomationsListResponse, plan: PlanResponse }: the two
+                   reads in parallel; rulesPath(projectId); readRuns(api, projectId, { rule?, limit })
+rule-outline.ts    sentenceOutlineOf(state) → RuleSentenceOutline (types, statuses, people, tabs)
+rule-names.ts      namedRuleBody(body, state) → AutomationRuleBody-shaped JSON with columns, card types, fields,
+                   people and Form tabs given by name turned into their ids (an id, or a name the plan lacks, kept)
+rule-ref.ts        resolveRule(ref, rules) → Found<AutomationListedRule>: id, then exact name (case aside)
+rule-listing.ts    listedRule(rule, outline) (the list line), listedRun(run), sentenceText(parts), ruleLine(listed)
+rule-refusals.ts   ruleRefusalOf(err) → { code, message } | null: the api's code, its `path`, and the words
+rule-changes.ts    applyRuleChanges(api, projectId, changes, state) → { applied, runs, refusal? }; RuleChange
+index.ts           re-exports, from packages/agent-verbs/src/index.ts
+```
+
+- `listedRule`: `{ id, name, on, paused?, needsAttention?, trigger, sentence, lastRun, runsThisWeek, nextRun? }`;
+  `sentence` is `ruleSentence(rule, outline)` joined, words and chips with one space; times are ISO.
+- `RuleChange` = `add { rule }` | `set { rule, name?, trigger?, conditions?, steps?, chain?, timeZone? }` |
+  `on|off|delete|duplicate { rule }` | `test { rule: string | body, card }` | `run { rule, card }`. `add` fills
+  `conditions: []`, `steps: []`, `chain: false`, `timeZone: 'UTC'` when left out; `set` lays the given parts over the
+  held rule's body. Each write answers the rule, which replaces the held one in the state, so a later change sees it.
+  The cards are read (`GET …/items`) once, the first time a test or run names one.
+- Applied lines: `+ rule <id> "<name>" (on|off)`, `~ rule "<name>" changed (on|off)`, `~ rule "<name>" on|off`,
+  `+ rule <id> "<name>" (off, a copy of "<from>")`, `- rule "<name>"`, `? tested "<name>" on #12: <result>`,
+  `> ran "<name>" on #12: <result>`, each write's line ending `, needs attention: …` when the saved rule does.
+- Refusals: the api's body is read off `ApiError.body` for `path` and `message`. `automation_invalid`,
+  `automation_value_unknown`, `automation_condition_unsupported` and `automation_step_unsupported` read
+  "The api refused the rule at <path>: <message>." plus the code's words; the rest are words alone
+  (`automations_need_editor`, `read_only_token`, `automation_name_taken`, `automation_rules_full`,
+  `automation_not_found`, `automation_not_manual`, `automation_budget_spent`, `item_not_found`). Any other is
+  `apiRefusalOf`'s; a 5xx throws.
+
+### The MCP (`apps/mcp/src/rule-tools.ts`, `packages/agent-verbs/src/mcp/rule-schema.ts`)
+
+- `mcpListRules` (read) and `mcpChangeRules` (destructive) in `verbs/mcp-tools.ts`, registered by
+  `registerRuleTools(server, env)` from `tools.ts`, after the thread tools in `MCP_TOOL_VERBS`.
+- `list_rules` input `{ projectId, rule?, runs?, limit? }`; output `{ rules[], rule?, runs?, runsToday, runsPerDay,
+count, url }`. `change_rules` input `{ projectId, changes[1..20] }`; output `{ applied[], runs?, url }`.
+- The body's shape is a loose zod object (`name`, `trigger`, `conditions`, `steps`, `chain`, `timeZone`), its
+  `.describe()` texts the whole format (`RULE_BODY_FORMAT`); the api's `readRuleBody` is the one check, so the tool
+  and the api never disagree on what reads.
+
+### The CLI (`packages/agent-verbs/src/verbs/rule.ts`)
+
+`rule.ls`, `rule.get`, `rule.add`, `rule.set`, `rule.on`, `rule.off`, `rule.rm`, `rule.duplicate`, `rule.test`,
+`rule.run`, `rule.log`, in `VERBS` after the thread verbs, the resource `rule` ("Automation rules: list, change,
+test and run them") in `RESOURCES`; `add` and `set` read JSON from a file or `-` (stdin) as `type apply` does. The
+CLI's `COMMAND_OF_TOOL` maps `list_rules` → `rule ls`, `change_rules` → `rule set`.
+
+### Telemetry
+
+`Mcp·Used·ListRules`, `Mcp·Used·ChangeRules` from `registerTool`; `Cli·Used·Rule<Verb>` from the CLI's counted
+verbs. The liveworkspace site's liveplanner catalogue lists them (`catalogue/connections.ts` MCP_TOOL_METRICS,
+`cli-commands.ts`).
+
+### Tests
+
+- api `automation-routes.test.ts`: every caller kind (owner, team, Editor link, token, tab Editor link, Participant,
+  Viewer, guest, read-only token, Participant's token, workbench session, link visitor) against every route; a
+  token's stamps carry `ai`; a token's Run Rule is an agent's to Who Did It; an outgoing action saved by a token
+  whose account is an Editor of the whole plan, refused for one whose account is not.
+- agent-verbs: each module to the package's thresholds; `rule-listing.perf.test.ts` lists 50 rules within a CPU budget.
+- mcp: the tool lists, annotations and telemetry suites name the two tools; a rule tools test drives both through
+  a fake api.
+- cli: the catalogue's examples route; a verb test per command through the fake api.
 
 ## Editor
 

@@ -17,11 +17,13 @@ and both speak Plan: boards and cards, sheets and forms first, elements only und
   `restore_project` for projects and tabs; `list_items`, `change_items`, `add_board`, `change_board` and
   `change_card_types` for boards and cards ([Plan for agents](../026-plan/plan-agents.md)); `list_sheets`,
   `read_sheet`, `change_sheet` and `add_sheet` for Sheets ([Sheet](../029-sheets/sheet.md)); `add_form`,
-  `change_form`, `read_form`, `share_form` and `try_form` for Forms ([Forms](../030-forms/forms.md#agents)).
+  `change_form`, `read_form`, `share_form` and `try_form` for Forms ([Forms](../030-forms/forms.md#agents));
+  `list_threads` and `change_threads` for card comment threads; `list_rules` and `change_rules` for Automations
+  ([Automations](../026-plan/automations.md#agents-and-the-cli)).
 - **The [CLI](../015-api/cli.md)** (`apps/cli`, the `liveplanner` command): every verb takes a `<project>` argument
   first, a pasted link, an id or id prefix, or a name (`liveplanner item add "Sprint 14" "Fix login" --status todo`),
-  and a tab by `--tab` name or prefix where it needs one. The resources are `project`, `tab`, `item`, `board`, `type`
-  (card types), `sheet`, `form`, `element`, `changeset`, `comment`, `presence`, `folder`, `template` and `workbench`,
+  and a tab by `--tab` name or prefix where it needs one. The resources are `project`, `tab`, `item`, `thread`,
+  `rule` (Automations), `board`, `type` (card types), `sheet`, `form`, `element`, `changeset`, `comment`, `presence`, `folder`, `template` and `workbench`,
   beside `auth`, `skill`, `telemetry` and the top-level `guide`, `schema`, `api`, `pull`, `push`, `export`, `watch`
   and `wait`.
 
