@@ -6,8 +6,10 @@ import {
 } from '@livedocuments/api-schema';
 import {
   elementFingerprint,
+  type ArticleBlock,
   type Element,
   type ElementOp,
+  type Page,
   type Tab,
 } from '@livedocuments/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
@@ -357,9 +359,13 @@ describe('a tab id', () => {
 // Two Editors' saves from one baseline (docs/specs/012-collaboration/collab-race-hardening.md "A save is merged with
 // the stored tab"): each says what it changed, and the second never erases the first (Work Tracker #669, #670).
 describe('a save merged over the stored tab by id', () => {
-  const slide = (id: string) => ({ id, orientation: 'landscape', kind: 'slide' }) as const;
-  const para = (id: string, text: string) => ({ id, type: 'paragraph', runs: [{ text }] }) as const;
-  const page = { id: 'p1', orientation: 'portrait', kind: 'article', flow: 'f1' } as const;
+  const slide = (id: string): Page => ({ id, orientation: 'landscape', kind: 'slide' });
+  const para = (id: string, text: string): ArticleBlock => ({
+    id,
+    type: 'paragraph',
+    runs: [{ text }],
+  });
+  const page: Page = { id: 'p1', orientation: 'portrait', kind: 'article', flow: 'f1' };
   const tabWith = (extra: Partial<Tab>): Tab => ({
     id: 't1',
     name: 'Board',
@@ -410,8 +416,12 @@ describe('a save merged over the stored tab by id', () => {
     });
     await saveOver(db, base, gwen);
     await saveOver(db, base, hugo);
-    const blocks = storedTab(db).articles!.f1!.blocks as unknown as { runs: { text: string }[] }[];
-    expect(blocks.map((b) => b.runs[0]!.text)).toEqual(['AAA from Gwen', 'Body', 'New line A']);
+    const blocks = storedTab(db).articles!.f1!.blocks;
+    expect(blocks.map((b) => (b.type === 'paragraph' ? b.runs[0]!.text : b.id))).toEqual([
+      'AAA from Gwen',
+      'Body',
+      'New line A',
+    ]);
   });
 
   it('stores an unreadable header as sent, and says so', async () => {
