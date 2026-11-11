@@ -25,6 +25,7 @@ import type {
   AutomationTriggerKind,
   AutomationWho,
 } from './types';
+import { isTimeTrigger } from './types';
 
 // What the sentence reads a rule against. `tabs` names Form tabs and the boards' tabs; `filters` names saved filters
 // by id. Either may be absent where nothing reads them.
@@ -309,8 +310,13 @@ export function triggerParts(
   trigger: AutomationTrigger,
   outline: RuleSentenceOutline,
 ): RuleSentencePart[] {
-  if (trigger.kind === 'scheduled' || trigger.kind === 'due_in' || trigger.kind === 'overdue')
-    return [{ word: 'When' }, { chip: timeTriggerWords(trigger), trigger: true }];
+  // A schedule reads as the design draws it, "Every [Weekday at 9:00]"; the other times "When [Overdue at 9:00]".
+  if (trigger.kind === 'scheduled' || trigger.kind === 'due_in' || trigger.kind === 'overdue') {
+    const words = timeTriggerWords(trigger);
+    return words.startsWith('Every ')
+      ? [{ word: 'Every' }, { chip: words.slice('Every '.length), trigger: true }]
+      : [{ word: 'When' }, { chip: words, trigger: true }];
+  }
   const parts: RuleSentencePart[] = [
     { word: 'When' },
     { chip: AUTOMATION_TRIGGER_NAMES[trigger.kind], trigger: true },
@@ -348,7 +354,8 @@ export function triggerParts(
   return parts;
 }
 
-/** The Rules list's sentence: the trigger, "if" and each condition, "then" and each step. */
+/** The Rules list's sentence: the trigger, "if" and each condition ("for cards" on a time trigger, whose conditions
+ *  pick its cards), "then" and each step. */
 export function ruleSentence(
   rule: Pick<AutomationRuleBody, 'trigger' | 'conditions' | 'steps'>,
   outline: RuleSentenceOutline,
@@ -356,7 +363,7 @@ export function ruleSentence(
   const parts = triggerParts(rule.trigger, outline);
   if (rule.conditions.length)
     parts.push(
-      { word: 'if' },
+      { word: isTimeTrigger(rule.trigger) ? 'for cards' : 'if' },
       ...rule.conditions.map((c) => ({ chip: conditionChip(c, outline) })),
     );
   if (rule.steps.length)

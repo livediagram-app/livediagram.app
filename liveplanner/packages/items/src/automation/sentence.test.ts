@@ -277,10 +277,18 @@ describe('Phase 2 words', () => {
   const when = (trigger: AutomationRuleBody['trigger']) => triggerParts(trigger, OUTLINE);
   it('says a time trigger as one chip', () => {
     expect(when({ kind: 'scheduled', every: 'weekday', at: '09:00' })).toEqual([
-      { word: 'When' },
-      { chip: 'Every Weekday at 9:00', trigger: true },
+      { word: 'Every' },
+      { chip: 'Weekday at 9:00', trigger: true },
     ]);
-    const chip = (t: AutomationRuleBody['trigger']) => (when(t)[1] as { chip: string }).chip;
+    expect(when({ kind: 'overdue', at: '09:00' })).toEqual([
+      { word: 'When' },
+      { chip: 'Overdue at 9:00', trigger: true },
+    ]);
+    // The whole words, as the Run Log's trigger line reads them.
+    const chip = (t: AutomationRuleBody['trigger']) => {
+      const [word, part] = when(t) as [{ word: string }, { chip: string }];
+      return word.word === 'Every' ? `Every ${part.chip}` : part.chip;
+    };
     expect(chip({ kind: 'scheduled', every: 'day', at: '17:45' })).toBe('Every Day at 17:45');
     expect(chip({ kind: 'scheduled', every: 'week', days: [1], at: '09:00' })).toBe(
       'Every Mon at 9:00',
@@ -301,6 +309,19 @@ describe('Phase 2 words', () => {
     expect(chip({ kind: 'due_in', days: 1, at: '09:00' })).toBe('Due in 1 Day at 9:00');
     expect(chip({ kind: 'due_in', days: 2, at: '09:00' })).toBe('Due in 2 Days at 9:00');
     expect(chip({ kind: 'overdue', at: '09:00' })).toBe('Overdue at 9:00');
+  });
+
+  it('says a time rule’s conditions as the cards it runs on', () => {
+    expect(
+      ruleSentence(
+        {
+          trigger: { kind: 'scheduled', every: 'weekday', at: '09:00' },
+          conditions: [{ kind: 'column', not: true, statuses: ['done'] }],
+          steps: [{ kind: 'flag' }],
+        },
+        OUTLINE,
+      ).map((p) => ('word' in p ? p.word : p.chip)),
+    ).toEqual(['Every', 'Weekday at 9:00', 'for cards', 'Column is not Done', 'then', 'Flag']);
   });
 
   it('says a branch, an outgoing action and Assign in Turn', () => {
