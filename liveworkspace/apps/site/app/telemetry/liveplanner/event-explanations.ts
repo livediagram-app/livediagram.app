@@ -763,6 +763,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone linked an existing card to this one from a Linked as section (Link Existing).',
   'Plan|Linked|LinkedCardMoved':
     'Someone moved an existing card’s link to this one from a Linked as section (Link Existing), after confirming the move.',
+  'Plan|Tested|AutomationRule':
+    'Someone tried an automation rule with Test on a Card, which shows what it would do and changes nothing.',
+  'Plan|Ran|AutomationManual':
+    "Someone ran a Run from a Card automation rule from a card's menu, under Run Rule.",
   'Plan|Created|BoardTab':
     'Someone started a Board tab from Start Planning: one board filling the tab.',
   'Plan|Created|SheetTab':
@@ -2597,8 +2601,11 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone was asked before deleting a Sheet with its cells (the value says Confirmed or Cancelled).',
   'Sheet|Used':
     'Someone saved a Sheet formula using a function for the first time in that formula (the value is the function name, from the fixed list).',
+  'Plan|Tested':
+    'Someone tried an automation rule on a card with Test on a Card, changing nothing.',
+  'Plan|Ran': "Someone ran an automation rule by hand from a card's menu.",
   'Plan|Created':
-    'Someone started a Plan tab from Start Planning (the value says which: a Board, Sheet, Dashboard or Visualisation tab, or a suggested dashboard).',
+    'Someone started a Plan tab from Start Planning (the value says which: a Board, Sheet, Dashboard or Visualisation tab, or a suggested dashboard), or saved a new automation rule.',
   'Sheet|Searched': 'Someone searched a list on a Sheet (the value says which: the functions).',
   'Plan|Imported': "Someone read a file into a board's cards (the value says which kind: Csv).",
   'Plan|Exported': "Someone downloaded a board's cards as a file (the value says which kind: Csv).",
