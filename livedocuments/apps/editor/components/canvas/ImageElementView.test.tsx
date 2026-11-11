@@ -3,6 +3,7 @@
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  IMAGE_BACKING_INSET_PX,
   THEMES,
   contrastRatio,
   MIN_TEXT_CONTRAST,
@@ -429,5 +430,73 @@ describe('picture crop, mask and greyscale', () => {
     // The right half of a 4:3 picture is 2:3; contained in 600 x 300 it is 200 wide, the whole one 400.
     expect(shown.style.width).toBe('400px');
     expect(shown.style.left).toBe('-200px');
+  });
+});
+
+// docs/specs/009-elements/images.md "The white under a picture": white under a transparent picture and a contain
+// picture's bands, stopping short of the box's edge so a fractional zoom never shows it as a light hairline.
+describe('the white under a picture', () => {
+  const ready = () => {
+    blob.state = { status: 'ready', src: 'data:image/png;base64,AAAA' } as typeof blob.state;
+  };
+
+  it('backs a picture that fills its box with white, inset from every edge', () => {
+    ready();
+    const frame = box(
+      draw(image({ imageId: 'x', naturalWidth: 1200, naturalHeight: 600 })).container,
+    );
+    expect(frame.style.backgroundColor).toBe('rgb(255, 255, 255)');
+    expect(frame.style.backgroundClip).toBe('content-box');
+    expect(frame.style.padding).toBe(`${IMAGE_BACKING_INSET_PX}px`);
+    expect(frame.className).not.toContain('bg-white');
+  });
+
+  it('runs the white to the edge in the bands a contained picture leaves', () => {
+    ready();
+    // A square picture contained in 600 x 300: 300 wide, centred, with 150 px bands beside it.
+    const frame = box(
+      draw(image({ imageId: 'x', naturalWidth: 500, naturalHeight: 500 })).container,
+    );
+    expect(frame.style.backgroundClip).toBe('content-box');
+    expect(frame.style.boxShadow).toBe('inset 150px 0px 0 0 #fff, inset -150px 0px 0 0 #fff');
+  });
+
+  it('learns a picture size it was not given when the picture loads, for its bands', () => {
+    ready();
+    const { container } = draw(image({ imageId: 'x' }));
+    const img = container.querySelector('img')!;
+    Object.defineProperty(img, 'naturalWidth', { value: 300 });
+    Object.defineProperty(img, 'naturalHeight', { value: 300 });
+    fireEvent.load(img);
+    expect(box(container).style.boxShadow).toBe(
+      'inset 150px 0px 0 0 #fff, inset -150px 0px 0 0 #fff',
+    );
+  });
+
+  it('insets the white all round a cover picture, which fills the box', () => {
+    ready();
+    const frame = box(
+      draw(image({ imageId: 'x', objectFit: 'cover', naturalWidth: 500, naturalHeight: 500 }))
+        .container,
+    );
+    expect(frame.style.boxShadow).toBe('none');
+  });
+
+  it('lays the picture over the whole box, so it alone meets the page at the edge', () => {
+    ready();
+    const img = box(draw(image({ imageId: 'x', objectFit: 'cover' })).container).querySelector(
+      'img',
+    )!;
+    expect(img.className).toMatch(/\babsolute\b/);
+    expect(img.className).toMatch(/\binset-0\b/);
+  });
+
+  it('keeps the inset white under a mask, the part placed from the box corner', () => {
+    ready();
+    const frame = box(draw(image({ imageId: 'x', mask: 'circle' })).container);
+    expect(frame.style.backgroundClip).toBe('content-box');
+    expect(frame.style.padding).toBe(`${IMAGE_BACKING_INSET_PX}px`);
+    expect(frame.style.clipPath).toMatch(/^path\(/);
+    expect((frame.firstElementChild as HTMLElement).className).toMatch(/\babsolute\b/);
   });
 });
