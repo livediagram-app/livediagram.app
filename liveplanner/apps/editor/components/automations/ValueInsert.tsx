@@ -3,7 +3,8 @@
 // Text a rule writes, with its values (docs/specs/026-plan/automations.md "Values"): a real textarea whose values
 // (`{{person}}`) show as violet chips, drawn by a backdrop under the transparent text so the caret, selection, undo
 // and screen readers stay the textarea's own; and Insert a Value, the chips that drop a value at the caret, with Any
-// Field… for a field of the card by its name. ValueChipsText draws the same text read-only (a step card's preview).
+// Field… for a field of the card by its name, and in an Incoming Webhook rule Webhook Field… for a value of the call's
+// JSON (WebhookFieldInsert). ValueChipsText draws the same text read-only (a step card's preview).
 
 import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import {
@@ -19,6 +20,8 @@ import {
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { lucideGlyph } from '@liveplanner/ui';
 import { lucideTextCursorInput } from '@liveworkspace/icons/lucide';
+import { useIncomingRule } from './incoming-rule';
+import { VALUE_CHIP_BUTTON, WebhookFieldInsert } from './WebhookFieldInsert';
 
 const FieldIcon = lucideGlyph(lucideTextCursorInput, 16);
 
@@ -106,6 +109,7 @@ export function ValueTextField({
   const backdrop = useRef<HTMLDivElement>(null);
   const caret = useRef<number | null>(null);
   const [anyField, setAnyField] = useState<HTMLButtonElement | null>(null);
+  const { incoming } = useIncomingRule();
 
   // Grows with its text (no inner scroll, so the backdrop never drifts), and puts the caret after an inserted value.
   useLayoutEffect(() => {
@@ -181,7 +185,7 @@ export function ValueTextField({
               key={name}
               type="button"
               onClick={() => insert(name)}
-              className="touch-target-y relative rounded-md bg-slate-100 px-2 py-0.5 text-[12px] font-medium leading-[18px] text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 motion-reduce:transition-none dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
+              className={VALUE_CHIP_BUTTON}
             >
               {chip}
             </button>
@@ -192,11 +196,12 @@ export function ValueTextField({
               aria-haspopup="menu"
               aria-expanded={anyField !== null}
               onClick={(e) => setAnyField(anyField ? null : e.currentTarget)}
-              className="touch-target-y relative rounded-md bg-slate-100 px-2 py-0.5 text-[12px] font-medium leading-[18px] text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 motion-reduce:transition-none dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
+              className={VALUE_CHIP_BUTTON}
             >
               Any Field…
             </button>
           ) : null}
+          {incoming ? <WebhookFieldInsert onInsert={insert} /> : null}
         </div>
       </div>
       {anyField ? (

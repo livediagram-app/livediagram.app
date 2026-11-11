@@ -11,6 +11,7 @@ import { AUTOMATION_PERSON_ID, type AutomationOutgoing, type AutomationStepLine 
 import type { ConditionContext } from './conditions';
 import type { ValueContext } from './values';
 import type { PlannedAi } from './ai-steps';
+import type { WebhookValues } from './webhook-paths';
 
 export interface PlanActionsContext extends ConditionContext {
   rule: { name: string };
@@ -22,6 +23,9 @@ export interface PlanActionsContext extends ConditionContext {
   urlOf?: (cardId: string) => string;
   // The rule's place in Assign in Turn's list (the api's automation_rules.turn).
   turn?: number;
+  // An Incoming Webhook run: the values its call gave; and whether it runs with no card (incoming.ts).
+  webhook?: WebhookValues;
+  cardless?: boolean;
 }
 
 // The card a Create Card makes: its type, its column (absent: the type's Default State) and fields.
@@ -165,6 +169,8 @@ export const walkOf = (card: Item, run: Run, ctx: PlanActionsContext, prefix = '
     rule: ctx.rule.name,
     now: ctx.now,
     timeZone: ctx.timeZone,
+    ...(ctx.webhook ? { webhook: ctx.webhook } : {}),
+    ...(ctx.cardless ? { cardless: true } : {}),
   };
   return { plan, ctx, type, values };
 };

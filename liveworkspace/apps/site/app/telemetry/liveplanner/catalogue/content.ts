@@ -887,6 +887,32 @@ export const PLAN_AUTOMATIONS_AI_FAILED = chart(
   { types: ['AutomationAiFailed', 'AutomationAiCapped'], rising: 'bad' },
 );
 
+// Incoming Webhook secrets (docs/specs/026-plan/automations.md "Incoming Webhook", in the liveplanner folder): made,
+// regenerated, and copied from the field that shows a new one once. Never the secret.
+export const PLAN_AUTOMATION_SECRETS_MADE = chart(
+  'Plan',
+  'Created',
+  'Webhook Secrets Made',
+  'A secret made for an Incoming Webhook rule with Make Secret, so another tool can start it.',
+  { types: ['AutomationSecret'] },
+);
+
+export const PLAN_AUTOMATION_SECRETS_REGENERATED = chart(
+  'Plan',
+  'Changed',
+  'Webhook Secrets Regenerated',
+  "An Incoming Webhook rule's secret replaced with Regenerate: the old one stops at once.",
+  { types: ['AutomationSecret'], rising: 'neutral' },
+);
+
+export const PLAN_AUTOMATION_SECRETS_COPIED = chart(
+  'Plan',
+  'Copied',
+  'Webhook Secrets Copied',
+  'A new secret copied from the field that shows it once.',
+  { types: ['AutomationSecret'] },
+);
+
 export const PLAN_COLUMNS_COLLAPSED = chart(
   'Plan',
   'Toggled',
@@ -1243,6 +1269,9 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_AUTOMATIONS_RAN,
   PLAN_AUTOMATIONS_AI,
   PLAN_AUTOMATIONS_AI_FAILED,
+  PLAN_AUTOMATION_SECRETS_MADE,
+  PLAN_AUTOMATION_SECRETS_REGENERATED,
+  PLAN_AUTOMATION_SECRETS_COPIED,
   PLAN_COLUMNS_COLLAPSED,
   PLAN_SETUP_CHANGED,
   PLAN_CALENDAR_MOVES,
@@ -1264,11 +1293,12 @@ export const PLAN_BOARDS: MetricStack = {
   title: 'Plan boards',
   blurb: 'Work on Plan boards: items made, moved, opened, voted on and deleted, and boards set up.',
   members: PLAN_BOARDS_MEMBERS,
-  // Calendar moves, chart statuses and card styles are slices of Boards Set Up (every Plan·Changed), and time added
-  // by hand a slice of Items Added (every Plan·Added), so the head counts them once.
+  // Calendar moves, chart statuses, card styles and webhook secrets regenerated are slices of Boards Set Up (every
+  // Plan·Changed), and time added by hand a slice of Items Added (every Plan·Added), so the head counts them once.
   headline: PLAN_BOARDS_MEMBERS.filter(
     (m) =>
       m !== PLAN_CALENDAR_MOVES &&
+      m !== PLAN_AUTOMATION_SECRETS_REGENERATED &&
       m !== PLAN_VIEW_STATUSES &&
       m !== PLAN_CARD_STYLES &&
       m !== PLAN_TIME_ENTRIES,

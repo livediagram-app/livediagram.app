@@ -53,6 +53,7 @@ export const AUTOMATION_TRIGGER_NAMES: Readonly<Record<AutomationTriggerKind, st
   scheduled: 'Scheduled',
   due_in: 'Due In',
   overdue: 'Overdue',
+  incoming_webhook: 'Incoming Webhook',
 };
 
 export const AUTOMATION_CONDITION_NAMES: Readonly<Record<AutomationCondition['kind'], string>> = {
@@ -319,6 +320,8 @@ export function triggerParts(
       ? [{ word: 'Every' }, { chip: words.slice('Every '.length), trigger: true }]
       : [{ word: 'When' }, { chip: words, trigger: true }];
   }
+  if (trigger.kind === 'incoming_webhook')
+    return [{ word: 'When a' }, { chip: 'Webhook Is Received', trigger: true }];
   const parts: RuleSentencePart[] = [
     { word: 'When' },
     { chip: AUTOMATION_TRIGGER_NAMES[trigger.kind], trigger: true },

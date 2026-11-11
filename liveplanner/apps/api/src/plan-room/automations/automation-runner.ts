@@ -8,15 +8,21 @@
 // one at once, a test changing nothing. Phase 2: a time trigger's event runs its one rule (the scan matched it; the
 // conditions are checked again); a branch's related cards are written one patch each, a card failing alone; Assign in
 // Turn's place moves on only after a done run; the run's messages go after its card writes (automation-sends.ts).
+// Phase 3: an Incoming Webhook call's event runs its one rule on its card, or with no card when it named none and
+// the rule's steps need none (a blank card, `card.…` values reading nothing, no card on the run or its messages).
 import {
   AUTOMATION_CHAIN_MAX,
   AUTOMATION_RUNS_PER_DAY,
+  NO_CARDS_NAMED,
   allHold,
+  cardlessCard,
   fieldName,
+  incomingTriggerWords,
   isTimeTrigger,
   isTrashed,
   itemTitle,
   planActions,
+  runsWithoutCard,
   sha256,
   statusName,
   timeTriggerWords,
@@ -28,6 +34,7 @@ import {
   type AutomationStepLine,
 } from '@liveplanner/items';
 import { listItems, readItem } from '../../db/items';
+import { appBaseUrl } from '../../email/client';
 import { cardUrl, readAutomationPlan, type AutomationPlan } from './automation-plan';
 import { claimRun, dropRun, runsToday, settleRun, trimRuns } from './automation-log';
 import type { AutomationSchedule } from './automation-queue';
@@ -70,6 +77,9 @@ function triggerLine(
 ): AutomationStepLine {
   if (event.kind === 'time' && isTimeTrigger(rule.trigger))
     return { kind: 'trigger', text: `Automation · ${timeTriggerWords(rule.trigger)}` };
+  // An Incoming Webhook call's: no person behind it.
+  if (event.kind === 'incoming')
+    return { kind: 'trigger', text: incomingTriggerWords(event.cards ?? 0) };
   const who = event.by.name;
   const column = (s: string | undefined) =>
     s && plan ? statusName(plan.outline, s) : (s ?? 'no column');
@@ -142,7 +152,11 @@ export async function runRule(
     if (result === 'done' || result === 'skipped') deps.store.advanceTurn(rule.id, turns);
     if (result === 'done' || result === 'failed')
       deps.store.settle(rule.id, result, reason ?? '', at, webhook);
-    console.info('[automations] run', { result, tookMs: run.tookMs });
+    console.info('[automations] run', {
+      result,
+      trigger: rule.trigger.kind,
+      tookMs: run.tookMs,
+    });
     return run;
   };
   try {
@@ -150,12 +164,18 @@ export async function runRule(
     const plan = state.plan;
     lines.push(triggerLine(event, plan, rule));
     const stop = chainStop(event, deps.store);
-    const item = await readItem(deps.env, deps.planId, event.cardId);
+    // An Incoming Webhook call that named no card: the rule runs once with none, when its steps need none.
+    const cardless = event.kind === 'incoming' && !event.cardId;
+    if (cardless && !runsWithoutCard(rule)) return end('skipped', NO_CARDS_NAMED);
+    const item = cardless ? cardlessCard() : await readItem(deps.env, deps.planId, event.cardId);
     if (!item || isTrashed(item)) {
       if (stop) return (dropRun(sql, id), null);
       return end('no_match', 'The card is gone');
     }
-    card = { id: item.id, key: item.key, title: itemTitle(item) };
+    if (!cardless) card = { id: item.id, key: item.key, title: itemTitle(item) };
+    const url = cardless
+      ? `${appBaseUrl(deps.env)}/project/${encodeURIComponent(deps.planId)}`
+      : cardUrl(deps.env, deps.planId, item.id);
     const ctx = {
       card: item,
       outline: plan.outline,
@@ -164,8 +184,10 @@ export async function runRule(
       now: at,
       timeZone: rule.timeZone,
       rule: { name: rule.name },
-      url: cardUrl(deps.env, deps.planId, item.id),
+      url,
       urlOf: (id: string) => cardUrl(deps.env, deps.planId, id),
+      ...(event.webhook ? { webhook: event.webhook } : {}),
+      ...(cardless ? { cardless: true } : {}),
       turn: opts.turn ?? (opts.dry ? 0 : deps.store.turn(rule.id)),
       // A branch's related cards come from the plan as it is now.
       ...(rule.steps.some((s) => s.kind === 'for')
@@ -192,7 +214,7 @@ export async function runRule(
       planId: deps.planId,
       runId: id,
       rule: rule.name,
-      card: { key: item.key, title: itemTitle(item), url: ctx.url },
+      card: cardless ? null : { key: item.key, title: itemTitle(item), url: ctx.url },
       at,
       dry: opts.dry === true,
     };
