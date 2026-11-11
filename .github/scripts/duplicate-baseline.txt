@@ -152,7 +152,6 @@ livedesign/packages/ui/src/icons/index.ts	livediagram/packages/ui/src/icons/inde
 livedesign/packages/ui/src/seo.ts	livediagram/packages/ui/src/seo.ts	livedocuments/packages/ui/src/seo.ts	livehuddle/packages/ui/src/seo.ts	liveplanner/packages/ui/src/seo.ts
 livedesign/scripts/ci-test-filters.mjs	livediagram/scripts/ci-test-filters.mjs	livedocuments/scripts/ci-test-filters.mjs	livehuddle/scripts/ci-test-filters.mjs	liveplanner/scripts/ci-test-filters.mjs
 livedesign/scripts/git-hooks/install.mjs	livediagram/scripts/git-hooks/install.mjs	livedocuments/scripts/git-hooks/install.mjs	livehuddle/scripts/git-hooks/install.mjs	liveplanner/scripts/git-hooks/install.mjs
-livedesign/scripts/next-dev.mjs	livediagram/scripts/next-dev.mjs	livedocuments/scripts/next-dev.mjs	livehuddle/scripts/next-dev.mjs	liveplanner/scripts/next-dev.mjs
 livedesign/scripts/ts-source-hooks.mjs	livediagram/scripts/ts-source-hooks.mjs	livedocuments/scripts/ts-source-hooks.mjs	livehuddle/scripts/ts-source-hooks.mjs	liveplanner/scripts/ts-source-hooks.mjs
 livediagram/apps/api/src/db/content-summary.ts	livehuddle/apps/api/src/db/content-summary.ts
 livediagram/apps/api/src/document-room/document-anonymise.ts	livehuddle/apps/api/src/document-room/document-anonymise.ts

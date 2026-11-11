@@ -43,6 +43,9 @@ shared configuration, and which Next.js features they use or decline, with the r
   last session's compilation, and `turbopackGc` keeps it from growing stale or without bound.
 - **Dev still builds into its own directory** (`.next-dev`), so a `next build` running beside it never overwrites it.
 - **A cache that goes wrong is a bug to fix at its root**, not a reason to wipe the cache on every start.
+- **A busy port is refused, never freed.** Sessions and agents share one machine, so the process on a dev port may be
+  another session's dev stack: dev names who holds the port (PID, command, folder), leaves it running and exits. Only
+  an explicit `--force` kills the holder and its children to take the port.
 
 ## Features used and declined
 

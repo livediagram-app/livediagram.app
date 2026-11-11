@@ -38,7 +38,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ mcp-kit                  an MCP Worker's app: the Streamable-HTTP transport and CORS, the OAuth 2.1 server with the device grant, request and tool scopes, preview fonts, tool results and fixable errors; each product hands in its server and OAuth config
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
 │  ├─ migration                the move from the historical livediagram.app: the payload contract and the splitter
-│  ├─ next-config              the Next.js settings every Next app spreads (liveworkspaceNextConfig)
+│  ├─ next-config              the Next.js settings every Next app spreads (liveworkspaceNextConfig), and the dev entry every app's dev script runs (scripts/next-dev.mjs, which refuses a busy port)
 │  ├─ oxlint-config            the lint rules every workspace runs, with the liveworkspace plugin
 │  ├─ page-background          a colour background (fill, gradient, pattern, motion) and its parser: pages and form covers
 │  ├─ prettier-config          the formatting settings, for the root and every product

@@ -10,7 +10,7 @@ Derived from [Next.js](../nextjs.md).
 | App config      | each app's `next.config.ts`              | The shared config spread, plus the app's own settings            |
 | Turbopack build | `isTurbopack(env)` (`env.TURBOPACK` set) | Next sets `TURBOPACK` before it loads the config                 |
 | Static export   | `output: 'export'`                       | Always, except the editor's dev server (`exportInDev: false`)    |
-| Dev directory   | `NEXT_DISTDIR=.next-dev`                 | Where `scripts/next-dev.mjs` points dev                          |
+| Dev directory   | `NEXT_DISTDIR=.next-dev`                 | Where `../packages/next-config/scripts/next-dev.mjs` points dev  |
 | Build year      | `NEXT_PUBLIC_BUILD_YEAR`                 | Inlined at build by `env`                                        |
 
 ## Behaviour and state
@@ -55,8 +55,17 @@ export function liveworkspaceNextConfig({
 
 ### Dev
 
-`scripts/next-dev.mjs` keeps `NEXT_DISTDIR=.next-dev` and stops deleting it on start. Turbopack's file-system cache
-(default on) and `turbopackGc` keep it. A corrupted-cache case the wipe once hid is reproduced and fixed at its root.
+`../packages/next-config/scripts/next-dev.mjs` keeps `NEXT_DISTDIR=.next-dev` and stops deleting it on start.
+Turbopack's file-system cache (default on) and `turbopackGc` keep it. A corrupted-cache case the wipe once hid is reproduced and fixed at its root.
+
+That script is the one copy, in `@liveworkspace/next-config`, and every app's `dev` script runs it. Its port guard is
+`../packages/next-config/scripts/port-guard.js`. Before `next dev` starts, `guardPort(port, { force })` asks `lsof -nP -iTCP:<port>
+-sTCP:LISTEN` for listeners (listeners only: a connected browser tab is never a holder) and the folder each runs in,
+then checks it can bind the port itself (a holder lsof cannot see). A busy port without `--force` prints
+`[dev] Port <n> is already in use` with one `Held by PID <pid> (<command>) in <folder>` line per holder and exits 1;
+the holder keeps running. With `--force` it kills each holder's children, then the holder (`pkill -KILL -P`,
+`kill -9`), logs the PIDs and starts. A port it cannot bind with no holder named is refused even with `--force`.
+`../packages/next-config/scripts/port-guard.test.js` holds a real listener in another process and checks the refusal.
 
 ### Versions
 
@@ -116,10 +125,10 @@ added 6 to 44 KiB.
 
 ## Constants and configuration
 
-| Constant       | Value              | Provenance                      | Safe range           |
-| -------------- | ------------------ | ------------------------------- | -------------------- |
-| `agentUpgrade` | `latest`           | `next upgrade --agent` guidance | `security`, `latest` |
-| `NEXT_DISTDIR` | `.next-dev` in dev | `scripts/next-dev.mjs`          | Any path but `.next` |
+| Constant       | Value              | Provenance                                     | Safe range           |
+| -------------- | ------------------ | ---------------------------------------------- | -------------------- |
+| `agentUpgrade` | `latest`           | `next upgrade --agent` guidance                | `security`, `latest` |
+| `NEXT_DISTDIR` | `.next-dev` in dev | `../packages/next-config/scripts/next-dev.mjs` | Any path but `.next` |
 
 ## Defaults ledger
 

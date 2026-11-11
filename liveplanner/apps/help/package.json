@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "node ../../scripts/next-dev.mjs --port 3204",
+    "dev": "node ../../../packages/next-config/scripts/next-dev.mjs --port 3204",
     "build": "next build",
     "lint": "oxlint",
     "typecheck": "tsc --noEmit",
