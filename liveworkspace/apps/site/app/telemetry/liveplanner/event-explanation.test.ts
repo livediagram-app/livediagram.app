@@ -17,7 +17,11 @@ const eventExplanation = APP.explain;
 const REPO = resolve(__dirname, '../../../../../../liveplanner');
 const EMITS = [
   ...scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry')),
-  ...sharedClientEmitters(),
+  ...sharedClientEmitters({
+    root: REPO,
+    roots: ['apps', 'packages'],
+    skip: join(REPO, 'apps', 'telemetry'),
+  }),
   // Every app's help-centre views, votes and searches, sent by the shared help site.
   ...sharedSiteEmitters(),
 ];

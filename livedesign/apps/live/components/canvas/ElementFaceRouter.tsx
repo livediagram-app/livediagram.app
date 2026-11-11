@@ -29,8 +29,10 @@ import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
 import { PageMasthead } from '@/components/canvas/PageMasthead';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
-import { InsetContent } from '@/components/canvas/InsetContent';
-import type { ContentInset } from '@/components/canvas/useIndicatorLayout';
+import {
+  InsetContent,
+  type ContentInset,
+} from '@liveworkspace/workbench/components/canvas/InsetContent';
 import { loadTableView } from '@/lib/editor-deferred-code';
 import { VideoView } from '@/components/canvas/VideoView';
 import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';

@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import type { CommunityShareInfo } from '@livedesign/api-schema';
 import { connectRoom, type ShareRole } from '@/lib/api-client';
 import { mayShareDesign } from './editor-page-helpers';
-import { useChangesetSeen } from './useChangesetSeen';
+import { useChangesetSeen } from '@liveworkspace/workbench/hooks/editor/useChangesetSeen';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // Sharing, session-permission and realtime-room infrastructure for the

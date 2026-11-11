@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { auditContrast } from './contrast';
+import { auditContrast } from '@liveworkspace/e2e-kit/contrast';
 import { dismissQuickTour, expect, expectNoPageErrors, startBlankDocument, test } from './fixtures';
 
 // Tooltips and hover cards (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md), in a real

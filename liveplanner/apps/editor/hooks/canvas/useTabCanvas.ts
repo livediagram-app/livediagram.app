@@ -26,7 +26,7 @@ import {
   withTabPattern,
   withTabTextSize,
 } from '@/lib/tab-style-transforms';
-import { useDebouncedCanvasTelemetry } from './useDebouncedCanvasTelemetry';
+import { useDebouncedCanvasTelemetry } from '@liveworkspace/workbench/hooks/canvas/useDebouncedCanvasTelemetry';
 
 type TabCanvasDeps = {
   // True when edits are disallowed (read-only role / locked tab). Every

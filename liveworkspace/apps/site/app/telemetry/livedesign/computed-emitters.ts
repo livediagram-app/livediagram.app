@@ -442,7 +442,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Square', 'Circle', 'Diamond', 'Triangle'],
     open: 'the shape the Shape Pen recognised',
   },
-  'apps/live/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
+  // The shared hook's flush on page hide sends what was scheduled: every canvas-panel slider.
+  'packages/workbench/src/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
   },
   'apps/live/hooks/canvas/useShapeDrawing.ts Element·Added': {

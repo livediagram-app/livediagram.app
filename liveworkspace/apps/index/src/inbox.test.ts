@@ -7,6 +7,7 @@ import {
   type CollabThreadInput,
   type InboxResponse,
 } from '@liveworkspace/index-client';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import { body, call, h, makeItem, person, useHarness } from './test-support';
 
@@ -462,15 +463,17 @@ describe('the Inbox at scale', () => {
       actions.run(id, owner, i);
     }
     db.exec('COMMIT');
-    const started = performance.now();
     const runs = 10;
     let res: InboxResponse | null = null;
-    for (let i = 0; i < runs; i++) res = await inbox(ada.auth);
-    const ms = (performance.now() - started) / runs;
+    const ms =
+      (await cpuMsOfAsync(async () => {
+        for (let i = 0; i < runs; i++) res = await inbox(ada.auth);
+      })) / runs;
     expect(res!.forms.length).toBe(100);
     expect(res!.threads.length).toBe(100);
     expect(res!.actions.length).toBe(100);
     // Measured about 18 ms a read here (three queries and the Timeline count); the budget leaves room for a slow machine.
-    expect(ms).toBeLessThan(150);
-  });
+    expect(ms).toBeLessThan(cpuBudgetMs(150));
+    // wall-clock: seeding 22,000 items with their forms, threads and actions can outlast the default 5 s on a loaded machine.
+  }, 30_000);
 });

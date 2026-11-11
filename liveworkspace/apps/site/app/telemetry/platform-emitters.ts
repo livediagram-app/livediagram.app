@@ -32,7 +32,8 @@ import {
   TEAM_ITEM_TYPES,
   type TelemetryWireEvent,
 } from '@liveworkspace/telemetry';
-import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
+import { COMPUTED, scanEmitters, type Emit, type ScanTree } from './emitter-scan';
+import { reachedSharedFiles } from './shared-reach';
 
 const MONOREPO = resolve(__dirname, '../../../../..');
 
@@ -92,13 +93,28 @@ export const SHARED_CLIENT_ROOTS = [
   'packages/ui/src',
 ];
 
-let clientCached: Emit[] | undefined;
+//
+// Given the app's own tree, only the shared files the app reaches count (shared-reach.ts: liveplanner
+// mounts no spotlight, so the shared spotlight sliders are not its events), and that tree is read
+// beside the shared code, so a shared emit whose values the app hands in (the shared
+// useDebouncedCanvasTelemetry's `schedule('k', 'BackgroundColor')`) resolves to the app's values
+// rather than reading as computed.
+const clientCached = new Map<string, Emit[]>();
 
-export function sharedClientEmitters(): Emit[] {
-  clientCached ??= scanEmitters(MONOREPO, SHARED_CLIENT_ROOTS, '').filter(
-    (e) => typeof e.category === 'string' && typeof e.action === 'string',
-  );
-  return clientCached;
+export function sharedClientEmitters(app?: ScanTree): Emit[] {
+  const key = app ? `${app.root} ${app.roots.join(',')} ${app.skip}` : '';
+  let emits = clientCached.get(key);
+  if (!emits) {
+    const reached = app && reachedSharedFiles(MONOREPO, app);
+    emits = scanEmitters(MONOREPO, SHARED_CLIENT_ROOTS, '', app).filter(
+      (e) =>
+        typeof e.category === 'string' &&
+        typeof e.action === 'string' &&
+        (!reached || reached.has(e.path)),
+    );
+    clientCached.set(key, emits);
+  }
+  return emits;
 }
 
 // The values each of the Explorer's computed emit sites can send, by the scan's site key

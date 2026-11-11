@@ -3,6 +3,7 @@
 // person index, whatever the table holds.
 import type { Item } from '@liveworkspace/index-client';
 import { MOST_USED_MAX, USE_WINDOW_DAYS } from '@liveworkspace/index-client';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import type { SQLInputValue } from 'node:sqlite';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Person } from './auth';
@@ -152,14 +153,16 @@ describe('the bound', () => {
     }
     db.exec('COMMIT');
     const big = await person('user_big');
-    const started = performance.now();
-    const page = await recent(big.auth, `used=${MOST_USED_MAX}`);
-    const ms = performance.now() - started;
-    expect(page.mostUsed).toHaveLength(MOST_USED_MAX);
-    expect(page.mostUsed!.every((i) => i.useOpens === 9 && i.useDays === 9)).toBe(true);
+    let page: Awaited<ReturnType<typeof recent>> | undefined;
+    const ms = await cpuMsOfAsync(async () => {
+      page = await recent(big.auth, `used=${MOST_USED_MAX}`);
+    });
+    expect(page!.mostUsed).toHaveLength(MOST_USED_MAX);
+    expect(page!.mostUsed!.every((i) => i.useOpens === 9 && i.useDays === 9)).toBe(true);
     console.info(`[most-used] 2,000 used items, ${ms.toFixed(1)} ms for Recent + Most Used`);
-    expect(ms).toBeLessThan(250);
-  });
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
+    // wall-clock: seeding 100,000 use_days rows outlasts the default 5 s on a loaded machine; the CPU budget is the gate.
+  }, 30_000);
 });
 
 describe('Hide from Recent', () => {

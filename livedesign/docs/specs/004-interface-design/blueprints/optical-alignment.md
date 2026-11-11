@@ -23,8 +23,8 @@ geometry check are [Iconography](../iconography.md)'s; this blueprint builds eve
 | `packages/ui/optical-guard.test.ts`                             | The guard over `packages/ui/src`                                                                                                |
 | `apps/live/e2e/optical.ts`                                      | `auditOptical(page)`: the runner (screenshots, ink diff, verdicts)                                                              |
 | `apps/live/e2e/optical-discover.ts`                             | `discover`: the in-page half (candidates, cap bands, intent, stack rows); one self-contained function                           |
-| `apps/live/e2e/optical-snap.ts`                                 | `paintedBaseline`, `inheritedSnap`: Chromium's whole-pixel baseline snap and the part a shape inherits from its position (pure) |
-| `apps/live/e2e/optical-snap.test.ts`                            | Their contracts (Vitest)                                                                                                        |
+| `../packages/e2e-kit/src/optical-snap.ts`                       | `paintedBaseline`, `inheritedSnap`: Chromium's whole-pixel baseline snap and the part a shape inherits from its position (pure) |
+| `../packages/e2e-kit/src/optical-snap.test.ts`                  | Their contracts (Vitest)                                                                                                        |
 | `apps/live/e2e/optical-snap.spec.ts`                            | The snap guard: the browser paints baselines where `paintedBaseline` says, and transforms move them after                       |
 | `apps/live/e2e/optical-audit.spec.ts`                           | The editor's audited screens                                                                                                    |
 | `apps/live/e2e/optical-audit-sites.spec.ts`                     | The help centre and marketing site                                                                                              |

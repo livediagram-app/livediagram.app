@@ -14,7 +14,7 @@ The kit lives in `apps/mcp/eval/`:
   made in the run's empty library). Ids are stable: rounds compare on the ids they share.
 - `apps/mcp/eval/bench/checks.mjs`: the readers checks are written with (boxes, arrows, cards, card types, sheet cells, forms,
   the reply), each answering yes or no, with a reason on a no.
-- `apps/mcp/eval/bench/run.mjs`: runs a round. `apps/mcp/eval/bench/score.mjs`: scores one, offline. `apps/mcp/eval/bench/summary.mjs`: the report.
+- `apps/mcp/eval/bench/run.mjs`: runs a round. `apps/mcp/eval/bench/score.mjs`: scores one, offline. `packages/mcp-kit/eval/summary.mjs` (shared): the report.
 - `mcp-call.mjs`: calls one tool by hand, to replay a call from a transcript.
 - `token.env`, `tokens.env` and `runs/` are gitignored.
 
