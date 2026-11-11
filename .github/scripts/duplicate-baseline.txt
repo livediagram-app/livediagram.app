@@ -128,7 +128,6 @@ livedesign/scripts/ci-test-filters.mjs	livediagram/scripts/ci-test-filters.mjs	l
 livedesign/scripts/git-hooks/install.mjs	livediagram/scripts/git-hooks/install.mjs	livedocuments/scripts/git-hooks/install.mjs	livehuddle/scripts/git-hooks/install.mjs	liveplanner/scripts/git-hooks/install.mjs
 livedesign/scripts/ts-source-hooks.mjs	livediagram/scripts/ts-source-hooks.mjs	livedocuments/scripts/ts-source-hooks.mjs	livehuddle/scripts/ts-source-hooks.mjs	liveplanner/scripts/ts-source-hooks.mjs
 livediagram/apps/api/src/db/content-summary.ts	livehuddle/apps/api/src/db/content-summary.ts
-livediagram/apps/api/src/document-room/document-anonymise.ts	livehuddle/apps/api/src/document-room/document-anonymise.ts
 livediagram/apps/api/src/legacy-request-forms.ts	livehuddle/apps/api/src/legacy-request-forms.ts
 livediagram/apps/api/src/liveworkspace/action-notices.ts	livehuddle/apps/api/src/liveworkspace/action-notices.ts
 livediagram/apps/api/src/liveworkspace/activity.ts	livehuddle/apps/api/src/liveworkspace/activity.ts
