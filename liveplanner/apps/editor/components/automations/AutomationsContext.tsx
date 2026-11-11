@@ -5,11 +5,16 @@
 // Automation comment's link to its rule all read one value, and none of them draws for anyone else.
 
 import { createContext, use } from 'react';
+import type { AutomationTemplateId } from '@liveplanner/items';
 import type { AutomationsScope } from './automations-client';
 
-// Where the screen opens: the Rules list, one rule's builder (null: a new rule), or the Run Log (one rule's runs).
+// Where the screen opens: the Rules list, one rule's builder (null: a new rule, blank or from a template), the Run
+// Log (one rule's runs), or the Templates tab.
 export type AutomationsTarget =
-  { view: 'rules' } | { view: 'rule'; ruleId: string | null } | { view: 'runs'; ruleId?: string };
+  | { view: 'rules' }
+  | { view: 'rule'; ruleId: string | null; template?: AutomationTemplateId }
+  | { view: 'runs'; ruleId?: string }
+  | { view: 'templates' };
 
 export type AutomationsAccess = {
   scope: AutomationsScope;
@@ -20,4 +25,14 @@ export const AutomationsContext = createContext<AutomationsAccess | null>(null);
 
 export function useAutomationsAccess(): AutomationsAccess | null {
   return use(AutomationsContext);
+}
+
+// The footer button's way in: present for an Editor on a plan saved to an account (it opens the screen) and for
+// whoever can edit a plan in Browser Storage (it opens Rules Run on Our Servers).
+export type AutomationsDoor = { open: () => void; offline: boolean };
+
+export const AutomationsDoorContext = createContext<AutomationsDoor | null>(null);
+
+export function useAutomationsDoor(): AutomationsDoor | null {
+  return use(AutomationsDoorContext);
 }

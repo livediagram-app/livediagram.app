@@ -1,15 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { Button, DialogCloseButton, DialogHeader } from '@liveplanner/ui';
-import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
-import { SyncProjectPrompt } from './SyncProjectPrompt';
+import { SyncGateDialog } from './SyncGateDialog';
 
 // The Share dialog's offline gate (docs/specs/006-project/offline-mode.md "Sharing a project in
 // This Browser"). An offline project is stored only in this browser, so there are no links to mint until it
-// is synced. The gate says so and offers Sync Project (SyncProjectPrompt, which Share Form draws too); the
+// is synced. The gate says so and offers Sync Plan (SyncGateDialog, which Automations draws too); the
 // sync converts the open project in place ("Syncing in place"), with no reload, and the Share dialog swaps the
 // gate for its share options as the project stops being offline. Sync waits for `ready` (the reader is known).
 export function ShareOfflineGate({
@@ -21,26 +17,14 @@ export function ShareOfflineGate({
   ready?: boolean;
   onClose: () => void;
 }) {
-  const [busy, setBusy] = useState(false);
   return (
-    <Dialog open onClose={onClose} ariaLabel="Share This Plan" size="md">
-      <DialogHeader title="Share This Plan" subtitle="Saved only in this browser.">
-        <HelpArticleLink article="offlineMode" size="md" />
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
-
-      <SyncProjectPrompt
-        onSyncToCloud={onSyncToCloud}
-        ready={ready}
-        onBusyChange={setBusy}
-        message="It is saved only in this browser, so there is nothing to share yet. Sync it to liveplanner to share it: share links, real-time collaboration and the live image all need it on our servers. You can take it offline again any time."
-      />
-
-      <DialogFooter>
-        <Button variant="secondary" size="xs" onClick={onClose} disabled={busy}>
-          Cancel
-        </Button>
-      </DialogFooter>
-    </Dialog>
+    <SyncGateDialog
+      title="Share This Plan"
+      help={<HelpArticleLink article="offlineMode" size="md" />}
+      message="It is saved only in this browser, so there is nothing to share yet. Sync it to liveplanner to share it: share links, real-time collaboration and the live image all need it on our servers. You can take it offline again any time."
+      onSyncToCloud={onSyncToCloud}
+      ready={ready}
+      onClose={onClose}
+    />
   );
 }

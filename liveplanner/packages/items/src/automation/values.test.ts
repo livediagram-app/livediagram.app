@@ -124,3 +124,19 @@ describe('hostile text', () => {
     expect(ms).toBeLessThan(cpuBudgetMs(200));
   });
 });
+
+// Phase 2 (#712): a branch's text names the card that started the rule.
+describe('the triggering card’s values', () => {
+  it('are known only in a branch', () => {
+    expect(isKnownValue('trigger.title')).toBe(false);
+    expect(isKnownValue('trigger.title', { branch: true })).toBe(true);
+    expect(unknownValueIn('{{trigger.url}}', { branch: true })).toBeNull();
+    expect(unknownValueIn('{{trigger.url}}')).toBe('trigger.url');
+  });
+  it('fill from the triggering card, and read as nothing without one', () => {
+    const trigger = { card: bug({ title: 'Epic' }, { key: 7 }), url: 'https://app.test/7' };
+    const text = '{{trigger.title}} {{trigger.key}} {{trigger.url}}';
+    expect(fillValues(text, ctx({}, { trigger }))).toBe('Epic #7 https://app.test/7');
+    expect(fillValues(text, ctx())).toBe('  ');
+  });
+});

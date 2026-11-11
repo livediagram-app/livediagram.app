@@ -50,3 +50,6 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX45 | archive         | an archived item sent to the Trash is restored to Archived.                                                                                  |
 | IDX46 | archive         | the Archived view takes no lens; Search finds archived documents, with an Archived badge.                                                    |
 | IDX47 | archive         | Duplicate, Share, Favourites and Hide from Recent are refused while archived; Rename and Delete are not.                                     |
+| IDX48 | webhooks        | an automation send's card link is kept only on the app's own origin, else dropped (the chat opens the plan).                                 |
+| IDX49 | webhooks        | an automation send with a blank message refuses the push (`invalid_sends`); a blank rule name or card title reads `Untitled`.                |
+| IDX50 | webhooks        | an automation send dated ahead is dated now; one sent again after its delivery was trimmed (20 finished kept) queues again.                  |

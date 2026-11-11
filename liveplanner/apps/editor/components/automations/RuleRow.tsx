@@ -2,8 +2,10 @@
 
 // One rule in the Rules list (docs/specs/026-plan/automations.md "The Automations screen"): its switch, its name and
 // sentence, Last Run and This Week, and its ⋯ menu. A rule that paused itself is amber, with Paused, the reason and
-// Resume; one naming something the plan lacks says what. Clicking the name or sentence opens the builder. On a phone
-// the row stacks: the name, the sentence's trigger, "4 min ago · 38 runs this week", and the switch at the right.
+// Resume (and Fix Webhook, when a webhook it posts through stopped it); one naming something the plan lacks says what.
+// A time rule that is on says its next moment under Last Run ("Next: Mon 9:00"). Clicking the name or sentence opens
+// the builder. On a phone the row stacks: the name, the sentence's trigger, "4 min ago · 38 runs this week", and the
+// switch at the right.
 
 import { ruleSentence, triggerParts, type RuleSentenceOutline } from '@liveplanner/items';
 import type { AutomationListedRule } from '@liveplanner/api-schema';
@@ -11,7 +13,7 @@ import { Switch, lucideGlyph } from '@liveplanner/ui';
 import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { SentenceChips } from './SentenceChips';
 import { RuleMenu } from './RuleMenu';
-import { lastRunWords, runsWords } from './run-words';
+import { lastRunWords, nextRunWords, runsWords } from './run-words';
 
 const AlertIcon = lucideGlyph(lucideTriangleAlert, 13);
 
@@ -23,12 +25,22 @@ export type RuleRowActions = {
   onDuplicate: () => void;
   onRunLog: () => void;
   onDelete: () => void;
+  // Opens the plan's Webhooks dialog, for a rule paused on one.
+  onFixWebhook?: (() => void) | undefined;
 };
 
 const LINK =
   'touch-target-y relative cursor-pointer rounded font-semibold text-brand-700 underline-offset-2 hover:text-brand-800 hover:underline dark:text-brand-300 dark:hover:text-brand-200';
 
-function PausedNote({ rule, onResume }: { rule: AutomationListedRule; onResume: () => void }) {
+function PausedNote({
+  rule,
+  onResume,
+  onFixWebhook,
+}: {
+  rule: AutomationListedRule;
+  onResume: () => void;
+  onFixWebhook?: (() => void) | undefined;
+}) {
   if (!rule.paused) return null;
   return (
     <span
@@ -36,6 +48,14 @@ function PausedNote({ rule, onResume }: { rule: AutomationListedRule; onResume: 
       className="relative z-[1] text-[12px] text-amber-800 dark:text-amber-300"
     >
       Paused after 10 failures in a row: {rule.paused.reason} <span aria-hidden>·</span>{' '}
+      {rule.paused.webhook && onFixWebhook ? (
+        <>
+          <button type="button" className={LINK} onClick={onFixWebhook}>
+            Fix Webhook
+          </button>{' '}
+          <span aria-hidden>·</span>{' '}
+        </>
+      ) : null}
       <button type="button" className={LINK} onClick={onResume}>
         Resume
       </button>
@@ -101,6 +121,9 @@ export function RuleRow({
   actions: RuleRowActions;
 }) {
   const quiet = rule.stats.lastRunAt === null || !rule.enabled;
+  // A time rule's next moment, while it is on.
+  const next =
+    rule.enabled && rule.stats.nextAt ? `Next: ${nextRunWords(rule.stats.nextAt, now)}` : null;
   const tone = quiet ? 'text-slate-500 dark:text-slate-400' : 'text-slate-700 dark:text-slate-200';
   const paused = !!rule.paused;
   const surface = paused ? 'rounded-lg bg-amber-50 dark:bg-amber-500/10' : '';
@@ -122,7 +145,11 @@ export function RuleRow({
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <RuleName rule={rule} onOpen={actions.onOpen} />
           {paused ? (
-            <PausedNote rule={rule} onResume={() => actions.onToggle(true)} />
+            <PausedNote
+              rule={rule}
+              onResume={() => actions.onToggle(true)}
+              onFixWebhook={actions.onFixWebhook}
+            />
           ) : (
             <>
               <SentenceChips parts={triggerParts(rule.trigger, outline)} />
@@ -131,6 +158,7 @@ export function RuleRow({
                 {rule.stats.lastRunAt === null
                   ? 'Never run'
                   : `${lastRunWords(rule.stats.lastRunAt, now)} · ${runsWords(rule.stats.runsThisWeek)} this week`}
+                {next ? ` · ${next}` : null}
               </span>
             </>
           )}
@@ -157,9 +185,20 @@ export function RuleRow({
         <RuleName rule={rule} onOpen={actions.onOpen} />
         <SentenceChips parts={ruleSentence(rule, outline)} />
         <NeedsNote needs={rule.needs} />
-        <PausedNote rule={rule} onResume={() => actions.onToggle(true)} />
+        <PausedNote
+          rule={rule}
+          onResume={() => actions.onToggle(true)}
+          onFixWebhook={actions.onFixWebhook}
+        />
       </div>
-      <span className={`text-[13px] ${tone}`}>{lastRunWords(rule.stats.lastRunAt, now)}</span>
+      <span className={`flex flex-col gap-0.5 text-[13px] ${tone}`}>
+        {lastRunWords(rule.stats.lastRunAt, now)}
+        {next ? (
+          <span data-rule-next="" className="text-[12px] text-slate-500 dark:text-slate-400">
+            {next}
+          </span>
+        ) : null}
+      </span>
       <span className={`text-[13px] tabular-nums ${tone}`}>
         {runsWords(rule.stats.runsThisWeek)}
       </span>

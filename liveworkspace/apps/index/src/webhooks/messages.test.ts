@@ -124,6 +124,81 @@ describe('bodyFor', () => {
     ).toEqual([]);
   });
 
+  describe('an automation send', () => {
+    const card = {
+      key: 48,
+      title: 'Publish <pricing> page',
+      url: 'https://www.liveplanner.app/project/p1#c',
+    };
+    const sent = (over: Partial<DeliveryEvent> = {}, detail: Record<string, unknown> = {}) =>
+      event({
+        type: 'automation',
+        actorId: null,
+        actorName: 'Automation',
+        detail: {
+          rule: 'Ship & tell',
+          card,
+          text: 'Pricing is live <!channel>',
+          ...detail,
+        } as never,
+        ...over,
+      });
+
+    it('is the message as the rule wrote it', () => {
+      expect(summaryOf(sent())).toBe('Pricing is live <!channel>');
+      expect(summaryOf(event({ type: 'automation', detail: null }))).toBe('');
+    });
+
+    it('posts Slack the message, then the card linked, then the rule, all escaped', () => {
+      const slack = JSON.parse(bodyFor('slack', sent()));
+      expect(slack.text).toBe('Pricing is live &lt;!channel&gt;');
+      expect(slack.blocks[0].text.text).toBe(
+        'Pricing is live &lt;!channel&gt;\n#48 Publish &lt;pricing&gt; page · <https://www.liveplanner.app/project/p1#c|Open in liveplanner>',
+      );
+      expect(slack.blocks[1].elements[0].text).toBe('Automation · Ship &amp; tell');
+      // No card: the plan's own link; no card and no link: the message alone.
+      const plain = JSON.parse(bodyFor('slack', sent({}, { card: null })));
+      expect(plain.blocks[0].text.text).toBe(
+        'Pricing is live &lt;!channel&gt;\n<https://www.liveplanner.app/project/p1|Open in liveplanner>',
+      );
+      const bare = JSON.parse(bodyFor('slack', sent({ url: null }, { card: null })));
+      expect(bare.blocks[0].text.text).toBe('Pricing is live &lt;!channel&gt;');
+      // A card whose link was dropped opens the plan.
+      const unlinked = JSON.parse(bodyFor('slack', sent({}, { card: { ...card, url: null } })));
+      expect(unlinked.blocks[0].text.text).toContain(
+        '<https://www.liveplanner.app/project/p1|Open in liveplanner>',
+      );
+    });
+
+    it('sends Teams the message, the card and the rule, with a button to the card', () => {
+      const content = JSON.parse(bodyFor('teams', sent())).attachments[0].content;
+      expect(content.body.map((b: { text: string }) => b.text)).toEqual([
+        'Pricing is live <!channel>',
+        '#48 Publish <pricing> page',
+        'Automation · Ship & tell',
+      ]);
+      expect(content.actions[0].url).toBe('https://www.liveplanner.app/project/p1#c');
+      const noCard = JSON.parse(bodyFor('teams', sent({}, { card: null }))).attachments[0].content;
+      expect(noCard.body).toHaveLength(2);
+      expect(noCard.actions[0].url).toBe('https://www.liveplanner.app/project/p1');
+      // A card with no number shows its title alone; a malformed detail reads as no rule and no card.
+      const odd = JSON.parse(
+        bodyFor('teams', sent({}, { card: { title: 'Loose', url: 1 }, rule: 5, text: 7 })),
+      ).attachments[0].content;
+      expect(odd.body.map((b: { text: string }) => b.text)).toEqual(['', 'Loose', 'Automation · ']);
+    });
+
+    it('sends a plain endpoint the detail whole, the card nested', () => {
+      const json = JSON.parse(bodyFor('json', sent()));
+      expect(json.actor).toEqual({ id: null, name: 'Automation' });
+      expect(json.detail).toEqual({
+        rule: 'Ship & tell',
+        card,
+        text: 'Pricing is live <!channel>',
+      });
+    });
+  });
+
   it(`keeps every body within ${WEBHOOK_PAYLOAD_MAX_BYTES} bytes, shortening the detail, then dropping it`, () => {
     const many = Object.fromEntries(
       Array.from({ length: 12 }, (_, i) => [`k${i}`, 'é'.repeat(2000)]),

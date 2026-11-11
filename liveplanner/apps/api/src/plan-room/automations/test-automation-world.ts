@@ -54,6 +54,9 @@ function identityOf(planId: string, who: Caller): RouteIdentity {
 
 export type AutomationWorld = RepeatWorld & {
   call: (method: string, path: string, body?: unknown, who?: Caller) => Promise<Response>;
+  // Any of the plan's routes (`/items/…`) through its room as a caller of a given kind (an API token's write is an
+  // agent's, tagged 'ai').
+  as: (who: Caller, method: string, path: string, body?: unknown) => Promise<Response>;
   // A rule made through the route, answered as stored.
   rule: (body: Partial<AutomationRuleBody>) => Promise<AutomationRule>;
 };
@@ -90,6 +93,16 @@ export async function automationWorld(planId = 'A'): Promise<AutomationWorld> {
   };
   const put = await w.send('PUT', `/api/projects/${planId}/tabs/t1`, tab);
   if (put.status >= 300) throw new Error(`tab put answered ${put.status}: ${await put.text()}`);
+  const as = (who: Caller, method: string, path: string, body?: unknown) =>
+    w.plans.get(planId)!.room.route(
+      planId,
+      new Request(`https://api.test/api/projects/${planId}${path}`, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+      }),
+      identityOf(planId, who),
+    );
   const call = (method: string, path: string, body?: unknown, who: Caller = 'owner') =>
     w.plans.get(planId)!.room.route(
       planId,
@@ -106,5 +119,5 @@ export async function automationWorld(planId = 'A'): Promise<AutomationWorld> {
       throw new Error(`rule create answered ${res.status}: ${await res.text()}`);
     return (await res.json<{ rule: AutomationRule }>()).rule;
   };
-  return { ...w, call, rule };
+  return { ...w, call, as, rule };
 }

@@ -102,9 +102,11 @@ export async function enqueueComment(
   }
 }
 
-// The wake the queue asks for: now while a trigger waits, else none.
+// The wake the queue asks for (now while a trigger waits, else none), and the time triggers' (their earliest
+// `next_at`, one indexed MIN read, none when no time rule is on).
 export class AutomationSchedule {
   at: number | null = null;
+  timeAt: number | null = null;
   // Triggers the queue had no room for since the last wake (one Skipped line says so).
   dropped = 0;
 
@@ -122,9 +124,34 @@ export class AutomationSchedule {
     );
   }
 
-  // After a wake (the object restarted): now when a trigger waits.
+  // After a wake (the object restarted): now when a trigger waits, and the time triggers' next moment.
   restore(now: number): void {
     this.at = this.waiting() ? now : null;
+    this.restoreTimes();
+  }
+
+  // The earliest time-trigger moment stored.
+  restoreTimes(): void {
+    if (!this.ready()) {
+      this.timeAt = null;
+      return;
+    }
+    const row = this.sql().exec('SELECT MIN(next_at) AS at FROM automation_schedule').toArray()[0];
+    this.timeAt = typeof row?.['at'] === 'number' ? row['at'] : null;
+  }
+
+  // The room's wake: the earlier of the two.
+  get wakeAt(): number | null {
+    if (this.at === null) return this.timeAt;
+    return this.timeAt === null ? this.at : Math.min(this.at, this.timeAt);
+  }
+
+  timeDue(now: number): boolean {
+    return this.timeAt !== null && this.timeAt <= now;
+  }
+
+  queueDue(now: number): boolean {
+    return this.at !== null && this.at <= now;
   }
 
   // Events were queued: a wake now. Whether the alarm needs arming.
@@ -135,11 +162,12 @@ export class AutomationSchedule {
   }
 
   due(now: number): boolean {
-    return this.at !== null && this.at <= now;
+    return this.queueDue(now) || this.timeDue(now);
   }
 
   clear(): void {
     this.at = null;
+    this.timeAt = null;
     this.dropped = 0;
   }
 
@@ -185,6 +213,11 @@ export class PlanAutomations implements AutomationsHook {
     this.schedule = new AutomationSchedule(sql, ready);
     this.arm = arm;
     this.deps = deps;
+    // A rule write changed when a time rule next runs: the room's alarm asks again.
+    this.store.onSchedule = () => {
+      this.schedule.restoreTimes();
+      this.arm();
+    };
   }
 
   get kinds(): ReadonlySet<AutomationEventKind> {

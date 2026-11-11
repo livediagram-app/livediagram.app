@@ -70,6 +70,7 @@ import { useDismissibleBanner } from '@liveworkspace/workbench/hooks/ui/useDismi
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { AutomationsHost } from '@/components/automations/AutomationsHost';
 import { automationsScopeFor } from '@/components/automations/automations-gate';
+import { useAutomationsGate } from '@/components/automations/use-automations-gate';
 import { useDelayedReveal } from '@liveworkspace/workbench/hooks/ui/useDelayedReveal';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -440,14 +441,23 @@ export function EditorView() {
       <LandscapeBarsHandle shown={landscapeBars.shown} onToggle={landscapeBars.toggle} />
     ) : null;
 
-  // Automations (docs/specs/026-plan/automations.md "Who may do what"): an Editor of the whole plan saved to an account.
-  const automationsScope = automationsScopeFor({
+  // Automations (docs/specs/026-plan/automations.md "Who may do what"): a signed-in Editor of the whole plan saved to
+  // an account opens the screen; one who could edit it but for a plan in This Browser or no account opens the gate.
+  const automationsGateInput = {
     level: ctx.can.level,
     structureReadOnly: isStructureReadOnly,
     offline: isOffline,
     hydrated,
     embed: embedMode,
+    signedIn: !!accountUserId,
+    authLoaded: ctx.authLoaded,
     scope: ctx.plan.context?.itemsScope ?? null,
+  };
+  const automationsScope = automationsScopeFor(automationsGateInput);
+  const automationsGate = useAutomationsGate({
+    ...automationsGateInput,
+    ready: ctx.selfParticipant.id !== 'self',
+    sync: ctx.syncToCloud,
   });
 
   return (
@@ -458,7 +468,13 @@ export function EditorView() {
     // a Default tab's paper is the viewer's, not the tab's.
     // Only a Dashboard draws participant cursors (plan-cursors.ts), so only there do Settings, the Collaborators
     // modal and search offer Hide Participant Cursors (docs/specs/012-collaboration/collaborator-enhancements.md).
-    <AutomationsHost scope={automationsScope} plan={ctx.plan.context}>
+    <AutomationsHost
+      scope={automationsScope}
+      plan={ctx.plan.context}
+      gate={automationsGate}
+      planName={projectName}
+      signedIn={!!accountUserId}
+    >
       <CursorsDrawnContext.Provider value={cursorsDrawn}>
         <SelectionStoreProvider store={ctx.selectionStore}>
           <ViewportStoreProvider store={ctx.viewport}>

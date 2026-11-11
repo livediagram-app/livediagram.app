@@ -66,4 +66,26 @@ describe('migratePlanSchema', () => {
     migratePlanSchema((q) => exec.exec(q));
     expect(columns().filter((c) => c === 'field')).toHaveLength(1);
   });
+
+  // Automations Phase 2 (docs/specs/026-plan/automations.md "Time triggers", "Assign in turn"): a plan at 18 gains
+  // the schedule and the turn column once, and the step runs again harmlessly.
+  it('gives a plan made at version 18 the time schedule and the turn, once', () => {
+    const sql = new DatabaseSync(':memory:');
+    const exec = nodeItemSql(sql);
+    const turns = () =>
+      sql
+        .prepare('PRAGMA table_info(automation_rules)')
+        .all()
+        .filter((r) => r.name === 'turn');
+    migratePlanSchema((q) => exec.exec(q));
+    sql.exec(
+      'DROP TABLE automation_schedule; ALTER TABLE automation_rules DROP COLUMN turn; UPDATE _plan_schema SET version = 18',
+    );
+    migratePlanSchema((q) => exec.exec(q));
+    expect(tables(sql)).toContain('automation_schedule');
+    expect(turns()).toHaveLength(1);
+    sql.exec('UPDATE _plan_schema SET version = 18');
+    expect(() => migratePlanSchema((q) => exec.exec(q))).not.toThrow();
+    expect(turns()).toHaveLength(1);
+  });
 });

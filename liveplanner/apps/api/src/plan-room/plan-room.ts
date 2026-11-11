@@ -660,7 +660,7 @@ export class PlanRoom extends DurableObject<Env> {
       this.communityAt,
       this.maintenanceAt,
       this.repeats.at,
-      this.automations.schedule.at,
+      this.automations.schedule.wakeAt,
       nextGrantDue(this),
     ];
     // Never sooner than a second from now, and no write when it already stands there (api-kit room-alarm.ts).

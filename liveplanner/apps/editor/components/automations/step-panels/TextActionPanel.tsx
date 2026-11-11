@@ -28,14 +28,21 @@ export function TextActionPanel({
   onChange,
   outline,
   invalidPath,
+  branch = false,
+  timeRule = false,
 }: {
   action: TextAction;
   onChange: (next: AutomationAction) => void;
   outline: AutomationOutline;
   // The refusal's last segment within this step ('text', 'subject', 'body'), if any.
   invalidPath: string | null;
+  // Inside a branch: the triggering card's values join Insert a Value.
+  branch?: boolean;
+  // A time trigger has nobody behind it, so an email never goes to whoever triggered it.
+  timeRule?: boolean;
 }) {
   const fields = outlineFields(outline.types);
+  const recipients = timeRule ? RECIPIENTS.filter((r) => r.key !== 'trigger') : RECIPIENTS;
   if (action.kind === 'comment')
     return (
       <ValueTextField
@@ -44,6 +51,7 @@ export function TextActionPanel({
         value={action.text}
         fields={fields}
         invalid={invalidPath !== null}
+        branch={branch}
         hint="Posted as Automation, in violet, so everyone can tell it from a person’s."
         onChange={(text) => onChange({ kind: 'comment', text })}
       />
@@ -54,7 +62,7 @@ export function TextActionPanel({
         label="To"
         value={action.to}
         outline={outline}
-        extra={RECIPIENTS}
+        extra={recipients}
         onChange={(to) => onChange({ ...action, to })}
       />
       <ValueTextField
@@ -64,6 +72,7 @@ export function TextActionPanel({
         value={action.subject}
         fields={fields}
         invalid={invalidPath === 'subject'}
+        branch={branch}
         onChange={(subject) => onChange({ ...action, subject })}
       />
       <ValueTextField
@@ -72,6 +81,7 @@ export function TextActionPanel({
         value={action.body}
         fields={fields}
         invalid={invalidPath === 'body' || invalidPath === 'text'}
+        branch={branch}
         hint="Sent from LivePlanner with a link to the card. Only to people in this plan."
         onChange={(body) => onChange({ ...action, body })}
       />

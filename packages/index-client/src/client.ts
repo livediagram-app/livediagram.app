@@ -55,6 +55,8 @@ import type {
   UpdateShareLinkInput,
 } from './types';
 import type {
+  AutomationSend,
+  AutomationSendResult,
   CardMove,
   CreateWebhookInput,
   UpdateWebhookInput,
@@ -444,6 +446,20 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
     });
     if (!res.ok) throw await failed(res);
   }
+  // A POST of one of the index's own `/app/...` paths, answering its JSON.
+  async function post<T>(path: string, body: unknown): Promise<T> {
+    const res = await (doFetch ?? fetch)(`${base}/app${path}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        [INDEX_APP_HEADER]: app,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw await failed(res);
+    return (await res.json()) as T;
+  }
   // A read; null when the index answers 404.
   async function get<T>(path: string): Promise<T | null> {
     const res = await (doFetch ?? fetch)(`${base}/app${path}`, {
@@ -481,6 +497,13 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
     // again: each is one delivery per webhook.
     pushCardMoves: (itemId: string, moves: readonly CardMove[]) =>
       put(`/items/${enc(itemId)}/card-moves`, { moves }),
+    // Up to AUTOMATION_SENDS_MAX messages a plan's automation rules post through its own webhooks (liveplanner), each
+    // answered queued or refused, in the order sent. Safe to send again: a key already queued answers queued.
+    pushAutomationSends: (
+      itemId: string,
+      sends: readonly AutomationSend[],
+    ): Promise<{ results: AutomationSendResult[] }> =>
+      post(`/items/${enc(itemId)}/automation-sends`, { sends }),
     // Connected tabs (connected-tabs.md): the tab holding a connection is in the host now (confirm), or has left it
     // (remove, which deletes the connection's pass). Each answers 204 whether or not it matched.
     confirmConnection: (hostId: string, connectionId: string, tabId: string) =>
@@ -489,21 +512,8 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
       send('DELETE', appConnectionPath(hostId, connectionId, tabId)),
     // Where up to COMMUNITY_STATES_MAX Community posts' items stand (the Community's sweep), one answer per post, in
     // order. Read only.
-    communityStates: async (
-      posts: readonly CommunityStateAsk[],
-    ): Promise<CommunityStateAnswer[]> => {
-      const res = await (doFetch ?? fetch)(`${base}/app/community/states`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${key}`,
-          [INDEX_APP_HEADER]: app,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ posts }),
-      });
-      if (!res.ok) throw await failed(res);
-      return ((await res.json()) as { states: CommunityStateAnswer[] }).states;
-    },
+    communityStates: async (posts: readonly CommunityStateAsk[]): Promise<CommunityStateAnswer[]> =>
+      (await post<{ states: CommunityStateAnswer[] }>('/community/states', { posts })).states,
   };
 }
 

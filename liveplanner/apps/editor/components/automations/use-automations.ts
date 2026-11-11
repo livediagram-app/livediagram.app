@@ -102,7 +102,7 @@ export type AutomationsApi = AutomationsState & {
   toggle: (id: string, enabled: boolean) => Promise<AutomationListedRule>;
   duplicate: (id: string) => Promise<AutomationListedRule>;
   remove: (id: string) => Promise<void>;
-  // Test on a Card (the rule as the builder holds it, unsaved) and Run Rule: the run, as the Run Log shows it.
+  // Test on a Card (the rule as the builder holds it, unsaved) and Run Rule: the run, as the Audit Trail shows it.
   test: (rule: AutomationRuleBody, item: string) => Promise<AutomationRunResponse>;
   run: (id: string, item: string) => Promise<AutomationRunResponse>;
 };

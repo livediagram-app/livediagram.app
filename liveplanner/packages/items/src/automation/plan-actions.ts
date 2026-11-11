@@ -1,181 +1,52 @@
 // Automations: a run's steps worked out, without touching anything (docs/specs/026-plan/automations.md "Actions",
 // "Runs, limits and loops"; blueprint automations.md "Files", "The run"). `planActions` walks the steps and each If /
 // Else in order against the card as the steps before left it, folds every change to the card into ONE patch (set and
-// clear, in step order), and gathers the comments, the card to make and the emails. An action that would change
-// nothing is "Already so"; one the card refuses fails the run there, with the lines so far. The api applies the plan
-// (automation-writes.ts); Test on a Card shows it. Pure.
+// clear, in step order), and gathers the comments, the card to make, the emails and the outgoing messages. A branch
+// (For Related Cards) plans its actions on each related card the same way, one patch per card; a card that refuses
+// one fails its own steps only. Assign in Turn takes the rule's turn and says how many turns the run used. An action
+// that would change nothing is "Already so"; one the card refuses fails the run there, with the lines so far. The api
+// applies the plan (automation-writes.ts); Test on a Card shows it. Pure.
 
-import {
-  itemAssignee,
-  itemLabels,
-  type Item,
-  type ItemFieldValue,
-  type ItemFields,
-  type ItemPatch,
-  type ItemPerson,
-} from '../item';
-import type { CustomFieldDef, ItemTypeDef } from '../item-types';
+import { itemAssignee, itemLabels, type ItemFields, type ItemPerson } from '../item';
 import { ITEM_LABELS_MAX, ITEM_TITLE_MAX } from '../limits';
-import { isPriority, validateFields } from '../fields';
-import { isDay } from '../repeat-dates';
+import { validateFields } from '../fields';
 import { isEmptyFieldValue, requiredCustomFieldsOf } from '../required-fields';
-import { typeAllowsStatus, typeIn } from '../type-catalogue';
+import { typeAllowsStatus } from '../type-catalogue';
 import {
   AUTOMATION_ACTIONS_MAX,
   AUTOMATION_CREATED_PER_RUN,
   AUTOMATION_PERSON_ID,
   AUTOMATION_TEXT_MAX,
   type AutomationAction,
-  type AutomationSetValue,
+  type AutomationBranch,
+  type AutomationOutgoing,
   type AutomationStep,
-  type AutomationStepLine,
 } from './types';
-import { allHold, type ConditionContext } from './conditions';
+import { allHold } from './conditions';
 import { fieldDefOf, fieldName, personOf, statusName, typeName } from './outline';
-import { dayFrom, fieldText, fillValues, type ValueContext } from './values';
+import { fieldText, fillValues } from './values';
+import { relatedCards } from './related';
+import { branchWords, notifyChip } from './sentence';
+import { Failed, fail, fieldKind, setValueOf } from './set-value';
+import {
+  walkOf,
+  type Plan,
+  type PlanActionsContext,
+  type PlannedRun,
+  type PlannedWrites,
+  Run,
+  type Walk,
+} from './plan-walk';
 
-export interface PlanActionsContext extends ConditionContext {
-  rule: { name: string };
-  // The link that opens the card, for {{card.url}}.
-  url: string;
-}
-
-// The card a Create Card makes: its type, its column (absent: the type's Default State) and fields.
-export interface PlannedCard {
-  type: string;
-  status?: string;
-  fields: ItemFields;
-}
-
-// An email to send: the person it goes to (null: nobody, so none is sent), its subject and body, filled in.
-export interface PlannedEmail {
-  to: ItemPerson | null;
-  subject: string;
-  body: string;
-}
-
-// What a run writes: the triggering card's one patch, the threads it starts, the card it makes and its emails.
-export interface PlannedWrites {
-  patch: ItemPatch;
-  comments: string[];
-  created: PlannedCard[];
-  emails: PlannedEmail[];
-}
-
-// A failed run keeps `done`, the steps before the one that failed (spec "Actions": the steps before it stay done).
-export type PlannedRun =
-  | (PlannedWrites & { lines: AutomationStepLine[] })
-  | { failed: string; lines: AutomationStepLine[]; done: PlannedWrites };
-
-const DATE_FIELDS = new Set(['start', 'due']);
-const NUMBER_KINDS = new Set(['number', 'currency', 'percent', 'duration', 'rating']);
-const LIST_KINDS = new Set(['labels', 'multichoice']);
-
-class Failed extends Error {}
-const fail = (reason: string): never => {
-  throw new Failed(reason);
-};
-
-const same = (a: ItemFieldValue | undefined, b: ItemFieldValue | undefined) =>
-  JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
-
-// The walk's state: the card as the steps so far left it, and the one patch that gets it there.
-class Plan {
-  readonly set: ItemFields = {};
-  readonly clear = new Set<string>();
-  readonly comments: string[] = [];
-  readonly created: PlannedCard[] = [];
-  readonly emails: PlannedEmail[] = [];
-  readonly lines: AutomationStepLine[] = [];
-  actions = 0;
-  card: Item;
-
-  private readonly was: ItemFields;
-
-  constructor(card: Item) {
-    this.was = card.fields;
-    this.card = { ...card, fields: { ...card.fields } };
-  }
-
-  // Sets or clears one field: whether that changed the card. The patch holds what differs from the card as it was.
-  write(field: string, value: ItemFieldValue | undefined): boolean {
-    const next = value === undefined || isEmptyFieldValue(value) ? undefined : value;
-    if (same(this.card.fields[field], next)) return false;
-    if (next === undefined) delete this.card.fields[field];
-    else this.card.fields[field] = next;
-    delete this.set[field];
-    this.clear.delete(field);
-    if (!same(this.was[field], next)) {
-      if (next === undefined) this.clear.add(field);
-      else this.set[field] = next;
-    }
-    return true;
-  }
-
-  line(text: string, changed = true): void {
-    this.lines.push({
-      kind: 'action',
-      ok: true,
-      text,
-      ...(changed ? {} : { already: true as const }),
-    });
-  }
-
-  patch(): ItemPatch {
-    return {
-      ...(Object.keys(this.set).length ? { set: { ...this.set } } : {}),
-      ...(this.clear.size ? { clear: [...this.clear] } : {}),
-    };
-  }
-}
-
-function fieldKind(field: string, def: CustomFieldDef | undefined): string {
-  if (DATE_FIELDS.has(field)) return 'date';
-  if (field === 'estimate') return 'number';
-  if (field === 'labels') return 'labels';
-  if (field === 'priority') return 'priority';
-  if (field === 'assignee') return 'person';
-  return def?.kind ?? 'text';
-}
-
-// A Set Field's value, as the field takes it; a refusal names why.
-function setValueOf(
-  value: AutomationSetValue,
-  field: string,
-  name: string,
-  kind: string,
-  plan: Plan,
-  ctx: PlanActionsContext,
-  values: ValueContext,
-): ItemFieldValue | undefined {
-  if ('from' in value) return plan.card.fields[value.from];
-  if ('date' in value) return dayFrom(value.date, ctx.now, ctx.timeZone);
-  if ('number' in value) return value.number;
-  if ('list' in value) return value.list;
-  const text = fillValues(
-    value.text,
-    { ...values, card: plan.card },
-    { iso: kind === 'date' },
-  ).trim();
-  if (text === '') return undefined;
-  if (kind === 'date') return isDay(text) ? text : fail(`${name} needs a day, not "${value.text}"`);
-  if (NUMBER_KINDS.has(kind)) {
-    const n = Number(text);
-    return Number.isFinite(n) ? n : fail(`${name} needs a number, not "${text}"`);
-  }
-  if (LIST_KINDS.has(kind)) return [text];
-  if (kind === 'priority') {
-    const p = text.toLowerCase();
-    return isPriority(p) ? p : fail(`${name} has no "${text}"`);
-  }
-  if (kind === 'person') {
-    const p = ctx.outline.people.find(
-      (x) => x.id === text || x.name.toLowerCase() === text.toLowerCase(),
-    );
-    return p ?? fail(`Nobody called "${text}" can be set`);
-  }
-  return field === 'title' ? text.slice(0, ITEM_TITLE_MAX) : text;
-}
+export type {
+  PlanActionsContext,
+  PlannedCard,
+  PlannedEmail,
+  PlannedRelated,
+  PlannedRun,
+  PlannedSend,
+  PlannedWrites,
+} from './plan-walk';
 
 // Whoever triggered the rule, when that is a person a card can name.
 const triggerPerson = (ctx: PlanActionsContext): ItemPerson | null =>
@@ -183,15 +54,67 @@ const triggerPerson = (ctx: PlanActionsContext): ItemPerson | null =>
     ? null
     : ctx.by;
 
-function apply(
-  a: AutomationAction,
-  plan: Plan,
-  ctx: PlanActionsContext,
-  type: ItemTypeDef,
-  values: ValueContext,
-) {
+// Assign in Turn: whose turn it is (passing over people who left the plan), and the turns that took.
+function inTurn(ids: readonly string[], w: Walk): ItemPerson {
+  const base = (w.ctx.turn ?? 0) + w.plan.run.turns;
+  for (let i = 0; i < ids.length; i += 1) {
+    const person = personOf(w.ctx.outline, ids[(base + i) % ids.length]!);
+    if (!person) continue;
+    w.plan.run.turns += i + 1;
+    return person;
+  }
+  return fail('Nobody in turn is in the plan any more');
+}
+
+function assign(a: Extract<AutomationAction, { kind: 'assign' }>, w: Walk) {
+  const { plan, ctx } = w;
+  if ('nobody' in a.to) return plan.line('Unassign', plan.write('assignee', undefined));
+  if ('rotate' in a.to) {
+    const person = inTurn(a.to.rotate, w);
+    return plan.line(`Assign ${person.name} (in turn)`, plan.write('assignee', person));
+  }
+  const person = 'person' in a.to ? personOf(ctx.outline, a.to.person) : triggerPerson(ctx);
+  if (!person)
+    return fail(
+      'trigger' in a.to ? 'Nobody to assign: no person made the change' : 'That person is gone',
+    );
+  return plan.line(`Assign ${person.name}`, plan.write('assignee', person));
+}
+
+function setField(a: Extract<AutomationAction, { kind: 'set_field' | 'clear_field' }>, w: Walk) {
+  const { plan, ctx, type } = w;
+  const def = fieldDefOf(ctx.outline, a.field, type);
+  const name = fieldName(ctx.outline, a.field, type);
+  if (def?.kind === 'calculated' || def?.calculation) fail(`${name} is worked out, never set`);
+  const value =
+    a.kind === 'set_field'
+      ? setValueOf({
+          value: a.value,
+          field: a.field,
+          name,
+          kind: fieldKind(a.field, def),
+          card: plan.card,
+          outline: ctx.outline,
+          now: ctx.now,
+          timeZone: ctx.timeZone,
+          values: w.values,
+        })
+      : undefined;
+  if (value === undefined) {
+    const required = requiredCustomFieldsOf(type).find((f) => f.id === a.field);
+    if (required && !isEmptyFieldValue(plan.card.fields[a.field]))
+      fail(`${type.label} cards need ${name}`);
+    return plan.line(`Clear ${name}`, plan.write(a.field, undefined));
+  }
+  const checked = validateFields({ [a.field]: value }, 'patch');
+  if (!checked.ok) fail(`${name} can't hold that value`);
+  return plan.line(`Set ${name} to ${fieldText(value, a.field)}`, plan.write(a.field, value));
+}
+
+function apply(a: AutomationAction, w: Walk) {
+  const { plan, ctx, type } = w;
   const o = ctx.outline;
-  const fill = (text: string) => fillValues(text, { ...values, card: plan.card });
+  const fill = (text: string) => fillValues(text, { ...w.values, card: plan.card });
   switch (a.kind) {
     case 'move': {
       const name = statusName(o, a.status);
@@ -200,33 +123,10 @@ function apply(
       return plan.line(`Move to ${name}`, plan.write('status', a.status));
     }
     case 'set_field':
-    case 'clear_field': {
-      const def = fieldDefOf(o, a.field, type);
-      const name = fieldName(o, a.field, type);
-      if (def?.kind === 'calculated' || def?.calculation) fail(`${name} is worked out, never set`);
-      const value =
-        a.kind === 'set_field'
-          ? setValueOf(a.value, a.field, name, fieldKind(a.field, def), plan, ctx, values)
-          : undefined;
-      if (value === undefined) {
-        const required = requiredCustomFieldsOf(type).find((f) => f.id === a.field);
-        if (required && !isEmptyFieldValue(plan.card.fields[a.field]))
-          fail(`${type.label} cards need ${name}`);
-        return plan.line(`Clear ${name}`, plan.write(a.field, undefined));
-      }
-      const checked = validateFields({ [a.field]: value }, 'patch');
-      if (!checked.ok) fail(`${name} can't hold that value`);
-      return plan.line(`Set ${name} to ${fieldText(value, a.field)}`, plan.write(a.field, value));
-    }
-    case 'assign': {
-      if ('nobody' in a.to) return plan.line('Unassign', plan.write('assignee', undefined));
-      const person = 'person' in a.to ? personOf(o, a.to.person) : triggerPerson(ctx);
-      if (!person)
-        return fail(
-          'trigger' in a.to ? 'Nobody to assign: no person made the change' : 'That person is gone',
-        );
-      return plan.line(`Assign ${person.name}`, plan.write('assignee', person));
-    }
+    case 'clear_field':
+      return setField(a, w);
+    case 'assign':
+      return assign(a, w);
     case 'add_label':
     case 'remove_label': {
       const labels = itemLabels(plan.card);
@@ -256,7 +156,7 @@ function apply(
     case 'archive':
       return plan.line('Archive', plan.write('archived', true));
     case 'create_card':
-      return createCard(a, plan, ctx, values);
+      return createCard(a, w);
     case 'email': {
       const to =
         'assignee' in a.to
@@ -277,12 +177,8 @@ function apply(
   }
 }
 
-function createCard(
-  a: Extract<AutomationAction, { kind: 'create_card' }>,
-  plan: Plan,
-  ctx: PlanActionsContext,
-  values: ValueContext,
-) {
+function createCard(a: Extract<AutomationAction, { kind: 'create_card' }>, w: Walk) {
+  const { plan, ctx } = w;
   const o = ctx.outline;
   if (plan.created.length >= AUTOMATION_CREATED_PER_RUN)
     fail(`A run makes up to ${AUTOMATION_CREATED_PER_RUN} card`);
@@ -290,7 +186,7 @@ function createCard(
   if (!type) return fail(`Card type ${a.type} is gone`);
   if (a.status && !o.statuses.some((s) => s.status === a.status))
     fail(`Column ${a.status} is gone`);
-  const title = fillValues(a.title, { ...values, card: plan.card })
+  const title = fillValues(a.title, { ...w.values, card: plan.card })
     .trim()
     .slice(0, ITEM_TITLE_MAX);
   const fields: ItemFields = { title: title || type.newTitle };
@@ -307,50 +203,108 @@ function createCard(
   plan.line(`Create ${typeName(o, type.id)} "${fields['title'] as string}"`);
 }
 
-function step(
-  a: AutomationAction,
-  plan: Plan,
-  ctx: PlanActionsContext,
-  type: ItemTypeDef,
-  values: ValueContext,
-) {
-  plan.actions += 1;
-  if (plan.actions > AUTOMATION_ACTIONS_MAX)
+function count(run: Run, n = 1) {
+  run.actions += n;
+  if (run.actions > AUTOMATION_ACTIONS_MAX)
     fail(`A run makes up to ${AUTOMATION_ACTIONS_MAX} changes`);
-  apply(a, plan, ctx, type, values);
 }
 
-// The run's steps against the card, worked out: the one patch, the comments, the card to make and the emails, with
-// a line per step; or where it failed and why.
-export function planActions(steps: readonly AutomationStep[], ctx: PlanActionsContext): PlannedRun {
-  const plan = new Plan(ctx.card);
-  const type = typeIn(ctx.outline.types, ctx.card.type);
-  const values: ValueContext = {
-    card: plan.card,
-    type,
-    outline: ctx.outline,
-    url: ctx.url,
-    person: ctx.by.name,
-    rule: ctx.rule.name,
-    now: ctx.now,
-    timeZone: ctx.timeZone,
-  };
-  try {
-    for (const s of steps) {
-      if (s.kind !== 'if') {
-        step(s, plan, ctx, type, values);
-        continue;
-      }
-      const held = allHold(s.conditions, { ...ctx, card: plan.card });
-      for (const l of held.lines) plan.lines.push({ kind: 'condition', ...l });
-      for (const a of held.ok ? s.then : s.else) step(a, plan, ctx, type, values);
+// An outgoing message: planned with its line, sent (or not, for a test) by the api.
+function notify(s: AutomationOutgoing, index: number, w: Walk) {
+  const run = w.plan.run;
+  run.sends.push({
+    step: index,
+    via: s.via,
+    webhook: s.webhook,
+    ...(s.name ? { name: s.name } : {}),
+    text: fillValues(s.text, { ...w.values, card: w.plan.card }).slice(0, AUTOMATION_TEXT_MAX),
+    line: run.lines.length,
+  });
+  w.plan.line(notifyChip(s));
+}
+
+// A branch: each related card's conditions, then its actions as one patch; a card that refuses one fails alone.
+function branch(s: AutomationBranch, top: Walk) {
+  const run = top.plan.run;
+  count(run, s.then.length);
+  const ctx = top.ctx;
+  const found = relatedCards(top.plan.card, s.related, ctx.items ?? [], {
+    ...ctx,
+    card: top.plan.card,
+  });
+  const at = run.lines.length;
+  const shown = found.cards.length;
+  const text =
+    found.total > shown
+      ? `${branchWords(s.related)}: on ${shown} of ${found.total} related cards`
+      : `${branchWords(s.related)}: on ${shown} related card${shown === 1 ? '' : 's'}`;
+  run.lines.push({ kind: 'branch', ok: true, text, cards: shown });
+  const failed: string[] = [];
+  for (const card of found.cards) {
+    const url = ctx.urlOf?.(card.id) ?? ctx.url;
+    const w = walkOf(card, run, { ...ctx, card, url }, `#${card.key} `);
+    w.values = { ...w.values, url, trigger: { card: top.plan.card, url: ctx.url } };
+    const held = allHold(s.conditions, { ...ctx, card });
+    const miss = held.lines.find((l) => !l.ok);
+    if (miss) {
+      run.lines.push({ kind: 'condition', ok: false, text: `#${card.key} ${miss.text}` });
+      continue;
     }
+    let reason: string | undefined;
+    try {
+      for (const a of s.then) apply(a, w);
+    } catch (error) {
+      if (!(error instanceof Failed)) throw error;
+      reason = error.message;
+      w.plan.failure(reason);
+      failed.push(`#${card.key}`);
+    }
+    run.related.push({
+      card,
+      patch: w.plan.patch(),
+      comments: w.plan.comments,
+      emails: w.plan.emails,
+      ...(reason ? { failed: reason } : {}),
+    });
+  }
+  if (failed.length)
+    run.lines[at] = {
+      kind: 'branch',
+      ok: false,
+      text: `${text}, failed on ${failed.join(', ')}`,
+      cards: shown,
+    };
+}
+
+// The run's steps against the card, worked out: the one patch, the comments, the card to make, the emails, the
+// related cards' writes and the messages, with a line per step; or where it failed and why.
+export function planActions(steps: readonly AutomationStep[], ctx: PlanActionsContext): PlannedRun {
+  const run = new Run();
+  const w = walkOf(ctx.card, run, ctx);
+  try {
+    steps.forEach((s, index) => {
+      if (s.kind === 'for') return branch(s, w);
+      if (s.kind === 'notify') {
+        count(run);
+        return notify(s, index, w);
+      }
+      if (s.kind !== 'if') {
+        count(run);
+        return apply(s, w);
+      }
+      const held = allHold(s.conditions, { ...ctx, card: w.plan.card });
+      for (const l of held.lines) run.lines.push({ kind: 'condition', ...l });
+      for (const a of held.ok ? s.then : s.else) {
+        count(run);
+        apply(a, w);
+      }
+    });
   } catch (error) {
     if (!(error instanceof Failed)) throw error;
-    plan.lines.push({ kind: 'action', ok: false, text: error.message });
-    return { failed: error.message, lines: plan.lines, done: writesOf(plan) };
+    w.plan.failure(error.message);
+    return { failed: error.message, lines: run.lines, done: writesOf(w.plan) };
   }
-  return { ...writesOf(plan), lines: plan.lines };
+  return { ...writesOf(w.plan), lines: run.lines };
 }
 
 const writesOf = (plan: Plan): PlannedWrites => ({
@@ -358,4 +312,7 @@ const writesOf = (plan: Plan): PlannedWrites => ({
   comments: plan.comments,
   created: plan.created,
   emails: plan.emails,
+  related: plan.run.related,
+  sends: plan.run.sends,
+  turns: plan.run.turns,
 });

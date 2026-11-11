@@ -13,5 +13,5 @@ Follow the references below only as needed; never upfront.
 - ./linked-boards.md - when working on linked boards: the Actions board that collects every action, linked cards kept in step with the canvas, Won't Do
 - ./tracker-import.md - when working on importing a Trello, Asana, Jira or Linear export into a new Board tab or plan: reading the file, the preview, the card type, people, comments and the agent doors
 - ./items.md - when working on items and the item store: fields, item types, writes, access, live sync, undo, offline projects, copies, limits
-- ./automations.md - when working on Automations: rules with triggers, conditions and actions that act on cards, the Automations screen, the rule builder, the Run Log and the footer button
+- ./automations.md - when working on Automations: rules with triggers, conditions and actions that act on cards, the Automations screen, the rule builder, the Audit Trail and the footer button
 - ./blueprints/README.md - when implementing Plan mode, the Plan board or the item store: file-level contracts, constants, defaults and tests

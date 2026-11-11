@@ -787,7 +787,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Automations',
     summary:
-      'Delete a rule. Its runs stay in the Run Log until they age out. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+      'Delete a rule. Its runs stay in the Audit Trail until they age out. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
     auth: 'clerk',
     statuses: [204, 401, 403, 404, 405, 410],
   },
@@ -855,7 +855,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Automations',
     summary:
-      'The Run Log, newest first: by rule, result and since when, up to 200. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+      'The Audit Trail, newest first: by rule, result and since when, up to 200. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
     auth: 'clerk',
     query: [
       { name: 'rule', required: false, description: 'A rule id.' },

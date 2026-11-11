@@ -4,10 +4,15 @@
 // Automation everywhere (the footer button, the screen's badge, a card's history and comments), and each step's icon
 // on its tinted tile: the trigger in the brand violet, conditions in orange, actions in blue, as the design draws them.
 
-import type { AutomationActionKind, AutomationStep } from '@liveplanner/items';
+import type { AutomationActionKind, AutomationStep, AutomationVia } from '@liveplanner/items';
 import { lucideGlyph } from '@liveplanner/ui';
 import {
+  lucideClock,
   lucideFunnel,
+  lucideHash,
+  lucideListTree,
+  lucideUsers,
+  lucideWebhook,
   lucideGitFork,
   lucideFlag,
   lucideMail,
@@ -24,10 +29,12 @@ import {
 
 export const BoltIcon = lucideGlyph(lucideZap, 16);
 export const ConditionIcon = lucideGlyph(lucideFunnel, 16);
+// A time trigger's own: the clock, where a card trigger has the bolt.
+export const ClockIcon = lucideGlyph(lucideClock, 16);
 
 type Glyph = ReturnType<typeof lucideGlyph>;
 
-const ACTION_GLYPHS: Record<AutomationActionKind | 'if', Glyph> = {
+const ACTION_GLYPHS: Record<AutomationActionKind | 'if' | 'for', Glyph> = {
   move: lucideGlyph(lucideMoveRight, 16),
   set_field: lucideGlyph(lucidePencil, 16),
   clear_field: lucideGlyph(lucideEraser, 16),
@@ -41,6 +48,14 @@ const ACTION_GLYPHS: Record<AutomationActionKind | 'if', Glyph> = {
   create_card: lucideGlyph(lucideSquarePlus, 16),
   email: lucideGlyph(lucideMail, 16),
   if: lucideGlyph(lucideGitFork, 16),
+  for: lucideGlyph(lucideListTree, 16),
+};
+
+// An outgoing action by where it posts: your own service, a Slack channel, a Teams channel.
+export const NOTIFY_GLYPHS: Record<AutomationVia, Glyph> = {
+  webhook: lucideGlyph(lucideWebhook, 16),
+  slack: lucideGlyph(lucideHash, 16),
+  teams: lucideGlyph(lucideUsers, 16),
 };
 
 export type StepTone = 'trigger' | 'condition' | 'action';
@@ -57,22 +72,31 @@ export const STEP_KIND_TEXT: Record<StepTone, string> = {
   action: 'text-blue-700 dark:text-blue-300',
 };
 
-/** A step's icon on its tile: the bolt for the trigger, the funnel for conditions, the action's own. */
+/** A step's icon on its tile: the bolt for the trigger (a clock for a time), the funnel for conditions, the action's
+ *  own, and an outgoing action's by where it posts. */
 export function StepTile({
   tone,
   kind,
+  via,
+  time = false,
   size = 32,
 }: {
   tone: StepTone;
-  kind?: AutomationStep['kind'];
+  kind?: AutomationStep['kind'] | undefined;
+  via?: AutomationVia | undefined;
+  time?: boolean;
   size?: 24 | 32;
 }) {
   const Icon =
     tone === 'trigger'
-      ? BoltIcon
+      ? time
+        ? ClockIcon
+        : BoltIcon
       : tone === 'condition'
         ? ConditionIcon
-        : ACTION_GLYPHS[kind ?? 'move'];
+        : kind === 'notify'
+          ? NOTIFY_GLYPHS[via ?? 'webhook']
+          : ACTION_GLYPHS[kind ?? 'move'];
   return (
     <span
       aria-hidden

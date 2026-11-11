@@ -71,22 +71,29 @@ function glyph(kind: HeroBackdropKind, ink: string): ReactNode {
   );
 }
 
+// The Automations screen's mark (StartHeaderBand's `variant`): a bolt, what sets a rule off.
+function bolt(ink: string): ReactNode {
+  return <path d="M11.5 1.75L4.5 11.25h5L8.25 18.25l7.25-9.75h-5Z" fill={ink} />;
+}
+
 export const StartTitleMark = memo(function StartTitleMark({
   kind,
   band,
+  variant,
 }: {
   kind: HeroBackdropKind;
   band: StartBandColours;
+  variant?: 'automations' | undefined;
 }) {
   return (
     <span
       aria-hidden
-      data-start-title-mark={kind}
+      data-start-title-mark={variant ?? kind}
       className="flex size-9 shrink-0 items-center justify-center rounded-[11px] max-sm:size-8"
       style={{ backgroundColor: band.wash, boxShadow: `inset 0 0 0 1px ${band.line}` }}
     >
       <svg width="20" height="20" viewBox="0 0 20 20">
-        {glyph(kind, band.accent)}
+        {variant ? bolt(band.accent) : glyph(kind, band.accent)}
       </svg>
     </span>
   );
