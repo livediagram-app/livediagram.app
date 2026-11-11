@@ -18,6 +18,8 @@ export type GalleryImage = {
   width: number;
   height: number;
   createdAt?: number;
+  /** Uploaded by an AI assistant through an app's MCP server: the Gallery shows it Made by AI. */
+  madeByAi?: boolean;
 };
 
 /** An item that places an image. `app` names another app's ("livediagram"); absent, the host's own. */

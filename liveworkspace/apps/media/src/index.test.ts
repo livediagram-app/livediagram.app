@@ -67,6 +67,7 @@ type UploadInit = {
   name?: string;
   sha?: string;
   document?: string;
+  source?: string;
 };
 const upload = (bytes: Uint8Array, init: UploadInit = {}, as = asApp) =>
   as(`/app/images?owner=${init.owner ?? 'user_1'}`, {
@@ -79,6 +80,7 @@ const upload = (bytes: Uint8Array, init: UploadInit = {}, as = asApp) =>
       ...(init.name ? { 'X-Image-Original-Name': encodeURIComponent(init.name) } : {}),
       ...(init.sha ? { 'X-Image-Sha256': init.sha } : {}),
       ...(init.document ? { 'X-Media-Document': init.document } : {}),
+      ...(init.source ? { 'X-Image-Source': init.source } : {}),
     },
     body: bytes,
   });
@@ -156,6 +158,20 @@ describe('uploads', () => {
     // A different owner with the same bytes gets their own.
     const theirs = await uploaded(png(1), { owner: 'user_2' });
     expect(theirs.image.id).not.toBe(first.image.id);
+  });
+
+  it('keeps the tool a new image came from, and never changes a deduped one', async () => {
+    const mine = await uploaded(png(1));
+    expect(mine.image.source).toBeUndefined();
+    // The same bytes again from the MCP: the person's image, still theirs alone.
+    expect((await uploaded(png(1), { source: 'mcp' })).image.source).toBeUndefined();
+    const made = await uploaded(png(2), { source: 'mcp' });
+    expect(made.image.source).toBe('mcp');
+    expect((await uploaded(png(3), { source: 'cli' })).image.source).toBe('cli');
+    // Anything else is a person's upload.
+    expect((await uploaded(png(4), { source: 'ai' })).image.source).toBeUndefined();
+    const list = (await (await asApp('/app/images?owner=user_1')).json()) as MediaListResponse;
+    expect(list.images.find((i) => i.id === made.image.id)?.source).toBe('mcp');
   });
 
   it('answers a known hash without reading the body', async () => {

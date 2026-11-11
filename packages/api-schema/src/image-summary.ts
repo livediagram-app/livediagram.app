@@ -12,4 +12,7 @@ export type ImageSummary = {
   height: number;
   originalName?: string;
   createdAt: number;
+  // The tool that uploaded it (`mcp`, an AI assistant; `cli`), absent for a person's own upload
+  // (liveworkspace/docs/specs/006-media/media.md "Uploaded by a tool").
+  source?: 'mcp' | 'cli';
 };

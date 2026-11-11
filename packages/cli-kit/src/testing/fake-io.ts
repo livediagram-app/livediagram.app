@@ -156,6 +156,10 @@ export function fakeIo(
     },
     files: {
       read: async (path) => fileMap.get(path)?.data ?? null,
+      readBytes: async (path) => {
+        const text = fileMap.get(path)?.data;
+        return byteMap.get(path) ?? (text === undefined ? null : new TextEncoder().encode(text));
+      },
       write: async (path, data, mode) => void fileMap.set(path, { data, mode: mode ?? 0o644 }),
       writeBytes: async (path, data) => void byteMap.set(path, data),
       mkdir: async (path) => void dirMap.add(path),

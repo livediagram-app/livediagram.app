@@ -258,3 +258,110 @@ describe('contactSheetTab', () => {
     expect(drawnIds(tab)).toEqual([null, 'a', 'b', 'c', null]);
   });
 });
+
+// upload_image and delete_image (docs/specs/015-api/mcp-server.md §4.5c, §4.5d): wired to the caller's own api, as
+// they are; a refusal answers as a tool error in words.
+function galleryHarness() {
+  const calls: { method: string; path: string; headers: Headers; bytes: number }[] = [];
+  const handlers = new Map<string, Handler>();
+  const server = {
+    registerTool: (name: string, _config: unknown, handler: Handler) => handlers.set(name, handler),
+  } as unknown as McpServer;
+  const env = {
+    API: {
+      fetch: async (request: Request) => {
+        const url = new URL(request.url);
+        if (url.pathname.endsWith('/events')) return new Response(null, { status: 204 });
+        const body = await request.arrayBuffer();
+        calls.push({
+          method: request.method,
+          path: url.pathname,
+          headers: request.headers,
+          bytes: body.byteLength,
+        });
+        if (url.pathname === '/api/images' && request.method === 'POST') {
+          const image = { ...GALLERY.images[0]!, id: 'new-1', originalName: 'Chart.png' };
+          return Response.json({ image, deduped: false });
+        }
+        if (url.pathname === '/api/images') return Response.json(GALLERY);
+        if (url.pathname === '/api/images/usage') {
+          return Response.json({
+            usage: { 'shot-1': [{ id: 'item-1', name: 'Launch plan', app: 'livediagram' }] },
+          });
+        }
+        if (request.method === 'DELETE') return Response.json({ ok: true });
+        return Response.json({ error: 'not in this test' }, { status: 500 });
+      },
+    },
+  } as unknown as Env;
+  registerTools(server, env);
+  const call = (name: string, args: unknown) =>
+    handlers.get(name)!(args, { authInfo: { token: 'tok_test' } }) as Promise<
+      Result & { structuredContent?: Record<string, unknown> }
+    >;
+  return { calls, call };
+}
+
+const PNG_BASE64 = btoa(String.fromCharCode(...PNG));
+
+describe('upload_image', () => {
+  it('uploads base64 bytes as the caller, marked as the MCP’s, and answers the new image', async () => {
+    const { calls, call } = galleryHarness();
+    const result = await call('upload_image', { data: PNG_BASE64, name: 'Chart.png' });
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      id: 'new-1',
+      name: 'Chart.png',
+      deduped: false,
+    });
+    const [post] = calls;
+    expect(post).toMatchObject({ method: 'POST', path: '/api/images', bytes: PNG.byteLength });
+    expect(post!.headers.get('Authorization')).toBe('Bearer tok_test');
+    expect(post!.headers.get('X-Image-Source')).toBe('mcp');
+    expect(post!.headers.get('X-Image-Width')).toBe('1');
+  });
+
+  it('refuses SVG and a private URL in words, sending nothing', async () => {
+    const { calls, call } = galleryHarness();
+    const svg = await call('upload_image', { data: btoa('<svg onload="alert(1)"/>') });
+    expect(svg.isError).toBe(true);
+    expect(svg.content[0]!.text).toMatch(/^That is SVG or other markup/);
+    const inward = await call('upload_image', { url: 'https://169.254.169.254/latest/meta-data' });
+    expect(inward.isError).toBe(true);
+    expect(inward.content[0]!.text).toContain('private, loopback, link-local or internal address');
+    expect(calls).toEqual([]);
+  });
+});
+
+describe('delete_image', () => {
+  it('removes an unused picture, keeps a placed one, and says where it is used', async () => {
+    const { calls, call } = galleryHarness();
+    const result = await call('delete_image', { imageIds: ['shot-1', 'shot-2', 'not-mine'] });
+    expect(result.structuredContent).toEqual({
+      results: [
+        {
+          id: 'shot-1',
+          outcome: 'in_use',
+          name: 'Screenshot dashboard.png',
+          usedIn: [{ id: 'item-1', name: 'Launch plan', app: 'livediagram' }],
+        },
+        { id: 'shot-2', outcome: 'deleted', name: 'Logo.png' },
+        { id: 'not-mine', outcome: 'not_found' },
+      ],
+      deleted: 1,
+      kept: 2,
+    });
+    expect(calls.filter((c) => c.method === 'DELETE').map((c) => c.path)).toEqual([
+      '/api/images/shot-2',
+    ]);
+  });
+
+  it('removes a placed picture when forced', async () => {
+    const { calls, call } = galleryHarness();
+    const result = await call('delete_image', { imageIds: ['shot-1'], force: true });
+    expect(result.structuredContent).toMatchObject({ deleted: 1, kept: 0 });
+    expect(calls.filter((c) => c.method === 'DELETE').map((c) => c.path)).toEqual([
+      '/api/images/shot-1',
+    ]);
+  });
+});

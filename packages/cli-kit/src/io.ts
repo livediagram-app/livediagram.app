@@ -4,6 +4,8 @@
 
 export type CliFiles = {
   read: (path: string) => Promise<string | null>;
+  // A file's bytes (a picture to upload), or null when it can't be read.
+  readBytes: (path: string) => Promise<Uint8Array | null>;
   // Written to a temporary file in the same directory, then renamed; `mode` for secrets (0o600).
   write: (path: string, data: string, mode?: number) => Promise<void>;
   // Bytes, written the same way (a PNG).

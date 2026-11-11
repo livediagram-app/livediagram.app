@@ -19,6 +19,8 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   archive_design: 'design archive',
   unarchive_design: 'design unarchive',
   list_images: 'image ls',
+  upload_image: 'image add',
+  delete_image: 'image rm',
   change_pages: 'page set',
   change_components: 'component make',
 };

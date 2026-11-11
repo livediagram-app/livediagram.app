@@ -26,6 +26,7 @@ Scope, by file:
 | `liveworkspace/apps/media/scripts/e2e-media.mjs`              | An end-to-end run against a local Worker                                                                                                                                                                  |
 | `liveworkspace/apps/media/migrations/0001_media.sql`          | `images`, `refs`, `ref_sync`                                                                                                                                                                              |
 | `liveworkspace/apps/media/migrations/0002_image_document.sql` | `images.document`, the document an image was uploaded for                                                                                                                                                 |
+| `liveworkspace/apps/media/migrations/0003_image_source.sql`   | `images.source`, the tool that uploaded an image (`mcp` or `cli`)                                                                                                                                         |
 | `packages/media/src/*`                                        | The contract: `MEDIA_APPS`, limits, `sniffImageType`, owners, wire headers, `createMediaClient`, previews' paths and caches, `createSharePage`, gallery usage                                             |
 
 ## Domain and naming
@@ -38,6 +39,7 @@ Scope, by file:
 | Reference   | `refs (app, document, image_id)`                                                                                 | A document that places an image, as its app last said                                                           |
 | Complete    | `ref_sync (app, completed_at)`                                                                                   | The app has reported every document at least once                                                               |
 | Claim       | `images.document`; `X-Media-Document` (`MEDIA_DOCUMENT_HEADER`) on upload                                        | The document a new image was uploaded for; null for older and This Browser uploads                              |
+| Source      | `images.source`; `X-Image-Source` (`IMAGE_SOURCE_HEADER`) on upload; `MediaImage.source`                         | The tool that uploaded a new image (`mcp`, `cli`); null for a person's. `mcp` is Made by AI                     |
 | Preview     | `previews/<app>/<itemId>/<view>-<tab>[-<appearance>].svg`                                                        | An item's drawing; `view` `full` or `public`, `tab` `first` or the tab id, `appearance` the reader's when asked |
 | Appearance  | `PreviewAppearance` (`light` \| `dark`, `@liveworkspace/media`); `ExportAppearance` (`@liveworkspace/index-app`) | The reader's appearance a preview is drawn in; `null` when none was asked                                       |
 | Share card  | the same key with `.png`                                                                                         | The 1200 x 630 raster drawn from the SVG beside it                                                              |
@@ -62,13 +64,14 @@ limit, current }`.
 5. `X-Image-Width` and `X-Image-Height` positive integers, else `400 invalid_dimensions`.
 6. `X-Image-Original-Name`: percent-decoded when it decodes, cut to `ORIGINAL_NAME_MAX` (200) code points; null when
    absent.
+   6a. `X-Image-Source` (`sourceOf`): `mcp` or `cli` is kept; anything else, or none, is null.
 7. Read the body; over 10 MiB is `413`. `sniffImageType` of the first 16 bytes must equal the declared type, else
    `415 unsupported_type` (SVG never passes).
 8. SHA-256 of the body as sent; the owner's image with it answers `deduped: true`.
 9. A JPEG goes through `stripJpegMetadata`; a malformed one is `415 { error: 'malformed_jpeg' }`.
 10. `bucket.put(uuid, stored, { httpMetadata: { contentType }, customMetadata: { owner, app } })`.
 11. `insertImage`: `INSERT OR IGNORE … SELECT … WHERE` both caps still hold, in one statement, with `document` (the
-    claim; a deduped image's row is never changed). A throw deletes the
+    claim) and `source` (a deduped image's row is never changed, so its source stays as it was). A throw deletes the
     bytes and rethrows. No row inserted: delete the bytes; the raced image with that hash answers `deduped: true`;
     else a cap answer, else `409 { error: 'upload_conflict' }`.
 12. `200 { image: MediaImage, deduped: false }`, logged `[media] stored`.
@@ -144,20 +147,21 @@ Every request: `X-Media-App: <app>` and `Authorization: Bearer <MEDIA_KEY_<APP>>
 `401 { error: 'unauthorized' }`; no bucket is `503 { error: 'media_unavailable' }`; off is `404`. Path segments are
 percent-decoded (a guest owner arrives as `guest%3A…`). Ids are 1 to `MEDIA_ID_MAX` (200) characters.
 
-| Route                       | Request                                                                                                                            | Answers                                                                                                                                    |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `GET /images?owner=`        |                                                                                                                                    | `200 { images: MediaImage[] }`, `created_at DESC, id`; `400 invalid_owner`                                                                 |
-| `POST /images?owner=`       | the bytes; `Content-Type`, `Content-Length`, `X-Image-Width`, `X-Image-Height`, optional `X-Image-Original-Name`, `X-Image-Sha256` | `200 { image, deduped }`; `400`, `403 gallery_full`, `409 upload_conflict`, `413`, `415`                                                   |
-| `GET /images/:id`           |                                                                                                                                    | `200 { image, owner }`; `404`                                                                                                              |
-| `GET /images/:id/bytes`     |                                                                                                                                    | the bytes; `Content-Type`, `Content-Length`, `X-Media-Owner`, `X-Content-Type-Options: nosniff`, `Cache-Control: private, no-store`; `404` |
-| `DELETE /images/:id?owner=` |                                                                                                                                    | `200 { ok: true }`; `403 forbidden`; `400 invalid_owner`                                                                                   |
-| `DELETE /previews/:itemId`  |                                                                                                                                    | `200 { deleted }`                                                                                                                          |
-| `GET /usage?owner=`         |                                                                                                                                    | `200 { usage: { [imageId]: [{ app, document }] } }`                                                                                        |
-| `POST /refs`                | `{ documents: [{ document, images }], complete? }`, ≤ 500 documents, ≤ 1000 images each, body ≤ 2 MiB                              | `200 { ok: true }`; `400 invalid_body`                                                                                                     |
-| `POST /owners/merge`        | `{ from, to }`                                                                                                                     | `200 { moved, kept }`; `400 invalid_body`                                                                                                  |
-| `DELETE /owners/:owner`     |                                                                                                                                    | `200 { deleted }`                                                                                                                          |
+| Route                       | Request                                                                                                                                                                  | Answers                                                                                                                                    |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /images?owner=`        |                                                                                                                                                                          | `200 { images: MediaImage[] }`, `created_at DESC, id`; `400 invalid_owner`                                                                 |
+| `POST /images?owner=`       | the bytes; `Content-Type`, `Content-Length`, `X-Image-Width`, `X-Image-Height`, optional `X-Image-Original-Name`, `X-Image-Sha256`, `X-Media-Document`, `X-Image-Source` | `200 { image, deduped }`; `400`, `403 gallery_full`, `409 upload_conflict`, `413`, `415`                                                   |
+| `GET /images/:id`           |                                                                                                                                                                          | `200 { image, owner }`; `404`                                                                                                              |
+| `GET /images/:id/bytes`     |                                                                                                                                                                          | the bytes; `Content-Type`, `Content-Length`, `X-Media-Owner`, `X-Content-Type-Options: nosniff`, `Cache-Control: private, no-store`; `404` |
+| `DELETE /images/:id?owner=` |                                                                                                                                                                          | `200 { ok: true }`; `403 forbidden`; `400 invalid_owner`                                                                                   |
+| `DELETE /previews/:itemId`  |                                                                                                                                                                          | `200 { deleted }`                                                                                                                          |
+| `GET /usage?owner=`         |                                                                                                                                                                          | `200 { usage: { [imageId]: [{ app, document }] } }`                                                                                        |
+| `POST /refs`                | `{ documents: [{ document, images }], complete? }`, ≤ 500 documents, ≤ 1000 images each, body ≤ 2 MiB                                                                    | `200 { ok: true }`; `400 invalid_body`                                                                                                     |
+| `POST /owners/merge`        | `{ from, to }`                                                                                                                                                           | `200 { moved, kept }`; `400 invalid_body`                                                                                                  |
+| `DELETE /owners/:owner`     |                                                                                                                                                                          | `200 { deleted }`                                                                                                                          |
 
-`MediaImage`: `{ id, contentType, byteSize, width, height, originalName?, createdAt, app }`; never the owner or hash.
+`MediaImage`: `{ id, contentType, byteSize, width, height, originalName?, createdAt, app, source? }`; never the owner or
+hash. `source` is present only for a tool's upload.
 
 ### Previews (`/api/previews`, browsers)
 
@@ -184,11 +188,11 @@ must carry an `ETag` that `etagVersion` reads.
 
 ## Data and persistence
 
-| Table      | Key                                   | Columns                                                                                                                              | Indexes                                                                                                                                 |
-| ---------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `images`   | `id` TEXT PK                          | `owner`, `app`, `content_type`, `byte_size`, `width`, `height`, `sha256`, `original_name` null, `created_at`, `document` null (0002) | `images_owner_sha_idx` UNIQUE `(owner, sha256)`; `images_owner_created_idx (owner, created_at DESC)`; `images_created_idx (created_at)` |
-| `refs`     | `(app, document, image_id)`, no rowid | no foreign key: a document may place a deleted image                                                                                 | `refs_image_idx (image_id)`                                                                                                             |
-| `ref_sync` | `app`, no rowid                       | `completed_at`                                                                                                                       |                                                                                                                                         |
+| Table      | Key                                   | Columns                                                                                                                                                    | Indexes                                                                                                                                 |
+| ---------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `images`   | `id` TEXT PK                          | `owner`, `app`, `content_type`, `byte_size`, `width`, `height`, `sha256`, `original_name` null, `created_at`, `document` null (0002), `source` null (0003) | `images_owner_sha_idx` UNIQUE `(owner, sha256)`; `images_owner_created_idx (owner, created_at DESC)`; `images_created_idx (created_at)` |
+| `refs`     | `(app, document, image_id)`, no rowid | no foreign key: a document may place a deleted image                                                                                                       | `refs_image_idx (image_id)`                                                                                                             |
+| `ref_sync` | `app`, no rowid                       | `completed_at`                                                                                                                                             |                                                                                                                                         |
 
 Written by: `images` upload, delete, merge, owner delete, sweep; `refs` `syncRefs` and a claimed upload; `ref_sync` a complete sync.
 Read by: galleries, dedupe, caps, usage (refs joined to images), the sweep.

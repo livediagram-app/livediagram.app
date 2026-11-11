@@ -248,7 +248,7 @@ Setting or clearing an image is one undoable step. Undo restores the prior `imag
 
 ## Agents
 
-An assistant places the user's own pictures through the MCP and the CLI; it never uploads them.
+An assistant places the user's own pictures through the MCP and the CLI, and adds or removes pictures of its own.
 
 - **Finding a picture.** `list_images` (MCP, [MCP server §4.5b](../015-api/mcp-server.md#45b-list_images)) and
   `image ls` (CLI, [CLI](../015-api/cli.md)) list the caller's gallery (`GET /api/images`): each image's id, name,
@@ -267,9 +267,15 @@ your image gallery: list_images lists the pictures you can place`). That keeps t
 - **Seeing it.** The MCP's preview embeds placed images ([Preview / live
   image](#preview--live-image-server-rendered-svg)), so the assistant's own picture of the page shows the
   screenshot, not a box.
-- **Why no upload.** A chat assistant cannot hand an attachment's bytes to a tool, and a fetch from a URL would bring
-  server-side requests to arbitrary hosts and pictures the user never chose. Pictures reach the gallery through the
-  editor (upload, paste, drop or Image search), where the user chooses them.
+- **Adding a picture.** `upload_image` (MCP, [MCP server §4.5c](../015-api/mcp-server.md#45c-upload_image)) and
+  `image add <file|url>` (CLI) upload one picture the assistant made or found (a render, a chart, a logo from a
+  repository) to the caller's gallery and answer its id, so it can go straight into an element. Base64 bytes (MCP), a
+  file (CLI) or a public https URL the server fetches with SSRF checks; PNG, JPEG, WebP or GIF up to 10 MB, judged by
+  their bytes, never SVG. An MCP upload is marked Made by AI in the Image Gallery; a CLI one is not, as with a file's
+  source.
+- **Removing pictures.** `delete_image` (MCP, [§4.5d](../015-api/mcp-server.md#45d-delete_image)) and `image rm
+<ids…>` (CLI) remove the caller's own pictures. A picture still placed is kept, naming the items that use it, unless
+  forced (`force: true`, `--force`), which leaves those elements showing a broken picture.
 
 ## Out of scope
 

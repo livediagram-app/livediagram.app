@@ -67,6 +67,15 @@ describe('the Image Gallery', () => {
     expect(host.list).toHaveBeenCalledTimes(1);
   });
 
+  it('marks a picture an AI assistant uploaded Made by AI, and no other', async () => {
+    const host = galleryHost([{ ...image(1), madeByAi: true }, image(2)]);
+    page({ kind: 'gallery' }, { gallery: host });
+    await screen.findByText('photo-1.png');
+    const tiles = document.querySelectorAll('[data-gallery-image]');
+    expect(tiles[0]!.querySelector('[data-made-by-ai]')?.textContent).toBe('Made by AI');
+    expect(tiles[1]!.querySelector('[data-made-by-ai]')).toBeNull();
+  });
+
   it("counts another app's items as uses, naming the app", async () => {
     const host = galleryHost([image(1)], {
       usage: vi.fn(async () => ({

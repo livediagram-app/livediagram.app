@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { IMAGE_ACCEPT_ATTR } from '@liveworkspace/api-schema/image-limits';
 import { ConfirmDialog, EmptyState } from '@liveworkspace/ui';
+import { MadeByAiChip } from '../explorer/badges';
 import { TrashIcon } from '../ui/icons';
 import { ImageIcon, UploadIcon } from '../ui/library-icons';
 import { isAbort } from '../data/errors';
@@ -230,7 +231,8 @@ function GalleryCard({
           <TrashIcon />
         </button>
       </div>
-      <div className="mt-1">
+      <div className="mt-1 flex flex-wrap items-center gap-1">
+        {image.madeByAi ? <MadeByAiChip /> : null}
         {usage.length === 0 ? (
           <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
             Not used

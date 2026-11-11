@@ -47,6 +47,20 @@ async function api(request: Request): Promise<Response> {
     return json({ documents: [{ id: 'd1', name: 'Roadmap', savedAt: 1_700_000_000_000 }] });
   }
   if (path === '/teams') return json({ teams: [] });
+  if (path === '/images' && request.method === 'POST') {
+    const image = {
+      id: 'img2',
+      contentType: 'image/png',
+      byteSize: 33,
+      width: 64,
+      height: 48,
+      createdAt: 1,
+    };
+    return json({ image: { ...image, originalName: 'Chart.png' }, deduped: false });
+  }
+  if (path === '/images/usage') {
+    return json({ usage: { img1: [{ id: 'd1', name: 'Roadmap', app: 'livedocuments' }] } });
+  }
   if (path === '/images') {
     return json({
       images: [
@@ -122,6 +136,17 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
   },
   { tool: 'list_trash', output: 'listTrashOutput', args: {} },
   { tool: 'list_images', output: 'listImagesOutput', args: { query: 'shot' } },
+  {
+    tool: 'upload_image',
+    output: 'uploadImageOutput',
+    args: { data: 'iVBORw0KGgoAAAANSUhEUgAAAEAAAAAwCAYAAAA=', name: 'Chart.png' },
+  },
+  { tool: 'delete_image', output: 'deleteImageOutput', args: { imageIds: ['img1', 'gone'] } },
+  {
+    tool: 'delete_image',
+    output: 'deleteImageOutput',
+    args: { imageIds: ['img1'], force: true },
+  },
   { tool: 'restore_document', output: 'restoreDocumentOutput', args: { documentId: 'd2' } },
   { tool: 'archive_document', output: 'archiveDocumentOutput', args: { documentId: 'd1' } },
   {

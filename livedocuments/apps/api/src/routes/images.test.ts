@@ -179,6 +179,19 @@ describe('handleImages', () => {
     expect(fake.status).toBe(415);
   });
 
+  it('keeps the tool an API token names for its upload, and never an editor’s', async () => {
+    const res = await upload(PNG, { token: { id: 'tok-1' } }, { 'X-Image-Source': 'mcp' });
+    const made: { image: { source?: string } } = await res.json();
+    expect(made.image.source).toBe('mcp');
+    const editor = await upload(OTHER_PNG, {}, { 'X-Image-Source': 'mcp' });
+    const edited: { image: { source?: string } } = await editor.json();
+    expect(edited.image.source).toBeUndefined();
+    const listed = (await (await call('GET', '/api/images')).json()) as {
+      images: { source?: string }[];
+    };
+    expect(listed.images.map((i) => i.source ?? null).sort()).toEqual(['mcp', null]);
+  });
+
   describe('the hash-only dedupe shortcut', () => {
     const probe = (opts: Opts) => upload(new Uint8Array([0]), opts, { 'X-Image-Sha256': sha });
     let sha = '';

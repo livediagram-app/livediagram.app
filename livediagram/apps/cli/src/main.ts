@@ -31,7 +31,7 @@ import { CliError, formatError } from './output/cli-error';
 import { EXIT, exitCodeForStatus, type ExitCode } from '@liveworkspace/cli-kit/exit-codes';
 import { failureOf } from './output/failure-of';
 import { render } from './output/print';
-import { inputReader } from '@liveworkspace/cli-kit/input';
+import { bytesReader, inputReader } from '@liveworkspace/cli-kit/input';
 import type { LinkFile } from './link/link-file';
 import { fileReadCopies } from './sync/read-copies';
 import { reportApiFailure, sendCliUsed, setTelemetry, type TelemetrySink } from './telemetry';
@@ -149,6 +149,7 @@ async function runOnline(
     newId: () => crypto.randomUUID(),
     sleep: io.sleep,
     readInput: inputReader(io),
+    readBytes: bytesReader(io),
     copies: fileReadCopies(io, profile.name, log),
   };
   if (verb.id === 'tab.render') {

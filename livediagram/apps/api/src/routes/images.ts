@@ -2,7 +2,13 @@
 // images live in liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md, src/media.ts): this route keeps
 // who may do what, and the service keeps the bytes, the dedupe and the caps.
 
-import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES, ORIGINAL_NAME_MAX } from '@liveworkspace/media';
+import {
+  ACCEPTED_IMAGE_TYPES,
+  IMAGE_SOURCE_HEADER,
+  imageSourceOf,
+  MAX_IMAGE_BYTES,
+  ORIGINAL_NAME_MAX,
+} from '@liveworkspace/media';
 import { reportImagesUploaded } from '@liveworkspace/index-app';
 import {
   galleryUsage,
@@ -97,6 +103,9 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
       height: Number(request.headers.get('X-Image-Height') ?? '0'),
       originalName: originalNameOf(request.headers.get('X-Image-Original-Name')),
       sha256,
+      // An API token's upload names its tool (the MCP's upload_image, the CLI's `image add`) so the gallery can say
+      // Made by AI (liveworkspace/docs/specs/006-media/media.md "Uploaded by a tool"); the editor never sends one.
+      source: ctx.token ? imageSourceOf(request.headers.get(IMAGE_SOURCE_HEADER)) : null,
     });
     if (!uploaded.ok) return serviceAnswer(uploaded);
     const { image, deduped } = uploaded.value;

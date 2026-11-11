@@ -35,6 +35,24 @@ describe("the Library's hosts over an app's API", () => {
                 createdAt: 1,
                 originalName: 'a.png',
               },
+              {
+                id: 'i2',
+                contentType: 'image/png',
+                byteSize: 9,
+                width: 2,
+                height: 3,
+                createdAt: 2,
+                source: 'mcp',
+              },
+              {
+                id: 'i3',
+                contentType: 'image/png',
+                byteSize: 9,
+                width: 2,
+                height: 3,
+                createdAt: 3,
+                source: 'cli',
+              },
             ],
           }),
     );
@@ -50,6 +68,9 @@ describe("the Library's hosts over an app's API", () => {
         height: 3,
         createdAt: 1,
       },
+      // The MCP's upload is Made by AI; the CLI's is not, as with a document's source.
+      expect.objectContaining({ id: 'i2', madeByAi: true }),
+      expect.not.objectContaining({ madeByAi: true }),
     ]);
     const usage = await gallery.usage!();
     expect(usage.i1![0]).toMatchObject({ id: 'd1', title: 'Roadmap' });
