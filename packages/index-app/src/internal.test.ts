@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { handleInternalItems, type InternalItemHandlers } from './internal';
+import { TITLE_MAX } from '@liveworkspace/index-client';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -158,6 +159,22 @@ describe('handleInternalItems', () => {
       },
     );
     expect(seen).toEqual({ by: 'user_b', code: null, ip: null });
+    // The index's title for the copy reaches the app trimmed and at most TITLE_MAX; anything else is none.
+    const titled = async (body: Record<string, unknown>) => {
+      let named: string | null | undefined;
+      await send('POST', '/api/internal/items/A/copy-to/B', body, {
+        copy: async (_f, _t, _tab, _copier, title) => {
+          named = title;
+          return { tabs: 1, items: 0 };
+        },
+      });
+      return named;
+    };
+    expect(await titled({ title: '  Roadmap (copy) ' })).toBe('Roadmap (copy)');
+    expect(await titled({ title: 'x'.repeat(TITLE_MAX + 9) })).toBe('x'.repeat(TITLE_MAX));
+    expect(await titled({})).toBeNull();
+    expect(await titled({ title: '   ' })).toBeNull();
+    expect(await titled({ title: 7 })).toBeNull();
     expect(
       (await send('POST', '/api/internal/items/A/copy-to/B', {}, { copy: async () => 'not_found' }))
         .status,

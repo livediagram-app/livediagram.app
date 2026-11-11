@@ -10,9 +10,10 @@
 //                                                            in the item's room (liveworkspace/docs/specs/011-workbench/workbench.md)
 //   POST   /api/internal/items/:id/connected-tabs {name, connection}  the index's reverse write of a connected tab
 //                                                            (connected-tabs.ts): one tab at the end, `{ tabId }`
-//   POST   /api/internal/items/:from/copy-to/:to  {tabId?, by?, code?, ip?}  copy an item's content (or one tab)
-//                                                            into a new item, for `by` (who copies) through link `code`
-//                                                            (if any), from address `ip` (if known)
+//   POST   /api/internal/items/:from/copy-to/:to  {tabId?, by?, code?, ip?, title?}  copy an item's content (or one
+//                                                            tab) into a new item, for `by` (who copies) through link
+//                                                            `code` (if any), from address `ip` (if known), named
+//                                                            `title` (the new item's, at the index)
 //   POST   /api/internal/people/:id/purge     {items}        a closed account: drop what the app keeps for the
 //                                                            person, and anonymise them in up to 100 items
 //   POST   /api/internal/people/:guest/merge  {into, legacy?}  a guest became an account: move what the app keeps
@@ -50,6 +51,7 @@ import {
   COMMUNITY_STATES_MAX,
   isItemCommunityState,
   parseItemNotice,
+  TITLE_MAX,
   type CommunityStateAnswer,
   type CommunityStateAsk,
   type IndexAppClient,
@@ -311,9 +313,13 @@ export async function handleInternalItems(
       code: validId(body['code']) ? body['code'] : null,
       ip: typeof body['ip'] === 'string' && IP_TEXT.test(body['ip']) ? body['ip'] : null,
     };
+    // The copy's name as the index titled it. Absent (an older index), blank or not text: the app starts the copy
+    // as it always has.
+    const title =
+      typeof body['title'] === 'string' ? body['title'].trim().slice(0, TITLE_MAX) || null : null;
     let outcome: CopyOutcome;
     try {
-      outcome = await handlers.copy(id, to, validId(tabId) ? tabId : null, copier);
+      outcome = await handlers.copy(id, to, validId(tabId) ? tabId : null, copier, title);
     } catch (err) {
       console.error('[internal] copy-to failed', err);
       outcome = 'conflict';

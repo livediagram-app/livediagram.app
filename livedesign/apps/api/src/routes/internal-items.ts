@@ -29,6 +29,7 @@ import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDesignFileFor } from './internal-file';
 import { indexAppClient } from '../index-service';
+import { capStoredName } from '../names';
 import type { Env } from '../types';
 
 export function handleInternalItems(
@@ -86,7 +87,7 @@ export function handleInternalItems(
       // connected tab at the end of the design's tab bar.
       connectedTab: (id, write) => designRoom(env, id).addConnectedTab(write),
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
-      copy: async (from, to, tabId, copier) => {
+      copy: async (from, to, tabId, copier, title) => {
         // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them;
         // through the design's Community post's link, without its comments or the people on its actions.
         const source = await designRoom(env, from).exportCopy(tabId, copier);
@@ -95,7 +96,10 @@ export function handleInternalItems(
         const { copy } = source;
         // The target is a new design: a copy into one that already holds this content fails its keys, and nothing
         // is written (importCopy is one transaction); the kit answers that as a conflict.
-        await designRoom(env, to).importCopy(copy);
+        // Named as the index titled the copy (an older index sends none), so its first open starts it with the
+        // name the Explorer lists, never as Untitled.
+        const name = title ? capStoredName(title, null, 'design') : '';
+        await designRoom(env, to).importCopy(name ? { ...copy, name } : copy);
         // A copy through a Community post's link counts toward the post (docs/specs/025-community/community.md
         // "Likes, reports and moderation"), once per copier and at most a few from one network: the copier's address
         // as the index saw it (an Explorer's copy). The api's own copy door counted it first

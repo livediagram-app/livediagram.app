@@ -165,7 +165,8 @@ export async function initPlan(env: PlanEnv, planId: string, d: PlanStart): Prom
        item_types = CASE WHEN plan.created_at = 0 THEN COALESCE(plan.item_types, excluded.item_types)
                          ELSE plan.item_types END,
        saved_at = excluded.saved_at,
-       name = excluded.name,
+       -- A copy lands unstarted with the index's title for it (its import): starting it keeps that name.
+       name = CASE WHEN plan.created_at = 0 AND plan.name <> '' THEN plan.name ELSE excluded.name END,
        created_at = CASE WHEN plan.created_at = 0 THEN excluded.created_at ELSE plan.created_at END,
        owner_id = CASE WHEN plan.created_at = 0 THEN excluded.owner_id ELSE plan.owner_id END,
        team_id = CASE WHEN plan.created_at = 0 THEN excluded.team_id ELSE plan.team_id END,

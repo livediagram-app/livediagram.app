@@ -33,6 +33,7 @@ import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
 import { indexAppClient } from '../index-service';
+import { capStoredName } from '../names';
 import type { Env } from '../types';
 
 export function handleInternalItems(
@@ -69,7 +70,7 @@ export function handleInternalItems(
               documentRoom(env, id).joined(notice.personId),
               reportServerEvent(env, 'Document', 'Joined', JOINED_TELEMETRY_TYPE[notice.level]),
             ]),
-      copy: async (from, to, tabId, copier) => {
+      copy: async (from, to, tabId, copier, title) => {
         // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves
         // them; through the canvas's Community post's link, without its comments or the people on its actions.
         const source = await documentRoom(env, from).exportCopy(tabId, copier);
@@ -78,7 +79,10 @@ export function handleInternalItems(
         // The target is a new canvas: importCopy is one transaction, so a copy into one that already holds this
         // content fails its keys and writes nothing (the kit answers 409). The copy carries a grant for each image
         // its source could serve, so it serves them too (docs/specs/009-elements/images.md "Placement grants").
-        await documentRoom(env, to).importCopy(source.copy);
+        // Named as the index titled the copy (an older index sends none), so its first open starts it with the
+        // name the Explorer lists, never as Untitled.
+        const name = title ? capStoredName(title, null, 'document') : '';
+        await documentRoom(env, to).importCopy(name ? { ...source.copy, name } : source.copy);
         // A copy through a Community post's link counts toward the post (docs/specs/025-community/community.md
         // "Likes"), once per copier and at most a few from one network: the copier's address as the index saw it
         // (an Explorer's copy). The api's own copy door counted it first (routes/document-index-routes.ts), so this
