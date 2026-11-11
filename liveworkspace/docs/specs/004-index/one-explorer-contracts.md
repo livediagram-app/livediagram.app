@@ -109,7 +109,10 @@ be a guest) from an ordinary one, which keeps its `{into}` shape. The index keep
 `person_app_merges` row until the app confirms. An app's door that takes only an account refuses a guest `into`
 until it is taught the legacy form; the index retries it like any other refusal, for up to a week.
 
-A guest's things stay until the guest deletes them, or becomes an account; nothing expires on its own.
+A guest's things stay until the guest deletes them, becomes an account, or goes 400 days unseen. By then its token
+and cookie have lapsed, so no app can be handed the id again, and accounts asks for its purge
+([accounts.md](../003-accounts/accounts.md#guests-who-never-come-back) "Guests who never come back"): every item it
+owns goes, as a closed account's do ([Closing an account](#closing-an-account)).
 
 ## Items
 

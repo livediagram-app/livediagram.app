@@ -1157,8 +1157,8 @@ export const FORM_QUESTIONS_ADDED = chart(
   'Form',
   'Added',
   'Form Questions Added',
-  'A question added to a form, by its type.',
-  { types: Object.values(QUESTION_TYPE_TELEMETRY) },
+  "A question added to a form, by its type, or all at once from a card type's fields.",
+  { types: [...Object.values(QUESTION_TYPE_TELEMETRY), 'FromCardType'] },
 );
 
 export const FORMS_CONNECTED = chart(

@@ -7,6 +7,9 @@ import { AXIS_ID_PATTERN, SHEET_ID_PATTERN } from '@liveplanner/sheets';
 import {
   FORM_DESCRIPTION_MAX,
   FORM_HEADING_MAX,
+  FIXED_DAYS_MAX,
+  FIXED_FIELDS_MAX,
+  FIXED_TEXT_MAX,
   FORM_RESPONSE_LIMIT_MAX,
   HELP_MAX,
   MESSAGE_MAX,
@@ -22,8 +25,10 @@ import {
   SECTIONS_MAX,
   SECTION_TITLE_MAX,
   SHEET_COLUMNS_MAX,
+  SHEET_FIXED_MAX,
   UNTITLED_FORM,
 } from './limits';
+import { isBuiltInFixedId } from './fixed';
 import {
   FORM_VERSION,
   STARTER_IDS,
@@ -34,7 +39,10 @@ import {
   type FormDestination,
   type FormQuestion,
   type FormSection,
+  type FixedValue,
+  type SheetFixedColumn,
   type StarterId,
+  type SubmittedDay,
 } from './model';
 
 const FORM_ID_PATTERN = /^[a-z0-9-]{1,24}$/;
@@ -158,13 +166,80 @@ function readQuestion(v: unknown): FormQuestion | null {
 // The cover: a colour background (@liveworkspace/page-background), nothing kept when it is not one.
 const readCover = (v: unknown): FormCover | undefined => parseColourBackground(v);
 
+// A time zone as Intl names one ("Europe/London", "UTC", "Etc/GMT+5"); an unknown one reads as UTC when used.
+const ZONE = /^[A-Za-z0-9_+\-/]{1,64}$/;
+
+// The submitted day (forms.md "Filled in automatically"): `days` a whole 0..FIXED_DAYS_MAX (absent reads as 0).
+function readSubmitted(v: unknown): SubmittedDay | undefined {
+  if (!isObj(v)) return undefined;
+  const days = v['days'] ?? 0;
+  if (!Number.isInteger(days) || (days as number) < 0 || (days as number) > FIXED_DAYS_MAX)
+    return undefined;
+  const out: SubmittedDay = { days: days as number };
+  if (typeof v['tz'] === 'string' && ZONE.test(v['tz'])) out.tz = v['tz'];
+  return out;
+}
+
+// A set value: the submitted day, or a text, a number or some texts (labels, picks), trimmed and capped.
+function readFixedValue(v: unknown, list: boolean): FixedValue | undefined {
+  if (!isObj(v)) return undefined;
+  if ('submitted' in v) {
+    const submitted = readSubmitted(v['submitted']);
+    return submitted ? { submitted } : undefined;
+  }
+  const value = v['value'];
+  if (finite(value)) return { value };
+  const t = text(value, FIXED_TEXT_MAX);
+  if (t) return { value: t };
+  if (list && Array.isArray(value)) {
+    const picks = readOptions(value);
+    return picks.length ? { value: picks } : undefined;
+  }
+  return undefined;
+}
+
+// A board destination's set fields, by field id (a custom field's, or Priority, Labels, Start or Due); at most
+// FIXED_FIELDS_MAX, absent when none is left.
+function readFixed(v: unknown): Record<string, FixedValue> | undefined {
+  if (!isObj(v)) return undefined;
+  const out: Record<string, FixedValue> = {};
+  let n = 0;
+  for (const [id, raw] of Object.entries(v)) {
+    if (n >= FIXED_FIELDS_MAX) break;
+    if (!isBuiltInFixedId(id) && !CUSTOM_FIELD_ID_PATTERN.test(id)) continue;
+    const value = readFixedValue(raw, true);
+    if (!value) continue;
+    out[id] = value;
+    n += 1;
+  }
+  return n ? out : undefined;
+}
+
+// A sheet destination's extra columns: each a distinct id, a header and a text, a number or the submitted day.
+function readSheetFixed(v: unknown): SheetFixedColumn[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out: SheetFixedColumn[] = [];
+  const ids = new Set<string>();
+  for (const c of v) {
+    if (out.length === SHEET_FIXED_MAX) break;
+    if (!isObj(c) || typeof c['id'] !== 'string' || !FORM_ID_PATTERN.test(c['id'])) continue;
+    const header = text(c['header'], PROMPT_MAX);
+    const value = readFixedValue(c, false);
+    if (!header || !value || ids.has(c['id'])) continue;
+    ids.add(c['id']);
+    out.push({ id: c['id'], header, ...value } as SheetFixedColumn);
+  }
+  return out.length ? out : undefined;
+}
+
 function readDestination(v: unknown): FormDestination | undefined {
   if (!isObj(v)) return undefined;
   const { tabId, typeId, status } = v;
   if (typeof tabId !== 'string' || !TAB_ID.test(tabId)) return undefined;
   if (typeof typeId !== 'string' || !ITEM_TYPE_PATTERN.test(typeId)) return undefined;
   if (typeof status !== 'string' || !STATUS_ID.test(status)) return undefined;
-  return { tabId, typeId, status };
+  const fixed = readFixed(v['fixed']);
+  return fixed ? { tabId, typeId, status, fixed } : { tabId, typeId, status };
 }
 
 export function readForm(raw: unknown): FormDefinition | null {
@@ -231,6 +306,8 @@ export function readForm(raw: unknown): FormDefinition | null {
     form.sheet = { tabId: sheet['tabId'], sheetId: sheet['sheetId'] };
     const columns = readSheetColumns(sheet['columns']);
     if (columns) form.sheet.columns = columns;
+    const fixed = readSheetFixed(sheet['fixed']);
+    if (fixed) form.sheet.fixed = fixed;
   }
   if (finite(raw['closesAt']) && raw['closesAt'] > 0) form.closesAt = raw['closesAt'];
   const limit = raw['limit'];

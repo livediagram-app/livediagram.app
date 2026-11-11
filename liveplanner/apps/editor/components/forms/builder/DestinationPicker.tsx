@@ -3,20 +3,28 @@
 // Responses Go To (docs/specs/030-forms/forms.md "Responses Go To and Settings"): the Board tab, the card type and the
 // status every response is made in (New Board and New Card Type the last choice of each), and a sentence reading the
 // choice back; a pencil beside Card Type opens that type's editor. A choice that no longer holds (its board, column or
-// type gone) says so, and the form takes no responses until it is fixed.
+// type gone) says so, and the form takes no responses until it is fixed. Column offers only the columns the card type
+// uses ("Columns follow the card type"); Add Questions for {Type}'s Fields and Set Automatically sit with it.
 import type { Tab } from '@liveplanner/project';
 import {
   DESTINATION_PROBLEM_TEXT,
+  columnForType,
   destinationProblem,
+  destinationWarning,
+  destinationWarningText,
+  typeColumns,
+  typeQuestionsToAdd,
   type FormDestination,
 } from '@liveplanner/forms';
-import { boardAddTypes } from '@liveplanner/items';
-import { PencilIcon, Select, Tooltip } from '@liveplanner/ui';
+import { boardAddTypes, typeFieldLabel } from '@liveplanner/items';
+import { PencilIcon, PlusIcon, Select, Tooltip } from '@liveplanner/ui';
 import { usePlan } from '@/components/plan/PlanContext';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
 import { boardsOf, sheetsOf } from '@liveplanner/templates';
 import { patchForm } from '@liveplanner/forms';
 import { useFormBuilder } from './form-builder-context';
+import { ExtraColumns } from './ExtraColumns';
+import { SetAutomatically } from './SetAutomatically';
 
 // The value of each select's last choice, New Board or New Card Type.
 const NEW = '__new';
@@ -121,6 +129,7 @@ function SheetDestination({ tabs }: { tabs: readonly Tab[] }) {
           {DESTINATION_PROBLEM_TEXT.sheet_missing}
         </p>
       )}
+      {current ? <ExtraColumns /> : null}
     </div>
   );
 }
@@ -142,6 +151,17 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
   const set = (next: FormDestination) =>
     b.actions.changeForm((f) => patchForm(f, { destination: next }));
   const column = board?.columns.find((c) => c.status === dest?.status);
+  // Only the columns the card type uses (forms.md "Columns follow the card type").
+  const columns = board ? typeColumns(board.columns, b.type) : [];
+  const warning = problem
+    ? null
+    : destinationWarning(dest, destTab ? boardsOf(destTab).map((x) => x.setup) : [], b.type);
+  // The fields no question asks yet, offered as questions (forms.md "Questions from the card type's fields").
+  const type = b.type;
+  const toAsk = type && !problem ? typeQuestionsToAdd(b.form, type) : [];
+  const askNames = toAsk.map((f) =>
+    f.kind === 'field' ? f.field.label : typeFieldLabel(type, f.kind),
+  );
   return (
     <div className="flex flex-col gap-3">
       <SettingsField label="Board">
@@ -159,7 +179,12 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
               dest && boardAddTypes(setup, b.types).some((t) => t.id === dest.typeId)
                 ? dest.typeId
                 : (boardAddTypes(setup, b.types)[0]?.id ?? dest?.typeId ?? '');
-            set({ tabId: tab.id, typeId, status: setup.columns[0]!.status });
+            // The board's first column the type uses; set values stay while the type does.
+            const picked = b.types.find((t) => t.id === typeId);
+            const status =
+              columnForType(setup.columns, picked, undefined) ?? setup.columns[0]!.status;
+            const fixed = dest?.typeId === typeId ? dest.fixed : undefined;
+            set({ tabId: tab.id, typeId, status, ...(fixed ? { fixed } : {}) });
           }}
         >
           <option value="" disabled>
@@ -213,12 +238,27 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
           ) : null}
         </div>
       </SettingsField>
+      {b.canEdit && type && toAsk.length ? (
+        <Tooltip label={askNames.join(', ')}>
+          <button
+            type="button"
+            onClick={() => b.actions.addTypeQuestions()}
+            className="-mt-1 flex h-9 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 text-[13px] font-medium text-slate-600 transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-600 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10 dark:hover:text-brand-200"
+          >
+            <PlusIcon size={13} />
+            <span className="truncate">Add Questions for {type.label}’s Fields</span>
+            <span className="shrink-0 rounded-full bg-slate-100 px-1.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              {toAsk.length}
+            </span>
+          </button>
+        </Tooltip>
+      ) : null}
       <div>
         <p className="mb-1.5 px-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
           Column
         </p>
         <div role="radiogroup" aria-label="Column" className="flex flex-wrap gap-1.5">
-          {(board?.columns ?? []).map((c) => {
+          {columns.map((c) => {
             const on = c.status === dest?.status;
             return (
               <button
@@ -249,6 +289,10 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
             <span className="text-[12px] text-slate-500 dark:text-slate-400">
               Choose a board first.
             </span>
+          ) : columns.length === 0 && type ? (
+            <span className="text-[12px] text-slate-500 dark:text-slate-400">
+              None of these columns is a {type.label} state.
+            </span>
           ) : null}
         </div>
       </div>
@@ -259,12 +303,20 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
         >
           {DESTINATION_PROBLEM_TEXT[problem]}
         </p>
+      ) : warning && type ? (
+        <p
+          role="status"
+          className="rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-100"
+        >
+          {destinationWarningText(warning, type.label, destTab?.name ?? 'the board')}
+        </p>
       ) : (
         <p className="rounded-lg bg-slate-50 px-3 py-2 text-[13px] leading-relaxed text-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
           Each response becomes a <strong>{b.type?.label}</strong> card in{' '}
           <strong>{column?.name}</strong> on <strong>{destTab?.name}</strong>.
         </p>
       )}
+      {!problem ? <SetAutomatically /> : null}
     </div>
   );
 }

@@ -13,6 +13,7 @@ import {
 import {
   FORM_VERSION,
   buildStarter,
+  columnForType,
   formStarter,
   newFormPartId,
   starterBaseType,
@@ -26,6 +27,7 @@ import {
   newItemTypeId,
   planBoardHeightFor,
   planBoardWidthFor,
+  settleDoneColumns,
   statusColumn,
   type ItemTypeDef,
   type PlanBoardSetup,
@@ -107,16 +109,52 @@ function newStatusOf(
   return `${name.toLowerCase().replace(/\s+/g, '-')}~${suffix}`;
 }
 
-// A new Board tab for a form's responses: "<Form> Responses", New, In Progress and Done, in the Form tab's theme.
+// The card type a new responses board is made for (docs/specs/030-forms/forms.md "Columns follow the card type"): its
+// id, the statuses it uses in its order, and the project's columns of those statuses (their colours).
+export type ResponsesBoardType = {
+  typeId: string;
+  statuses?: readonly string[] | undefined;
+  columns?: readonly Pick<PlanColumn, 'status' | 'color' | 'done'>[];
+};
+
+// A responses board for a type with its own statuses: a column per status, in the type's order, named as the project
+// names it (and coloured as its first column of that status), taking that type alone. Null for a type without them.
+export function typeResponsesBoardSetup(
+  forType: ResponsesBoardType,
+  title: string,
+  statusNames: Iterable<readonly [string, string]>,
+  random: () => number = Math.random,
+): PlanBoardSetup | null {
+  if (!forType.statuses?.length) return null;
+  const names = new Map(statusNames);
+  const kanban = freshBoardSetup('kanban', random, names);
+  const columns = forType.statuses.map((status) => {
+    const known = forType.columns?.find((c) => c.status === status);
+    return statusColumn(status, names.get(status) ?? status, {
+      ...(known?.color ? { color: known.color } : {}),
+      ...(known?.done !== undefined ? { done: known.done } : {}),
+    });
+  });
+  const { doneColumnId: _done, ...rest } = kanban;
+  // Done columns flagged as the project's are, else by their names, as every board written now is.
+  return settleDoneColumns(undefined, { ...rest, title, columns, addTypes: [forType.typeId] });
+}
+
+// A new Board tab for a form's responses: "<Form> Responses", New, In Progress and Done (or, `forType` given with its
+// own statuses, those), in the Form tab's theme.
 export function responsesBoardTab(
   heading: string,
   formTab: Pick<Tab, 'theme'>,
   statusNames: Iterable<readonly [string, string]>,
   starter: FormStarter = formStarter('blank'),
   random: () => number = Math.random,
+  forType?: ResponsesBoardType,
 ): Tab {
   const title = `${heading} Responses`.slice(0, 80);
-  const setup = responsesBoardSetup(starter, title, statusNames, random);
+  const names = [...statusNames];
+  const setup =
+    (forType && typeResponsesBoardSetup(forType, title, names, random)) ??
+    responsesBoardSetup(starter, title, names, random);
   const element = {
     ...createShape('plan-board', 0, 0),
     planBoard: setup,
@@ -212,7 +250,9 @@ export function planFormStart(input: {
   let status: string;
   if (target) {
     tabId = target.tab.id;
-    status = target.setup.columns[0]!.status;
+    // The board's first column the type uses (forms.md "Columns follow the card type").
+    status =
+      columnForType(target.setup.columns, type, undefined) ?? target.setup.columns[0]!.status;
   } else {
     newBoardTab = responsesBoardTab(form.heading, formTab, input.statusNames, starter, random);
     tabId = newBoardTab.id;

@@ -86,15 +86,24 @@ export function effectiveTarget(q: FormQuestion, type: ItemTypeDef | undefined):
   return { ...t, field };
 }
 
-// The fields of `type` a question could map to, each with the question already using it (if another does).
+// The fields of `type` a question could map to, each with the question already using it (if another does). A field
+// the destination sets automatically is left out: one source per field (forms.md "Filled in automatically").
 export function fieldChoices(
-  form: Pick<FormDefinition, 'sections'>,
+  form: Pick<FormDefinition, 'sections'> & {
+    destination?: { fixed?: object | undefined } | undefined;
+  },
   q: FormQuestion,
   type: ItemTypeDef | undefined,
 ): { field: CustomFieldDef; takenBy?: FormQuestion }[] {
   const others = questionsOf(form).filter((o) => o.id !== q.id);
+  const fixed = form.destination?.fixed ?? {};
   return (type?.custom ?? [])
-    .filter((f) => type!.fields.includes(f.id) && fieldTakes(q, f))
+    .filter(
+      (f) =>
+        type!.fields.includes(f.id) &&
+        fieldTakes(q, f) &&
+        !Object.prototype.hasOwnProperty.call(fixed, f.id),
+    )
     .map((field) => {
       const takenBy = others.find((o) => o.goesTo?.to === 'field' && o.goesTo.fieldId === field.id);
       return takenBy ? { field, takenBy } : { field };

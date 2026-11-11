@@ -270,6 +270,58 @@ type_not_on_board`, Archive boards not counted; `DESTINATION_PROBLEM_TEXT` its s
 `goesTo`, the destination and the starter, and fills the default confirmation. `closedReason(form, { open,
 responses, now })`: `switched_off | no_destination | closes_at | limit`.
 
+## 8a. Columns, questions and set values from the card type
+
+- **Columns** (`destination.ts`): `typeUsesStatus(type, status)` (`type.statuses` holds it; a legacy type: not in
+  `excludedStatuses`), `typeColumns(columns, type)` (the board's columns the type uses, every column with no type),
+  `columnForType(columns, type, status)` (`status` while the type uses it, else the first column it uses, else
+  `status`). `destinationWarning(destination, boards, type)` (judged only once `destinationProblem` finds nothing):
+  `status_not_in_type` (the saved status is one the type leaves out) or `no_type_column` (no column of the board is
+  one), with `destinationWarningText(warning, typeLabel, boardName)`. Never read by the api or `destinationProblem`:
+  `FormPage` passes it to `FormProblems` (`warnings`) and the status bar's count, not to `problemCount` (the
+  Accepting Responses gate) or Publish Form. `DestinationPicker`'s chips are `typeColumns`; choosing a board takes
+  `columnForType`; `setDestinationType` moves the status with `columnForType` in the same step.
+  `responsesBoardTab(heading, formTab, statusNames, starter?, random?, forType?)` (`@liveplanner/templates`):
+  `forType: { typeId, statuses, columns? }` with statuses builds one column per status in order (`statusColumn`,
+  named from `statusNames`, the colour of `columns`' column of that status) and `addTypes: [typeId]`; no statuses, the
+  starter's board as before. `newResponsesBoard` and the agents' new responses board (`form-draft.ts`) pass it.
+- **Questions** (`type-questions.ts`): `TYPE_QUESTION_KINDS` (custom kind → question type, the spec's table),
+  `typeQuestionFields(type)` (title, description, then each custom field in `type.fields` order whose kind is in the
+  table), `typeQuestionsToAdd(form, type)` (those no question asks: Title while none goes to Title, Description while
+  no answer resolves there, a field no `effectiveTarget` reaches and `destination.fixed` does not set),
+  `questionFromField(field, type, id)` (prompt `typeFieldLabel`/the field's label capped at `PROMPT_MAX`, `required`
+  from the field, options through `readOptions`, a Rating's `ratingScaleOf` clamped to the question's range,
+  `withTime` for a timed range, `goesTo`), and `withTypeQuestions(form, type, newId)` (appended to the last section,
+  capped at `QUESTIONS_MAX`; the same form when none). `setDestinationType` commits the type, then, on a form with no
+  questions, the questions as a second commit (their own undo step); `DestinationPicker`'s **Add Questions for
+  {Type}'s Fields** is `addTypeQuestions()` (one commit).
+- **Set values** (`fixed.ts`): `FormDestination.fixed?: Record<fieldId, FixedValue>`, `FixedValue = { value: string
+| number | string[] } | { submitted: { days: number; tz?: string } }`; `FormSheetDestination.fixed?:
+SheetFixedColumn[]` (`{ id, header, value? | submitted? }`, `id` `newFormPartId('x')`, `x-` and 6 base-36 characters). `readFixed` and
+  `readSheetFixed` (`read.ts`): field ids by `CUSTOM_FIELD_ID_PATTERN` or the built-ins `priority`, `labels`,
+  `start`, `due`; a value a string up to `FIXED_TEXT_MAX` (500), a finite number, or up to `ITEM_LABELS_MAX`
+  strings; `days` a whole number 0..`FIXED_DAYS_MAX` (365); `tz` up to 64 characters of `[A-Za-z0-9_+-/]`; at most
+  `FIXED_FIELDS_MAX` (20) fields and `SHEET_FIXED_MAX` (10) columns, the rest dropped. `fixedFieldsOf(type)` (what
+  may be set: built-in Priority, Labels, Start, Due in `type.fields`; custom Choice, Multiple Choice, Labels, Text,
+  Long Text, Number, Currency, Date), `fixedValueOf(value, field, at)` (the card's value, or undefined when broken:
+  an option the field lacks, a kind that takes no such value), `submittedDay(at, tz?, days?)` (the day in `tz` by
+  `Intl.DateTimeFormat`, UTC when absent or unknown, plus `days`, `YYYY-MM-DD`), `fixedCardFields(fixed, type,
+at)` (every value that resolves) and `brokenFixed(fixed, type)` (field ids that do not). `responseCard(..., at =
+Date.now())` writes `fixedCardFields` after the answers; `publishProblems` adds `broken_fixed` (`{ fieldId }`) per
+  `brokenFixed` and counts a set field as asked for `required_unasked`; `fieldChoices` leaves out a set field.
+  `sheetHeaders(form)` appends each `sheet.fixed` column's header (made distinct) after the questions, keyed by its
+  id; `responseRowWrite` fills it (`{ s }` text or date, `{ n }` number). `setDestinationType` keeps only
+  `fixedKeptFor(fixed, newType)`; choosing a board (`DestinationPicker`, the agents' `setRespondsTo`) keeps `fixed`
+  while the type stays; `newResponsesBoard` keeps it. Edits: `withFixed(form, fieldId, value | null)`,
+  `withSheetFixed(form, columns)`. Live: `components/forms/builder/SetAutomatically.tsx` (a value editor per
+  `FixedKind`: a `Select` for Choice and Priority, toggle chips for Multiple Choice keeping one, `DraftText` for
+  Labels, Text and Number, held as a pending row until a value is typed; Submitted Date + days), `ExtraColumns.tsx`
+  (header, Submitted Date / Text / Number, the value; Add Column makes "Extra Column" with the submitted day) and
+  `fixed-value-parts.tsx` (`Shell`, the workbench `AccordionSection`, closed unless a set value is broken; `Row`;
+  `SubmittedDays`; `readDays`, `readLabels`, `readNumber`, the zone from `Intl.DateTimeFormat().resolvedOptions()`).
+  An older editor's `readForm` drops `fixed` on its next edit; the stored shape only adds, and the api reads it from
+  the stored form on each response (`responseCard`'s default `at`), so `forms/respond.ts` is unchanged.
+
 ## 9. Project
 
 - `formLook(tab) → FormLook` (`packages/project/src/form-look.ts`, beside the themes: `@liveplanner/forms`
@@ -442,6 +494,12 @@ editor modules: `forms-public.ts`, the shared controls and `@liveplanner/ui`.
 | Not Taking Responses: each reason, its order, Editor only, what it opens                                                         | `apps/editor/components/forms/form-not-taking.test.ts`, `apps/editor/components/forms/FormStatusBar.test.tsx`                                                                                           |
 | Share Form on a project in This Browser syncs, then publishes                                                                    | `apps/editor/components/forms/ShareFormDialog.test.tsx`, `apps/editor/components/dialogs/ShareOfflineGate.test.tsx`                                                                                     |
 | Sections shown by earlier answers, broken rules, the check dropping hidden answers, reading rules                                | `packages/forms/src/branching.test.ts`                                                                                                                                                                  |
+| Columns a card type uses, the warning and its words                                                                              | `packages/forms/src/destination.test.ts`, `apps/editor/components/forms/form-destination.test.ts`, `FormProblems.test.tsx`                                                                              |
+| Questions from a card type's fields: kinds, skipped kinds, required, only unasked, the cap                                       | `packages/forms/src/type-questions.test.ts`                                                                                                                                                             |
+| Set values: fields offered, each kind, broken, the submitted day in a zone and plus days, read, edits                            | `packages/forms/src/fixed.test.ts`                                                                                                                                                                      |
+| Set values on the card (after the answers, the api's clock), publish problems, mapping excluded, extra sheet columns             | `card.test.ts`, `publish-check.test.ts`, `mapping.test.ts`, `sheet-row.test.ts`                                                                                                                         |
+| Responses Go To: filtered chips, the warning, Add Questions, Set Automatically, Extra Columns                                    | `apps/editor/components/forms/builder/DestinationPicker.test.tsx`                                                                                                                                       |
+| Picking a type: column moved, questions as a second step, set values kept; + New Board from the type's statuses                  | `apps/editor/hooks/forms/useFormActions.types.test.ts`, `packages/templates/src/form-start.test.ts`, `packages/agent-verbs/src/forms/form-draft.test.ts`                                                |
 | Destination problems; public projection; closed reasons                                                                          | `destination.test.ts`, `public.test.ts`                                                                                                                                                                 |
 | The two field kinds: catalogue, card text, CSV, agents                                                                           | `packages/items/src/form-field-kinds.test.ts`                                                                                                                                                           |
 | Form tab kind always Plan                                                                                                        | `packages/project/src/dashboard.test.ts`                                                                                                                                                                |

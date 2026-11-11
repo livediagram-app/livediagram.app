@@ -186,8 +186,11 @@ becomes `deleted`; a hold it has (`claimingBy`) goes, `claimingUntil` with it.
 
 `noteGuestSeen` upserts `seen_at` at most once a day per guest (the hand-off, the workspace token, and an app reading
 or writing a guest's settings or profile). The daily `idle guests` step reads up to 500 ids unseen for 400 days,
-oldest first, then one batch deletes their `settings`, `profile` and `guest_seen` rows, rechecking the cutoff in each
-delete. Their items stay in the index.
+oldest first, then one batch writes a `pending_purges` row for each (`teamIds` `[]`, an existing row left as it is)
+and deletes their `settings`, `profile` and `guest_seen` rows, rechecking the cutoff in each statement. The
+15-minute `index purges` step sends those rows to the index (`retryPendingPurges`: a guest has no `user` row, so it
+is never dropped as unfinished), which deletes every item the guest owns. At 25 a run that step sends 2,400 a day,
+well above the sweep's 500.
 
 ## Data and persistence
 
@@ -228,7 +231,7 @@ delete. Their items stay in the index.
 | `liveworkspace/apps/accounts/src/workspace-token.test.ts` (4) | the workspace token for an account, a guest, cross-site, the limit                                                                   |
 | `liveworkspace/apps/accounts/src/end-session.test.ts` (17)    | ending a session from an app, the browser's hop, liveworkspace.app and Security: every app's tokens gone, tickets, redirects refused |
 | `liveworkspace/apps/accounts/src/legacy-guests.test.ts` (14)  | claiming a returning guest of the old livediagram.app                                                                                |
-| `liveworkspace/apps/accounts/src/guest-sweep.test.ts` (4)     | noting a guest seen; sweeping guests who can never come back                                                                         |
+| `liveworkspace/apps/accounts/src/guest-sweep.test.ts` (6)     | noting a guest seen; sweeping guests who can never come back, and queueing their items' purge                                        |
 | `liveworkspace/apps/accounts/src/account-api.test.ts` (43)    | the people door and bearers among the rest, sessions, tokens                                                                         |
 | `liveworkspace/apps/accounts/src/link-google.test.ts` (10)    | connecting Google from an app: the hop, the state cookie alone, Better Auth's callback, tickets, return addresses                    |
 

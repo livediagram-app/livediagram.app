@@ -472,6 +472,26 @@ describe('responses (docs/specs/030-forms/forms.md "What a response makes")', ()
     expect((await owner('GET', 'form-link')).body).toMatchObject({ responses: 0 });
   });
 
+  // Fields set automatically (docs/specs/030-forms/forms.md "Filled in automatically"): filled here, never sent.
+  it('fills a field set automatically on the server, whatever the response sends', async () => {
+    writeForm(
+      form({
+        destination: {
+          tabId: 'board',
+          typeId: 'bug',
+          status: 'new',
+          fixed: { 'f-severity': { value: 'Low' } },
+        },
+      }),
+    );
+    const code = await publish();
+    const res = await pub('POST', `${code}/responses`, {
+      answers: { 'q-sum': 'Crash', 'q-sev': 'High', 'f-severity': 'High' },
+    });
+    expect(res.status).toBe(201);
+    expect((await items())[0]!.fields['f-severity']).toBe('Low');
+  });
+
   it('titles a card by the form and its number when nothing goes to Title', async () => {
     const f = form();
     delete f.sections[0]!.questions[0]!.goesTo;
@@ -525,6 +545,28 @@ describe('responses to a Sheet (docs/specs/030-forms/forms.md "Responses to a Sh
     const res = await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'Only a sheet' } });
     expect(res).toEqual({ status: 201, body: { number: 1 } });
     expect(textAt('ra02')).toContainEqual({ s: 'Only a sheet' });
+  });
+
+  it('fills its extra columns on the server', async () => {
+    seedSheet();
+    writeForm(
+      form({
+        sheet: {
+          tabId: 'stab',
+          sheetId: SHEET,
+          fixed: [
+            { id: 'x-src', header: 'Source', value: 'Web' },
+            { id: 'x-due', header: 'Due', submitted: { days: 1 } },
+          ],
+        },
+      }),
+    );
+    const code = await publish();
+    await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'Crash' } });
+    expect(textAt('ra01').map((i) => i['s'])).toEqual(expect.arrayContaining(['Source', 'Due']));
+    const row = textAt('ra02');
+    expect(row).toContainEqual({ s: 'Web' });
+    expect(row.some((i) => /^\d{4}-\d{2}-\d{2}$/.test(String(i['s'])))).toBe(true);
   });
 
   it('adds a row under the headers it writes, a column per question, no card', async () => {

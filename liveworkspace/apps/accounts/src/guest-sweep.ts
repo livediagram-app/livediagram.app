@@ -3,14 +3,16 @@
 // stamps when the id was last seen (at most once a day). A guest still using an app is handed a fresh
 // token before its 45 days are up (a year for one minted before 2026-11), so it is never more than a year unseen. Once an id has gone 400 days
 // unseen, its token has lapsed and browsers have dropped its cookie (Chrome caps a cookie at 400
-// days), so no app can be handed it again: its settings and profile are deleted. Its items stay in the
-// index, as every guest's do, until someone deletes them.
+// days), so no app can be handed it again: its settings and profile are deleted, and a purge request is
+// queued in pending_purges, which the 15-minute cron sends to the index (index-purge.ts) to delete every
+// item the guest owns, as a closed account's are.
 import { GUEST_ID } from './ids.ts';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 // Longer than any guest token's life (a year at most) and the longest a browser keeps the cookie without a visit.
 export const GUEST_IDLE_MS = 400 * DAY_MS;
-// Guest ids swept per daily run, the longest unseen first: one read and one batch of three deletes.
+// Guest ids swept per daily run, the longest unseen first: one read and one batch of an insert and three
+// deletes. Well under the 2,400 purges a day the 15-minute cron sends (PURGES_PER_RUN), so the queue drains.
 export const GUEST_SWEEP_LIMIT = 500;
 
 // One upsert, and none at all when the id was already stamped in the last day, so a busy guest costs a
@@ -39,6 +41,14 @@ export async function sweepIdleGuests(db: D1Database, now = Date.now()): Promise
   // Checked again in each delete, so a guest seen between the read and the batch keeps everything.
   const idle = `IN (SELECT guest_id FROM guest_seen WHERE guest_id IN (SELECT value FROM json_each(?)) AND seen_at < ?)`;
   await db.batch([
+    // First, while guest_seen still names them. A guest has no teams; a request already queued is kept.
+    db
+      .prepare(
+        `INSERT INTO pending_purges (userId, teamIds, createdAt)
+         SELECT guest_id, '[]', ? FROM guest_seen WHERE guest_id ${idle}
+         ON CONFLICT (userId) DO NOTHING`,
+      )
+      .bind(now, ids, cutoff),
     db.prepare(`DELETE FROM settings WHERE owner_id ${idle}`).bind(ids, cutoff),
     db.prepare(`DELETE FROM profile WHERE owner_id ${idle}`).bind(ids, cutoff),
     db.prepare(`DELETE FROM guest_seen WHERE guest_id ${idle}`).bind(ids, cutoff),

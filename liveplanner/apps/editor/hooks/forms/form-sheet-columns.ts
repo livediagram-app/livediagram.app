@@ -7,6 +7,7 @@ import {
   sheetHeadersWrite,
   type FormDefinition,
   type FormSheetDestination,
+  type SheetForm,
 } from '@liveplanner/forms';
 import { cellKey, type Sheet, type SheetWrite } from '@liveplanner/sheets';
 
@@ -31,7 +32,7 @@ export function topRowTexts(
 }
 
 // Each key's header as the form words it now (what `renamed` is the next time).
-export function headersByKey(form: Pick<FormDefinition, 'sections'>): Map<string, string> {
+export function headersByKey(form: SheetForm): Map<string, string> {
   return new Map(sheetHeaders(form).map((h) => [h.key, h.header]));
 }
 

@@ -10,6 +10,8 @@ export * from './starters';
 export * from './public';
 export * from './ids';
 export * from './destination';
+export * from './fixed';
+export * from './type-questions';
 export * from './branching';
 export * from './publish-check';
 export * from './sheet-row';
