@@ -112,12 +112,16 @@ When `imageId === null`, `<ImageElementView>` (`apps/editor/components/canvas/Im
 A picture is drawn on white in every theme, so a transparent PNG and the bands a `contain` picture leaves keep the
 white they were made on. Where the picture reaches the box's edge, the white stops 2 canvas px short of it (and of its
 rounded corners), so at that edge only the picture meets what lies behind it; where the picture leaves a band, the
-white runs to the edge, so a band's corner meets the picture's corner and the picture never pokes out past it
+white runs to the edge, so a band's corner meets the picture's corner and the picture never pokes out past it (and meets the picture square, even in a rounded box)
 (`imageBackingStyle`, `packages/element-model/src/image-backing.ts`, shared by every product). Were the white to reach
 an edge the picture also reaches, a zoom that puts the edge between screen pixels (66%, say) would blend the picture's
 edge pixels over part-white ones, and a picture that fills its box on a dark background (a logo on its own background)
-would wear a faint light frame. 2 px keeps the white a whole screen pixel in from the edge at 50% zoom and above on any
-screen; the 2 px rim it leaves under a transparent edge shows what lies behind, too thin to read as a gap. A picture
+would wear a faint light frame. The white stays at least one device pixel in from the edge at every zoom: 2 px does
+that at 50% zoom and above on any screen, and further out the canvas widens it to the next power of two that does (4 px
+below 50% on a 1x screen, 8 px below 25%, and so on; `imageBackingInsetPx`). The canvas's zoomed layer sets it as one
+CSS variable, so no picture re-renders as the zoom changes and the pictures restyle only at those few steps; a frame
+outside a canvas keeps 2 px. The rim it leaves under a transparent edge shows what lies behind, one or two screen
+pixels at most, too thin to read as a gap. A picture
 whose size is not stored learns it when it loads; until then its white is inset all round. The frame's corner radius
 still bounds the white. Exports draw at whole pixels and keep their full-size white backing.
 
