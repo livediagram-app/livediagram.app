@@ -125,6 +125,11 @@ export function GalleryContent({
     () => (loaded.status === 'ready' ? filterGallery(loaded.images, loaded.usage, filter) : []),
     [loaded, filter],
   );
+  // Only worked out when the Unused list comes up empty.
+  const anyUnchecked =
+    shown.length === 0 &&
+    loaded.status === 'ready' &&
+    loaded.images.some((image) => isUnchecked(loaded.usage, image.id));
 
   const remove = (image: GalleryImage) => {
     setDeleting(null);
@@ -180,7 +185,11 @@ export function GalleryContent({
             compact={compact}
             icon={<ImageIcon size={28} />}
             title="No unused images"
-            description={`Every image here is placed in a ${kindMany.one} or another app’s item, so there is nothing to clear.`}
+            description={
+              anyUnchecked
+                ? 'Where some images are used couldn’t be checked just now, so none of them are listed here. Open the gallery again to retry.'
+                : `Every image here is placed in a ${kindMany.one} or another app’s item, so there is nothing to clear.`
+            }
           >
             {onShowAll ? (
               <Button size="sm" variant="secondary" onClick={onShowAll}>

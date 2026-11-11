@@ -193,6 +193,8 @@ describe('the Image Gallery', () => {
     expect(screen.queryByText('Not used')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Unused' }));
     expect(screen.getByText('No unused images')).toBeTruthy();
+    expect(screen.getByText(/couldn’t be checked just now/)).toBeTruthy();
+    expect(screen.queryByText(/so there is nothing to clear/)).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Show All Images' }));
     fireEvent.click(screen.getByRole('button', { name: 'Delete photo-2.png' }));
     expect((await screen.findByRole('dialog')).textContent).toContain(

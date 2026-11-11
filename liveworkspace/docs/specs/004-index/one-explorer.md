@@ -542,7 +542,8 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   Help: Unused keeps only the images checked and found placed nowhere ("Not used"), read from the usage the Gallery
   already loads, so it costs no request. An image whose usage could not be checked reads "Couldn't check" and is
   never counted or shown as Unused ([media.md](../006-media/media.md#usage)). It starts on All each visit, applies to the grid as it stands (a delete takes the
-  card out at once), and when every image is in use it says so with an empty state that offers All again. The
+  card out at once), and when every image is in use it says so with an empty state that offers All again (when some
+  could not be checked, the empty state says that instead of calling them all in use). The
   switch shows only once the gallery has images and the host reads usage; the editor panel's compact Gallery has
   no header and stays on All. An upload is checked against the media service's types and 10 MB cap
   (`@liveworkspace/api-schema/image-limits`) before the file is read or decoded, so an oversized file is refused
