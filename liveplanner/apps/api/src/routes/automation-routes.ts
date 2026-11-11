@@ -1,6 +1,7 @@
 // A plan's Automations, `/api/projects/:id/automations` (docs/specs/026-plan/automations.md; blueprint
-// automations.md "Routes"), inside the plan's room. Every route is an Editor's of the whole plan, signed in, never
-// through an API token and never through a link confined to one tab: anyone else is answered 403
+// automations.md "Routes", "Agents and the CLI"), inside the plan's room. Every route is an Editor's of the whole plan,
+// signed in or through that person's API token (a read-only token lists and reads the Audit Trail, nothing else),
+// never a workbench session and never through a link confined to one tab: anyone else is answered 403
 // `automations_need_editor`. A rule is checked by @liveplanner/items readRuleBody; it is on once it has an action.
 // Test on a Card runs the rule as a dry run, changing nothing and logging nothing; Run Rule runs a Run from a Card
 // rule at once. A time trigger's rule lists its next moment (`stats.nextAt`), and tests on the chosen card as if its
@@ -39,7 +40,8 @@ import type { PlanAutomations } from '../plan-room/automations/automation-queue'
 import { writer } from './item-route-kit';
 import { gateEdit, missingProject, readBody, requireOwner, type PlanRouteContext } from './context';
 
-type Gated = { projectId: string; hook: PlanAutomations; by: ItemPerson };
+// `ai`: the caller is an API token (an agent), whose stamps and Run Rule say so.
+type Gated = { projectId: string; hook: PlanAutomations; by: ItemPerson; ai: boolean };
 
 const refuse = (
   status: number,
@@ -49,19 +51,42 @@ const refuse = (
 
 const notFoundRule = () => refuse(404, 'automation_not_found');
 
-// The door every route passes: an Editor of the whole plan, signed in, in person.
+// Who may come through (spec "Who may do what"): a signed-in person, or an API token of one (its account verified),
+// never a workbench session, a guest or a link visitor with no account.
+function signedInCaller(ctx: PlanRouteContext): boolean {
+  if (ctx.workbench) return false;
+  return ctx.token ? !!ctx.verifiedUserId : !!ctx.accountUserId;
+}
+
+// The door every route passes: an Editor of the whole plan, signed in, in person or through their token. A read-only
+// token reads (GET) and nothing else, as the worker's choke point already answers it.
 async function gate(ctx: PlanRouteContext, projectId: string): Promise<Gated | Response> {
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
   const doc = await getProject(ctx.env, projectId);
   if (!doc) return missingProject(ctx, projectId);
+  if (ctx.token?.readOnly && ctx.request.method !== 'GET') {
+    console.info('[automations] refused', { token: true, readOnly: true });
+    return json({ error: 'read_only_token' }, { status: 403 });
+  }
   const hook = ctx.env.AUTOMATIONS;
-  if (!ctx.accountUserId || ctx.token || !hook || !(await gateEdit(ctx, projectId))) {
-    console.info('[automations] refused', { token: !!ctx.token, signedIn: !!ctx.accountUserId });
+  if (!signedInCaller(ctx) || !hook || !(await gateEdit(ctx, projectId))) {
+    console.info('[automations] refused', {
+      token: !!ctx.token,
+      signedIn: !!ctx.accountUserId,
+      workbench: !!ctx.workbench,
+    });
     return refuse(403, 'automations_need_editor');
   }
-  return { projectId, hook, by: await writer(ctx, owner) };
+  return { projectId, hook, by: await writer(ctx, owner), ai: !!ctx.token };
 }
+
+// A stamp of the caller now: an agent's says so (spec "Agents and the CLI", "Who it was").
+const stampOf = (g: Gated) => ({
+  by: g.by,
+  at: Date.now(),
+  ...(g.ai ? { ai: true as const } : {}),
+});
 
 function listed(
   hook: PlanAutomations,
@@ -98,6 +123,8 @@ async function list(ctx: PlanRouteContext, g: Gated): Promise<Response> {
     rules: g.hook.store.list().map((r) => listed(g.hook, plan, r, stats, nextAts)),
     runsToday: runsToday(g.hook.sql(), now),
     runsPerDay: AUTOMATION_RUNS_PER_DAY,
+    // What an agent names people by, and words them with (spec "Agents and the CLI").
+    people: plan.outline.people.map((p) => ({ id: p.id, name: p.name })),
   };
   return json(answer);
 }
@@ -118,7 +145,7 @@ async function create(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   if (rules.length >= AUTOMATION_RULES_MAX) return refuse(409, 'automation_rules_full');
   if (ruleNameTaken(body.name, rules))
     return refuse(409, 'automation_name_taken', { path: 'name' });
-  const stamp = { by: g.by, at: Date.now() };
+  const stamp = stampOf(g);
   const rule: AutomationRule = {
     ...body,
     id: crypto.randomUUID(),
@@ -140,7 +167,7 @@ async function save(ctx: PlanRouteContext, g: Gated, held: AutomationRule): Prom
     ...held,
     ...body,
     enabled: held.enabled && ruleHasAction(body),
-    edited: { by: g.by, at: Date.now() },
+    edited: stampOf(g),
   };
   g.hook.store.update(rule);
   return answerRule(ctx, g, rule);
@@ -171,7 +198,7 @@ async function duplicate(ctx: PlanRouteContext, g: Gated, held: AutomationRule):
   const rules = g.hook.store.list();
   if (rules.length >= AUTOMATION_RULES_MAX) return refuse(409, 'automation_rules_full');
   const { paused: _paused, ...rest } = held;
-  const stamp = { by: g.by, at: Date.now() };
+  const stamp = stampOf(g);
   const rule: AutomationRule = {
     ...rest,
     id: crypto.randomUUID(),
@@ -207,7 +234,7 @@ const manualEvent = (
   kind: 'manual',
   cardId,
   by: g.by,
-  role: 'editor',
+  role: g.ai ? 'agent' : 'editor',
   ...(ruleId ? { ruleId } : {}),
   at: Date.now(),
 });
@@ -229,7 +256,7 @@ async function test(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   const card = await cardOf(ctx, g, raw);
   const deps = g.hook.deps();
   if (!card || !deps) return missingItem();
-  const stamp = { by: g.by, at: Date.now() };
+  const stamp = stampOf(g);
   const rule: AutomationRule = {
     ...read.body,
     id: 'test',

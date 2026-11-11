@@ -25,6 +25,8 @@ export interface AutomationsListResponse {
   // The Runs today meter.
   runsToday: number;
   runsPerDay: number;
+  // The plan's people as rules name them (`assign { person }` takes the id), for agents; the editor reads its own.
+  people?: { id: string; name: string }[];
 }
 
 export interface AutomationRuleResponse {
