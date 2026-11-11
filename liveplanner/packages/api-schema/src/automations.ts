@@ -73,6 +73,8 @@ export const AUTOMATION_ERRORS = [
   'automation_rules_full',
   'automation_not_found',
   'automation_not_manual',
+  // Run Rule past the day's budget (AUTOMATION_RUNS_PER_DAY): 429, nothing ran.
+  'automation_budget_spent',
 ] as const;
 export type AutomationError = (typeof AUTOMATION_ERRORS)[number];
 
