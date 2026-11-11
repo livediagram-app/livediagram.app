@@ -259,3 +259,47 @@ describe('the remaining paths', () => {
     ]);
   });
 });
+
+// Columns follow the card type, and fields set automatically stay with it (docs/specs/030-forms/forms.md "Columns
+// follow the card type", "Filled in automatically").
+describe('setRespondsTo and the card type’s statuses', () => {
+  it('takes a board’s first column the type uses, and a new board of the type’s statuses', () => {
+    const world = formWorld();
+    const cols = world.boards[0]!.columns;
+    const second = cols[1]!.status;
+    const picky = { ...BUG, statuses: [second, 'review~x'] };
+    const typed = { ...world, types: world.types.map((t) => (t.id === 'bug' ? picky : t)) };
+    const there = formDraft(bugForm(), typed);
+    expect(setRespondsTo(there, { to: 'board', board: 'Bugs' })).toBeNull();
+    expect(there.form.destination?.status).toBe(second);
+    // A type using none of the board's columns takes its first (the builder warns).
+    const none = {
+      ...world,
+      types: world.types.map((t) => (t.id === 'bug' ? { ...BUG, statuses: ['x~1'] } : t)),
+    };
+    const stray = formDraft(bugForm(), none);
+    setRespondsTo(stray, { to: 'board', board: 'Bugs' });
+    expect(stray.form.destination?.status).toBe(cols[0]!.status);
+
+    const fresh = formDraft(bugForm(), typed);
+    expect(setRespondsTo(fresh, { to: 'board' })).toBeNull();
+    const setup = (
+      fresh.newTabs[0]!.elements[0] as {
+        planBoard: { columns: { status: string }[]; addTypes: string[] };
+      }
+    ).planBoard;
+    expect(setup.columns.map((c) => c.status)).toEqual([second, 'review~x']);
+    expect(setup.addTypes).toEqual(['bug']);
+  });
+
+  it('keeps the fields set automatically while the card type stays, and drops them with it', () => {
+    const fixed = { 'f-severity': { value: 'High' } };
+    const form = { ...bugForm(), destination: { ...bugForm().destination!, fixed } };
+    const same = formDraft(form);
+    setRespondsTo(same, { to: 'board', board: 'Bugs' });
+    expect(same.form.destination?.fixed).toEqual(fixed);
+    const other = formDraft(form);
+    setRespondsTo(other, { to: 'board', board: 'Bugs', cardType: 'Task' });
+    expect(other.form.destination).not.toHaveProperty('fixed');
+  });
+});

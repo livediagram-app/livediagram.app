@@ -8,6 +8,7 @@ import {
   QUESTION_TYPE_NAMES,
   RATING_SCALE_DEFAULT,
   canGoToTitle,
+  columnForType,
   destinationType,
   formStarter,
   newFieldFor,
@@ -184,18 +185,24 @@ export function setRespondsTo(
       const column = resolveColumn(board, r.column);
       if (!column.ok) return column;
       status = column.column.status;
-    } else status = board.columns[0]!.status;
+    } else
+      // The board's first column the type uses (forms.md "Columns follow the card type").
+      status = columnForType(board.columns, type, undefined) ?? board.columns[0]!.status;
   } else {
     if (r.column)
       return refuse(
         'column_unknown',
-        'A new board has the columns New, In Progress and Done: name a column of an existing board only.',
+        'A new board has the card type’s states as columns (New, In Progress and Done for a type without its own): name a column of an existing board only.',
       );
     type ??= own ?? newFormType(d);
+    // A type with its own statuses gets them as the board's columns (forms.md "Columns follow the card type").
     const tab = responsesBoardTab(
       d.form.heading,
       d.formTab,
       d.world.statuses.map((s) => [s.status, s.name] as const),
+      undefined,
+      undefined,
+      { typeId: type.id, statuses: type.statuses },
     );
     // A responses board takes the form's card type alone, so it shows only responses.
     const made = boardsOf(tab)[0]!;
@@ -222,7 +229,13 @@ export function setRespondsTo(
     d.changedBoards.set(board.elementId, taking);
   }
   const { sheet: _sheet, ...rest } = d.form;
-  d.form = { ...rest, destination: { tabId: board.tabId, typeId: type.id, status } };
+  // Fields set automatically stay while the card type does (they name its fields).
+  const was = d.form.destination;
+  const fixed = was?.typeId === type.id ? was.fixed : undefined;
+  d.form = {
+    ...rest,
+    destination: { tabId: board.tabId, typeId: type.id, status, ...(fixed ? { fixed } : {}) },
+  };
   // The status was chosen from the board's own columns.
   const column = board.columns.find((c) => c.status === status)!.name;
   d.lines.push(`responses go to ${type.label} cards in ${column} on "${board.tabName}"`);
