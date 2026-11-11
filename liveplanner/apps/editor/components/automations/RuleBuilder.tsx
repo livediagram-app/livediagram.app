@@ -245,7 +245,8 @@ export function RuleBuilder({
       </nav>
       {rule && !phone ? (
         <span className="text-[12px] text-slate-500 dark:text-slate-400">
-          Edited by {rule.edited.by.name} ·{' '}
+          Edited by {rule.edited.by.name}
+          {rule.edited.ai ? ' (Agent)' : ''} ·{' '}
           {formatRelativeTimeShort(Math.max(0, now - rule.edited.at))}
         </span>
       ) : null}

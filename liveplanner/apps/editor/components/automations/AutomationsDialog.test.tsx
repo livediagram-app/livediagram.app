@@ -412,4 +412,12 @@ describe('on a wide screen', () => {
     expect(await screen.findByText(/Edited by Ana Costa/)).toBeTruthy();
     expect(document.querySelector('[data-step-panel]')).toBeTruthy();
   });
+
+  // docs/specs/026-plan/automations.md "Agents and the CLI": a rule an agent saved says so.
+  it('says when an agent edited the rule', async () => {
+    const r = rule();
+    list([rule({ edited: { ...r.edited, ai: true } })]);
+    wrap(<Harness initial={{ view: 'rule', ruleId: 'r1' }} />);
+    expect(await screen.findByText(/Edited by Ana Costa \(Agent\)/)).toBeTruthy();
+  });
 });
