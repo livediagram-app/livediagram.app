@@ -7,7 +7,7 @@ Derived from [Nudge](../nudge.md).
 | File                                                                                              | Role                                                                                                  |
 | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `packages/api-schema/src/nudge.ts`                                                                | `NudgeOp`, `NudgeRefusedOp`, `parseNudge`, `NUDGE_COOLDOWN_MS`, `createNudgeLedger`, `nudgeCountdown` |
-| `packages/api-schema/src/room-messages.ts`                                                        | `nudge` in `PRESENCE_OP_KINDS`, `nudge-refused` in `SYSTEM_OP_KINDS`, both in `RoomOp`                |
+| `packages/api-schema/src/room-op-kinds.ts`, `packages/api-schema/src/room-op.ts`                  | `nudge` in `PRESENCE_OP_KINDS`, `nudge-refused` in `SYSTEM_OP_KINDS`, both in `RoomOp`                |
 | `apps/api/src/room-op-gate.ts`                                                                    | Parses `nudge`; drops a Viewer's and a malformed one                                                  |
 | `apps/api/src/room-nudge.ts`                                                                      | `nudgeIdentity`, `decideNudge`: self, absent target, cooldown                                         |
 | `apps/api/src/document-room/document-room.ts`, `apps/api/src/document-room/room-call-sessions.ts` | Holds the ledger, addresses the nudge (`sendToPresence`) or answers `nudge-refused` to the sender     |

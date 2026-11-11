@@ -31,7 +31,7 @@ The whole-tab broadcast is replaced by granular, id-addressed element ops, so
 different elements merge instead of clobbering. The room orders element ops and
 relays them; it does not merge them.
 
-- Wire (`packages/api-schema/src/room-messages.ts`): `{ kind: 'el'; tabId;
+- Wire (`packages/api-schema/src/room-op.ts`): `{ kind: 'el'; tabId;
 op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
   `tab` op (back-compat fallback). `ElementOp` (add / update / remove / reorder)
   lives in `@livehuddle/document` so it's shared and unit-tested off-socket.
@@ -269,9 +269,9 @@ dormant.
 
 - `packages/document`: `element-ops.ts`: `ElementOp`, `diffToElementOps`,
   `applyElementOp` (pure, unit-tested).
-- `packages/api-schema/src/room-messages.ts`: `el` / `tab-meta` ops; `seq` /
+- `packages/api-schema/src/room-op.ts`: `el` / `tab-meta` ops; `packages/api-schema/src/room-messages.ts`: `seq` /
   `epoch` on the op frame; the `sync` + `catchup` frames.
-- `packages/api-schema/src/room-messages.ts`: `PRESENCE_OP_KINDS` /
+- `packages/api-schema/src/room-op-kinds.ts`: `PRESENCE_OP_KINDS` /
   `MUTATION_OP_KINDS` / `SYSTEM_OP_KINDS`, the one classification of every op.
 - `packages/document`: `element-deltas.ts` (`applyElementDelta`,
   `mergeIncomingElement`), `collab-ledger.ts` (the ledger's entries and the

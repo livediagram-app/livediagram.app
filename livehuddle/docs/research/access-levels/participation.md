@@ -72,7 +72,7 @@ Two roles reach the room, `edit` and `view`, fixed at the upgrade as `X-Verified
 ([API app, Realtime model](../../specs/015-api/api.md#realtime-model)). Three doors decide what a view-role visitor may
 write, and they disagree in effect though each is coherent on its own:
 
-- **Presence-class ops** relay from any role (`PRESENCE_OP_KINDS`, `packages/api-schema/src/room-messages.ts`).
+- **Presence-class ops** relay from any role (`PRESENCE_OP_KINDS`, `packages/api-schema/src/room-op-kinds.ts`).
   `poll-answer` was placed there on purpose, because "audiences are usually on view links"
   ([Live poll](../../specs/012-collaboration/live-poll.md#roles)).
 - **Mutation-class ops** relay only from `edit` (`apps/api/src/document-room/document-room.ts:663`). A dot (`vote`) and every

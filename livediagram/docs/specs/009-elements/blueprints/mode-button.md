@@ -15,7 +15,7 @@ Scope, by file:
 | `packages/document/src/validate.ts`                                         | Rejects an unknown `mode`                                           |
 | `packages/document/src/svg-render-faces.ts`                                 | The export face (`svgBehaviourFace`, `'mode-button'`, `keycapEdge`) |
 | `apps/editor/components/canvas/ModeButtonFace.tsx`                          | The face: chip, derived text, press; `MODE_LABEL`                   |
-| `apps/editor/components/canvas/ElementFaceRouter.tsx`                       | Renders the face while not editing                                  |
+| `apps/editor/components/canvas/behaviour-faces.tsx`                         | Renders the face while not editing                                  |
 | `apps/editor/components/canvas/BoxedElementView.tsx`                        | Resolves `textColor` through `ownColours` and `defaultTextColor`    |
 | `apps/editor/hooks/ui/usePressWithoutDrag.ts`                               | Click presses, drag stays silent                                    |
 | `../packages/workbench/src/lib/press-gestures.ts`                           | `isDragTravel`, `PRESS_DRAG_SLOP_PX`                                |
@@ -24,7 +24,7 @@ Scope, by file:
 | `apps/editor/hooks/canvas/useCanvasTool.ts`                                 | `selectCanvasTool` telemetry, `toolBeforeCurrent`                   |
 | `apps/editor/components/canvas/editor-canvas-host/useSessionCanvasProps.ts` | Threads the press; ignores a mode `isButtonMode` refuses            |
 | `apps/editor/components/palette/tile-defs/behaviour-tiles.tsx`              | Seven `tools:mode-<mode>` tiles, `tileGroup: 'mode'` [QF6]          |
-| `apps/editor/components/palette/ElementDataSections.tsx`                    | The **Button** menu section                                         |
+| `apps/editor/components/palette/ElementBehaviourToolSections.tsx`           | The **Button** menu section                                         |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`                           | `setButtonModeSelected`                                             |
 | `apps/editor/lib/draw-commit.ts`, `useElementCreation.ts`                   | Apply the tile's `mode` at commit / drop                            |
 | `apps/editor/lib/element-telemetry.ts`                                      | `SHAPE_TOKENS['mode-button'] = 'ModeButton'`                        |
@@ -73,7 +73,7 @@ The element holds one field, `mode`. Everything else is per-viewer and never per
 
 ### Rendering the face
 
-1. `ElementFaceRouter` renders `ModeButtonFace` while `!isEditing`; mid-edit the ordinary label
+1. `behaviourFace` (ElementFaceRouter's chain) renders `ModeButtonFace` while `!isEditing`; mid-edit the ordinary label
    editor takes over.
 2. `mode = element.mode ?? DEFAULT_BUTTON_MODE`. `isCurrent = activeMode === mode`.
 3. Text: a non-blank label wins and fills the width; a blank label shows the kicker over

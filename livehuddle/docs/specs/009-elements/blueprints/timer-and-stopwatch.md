@@ -14,7 +14,7 @@ Derived from [Timer and Stopwatch](../timer-and-stopwatch.md).
 | `packages/document/src/validate-shape.ts`                     | `pieceTimer` validation                                                                                         |
 | `packages/document/src/svg-render-timers.ts`                  | The export: body, time and state word                                                                           |
 | `packages/document/src/retired-timer.ts`                      | `dropRetiredTimer`: a stored tab's old `timer` field is dropped on read                                         |
-| `packages/api-schema/src/room-messages.ts`                    | `piece-timer` joins `PARTICIPATION_DELTA_KINDS`                                                                 |
+| `packages/api-schema/src/room-op-kinds.ts`                    | `piece-timer` joins `PARTICIPATION_DELTA_KINDS`                                                                 |
 | `apps/api/src/document-room-rules.ts`                         | `answersAsSelf` admits a `piece-timer` delta (it names nobody)                                                  |
 | `packages/avatar/src/office-geometry.ts`                      | `isWallPieceShape` holds both kinds                                                                             |
 | `apps/editor/lib/timer-ticker.ts`                             | The one 250 ms ticker (`useTickerValue`)                                                                        |

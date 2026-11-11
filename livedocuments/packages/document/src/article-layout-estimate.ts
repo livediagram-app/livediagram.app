@@ -5,7 +5,7 @@
 // weight, face, line height and margins, from the article's resolved style), its words wrapped at an estimated width
 // and flowed down the article's pages, a page break starting the next. An estimate: a line may break a word earlier
 // or later than the browser would, so a long article can end a few lines off. Pure.
-import { articleListMarkers, articlesOf, type ArticleBlock, type ArticleRun } from './article-flow';
+import { articleListMarkers, articlesOf } from './article-flow';
 import { articleBandsFor, bandDate } from './article-bands';
 import type { ArticleDrawOp } from './article-draw-ops';
 import {
@@ -23,155 +23,17 @@ import { isLightColor } from './colors';
 import { resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { legibleOn, pageFillTone } from './page-content';
 import type { LaidOutPage } from './page';
-
-// An average glyph's advance as a share of the font size (a bold one a little wider), as the headless renders
-// estimate a label (svg-render-primitives' LABEL_ESTIMATE_CHAR_EM).
-const CHAR_EM = 0.52;
-export const BOLD_EM = 1.06;
-const MONO = 'Roboto Mono, ui-monospace, monospace';
-
-// How a block is set (app/article-pages.css): its size as a share of the body size, weight, face, line height (null:
-// the body's), margins above and below in body lines, its left indent in px, and its colour.
-type Set = {
-  scale: number;
-  weight: string;
-  italic?: boolean;
-  heading?: boolean;
-  mono?: boolean;
-  leading: number | null;
-  above: number;
-  below: number;
-  indent: number;
-  muted?: boolean;
-  ruled?: boolean;
-};
-
-function setOf(b: ArticleBlock, para: number, rules: 'none' | 'title' | 'headings'): Set {
-  const head = (
-    scale: number,
-    weight: string,
-    above: number,
-    below: number,
-    leading = 1.25,
-  ): Set => ({
-    scale,
-    weight,
-    heading: true,
-    leading,
-    above,
-    below,
-    indent: 0,
-  });
-  if (b.type === 'list')
-    return {
-      scale: 1,
-      weight: '400',
-      leading: null,
-      above: 0,
-      below: 0.25,
-      indent: 28 * ((b.level ?? 0) + 1),
-    };
-  if (b.type === 'code')
-    return {
-      scale: 14 / 16,
-      weight: '400',
-      mono: true,
-      leading: 1.55,
-      above: 0.5,
-      below: 0.75,
-      indent: 14,
-    };
-  if (b.type !== 'paragraph')
-    return { scale: 1, weight: '400', leading: null, above: 0, below: 0, indent: 0 };
-  switch (b.style) {
-    case 'title':
-      return { ...head(36 / 16, '700', 0, 0.5, 1.15), ruled: rules !== 'none' };
-    case 'subtitle':
-      return {
-        scale: 20 / 16,
-        weight: '400',
-        leading: null,
-        above: 0,
-        below: 1,
-        indent: 0,
-        muted: true,
-      };
-    case 'h1':
-      return { ...head(28 / 16, '700', 1.2, 0.4), ruled: rules === 'headings' };
-    case 'h2':
-      return { ...head(22 / 16, '650', 1, 0.3), ruled: rules === 'headings' };
-    case 'h3':
-      return { ...head(18 / 16, '650', 0.8, 0.2), ruled: rules === 'headings' };
-    case 'quote':
-      return {
-        scale: 18 / 16,
-        weight: '400',
-        italic: true,
-        leading: null,
-        above: 0.5,
-        below: 0.75,
-        indent: 16,
-      };
-    default:
-      return { scale: 1, weight: '400', leading: null, above: 0, below: para, indent: 0 };
-  }
-}
-
-const runsText = (runs: readonly ArticleRun[]) => runs.map((r) => r.text).join('');
-
-// A stretch of a line in one style.
-type Style = { b: boolean; i: boolean };
-type Segment = Style & { text: string };
-
-// Each character's style, from the runs it is in (a block set bold, a heading, bolds every character).
-function charStyles(runs: readonly ArticleRun[], bold: boolean, italic: boolean): Style[] {
-  return runs.flatMap((r) => Array.from(r.text, () => ({ b: bold || !!r.b, i: italic || !!r.i })));
-}
-
-// A wrapped line cut where its style changes, found in the block's text from `from`; the end it reached.
-function segmentsOf(
-  text: string,
-  styles: readonly Style[],
-  line: string,
-  from: number,
-): { segments: Segment[]; end: number } {
-  const at = line ? text.indexOf(line, from) : from;
-  const start = at < 0 ? from : at;
-  const segments: Segment[] = [];
-  for (let k = 0; k < line.length; k++) {
-    const s = styles[start + k] ?? { b: false, i: false };
-    const last = segments[segments.length - 1];
-    if (last && last.b === s.b && last.i === s.i) last.text += line[k];
-    else segments.push({ ...s, text: line[k]! });
-  }
-  return { segments, end: start + line.length };
-}
-
-// The lines a text breaks into at `width` px, words kept whole unless one alone is wider.
-export function wrapEstimated(text: string, width: number, px: number, bold: boolean): string[] {
-  const advance = px * CHAR_EM * (bold ? BOLD_EM : 1);
-  const fits = Math.max(1, Math.floor(width / advance));
-  const out: string[] = [];
-  for (const para of text.split('\n')) {
-    let line = '';
-    for (const word of para.split(/ +/)) {
-      const next = line ? `${line} ${word}` : word;
-      if (next.length <= fits) {
-        line = next;
-        continue;
-      }
-      if (line) out.push(line);
-      let rest = word;
-      while (rest.length > fits) {
-        out.push(rest.slice(0, fits));
-        rest = rest.slice(fits);
-      }
-      line = rest;
-    }
-    out.push(line);
-  }
-  return out;
-}
+import {
+  CHAR_EM,
+  MONO,
+  setOf,
+  runsText,
+  charStyles,
+  segmentsOf,
+  wrapEstimated,
+  type Style,
+} from './article-layout-set';
+export { BOLD_EM, wrapEstimated } from './article-layout-set';
 
 type EstimatedArticle = {
   // Each page's operations, by page id.

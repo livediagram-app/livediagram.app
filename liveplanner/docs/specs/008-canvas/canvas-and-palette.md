@@ -258,7 +258,7 @@ Not in history: selection, edit mode entry, panel positions, format-painter mode
 
 ### Element kinds
 
-The canvas draws every `ShapeKind` and the other element types in `packages/project`, each from its default box (`shape-factory.ts`) when it is built without one. The editor creates a few itself: Plan's boards, sheets, views and charts, and a sticky, text, a page and the session tools, from the tiles in `palette-tile-defs.tsx` that Start Planning and the Dashboard slot pickers render. The other kinds arrive on a tab by import, paste or an older tab, and are drawn and edited as follows.
+The canvas draws every `ShapeKind` and the other element types in `packages/project`, each from its default box (`shape-default-size.ts`) when it is built without one. The editor creates a few itself: Plan's boards, sheets, views and charts, and a sticky, text, a page and the session tools, from the tiles in `palette-tile-defs.tsx` that Start Planning and the Dashboard slot pickers render. The other kinds arrive on a tab by import, paste or an older tab, and are drawn and edited as follows.
 
 **Shapes** (general shapes), with the box each is built at:
 

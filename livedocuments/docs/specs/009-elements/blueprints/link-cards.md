@@ -14,7 +14,7 @@ Scope, by file:
 | `packages/document/src/colors.ts`                                              | Default fill, stroke, text; `supportsColours` true                                                                        |
 | `packages/document/src/themes.ts`                                              | `THEME_COLOUR_FIELDS['link-card'] = []`                                                                                   |
 | `packages/document/src/validate.ts`                                            | Link card carries no extra required fields                                                                                |
-| `packages/document/src/svg-render.ts`                                          | Export: generic `rect` branch                                                                                             |
+| `packages/document/src/svg-render-boxed.ts`                                    | Export: generic `rect` branch                                                                                             |
 | `packages/api-schema/src/index.ts`                                             | `UnfurlResult`                                                                                                            |
 | `apps/api/src/routes/unfurl.ts`                                                | `handleUnfurl`: routing, the per-IP throttle, this product's User-Agent                                                   |
 | `../packages/api-kit/src/unfurl.ts`, `../packages/api-kit/src/unfurl-fetch.ts` | `UnfurlResult`, `isBlockedHost`, `parsePublicHttpUrl`, `buildUnfurlResult`; `unfurl` (the bounded fetch), every product's |

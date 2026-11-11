@@ -103,7 +103,7 @@ left. As a card it wants the fill, border and rounded corners every other card g
   off that list renders as a transparent nothing.
 - **Keeps its own colours** (the Behaviour set in `themes.ts`): a panel is canvas chrome, not a node in the tab's
   theme.
-- **Sized for a short conversation**, 300 × 320 (`shape-factory.ts`), with no label: the panel's content is the
+- **Sized for a short conversation**, 300 × 320 (`shape-default-size.ts`), with no label: the panel's content is the
   thread. It reflows, so a resize makes room for more of it.
 - **Not votable** ([Session tools (timer + voting)](session-tools.md)): a comment panel IS a remark, so a dot on one
   means nothing.

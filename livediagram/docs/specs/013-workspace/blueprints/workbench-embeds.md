@@ -299,16 +299,16 @@ The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface =
 
 | Gate                                                                         | File                                                                  | In a workbench                                            |
 | ---------------------------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------- |
-| `EditorHeader` (and with it the account menu, Share, Make a copy, role pill) | `EditorView.tsx`                                                      | Not rendered                                              |
+| `EditorHeader` (and with it the account menu, Share, Make a copy, role pill) | `editor-view-bars.tsx`                                                | Not rendered                                              |
 | `CommunityBar`, Community badge request                                      | `EditorView.tsx`                                                      | Not rendered, not requested                               |
-| TabBar, palette, toolbars, Quick style, panels, search                       | `EditorView.tsx`                                                      | Rendered as in the app                                    |
+| TabBar, palette, toolbars, Quick style, panels, search                       | `EditorView.tsx`, `editor-view-bars.tsx`                              | Rendered as in the app                                    |
 | `EmbedChrome`                                                                | `EditorView.tsx`                                                      | Not rendered; `WorkbenchChrome` instead                   |
 | Explorer (popover)                                                           | `useCanvasChromePanels.tsx`                                           | Not rendered; status screens use `EmbedShell`             |
 | Photo-import note reading on the server                                      | `useCapabilities` consumer                                            | `aiEnabled` read as false                                 |
 | Sign-in banner, theme-mode banner                                            | `EditorView.tsx`                                                      | Off                                                       |
 | Settings categories `documents`, `account`, `tokens`; the Appearance choice  | `settings-catalogue.ts`                                               | Hidden                                                    |
 | Share, delete, move, take offline, copy commands                             | `editor-commands.ts`                                                  | Absent                                                    |
-| TabBar "copy to another document"                                            | `EditorView.tsx` `otherDocuments`                                     | `[]`                                                      |
+| TabBar "copy to another document"                                            | `editor-view-bars.tsx` `otherDocuments`                               | `[]`                                                      |
 | Image picker gallery                                                         | `ImagePicker.tsx`, `useEditorImages`                                  | Upload only; `apiListImages` never called                 |
 | Shape library writes (save to My shapes)                                     | their hosts                                                           | Absent; reads stay                                        |
 | `useTokenTeams`, `useDocumentList`                                           | `app/document/[id]/editor-state/useEditorComments.ts`                 | Off: no teams, no document list                           |

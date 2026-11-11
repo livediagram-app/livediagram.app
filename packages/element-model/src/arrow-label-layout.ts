@@ -11,25 +11,12 @@
 // so an exported label wraps at the same words and sits at the same spot.
 
 import { isContainerKind } from './containment';
-import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { arrowLabelFontSize } from '@liveworkspace/model-core/arrow-label';
-import {
-  longestWordWidth,
-  wrapBalanced,
-  type TextMeasure,
-} from '@liveworkspace/model-core/arrow-label-wrap';
-import { arrowLabelAnchor, arrowPathPolyline } from './arrow-path';
-import {
-  ARROWHEAD_SIZE_PX,
-  arrowheadShapeOf,
-  arrowheadSizeOf,
-  arrowheadStartShapeOf,
-  arrowStyleOf,
-  type ArrowheadShape,
-} from './arrow-style';
-import { isErShape } from './er-heads';
+import { longestWordWidth } from '@liveworkspace/model-core/arrow-label-wrap';
+import { arrowLabelAnchor } from './arrow-path';
+import { arrowStyleOf } from './arrow-style';
 import { arrowPolyline } from './arrow-path-hits';
-import { elementIndexFor, endpointPosition } from './geometry';
+import { elementIndexFor } from './geometry';
 import { rectsIntersect, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 import {
   addToRectGrid,
@@ -46,41 +33,49 @@ import {
   type ElementId,
 } from './element';
 import type { ElementIndex } from './geometry';
-import { LABEL_LINE_HEIGHT, labelMeasure } from './svg-render-primitives';
+import { LABEL_LINE_HEIGHT } from './svg-render-primitives';
+import {
+  arrowRoute,
+  directionAt,
+  endClearances,
+  openRunOf,
+  pointAt,
+  segmentSpans,
+  type Pt,
+  type Route,
+  type Span,
+} from './arrow-label-route';
+import {
+  blockOf,
+  cachedMeasure,
+  capFor,
+  defaultMeasureFor,
+  fittingBlock,
+  footprintAlong,
+  KNOCKOUT_MARGIN_PX,
+  LABEL_PAD_X_PX,
+  rectAround,
+  type ArrowLabelLayoutOptions,
+  type Block,
+} from './arrow-label-blocks';
 
-type Pt = { x: number; y: number };
+// The route geometry and the text blocks live beside this file; re-exported so callers' imports stay as they were.
+export { arrowResolvedEnds, arrowRoutePoints } from './arrow-label-route';
+export {
+  KNOCKOUT_MARGIN_PX,
+  LABEL_PAD_X_PX,
+  LABEL_PAD_Y_PX,
+  type ArrowLabelLayoutOptions,
+  type ArrowLabelMeasureFor,
+} from './arrow-label-blocks';
 
-const END_STUB_PX = 12;
-export const LABEL_PAD_X_PX = 4;
-export const LABEL_PAD_Y_PX = 2;
-export const KNOCKOUT_MARGIN_PX = 3;
 export const KNOCKOUT_RADIUS_PX = 4;
 const BESIDE_GAP_PX = 6;
-const LOCAL_DIRECTION_WINDOW_PX = 24;
 const CROSS_CAP_PX = 120;
 const ALONG_CAP_PX = 240;
-const CHAR_WIDTH_FALLBACK_PX = 7;
-const WORD_WIDTH_CACHE_MAX = 2000;
 // Slide candidates: twelfths of the open run, at most a quarter of it either
 // side of the preferred centre.
 const SLIDE_DIVISIONS = 12;
-
-export type ArrowLabelMeasureFor = (
-  fontPx: number,
-  bold: boolean,
-  italic: boolean,
-  family?: string,
-) => TextMeasure;
-
-export type ArrowLabelLayoutOptions = {
-  crossCapPx: number;
-  alongCapPx: number;
-  fontFamilyOf?: (arrow: ArrowElement) => string | undefined;
-  measureFor?: ArrowLabelMeasureFor;
-  // Which fonts had loaded when measuring (bump it when webfonts land). Part of the word-width cache key,
-  // so text first measured in a fallback face is measured again in the real one.
-  fontEpoch?: number;
-};
 
 export const DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS: ArrowLabelLayoutOptions = {
   crossCapPx: CROSS_CAP_PX,
@@ -98,210 +93,6 @@ export type ArrowLabelLayout = {
   height: number;
   knockout: Rect | null;
 };
-
-type Block = { lines: string[]; width: number; height: number };
-
-// ---------------------------------------------------------------------
-// Measuring
-// ---------------------------------------------------------------------
-
-const wordWidths = new Map<string, number>();
-
-function cachedMeasure(key: string, measure: TextMeasure, fontPx: number): TextMeasure {
-  return (s) => {
-    const k = `${key}|${s}`;
-    const hit = wordWidths.get(k);
-    if (hit !== undefined) return hit;
-    let w = measure(s);
-    if (!Number.isFinite(w)) w = s.length * CHAR_WIDTH_FALLBACK_PX * (fontPx / 12);
-    if (wordWidths.size >= WORD_WIDTH_CACHE_MAX) wordWidths.clear();
-    wordWidths.set(k, w);
-    return w;
-  };
-}
-
-// labelMeasure shares one canvas context, so the font is set on every call
-// rather than once: two captions measured in turn must not borrow each
-// other's font.
-const defaultMeasureFor: ArrowLabelMeasureFor = (px, bold, italic, family) => (s) =>
-  labelMeasure(px, bold, italic, family)(s);
-
-// ---------------------------------------------------------------------
-// Route geometry
-// ---------------------------------------------------------------------
-
-type Route = { pts: Pt[]; cum: number[]; length: number };
-
-function routeOf(pts: Pt[]): Route {
-  const cum = [0];
-  for (let i = 1; i < pts.length; i++) {
-    cum.push(cum[i - 1]! + Math.hypot(pts[i]!.x - pts[i - 1]!.x, pts[i]!.y - pts[i - 1]!.y));
-  }
-  return { pts, cum, length: cum[cum.length - 1] ?? 0 };
-}
-
-function pointAt(r: Route, s: number): Pt {
-  const d = Math.max(0, Math.min(r.length, s));
-  for (let i = 1; i < r.pts.length; i++) {
-    if (d <= r.cum[i]! || i === r.pts.length - 1) {
-      const seg = r.cum[i]! - r.cum[i - 1]!;
-      const f = seg > 1e-9 ? (d - r.cum[i - 1]!) / seg : 0;
-      const a = r.pts[i - 1]!;
-      const b = r.pts[i]!;
-      return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
-    }
-  }
-  return r.pts[0] ?? { x: 0, y: 0 };
-}
-
-function directionAt(r: Route, s: number): Pt {
-  const a = pointAt(r, s - LOCAL_DIRECTION_WINDOW_PX);
-  const b = pointAt(r, s + LOCAL_DIRECTION_WINDOW_PX);
-  const len = Math.hypot(b.x - a.x, b.y - a.y);
-  return len > 1e-9 ? { x: (b.x - a.x) / len, y: (b.y - a.y) / len } : { x: 1, y: 0 };
-}
-
-// Endpoints as both renderers draw them: resolved, plus the converging-fan spread.
-export function arrowResolvedEnds(arrow: ArrowElement, elements: Element[]): { from: Pt; to: Pt } {
-  const rawFrom = endpointPosition(arrow.from, elements);
-  const rawTo = endpointPosition(arrow.to, elements);
-  const fs = arrowEndpointSpread(arrow.id, 'from', elements);
-  const ts = arrowEndpointSpread(arrow.id, 'to', elements);
-  return {
-    from: { x: rawFrom.x + fs.x, y: rawFrom.y + fs.y },
-    to: { x: rawTo.x + ts.x, y: rawTo.y + ts.y },
-  };
-}
-
-function arrowRoute(arrow: ArrowElement, elements: Element[]): { route: Route; from: Pt; to: Pt } {
-  const { from, to } = arrowResolvedEnds(arrow, elements);
-  const pts = arrowPathPolyline(
-    arrowStyleOf(arrow),
-    from,
-    to,
-    arrow.from,
-    arrow.to,
-    arrow.curveOffset,
-    arrow.elbowOffset,
-    arrow.curvePoints,
-  );
-  return { route: routeOf(pts), from, to };
-}
-
-// The drawn route as a polyline, endpoints resolved the way both renderers do.
-export function arrowRoutePoints(arrow: ArrowElement, elements: Element[]): Pt[] {
-  return arrowRoute(arrow, elements).route.pts;
-}
-
-function headLength(arrow: ArrowElement, shape: ArrowheadShape = arrowheadShapeOf(arrow)): number {
-  const base = (8 / ARROWHEAD_SIZE_PX.medium) * ARROWHEAD_SIZE_PX[arrowheadSizeOf(arrow)];
-  // An ER end (er-heads.ts) runs 1.5 heads back from the table.
-  return shape === 'diamond' || shape === 'diamond-hollow'
-    ? base * 1.5
-    : isErShape(shape)
-      ? base * 1.5
-      : base;
-}
-
-function endClearances(arrow: ArrowElement): { start: number; end: number } {
-  const ends = arrow.arrowEnds ?? 'to';
-  return {
-    start:
-      ends === 'from' || ends === 'both'
-        ? headLength(arrow, arrowheadStartShapeOf(arrow)) + END_STUB_PX
-        : END_STUB_PX,
-    end: ends === 'to' || ends === 'both' ? headLength(arrow) + END_STUB_PX : END_STUB_PX,
-  };
-}
-
-// ---------------------------------------------------------------------
-// Blocks
-// ---------------------------------------------------------------------
-
-// An arrow's own label width replaces the direction caps (arrow-labels.md "Width and wrapping").
-function capFor(u: Pt, o: ArrowLabelLayoutOptions, own?: number): number {
-  return own ?? o.crossCapPx + (o.alongCapPx - o.crossCapPx) * u.x * u.x;
-}
-
-function blockOf(text: string, width: number, measure: TextMeasure, lineHeight: number): Block {
-  const wrapped = wrapBalanced(text, width, measure);
-  return {
-    lines: wrapped.lines,
-    width: wrapped.width + LABEL_PAD_X_PX * 2,
-    height: wrapped.lines.length * lineHeight + LABEL_PAD_Y_PX * 2,
-  };
-}
-
-// Length of route a block covers when centred on a line running along `u`,
-// knockout margin included.
-function footprintAlong(b: Block, u: Pt): number {
-  const w = b.width + KNOCKOUT_MARGIN_PX * 2;
-  const h = b.height + KNOCKOUT_MARGIN_PX * 2;
-  const ax = Math.abs(u.x);
-  const ay = Math.abs(u.y);
-  const alongW = ax > 1e-9 ? w / ax : Infinity;
-  const alongH = ay > 1e-9 ? h / ay : Infinity;
-  return Math.min(alongW, alongH);
-}
-
-// The widest block, at most `cap`, whose footprint fits `room`; null when not
-// even one word per line fits.
-function fittingBlock(
-  text: string,
-  cap: number,
-  u: Pt,
-  room: number,
-  measure: TextMeasure,
-  lineHeight: number,
-  // An arrow's own label width is never narrowed: a label that does not fit at it moves beside.
-  fixed = false,
-): Block | null {
-  const floor = longestWordWidth(text, measure);
-  let width = Math.max(cap, floor);
-  for (;;) {
-    const b = blockOf(text, width, measure, lineHeight);
-    if (footprintAlong(b, u) <= room) return b;
-    if (fixed) return null;
-    const textWidth = b.width - LABEL_PAD_X_PX * 2;
-    if (textWidth <= floor + 0.01) return null;
-    width = Math.max(floor, textWidth - 1);
-  }
-}
-
-function rectAround(c: Pt, w: number, h: number, margin = 0): Rect {
-  return {
-    x: c.x - w / 2 - margin,
-    y: c.y - h / 2 - margin,
-    width: w + margin * 2,
-    height: h + margin * 2,
-  };
-}
-
-// ---------------------------------------------------------------------
-// Spans (which part of the route may hold the label)
-// ---------------------------------------------------------------------
-
-type Span = { start: number; end: number; atRouteStart: boolean; atRouteEnd: boolean };
-
-function segmentSpans(r: Route): Span[] {
-  const spans: Span[] = [];
-  for (let i = 1; i < r.pts.length; i++) {
-    spans.push({
-      start: r.cum[i - 1]!,
-      end: r.cum[i]!,
-      atRouteStart: i === 1,
-      atRouteEnd: i === r.pts.length - 1,
-    });
-  }
-  return spans;
-}
-
-function openRunOf(span: Span, clear: { start: number; end: number }): [number, number] {
-  return [
-    span.start + (span.atRouteStart ? clear.start : END_STUB_PX),
-    span.end - (span.atRouteEnd ? clear.end : END_STUB_PX),
-  ];
-}
 
 // Where an on-line label goes: the span it may occupy and its preferred centre.
 // The route middle, unless the label would straddle a corner there; then the

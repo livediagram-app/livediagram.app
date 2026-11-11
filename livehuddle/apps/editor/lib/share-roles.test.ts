@@ -52,7 +52,7 @@ const paletteTileIdsFor = (level: Level): string[] => {
   return paletteCategories().flatMap((c) => (c.tiles ?? []).map((t) => t.id));
 };
 // What the Edit | Walk toggle and the mode buttons can do for each level: CanvasChrome builds the toggle where
-// `!can.alwaysWalks`, and EditorCanvasHost gives the mode buttons a press where `!can.alwaysWalks`; useCanvasTool holds
+// `!can.alwaysWalks`, and useCanvasWalkProps gives the mode buttons a press where `!can.alwaysWalks`; useCanvasTool holds
 // a Participant and a Viewer in Avatar mode (`holdWalking(can.alwaysWalks)`).
 
 const expectPerLevel = (
@@ -138,7 +138,7 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
   });
 
   // Pushing, sitting and a drink are the character's own presence: in Avatar mode, which every role has, with no
-  // gate of their own (EditorCanvasHost wires `onAvatarPush` and the seat and drink for every session).
+  // gate of their own (useCanvasWalkProps wires `onAvatarPush` and the seat and drink for every session).
   expectPerLevel(
     'Push another character, sit, take a drink',
     (level) => toolsFor(level).includes('avatar'),
@@ -153,7 +153,7 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
   );
 
   // A walking click on a control piece (share-roles.md "Always walking", bring-focus.md "Rules"): its face has a press
-  // where the gate opens (EditorCanvasHost gives Bring Focus `onPressFocusButton` on `gates.run`, a mode button
+  // where the gate opens (useCanvasWalkProps gives Bring Focus `onPressFocusButton` on `gates.run`, a mode button
   // `onPressModeButton` where `!can.alwaysWalks`; TimerView draws its controls on `can.takePart`), and without one the
   // click does nothing: never the reader, never a walk (avatarPressOutcome, owner 2026-11-06).
   describe('Press Bring Focus', () => {
@@ -216,7 +216,7 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
     view: false,
   });
 
-  // The Bring Focus face is pressable only where `roleGates(...).run` (EditorCanvasHost).
+  // The Bring Focus face is pressable only where `roleGates(...).run` (useCanvasWalkProps).
   expectPerLevel('Press Bring Focus', (level) => gatesFor(level).run, {
     edit: true,
     participate: false,

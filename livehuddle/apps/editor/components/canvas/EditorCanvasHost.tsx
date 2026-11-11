@@ -1,26 +1,15 @@
 'use client';
 
-import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { roleGates } from '@/lib/editor-capabilities';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
 import { dropThenDisarm } from '@liveworkspace/workbench/lib/palette-drop';
-import { describeOne } from '@/lib/element-names';
-import {
-  canvasSurface,
-  DEFAULT_BACKGROUND_COLOR,
-  DEFAULT_BUTTON_MODE,
-  spacePattern,
-} from '@livehuddle/document';
+import { canvasSurface, DEFAULT_BACKGROUND_COLOR, spacePattern } from '@livehuddle/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { useState } from 'react';
 import { ItemWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
 
-import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
-import {
-  LockedElementMenu,
-  type LockHolder,
-} from '@liveworkspace/workbench/components/canvas/LockedElementMenu';
+import { LockedElementMenu } from '@liveworkspace/workbench/components/canvas/LockedElementMenu';
 
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
@@ -31,7 +20,10 @@ import { Canvas } from '@/components/canvas/Canvas';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useTimerPieceControls } from '@/lib/timer-piece-controls';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
-import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
+import { useCanvasFormatProps } from '@/components/canvas/useCanvasFormatProps';
+import { useCanvasMenuProps, type LockedMenuState } from '@/components/canvas/useCanvasMenuProps';
+import { useCanvasThreadProps } from '@/components/canvas/useCanvasThreadProps';
+import { useCanvasWalkProps } from '@/components/canvas/useCanvasWalkProps';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -43,11 +35,6 @@ export function EditorCanvasHost() {
   const {
     activeTab,
     activeTabLoadState,
-    formatConfig,
-    onToggleFormatGroup,
-    onSetFormatMode,
-    formatPanelPosition,
-    setFormatPanelPosition,
 
     addAvatar,
     addSticker,
@@ -62,16 +49,6 @@ export function EditorCanvasHost() {
     pressArmedAction,
     beginEdit,
     beginRoomWalls,
-    broadcastAvatar,
-    broadcastAvatarPush,
-    broadcastAvatarSay,
-    toggleDoor,
-    broadcastCallSignal,
-    callsRoom,
-    avatarShove,
-    walkIn,
-    avatarAtRef,
-    pressFocusButton,
     broadcastCursor,
     canvasPointerRef,
     cancelDrawShape,
@@ -80,17 +57,12 @@ export function EditorCanvasHost() {
     canUndo,
     canvasMainRef,
     canvasTool,
-    participantsByTab,
-    keepWalkingTo,
 
     confirmIdentity,
     cancelIdentity,
 
     accountDisplayName,
     accountUserId,
-    actionRows,
-    commentRows,
-    commentsPanelPosition,
     commitDraw,
     commitRoomWalls,
     commitLabel,
@@ -132,13 +104,10 @@ export function EditorCanvasHost() {
     isReadOnly,
     can,
     livePresence,
-    lockedByOther,
     mapPosition,
     narrowMultiSelection,
     newDocument,
     openActionPopover,
-    completeAction,
-    reopenAction,
     openComments,
     openNote,
     pendingDraw,
@@ -152,13 +121,10 @@ export function EditorCanvasHost() {
     selectMarquee,
     selfParticipant,
     sessionShareCode,
-    exitAvatarTool,
-    pressModeButton,
     followMe,
     tabs,
     setCanvasTool,
     setCanvasThemeTab,
-    setCommentsPanelPosition,
     setContextMenu,
     setEditingId,
     setExportOpen,
@@ -196,11 +162,7 @@ export function EditorCanvasHost() {
   // render: if the holder lets go while the menu is up it closes on the next
   // outside click anyway, and a list that emptied underneath would leave a
   // menu with nothing in it.
-  const [lockedMenu, setLockedMenu] = useState<{
-    elementId: string;
-    at: { x: number; y: number };
-    holders: LockHolder[];
-  } | null>(null);
+  const [lockedMenu, setLockedMenu] = useState<LockedMenuState>(null);
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
   // the tab stores: a tab on the Default theme follows this browser's
   // appearance (docs/specs/007-editor/editor-app.md). Subscribing to the appearance here is what makes the
@@ -253,12 +215,12 @@ export function EditorCanvasHost() {
     setContextMenu,
   });
 
-  // The element the format brush is loaded from (docs/specs/010-palette/stickers.md), for the panel's
-  // preview. Resolved here rather than in the panel so the panel stays a
-  // renderer and never reaches into the tab.
-  const formatSource = formatSourceId
-    ? (activeTab.elements.find((el) => el.id === formatSourceId) ?? null)
-    : null;
+  // The Canvas's props by concern, each read from EditorContext: walking, the menu doors, comments and actions,
+  // and the Format panel (useCanvas*Props).
+  const walkProps = useCanvasWalkProps(gates);
+  const menuProps = useCanvasMenuProps(setLockedMenu);
+  const threadProps = useCanvasThreadProps();
+  const formatProps = useCanvasFormatProps();
 
   // Object props the canvas boundary compares by identity (docs/specs/008-canvas/canvas-performance.md
   // "The canvas re-renders only for what it shows"): new only when their data changes.
@@ -307,29 +269,7 @@ export function EditorCanvasHost() {
         snapGuideStore={snapGuideStore}
         remoteSelectionsByElement={remoteSelectionsByElement}
         peers={peerRows}
-        onAvatarPresence={broadcastAvatar}
-        // Who could see a character standing still: alone, its heartbeat rests (docs/specs/008-canvas/avatar-mode.md).
-        avatarPeers={livePresence.length}
-        // Avatar mode (docs/specs/008-canvas/avatar-mode.md): clicking a peer's character walks over and
-        // shoves it; their own client decides what to do with the request.
-        onAvatarPush={broadcastAvatarPush}
-        // A walking click on a Door next to you swings it (docs/specs/008-canvas/avatar-mode.md "Clicking a piece").
-        onToggleDoor={toggleDoor}
-        onAvatarSay={broadcastAvatarSay}
-        // Proximity audio (docs/specs/012-collaboration/proximity-audio.md): only with a room to talk in.
-        onCallSignal={callsRoom ? broadcastCallSignal : undefined}
-        avatarShove={avatarShove}
-        walkIn={walkIn}
-        avatarAtRef={avatarAtRef}
-        // An Editor's alone: a Participant and a Viewer are always walking (docs/specs/013-workspace/share-roles.md
-        // "Always walking").
-        walkToggle={!embedMode && !can.alwaysWalks}
-        // Bring Focus (docs/specs/012-collaboration/bring-focus.md) moves everyone's view, so it is running the
-        // session: an Editor's (docs/specs/013-workspace/share-roles.md), and the facilitator's while somebody holds the
-        // baton (docs/specs/012-collaboration/facilitator.md): "everybody look here" is the same act as "everybody
-        // stop and listen". Undefined renders the face inert, which is what a
-        // read-only surface already gets.
-        onPressFocusButton={gates.run ? pressFocusButton : undefined}
+        {...walkProps}
         onCanvasPointerMove={(x, y, target) => {
           canvasPointerRef.current = pastePointer(x, y, target ?? null);
           broadcastCursor(x !== null && y !== null ? { x, y } : null);
@@ -337,51 +277,7 @@ export function EditorCanvasHost() {
         onSelectMarquee={selectMarquee}
         canvasTool={canvasTool}
         onSetCanvasTool={setCanvasTool}
-        onExitAvatarMode={exitAvatarTool}
-        // Mode button (docs/specs/009-elements/mode-button.md): pressing one is exactly picking that mode from
-        // the palette, so it goes through the same setter, telemetry, the
-        // selection clear, and the empty-canvas guard all included. Pressing it
-        // again, while already in that mode, hands you back your previous one.
-        // A read-only session presses only the modes it has (PARTICIPANT_CANVAS_TOOLS, docs/specs/013-workspace/share-roles.md).
-        // Avatar Pad (docs/specs/009-elements/avatar-pad.md "Pressing it"): every role may walk, so a press is the
-        // Avatar pick for anyone; the canvas has already told the walk which pad to start on.
-        onPressAvatarPad={() => pressModeButton('avatar')}
-        // The Directory's Walk There and a ride's arrival (docs/specs/009-elements/directory.md, elevator.md): the
-        // Avatar pick for anyone, only when not already walking (the pick toggles).
-        onEnterAvatarMode={() => {
-          if (canvasTool !== 'avatar') pressModeButton('avatar');
-        }}
-        tabPresence={participantsByTab}
-        // Travel (a Portal, an Elevator, the Directory's Go) switches tab without ending Avatar mode
-        // (docs/specs/008-canvas/avatar-mode.md "Changing tab").
-        onTravelToTab={(tabId) => {
-          keepWalkingTo(tabId);
-          followLink({ kind: 'tab', tabId });
-        }}
-        // A Participant's and a Viewer's buttons are inert faces: they are always walking, so none can switch them.
-        onPressModeButton={
-          can.alwaysWalks
-            ? undefined
-            : (element) => {
-                const mode = element.mode ?? DEFAULT_BUTTON_MODE;
-                if (isReadOnly && !PARTICIPANT_CANVAS_TOOLS.includes(mode)) return;
-                pressModeButton(mode);
-              }
-        }
-        // The `…` on a Behaviours element's face (docs/specs/008-canvas/canvas-and-palette.md). Anchored from the
-        // ELEMENT's rect, not the trigger's, so it lands exactly where a
-        // right-click on the same element would, one menu, one position,
-        // whichever way you asked for it.
-        onOpenElementSettings={
-          isReadOnly
-            ? undefined
-            : (elementId) => {
-                const node = document.querySelector(elementSelector(elementId));
-                if (!(node instanceof HTMLElement)) return;
-                const { x, y } = elementMenuAnchor(node.getBoundingClientRect());
-                setContextMenu({ mode: 'element', elementId, x, y });
-              }
-        }
+        {...menuProps}
         // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): resolved to a NAME here, where presence lives,
         // so the pill doesn't have to look one up.
         followingName={
@@ -426,25 +322,7 @@ export function EditorCanvasHost() {
         }
         onResetMap={() => setMapPosition((p) => (p === null ? p : null))}
         userPreferences={userPreferences}
-        formatConfig={formatConfig}
-        onToggleFormatGroup={onToggleFormatGroup}
-        onSetFormatMode={onSetFormatMode}
-        // What the brush holds, described for the panel's preview (docs/specs/010-palette/stickers.md):
-        // the loaded element's name and the three colours the swatch draws.
-        formatBrushSource={
-          formatSource
-            ? {
-                name: describeOne(formatSource),
-                fill: 'fillColor' in formatSource ? formatSource.fillColor : undefined,
-                stroke: 'strokeColor' in formatSource ? formatSource.strokeColor : undefined,
-                textColor: 'textColor' in formatSource ? formatSource.textColor : undefined,
-              }
-            : null
-        }
-        formatPanelPosition={formatPanelPosition}
-        onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}
-        onResetFormatPanel={() => setFormatPanelPosition(null)}
-
+        {...formatProps}
         // Bottom-dock Theme & canvas button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
         // CanvasThemeDialog on its home, the Looks and the Fine-tune rows.
         onOpenCanvasTheme={
@@ -456,25 +334,7 @@ export function EditorCanvasHost() {
               }
         }
         // No Tidy Up button: Auto Layout is not in livehuddle (docs/specs/008-canvas/layout-cleanup.md).
-        commentRows={commentRows}
-        commentsPanelPosition={commentsPanelPosition}
-        onMoveCommentsPanel={(x, y) => setCommentsPanelPosition({ x, y })}
-        onResetCommentsPanel={() => setCommentsPanelPosition(null)}
-        onOpenCommentsForElement={(id) => {
-          setSelectedId(id);
-          openComments(id);
-        }}
-        actionRows={actionRows}
-        onOpenActionForElement={(id) => {
-          setSelectedId(id);
-          openActionPopover(id);
-        }}
-        onToggleActionDone={
-          isReadOnly
-            ? undefined
-            : (id, done, actionId) =>
-                done ? completeAction(id, actionId) : reopenAction(id, actionId)
-        }
+        {...threadProps}
         currentDocumentId={documentId}
         currentShareCode={sessionShareCode}
         onRenameCurrentDocument={nameDocument}
@@ -511,90 +371,6 @@ export function EditorCanvasHost() {
           setContextMenu(null);
         }}
         onSelect={selectElement}
-        onElementContextMenu={(id, sx, sy) => {
-          // Concurrent-selection lock (docs/specs/007-editor/editor-app.md): a peer holds this
-          // element, so it can't be selected, dragged, or edited, don't
-          // pop a dead context menu on it either. Same gate as
-          // selectElement. A Participant or a Viewer still opens its own menu there
-          // (comments, a link), less Edit Text (docs/specs/008-canvas/element-menu-quick-bar.md).
-          //
-          // The one exception is whoever is running the session
-          // (docs/specs/012-collaboration/facilitator.md): for them a locked element has exactly one
-          // available action, freeing it, and that gets its own small menu
-          // rather than the element's real one, whose every other row
-          // would be dead. See LockedElementMenu.
-          if (!isReadOnly && lockedByOther(id)) {
-            const holders = remoteSelectionsByElement.get(id);
-            if (facilitator.canReleaseSelectionLock && holders?.length) {
-              setLockedMenu({ elementId: id, at: { x: sx, y: sy }, holders });
-            }
-            return;
-          }
-          // Right-clicking the element that already owns the menu AT THE
-          // SAME ANCHOR is a no-op: return the SAME state object so React
-          // re-renders nothing. Re-opening would restart the entrance
-          // animation and flash the selection popover in the gap, for a
-          // gesture that asked for the menu already on screen.
-          //
-          // The anchor has to be part of that comparison: selectElement
-          // runs first and retargets an open menu's elementId in place
-          // (keeping the old x / y), so an id-only check would see 'same
-          // element' for a right-click on a DIFFERENT one and strand the
-          // menu at the previous element's position.
-          setContextMenu((cur) =>
-            cur && cur.mode === 'element' && cur.elementId === id && cur.x === sx && cur.y === sy
-              ? cur
-              : { mode: 'element', elementId: id, x: sx, y: sy },
-          );
-        }}
-        onMultiContextMenu={
-          isReadOnly
-            ? undefined
-            : // Right-click on a group / multi-selection always OPENS at the
-              // cursor (a direct set, like onElementContextMenu). A toggle here
-              // meant a lingering multi menu (which clicking elsewhere doesn't
-              // dismiss, since element pointerdown stops propagation) got
-              // closed by the next right-click instead of reopening, so the
-              // group menu "wouldn't open".
-              (sx, sy) => setContextMenu({ mode: 'multi', x: sx, y: sy })
-        }
-        onOpenMultiContextMenu={
-          isReadOnly
-            ? undefined
-            : (sx, sy) =>
-                // Toggle: the selection toolbar's ⋯ button closes an
-                // already-open multi menu instead of reopening it.
-                setContextMenu((cur) =>
-                  cur && cur.mode === 'multi' ? null : { mode: 'multi', x: sx, y: sy },
-                )
-        }
-        onOpenElementContextMenu={
-          isReadOnly
-            ? undefined
-            : (id, sx, sy) =>
-                // Ellipsis is a toggle: clicking it while its menu is already
-                // open for this element closes it (the ContextMenu ignores the
-                // trigger's mousedown so this onClick gets to decide).
-                setContextMenu((cur) =>
-                  cur && cur.mode === 'element' && cur.elementId === id
-                    ? null
-                    : { mode: 'element', elementId: id, x: sx, y: sy },
-                )
-        }
-        onCanvasContextMenu={
-          isReadOnly
-            ? undefined
-            : (sx, sy) =>
-                setContextMenu({
-                  mode: 'canvas',
-                  x: sx,
-                  y: sy,
-                  // Open upward when the click is in the bottom fifth of the
-                  // viewport so the canvas menu's categories don't run
-                  // off-screen (matching the tab menu).
-                  openUp: sy > window.innerHeight * 0.8,
-                })
-        }
         onBeginDrag={beginDrag}
         onPressArmedAction={pressArmedAction}
         onBeginEdit={beginEdit}

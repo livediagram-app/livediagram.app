@@ -9,41 +9,17 @@
 // (Workers / jsdom), so wrapping still works headless.
 
 import { PAGE_EXPORT_PAPER, withinPageFrame, type PageExportFrame } from './page-frame';
-import { svgTabWindow, type ResolveTabWindow } from './tab-window';
-import { missingComponentFrame } from './component-resolve';
-import {
-  hasShapeSilhouette,
-  scaledPolygonPoints,
-  svgChecklistShape,
-  svgBrowserChrome,
-  svgLegendShape,
-  svgCodeBlockShape,
-  svgFreehandShape,
-  svgPathElementShape,
-  svgShapeSilhouette,
-} from './svg-render-shapes';
-import { faceFinishOf, finishWobblesArt, isHandDrawn, resolveFinish, type Finish } from './finish';
-import {
-  SKETCH_ART_FILTER_ID,
-  svgSketchArtDefs,
-  svgSketchedBody,
-  svgSketchFace,
-} from './svg-render-sketch';
-import { svgMarkerFace, svgProfessionalFace } from './svg-render-face-finish';
+import type { ResolveTabWindow } from './tab-window';
+import { hasShapeSilhouette } from './svg-render-shapes';
+import { resolveFinish, type Finish } from './finish';
+import { svgSketchArtDefs } from './svg-render-sketch';
 import { sketchBackdropIds } from './sketch-backdrop';
 import { acceptsInlineIcon, canvasSurface } from './colors';
-import { inlineIconLayout } from './svg-render-inline-icon';
-import { svgIconShape, svgImageShape } from './svg-render-image-icon';
-import { DIAMOND_POINTS } from './shape-geometry';
-import { svgTableShape } from './svg-render-table';
 // Which body an element draws, and the list of kinds that have one (docs/specs/020-import-export/export-fidelity.md).
-import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
-import { svgPageFold } from './svg-render-page';
-import { svgHeroCaption } from './svg-render-web';
-import { defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
+import { shapeHasBespokeBody } from './svg-render-body';
 // Text/number primitives shared with the per-element emitters — re-exported
 // below so existing importers of this module keep resolving.
-import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from './svg-render-primitives';
 
 export {
   estimatedLabelMeasure,
@@ -56,8 +32,6 @@ export {
   wrapLabel,
   xmlEscape,
 } from './svg-render-primitives';
-import { svgRichWrappedLabel, svgWrappedLabel } from './svg-render-labels';
-import { svgWordmarkLabel } from './svg-render-wordmark';
 import { hasWordmarkType } from './wordmark';
 
 export {
@@ -102,16 +76,10 @@ export {
   type ResolveStickerArt,
 } from './svg-render-describe';
 import {
-  describeBoxedExport,
-  selfLabelled,
   EXPORT_BG,
-  EXPORT_IMAGE_FILL,
-  EXPORT_IMAGE_STROKE,
   EXPORT_PADDING,
-  exportFontFamily,
   exportFontIds,
   finishOf,
-  type BoxedExportOptions,
   type ResolveIconArt,
   type ResolveImageHref,
   type ResolveStickerArt,
@@ -122,12 +90,12 @@ import { googleFontsHref } from '@liveworkspace/model-core/fonts';
 import { boundsOfPoints, type Point } from '@liveworkspace/model-core/geometry-primitives';
 import { getBuiltInTheme } from './themes';
 import { themeChartPalette } from './theme-presets';
-import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
-import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
-import { resolveStockColours } from './stock-colours';
+import { resolvedAccentEdge } from './accent-edge';
 import { isPointerNote, pointerTipOf } from './pointer-note';
 import { drawnBounds, rotationOf } from './rotation';
-import { tagColoursOf, withTagAccent } from './tag-colours';
+import { tagColoursOf } from './tag-colours';
+import { svgBoxed } from './svg-render-boxed';
+export { svgBoxed } from './svg-render-boxed';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
@@ -175,304 +143,6 @@ export function contentBounds(
 // a theme-deferring element exports with its rendered look.
 
 export { svgIconShape } from './svg-render-image-icon';
-
-export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): string {
-  // An instance (docs/specs/009-elements/components.md "Exports"): an export expands it first (expandInstances), which
-  // keeps it, unseen (opacity 0), only as the box its arrows pin to. One reaching a renderer unexpanded draws as a
-  // dashed frame rather than nothing.
-  if (source.type === 'shape' && source.shape === 'instance')
-    return source.opacity === 0 ? '' : svgBoxed(missingComponentFrame(source, 'Component'), opts);
-  // Every word on the element in its face, so a face that writes its own (a panel's rows, a button) wears the tab's
-  // font and finish as on the canvas; a word that names its own face keeps it.
-  const face = exportFontFamily(source, opts.tabFont, opts.tabFinish);
-  const drawn = svgBoxedFace(source, opts);
-  const out = face ? drawn.replace(/^<g/, `<g font-family="${xmlEscape(face)}"`) : drawn;
-  // A stored tab window (docs/specs/009-elements/tab-window.md, retired): only its frame follows this finish.
-  if (source.type === 'shape' && source.shape === 'tab-window') return out;
-  const finish = faceFinishOf(source, resolveFinish(finishOf(source), opts.tabFinish));
-  const open = out.indexOf('>') + 1;
-  const close = out.lastIndexOf('</g>');
-  const inner = out.slice(open, close);
-  // Under Sketch a face is drawn by hand, its words crisp (docs/specs/008-canvas/finish.md "Every other face is
-  // drawn by hand too"); under Professional its rectangles go square and its lines thin ("Faces").
-  if (finish === 'sketch')
-    return (
-      out.slice(0, open) +
-      svgSketchFace(
-        svgMarkerFace(inner, source.id, { width: source.width, height: source.height }, 'pencil'),
-      ) +
-      out.slice(close)
-    );
-  if (finish === 'professional')
-    return out.slice(0, open) + svgProfessionalFace(inner) + out.slice(close);
-  // Under Marker its frames and shapes are drawn in marker ("Faces: frames and shapes").
-  if (finish === 'marker')
-    return (
-      out.slice(0, open) +
-      svgMarkerFace(inner, source.id, { width: source.width, height: source.height }) +
-      out.slice(close)
-    );
-  return out;
-}
-
-function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
-  const surface = opts.surface ?? 'light';
-  // A stock colour stored by name is drawn in its version for this page.
-  // A card under the tab's tag colours renders their accent edge (docs/specs/009-elements/tag-colours.md).
-  const el = resolveStockColours(withTagAccent(source, opts.tagColours), surface);
-  const { opacity, shape, label: described } = describeBoxedExport(el, opts);
-  let label = described;
-  // What a self-drawing element writes its own text in: the label's resolved
-  // colour and face, so a chart's key and a rail's captions read like every
-  // other label on the canvas.
-  const labelColor = label?.color ?? defaultTextColor(el, surface);
-  const fontFamily = label?.fontFamily ?? exportFontFamily(el, opts.tabFont, opts.tabFinish);
-  // The drawing style (docs/specs/008-canvas/finish.md): Professional's borders and corners, Sketch's or Marker's
-  // hand-drawn body. Null when this element is not drawn by hand.
-  const finish = resolveFinish(finishOf(el), opts.tabFinish);
-  const sketch = isHandDrawn(finish)
-    ? svgSketchedBody(el, shape, finish, !!opts.sketchBackdrop)
-    : null;
-  const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
-  // Rotation applies to the whole element (body + label) about its centre,
-  // exactly like the canvas wrapper's CSS rotate.
-  const rotation = rotationOf(el);
-  const rotAttr = rotation
-    ? ` transform="rotate(${r2(rotation)} ${r2(el.x + el.width / 2)} ${r2(el.y + el.height / 2)})"`
-    : '';
-  // Drop shadow (docs/specs/008-canvas/element-shadows.md): reference the shared feDropShadow def the
-  // design emitter collects via svgShadowDefs (deterministic id, so
-  // this stays in lockstep without threading the def through).
-  const shadow = supportsShadow(el) ? el.shadow : undefined;
-  const shadowAttr = shadow ? ` filter="url(#${shadowFilterId(shadow)})"` : '';
-  const cx = el.x + el.width / 2;
-  const cy = el.y + el.height / 2;
-  let shapeStr = '';
-  if (el.type === 'table') {
-    // The real grid (tracks / headers / zebra / per-cell text), not a
-    // box-with-nothing. Tables carry no element label; the cells are the
-    // content.
-    return `<g${opAttr}${rotAttr}>${svgTableShape(el, surface)}${sketch ?? ''}</g>`;
-  }
-  if (el.type === 'freehand' && shape.kind === 'rect') {
-    // The sketch's actual polyline instead of its bounding box; a Polygon-tool outline drawn by hand in its finish
-    // (docs/specs/008-canvas/finish.md "Polygons").
-    return `<g${opAttr}${rotAttr}>${sketch ?? svgFreehandShape(el, shape.stroke, shape.fill, finish)}</g>`;
-  }
-  if (el.type === 'path' && shape.kind === 'rect') {
-    // The path's own curve (docs/specs/023-draw-mode/path-tool.md "Export"), or drawn by hand in its finish
-    // (finish.md "Polygons and paths").
-    return `<g${opAttr}${rotAttr}>${sketch ?? svgPathElementShape(el, shape.stroke, shape.fill, finish)}</g>`;
-  }
-  if (el.type === 'shape' && el.shape === 'code-block') {
-    // The dark editor card + plain mono lines (docs/specs/009-elements/code-block.md); no label.
-    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgCodeBlockShape(el)}</g>`;
-  }
-  if (el.type === 'shape' && el.shape === 'legend' && shape.kind === 'rect') {
-    // The key card with its swatch + label rows (docs/specs/009-elements/pie-chart.md).
-    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgLegendShape(
-      el,
-      shape.fill,
-      shape.stroke,
-      // Its rows in the element's ink for this page, as the canvas writes them.
-      el.textColor ?? defaultTextColor(el, surface),
-      opts.chartPalette,
-      fontFamily,
-    )}</g>`;
-  }
-  if (el.type === 'shape' && el.shape === 'tab-window') {
-    // A stored tab window (docs/specs/009-elements/tab-window.md, retired): its frame named for its tab.
-    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgTabWindow(el, opts.resolveTabWindow?.(el), el.strokeColor, surface, finish === 'sketch', fontFamily)}</g>`;
-  }
-  if (el.type === 'shape' && el.shape === 'checklist' && shape.kind === 'rect') {
-    // The themed to-do card with its rows + done-count footer (docs/specs/009-elements/checklist.md).
-    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgChecklistShape(
-      el,
-      shape.fill,
-      shape.stroke,
-      el.textColor ?? defaultTextColor(el, surface),
-      fontFamily,
-    )}</g>`;
-  }
-  if (shape.kind === 'image') {
-    shapeStr =
-      (shape.href
-        ? svgImageShape(el, shape.href, shape.objectFit, shape.radius)
-        : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
-          ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`) +
-      // Its hand-drawn edge (finish.md "Images"), then a hero's caption card
-      // (docs/specs/009-elements/web-components-and-no-groups.md), over the image.
-      (sketch ?? '') +
-      (el.type === 'image' ? svgHeroCaption(el, fontFamily) : '');
-  } else if (sketch && (shape.kind === 'ellipse' || shape.kind === 'diamond')) {
-    shapeStr = sketch;
-  } else if (shape.kind === 'ellipse') {
-    // Inset by half the border, as the canvas's CSS border sits inside.
-    const b = el.type === 'shape' ? borderOf(el, finish) : { width: 1.5, dash: null };
-    shapeStr = `<ellipse cx="${r2(cx)}" cy="${r2(cy)}" rx="${r2(Math.max(0, el.width / 2 - b.width / 2))}" ry="${r2(Math.max(0, el.height / 2 - b.width / 2))}" fill="${xmlEscape(shape.fill)}"${strokeAttrs(shape.stroke, b.width, b.dash)}/>`;
-  } else if (shape.kind === 'diamond') {
-    // Native at element coordinates, from the shared table's points, inset
-    // by half the border so the tips stay inside the box (strokeInside).
-    const b = el.type === 'shape' ? borderOf(el, finish) : { width: 1.5, dash: null };
-    const inset = b.width / 2;
-    const points = scaledPolygonPoints(
-      DIAMOND_POINTS,
-      el.x + inset,
-      el.y + inset,
-      Math.max(0, el.width - b.width),
-      Math.max(0, el.height - b.width),
-    );
-    shapeStr = `<polygon points="${points}" fill="${xmlEscape(shape.fill)}"${strokeAttrs(shape.stroke, b.width, b.dash)} stroke-linejoin="round"/>`;
-  } else if (shape.kind === 'rect') {
-    // Shape silhouettes (hexagon / cylinder / design / devices / actor /
-    // frame ...) mirror the editor overlay's geometry; kinds without one
-    // (square / sticky / text-box / cards) stay a rounded rect, with the
-    // stadium's full pill radius as the one native special case.
-    const silhouette =
-      el.type === 'shape' && hasShapeSilhouette(el.shape)
-        ? svgShapeSilhouette(el, shape.fill, shape.stroke, finish)
-        : null;
-    const rx =
-      el.type === 'shape' && el.shape === 'stadium'
-        ? Math.min(el.width, el.height) / 2
-        : // A sticky is die-cut paper: square corners, matching the canvas.
-          el.type === 'sticky'
-          ? 0
-          : 6;
-    // What this element draws INSTEAD of (or under) a plain label: its plot,
-    // its value, its rows, its face. See svg-render-body.
-    const face = svgElementBody(el, {
-      labelColor,
-      fontFamily,
-      stroke: shape.stroke,
-      fill: shape.fill,
-      chartPalette: opts.chartPalette,
-      chartGround: opts.chartGrounds?.get(el.id),
-      label: label?.text ?? el.label ?? '',
-      surface,
-      resolveIconArt: opts.resolveIconArt,
-      tagColours: opts.tagColours,
-    });
-    // A SELF-PAINTING element's body is its own: the canvas gives it a
-    // wrapper with no border and no background (element-variant.ts), and the
-    // export drew one anyway, framing every chart, progress element, rating
-    // and rail in a box that is not on the canvas. Also gated on having drawn
-    // a face, so a self-painting kind the export cannot draw yet (portal, an
-    // unresolved icon) still renders its box rather than nothing at all. A
-    // record and a page are NOT self-painting: their rows and masthead sit
-    // inside a real box, so they keep it. A silhouette always wins: an actor
-    // IS its figure.
-    const selfPainting = el.type === 'shape' && SELF_PAINTING_SHAPES.has(el.shape);
-    const box =
-      sketch ??
-      silhouette ??
-      (selfPainting && face
-        ? ''
-        : el.type === 'shape'
-          ? // A shape's border is the element's own (width, dash, radius), inset
-            // like the canvas's CSS border (svg-render-border). A stadium keeps
-            // its silhouette radius.
-            borderedRect(
-              el,
-              shape.fill,
-              shape.stroke,
-              el.shape === 'stadium' ? rx : undefined,
-              finish,
-            )
-          : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`);
-    // What the canvas draws ON the box: a browser frame's chrome strip
-    // (docs/specs/008-canvas/canvas-and-palette.md) and a page's fold.
-    const onBox =
-      el.type === 'shape' && el.shape === 'browser'
-        ? svgBrowserChrome(el, shape.stroke)
-        : el.type === 'shape' && el.shape === 'page'
-          ? svgPageFold(el, shape.fill, shape.stroke, opts.paper ?? '#ffffff')
-          : '';
-    // An accent edge (docs/specs/008-canvas/accent-edge.md): over the fill, inside the border, under the label.
-    const edgeBorder = el.type === 'shape' ? borderOf(el, finish) : null;
-    const edge =
-      el.type === 'shape' && edgeBorder
-        ? svgAccentEdge(el, {
-            stroke: shape.stroke,
-            borderWidth: edgeBorder.width,
-            radius: el.shape === 'stadium' ? rx : edgeBorder.radius,
-          })
-        : '';
-    shapeStr = box + edge + onBox + face;
-  } else if (shape.kind === 'icon') {
-    shapeStr = svgIconShape(el, shape.art, shape.stroke);
-  } else if (shape.kind === 'sticker') {
-    // The sticker's own art, nested over the whole element box. Its viewBox
-    // comes from the builder (square for an emoji, a wide pill for a badge)
-    // and `meet` keeps the plate un-warped, matching the canvas.
-    shapeStr =
-      `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
-      ` viewBox="${shape.art.viewBox}" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
-      `${shape.art.markup}</svg>`;
-  }
-  // Icons and stickers under Sketch draw through the hand-drawn wobble (docs/specs/008-canvas/finish.md), as on the
-  // canvas; the export carries the filter's defs (svgSketchArtDefs).
-  if (
-    finish === 'sketch' &&
-    finishWobblesArt(el) &&
-    (shape.kind === 'icon' || shape.kind === 'sticker')
-  )
-    shapeStr = `<g filter="url(#${SKETCH_ART_FILTER_ID})">${shapeStr}</g>`;
-  // An inline icon beside the label, as the canvas lays it out (svg-render-inline-icon); it moves the label aside.
-  const iconArt =
-    el.type === 'shape' &&
-    acceptsInlineIcon(el) &&
-    el.iconId &&
-    (shape.kind === 'rect' || shape.kind === 'ellipse' || shape.kind === 'diamond') &&
-    !selfLabelled(el)
-      ? opts.resolveIconArt?.(el.iconId)
-      : undefined;
-  const inline =
-    iconArt && el.type === 'shape'
-      ? inlineIconLayout(el, label, iconArt, labelColor, el.textSize ?? 'scale')
-      : null;
-  if (inline) label = inline.label;
-  if (inline) shapeStr += inline.icon;
-  // A self-drawing element renders NO standard label on the canvas (its own
-  // content is what it shows), so the export must not print one either: a
-  // chart came out with "pie-chart" centred in the middle of it.
-  const labelStr =
-    !label || selfLabelled(el)
-      ? ''
-      : el.type === 'text' && hasWordmarkType(el)
-        ? // Tracking, weight, case and arc (docs/specs/007-editor/logo-pages.md "Wordmark type").
-          svgWordmarkLabel(el, label)
-        : label.runs
-          ? svgRichWrappedLabel(
-              label.runs,
-              label.x,
-              label.y,
-              label.anchor,
-              label.maxWidth,
-              label.valign,
-              label.fontFamily,
-            )
-          : svgWrappedLabel(
-              // Wrapped in the face it paints in, or a wide face breaks at the
-              // wrong words and runs out of its element.
-              wrapLabel(
-                label.text,
-                label.maxWidth,
-                labelMeasure(label.size, label.bold, label.italic, label.fontFamily),
-                !(el.type === 'shape' && el.shape === 'icon'),
-              ),
-              label.x,
-              label.y,
-              label.anchor,
-              label.color,
-              label.size,
-              label.bold,
-              label.italic,
-              label.valign,
-              label.fontFamily,
-            );
-  return `<g${opAttr}${rotAttr}${shadowAttr}>${shapeStr}${labelStr}</g>`;
-}
 
 // The <style> block declaring the webfonts an export actually used
 // (docs/specs/004-interface-design/fonts.md), so the file carries its own typography instead of relying on

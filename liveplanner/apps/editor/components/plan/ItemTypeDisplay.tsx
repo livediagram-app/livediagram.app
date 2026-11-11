@@ -19,9 +19,6 @@ import { createPortal } from 'react-dom';
 import {
   CARD_FIELDS,
   CARD_SIZES,
-  COMMENTS_FIELD,
-  commentsFieldsOf,
-  fromLocalInput,
   CARD_SLOTS,
   CARD_SLOT_LABELS,
   cardDisplayFields,
@@ -32,39 +29,27 @@ import {
   typeCardLayout,
   typeOffersCardField,
   customCardFields,
-  isCustomCardField,
-  STATUS_SINCE_FIELD,
-  type CustomFieldDef,
   type CardDisplay,
   type CardField,
   AUTOMATIC_CARD_FIELDS,
   type CardLayout,
   type CardSize,
-  typeFieldLabel,
   type CardSlot,
-  type Item,
   type ItemTypeDef,
 } from '@liveplanner/items';
-import { Button, CloseIcon, PlusIcon, lucideGlyph } from '@liveplanner/ui';
-import { lucideImage } from '@liveworkspace/icons/lucide';
+import { Button, CloseIcon } from '@liveplanner/ui';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
-import { FIELD_GLYPHS } from './card-field-glyphs';
-import { CARD_FIELD_LABELS } from './board-setup-edits';
 import { moveCardField, neighbourSlot, removeCardField } from './card-layout-edits';
 import { PlanCardFace, type CardFaceEdit } from './PlanCardFace';
-import { PlanTypeGlyph } from './plan-type-glyph';
-import { dayKey } from './day-label';
 import { planPalette } from './plan-palette';
 import { useCardFieldDrag } from './useCardFieldDrag';
-import { customFieldIcon } from './CustomFieldKindParts';
-import { fieldCountKey } from '@liveplanner/project';
-import { createThreadStore, type ThreadStore } from '@/hooks/plan/thread-store';
 import { ThreadCountsProvider } from './threads/CardThreadsContext';
 
-const PicturesGlyph = lucideGlyph(lucideImage, 14);
+import { sampleCard, sampleThreadStore } from './item-type-display-sample';
+import { DROP_MARKER, fieldIcon, fieldLabel, PlaceMenu } from './ItemTypeDisplayParts';
 
 export type CardDisplayDraft = CardDisplay;
 
@@ -86,186 +71,6 @@ export function cardZoomFor(width: number | undefined): number {
   const fit = (width - 2 * CARD_GUTTER_PX) / CARD_PX;
   return Math.max(CARD_ZOOM_MIN, Math.min(CARD_ZOOM, fit));
 }
-
-const SAMPLE_PERSON = { id: 'sample-person', name: 'Sam Rivera', color: '#0d9488' };
-const SAMPLE_REVIEWER = { id: 'sample-reviewer', name: 'Ana Silva', color: '#7c3aed' };
-
-// A card with something in every field, so each placed field shows.
-function sampleCard(type: ItemTypeDef): Item {
-  return {
-    id: 'sample-card',
-    type: type.id,
-    key: 12,
-    rank: 'a',
-    fields: {
-      title: `Example ${type.label || 'card'}`,
-      assignee: SAMPLE_PERSON,
-      priority: 'high',
-      due: dayKey(3),
-      start: dayKey(-2),
-      // Four days in its column, so a placed Age reads "4d".
-      status: 'In Progress',
-      [STATUS_SINCE_FIELD]: Date.now() - 4 * 86_400_000,
-      labels: ['Design'],
-      estimate: 3,
-      checklist: [
-        { id: 'a', text: 'One', done: true },
-        { id: 'b', text: 'Two', done: true },
-        { id: 'c', text: 'Three', done: false },
-        { id: 'd', text: 'Four', done: false },
-        { id: 'e', text: 'Five', done: false },
-      ],
-      description: 'A short description of the work, as its first lines read on a card.',
-      votes: { 'sample-person': 3 },
-      comments: { comments: [{}, {}] },
-      // Three pictures, so the Attachments chip reads 3; the cover draws as its placeholder (CardCover's `sample`).
-      attachments: ['a', 'b', 'c'].map((n) => ({
-        id: `sample-${n}`,
-        name: `${n}.png`,
-        size: 1024,
-        type: 'image/png',
-      })),
-      // A sample value for each of the type's custom fields, so a placed one shows.
-      ...Object.fromEntries((type.custom ?? []).flatMap((c) => sampleCustom(c))),
-    },
-    rev: 1,
-    // Made two days ago and edited today, so placed stamps read as a real card's.
-    createdAt: Date.now() - 2 * 86_400_000,
-    updatedAt: Date.now(),
-    createdBy: SAMPLE_PERSON,
-    updatedBy: SAMPLE_PERSON,
-  };
-}
-
-// The sample's open comments: two in each of the type's Comments fields, so each placed one's chip shows.
-function sampleThreadStore(type: ItemTypeDef, itemId: string): ThreadStore {
-  const fields = commentsFieldsOf(type);
-  const store = createThreadStore();
-  store.setCounts(
-    new Map([
-      [itemId, 2 * fields.length],
-      ...fields
-        .filter((f) => f !== COMMENTS_FIELD)
-        .map((f) => [fieldCountKey(itemId, f), 2] as const),
-    ]),
-  );
-  return store;
-}
-
-// A custom field's sample value, by its kind (none for a Link to Card: the chip then reads its name).
-function sampleCustom(c: CustomFieldDef): [string, unknown][] {
-  switch (c.kind) {
-    case 'number':
-      return [[c.id, 5]];
-    case 'date':
-      return [[c.id, dayKey(7)]];
-    // A week away at 17:00 in the viewer's zone; a range of that day to two days later, 09:00 to 17:00 with times.
-    case 'datetime':
-      return [[c.id, fromLocalInput(`${dayKey(7)}T17:00`) ?? dayKey(7)]];
-    case 'daterange':
-      return [
-        [
-          c.id,
-          c.withTime
-            ? [fromLocalInput(`${dayKey(7)}T09:00`), fromLocalInput(`${dayKey(9)}T17:00`)]
-            : [dayKey(7), dayKey(9)],
-        ],
-      ];
-    case 'phone':
-      return [[c.id, '+44 20 7946 0958']];
-    case 'checkbox':
-      return [[c.id, true]];
-    case 'link':
-      return [[c.id, 'https://example.com']];
-    case 'currency':
-      return [[c.id, 12500]];
-    case 'percent':
-      return [[c.id, 40]];
-    // 2h 30m; a Time Spent field as one entry of it (docs/specs/026-plan/item-types.md "Duration").
-    case 'duration':
-      return [
-        [
-          c.id,
-          c.timeSpent
-            ? {
-                people: { sample: { name: 'Sam', color: '#7c3aed' } },
-                entries: [{ id: 'sample-entry', by: 'sample', minutes: 150, at: 0 }],
-                running: [],
-              }
-            : 150,
-        ],
-      ];
-    case 'email':
-      return [[c.id, 'sam@example.com']];
-    case 'choice':
-      return c.options?.[0] ? [[c.id, c.options[0]]] : [];
-    // A built-in kind's sample is its built-in field's; an Image has none to fetch, so it reads its name, and a
-    // Comments field's chip counts the sample's threads (sampleThreadStore).
-    case 'person':
-      return [[c.id, SAMPLE_REVIEWER]];
-    case 'labels':
-      return [[c.id, ['Urgent']]];
-    case 'colour':
-      return [[c.id, '#0d9488']];
-    case 'checklist':
-      return [
-        [
-          c.id,
-          [
-            { id: 'a', text: 'One', done: true },
-            { id: 'b', text: 'Two', done: false },
-          ],
-        ],
-      ];
-    // A Votes field reads its ▲ count, as the built-in Votes' sample does.
-    case 'votes':
-      return [[c.id, { 'sample-person': 2 }]];
-    case 'card':
-    case 'image':
-    case 'comments':
-      return [];
-    default:
-      return [[c.id, c.label || 'Sample']];
-  }
-}
-
-// A field's name and icon: a built-in's own, or a custom field's (its label, its kind's icon).
-const customOf = (type: ItemTypeDef, f: CardField) =>
-  isCustomCardField(f) ? (type.custom ?? []).find((c) => c.id === f) : undefined;
-const fieldLabel = (type: ItemTypeDef, f: CardField) =>
-  customOf(type, f)?.label ||
-  (isCustomCardField(f) ? 'Custom Field' : typeFieldLabel(type, f, CARD_FIELD_LABELS[f]));
-const fieldIcon = (type: ItemTypeDef, f: CardField, size = 14) => {
-  const custom = customOf(type, f);
-  if (custom)
-    return (
-      <span className="flex" style={{ width: size, height: size }}>
-        <span className="flex [&_svg]:h-full [&_svg]:w-full">{customFieldIcon(custom)}</span>
-      </span>
-    );
-  // Attachments draws its picture glyph, as on the card.
-  if (f === 'attachments')
-    return (
-      <span className="flex [&_svg]:h-full [&_svg]:w-full" style={{ width: size, height: size }}>
-        <PicturesGlyph />
-      </span>
-    );
-  return f === 'key' ? (
-    <span className="text-[12px] font-semibold leading-none">#</span>
-  ) : (
-    <PlanTypeGlyph glyph={FIELD_GLYPHS[f as keyof typeof FIELD_GLYPHS] ?? 'note'} size={size} />
-  );
-};
-
-// Where a dragged field lands: a bar between chips.
-const DROP_MARKER = (
-  <span
-    key="drop-marker"
-    data-drop-marker=""
-    aria-hidden
-    className="h-5 w-[3px] shrink-0 self-center rounded-full bg-brand-500 shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-brand-500)_20%,transparent)] dark:bg-brand-400"
-  />
-);
 
 export function ItemTypeDisplay({
   type,
@@ -596,38 +401,6 @@ export function ItemTypeDisplay({
           />
         </AnchoredPopover>
       ) : null}
-    </div>
-  );
-}
-
-// Where an available field goes: a row per part of the card.
-function PlaceMenu({
-  title,
-  slots,
-  labelOf,
-  onPick,
-}: {
-  title: string;
-  slots: readonly CardSlot[];
-  labelOf: (slot: CardSlot) => string;
-  onPick: (slot: CardSlot) => void;
-}): ReactNode {
-  return (
-    <div className="flex flex-col gap-0.5 rounded-lg border border-slate-200 bg-white p-1.5 dark:border-slate-700 dark:bg-slate-900">
-      <span className="px-2 pb-1 pt-0.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-        {title}
-      </span>
-      {slots.map((s) => (
-        <button
-          key={s}
-          type="button"
-          className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-          onClick={() => onPick(s)}
-        >
-          <PlusIcon size={12} />
-          {labelOf(s)}
-        </button>
-      ))}
     </div>
   );
 }

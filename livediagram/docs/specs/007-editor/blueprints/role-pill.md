@@ -14,7 +14,7 @@ Scope, by file:
 | `apps/editor/app/document/[id]/useViewPreview.ts`                      | `viewPreview`, `canToggleRole`, `toggleViewPreview` |
 | `apps/editor/app/document/[id]/useRoleIndicator.ts`                    | Role in force, owner name and toggle, for the pill  |
 | `apps/editor/app/document/[id]/editor-state/useEditorCollaboration.ts` | `isReadOnly` includes the preview                   |
-| `apps/editor/app/document/[id]/EditorView.tsx`                         | Places the pill in the header's `rolePill` slot     |
+| `apps/editor/app/document/[id]/editor-view-bars.tsx`                   | Places the pill in the header's `rolePill` slot     |
 | `apps/editor/components/chrome/EditorHeader.tsx`                       | `rolePill` slot after the visibility badge          |
 | `apps/editor/components/chrome/TopCenterChrome.tsx`                    | No separate visitor owner / role badge              |
 

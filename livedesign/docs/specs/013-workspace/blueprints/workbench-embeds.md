@@ -618,16 +618,16 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
 
 `useExplorerSurface()` reads `useWorkbenchSession()?.scope === 'workspace'`. The Surface table, Explorer side:
 
-| Gate                                                                    | File                                    | In a workbench                                              |
-| ----------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------- |
-| App header (brand, product nav, `AuthControls`)                         | `ExplorerShell.tsx`                     | Not rendered; the lens field in a slim bar instead (WB61)   |
-| Home hero                                                               | `ExplorerShell.tsx`                     | Rendered as in the app                                      |
-| Bottom bar: Settings, Appearance                                        | `ExplorerShell.tsx`, `ChromeControls`   | Absent; Search stays; Open in livedesign at the right end   |
-| Settings dialog, `?settings=` links, `useOpenSettingsRequests`          | `useExplorerState.ts`, `ExplorerShell`  | Never opens                                                 |
-| Search panel's settings rows                                            | `ExplorerShell.tsx`                     | `[]`                                                        |
-| Sign-in banner, `LocalMovePrompt`                                       | `ExplorerShell.tsx`                     | Not rendered                                                |
-| Teams administration: New team, the Invites row and view, team settings | `sidebar/*`, `TeamLibraryHeader`, views | Absent (WB62)                                               |
-| Every `window.location.assign`, `<a href>`, `router.push`/`replace`     | the Explorer                            | Through `assignAppLocation` / `useAppNavigation`: the frame |
+| Gate                                                                    | File                                                                  | In a workbench                                              |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------- |
+| App header (brand, product nav, `AuthControls`)                         | `ExplorerShell.tsx`                                                   | Not rendered; the lens field in a slim bar instead (WB61)   |
+| Home hero                                                               | `ExplorerShell.tsx`                                                   | Rendered as in the app                                      |
+| Bottom bar: Settings, Appearance                                        | `ExplorerShell.tsx`, `ChromeControls`                                 | Absent; Search stays; Open in livedesign at the right end   |
+| Settings dialog, `?settings=` links, `useOpenSettingsRequests`          | `useExplorerState.ts`, `ExplorerShell`, `useExplorerSettingsPanel.ts` | Never opens                                                 |
+| Search panel's settings rows                                            | `ExplorerShell.tsx`                                                   | `[]`                                                        |
+| Sign-in banner, `LocalMovePrompt`                                       | `ExplorerShell.tsx`                                                   | Not rendered                                                |
+| Teams administration: New team, the Invites row and view, team settings | `sidebar/*`, `TeamLibraryHeader`, views                               | Absent (WB62)                                               |
+| Every `window.location.assign`, `<a href>`, `router.push`/`replace`     | the Explorer                                                          | Through `assignAppLocation` / `useAppNavigation`: the frame |
 
 #### The CLI, workspace scope
 
