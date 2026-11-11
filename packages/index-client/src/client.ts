@@ -189,7 +189,14 @@ export function createIndexClient({
   return {
     // Items
     listItems: (query: ItemListQuery = {}, options: RequestOptions = {}) =>
-      call<Page<Item, 'items'> & { mostUsed?: Item[]; mine?: MineCount; any?: boolean }>('/items', {
+      call<
+        Page<Item, 'items'> & {
+          mostUsed?: Item[];
+          mine?: MineCount;
+          any?: boolean;
+          newest?: Item[];
+        }
+      >('/items', {
         query: listQuery(query),
         signal: options.signal,
       }),

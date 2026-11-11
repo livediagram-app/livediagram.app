@@ -72,6 +72,7 @@ describe('Home’s requests', () => {
       used: 8,
       mine: LIST_LIMIT_MAX,
       any: true,
+      newest: 4,
       app: 'liveplanner',
     });
     // The sidebar's count page (100), of which Home shows its four.

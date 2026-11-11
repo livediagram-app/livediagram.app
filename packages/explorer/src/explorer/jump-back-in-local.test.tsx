@@ -76,9 +76,11 @@ function home(thisBrowser: Partial<ThisBrowserHost>, index = createFakeIndex()) 
   return index;
 }
 
+// Jump Back In's card (New above it shows the same item too, with its own line).
 const card = async (id = 'local-1') => {
-  await waitFor(() => expect(document.querySelector(`[data-item-card="${id}"]`)).toBeTruthy());
-  return document.querySelector(`[data-item-card="${id}"]`) as HTMLElement;
+  const selector = `[data-home-section="jump-back-in"] [data-item-card="${id}"]`;
+  await waitFor(() => expect(document.querySelector(selector)).toBeTruthy());
+  return document.querySelector(selector) as HTMLElement;
 };
 const sidebar = () => within(screen.getByRole('navigation', { name: 'Sections' }));
 const rowOf = (name: string) =>

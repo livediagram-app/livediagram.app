@@ -224,6 +224,7 @@ export function createFakeIndex(
           mostUsed?: Item[];
           mine?: { count: number; more: boolean };
           any?: boolean;
+          newest?: Item[];
         } = {
           items: slice.map(bare),
           nextCursor: next,
@@ -236,6 +237,13 @@ export function createFakeIndex(
         }
         if (query.any && !query.cursor)
           result.any = select({ view: 'search', app: query.app }).length > 0;
+        // Home's New: the person's own and their teams' (not links'), the most recently made first.
+        if (query.newest && !query.cursor) {
+          result.newest = select({ view: 'all', app: query.app })
+            .sort((a, b) => b.createdAt - a.createdAt || (a.id < b.id ? 1 : -1))
+            .slice(0, query.newest)
+            .map(bare);
+        }
         if (query.used && query.view === 'recent' && !query.cursor) {
           result.mostUsed = select(query)
             .filter((i) => (i.useOpens ?? i.useDays ?? 0) > 0)

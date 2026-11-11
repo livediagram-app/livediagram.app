@@ -19,7 +19,7 @@ backdrop, a heavy display heading, pills with a coloured dot, the glowing search
 
 - **The hero** opens the page ([The hero](#the-hero)): a full-width band under the Explorer header, above the
   sidebar and the sections. It is Home's page header; Home has no other.
-- **One column** under it, beside the sidebar, at every width: **Jump Back In**, then **What Happened**. It scrolls
+- **One column** under it, beside the sidebar, at every width: **New**, then **Jump Back In**, then **What Happened**. It scrolls
   with the page.
 - **Display headings** set the sections apart. Each section opens with its heading row: the title (about 24 px,
   extra bold, tight tracking) and the section's quiet link at the right end (**See More**, **See Timeline**). No rule
@@ -27,8 +27,10 @@ backdrop, a heavy display heading, pills with a coloured dot, the glowing search
 - Jump Back In's designs are **cards** ([Jump Back In](#jump-back-in)); What Happened's days sit in **one panel**
   (a white, rounded, hairline-bordered surface; the raised surface in dark mode).
 - Home has no import, no folder and no view switch.
-- The person's own history (what they created, updated or opened) is not on Home: Jump Back In holds what they
-  reach for, and the full record is the Timeline's.
+- The person's own history (what they created, updated or opened) is not on Home: New holds the four designs made
+  most recently in livedesign (theirs and their teams', made by AI ones included, wearing Made by AI; hidden while there
+  are none: [One Explorer "New, on Home"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#new-on-home)), Jump
+  Back In what they reach for, and the full record is the Timeline's.
 
 ## The hero
 
