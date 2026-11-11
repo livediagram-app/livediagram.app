@@ -63,12 +63,11 @@ const isCategoryToken = (word: string) => word.toLowerCase().startsWith(CATEGORY
 const COMMUNITY_MINE_TOKEN = 'is:mine';
 const isMineToken = (word: string) => word.toLowerCase() === COMMUNITY_MINE_TOKEN;
 
-// The plain search terms (blueprint C5): lowercased, whitespace-split, `#tag`, `category:` and `sort:` tokens
-// left out,
-// de-duplicated, each cut to COMMUNITY_SEARCH_TERM_MAX, at most COMMUNITY_SEARCH_TERMS_MAX of them.
+// The plain search terms (blueprint C5): lowercased and NFC-normalised (as the service's search text is stored),
+// whitespace-split, `#tag`, `category:` and `sort:` tokens left out, de-duplicated, each cut to COMMUNITY_SEARCH_TERM_MAX, at most COMMUNITY_SEARCH_TERMS_MAX of them.
 export function communitySearchTerms(q: string): string[] {
   const terms: string[] = [];
-  for (const raw of q.toLowerCase().split(/\s+/)) {
+  for (const raw of q.toLowerCase().normalize('NFC').split(/\s+/)) {
     if (isTagToken(raw) || isSortToken(raw) || isCategoryToken(raw) || isMineToken(raw)) continue;
     const term = raw.slice(0, COMMUNITY_SEARCH_TERM_MAX);
     if (term && !terms.includes(term)) terms.push(term);
