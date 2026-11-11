@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  LEGACY_MAX_PUSH_NOTIFICATIONS,
   MAX_PUSH_DEVICES,
   MAX_PUSH_NOTIFICATIONS,
   type PushNotification,
@@ -320,12 +319,10 @@ describe('an app asking for notifications', () => {
       notifications: [note({ tag: 'p1:c1', title: 'x'.repeat(120) })],
     });
     expect(read({})).toEqual({ ok: false, error: 'notifications_required' });
-    // An app from before a save was one request sends 50 at most; one from after sends a save's whole batch.
+    // A save's whole batch is one request; more is refused.
     const many = (length: number) => ({
       notifications: Array.from({ length }, () => note()),
     });
-    expect(read(many(LEGACY_MAX_PUSH_NOTIFICATIONS))).toMatchObject({ ok: true });
-    expect(read(many(LEGACY_MAX_PUSH_NOTIFICATIONS + 1))).toMatchObject({ ok: true });
     expect(read(many(MAX_PUSH_NOTIFICATIONS))).toMatchObject({ ok: true });
     expect(read(many(MAX_PUSH_NOTIFICATIONS + 1))).toEqual({
       ok: false,
@@ -371,19 +368,17 @@ describe('an app asking for notifications', () => {
       (await internal({ notifications: [note({ url: 'https://evil.example/' })] })).status,
     ).toBe(400);
     expect((await internal({ notifications: [note()] }, NO_APP)).status).toBe(403);
-    // A save's whole batch, past the old limit of 50, is one request that sends after the answer.
+    // A save's whole batch, past 50 people, is one request that sends after the answer.
     fetcher.mockClear();
     waits.length = 0;
     const save = await internal({
-      notifications: Array.from({ length: LEGACY_MAX_PUSH_NOTIFICATIONS + 10 }, (_, i) =>
-        note({ tag: `p1:c${i % 5}` }),
-      ),
+      notifications: Array.from({ length: 60 }, (_, i) => note({ tag: `p1:c${i % 5}` })),
     });
     expect(save.status).toBe(202);
-    expect(await save.json()).toEqual({ accepted: LEGACY_MAX_PUSH_NOTIFICATIONS + 10 });
+    expect(await save.json()).toEqual({ accepted: 60 });
     expect(waits).toHaveLength(1);
     await Promise.all(waits);
-    expect(fetcher).toHaveBeenCalledTimes(LEGACY_MAX_PUSH_NOTIFICATIONS + 10);
+    expect(fetcher).toHaveBeenCalledTimes(60);
   });
 
   it('sends to every device whose switch is on, encrypted and signed, and forgets the ones gone', async () => {

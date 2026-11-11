@@ -41,8 +41,8 @@ Scope, by file:
   `threadReply`, then `comment` per person; checks readers (owner, joined team member, else `indexGrants`); drops
   present people. The team read and each person's `indexGrants` are memoised for the call, and every comment's
   notifications go in one `deps.send` (one `sendPush`). `pushComment` is `pushComments` of one.
-- **sendPush**: one request for up to `MAX_PUSH_NOTIFICATIONS`; on `400 too_many_notifications` (an accounts Worker
-  from before the limit rose) it resends `LEGACY_MAX_PUSH_NOTIFICATIONS` a request, all at once.
+- **sendPush**: one request for up to `MAX_PUSH_NOTIFICATIONS`, more split into requests of that size, all at once;
+  any refusal throws.
 - **Service worker**: `push` shows `PushMessage` with the site's icon and `data.url`; `notificationclick` focuses a
   client already at that URL, else `clients.openWindow(url)`. No `fetch` listener.
 
@@ -82,18 +82,17 @@ label 1..80, app IN (liveworkspace, the four apps) DEFAULT liveworkspace, create
 
 ## Performance and limits
 
-| Constant                        | Value  | Where                           |
-| ------------------------------- | ------ | ------------------------------- |
-| `MAX_PUSH_NOTIFICATIONS`        | 250    | a request to accounts           |
-| `LEGACY_MAX_PUSH_NOTIFICATIONS` | 50     | a request, to an older accounts |
-| `MAX_PUSH_DEVICES`              | 10     | an account (ACC20)              |
-| `MAX_PUSH_SENDS_PER_CALL`       | 200    | posts a request (ACC21)         |
-| `PUSH_SEND_CONCURRENCY`         | 8      | posts in flight                 |
-| `PUSH_SEND_TIMEOUT_MS`          | 10,000 | each post                       |
-| `PUSH_TTL_SECONDS`              | 14,400 | a message's TTL (ACC22)         |
-| `VAPID_TOKEN_SECONDS`           | 43,200 | a VAPID token                   |
-| `PUSH_RECIPIENTS_MAX`           | 50     | people one event reaches        |
-| `PUSH_COMMENTS_PER_SAVE_MAX`    | 5      | comments a save notifies        |
+| Constant                     | Value  | Where                    |
+| ---------------------------- | ------ | ------------------------ |
+| `MAX_PUSH_NOTIFICATIONS`     | 250    | a request to accounts    |
+| `MAX_PUSH_DEVICES`           | 10     | an account (ACC20)       |
+| `MAX_PUSH_SENDS_PER_CALL`    | 200    | posts a request (ACC21)  |
+| `PUSH_SEND_CONCURRENCY`      | 8      | posts in flight          |
+| `PUSH_SEND_TIMEOUT_MS`       | 10,000 | each post                |
+| `PUSH_TTL_SECONDS`           | 14,400 | a message's TTL (ACC22)  |
+| `VAPID_TOKEN_SECONDS`        | 43,200 | a VAPID token            |
+| `PUSH_RECIPIENTS_MAX`        | 50     | people one event reaches |
+| `PUSH_COMMENTS_PER_SAVE_MAX` | 5      | comments a save notifies |
 
 The worst request (200 encryptions and posts against an instant fake service) runs in about 0.3 seconds in the tests
 (`push.test.ts`), and the app's request never waits on it.
@@ -108,7 +107,7 @@ Logs, never an id or address: `[push] not_configured { count }`, `settings_faile
 `web-push.test.ts` (the RFC 8291 Appendix A example byte for byte, a browser-side decrypt, VAPID verified with the
 public key), `push.test.ts` (devices, both doors, the internal route, delivery, the cap), `index-app/src/push.test.ts`
 (kinds, readers, presence, the cap, and a save's cost: one team read, one index ask a person, one send),
-`auth-client/src/push.test.ts` (one request a save, the fallback to 50 a request), and the Settings panel's Phone tests.
+`auth-client/src/push.test.ts` (one request a save, more split, any refusal throws), and the Settings panel's Phone tests.
 
 ## Constants and configuration
 
