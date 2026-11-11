@@ -211,7 +211,7 @@ dialog, `useSequenceSetters`), `SequenceNumbered`, `SequenceAnim`.
 | Look: colours, face, finish | `packages/document/src/sequence-element.test.ts`, `apps/editor/components/canvas/SequenceFace.test.tsx` |
 | Menu: summary, Edit         | `apps/editor/components/palette/SequenceMenuSection.test.tsx`                                           |
 | Dialog: rows, text, close   | `apps/editor/components/dialogs/SequenceDialog.test.tsx`                                                |
-| Text read and written       | `packages/document/src/sequence-text.test.ts`                                                           |
+| Text read and written       | `../packages/element-model/src/sequence-text.test.ts`                                                   |
 | Dialog writes               | `apps/editor/hooks/canvas/useSequenceSetters.test.ts`                                                   |
 | Who may edit                | `apps/editor/lib/sequence-edit.test.ts`                                                                 |
 | Face label, Play class      | `apps/editor/components/canvas/SequenceFace.test.tsx`                                                   |
