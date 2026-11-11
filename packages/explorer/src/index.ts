@@ -132,6 +132,7 @@ export type {
   GalleryHost,
   GalleryImage,
   GalleryUse,
+  GalleryUsage,
   ImportHost,
   ImportSource,
   ItemMenuHost,

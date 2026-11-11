@@ -193,25 +193,20 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   return notFound();
 }
 
-// Designs named per usage answer: a gallery's images are placed on a few designs each, and all their names are one
-// index lookup.
-export const IMAGE_USAGE_DESIGNS_MAX = 200;
-
 // The items, in every app, that place each image (@liveworkspace/media galleryUsage): the gallery lists every app's
-// images, so an image placed only in another app's items is used there, not "Not used".
+// images, so an image placed only in another app's items is used there, not "Not used". Every item is looked up, in
+// batches; one in the Trash still counts, marked; an image whose items could not be checked is listed as unchecked
+// (liveworkspace/docs/specs/006-media/media.md "Usage").
 async function imageUsage(ctx: RouteContext, media: MediaClient, owner: string): Promise<Response> {
   const answered = await media.usage(await mediaOwner(owner));
   if (!answered.ok) return serviceAnswer(answered);
-  if (Object.keys(answered.value.usage).length === 0) return json({ usage: {} });
+  if (Object.keys(answered.value.usage).length === 0) return json({ usage: {}, unchecked: [] });
   const client = clientFor(ctx);
   if (client instanceof Response) return client;
-  const usage = await galleryUsage(
-    answered.value.usage,
-    async (ids) => (await client.lookupItems(ids)).items,
-    // In the Trash: not shown (gone, another app's id or not the caller's to open, the index leaves out).
-    { max: IMAGE_USAGE_DESIGNS_MAX, keep: (item) => !item.trashedAt },
+  // Gone, another app's id or not the caller's to open: the index leaves it out.
+  return json(
+    await galleryUsage(answered.value.usage, async (ids) => (await client.lookupItems(ids)).items),
   );
-  return json({ usage });
 }
 
 // A refusal from the service, passed on as it came (a full gallery, an unsupported file), except one

@@ -8,20 +8,20 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { IMAGE_ACCEPT_ATTR } from '@liveworkspace/api-schema/image-limits';
-import { Button, ConfirmDialog, EmptyState } from '@liveworkspace/ui';
+import { Button, ConfirmDialog, EmptyState, HoverCard } from '@liveworkspace/ui';
 import { TrashIcon } from '../ui/icons';
 import { ImageIcon, UploadIcon } from '../ui/library-icons';
 import { isAbort } from '../data/errors';
 import { useBlobUrl } from './blobs';
-import { filterGallery, type GalleryFilter } from './gallery-filter';
-import type { GalleryHost, GalleryImage, GalleryUse } from './types';
+import { filterGallery, isUnchecked, UNKNOWN_USAGE, type GalleryFilter } from './gallery-filter';
+import type { GalleryHost, GalleryImage, GalleryUsage, GalleryUse } from './types';
 import { quoted } from '../quoted';
 
 type Loaded =
   | { status: 'loading' }
   | { status: 'off' }
   | { status: 'failed' }
-  | { status: 'ready'; images: GalleryImage[]; usage: Record<string, GalleryUse[]> };
+  | { status: 'ready'; images: GalleryImage[]; usage: GalleryUsage };
 
 export function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
@@ -46,7 +46,9 @@ export function useGallery(host: GalleryHost | undefined) {
     if (!host) return;
     const controller = new AbortController();
     const { signal } = controller;
-    Promise.all([host.list(signal), host.usage?.(signal).catch(() => ({})) ?? {}]).then(
+    // A usage read that fails checks nothing: no image reads unused for it.
+    const usage = host.usage?.(signal).catch(() => UNKNOWN_USAGE) ?? UNKNOWN_USAGE;
+    Promise.all([host.list(signal), usage]).then(
       ([images, usage]) => {
         if (signal.aborted) return;
         setLoaded(images === null ? { status: 'off' } : { status: 'ready', images, usage });
@@ -70,7 +72,8 @@ export function useGallery(host: GalleryHost | undefined) {
 
 export type GalleryState = ReturnType<typeof useGallery>;
 
-/** How many of the loaded images nothing places, or null before the gallery (and its usage) is ready. */
+/** How many of the loaded images were checked and found placed nowhere, or null before the gallery (and its
+ *  usage) is ready. */
 export function unusedCount(host: GalleryHost, loaded: GalleryState['loaded']): number | null {
   if (!host.usage || loaded.status !== 'ready' || loaded.images.length === 0) return null;
   return filterGallery(loaded.images, loaded.usage, 'unused').length;
@@ -115,7 +118,8 @@ export function GalleryContent({
   const grid = compact
     ? 'grid grid-cols-3 gap-2.5 @[38rem]:grid-cols-5'
     : 'grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4';
-  const usageOf = (id: string) => (loaded.status === 'ready' ? (loaded.usage[id] ?? []) : []);
+  const usageOf = (id: string) => (loaded.status === 'ready' ? (loaded.usage.uses[id] ?? []) : []);
+  const uncheckedOf = (id: string) => loaded.status === 'ready' && isUnchecked(loaded.usage, id);
   // One pass over at most the gallery's cap, again only when the list, its usage or the switch changes.
   const shown = useMemo(
     () => (loaded.status === 'ready' ? filterGallery(loaded.images, loaded.usage, filter) : []),
@@ -192,6 +196,7 @@ export function GalleryContent({
                 host={host}
                 image={image}
                 usage={usageOf(image.id)}
+                unchecked={uncheckedOf(image.id)}
                 kindMany={kindMany}
                 onDelete={() => setDeleting(image)}
               />
@@ -206,7 +211,9 @@ export function GalleryContent({
           message={
             usageOf(deleting.id).length
               ? `It’s still in ${countOf(usageOf(deleting.id), kindMany)}: those will show a broken picture.`
-              : 'This image will be removed from your gallery for good. This can’t be undone.'
+              : uncheckedOf(deleting.id)
+                ? 'We couldn’t check where it’s used: anything that places it will show a broken picture. This can’t be undone.'
+                : 'This image will be removed from your gallery for good. This can’t be undone.'
           }
           confirmLabel="Delete Image"
           onCancel={() => setDeleting(null)}
@@ -232,12 +239,15 @@ function GalleryCard({
   host,
   image,
   usage,
+  unchecked,
   kindMany,
   onDelete,
 }: {
   host: GalleryHost;
   image: GalleryImage;
   usage: GalleryUse[];
+  // Its usage couldn't be checked: neither used nor "Not used".
+  unchecked: boolean;
   kindMany: { one: string; many: string };
   onDelete: () => void;
 }) {
@@ -284,9 +294,21 @@ function GalleryCard({
       </div>
       <div className="mt-1">
         {usage.length === 0 ? (
-          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-            Not used
-          </span>
+          <HoverCard
+            title={unchecked ? 'Couldn’t check' : 'Not used'}
+            description={
+              unchecked
+                ? 'Where this image is used couldn’t be checked just now. Open the gallery again to retry.'
+                : 'Nothing of yours, in any app, places this image.'
+            }
+          >
+            <span
+              tabIndex={0}
+              className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+            >
+              {unchecked ? 'Couldn’t check' : 'Not used'}
+            </span>
+          </HoverCard>
         ) : (
           <button
             type="button"
@@ -314,6 +336,9 @@ function GalleryCard({
               )}
               {d.app ? (
                 <span className="text-slate-500 dark:text-slate-400"> in {d.app}</span>
+              ) : null}
+              {d.trashed ? (
+                <span className="text-slate-500 dark:text-slate-400"> (in the Trash)</span>
               ) : null}
             </li>
           ))}

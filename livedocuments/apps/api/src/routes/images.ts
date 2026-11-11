@@ -3,7 +3,12 @@
 // who may do what, and the service keeps the bytes, the dedupe and the caps.
 
 import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES, ORIGINAL_NAME_MAX } from '@liveworkspace/media';
-import { galleryUsage, type ImageUsage, type MediaClient } from '@liveworkspace/media';
+import {
+  galleryUsage,
+  usageUnknown,
+  type GalleryUsageAnswer,
+  type MediaClient,
+} from '@liveworkspace/media';
 import { reportImagesUploaded } from '@liveworkspace/index-app';
 import { documentRoom } from '../document-client';
 import { indexAppClient, indexFor } from '../index-service';
@@ -17,9 +22,6 @@ import {
 import { badRequest, CORS_HEADERS, imagesUnavailable, json, notFound } from '../responses';
 import { grantCallerOf, requireOwner, type RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
-
-// The Gallery's "Used in" names: at most this many items are looked up in the index, in one request.
-export const USAGE_DOCUMENTS_MAX = 200;
 
 // Without the service (no MEDIA_KEY) every endpoint answers 503, so the editor hides
 // images rather than falling through to a generic 500.
@@ -103,7 +105,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   if (segments.length === 3 && segments[2] === 'usage' && request.method === 'GET') {
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
-    return json({ usage: await usageOf(ctx, media, owner) });
+    return json(await usageOf(ctx, media, owner));
   }
 
   // GET /api/images/:id: byte read. Auth: owner of the
@@ -178,23 +180,27 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   return notFound();
 }
 
-// The Gallery's usage map (@liveworkspace/media galleryUsage): the items, in every app, the media service says
-// place each of the owner's images, kept to those the index answers as theirs and not in the Trash, named as the
-// index has them. The gallery lists every app's images, so an image placed only in another app's items is used
-// there, not "Not used". At most USAGE_DOCUMENTS_MAX items are looked up, in one index request; one past that, or
-// one the index cannot answer, is left out of the badge rather than failing the Gallery.
-async function usageOf(ctx: RouteContext, media: MediaClient, owner: string): Promise<ImageUsage> {
+// The Gallery's usage (@liveworkspace/media galleryUsage): the items, in every app, the media service says place
+// each of the owner's images, kept to those the index answers as theirs, named as the index has them (one in the
+// Trash still counts, marked). The gallery lists every app's images, so an image placed only in another app's
+// items is used there, not "Not used". Every item is looked up, in batches; an image whose items could not be
+// checked is listed as unchecked, and when the service or the index can't be reached the whole answer is unknown,
+// so the Gallery never calls a placed image unused (liveworkspace/docs/specs/006-media/media.md "Usage").
+async function usageOf(
+  ctx: RouteContext,
+  media: MediaClient,
+  owner: string,
+): Promise<GalleryUsageAnswer> {
   const answered = await media.usage(await mediaOwner(owner));
   if (!answered.ok) {
     console.error('[images] media usage answered', answered.status);
-    return {};
+    return usageUnknown();
   }
   const client = indexFor(ctx.env, grantCallerOf(ctx));
-  if (!client) return {};
+  if (!client) return usageUnknown();
   return galleryUsage(answered.value.usage, async (ids) => (await client.lookupItems(ids)).items, {
-    max: USAGE_DOCUMENTS_MAX,
-    // Not theirs or in the Trash: not in the badge (gone, or another app's id, the index leaves out).
-    keep: (item) => item.ownerId === owner && item.trashedAt === null,
+    // Not theirs: not in the badge (gone, or another app's id, the index leaves out).
+    keep: (item) => item.ownerId === owner,
   });
 }
 

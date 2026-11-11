@@ -19,7 +19,10 @@ function galleryHost(images: GalleryImage[] | null, over: Partial<GalleryHost> =
   const host: GalleryHost & { blobs: string[] } = {
     blobs: [],
     list: vi.fn(async () => images),
-    usage: vi.fn(async () => ({ 'img-1': [{ id: 'd1', title: 'Roadmap', href: '/d/d1' }] })),
+    usage: vi.fn(async () => ({
+      uses: { 'img-1': [{ id: 'd1', title: 'Roadmap', href: '/d/d1' }] },
+      unchecked: new Set<string>(),
+    })),
     imageBlob: vi.fn(async (img: GalleryImage) => {
       host.blobs.push(img.id);
       return new Blob(['x'], { type: 'image/png' });
@@ -70,14 +73,17 @@ describe('the Image Gallery', () => {
   it("counts another app's items as uses, naming the app", async () => {
     const host = galleryHost([image(1)], {
       usage: vi.fn(async () => ({
-        'img-1': [
-          {
-            id: 'doc-1',
-            title: 'Brief',
-            href: 'https://livedocuments.app/document/doc-1',
-            app: 'livedocuments',
-          },
-        ],
+        uses: {
+          'img-1': [
+            {
+              id: 'doc-1',
+              title: 'Brief',
+              href: 'https://livedocuments.app/document/doc-1',
+              app: 'livedocuments',
+            },
+          ],
+        },
+        unchecked: new Set<string>(),
       })),
     });
     page({ kind: 'gallery' }, { gallery: host });
@@ -154,6 +160,44 @@ describe('the Image Gallery', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Show All Images' }));
     expect(screen.getByRole('button', { name: 'All' }).getAttribute('aria-pressed')).toBe('true');
     expect(screen.getByText('photo-1.png')).toBeTruthy();
+  });
+
+  it('never shows or counts an unchecked image as Unused, and says it could not check', async () => {
+    const host = galleryHost([image(1), image(2), image(3)], {
+      usage: vi.fn(async () => ({
+        uses: { 'img-1': [{ id: 'd1', title: 'Old board', trashed: true }] },
+        unchecked: new Set(['img-3']),
+      })),
+    });
+    page({ kind: 'gallery' }, { gallery: host });
+    expect(await screen.findByText('Couldn’t check')).toBeTruthy();
+    expect(screen.getAllByText('Not used')).toHaveLength(1);
+    // A use in the Trash still counts, named so and without a link.
+    fireEvent.click(screen.getByRole('button', { name: 'Used in 1 canvas' }));
+    expect(screen.getByText('Old board')).toBeTruthy();
+    expect(screen.getByText('(in the Trash)')).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Old board' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Unused' }));
+    const grid = screen.getByRole('list', { name: 'Unused images' });
+    expect(within(grid).getByText('photo-2.png')).toBeTruthy();
+    expect(within(grid).queryByText('photo-3.png')).toBeNull();
+    expect(within(grid).queryByText('photo-1.png')).toBeNull();
+  });
+
+  it('shows nothing under Unused when the usage could not be read, and warns on delete', async () => {
+    const host = galleryHost([image(1), image(2)], {
+      usage: vi.fn(async () => Promise.reject(new Error('down'))),
+    });
+    page({ kind: 'gallery' }, { gallery: host });
+    expect(await screen.findAllByText('Couldn’t check')).toHaveLength(2);
+    expect(screen.queryByText('Not used')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Unused' }));
+    expect(screen.getByText('No unused images')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Show All Images' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete photo-2.png' }));
+    expect((await screen.findByRole('dialog')).textContent).toContain(
+      'We couldn’t check where it’s used',
+    );
   });
 
   it('has no Show switch without images or without usage to read', async () => {

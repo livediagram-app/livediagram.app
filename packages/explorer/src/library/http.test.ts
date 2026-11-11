@@ -52,8 +52,8 @@ describe("the Library's hosts over an app's API", () => {
       },
     ]);
     const usage = await gallery.usage!();
-    expect(usage.i1![0]).toMatchObject({ id: 'd1', title: 'Roadmap' });
-    expect(usage.i1![0]!.href).toMatch(/\/document\/d1$/);
+    expect(usage.uses.i1![0]).toMatchObject({ id: 'd1', title: 'Roadmap' });
+    expect(usage.uses.i1![0]!.href).toMatch(/\/document\/d1$/);
     const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toMatch(/livediagram.*\/api\/images$/);
     expect(new Headers(init.headers).get('Authorization')).toBe('Bearer tok');
@@ -74,11 +74,48 @@ describe("the Library's hosts over an app's API", () => {
       ),
     );
     const usage = await libraryHosts('livediagram').gallery!.usage!();
-    const [own, other] = usage.i1!;
+    const [own, other] = usage.uses.i1!;
     expect(own).toMatchObject({ id: 'c1', title: 'Board' });
     expect(own!.app).toBeUndefined();
     expect(other).toMatchObject({ id: 'd1', title: 'Brief', app: 'livedocuments' });
     expect(other!.href).toMatch(/livedocuments.*\/document\/d1$/);
+  });
+
+  it('carries the images that could not be checked, and marks a Trash use without a link', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        json({
+          usage: {
+            i1: [{ id: 'c1', name: 'Old', app: 'livediagram', trashed: true }],
+            i2: [{ id: 'd1', name: 'Brief', app: 'livedocuments', trashed: true }],
+          },
+          unchecked: ['i3'],
+        }),
+      ),
+    );
+    const usage = await libraryHosts('livediagram').gallery!.usage!();
+    expect(usage.uses.i1).toEqual([{ id: 'c1', title: 'Old', trashed: true }]);
+    expect(usage.uses.i2).toEqual([
+      { id: 'd1', title: 'Brief', app: 'livedocuments', trashed: true },
+    ]);
+    expect(usage.unchecked).toEqual(new Set(['i3']));
+  });
+
+  it('checks nothing when the api answers unknown or 503, and nothing is unchecked from an older api', async () => {
+    const answers = [
+      json({ usage: {}, unchecked: [], unknown: true }),
+      json({ error: 'media_unavailable' }, 503),
+      json({ usage: {} }),
+    ];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => answers.shift()!),
+    );
+    const gallery = libraryHosts('livediagram').gallery!;
+    expect((await gallery.usage!()).unchecked).toBe('all');
+    expect((await gallery.usage!()).unchecked).toBe('all');
+    expect((await gallery.usage!()).unchecked).toEqual(new Set());
   });
 
   it('answers null when images are off, and says why an upload was refused', async () => {

@@ -168,10 +168,13 @@ max-age=86400`.
   unreachable bytes). Then the remembered owner is forgotten (`rememberMediaOwner(id, null)`); 200 `{ ok: true }`.
 - `GET /api/images`: owner only; `media.list(mediaOwner(owner))`, newest first, from every app.
 - `GET /api/images/usage`: owner only; `usageOf` asks the service which documents, in every app, place each
-  of the owner's images (`media.usage`), and `@liveworkspace/media`'s `galleryUsage` looks at most
-  `USAGE_DOCUMENTS_MAX` (200) up in the index in one request (`lookupItems`), keeping those whose `app` matches, the owner's and
-  not in the Trash, named as the index has them. No tab body read, each item once per image, as
-  `{ id, name, app }` ordered by name.
+  of the owner's images (`media.usage`), and `@liveworkspace/media`'s `galleryUsage` looks them up in the index
+  in batches of 200 ids, 4 at a time, every item up to 5,000 (`lookupItems`). One in the Trash still counts,
+  marked `trashed`. Answers `{ usage, unchecked }`: `unchecked` lists the images whose items could not be
+  checked (past 5,000, or a failed lookup); with the service or the index unreachable it answers
+  `{ usage: {}, unchecked: [], unknown: true }`, so the Gallery never calls a placed image unused
+  (liveworkspace/docs/specs/006-media/media.md "Usage"). It keeps those whose `app` matches and the owner's, named as the index has them. No tab body
+  read, each item once per image, as `{ id, name, app, trashed? }` ordered by name.
 
 ### Retention
 
@@ -268,7 +271,11 @@ export function embedTabImages(
 ): Promise<Map<string, string>>;
 
 // apps/api/src/routes/images.ts (module-private)
-async function usageOf(ctx: RouteContext, media: MediaClient, owner: string): Promise<ImageUsage>; // @liveworkspace/media: Record<imageId, { id; name; app }[]>, via galleryUsage
+async function usageOf(
+  ctx: RouteContext,
+  media: MediaClient,
+  owner: string,
+): Promise<GalleryUsageAnswer>; // @liveworkspace/media: { usage: Record<imageId, { id; name; app; trashed? }[]>; unchecked: imageId[]; unknown? }, via galleryUsage
 
 // apps/api/src/db/image-grants.ts
 // (each runs inside the document's Durable Object, over its own SQLite)

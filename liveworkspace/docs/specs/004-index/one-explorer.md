@@ -539,8 +539,9 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   origin (`imagesPath`, `shapeLibrariesPath`). The Gallery lists the person's images from every app, and its "Used
   in" badge counts every app's items that place one: another app's item is named with its app and opens there
   ([media.md](../006-media/media.md#usage)). Its header has a **Show** switch, **All** or **Unused**, just left of
-  Help: Unused keeps only the images nothing places (no "Used in" badge), read from the usage the Gallery already
-  loads, so it costs no request. It starts on All each visit, applies to the grid as it stands (a delete takes the
+  Help: Unused keeps only the images checked and found placed nowhere ("Not used"), read from the usage the Gallery
+  already loads, so it costs no request. An image whose usage could not be checked reads "Couldn't check" and is
+  never counted or shown as Unused ([media.md](../006-media/media.md#usage)). It starts on All each visit, applies to the grid as it stands (a delete takes the
   card out at once), and when every image is in use it says so with an empty state that offers All again. The
   switch shows only once the gallery has images and the host reads usage; the editor panel's compact Gallery has
   no header and stays on All. An upload is checked against the media service's types and 10 MB cap

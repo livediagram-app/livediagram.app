@@ -449,8 +449,13 @@ describe('handleImages', () => {
             { id: 'A', name: 'Apple', app: 'livediagram' },
             { id: 'Z', name: 'Zebra', app: 'livediagram' },
           ],
-          b: [{ id: 'A', name: 'Apple', app: 'livediagram' }],
+          // In the Trash: still a use, marked, since a restore would bring the picture back.
+          b: [
+            { id: 'A', name: 'Apple', app: 'livediagram' },
+            { id: 'trashed', name: 'Gone', app: 'livediagram', trashed: true },
+          ],
         },
+        unchecked: [],
       });
     });
 
@@ -477,12 +482,41 @@ describe('handleImages', () => {
             { id: 'P', name: 'Poster', app: 'livedesign' },
           ],
         },
+        unchecked: [],
+      });
+    });
+
+    it('marks an image unchecked, never unused, when the index lookup fails', async () => {
+      mediaImages(media, 'user_ada', ['a']);
+      media.sql
+        .prepare(`INSERT INTO refs (app, document, image_id) VALUES ('livediagram.app', 'X', 'a')`)
+        .run();
+      indexFor.mockReturnValue({ lookupItems: vi.fn().mockRejectedValue(new Error('down')) });
+      expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
+        usage: {},
+        unchecked: ['a'],
+      });
+    });
+
+    it('answers unknown when the index cannot be reached at all', async () => {
+      mediaImages(media, 'user_ada', ['a']);
+      media.sql
+        .prepare(`INSERT INTO refs (app, document, image_id) VALUES ('livediagram.app', 'X', 'a')`)
+        .run();
+      indexFor.mockReturnValue(null);
+      expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
+        usage: {},
+        unchecked: [],
+        unknown: true,
       });
     });
 
     it('answers an empty map when nothing places them', async () => {
       indexFor.mockReturnValue({ lookupItems: vi.fn() });
-      expect(await (await call('GET', '/api/images/usage')).json()).toEqual({ usage: {} });
+      expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
+        usage: {},
+        unchecked: [],
+      });
     });
   });
 

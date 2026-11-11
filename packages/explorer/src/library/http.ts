@@ -88,20 +88,29 @@ async function imageSize(file: File): Promise<{ width: number; height: number }>
 
 // One use as the Gallery shows it: this app's item opens on the host's origin; another app's (the gallery lists every
 // app's images, so their uses are every app's) on that app's site, named with its app. An older api sends no app:
-// this app's.
+// this app's. One in the Trash is marked and has no link (it opens nowhere until restored).
+type WireUse = { id: string; name: string; app?: string; trashed?: boolean };
+
 export function galleryUse(
   host: AppName,
-  use: { id: string; name: string; app?: string },
+  use: WireUse,
   itemUrl: (id: string) => string,
 ): GalleryUse {
   const app = use.app && isAppName(use.app) ? use.app : host;
-  if (app === host) return { id: use.id, title: use.name, href: itemUrl(use.id) };
+  const trashed = use.trashed === true;
+  const mark = trashed ? { trashed } : {};
+  if (app === host) {
+    return { id: use.id, title: use.name, ...(trashed ? {} : { href: itemUrl(use.id) }), ...mark };
+  }
   const site = siteOfApp(app);
   return {
     id: use.id,
     title: use.name,
-    href: `${site.url}${APP_ITEMS[app].itemPath}${encodeURIComponent(use.id)}`,
+    ...(trashed
+      ? {}
+      : { href: `${site.url}${APP_ITEMS[app].itemPath}${encodeURIComponent(use.id)}` }),
     app: site.name,
+    ...mark,
   };
 }
 
@@ -126,15 +135,19 @@ function galleryHost(app: AppName, path: string, token: Token, origin: string): 
     },
     usage: async (signal) => {
       const res = await call(token, `${base}/usage`, {}, signal);
-      if (res.status === 503) return {};
+      // Unreachable, or an api that could read nothing: nothing was checked.
+      if (res.status === 503) return { uses: {}, unchecked: 'all' };
       const body = (await res.json()) as {
-        usage: Record<string, { id: string; name: string; app?: string }[]>;
+        usage: Record<string, WireUse[]>;
+        unchecked?: string[];
+        unknown?: boolean;
       };
-      const out: Record<string, GalleryUse[]> = {};
-      for (const [id, uses] of Object.entries(body.usage)) {
-        out[id] = uses.map((u) => galleryUse(app, u, itemUrl));
+      if (body.unknown) return { uses: {}, unchecked: 'all' };
+      const uses: Record<string, GalleryUse[]> = {};
+      for (const [id, list] of Object.entries(body.usage)) {
+        uses[id] = list.map((u) => galleryUse(app, u, itemUrl));
       }
-      return out;
+      return { uses, unchecked: new Set(body.unchecked ?? []) };
     },
     imageBlob: async (image, signal) => {
       const res = await call(token, `${base}/${encodeURIComponent(image.id)}`, {}, signal).catch(

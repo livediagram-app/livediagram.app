@@ -198,9 +198,13 @@ Participant sends no beacon, so nothing else shares it.
   uploaded in another app serves it.
 - `GET /api/images/usage`: owner only; `imageUsage` reads the service's references for the
   owner's images in every app (`media.usage`) and names each item through `@liveworkspace/media`'s `galleryUsage`
-  from the index (at most `IMAGE_USAGE_DESIGNS_MAX`, 200, in one request, `lookupItems`), keeping those whose
-  `app` matches that the caller can open and that are not in the Trash; no tab body read, each item once per image,
-  as `{ id, name, app }` ordered by name. With no references it answers `{ usage: {} }` without asking the index.
+  from the index, keeping those whose `app` matches that the caller can open, in batches of 200 ids, 4 at a time, every item up to 5,000 (`lookupItems`). One in the Trash still counts,
+  marked `trashed`. Answers `{ usage, unchecked }`: `unchecked` lists the images whose items could not be
+  checked (past 5,000, or a failed lookup); with the service or the index unreachable it answers
+  `{ usage: {}, unchecked: [], unknown: true }`, so the Gallery never calls a placed image unused
+  (liveworkspace/docs/specs/006-media/media.md "Usage"). No tab body read,
+  each item once per image, as `{ id, name, app, trashed? }` ordered by name. With no references it answers
+  `{ usage: {}, unchecked: [] }` without asking the index.
 
 ### Retention
 

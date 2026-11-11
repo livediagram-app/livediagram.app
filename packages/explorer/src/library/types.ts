@@ -20,14 +20,28 @@ export type GalleryImage = {
   createdAt?: number;
 };
 
-/** An item that places an image. `app` names another app's ("livediagram"); absent, the host's own. */
-export type GalleryUse = { id: string; title: string; href?: string; app?: string };
+/** An item that places an image. `app` names another app's ("livediagram"); absent, the host's own. `trashed` while
+ *  it is in the Trash: still a use (a restore brings the picture back), shown without a link. */
+export type GalleryUse = {
+  id: string;
+  title: string;
+  href?: string;
+  app?: string;
+  trashed?: boolean;
+};
+
+/** Which items place each image, by image id (an image placed nowhere is absent), and the images whose usage could
+ *  not be checked: listed, or 'all' when the usage could not be read at all. An unchecked image is never unused. */
+export type GalleryUsage = {
+  uses: Record<string, GalleryUse[]>;
+  unchecked: ReadonlySet<string> | 'all';
+};
 
 export type GalleryHost = {
   /** The person's images, newest first; null when images are off where the host keeps them. */
   list: (signal?: AbortSignal) => Promise<GalleryImage[] | null>;
-  /** Which items place each image, by image id; an image placed nowhere is absent. */
-  usage?: (signal?: AbortSignal) => Promise<Record<string, GalleryUse[]>>;
+  /** Which items place each image, and which images could not be checked. */
+  usage?: (signal?: AbortSignal) => Promise<GalleryUsage>;
   /** An image's bytes, for its tile (a browser can't send the person's credentials from an <img>). */
   imageBlob: (image: GalleryImage, signal?: AbortSignal) => Promise<Blob | null>;
   /** Delete one. Items that place it show a broken picture. */
