@@ -22,7 +22,7 @@ drags for collaborators.
 | `apps/editor/e2e/perf/large-selection-drag.perf.ts`                 | The large-selection bench: script and frame per pointer move                             |
 | `apps/editor/hooks/canvas/useCanvasSelectionView.ts`                | Derives the selection from the previewed elements while a preview lasts                  |
 | `livediagram/apps/editor/hooks/canvas/useArrowLabelLayouts.ts`      | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label                |
-| `packages/api-schema/src/room-messages.ts`                          | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                                       |
+| `packages/api-schema/src/room-op-kinds.ts`                          | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                                       |
 | `apps/editor/hooks/collab/useDragPreviewBroadcast.ts`               | Sends the local preview at `DRAG_PREVIEW_SEND_MS`, and its end                           |
 | `apps/editor/hooks/collab/peer-drag-previews.ts`                    | Receives peers' previews: role check, expiry, cleared by real ops                        |
 

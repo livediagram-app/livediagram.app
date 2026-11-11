@@ -26,7 +26,7 @@ Scope, by file:
 | `packages/explorer/src/library/import-source-icons.tsx` (repo root)                                                    | `ExcalidrawSourceIcon`                                                             |
 | `apps/editor/scripts/excalidraw-verify.mts`                                                                            | Real copies through parser and landing, aggregates only (local)                    |
 | `apps/editor/lib/excalidraw-embedded.ts`                                                                               | `extractExcalidrawScene`: PNG / SVG / JSON input to scene text                     |
-| `apps/editor/hooks/canvas/useClipboard.ts`                                                                             | Paste branches and `dropBoardFile`: scenes go to the board-scene insert            |
+| `apps/editor/hooks/canvas/useClipboard.ts`, `useClipboardPaste.ts`                                                     | Paste branches and `dropBoardFile`: scenes go to the board-scene insert            |
 | `apps/editor/hooks/canvas/usePaletteDrop.ts`                                                                           | `onDropFile`: a dropped file with its canvas point                                 |
 | `apps/editor/components/canvas/Canvas.tsx`, `apps/editor/components/canvas/editor-canvas-host/useInsertCanvasProps.ts` | Thread `onDropFile` (`dropBoardFile`, not when read-only)                          |
 | `apps/editor/hooks/persistence/useTabImport.ts`                                                                        | Extraction, `sceneFromExcalidrawText`, then `importScene` (useBoardSceneImport)    |
@@ -205,7 +205,7 @@ read."
   `track('Tab', 'Imported', 'Excalidraw' | 'ExcalidrawPng' | 'ExcalidrawSvg')`.
 - File accept for `excalidraw`: `.excalidraw,.json,application/json,.png,image/png,.svg,image/svg+xml`.
 
-### Paste (`useClipboard`)
+### Paste (`useClipboard`, its listeners in `useClipboardPaste`)
 
 - Dep `insertBoardScene(scene, at?)` (the editor passes `useBoardSceneInsert.insertScene`);
   without it every branch below is skipped and paste behaves as before.

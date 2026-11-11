@@ -25,7 +25,7 @@ Scope, by file (under `apps/editor/lib/office-export/` unless marked):
 | `test-tabs.ts`                                    | Fixture tabs: every element kind, every block kind, long decks and articles; a fake drawer      |
 | `components/dialogs/office/OfficeExportPanel.tsx` | The panel, loaded lazily with the writers                                                       |
 | `components/dialogs/office/useOfficeExport.ts`    | The making: progress, Cancel, failure, download, telemetry                                      |
-| `lib/export-tab.ts`                               | `renderTabToCanvas` takes `only` (element ids) and `crop` (a canvas rect)                       |
+| `lib/export-tab-canvas.ts`                        | `renderTabToCanvas` takes `only` (element ids) and `crop` (a canvas rect)                       |
 
 Only `page-drawer.ts` and the panel touch the DOM; every other module runs in Node under Vitest.
 

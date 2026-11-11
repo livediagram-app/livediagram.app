@@ -25,7 +25,7 @@ Scope, by file:
 | `apps/editor/components/canvas/wayfinding/useFloorsOnOpen.ts`  | Fetches unopened floors once per panel opening; the eight-second wait    |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`            | Composes `useWayfinding`; the resolver returns its handle                |
 | `apps/editor/components/canvas/ElementFaceRouter.tsx`          | Renders the two faces over the drawing                                   |
-| `apps/editor/components/canvas/EditorCanvasHost.tsx`           | `tabPresence`; `onTravelToTab` (travel keeps Avatar mode)                |
+| `apps/editor/components/canvas/useCanvasWalkProps.ts`          | `tabPresence`; `onTravelToTab` (travel keeps Avatar mode)                |
 | `apps/editor/hooks/canvas/useCanvasTool.ts`                    | `keepWalkingTo(tabId)`: the next tab change is travel                    |
 
 ## Domain and naming
@@ -66,7 +66,7 @@ Scope, by file:
   walls and anything else in the way.
 - **Go / Ride.** `go({ tabId, point, ignoreId })`: while walking, arm the ignored Elevator and `teleportTo(point)`
   first. Same tab: centre the camera (`viewportOffsetCentredOn` on a zero box at the point). Another tab: remember
-  `{ tabId, point, ignoreId }` and call `onTravelToTab(tabId)` (EditorCanvasHost: `keepWalkingTo(tabId)` then the
+  `{ tabId, point, ignoreId }` and call `onTravelToTab(tabId)` (useCanvasWalkProps: `keepWalkingTo(tabId)` then the
   tab link), so `useCanvasTool` does not end the mode for that one change; an effect on the active tab then centres
   the camera, again on the next frame after the tab's own view restore, and plays the doors.
 - **Names.** `floorElevators(elements)`: a tab's Elevators by `(y, x, id)`, the trimmed label else `Elevator n`

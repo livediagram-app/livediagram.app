@@ -30,7 +30,7 @@ Derived from [Components](../components.md). Defaults in [DEFAULTS.md](DEFAULTS.
 | `apps/live/components/canvas/component/ComponentSessionBar.tsx` | "Editing <name>" with Done                                                           |
 | `apps/live/components/palette/ComponentMenuSection.tsx`         | The instance menu's Component section and Overrides                                  |
 | `apps/live/components/palette/component-tiles.tsx`              | In This Design: a band (Components tab) or the flyout's first group (CategoryFlyout) |
-| `apps/live/lib/export-tab.ts`                                   | `renderTabToSvg` / `renderTabToCanvas` expand instances first                        |
+| `apps/live/lib/export-tab.ts`, `export-tab-canvas.ts`           | `renderTabToSvg` / `renderTabToCanvas` expand instances first                        |
 | `packages/design-views`, `packages/agent-verbs`, `apps/mcp`     | The agents' read and write paths                                                     |
 
 ## Domain and naming

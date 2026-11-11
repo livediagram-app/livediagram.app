@@ -59,7 +59,7 @@ refuses a closed vote, as the stepper (which is gone once casting closes) always
 ## Security and trust
 
 No new trust boundary: the dot travels as the existing `vote` room op, which the room refuses from a view role.
-The editor gate is `can.takePart`, as the pointer's (`CanvasElementsLayer`).
+The editor gate is `can.takePart`, as the pointer's (`useElementLayerHandlers`).
 
 ## Performance and limits
 

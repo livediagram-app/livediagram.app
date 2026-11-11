@@ -30,7 +30,9 @@ Derived from [Wireframe pages](../wireframe-pages.md). The page machinery it ext
 | File                                                                                  | Role                                                                                                                |
 | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `packages/design/src/wireframe-device.ts` (+ test)                                    | Devices, groups, gutters, geometry (`deviceGeometry`), the safe area, paths, `wireframeAddress`                     |
-| `packages/design/src/wireframe-device-svg.ts`                                         | The frame as SVG in each look and finish, the status bar and home indicator                                         |
+| `packages/design/src/wireframe-device-svg.ts`                                         | The frame under the screen, in each device and look; re-exports the two below                                       |
+| `packages/design/src/wireframe-frame-paint.ts`                                        | Each look's paint and finish (Theme, Outline, Sketch, Marker) and the parts a frame is built from                   |
+| `packages/design/src/wireframe-frame-over.ts`                                         | What is drawn over the screen: the camera in it, the status bar and home indicator                                  |
 | `packages/design/src/wireframe-page.ts`                                               | The page-level answers every caller asks once: geometry, screen, content box, clip, frame                           |
 | `packages/design/src/pages-edits.ts`                                                  | `pageDeviceSet` (orientation, frame look, system bars; re-fit), `not_a_wireframe`                                   |
 | `packages/templates/src/wireframe-layouts.ts`, `wireframe-layouts-*.ts`               | The layouts by category; `wireframeLayoutsFor`                                                                      |
@@ -182,8 +184,8 @@ Inspect: `Canvas · Used · Inspect` (`useCanvasTool`); `UI · Copied · Inspect
 | `WIREFRAME_GUTTER`                    | phone 16, tablet 24, computer 32, watch 12 | `wireframe-device.ts`        |
 | Device screens                        | as the spec's table                        | `WIREFRAME_DEVICES`          |
 | `BROWSER`                             | border 1, toolbar 52, radius 12            | `wireframe-device.ts`        |
-| `STATUS_TIME` / `WATCH_TIME`          | `9:41` / `10:09`                           | `wireframe-device-svg.ts`    |
-| `SKETCH_FRAME_PX` / `MARKER_FRAME_PX` | 1.4 / 3                                    | `wireframe-device-svg.ts`    |
+| `STATUS_TIME` / `WATCH_TIME`          | `9:41` / `10:09`                           | `wireframe-frame-over.ts`    |
+| `SKETCH_FRAME_PX` / `MARKER_FRAME_PX` | 1.4 / 3                                    | `wireframe-frame-paint.ts`   |
 | `WATCH_MAX_WIDTH` / `PHONE_MAX_WIDTH` | 300 / 600                                  | `wireframe-layout-kit.ts`    |
 | `SHORT_HEIGHT` / `SHORT_SCALE_MIN`    | 600 / 0.72                                 | `wireframe-layouts-start.ts` |
 | `TALL_RATIO` / `COLUMN_MAX`           | 1.2 / 560                                  | `wireframe-layouts-start.ts` |

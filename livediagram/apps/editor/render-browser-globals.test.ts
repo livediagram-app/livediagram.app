@@ -25,7 +25,7 @@ const OUTSIDE_RENDER: Record<string, string> = {
   'apps/editor/hooks/ui/usePanelDock.ts': 'inside an effect',
   'apps/editor/hooks/canvas/useDocumentActions.ts': 'inside a handler',
   'apps/editor/hooks/canvas/useAutoCopyParam.ts': 'inside an effect',
-  'apps/editor/hooks/canvas/useClipboard.ts': 'inside a handler',
+  'apps/editor/hooks/canvas/useClipboardPaste.ts': 'inside an effect',
   'apps/editor/hooks/collab/useFacilitator.ts': 'readToken and writeToken, called from callbacks',
   '../packages/workbench/src/components/primitives/useMovablePanelMeasure.ts': 'inside an effect',
 };

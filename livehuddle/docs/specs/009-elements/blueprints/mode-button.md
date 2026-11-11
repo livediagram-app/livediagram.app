@@ -22,7 +22,7 @@ Scope, by file:
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`            | `pressModeButton`: records the Avatar spawn point                   |
 | `apps/editor/app/document/[id]/editor-state/useEditorTools.ts` | `pressModeButton`: Leave, else `pickCanvasTool`                     |
 | `apps/editor/hooks/canvas/useCanvasTool.ts`                    | `selectCanvasTool` telemetry, `toolBeforeCurrent`                   |
-| `apps/editor/components/canvas/EditorCanvasHost.tsx`           | Threads the press; `mode ?? DEFAULT_BUTTON_MODE`                    |
+| `apps/editor/components/canvas/useCanvasWalkProps.ts`          | Threads the press; `mode ?? DEFAULT_BUTTON_MODE`                    |
 | `apps/editor/components/palette/tile-defs/room-tiles.tsx`      | The one `tools:mode-avatar` tile, `tileGroup: 'travel'` [QF6]       |
 | `packages/document/src/legacy-mode-buttons.ts`                 | Drops a retired stored `mode` on load                               |
 | `apps/editor/lib/draw-commit.ts`, `useElementCreation.ts`      | Apply the tile's `mode` at commit / drop                            |

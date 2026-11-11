@@ -14,7 +14,7 @@ Scope, by file:
 | `apps/editor/lib/portals.ts`                           | Names, sites, resolution, camera centring                         |
 | `apps/editor/components/canvas/portal-travel.ts`       | `usePortalTravel`: `enterPortal` and `resolvePortal`, no state    |
 | `apps/editor/components/canvas/PortalFace.tsx`         | The ring, lit / dead states, the press, hover cards               |
-| `apps/editor/components/canvas/ElementFaceRouter.tsx`  | Renders the face while not editing                                |
+| `apps/editor/components/canvas/behaviour-faces.tsx`    | Renders the face while not editing                                |
 | `apps/editor/components/palette/PortalMenuSection.tsx` | Name, Leads to, Create Portal                                     |
 | `apps/editor/hooks/canvas/usePortalSetters.ts`         | Link, unlink, rename, create across tabs                          |
 | `apps/editor/lib/themes.ts`                            | `deriveNewBoxedColours` leaves a portal's colours alone           |
@@ -145,7 +145,7 @@ export function usePortalTravel(deps: PortalTravelDeps): {
 ## Performance and limits
 
 - `portalSites` scans every tab: `O(total elements)` per resolve.
-- `resolvePortal` runs per portal per render (`ElementFaceRouter` calls it twice). With `p`
+- `resolvePortal` runs per portal per render (`behaviourFace` calls it twice). With `p`
   portals and `n` elements that is `O(p·n)` per render, fine at the `MAX_ELEMENTS_PER_TAB` scale
   for the handful of portals a canvas holds.
 

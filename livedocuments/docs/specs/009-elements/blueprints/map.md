@@ -28,7 +28,7 @@ Scope, by file:
 | `apps/editor/hooks/canvas/useMapSetters.ts`              | `setMap(id, patch)`, `setMapViewSelected(view)`, `cleanMapPatch`                                                                                                                                             |
 | `apps/editor/lib/map-edit.ts`                            | `canEditMap(can, el)`                                                                                                                                                                                        |
 | `apps/editor/components/palette/palette-tile-defs.tsx`   | Tile `data:map`                                                                                                                                                                                              |
-| `packages/agent-verbs/src/mcp/schema.ts`                 | The `map` paragraph of the element docs                                                                                                                                                                      |
+| `packages/agent-verbs/src/mcp/element-docs.ts`           | The `map` paragraph of the element docs                                                                                                                                                                      |
 | `packages/licences/src/embedded-works.ts`                | The `natural-earth` entry                                                                                                                                                                                    |
 
 ## Domain and naming

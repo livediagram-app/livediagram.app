@@ -208,7 +208,7 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 - Every input and output property `.describe()`d; layout ids described by kind in `change_pages`'s `layout`
   description, generated from `layoutCatalogueFor`.
 - `read_document` `view` enum gains `pages`.
-- The server instructions (`packages/agent-verbs/src/mcp/schema.ts`) gain a paragraph: what Pages tabs hold,
+- The server instructions (`packages/agent-verbs/src/mcp/element-docs.ts`) gain a paragraph: what Pages tabs hold,
   which tool makes what (a document or brief → an article, a deck → slides, an infographic → an infographic page), how a document
   for pages starts (`create_document` with template `blank-illustration`), and that a layout's sample text is
   found in the `pages` view and replaced with `update_document`.

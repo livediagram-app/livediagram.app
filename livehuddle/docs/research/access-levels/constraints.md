@@ -69,7 +69,7 @@ Sources: [Team shared documents](../../specs/013-workspace/team-shared-documents
 | Change elements, tabs, document                                      | room mutations, tab `PUT`                                                       | no   | yes  |
 | Run session tools, hold the facilitator baton                        | `canHold` is edit-only ([facilitator.ts](../../../apps/api/src/facilitator.ts)) | no   | yes  |
 
-Sources: [room-messages.ts](../../../packages/api-schema/src/room-messages.ts) (op classes),
+Sources: [room-op-kinds.ts](../../../packages/api-schema/src/room-op-kinds.ts) (op classes),
 [document-room/document-room.ts](../../../apps/api/src/document-room/document-room.ts) (`sender.role !== 'edit' && !isPresenceOp`),
 [API app](../../specs/015-api/api.md) (comment and Q&A rows),
 [Per-participant responses](../../specs/012-collaboration/participant-responses.md) ("Edit-role only"),
