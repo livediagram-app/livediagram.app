@@ -110,7 +110,7 @@ differ, and the second copy is stored once more.
 | `missing-bytes`      | The source names an image but does not carry its bytes.                                                      |
 | `unsupported`        | The browser cannot decode the bytes, or the gallery refuses the type (`unsupported_type`, `malformed_jpeg`). |
 | `too-large`          | The source is over 50 MB, or the encoded image is over the 10 MB per-file cap (`file_too_large`).            |
-| `gallery-full`       | The owner's gallery is at its image-count or byte cap (`gallery_full`, 100 images / 100 MB hosted).          |
+| `gallery-full`       | The owner's gallery is at its image-count or byte cap (`gallery_full`, 500 images / 1 GB hosted).            |
 | `images-unavailable` | The deployment stores no images (`images_unavailable`: a deployment without the media service).              |
 | `offline-budget`     | An Offline Mode import has already embedded 8 MB of images.                                                  |
 | `upload-failed`      | Anything else: the network dropped, the server erred.                                                        |

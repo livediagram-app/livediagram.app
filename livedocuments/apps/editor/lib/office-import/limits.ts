@@ -17,7 +17,7 @@ export const OFFICE_INFLATE_SLICE_BYTES = 16 * 1024;
 export const OFFICE_XML_MAX_DEPTH = 256;
 /** The most elements one XML part may hold. */
 export const OFFICE_XML_MAX_ELEMENTS = 1_000_000;
-/** The most pictures one import stores (the hosted gallery's count). */
+/** The most pictures one import stores (a fifth of the hosted gallery's 500). */
 export const OFFICE_MAX_IMAGES = 100;
 /** The most items one slide brings across. */
 export const OFFICE_MAX_SLIDE_ITEMS = 300;

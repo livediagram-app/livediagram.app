@@ -64,7 +64,7 @@ the media service itself ([liveworkspace/docs/specs/006-media/media.md](../../..
 | Image owner      | `image_owners.owner_id` (the design's) | Whose an image is, as the media service names owners        |
 | Media owner      | `mediaOwner(owner)`                    | The owner as the service knows them; a guest id is hashed   |
 | Dedupe key       | person and `sha256`, in the service    | SHA-256 of the uploaded (pre-strip) bytes, per person       |
-| Gallery cap      | the service's, 100 images and 100 MB   | Per-person count and byte ceilings, across every app        |
+| Gallery cap      | the service's, 500 images and 1 GB     | Per-person count and byte ceilings, across every app        |
 | Metadata strip   | the service's JPEG strip               | Byte-level removal of APPn and COM segments from a JPEG     |
 | Reference        | row of `image_refs` naming the id      | A tab places the image; see the index blueprint             |
 | Reference outbox | the design's `outbox` media key        | The design's images changed since the service last heard    |
@@ -416,7 +416,7 @@ account)` (`mergeMediaOwner`; idempotent, and a failure keeps the notice to ask 
 - **Privacy.** The service strips JPEG APPn and COM segments before storage (I2). PNG, WebP and GIF
   pass through (spec, Out of scope).
 - **Abuse.** `WRITE_RATE_LIMITER` (300 per 60 s per owner or token) on POST and DELETE; per-file
-  cap; the media service's per-person caps (100 images, 100 MB, across every app), enforced
+  cap; the media service's per-person caps (500 images, 1 GB, across every app), enforced
   atomically at its insert; the `images` segment answers only a verified Bearer (an account's,
   a guest's or an API token); read-only tokens cannot write. Uploads are off in embeds (D42).
 - **Caching.** `private` only, so no shared cache holds a share-gated image.
@@ -529,7 +529,7 @@ O1 exists. O2 to O5 do not; Observability stays unchecked until GB5 lands.
 | `MAX_BODY_BYTES`           | `8 * 1024 * 1024`                                 | Non-image write cap in `limits.ts`                          |
 | `MEDIA_KEY`                | secret; unset = no images                         | `wrangler secret put`; the service's `MEDIA_KEY_LIVEDESIGN` |
 | `MEDIA_URL`                | unset = `https://www.liveworkspace.app/api/media` | `hosted-vars.json` per environment                          |
-| Gallery caps               | 100 images, 100 MB per person                     | The media service's, across every app                       |
+| Gallery caps               | 500 images, 1 GB per person                       | The media service's, across every app                       |
 | Reference announce cron    | `0 3 * * *`                                       | `wrangler.toml`, production and staging                     |
 | `IMAGE_EMBED_BUDGET_BYTES` | `3 * 1024 * 1024`                                 | Spec; 1 to 8 MiB keeps snapshots streamable                 |
 | Read `Cache-Control`       | `private, max-age=86400`                          | Spec; `private` is load-bearing                             |

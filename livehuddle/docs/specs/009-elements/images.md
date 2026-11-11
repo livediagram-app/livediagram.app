@@ -71,7 +71,7 @@ Server-side enforcement: the upload endpoint checks `Content-Type` against the w
 ### Size cap
 
 - **Per-file cap: 10 MB.** Sits comfortably above typical phone JPEGs (2–4 MB) and 4K screenshots (~3–6 MB as PNG), while staying well below the Workers request-body limit (100 MB). Going higher hurts the picker UX (long uploads on slow networks) without serving real diagram content; canvas images render at thumbnail or modest sizes, so an 8K original is wasted bytes.
-- **Per-person cap: 100 images and 100 MB, across every app**, kept by the media service. When either is reached the upload answers 403 with `{ error: "gallery_full", reason: "count" | "bytes", limit, current }`, passed on as the service sent it, so the client can render an accurate message.
+- **Per-person cap: 500 images and 1 GB, across every app**, kept by the media service. When either is reached the upload answers 403 with `{ error: "gallery_full", reason: "count" | "bytes", limit, current }`, passed on as the service sent it, so the client can render an accurate message.
 - Enforcement order on POST: this api checks the declared type and `Content-Length` against the per-file cap first, so a refused file never leaves the worker; the service then answers an early `X-Image-Sha256` dedupe without the body (sent only for the owner's own editor or a guest: an API token uploads the body, which still dedupes on its real hash, because the shortcut would otherwise hand them the matching gallery row for nothing more than a hash), checks the caps, sniffs the bytes and stores them. The caps ride inside the row's insert, so uploads racing each other (the [Import image pipeline](../020-import-export/import-image-pipeline.md) sends three at once) cannot together pass one; a refused insert answers the same 403, or 409 `{ error: "upload_conflict" }` when the gallery has room again by then, and the client may retry.
 
 ## API endpoints
@@ -176,7 +176,7 @@ iPhone was closed while moving between its pages.
 - **Gallery tab.** Renders `apiListImages()` as a 4-column grid of thumbnails (re-uses `/api/images/:id` with native `<img>` lazy loading). Hovering a tile surfaces a small "Use" button + a trash icon for delete. Clicking a tile sets the element's `imageId` and closes.
 - **Search tab.** Searches openly licensed pictures on Openverse and stores the picked one in the gallery, with a creator credit on the element. See [Image search](image-search.md).
 
-The modal also surfaces the soft-cap usage as a tiny bar at the bottom ("3.2 / 100 MB used") so users see the cap before they hit it.
+The modal also surfaces the soft-cap usage as a tiny bar at the bottom ("3.2 MB / 1 GB used") so users see the cap before they hit it.
 
 When the picker is opened for an element that already has an attached image, a **Remove from element** action sits in the modal footer. It clears the element's `imageId` (returning the canvas back to the placeholder state) and drops `naturalWidth` / `naturalHeight` so a later "Reset to natural size" doesn't snap to stale dimensions. The gallery copy is untouched; users can re-attach the same image (or a different one) without re-uploading.
 

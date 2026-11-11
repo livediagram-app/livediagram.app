@@ -100,8 +100,9 @@ The body is the file's raw bytes. Headers: `Content-Type`, `Content-Length`, `X-
    a bare hash would let them probe the gallery, so they upload the body and still dedupe on its real
    hash.
 4. A full gallery: `403 gallery_full` with `reason` (`count` or `bytes`), `limit` and `current`. The caps
-   are per person across every app (`IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`; 100 images and
-   100 MB in production and staging).
+   are per person across every app (`IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`; 500 images and
+   1 GB in production and staging: a full-window screenshot is 0.3 to 1.1 MB, so 1 GB holds the 500 with
+   room to spare).
 5. Missing or invalid dimensions: `400 invalid_dimensions`.
 6. Bytes whose first bytes aren't the declared format: `415 unsupported_type`. The declared type is never
    trusted alone.

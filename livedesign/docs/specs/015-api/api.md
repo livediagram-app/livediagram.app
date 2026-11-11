@@ -162,7 +162,7 @@ The three preview doors resolve the code at the index as an anonymous visitor wo
 
 **Images ([Images](../009-elements/images.md))**
 
-The bytes, the gallery, the dedupe and the caps (100 images and 100 MB per person, across every app) are liveworkspace's media service's. The api keeps who may read what. Without `MEDIA_KEY` every route answers 503 and the editor hides the Image entry.
+The bytes, the gallery, the dedupe and the caps (500 images and 1 GB per person, across every app) are liveworkspace's media service's. The api keeps who may read what. Without `MEDIA_KEY` every route answers 503 and the editor hides the Image entry.
 
 | Method | Path                | Auth                      | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | ------ | ------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

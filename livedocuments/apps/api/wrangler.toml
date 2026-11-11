@@ -123,7 +123,7 @@ type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
-# The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
+# The image gallery's caps (500 images and 1 GB per person, across every app) are the media service's
 # (liveworkspace/docs/specs/006-media/media.md "Uploads"), not this worker's.
 
 # Transactional email (docs/specs/014-identity/transactional-email.md) goes out through Cloudflare Email

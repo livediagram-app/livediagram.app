@@ -1,5 +1,5 @@
 // The Library's host pages: the Image Gallery and Shape Libraries, from the host's sources, and their sidebar rows.
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeIndex } from '../test/fakeClient';
 import { Explorer } from '../explorer/Explorer';
@@ -115,6 +115,55 @@ describe('the Image Gallery', () => {
     await waitFor(() => expect(host.list).toHaveBeenCalledTimes(2));
     fireEvent.change(input, { target: { files: [file] } });
     expect(await screen.findByText('Your gallery is full.')).toBeTruthy();
+  });
+
+  it('shows only the unused images with Unused, beside Help, with no read of its own', async () => {
+    const host = galleryHost([image(1), image(2), image(3)], {
+      helpHref: '/help/explorer/image-gallery/',
+    });
+    page({ kind: 'gallery' }, { gallery: host });
+    const show = await screen.findByRole('group', { name: 'Show' });
+    const [all, unused] = within(show).getAllByRole('button');
+    expect(all!.textContent).toBe('All');
+    expect(all!.getAttribute('aria-pressed')).toBe('true');
+    // Just left of Help.
+    expect(show.nextElementSibling?.textContent).toBe('Help');
+    fireEvent.click(unused!);
+    expect(unused!.getAttribute('aria-pressed')).toBe('true');
+    const grid = screen.getByRole('list', { name: 'Unused images' });
+    expect(within(grid).queryByText('photo-1.png')).toBeNull();
+    expect(within(grid).getByText('photo-2.png')).toBeTruthy();
+    expect(within(grid).getByText('photo-3.png')).toBeTruthy();
+    // A delete takes the card out at once, the switch still on Unused.
+    fireEvent.click(screen.getByRole('button', { name: 'Delete photo-2.png' }));
+    fireEvent.click(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete Image' }),
+    );
+    await waitFor(() => expect(screen.queryByText('photo-2.png')).toBeNull());
+    expect(within(grid).getByText('photo-3.png')).toBeTruthy();
+    fireEvent.click(all!);
+    expect(screen.getByText('photo-1.png')).toBeTruthy();
+    expect(host.list).toHaveBeenCalledTimes(1);
+    expect(host.usage).toHaveBeenCalledTimes(1);
+  });
+
+  it('says every image is in use, and offers All again', async () => {
+    page({ kind: 'gallery' }, { gallery: galleryHost([image(1)]) });
+    fireEvent.click(await screen.findByRole('button', { name: 'Unused' }));
+    expect(screen.getByText('No unused images')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Show All Images' }));
+    expect(screen.getByRole('button', { name: 'All' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByText('photo-1.png')).toBeTruthy();
+  });
+
+  it('has no Show switch without images or without usage to read', async () => {
+    page({ kind: 'gallery' }, { gallery: galleryHost([]) });
+    expect(await screen.findByText('No images yet')).toBeTruthy();
+    expect(screen.queryByRole('group', { name: 'Show' })).toBeNull();
+    cleanup();
+    page({ kind: 'gallery' }, { gallery: galleryHost([image(1)], { usage: undefined }) });
+    expect(await screen.findByText('photo-1.png')).toBeTruthy();
+    expect(screen.queryByRole('group', { name: 'Show' })).toBeNull();
   });
 
   it('says when images are off, and when the host has no gallery', async () => {

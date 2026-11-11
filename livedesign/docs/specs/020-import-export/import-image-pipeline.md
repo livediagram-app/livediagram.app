@@ -110,8 +110,8 @@ differ, and the second copy is stored once more.
 | `missing-bytes`      | The source names an image but does not carry its bytes.                                                      |
 | `unsupported`        | The browser cannot decode the bytes, or the gallery refuses the type (`unsupported_type`, `malformed_jpeg`). |
 | `too-large`          | The source is over 50 MB, or the encoded image is over the 10 MB per-file cap (`file_too_large`).            |
-| `gallery-full`       | The owner's gallery is at its image-count or byte cap (`gallery_full`, 100 images / 100 MB hosted).          |
-| `images-unavailable` | The deployment stores no images (`images_unavailable`: a deployment without R2).                              |
+| `gallery-full`       | The owner's gallery is at its image-count or byte cap (`gallery_full`, 500 images / 1 GB hosted).            |
+| `images-unavailable` | The deployment stores no images (`images_unavailable`: a deployment without R2).                             |
 | `offline-budget`     | An Offline Mode import has already embedded 8 MB of images.                                                  |
 | `upload-failed`      | Anything else: the network dropped, the server erred.                                                        |
 
@@ -164,7 +164,7 @@ without images closes the dialog as before. Copy per failure:
 | `too-large`          | The image was too large to import.                                         |
 | `gallery-full`       | Your image gallery is full. Free up space in the Explorer's Image Gallery. |
 | `images-unavailable` | This server doesn't store images.                                          |
-| `offline-budget`     | This offline design reached its image limit for one import.              |
+| `offline-budget`     | This offline design reached its image limit for one import.                |
 | `upload-failed`      | The upload didn't go through. Check your connection and try again.         |
 
 Every summary that lists placeholders ends with the same way forward: _Double-click a placeholder to add its image._

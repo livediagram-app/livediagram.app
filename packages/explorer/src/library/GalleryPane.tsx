@@ -3,15 +3,17 @@
 // The Image Gallery (livediagram's GalleryPane): every image the person has added, from the host's media source,
 // each with its size, a "Used in" chip naming the items that place it (so orphaned bytes are easy to spot), and
 // Delete. Upload by dropping, pasting or choosing a file, where the host takes uploads. Two reads on arrival (the
-// list and the usage), each tile's picture only as it nears the screen (./blobs).
+// list and the usage), each tile's picture only as it nears the screen (./blobs). The page's Show switch (All or
+// Unused, ./gallery-filter) filters what those reads brought, never reading again.
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { IMAGE_ACCEPT_ATTR } from '@liveworkspace/api-schema/image-limits';
-import { ConfirmDialog, EmptyState } from '@liveworkspace/ui';
+import { Button, ConfirmDialog, EmptyState } from '@liveworkspace/ui';
 import { TrashIcon } from '../ui/icons';
 import { ImageIcon, UploadIcon } from '../ui/library-icons';
 import { isAbort } from '../data/errors';
 import { useBlobUrl } from './blobs';
+import { filterGallery, type GalleryFilter } from './gallery-filter';
 import type { GalleryHost, GalleryImage, GalleryUse } from './types';
 import { quoted } from '../quoted';
 
@@ -36,11 +38,12 @@ function countOf(usage: GalleryUse[], kindMany: { one: string; many: string }): 
   return `${n} ${n === 1 ? words.one : words.many}`;
 }
 
-/** The gallery's list and usage, read once and again after an upload. */
-function useGallery(host: GalleryHost) {
+/** The gallery's list and usage, read once and again after an upload; nothing is read without a host. */
+export function useGallery(host: GalleryHost | undefined) {
   const [loaded, setLoaded] = useState<Loaded>({ status: 'loading' });
   const [version, setVersion] = useState(0);
   useEffect(() => {
+    if (!host) return;
     const controller = new AbortController();
     const { signal } = controller;
     Promise.all([host.list(signal), host.usage?.(signal).catch(() => ({})) ?? {}]).then(
@@ -65,6 +68,15 @@ function useGallery(host: GalleryHost) {
   return { loaded, reload, drop };
 }
 
+export type GalleryState = ReturnType<typeof useGallery>;
+
+/** How many of the loaded images nothing places, or null before the gallery (and its usage) is ready. */
+export function unusedCount(host: GalleryHost, loaded: GalleryState['loaded']): number | null {
+  if (!host.usage || loaded.status !== 'ready' || loaded.images.length === 0) return null;
+  return filterGallery(loaded.images, loaded.usage, 'unused').length;
+}
+
+/** The Gallery on its own, reading its images itself (the editor panel's compact Gallery). */
 export function GalleryPane({
   host,
   kindMany,
@@ -75,13 +87,40 @@ export function GalleryPane({
   kindMany: { one: string; many: string };
   compact?: boolean;
 }) {
-  const { loaded, reload, drop } = useGallery(host);
+  const gallery = useGallery(host);
+  return <GalleryContent host={host} gallery={gallery} kindMany={kindMany} compact={compact} />;
+}
+
+/** The Gallery over a state its page holds (./LibraryViews, whose header's Show switch reads the same state). */
+export function GalleryContent({
+  host,
+  gallery,
+  kindMany,
+  compact = false,
+  filter = 'all',
+  onShowAll,
+}: {
+  host: GalleryHost;
+  gallery: GalleryState;
+  kindMany: { one: string; many: string };
+  compact?: boolean;
+  // The Show switch's choice: Unused keeps only the images nothing places.
+  filter?: GalleryFilter;
+  // Back to All, from the empty state when every image is in use.
+  onShowAll?: () => void;
+}) {
+  const { loaded, reload, drop } = gallery;
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<GalleryImage | null>(null);
   const grid = compact
     ? 'grid grid-cols-3 gap-2.5 @[38rem]:grid-cols-5'
     : 'grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4';
   const usageOf = (id: string) => (loaded.status === 'ready' ? (loaded.usage[id] ?? []) : []);
+  // One pass over at most the gallery's cap, again only when the list, its usage or the switch changes.
+  const shown = useMemo(
+    () => (loaded.status === 'ready' ? filterGallery(loaded.images, loaded.usage, filter) : []),
+    [loaded, filter],
+  );
 
   const remove = (image: GalleryImage) => {
     setDeleting(null);
@@ -132,9 +171,22 @@ export function GalleryPane({
             title="No images yet"
             description={`Every image you add to a ${kindMany.one} collects here, ready to reuse in any of them.`}
           />
+        ) : shown.length === 0 ? (
+          <EmptyState
+            compact={compact}
+            icon={<ImageIcon size={28} />}
+            title="No unused images"
+            description={`Every image here is placed in a ${kindMany.one} or another app’s item, so there is nothing to clear.`}
+          >
+            {onShowAll ? (
+              <Button size="sm" variant="secondary" onClick={onShowAll}>
+                Show All Images
+              </Button>
+            ) : null}
+          </EmptyState>
         ) : (
-          <ul className={grid} aria-label="Images">
-            {loaded.images.map((image) => (
+          <ul className={grid} aria-label={filter === 'unused' ? 'Unused images' : 'Images'}>
+            {shown.map((image) => (
               <GalleryCard
                 key={image.id}
                 host={host}

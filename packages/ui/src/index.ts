@@ -50,6 +50,8 @@ export { Tooltip, type TooltipProps } from './Tooltip';
 export { HoverCard, type HoverCardProps } from './HoverCard';
 // The "this app or All Apps" switch the Explorer and the Community page share (AppScopeToggle.tsx).
 export { AppScopeToggle, type AppScope, type AppScopeOption } from './AppScopeToggle';
+// A pane header's small pressed-state switch, which AppScopeToggle and the Image Gallery's All / Unused draw.
+export { SegmentedToggle, type SegmentedOption } from './SegmentedToggle';
 export { placeHint, type HintLayout, type HintPlacement } from './hint/place-hint';
 export { HINT_CARD_SURFACE } from './hint/hint-constants';
 export { Dialog, type DialogProps } from './dialog/Dialog';
