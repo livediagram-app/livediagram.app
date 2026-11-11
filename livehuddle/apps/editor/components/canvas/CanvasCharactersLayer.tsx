@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
@@ -9,7 +10,8 @@ import { AvatarPadArrivals } from '@livehuddle/avatar/components/AvatarPadArriva
 import { useAvatarPadArrivals } from '@livehuddle/avatar/hooks/useAvatarPadArrivals';
 import { useAvatarPose } from '@livehuddle/avatar/hooks/useAvatarPose';
 import { poseFeet } from '@livehuddle/avatar/pose';
-import { parseAvatarStatus } from '@livehuddle/avatar/status';
+import { avatarStatusLabel, parseAvatarStatus } from '@livehuddle/avatar/status';
+import { seatedChipShifts, type ChipBearer } from '@livehuddle/avatar/chair-sitters';
 import { isDrinkKind } from '@livehuddle/avatar/office-geometry';
 import { headPoint } from '@livehuddle/avatar/speech';
 import { avatarScale, peerAvatarConfig } from '@livehuddle/avatar/config';
@@ -43,6 +45,9 @@ const AvatarSpeechLayer = dynamic(loadAvatarSpeechLayer, { ssr: false });
 const AVATAR_BURST_PX = 120;
 
 const wholeView = (v: View) => v;
+
+// Your own chip's key in the chip spread: no peer id is empty.
+const SELF_CHIP = '';
 
 type CanvasAvatar = ReturnType<typeof useCanvasAvatar>;
 
@@ -156,6 +161,37 @@ export function CanvasCharactersLayer({
   });
   // Do Not Disturb quiets the join and leave chimes and the nudge too (join-and-leave-sounds.md "Settings").
   useQuietForDoNotDisturb(avatarStatus === 'dnd');
+  // Seated neighbours' chips spread so none covers another (docs/specs/008-canvas/avatar-mode.md "Seated neighbours'
+  // chips never cover each other"): everyone sitting, and your own status chip while you sit and wear one.
+  const selfSeatedAt = inMode && avatar.seatedOn ? feet : null;
+  const chipShifts = useMemo(() => {
+    // Only the seated take part, so a room of walkers parses nothing more per frame.
+    const bearers: ChipBearer[] = [];
+    for (const peer of remoteAvatars) {
+      if (!peer.avatar.seatedOn) continue;
+      const status = parseAvatarStatus(peer.avatar.status);
+      bearers.push({
+        key: peer.id,
+        x: peer.avatar.x,
+        y: peer.avatar.y,
+        scale: avatarScale(peerAvatarConfig(peer.avatar.config).size),
+        seated: true,
+        name: peer.name,
+        status: status ? avatarStatusLabel(status) : null,
+      });
+    }
+    if (selfSeatedAt && avatarStatus)
+      bearers.push({
+        key: SELF_CHIP,
+        x: selfSeatedAt.x,
+        y: selfSeatedAt.y,
+        scale: selfScale,
+        seated: true,
+        name: '',
+        status: avatarStatusLabel(avatarStatus),
+      });
+    return seatedChipShifts(bearers);
+  }, [remoteAvatars, selfSeatedAt, avatarStatus, selfScale]);
   // Where the camera and screen bubbles were laid out, so speech bubbles rise clear of them.
   const callBubbleRects = useCallBubbleRects();
 
@@ -191,6 +227,7 @@ export function CanvasCharactersLayer({
           name={peer.name}
           standingOn={null}
           glideMs={peer.glideMs}
+          chipShift={chipShifts.get(peer.id)}
         />
       ))}
       {/* The Receptionist (docs/specs/008-canvas/receptionist.md): the host by the tab's Avatar Pad, drawn while you
@@ -231,6 +268,7 @@ export function CanvasCharactersLayer({
         status={avatarStatus}
         shirt={props.selfParticipant.color}
         standingOn={avatarStandingOn}
+        chipShift={chipShifts.get(SELF_CHIP)}
       />
       {/* Who is talking, near and far (docs/specs/012-collaboration/proximity-audio.md "The talking equaliser"). */}
       <TalkingBars {...call.bars} />

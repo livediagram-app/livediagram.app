@@ -31,10 +31,10 @@ Shape kinds: `pillar`, `column`, `car-park`, `bike-rack`, `swimming-pool`, `stag
 | -------------- | ------------ | --------------------------------------------------------------------------------------------------------------- |
 | Pillar         | 48 × 152     | Scenery: its base blocks, full width, so you walk round it                                                      |
 | Column         | 64 × 168     | Scenery: its plinth blocks                                                                                      |
-| Car Park       | 240 × 128    | Scenery: the bays block across the whole width (the parked cars), so a row of them is one barrier               |
+| Car Park       | 240 × 128    | Scenery: the two parked cars and the kerb block, so you can walk into the empty middle bay up to its kerb       |
 | Bike Rack      | 136 × 80     | Scenery: the stands and the bikes locked to them block                                                          |
 | Swimming Pool  | 320 × 200    | Scenery drawn to its size: the water blocks, so you stop at the rim and walk round on the deck                  |
-| Stage Curtains | 360 × 120    | Hangs over a stage: never blocks, never a destination (you walk between and in front of the drapes)             |
+| Stage Curtains | 360 × 120    | Hangs over a stage: each drape's hem blocks, never a destination (you walk between and in front of the drapes)  |
 | Podium         | 56 × 88      | Its foot blocks; a click stands you at its speaker spot ([Speaking from the Podium](#speaking-from-the-podium)) |
 
 - **Scenery** blocks as the [Plant](office.md#plant-bookshelf) does: a solid footprint, a character inside one walks
@@ -43,9 +43,15 @@ Shape kinds: `pillar`, `column`, `car-park`, `bike-rack`, `swimming-pool`, `stag
 - **The pool's rim**: the footprint is the water, the pool less its deck. The deck is a fixed band (14 px, or a tenth
   of the pool's shorter side when that is less), the same on the canvas and in the walk, however big the pool, so the
   water always stops a character exactly where its edge is drawn.
-- **Stage Curtains** walk as a wall piece does (the [Notice Board](social-pieces.md#how-each-one-walks)): walked past,
-  not to. A click on them walks you to the clicked point, so a click on the stage between the drapes still takes you
-  onto the stage.
+- **A piece's footprint can be several boxes** (Work Tracker #609): each blocks as one footprint does, and what lies
+  between them is open floor. The Car Park blocks at its two cars and its kerb, each car's box running out to the
+  piece's edge, so car parks side by side still join into one barrier at their cars and kerbs, while the empty middle
+  bay is open from the front (from behind, from the far edge; on its side, from the side away from the kerb). Turned,
+  each box turns with the drawing, as a single footprint does ([Turning furniture](furniture-facing.md)).
+- **Stage Curtains** are never a destination: walked past and between, not to. A click on them walks you to the
+  clicked point, so a click on the stage between the drapes still takes you onto the stage. Each drape blocks at its
+  hem, where it meets the floor: a box under each side drape, the outer sixth of the width, so you walk round a drape
+  and onto the stage between them, never through one. The pelmet across the top hangs overhead and blocks nothing.
 - Nobody sits in any of them; none gives a drink. The Podium alone is a destination: you stand at it
   ([Speaking from the Podium](#speaking-from-the-podium)). Standing on a stage under its curtains, or behind its
   podium, is standing on the stage ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md)).

@@ -4,7 +4,6 @@ import { avatarScale } from './config';
 import {
   isFixedSeatShape,
   isSceneryShape,
-  isWallPieceShape,
   officeFootprint,
   POOL_DECK,
   poolDeck,
@@ -51,7 +50,6 @@ describe('the venue pieces', () => {
   const SCENERY = [
     ['pillar', 48, 152],
     ['column', 64, 168],
-    ['car-park', 240, 128],
     ['bike-rack', 136, 80],
     ['podium', 56, 88],
   ] as const;
@@ -104,50 +102,26 @@ describe('the venue pieces', () => {
     expect(end.y).toBeLessThan(260);
   });
 
-  it('walks between and in front of the stage curtains: nothing to block or stand on', () => {
-    expect(isWallPieceShape('stage-curtains')).toBe(true);
-    expect(isSceneryShape('stage-curtains')).toBe(false);
+  // The car park's and the curtains' several boxes: footprint-boxes.test.ts.
+  it('walks in front of the stage curtains and stands on nothing there', () => {
     const curtains = piece('stage-curtains', 0, 0, 360, 120);
-    expect(officeFootprint(curtains)).toBeNull();
     expect(elementUnderFeet([curtains], { x: 180, y: 100 })).toBeNull();
-    const end = walk([curtains], { x: 20, y: 200 }, { x: 20, y: 60 });
-    expect(Math.round(end.y)).toBe(60);
+    const end = walk([curtains], { x: 20, y: 300 }, { x: 200, y: 140 });
+    expect(Math.round(end.y)).toBe(140);
   });
 
   // The Podium alone is held, stood at (lectern.test.ts; venue-pieces.md "Speaking from the Podium").
   it('seats nobody but the podium’s speaker', () => {
     const others = SCENERY.map(([s]) => s).filter((s) => s !== 'podium');
-    for (const shape of [...others, 'swimming-pool', 'stage-curtains']) {
+    for (const shape of [...others, 'car-park', 'swimming-pool', 'stage-curtains']) {
       expect(isFixedSeatShape(shape), shape).toBe(false);
       expect(seatsACharacter(shape), shape).toBe(false);
     }
   });
 
   // livehuddle's furniture-facing.md "A turn": what blocks turns with the piece.
-  it('turns what blocks with the car park, the bike rack, the podium and the suggestion box', () => {
-    // The car park on its side: its bays down the canvas, the kerb on the right left clear.
-    const side = officeFootprint({
-      x: 0,
-      y: 0,
-      width: 128,
-      height: 240,
-      shape: 'car-park',
-      chairFacing: 'e',
-    })!;
-    expect([side.y, side.height]).toEqual([0, 240]);
-    expect(side.x + side.width).toBeLessThan(112);
-    // From behind the kerb is nearest, at the bottom, and is not in the way.
-    const back = officeFootprint({
-      x: 0,
-      y: 0,
-      width: 240,
-      height: 128,
-      shape: 'car-park',
-      chairFacing: 's',
-    })!;
-    expect(back.y + back.height).toBeLessThanOrEqual(106);
-    expect(back.y).toBeLessThan(20);
-    // The bike rack's pad runs down the canvas on its side.
+  it('turns what blocks with the bike rack, the podium and the suggestion box', () => {
+    // The car park's turned boxes: footprint-boxes.test.ts. The bike rack's pad runs down the canvas on its side.
     const rack = officeFootprint({
       x: 0,
       y: 0,
