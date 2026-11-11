@@ -151,28 +151,21 @@ describe('archiving', () => {
     expect(inbox.actions).toEqual([]);
   });
 
-  it('records “To Archived” on its owner’s Timeline, and drops what reached others alone', async () => {
+  it('records “To Archived” in its History, which stays its owner’s, and drops its favourites’ events', async () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);
     await call(`/favourites/${item.id}`, { method: 'PUT', auth: ada.auth });
     await archive(ada.auth, item.id);
     const events = h.db.sql
-      .prepare('SELECT type, detail FROM timeline_events WHERE item_id = ? ORDER BY occurred_at')
+      .prepare('SELECT type, detail FROM events WHERE item_id = ? ORDER BY occurred_at')
       .all(item.id) as { type: string; detail: string | null }[];
     expect(events.map((e) => e.type)).toEqual(['created', 'moved']);
     expect(JSON.parse(events[1]!.detail!)).toMatchObject({ folderName: 'Archived', archived: '1' });
-    const scopes = h.db.sql
-      .prepare(
-        `SELECT DISTINCT s.scope FROM timeline_event_scopes s JOIN timeline_events e ON e.id = s.event_id
-         WHERE e.item_id = ?`,
-      )
-      .all(item.id) as { scope: string }[];
-    expect(scopes.map((s) => s.scope)).toEqual(['a:user_a']);
-    // Not on the Timeline while archived.
-    const timeline = await body<{ events: { itemId: string | null }[] }>(
-      await call('/timeline', { auth: ada.auth }),
+    // Its owner still reads its History while it is archived.
+    const history = await body<{ events: { type: string }[] }>(
+      await call(`/items/${item.id}/history`, { auth: ada.auth }),
     );
-    expect(timeline.events.some((e) => e.itemId === item.id)).toBe(false);
+    expect(history.events.map((e) => e.type)).toEqual(['moved', 'created']);
   });
 
   it('refuses anyone but the owner, an item in the Trash, and a folder’s id', async () => {
@@ -439,13 +432,11 @@ describe('moving out', () => {
     expect(ids(await list(ada.auth, `view=all&folder=${folder.folder.id}`))).toEqual([item.id]);
     // The old link stays gone.
     expect((await call(`/share/${link.code}`, { auth: ada.auth })).status).toBe(404);
-    // Its history came back with it.
-    const timeline = await body<{ events: { itemId: string | null; type: string }[] }>(
-      await call('/timeline', { auth: ada.auth }),
+    // Its History came back with it.
+    const history = await body<{ events: { type: string }[] }>(
+      await call(`/items/${item.id}/history`, { auth: ada.auth }),
     );
-    expect(timeline.events.filter((e) => e.itemId === item.id).map((e) => e.type)).toContain(
-      'created',
-    );
+    expect(history.events.map((e) => e.type)).toContain('created');
   });
 
   it('to My Work’s root with teamId null', async () => {

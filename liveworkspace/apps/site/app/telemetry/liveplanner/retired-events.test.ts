@@ -95,17 +95,20 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(false);
   });
 
-  it("retires the old Timeline's arrivals, not what the shared Explorer's Timeline reports", () => {
-    for (const type of ['Landing', 'Nav'])
+  it('retires the Timeline and What Happened, not Home or the Inbox', () => {
+    for (const type of ['Landing', 'Nav', 'Card', 'Stack', 'Menu'])
       expect(isRetiredEvent('Timeline', 'Opened', type)).toBe(true);
+    expect(isRetiredEvent('Timeline', 'Removed', 'Entry')).toBe(true);
+    expect(isRetiredEvent('Timeline', 'Changed', 'Calendar')).toBe(true);
+    expect(isRetiredEvent('Timeline', 'Loaded', 'More')).toBe(true);
+    expect(isRetiredEvent('Home', 'Selected', 'WhatHappened')).toBe(true);
+    expect(isRetiredEvent('Home', 'Selected', 'SeeTimeline')).toBe(true);
+    expect(isRetiredEvent('Home', 'Opened', 'Group')).toBe(true);
     expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Timeline')).toBe(true);
     expect(isRetiredEvent('UI', 'Selected', 'ExplorerPanel.Timeline')).toBe(true);
-    for (const type of ['Card', 'Stack', 'Menu'])
-      expect(isRetiredEvent('Timeline', 'Opened', type)).toBe(false);
-    expect(isRetiredEvent('Timeline', 'Removed', 'Entry')).toBe(false);
-    expect(isRetiredEvent('Timeline', 'Removed', 'Stack')).toBe(false);
-    expect(isRetiredEvent('Timeline', 'Changed', 'Calendar')).toBe(false);
-    expect(isRetiredEvent('Timeline', 'Loaded', 'More')).toBe(false);
+    expect(isRetiredEvent('Home', 'Selected', 'Welcome.Blank')).toBe(false);
+    expect(isRetiredEvent('Home', 'Opened', 'Welcome')).toBe(false);
+    expect(isRetiredEvent('Home', 'Loaded', 'Retry')).toBe(false);
     expect(isRetiredEvent('Page', 'View', '/explorer/timeline')).toBe(false);
     expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Inbox')).toBe(false);
   });

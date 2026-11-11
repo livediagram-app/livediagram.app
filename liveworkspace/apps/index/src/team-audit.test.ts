@@ -45,7 +45,7 @@ const count = () =>
   (h.db.sql.prepare('SELECT COUNT(*) AS n FROM team_audit_events').get() as { n: number }).n;
 
 const sendAccountEvents = (events: unknown[]) =>
-  call('/internal/timeline', { method: 'POST', auth: 'merge-key', body: { events } });
+  call('/internal/events', { method: 'POST', auth: 'merge-key', body: { events } });
 
 describe("a team item's events", () => {
   it('logs shares, unshares, trash, restore and a delete for good, with who and the name then', async () => {
@@ -79,7 +79,7 @@ describe("a team item's events", () => {
     next();
     await call(`/items/${item.id}?permanent=true`, { method: 'DELETE', auth: ada.auth });
 
-    // Made and renamed are the Timeline's, not the log's.
+    // Made and renamed are History's, not the log's.
     expect(kinds('team_au')).toEqual([
       'shared Budget 2',
       'shared Budget 2',
@@ -192,7 +192,6 @@ describe("a team's own events, from accounts", () => {
     title: 'Guild',
     detail: { teamId: 'team_ac', personId: 'user_ac2', memberName: 'Bea', via: 'link' },
     at: START,
-    scopes: ['t:team_ac', 'p:user_ac2'],
   };
 
   it("logs a team's events for its team alone, once, and never a token's or a team's deletion", async () => {
@@ -203,7 +202,6 @@ describe("a team's own events, from accounts", () => {
       actorId: 'user_ac2',
       title: 'CI',
       at: START,
-      scopes: ['p:user_ac2'],
     };
     const deleted = {
       id: 'team_deleted:team_gone',
@@ -212,7 +210,6 @@ describe("a team's own events, from accounts", () => {
       title: 'Gone',
       detail: { teamId: 'team_gone' },
       at: START,
-      scopes: ['p:user_ac2'],
     };
     expect((await sendAccountEvents([joined, token, deleted])).status).toBe(204);
     // Sent again, later (accounts resends): nothing new, and the row keeps its time.
@@ -245,13 +242,12 @@ describe("a team's own events, from accounts", () => {
       title: 'Guild',
       detail: { teamId: 'team_ac', personId: 'user_ac3', memberName: 'Cy', role: 'admin' },
       at: START + 1,
-      scopes: ['t:team_ac', 'p:user_ac3'],
     };
     const solo = {
       ...joined,
       id: 'team_joined:team_solo:user_ac2',
       title: 'Solo',
-      scopes: ['t:team_solo'],
+      detail: { ...joined.detail, teamId: 'team_solo' },
     };
     expect((await sendAccountEvents([joined, changed, solo])).status).toBe(204);
     // Someone else's rows are left alone.
@@ -305,7 +301,7 @@ describe('the bound', () => {
       .map((r) => String((r as { detail: string }).detail));
   };
   const scans = (lines: string[]) =>
-    lines.filter((l) => /\bSCAN (e|i|items|timeline_events|team_audit_events)\b(?! USING)/.test(l));
+    lines.filter((l) => /\bSCAN (e|i|items|events|team_audit_events)\b(?! USING)/.test(l));
 
   it('writes each kind with one indexed statement, never scanning the events or the log', () => {
     // Records each statement's text and binds, for its plan.
@@ -316,14 +312,14 @@ describe('the bound', () => {
       itemAuditStatement(db, 'ev1')!,
       itemAuditStatement(db, 'ev1', ['team_a', null, 'team_b'])!,
       accountAuditStatement(db, [
-        { id: 'a', type: 'team_joined', scopes: ['t:team_a', 'p:user_1'] },
-        { id: 'b', type: 'token_created', scopes: ['p:user_1'] },
+        { id: 'a', type: 'team_joined', detail: { teamId: 'team_a' } },
+        { id: 'b', type: 'team_renamed', detail: null },
       ])!,
     ];
     for (const statement of statements) expect(scans(plan(statement))).toEqual([]);
     expect(itemAuditStatement(db, 'ev1', [null])).toBeNull();
     expect(
-      accountAuditStatement(db, [{ id: 'b', type: 'token_created', scopes: ['p:user_1'] }]),
+      accountAuditStatement(db, [{ id: 'b', type: 'created', detail: { teamId: 'team_a' } }]),
     ).toBeNull();
   });
 });

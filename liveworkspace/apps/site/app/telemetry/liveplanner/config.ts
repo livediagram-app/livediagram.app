@@ -93,7 +93,7 @@ import {
   TABLES,
   TAB_ACTIONS,
   TEAM_ACTIVITY,
-  TIMELINE,
+  HOME,
   TRASH,
   UNDO_AND_REDO,
   VOTING,
@@ -302,7 +302,7 @@ export const LIVEPLANNER: TelemetryAppConfig = {
       },
       {
         title: 'Explorer',
-        metrics: [TIMELINE, EXPLORER_FILTERS_PICKED, SHARE_LINKS_MADE, SHARE_PASSES, INBOX],
+        metrics: [HOME, EXPLORER_FILTERS_PICKED, SHARE_LINKS_MADE, SHARE_PASSES, INBOX],
       },
       {
         title: 'Community',

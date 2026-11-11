@@ -111,7 +111,7 @@ export function RecentDocumentsCard({ ownerId }: { ownerId: string | null }) {
       {/* Footer: the card caps at 5 rows, so returning users with more
             history get a way into the full library. Points at the
             Explorer's front door rather than a named section, so the
-            landing view stays decided in one place (docs/specs/013-workspace/timeline.md §8.1). */}
+            landing view stays decided in one place (docs/specs/013-workspace/history.md). */}
       <a
         href="/explorer"
         className="group flex items-center justify-center gap-1.5 rounded-b-2xl border-t border-slate-100 px-4 py-2.5 text-[11px] font-medium text-slate-500 transition hover:bg-brand-50 hover:text-brand-700 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-brand-500/10 dark:hover:text-brand-200"

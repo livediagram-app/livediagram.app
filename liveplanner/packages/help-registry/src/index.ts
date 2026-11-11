@@ -119,7 +119,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: one library, shared by every liveworkspace app, that keeps your plans, folders and teams easy to find and manage.',
-    articleCount: 13,
+    articleCount: 12,
     kind: 'feature',
     groups: ['Your Library', 'Activity'],
   },
@@ -911,9 +911,9 @@ export const articles: Article[] = [
     slug: 'home',
     title: 'Home',
     description:
-      'The Explorer’s landing view: what you opened last, what was shared with you recently, and what happened.',
+      'The Explorer’s landing view: what you opened last and what was shared with you recently.',
     keywords:
-      'home jump back in recent last opened most used see more shared with you recently what happened while away teammates others changes see timeline landing start plan',
+      'home jump back in recent last opened most used see more shared with you recently landing start plan history last 30 days',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -925,17 +925,6 @@ export const articles: Article[] = [
       'What is outstanding for you across every app: actions and cards assigned to you or by you, new form responses and open comment threads.',
     keywords:
       'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies mentions pending work queue what needs me badge count all apps plan plans',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Activity',
-  },
-  {
-    slug: 'timeline',
-    title: 'Timeline',
-    description:
-      'What happened to your plans and your teams’, day by day: made, updated, renamed, moved, trashed and shared.',
-    keywords:
-      'timeline history what happened changes feed log audit who changed edited renamed moved trashed restored shared favourited calendar filter new since last visit unread count remove from timeline hide menu rename upcoming link team activity every app all apps plan plans',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',

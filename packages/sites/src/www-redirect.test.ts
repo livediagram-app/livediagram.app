@@ -39,7 +39,7 @@ describe('wwwRedirect', () => {
         '/s/abc123?view=present',
         '/join/t0k3n?team=1&x=%2F',
         '/sign-in?client_id=a&sig=b&ba_param=c',
-        '/explorer/timeline?id=t1',
+        '/explorer/inbox?id=t1',
         '/_next/static/chunks/app.js',
       ]) {
         expect(answer(`https://liveplanner.app${path}`, { method })?.headers.get('Location')).toBe(

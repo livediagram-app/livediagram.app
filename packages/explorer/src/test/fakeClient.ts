@@ -13,8 +13,8 @@ import {
   type SharedListQuery,
   type TeamAuditEvent,
   type TeamAuditQuery,
-  type TimelineEvent,
-  type TimelineQuery,
+  type HistoryQuery,
+  type ItemEvent,
 } from '@liveworkspace/index-client';
 
 export function makeItem(i: number, over: Partial<Item> = {}): Item {
@@ -43,9 +43,9 @@ export function makeItem(i: number, over: Partial<Item> = {}): Item {
 
 export function makeEvent(
   i: number,
-  over: Partial<TimelineEvent> = {},
+  over: Partial<ItemEvent> = {},
   item: Partial<Item> = {},
-): TimelineEvent & { item: Item; itemId: string } {
+): ItemEvent & { item: Item; itemId: string } {
   const it = makeItem(i, item);
   return {
     id: `ev-${i}`,
@@ -59,7 +59,7 @@ export function makeEvent(
     occurredAt: Date.now() - i * 60_000,
     item: it,
     ...over,
-  } as TimelineEvent & { item: Item; itemId: string };
+  } as ItemEvent & { item: Item; itemId: string };
 }
 
 export type Call = { method: string; args: unknown[] };
@@ -71,9 +71,8 @@ export type FakeIndex = {
   // The reader's default folders: key to folder id.
   placementDefaults: Map<string, string>;
   inbox: InboxResponse;
-  // The Timeline, newest first or not (the fake sorts), and when the person last marked it seen.
-  events: TimelineEvent[];
-  timelineSeen: { at: number | null };
+  // The items' History events, newest first or not (the fake sorts).
+  events: ItemEvent[];
   // The team audit log's rows (each with its `team`), newest first, and the CSV
   // files Export CSV reads in turn (the cursor is the next file's index).
   audit: (TeamAuditEvent & { team: string })[];
@@ -93,8 +92,7 @@ export function createFakeIndex(
   seed: {
     items?: Item[];
     folders?: Folder[];
-    events?: TimelineEvent[];
-    seenAt?: number | null;
+    events?: ItemEvent[];
     defaults?: Record<string, string>;
     audit?: (TeamAuditEvent & { team: string })[];
     auditFiles?: string[];
@@ -104,14 +102,13 @@ export function createFakeIndex(
   const auditFiles = seed.auditFiles ?? [];
   const items = seed.items ?? [];
   const events = seed.events ?? [];
-  const timelineSeen = { at: seed.seenAt ?? null };
   const folders = seed.folders ?? [];
   const placementDefaults = new Map(Object.entries(seed.defaults ?? {}));
   const calls: Call[] = [];
   const fail = new Map<string, IndexError>();
   const hold = new Set<string>();
   let waiting: (() => void)[] = [];
-  const inbox: InboxResponse = { threads: [], actions: [], forms: [], timelineNew: 0 };
+  const inbox: InboxResponse = { threads: [], actions: [], forms: [] };
 
   function answer<T>(
     method: string,
@@ -344,30 +341,18 @@ export function createFakeIndex(
         threads: inbox.threads.filter((t) => !query.app || t.app === query.app),
         actions: inbox.actions.filter((a) => !query.app || a.app === query.app),
         forms: inbox.forms.filter((f) => !query.app || f.app === query.app),
-        timelineNew: inbox.timelineNew,
       })),
-    timeline: (query: TimelineQuery = {}, options: { signal?: AbortSignal } = {}) =>
-      answer('timeline', [query], options.signal, () => {
+    itemHistory: (
+      itemId: string,
+      query: HistoryQuery = {},
+      options: { signal?: AbortSignal } = {},
+    ) =>
+      answer('itemHistory', [itemId, query], options.signal, () => {
         const mine = events
-          .filter((e) => !query.app || e.app === query.app)
-          .filter((e) => !query.item || e.itemId === query.item)
-          // One team's activity: the events on its items.
-          .filter((e) => !query.team || e.item?.teamId === query.team)
+          .filter((e) => e.itemId === itemId)
           .sort((a, b) => b.occurredAt - a.occurredAt);
         const { slice, next } = page(mine, query.limit ?? 30, query.cursor);
-        return { events: slice, nextCursor: next, seenAt: timelineSeen.at };
-      }),
-    dismissTimelineEvents: (ids: string[]) =>
-      answer('dismissTimelineEvents', [ids], undefined, () => {
-        for (const id of ids) {
-          const at = events.findIndex((e) => e.id === id);
-          if (at >= 0) events.splice(at, 1);
-        }
-      }),
-    markTimelineSeen: () =>
-      answer('markTimelineSeen', [], undefined, () => {
-        timelineSeen.at = Date.now();
-        return { seenAt: timelineSeen.at };
+        return { events: slice, nextCursor: next };
       }),
     getItem: (id: string) => answer('getItem', [id], undefined, () => ({ item: { ...find(id) } })),
     updateItem: (id: string, input: Partial<Item>) =>
@@ -521,7 +506,6 @@ export function createFakeIndex(
     placementDefaults,
     inbox,
     events,
-    timelineSeen,
     audit,
     auditFiles,
     calls,

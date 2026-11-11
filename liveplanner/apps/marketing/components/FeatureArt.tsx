@@ -13,7 +13,6 @@ export * from './feature-art/canvas';
 export * from './feature-art/together';
 export * from './feature-art/sharing';
 export * from './feature-art/foundations';
-export * from './feature-art/embeds-timeline';
 // Plan's boards, cards, views and dashboards (docs/specs/026-plan/plan-mode.md).
 export * from './feature-art/plan';
 export * from './feature-art/plan-views';

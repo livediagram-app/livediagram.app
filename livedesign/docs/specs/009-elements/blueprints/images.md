@@ -134,7 +134,7 @@ originalName: originalNameOf(X-Image-Original-Name), sha256 })`. The service ans
 9. `rememberMediaImages(env, owner, [image.id])`: the image is recorded as the uploader's, under
    the owner id this api uses (a guest's own id, never its hash).
 10. Unless deduped, `waitUntil(recordImageUploaded(env, owner))`
-    ([Timeline](../../013-workspace/timeline.md)); 200 `{ image, deduped }`.
+    ([History](../../013-workspace/history.md)); 200 `{ image, deduped }`.
 
 Invariants:
 

@@ -40,7 +40,6 @@ import { readOauthKvDump } from './kv.ts';
 import { writeImages } from './media.ts';
 import { writeShapeLibraries } from './people.ts';
 import { Report } from './report.ts';
-import { writeTimeline } from './timeline.ts';
 
 export const BUNDLE_FORMAT = 1;
 
@@ -138,7 +137,6 @@ export async function plan(input: PlanInput): Promise<PlanResult> {
       moved,
     });
     writePlacementDefaults(ctx, folders);
-    writeTimeline(ctx);
     writeCommunity(ctx);
     // Last: every pass has named its guests by now.
     writeProfiles(ctx);

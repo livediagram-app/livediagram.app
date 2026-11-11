@@ -25,7 +25,6 @@ export class Report {
   readonly notes = new CappedList<{ document: string; note: string }>();
   readonly crossReferences = new CappedList<CrossReference>();
   readonly crossReferenceKinds: Record<string, number> = {};
-  readonly droppedHistory: Record<string, number> = {};
   readonly shareCodeCaseCollisions = new CappedList<{
     code: string;
     kept: string;
@@ -53,10 +52,6 @@ export class Report {
     this.crossReferenceKinds[ref.kind] = (this.crossReferenceKinds[ref.kind] ?? 0) + 1;
   }
 
-  dropHistory(type: string): void {
-    this.droppedHistory[type] = (this.droppedHistory[type] ?? 0) + 1;
-  }
-
   toJSON(): Record<string, unknown> {
     const sorted = (o: Record<string, number>) =>
       Object.fromEntries(Object.entries(o).sort(([a], [b]) => (a < b ? -1 : 1)));
@@ -64,7 +59,6 @@ export class Report {
       counts: sorted(this.counts),
       crossReferenceKinds: sorted(this.crossReferenceKinds),
       crossReferences: this.crossReferences,
-      droppedHistory: sorted(this.droppedHistory),
       shareCodeCaseCollisions: this.shareCodeCaseCollisions,
       imageCollisions: this.imageCollisions,
       picturesMissing: this.picturesMissing,

@@ -2,7 +2,7 @@
 
 Derived from [accounts.md "Teams"](../accounts.md#teams), ["Invitations"](../accounts.md#invitations), ["Reminders
 and expiry"](../accounts.md#reminders-and-expiry), ["The join link"](../accounts.md#the-join-link), ["How an app keeps
-up"](../accounts.md#how-an-app-keeps-up) and ["On the Timeline"](../accounts.md#on-the-timeline). The spec decides;
+up"](../accounts.md#how-an-app-keeps-up) and ["Team events for the audit log"](../accounts.md#team-events-for-the-audit-log). The spec decides;
 this file only adds engineering precision, read from the code. Defaults are cited as `ACCn`. Paths are relative to the
 repository root.
 
@@ -14,7 +14,7 @@ Scope, by file:
 | `liveworkspace/apps/accounts/src/account-api.ts`          | The doors, in `account-api/`: `teamRoutes` (session and bearer, `both-doors.ts`), `handleOpen` (join preview, email decline, `signed-in.ts`), the internal team routes (`internal.ts`), `/index/teams`, `/index/people` (`index-door.ts`)                                                                       |
 | `liveworkspace/apps/accounts/src/internal-invitations.ts` | `POST /api/account/internal/invitations`                                                                                                                                                                                                                                                                        |
 | `liveworkspace/apps/accounts/src/notify.ts`               | `teamPeople` for `POST /api/account/internal/teams/members`                                                                                                                                                                                                                                                     |
-| `liveworkspace/apps/accounts/src/index-timeline.ts`       | `timelineStatement`, `teamScopes`, the outbox to the index                                                                                                                                                                                                                                                      |
+| `liveworkspace/apps/accounts/src/index-events.ts`         | `eventStatement`, the outbox to the index                                                                                                                                                                                                                                                                       |
 | `packages/auth-client/src/account.ts`, `invitations.ts`   | Each app's side: the change feed, `teams/of`, invitations (cached 30 s, 500 accounts)                                                                                                                                                                                                                           |
 
 ## Domain and naming
@@ -46,7 +46,7 @@ Scope, by file:
 | joined            | `setMemberRole`                   | joined        | `team_role_changed`                                                                                            |
 | joined            | `removeMember` (self or an admin) | removed       | `team_member_removed`; the last member leaving deletes the team                                                |
 | invited, declined | `removeMember` by an admin        | removed       | withdrawn or cleared; no event                                                                                 |
-| any open          | the team deleted                  | removed       | `team_deleted` to each joined member                                                                           |
+| any open          | the team deleted                  | removed       | no event (the team and its audit log go)                                                                       |
 
 Every write is `BUMP` (`UPDATE team_seq SET value = value + 1`) then the row with `rev = (SELECT value FROM team_seq)`,
 in one batch, so the feed sees every change. A role change or removal carries `KEEPS_AN_ADMIN`, so two admins
@@ -112,13 +112,13 @@ also `WHERE` the account is in fewer than 50); a create, an invitation or a link
 `409`, and an acceptance that changed none was not taken. The events ride the
 same guard (the row exists).
 
-### On the Timeline
+### Team events for the audit log
 
 Each event is queued into `index_timeline_outbox` in the batch of its change (`INSERT OR IGNORE`, guarded by
-`memberGuard` where the change might not land), then sent after the response and by the frequent cron. Ids:
-`team_invite_sent:<member>`, `team_joined:<member>`, `team_declined:<member>`, `team_role_changed:<member>:<now>`,
-`team_member_removed:<member>`, `team_renamed:<team>:<now>`, `team_deleted:<team>`. Scopes `t:<team>` and the
-person's `p:<id>`; a deleted team's go to each former member's `p:`. Detail always carries `teamId`.
+`memberGuard` where the change might not land), then sent after the response and by the frequent cron to
+`POST /internal/events`. Ids: `team_invite_sent:<member>`, `team_joined:<member>`, `team_declined:<member>`,
+`team_role_changed:<member>:<now>`, `team_member_removed:<member>`, `team_renamed:<team>:<now>`. Detail always
+carries `teamId`, which names the audit log it goes in. A deleted team sends nothing: its audit log goes with it.
 
 ### Closing an account (`leaveAllTeams`)
 
@@ -166,7 +166,7 @@ space-separated (default `''`); `reminder1SentAt`..`reminder3SentAt`, `reminderA
 | `liveworkspace/apps/accounts/src/team-invites.test.ts` (26)        | the join link; the organisation line; declining from the email; invitations turned down; reminders and expiry; telling the admins; the routes; counting team emails, teams and tokens |
 | `liveworkspace/apps/accounts/src/internal-invitations.test.ts` (4) | `POST /api/account/internal/invitations`                                                                                                                                              |
 | `liveworkspace/apps/accounts/src/notify.test.ts` (4)               | `readNotifySettings`; `teamPeople`                                                                                                                                                    |
-| `liveworkspace/apps/accounts/src/index-timeline.test.ts` (16)      | team events and their outbox                                                                                                                                                          |
+| `liveworkspace/apps/accounts/src/index-events.test.ts`             | team events and their outbox                                                                                                                                                          |
 | `packages/auth-client/src/invitations.test.ts`                     | the app's cached invitations read                                                                                                                                                     |
 
 ## Constants and configuration
@@ -174,14 +174,14 @@ space-separated (default `''`); `reminder1SentAt`..`reminder3SentAt`, `reminderA
 `TEAM_NAME_MAX_LENGTH` 80, `ORGANISATION_MAX_LENGTH` 80, `MAX_TEAMS_PER_ACCOUNT` 50, `MAX_MEMBERS_PER_TEAM` 200,
 `INVITE_LINK_TTL_MS` 7 d, `REMINDER_AGES_MS` 1, 7, 21 d, `INVITATION_TTL_MS` 28 d, `EXPIRE_BATCH` 500,
 `REMINDER_BATCH` 100, `MAX_REMINDER_ATTEMPTS` 3, `MAX_DECLINE_HASHES` 4, `LIST_PREVIEW_MEMBERS` 4,
-`CHANGES_PAGE_SIZE` 500 (`teams/changes.ts`), `DELETED_MEMBER_EMAIL` `'Deleted account'` (`teams/members.ts`); `TIMELINE_BATCH` 100,
-`TIMELINE_SCOPES_MAX` 250, `TIMELINE_CALLS_PER_RUN` 10, `TIMELINE_MAX_ATTEMPTS` 96, `TIMELINE_OUTBOX_MAX` 5,000,
-`TIMELINE_TIMEOUT_MS` 5 s (`index-timeline.ts`); `INVITATIONS_TTL_MS` 30 s, `INVITATIONS_CACHE_MAX` 500
+`CHANGES_PAGE_SIZE` 500 (`teams/changes.ts`), `DELETED_MEMBER_EMAIL` `'Deleted account'` (`teams/members.ts`); `EVENTS_BATCH` 100,
+`EVENTS_CALLS_PER_RUN` 10, `EVENTS_MAX_ATTEMPTS` 96, `EVENTS_OUTBOX_MAX` 5,000, `EVENTS_TIMEOUT_MS` 5 s
+(`index-events.ts`); `INVITATIONS_TTL_MS` 30 s, `INVITATIONS_CACHE_MAX` 500
 (`packages/auth-client/src/invitations.ts`). `TEAM_LINK_LIMITER` `1004` (`2004`), 20 per 60 s.
 
 ## Defaults ledger
 
 - `ACC8`: the 50-team cap bounds the access token's `teams` claim.
 - `ACC9`: a reminder that fails three sends in a row leaves the queue; the invitation still expires at 28 days.
-- `ACC10`: a Timeline event the index refuses 96 times is dropped, and the outbox keeps at most 5,000 events.
+- `ACC10`: a team event the index refuses 96 times is dropped, and the outbox keeps at most 5,000 events.
 - `ACC19`: an invited address is timed by the zone of the account with that address, else the default.

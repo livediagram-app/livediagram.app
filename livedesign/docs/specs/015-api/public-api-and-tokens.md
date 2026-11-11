@@ -237,7 +237,7 @@ or scope change; a token is replaced by creating a new one and revoking the old.
 points at tokens opens Settings on the API Tokens category in place: the
 AI Tools category's **Manage API Tokens** link row (which replaced the old
 read-only token list there), and the timeline's token cards and their
-**Open API Tokens** menu verb ([Timeline](../013-workspace/timeline.md)).
+**Open API Tokens** menu verb ([History](../013-workspace/history.md)).
 Mail, which cannot open a dialog, links at the `?settings=tokens` deep link
 (`/explorer?settings=tokens`), which opens the Explorer with Settings on the
 category.
@@ -402,6 +402,6 @@ Every full token inherits the owner's read+write access; finer grants come
 later if demand appears.
 
 **Webhooks** are no longer out of scope: liveworkspace sends them for every app's items, from the index's
-Timeline events, to any HTTPS endpoint, a Slack channel or a Microsoft Teams channel. Anyone signed in who can edit the whole design adds one
+events, to any HTTPS endpoint, a Slack channel or a Microsoft Teams channel. Anyone signed in who can edit the whole design adds one
 from the design's ⋯ menu in the Explorer (**Webhooks**): its owner, its team's people, or an Editor link to every
 tab; a Viewer, a Participant or a one-tab link never can, and a webhook reports on that design alone. See [Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md).

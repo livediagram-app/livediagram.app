@@ -8,8 +8,8 @@ Scope, by file:
 
 | File                                                  | Role                                                                                    |
 | ----------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/accounts/src/tokens.ts`           | Mint, list, revoke, verify, revoke by secret, live ids, the token Timeline events       |
-| `liveworkspace/apps/accounts/src/token-expiry.ts`     | The week-ahead email and the Timeline note                                              |
+| `liveworkspace/apps/accounts/src/tokens.ts`           | Mint, list, revoke, verify, revoke by secret, live ids                                  |
+| `liveworkspace/apps/accounts/src/token-expiry.ts`     | The week-ahead email                                                                    |
 | `liveworkspace/apps/accounts/src/bench-accounts.ts`   | `POST /api/auth/internal/bench-accounts` (development)                                  |
 | `liveworkspace/apps/accounts/src/workbench/revoke.ts` | `endTokenWorkbench`: a revoked token's pairings end                                     |
 | `packages/auth-client/src/account.ts`                 | Each app's side: `verifyApiToken` (cached 60 s valid, 10 s invalid), mint, revoke, live |
@@ -43,10 +43,9 @@ A secret passes `isApiTokenFormat` when it has either prefix and more than 24 ch
 
 ### Minting and revoking
 
-- Mint: one batch. The insert is `INSERT … SELECT … WHERE (live count) < 20`, so two at once can't pass the cap;
-  `token_created:<id>` is queued only `WHERE EXISTS` the row.
-- Revoke: read the name, then one batch: `UPDATE … SET revokedAt` where not revoked, and `token_revoked:<id>` guarded
-  on that exact `revokedAt`.
+- Mint: one statement, `INSERT … SELECT … WHERE (live count) < 20`, so two at once can't pass the cap.
+- Revoke: one statement, `UPDATE … SET revokedAt` where not revoked (by id and owner, or by the secret's hash).
+- No event goes to the index for a token: they were the Timeline's, which is gone.
 - Verify: an indexed lookup by hash, joined to the user; `lastUsedAt` stamped only when older than a minute (`AND
 (lastUsedAt IS NULL OR lastUsedAt < ?)`); the email only when verified.
 
@@ -57,12 +56,9 @@ A secret passes `isApiTokenFormat` when it has either prefix and more than 24 ch
    soonest first (`api_token_expiry_warning_idx`). Sent one at a time; a failure is logged and left for the next run;
    those that went stamped `expiryWarnedAt` in one update; each counted `Email·Sent·TokenExpiring` under the
    owner's sign-up app. Logged `[tokens] expiry warnings { sent, failed }`.
-2. `noteExpiringTokens` (in the 09:17 UTC run, after step 1): up to 500 live tokens expiring within 7 days not yet noted
-   (`api_token_expiry_note_idx`), verified or not; one batch of `token_expiring:<id>` events dated at the expiry (so
-   they show under Upcoming) and the `expiryNotedAt` stamps; then a Timeline flush.
 
-Token events: scope `p:<owner>`, title the token's name, detail `{ tokenId }`; `actorId` the owner (none for an
-expiry).
+The `expiryNotedAt` column and `api_token_expiry_note_idx` are left from the Timeline note, which is gone: nothing
+writes or reads them.
 
 ## Data and persistence
 
@@ -81,7 +77,7 @@ Columns: `userId` (`ON DELETE CASCADE`), `name`, `readOnly` (default 0), `create
 | An expired or revoked token       | `404 invalid_token` to the app         |
 | A token revoked twice             | the second `404`                       |
 | The warning email fails           | not stamped; retried while in its week |
-| An owner with no verified address | no email; the Timeline note still goes |
+| An owner with no verified address | no email                               |
 
 ## Security and trust
 
@@ -91,13 +87,13 @@ Columns: `userId` (`ON DELETE CASCADE`), `name`, `readOnly` (default 0), `create
 
 ## Testing
 
-| Test                                                          | Pins                                                         |
-| ------------------------------------------------------------- | ------------------------------------------------------------ |
-| `liveworkspace/apps/accounts/src/tokens.test.ts` (11)         | API tokens; tokens carried over from the old livediagram.app |
-| `liveworkspace/apps/accounts/src/token-expiry.test.ts` (8)    | the expiring-token warning and note                          |
-| `liveworkspace/apps/accounts/src/bench-accounts.test.ts` (3)  | bench accounts                                               |
-| `liveworkspace/apps/accounts/src/index-timeline.test.ts` (16) | API token events                                             |
-| `packages/auth-client/src/account.test.ts`                    | the app's verify cache and calls                             |
+| Test                                                         | Pins                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `liveworkspace/apps/accounts/src/tokens.test.ts` (11)        | API tokens; tokens carried over from the old livediagram.app |
+| `liveworkspace/apps/accounts/src/token-expiry.test.ts` (8)   | the expiring-token warning and note                          |
+| `liveworkspace/apps/accounts/src/bench-accounts.test.ts` (3) | bench accounts                                               |
+| `liveworkspace/apps/accounts/src/index-events.test.ts`       | no event queued for a token                                  |
+| `packages/auth-client/src/account.test.ts`                   | the app's verify cache and calls                             |
 
 ## Constants and configuration
 
@@ -110,4 +106,4 @@ Columns: `userId` (`ON DELETE CASCADE`), `name`, `readOnly` (default 0), `create
 ## Defaults ledger
 
 - `ACC11`: a token's last use is stamped at most once a minute, so a burst of MCP calls costs one write.
-- `ACC12`: an expiry warning is sent only to a verified address; the Timeline note goes regardless.
+- `ACC12`: an expiry warning is sent only to a verified address.

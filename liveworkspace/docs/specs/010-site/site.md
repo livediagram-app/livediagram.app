@@ -432,7 +432,7 @@ built once here. It is shown here and, through each switched-on app's router, at
 - **Telemetry.** What people use here counts for the app the page shows, or `liveworkspace.app` on All Apps,
   batched and only with the person's consent ([telemetry.md](../008-telemetry/telemetry.md#the-explorer-on-liveworkspaceapp)).
 - **The sidebar.** As [one-explorer.md "The sidebar"](../004-index/one-explorer.md#the-sidebar) has it: Overview
-  (Home, Inbox, Shared With Me), Spaces, and the Library holding Recent, Timeline, Favourites, Archived and the Trash.
+  (Home, Inbox, Shared With Me), Spaces, and the Library holding Recent, Favourites, Archived and the Trash.
   The current view's rows open themselves (its space and folders, or the Library), and a drag resting on the folded
   Library opens it.
 - **Archived.** A row of the sidebar's Library, before the Trash, at `/explorer/archived`

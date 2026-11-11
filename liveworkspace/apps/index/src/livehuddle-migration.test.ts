@@ -43,7 +43,7 @@ const count = (sql: DatabaseSync, query: string) =>
   Number((sql.prepare(`SELECT count(*) AS n FROM ${query}`).get() as { n: number }).n);
 
 // Two scopes' folders and items, and rows in every table that references items (directly or through
-// timeline_events), plus some in tables the rebuild leaves alone.
+// its events), plus some in tables the rebuild leaves alone.
 function seed(sql: DatabaseSync): void {
   sql.exec(`
     INSERT INTO folders (id, name, parent_id, owner_id, team_id, scope, created_at, updated_at) VALUES
@@ -64,16 +64,6 @@ function seed(sql: DatabaseSync): void {
       ('u1', 'i1', 30, 0), ('u1', 'i2', 0, 1), ('u2', 'i3', 31, 0);
     INSERT INTO use_days (person_id, item_id, day, opens) VALUES
       ('u1', 'i1', 20000, 3), ('u1', 'i1', 20001, 1), ('u2', 'i3', 20001, 7);
-    INSERT INTO timeline_events (id, app, item_id, actor_id, actor_name, type, title, detail, occurred_at) VALUES
-      ('e1', 'livediagram', 'i1', 'u1', NULL, 'created', 'Flow', NULL, 40),
-      ('e2', 'liveplanner', 'i2', 'u1', 'Ann', 'renamed', 'Plan', '{"from":"Old"}', 41),
-      ('e3', 'liveworkspace', NULL, 'u2', NULL, 'team_joined', 'Team', NULL, 42),
-      ('e4', 'livedocuments', 'i3', 'deleted', NULL, 'commented', 'Doc', '{"text":"hi"}', 43);
-    INSERT INTO timeline_event_scopes (scope, event_id, app, occurred_at) VALUES
-      ('p:u1', 'e1', 'livediagram', 40), ('p:u1', 'e2', 'liveplanner', 41), ('t:t1', 'e3', 'liveworkspace', 42),
-      ('t:t1', 'e4', 'livedocuments', 43), ('p:u2', 'e1', 'livediagram', 40);
-    INSERT INTO timeline_dismissals (person_id, event_id, created_at) VALUES ('u1', 'e1', 50), ('u2', 'e4', 51);
-    INSERT INTO timeline_scope_state (person_id, last_seen_at) VALUES ('u1', 60);
     INSERT INTO share_links (code, item_id, level, tab_id, expiry, expires_at, created_at, public) VALUES
       ('c1', 'i1', 'view', NULL, 'never', NULL, 70, 0), ('c2', 'i1', 'edit', 'tab-1', 'week', 999, 71, 0),
       ('c3', 'i3', 'participate', NULL, 'month', 1000, 72, 1);
@@ -101,6 +91,27 @@ function seed(sql: DatabaseSync): void {
     INSERT INTO collab_form_reads (person_id, item_id, tab_id, seen) VALUES ('u1', 'i2', 'form1', 3);
     INSERT INTO purge_tombstones (item_id, app, created_at) VALUES ('gone', 'livediagram', 140);
   `);
+  // The events' tables as the rebuild knew them, until 0017 drops the feed's and renames the log `events`.
+  const timeline = sql
+    .prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'timeline_events'")
+    .get();
+  const events = timeline ? 'timeline_events' : 'events';
+  sql.exec(`
+    INSERT INTO ${events} (id, app, item_id, actor_id, actor_name, type, title, detail, occurred_at) VALUES
+      ('e1', 'livediagram', 'i1', 'u1', NULL, 'created', 'Flow', NULL, 40),
+      ('e2', 'liveplanner', 'i2', 'u1', 'Ann', 'renamed', 'Plan', '{"from":"Old"}', 41),
+      ('e3', 'liveworkspace', NULL, 'u2', NULL, 'team_joined', 'Team', NULL, 42),
+      ('e4', 'livedocuments', 'i3', 'deleted', NULL, 'commented', 'Doc', '{"text":"hi"}', 43);
+  `);
+  if (timeline) {
+    sql.exec(`
+      INSERT INTO timeline_event_scopes (scope, event_id, app, occurred_at) VALUES
+        ('p:u1', 'e1', 'livediagram', 40), ('p:u1', 'e2', 'liveplanner', 41), ('t:t1', 'e3', 'liveworkspace', 42),
+        ('t:t1', 'e4', 'livedocuments', 43), ('p:u2', 'e1', 'livediagram', 40);
+      INSERT INTO timeline_dismissals (person_id, event_id, created_at) VALUES ('u1', 'e1', 50), ('u2', 'e4', 51);
+      INSERT INTO timeline_scope_state (person_id, last_seen_at) VALUES ('u1', 60);
+    `);
+  }
   // Webhooks belonged to an account or team scope until 0014, which ties each to one item.
   const scoped = sql
     .prepare("SELECT 1 FROM pragma_table_info('webhooks') WHERE name = 'scope'")
@@ -236,6 +247,7 @@ describe('the rebuild check', () => {
   it('names every way two snapshots can differ', () => {
     const sql = migrated(() => true);
     seed(sql);
+    sql.exec('CREATE TABLE widened (id TEXT PRIMARY KEY, n INTEGER)');
     const before = snapshot(sql);
     sql.exec(`
       DELETE FROM favourites WHERE person_id = 'u2' AND item_id = 'i3';
@@ -248,9 +260,8 @@ describe('the rebuild check', () => {
       CREATE TABLE scratch (id INTEGER PRIMARY KEY, blob BLOB, big INTEGER);
       INSERT INTO scratch (blob, big) VALUES (x'00ff', 9007199254740993);
       ALTER TABLE drive_people ADD COLUMN note TEXT;
-      DROP TABLE timeline_scope_state;
-      CREATE TABLE timeline_scope_state (person_id TEXT PRIMARY KEY, last_seen_at INTEGER NOT NULL CHECK (last_seen_at > 0));
-      INSERT INTO timeline_scope_state VALUES ('u1', 60);
+      DROP TABLE widened;
+      CREATE TABLE widened (id TEXT PRIMARY KEY, n INTEGER CHECK (n > 0));
     `);
     const after = snapshot(sql);
     expect(after.tables.scratch!.rows).toBe(1);
@@ -260,16 +271,14 @@ describe('the rebuild check', () => {
       'opens: same count, different rows',
       'purge_tombstones: gone',
       'scratch: new',
-      'timeline_scope_state: checks changed',
+      'widened: checks changed',
       'index collab_actions_item: changed',
       'index purge_tombstones_due: gone',
       'index share_links_created: new',
       'index share_links_expires: gone',
     ]);
     // A widened table's CHECKs may change; its foreign keys may not.
-    expect(compare(before, after, ['timeline_scope_state'])).not.toContain(
-      'timeline_scope_state: checks changed',
-    );
+    expect(compare(before, after, ['widened'])).not.toContain('widened: checks changed');
   });
 
   it('reads CHECKs with nested parentheses and comments', () => {

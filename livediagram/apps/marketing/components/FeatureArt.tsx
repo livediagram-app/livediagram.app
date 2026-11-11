@@ -22,7 +22,7 @@ export * from './feature-art/versatility';
 export * from './feature-art/content';
 export * from './feature-art/content-tech';
 export * from './feature-art/structure';
-export * from './feature-art/embeds-timeline';
+export * from './feature-art/embeds';
 // Presentation mode (docs/specs/012-collaboration/presentation-mode.md): decks, notes, and the fact that
 // presenting is yours alone.
 export * from './feature-art/present';

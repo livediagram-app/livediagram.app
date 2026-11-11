@@ -44,7 +44,7 @@ Workbench pairings, tickets and sessions run in this Worker too; they are bluepr
 2. `GET`: `/api/auth/sign-in-options`; `/api/auth/guest` (first `GUEST_LIMITER` keyed `ip:<network>`, `429 {
 error: 'rate_limited' }`); `/api/auth/workspace-token`; `/api/auth/end-session` (the browser's hop); the two
    discovery documents at the root.
-3. `/api/account` and below: `handleAccountApi`; after it, the request's telemetry events and Timeline events are
+3. `/api/account` and below: `handleAccountApi`; after it, the request's telemetry events and team events are
    flushed in `waitUntil`.
 4. `POST /api/auth/internal/clients`; `POST /api/auth/internal/bench-accounts`; `POST /api/auth/delete-account/code`;
    `POST /api/auth/delete-account/check`; `POST /api/auth/delete-account`;
@@ -78,10 +78,10 @@ parse is read as `{}`.
 
 Each step runs in `step()`: a throw logs `[accounts] cron step failed: <name>` and the run goes on.
 
-| Cron           | Steps, in order                                                                                                                                                                                                                                                                                                              |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `*/15 * * * *` | 1. `index purges`: rows whose user still exists, 30 days after their first try, dropped; then up to 25 `pending_purges` rows whose user is gone sent again. 2. `timeline`: the outbox trimmed to 5,000, then up to 10 calls of 100 events. 3. `lifecycle`: welcomes only.                                                    |
-| `17 * * * *`   | The same three (the lifecycle runs every stage), then 4. `invitation sweep`; 5. the token expiry emails, then, in the 09:17 UTC run only, the token Timeline notes (and a flush); then `server events`; 6. `code days`: up to 5,000 ended `sign_in_code_limit` windows deleted; 7. in the 09:17 UTC run only, `idle guests`. |
+| Cron           | Steps, in order                                                                                                                                                                                                                                                         |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `*/15 * * * *` | 1. `index purges`: rows whose user still exists, 30 days after their first try, dropped; then up to 25 `pending_purges` rows whose user is gone sent again. 2. `events`: the outbox trimmed to 5,000, then up to 10 calls of 100 events. 3. `lifecycle`: welcomes only. |
+| `17 * * * *`   | The same three (the lifecycle runs every stage), then 4. `invitation sweep`; 5. the token expiry emails; then `server events`; 6. `code days`: up to 5,000 ended `sign_in_code_limit` windows deleted; 7. in the 09:17 UTC run only, `idle guests`.                     |
 
 The hourly run's emails keep to the send window ([email.md](email.md) "The send window"): the window is read from
 `EMAIL_SEND_WINDOW` and `EMAIL_DEFAULT_TIME_ZONE` once per run (`sendWindowOf`). Without an `EMAIL` binding outside
@@ -184,8 +184,8 @@ Shared(Link)|Removed(Link|Self|Invite|Member)|Added(Member)|Changed(Role)|Joined
 
 Lists are bounded: 50 teams an account, 200 members a team, 20 live API tokens, 100 ids a profile, email or notify
 read, 16,384 bytes of settings a row, 500 rows a change-feed page. Every cron sweep takes a bounded batch (25 purges,
-10 x 100 Timeline events, 100 accounts a lifecycle stage, 500 expiries and 100 reminders a stage, 100 token
-warnings and 500 notes, 500 idle guests). Measured numbers are in [sign-in.md "Performance"](../sign-in.md#performance).
+10 x 100 team events, 100 accounts a lifecycle stage, 500 expiries and 100 reminders a stage, 100 token
+warnings, 500 idle guests). Measured numbers are in [sign-in.md "Performance"](../sign-in.md#performance).
 
 ## Observability
 
@@ -207,8 +207,8 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `warn`  | `[accounts] drive disconnect not taken`             | `drive-disconnect.ts`             |
 | `log`   | `[accounts] index purges`                           | `index.ts`                        |
 | `log`   | `[accounts] legacy guest claimed`                   | `legacy-guests.ts`                |
-| `log`   | `[accounts] timeline events`                        | `index.ts`                        |
-| `warn`  | `[accounts] timeline events dropped, over the outb` | `index.ts`                        |
+| `log`   | `[accounts] team events`                            | `index.ts`                        |
+| `warn`  | `[accounts] team events dropped, over the outbox l` | `index.ts`                        |
 | `log`   | `[email] To: … Subject: …`                          | `email.ts`                        |
 | `log`   | `[guests] idle guests swept`                        | `index.ts`                        |
 | `warn`  | `[lifecycle] giving up on an account after ${faile` | `lifecycle.ts`                    |
@@ -222,10 +222,9 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `error` | `[teams] invite email failed`                       | `account-api/both-doors.ts`       |
 | `error` | `[teams] invite response email failed`              | `account-api/shared.ts`           |
 | `warn`  | `[telemetry] batch not sent`                        | `telemetry.ts`                    |
-| `warn`  | `[timeline] events not taken; the cron sends them`  | `index-timeline.ts`               |
-| `warn`  | `[timeline] flush failed`                           | `index-timeline.ts`               |
-| `warn`  | `[timeline] trim failed`                            | `index-timeline.ts`               |
-| `error` | `[tokens] expiry Timeline note failed`              | `index.ts`                        |
+| `warn`  | `[events] events not taken; the cron sends them ag` | `index-events.ts`                 |
+| `warn`  | `[events] flush failed`                             | `index-events.ts`                 |
+| `warn`  | `[events] trim failed`                              | `index-events.ts`                 |
 | `error` | `[tokens] expiry warning failed`                    | `token-expiry.ts`                 |
 | `error` | `[tokens] expiry warning sweep failed`              | `index.ts`                        |
 | `log`   | `[tokens] expiry warnings`                          | `index.ts`                        |
@@ -280,7 +279,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/accounts/src/handoff.ts`                  | Signing in on the app's own address (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in on the app's own address").                                                                                     |
 | `liveworkspace/apps/accounts/src/ids.ts`                      | Account ids keep Clerk's `user_` prefix                                                                                                                                                                            |
 | `liveworkspace/apps/accounts/src/index-purge.ts`              | Closing an account empties the index too (liveworkspace/docs/specs/003-accounts/accounts.md "Closing an account")                                                                                                  |
-| `liveworkspace/apps/accounts/src/index-timeline.ts`           | Teams' and API tokens' events on the Timeline (liveworkspace/docs/specs/003-accounts/accounts.md "On the Timeline")                                                                                                |
+| `liveworkspace/apps/accounts/src/index-events.ts`             | Teams' events for the team audit log (liveworkspace/docs/specs/003-accounts/accounts.md "Team events for the audit log")                                                                                           |
 | `liveworkspace/apps/accounts/src/index.ts`                    |                                                                                                                                                                                                                    |
 | `liveworkspace/apps/accounts/src/internal-invitations.ts`     | The invitations waiting for an account, for an app's server (liveworkspace/docs/specs/003-accounts/accounts.md "The API"): `POST /api/account/internal/invitations` `{ userId }`                                   |
 | `liveworkspace/apps/accounts/src/legacy-guests.ts`            | Returning guests of the old livediagram.app (liveworkspace/docs/specs/003-accounts/accounts.md "Returning guests of the old livediagram.app", docs/migration.md step 6)                                            |
@@ -425,7 +424,8 @@ owns it: Better Auth's own tables, `sign_in_handoff` and `sign_in_code_limit` in
 `legacy_guest` in [sessions-and-guests.md](sessions-and-guests.md); `team`, `team_member`, `team_seq` in [teams.md](teams.md);
 `api_token` in [tokens.md](tokens.md); `settings`, `profile` in [settings-and-profiles.md](settings-and-profiles.md);
 `email_lifecycle`, `account_app` in [email.md](email.md). `pending_purges` (`pending_purges_due (lastAttemptAt)`) and
-`index_timeline_outbox` (`index_timeline_outbox_order (createdAt)`) are written and read as above.
+`index_timeline_outbox` (`index_timeline_outbox_order (createdAt)`, its name from the Timeline's days) are written and
+read as above.
 
 Migrations, in order:
 
@@ -534,11 +534,10 @@ redo it (or drop it once upstream batches the lookup) and keep that test passing
 | `PURGE_RETRY_CRON`                  | `'*/15 * * * *'`                                                         | `index-purge.ts`     |
 | `PURGES_PER_RUN`                    | `25`                                                                     | `index-purge.ts`     |
 | `STALE_PURGE_DAYS`                  | `30`                                                                     | `index-purge.ts`     |
-| `TIMELINE_BATCH`                    | `100`                                                                    | `index-timeline.ts`  |
-| `TIMELINE_SCOPES_MAX`               | `250`                                                                    | `index-timeline.ts`  |
-| `TIMELINE_CALLS_PER_RUN`            | `10`                                                                     | `index-timeline.ts`  |
-| `TIMELINE_MAX_ATTEMPTS`             | `96`                                                                     | `index-timeline.ts`  |
-| `TIMELINE_OUTBOX_MAX`               | `5_000`                                                                  | `index-timeline.ts`  |
+| `EVENTS_BATCH`                      | `100`                                                                    | `index-events.ts`    |
+| `EVENTS_CALLS_PER_RUN`              | `10`                                                                     | `index-events.ts`    |
+| `EVENTS_MAX_ATTEMPTS`               | `96`                                                                     | `index-events.ts`    |
+| `EVENTS_OUTBOX_MAX`                 | `5_000`                                                                  | `index-events.ts`    |
 | `LEGACY_CLAIM_HOLD_MS`              | `60_000`                                                                 | `legacy-guests.ts`   |
 | `ACTIVATION_DELAY_MS`               | `3 * DAY_MS`                                                             | `lifecycle.ts`       |
 | `WINBACK_QUIET_MS`                  | `4 * WEEK_MS`                                                            | `lifecycle.ts`       |
@@ -570,7 +569,6 @@ redo it (or drop it once upstream batches the lookup) and keep that test passing
 | `TELEMETRY_TIMEOUT_MS`              | `2_000`                                                                  | `telemetry.ts`       |
 | `TOKEN_EXPIRY_WARNING_MS`           | `7 * DAY_MS`                                                             | `token-expiry.ts`    |
 | `TOKEN_EXPIRY_SWEEP_LIMIT`          | `100`                                                                    | `token-expiry.ts`    |
-| `TOKEN_EXPIRY_NOTE_LIMIT`           | `500`                                                                    | `token-expiry.ts`    |
 | `API_TOKEN_PREFIX`                  | `'lwt_'`                                                                 | `tokens.ts`          |
 | `LEGACY_API_TOKEN_PREFIX`           | `'lvd_'`                                                                 | `tokens.ts`          |
 | `MAX_API_TOKENS_PER_ACCOUNT`        | `20`                                                                     | `tokens.ts`          |
@@ -658,7 +656,7 @@ pin it; these pin the Worker as a whole:
 | `liveworkspace/apps/accounts/src/deletion-code.test.ts`               | the deletion code: sent, checked, spent, expired, three tries, concurrent guesses, and closing refused without it                                                            |
 | `liveworkspace/apps/accounts/src/drive-disconnect.test.ts` (4)        | `disconnectDrive`: done, skipped, failed, a `404`                                                                                                                            |
 | `liveworkspace/apps/accounts/src/telemetry.test.ts` (7)               | server events: held, bounded, one batch per app, keys                                                                                                                        |
-| `liveworkspace/apps/accounts/src/index-timeline.test.ts` (16)         | API token and team events; sending to the index; the outbox's bound                                                                                                          |
+| `liveworkspace/apps/accounts/src/index-events.test.ts`                | team events (and no token events); sending to the index; the outbox's bound                                                                                                  |
 | `liveworkspace/apps/accounts/src/ids.test.ts` (1)                     | account ids keep the `user_` shape                                                                                                                                           |
 | `liveworkspace/apps/accounts/scripts/import-clerk-users.test.ts`      | the Clerk import ([012-migrate](../../012-migrate/blueprints/migrate.md))                                                                                                    |
 | `packages/auth-client/src/*.test.ts`                                  | each app's side: OAuth, silent sign-in, return paths, verification, the account API client, invitations, notify rules, account names, the workbench client, the e2e stand-in |

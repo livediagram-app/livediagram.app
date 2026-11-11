@@ -1,20 +1,19 @@
 'use client';
 
-// History (livediagram's DocumentHistoryDialog; livediagram/docs/specs/013-workspace/timeline.md "Beyond the feed"):
-// one item's own Timeline, from its menu. A dialog rather than a page, because "what happened to this?" is asked
-// while looking at the row. The header shows whose history it is; a strip sums it up; chips narrow it to one kind;
+// History (livediagram's DocumentHistoryDialog; livediagram/docs/specs/013-workspace/history.md "The dialog"):
+// one item's own record of what happened to it, from its menu. A dialog rather than a page, because "what happened
+// to this?" is asked while looking at the row. The header shows whose history it is; a strip sums it up; chips narrow it to one kind;
 // the events run newest first down a rail under sticky day headings, a run of one kind by one person folded into
-// one entry. One `GET /timeline?item=` page of 30, and Show older events for the next; nothing else is asked for
+// one entry. One `itemHistory` page of 30, and Show older events for the next; nothing else is asked for
 // but people's names, from the Explorer's shared people store.
 
 import { memo, useCallback, useEffect, useId, useMemo, useState, type ReactNode } from 'react';
-import type { Item, TimelineEvent } from '@liveworkspace/index-client';
+import type { Item, ItemEvent } from '@liveworkspace/index-client';
 import { Button, EmptyState, PictureDisc } from '@liveworkspace/ui';
 import { DAY_MONTH_YEAR } from '@liveworkspace/ui/date-format';
 import { usePersonPicture } from '../data/usePeople';
 import { useExtras } from '../explorer/extras';
 import { useExplorer, type ExplorerContextValue } from '../explorer/context';
-import { actorWords, renderTimelineEvent } from '../explorer/timeline-event-render';
 import { AppMark } from '../explorer/badges';
 import { useOwnerLabel } from '../explorer/rows';
 import { Dialog, DialogCloseButton } from '../ui/Dialog';
@@ -22,7 +21,7 @@ import { HistoryIcon } from '../ui/library-icons';
 import { ChevronDownIcon, Glyph, ItemIcon } from '../ui/icons';
 import { avatarFill } from '../ui/avatar-fill';
 import { FOCUS_RING } from '../ui/classes';
-import { eventIcon } from '../timeline/icons';
+import { eventIcon } from './event-icons';
 import {
   CATEGORY_LABELS,
   eventLabel,
@@ -31,9 +30,10 @@ import {
   TONE_INKS,
   toneColor,
   toneSoftColor,
-  type TimelineCategory,
-} from '../timeline/model';
-import { initials, personName } from '../timeline/whatHappened';
+  type EventCategory,
+} from './history-model';
+import { actorWords, eventWords } from './history-render';
+import { initials, personName } from './person-name';
 import { isAbort } from '../data/errors';
 import { useNamedEvents } from '../data/names';
 import { relativeSince } from '../time';
@@ -51,9 +51,13 @@ import {
 
 export { HISTORY_PAGE };
 
-type State = { events: TimelineEvent[]; cursor: string | null; loading: boolean; failed: boolean };
+type State = { events: ItemEvent[]; cursor: string | null; loading: boolean; failed: boolean };
 
-type RenderCtx = Parameters<typeof renderTimelineEvent>[1];
+// What each entry needs to word itself: who is reading, and the reader's team names.
+type RenderCtx = {
+  viewerId: string | null;
+  teamName: (id: string | null) => string | null;
+};
 
 const MUTED = 'text-slate-500 dark:text-slate-400';
 const BUTTON = `inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition duration-micro hover:border-brand-300 hover:text-brand-700 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500/50 dark:hover:text-brand-300 ${FOCUS_RING}`;
@@ -75,7 +79,7 @@ export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => vo
     (cursor: string | null, signal?: AbortSignal) => {
       setState((s) => ({ ...s, loading: true, failed: false }));
       client
-        .timeline({ item: item.id, limit: HISTORY_PAGE, ...(cursor ? { cursor } : {}) }, { signal })
+        .itemHistory(item.id, { limit: HISTORY_PAGE, ...(cursor ? { cursor } : {}) }, { signal })
         .then(
           (page) =>
             setState((s) => ({
@@ -101,7 +105,7 @@ export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => vo
   const events = useNamedEvents(state.events);
   // One clock for the dialog, so the day headings and "2 hours ago" agree and never shift while it is read.
   const [now] = useState(() => Date.now());
-  const [category, setCategory] = useState<TimelineCategory | null>(null);
+  const [category, setCategory] = useState<EventCategory | null>(null);
   const chips = useMemo(() => historyCategories(events), [events]);
   const summary = useMemo(() => summariseHistory(events), [events]);
   // A chip whose kind has gone (never, with paging only adding) would leave the list empty: fall back to All.
@@ -111,12 +115,8 @@ export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => vo
     [events, active, now],
   );
 
-  const { renderThumbnail, openItem, navigate, teamName } = ctx;
-  // What each event says, as the Timeline's cards say it; no app mark (it is all one item's) and no picture.
-  const renderCtx: RenderCtx = useMemo(
-    () => ({ viewerId, filter: 'app', renderThumbnail: undefined, openItem, navigate, teamName }),
-    [viewerId, openItem, navigate, teamName],
-  );
+  const { renderThumbnail, teamName } = ctx;
+  const renderCtx: RenderCtx = useMemo(() => ({ viewerId, teamName }), [viewerId, teamName]);
 
   const title = item.title || 'Untitled';
   const more = Boolean(state.cursor);
@@ -330,7 +330,7 @@ function SummaryStrip({
   now: number;
   count: number;
   more: boolean;
-  people: TimelineEvent[];
+  people: ItemEvent[];
   viewerId: string | null;
 }) {
   const stat = 'flex min-w-0 flex-col gap-0.5';
@@ -414,7 +414,7 @@ function PersonAvatar({
   size,
   ring = false,
 }: {
-  event: TimelineEvent;
+  event: ItemEvent;
   viewerId: string | null;
   size: number;
   ring?: boolean;
@@ -456,13 +456,6 @@ function PersonGlyph() {
   );
 }
 
-/** The detail after the reason, without the "by …" the avatar line already says. */
-function detailOf(meta: ReactNode): string | null {
-  if (typeof meta !== 'string') return null;
-  const parts = meta.split(' · ').filter((p) => !p.startsWith('by '));
-  return parts.length ? parts.join(' · ') : null;
-}
-
 const cap = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 const HistoryEntry = memo(function HistoryEntry({
@@ -477,11 +470,11 @@ const HistoryEntry = memo(function HistoryEntry({
   const [open, setOpen] = useState(false);
   const listId = useId();
   const event = run.events[0]!;
-  const card = renderTimelineEvent(event, ctx);
+  const words = eventWords(event, ctx.viewerId, ctx.teamName);
   const tone = eventTone(event.type);
   const many = run.events.length;
-  const who = cap(actorWords(event, ctx.viewerId ?? null));
-  const detail = many > 1 ? null : detailOf(card.meta);
+  const who = cap(actorWords(event, ctx.viewerId));
+  const detail = many > 1 ? null : words.detail;
   return (
     <li
       data-history-event={event.type}
@@ -531,15 +524,15 @@ const HistoryEntry = memo(function HistoryEntry({
           </span>
         </div>
         <p className={`mt-0.5 flex min-w-0 items-center gap-1.5 text-xs ${MUTED}`}>
-          <PersonAvatar event={event} viewerId={ctx.viewerId ?? null} size={16} />
+          <PersonAvatar event={event} viewerId={ctx.viewerId} size={16} />
           <span className="truncate">
             <span className="font-medium text-slate-700 dark:text-slate-200">{who}</span>
             {detail ? ` · ${detail}` : ''}
           </span>
         </p>
-        {card.description && many === 1 ? (
+        {words.quote && many === 1 ? (
           <blockquote className="mt-1.5 line-clamp-3 rounded-lg border-l-2 border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
-            {card.description}
+            {words.quote}
           </blockquote>
         ) : null}
         {many > 1 ? (
@@ -563,7 +556,7 @@ const HistoryEntry = memo(function HistoryEntry({
                 className="mt-1.5 flex flex-col gap-1 border-l border-slate-200 pl-3 motion-safe:animate-fade-in dark:border-slate-700"
               >
                 {run.events.map((e) => {
-                  const d = detailOf(renderTimelineEvent(e, ctx).meta);
+                  const d = eventWords(e, ctx.viewerId, ctx.teamName).detail;
                   return (
                     <li
                       key={e.id}

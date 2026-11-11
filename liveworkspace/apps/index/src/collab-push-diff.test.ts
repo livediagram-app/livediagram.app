@@ -61,7 +61,7 @@ function held(itemId: string) {
   };
 }
 
-// The rows the push's write batch changed, summed over its statements (the Timeline's own rows aside).
+// The rows the push's write batch changed, summed over its statements (the event log's own rows aside).
 async function writesOf(push: () => Promise<Response>): Promise<number> {
   const db = h.db.env.INDEX_DB;
   const batch = db.batch.bind(db);

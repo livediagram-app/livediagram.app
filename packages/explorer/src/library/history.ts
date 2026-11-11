@@ -1,8 +1,8 @@
-// History's pure rules (livediagram/docs/specs/013-workspace/timeline.md "Beyond the feed"): the day headings, the
+// History's pure rules (livediagram/docs/specs/013-workspace/history.md "The dialog"): the day headings, the
 // runs of one kind by one person that fold into one entry, the kinds a filter chip offers, the summary strip, and a
 // person's avatar colour. No React here, so each is tested on its own.
 
-import type { TimelineEvent } from '@liveworkspace/index-client';
+import type { ItemEvent } from '@liveworkspace/index-client';
 import { PRESENCE_COLOURS } from '@liveworkspace/settings/presence';
 import { WEEKDAY } from '@liveworkspace/ui/date-format';
 import {
@@ -10,10 +10,10 @@ import {
   eventCategory,
   formatDay,
   sortCategories,
-  type TimelineCategory,
-} from '../timeline/model';
+  type EventCategory,
+} from './history-model';
 
-export const HISTORY_PAGE = 30;
+export { HISTORY_PAGE } from '@liveworkspace/index-client';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -34,16 +34,16 @@ export function historyDayLabel(key: string, now: number): string {
 }
 
 /** One entry on the rail: an event alone, or a run of one kind by one person (newest first). */
-export type HistoryRun = { key: string; events: TimelineEvent[] };
+export type HistoryRun = { key: string; events: ItemEvent[] };
 
 export type HistoryDay = { key: string; label: string; runs: HistoryRun[]; count: number };
 
-const sameRun = (a: TimelineEvent, b: TimelineEvent) =>
+const sameRun = (a: ItemEvent, b: ItemEvent) =>
   a.type === b.type && (a.actorId ?? '') === (b.actorId ?? '');
 
 /** Newest-first events into days, each day's consecutive events of one kind by one person folded into a run. One
  *  pass, linear in the events. */
-export function buildHistory(events: readonly TimelineEvent[], now: number): HistoryDay[] {
+export function buildHistory(events: readonly ItemEvent[], now: number): HistoryDay[] {
   const days: HistoryDay[] = [];
   let day: HistoryDay | null = null;
   let run: HistoryRun | null = null;
@@ -64,11 +64,11 @@ export function buildHistory(events: readonly TimelineEvent[], now: number): His
   return days;
 }
 
-/** The kinds the loaded events hold, in the Timeline's fixed order, and how many of each: the filter's chips. */
+/** The kinds the loaded events hold, in a fixed order, and how many of each: the filter's chips. */
 export function historyCategories(
-  events: readonly TimelineEvent[],
-): { category: TimelineCategory; count: number }[] {
-  const counts = new Map<TimelineCategory, number>();
+  events: readonly ItemEvent[],
+): { category: EventCategory; count: number }[] {
+  const counts = new Map<EventCategory, number>();
   for (const event of events) {
     const category = eventCategory(event.type);
     counts.set(category, (counts.get(category) ?? 0) + 1);
@@ -80,20 +80,20 @@ export function historyCategories(
 }
 
 export function filterHistory(
-  events: readonly TimelineEvent[],
-  category: TimelineCategory | null,
-): readonly TimelineEvent[] {
+  events: readonly ItemEvent[],
+  category: EventCategory | null,
+): readonly ItemEvent[] {
   return category ? events.filter((e) => eventCategory(e.type) === category) : events;
 }
 
 export type HistorySummary = {
   count: number;
   // The people who took part, newest first: their ids and the event that names them.
-  people: TimelineEvent[];
+  people: ItemEvent[];
 };
 
-export function summariseHistory(events: readonly TimelineEvent[]): HistorySummary {
-  const seen = new Map<string, TimelineEvent>();
+export function summariseHistory(events: readonly ItemEvent[]): HistorySummary {
+  const seen = new Map<string, ItemEvent>();
   for (const event of events) {
     if (event.actorId && !seen.has(event.actorId)) seen.set(event.actorId, event);
   }

@@ -1,15 +1,14 @@
 # Explorer Home
 
 **Home** is the Explorer's landing view and the first row of the sidebar's Overview group
-([Explorer structure](explorer-structure.md)). It answers the two questions a returning person
-brings, in one screen: "what was I working on?" and "what happened while I was away?".
+([Explorer structure](explorer-structure.md)). It answers the question a returning person
+brings, in one screen: "what was I working on?". Home's What Happened section and the Timeline it linked to are
+retired (November 2026, [History](history.md)): what happened to one design is its History.
 
 ## Route
 
 - Home lives at `/explorer/home`. `/explorer`, and any Explorer URL that names no view, lands on it.
-- The **Timeline** ([Timeline](timeline.md)) lives at `/explorer/timeline`, with a sidebar row of its own under the
-  Inbox ([Explorer structure](explorer-structure.md)). What Happened's **See Timeline** link also opens it; its
-  breadcrumb is its own (**Timeline**).
+- The retired `/explorer/timeline` opens Home.
 
 ## Layout
 
@@ -19,18 +18,17 @@ backdrop, a heavy display heading, pills with a coloured dot, the glowing search
 
 - **The hero** opens the page ([The hero](#the-hero)): a full-width band under the Explorer header, above the
   sidebar and the sections. It is Home's page header; Home has no other.
-- **One column** under it, beside the sidebar, at every width: **New**, then **Jump Back In**, then **What Happened**. It scrolls
+- **One column** under it, beside the sidebar, at every width: **New**, then **Jump Back In**. It scrolls
   with the page.
 - **Display headings** set the sections apart. Each section opens with its heading row: the title (about 24 px,
-  extra bold, tight tracking) and the section's quiet link at the right end (**See More**, **See Timeline**). No rule
+  extra bold, tight tracking) and the section's quiet link at the right end (**See More**). No rule
   runs under the row. Generous space (about 40 px) separates one section from the next.
-- Jump Back In's designs are **cards** ([Jump Back In](#jump-back-in)); What Happened's days sit in **one panel**
-  (a white, rounded, hairline-bordered surface; the raised surface in dark mode).
+- Jump Back In's designs are **cards** ([Jump Back In](#jump-back-in)).
 - Home has no import, no folder and no view switch.
 - The person's own history (what they created, updated or opened) is not on Home: New holds the four designs made
   most recently in livedesign (theirs and their teams', made by AI ones included, wearing Made by AI; hidden while there
   are none: [One Explorer "New, on Home"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#new-on-home)), Jump
-  Back In what they reach for, and the full record is the Timeline's.
+  Back In what they reach for, and a design's own record is its History.
 
 ## The hero
 
@@ -89,7 +87,7 @@ With the banner hidden, Home is drawn like every other Explorer page:
 - the **header's search field** is drawn on Home too ([Explorer filters](explorer-filters.md#the-field)), so the page
   still has exactly one lens field;
 - Home takes the ordinary **page header** (the title "Home", its Help link and New Design), so it keeps its `h1`;
-- Jump Back In and What Happened, or a first run's sections, follow as before.
+- Jump Back In, or a first run's sections, follow as before.
 
 One reading, the `homeBanner` preference, which the editor's Explorer host hands the shared Explorer as
 `heroHidden` (`apps/live/app/embed/workbench/ExplorerHost.tsx`), decides all three, so Home never shows two fields or
@@ -121,7 +119,7 @@ The hero speaks to a beginning:
   **Start Blank** makes a blank Pages design with its start closed (`/new?start=blank`).
 - **What it makes**: the same four pictures as the ordinary hero, so a first run shows what can be made.
 
-Under it, beside the sidebar, Home holds three sections in place of Jump Back In and What Happened:
+Under it, beside the sidebar, Home holds three sections in place of Jump Back In:
 
 - **Start Blank**: the Pages blanks (Blank Logo, the blank wireframes, Photo Edit and the rest), each a card with its preview,
   title and one-line description. Activating one makes
@@ -217,8 +215,7 @@ the **8 most used** and the **8 most recent**, no design twice.
 - While it loads, each group's skeleton is two rows of cards (the phone's, one strip), the height of full groups.
 - With **no design at all** it looks as if it held one: a single slot the size and place of one most used card
   (the first column, a dashed edge), holding the empty state ("No designs yet", "The designs you use most and last
-  will gather here."), and no group labels. Only then is Jump Back In shorter than its reserved height: What Happened
-  sits under the one row.
+  will gather here."), and no group labels. Only then is Jump Back In shorter than its reserved height.
 - On a phone with no design at all, the strip holds the small [empty state](../004-interface-design/empty-states.md)'s
   heading alone, the size of one tile, and no See More tile.
 
@@ -240,76 +237,6 @@ the **8 most used** and the **8 most recent**, no design twice.
 - A design stored only in this browser counts its making in this browser's record ([Opens](#opens)), by the same
   rule.
 
-## What Happened
-
-- What **other people** did to designs the person can open, grouped under day headings (**Today**, **Yesterday**,
-  then the date). The days are the person's own (their time zone), and the section covers the last **14 days**.
-- "Designs the person can open" are the ones they own, the ones in a team they have joined, and the ones shared
-  with them through a link that is still live. A link scoped to one tab ([Tab-scoped share links](tab-scoped-share-links.md))
-  shows nothing here: the actions name things on tabs the link does not reach.
-- "Other people" are everyone but the person, under any identity they have had (a guest id before sign-up counts as
-  theirs).
-- The actions and their verbs are a closed set, in this order wherever several are named:
-
-  | Action                                       | Verb phrase            |
-  | -------------------------------------------- | ---------------------- |
-  | A comment that starts a thread               | commented              |
-  | A comment on a thread that already had one   | replied                |
-  | A thread resolved                            | resolved a thread      |
-  | A day of edits (one per person per day)      | edited                 |
-  | An action assigned to the person             | assigned you an action |
-  | An action assigned to anyone else            | assigned an action     |
-  | An action completed                          | completed an action    |
-  | The design published into one of their teams | shared                 |
-
-- Opens are never listed here: whether someone looked at a design is theirs to know, not the reader's.
-- **No filter controls** sit in or above this section. It stays clean; the shared filters live on the other
-  Explorer views ([Explorer filters](explorer-filters.md)).
-- **Nothing from anyone, no section.** When nobody else did anything in the window, What Happened is left out of the
-  page entirely, heading included, rather than set a second empty state under Jump Back In's. While it loads, its
-  heading and skeleton hold its place.
-- A quiet **See Timeline** link beside the section's heading opens the **Timeline**, shown only once What Happened
-  has an entry (not while it loads, not when it is empty), where
-  everything that happened, the person's own doings included, can be filtered and paged.
-- Every entry is **spot on**. It names:
-  - who acted;
-  - what they did, as a plain verb phrase (commented, replied, resolved a thread, edited, assigned you an action,
-    shared);
-  - which design;
-  - where the design lives (its space and folder).
-- One design's actions on one day form a **group**. A group with one person is shown as that person's entries,
-  one per action.
-- **Several actions on one design by more than one person collapse into one entry**, a **summary sentence that
-  expands**:
-  - the people's avatars, overlapped, then one sentence naming them and what they did, e.g. "Priya, Sam and Lee
-    commented, edited and assigned you an action in **Payments architecture**";
-  - beneath it, where the design lives, how many updates there were and the time of the latest ("Platform team ·
-    5 updates · 14:05");
-  - a chevron;
-  - expanding lists every underlying action, newest first: avatar, who, what, a small icon for the kind, and time.
-  - The entry is a disclosure button (`aria-expanded`); collapsed is the default, and the state is not remembered.
-  - Each expanded action opens the design.
-- A one-person entry is a link that opens the design. A comment or reply shows its words beneath, an action its
-  name, on one line; then where the design lives and the time.
-- "Where the design lives" reads the team's name for a design in a team (whoever reaches it, its owner included)
-  or **My Work**, then `›` and the folder when it has one; a
-  design shared with the person reads **Shared by** and the owner's name.
-- A person without a known name is **Someone**. A summary names at most three people, then "and N others".
-- Times are clock times in the person's own time zone and locale (`14:05`, `2:05 PM`), under the day heading that dates
-  them.
-
-## Unread
-
-Viewing Home counts as having looked: it moves the Timeline feed's unread mark exactly as the Timeline page does
-([Timeline](timeline.md) §2.5), once per visit, and says where the mark stood before, so what is new to the person
-can be marked.
-
-- In What Happened, an entry newer than that mark carries a **New** pill, as the Timeline's cards do: the word,
-  never colour alone. A summary is new when its latest action is.
-- A person who has never looked sees none: marking a whole history new would be noise.
-- The mark is the one the first read of the visit reports; a retry does not move what is marked.
-- The sidebar's Home badge clears when Home has been read.
-
 ## Opens
 
 An **open** is the editor loading a design for a person to look at.
@@ -321,8 +248,8 @@ An **open** is the editor loading a design for a person to look at.
   **last open** of the design, which is what Recent reads.
 - These are **not** opens: a snapshot or thumbnail, an embed ([Read-only embeds](embeds.md)), a duplicate, Take
   Offline, and any read through the public API or an AI tool.
-- Opens are **private**. Only the person who opened a design ever sees that they did: in their Jump Back In, never in What Happened, a design's
-  History, a team's feed, or the Timeline feed ([Timeline](timeline.md)).
+- Opens are **private**. Only the person who opened a design ever sees that they did: in their Jump Back In, never in a design's
+  History ([History](history.md)).
 - Offline Mode designs never reach the server, so the server records none of their opens. **This Browser counts
   them instead**: the editor opening a design stored only here adds the day to that design's own record in
   this browser, by the same once-per-UTC-day rule, keeping the days of the last 90, and moves its last open. Its
@@ -339,24 +266,22 @@ An **open** is the editor loading a design for a person to look at.
   and its last open the later of the two.
 - Deleting the account deletes its opens. Deleting a design for good deletes everyone's opens of it; a design in
   the Trash only leaves Home until it is restored.
-- An open older than a year is forgotten, the Timeline's retention ([Timeline](timeline.md) §3.5).
+- An open older than a year is forgotten.
 
 ## States
 
 Every state keeps the layout it lands in: headings are in place from the first paint, and each section's skeleton
 has the size of what replaces it, so nothing shifts (CLS 0). The one exception is a person with no design at all:
-Jump Back In's single empty slot is shorter than the skeleton, so What Happened rises once, on a page with nothing
-else on it.
+Jump Back In's single empty slot is shorter than the skeleton, on a page with nothing else on it.
 
-| State                 | What shows                                                                                                     |
-| --------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Loading               | Each section's skeleton: both groups' cards (the phone's strip), three entry rows in the panel                 |
-| Jump Back In, partial | What exists, no empty boxes (see [Fewer than 8 designs](#fewer-than-8-designs))                                |
-| Jump Back In, empty   | One card-sized slot: empty state "No designs yet": "The designs you use most and last will gather here."       |
-| What Happened, empty  | The section is left out: no heading, no link, no empty state. It is the page's last section, so nothing moves. |
-| Read failed           | "Home could not load. Check your connection and try again." with **Try again**, in place of the body           |
+| State                 | What shows                                                                                               |
+| --------------------- | -------------------------------------------------------------------------------------------------------- |
+| Loading               | Each section's skeleton: both groups' cards (the phone's strip)                                          |
+| Jump Back In, partial | What exists, no empty boxes (see [Fewer than 8 designs](#fewer-than-8-designs))                          |
+| Jump Back In, empty   | One card-sized slot: empty state "No designs yet": "The designs you use most and last will gather here." |
+| Read failed           | "Home could not load. Check your connection and try again." with **Try again**, in place of the body     |
 
-Under reduced motion nothing animates: no skeleton pulse, no chevron turn, no smooth scrolling.
+Under reduced motion nothing animates: no skeleton pulse, no smooth scrolling.
 
 ## Telemetry
 
@@ -366,9 +291,8 @@ One-liners on the closed vocabulary ([Telemetry](../017-telemetry/telemetry.md))
 - `Home·Selected·JumpBackIn.MostUsed` / `JumpBackIn.Recent`: a design opened from Jump Back In, by the group it
   belongs to (most used or recent), wherever it sits.
 - `Home·Selected·JumpBackIn.SeeMore`: See More followed to the Recent page (the link or the phone's tile).
-- `Home·Selected·WhatHappened`: a design opened from What Happened.
-- `Home·Opened·Group`: a summary entry expanded.
 - `Home·Loaded·Retry`: a failed read retried.
+- Retired with What Happened: `Home·Selected·WhatHappened`, `Home·Selected·SeeTimeline` and `Home·Opened·Group`.
 - `Home·Opened·Welcome`: the first-run Home shown.
 - `Home·Selected·Welcome.Blank` / `Welcome.Template` / `Welcome.AllTemplates` / `Welcome.Search` /
   `Welcome.StartBlank` / `Welcome.SignIn`: a start taken from it (a blank card, a template card, Browse All
@@ -376,14 +300,13 @@ One-liners on the closed vocabulary ([Telemetry](../017-telemetry/telemetry.md))
 
 ## Help
 
-The help centre's [Home](../../../apps/help/app/explorer/timeline/page.mdx) article describes Home (Jump Back In, What Happened) and the Timeline.
+The help centre's Home article (Home's Help link) describes Home and Jump Back In.
 
 ## Accessibility
 
-- Each section is a landmark (`section`) named by its heading (**Jump Back In**, **What Happened**).
+- Each section is a landmark (`section`) named by its heading (**Jump Back In**).
 - Jump Back In's designs are one list named **Jump Back In**; each design is one link named by its design's
   name (plus **This Browser** for a design stored only here). No row or group carries a label of its own.
-- A summary entry's expanded list is the region its disclosure button controls (`aria-controls`).
 - Keyboard order follows the reading order: See More (desktop and tablet), Jump Back In's designs in their order
-  (then the See More tile on a phone), then What Happened.
+  (then the See More tile on a phone).
 - WCAG 2.2 AA: contrast, visible focus, and targets of at least 24 by 24 px.

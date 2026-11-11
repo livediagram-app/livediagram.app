@@ -4,7 +4,7 @@
 
 import { APPS, type App } from './constants';
 
-/** The events a webhook can listen for: what can happen to an existing document (the Timeline's item events after
+/** The events a webhook can listen for: what can happen to an existing document (the event log's item events after
  *  it is made) and liveplanner's card moves and form responses. */
 export const WEBHOOK_EVENTS = [
   'renamed',
@@ -25,7 +25,7 @@ export type WebhookDeliveryType = WebhookEvent | 'ping';
 export const isWebhookEvent = (value: unknown): value is WebhookEvent =>
   (WEBHOOK_EVENTS as readonly unknown[]).includes(value);
 
-/** Which apps send each event: every app has documents (the Timeline's events) and pushes its comment threads and
+/** Which apps send each event: every app has documents (the event log's events) and pushes its comment threads and
  *  actions; card moves and form responses are liveplanner's alone. */
 export const WEBHOOK_EVENT_APPS: Record<WebhookEvent, readonly App[]> = {
   renamed: APPS,

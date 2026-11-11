@@ -1,15 +1,15 @@
 'use client';
 
-// Who did what, by name (What Happened, the Timeline): the index keeps only an event's actor id, so the names come
+// Who did what, by name (an item's History): the index keeps only an event's actor id, so the names come
 // from the Explorer's one people store (usePeople.ts), the same that names the Owner column: gathered into one
 // request per beat, at most PEOPLE_MAX ids each, and kept for the page, bounded. No request per row, none twice.
 
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
-import type { TimelineEvent } from '@liveworkspace/index-client';
+import type { ItemEvent } from '@liveworkspace/index-client';
 import { useExtras } from '../explorer/extras';
 
 /** The events with their actors' names filled in where the event carries none, asking for the missing ones. */
-export function useNamedEvents<E extends Pick<TimelineEvent, 'actorId' | 'actorName'>>(
+export function useNamedEvents<E extends Pick<ItemEvent, 'actorId' | 'actorName'>>(
   events: readonly E[],
 ): readonly E[] {
   const { people } = useExtras();

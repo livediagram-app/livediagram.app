@@ -113,7 +113,6 @@ import {
   trackLens,
   trackOrganise,
   trackSignInBanner,
-  trackTimeline,
   trackViewToggled,
   trackWelcome,
   trackWelcomeOpened,
@@ -168,9 +167,6 @@ const NO_ARRIVAL: Arrival = { app: null, via: null };
 // Where the Settings panel opens: the app it is for (by its site id), the side of the switch, and the category.
 type PanelOpening = { app: AppId | null; scope: 'app' | 'all' | null; categoryId: string | null };
 const appIdOf = (app: AppName) => siteOfApp(app).id as AppId;
-// The API tokens, a category of the Settings panel (the timeline's token cards lead there), opened in place on
-// either address.
-const TOKENS_SETTINGS = `/explorer?${SETTINGS_PARAM}=tokens`;
 
 // The Explorer's own addresses move inside the page; anything else (an item in its app, which on an app's address is
 // this same origin) is a full page load, never this site's client router, which has no such page.
@@ -574,7 +570,6 @@ export function ExplorerShell() {
           shareUrl={shareUrl}
           share={share}
           teamsHost={teamsHost}
-          tokensUrl={TOKENS_SETTINGS}
           filter={shownFilter}
           onFilterChange={setFilter}
           header={header}
@@ -601,7 +596,6 @@ export function ExplorerShell() {
           itemMenu={itemMenu}
           heroHidden={settings.heroHidden}
           onHideHero={settings.onHideHero}
-          onTimeline={trackTimeline}
           onHome={trackHome}
           onOrganise={trackOrganise}
           lensTemplates={lensTemplatesFor(app)}

@@ -88,10 +88,10 @@ afterEach(() => {
 });
 
 describe('the sidebar', () => {
-  it('holds Recent, Timeline, Favourites, Archived and the Trash in the Library, in that order', async () => {
+  it('holds Recent, Favourites, Archived and the Trash in the Library, in that order', async () => {
     page(createFakeIndex(), { kind: 'archived' });
     const library = await sections().findByRole('treeitem', { name: 'Library' });
-    expect(rowNames(library)).toEqual(['Recent', 'Timeline', 'Favourites', 'Archived', 'Trash']);
+    expect(rowNames(library)).toEqual(['Recent', 'Favourites', 'Archived', 'Trash']);
     expect(row('Archived').getAttribute('aria-current')).toBe('page');
     // Overview keeps Home, Inbox and Shared With Me.
     const overview = row('Home').parentElement!;
@@ -100,16 +100,6 @@ describe('the sidebar', () => {
       'Inbox',
       'Shared With Me',
     ]);
-  });
-
-  it('puts the Timeline’s count on the folded Library, and only on the Timeline row once open', async () => {
-    const index = createFakeIndex();
-    index.inbox.timelineNew = 4;
-    page(index, { kind: 'home' });
-    const library = await sections().findByRole('treeitem', { name: 'Library (4 new)' });
-    fireEvent.click(within(library).getByRole('button', { name: 'Expand Library' }));
-    expect(row('Library').getAttribute('aria-expanded')).toBe('true');
-    expect(row('Timeline (4 new)')).toBeTruthy();
   });
 
   it('opens the Library for each of its pages, and a folded one stays folded until the view changes', async () => {
@@ -155,7 +145,7 @@ describe('the sidebar', () => {
     expect(rowsForView({ kind: 'folder', id: 'b' }, byId)).toEqual(['my-work', 'a', 'b']);
     expect(rowsForView({ kind: 'team', id: 'T1' }, byId)).toEqual(['team:T1']);
     expect(rowsForView({ kind: 'team', id: 'T1', folderId: 't' }, byId)).toEqual(['team:T1', 't']);
-    for (const kind of ['recent', 'timeline', 'favourites', 'archived', 'trash'] as const)
+    for (const kind of ['recent', 'favourites', 'archived', 'trash'] as const)
       expect(rowsForView({ kind }, byId)).toEqual(['library']);
     expect(rowsForView({ kind: 'home' }, byId)).toEqual([]);
     expect(rowsForView({ kind: 'shared' }, byId)).toEqual([]);

@@ -1,6 +1,6 @@
 // What an item pushes (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item pushes"), from its app's
 // server with the app's key: the summary derived from its content, each tab's comment threads and
-// actions for the Inbox, and its Timeline events (timeline.ts). Only the item's own app may push for it.
+// actions for the Inbox, and its events (event-push.ts). Only the item's own app may push for it.
 
 import { SUMMARY_MAX_BYTES, type App } from '@liveworkspace/index-client';
 import { callerApp } from './auth';
@@ -13,7 +13,8 @@ import type { Env } from './env';
 import { badRequest, fail, noContent, notFound, readObject, unauthorized } from './http';
 import { handleMigrationHandoff } from './migration-handoff';
 import { handleAppPeople } from './notices';
-import { FUTURE_SLACK_MS, pushAppEvents, pushPersonEvents } from './timeline';
+import { pushAppEvents } from './event-push';
+import { FUTURE_SLACK_MS } from './events';
 import { pushCardMoves } from './webhooks/routes';
 
 const isTime = (value: unknown): value is number =>
@@ -35,12 +36,12 @@ export async function handleApp(
   if (segments[1] === 'migration' && segments[2] === 'handoff' && segments.length === 3) {
     return handleMigrationHandoff(request, env, app, waitUntil);
   }
-  // /app/people/events: the Timeline's events about people (images uploaded), timeline.ts.
+  // /app/people/events: images uploaded, which the index no longer keeps. Kept one release so an app deployed
+  // before this index is never refused: 204 whatever the body, nothing read or recorded. Then it goes.
   if (segments[1] === 'people' && segments[2] === 'events' && segments.length === 3) {
     if (request.method !== 'PUT') return notFound();
-    const body = await readObject(request);
-    if (!body) return badRequest();
-    return pushPersonEvents(env, app, body);
+    await request.body?.cancel();
+    return noContent();
   }
   // /app/community/states: where Community posts' items stand, for the Community's sweep (community-states.ts).
   if (segments[1] === 'community' && segments[2] === 'states' && segments.length === 3) {

@@ -21,7 +21,7 @@ describe('ExplorerSkeleton', () => {
 });
 
 describe('section links', () => {
-  it('reach a finger’s 44px on a touch screen (See All, See Timeline)', () => {
+  it('reach a finger’s 44px on a touch screen (See More, See All)', () => {
     expect(SECTION_LINK.split(' ')).toEqual(expect.arrayContaining(['relative', 'touch-target']));
   });
 });

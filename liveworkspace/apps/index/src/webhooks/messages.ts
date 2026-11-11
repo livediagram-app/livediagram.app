@@ -1,6 +1,6 @@
 // What a delivery says (liveworkspace/docs/specs/004-index/webhooks.md "Destinations"): the signed JSON event for a
 // plain endpoint, a Slack message, or a Teams Adaptive Card, each from the delivery's own copy of the event and
-// never more than the Timeline detail the scope already sees. Every body is capped at WEBHOOK_PAYLOAD_MAX_BYTES.
+// never more than the event's detail an Editor of the document already sees. Every body is capped at WEBHOOK_PAYLOAD_MAX_BYTES.
 
 import {
   WEBHOOK_EVENT_LABELS,

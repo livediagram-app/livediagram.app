@@ -191,7 +191,7 @@ describe('the Inbox', () => {
 
     // Cat is mentioned and assigned, but cannot reach the item: nothing shows.
     const forCat = await body<InboxResponse>(await call('/inbox', { auth: cat.auth }));
-    expect(forCat).toEqual({ threads: [], actions: [], forms: [], timelineNew: 0 });
+    expect(forCat).toEqual({ threads: [], actions: [], forms: [] });
     // Given a link and having opened it, Cat sees them.
     const { link } = await body<{ link: { code: string } }>(
       await call(`/items/${teamItem.id}/share`, {
@@ -273,19 +273,17 @@ describe('the guest merge', () => {
       await call('/placement-defaults', { auth: user.auth }),
     );
     expect(defaults.defaults).toEqual([{ key: 'mode:plan', folderId: folder.folder.id }]);
-    // Their Timeline is the account's: what they did, under the account's id.
-    const timeline = await body<{ events: { type: string; actorId: string }[] }>(
-      await call('/timeline', { auth: user.auth }),
+    // Its History is the account's: what they did, under the account's id.
+    const history = await body<{ events: { type: string; actorId: string }[] }>(
+      await call(`/items/${mine.items[0]!.id}/history`, { auth: user.auth }),
     );
-    expect(timeline.events.map((e) => [e.type, e.actorId]).sort()).toEqual([
+    expect(history.events.map((e) => [e.type, e.actorId]).sort()).toEqual([
       ['created', 'user_u1'],
       ['favourited', 'user_u1'],
       ['moved', 'user_u1'],
     ]);
     expect(
-      h.db.sql
-        .prepare("SELECT COUNT(*) AS n FROM timeline_event_scopes WHERE scope = 'p:guest_g1'")
-        .get(),
+      h.db.sql.prepare("SELECT COUNT(*) AS n FROM events WHERE actor_id = 'guest_g1'").get(),
     ).toEqual({ n: 0 });
     expect(
       h.db.sql.prepare("SELECT opens FROM use_days WHERE person_id = 'user_u1' AND day = 5").get(),
@@ -371,9 +369,9 @@ describe('the empty clean-up', () => {
       expect(rowOf(item.id)).toEqual({ trashed_at: null, trash_reason: null });
     }
     expect(rowOf(deleted.id)).toEqual({ trashed_at: now - 2 * DAY, trash_reason: 'deleted' });
-    // No Timeline entry: nothing anyone did.
+    // No event: nothing anyone did.
     expect(
-      h.db.sql.prepare("SELECT COUNT(*) AS n FROM timeline_events WHERE type = 'trashed'").get(),
+      h.db.sql.prepare("SELECT COUNT(*) AS n FROM events WHERE type = 'trashed'").get(),
     ).toEqual({ n: 0 });
     // The team's item is in the team's Trash.
     const trash = await body<{ items: Item[] }>(

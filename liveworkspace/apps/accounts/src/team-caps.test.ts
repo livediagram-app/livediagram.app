@@ -172,7 +172,7 @@ describe('the member cap, racing', () => {
     );
     expect(errors(results)).toEqual(['member_limit_reached', 'member_limit_reached', 'ok']);
     expect(openCount(id)).toBe(MAX_MEMBERS_PER_TEAM);
-    // Only the invitation made is on the Timeline.
+    // Only the invitation made is queued for the audit log.
     expect(
       sql
         .prepare(

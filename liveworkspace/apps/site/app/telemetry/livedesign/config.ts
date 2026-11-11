@@ -86,7 +86,7 @@ import {
   TABLES,
   TAB_ACTIONS,
   TEAM_ACTIVITY,
-  TIMELINE_AND_ACTIVITY,
+  HOME_AND_ACTIVITY,
   TRASH,
   UNDO_AND_REDO,
   WEB_VITAL_CHARTS,
@@ -215,13 +215,7 @@ export const LIVEDESIGN: TelemetryAppConfig = {
     // so read them against it.
     {
       title: 'Collaboration',
-      metrics: [
-        LIVE_TOGETHER,
-        JOINING,
-        SHARING_AND_JOINING,
-        SHARE_LINKS_MADE,
-        TIMELINE_AND_ACTIVITY,
-      ],
+      metrics: [LIVE_TOGETHER, JOINING, SHARING_AND_JOINING, SHARE_LINKS_MADE, HOME_AND_ACTIVITY],
     },
     {
       title: 'Connections',

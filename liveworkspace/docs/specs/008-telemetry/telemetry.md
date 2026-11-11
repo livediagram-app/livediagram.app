@@ -101,7 +101,7 @@ sent.
 ## The Explorer on liveworkspace.app
 
 The one Explorer lives on liveworkspace.app ([site.md](../010-site/site.md#the-explorer-explorer)), so the events
-each app's own Explorer used to send now come from there: the Timeline, Home and its first run, the
+each app's own Explorer used to send now come from there: Home's first run, the
 filter lens, the Inbox, the List / Card / Details toggle, Home's banner closed and its Try Again
 (`Home·Loaded·Retry`), the Share dialog (links copied and revoked, and each link made by level,
 lifetime and tab, extended, rescoped or given a password: `<Noun>·Shared`), folders made,
@@ -109,7 +109,9 @@ renamed (`Folder·Renamed`), re-parented and deleted, default folders set and cl
 `Template`), the Trash (`Trash·Restored` / `Deleted` / `Cleared`, `Personal` or `Team`), items moved
 into, within and out of a team (`Team·Added` / `Moved` / `Removed` with the item's noun) and a
 guest's sign-in banner. They keep the names the apps always gave them, so each app's dashboard keeps
-counting them. An app that draws the shared Explorer itself (its panel, its Explorer page, the
+counting them. The Timeline's events (`Timeline·*`) and Home's What Happened ones (`Home·Selected·WhatHappened`,
+`SeeTimeline`, `Home·Opened·Group`) are retired (November 2026): nothing sends them, and every app's dashboard
+drops them as a retired feature. An app that draws the shared Explorer itself (its panel, its Explorer page, the
 Workbench) reports the same events through its own hosts, so each is counted once, where it happened.
 
 **Returning visitors.** Shown on an app's own address (`liveplanner.app/explorer/…`), the Explorer also

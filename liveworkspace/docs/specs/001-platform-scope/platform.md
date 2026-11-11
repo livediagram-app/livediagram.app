@@ -14,19 +14,19 @@ made once, a person's work and identity follow them from app to app, and an app 
 
 ## What the platform owns
 
-| Service   | What it is                                                                                         | Spec                                           |
-| --------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| Accounts  | Sign-in by email code or Google, sessions, guests, teams, API tokens, settings, profiles, email    | [003-accounts](../003-accounts/README.md)      |
-| Index     | Where every item is and who can reach it: folders, favourites, sharing, the Inbox, Timeline, Trash | [004-index](../004-index/README.md)            |
-| Drive     | Each person's items mirrored to their Google Drive                                                 | [005-drive](../005-drive/README.md)            |
-| Export    | Download Your Data: everything a person or team owns, as one zip                                   | [003-accounts](../003-accounts/data-export.md) |
-| Media     | Every app's uploaded images, and every item's previews, live images and share cards                | [006-media](../006-media/README.md)            |
-| Community | Every app's public Community listings                                                              | [007-community](../007-community/README.md)    |
-| Telemetry | Every app's anonymous events, and the public dashboard                                             | [008-telemetry](../008-telemetry/README.md)    |
-| Status    | Hourly checks of every service, kept for 90 days, and the status page                              | [009-status](../009-status/README.md)          |
-| Site      | liveworkspace.app's pages: the front door, the Explorer, Settings, sign-in, the site switcher      | [010-site](../010-site/README.md)              |
-| Workbench | Pairing API tokens with developer workbenches, and the sessions they open                          | [011-workbench](../011-workbench/README.md)    |
-| Migrate   | The one-off move of the historical livediagram.app's people and documents                          | [012-migrate](../012-migrate/README.md)        |
+| Service   | What it is                                                                                        | Spec                                           |
+| --------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Accounts  | Sign-in by email code or Google, sessions, guests, teams, API tokens, settings, profiles, email   | [003-accounts](../003-accounts/README.md)      |
+| Index     | Where every item is and who can reach it: folders, favourites, sharing, the Inbox, History, Trash | [004-index](../004-index/README.md)            |
+| Drive     | Each person's items mirrored to their Google Drive                                                | [005-drive](../005-drive/README.md)            |
+| Export    | Download Your Data: everything a person or team owns, as one zip                                  | [003-accounts](../003-accounts/data-export.md) |
+| Media     | Every app's uploaded images, and every item's previews, live images and share cards               | [006-media](../006-media/README.md)            |
+| Community | Every app's public Community listings                                                             | [007-community](../007-community/README.md)    |
+| Telemetry | Every app's anonymous events, and the public dashboard                                            | [008-telemetry](../008-telemetry/README.md)    |
+| Status    | Hourly checks of every service, kept for 90 days, and the status page                             | [009-status](../009-status/README.md)          |
+| Site      | liveworkspace.app's pages: the front door, the Explorer, Settings, sign-in, the site switcher     | [010-site](../010-site/README.md)              |
+| Workbench | Pairing API tokens with developer workbenches, and the sessions they open                         | [011-workbench](../011-workbench/README.md)    |
+| Migrate   | The one-off move of the historical livediagram.app's people and documents                         | [012-migrate](../012-migrate/README.md)        |
 
 ## What each app keeps
 

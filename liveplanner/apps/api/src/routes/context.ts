@@ -120,7 +120,7 @@ export type ProjectGrant = {
 
 // A Community post's link is refused unless the door passes `COMMUNITY_CONTENT` (docs/specs/025-community/
 // community.md "Viewing a post's plan"): the link is a content-only pass, so the plan, its tabs, cards, sheets and
-// images serve it, and comments, threads, history, the form link, the timeline and any door added later do not.
+// images serve it, and comments, threads, history, the form link and any door added later do not.
 // Fail closed, like the tab scope.
 export const COMMUNITY_CONTENT = { community: true } as const;
 export type GateOptions = { community?: boolean };

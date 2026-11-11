@@ -6,14 +6,12 @@
 // the Explorer's gallery lists a person's images from every app.
 
 import { levelAtLeast } from '@liveplanner/api-schema';
-import { reportImagesUploaded } from '@liveworkspace/index-app';
 import {
   ACCEPTED_IMAGE_TYPES,
   MAX_IMAGE_BYTES,
   ORIGINAL_NAME_MAX,
   type MediaClient,
 } from '@liveworkspace/media';
-import { indexAppClient } from '../index-service';
 import {
   imageSummary,
   mediaClient,
@@ -114,9 +112,6 @@ async function upload(ctx: RouteContext, media: MediaClient): Promise<Response> 
   const { image, deduped } = uploaded.value;
   rememberMediaOwner(image.id, named);
   if (planId !== null) await planRoom(env, planId).grantImage(image.id);
-  // The Timeline's image_uploaded (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): only a
-  // genuinely NEW upload, so the same picture added twice is one event.
-  if (!deduped) ctx.waitUntil?.(reportImagesUploaded(indexAppClient(env), owner));
   return json({ image: imageSummary(image), deduped });
 }
 

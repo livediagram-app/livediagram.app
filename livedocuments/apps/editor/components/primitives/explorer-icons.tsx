@@ -66,7 +66,7 @@ export const ShareIcon = lucideGlyph(lucideShare2, 13);
 export const ImageIcon = lucideGlyph(lucideImage, 13);
 // A team: one drawing, shared with the landing page (@livedocuments/ui).
 export { TeamIcon } from '@livedocuments/ui';
-// The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home (the Timeline), My
+// The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home, My
 // documents (a root folder), Library, and This Browser (a browser window).
 export const HomeIcon = lucideGlyph(lucideHouse, 13);
 export const ThisBrowserIcon = lucideGlyph(lucideAppWindow, 13);

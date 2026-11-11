@@ -23,8 +23,6 @@ export type ExplorerView =
   | { kind: 'archived' }
   // Open actions and unresolved threads, across every app.
   | { kind: 'inbox' }
-  // What happened to the items you can reach, and your teams', newest first.
-  | { kind: 'timeline' }
   // Search results: every item the person can open, narrowed by the lens (words and filters).
   | { kind: 'search'; q: string }
   | ({ kind: 'folder'; id: string } & Lensed)
@@ -79,7 +77,7 @@ export type ExplorerViewKind = ExplorerView['kind'];
 /** The views that list items (and folders): every view but those drawn by panes of their own. */
 export type ItemsView = Exclude<
   ExplorerView,
-  { kind: 'home' | 'inbox' | 'timeline' | 'invites' | 'gallery' | 'shape-libraries' | 'offline' }
+  { kind: 'home' | 'inbox' | 'invites' | 'gallery' | 'shape-libraries' | 'offline' }
 >;
 
 export const DEFAULT_BASE_PATH = '/explorer';
@@ -112,7 +110,8 @@ export function explorerPath(view: ExplorerView, base = DEFAULT_BASE_PATH): stri
   }
 }
 
-/** Which view an address shows. Unknown addresses, and folder or team ones without an id, are Home. */
+/** Which view an address shows. Unknown addresses (the retired `/timeline` among them), and folder or team ones
+ *  without an id, are Home. */
 export function viewFromLocation(
   pathname: string,
   search: URLSearchParams | string = '',
@@ -134,7 +133,6 @@ export function viewFromLocation(
     case 'trash':
     case 'archived':
     case 'inbox':
-    case 'timeline':
     case 'home':
     case 'invites':
     case 'shape-libraries':
@@ -174,7 +172,6 @@ export function sameView(a: ExplorerView, b: ExplorerView): boolean {
 export const SIDEBAR_LABELS = {
   home: 'Home',
   inbox: 'Inbox',
-  timeline: 'Timeline',
   shared: 'Shared With Me',
   myWork: 'My Work',
   library: 'Library',
@@ -191,7 +188,6 @@ export const SIDEBAR_LABELS = {
 export const VIEW_TITLES: Record<Exclude<ExplorerViewKind, 'folder' | 'team'>, string> = {
   home: SIDEBAR_LABELS.home,
   inbox: SIDEBAR_LABELS.inbox,
-  timeline: SIDEBAR_LABELS.timeline,
   shared: SIDEBAR_LABELS.shared,
   all: SIDEBAR_LABELS.myWork,
   trash: SIDEBAR_LABELS.trash,

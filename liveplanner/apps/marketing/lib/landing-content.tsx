@@ -38,7 +38,6 @@ import {
   SheetsArt,
   TeamsArt,
   TemplatesArt,
-  TimelineFeedArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
 
@@ -431,14 +430,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Comments where the work is',
         description:
           "Every card has its own thread, and any cell can carry one. Reply, @mention a teammate, resolve. Comments carry the author's name and colour so it's clear who said what.",
-      },
-      {
-        art: <TimelineFeedArt />,
-        href: '/help/explorer/home/',
-        group: 'Work together live',
-        title: 'See what happened while you were away',
-        description:
-          'The Explorer opens on Home: the plans you return to most, and what your teammates commented and changed while you were away. Every plan and team keeps its own history, and the Inbox gathers the threads and form answers still waiting on you, with a count in the sidebar so you can tell without looking.',
       },
       {
         art: <ShareLinksArt />,

@@ -1,4 +1,4 @@
-// Working together: live sessions, the Share dialog and embeds, discussion, the Timeline, teams and presenting (docs/specs/017-telemetry/telemetry.md).
+// Working together: live sessions, the Share dialog and embeds, discussion, teams and presenting (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../../_shared/metric-series';
@@ -31,27 +31,6 @@ export const FEED_RETRIES = chart(
   'Inbox Retries',
   "The Explorer's Inbox retried after failing to load.",
   { rising: 'bad' },
-);
-
-export const TIMELINE_LOADS = chart(
-  'Timeline',
-  'Loaded',
-  'Timeline Loads',
-  'More of the Timeline loaded, or a failed load retried.',
-);
-
-export const TIMELINE_VIEW_SWITCHED = chart(
-  'Timeline',
-  'Changed',
-  'Timeline View Switched',
-  'The Timeline switched between its list and calendar.',
-);
-
-export const TIMELINE_FILTERED = chart(
-  'Timeline',
-  'Selected',
-  'Timeline Filtered',
-  'The Timeline narrowed to everyone, others, or a kind of event.',
 );
 
 export const COMMENTS_DELETED = chart(
@@ -430,42 +409,9 @@ export const TEAM_ACTIVITY: MetricStack = {
   headline: INVITES_ACCEPTED,
 };
 
-// The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md) and Inbox (docs/specs/013-workspace/inbox.md),
-// reported through a workbench frame's onTimeline prop and the Inbox host's onTelemetry (apps/editor
-// app/embed/workbench/ExplorerHost.tsx, lib/explorer-inbox-host.tsx), and by liveworkspace's Explorer page (on
-// liveworkspace.app and on this app's address) in this app's name. Timeline·Opened carries what was done in the feed by type: a card, a card or stack menu, a stacked run.
-
-export const TIMELINE_MENUS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Card Menus',
-  'The menu on a Timeline card or stack opened, by its button or a right-click.',
-  { types: ['Menu'] },
-);
-
-export const TIMELINE_STACKS_EXPANDED = chart(
-  'Timeline',
-  'Opened',
-  'Stacks Expanded',
-  'A stacked run of changes on the Timeline opened up to show each one.',
-  { types: ['Stack'] },
-);
-
-export const TIMELINE_CARDS_OPENED = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Cards Opened',
-  'A document opened from its card on the Timeline.',
-  { types: ['Card'] },
-);
-
-export const TIMELINE_ENTRIES_REMOVED = chart(
-  'Timeline',
-  'Removed',
-  'Timeline Entries Removed',
-  'An entry or a whole stack removed from the feed.',
-  { rising: 'neutral' },
-);
+// The shared Explorer's Inbox (docs/specs/013-workspace/inbox.md), reported through the Inbox host's onTelemetry
+// (apps/editor lib/explorer-inbox-host.tsx), and by liveworkspace's Explorer page (on liveworkspace.app and on this
+// app's address) in this app's name. The Timeline's events are retired (retired-events.ts).
 
 export const ACTIVITY_OPENED = chart(
   'Activity',
@@ -504,8 +450,8 @@ export const ACTIVITY_RESOLVED = chart(
   "A thread resolved, or an action marked done in the editor's panel, from the Explorer's Inbox reading pane.",
 );
 
-// Explorer Home (docs/specs/013-workspace/explorer-home.md): What Happened, through ExplorerHost's onHome prop, and
-// the first run's welcome, from the Explorer on liveworkspace.app.
+// Explorer Home (docs/specs/013-workspace/explorer-home.md): a failed read retried, through ExplorerHost's onHome
+// prop, and the first run's welcome, from the Explorer on liveworkspace.app.
 
 export const HOME_WELCOMES = chart(
   'Home',
@@ -518,16 +464,8 @@ export const HOME_WELCOMES = chart(
 export const HOME_DOCUMENTS_OPENED = chart(
   'Home',
   'Selected',
-  'Documents Opened from Home',
-  'A document opened from What Happened, See Timeline followed, or a start taken from the first-run Home.',
-);
-
-export const HOME_GROUPS_EXPANDED = chart(
-  'Home',
-  'Opened',
-  'Home Summaries Expanded',
-  "A summary of several people's work on one document opened up to every action.",
-  { types: ['Group'] },
+  'Starts Taken from Home',
+  'A start taken from the first-run Home: a blank, a template, all templates, search or sign in.',
 );
 
 export const HOME_LOADS = chart(
@@ -541,28 +479,19 @@ export const HOME_LOADS = chart(
   },
 );
 
-export const TIMELINE_AND_ACTIVITY: MetricStack = {
+export const HOME_AND_ACTIVITY: MetricStack = {
   stack: true,
-  title: 'Timeline & Activity',
-  blurb:
-    "Keeping up with what changed: Explorer Home, the Explorer Timeline and the Explorer's Inbox.",
+  title: 'Home & Activity',
+  blurb: "Keeping up with what changed: Explorer Home and the Explorer's Inbox.",
   members: [
     HOME_WELCOMES,
     HOME_DOCUMENTS_OPENED,
-    HOME_GROUPS_EXPANDED,
     HOME_LOADS,
-    TIMELINE_MENUS,
-    TIMELINE_STACKS_EXPANDED,
-    TIMELINE_CARDS_OPENED,
-    TIMELINE_ENTRIES_REMOVED,
     ACTIVITY_OPENED,
     ACTIVITY_THREADS,
     ACTIVITY_FILTERS,
     ACTIVITY_REPLIES,
     ACTIVITY_RESOLVED,
-    TIMELINE_LOADS,
-    TIMELINE_VIEW_SWITCHED,
-    TIMELINE_FILTERED,
     FEED_RETRIES,
   ],
 };

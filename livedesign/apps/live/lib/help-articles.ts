@@ -64,7 +64,7 @@ export const HELP_ARTICLES = {
   explorerPanel: 'explorer/explorer-panel',
   layers: 'canvas/layers',
   minimap: 'user-interface/minimap',
-  timeline: 'explorer/timeline',
+  home: 'explorer/home',
   // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
   inbox: 'explorer/activity',
   recentDesigns: 'explorer/recent',
@@ -233,9 +233,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Map',
     description: 'Tips for finding your way around a big canvas.',
   },
-  timeline: {
-    title: 'Learn about Home and the Timeline',
-    description: 'Jump Back In, what others did while you were away, and your own Timeline.',
+  home: {
+    title: 'Learn about Home',
+    description: 'Jump Back In and what was shared with you recently.',
   },
   inbox: {
     title: 'Learn about the Inbox',

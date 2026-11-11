@@ -1,0 +1,70 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { HomeOverview } from '@/components/illustrations/explorer-home';
+
+export const metadata = helpMetadata({
+  title: 'Home',
+  description:
+    'The Explorer opens on Home: the canvases you use most and last, and what was shared with you recently.',
+  path: '/help/explorer/home/',
+});
+
+<ArticleLayout
+  title="Home"
+  description="The canvases you use most and last, and what was shared with you recently, on one page."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+**Home** is the page the [Explorer](/explorer) opens on, and the first row of its sidebar, above the [Inbox](/help/explorer/activity/). It answers the question you bring back with you, on one screen: **what was I working on?**
+
+Home opens with a greeting across the top of the page. Under it, two pills say how many canvases you have across My Work and your teams and whether anything waits in your **Inbox**; click one to go there. The search field sits right there in the greeting, with **New Canvas** inside it, so the first screen always offers a way to find something or start something. On a wide screen a Flowchart, a Mind Map and a Retrospective fan out beside it: a glimpse of what a canvas can hold.
+
+Prefer a plainer Home? Press the **×** beside **Help** in the greeting's corner to hide it. Home then opens with its title and the search field in the header, like every other page, and stays that way on your other devices. Turn it back on in **Settings > Explorer** with **Show Home Banner**.
+
+Rather skip the homepage? Turn on **Automatically Open Explorer** in **Settings > Explorer**, and opening livediagram.app while you're signed in comes straight here.
+
+Your first visit looks different. With nothing made yet, Home welcomes you and offers ways to start instead: the search field looks through the templates, **Start Blank** makes an empty diagram at once, and below it sit a blank for every mode and the most popular templates, each one click from a new canvas. If you have used livediagram before and see nothing, **Sign In** brings your canvases back; **Import from** brings in boards from other tools. Once you have a canvas, Home shows your work instead.
+
+Below the greeting, Home is one column: **Jump Back In**, then **Shared With You Recently**, each with its link at the right of its heading.
+
+<Figure caption="Home: the canvases you use most and last, then what was shared with you recently.">
+  <HomeOverview />
+</Figure>
+
+## Jump Back In
+
+**Jump Back In** holds up to sixteen canvases within reach: the **eight you opened most** lately, then the **eight you used last**.
+
+- **Most Used** counts how many times you opened a canvas over the last 14 days, so a canvas you open a lot over a few days rises to the top. A day you only edited or made it counts as one open. A canvas you have not opened in 14 days drops off, so the list stays about what you are working on now.
+- **The last ones** are the canvases you opened, edited or made most recently, newest first.
+- **What you make is in at once**, opened or not: a new canvas, a duplicate, a single imported board, or one an AI tool made for you. An import of several canvases at once is the exception, so a big import never pushes your work aside; those join when you first open one.
+- A canvas is never shown twice: if one of the last ones is also among the most used, it stays with the most used, and the next most recent takes its place.
+
+On a computer or a tablet they sit as cards in two groups: **Most Used** first, with a line under each saying how many times you opened it, then **Recent**, saying when you last used each. Each group is up to two rows of four on a computer. On a phone they share one strip of up to eight you scroll sideways, taking turns, and the strip ends in a **See More** tile.
+
+Each canvas shows a picture of what is drawn on it, with its name underneath; click one to open it. A canvas saved only in this browser wears the **Browser Storage** pill and takes its place like any other, counted in this browser. Canvases in the [Trash](/help/account-and-data/trash/), and ones whose share link has lapsed or whose team you have left, never appear. With nothing yet to show, the section says "The canvases you use most and last will gather here."
+
+Opening a canvas is private: it counts towards your own Jump Back In, and nobody else ever sees that you opened it.
+
+**See More** opens [Recent](/help/explorer/recent/): the 12 canvases you opened most recently, newest first, with the same filters as the rest of the Explorer. Its breadcrumb leads back to Home.
+
+## Shared With You Recently
+
+Under Jump Back In sit the four items most recently [shared with you](/help/explorer/shared-with-you/) through a link. **See All** opens Shared With Me.
+
+## Guests and signing in
+
+Home works without an account, like the rest of livediagram.
+
+**Your work follows you.** Signing up moves what you open, to your new account alongside your canvases, so a week of work as a guest is still there afterwards.
+
+## A canvas's History
+
+The **History** item in a canvas's menu opens everything that has happened to that canvas: created, commented on, shared, filed. History covers the **last 30 days**; anything older is no longer listed.
+
+<Tip>
+  To step back your own recent edits on a canvas, use [Undo](/help/canvas/undo/) in the editor.
+</Tip>
+
+</ArticleLayout>

@@ -114,6 +114,6 @@ export type LibraryHostProps = {
   imports?: ImportHost;
   /** The host's own verbs on an item's menu. */
   itemMenu?: ItemMenuHost;
-  /** History on an item's menu: the item's own Timeline. On by default. */
+  /** History on an item's menu: what happened to the item. On by default. */
   history?: boolean;
 };

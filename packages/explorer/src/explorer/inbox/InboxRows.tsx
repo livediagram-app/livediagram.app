@@ -19,7 +19,7 @@ import type { CardColumn } from '@liveworkspace/index-client';
 import { PictureDisc } from '@liveworkspace/ui';
 import { DAY_MONTH, MEDIUM_DATE_TIME } from '@liveworkspace/ui/date-format';
 import { usePersonPicture } from '../../data/usePeople';
-import { initials } from '../../timeline/whatHappened';
+import { initials } from '../../library/person-name';
 import { useNow } from '../../time';
 import { avatarFill } from '../../ui/avatar-fill';
 import {

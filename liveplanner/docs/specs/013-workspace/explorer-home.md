@@ -1,6 +1,6 @@
 # Explorer Home
 
-**Moved to liveworkspace's index (October 2026).** liveplanner's own Home (Jump Back In with its Within reach set, then What Happened, read from `/api/home`) is gone. `/explorer` and `/explorer/home` render the shared Explorer's Home view: the hero, New (the four plans made most recently in this app, newest first, mine and my teams', made by AI ones included, wearing Made by AI; hidden while there are none: [One Explorer "New, on Home"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#new-on-home)), Jump Back In (Most Used: up to eight items you opened in the last 14 days, the most opened first, then Recent: up to eight of your most recently opened, from every app, four across in two rows on a desktop and one strip of up to eight on a phone, each with a line such as "Opened 12 times" or "Opened 2 hours ago") Shared With You Recently, and What Happened, read from the index.
+**Moved to liveworkspace's index (October 2026).** liveplanner's own Home (Jump Back In with its Within reach set, then What Happened, read from `/api/home`) is gone. `/explorer` and `/explorer/home` render the shared Explorer's Home view: the hero, New (the four plans made most recently in this app, newest first, mine and my teams', made by AI ones included, wearing Made by AI; hidden while there are none: [One Explorer "New, on Home"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#new-on-home)), Jump Back In (Most Used: up to eight items you opened in the last 14 days, the most opened first, then Recent: up to eight of your most recently opened, from every app, four across in two rows on a desktop and one strip of up to eight on a phone, each with a line such as "Opened 12 times" or "Opened 2 hours ago") and Shared With You Recently, read from the index.
 
 ## The hero
 
@@ -50,28 +50,14 @@ Either flip reports `UI / Toggled / HomeBannerOff` or `HomeBannerOn` before the 
 With the banner hidden, Home is drawn like every other Explorer page: the header's search field is drawn on Home too,
 and Home takes the ordinary page header (the title "Home" and its Help link), so it keeps its `h1`.
 
-## What Happened
+## What Happened (retired)
 
-Home's last section is what other people did to the items the person can open, from one page (30 events) of the
-index's [Timeline](timeline.md) (`GET /timeline`, in Home's This app / All filter), read once per visit and filter.
-It keeps others' doings only: never the reader's own, never one nobody did, never a favourite (only its person's).
+Home's What Happened section, what other people did to the items the person could open, is retired with the
+Timeline (November 2026, [History](history.md)). Home ends with Shared With You Recently; what happened to one item
+is its History.
 
-- One group per item per local day, under day headings ("Today", "Yesterday", "Tue, 14 Oct").
-- A group with one person lists each doing as a link that opens the item in its app (a plan in the Trash opens the
-  Trash): an initials avatar (the person glyph when the index has no name), "**Sam Lee** renamed **Budget 2027**",
-  what it changed ("Was “Budget”", "To Launch plans", the share level, "Made by AI"), then where it lives (its space
-  › its folder), the time and, under All, the app's mark.
-- A group with several people is one button: "**Sam Lee and Ana Ruiz** edited and renamed **Budget 2027**", "2
-  updates", dealing out every doing (collapsed each visit, never remembered).
-- **New** marks a doing since the person last looked at the Timeline; reading Home does not mark it seen.
-- **See Timeline** at the heading's end opens the Timeline, once the entries are in.
-- With nothing from anyone, or a failed read, the section is left out. It is the page's last, so nothing moves.
-
-Comments, replies, resolved threads and actions are not Timeline events: they are in the [Inbox](inbox.md), and the
-index's names come only from what an app reports (liveplanner's edits carry none yet, so they read "A teammate").
-
-Telemetry, through the Explorer's `onHome` prop: `Home·Selected` (`WhatHappened`, `SeeTimeline`) and `Home·Opened`
-(`Group`).
+Telemetry, through the Explorer's `onHome` prop: `Home·Loaded·Retry` (a failed read of Home tried again). The What
+Happened events (`Home·Selected·WhatHappened`, `Home·Selected·SeeTimeline`, `Home·Opened·Group`) are no longer sent.
 
 What liveplanner still does is say when a plan is opened: the editor records the open with the index (`POST /items/:id/open`, debounced there to one write a minute) when it loads the plan. The index keeps the time for Recent and counts the open on that day for Most Used (opens over the last 14 days), and Jump Back In reads both in one request.
 

@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS agent_changeset_parts (
 -- changed, filled by the triggers below so no write path can forget it, drained by the room's alarm.
 --   tab:     a tab's comment threads and actions (the Inbox)
 --   summary: the document's listing summary and its last change, for the Explorer
---   edit:    who edited it and when (<person>@<time>, one per person), for the Timeline and Most Used
+--   edit:    who edited it and when (<person>@<time>, one per person), for History and Most Used
 --   images:  the images the document places (the media service's references, the placement grants)
 -- A key written again while a flush is in flight is deleted and inserted again under a new id, so the flush's
 -- delete (by the ids it read) keeps it for the next one. Not INSERT OR REPLACE: inside a trigger, the conflict

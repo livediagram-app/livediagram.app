@@ -47,7 +47,7 @@ describe('explorer host', () => {
 describe('explorer help', () => {
   it('gives each view its article, the Library pages included, and Invites none', async () => {
     const { explorerHelpHref } = await import('./explorer-host');
-    expect(explorerHelpHref({ kind: 'home' })).toBe('/help/explorer/timeline/');
+    expect(explorerHelpHref({ kind: 'home' })).toBe('/help/explorer/home/');
     expect(explorerHelpHref({ kind: 'gallery' })).toBe('/help/explorer/image-gallery/');
     expect(explorerHelpHref({ kind: 'shape-libraries' })).toBe('/help/explorer/shape-libraries/');
     expect(explorerHelpHref({ kind: 'invites' })).toBeUndefined();

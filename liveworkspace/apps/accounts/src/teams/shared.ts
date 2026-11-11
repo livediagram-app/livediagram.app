@@ -2,7 +2,7 @@
 
 import { type SettingsApp, isSettingsApp } from '../settings.ts';
 import { cleanText } from '@liveworkspace/api-kit/typed-text';
-import { type TimelineType, type TimelineEvent, timelineStatement } from '../index-timeline.ts';
+import { type TeamEventType, type TeamEvent, eventStatement } from '../index-events.ts';
 
 // Longer names are cut to this, like account names.
 export const TEAM_NAME_MAX_LENGTH = 80;
@@ -34,7 +34,7 @@ export interface Actor {
   id: string;
   // The account's verified address, lower-cased, or null when it isn't verified.
   email: string | null;
-  // The account's name, for the Timeline's "by …" (an event with none says "a teammate").
+  // The account's name, for the audit log's "by …" (an event with none says "a teammate").
   name?: string | null;
 }
 
@@ -47,23 +47,22 @@ export const fail = (status: number, error: string): Result<never> => ({
   error,
 });
 
-// One team event for the Timeline (index-timeline.ts), queued in the batch that makes its change. `guard`
+// One team event for the audit log (index-events.ts), queued in the batch that makes its change. `guard`
 // holds only when that change was made.
 export function teamEvent(
   db: D1Database,
   event: {
     id: string;
-    type: TimelineType;
+    type: TeamEventType;
     teamId: string;
     teamName: string;
     actor: { id: string | null; name?: string | null } | null;
     at: number;
-    scopes: string[];
     detail?: Record<string, string | null>;
   },
   guard?: { sql: string; args: unknown[] },
 ): D1PreparedStatement {
-  const timeline: TimelineEvent = {
+  const teamEventBody: TeamEvent = {
     id: event.id,
     type: event.type,
     actorId: event.actor?.id ?? null,
@@ -71,9 +70,8 @@ export function teamEvent(
     title: event.teamName,
     detail: { teamId: event.teamId, ...event.detail },
     at: event.at,
-    scopes: event.scopes,
   };
-  return timelineStatement(db, timeline, guard);
+  return eventStatement(db, teamEventBody, guard);
 }
 
 // The member row still in `status`, changed at `now` by the batch before it.
@@ -85,17 +83,6 @@ export const memberGuard = (memberId: string, status: MemberStatus, now: number)
 // A unique index refusing a row (two invitations or joins at once): the one race a team write answers as done. Any
 // other failure (D1 down, a foreign key) is no answer at all and goes on to the request-failure guard.
 export const isUniqueClash = (err: unknown) => /UNIQUE constraint failed/i.test(String(err));
-
-// The people in a team, for an event they must see once it is gone.
-export async function joinedPeople(db: D1Database, teamId: string): Promise<string[]> {
-  const { results } = await db
-    .prepare(
-      `SELECT userId FROM team_member WHERE teamId = ? AND status = 'joined' AND userId IS NOT NULL`,
-    )
-    .bind(teamId)
-    .all<{ userId: string }>();
-  return results.map((r) => r.userId);
-}
 
 // The app an invitation's sender signed up through (migrations/0009_signup_app.sql), one primary-key
 // read beside the member row: its emails are counted under it (email.ts). Null for liveworkspace.app,

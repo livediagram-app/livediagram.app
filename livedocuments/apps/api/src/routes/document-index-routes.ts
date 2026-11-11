@@ -49,8 +49,7 @@ export async function handleDocumentIndexRoutes(ctx: RouteContext): Promise<Resp
   if (client instanceof Response) return client;
   try {
     if (isDelete) {
-      // Taken offline (Offline Mode): the cloud copy goes for good, not to the Trash, and the Timeline says
-      // "Taken Offline" rather than a deletion.
+      // Taken offline (Offline Mode): the cloud copy goes for good, not to the Trash.
       if (readDocumentConversion(request.headers.get(DOCUMENT_CONVERSION_HEADER)) === 'offline') {
         await client.deleteItem(id, { permanent: true, reason: 'offline' });
         return noContent();

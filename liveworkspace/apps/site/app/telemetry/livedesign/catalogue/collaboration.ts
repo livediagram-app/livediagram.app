@@ -1,4 +1,4 @@
-// Working together: live sessions, sharing, discussion, the Timeline and teams (docs/specs/017-telemetry/telemetry.md).
+// Working together: live sessions, sharing, discussion and teams (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../../_shared/metric-series';
@@ -28,27 +28,6 @@ export const FEED_RETRIES = chart(
   'Inbox Retries',
   "The Explorer's Inbox retried after failing to load.",
   { rising: 'bad' },
-);
-
-export const TIMELINE_LOADS = chart(
-  'Timeline',
-  'Loaded',
-  'Timeline Loads',
-  'More of the Timeline loaded, or a failed load retried.',
-);
-
-export const TIMELINE_VIEW_SWITCHED = chart(
-  'Timeline',
-  'Changed',
-  'Timeline View Switched',
-  'The Timeline switched between its list and calendar.',
-);
-
-export const TIMELINE_FILTERED = chart(
-  'Timeline',
-  'Selected',
-  'Timeline Filtered',
-  'The Timeline narrowed to everyone, others, or a kind of event.',
 );
 
 export const COMMENTS_DELETED = chart(
@@ -387,59 +366,6 @@ export const TEAM_ACTIVITY: MetricStack = {
   headline: INVITES_ACCEPTED,
 };
 
-// The Explorer Timeline (docs/specs/013-workspace/timeline.md) and the Explorer's Inbox (docs/specs/013-workspace/inbox.md).
-// Timeline·Opened carries four things by type: two ways of arriving on the
-// feed (Landing, the Explorer's default page, and Nav, a deliberate visit),
-// which is how the landing-page change is measured, and two things done in it
-// (a card or stack menu opened, a stacked run expanded).
-export const TIMELINE_LANDINGS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Landings',
-  'A page load that started on the Timeline.',
-  { types: ['Landing'] },
-);
-
-export const TIMELINE_VISITS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Visits',
-  "The Timeline opened after starting elsewhere: its sidebar row, or Home's See Timeline.",
-  { types: ['Nav'] },
-);
-
-export const TIMELINE_MENUS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Card Menus',
-  'The menu on a Timeline card or stack opened, by its button or a right-click.',
-  { types: ['Menu'] },
-);
-
-export const TIMELINE_STACKS_EXPANDED = chart(
-  'Timeline',
-  'Opened',
-  'Stacks Expanded',
-  'A stacked run of changes on the Timeline opened up to show each one.',
-  { types: ['Stack'] },
-);
-
-export const TIMELINE_CARDS_OPENED = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Cards Opened',
-  'A design opened from its card on the Timeline.',
-  { types: ['Card'] },
-);
-
-export const TIMELINE_ENTRIES_REMOVED = chart(
-  'Timeline',
-  'Removed',
-  'Timeline Entries Removed',
-  'An entry or a whole stack removed from the feed.',
-  { rising: 'neutral' },
-);
-
 export const ACTIVITY_OPENED = chart(
   'Activity',
   'Opened',
@@ -506,16 +432,8 @@ export const HOME_WELCOMES = chart(
 export const HOME_DESIGNS_OPENED = chart(
   'Home',
   'Selected',
-  'Designs Opened from Home',
-  'A design opened from Jump Back In (most used or recent) or What Happened, See More followed, or a start taken from the first-run Home.',
-);
-
-export const HOME_GROUPS_EXPANDED = chart(
-  'Home',
-  'Opened',
-  'Home Summaries Expanded',
-  "A summary of several people's work on one design opened up to every action.",
-  { types: ['Group'] },
+  'Starts Taken from Home',
+  'A start taken from the first-run Home: a blank, a template, all templates, search or sign in.',
 );
 
 export const HOME_LOADS = chart(
@@ -529,32 +447,21 @@ export const HOME_LOADS = chart(
   },
 );
 
-export const TIMELINE_AND_ACTIVITY: MetricStack = {
+export const HOME_AND_ACTIVITY: MetricStack = {
   stack: true,
-  title: 'Timeline & Activity',
-  blurb:
-    "Keeping up with what changed: Explorer Home, the Explorer Timeline and the Explorer's Inbox.",
+  title: 'Home & Activity',
+  blurb: "Keeping up with what changed: Explorer Home and the Explorer's Inbox.",
   members: [
     HOME_LANDINGS,
     HOME_VISITS,
     HOME_WELCOMES,
     HOME_DESIGNS_OPENED,
-    HOME_GROUPS_EXPANDED,
     HOME_LOADS,
-    TIMELINE_LANDINGS,
-    TIMELINE_VISITS,
-    TIMELINE_MENUS,
-    TIMELINE_STACKS_EXPANDED,
-    TIMELINE_CARDS_OPENED,
-    TIMELINE_ENTRIES_REMOVED,
     ACTIVITY_OPENED,
     ACTIVITY_THREADS,
     ACTIVITY_FILTERS,
     ACTIVITY_REPLIES,
     ACTIVITY_RESOLVED,
-    TIMELINE_LOADS,
-    TIMELINE_VIEW_SWITCHED,
-    TIMELINE_FILTERED,
     FEED_RETRIES,
   ],
 };

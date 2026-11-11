@@ -4,7 +4,7 @@ import {
 } from '@liveworkspace/help-site/art/scenes/search-panel';
 
 // Search Panel: the shared scene (docs/specs/018-help/help-pages.md "Category art"). "roadmap" finds a design, a tab
-// of its screens, a sticky note on a wireframe and the Timeline guide.
+// of its screens, a sticky note on a wireframe and the Timeline Rail guide.
 export function SearchPanelArt() {
   return (
     <Scene
@@ -24,7 +24,7 @@ export function SearchPanelArt() {
         },
         {
           heading: 'HELP',
-          rows: [{ glyph: SEARCH_GLYPHS.help, title: 'Timeline', where: 'Help Centre' }],
+          rows: [{ glyph: SEARCH_GLYPHS.help, title: 'Timeline Rail', where: 'Help Centre' }],
         },
       ]}
     />
