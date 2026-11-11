@@ -58,7 +58,7 @@ give every card with its fields and every thread with its comments.
 From the Work Item cards in **Under Review**, work out each card's state from its question threads:
 
 - **Waiting:** an open question thread on it ends with a comment marked `ai: true` (nobody has replied since
-  the loop asked). Skip it this pass.
+  the loop asked). Don't review it again this pass, but check its `needs-owner` flag (see "Flag for the owner").
 - **Answered:** it has question threads, and none is waiting: each was resolved, or a
   person replied after the loop's last comment. Review it again (step 3) with the answers in hand.
 - **New:** no question threads. Review it (step 3).
@@ -145,11 +145,38 @@ vocabulary: the labels already on its Work Items (`list_items` shows each card's
 or area the work reaches. Label from where the work really lives in the code (step 3.2), not the App field.
 
 - Only add. Never remove or rename a label a person set, even one you think is wrong (say so in the report).
+  The one label this loop removes is its own `needs-owner` flag (see "Flag for the owner").
 - `set` replaces the whole list, so write the card's existing labels plus the new ones:
   `{"op": "set", "item": "#12", "fields": {"labels": ["liveplanner", "dashboards"]}}`.
 - Add a label the plan doesn't use yet only when no existing one fits a product or area the card clearly
   reaches, and keep it lowercase and short, like the others. Name new labels in the report.
 - Label cards in every state you review (New and Answered), including ones you move to Reviewed.
+
+### Flag for the owner
+
+The owner asked (2026-11-11) for the cards that need them to stand out on the board. Mark each one with the
+label **`needs-owner`**, so it shows as a chip on the card and the board can be filtered by it. A card needs the
+owner when one of its open question threads, or the card itself, involves:
+
+- **Reversing a deliberate decision:** a spec rule, a commit from the last month, or a written non-goal.
+- **A bug that is probably not a bug:** the code shows the described behaviour is by design, or main doesn't
+  do what the card says, so a repro is needed.
+- **Security, privacy, data, sharing roles or billing:** auth, tokens, who can see what, deletes, exports,
+  costs.
+- **A step only the owner can take:** a real device, their accounts, dashboards or secrets, a product call
+  such as cancelling a card.
+- **A much bigger cost than the card suggests:** many apps, a new data model or a migration.
+
+An ordinary scope question with a clear recommendation doesn't get the flag. Every open thread is already in
+the Inbox, and the flag is for the few that need real thought.
+
+- Add it in the same `set` as the card's other labels, keeping every existing label.
+- Remove it (it is the one label this loop may remove) when nothing flagged is left: the card moves to Reviewed,
+  its flagged threads are answered and resolved, or its open question threads are moot. Remove it from a card in
+  any column once no question of the loop's is open on it.
+- **Waiting** cards are not reviewed again, but each pass still checks them: a Waiting card whose open question
+  matches the list above and lacks the flag gets it, so older questions are flagged too.
+- Never add or remove the flag on a card that has no question thread from this loop.
 
 ### What counts as important
 
@@ -224,7 +251,8 @@ threads (open and resolved), so you never ask the same question twice.
 - Only ever do these: move Work Items from **Under Review** to **Reviewed**; start question threads on Under
   Review Work Items, reply in them and resolve them once their answer is acted on (or, on a card in any column,
   once moot, as above); correct a Work Item's
-  **Type** when it's wrong or missing; and add its missing **labels**. Never edit a card's title, description or other fields. Never move
+  **Type** when it's wrong or missing; add its missing **labels**; and add or remove the **`needs-owner`**
+  label as "Flag for the owner" says. Never edit a card's title, description or other fields. Never move
   cards anywhere else. Never reply to, resolve, edit or delete a thread a person started, or anyone's comment
   but the loop's own. Never touch cards in any other column or on any other board.
 - Never write code, branches or PRs from this loop. It only reviews.
@@ -242,5 +270,7 @@ End each pass with a short table, plus one line on anything that went wrong:
 | #16 "Add to Folder" label            | Low      | Skipped, waiting on 1 thread              |
 | #5 Simplified dashboard board        | (unset)  | Type Bug → Feature; +liveplanner; 1 asked |
 
-After the table, list the cards worth the board owner's attention first (a reversed decision, a bug that's probably
-not a bug, a security change), one line each. When nothing is New or Answered, say so in one line.
+Mark flagged cards in the Outcome column (`needs-owner`, or `needs-owner removed`). After the table, list every
+card carrying `needs-owner` first, flagged this pass or earlier, one line each saying why (a reversed decision, a bug
+that's probably not a bug, a security change, a step only the owner can take). When nothing is New or Answered,
+say so in one line.
