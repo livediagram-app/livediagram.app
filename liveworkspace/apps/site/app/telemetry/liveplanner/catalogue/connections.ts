@@ -86,6 +86,12 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Change Threads',
     'Starting, replying to, resolving or reopening comment threads on Plan cards.',
   ),
+  mcpTool('ListRules', 'List Rules', 'Reading a plan’s Automations rules and their Audit Trail.'),
+  mcpTool(
+    'ChangeRules',
+    'Change Rules',
+    'Adding, changing, turning on or off, deleting, testing or running Automations rules.',
+  ),
   mcpTool(
     'AddBoard',
     'Add Board',

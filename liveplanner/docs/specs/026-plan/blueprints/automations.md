@@ -472,26 +472,27 @@ index.ts           re-exports, from packages/agent-verbs/src/index.ts
 
 ### The MCP (`apps/mcp/src/rule-tools.ts`, `packages/agent-verbs/src/mcp/rule-schema.ts`)
 
-- `mcpListRules` (read) and `mcpChangeRules` (destructive) in `verbs/mcp-tools.ts`, registered by
-  `registerRuleTools(server, env)` from `tools.ts`, after the thread tools in `MCP_TOOL_VERBS`.
+- `mcpListRules` (read) and `mcpChangeRules` (destructive) in `packages/agent-verbs/src/verbs/mcp-tools.ts`,
+  registered by `registerRuleTools(server, env)` from `apps/mcp/src/tools.ts`, after `change_card_types` in
+  `MCP_TOOL_VERBS` (the order `verb-parity.test` holds the registered tools to).
 - `list_rules` input `{ projectId, rule?, runs?, limit? }`; output `{ rules[], rule?, runs?, runsToday, runsPerDay,
 count, url }`. `change_rules` input `{ projectId, changes[1..20] }`; output `{ applied[], runs?, url }`.
 - The body's shape is a loose zod object (`name`, `trigger`, `conditions`, `steps`, `chain`, `timeZone`), its
-  `.describe()` texts the whole format (`RULE_BODY_FORMAT`); the api's `readRuleBody` is the one check, so the tool
+  `.describe()` texts the whole format (`RULE_TRIGGER_FORMAT`, `RULE_CONDITIONS_FORMAT`, `RULE_STEPS_FORMAT`); the api's `readRuleBody` is the one check, so the tool
   and the api never disagree on what reads.
 
 ### The CLI (`packages/agent-verbs/src/verbs/rule.ts`)
 
 `rule.ls`, `rule.get`, `rule.add`, `rule.set`, `rule.on`, `rule.off`, `rule.rm`, `rule.duplicate`, `rule.test`,
-`rule.run`, `rule.log`, in `VERBS` after the thread verbs, the resource `rule` ("Automation rules: list, change,
+`rule.run`, `rule.log`, in `VERBS` after the thread verbs, the resource `rule` ("Automations rules: list, change,
 test and run them") in `RESOURCES`; `add` and `set` read JSON from a file or `-` (stdin) as `type apply` does. The
 CLI's `COMMAND_OF_TOOL` maps `list_rules` → `rule ls`, `change_rules` → `rule set`.
 
 ### Telemetry
 
 `Mcp·Used·ListRules`, `Mcp·Used·ChangeRules` from `registerTool`; `Cli·Used·Rule<Verb>` from the CLI's counted
-verbs. The liveworkspace site's liveplanner catalogue lists them (`catalogue/connections.ts` MCP_TOOL_METRICS,
-`cli-commands.ts`).
+verbs. The liveworkspace site's liveplanner catalogue lists them (`liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/connections.ts`
+MCP_TOOL_METRICS, `liveworkspace/apps/site/app/telemetry/liveplanner/cli-commands.ts`).
 
 ### Tests
 
@@ -499,7 +500,10 @@ verbs. The liveworkspace site's liveplanner catalogue lists them (`catalogue/con
   Viewer, guest, read-only token, Participant's token, workbench session, link visitor) against every route; a
   token's stamps carry `ai`; a token's Run Rule is an agent's to Who Did It; an outgoing action saved by a token
   whose account is an Editor of the whole plan, refused for one whose account is not.
-- agent-verbs: each module to the package's thresholds; `rule-listing.perf.test.ts` lists 50 rules within a CPU budget.
+- agent-verbs: each module to the package's thresholds (100%); `rule-listing.perf.test.ts` lists 50 rules within a
+  CPU budget. **Measured**: 50 full rules (10 conditions and 20 actions each) list in 1.4 to 1.8 ms of CPU on an
+  M-series Mac (the budget 20 ms), and naming a full rule's body takes 0.03 to 0.11 ms (the budget 5 ms). A call adds
+  two api reads in parallel, never one a rule.
 - mcp: the tool lists, annotations and telemetry suites name the two tools; a rule tools test drives both through
   a fake api.
 - cli: the catalogue's examples route; a verb test per command through the fake api.

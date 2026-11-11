@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Automations',
   description:
-    'How to make automation rules: triggers and times, conditions, actions, related cards, Slack and webhook posts, templates, testing, the Audit Trail and limits.',
+    'How to make automation rules: triggers, conditions, actions, related cards, Slack and webhook posts, testing, the Audit Trail, limits, AI tools and the CLI.',
   path: '/help/plan/automations/',
 });
 
@@ -98,8 +98,17 @@ A rule's changes don't set off other rules, so two rules can never keep changing
 - A rule that fails 10 times in a row turns itself off and is marked **Paused** with the reason. Fix what it names, then press **Resume**. When a webhook stopped it, **Fix Webhook** opens the plan's webhooks.
 - A rule that names something the plan no longer has (a column, a card type, a field, a person) says **Needs Attention** and what is missing.
 
+## Agents and the CLI
+
+An AI tool connected through the [MCP server](/help/account-and-data/connect-ai-mcp/), or a script with the [command line](/help/developers/cli/), can read and work your rules as you would:
+
+- **List rules** (`list_rules`, or `liveplanner rule ls`) reads each rule's sentence, whether it is on, paused or needs attention, its last run, its runs this week and its next run. Ask for one rule by its name to get it whole, or for the Audit Trail (`liveplanner rule log`) to see what recent runs did.
+- **Change rules** (`change_rules`) adds, changes, turns on and off, copies and deletes rules, tests one on a card and runs a Run from a Card rule. On the command line those are `rule add`, `rule set`, `rule on`, `rule off`, `rule duplicate`, `rule rm`, `rule test` and `rule run`, a rule written as JSON in a file.
+- The AI names columns, card types, fields and people the way your board shows them ("Done", "Bug", "Ana Costa"). A rule it saves says **Edited by** you, marked **(Agent)**.
+- It reaches your rules only when you are an Editor of the whole plan, as you would. A read-only connection can list rules and the Audit Trail but never change, test or run them.
+
 ## Who Can
 
-Only an Editor of the whole plan makes, changes, turns on or off, tests and runs rules. Everyone's changes, a Participant's included, can start them. Rules run on our servers, even when nobody has the plan open, so a plan in [Browser Storage](/help/privacy-and-security/offline-mode/) has none: its **Automations** button says so and offers **Sync Plan**, as **Share** does; once it is synced, Automations opens. Rules are also an account's work: if you aren't signed in, **Automations** asks you to sign in first, then opens on your rules. Rules are copied when you duplicate a plan.
+Only an Editor of the whole plan makes, changes, turns on or off, tests and runs rules, in the editor or through an AI tool or the command line acting for them. Everyone's changes, a Participant's included, can start them. Rules run on our servers, even when nobody has the plan open, so a plan in [Browser Storage](/help/privacy-and-security/offline-mode/) has none: its **Automations** button says so and offers **Sync Plan**, as **Share** does; once it is synced, Automations opens. Rules are also an account's work: if you aren't signed in, **Automations** asks you to sign in first, then opens on your rules. Rules are copied when you duplicate a plan.
 
 </ArticleLayout>
