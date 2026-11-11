@@ -56,7 +56,7 @@ import { useLabelTextAnimation } from '@/components/canvas/useTextAnimation';
 import { AnimationLayer } from '@liveworkspace/workbench/components/canvas/AnimationLayer';
 import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
-import { clearingInset } from '@/components/canvas/InsetContent';
+import { clearingInset } from '@liveworkspace/workbench/components/canvas/InsetContent';
 import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';

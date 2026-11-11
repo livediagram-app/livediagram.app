@@ -26,7 +26,7 @@ The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`
 - **Node:** `>=22` (Wrangler 4 requires it). The root workflows pin Node 22.
 - **pnpm:** `9.15.0`, one workspace and lockfile at the monorepo root, through `pnpm/action-setup` in the workflows.
 - **Wrangler:** `^4.148.0` across the workspaces.
-- **Asset size:** Workers Static Assets refuses any file over 25 MiB, and only at deploy. The editor's `build` ends with `scripts/asset-size-gate.mjs`, which fails the build on any file in `out/` over the limit, so CI catches it first. `@huggingface/transformers` stays on 3.x for this reason: 4.3.0 ships a 25.6 MiB onnxruntime wasm, and Dependabot ignores its majors.
+- **Asset size:** Workers Static Assets refuses any file over 25 MiB, and only at deploy. The editor's `build` ends with `asset-size-gate` (@liveworkspace/next-config), which fails the build on any file in `out/` over the limit, so CI catches it first. `@huggingface/transformers` stays on 3.x for this reason: 4.3.0 ships a 25.6 MiB onnxruntime wasm, and Dependabot ignores its majors.
 
 ## CI
 

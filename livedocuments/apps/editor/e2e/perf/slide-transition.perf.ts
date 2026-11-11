@@ -1,9 +1,9 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { firefox, webkit, type Browser, type CDPSession, type Page } from '@playwright/test';
 import { adoptGuest, expect, mintGuest, ownerHeaders, seedDocumentItem, test } from '../fixtures';
-import { benchmarkInPage, calibratedThrottle } from './calibrate';
+import { benchmarkInPage, calibratedThrottle } from '@liveworkspace/e2e-kit/perf/calibrate';
 import { buildReferenceBoard } from './reference-board';
-import { mainThreadTasks, type TraceEvent } from './trace-tasks';
+import { mainThreadTasks, type TraceEvent } from '@liveworkspace/e2e-kit/perf/trace-tasks';
 
 // The slide-transition probe (docs/specs/012-collaboration/presentation-mode.md "Motion"): a deck of small
 // (1-element) and large (100-element) slides, moved through with Slide and Fade, the CPU slowed to the

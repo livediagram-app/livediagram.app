@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
-import { paintedBaseline } from './optical-snap';
+import { paintedBaseline } from '@liveworkspace/e2e-kit/optical-snap';
 
 // The snap guard (docs/specs/004-interface-design/optical-alignment.md, "Guards"): the ink audit takes
 // the baseline snap a shape inherits out of its caps readings, which is only right while the browser

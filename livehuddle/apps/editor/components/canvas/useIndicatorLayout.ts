@@ -17,12 +17,10 @@ import {
 import { useElementIndicatorStyle } from '@/components/canvas/ElementIndicatorStyleContext';
 import type { ElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';
 import { clusterSize, type IndicatorForm, type IndicatorItem } from './indicator-items';
+import type { ContentInset } from '@liveworkspace/workbench/components/canvas/InsetContent';
 
 // What the cluster needs to know about the content: everything contentBox reads but the size.
 type ContentLayout = Omit<Parameters<typeof contentBox>[0], 'width' | 'height'>;
-
-// How far the content area pulls in from the element's top and bottom.
-export type ContentInset = { top: number; bottom: number };
 
 export type IndicatorLayout = {
   form: IndicatorForm;

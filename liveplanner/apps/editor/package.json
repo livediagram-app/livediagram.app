@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node ../../../packages/next-config/scripts/next-dev.mjs --port 3202",
     "dev:webpack": "node ../../../packages/next-config/scripts/next-dev.mjs --port 3202 --webpack",
-    "build": "next build && node scripts/asset-size-gate.mjs out",
+    "build": "next build && asset-size-gate out",
     "build:signed-in": "node scripts/build-signed-in.mjs",
     "lint": "oxlint",
     "test": "vitest run",
@@ -57,6 +57,7 @@
   },
   "devDependencies": {
     "@liveplanner/tailwind-config": "workspace:*",
+    "@liveworkspace/e2e-kit": "workspace:*",
     "@liveworkspace/next-config": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/source-ast": "workspace:*",

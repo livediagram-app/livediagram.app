@@ -55,7 +55,7 @@ import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGest
 import { useElementPopIn } from '@/components/canvas/useElementPopIn';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
-import { clearingInset } from '@/components/canvas/InsetContent';
+import { clearingInset } from '@liveworkspace/workbench/components/canvas/InsetContent';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { isPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through';

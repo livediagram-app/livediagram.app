@@ -6,7 +6,7 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
 import { createRevealStore, type RevealStore } from '@/lib/changeset-reveals';
-import { admitChangesetOp, type ChangesetSeen } from './changeset-seen';
+import { admitChangesetOp, type ChangesetSeen } from '@liveworkspace/workbench/lib/changeset-seen';
 import {
   changesetToastCopy,
   coalesceChangesetToast,

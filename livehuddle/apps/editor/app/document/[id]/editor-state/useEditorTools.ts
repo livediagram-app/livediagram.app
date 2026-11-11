@@ -1,7 +1,7 @@
 'use client';
 
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
-import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
+import { useFormatConfig } from '@liveworkspace/workbench/hooks/canvas/useFormatConfig';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useFormatTool } from '../useFormatTool';

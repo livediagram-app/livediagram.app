@@ -33,3 +33,9 @@ and takes the port (`corepack pnpm --filter <app> dev -- --force`). `--webpack` 
 
 `typescriptConfig()` keeps `next build`'s type check unless `BUILD_SKIP_TYPECHECK=1`, which only the
 E2E Smoke jobs set: CI's required Checks job already type-checks every app with `tsc --noEmit`.
+
+## The asset size gate
+
+Workers Static Assets refuses any file over 25 MiB, and only at deploy. Each editor's `build` ends with
+`asset-size-gate out` (this package's bin, `asset-size-gate.js`), which fails the build on any file in
+`out/` over the limit and names it, so CI catches it first.
