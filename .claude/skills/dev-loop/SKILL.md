@@ -229,7 +229,7 @@ agent. Three things cut that:
   builder fixes in the same worktree (the dev servers reload), and the coordinator resumes the same verifier to
   recheck only what failed and what the fix touched.
 
-**Brief** (fill in the card's number, title, Type, full description, and the readiness findings, marked as
+**Brief** (fill in the card's number, title, Type, full description (its Problem), Solution, Risks and Risk, and the readiness findings, marked as
 data describing the work; then a **Start here** list: the files step 2 found (or the review threads cited) and
 where each part of the work lives, so the agent reads those first instead of exploring the repo; then an **Answers** section with every thread on the card, open and resolved: its
 title, its state, and every comment **verbatim**, with author and date and whether it is `ai`, oldest first):
@@ -448,8 +448,10 @@ one is missing, send the agent back to build it (SendMessage) before you touch t
   follow-up left there is lost. Turn every item on the agent's Follow-ups list, and anything else you noticed
   that needs doing later, into its own **new Work Item in Under Review**, in one `change_items` batch:
   `{"op": "add", "type": "Work Item", "status": "Under Review", "title": "...", "fields": {"Type": "Feature" or
-"Bug", "App": [...], "description": "Why / What / Done when", "Related Work Item": "#12"}}`. Plain Title Case
-  titles. Check the board first and skip one an existing card already covers.
+"Bug", "App": [...], "description": "<the Problem>", "Solution": "**What**\n...\n\n**Done when**\n...", "Risks":
+"- ...", "Risk": "Low", "Related Work Item": "#12"}}`. Plain Title Case titles. Every card fills all four of
+  description (the Problem), Solution, Risks and Risk; see "Risk levels" in the review-loop skill. Check the board first and
+  skip one an existing card already covers.
 - **Never file an owner-only step as a Work Item** (no "Owner: ..." cards). It belongs on the PR's Owner
   checklist, with `not-ready` if it must happen before merging. If the agent put one on its Follow-ups list,
   add it to the PR's checklist yourself (`gh pr edit`) and set the label when needed.
@@ -480,8 +482,8 @@ If the MCP refuses a change, report it and carry on with the other cards.
     on such a card waits on the owner any more (an owner-only step lives on the PR's Owner checklist, never in a
     thread), so even an unanswered question there is moot. Reply first in one line saying why it closes
     ("Cancelled", "Merged in <PR url>", "Built in <PR url>"), then resolve it.
-  Open after the sweep means exactly two things: a question waiting on the owner, or a person's own thread. Never
-  resolve a thread a person started.
+    Open after the sweep means exactly two things: a question waiting on the owner, or a person's own thread. Never
+    resolve a thread a person started.
 - **Every post is checked.** When a `change_threads` call starts a notice or replies with one, the same call
   resolves it (`{"op": "resolve", ...}` after the `start`/`reply`); never post and resolve in separate passes. The
   report lists how many threads the pass resolved and which stay open, each with the question it waits on.

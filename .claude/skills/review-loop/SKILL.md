@@ -131,6 +131,10 @@ For each card, in order:
    - **No issues or important questions:** move it to **Reviewed**:
      `change_items` → `{"op": "move", "item": "#12", "status": "Reviewed"}`.
    - **Labels missing:** add them in the same batch (see "Labels"). Like a Type fix, this never holds a card back.
+   - **Problem, Solution, Risks or Risk missing:** fill only the empty ones in the same batch, from the card and
+     what step 3 found: description is the Problem; Solution is `**What**` then `**Done when**`; Risks is 1 to 3
+     concrete bullets; Risk is a level from "Risk levels" below. Never overwrite one a person filled in. Like a
+     Type fix, this never holds a card back.
    - **Issues or important questions:** leave it in Under Review. Start one thread per question (step 4).
    - **An answer that can't be acted on** (unclear, contradicting another answer, or asking for something the
      code shows can't work): reply in **that** thread saying what's missing, rather than starting a new one.
@@ -150,6 +154,19 @@ or area the work reaches. Label from where the work really lives in the code (st
 - Add a label the plan doesn't use yet only when no existing one fits a product or area the card clearly
   reaches, and keep it lowercase and short, like the others. Name new labels in the report.
 - Label cards in every state you review (New and Answered), including ones you move to Reviewed.
+
+### Risk levels
+
+Every Work Item carries a **Risk**. Calibrate it: most cards are Low or Medium, and flagging everything High
+hides the ones that matter.
+
+- **Critical:** the owner must look before it ships: production user data or a remote migration that could lose
+  or corrupt it, auth, sessions, permissions or share-role security, privacy, legal or billing, secrets,
+  irreversible deletes, or a change that could take every product down.
+- **High:** shared platform code with real breakage potential (rooms, outbox and sync, accounts, the index,
+  schema steps), hot-path performance, or wide user-visible changes across products.
+- **Medium:** a real behaviour change in one product, or a modest change in a shared package.
+- **Low:** tests, docs and help, tooling, templates, copy, or contained UI polish in one app.
 
 ### What counts as important
 
@@ -224,7 +241,8 @@ threads (open and resolved), so you never ask the same question twice.
 - Only ever do these: move Work Items from **Under Review** to **Reviewed**; start question threads on Under
   Review Work Items, reply in them and resolve them once their answer is acted on (or, on a card in any column,
   once moot, as above); correct a Work Item's
-  **Type** when it's wrong or missing; and add its missing **labels**. Never edit a card's title, description or other fields. Never move
+  **Type** when it's wrong or missing; add its missing **labels**; and fill its empty **Solution**, **Risks** and
+  **Risk** (and an empty description). Never edit a card's title or change a field someone already filled. Never move
   cards anywhere else. Never reply to, resolve, edit or delete a thread a person started, or anyone's comment
   but the loop's own. Never touch cards in any other column or on any other board.
 - Never write code, branches or PRs from this loop. It only reviews.
