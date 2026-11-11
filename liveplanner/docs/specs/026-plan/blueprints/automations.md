@@ -214,9 +214,6 @@ type AutomationTrigger = … // Phase 1's, plus:
       dayOfMonth?: number; at: string } // month: 1 to 31; at: 'HH:MM', minutes 00/15/30/45
   | { kind: 'due_in'; days: number; at: string } // 1 to 30
   | { kind: 'overdue'; at: string };
-// Every trigger (Phase 1's included) gains `types?: string[]`: card type ids, none or empty meaning every type.
-// Matched in matches.ts before anything is queued (so another type's card costs no run row), in Run Rule's list
-// and in the time scan; outline.ts flags a gone type as Needs Attention.
 type AutomationAssignee = … | { rotate: string[] }; // 2 to 10 person ids
 type AutomationOutgoing = { kind: 'notify'; via: 'webhook' | 'slack' | 'teams'; webhook: string; text: string };
 type AutomationRelated =
@@ -283,8 +280,6 @@ ALTER TABLE automation_rules ADD COLUMN turn INTEGER NOT NULL DEFAULT 0;        
 
 ### Editor
 
-- Trigger panel: a **Card Types** chip row (the plan's types, ChipToggles, hint "None picked: every card type.")
-  under every trigger's own fields; the sentence reads "When a Bug or Task card moves to Done".
 - Trigger panel: Scheduled (Every: Day, Weekday, Week with day chips, Month with a day; At: a quarter-hour select),
   Due In (days), Overdue; the time zone shown ("Times are Europe/London"). A time rule's row shows "Next: Mon 9:00".
 - **+ For Related Cards** adds a branch card with its inset steps and its own + Add Condition / + Add Action.
