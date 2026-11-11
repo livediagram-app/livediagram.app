@@ -326,6 +326,27 @@ jobs:
           pattern: coverage-*-editor-*
           path: coverage-editors
 
+      # The download lists this run's artifacts once, and the listing can lag an upload: run 42826405532 missed a
+      # shard finalised 13 s before it listed them, and failed on a slice. Each shard the plan reached and the
+      # folder lacks is fetched again by name, up to six times 10 s apart (docs/ci.md "Editor coverage floors").
+      - name: Fetch any shard the listing missed
+        env:
+          EDITORS: ${{ needs.plan.outputs.editors }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p coverage-editors
+          for attempt in 1 2 3 4 5 6; do
+            missing="$(node .github/scripts/coverage-floors.mjs --missing coverage-editors)"
+            if [ -z "${missing}" ]; then exit 0; fi
+            echo "Attempt ${attempt}, not here yet: $(echo ${missing})"
+            sleep 10
+            for name in ${missing}; do
+              rm -rf "coverage-editors/${name}"
+              gh run download "${GITHUB_RUN_ID}" --repo "${GITHUB_REPOSITORY}" --name "${name}" \
+                --dir "coverage-editors/${name}" || true
+            done
+          done
+
       - name: Check the floors
         env:
           EDITORS: ${{ needs.plan.outputs.editors }}

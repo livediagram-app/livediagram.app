@@ -5,6 +5,11 @@ export const BUDGET_ISSUE_TITLE = 'Canvas performance budget: livehuddle';
 
 type BudgetIssueAction = 'open' | 'comment' | 'close' | 'none';
 
+// The most commits a report lists (git log's order: the latest first), then how many more. Every night from
+// 2026-10-16 listed all 2,219 since the last green one, 190 KB against GitHub's 65,536-character body, and
+// the 422 failed the run.
+export const MAX_LISTED_COMMITS = 30;
+
 // Only a run on main reports; a branch measured by hand writes its job summary and nothing else.
 export function budgetIssueAction(run: {
   misses: number;
@@ -29,8 +34,16 @@ export function budgetIssueComment(report: {
     report.action === 'close'
       ? `Back within budget at ${report.sha}.`
       : `${report.misses} of ${report.rows} rows over budget at ${report.sha}.`;
+  const listed = report.commits.slice(0, MAX_LISTED_COMMITS);
+  const more = report.commits.length - listed.length;
   const commits = report.commits.length
-    ? ['', 'Commits since the previous run:', '', ...report.commits.map((c) => `- ${c}`)]
+    ? [
+        '',
+        'Commits since the previous run:',
+        '',
+        ...listed.map((c) => `- ${c}`),
+        ...(more > 0 ? ['', `And ${more} more.`] : []),
+      ]
     : [];
   return [
     head,

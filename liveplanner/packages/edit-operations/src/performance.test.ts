@@ -6,7 +6,7 @@
 // Four times the elements, or four times the operations, should cost about four times as much; a
 // quadratic step would cost sixteen.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuGrowthRatio, cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element, Tab } from '@liveplanner/project';
 import { applyEditOperations } from './apply';
 import { newView } from './fixtures/sprint-dashboard';
@@ -19,7 +19,6 @@ const RATIO_CEILING = cpuRatioCeiling(8);
 // The smaller tab of the per-element growth checks: 1,200 against 4,800, not 2,400 against 9,600, so the larger keeps
 // the collector out of the timing (docs/ci.md "Speed budgets"); measured at 4.3 to 5.1 for four times the tab.
 const SMALL_TAB = 1200;
-const RUNS = 3;
 // Fresh states a run of the noteTarget check fills, so it times a millisecond or more, not timer noise.
 const NOTE_PASSES = 20;
 // Sized to time tens of milliseconds an apply; coverage on a CI runner makes that seconds.
@@ -59,53 +58,52 @@ function changesetOf(rounds: number): EditOperation[] {
   return parsed.operations;
 }
 
-function fastestApply(tab: Tab, operations: readonly EditOperation[]): number {
-  let fastest = Infinity;
-  for (let run = 0; run < RUNS; run++) {
-    let outcome: ReturnType<typeof applyEditOperations> | undefined;
-    fastest = Math.min(
-      fastest,
-      cpuMsOf(() => (outcome = applyEditOperations(tab, operations))),
-    );
-    expect(outcome).not.toHaveProperty('errors');
-  }
-  return fastest;
+// One apply's CPU time: a sample for cpuGrowthRatio, which warms each size and times the two in turns.
+function applyMs(tab: Tab, operations: readonly EditOperation[]): number {
+  let outcome: ReturnType<typeof applyEditOperations> | undefined;
+  const ms = cpuMsOf(() => (outcome = applyEditOperations(tab, operations)));
+  expect(outcome).not.toHaveProperty('errors');
+  return ms;
+}
+
+// The growth from `small` to `large` (each one sample's CPU time), held under the ceiling.
+function expectLinear(small: () => number, large: () => number): void {
+  expect(cpuGrowthRatio(small, large, { ceiling: RATIO_CEILING })).toBeLessThan(RATIO_CEILING);
 }
 
 describe('performance', () => {
   // Noting each resolved target once searched the targets so far (`includes`): quadratic in a `set … all`.
   it('notes targets in time linear in their number', { timeout: TIMEOUT_MS }, () => {
     // One pass over 1,200 targets takes a fraction of a millisecond, so timer noise alone read 8.5 against 8 on CI: each
-    // run notes the whole tab into NOTE_PASSES fresh states (made outside the timing), a millisecond or more.
-    const fastest = (tab: Tab) => {
-      let best = Infinity;
-      for (let run = 0; run < RUNS; run++) {
-        const states = Array.from({ length: NOTE_PASSES }, () => createState(tab, {}, () => {}));
-        best = Math.min(
-          best,
-          cpuMsOf(() => {
-            for (const state of states) for (const el of tab.elements) noteTarget(state, el.id);
-          }),
-        );
-      }
-      return best;
+    // sample notes the whole tab into NOTE_PASSES fresh states (made outside the timing), a millisecond or more.
+    // Timed one tab after the other, best of three each, it still read 8.86 on CI (2026-11-11): cpuGrowthRatio times
+    // them in turns after a warm-up, and samples again while a round reads over the ceiling.
+    const sample = (tab: Tab) => () => {
+      const states = Array.from({ length: NOTE_PASSES }, () => createState(tab, {}, () => {}));
+      return cpuMsOf(() => {
+        for (const state of states) for (const el of tab.elements) noteTarget(state, el.id);
+      });
     };
-    const small = fastest(tabOf(SMALL_TAB));
-    const large = fastest(tabOf(SMALL_TAB * GROWTH));
-    expect(large / small).toBeLessThan(RATIO_CEILING);
+    expectLinear(sample(tabOf(SMALL_TAB)), sample(tabOf(SMALL_TAB * GROWTH)));
   });
 
   it('grows about linearly with the tab', { timeout: TIMEOUT_MS }, () => {
     const operations = changesetOf(10);
-    const small = fastestApply(tabOf(100), operations);
-    const large = fastestApply(tabOf(100 * GROWTH), operations);
-    expect(large / small).toBeLessThan(RATIO_CEILING);
+    const small = tabOf(100);
+    const large = tabOf(100 * GROWTH);
+    expectLinear(
+      () => applyMs(small, operations),
+      () => applyMs(large, operations),
+    );
   });
 
   it('grows about linearly with the changeset', { timeout: TIMEOUT_MS }, () => {
     const tab = tabOf(400);
-    const small = fastestApply(tab, changesetOf(5));
-    const large = fastestApply(tab, changesetOf(5 * GROWTH));
-    expect(large / small).toBeLessThan(RATIO_CEILING);
+    const small = changesetOf(5);
+    const large = changesetOf(5 * GROWTH);
+    expectLinear(
+      () => applyMs(tab, small),
+      () => applyMs(tab, large),
+    );
   });
 });

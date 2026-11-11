@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { BUDGET_ISSUE_TITLE, budgetIssueAction, budgetIssueComment } from './budget-report';
+import {
+  BUDGET_ISSUE_TITLE,
+  MAX_LISTED_COMMITS,
+  budgetIssueAction,
+  budgetIssueComment,
+} from './budget-report';
 
 // docs/specs/008-canvas/canvas-performance.md "Measuring": a failing run opens one issue or comments
 // on it; the first all-pass run closes it.
@@ -39,6 +44,28 @@ describe('budgetIssueComment', () => {
     expect(body).toContain('| a |');
     expect(body).toContain('- abc1234 Faster arrows');
     expect(body).toContain('https://github.com/o/r/actions/runs/1');
+  });
+
+  // 2,219 commits since the last green night made a 190 KB body, and GitHub refuses one over 65,536 characters.
+  it('lists the latest commits, then how many more, so a long gap stays postable', () => {
+    const commits = Array.from(
+      { length: 2219 },
+      (_, i) => `${String(i).padStart(10, '0')} ${'x'.repeat(70)}`,
+    );
+    const body = budgetIssueComment({
+      action: 'comment',
+      table: '| a |',
+      misses: 3,
+      rows: 38,
+      sha: 'abc1234',
+      commits,
+      runUrl: 'u',
+    });
+    expect(body).toContain(`- ${commits[0]}`);
+    expect(body).toContain(`- ${commits[MAX_LISTED_COMMITS - 1]}`);
+    expect(body).not.toContain(`- ${commits[MAX_LISTED_COMMITS]}`);
+    expect(body).toContain(`And ${2219 - MAX_LISTED_COMMITS} more.`);
+    expect(body.length).toBeLessThan(65_536);
   });
 
   it('says so when the budget holds again', () => {
