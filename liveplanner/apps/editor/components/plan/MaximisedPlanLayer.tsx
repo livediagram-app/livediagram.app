@@ -9,7 +9,6 @@
 // element underneath.
 import { useCanvasMenu } from '@/components/canvas/canvas-menu-context';
 import {
-  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -18,325 +17,32 @@ import {
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { MENU_SURFACE_ATTR, MaximizeIcon, MinimizeIcon, Tooltip } from '@liveplanner/ui';
+import { MaximizeIcon, MinimizeIcon, Tooltip } from '@liveplanner/ui';
 import {
-  finishRestore,
   maximisePlanElement,
-  releasePlanElement,
   restorePlanElement,
   useMaximisedPlanClosing,
   type MaximisedKind,
 } from '@/hooks/plan/maximised-plan';
-import { MOTION_MS } from '@liveworkspace/style-guards/motion';
-import { isAnimatedPattern } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
-import { TabPatternLayer } from '@/components/canvas/TabPatternLayer';
-import { useCanvasPattern } from '@/components/canvas/canvas-pattern-context';
-import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
-import type { CanvasLayout, PhoneRow } from '@/lib/canvas-layer-insets';
 import { announceHeaderBand } from './menu-name-slot';
-import { BAND_CARD_PX } from './band-controls';
-import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import type { PlanPalette } from './plan-palette';
-import {
-  CANVAS_ROOT_SELECTOR,
-  elementSelector,
-} from '@liveworkspace/workbench/lib/canvas-selectors';
+import { type BandBlend, CanvasCover, stop, useCanvasRoot } from './CanvasCover';
+import { closeBox, openBox, useReportedBoxSize } from './maximise-motion';
 
-const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
+export { CanvasCover } from './CanvasCover';
+export {
+  escapeRestores,
+  flipTransform,
+  openBox,
+  originOf,
+  useMaximisedPlanLifetime,
+} from './maximise-motion';
 
-// A maximised or tab-filling element is drawn over the canvas area (the canvas's own `main`), over its content, inset
-// clear of the chrome laid over the canvas (the Toolbar layout's top row, side panels, the zoom controls:
-// useCanvasLayerInsets), with the header, tab bar and footer outside `main`: docs/specs/026-plan/plan-board.md
-// "Maximised board", "Fill Tab". Under the panels too, should one be dragged over it.
-const CANVAS_LAYER_Z = 'z-[calc(var(--z-panel)-1)]';
-
-// The cover over the whole canvas area while a Plan element is maximised or fills its tab: painted with the canvas's
-// background so nothing under it shows, and it takes every press,
-// double-click, right-click and wheel on the canvas around the element (the margins its insets leave), so nothing
-// under it is selected, moved, marqueed, drawn on, panned or zoomed; the chrome above it (panels, toolbar, the
-// bottom controls) stays reachable. `data-canvas-cover` also tells the canvas's capture-phase handler to stand down
-// for a press inside it (useCanvasSurfaceGestures). The element sits in it at its insets, `marker` naming which.
-export function CanvasCover({
-  layout,
-  marker,
-  tint,
-  blend,
-  enter = false,
-  children,
-}: {
-  layout: CanvasLayout;
-  marker: Record<string, string>;
-  // A tab's own page (a Board, Sheet, Dashboard or Form tab): it fades in as it mounts, on a tab switch
-  // (docs/specs/026-plan/plan-tabs.md "Switching to a tab fades its content in"). Not a maximised element, which grows.
-  enter?: boolean;
-  // The element's hue (planBandTint), worn by the menu box and palette while its header holds the top row.
-  tint?: string | undefined;
-  // The element's own surface and border (planBandBlend): with it, the chrome in the band takes them instead, flat
-  // (no shadow), so the top row reads as part of the element.
-  blend?: BandBlend | undefined;
-  children: ReactNode;
-}) {
-  const { insets, band, row } = layout;
-  // An animated canvas style is a layer of the canvas's own, under this cover: drawn again here, as the inherited
-  // background carries only the colour and a static pattern (the canvas's copy stops meanwhile: canvas-motion.css).
-  const pattern = useCanvasPattern();
-  // The menu box is drawn at the toolbar's UI scale; the band's cards take its height (band-controls BAND_CARD_PX).
-  const toolbarScale = useUiScale('toolbar');
-  // The element's name moves to the menu box while there is a band, and back when it goes (menu-name-slot).
-  const banded = !!band;
-  useLayoutEffect(() => {
-    announceHeaderBand();
-    return announceHeaderBand;
-  }, [banded]);
-  // The palette moves to the header's right end, before its controls (plan-board.md "The header holds the top row"):
-  // set on the canvas the strip sits in, so the strip itself never re-renders for it.
-  const coverRef = useRef<HTMLDivElement>(null);
-  const stripEnd = band?.stripEnd ?? null;
-  useLayoutEffect(() => {
-    const main = coverRef.current?.parentElement;
-    if (!main || stripEnd === null) return;
-    setStripEnd(main, stripEnd);
-    return () => clearStripEnd(main);
-  }, [stripEnd]);
-  // The chrome in the band wears the element's hue (toolbar-surface BAND_TINT): set on the canvas they sit in.
-  const bandTint = band && tint && !blend ? tint : null;
-  useLayoutEffect(() => {
-    const main = coverRef.current?.parentElement;
-    if (!main || !bandTint) return;
-    setBandTint(main, bandTint);
-    return () => clearBandTint(main);
-  }, [bandTint]);
-  // On a phone's shared row too (canvas-layer-insets phoneRow), so the menu box reads as part of the element.
-  const blendSurface = (band || row) && blend ? blend.surface : null;
-  const blendLine = blend?.line ?? null;
-  useLayoutEffect(() => {
-    const main = coverRef.current?.parentElement;
-    if (!main || !blendSurface || !blendLine) return;
-    setAttr(main, 'data-band-blend', '');
-    setProp(main, '--band-surface', blendSurface);
-    setProp(main, '--band-line', blendLine);
-    return () => {
-      main.removeAttribute('data-band-blend');
-      main.style.removeProperty('--band-surface');
-      main.style.removeProperty('--band-line');
-    };
-  }, [blendSurface, blendLine]);
-  return (
-    <div
-      ref={coverRef}
-      data-canvas-cover=""
-      // The default cursor: it takes every press, so the canvas's pan hand (inherited from `main`) never shows over it.
-      className={`absolute inset-0 cursor-default ${CANVAS_LAYER_Z}`}
-      // An opaque backdrop: the canvas's own background (colour and static pattern, from the canvas `main` it sits in),
-      // so nothing on the canvas shows through around the element, yet it still reads as the canvas.
-      style={{ background: 'inherit' }}
-      onPointerDown={stop}
-      onDoubleClick={stop}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-      onWheel={stop}
-    >
-      {pattern && isAnimatedPattern(pattern.pattern) ? <TabPatternLayer {...pattern} /> : null}
-      <div
-        {...marker}
-        {...(band ? { 'data-header-band': '' } : {})}
-        // Opacity only: nothing in it is measured off its place while it fades. CSS on mount, so never on a re-render.
-        className={`absolute p-2 sm:p-3 ${enter ? 'animate-tab-in' : ''}`}
-        // The header band (docs/specs/026-plan/plan-board.md "The header holds the top row"): the element's header
-        // reads these, each with its own size as the fallback, so on the canvas nothing changes.
-        // On a phone, the row it shares with the menu (canvas-layer-insets phoneRow): the same height and start, no more.
-        style={{
-          ...insets,
-          ...(band ? bandVars(band, toolbarScale) : row ? rowVars(row) : {}),
-        }}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
-// The strip's place in a header band, as the properties its root reads (ToolbarPalette): pressed to the right,
-// `stripEnd` screen px from the canvas's right edge, written in the strip's own px (its UI scale zooms it).
-function setStripEnd(main: HTMLElement, stripEnd: number): void {
-  const strip = main.querySelector<HTMLElement>('[data-toolbar-palette]');
-  const zoom = strip ? parseFloat(getComputedStyle(strip).zoom) || 1 : 1;
-  setAttr(main, 'data-strip-in-band', '');
-  setProp(main, '--plan-strip-align', 'flex-end');
-  setProp(main, '--plan-strip-end', `${Math.round(stripEnd / zoom)}px`);
-}
-
-// Writes that skip what is already there: an identical attribute or property write still reaches a MutationObserver
-// (the layout hook's, a test's) as a change, and the canvas restyles for it.
-function setAttr(el: HTMLElement, name: string, value: string): void {
-  if (el.getAttribute(name) !== value) el.setAttribute(name, value);
-}
-
-function setProp(el: HTMLElement, name: string, value: string): void {
-  if (el.style.getPropertyValue(name) !== value) el.style.setProperty(name, value);
-}
-
-// An element's own surface and border, for the chrome in its band to take (toolbar-surface BAND_BLEND).
-type BandBlend = { surface: string; line: string };
-
-// The element's hue on the chrome in its band (toolbar-surface BAND_TINT), set on the canvas they sit in.
-function setBandTint(main: HTMLElement, tint: string): void {
-  setAttr(main, 'data-band-tint', '');
-  setProp(main, '--band-tint', tint);
-}
-
-function clearBandTint(main: HTMLElement): void {
-  main.removeAttribute('data-band-tint');
-  main.style.removeProperty('--band-tint');
-}
-
-function clearStripEnd(main: HTMLElement): void {
-  main.removeAttribute('data-strip-in-band');
-  main.style.removeProperty('--plan-strip-align');
-  main.style.removeProperty('--plan-strip-end');
-}
-
-// The header band as the CSS properties a maximised element's header reads (PLAN_BAND_*).
-function bandVars(
-  band: NonNullable<CanvasLayout['band']>,
-  toolbarScale = 1,
-): Record<string, string> {
-  return {
-    '--plan-band-h': `${band.height}px`,
-    // The menu box's height on screen, which each card in the band matches: its controls and inset at the toolbar's
-    // scale, its hairline border a screen px whatever the scale.
-    '--plan-band-card-h': `${Math.round(((BAND_CARD_PX - 2) * toolbarScale + 2) * 10) / 10}px`,
-    '--plan-band-left': `${band.left}px`,
-    '--plan-band-mid': `${band.mid}px`,
-  };
-}
-
-// A phone's shared top row as the properties the element's header reads: its height and where its content starts.
-function rowVars(row: PhoneRow): Record<string, string> {
-  return { '--plan-band-h': `${row.height}px`, '--plan-band-left': `${row.left}px` };
-}
-
-// The canvas `main` holding the slot, found from a marker rendered in the slot as it mounts: the marker's ref
-// callback, and the element once found (null until then).
-function useCanvasRoot(): [(node: HTMLElement | null) => void, HTMLElement | null] {
-  const [canvas, setCanvas] = useState<HTMLElement | null>(null);
-  const mark = useCallback((node: HTMLElement | null) => {
-    if (node) setCanvas(node.closest<HTMLElement>(CANVAS_ROOT_SELECTOR) ?? document.body);
-  }, []);
-  return [mark, canvas];
-}
-
-// The element grows to the screen, or shrinks back to its place, over the dialogs' `long` token (MOTION_MS.long,
-// the chrome ceiling in docs/specs/004-interface-design/motion.md) with the dialogs' own ease,
-// cubic-bezier(0.16, 1, 0.3, 1). The ease stays literal in the transitions below: the motion-budget guard reads a
-// variable there as an unbounded delay.
-// The frame that grows or shrinks in the element's place, empty: a surface, border and shadow, no content.
-const GHOST_CLASSES = [
-  'rounded-xl',
-  'border',
-  'border-slate-200',
-  'bg-white',
-  'shadow-2xl',
-  'dark:border-slate-700',
-  'dark:bg-slate-900',
-];
-// How long the content takes to fade in once the frame has grown.
-const REVEAL_MS = 120;
-
-// The transform that lays a box drawn at `to` over `from` (top-left origin): where the element sits on the canvas.
-type BoxSize = { width: number; height: number };
-
-// The box's laid-out size (untransformed, so the open animation never shows in it), for a view to fit: reported now
-// and on every resize, and null when the box goes. Both maximised layers report through it.
-function useReportedBoxSize(
-  boxRef: { current: HTMLElement | null },
-  onSize: ((size: BoxSize | null) => void) | undefined,
-  canvas: unknown,
-): void {
-  useEffect(() => {
-    const box = boxRef.current;
-    if (!box || !onSize) return;
-    const report = () => onSize({ width: box.offsetWidth, height: box.offsetHeight });
-    report();
-    if (typeof ResizeObserver === 'undefined') return () => onSize(null);
-    const ro = new ResizeObserver(report);
-    ro.observe(box);
-    return () => {
-      ro.disconnect();
-      onSize(null);
-    };
-  }, [boxRef, onSize, canvas]);
-}
-
-export function flipTransform(from: DOMRect, to: DOMRect): string {
-  if (to.width <= 0 || to.height <= 0) return 'none';
-  const sx = from.width / to.width;
-  const sy = from.height / to.height;
-  return `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${sx}, ${sy})`;
-}
-
-// Where the element is drawn on screen, measured at the moment it is asked: its slot (MaximisableSlot's own box, which
-// stays in place while the body is away), else its canvas node. The slot is where it really is: in a Dashboard slot the
-// element is drawn in the slot, while its canvas node sits out of sight under the page (plan-tabs.md "Slot content"),
-// so growing from or shrinking to the canvas node would fly to a place the element is not.
-export function originOf(id: string): DOMRect | null {
-  const key = CSS.escape(id);
-  for (const selector of [`[data-plan-slot="${key}"]`, elementSelector(key)]) {
-    const box = document.querySelector(selector)?.getBoundingClientRect();
-    if (box && box.width > 0 && box.height > 0) return box;
-  }
-  return null;
-}
-
-// Escape restores, unless a dialog over the element (the item panel, a confirm) or an open menu has it first
-// (menus hear Escape on the project, after this capture listener), or the key is pressed inside something that
-// uses Escape itself (`data-keeps-escape`: a Sheet's cell being edited, its Find bar, its copied range's marquee).
-export function escapeRestores(
-  e: Pick<KeyboardEvent, 'key' | 'defaultPrevented'> & { target?: EventTarget | null },
-): boolean {
-  const keeps = e.target instanceof Element && !!e.target.closest('[data-keeps-escape]');
-  return (
-    e.key === 'Escape' &&
-    !e.defaultPrevented &&
-    !keeps &&
-    !document.querySelector(`[aria-modal="true"],[${MENU_SURFACE_ATTR}]`)
-  );
-}
-
-// While `id` is maximised: Escape restores it (even with something selected), and the element going (unmounted: a tab switch, a deletion)
-// or leaving Plan mode (`interactive` false) lets it go.
-export function useMaximisedPlanLifetime(
-  id: string,
-  maximised: boolean,
-  interactive: boolean,
-): void {
-  useEffect(() => {
-    if (maximised && !interactive) releasePlanElement(id);
-  }, [id, maximised, interactive]);
-  useEffect(() => () => releasePlanElement(id), [id]);
-  useEffect(() => {
-    if (!maximised) return;
-    // Capture phase, before the editor's own Escape (which deselects, and would leave this Escape prevented):
-    // one Escape restores, and goes no further.
-    const onKey = (e: KeyboardEvent) => {
-      if (!escapeRestores(e)) return;
-      e.preventDefault();
-      e.stopPropagation();
-      restorePlanElement();
-    };
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [maximised]);
-}
-
-// What a slot's host is laid out as: filling whatever holds it (the canvas slot, or the overlay's box).
 const HOST_CLASS = 'absolute inset-0';
 
 // A board's or a view's place: the body rendered once, through a portal into its own host element, which sits in
@@ -459,93 +165,6 @@ function OverFace({ id, over, children }: { id: string; over: boolean; children:
 // fades in over the last REVEAL_MS (the frame is all but full size by then on this ease), so the whole maximise
 // settles within MOTION_MS.long; the frame drops its ghost surface once the grow ends. Returns the cancel, which
 // drops whatever is still pending and never reveals: restoring, or the layer going, takes the host from here.
-export function openBox(box: HTMLElement, id: string, host: HTMLElement): () => void {
-  const origin = originOf(id);
-  box.style.opacity = '';
-  const reveal = () => {
-    if (host.parentElement !== box) {
-      box.appendChild(host);
-      // Moved under the band: its name looks again (menu-name-slot).
-      announceHeaderBand();
-    }
-  };
-  const settle = () => box.classList.remove(...GHOST_CLASSES);
-  if (!origin || prefersReducedMotion()) {
-    box.style.transition = 'none';
-    box.style.transform = 'none';
-    reveal();
-    settle();
-    return () => {};
-  }
-  box.classList.add(...GHOST_CLASSES);
-  // Measured untransformed, whatever a phase before left on it (a restore cut short, a re-run).
-  box.style.transition = 'none';
-  box.style.transform = 'none';
-  box.style.transform = flipTransform(origin, box.getBoundingClientRect());
-  void box.offsetWidth;
-  box.style.transition = `transform ${MOTION_MS.long}ms cubic-bezier(0.16, 1, 0.3, 1)`;
-  box.style.transform = 'none';
-  let revealed = false;
-  const show = () => {
-    if (revealed) return;
-    revealed = true;
-    reveal();
-    host.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: REVEAL_MS, easing: 'ease-out' });
-  };
-  const end = () => {
-    show();
-    settle();
-  };
-  const fade = window.setTimeout(show, MOTION_MS.long - REVEAL_MS);
-  // The transition's end, or a timer should it never fire (a hidden tab).
-  const done = window.setTimeout(end, MOTION_MS.long + 60);
-  const onEnd = (e: TransitionEvent) => {
-    if (e.target === box && e.propertyName === 'transform') end();
-  };
-  box.addEventListener('transitionend', onEnd);
-  return () => {
-    window.clearTimeout(fade);
-    window.clearTimeout(done);
-    box.removeEventListener('transitionend', onEnd);
-  };
-}
-
-// Restoring (a container transform): the host goes straight back to its slot on the canvas, sharp in its own
-// place, while an empty frame shrinks from the screen into that place and fades; then the restore finishes (at
-// once without motion). Returns the cancel (maximising again while it shrinks back).
-function closeBox(box: HTMLElement, id: string, host: HTMLElement): () => void {
-  const slot = document.querySelector(`[data-plan-slot="${CSS.escape(id)}"]`);
-  if (slot && host.parentElement !== slot) {
-    slot.appendChild(host);
-    announceHeaderBand();
-  }
-  const origin = originOf(id);
-  if (!origin || prefersReducedMotion()) {
-    finishRestore();
-    return () => {};
-  }
-  box.classList.add(...GHOST_CLASSES);
-  box.style.transition = 'none';
-  box.style.transform = 'none';
-  box.style.opacity = '1';
-  const target = box.getBoundingClientRect();
-  void box.offsetWidth;
-  box.style.transition = `transform ${MOTION_MS.long}ms cubic-bezier(0.16, 1, 0.3, 1), opacity ${MOTION_MS.long}ms ease-in`;
-  box.style.transform = flipTransform(origin, target);
-  box.style.opacity = '0';
-  const done = window.setTimeout(finishRestore, MOTION_MS.long + 60);
-  const onEnd = (e: TransitionEvent) => {
-    if (e.target === box && e.propertyName === 'transform') finishRestore();
-  };
-  box.addEventListener('transitionend', onEnd);
-  return () => {
-    window.clearTimeout(done);
-    box.removeEventListener('transitionend', onEnd);
-  };
-}
-
-// The overlay a maximised element's host moves into: the canvas area (CANVAS_LAYER_Z), grown from the element's place
-// on open and shrunk back to it on restore. The editor's chrome (header, tab bar, footer, palette, panels) stays.
 export function MaximisedPlanLayer({
   id,
   host,

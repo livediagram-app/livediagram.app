@@ -46,446 +46,71 @@
 // export's key (DATA_EXPORT_KEY) the export door alone, in all four formats. The csv and comments formats take the
 // index's key and the data export's, never the media or the Drive key.
 // The app supplies what each does to its own content (`InternalItemHandlers`); a door with no handler is a 404.
-
 import {
   COMMUNITY_STATES_MAX,
   isItemCommunityState,
   parseItemNotice,
-  readConnectedTabWrite,
   type CommunityStateAnswer,
   type CommunityStateAsk,
-  type ConnectedTabWrite,
   type IndexAppClient,
-  type ItemNotice,
-  type Level,
 } from '@liveworkspace/index-client';
-import type { ConnectedTabOutcome } from './connected-tabs';
-import type {
-  MigrationApp,
-  MigrationDoorAnswer,
-  MigrationPersonAnswer,
-  MigrationPersonPayload,
-  MigrationRoomPayload,
-} from '@liveworkspace/migration';
-import {
-  MigrationTabTooLarge,
-  parseMigrationPayload,
-  parseMigrationPersonPayload,
-} from './migration-door';
-import { answerDataExport, isDataExportFormat, type DataExportHandlers } from './data-export-door';
+import { answerDataExport, isDataExportFormat } from './data-export-door';
 import { BULK_PURGE_MAX, purgeEach } from './purge';
 import { bearerMatches } from './timing-safe';
+import {
+  type Copier,
+  type CopyOutcome,
+  IP_TEXT,
+  type InternalItemHandlers,
+  type InternalItemsOptions,
+  MAX_CODES,
+} from './internal-contract';
+import {
+  badRequest,
+  bodyOf,
+  connectedTab,
+  exportItem,
+  importItem,
+  json,
+  migrateItem,
+  migratePerson,
+  notFound,
+  personClosed,
+  personMerged,
+  validId,
+} from './internal-doors';
+
+export {
+  EXPORT_APPEARANCES,
+  EXPORT_FORMATS,
+  IMPORT_MAX_BYTES,
+  IMPORT_NAME_MAX,
+  JOINED_TELEMETRY_TYPE,
+  etagVersion,
+  exportEtag,
+} from './internal-contract';
+export type {
+  Copier,
+  CopyOutcome,
+  ExportAppearance,
+  ExportFormat,
+  ExportQuery,
+  ExportResult,
+  ImportInput,
+  ImportResult,
+  InternalItemHandlers,
+  InternalItemsOptions,
+} from './internal-contract';
+export { MIGRATION_MAX_BYTES, PERSON_ITEMS_MAX } from './internal-doors';
 
 // The telemetry type a `joined` notice is counted under: `<Noun>·Joined·Edit|Participate|View`, once per person and
 // item (the index sends the notice the first time someone comes in through a link). Every app reports it from its
 // `notice` handler with its own noun (Project, Document, Design).
-export const JOINED_TELEMETRY_TYPE: Record<Level, 'View' | 'Participate' | 'Edit'> = {
-  view: 'View',
-  participate: 'Participate',
-  edit: 'Edit',
-};
-
-const MAX_ID = 200;
-const MAX_CODES = 500;
-
-// Who copies an item, the link they came in by, and the address they copied from (the visitor's, as the index saw
-// it; null when it did not know), for anything the app counts per network.
-export type Copier = { by: string | null; code: string | null; ip: string | null };
-
-// An address as the index forwards it: IPv4 or IPv6 text, nothing longer.
-const IP_TEXT = /^[0-9A-Fa-f:.]{2,45}$/;
-
-export type CopyOutcome = { tabs: number; items: number } | 'not_found' | 'conflict';
-
-// ---------- The export door (liveworkspace/docs/specs/006-media/previews.md "The export door") --------------------------------------
-
-// What an item can be exported as. `svg`: the first tab (or `tabId`) drawn, the platform's previews. `file`: the
-// item's whole-item envelope as JSON text, the Drive mirror's file (`tabId` and `code` play no part).
-export const EXPORT_FORMATS = ['svg', 'file'] as const;
-export type ExportFormat = (typeof EXPORT_FORMATS)[number];
-
-// The reader's appearance a drawing is asked for (previews.md "The export door"), for an app whose drawing depends
-// on one. The browser address names the same two (@liveworkspace/media PREVIEW_APPEARANCES).
-export const EXPORT_APPEARANCES = ['light', 'dark'] as const;
-export type ExportAppearance = (typeof EXPORT_APPEARANCES)[number];
-
-const isExportAppearance = (value: unknown): value is ExportAppearance =>
-  typeof value === 'string' && (EXPORT_APPEARANCES as readonly string[]).includes(value);
-
-export type ExportQuery = {
-  format: ExportFormat;
-  // One tab, or null for the first.
-  tabId: string | null;
-  // The public link (a Community post's) the reader came in by: the app draws what that link may show, or refuses
-  // (`not_found`) when it shows nothing now. Null for everyone else.
-  code: string | null;
-  // The reader's appearance (`svg` only): null draws as the app does with no reader.
-  appearance: ExportAppearance | null;
-  // The version the caller already holds (`If-None-Match`): `unchanged` when it is still the content's, undrawn.
-  ifVersion: number | null;
-};
-
-// `version`: the content's last save (epoch ms), sent back as the ETag.
-export type ExportResult =
-  | { status: 'ok'; body: string | Uint8Array; contentType: string; version: number }
-  | { status: 'empty'; version: number }
-  | { status: 'unchanged'; version: number }
-  | { status: 'not_found' };
-
-const isExportFormat = (value: unknown): value is ExportFormat =>
-  typeof value === 'string' && (EXPORT_FORMATS as readonly string[]).includes(value);
-
-// An ETag of a version, and the version an If-None-Match names (weak or strong, the first of a list).
-export const exportEtag = (version: number): string => `"${version}"`;
-export function etagVersion(header: string | null): number | null {
-  const first = header?.split(',')[0]?.trim().replace(/^W\//, '');
-  const match = first ? /^"(\d{1,16})"$/.exec(first) : null;
-  return match ? Number(match[1]) : null;
-}
-
-export type InternalItemHandlers = {
-  // Drop everything the item stores (its Durable Object, and anything the app keeps beside it).
-  purge: (itemId: string) => Promise<unknown>;
-  // End the sessions of these share codes; answers how many closed. `rescoped`: reload into what the link opens.
-  revoke?: (itemId: string, codes: string[], reason: 'revoked' | 'rescoped') => Promise<number>;
-  // Copy the content (or one tab of it) into a new item. `copier` says who copies (`by`, null from an index that
-  // does not say) and the share link they came in by (`code`, null for their own or their team's item), so the
-  // app can copy only what that person may read (another's comment authors, a published post's redactions).
-  copy?: (from: string, to: string, tabId: string | null, copier: Copier) => Promise<CopyOutcome>;
-  // A notice for the app's emails, run off the index's path (waitUntil).
-  notice?: (itemId: string, notice: ItemNotice) => Promise<unknown>;
-  // A closed account (the index's person purge): what the app keeps for the person beside their items (images,
-  // claims), dropped. Idempotent.
-  personClosed?: (personId: string) => Promise<unknown>;
-  // A guest became an account (the index's merge): what the app keeps for the guest beside their items (images,
-  // a per-person store) moves to the account. Idempotent. An app with nothing to move leaves it out and the door
-  // just confirms. `legacy`: a returning guest of the old livediagram.app claiming its migrated work
-  // (docs/migration.md step 6), where `intoId` may be another guest (the browser's new one) as well as an account.
-  personMerged?: (
-    guestId: string,
-    intoId: string,
-    options: { legacy: boolean },
-  ) => Promise<unknown>;
-  // Their name off one item they worked in that outlives them (anonymise.ts). Idempotent.
-  anonymise?: (itemId: string, personId: string) => Promise<unknown>;
-  // The item drawn as a file (the export door). Read only: nothing is cached or written on the app's side.
-  export?: (itemId: string, query: ExportQuery) => Promise<ExportResult>;
-  // A new item for `owner` from a file (the Drive mirror's import door): fresh ids throughout, registered in the
-  // index as the owner's personal item in `folderId`. Refuses a file of another kind or that doesn't parse
-  // (`invalid_file`) and one past the app's item limits (`too_large`).
-  import?: (input: ImportInput) => Promise<ImportResult>;
-  // A workbench pairing was unpaired, its token revoked or its account closed (liveworkspace/docs/specs/011-workbench/workbench.md
-  // "Ending access"): close that pairing's sessions in the item's room. Answers whether the room was reached.
-  workbenchClose?: (itemId: string, pairingId: string) => Promise<boolean>;
-  // An old livediagram.app document's part into the item's room (the migration door, docs/migration.md): one
-  // Durable Object call, one transaction (migration-room.ts writeMigratedRoom). The payload is checked for shape,
-  // version, app and id before it is called. Throws MigrationTabTooLarge (migration-door.ts) for a tab over the
-  // app's tab cap, which the door answers 413 naming the tab.
-  migrate?: (payload: MigrationRoomPayload) => Promise<MigrationDoorAnswer>;
-  // What the app keeps for one old livediagram.app person beside their items (the person migration door,
-  // docs/migration.md): their shape libraries into their store, added once, never updated. Checked for shape,
-  // version, app and person before it is called. An app with nothing to take leaves it out and the door is a 404.
-  migratePerson?: (payload: MigrationPersonPayload) => Promise<MigrationPersonAnswer>;
-  // The index's reverse write of a connected tab (connected-tabs.ts appendConnectedTab): one tab, loose, at the end of
-  // the item's tab bar, the same connection id again answering the tab it made. An app without it answers 404.
-  connectedTab?: (itemId: string, write: ConnectedTabWrite) => Promise<ConnectedTabOutcome>;
-  // Where Community posts' items stand, as the index reads them (the app's index client `communityStates`), for the
-  // Community's sweep. An app without it answers 404.
-  communityStates?: (posts: CommunityStateAsk[]) => Promise<CommunityStateAnswer[]>;
-} & DataExportHandlers;
-
-// The import door's body (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"): whose item it is (an account id,
-// never a guest), the folder of theirs it goes in (null: the top), its name, and the file's text.
-export type ImportInput = { owner: string; folderId: string | null; name: string; file: string };
-
-export type ImportResult =
-  { status: 'ok'; id: string } | { status: 'invalid_file' } | { status: 'too_large' };
-
-// The largest import body the door reads: a Durable Object RPC message's cap, which an item's content crosses whole.
-// A bigger body is refused by its Content-Length before it is read.
-export const IMPORT_MAX_BYTES = 32 * 1024 * 1024;
-// The longest item name the import door takes; each app shortens it further to its own cap.
-export const IMPORT_NAME_MAX = 1000;
-
-export type InternalItemsOptions = {
-  key: string | undefined;
-  // The app's name as the migration's payloads carry it (`MigrationRoomPayload.app`): needed by the migration door.
-  app?: MigrationApp;
-  // The app's MIGRATION_KEY, which the migrate tool calls with (docs/migration.md "Tooling"): the migration door
-  // alone. Set only for the migration, and removed after it.
-  migrationKey?: string | undefined;
-  // A second key the export door alone takes: the app's MEDIA_KEY, which liveworkspace's previews call it with.
-  exportKey?: string | undefined;
-  // The app's DRIVE_KEY, which liveworkspace's Drive mirror calls with: the export door and the import door alone.
-  driveKey?: string | undefined;
-  // The app's DATA_EXPORT_KEY, which liveworkspace's data export calls with: the export door alone, every format.
-  dataExportKey?: string | undefined;
-  // The app's COMMUNITY_KEY, which the Community service's sweep calls with: the community-states door alone.
-  communityKey?: string | undefined;
-  handlers: InternalItemHandlers;
-  waitUntil?: (promise: Promise<unknown>) => void;
-};
-
-function validId(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0 && value.length <= MAX_ID;
-}
-
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
-const notFound = () => json({ error: 'not_found' }, 404);
-const badRequest = (message: string) => json({ error: 'bad_request', message }, 400);
-
-async function bodyOf(request: Request): Promise<Record<string, unknown> | null> {
-  try {
-    const body: unknown = await request.json();
-    return body && typeof body === 'object' && !Array.isArray(body)
-      ? (body as Record<string, unknown>)
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-// Whether a path is one of these doors (`/api/internal/items...` or `/api/internal/people...`).
 export function isInternalItemsPath(pathname: string): boolean {
   return /^\/api\/internal\/(items|people)(\/|$)/.test(pathname);
 }
 
 // The most items one person purge names.
-export const PERSON_ITEMS_MAX = 100;
-const PERSON_ID = /^(user|guest)_[A-Za-z0-9-]{1,64}$/;
-const GUEST_ID = /^guest_[A-Za-z0-9-]{1,64}$/;
-const USER_ID = /^user_[A-Za-z0-9-]{1,64}$/;
-
-async function personMerged(request: Request, guest: string, handlers: InternalItemHandlers) {
-  if (!GUEST_ID.test(guest)) return notFound();
-  const body = (await bodyOf(request)) ?? {};
-  const into = body['into'];
-  // A returning old guest (`legacy: true`) merges into whoever claims it, a guest or an account; any other merge is a
-  // guest signing in, into an account.
-  const legacy = body['legacy'] === true;
-  if (legacy) {
-    if (typeof into !== 'string' || !PERSON_ID.test(into) || into === guest)
-      return badRequest('into must be another guest or an account id');
-  } else if (typeof into !== 'string' || !USER_ID.test(into))
-    return badRequest('into must be an account id');
-  try {
-    await handlers.personMerged?.(guest, into, { legacy });
-  } catch (err) {
-    // The index asks again (a merge is safe to do twice).
-    console.warn('[internal] person merge failed', { error: String(err) });
-    return json({ ok: false }, 503);
-  }
-  return json({ ok: true });
-}
-
-async function personClosed(request: Request, person: string, handlers: InternalItemHandlers) {
-  if (!PERSON_ID.test(person)) return notFound();
-  const items = ((await bodyOf(request)) ?? {})['items'] ?? [];
-  if (!Array.isArray(items) || items.length > PERSON_ITEMS_MAX || !items.every(validId)) {
-    return badRequest(`items must be up to ${PERSON_ITEMS_MAX} item ids`);
-  }
-  await handlers.personClosed?.(person);
-  const anonymise = handlers.anonymise;
-  const { purged, unreached } = anonymise
-    ? await purgeEach([...new Set(items)], (id) => anonymise(id, person))
-    : { purged: [], unreached: [] };
-  // The index asks again (every item is safe to do twice) until each was reached.
-  return json(
-    { ok: unreached.length === 0, anonymised: purged.length, unreached },
-    unreached.length ? 503 : 200,
-  );
-}
-
-// GET /api/internal/items/:id/export: the item as a file, or why not.
-async function exportItem(
-  url: URL,
-  request: Request,
-  id: string,
-  run: NonNullable<InternalItemHandlers['export']>,
-): Promise<Response> {
-  const format = url.searchParams.get('format') ?? 'svg';
-  if (!isExportFormat(format)) return badRequest('unknown format');
-  const tab = url.searchParams.get('tab');
-  const code = url.searchParams.get('code');
-  if ((tab !== null && !validId(tab)) || (code !== null && !validId(code))) {
-    return badRequest('invalid tab or code');
-  }
-  const appearance = url.searchParams.get('appearance');
-  if (appearance !== null && !isExportAppearance(appearance)) {
-    return badRequest('appearance must be light or dark');
-  }
-  const result = await run(id, {
-    format,
-    tabId: tab,
-    code,
-    appearance,
-    ifVersion: etagVersion(request.headers.get('If-None-Match')),
-  });
-  if (result.status === 'not_found') return notFound();
-  const headers = new Headers({ ETag: exportEtag(result.version), 'Cache-Control': 'no-store' });
-  if (result.status === 'unchanged') return new Response(null, { status: 304, headers });
-  if (result.status === 'empty') return new Response(null, { status: 204, headers });
-  headers.set('Content-Type', result.contentType);
-  return new Response(result.body, { status: 200, headers });
-}
-
-// POST /api/internal/items/import: a new item from a file, or why not.
-async function importItem(
-  request: Request,
-  run: NonNullable<InternalItemHandlers['import']>,
-): Promise<Response> {
-  const declared = Number(request.headers.get('Content-Length'));
-  if (Number.isFinite(declared) && declared > IMPORT_MAX_BYTES) {
-    console.warn('[internal] import refused', { reason: 'too_large', bytes: declared });
-    return json({ error: 'too_large' }, 413);
-  }
-  const body = await bodyOf(request);
-  if (!body) return badRequest('body must be a JSON object');
-  const { owner, folderId, name, file } = body;
-  if (typeof owner !== 'string' || !USER_ID.test(owner))
-    return badRequest('owner must be an account id');
-  if (folderId !== null && !validId(folderId))
-    return badRequest('folderId must be a folder id or null');
-  if (typeof name !== 'string' || !name.trim() || name.length > IMPORT_NAME_MAX)
-    return badRequest('name must be a name');
-  if (typeof file !== 'string' || !file) return badRequest('file must be the file text');
-  let result: ImportResult;
-  try {
-    result = await run({ owner, folderId, name: name.trim(), file });
-  } catch (err) {
-    // The mirror asks again on its next pass.
-    console.error('[internal] import failed', { error: String(err) });
-    return json({ error: 'unavailable' }, 503);
-  }
-  if (result.status === 'invalid_file') {
-    console.warn('[internal] import refused', { reason: 'invalid_file' });
-    return json({ error: 'invalid_file' }, 400);
-  }
-  if (result.status === 'too_large') {
-    console.warn('[internal] import refused', { reason: 'too_large' });
-    return json({ error: 'too_large' }, 413);
-  }
-  console.info('[internal] imported', { id: result.id });
-  return json({ id: result.id }, 201);
-}
-
-// The largest migration body the door reads: the same RPC message cap as the import door's.
-export const MIGRATION_MAX_BYTES = IMPORT_MAX_BYTES;
-
-// A migration door's body, read up to MIGRATION_MAX_BYTES and parsed as JSON, or the refusal to answer.
-async function migrationBody(request: Request): Promise<{ body: unknown } | Response> {
-  const declared = Number(request.headers.get('Content-Length'));
-  if (Number.isFinite(declared) && declared > MIGRATION_MAX_BYTES) {
-    console.warn('[internal] migration refused', { reason: 'too_large', bytes: declared });
-    return json({ error: 'too_large' }, 413);
-  }
-  const bytes = await request.arrayBuffer();
-  if (bytes.byteLength > MIGRATION_MAX_BYTES) {
-    console.warn('[internal] migration refused', { reason: 'too_large', bytes: bytes.byteLength });
-    return json({ error: 'too_large' }, 413);
-  }
-  try {
-    return { body: JSON.parse(new TextDecoder().decode(bytes)) as unknown };
-  } catch {
-    return badRequest('body must be JSON');
-  }
-}
-
-// PUT /api/internal/people/:id/migration: what the app keeps for an old person beside their items.
-async function migratePerson(
-  request: Request,
-  person: string,
-  app: MigrationApp | undefined,
-  run: InternalItemHandlers['migratePerson'],
-): Promise<Response> {
-  if (!app || !run || !PERSON_ID.test(person)) return notFound();
-  const read = await migrationBody(request);
-  if (read instanceof Response) return read;
-  const parsed = parseMigrationPersonPayload(read.body, app, person);
-  if (!parsed.ok) {
-    console.warn('[internal] person migration refused', { reason: 'invalid', error: parsed.error });
-    return badRequest(parsed.error);
-  }
-  let answer: MigrationPersonAnswer;
-  try {
-    answer = await run(parsed.payload);
-  } catch (err) {
-    // The tool runs again; adding a library is safe to repeat.
-    console.error('[internal] person migration failed', { error: String(err) });
-    return json({ error: 'unavailable' }, 503);
-  }
-  console.info('[internal] person migrated', answer);
-  return json(answer);
-}
-
-// PUT /api/internal/items/:id/migration: an old document's part into the item's room.
-async function migrateItem(
-  request: Request,
-  id: string,
-  app: MigrationApp | undefined,
-  run: NonNullable<InternalItemHandlers['migrate']>,
-): Promise<Response> {
-  if (!app) return notFound();
-  const read = await migrationBody(request);
-  if (read instanceof Response) return read;
-  const parsed = parseMigrationPayload(read.body, app, id);
-  if (!parsed.ok) {
-    console.warn('[internal] migration refused', { reason: 'invalid', error: parsed.error });
-    return badRequest(parsed.error);
-  }
-  let answer: MigrationDoorAnswer;
-  try {
-    answer = await run(parsed.payload);
-  } catch (err) {
-    if (err instanceof MigrationTabTooLarge) {
-      console.warn('[internal] migration refused', {
-        reason: 'tab_too_large',
-        tabId: err.tabId,
-        bytes: err.bytes,
-      });
-      return json(
-        { error: 'tab_too_large', tabId: err.tabId, bytes: err.bytes, cap: err.cap },
-        413,
-      );
-    }
-    // The tool runs again; every write is safe to repeat.
-    console.error('[internal] migration failed', { error: String(err) });
-    return json({ error: 'unavailable' }, 503);
-  }
-  console.info('[internal] migrated', {
-    written: answer.written.length,
-    edited: answer.edited.length,
-    meta: answer.meta,
-  });
-  return json(answer);
-}
-
-// POST /api/internal/items/:id/connected-tabs: the reverse tab, or why not. The index waits at most 5 s for it and
-// takes the reverse back on anything but a 2xx.
-async function connectedTab(
-  request: Request,
-  id: string,
-  run: NonNullable<InternalItemHandlers['connectedTab']>,
-): Promise<Response> {
-  const write = readConnectedTabWrite(await bodyOf(request));
-  if (!write) return badRequest('invalid connected tab');
-  let outcome: ConnectedTabOutcome;
-  try {
-    outcome = await run(id, write);
-  } catch (err) {
-    console.error('[internal] connected tab failed', { error: String(err) });
-    return json({ error: 'unavailable' }, 503);
-  }
-  if (outcome === 'not_found') return notFound();
-  if (outcome === 'connection_limit') {
-    console.warn('[internal] connected tab refused', { reason: 'connection_limit' });
-    return json({ error: 'connection_limit' }, 409);
-  }
-  console.info('[internal] connected tab', { made: outcome.made });
-  return json({ tabId: outcome.tabId }, outcome.made ? 201 : 200);
-}
-
 const EXPORT_PATH = /^\/api\/internal\/items\/[^/]+\/export$/;
 const MIGRATION_PATH = /^\/api\/internal\/items\/[^/]+\/migration$/;
 const PERSON_MIGRATION_PATH = /^\/api\/internal\/people\/[^/]+\/migration$/;
