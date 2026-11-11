@@ -135,6 +135,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Plan·Linked',
   'Plan·Moved',
   'Plan·Opened',
+  // Automations (docs/specs/026-plan/automations.md "Telemetry"): Run Rule on a card ('Ran', type AutomationManual).
+  'Plan·Ran',
   'Plan·Removed',
   // Saved filters renamed, cards selected, a saved filter applied (docs/specs/026-plan/board-widgets.md "Saved filters",
   // plan-board.md "Several cards at once").
@@ -143,6 +145,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Plan·Revealed',
   'Plan·Selected',
   'Plan·Started',
+  // Automations: Test on a Card ('Tested', type AutomationRule).
+  'Plan·Tested',
   'Plan·Toggled',
   'Plan·Unlinked',
   'Plan·Used',

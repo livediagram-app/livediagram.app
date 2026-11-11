@@ -38,6 +38,10 @@ import { PlanTypeGlyph } from './plan-type-glyph';
 import { ItemPanelMenu } from './ItemPanelMenu';
 import { useCardMorph } from './useCardMorph';
 import { useItemRepeat } from './ItemRepeatLine';
+import { useRunRule } from '@/components/automations/use-run-rule';
+import { useCardThreadsContext } from './threads/CardThreadsContext';
+import { useSetByAutomation } from '@/components/automations/set-by-automation';
+import { SetByAutomationChip } from '@/components/automations/SetByAutomationChip';
 import { LinkedCardGroup } from './LinkedCards';
 import { BlockedBySections } from './BlockedBy';
 import { LinkedActionBanner } from './LinkedActionBanner';
@@ -216,6 +220,11 @@ function ItemPanelContent({
   const [now] = useState(() => Date.now());
   const type = typeIn(types, item.type);
   const repeat = useItemRepeat({ item, type, statuses, canSet: canRetire, now, onSave });
+  // Run Rule (docs/specs/026-plan/automations.md "On cards"): null unless an Editor has a Run from a Card rule on.
+  const runRules = useRunRule(item.id);
+  // Set by Automation: the fields whose latest change was a rule's, read while a rule made the card's last change.
+  const historyScope = useCardThreadsContext()?.threads.scope ?? null;
+  const setByAutomation = useSetByAutomation(historyScope, item);
   const tabs = tabsOf(type);
   const offered = new Set<string>(type.fields);
   // The fields in no tab, then any built-in field the item holds a value in that its type does not
@@ -334,6 +343,7 @@ function ItemPanelContent({
           onEditType={onEditType}
           onCopyLink={onCopyLink}
           repeat={repeat.menu}
+          runRules={canEdit ? runRules : null}
         />
       )}
       {onMaximise && !mobile ? (
@@ -367,6 +377,7 @@ function ItemPanelContent({
       ) : (
         <ItemFieldEditor f={f} ctx={ctx} />
       )}
+      {setByAutomation.has(f) ? <SetByAutomationChip /> : null}
     </ItemDetailsRow>
   );
 

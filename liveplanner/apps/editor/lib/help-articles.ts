@@ -59,6 +59,9 @@ export const HELP_ARTICLES = {
   planDashboards: 'plan/dashboards',
   planForms: 'plan/forms',
   planTour: 'plan/plan-tour',
+  // Automations (docs/specs/026-plan/automations.md "The Automations screen": How Rules Work). The Plan section's
+  // landing until the Automations article lands; then its own path.
+  planAutomations: 'plan',
   links: 'plan/dashboards',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -118,6 +121,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   planCards: {
     title: 'Learn about cards',
     description: 'Open a card, fill it in, and archive, trash or present it.',
+  },
+  planAutomations: {
+    title: 'Learn about automations',
+    description: 'Rules that move, assign and tell people about cards for you.',
   },
   planCardActivity: {
     title: 'Learn about card activity',

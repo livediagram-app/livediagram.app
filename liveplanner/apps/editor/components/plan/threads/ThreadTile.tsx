@@ -47,6 +47,7 @@ import {
 } from '@/components/panels/comment-thread-parts';
 import { initialsOf } from '@/lib/identity';
 import { useRelativeNow } from '@/lib/relative-time';
+import { isAutomationAuthor } from '@/components/automations/AutomationAuthor';
 import { TimelineDisc, TimelineTime, railClass } from './timeline-parts';
 import { ThreadSharedChip } from './ThreadSharedChip';
 import { ThreadTitleEditor } from './ThreadTitleEditor';
@@ -222,6 +223,7 @@ export function ThreadTile({
             <TimelineDisc
               name={starter.name}
               color={starter.color}
+              automation={isAutomationAuthor(first?.authorId)}
               size={28}
               badge={
                 resolved ? (
@@ -263,7 +265,7 @@ export function ThreadTile({
                   className="mt-1 block truncate text-[12px] text-slate-500 dark:text-slate-400"
                 >
                   <span className="font-medium text-slate-600 dark:text-slate-300">
-                    {latest.authorName}:
+                    {isAutomationAuthor(latest.authorId) ? 'Automation' : latest.authorName}:
                   </span>{' '}
                   {latest.text}
                 </span>

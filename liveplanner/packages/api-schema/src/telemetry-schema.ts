@@ -283,6 +283,10 @@ export const TELEMETRY_ACTIONS = [
   // Timing (docs/specs/017-telemetry/timing-telemetry.md): a key moment was timed. Only ever paired with the
   // 'Timing' category.
   'Measured',
+  // Automations (docs/specs/026-plan/automations.md "Telemetry"): a rule tried on a card (Test on a Card, which
+  // changes nothing) and a Run from a Card rule run by hand. Typed 'AutomationRule' and 'AutomationManual'.
+  'Tested',
+  'Ran',
 ] as const;
 export type TelemetryAction = (typeof TELEMETRY_ACTIONS)[number];
 
