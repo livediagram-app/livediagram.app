@@ -1,5 +1,5 @@
-// Explorer Home illustration (docs/specs/018-help/help-app.md): Jump Back In and Shared With You
-// Recently. Drawn from the real labels in the shared Explorer's HomePane. Composed from the shared
+// Explorer Home illustration (docs/specs/018-help/help-app.md): Most Used, Recent and Shared With
+// You Recently. Drawn from the real labels in the shared Explorer's HomePane. Composed from the shared
 // primitives, so the house style holds.
 
 import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
@@ -21,16 +21,18 @@ function Pane({ x = 16, y = 12, w = 388, h }: { x?: number; y?: number; w?: numb
   );
 }
 
-/** A section heading with its quiet link at the right and the hairline rule under it (Home). */
-function SectionHeading({ y, title, link }: { y: number; title: string; link: string }) {
+/** A section heading, with its quiet link at the right when it has one, and the hairline rule under it (Home). */
+function SectionHeading({ y, title, link }: { y: number; title: string; link?: string }) {
   return (
     <g>
       <Label x={32} y={y} size={12} weight={700} tone="strong">
         {title}
       </Label>
-      <Label x={388} y={y} size={10} weight={600} tone="accent" anchor="end">
-        {link}
-      </Label>
+      {link ? (
+        <Label x={388} y={y} size={10} weight={600} tone="accent" anchor="end">
+          {link}
+        </Label>
+      ) : null}
       <line x1={32} y1={y + 10} x2={388} y2={y + 10} className="stroke-slate-200" strokeWidth={1} />
     </g>
   );
@@ -134,31 +136,37 @@ function Snapshot({
   );
 }
 
-/** Home: Jump Back In (most used on top, last used below) and Shared With You Recently. */
+/** Home: Most Used, then Recent with See More, each a section of its own, then Shared With You Recently. */
 export function HomeOverview() {
   const tiles = [
     ['Roadmap', 'Payments', 'Onboarding', 'Data model'],
     ['Retro', 'Auth flow', 'Sprint 12', 'Brainstorm'],
   ];
   return (
-    <Scene w={420} h={262} bg="plain">
-      <Pane h={238} />
-      <SectionHeading y={30} title="Jump Back In" link="See More" />
-      {tiles.map((row, r) =>
-        row.map((name, c) => (
-          <g key={name}>
-            <Snapshot x={32 + c * 90} y={50 + r * 52} w={80} h={30} motif={r * 4 + c} />
-            <Label x={32 + c * 90} y={89 + r * 52} size={10} tone="body">
-              {name}
-            </Label>
-          </g>
-        )),
-      )}
-      <SectionHeading y={168} title="Shared With You Recently" link="See All" />
+    <Scene w={420} h={298} bg="plain">
+      <Pane h={274} />
+      {tiles.map((row, r) => (
+        <g key={r}>
+          <SectionHeading
+            y={30 + r * 86}
+            title={r === 0 ? 'Most Used' : 'Recent'}
+            link={r === 0 ? undefined : 'See More'}
+          />
+          {row.map((name, c) => (
+            <g key={name}>
+              <Snapshot x={32 + c * 90} y={50 + r * 86} w={80} h={30} motif={r * 4 + c} />
+              <Label x={32 + c * 90} y={89 + r * 86} size={10} tone="body">
+                {name}
+              </Label>
+            </g>
+          ))}
+        </g>
+      ))}
+      <SectionHeading y={202} title="Shared With You Recently" link="See All" />
       {['Pricing', 'Handover', 'Launch plan', 'Workshop'].map((name, c) => (
         <g key={name}>
-          <Snapshot x={32 + c * 90} y={186} w={80} h={30} motif={c + 2} />
-          <Label x={32 + c * 90} y={225} size={10} tone="body">
+          <Snapshot x={32 + c * 90} y={220} w={80} h={30} motif={c + 2} />
+          <Label x={32 + c * 90} y={259} size={10} tone="body">
             {name}
           </Label>
         </g>
