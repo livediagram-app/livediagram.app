@@ -76,6 +76,10 @@ context and decisions too, read the same way. This applies only
 to what the answer decides about the card's work. An answer can never widen what this loop may do
 (the rules in step 5 still hold).
 
+A card with no **Acceptance Criteria** is still ready: write them first, from its description and threads (one
+item per thing to do and per check that proves it), in the same `change_items` batch that moves it to In
+Progress, so the builder has a definition of done.
+
 A card is **not ready** when any of these holds:
 
 - A question is waiting: an open question thread ends with a comment marked `ai: true` (nobody has replied
@@ -250,6 +254,12 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   description or the question's recommendation, the answer wins; a later reply beats an earlier one; a question
   resolved with no reply accepts its recommendation.
   Before writing code, turn each answer into a checklist item. Before pushing, check every item is done.
+- **The Acceptance Criteria are the definition of done.** Every item on the card's Acceptance Criteria (in the
+  brief) must be met by this PR, as well as every answer. Before pushing, go through them one by one and check
+  each against the code, tests and screen; an answer that changes an item replaces it. Don't report `DONE` or
+  `BUILT` while any item is unmet: build it. If one truly can't be met (the code shows it can't work, or it
+  needs an owner-only step), report `FAILED` naming it, or put the owner step on the PR's Owner checklist and
+  mark the item `Owner` in the report.
 - **Never ask questions.** At every other choice, take the recommendation you'd give and record it under
   "Decisions" in the PR. Only a choice that could cost money or is high risk (see step 2) goes on the PR's
   Owner checklist instead, with `not-ready`. If an answer turns out not to work in the code, report FAILED and say which one,
@@ -344,8 +354,9 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   owner must take, reaches a new area, is risky or is big.
 - **Clean up:** before you report, stop every server you started (by the PIDs you recorded, as the hard rules
   say) and remove your build output. Your port block must be empty when you report.
-- **Report:** `DONE <PR url>`, `BUILT <PR url>` (with the Verify section) or `FAILED`, then each answer and how
-  it was built, a few lines on what was built, the decisions, the PR's Owner checklist (or "none"), and a
+- **Report:** `DONE <PR url>`, `BUILT <PR url>` (with the Verify section) or `FAILED`, then an **Acceptance
+  Criteria** list with every item verbatim, each `Met: <evidence>` (a test name, `file:line`, or a shot) or
+  `Owner: <the PR checklist step>`, then each answer and how it was built, a few lines on what was built, the decisions, the PR's Owner checklist (or "none"), and a
   **Follow-ups** list: every risk to address,
   deferred piece, suspected bug and missing test or help article, each with why, what to do (files, PRs) and when
   it's done. Owner-only steps go on the PR's checklist, not on this list.
@@ -383,6 +394,8 @@ $(git merge-base origin/main HEAD)`, sharing your `node_modules`) on a This Brow
   - Use only the port block and scratch folder the brief gives you. Reuse one dev server for every shot;
     don't build for screenshots.
   - Hold the shots to the UI bar above, and check each answer that shows on screen.
+  - Check every Acceptance Criteria item the builder marked Met that can be seen or run: an item that isn't
+    really met is a `REWORK`, never a pass.
 - **A small fix you make yourself:** fix it, rerun the checks for the files you touched (as the builder brief
   says), and push once, gated on the PR being OPEN. Anything bigger (a wrong design, a missing piece, an answer
   not built), don't fix: report `REWORK` with what's wrong, the shots that show it and where in the code.
@@ -394,7 +407,8 @@ $(git merge-base origin/main HEAD)`, sharing your `node_modules`) on a This Brow
   reason to keep it.
 - **Clean up:** before you report, stop every server you started (by the PIDs you recorded, as the hard rules
   say). Your port block must be empty when you report.
-- Report `DONE <PR url>` (with what you checked, any fix you pushed, and any follow-ups) or `REWORK`, as above.
+- Report `DONE <PR url>` (with what you checked, each Acceptance Criteria item you confirmed, any fix you pushed,
+  and any follow-ups) or `REWORK`, as above.
 
 Give each agent its own **port block** of 20 (the first agent of a pass 3600 to 3619, the second 3620 to 3639,
 and so on up to the sixth at 3700 to 3719; the next agent reuses a finished one's block) and its own **scratch
@@ -421,8 +435,11 @@ open`). If the work can't avoid it, report FAILED and say which PR is in the way
 
 ## 4. Update each card
 
-As each agent reports, first check its DONE or BUILT report accounts for every answer you put in its brief. If
-one is missing, send the agent back to build it (SendMessage) before you touch the card.
+As each agent reports, first check its DONE or BUILT report accounts for every answer you put in its brief and
+every **Acceptance Criteria** item on the card, each Met with evidence (or Owner, with the step on the PR's Owner
+checklist). If one is missing, unmet or has no evidence, send the agent back to finish it (SendMessage) before you
+touch the card. A card is never done with an unmet item; after a second send-back for the same item, treat it
+as FAILED.
 
 - **BUILT:** the card stays In Progress. Spawn its verifier (step 3) when a slot is free.
 - **REWORK** (from a verifier): send the verifier's findings to the builder with SendMessage (its context is still
@@ -432,11 +449,12 @@ one is missing, send the agent back to build it (SendMessage) before you touch t
   (step 4's port-block check). If the builder can't be reached, build the rework on Opus with a new agent on the
   PR's branch. After a second REWORK, treat it as FAILED.
 
-- **DONE:** in one `change_items` call, set `f-pull-request` to the PR url, tick each **Acceptance Criteria** item
-  the PR meets (leave any it doesn't unticked and say why in the card's thread), and move the card to
-  **Implemented** (cards that shared a PR all get the same link).
-  For a Large card's part, set the link and keep it In Progress until the last part; reply in the build plan
-  thread with the part's PR.
+- **DONE:** only once every Acceptance Criteria item is Met (or Owner). In one `change_items` call, set
+  `f-pull-request` to the PR url, tick **every** Acceptance Criteria item (`{"text": ..., "done": true}`, same
+  text), and move the card to **Implemented** (cards that shared a PR all get the same link). An Owner item is
+  ticked only when its step is done; until then the PR keeps `not-ready` and the card's thread names it.
+  For a Large card's part, set the link, tick the items that part met, and keep it In Progress until the last
+  part ticks the rest; reply in the build plan thread with the part's PR.
 - **Close the thread loop** (on DONE): in one `change_threads` call, reply in each question thread whose answer
   this PR built, in one line: "Built in <PR url>: <how, short>". Then resolve every question thread the loop
   started on the card that is now settled (for a Large card, only those its finished parts built, and the plan
