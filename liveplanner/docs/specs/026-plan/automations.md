@@ -340,7 +340,9 @@ own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel says 
 - Its outcome is the step's line in the Audit Trail with the sparkle: "Summarised the card into a comment", "Set the
   card type to Bug", "Set priority High, added labels billing, urgent". A step that fails fails the run with its
   reason, as any action does, after the steps before it landed:
-  - no model here (local development without Cloudflare, a self-hosted copy): "AI isn't set up here";
+  - no model here (a self-hosted copy with no `AI` binding): "AI isn't set up here". Local `wrangler dev` reaches the
+    real Workers AI through the developer's wrangler sign-in (the binding is always remote), so local runs spend that
+    account's Neurons within the same 100 a day; signed out, they fail "The AI couldn't answer";
   - the model errs or is out of its limit: "The AI couldn't answer: try again later";
   - no answer within **15 seconds**: "The AI took too long to answer";
   - a reply that is not the JSON asked for: "The AI's reply couldn't be read"; one that breaks a constraint, its own
