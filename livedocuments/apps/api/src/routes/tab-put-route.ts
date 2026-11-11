@@ -7,9 +7,16 @@ import {
   CHANGESET_MERGE_WINDOW_MS,
   CHANGESET_SEEN_HEADER,
   TAB_SAVE_CAS_ATTEMPTS,
+  TAB_SAVE_CHANGES_HEADER,
   parseChangesetSeen,
+  readTabSaveChanges,
 } from '@livedocuments/api-schema';
-import { isValidTab, migrateIncomingTab, type Tab } from '@livedocuments/document';
+import {
+  isValidTab,
+  mergeSaveOverStored,
+  migrateIncomingTab,
+  type Tab,
+} from '@livedocuments/document';
 import {
   confirmTabConnection,
   connectionToKeep,
@@ -83,6 +90,18 @@ export async function handleTabPut(
     console.warn('[changeset] seen-invalid', { documentId: id, tabId, length: seenHeader.length });
   }
 
+  // What this save changed, by id (docs/specs/012-collaboration/collab-race-hardening.md "A save is merged with the
+  // stored tab"): merged over the stored tab, so a peer's page or writing this save never saw stays. Absent (an
+  // editor from before it) or unreadable, the tab is stored as sent.
+  const changesHeader = request.headers.get(TAB_SAVE_CHANGES_HEADER);
+  const changes = readTabSaveChanges(changesHeader);
+  if (changesHeader !== null && changes === null) {
+    console.warn('[tab-save] changes-invalid', {
+      documentId: id,
+      tabId,
+      length: changesHeader.length,
+    });
+  }
   const scoped = (grantOn(ctx, id)?.tabScope ?? null) !== null;
   for (let attempt = 1; attempt <= TAB_SAVE_CAS_ATTEMPTS; attempt += 1) {
     // The stored tab and the changesets this editor had not seen, read together. Changesets merge
@@ -95,8 +114,11 @@ export async function handleTabPut(
     ]);
     const ledger = applyRoomLedger(merge.tab, fetchedLedger);
     const commentAuthors = ledger.commentAuthors;
-    // A copy: each attempt starts again from the save as sent.
-    const body: Tab = { ...ledger.tab };
+    // A copy: each attempt starts again from the save as sent, merged over the tab as this attempt read it.
+    const body: Tab =
+      existingTab && changes
+        ? mergeSaveOverStored(existingTab, ledger.tab, changes)
+        : { ...ledger.tab };
     // The name cap (docs/specs/006-document/name-length.md): a new or changed name is shortened;
     // an autosave echoing the stored name unchanged keeps it.
     body.name = capStoredName(body.name, existingTab?.name ?? null, 'tab');

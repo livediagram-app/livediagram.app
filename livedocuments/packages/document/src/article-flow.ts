@@ -6,6 +6,7 @@ import { parseArticleBand, type ArticleBand } from './article-bands';
 import { cleanFootnoteText } from './article-footnotes';
 import { parseArticleTable, type ArticleTableBlock } from './article-table';
 import type { ArticleTocBlock } from './article-toc';
+import { sameJsonValue } from '@liveworkspace/model-core/same-json-value';
 
 // Block and article limits (docs/specs/007-editor/article-pages.md "Blocks"). An article this
 // large is ~250 pages of text, far inside a tab's row (MAX_TAB_BYTES, 1.99 MB) only when the
@@ -394,23 +395,7 @@ const EMPTY_ARTICLES: Readonly<Record<string, ArticleFlow>> = Object.freeze({});
 
 /** Whether two blocks (or any plain JSON values) are the same, whatever order their keys are in:
  *  a block read from storage and one built in the editor list their fields differently. */
-export function sameArticleValue(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
-  if (Array.isArray(a) !== Array.isArray(b)) return false;
-  if (Array.isArray(a)) {
-    const bs = b as unknown[];
-    return a.length === bs.length && a.every((v, i) => sameArticleValue(v, bs[i]));
-  }
-  const ka = Object.keys(a).filter((k) => (a as Record<string, unknown>)[k] !== undefined);
-  const kb = Object.keys(b).filter((k) => (b as Record<string, unknown>)[k] !== undefined);
-  return (
-    ka.length === kb.length &&
-    ka.every((k) =>
-      sameArticleValue((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]),
-    )
-  );
-}
+export const sameArticleValue: (a: unknown, b: unknown) => boolean = sameJsonValue;
 
 /** A new block id: `b-` and eight hex digits, never one in `taken`. */
 export function nextArticleBlockId(taken?: ReadonlySet<string>): string {

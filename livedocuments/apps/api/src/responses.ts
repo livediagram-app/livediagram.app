@@ -5,6 +5,7 @@
 import {
   BUILD_ID_HEADER,
   CHANGESET_SEEN_HEADER,
+  TAB_SAVE_CHANGES_HEADER,
   CLIENT_HEADER,
   COMMUNITY_KEY_HEADER,
   DOCUMENT_CONVERSION_HEADER,
@@ -26,6 +27,8 @@ export const CORS_HEADERS = corsHeaders({
     // Take Offline and Sync Document declare themselves with the conversion header.
     DOCUMENT_CONVERSION_HEADER,
     CHANGESET_SEEN_HEADER,
+    // What a tab save changed, merged over the stored tab (docs/specs/012-collaboration/collab-race-hardening.md).
+    TAB_SAVE_CHANGES_HEADER,
     CLIENT_HEADER,
     // My Shares passes the page's community key on (docs/specs/025-community/community.md "My Shares").
     COMMUNITY_KEY_HEADER,

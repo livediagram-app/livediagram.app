@@ -2,6 +2,7 @@
 // cross-document link, and delete.
 import {
   CHANGESET_SEEN_HEADER,
+  TAB_SAVE_CHANGES_HEADER,
   type TabResponse,
   type TabSummary,
 } from '@livedocuments/api-schema';
@@ -127,6 +128,9 @@ export async function apiSaveTab(
     allowEmpty?: boolean;
     roomCursor?: { epoch: string; seq: number } | null;
     changesetSeen?: number;
+    // What the save changed by id (tabSaveChangesHeader), merged over the stored tab by the api
+    // (docs/specs/012-collaboration/collab-race-hardening.md "A save is merged with the stored tab").
+    saveChanges?: string | null;
   } = {},
 ): Promise<number | null> {
   if (await isOfflineId(documentId)) {
@@ -141,6 +145,7 @@ export async function apiSaveTab(
   if (opts.changesetSeen !== undefined) {
     headers.set(CHANGESET_SEEN_HEADER, String(opts.changesetSeen));
   }
+  if (opts.saveChanges) headers.set(TAB_SAVE_CHANGES_HEADER, opts.saveChanges);
   const body = JSON.stringify(tabForWire(tab));
   const res = await apiFetch(`${API_BASE}/documents/${documentId}/tabs/${tab.id}`, {
     method: 'PUT',
@@ -196,6 +201,8 @@ export function flushDocumentSavesBeacon(args: {
   tabs: Tab[];
   // The seen changeset revision per tab, as the debounced save sends it.
   changesetSeen?: ReadonlyMap<string, number>;
+  // Each tab's `X-Save-Changes`, as the debounced save sends it.
+  saveChanges?: ReadonlyMap<string, string>;
 }): void {
   // Offline Mode (docs/specs/006-document/offline-mode.md): best-effort flush to IndexedDB. A beforeunload
   // handler can't await, so these writes may not finish — the 600ms debounced
@@ -229,10 +236,12 @@ export function flushDocumentSavesBeacon(args: {
   const keepaliveFor = (body: string | undefined) => takeKeepalive(bodyBytes(body));
   for (const t of args.changedTabs) {
     const seen = args.changesetSeen?.get(t.id);
+    const changes = args.saveChanges?.get(t.id);
     const headers: Record<string, string> = {
       ...jsonHeaders,
       ...(args.loadedTabIds.has(t.id) ? { 'X-Allow-Empty': '1' } : {}),
       ...(seen !== undefined ? { [CHANGESET_SEEN_HEADER]: String(seen) } : {}),
+      ...(changes ? { [TAB_SAVE_CHANGES_HEADER]: changes } : {}),
     };
     const body = JSON.stringify(tabForWire(t));
     void apiFetch(

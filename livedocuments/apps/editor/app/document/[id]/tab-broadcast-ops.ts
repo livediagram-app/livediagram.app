@@ -2,6 +2,8 @@ import {
   diffToElementOps,
   elementChangeIsDeltaOnly,
   mergeIncomingElement,
+  pageStepsOf,
+  withPeerPageSteps,
   type Tab,
 } from '@livedocuments/document';
 import { tabArticleOps, type RoomOp } from '@livedocuments/api-schema';
@@ -32,10 +34,12 @@ export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'articl
 // A whole tab as one op, without its articles' writing: that always travels as `article` ops, so a
 // long document never makes a whole-tab op too big for the room to carry, and a receiver keeps its
 // own writing through the merge (mergeRemoteTab).
-function wholeTabOp(tab: Tab): RoomOp {
+// With a `before`, the pages' steps ride along, so a receiver keeps a page it added meanwhile (pageSteps).
+function wholeTabOp(tab: Tab, before?: Tab, previous?: Tab): RoomOp {
   const { articles: _docs, ...rest } = tab;
   void _docs;
-  return { kind: 'tab', tabId: tab.id, tab: rest };
+  const steps = before ? pageStepsOf(before, tab, previous) : [];
+  return { kind: 'tab', tabId: tab.id, tab: rest, ...(steps.length ? { pageSteps: steps } : {}) };
 }
 
 function tabMetaPatch(before: Tab, after: Tab): Partial<Omit<Tab, 'elements'>> {
@@ -61,7 +65,10 @@ function tabMetaPatch(before: Tab, after: Tab): Partial<Omit<Tab, 'elements'>> {
 //   - a bulk element change (> EL_OP_BROADCAST_LIMIT ops) → one whole-`tab` op;
 //   - otherwise → a `tab-meta` patch (only if meta changed) followed by one
 //     `el` op per changed element, in the diff's order.
-export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
+//
+// `previous` is this editor's last save of the tab while it may still be in flight: a page it held that `after`
+// lacks is removed in the page steps too (pageStepsOf).
+export function tabBroadcastOps(before: Tab | undefined, after: Tab, previous?: Tab): RoomOp[] {
   if (!before)
     return [wholeTabOp(after), ...tabArticleOps({ ...after, articles: undefined }, after)];
 
@@ -75,7 +82,7 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
     return !prev || !elementChangeIsDeltaOnly(prev, op.element);
   });
   if (elOps.length > EL_OP_BROADCAST_LIMIT) {
-    return [wholeTabOp(after), ...tabArticleOps(before, after)];
+    return [wholeTabOp(after, before, previous), ...tabArticleOps(before, after)];
   }
 
   const ops: RoomOp[] = [];
@@ -88,11 +95,15 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
     // receiver, wiping their unsaved presses.
     const clear = patchKeys.filter((k) => patch[k] === undefined);
     for (const k of clear) delete patch[k];
+    // A page list goes with its steps (docs/specs/012-collaboration/collab-race-hardening.md "Pages"): a receiver
+    // applies them over its own pages by id, and an older one takes the list whole, as it always did.
+    const pageSteps = 'pages' in patch ? pageStepsOf(before, after, previous) : [];
     ops.push({
       kind: 'tab-meta',
       tabId: after.id,
       patch: patch,
       ...(clear.length ? { clear } : {}),
+      ...(pageSteps.length ? { pageSteps } : {}),
     });
   }
   for (const op of elOps) ops.push({ kind: 'el', tabId: after.id, op });
@@ -109,7 +120,10 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
 // Every element's delta-carried fields (ticks, comments: docs/specs/012-collaboration/collab-race-hardening.md) stay
 // ours too: they reached us one delta at a time, and the whole-tab op carries the sender's as they stood at their
 // autosave.
-export function mergeRemoteTab(local: Tab, incoming: Tab): Tab {
+//
+// The pages are merged by the sender's `pageSteps` when it sent them, so a page added here meanwhile stays.
+export function mergeRemoteTab(local: Tab, incoming: Tab, pageSteps?: unknown): Tab {
+  const pages = withPeerPageSteps(local, pageSteps, incoming.pages);
   const localById = new Map(local.elements.map((e) => [e.id, e]));
   const elements = incoming.elements.map((el) => {
     const mine = localById.get(el.id);
@@ -122,6 +136,7 @@ export function mergeRemoteTab(local: Tab, incoming: Tab): Tab {
     // structure, docs/specs/013-workspace/tab-scoped-share-links.md), so ours stays.
     name: typeof incoming.name === 'string' ? incoming.name : local.name,
     elements,
+    ...(pages ? { pages } : {}),
     folder: local.folder,
     // The writing is the `article` ops' alone (wholeTabOp): ours stays through a whole-tab merge.
     ...(local.articles !== undefined ? { articles: local.articles } : {}),
