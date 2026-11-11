@@ -187,7 +187,8 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 | `DELETE /items/:id`            | owner / team        | To the Trash; `?permanent=true` purges (below).                                        |
 | `POST /items/:id/restore`      | owner / team        | `{item}`                                                                               |
 | `POST /items/:id/copy`         | anyone who can view | `{title?}` → 201 `{item}`. The index makes the row, then asks the                      |
-|                                |                     | app to copy the content (`POST <app>/api/internal/items/:from/copy-to/:to`).           |
+|                                |                     | app to copy the content (`POST <app>/api/internal/items/:from/copy-to/:to`),           |
+|                                |                     | naming the row's title, which the copy opens with.                                     |
 | `POST /items/:id/open`         | person or link      | Records an open for Recent, and counts it on the day's row for Most Used               |
 |                                |                     | (`use_days.opens`, kept 14 days). Debounced: at most one write a minute                |
 |                                |                     | per person and item.                                                                   |
