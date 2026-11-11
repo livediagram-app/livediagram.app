@@ -22,20 +22,20 @@ work. A rule does it every time, at once, and says that it did.
 
 ## Domain language
 
-| Term           | Means                                                                                         | Never called              |
-| -------------- | --------------------------------------------------------------------------------------------- | ------------------------- |
-| **rule**       | One automation: a name, on or off, a trigger, conditions and steps                            | automation (one), recipe  |
-| **trigger**    | What starts a rule: something that happened to one card, a person running it from the card,   | event (in copy), hook     |
-|                | or a time (a schedule, a due date coming or passed)                                           |                           |
-| **branch**     | A step that runs its own actions on each of the card's related cards (For Related Cards)      | loop, for-each (in copy)  |
-| **template**   | A ready-made rule from the Templates gallery, opened in the builder to finish and save        | recipe, preset            |
-| **condition**  | A check on the card or on who made the change; every condition must hold                      | filter (in copy), guard   |
-| **step**       | An action, or an If / Else holding actions                                                    | node                      |
-| **action**     | One change or message a rule makes                                                            | task, job                 |
-| **run**        | One rule answering one trigger: matched (its actions ran), no match, skipped or failed        | execution                 |
-| **Run Log**    | The plan's list of recent runs, newest first                                                  | audit log, history (here) |
-| **value**      | A placeholder in a rule's text (`{{card.title}}`), filled in when the rule runs               | smart value, variable     |
-| **Automation** | Who a rule's changes are by, on cards, comments and history, with the rule's name beside it   | bot, system               |
+| Term           | Means                                                                                       | Never called              |
+| -------------- | ------------------------------------------------------------------------------------------- | ------------------------- |
+| **rule**       | One automation: a name, on or off, a trigger, conditions and steps                          | automation (one), recipe  |
+| **trigger**    | What starts a rule: something that happened to one card, a person running it from the card, | event (in copy), hook     |
+|                | or a time (a schedule, a due date coming or passed)                                         |                           |
+| **branch**     | A step that runs its own actions on each of the card's related cards (For Related Cards)    | loop, for-each (in copy)  |
+| **template**   | A ready-made rule from the Templates gallery, opened in the builder to finish and save      | recipe, preset            |
+| **condition**  | A check on the card or on who made the change; every condition must hold                    | filter (in copy), guard   |
+| **step**       | An action, or an If / Else holding actions                                                  | node                      |
+| **action**     | One change or message a rule makes                                                          | task, job                 |
+| **run**        | One rule answering one trigger: matched (its actions ran), no match, skipped or failed      | execution                 |
+| **Run Log**    | The plan's list of recent runs, newest first                                                | audit log, history (here) |
+| **value**      | A placeholder in a rule's text (`{{card.title}}`), filled in when the rule runs             | smart value, variable     |
+| **Automation** | Who a rule's changes are by, on cards, comments and history, with the rule's name beside it | bot, system               |
 
 ## Who may do what
 
@@ -147,32 +147,33 @@ with what is missing.
 
 ## Actions
 
-| Action                          | Does                                                                                             |
-| ------------------------------- | ------------------------------------------------------------------------------------------------ |
-| **Move to Column**              | sets the card's status to a column its type uses (as the Status picker offers)                   |
-| **Set Field**                   | sets a field to a value: a literal, a value from the card, or a date (Today ± days)              |
-| **Clear Field**                 | empties a field                                                                                  |
-| **Assign**                      | assigns a chosen person, **whoever triggered the rule**, nobody, or **people in turn**: each run |
-|                                 | the next of 2 to 10 chosen people, in order, round and round                                     |
-| **Add Label**, **Remove Label** | adds or takes off one label                                                                      |
-| **Add Comment**                 | starts a new thread on the card with the comment, by Automation                                  |
-| **Flag**, **Unflag**            | flags or unflags the card                                                                        |
-| **Archive**                     | archives the card                                                                                |
-| **Create Card**                 | adds a card of a chosen type, with a title (values allowed), to a column, optionally copying the |
-|                                 | triggering card's assignee, labels and due date, and optionally linking it through a Card field  |
-| **Send Email**                  | emails the assignee, whoever triggered it or a chosen person, with a subject and a short body    |
-|                                 | (values allowed) and a link to the card; only people with an account get it, and the email       |
-|                                 | [notification](../014-identity/profile-and-email-notifications.md) opt-out applies               |
-| **Send to Webhook**             | sends a signed JSON event to one of the plan's own-service webhooks: the rule, the card and a    |
-|                                 | message (values allowed)                                                                         |
+| Action                          | Does                                                                                              |
+| ------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **Move to Column**              | sets the card's status to a column its type uses (as the Status picker offers)                    |
+| **Set Field**                   | sets a field to a value: a literal, a value from the card, or a date (Today ± days)               |
+| **Clear Field**                 | empties a field                                                                                   |
+| **Assign**                      | assigns a chosen person, **whoever triggered the rule**, nobody, or **people in turn**: each run  |
+|                                 | the next of 2 to 10 chosen people, in order, round and round                                      |
+| **Add Label**, **Remove Label** | adds or takes off one label                                                                       |
+| **Add Comment**                 | starts a new thread on the card with the comment, by Automation                                   |
+| **Flag**, **Unflag**            | flags or unflags the card                                                                         |
+| **Archive**                     | archives the card                                                                                 |
+| **Create Card**                 | adds a card of a chosen type, with a title (values allowed), to a column, optionally copying the  |
+|                                 | triggering card's assignee, labels and due date, and optionally linking it through a Card field   |
+| **Send Email**                  | emails the assignee, whoever triggered it or a chosen person, with a subject and a short body     |
+|                                 | (values allowed) and a link to the card; only people with an account get it, and the email        |
+|                                 | [notification](../014-identity/profile-and-email-notifications.md) opt-out applies                |
+| **Send to Webhook**             | sends a signed JSON event to one of the plan's own-service webhooks: the rule, the card and a     |
+|                                 | message (values allowed)                                                                          |
 | **Post to Slack**               | posts the message, with an **Open in liveplanner** link, through one of the plan's Slack webhooks |
-| **Post to Microsoft Teams**     | the same, as a card in a Teams channel through one of the plan's Teams webhooks                  |
-| **For Related Cards**           | a branch: runs its own conditions and actions on each related card (below)                       |
+| **Post to Microsoft Teams**     | the same, as a card in a Teams channel through one of the plan's Teams webhooks                   |
+| **For Related Cards**           | a branch: runs its own conditions and actions on each related card (below)                        |
 
 ### Assign in turn
 
 **People in turn** keeps its place per rule: the first run assigns the first person, the next the second, and after
-the last back to the first. A person who has left the plan is passed over (and the rule needs attention). A run that
+the last back to the first. A person who has left the plan is passed over, their turn with them (and the rule needs
+attention). A branch assigning in turn gives each related card the next person. A run that
 fails or matches nothing doesn't move the turn, and Test on a Card shows whose turn it is without taking it.
 
 ### Outgoing actions
@@ -185,8 +186,11 @@ fails or matches nothing doesn't move the turn, and Test on a Card shows whose t
   It fails when the platform refuses it: the webhook is paused ("Launch Channel is paused: the address said it’s
   gone"), deleted, or the platform can't be reached. Ten such failures pause the rule like any other, and a rule
   paused on a webhook shows **Fix Webhook** (the Webhooks dialog) beside **Resume**.
-- A rule holds at most **5** outgoing actions, never inside a branch, so one run posts at most 5 messages.
+- A rule holds at most **5** outgoing actions, at its top level (never inside a branch or an If / Else), so one run
+  posts at most 5 messages.
 - **Test on a Card** sends nothing and says "Would post to Launch Channel: …" with the message filled in.
+- A message whose values all came out empty (`{{card.assignee}}` on a card with none) is never sent: that step fails
+  with "The message came out empty".
 
 ### For Related Cards
 
@@ -202,7 +206,8 @@ Each branch has its own conditions (up to 10, on the related card) and 1 to 10 a
 rule's 20. In a branch, `{{card.…}}` is the related card and `{{trigger.title}}`, `{{trigger.key}}` and
 `{{trigger.url}}` the card that started the rule. A branch takes no If / Else, no other branch, no Create Card and
 no outgoing action. It runs on at most **100 related cards** (the first by their number), each as one write by
-Automation, and the run's line says "On 3 related cards". A related card that refuses an action fails that card's
+Automation, and the run's line says "For each Child Card: on 3 related cards" (each card's own lines beneath it,
+headed by its number). A related card that refuses an action fails that card's
 steps only; the run is **Failed** if any did, naming them.
 
 - An action that would change nothing (a label already there, a card already in the column) is not a change: the
@@ -286,22 +291,23 @@ on this plan's cards for you when something happens.", a **New Rule** button and
 - **Templates** (the tab, and under the empty state): category chips **All**, **Status**, **Assigning**, **Due
   Dates**, **Forms** and **Telling People**, then a tile per template, its name, its sentence and its category:
 
-  | Template                  | Does                                                                                  | Category       |
-  | ------------------------- | ------------------------------------------------------------------------------------- | -------------- |
-  | Stamp the Finish Date     | When a card moves to a done column, set Completed On to today and clear its flag.     | Status         |
-  | Assign on Start           | When a card moves to In Progress with no assignee, assign whoever moved it.           | Assigning      |
-  | Overdue Nudge             | Every weekday at 9:00, flag overdue cards and email their assignee.                   | Due Dates      |
-  | Share Out Form Responses  | When a form response lands, assign people in turn and thank the sender in a comment.  | Forms          |
+  | Template                   | Does                                                                                 | Category       |
+  | -------------------------- | ------------------------------------------------------------------------------------ | -------------- |
+  | Stamp the Finish Date      | When a card moves to a done column, set Completed On to today and clear its flag.    | Status         |
+  | Assign on Start            | When a card moves to In Progress with no assignee, assign whoever moved it.          | Assigning      |
+  | Overdue Nudge              | Every weekday at 9:00, flag overdue cards and email their assignee.                  | Due Dates      |
+  | Share Out Form Responses   | When a form response lands, assign people in turn and thank the sender in a comment. | Forms          |
   | Post Shipped Work to Slack | When a card with a chosen label moves to Done, post its title and link to a channel. | Telling People |
-  | Triage New Bugs           | When a Bug card is added, label it triage and assign the people on triage in turn.    | Assigning      |
-  | Unblock the Next Card     | When a card is done, comment on every card it was blocking that it can start.         | Status         |
-  | Due Soon Reminder         | Two days before a card is due, email its assignee with a link to the card.            | Due Dates      |
+  | Triage New Bugs            | When a Bug card is added, label it triage and assign the people on triage in turn.   | Assigning      |
+  | Unblock the Next Card      | When a card is done, comment on every card it was blocking that it can start.        | Status         |
+  | Due Soon Reminder          | Two days before a card is due, email its assignee with a link to the card.           | Due Dates      |
 
   Picking one opens the builder filled in, unsaved and off, named after it (made unique). What the plan has is
   filled in by its role (its done columns, its In Progress column, a date field named like Completed On, a Bug
   type); what it lacks or the template leaves to you (a label, the people in turn, a Slack webhook) is left empty,
   its step marked "Pick a field" (or a label, people, a webhook) until picked. Nothing is saved until **Save Rule**.
   **New Rule** offers **Start From a Template** too.
+
 - **Run Log**: filters **All Rules**, **Any Result** and **Last 7 Days**, the line "Kept for 30 days or the last
   2,000 runs, and the last 500 No Matches" (No Matches are kept apart, so they never push a run out), and one row per run: When, Rule, Card (`#48` and title), Result (**Done**, **No Match**, **Skipped**,
   **Failed** pills), Took. A row opens to its steps, one line each with a tick or a cross: who did what (the

@@ -2,10 +2,13 @@
 // "Storage"). Reads and writes `automation_rules` straight through the room's SQL (no write here is a card write), and
 // keeps `kinds`: the event kinds some rule that is on hears, in memory, rebuilt on every rule write and on wake. That
 // set is the whole cost a save pays when the plan has no rule that is on: one lookup, no SQL
-// (db/item-history.ts appendItemHistory).
+// (db/item-history.ts appendItemHistory). Every rule write also keeps the time triggers' schedule
+// (`automation_schedule`): a time-trigger rule that is on has its next moment there, any other rule none.
 import {
   AUTOMATION_FAILURES_TO_PAUSE,
   TRIGGER_EVENT_KINDS,
+  isTimeTrigger,
+  nextMoment,
   type AutomationEventKind,
   type AutomationRule,
 } from '@liveplanner/items';
@@ -29,10 +32,51 @@ export class AutomationStore {
   private readonly sql: () => Sql;
   // Whether the plan's schema exists (a plan never started holds no table to ask).
   private readonly ready: () => boolean;
+  // Called after the time triggers' schedule changed (the room's wake asks again).
+  onSchedule: () => void = () => {};
 
   constructor(sql: () => Sql, ready: () => boolean) {
     this.sql = sql;
     this.ready = ready;
+  }
+
+  // The rule's row in the time triggers' schedule, from the rule as it now is: its next moment after `now` for a
+  // time trigger that is on, else none.
+  private reschedule(rule: AutomationRule | null, id: string, now = Date.now()): void {
+    const next =
+      rule && rule.enabled && isTimeTrigger(rule.trigger)
+        ? nextMoment(rule.trigger, rule.timeZone, now)
+        : null;
+    if (next === null) this.sql().exec('DELETE FROM automation_schedule WHERE rule_id = ?', id);
+    else
+      this.sql().exec(
+        `INSERT INTO automation_schedule (rule_id, next_at) VALUES (?, ?)
+         ON CONFLICT (rule_id) DO UPDATE SET next_at = excluded.next_at`,
+        id,
+        next,
+      );
+    this.onSchedule();
+  }
+
+  // Each time rule's next moment, by rule id, for the Rules list's "Next: Mon 9:00".
+  nextAts(): Map<string, number> {
+    if (!this.ready()) return new Map();
+    const rows = this.sql()
+      .exec('SELECT rule_id, next_at FROM automation_schedule')
+      .toArray() as unknown as { rule_id: string; next_at: number }[];
+    return new Map(rows.map((r) => [r.rule_id, Number(r.next_at)]));
+  }
+
+  // The rule's place in Assign in Turn's list.
+  turn(id: string): number {
+    const row = this.sql().exec('SELECT turn FROM automation_rules WHERE id = ?', id).toArray()[0];
+    return Number(row?.['turn'] ?? 0);
+  }
+
+  // A done run took `turns` turns: the next run starts that far on.
+  advanceTurn(id: string, turns: number): void {
+    if (turns > 0)
+      this.sql().exec('UPDATE automation_rules SET turn = turn + ? WHERE id = ?', turns, id);
   }
 
   private rows(where = '', ...bindings: unknown[]): Row[] {
@@ -92,6 +136,7 @@ export class AutomationStore {
       rule.enabled ? 1 : 0,
     );
     this.load();
+    this.reschedule(rule, rule.id);
   }
 
   // A rule as written now. `failures`: set it too (Resume and a matched run clear it).
@@ -104,6 +149,7 @@ export class AutomationStore {
       rule.id,
     );
     this.load();
+    this.reschedule(rule, rule.id);
   }
 
   remove(id: string): boolean {
@@ -111,6 +157,7 @@ export class AutomationStore {
       this.sql().exec('DELETE FROM automation_rules WHERE id = ? RETURNING id', id).toArray()
         .length > 0;
     this.load();
+    this.reschedule(null, id);
     return gone;
   }
 
@@ -126,8 +173,15 @@ export class AutomationStore {
   }
 
   // A run's result on its rule's count: a done run clears it, a failed one adds one, and the tenth failure in a row
-  // turns the rule off, Paused with the reason. Answers whether it paused.
-  settle(id: string, result: 'done' | 'failed', reason: string, now: number): boolean {
+  // turns the rule off, Paused with the reason (and the webhook, when a message's failure paused it, for Fix
+  // Webhook). Answers whether it paused.
+  settle(
+    id: string,
+    result: 'done' | 'failed',
+    reason: string,
+    now: number,
+    webhook?: string,
+  ): boolean {
     const rule = this.get(id);
     if (!rule) return false;
     if (result === 'done') {
@@ -139,7 +193,10 @@ export class AutomationStore {
       this.sql().exec('UPDATE automation_rules SET failures = ? WHERE id = ?', failures, id);
       return false;
     }
-    this.update({ ...rule, enabled: false, paused: { reason, at: now } }, failures);
+    this.update(
+      { ...rule, enabled: false, paused: { reason, at: now, ...(webhook ? { webhook } : {}) } },
+      failures,
+    );
     console.info('[automations] paused', { failures });
     return true;
   }

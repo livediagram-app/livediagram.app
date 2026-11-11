@@ -3,11 +3,14 @@
 // through an API token and never through a link confined to one tab: anyone else is answered 403
 // `automations_need_editor`. A rule is checked by @liveplanner/items readRuleBody; it is on once it has an action.
 // Test on a Card runs the rule as a dry run, changing nothing and logging nothing; Run Rule runs a Run from a Card
-// rule at once.
+// rule at once. A time trigger's rule lists its next moment (`stats.nextAt`), and tests on the chosen card as if its
+// moment had come.
 import {
   AUTOMATION_RULES_MAX,
   AUTOMATION_RUNS_PER_DAY,
+  automationPerson,
   freeRuleName,
+  isTimeTrigger,
   isTrashed,
   readRuleBody,
   ruleHasAction,
@@ -65,12 +68,14 @@ function listed(
   plan: AutomationPlan,
   rule: AutomationRule,
   stats: ReturnType<typeof ruleStats>,
+  nextAts: ReadonlyMap<string, number>,
 ): AutomationListedRule {
   const s = stats.get(rule.id);
   return {
     ...rule,
     stats: {
       lastRunAt: s?.lastRunAt ?? null,
+      nextAt: isTimeTrigger(rule.trigger) ? (nextAts.get(rule.id) ?? null) : null,
       runsThisWeek: s?.runsThisWeek ?? 0,
       failuresInARow: hook.store.failures(rule.id),
     },
@@ -81,15 +86,16 @@ function listed(
 async function answerRule(ctx: PlanRouteContext, g: Gated, rule: AutomationRule, status = 200) {
   const plan = await readAutomationPlan(ctx.env, g.projectId);
   const stats = ruleStats(g.hook.sql(), Date.now());
-  return json({ rule: listed(g.hook, plan, rule, stats) }, { status });
+  return json({ rule: listed(g.hook, plan, rule, stats, g.hook.store.nextAts()) }, { status });
 }
 
 async function list(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   const now = Date.now();
   const plan = await readAutomationPlan(ctx.env, g.projectId);
   const stats = ruleStats(g.hook.sql(), now);
+  const nextAts = g.hook.store.nextAts();
   const answer: AutomationsListResponse = {
-    rules: g.hook.store.list().map((r) => listed(g.hook, plan, r, stats)),
+    rules: g.hook.store.list().map((r) => listed(g.hook, plan, r, stats, nextAts)),
     runsToday: runsToday(g.hook.sql(), now),
     runsPerDay: AUTOMATION_RUNS_PER_DAY,
   };
@@ -231,8 +237,19 @@ async function test(ctx: PlanRouteContext, g: Gated): Promise<Response> {
     made: stamp,
     edited: stamp,
   };
-  const event = manualEvent(g, card.id, 't');
-  const run = await runRule(deps, { plan: null, today: 0 }, rule, event, { dry: true });
+  // A time trigger's rule runs as at its moment: by Automation, no person behind it.
+  const event: AutomationEvent = isTimeTrigger(rule.trigger)
+    ? {
+        ...manualEvent(g, card.id, 't'),
+        kind: 'time',
+        by: automationPerson(rule.name),
+        role: 'system',
+      }
+    : manualEvent(g, card.id, 't');
+  // Whose turn it is for a saved rule (shown, never taken).
+  const saved = typeof raw['ruleId'] === 'string' ? g.hook.store.get(raw['ruleId']) : null;
+  const turn = saved ? g.hook.store.turn(saved.id) : 0;
+  const run = await runRule(deps, { plan: null, today: 0 }, rule, event, { dry: true, turn });
   return json({ run });
 }
 

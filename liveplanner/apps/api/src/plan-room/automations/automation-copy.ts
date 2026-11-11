@@ -4,6 +4,8 @@
 // (one that does not read back is left behind). A plan's delete drops them with the rest of its SQLite.
 import {
   AUTOMATION_RULES_MAX,
+  isTimeTrigger,
+  nextMoment,
   readRuleBody,
   type AutomationRule,
   type AutomationStamp,
@@ -26,16 +28,30 @@ export async function copiedRules(env: Pick<PlanEnv, 'PLAN_DB'>): Promise<Automa
   return out;
 }
 
-// A copy's rules as rows of the plan they land in: on or off as they were, nothing paused or failed.
+// A copy's rules as rows of the plan they land in: on or off as they were, nothing paused or failed, the turn from
+// the first person; a time rule that is on is scheduled from now.
 export function copiedRuleStatements(
   env: Pick<PlanEnv, 'PLAN_DB'>,
   rules: readonly AutomationRule[],
+  now = Date.now(),
 ): D1PreparedStatement[] {
-  return rules.slice(0, AUTOMATION_RULES_MAX).map((rule, position) => {
+  return rules.slice(0, AUTOMATION_RULES_MAX).flatMap((rule, position) => {
     const { paused: _paused, ...kept } = rule;
-    return env.PLAN_DB.prepare(
+    const row = env.PLAN_DB.prepare(
       'INSERT INTO automation_rules (id, body, enabled, position, failures) VALUES (?, ?, ?, ?, 0)',
     ).bind(rule.id, JSON.stringify(kept), kept.enabled ? 1 : 0, position);
+    const next =
+      kept.enabled && isTimeTrigger(kept.trigger)
+        ? nextMoment(kept.trigger, kept.timeZone, now)
+        : null;
+    if (next === null) return [row];
+    return [
+      row,
+      env.PLAN_DB.prepare('INSERT INTO automation_schedule (rule_id, next_at) VALUES (?, ?)').bind(
+        rule.id,
+        next,
+      ),
+    ];
   });
 }
 
