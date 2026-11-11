@@ -23,7 +23,7 @@ canvas. A project in This Browser says what it is on the project itself: the edi
 | A signed-in person | **liveplanner**  |
 
 Why a guest starts local: [Auth + guest access → Guest projects start local](../014-identity/auth-and-guest-access.md#guest-projects-start-local).
-A project in This Browser is still in the shared Explorer: its This Browser row and view, and Jump Back In, list this
+A project in This Browser is still in the shared Explorer: its This Browser row and view, and Most Used and Recent, list this
 browser's projects beside the index's ([liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md),
 [Offline Mode → This Browser badge + Explorer](offline-mode.md#this-browser-badge--explorer)).
 

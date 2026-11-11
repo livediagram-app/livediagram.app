@@ -3,7 +3,7 @@
 //
 // The server never sees an Offline Mode design, so it cannot count its opens. This Browser does,
 // by the server's own rule: the UTC days with an open, inside the 90-day use window, and the last
-// open, so Home's Jump Back In places a local design among the rest. The record sits on the
+// open, so Home's Recent places a local design among the rest. The record sits on the
 // design's own record, so it goes wherever the record goes (the local Trash, a purge, Sync
 // Design) and never leaves the browser.
 
@@ -20,7 +20,7 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type { LocalOpens };
 
-/** A local design that has been opened, as Jump Back In merges it. */
+/** A local design that has been opened, as Home's Recent merges it. */
 export type LocalOpenDesign = { design: DesignSummary; opens: LocalOpens };
 
 /** A record's stored opens as the current shape. The shape written before Within reach still

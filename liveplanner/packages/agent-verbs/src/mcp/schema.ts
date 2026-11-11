@@ -361,7 +361,7 @@ export const createProjectShape = {
     .boolean()
     .optional()
     .describe(
-      "Whether this plan joins the user's Jump back in (their most used and recent plans) " +
+      "Whether this plan joins the user's Most Used and Recent on Home (their most used and recent plans) " +
         'at once. Default true. Pass false when making many plans in one go, so a batch ' +
         "never pushes the user's own work out of reach.",
     ),

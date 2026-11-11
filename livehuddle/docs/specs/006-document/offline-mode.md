@@ -209,13 +209,13 @@ back into This Browser's list.
   this browser holds at least one (`hooks/persistence/useThisBrowserHost.ts`). `/offline`, the old This Browser page,
   only redirects to `/explorer/offline`, its query kept.
 - **Home.** An offline document's opens are counted in this browser only (`lib/offline/offline-opens.ts`), never
-  sent anywhere, and carried in that list, so Home's Jump Back In can place it among the reader's other documents
+  sent anywhere, and carried in that list, so Home's Most Used and Recent can place it among the reader's other documents
   ([Explorer Home](../013-workspace/explorer-home.md#opens)).
 
 ### This Browser pill
 
 Every row and card of an offline document carries a **This Browser** pill,
-wherever the document is listed: This Browser's page and Home's Jump Back In.
+wherever the document is listed: This Browser's page and Home's Most Used and Recent.
 
 - **Not colour alone.** The pill shows an icon (a browser window) and the words
   "This Browser", in a teal tone whose text meets 4.5:1 on its fill in light and

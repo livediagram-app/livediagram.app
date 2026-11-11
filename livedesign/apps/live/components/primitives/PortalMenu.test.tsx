@@ -121,7 +121,7 @@ describe('PortalMenu', () => {
   });
 });
 
-// docs/specs/013-workspace/explorer-home.md "Jump Back In": a card's menu opens beside the card, out of its way.
+// docs/specs/013-workspace/explorer-home.md "Most Used and Recent": a card's menu opens beside the card, out of its way.
 describe('PortalMenu beside a card', () => {
   const open = (card: DOMRect) => {
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(MENU_W);

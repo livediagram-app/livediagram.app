@@ -81,9 +81,9 @@ view says so. Its local folders show first, as folder cards, then the canvases.
   teams, with their count, shown while it holds a canvas or a local folder, opening the Explorer's own This Browser
   view (`/explorer/offline`, a local folder at `/explorer/offline?folder=<id>`), each canvas opening in the editor.
   It has local folders of its own (New Folder, and on each folder Rename, New Subfolder, Move Folder and Delete Folder), and Sync of a canvas in one
-  offers the My Work folder of the same name; Home's Jump Back In shows the ones opened, each a card
+  offers the My Work folder of the same name; Home's Most Used and Recent shows the ones opened, each a card
   like the rest with the This Browser badge, its menu (Open, Sync Space) and its drag (the Trash or a folder,
-  [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser in Jump Back In"). On
+  [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser on Home"). On
   liveworkspace.app, which cannot read this browser's storage for livehuddle, This Browser is never a Space: a quiet row after the Library links to `/explorer/offline` here.
 - **The editor's Explorer panel** has This Browser as a view of its own: a rail entry, last among the spaces, with
   the count, shown only while it holds something, opening its pane in place (`apps/editor/hooks/persistence/useThisBrowserHost.ts`,

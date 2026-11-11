@@ -81,7 +81,7 @@ Top to bottom. "Opens" names the view a row selects; every view keeps its own ro
 
 Home is the Explorer's landing view. The **Inbox** is what is outstanding for the reader now; what happened to one
 design is its **History**, on its menu ([History](history.md)). Recent and Favourites have no sidebar row; their routes
-(`/explorer/recent`, `/explorer/favourites`) keep working. Recent is reached from Home's Jump Back In (**See More**).
+(`/explorer/recent`, `/explorer/favourites`) keep working. Recent is reached from Home's Recent (**See More**).
 The retired `/explorer/activity` opens the Inbox, and the retired `/explorer/timeline` opens Home
 ([Folders: Explorer routes](folders.md#explorer-routes)).
 
@@ -326,7 +326,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 
 | Section        | The pane shows                                                                                                                                                                                                                                                                                                       | Action     |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| Home           | **Jump Back In**: up to eight designs (most used, then most recent), never the one open, as cards (four per row) with **See all** (Recent); when the open one is the only one, the empty state says "Nothing else yet" rather than "No designs yet".                                                                 | None       |
+| Home           | **Most Used** and **Recent**: up to eight designs (most used, then most recent), never the one open, as cards (four per row) with **See all** (Recent); when the open one is the only one, the empty state says "Nothing else yet" rather than "No designs yet".                                                     | None       |
 | Inbox          | The Inbox ([Inbox](inbox.md)): assigned to you, you assigned, open comment threads                                                                                                                                                                                                                                   | None       |
 | Shared With Me | The designs shared with the reader, as rows                                                                                                                                                                                                                                                                          | None       |
 | My Work        | The root folders as preview cards (their counts on the picture), then the root designs as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it | New Folder |
@@ -386,11 +386,11 @@ row and card of one, wherever it is listed (folders, This Browser, Recent and Fa
 editor's Explorer, the Trash), carries the **This Browser** pill
 ([Offline Mode: This Browser pill](../006-design/offline-mode.md#this-browser-pill)).
 
-The editor header names such a design with the matching **This Browser** badge. Home's "Jump Back In" carries the
+The editor header names such a design with the matching **This Browser** badge. Home's Recent carries the
 same pill (`ThisBrowserPill`) on the design's card, which is the same size and shape as the rest of its group, with
 the same ⋯ menu and right-click (Open, Sync Design) and the same drag: to the Trash, deleted for good after a
 confirmation where the host can; to a folder, synced to the account first
-([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser in Jump Back In",
+([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser on Home",
 [Explorer Home](explorer-home.md)).
 
 ## Telemetry

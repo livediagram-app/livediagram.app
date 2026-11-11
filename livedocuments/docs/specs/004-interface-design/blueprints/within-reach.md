@@ -1,7 +1,7 @@
 # Within reach: blueprint
 
 Derived from [Within reach](../within-reach.md). The spec decides; this file adds engineering precision. The
-surface that uses the rule, the shared Explorer's Jump Back In, is liveworkspace's
+surface that uses the rule, the shared Explorer's Most Used and Recent, is liveworkspace's
 ([one-explorer.md](../../../../../liveworkspace/docs/specs/004-index/one-explorer.md)); this one is the allocation.
 
 Scope, by file:
@@ -87,11 +87,11 @@ browser's opened local documents).
 | Recent newest first, never one of the most used     | same                                                                                           |
 | Short groups, empty input, `n <= 0`, stable ties    | same                                                                                           |
 | The merge property over two lists                   | same                                                                                           |
-| Jump Back In's split, merge and alternation         | `packages/api-schema` (`withinReach`; the Home view that used it moved to the shared Explorer) |
+| Most Used and Recent's split and merge              | `packages/api-schema` (`withinReach`; the Home view that used it moved to the shared Explorer) |
 
 ## Constants and configuration
 
-None of its own: N, the measure of a use and its window belong to each surface (Jump Back In: 4,
+None of its own: N, the measure of a use and its window belong to each surface (Most Used and Recent: 4,
 over `WITHIN_REACH_USE_WINDOW_DAYS`).
 
 ## Defaults ledger

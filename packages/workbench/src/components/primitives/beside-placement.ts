@@ -1,4 +1,4 @@
-// Where a menu opens beside the card it belongs to (docs/specs/013-workspace/explorer-home.md "Jump Back In"): out of
+// Where a menu opens beside the card it belongs to (docs/specs/013-workspace/explorer-home.md "Most Used and Recent"): out of
 // the card's way, never over it. To the card's right with its top level with the card's, else to its left, else
 // nowhere (null), and the caller hangs it from its trigger as usual. PURE, so it tests without layout.
 
