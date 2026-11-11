@@ -11,7 +11,7 @@ Derived from [Venue pieces](../venue-pieces.md).
 | `packages/document/src/colors.ts`                                         | `FLOOR_FILLS['swimming-pool']`: the water, light and dark                                                              |
 | `packages/document/src/svg-render-faces.ts`                               | The grid pieces through `furnitureArt`; the pool through `sizedSvg(swimmingPoolParts)`                                 |
 | `packages/document/src/shape-factory.ts`                                  | Default sizes; grid pieces wordless and aspect locked; the pool wordless and free                                      |
-| `packages/avatar/src/office-geometry.ts`                                  | Footprints (`OFFICE_FOOTPRINT`), `POOL_DECK`, `poolDeck`, the pool's inset footprint, `stage-curtains` a wall piece    |
+| `packages/avatar/src/office-geometry.ts`                                  | Footprints (`OFFICE_FOOTPRINT`, `OFFICE_FOOTPRINT_BOXES`), `POOL_DECK`, `poolDeck`, the pool's inset footprint         |
 | `apps/editor/components/canvas/collab/FurnitureView.tsx`                  | `NOUN` for the six grid pieces                                                                                         |
 | `apps/editor/components/canvas/collab/SwimmingPoolView.tsx`               | The pool at its own size, with the Pond's `lh-ripple`                                                                  |
 | `apps/editor/components/canvas/collab/RoomView.tsx`                       | `SizedPieceView` paints every part through `FurniturePartView`, so the stage's own colours (nosing, skirt, lamps) show |
@@ -31,16 +31,30 @@ Derived from [Venue pieces](../venue-pieces.md).
 | Car Park       | `car-park`       | 240 × 128, three bays 76 apart (`BAY_LINES` 4, 80, 156, 232) |
 | Bike Rack      | `bike-rack`      | 136 × 80, two hoops                                          |
 | Swimming Pool  | `swimming-pool`  | Sized, default 320 × 200, deck `poolDeck(w, h)`              |
-| Stage Curtains | `stage-curtains` | 360 × 120, a wall piece                                      |
+| Stage Curtains | `stage-curtains` | 360 × 120, scenery blocking at its two hems                  |
 | Podium         | `podium`         | 56 × 88                                                      |
 
 ## Behaviour and state
 
 - Footprints (fractions of the box): pillar `x 0..1, y 134..150 / 152`; column `x 4..60 / 64, y 148..164 / 168`; car
-  park `x 0..1, y 44..124 / 128`; bike rack `x 4..132 / 136, y 52..76 / 80`; podium `x 8..48 / 56, y 74..86 / 88`.
+  park in `OFFICE_FOOTPRINT_BOXES` (below); bike rack `x 4..132 / 136, y 52..76 / 80`; podium `x 8..48 / 56, y 74..86 / 88`.
 - The pool's footprint is in px: the box inset by `poolDeck(w, h) = max(0, min(POOL_DECK, min(w, h) / 10))`,
   `POOL_DECK = 14`. `swimmingPoolParts` draws the water at exactly that inset.
-- `isWallPieceShape('stage-curtains')`: no footprint, `elementUnderFeet` skips it.
+- **Several boxes** (`OFFICE_FOOTPRINT_BOXES`: a list of fractions per drawing, `front`, optional `back`, `side`).
+  `footprintFractions(shape, facing)` reads it (the back left out blocks as the front; the right is the side
+  mirrored, `mirrorFraction` on each box), else `[footprintFraction(shape, facing)]`, else `[]`.
+  `officeFootprints(el)` is those in canvas px (the pool's water its one box); `officeFootprint(el)` stays the one
+  box of a single-box piece, and for a several-box piece their bounding box (what a caller that wants one place reads).
+  `fenceSegments` outlines each box of `officeFootprints(el)` as its own `solid`, so the walk's step test and the
+  route grid (pathing.ts, which fills each `solid`) block each box and leave the floor between open.
+  - Car park front: kerb `x 0..1, y 18..31 / 128`; red car `x 0..76 / 240, y 36..120 / 128`; blue car
+    `x 164..240 / 240, y 36..120 / 128`. Back: kerb `x 0..1, y 104..122 / 128`; cars `x 0..76` and `164..240 / 240,
+y 28..104 / 128`. Side (128 × 240, `'e'`; `'w'` mirrored): kerb `x 106..126 / 128, y 0..1`; cars
+    `x 4..96 / 128, y 0..78 / 240` and `y 162..240 / 240`. The middle bay (front `x 76..164`) is open from the side
+    away from its kerb.
+  - Stage curtains, every facing (one drawing): the hems `x 0..60 / 360` and `x 300..360 / 360`, `y 98..118 / 120`.
+- `stage-curtains` leaves `WALL_PIECE_KINDS` and is scenery (`isSceneryShape`: a kind in `OFFICE_FOOTPRINT` or
+  `OFFICE_FOOTPRINT_BOXES`, or the pool); `elementUnderFeet` skips it as scenery, so it is still never a destination.
 - **Speaking from the Podium** (`packages/avatar/src/lectern.ts`, `lectern-seats.ts`). `podium` joins `FixedSeatKind`
   and `STANDING_SEAT_KINDS` (office-geometry.ts), so it is held, claimed, yielded, carried round and drawn standing
   by the seat code every seat uses (seat-claims.ts, chair-sitters.ts, useAvatarWalkArrivals followSeat), and keeps its
@@ -113,8 +127,11 @@ in `PALETTE_TELEMETRY_TYPES`.
 - `office-venue.test.ts` (document): grid pieces at their size, wordless, locked, parts in the grid, the mirrored
   drapes; the pool's water at the deck, its lanes, ladder and CPU budget.
 - `office.test.ts`: the stage's boards, nosing, skirt, footlights clear of the plate, the plank cap.
-- `venue-pieces.test.ts` (avatar): footprints, the pool's inset and a walk stopping at its rim, the curtains walked
-  through, nobody seated but the Podium's speaker.
+- `venue-pieces.test.ts` (avatar): footprints, the pool's inset and a walk stopping at its rim, nobody seated but the
+  Podium's speaker.
+- `footprint-boxes.test.ts` (avatar): the car park's and the curtains' boxes at every facing; a walk (and a route,
+  `findWalkPath`) into the car park's empty bay; a walk into each drape stopped at its hem; a walk between the drapes
+  onto the stage.
 - `lectern.test.ts` (avatar): the spot and facing at 0, 90, 180 and 270 degrees, a stored rotation at any angle
   ignored, the spot clear of the foot, feet on the spot counted at the Podium, walking up to it, the free spot, the
   taken case's step aside and two arriving at once.
@@ -145,7 +162,8 @@ in `PALETTE_TELEMETRY_TYPES`.
 
 ## Defaults ledger
 
-- Stage Curtains never block (a wall piece): a single-box footprint could only block the whole stage or none of it.
-- The car park blocks across all its bays, the empty one too: one footprint box per piece.
+- Stage Curtains block at their hems only, the outer sixth of the width each side (the drape's foot is 60 of 360 wide).
+- The car park's cars run out to the piece's edge (the outer bay lines are paint, not floor), so a row of car parks
+  stays one barrier; the wheel stop in the empty bay does not block (a low strip, stepped over).
 - The pool's deck is travertine (`#d4c19c`), not white tile: it reads on both papers and is no light base on dark.
 - Pillars and Columns join Rooms (structure), the pool and arrivals Garden (outdoors), no new category.
