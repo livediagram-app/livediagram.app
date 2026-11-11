@@ -745,6 +745,131 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     responseSchema: 'ItemTypesResponse',
     statuses: [200, 400, 401, 403, 404, 405, 409, 410],
   },
+  // A plan's Automations (docs/specs/026-plan/automations.md).
+  {
+    method: 'GET',
+    path: '/projects/{id}/automations',
+    segment: 'projects',
+    tag: 'Automations',
+    summary:
+      "The plan's rules in their order, each with its last run, its runs this week, its failures in a row and what it names that the plan lacks; and the runs today against the day's budget. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.",
+    auth: 'clerk',
+    responseSchema: 'AutomationsListResponse',
+    statuses: [200, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'POST',
+    path: '/projects/{id}/automations',
+    segment: 'projects',
+    tag: 'Automations',
+    summary:
+      'Make a rule, last in the list: on once it has an action. Up to 50 rules, names unique. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+    auth: 'clerk',
+    requestSchema: 'AutomationRuleBody',
+    responseSchema: 'AutomationRuleResponse',
+    statuses: [201, 400, 401, 403, 404, 409, 410],
+  },
+  {
+    method: 'PUT',
+    path: '/projects/{id}/automations/{ruleId}',
+    segment: 'projects',
+    tag: 'Automations',
+    summary:
+      "Save a rule's trigger, conditions, actions and details. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.",
+    auth: 'clerk',
+    requestSchema: 'AutomationRuleBody',
+    responseSchema: 'AutomationRuleResponse',
+    statuses: [200, 400, 401, 403, 404, 405, 409, 410],
+  },
+  {
+    method: 'DELETE',
+    path: '/projects/{id}/automations/{ruleId}',
+    segment: 'projects',
+    tag: 'Automations',
+    summary:
+      'Delete a rule. Its runs stay in the Run Log until they age out. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+    auth: 'clerk',
+    statuses: [204, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'POST',
+    path: '/projects/{id}/automations/{ruleId}/toggle',
+    segment: 'projects',
+    tag: 'Automations',
+    summary:
+      'Turn a rule on or off. On clears a pause and its failures. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+    auth: 'clerk',
+    requestSchema: 'AutomationToggleRequest',
+    responseSchema: 'AutomationRuleResponse',
+    statuses: [200, 400, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'POST',
+    path: '/projects/{id}/automations/{ruleId}/duplicate',
+    segment: 'projects',
+    tag: 'Automations',
+    summary:
+      'Copy a rule, off, as "<name> copy". Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+    auth: 'clerk',
+    responseSchema: 'AutomationRuleResponse',
+    statuses: [201, 401, 403, 404, 405, 409, 410],
+  },
+  {
+    method: 'POST',
+    path: '/projects/{id}/automations/{ruleId}/run',
+    segment: 'projects',
+    tag: 'Automations',
+    summary:
+      'Run a Run from a Card rule that is on, on one card, now. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+    auth: 'clerk',
+    requestSchema: 'AutomationRunNowRequest',
+    responseSchema: 'AutomationRunResponse',
+    statuses: [200, 400, 401, 403, 404, 405, 409, 410, 429],
+  },
+  {
+    method: 'POST',
+    path: '/projects/{id}/automations/order',
+    segment: 'projects',
+    tag: 'Automations',
+    summary:
+      'Put the rules in this order; ids names every rule once. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+    auth: 'clerk',
+    requestSchema: 'AutomationOrderRequest',
+    statuses: [204, 400, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'POST',
+    path: '/projects/{id}/automations/test',
+    segment: 'projects',
+    tag: 'Automations',
+    summary:
+      'Try a rule on a card: what each condition and action would do. Nothing changes and nothing is logged. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+    auth: 'clerk',
+    requestSchema: 'AutomationTestRequest',
+    responseSchema: 'AutomationRunResponse',
+    statuses: [200, 400, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'GET',
+    path: '/projects/{id}/automations/runs',
+    segment: 'projects',
+    tag: 'Automations',
+    summary:
+      'The Run Log, newest first: by rule, result and since when, up to 200. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+    auth: 'clerk',
+    query: [
+      { name: 'rule', required: false, description: 'A rule id.' },
+      { name: 'result', required: false, description: 'done, no_match, skipped or failed.' },
+      {
+        name: 'since',
+        required: false,
+        description: 'Runs at or after this time (ms since 1970).',
+      },
+      { name: 'limit', required: false, description: 'Up to 200; 50 when left off.' },
+    ],
+    responseSchema: 'AutomationRunsResponse',
+    statuses: [200, 401, 403, 404, 405, 410],
+  },
   // The project's plan for agents (docs/specs/026-plan/plan-agents.md).
   {
     method: 'GET',

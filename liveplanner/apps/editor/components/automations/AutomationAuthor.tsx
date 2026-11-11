@@ -9,7 +9,14 @@ import { AUTOMATION_PERSON_ID } from '@liveplanner/items';
 import { useAutomationsAccess } from './AutomationsContext';
 import { useAutomations } from './use-automations';
 
-export const isAutomationAuthor = (id: string | undefined | null) => id === AUTOMATION_PERSON_ID;
+// A comment a rule added: its public `automation` mark, which survives the api's author-id redaction, or (as a
+// history writer or before the mark) the Automation id.
+export const isAutomationAuthor = (
+  c: { authorId?: string | null; automation?: unknown } | string | undefined | null,
+): boolean =>
+  typeof c === 'string' || c == null
+    ? c === AUTOMATION_PERSON_ID
+    : c.automation !== undefined || c.authorId === AUTOMATION_PERSON_ID;
 
 // A comment Automation added: the violet card it sits on.
 export const AUTOMATION_SURFACE =

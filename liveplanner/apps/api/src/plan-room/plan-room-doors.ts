@@ -247,7 +247,9 @@ export async function exportCopy(
   const env = room.requireEnv();
   const post = copier?.code ? await communityOf(room, planId) : null;
   const community = post !== null && post.open && post.code === copier?.code;
-  const copy = await exportPlanCopy(env, planId, onlyTabId, null, community);
+  // The rules go with a whole-plan copy by someone not reaching it through a link (its owner or team).
+  const withRules = onlyTabId === null && !community && !copier?.code;
+  const copy = await exportPlanCopy(env, planId, onlyTabId, null, community, withRules);
   return copy ? { copy, community } : null;
 }
 

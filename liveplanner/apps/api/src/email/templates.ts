@@ -54,6 +54,7 @@ export type EmailKind =
   | 'Mentioned'
   | 'FormResponse'
   | 'FormSuspended'
+  | 'AutomationEmail'
   | 'AccountDeleted';
 
 export type RenderedEmail = {
@@ -239,6 +240,35 @@ export function formResponseEmail(
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because someone filled in a form in a plan you own.',
+      ),
+    }),
+    unsubscribeUrl: profilePath(env),
+  };
+}
+
+// A rule's Send Email (docs/specs/026-plan/automations.md "Actions"): the subject and body its Editor wrote (values
+// filled in), the rule's name and the plan's, and a button that opens the card. Everything in it is escaped; the
+// body's lines stay lines. Opt-out with assigned actions (notifyActionAssigned): it tells someone about a card.
+export function automationEmail(
+  env: Env,
+  input: { subject: string; body: string; rule: string; planName: string; cardUrl: string },
+): RenderedEmail {
+  const body = input.body
+    .split(/\r?\n/)
+    .map((line) => escapeHtml(line))
+    .join('<br>');
+  return {
+    kind: 'AutomationEmail',
+    subject: escapeText(input.subject.trim() || input.rule),
+    html: shell(env, {
+      heading: escapeHtml(input.subject.trim() || input.rule),
+      intro: body || escapeHtml(input.rule),
+      outro: `Sent by the rule <strong>${escapeHtml(input.rule)}</strong> in <strong>${escapeHtml(input.planName.trim() || 'a plan')}</strong>.`,
+      ctaText: 'Open the card',
+      ctaHref: input.cardUrl,
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because a rule in a plan you work on sends it.',
       ),
     }),
     unsubscribeUrl: profilePath(env),

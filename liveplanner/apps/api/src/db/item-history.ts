@@ -11,11 +11,17 @@ import {
   historyChangesOf,
   readStoredHistory,
   type Item,
+  type ItemHistoryChange,
   type ItemHistoryTag,
   type StoredHistoryEntry,
 } from '@liveplanner/items';
 import { CARD_MOVED_KIND, cardMoveKeyOf } from '@liveworkspace/index-app';
 import type { PlanEnv } from '../types';
+import {
+  enqueueStatement,
+  eventsOfWrites,
+  type HistorySource,
+} from '../plan-room/automations/automation-queue';
 
 // A card with no status, as a webhook names where it was.
 const NO_STATUS = 'No Status';
@@ -28,13 +34,21 @@ export type HistoryWrite = { before: Item | null; after: Item };
 // trim: its entries past ITEM_HISTORY_MAX, and those past the age limit, go. A made card has nothing to trim (a card
 // put back after a delete starts a new history; its old one went with it). Never throws: the card's write has
 // landed, and a history that could not be kept must not refuse it. Answers how many entries it kept.
+//
+// The same batch queues the writes' Automations events (docs/specs/026-plan/automations.md "Runs, limits and
+// loops"), only for the kinds some rule that is on hears: a plan with none pays one Set lookup and no statement.
+// `source` says who made the writes, for a rule's Who Did It and its chain.
 export async function appendItemHistory(
-  env: Pick<PlanEnv, 'PLAN_DB'>,
+  env: Pick<PlanEnv, 'PLAN_DB' | 'AUTOMATIONS'>,
   projectId: string,
   writes: readonly HistoryWrite[],
   tag?: ItemHistoryTag,
+  source?: HistorySource,
 ): Promise<number> {
   const db = env.PLAN_DB;
+  const hook = env.AUTOMATIONS;
+  const listening = hook !== undefined && hook.kinds.size > 0;
+  const heard: { before: Item | null; after: Item; changes: ItemHistoryChange[] }[] = [];
   const rows: { i: string; a: number; b: string; c: string }[] = [];
   const moves: string[] = [];
   const trimmed = new Set<string>();
@@ -42,6 +56,7 @@ export async function appendItemHistory(
   for (const { before, after } of writes) {
     const changes = historyChangesOf(before, after);
     if (changes.length === 0) continue;
+    if (listening) heard.push({ before, after, changes });
     const by = before ? after.updatedBy : after.createdBy;
     rows.push({
       i: after.id,
@@ -97,8 +112,11 @@ export async function appendItemHistory(
         .bind(projectId, itemId, cutoff, projectId, itemId, ITEM_HISTORY_MAX),
     );
   }
+  const events = listening ? await eventsOfWrites(hook.kinds, heard, tag, source) : [];
+  if (events.length > 0) statements.push(enqueueStatement(db, events, Date.now()));
   try {
-    await db.batch(statements);
+    const results = await db.batch(statements);
+    if (events.length > 0) hook?.queued(events.length - (results.at(-1)?.meta.changes ?? 0));
     return rows.length;
   } catch (error) {
     console.warn('[items] history.append.failed', { projectId, error: String(error) });

@@ -4,6 +4,7 @@
 // (its card types, columns, people, tabs and saved filters); one the plan no longer has reads as its stored id, so a
 // rule needing attention still says what it names. Pure.
 
+import { automationDayWords } from './conditions';
 import { BUILT_IN_FIELD_NAMES, builtInFieldLabel } from '../built-in-field-labels';
 import { isPriority, PRIORITY_LABELS } from '../fields';
 import type { ItemPerson } from '../item';
@@ -12,7 +13,6 @@ import type {
   AutomationAction,
   AutomationActionKind,
   AutomationCondition,
-  AutomationDay,
   AutomationFieldOp,
   AutomationRuleBody,
   AutomationSetValue,
@@ -126,12 +126,6 @@ export function outlineFieldName(fieldId: string, outline: RuleSentenceOutline):
 }
 
 /** A day a date condition or Set Field names: "Today", "Today + 3 days", "Today - 1 day", or the day itself. */
-export function automationDayWords(day: AutomationDay): string {
-  if ('day' in day) return day.day;
-  if (day.today === 0) return 'Today';
-  const n = Math.abs(day.today);
-  return `Today ${day.today > 0 ? '+' : '-'} ${n} ${n === 1 ? 'day' : 'days'}`;
-}
 
 // A stored value as a person reads it: a priority by its label, a list joined.
 function valueWords(field: string, value: string | number | readonly string[]): string {

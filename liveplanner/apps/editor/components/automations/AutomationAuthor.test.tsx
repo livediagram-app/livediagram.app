@@ -31,6 +31,9 @@ describe('Automation as an author', () => {
     expect(isAutomationAuthor(AUTOMATION_PERSON_ID)).toBe(true);
     expect(isAutomationAuthor('u-ana')).toBe(false);
     expect(isAutomationAuthor(undefined)).toBe(false);
+    expect(isAutomationAuthor({ automation: { ruleId: 'r1', rule: 'Done' } })).toBe(true);
+    expect(isAutomationAuthor({ authorId: AUTOMATION_PERSON_ID })).toBe(true);
+    expect(isAutomationAuthor({ authorId: 'u-ana' })).toBe(false);
   });
 
   it('names the rule as text for anyone, and as a link to it for an Editor', async () => {

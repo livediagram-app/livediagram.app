@@ -49,6 +49,8 @@ import { importPlanCopy, readPlanOutline, type PlanCopy, type PlanOutline } from
 import type { CommunityLink, CommunityListing, CopySource } from '../plan-client';
 import type { Copier } from '@liveworkspace/index-app';
 import { RepeatSchedule } from './card-repeats';
+import { PlanAutomations } from './automations/automation-queue';
+import { automationDeps, runAutomations } from './automations/plan-room-automations';
 import { importProjectFile, type ProjectFileImport } from './project-file';
 import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
@@ -232,6 +234,14 @@ export class PlanRoom extends DurableObject<Env> {
     () => this.state.storage.sql,
     () => this.schemaReady,
   );
+  // The plan's Automations (automations/; docs/specs/026-plan/automations.md): its rules, the kinds they hear (the
+  // check every save makes) and the wake its queue asks for. A plan without a rule that is on asks for none.
+  readonly automations = new PlanAutomations(
+    () => this.state.storage.sql,
+    () => this.schemaReady,
+    () => this.armAlarm(),
+    () => automationDeps(this),
+  );
   // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
   writes = 0;
   // The next daily upkeep (persisted, so a wake keeps the day).
@@ -279,6 +289,7 @@ export class PlanRoom extends DurableObject<Env> {
           PLAN_DB: this.db.asD1(),
           PLAN_ROOM: localNamespace(this, env.PLAN_ROOM),
           ROOM_PEOPLE: () => roomPeople(this),
+          AUTOMATIONS: this.automations,
         }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
@@ -649,6 +660,7 @@ export class PlanRoom extends DurableObject<Env> {
       this.communityAt,
       this.maintenanceAt,
       this.repeats.at,
+      this.automations.schedule.at,
       nextGrantDue(this),
     ];
     // Never sooner than a second from now, and no write when it already stands there (api-kit room-alarm.ts).
@@ -663,6 +675,7 @@ export class PlanRoom extends DurableObject<Env> {
     const now = Date.now();
     checkGrants(this, now);
     if (this.repeats.due(now)) await runRepeats(this, now);
+    if (this.automations.schedule.due(now)) await runAutomations(this, now);
     if (this.flushAt !== null && this.flushAt <= now) await drainIndex(this);
     // A shared tab written while the push was in flight (its write armed nothing then).
     this.shares.noteWrite();

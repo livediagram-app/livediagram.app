@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { AutomationAction, AutomationCondition, AutomationRuleBody } from './types';
+import { automationDayWords } from './conditions';
 import {
   actionChip,
-  automationDayWords,
   conditionChip,
   outlineFieldName,
   outlinePersonName,
@@ -179,7 +179,7 @@ describe('conditionChip', () => {
     ],
     [
       { kind: 'field', field: 'due', op: 'on_or_after', value: { day: '2026-11-11' } },
-      'Due Date is on or after 2026-11-11',
+      'Due Date is on or after 11 Nov 2026',
     ],
   ];
   it.each(cases)('reads %j as %s', (c, words) => {
@@ -248,7 +248,7 @@ describe('the names', () => {
     expect(automationDayWords({ today: 0 })).toBe('Today');
     expect(automationDayWords({ today: 1 })).toBe('Today + 1 day');
     expect(automationDayWords({ today: -2 })).toBe('Today - 2 days');
-    expect(automationDayWords({ day: '2026-01-02' })).toBe('2026-01-02');
+    expect(automationDayWords({ day: '2026-01-02' })).toBe('2 Jan 2026');
   });
 
   it('names fields, people and tabs, falling back to what the rule stored', () => {

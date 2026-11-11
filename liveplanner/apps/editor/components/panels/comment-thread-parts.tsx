@@ -371,7 +371,7 @@ function CommentRow({
   const now = useRelativeNow();
   const comfortable = density === 'comfortable';
   // A comment a rule added (docs/specs/026-plan/automations.md "On cards"): the bolt, Automation and the rule.
-  const automation = isAutomationAuthor(comment.authorId);
+  const automation = isAutomationAuthor(comment);
   const [editing, setEditing] = useState(false);
   // Its reactions (docs/specs/012-collaboration/comment-reactions.md): the trigger beside Edit and Delete opens the
   // tray under the text, where the chips are. The scope (the canvas's, or a card thread's) says how one is sent.
@@ -406,7 +406,7 @@ function CommentRow({
           className={`flex items-baseline gap-1.5 ${comfortable ? 'text-[13px]' : 'text-[11px]'}`}
         >
           {automation ? (
-            <AutomationAuthorName rule={comment.authorName} />
+            <AutomationAuthorName rule={comment.automation?.rule ?? comment.authorName} />
           ) : (
             <span className="truncate font-medium text-slate-900 dark:text-slate-50">
               {comment.authorName}
