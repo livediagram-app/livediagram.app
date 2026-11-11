@@ -404,24 +404,35 @@ ratchet instead: it may never fall, and its floor rises as tests are added.
 
 ## Before a push
 
-A **pre-push hook** runs, for what a push changes, what CI's Checks and Tests jobs would fail on, so a
-deterministic failure shows up on the machine in minutes rather than on CI later.
+A **pre-push hook** runs the fast checks CI's Checks job would fail on, and the tests the push reaches,
+so a deterministic failure shows up on the machine in minutes rather than on CI later. Whole suites,
+coverage floors and E2E are CI's: running them on every push took up to half an hour, loaded a machine
+several agents share, and timed out tests the change never touched.
 
 - `pnpm install` installs it: the root `prepare` script runs `scripts/git-hooks/install.mjs`, which
   points `core.hooksPath` at the tracked `.githooks/` (for every worktree of the repository). It skips,
   saying so, when `CI` is set or outside a git work tree.
-- `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs`. It takes the merge base with
-  `origin/main`, asks CI's planner (`ci-plan.mjs`) which groups the change reaches, and runs each
-  group's steps as `ci.yml` does: the copies guard, the file size guard and the markup guard (once), lint and type check, the format check, the speed-budget guard, `test`, `test:coverage`, then
-  each reached editor's suite once (unsharded, without coverage, so no floor is checked). It stops at the first failing step.
+- `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs` (tests: `pre-push.test.mjs`, on the
+  platform's CI script tests). It takes the merge base with `origin/main` and asks CI's planner
+  (`ci-plan.mjs`) which groups the change reaches. It runs, stopping at the first failing step:
+  - once: the copies guard, the file size guard and the markup guard;
+  - per group, as `ci.yml`'s Checks job does: lint and type check, the format check and the
+    speed-budget guard;
+  - per workspace the push changes: `vitest related` on its changed code files (every test that imports
+    one, and a changed test itself), then its guard tests, which scan files and so are never "related":
+    the tests at its root and in `app/`, `lib/small-text-contrast.test.ts` and an api's `src/openapi`
+    tests (stale generated schemas);
+  - when the push deletes or renames a file: every help app's `repo-paths-in-docs` test.
+- When half the cores are already busy, each test run is capped at two workers, so a starved CPU
+  doesn't fail timing tests.
 - It checks only a push of the checked-out `HEAD`; a push of any other commit, a tag or a deletion
   passes and is left to CI. Nothing changed since the merge base also passes.
-- One run at a time on the machine: a push made while another's checks are running skips its own and
-  says so, since parallel runs overload it.
+- One run at a time on the machine: a push made while another's checks are running waits its turn,
+  for up to 15 minutes, then skips and says so.
 - It finds `pnpm` (which turbo needs) through corepack shims in the temp directory when `pnpm` isn't on
   `PATH`. `git push --no-verify` skips it; CI still runs everything, E2E included.
-- A change to something every workspace leans on (`.github/`, the root config) reaches everything, as
-  on CI, so that push runs the whole repository's checks; turbo's cache replays what hasn't changed.
+- A change to something every workspace leans on (`.github/`, the root config) reaches every group's
+  lint, type check and format, as on CI; turbo's cache replays what hasn't changed.
 
 ## Deploys
 

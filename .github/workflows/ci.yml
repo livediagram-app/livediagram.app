@@ -121,10 +121,10 @@ jobs:
       - name: Lint and type check
         run: pnpm turbo run lint typecheck --continue --concurrency=2 ${{ matrix.filters }}
 
-      # CI's own scripts (.github/scripts), on the platform's run.
+      # CI's own scripts (.github/scripts) and the pre-push hook's, on the platform's run.
       - name: CI script tests
         if: matrix.group == 'platform'
-        run: node --test .github/scripts/*.test.mjs
+        run: node --test .github/scripts/*.test.mjs scripts/git-hooks/*.test.mjs
 
       # The files the change touched, each product's with its own ignore file (format-check.sh).
       - name: Format check
