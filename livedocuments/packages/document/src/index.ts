@@ -366,6 +366,7 @@ export * from './shadow';
 // Text effects (docs/specs/008-canvas/text-effects.md): gradient presets and the highlight band.
 export * from './text-effects';
 export * from './finish';
+export * from './image-backing';
 export * from './sketch';
 export * from './sketch-element';
 export * from './sketch-backdrop';

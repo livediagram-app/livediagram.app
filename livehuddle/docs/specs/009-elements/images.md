@@ -144,6 +144,20 @@ When `imageId === null`, `<ImageElementView>` (`apps/editor/components/canvas/Im
 - **The broken state is sized to the box.** It shows whenever the picture cannot be drawn: its bytes could not be fetched, or they arrived and will not decode (a truncated `data:` URL, a corrupt upload), never the browser's own broken-image glyph. Its label is a tenth of the box's shorter side, between 10 and 40 canvas px, and the icon twice the label (at least 16 px, at most 40% of the shorter side) (`imagePlaceholderMetrics`). A box too small to hold the label under the icon shows the icon alone and carries the label as its accessible name.
 - **Telemetry.** Pressing Select Image tracks `Element / Used / ImagePlaceholder`.
 
+### The white under a picture
+
+A picture is drawn on white in every theme, so a transparent PNG and the bands a `contain` picture leaves keep the
+white they were made on. Where the picture reaches the box's edge, the white stops 2 canvas px short of it (and of its
+rounded corners), so at that edge only the picture meets what lies behind it; where the picture leaves a band, the
+white runs to the edge, so a band's corner meets the picture's corner and the picture never pokes out past it
+(`imageBackingStyle`, `packages/element-model/src/image-backing.ts`, shared by every product). Were the white to reach
+an edge the picture also reaches, a zoom that puts the edge between screen pixels (66%, say) would blend the picture's
+edge pixels over part-white ones, and a picture that fills its box on a dark background (a logo on its own background)
+would wear a faint light frame. 2 px keeps the white a whole screen pixel in from the edge at 50% zoom and above on any
+screen; the 2 px rim it leaves under a transparent edge shows what lies behind, too thin to read as a gap. A picture
+whose size is not stored learns it when it loads; until then its white is inset all round. The frame's corner radius
+still bounds the white. Exports draw at whole pixels and keep their full-size white backing.
+
 ### Shown at the size they are seen
 
 A picture is kept whole in the gallery, and exports draw the original, but the editor shows a copy

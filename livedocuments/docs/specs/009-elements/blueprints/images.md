@@ -462,7 +462,11 @@ reads a 503 as `null`.
   scaled and trimmed by `imageEmptyLayout`; a lone badge is the button. View role: badge and
   "No image yet", no button, no hover tint. `[QB10]`
 - **Loading**: pulsing slate box with the element's radius. **Broken**: rose box, broken glyph,
-  "Image unavailable". **Ready**: bitmap on white in every theme (D47), `objectFit` (default
+  "Image unavailable". **Ready**: bitmap on white in every theme (D47), the white inset
+  `IMAGE_BACKING_INSET_PX` (2 px) from the box's edge where the bitmap reaches it and to the edge in a
+  `contain` picture's bands (`imageBackingStyle` from `@liveworkspace/element-model/image-backing`: the frame's
+  `padding` insets its background colour, each band an inset `box-shadow` with no blur; the bitmap absolutely positioned over the whole
+  box; a size not stored is learnt on load), `objectFit` (default
   `contain`), radius from `borderRadius` (default 4 px) (D48).
 - **Picker** (`Dialog`, `size="2xl"`, title "Image"): tabs "Upload" and "Gallery" (with a
   count badge once loaded).

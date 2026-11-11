@@ -374,6 +374,7 @@ export * from '@liveworkspace/model-core/border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';
 export * from './finish';
+export * from './image-backing';
 export * from './sketch';
 export * from './sketch-element';
 export * from './sketch-backdrop';
