@@ -231,7 +231,8 @@ ledger never sees it. So a save says how it changed the pages, by id, and the ap
 has stored (risk 5):
 
 - **The save sends its page steps.** Beside the whole tab, the PUT carries `X-Save-Changes`
-  (`@liveworkspace/api-schema/tab-save-changes`): URI-encoded JSON of the save's page steps (`tabSaveChanges`,
+  (`@liveworkspace/api-schema/tab-save-changes`): URI-encoded JSON of the save's page steps, and the ids of the photo
+  pages whose picture (`photos[pageId]`) it set, changed or removed (`tabSaveChanges`,
   `packages/design/src/tab-save-changes.ts`). A step names a page by id, where it goes (after one id, else before
   another) when it is new or moved, and carries no payload: the saved tab holds it. The steps are those from the save
   baseline (`lastSavedTabsRef`, which already holds every peer's change this editor has seen) to the saved tab, plus
@@ -241,8 +242,10 @@ has stored (risk 5):
   compare-and-swap, against the tab that attempt read, so a peer's save that lands first is merged and never
   overwritten. A page the save did not change keeps the stored copy; a peer's page the save never saw stays; a page
   the save removed goes; one it changed or added is taken from the saved tab, a new or moved one placed after its
-  neighbour as in the saved tab. Everything else in the tab is stored as sent (elements keep the changeset merge and
-  the ledger; photos are their `photo` ops').
+  neighbour as in the saved tab. Pictures merge the same way, by page: the stored ones stay, the ones the save named
+  are taken from the saved tab (or removed when it lacks them), and a picture whose page the merged tab no longer
+  holds goes, so a peer's photo page keeps its picture (Work Tracker #717). Everything else in the tab is stored as
+  sent (elements keep the changeset merge and the ledger).
 - **No header, stored as sent.** A save without one (an editor from before the header, open through a deploy; a
   tab's first save; steps past `TAB_SAVE_CHANGES_MAX_CHARS`, 8,000) or with an unreadable one (logged
   `[tab-save] changes-invalid`) stores the tab as sent. An api from before the header ignores it. The unload beacon
@@ -260,6 +263,17 @@ page a peer changed that was removed here comes back: a change wins over a concu
 change (`pagesRoomOps`, [Pages for agents](../024-agents/pages-for-agents.md)) sends its steps too.
 
 Residual: two people changing the same page at once (its background, its name) still keep the later change.
+
+### At the page cap
+
+A tab holds at most 100 pages (`MAX_PAGES`), and at most 10 of them photo pages (`PHOTO_MAX_PAGES`). Each editor checks
+the cap before it adds a page, but two Editors one page short of it can each add one at once. The merge holds both caps
+(`withinPageCaps`, `@liveworkspace/model-core/tab-page-steps`): while a cap is passed, the last page it counts that the
+tab did not hold before the merge is left out. So the store keeps the page whose save landed first, and the later
+save's other changes (its edits, moves, removals and pages of another kind) all stand; only its added page that no
+longer fits is dropped. A receiver applies a peer's steps the same way, so no screen holds more pages than the cap: it
+keeps its own page and leaves out the peer's. Residual: the Editor whose page did not fit keeps it on screen until
+they reload, and their later saves of it are left out the same way.
 
 ## Tab lists
 

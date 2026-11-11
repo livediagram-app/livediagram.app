@@ -5,6 +5,7 @@ import {
   savedPagesOver,
   storedPageList,
   tabPageSteps,
+  withinPageCaps,
 } from './tab-page-steps';
 
 type Page = { id: string; name?: string };
@@ -54,5 +55,60 @@ describe('tab page steps', () => {
     expect(parsePageSteps(undefined)).toBeNull();
     expect(parsePageSteps('x')).toBeNull();
     expect(parsePageSteps([{ kind: 'remove', id: 'a' }])).toEqual([{ kind: 'remove', id: 'a' }]);
+  });
+});
+
+// collab-race-hardening.md "At the page cap": two Editors one page short of a cap each add one.
+describe('the page caps', () => {
+  const many = (n: number) => Array.from({ length: n }, (_, i) => `p${String(i).padStart(3, '0')}`);
+  const kind = (id: string) => ({ id, kind: id.startsWith('ph') ? 'photo' : 'design' });
+
+  it('keeps the page that landed first, and the rest of the save that no longer fits', () => {
+    const base = tab(...many(99));
+    const stored = tab(...many(99), 'pA');
+    // Hugo renames the first page and adds one: his add no longer fits beside Gwen's, his rename stands.
+    const saved = {
+      pages: [
+        { id: 'p000', name: 'Cover' },
+        ...many(99)
+          .slice(1)
+          .map((id) => ({ id })),
+        { id: 'pB' },
+      ],
+    };
+    const steps = tabPageSteps(base, saved, fallback);
+    const out = savedPagesOver(stored, saved, steps, fallback, [{ max: 100 }]) as Page[];
+    expect(out).toHaveLength(100);
+    expect(ids(out)).toContain('pA');
+    expect(ids(out)).not.toContain('pB');
+    expect(out[0]).toEqual({ id: 'p000', name: 'Cover' });
+  });
+
+  it('holds one kind of page to its own cap, by the last added first, and never drops a page already held', () => {
+    const counts = (p: { id: string; kind?: string }) => p.kind === 'photo';
+    const had = ['ph1', 'ph2', 'd1'].map(kind);
+    const pages = ['ph1', 'phX', 'ph2', 'd1', 'phY', 'd2'].map(kind);
+    expect(ids(withinPageCaps(pages, had, [{ max: 3, counts }]))).toEqual([
+      'ph1',
+      'phX',
+      'ph2',
+      'd1',
+      'd2',
+    ]);
+    expect(ids(withinPageCaps(had, [], [{ max: 1, counts }]))).toEqual(['ph1', 'd1']);
+    expect(ids(withinPageCaps(had, had, [{ max: 1, counts }]))).toEqual(ids(had));
+  });
+
+  it("leaves a receiver's own page and drops the peer's that would pass the cap", () => {
+    const local = tab('p1', 'pA');
+    const sent = [{ id: 'p1' }, { id: 'pB' }];
+    const steps = tabPageSteps(tab('p1'), { pages: sent }, fallback);
+    expect(ids(pagesWithSteps(local, steps, sent, fallback, [{ max: 2 }]))).toEqual(['p1', 'pA']);
+    expect(ids(pagesWithSteps(local, steps, sent, fallback))).toEqual(['p1', 'pA', 'pB']);
+    expect(ids(pagesWithSteps(local, steps, sent, fallback, [{ max: 3 }]))).toEqual([
+      'p1',
+      'pA',
+      'pB',
+    ]);
   });
 });

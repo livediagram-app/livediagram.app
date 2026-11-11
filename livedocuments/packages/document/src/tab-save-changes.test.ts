@@ -279,3 +279,23 @@ describe('the changes a save sends', () => {
     expect(parseTabSaveChanges({ articles: many })).toBeNull();
   });
 });
+
+// collab-race-hardening.md "At the page cap": two Editors one slide short of the cap each add one (#717).
+describe('two Editors at the page cap', () => {
+  it('keeps 100 pages: the first add to land, and the rest of the later save', () => {
+    const pages = Array.from({ length: 99 }, (_, i) => slide(`s${String(i).padStart(3, '0')}`));
+    const base = tab(pages);
+    const gwen = tab([...pages, slide('sA')]);
+    const hugo = tab([slide('s000', 'Cover'), ...pages.slice(1), slide('sB')]);
+    const stored = mergeSaveOverStored(
+      mergeSaveOverStored(base, gwen, save(base, gwen).changes),
+      hugo,
+      save(base, hugo).changes,
+    );
+    expect(stored.pages).toHaveLength(100);
+    expect(pageIds(stored)).toContain('sA');
+    expect(pageIds(stored)).not.toContain('sB');
+    expect(stored.pages![0]).toEqual(slide('s000', 'Cover'));
+    expect(withPeerPageSteps(gwen, pageStepsOf(base, hugo), hugo.pages)).toHaveLength(100);
+  });
+});

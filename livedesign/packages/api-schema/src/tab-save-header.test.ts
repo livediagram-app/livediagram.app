@@ -15,6 +15,7 @@ describe('the X-Save-Changes header', () => {
     const header = tabSaveChangesHeader(tab('p1'), tab('p1', 'p2'))!;
     expect(readTabSaveChanges(header)).toEqual({
       pages: [{ kind: 'put', id: 'p2', after: 'p1', before: null }],
+      photos: [],
     });
   });
 

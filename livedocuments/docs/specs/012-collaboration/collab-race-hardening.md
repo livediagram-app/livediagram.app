@@ -142,6 +142,17 @@ Residual: two people changing the same page at once (its background, its name) s
 article writers whose writing each adds an overflow page at once keep both pages until the next lay-out drops the one
 left empty.
 
+### At the page cap
+
+A tab holds at most 100 pages (`MAX_PAGES`). Each editor checks the cap before it adds a page, but two Editors one page
+short of it can each add one at once. The merge holds the cap (`withinPageCaps`,
+`@liveworkspace/model-core/tab-page-steps`): while it is passed, the last page the tab did not hold before the merge
+is left out. So the store keeps the page whose save landed first, and the later save's other changes (its edits,
+moves, removals and its writing) all stand; only its added page that no longer fits is dropped. A receiver applies a
+peer's steps the same way, so no screen holds more than 100 pages: it keeps its own page and leaves out the peer's.
+Residual: the Editor whose page did not fit keeps it on screen until they reload, and their later saves of it are
+left out the same way (Work Tracker #717).
+
 ## The rest of the transport
 
 - **A cleared tab field travels by name** (risk 6). A `tab-meta` op carries a `clear` list of the fields the sender

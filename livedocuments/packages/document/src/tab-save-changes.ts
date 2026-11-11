@@ -13,10 +13,12 @@ import {
   parsePageSteps,
   savedPagesOver,
   tabPageSteps,
+  type PageCap,
 } from '@liveworkspace/model-core/tab-page-steps';
 import { articlesOf, isArticleId, type ArticleFlow } from './article-flow';
 import { applyArticleOps, diffArticleFlow, type ArticleOp } from './article-flow-ops';
 import { pagesOf, type Page } from './page';
+import { MAX_PAGES } from './page-sizes';
 import type { Tab } from './index';
 
 /** An article op without its payload: the block, style or cell text comes from the saved tab. */
@@ -41,6 +43,9 @@ const MAX_CHANGED_ARTICLES = 200;
 
 const readPages = (tab: { pages?: unknown } | undefined) => pagesOf(tab);
 
+/** A tab's page cap, held when pages from two Editors merge (collab-race-hardening.md "At the page cap"). */
+const PAGE_CAPS: readonly PageCap<Page>[] = [{ max: MAX_PAGES }];
+
 /** The steps a change from `before` to `after` makes to the tab's pages, by id (collab-race-hardening.md "Pages"):
  *  sent with every op that carries the pages, and with every save. */
 export function pageStepsOf(before: Tab, after: Tab, previous?: Tab): IdListStep[] {
@@ -53,7 +58,7 @@ export function pageStepsOf(before: Tab, after: Tab, previous?: Tab): IdListStep
 export function withPeerPageSteps(local: Tab, steps: unknown, sent: unknown): Page[] | null {
   const read = parsePageSteps(steps);
   if (!read || !Array.isArray(sent)) return null;
-  return pagesWithSteps(local, read, readPages({ pages: sent }), readPages);
+  return pagesWithSteps(local, read, readPages({ pages: sent }), readPages, PAGE_CAPS);
 }
 
 /** The changes from `before` (the save baseline) to `after` (the tab saved). `previous` is this editor's last save
@@ -187,7 +192,7 @@ export function parseTabSaveChanges(v: Record<string, unknown> | null): TabSaveC
  *  the save made it, or when a page of the merged tab still shows it. */
 export function mergeSaveOverStored(stored: Tab, saved: Tab, changes: TabSaveChanges): Tab {
   const out: Tab = { ...saved };
-  const pages = savedPagesOver(stored, saved, changes.pages, readPages);
+  const pages = savedPagesOver(stored, saved, changes.pages, readPages, PAGE_CAPS);
   if (pages === undefined) delete out.pages;
   else out.pages = pages as Tab['pages'];
   if (changes.articles) {

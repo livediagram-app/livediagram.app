@@ -47,14 +47,47 @@ export function tabPageSteps<P extends PageItem>(
   );
 }
 
-/** `local`'s pages with a sender's `steps` applied, each page taken from `sent` (the sender's whole list). */
+/** A cap on a tab's pages: at most `max` of them, or of those `counts` picks (a product's page cap, and a cap on one
+ *  kind of page). */
+export type PageCap<P> = { max: number; counts?: (page: P) => boolean };
+
+/** `pages` held to each cap (collab-race-hardening.md "Pages", "At the page cap"): while a cap is passed, the last
+ *  page it counts that `had` lacks (one the merged change added) is left out. Pages `had` held always stay, and so
+ *  does every other step of the change. */
+export function withinPageCaps<P extends PageItem>(
+  pages: P[],
+  had: readonly P[],
+  caps: readonly PageCap<P>[],
+): P[] {
+  let out = pages;
+  const old = new Set(had.map((p) => p.id));
+  for (const { max, counts = () => true } of caps) {
+    let over = out.filter(counts).length - max;
+    if (over <= 0) continue;
+    const drop = new Set<string>();
+    for (let i = out.length - 1; i >= 0 && over > 0; i--) {
+      const page = out[i]!;
+      if (counts(page) && !old.has(page.id)) {
+        drop.add(page.id);
+        over--;
+      }
+    }
+    out = out.filter((p) => !drop.has(p.id));
+  }
+  return out;
+}
+
+/** `local`'s pages with a sender's `steps` applied, each page taken from `sent` (the sender's whole list), held to
+ *  `caps`: a sender's added page that would pass one is left out here. */
 export function pagesWithSteps<P extends PageItem>(
   local: PagesTab,
   steps: readonly IdListStep[],
   sent: readonly P[],
   fallback: (tab: PagesTab | undefined) => P[],
+  caps: readonly PageCap<P>[] = [],
 ): P[] {
-  return applyIdListSteps(storedPageList(local, fallback), steps, sent);
+  const had = storedPageList(local, fallback);
+  return withinPageCaps(applyIdListSteps(had, steps, sent), had, caps);
 }
 
 /** A peer's or a request's page steps, read defensively; null when absent or malformed (the sender's whole list
@@ -65,14 +98,16 @@ export function parsePageSteps(v: unknown): IdListStep[] | null {
 
 /** The pages a save stores, given the stored tab, the saved one and the save's page steps
  *  (collab-race-hardening.md "A save is merged with the stored tab"): no steps, the saved pages as sent; steps that
- *  change nothing, the stored pages as they are; else the steps applied over the stored pages, by id. */
+ *  change nothing, the stored pages as they are; else the steps applied over the stored pages, by id, held to
+ *  `caps` (a page the save added that no longer fits beside a peer's is left out; the rest of the save stands). */
 export function savedPagesOver<P extends PageItem>(
   stored: PagesTab,
   saved: PagesTab,
   steps: readonly IdListStep[] | undefined,
   fallback: (tab: PagesTab | undefined) => P[],
+  caps: readonly PageCap<P>[] = [],
 ): unknown {
   if (steps === undefined) return saved.pages;
   if (steps.length === 0) return stored.pages === undefined ? saved.pages : stored.pages;
-  return pagesWithSteps(stored, steps, storedPageList(saved, fallback), fallback);
+  return pagesWithSteps(stored, steps, storedPageList(saved, fallback), fallback, caps);
 }
