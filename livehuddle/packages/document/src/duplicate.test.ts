@@ -4,7 +4,7 @@ import { duplicateElements, freshCopyFields } from './duplicate';
 
 const carrying = (): Element =>
   ({
-    ...createShape('square', 0, 0),
+    ...createShape('focus-button', 0, 0),
     id: 'orig',
     commentThread: { comments: [{ id: 'c1', authorId: 'u1', text: 'Hi', createdAt: 1 }] },
     responses: [{ participantId: 'u1', value: '3', at: 1 }],
@@ -37,6 +37,6 @@ describe('freshCopyFields', () => {
   });
 
   it('adds no keys an element never had', () => {
-    expect(freshCopyFields(createShape('square', 0, 0))).toEqual({});
+    expect(freshCopyFields(createShape('focus-button', 0, 0))).toEqual({});
   });
 });

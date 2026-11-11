@@ -31,7 +31,7 @@ describe('layoutView (R17)', () => {
   it('names the origin on the header only when content does not start at 0,0', () => {
     const at = (x: number, y: number) =>
       buildViewModel(
-        { id: 'tab-1', name: 'T', elements: [shapeAt('square', 'a', x, y)] },
+        { id: 'tab-1', name: 'T', elements: [shapeAt('signpost', 'a', x, y)] },
         { rev: 3 },
       );
     expect(layoutView(at(0, 0)).text.split('\n')[0]).not.toContain('origin');
@@ -50,7 +50,7 @@ describe('layoutView (R17)', () => {
   });
 
   it('prints rotation, elements without geometry, a stored arrow among them, and loose rows', () => {
-    const a = { ...shapeAt('square', 'a', 10, 10), rotation: 44.6 };
+    const a = { ...shapeAt('signpost', 'a', 10, 10), rotation: 44.6 };
     const frame = retiredShapeAt('boundary', 'f', 0, 0, 1000, 1000);
     const odd = { id: 'odd', type: 'hologram' } as unknown as Element;
     const tab = tabOf([
@@ -95,12 +95,12 @@ describe('layoutView (R17)', () => {
 describe('the layout header origin', () => {
   it('says the origin only when content does not start at 0,0', () => {
     const atZero = buildViewModel(
-      { id: 't', name: 'T', elements: [shapeAt('square', 'a', 0, 0)] },
+      { id: 't', name: 'T', elements: [shapeAt('signpost', 'a', 0, 0)] },
       { rev: 3 },
     );
     expect(layoutView(atZero).text.split('\n')[0]).not.toContain('origin');
     const offset = buildViewModel(
-      { id: 't', name: 'T', elements: [shapeAt('square', 'a', 40, 20)] },
+      { id: 't', name: 'T', elements: [shapeAt('signpost', 'a', 40, 20)] },
       { rev: 3 },
     );
     expect(layoutView(offset).text.split('\n')[0]).toContain(

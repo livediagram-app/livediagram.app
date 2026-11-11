@@ -9,7 +9,7 @@ import { ChangesetRevealContext, ChangesetRevealOverlay } from './ChangesetRevea
 const box = (id: string, x: number): Element => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x,
   y: 10,
   width: 100,

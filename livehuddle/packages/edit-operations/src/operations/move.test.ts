@@ -32,7 +32,7 @@ describe('move', () => {
     const blocker = {
       id: 'b',
       type: 'shape',
-      shape: 'square',
+      shape: 'signpost',
       x: 200,
       y: 300,
       width: 140,
@@ -63,7 +63,7 @@ describe('move', () => {
   });
 
   it('moves several with all, and nothing for a zero move (E4)', () => {
-    expect(lines(run('move type:stadium by=0,10 all'))).toEqual([
+    expect(lines(run('move type:room-sign by=0,10 all'))).toEqual([
       '~ n1  @40,0→@40,10',
       '~ n8  @40,720→@40,730',
     ]);
@@ -88,7 +88,7 @@ describe('move', () => {
   });
 
   it('refuses a reference that moves with it', () => {
-    expect(refused(run('move type:square below:n4 all'))).toMatchObject({
+    expect(refused(run('move type:signpost below:n4 all'))).toMatchObject({
       code: 'invalid_value',
       details: ['below:n4: n4 moves with it'],
     });

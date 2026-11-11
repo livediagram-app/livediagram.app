@@ -42,7 +42,7 @@ const tab = (label: string): Tab =>
     id: 't1',
     name: 'A',
     elements: [
-      { id: 'e1', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, label },
+      { id: 'e1', type: 'shape', shape: 'focus-button', x: 0, y: 0, width: 10, height: 10, label },
     ],
   }) as unknown as Tab;
 

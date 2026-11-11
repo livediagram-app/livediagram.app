@@ -10,7 +10,7 @@ const resolveIconArt = (id: string) => (id === 'database' ? ART : undefined);
 const box = (extra: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 'b',
   type: 'shape',
-  shape: 'square',
+  shape: 'room',
   x: 0,
   y: 0,
   width: 220,
@@ -74,7 +74,7 @@ describe('a rich label beside its icon', () => {
     const card = (id: string, name: string, role: string, x: number) => ({
       id,
       type: 'shape',
-      shape: 'square',
+      shape: 'room',
       x,
       y: 0,
       width: 223,

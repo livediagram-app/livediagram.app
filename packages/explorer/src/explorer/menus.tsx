@@ -56,7 +56,7 @@ export function ItemMenu({
   item: ShownItem;
   anchor: HTMLElement | null;
   onClose: () => void;
-  /** Rows a surface adds before the destructive ones (the Timeline's Remove from Timeline). */
+  /** Rows a surface adds before the destructive ones. */
   extra?: ReactNode;
 }) {
   const { actions, openItem, setRenamingId, openDialog, navigate, reloadLists, viewerId } =

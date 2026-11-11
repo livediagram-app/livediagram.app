@@ -31,24 +31,24 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term       | Identifier                                                                                       | Meaning                                                                                                                                                                                                |
-| ---------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Webhook    | `webhooks` row, id a UUID                                                                        | one destination for one item's events                                                                                                                                                                  |
-| Document   | `webhooks.item_id`                                                                               | the item it belongs to and reports on; its app is the item's                                                                                                                                           |
-| Kind       | `json`, `slack`, `teams`                                                                         | signed JSON, a Slack incoming webhook, a Teams Workflows webhook                                                                                                                                       |
-| Event      | `WEBHOOK_EVENTS`                                                                                 | `renamed`, `moved`, `trashed`, `shared`, `commented`, `action_assigned`, `action_done`, `card_moved`, `form_response`; `card_moved` and `form_response` are liveplanner's alone (`WEBHOOK_EVENT_APPS`) |
-| Who Did It | `who`: `anyone`, `me`                                                                            | every editor's events, or only those whose actor is the webhook's `created_by`                                                                                                                         |
-| Delivery   | `webhook_deliveries` row, `UNIQUE (webhook_id, event_id)`                                        | the outbox row, then a recent delivery                                                                                                                                                                 |
-| Event id   | the Timeline event's id; `cmv:<item>:<card>:<at>`; `frm:<item>:<tab>:<responses>`; `ping:<uuid>` | the same on every retry: `X-Liveworkspace-Delivery`                                                                                                                                                    |
-| Pause      | `paused`, `creator_left`, `failing`, `gone`                                                      | why nothing is sent                                                                                                                                                                                    |
+| Term       | Identifier                                                                                     | Meaning                                                                                                                                                                                                |
+| ---------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Webhook    | `webhooks` row, id a UUID                                                                      | one destination for one item's events                                                                                                                                                                  |
+| Document   | `webhooks.item_id`                                                                             | the item it belongs to and reports on; its app is the item's                                                                                                                                           |
+| Kind       | `json`, `slack`, `teams`                                                                       | signed JSON, a Slack incoming webhook, a Teams Workflows webhook                                                                                                                                       |
+| Event      | `WEBHOOK_EVENTS`                                                                               | `renamed`, `moved`, `trashed`, `shared`, `commented`, `action_assigned`, `action_done`, `card_moved`, `form_response`; `card_moved` and `form_response` are liveplanner's alone (`WEBHOOK_EVENT_APPS`) |
+| Who Did It | `who`: `anyone`, `me`                                                                          | every editor's events, or only those whose actor is the webhook's `created_by`                                                                                                                         |
+| Delivery   | `webhook_deliveries` row, `UNIQUE (webhook_id, event_id)`                                      | the outbox row, then a recent delivery                                                                                                                                                                 |
+| Event id   | the logged event's id; `cmv:<item>:<card>:<at>`; `frm:<item>:<tab>:<responses>`; `ping:<uuid>` | the same on every retry: `X-Liveworkspace-Delivery`                                                                                                                                                    |
+| Pause      | `paused`, `creator_left`, `failing`, `gone`                                                    | why nothing is sent                                                                                                                                                                                    |
 
 ## Behaviour and state
 
 ### Queuing (`outbox.ts`)
 
-- `eventStatements` and `bulkEventStatements` (`timeline.ts`) append `webhookOutboxStatement` for each event whose
+- `eventStatements` and `bulkEventStatements` (`events.ts`) append `webhookOutboxStatement` for each event whose
   type `isListened` (and, in bulk, that has an item). It is `INSERT OR IGNORE … SELECT` from `json_each(ids)` joined to
-  `timeline_events`, `items` and the item's own live webhooks (`webhooks_item_live`), kept when
+  `events`, `items` and the item's own live webhooks (`webhooks_item_live`), kept when
   `instr(w.events, ',<type>,')`, `w.who = 'anyone' OR w.created_by = e.actor_id`, the event is no older than
   `WEBHOOK_FRESH_MS` (1 h) and the webhook has fewer than `WEBHOOK_PENDING_MAX` (500) pending (a count stopped at
   500). The event's app, item, title, actor, name, detail and time are copied in; `next_at` is now, or the

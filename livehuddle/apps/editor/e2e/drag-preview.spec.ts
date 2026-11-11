@@ -19,8 +19,7 @@ const CANVAS = '[data-canvas-a11y-root]';
 const BOARD = [
   {
     id: 'a',
-    type: 'shape',
-    shape: 'square',
+    type: 'sticky',
     x: 300,
     y: 300,
     width: 120,
@@ -29,8 +28,7 @@ const BOARD = [
   },
   {
     id: 'b',
-    type: 'shape',
-    shape: 'square',
+    type: 'sticky',
     x: 800,
     y: 300,
     width: 120,

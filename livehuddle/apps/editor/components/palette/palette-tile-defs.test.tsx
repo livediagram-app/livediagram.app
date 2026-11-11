@@ -48,7 +48,7 @@ describe('PALETTE_TILES catalogue', () => {
 //
 // Text cannot be checked mechanically here — some blurbs enumerate ("estimate
 // cards, temperature checks, ...") while others are deliberately illustrative
-// ("Square, circle, diamond, and the flowchart shape vocabulary"), and no rule
+// ("A seat to sit in, and the furniture round it"), and no rule
 // separates them. So this pins the COUNT instead. Adding or removing a tile
 // fails this test, and the failure is the prompt to re-read that category's
 // description and decide whether it still describes what is in the tab.
@@ -59,7 +59,6 @@ describe('PALETTE_TILES catalogue', () => {
 const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
   popular: 0,
-  shapes: 13,
   write: 2,
   stickers: 0,
   media: 3,

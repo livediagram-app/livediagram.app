@@ -48,7 +48,7 @@ import { tellApp } from './notices';
 import { verifyOwnGrant, type OwnGrant } from './own-grants';
 import { directAccess, getItemRow, type ItemRow } from './rows';
 import { guessVisitorOf } from './share-guesses';
-import { eventStatements } from './timeline';
+import { eventStatements } from './events';
 
 // An app acting for a person (an API token's, the Drive mirror, the data export): agents read connected tabs, never
 // make or open them.

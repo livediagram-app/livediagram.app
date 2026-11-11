@@ -12,8 +12,8 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX6  | sharing         | a share password is trimmed before its length is checked, and whitespace alone clears it.                                                    |
 | IDX7  | sharing         | a password set before the 6-character rule keeps working; only a new one is held to it.                                                      |
 | IDX8  | inbox           | shown text in a push past its cap is cut rather than refused; ids and times are refused when malformed.                                      |
-| IDX9  | timeline        | an event from a clock more than 5 minutes fast is dated now, so it can't pin itself to the top.                                              |
-| IDX10 | timeline        | an empty item tidied away (`reason=empty`) records no `trashed` event.                                                                       |
+| IDX9  | events          | an event from a clock more than 5 minutes fast is dated now, so it can't pin itself to the top.                                              |
+| IDX10 | events          | an empty item tidied away (`reason=empty`) records no `trashed` event.                                                                       |
 | IDX11 | trash           | an app that does not answer a tombstone is retried hourly with no give-up; person notices and merges give up after 7 days.                   |
 | IDX12 | trash           | a person purge is kept and run again for 2 hours after the request, the life of an access token.                                             |
 | IDX13 | default-folders | with no working default an item lands at the root of the person's own space, never a team's.                                                 |

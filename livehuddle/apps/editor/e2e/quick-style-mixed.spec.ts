@@ -18,8 +18,7 @@ import {
 const BOARD = [
   {
     id: 'rect',
-    type: 'shape',
-    shape: 'square',
+    type: 'sticky',
     x: 400,
     y: 120,
     width: 180,

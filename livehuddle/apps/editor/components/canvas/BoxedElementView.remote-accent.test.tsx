@@ -43,7 +43,7 @@ const painted = (container: HTMLElement, colour: string) =>
 describe('a remote selection and a face accent', () => {
   it("never paints a stored card's placeholder in a collaborator's colour", () => {
     const card = {
-      ...createShape('square', 0, 0),
+      ...createShape('room', 0, 0),
       shape: 'card',
       width: 280,
       height: 150,

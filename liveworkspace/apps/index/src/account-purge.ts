@@ -8,9 +8,9 @@
 // - Items and folders in a team stay with the team, their owner anonymised; those in a team that closed
 //   with the account (one they ran alone, named in `teamIds`) are theirs alone and go too.
 // - Their folders, favourites, opens (Recent), use days (Most Used), Shared with me rows, placement
-//   defaults and Timeline rows only they see go.
+//   defaults and their own `favourited` events go.
 // - Rows on other people's items that only name them (comment threads they are in, actions assigned to
-//   or by them, Timeline events they did or a team's are about, webhook deliveries of what they did) keep
+//   or by them, events they did or a team's are about, webhook deliveries of what they did) keep
 //   the row but name ANONYMISED_PERSON instead.
 // - The team audit log (team-audit.ts): a closed team's goes; rows they did, or that a team event is about them,
 //   name ANONYMISED_PERSON instead, with no name.
@@ -158,18 +158,17 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
            SELECT rowid FROM collab_actions WHERE ${role}_id = ? LIMIT ?)`,
       )
       .bind(ANONYMISED_PERSON, person, CHUNK);
-  // An action given to them: the event's detail names them (`assigneeId`, `assigneeName`), on the Timeline and in
+  // An action given to them: the event's detail names them (`assigneeId`, `assigneeName`), in the event log and in
   // the webhook deliveries made of it. `action_assigned` events are `aa:` ids, so the primary key's range keeps the
   // scan to them.
-  const anonymiseAssigned =
-    (table: 'timeline_events' | 'webhook_deliveries', range: string) => () =>
-      db
-        .prepare(
-          `UPDATE ${table} SET detail = json_set(detail, '$.assigneeId', ?, '$.assigneeName', NULL)
+  const anonymiseAssigned = (table: 'events' | 'webhook_deliveries', range: string) => () =>
+    db
+      .prepare(
+        `UPDATE ${table} SET detail = json_set(detail, '$.assigneeId', ?, '$.assigneeName', NULL)
          WHERE rowid IN (SELECT rowid FROM ${table} WHERE ${range} AND type = 'action_assigned'
            AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.assigneeId') END = ? LIMIT ?)`,
-        )
-        .bind(ANONYMISED_PERSON, person, CHUNK);
+      )
+      .bind(ANONYMISED_PERSON, person, CHUNK);
   return [
     // Their folders: personal ones, and those in a team that closed with them (their items are gone by
     // now; anyone else's in them move to the root). Placement defaults pointing at them cascade.
@@ -182,45 +181,35 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
     byPerson('favourites'),
     byPerson('opens'),
     byPerson('use_days'),
-    // The Timeline: what only they saw (their own space's rows; their own items' events went with the
-    // items), then the events of theirs no one else sees, then their name off the rest (team items,
-    // other people's items they edited).
+    // The event log: their favourites' events, which only they saw (their own items' events went with the
+    // items), then their name off the rest (team items, other people's items they edited or visited), both
+    // through the actor index.
     () =>
       db
         .prepare(
-          `DELETE FROM timeline_event_scopes WHERE rowid IN (
-             SELECT rowid FROM timeline_event_scopes WHERE scope = ? LIMIT ?)`,
-        )
-        .bind(`p:${person}`, CHUNK),
-    () =>
-      db
-        .prepare(
-          `DELETE FROM timeline_events WHERE rowid IN (
-             SELECT rowid FROM timeline_events e WHERE e.actor_id = ?
-             AND NOT EXISTS (SELECT 1 FROM timeline_event_scopes s WHERE s.event_id = e.id) LIMIT ?)`,
+          `DELETE FROM events WHERE rowid IN (
+             SELECT rowid FROM events WHERE actor_id = ? AND type = 'favourited' LIMIT ?)`,
         )
         .bind(person, CHUNK),
     () =>
       db
         .prepare(
-          `UPDATE timeline_events SET actor_id = ?, actor_name = NULL WHERE rowid IN (
-             SELECT rowid FROM timeline_events WHERE actor_id = ? LIMIT ?)`,
+          `UPDATE events SET actor_id = ?, actor_name = NULL WHERE rowid IN (
+             SELECT rowid FROM events WHERE actor_id = ? LIMIT ?)`,
         )
         .bind(ANONYMISED_PERSON, person, CHUNK),
     // Account events (teams; no item) about them keep their row for the team, the person in their detail
     // anonymised as the team audit log's is. `json_valid` first, as a detail that isn't JSON makes json_extract
-    // throw; the `item_id IS NULL` range of timeline_events_item keeps the scan to account events.
+    // throw; the `item_id IS NULL` range of events_item keeps the scan to account events.
     () =>
       db
         .prepare(
-          `UPDATE timeline_events SET detail = json_set(detail, '$.personId', ?, '$.memberName', NULL)
+          `UPDATE events SET detail = json_set(detail, '$.personId', ?, '$.memberName', NULL)
            WHERE rowid IN (
-             SELECT rowid FROM timeline_events WHERE item_id IS NULL
+             SELECT rowid FROM events WHERE item_id IS NULL
                AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.personId') END = ? LIMIT ?)`,
         )
         .bind(ANONYMISED_PERSON, person, CHUNK),
-    byPerson('timeline_scope_state'),
-    byPerson('timeline_dismissals'),
     byPerson('shared_with'),
     byPerson('placement_defaults'),
     byPerson('collab_form_reads'),
@@ -228,7 +217,7 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
     byPerson('drive_people'),
     anonymiseAction('assignee'),
     anonymiseAction('assigner'),
-    anonymiseAssigned('timeline_events', "id >= 'aa:' AND id < 'aa;'"),
+    anonymiseAssigned('events', "id >= 'aa:' AND id < 'aa;'"),
     anonymiseAssigned('webhook_deliveries', 'true'),
     // The deliveries of events they did, on webhooks that outlive them (webhooks/purge.ts).
     webhookDeliveryPurgeStatement(db, person, ANONYMISED_PERSON, CHUNK),

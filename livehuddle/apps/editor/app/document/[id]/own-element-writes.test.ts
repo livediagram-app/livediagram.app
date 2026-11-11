@@ -10,7 +10,7 @@ import {
 // docs/specs/012-collaboration/realtime-conflict-resolution.md "Same-element edits converge".
 
 const el = (id: string) =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 }) as Element;
+  ({ id, type: 'shape', shape: 'focus-button', x: 0, y: 0, width: 1, height: 1 }) as Element;
 const update = (id: string, tabId = 't1'): RoomOp => ({
   kind: 'el',
   tabId,

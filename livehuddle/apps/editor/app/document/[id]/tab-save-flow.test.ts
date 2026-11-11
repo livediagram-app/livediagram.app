@@ -13,7 +13,7 @@ import { createOwnElementWrites, isSupersededByOwnWrite } from './own-element-wr
 const boxTab = (x: number): Tab => ({
   id: 't1',
   name: 'Tab',
-  elements: [{ id: 'a', type: 'shape', shape: 'square', x, y: 0, width: 10, height: 10 }],
+  elements: [{ id: 'a', type: 'shape', shape: 'focus-button', x, y: 0, width: 10, height: 10 }],
 });
 
 describe('saveTabAndRelay', () => {

@@ -5,7 +5,7 @@ import { createElement, type ReactNode } from 'react';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createSticky, type Element } from '@livehuddle/document';
 import { storedArrow } from '@/test/retired-elements';
 import { useOffscreenContent } from './useOffscreenContent';
 
@@ -27,7 +27,7 @@ function main(width = 800, height = 600) {
   return { current: el };
 }
 
-const square = { ...createShape('square', 100, 100), width: 100, height: 100 } as Element;
+const square = { ...createSticky(100, 100), width: 100, height: 100 } as Element;
 
 // The view the hook reads, in a store as the editor's canvas has one.
 function viewAt(offset = { x: 0, y: 0 }, zoom = 1) {

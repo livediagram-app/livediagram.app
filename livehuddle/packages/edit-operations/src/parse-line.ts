@@ -37,7 +37,7 @@ const FIELD_KEY = /^([a-zA-Z][a-zA-Z-]*)=/;
 const KEYED = /^([a-zA-Z][a-zA-Z-]*):/;
 // What an `add` placement can be, for a word that reads as one but is not.
 const PLACEMENT_EXPECTED =
-  'a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or align:<ref>';
+  'a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref> or align:<ref>';
 // A whole JSON number, `true` or `false`; `2FA`, `3D` or `1st` are strings (EO19).
 const JSON_LITERAL = /^(-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?|true|false)$/;
 
@@ -94,7 +94,7 @@ const numbers = (text: string): [number, number] | null => {
 
 type PlacementWord = { word: Word; key: string; text: string };
 
-// Several placement words read as one placement: a side or `after` (the main one) with at most one `align:<x>`
+// Several placement words read as one placement: a side (the main one) with at most one `align:<x>`
 // (`alignTo`, centred on x across the side). `at:` takes no company.
 function combinePlacements(
   words: readonly PlacementWord[],
@@ -155,7 +155,7 @@ function collect(name: EditOperationName, words: readonly Word[]): Collected | L
         out.gap = word;
         continue;
       }
-      // Placements combine after the loop: a side or `after` with an `align:`.
+      // Placements combine after the loop: a side with an `align:`.
       if (out.place || out.pending) {
         // Nothing pending yet means the one placement so far is `out.place`.
         (out.pending ??= [out.placeWord!]).push({ word, ...placement });
@@ -179,7 +179,7 @@ function collect(name: EditOperationName, words: readonly Word[]): Collected | L
   }
   if (out.gap !== undefined) {
     if (!out.place || out.place.rel === 'at')
-      return { column: out.gap.column, expected: 'gap: with a side, after or align placement' };
+      return { column: out.gap.column, expected: 'gap: with a side or align placement' };
     const gap = out.gap.raw.slice('gap:'.length);
     // `gap:` alone is not 0: a missing number is refused, as is anything Number reads as not finite.
     if (gap.trim() === '' || !Number.isFinite(Number(gap)))
@@ -212,7 +212,7 @@ export function parseOperationWords(
   if (name === 'add') {
     const [kindWord, ...more] = rest;
     if (!kindWord || hasQuotes(kindWord) || /[:=~]/.test(kindWord.value))
-      return fail(kindWord, end, 'a kind: square, text, sticky, …');
+      return fail(kindWord, end, 'a kind: sticky, text, room, …');
     const c = collect(name, more);
     if ('column' in c) return { error: c };
     if (c.terms.length) {

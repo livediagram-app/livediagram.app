@@ -101,7 +101,7 @@ their items, such as their images or its own per-person store (`personMerged` in
 copied work is under `guest_<old uuid>`, which accounts merges into whoever claims it
 ([accounts.md](../003-accounts/accounts.md#returning-guests-of-the-old-livediagramapp)), a guest as well as an account. So the
 merge has a second form, `{guestId, userId, legacy: true}`: `userId` may then be a guest (`guest_…`) too, and
-everything else is the same (items, folders, favourites, opens, use days, the Timeline, Shared with me, placement
+everything else is the same (items, folders, favourites, opens, use days, the event log, Shared with me, placement
 defaults, the Inbox's rows, one batch); an item or folder outside a team lands in `p:<userId>`, the target's own
 space, guest or account. Without `legacy: true` a guest target is still refused (400). The apps hear it as
 `POST /api/internal/people/:guest/merge {into, legacy: true}`, so an app can tell a legacy merge (whose `into` may
@@ -225,7 +225,7 @@ again at most once an hour.
 summary's `hasContent` is false, or it never pushed a summary) that has not changed for 30 days, with
 `trashReason: 'empty'` and the run's moment as `trashedAt`, so it waits the full 30 days there. It covers every
 app, and a team's item goes to its team's Trash. The check and the move are one statement; an item restored
-unchanged is not moved again until it changes. At most 1,000 a run, oldest change first. No Timeline entry.
+unchanged is not moved again until it changes. At most 1,000 a run, oldest change first. No event is recorded.
 
 **Archived.** A document its owner has put away: out of every list but its owner's Archived view and Search, and
 closed to opening and editing until it is moved out ([blueprints/archive.md](blueprints/archive.md)).
@@ -236,9 +236,9 @@ closed to opening and editing until it is moved out ([blueprints/archive.md](blu
 - In one batch the item takes `archivedAt`, leaves its folder and its team (`teamId` null), and moves to its owner's
   archive scope (`a:<owner>`). Its share links and share password are deleted for good, with every Shared with me
   row they made; its favourites, opens (Hide from Recent's too) and use days are deleted for everyone; its Inbox rows
-  (threads, the people in them, actions, forms and form reads) are deleted. Its Timeline follows it (as a scope
-  move does), the rows that reached other people alone (their favourites, an assignee's) are deleted, and a `moved`
-  event with `{archived: true}` is recorded (in its team's audit log when it left one). The app is told to end the
+  (threads, the people in them, actions, forms and form reads) are deleted. Its History stays its owner's, its
+  `favourited` events are deleted (they were other people's, or the owner's own, and Archived holds no favourites),
+  and a `moved` event with `{archived: true}` is recorded (in its team's audit log when it left one). The app is told to end the
   sessions its links admitted (`POST <app>/api/internal/items/:id/revoke`); an owner's or teammate's open session
   ends when its grant is next renewed.
 - `view=archived` lists the person's archived items that are not in the Trash, newest change first, with `app` and
@@ -267,18 +267,17 @@ holds for that person:
   every app, the Trash included, and with each one its favourites, opens, share links, password,
   Shared with me rows and comment and action rows.
 - **Deleted**: their folders, favourites, opens (Recent), use
-  days (Most Used), Shared with me rows, placement defaults, and the Timeline only they saw (their own
-  space's events and their favourites) with when they last looked at it and what they removed from it.
+  days (Most Used), Shared with me rows, placement defaults, and their own `favourited` events (the
+  events of their own items went with the items).
 - **Kept by the team**: an item or folder they made in a team stays with that team, its owner anonymised.
   `teamIds` names the teams that closed with the account (one it ran alone); their items and folders in
   those go too, while anyone else's stay theirs.
 - **Anonymised**: on other people's items, a comment thread they are in or are mentioned in, an action
-  assigned to or by them, a Timeline event they did (in a team, or an edit of someone else's item), a team's
-  Timeline event about them (its detail's `personId`), an action given to them on the Timeline (its detail's
+  assigned to or by them, an event they did (in a team, an edit of someone else's item, a visit through a link), a
+  team's event about them (its detail's `personId`), an action given to them in the event log (its detail's
   `assigneeId`), and a webhook delivery of an event they did or of an action given to them, keeps its row, naming
   `deleted` (no account or guest) in their place, with no name (an action's `assignee_name` or `assigner_name` too).
-  A Timeline event's own id is left as it is: the id has already gone out to browsers, which dismiss events by it,
-  and to webhook receivers, as each delivery's `eventId` and its delivery header, the key they tell repeats apart by.
+  An event's own id is left as it is: the id has already gone out to webhook receivers, as each delivery's `eventId` and its delivery header, the key they tell repeats apart by.
   So an id made per person never holds the person's id: an edit's (`ed:<item>:<key>:<day>`) and an action given to
   someone's (`aa:…:<key>`) carry a one-way key of them (the first 32 hex characters of SHA-256 of
   `liveworkspace:timeline:v1:<person>`), the same every time, so a person's edits of a day still make one event. Ids
@@ -288,7 +287,10 @@ holds for that person:
 - **Told to each app**: their name is also in the content of items that outlive them (their comments,
   cards, assignments and edits), which only the item's app holds, and an app may keep something of theirs
   beside their items (images, a workbench). Before it rewrites its own rows, the index records one notice
-  per app, and one per item of someone else's (or of a team that outlives them) that names them. It then
+  per app, and one per item of someone else's (or of a team that outlives them) that may name them: one they
+  commented on, were given or gave an action on, or did something to in the event log, and, since that log keeps
+  only 30 days, any they opened or reached by a link (a superset; an item that turns out not to name them changes
+  nothing). It then
   sends each app `POST /api/internal/people/:id/purge {items}` with the app's key, at most 100 items a
   call. The app drops what it keeps for the person and takes their name off each item: their id becomes
   `deleted` and the name kept beside it becomes "Deleted account" (`@liveworkspace/index-app`,
@@ -378,7 +380,7 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   by app and level, read for the item's app): livehuddle's Participant reads "Walks, talks and uses the pieces; adds
   nothing." ([livehuddle Share roles](../../../../livehuddle/docs/specs/013-workspace/share-roles.md#a-participant-walks)).
 - `GET /share/:code`: public: `{item, level, tabId, public}` (`public`: a Community post's link); records the item under Shared for a person who
-  opens it, except through a public link (no Shared entry, no "joined" notice, no visit on the Timeline); 401
+  opens it, except through a public link (no Shared entry, no "joined" notice, no visit in its History); 401
   `password_required`, 403 `password_invalid` (a public link: 404). A password not already found right
   is a guess, limited per visitor's network (10 a minute, before it is checked) and, for a wrong one, per item (30 a
   minute) on every door that takes one (this, `POST /items/:id/grant` and any read with `X-Share-Password`): over
@@ -502,7 +504,7 @@ minute, with retries ([When a push fails](#when-a-push-fails)):
 latestText, latestAuthorName, latestAuthorColor?, latestAuthorId?, resolvedById?, agentIds?, card?, firstAt,
 latestAt}],
 actions: [{elementId, actionId, elementLabel, name, description?, status, assigneeId, assigneeName?, assignerId,
-assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push makes the Timeline's
+assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push makes the event log's
   collaboration events (below); the optional ids say who wrote, resolved or closed. The comment text itself stays in the content, beside what it is about; the index
   keeps what the Inbox needs: the latest comment's opening, the action's note, and the names on it. Shown text
   is cut to length rather than refused. `participantIds` are the people who wrote in the thread themselves;
@@ -540,16 +542,13 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null, column?: {na
   (0 when none), for the app's own unseen count.
 
 - `PUT /app/items/:id/events`: `{events: [{type: 'edited', actorId, actorName?, at}]}`, up to 100: who
-  wrote to the item and when, for the Timeline and Most Used. Each person's `edited` lands on one event per
+  wrote to the item and when, for its History, its webhooks and Most Used. Each person's `edited` lands on one event per
   item and UTC day (a later report moves its time on), and counts that day as one of their use days (one open
   when the day has none yet, so an item only edited still reaches Most Used; it never adds to a day's opens). liveplanner sends one per person who wrote since its last push, with the time of their latest
   write.
-- `PUT /app/people/events`: `{events: [{type: 'image_uploaded', actorId, at, count?}]}`, up to 100, from the
-  app's server when a person uploads images (not a deduped re-upload): each adds `count` (default 1) to that
-  person's one `image_uploaded` event for the app and UTC day, seen by them alone.
 - `PUT /app/items/:id/card-moves`: `{moves: [{cardId, cardKey, card, from, to, actorId?, actorName?, at}]}`, up to
   100: a plan's cards that changed status (liveplanner), for the plan's own webhooks only (`card_moved`,
-  [webhooks.md](webhooks.md)); nothing goes on the Timeline. Each is one delivery per webhook however often it is
+  [webhooks.md](webhooks.md)); nothing goes in the event log. Each is one delivery per webhook however often it is
   sent (its id is made from the item, card and time). 204; 400 `invalid_moves`.
 
 ### When a push fails
@@ -597,10 +596,10 @@ the item for the person and has that app write it.
   else is 400. Limited to 60 a minute per person (`MIGRATION_LIMITER`; absent, not limited): 429 `rate_limited`.
 - The index makes the item as `POST /items` would: `id` the payload's, the given app's kind, owned by the person,
   no team, no folder (the top of their space, `p:<person>`), `source: 'import'`, created and updated now, with
-  its `created` Timeline event in the same batch. An id already taken is 409 `item_exists`.
+  its `created` event in the same batch. An id already taken is 409 `item_exists`.
 - Then it calls the app's migration door, `PUT ${APP_ORIGIN_<APP>}/api/internal/items/:id/migration`, with that
   app's key, the payload as the body (`ownerId` set to the person and `teamId` to null, whatever was sent), and
-  30 seconds to answer. If the app fails, the item row is deleted again (its Timeline rows go with it) and the
+  30 seconds to answer. If the app fails, the item row is deleted again (its events go with it) and the
   answer is 502 `migration_failed`. Otherwise `{id, app}` (201).
 
 ## The Google Drive mirror
@@ -653,93 +652,76 @@ logged and dropped; an email is best-effort. Types and helpers are in `@livework
   (`@liveworkspace/index-app` `handleInternalItems`, `communityKey` and the `communityStates` handler) checks the body
   and passes it to the call above; an app without the key or the handler answers `404`.
 
-## Timeline
+## The event log
 
-What happened to the items a person reaches as owner or team member, newest first: in their own space,
-and in each team they are in (a newcomer sees what happened before they joined). Items shared with them
-by link are not on it.
+A short-lived record of what happened to items, kept 30 days (`EVENT_RETENTION_MS`). It is not a view of its own: it
+feeds each item's History, the item's webhooks ([webhooks.md](webhooks.md)) and its team's audit log
+([team-audit-log.md](team-audit-log.md)), and an `edited` report counts towards Most Used. The audit log keeps its own
+copy for a year, so the sweep never cuts it short.
 
 - The index records `created` (with `source` when an AI or import made it, `copiedFrom` for a copy),
-  `renamed` (`from`), `moved` (`folderName`, `teamId`, and `fromTeamId` when it changed team), `trashed`, `restored`, `shared` (`level`),
-  `unshared` and `favourited` in the same batch as the change. A favourite is on its person's Timeline
-  only. An empty item its app tidies away is not news. An item created with `synced: true` (kept offline in
-  one browser, put back under its own id) records `synced` instead of `created`; `DELETE
-/items/:id?permanent=true&reason=offline` (taken offline into one browser) records `taken_offline` on its
-  person's Timeline, keeping the item's name after it has gone. Only its owner's goes for good: a joined
-  teammate taking a team item offline sends the team's copy to the team Trash (`trashed`) instead, since from
-  the team's side it is a deletion.
+  `renamed` (`from`), `moved` (`folderName`, `teamId`, and `fromTeamId` when it changed team), `trashed`, `restored`,
+  `shared` (`level`), `unshared` and `favourited` in the same batch as the change. An empty item its app tidies away
+  is not news. An item created with `synced: true` (kept offline in one browser, put back under its own id) records
+  `synced` instead of `created`. An item taken offline for good (`DELETE /items/:id?permanent=true&reason=offline`)
+  leaves no event: it is gone, and so is its History. A joined teammate taking a team item offline sends the team's
+  copy to the team Trash (`trashed`) instead, since from the team's side it is a deletion.
 - From each collab push, in the batch that replaces the tab's rows, the index compares the tab with what it
   held: a thread with more comments is `commented` (`text`, `count`, `reply`, `on`), one turned resolved
   `comment_resolved`, an action or open card with a new assignee `action_assigned` (`action`, `assigneeId`,
-  `assigneeName`; the assignee sees it too, wherever the item is), one turned done `action_done`. Each id is
-  made from what it says, so a push sent again records nothing new, and nothing dated before the item was made
-  (a copy's threads) is news. At most `COLLAB_EVENTS_MAX` (100) a push, the newest. A deleted comment's words
-  leave the Timeline with it: a thread with fewer comments than it held drops its `commented` events past its
-  count, and a thread that is gone drops its `comment_resolved` too (never read from a push at the thread cap).
-- `opened_by_visitor` and `copied_by_visitor`: someone who came in through a share link, on the item owner's
-  Timeline alone. An open (a grant through a link) is one event per visitor, item and UTC day, its time moving on;
-  a copy through a link is one per visitor and item. The actor is the visitor's account or guest id, or null for
-  one with no identity (known by the link they came in through). Written off the response path, an open at most
-  once a day per isolate.
-- `share_link_expiring` warns an item's owner (them alone) before its share links stop working: one per item,
-  dated at the soonest expiry among its live links that lapse within `SHARE_EXPIRY_WARNING_MS` (a week), so it
-  waits in Upcoming (`expiresAt`, `links`: how many lapse in the week). Making, extending or deleting a link works
-  it out again at once, and so does a restore from the Trash; moving the item to the Trash drops it, as a link
-  reaches nothing there; a daily pass (at most 2,000 items, the soonest first) catches links the week has since
-  reached, and leaves one the owner removed from their Timeline removed.
-- Apps report `edited` and `image_uploaded` (above).
+  `assigneeName`), one turned done `action_done`. Each id is made from what it says, so a push sent again records
+  nothing new, and nothing dated before the item was made (a copy's threads) is news. At most `COLLAB_EVENTS_MAX`
+  (100) a push, the newest. A deleted comment's words leave the log with it: a thread with fewer comments than it
+  held drops its `commented` events past its count, and a thread that is gone drops its `comment_resolved` too (never
+  read from a push at the thread cap).
+- `opened_by_visitor` and `copied_by_visitor`: someone who came in through a share link, in the item owner's History
+  alone. An open (a grant through a link) is one event per visitor, item and UTC day, its time moving on; a copy
+  through a link is one per visitor and item. The actor is the visitor's account or guest id, or null for one with
+  no identity (known by the link they came in through). Written off the response path, an open at most once a day
+  per isolate.
+- Apps report `edited` (above).
 - Each event the index records about an item (`renamed`, `moved`, `trashed`, `shared`, `commented`,
   `action_assigned`, `action_done`) is also handed, in the same batch, to that item's own webhooks that listen for
   it ([webhooks.md](webhooks.md)).
-- liveworkspace accounts reports its teams' and API tokens' events, `POST /internal/timeline {events}` with
-  its key (up to 100, each `{id, type, actorId, actorName?, title, detail?, at, scopes}`): `team_invite_sent`,
-  `team_joined`, `team_declined`, `team_role_changed`, `team_member_removed` (`left` when they left),
-  `team_renamed` (`from`), `team_deleted`, `token_created`, `token_revoked` and `token_expiring` (dated at the
-  expiry, so it waits in Upcoming). Their app is `liveworkspace` (`TIMELINE_PLATFORM`); `scopes` (at most 250)
-  say who sees each: a team's events its team (`t:<team>`) and the people they are about, a token's its owner.
-  Accounts writes each to an outbox in the batch that makes the change and sends them after the response,
-  resending until the index takes them; the ids make a resend change nothing.
-- The team-level events among these (a team's own, but `team_deleted`; and on a team's items `shared`, `unshared`,
-  `moved` into, out of or between teams with `fromTeamId`, `trashed` and `restored`) are also copied, in the same
-  batch, into the team audit log its admins read, kept a year ([team-audit-log.md](team-audit-log.md)). A share
-  link's `shared` carries `public` for a Community post's. Token events never are.
-- An event about no item (a team's, a token's, images, an item taken offline) has `itemId` and `item` null and
-  keeps its own `app` and `title`. Filtered to one app, a Timeline shows that app's events and the account's
-  own (`liveworkspace`); All shows everything. One no scope sees any more is swept daily.
-- `GET /timeline?app=&limit=&cursor=`: `{events, nextCursor, seenAt}`. `app` unset: every app. `limit`
-  30 by default, at most 100. Each event: `{id, app, type, actorId, actorName, itemId, title, detail,
-occurredAt, item}`, `title` being the item's name then and `item` the item as it is now (null for an event
-  about no item). One statement a page: an index range of at most `limit + 1` rows per scope (by scope, then
-  app, then time; filtered, a second for `liveworkspace`), the newest of those joined to their events and
-  items.
-- `GET /timeline?team=<id>&app=&limit=&cursor=`: one team's activity (the team page's Team Activity), the same
-  shape: only the team's scope (`t:<team>`), so events on its items and the team's own events, including those
-  from before the person joined. A joined member only, checked against the accounts Worker as every team filter
-  is (403 `not_team_member` otherwise; 400 `invalid_query` for a malformed id). `seenAt` is the person's, as on any
-  page; a team feed marks nothing new. One index range: a single term, never a compound past D1's limit.
-- `GET /timeline?item=<id>&limit=&cursor=`: one item's history (an item menu's History), the same shape:
-  only that item's events, read through the events' item index, each kept when one of the person's scopes
-  sees it and they haven't removed it.
-- `POST /timeline/seen`: `{seenAt}`: what came before is no longer new.
-- `POST /timeline/dismiss {ids}`: 204: Remove from Timeline, for this person only. 1 to
-  `TIMELINE_DISMISS_MAX` (100) event ids; an id from nowhere adds nothing. A removed event leaves their
-  pages and their count, and goes when the event does. A guest's removals follow them into their account.
+- liveworkspace accounts reports its teams' events, `POST /internal/events {events}` with its key (up to 100, each
+  `{id, type, actorId, actorName?, title, detail?, at}`): `team_invite_sent`, `team_joined`, `team_declined`,
+  `team_role_changed`, `team_member_removed` (`left` when they left) and `team_renamed` (`from`), each naming its team
+  in `detail.teamId`. Their app is `liveworkspace` (`PLATFORM_APP`). Accounts writes each to an outbox in the batch
+  that makes the change and sends them after the response, resending until the index takes them; the ids make a
+  resend change nothing. The index quietly drops the kinds it no longer keeps (`team_deleted`, `token_created`,
+  `token_revoked`, `token_expiring`) and ignores `scopes`, so events an older accounts Worker left waiting in its
+  outbox are taken, never refused.
+- The team-level events among these (a team's own; and on a team's items `shared`, `unshared`, `moved` into, out of
+  or between teams with `fromTeamId`, `trashed` and `restored`) are also copied, in the same batch, into the team
+  audit log its admins read, kept a year ([team-audit-log.md](team-audit-log.md)). A share link's `shared` carries
+  `public` for a Community post's.
+- The daily run deletes events older than `EVENT_RETENTION_MS`, oldest first, through the events' time index, in
+  bounded chunks (`EVENT_SWEEP_CHUNK`, 500, a statement and at most `EVENT_SWEEP_ROUNDS`, 40, a run: 20,000 events); a backlog past
+  that waits for the next day. Deleting an event deletes nothing else: its webhook deliveries and audit rows keep
+  their own copy.
+- `GET /items/:id/history?limit=&cursor=`: `{events, nextCursor}`, one item's events of the last 30 days, newest
+  first. `limit` `HISTORY_PAGE` (30) by default, at most `HISTORY_LIMIT_MAX` (100) (400 `invalid_query`; a bad
+  cursor is 400 `invalid_cursor`). Only someone who reaches the item directly (its owner, or a member of its team)
+  reads it, the Trash and Archived included; anyone else, a link visitor among them, gets 404 as for an item they
+  can't reach. A `favourited` event shows only to the person who starred it, and `opened_by_visitor` and
+  `copied_by_visitor` only to the item's owner. Each event: `{id, app, type, actorId, actorName, itemId, title,
+detail, occurredAt, item}`, `title` being the item's name then and `item` the item as it is now. One statement: a
+  range of the events' item index (`item_id`, then time), at most `limit + 1` rows plus the few the person may not
+  see.
 
 The index keeps no names of people. An event shows its person as "You" to them; to anyone else, by the
 name an app reported, or as a teammate.
 
 ## Inbox
 
-`GET /inbox?app=`: `{threads, actions, forms, timelineNew}` across every app: open actions and cards assigned
+`GET /inbox?app=`: `{threads, actions, forms}` across every app: open actions and cards assigned
 to or by me; unresolved threads (an element's or a card's) on my items, where I commented, or where I am
 mentioned; and forms with responses I haven't seen on items I own or reach through a team (not through a
 link); all limited to items I can reach (through a link scoped to one tab, that tab's threads and actions and the
 cards on its boards alone). Each row carries `app`, `itemId`, `itemTitle`, `itemTeamId`, `tabId`
 and `tabName`, so opening it goes to that app; a thread says why it is there (`mentionsYou`, `youCommented`,
-`onYourItem`). `timelineNew` is the sidebar's Timeline count, read in the same batch: events by someone else
-since my last look, up to now (never one still to come), not removed, counted to at most
-`TIMELINE_NEW_CAP + 1` (100, shown as "99+"); 0 before my first look. One read is three indexed queries and the
-count: about 18 ms with 2,000 of my items among 22,000, each with a form, a thread and an action.
+`onYourItem`). One read is three indexed queries in one batch: about 18 ms with 2,000 of my items among 22,000,
+each with a form, a thread and an action (measured when a fourth, the old Timeline count, rode along).
 
 The Explorer shows it as a list and a reading pane (`packages/explorer/src/explorer/InboxPane.tsx`), the same
 component on the page and in every editor's panel:
@@ -831,6 +813,6 @@ folderId? }`; `ThisBrowserFolder` is `{ id, name, parentId, createdAt, updatedAt
 ## What goes away in each app, as it moves
 
 Its tables for folders, favourites, opens, Trash state, share links, shared-with, placement
-defaults, the collab index, its own Timeline (the index's replaces it), the teams mirror and guest ids,
+defaults, the collab index, its own Timeline (gone: the index's event log feeds History instead), the teams mirror and guest ids,
 and the routes over them. Its
 content tables move into the item's Durable Object.

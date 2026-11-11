@@ -1,14 +1,16 @@
-// Opened by a Visitor and Copied by a Visitor: who came in through a share link, on the owner's Timeline alone.
-import type { ShareLink, TimelineEvent, TimelinePage } from '@liveworkspace/index-client';
+// Opened by a Visitor and Copied by a Visitor: who came in through a share link, in the owner's History alone.
+import type { HistoryPage, ItemEvent, ShareLink } from '@liveworkspace/index-client';
 import { describe, expect, it } from 'vitest';
 import { body, call, makeItem, person, settle, useHarness } from './test-support';
 
 useHarness();
 
-const feed = async (auth: string) =>
-  (await body<TimelinePage>(await call('/timeline', { auth }))).events.filter((e: TimelineEvent) =>
-    e.type.endsWith('_by_visitor'),
-  );
+// The visits in an item's History as `auth` reads it; null when they can't read it (404).
+async function feed(auth: string, itemId: string): Promise<ItemEvent[] | null> {
+  const res = await call(`/items/${itemId}/history`, { auth });
+  if (res.status === 404) return null;
+  return (await body<HistoryPage>(res)).events.filter((e) => e.type.endsWith('_by_visitor'));
+}
 
 async function link(auth: string, itemId: string, extra: Record<string, unknown> = {}) {
   const res = await call(`/items/${itemId}/share`, {
@@ -19,7 +21,7 @@ async function link(auth: string, itemId: string, extra: Record<string, unknown>
   return (await body<{ link: ShareLink }>(res)).link;
 }
 
-describe('visitors on the Timeline', () => {
+describe('visitors in History', () => {
   it("records no visit through a public link (a Community post's)", async () => {
     const ada = await person('user_p1');
     const eve = await person('user_p2');
@@ -32,7 +34,7 @@ describe('visitors on the Timeline', () => {
     });
     expect(res.status).toBe(200);
     await settle();
-    expect(await feed(ada.auth)).toEqual([]);
+    expect(await feed(ada.auth, item.id)).toEqual([]);
   });
 
   it("records a link visitor's open once a day, and their copy once, for the owner only", async () => {
@@ -56,7 +58,7 @@ describe('visitors on the Timeline', () => {
     await grant(ada.auth, false);
     await grant(bo.auth, false);
     await settle();
-    const opened = await feed(ada.auth);
+    const opened = (await feed(ada.auth, item.id))!;
     expect(opened.map((e) => [e.type, e.actorId, e.title])).toEqual(
       expect.arrayContaining([
         ['opened_by_visitor', 'user_v3', 'Plan'],
@@ -64,7 +66,8 @@ describe('visitors on the Timeline', () => {
       ]),
     );
     expect(opened).toHaveLength(2);
-    expect(await feed(bo.auth)).toEqual([]);
+    // A teammate reads the History, but not who came in through the owner's links.
+    expect(await feed(bo.auth, item.id)).toEqual([]);
 
     const copy = await call(`/items/${item.id}/copy`, {
       method: 'POST',
@@ -82,8 +85,9 @@ describe('visitors on the Timeline', () => {
     // The owner's own copy is no visitor's.
     await call(`/items/${item.id}/copy`, { method: 'POST', auth: ada.auth, body: {} });
     await settle();
-    const copied = (await feed(ada.auth)).filter((e) => e.type === 'copied_by_visitor');
+    const copied = (await feed(ada.auth, item.id))!.filter((e) => e.type === 'copied_by_visitor');
     expect(copied.map((e) => e.actorId)).toEqual(['user_v3']);
-    expect(await feed(eve.auth)).toEqual([]);
+    // The visitor reaches it only through the link: no History.
+    expect(await feed(eve.auth, item.id)).toBeNull();
   });
 });

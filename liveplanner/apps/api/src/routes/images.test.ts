@@ -14,12 +14,6 @@ import { makeTestRouteContext } from './test-route-context';
 // uploader or to anyone who may read a plan that serves the picture. The media service, the index and the plan's
 // room are stood in for (the room's own answer is plan-room/image-grants.test.ts's).
 
-const { pushPersonEvents } = vi.hoisted(() => ({ pushPersonEvents: vi.fn(async () => {}) }));
-vi.mock('../index-service', async (original) => ({
-  ...(await original<typeof import('../index-service')>()),
-  indexAppClient: () => ({ pushPersonEvents }),
-}));
-
 // `Bearer guest:<id>` stands in for a verified guest token; no Authorization is nobody (a link visitor).
 vi.mock('../auth/accounts', () => ({
   getPersonIdentity: async (_env: unknown, request: Request) => {
@@ -74,7 +68,6 @@ beforeEach(() => {
   post = null;
   room.grantImage.mockClear();
   room.servesImage.mockClear();
-  pushPersonEvents.mockClear();
   clearMediaOwnersForTests();
   setGrantVerifierForTests(async (token: string) =>
     token.startsWith('G.') ? (JSON.parse(atob(token.slice(2))) as GrantClaims) : null,
@@ -211,14 +204,13 @@ describe('POST /api/images?p=', () => {
     expect(stored.get('img-1')!.owner).toBe(await mediaGuestOwner(MEDIA_APP, 'alice'));
   });
 
-  it("puts a new upload on the uploader's Timeline, and not the same bytes again (granted again)", async () => {
+  it('grants the same bytes again when they come back deduped', async () => {
     await uploaded();
     const again = (await (await upload({ grant: grantOf('alice', 'edit') })).json()) as {
       deduped: boolean;
     };
     expect(again.deduped).toBe(true);
     expect(granted).toEqual(['img-1', 'img-1']);
-    expect(pushPersonEvents).toHaveBeenCalledTimes(1);
   });
 
   describe('who may upload (docs/specs/013-workspace/share-roles.md)', () => {

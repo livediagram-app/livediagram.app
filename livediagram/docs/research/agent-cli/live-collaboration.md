@@ -147,7 +147,7 @@ focus: [elementIds], ttl }`. The room keeps a virtual roster entry with an alarm
   - Comments: `authorName: "Claude for Webber"`, `authorId` = token owner (delete-own still
     works), plus `agent: "Claude"` so the UI can badge it. Today the name would be "Webber".
   - Changes: each changeset records `{ id, agent, for, summary, at, elementIds }` in the
-    timeline (`docs/specs/013-workspace/timeline.md`) as "Claude for Webber changed 6 elements:
+    timeline (`docs/specs/013-workspace/history.md`) as "Claude for Webber changed 6 elements:
     added payment service". Per-element provenance (`createdBy`) is not needed for v1.
 
 ### 4.3 Write granularity and conflicts

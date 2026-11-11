@@ -9,7 +9,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // Arrow-key nudge (docs/specs/008-canvas/canvas-and-palette.md Move).
 
 function shape(id: string, x: number, y: number): Element {
-  return { id, type: 'shape', shape: 'square', x, y, width: 100, height: 100 };
+  return { id, type: 'shape', shape: 'focus-button', x, y, width: 100, height: 100 };
 }
 
 function harness(opts: { elements: Element[]; selected?: string; multi?: string[] }) {

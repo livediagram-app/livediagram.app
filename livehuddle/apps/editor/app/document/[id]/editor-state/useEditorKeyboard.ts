@@ -59,7 +59,6 @@ export function useEditorKeyboard({
   const { fitToScreen, getViewportCenter, setViewportZoom } = fromViewport;
   const { redo, undo } = fromEditing;
   const {
-    addShape,
     addSticky,
     addText,
     cancelDrawShape,
@@ -90,7 +89,6 @@ export function useEditorKeyboard({
     copySelection,
     setCanvasTool: pickCanvasTool,
     canvasTool,
-    addShape,
     addText,
     addSticky,
     onBeginEditSelected: beginEdit,

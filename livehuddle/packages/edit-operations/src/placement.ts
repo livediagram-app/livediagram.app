@@ -1,6 +1,6 @@
 // Where `add` and `move` put an element (docs/specs/024-agents/edit-operations.md "Placement";
-// blueprint "Placement", EO23 to EO26, EO50): beside, after or aligned with a reference, at a
-// point from the content origin, or, for a new element, beside the last one added. Side, `after` and
+// blueprint "Placement", EO23 to EO26, EO50): beside or aligned with a reference, at a
+// point from the content origin, or, for a new element, beside the last one added. Side and
 // default spots move along their axis past whatever already sits there; `at:` and `align:` are exact.
 
 import type { EditRejection } from '@livehuddle/api-schema';
@@ -223,8 +223,7 @@ export function resolvePlacement(
       return { x: Math.round(box.x), y: Math.round(box.y), ref };
     }
     default: {
-      // `after:x` reads as below x: no arrow gives x a direction since part 4 of the element engine (EO24).
-      const side = placement.rel === 'after' ? 'below' : placement.rel;
+      const side = placement.rel;
       let start = beside(refBox, side, size, gap);
       // `below:<container> align:<x>`: beside the reference, centred on x across the side.
       if (placement.alignTo !== undefined) {

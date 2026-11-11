@@ -6,11 +6,14 @@ import type { BoxedElement, Element } from './index';
 // docs/specs/009-elements/blueprints/annotations.md [QD8]: Rotation is hidden for annotations.
 describe('supportsRotation', () => {
   it('lets a boxed element rotate', () => {
-    expect(supportsRotation(createShape('square', 0, 0))).toBe(true);
+    expect(supportsRotation(createShape('focus-button', 0, 0))).toBe(true);
   });
 
   it('never rotates an annotation marker', () => {
-    const marker = { ...createShape('square', 0, 0), type: 'annotation' } as unknown as Element;
+    const marker = {
+      ...createShape('focus-button', 0, 0),
+      type: 'annotation',
+    } as unknown as Element;
     expect(supportsRotation(marker)).toBe(false);
   });
 
@@ -31,7 +34,7 @@ const bar = (rotation?: number, type = 'shape') =>
   ({
     id: 'b',
     type,
-    shape: 'square',
+    shape: 'focus-button',
     x: 20,
     y: 45,
     width: 60,

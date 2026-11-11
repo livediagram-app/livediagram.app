@@ -20,7 +20,7 @@ import {
   type TeamAuditEvent,
   type TeamAuditEventType,
   type TeamAuditPerson,
-  type TimelineApp,
+  type EventApp,
 } from '@liveworkspace/index-client';
 import { decodeCursor, encodeCursor, isId, type Cursor } from './codec';
 import type { PersonContext } from './context';
@@ -57,7 +57,7 @@ export type TeamAuditFilter = {
 type Row = {
   id: string;
   type: TeamAuditEventType;
-  app: TimelineApp;
+  app: EventApp;
   actor_id: string | null;
   actor_name: string | null;
   subject_id: string | null;

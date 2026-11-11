@@ -298,12 +298,12 @@ describe('deleteAccount', () => {
 
     expect((await close()).status).toBe(200);
 
-    // Every column of every table, searched for the id. The Timeline outbox holds the team events it has yet to
+    // Every column of every table, searched for the id. The event outbox holds the team events it has yet to
     // hand the index (which anonymises them there): it is a queue, emptied as the index takes them.
     const tables = sql
       .prepare(
         `SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'
-           AND name NOT IN ('d1_migrations', 'index_timeline_outbox')`,
+           AND name NOT IN ('d1_migrations', 'index_events_outbox')`,
       )
       .all() as { name: string }[];
     const holding: string[] = [];

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createShape, createSticky, type Element } from '@livehuddle/document';
 import { buildTemplate, TEMPLATES, templateCategory } from '@livehuddle/templates';
 import { AVATAR_SIZES, avatarScale } from '@livehuddle/avatar/config';
 import { avatarFigureHeight, avatarSpawnBelow } from '@livehuddle/avatar/walk';
@@ -12,7 +12,7 @@ const button = (id: string, x: number, y: number, mode?: 'avatar'): Element => (
   ...(mode ? { mode } : {}),
 });
 const pad = (id: string): Element => ({ ...createShape('avatar-pad', 0, 0), id });
-const square = (id: string): Element => ({ ...createShape('square', 0, 0), id });
+const square = (id: string): Element => ({ ...createSticky(0, 0), id });
 
 describe('walkEntrance', () => {
   it('offers no walk on an empty tab or one with neither a pad nor an Avatar button', () => {

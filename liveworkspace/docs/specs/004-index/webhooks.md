@@ -3,7 +3,7 @@
 What happens to one document, sent to another tool as it happens: a signed JSON POST to any HTTPS endpoint, or a
 message formatted for a Slack or Microsoft Teams channel, with a link back to the document. A webhook belongs to a
 single document and only ever reports on that document: never on an account's other documents, a folder or a team.
-Built once in the index, beside the Timeline it hangs off; the apps only emit their events. The engineering detail
+Built once in the index, beside the event log it hangs off; the apps only emit their events. The engineering detail
 is [blueprints/webhooks.md](blueprints/webhooks.md).
 
 ## Who adds one
@@ -30,9 +30,9 @@ the team's audit log ([team-audit-log.md](team-audit-log.md)).
 
 ## What it sends
 
-The events are what can happen to an existing document: the Timeline's item events, each recorded by the index in
-the same batch as the change ([one-explorer-contracts.md "Timeline"](one-explorer-contracts.md#timeline)), plus
-liveplanner's card moves and form responses, which are not on the Timeline:
+The events are what can happen to an existing document: the event log's item events, each recorded by the index in
+the same batch as the change ([one-explorer-contracts.md "The event log"](one-explorer-contracts.md#the-event-log)),
+plus liveplanner's card moves and form responses, which are not in the event log:
 
 | Event             | When                                                              | Apps        |
 | ----------------- | ----------------------------------------------------------------- | ----------- |
@@ -59,7 +59,7 @@ goes to an Only Me webhook: a form response (from whoever filled the form in), o
 resumes a paused webhook, or sets one to Only Me, becomes its creator, so Only Me then means them.
 
 A payload never carries more than an Editor of the document could already read: the document's id, app, name and
-link, who did it (the name an app reported, or none), when, and the event's Timeline detail (a comment's opening
+link, who did it (the name an app reported, or none), when, and the event's detail (a comment's opening
 words, an action's name and assignee's name, a card's title and statuses). An event older than an hour when it is
 recorded (a merge, a migration or a resent push replaying history) is never sent.
 

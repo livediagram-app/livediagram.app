@@ -267,7 +267,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     (cascades, the schema), the `DocumentRoom` Durable Object's rules, ledger
     and multiplayer paths, every route family (documents, tabs, share, images,
     thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
-    events, AI), the Timeline's writers and its catalogue
+    events, AI), the event log's writers and its catalogue
     against its spec, the image reference index, email lifecycle, the OpenAPI
     manifest ↔ dispatch drift guards, response helpers, MIME sniffing.
   - `packages/api-schema`: the wire contracts both sides share: the SHA-256
@@ -279,8 +279,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     view-model copy, `?q=` and carry-over, the telemetry facets.
   - `packages/ui`: the shared primitives (Button, Tooltip, HoverCard, hints),
     appearance boot + store, SEO helpers, icons and glyph ink, optical centring,
-    and the Timeline's cards, stacking, grouping, tones and categories, rendered
-    in jsdom where they hold state.
+    rendered in jsdom where they hold state.
   - `../packages/icons`: the icon resolver, catalogues, markup builders, stroke
     weight, cap-band and ink centring, and the vendored Lucide set.
   - `packages/template-previews`: preview SVGs, their bounds and motion. The

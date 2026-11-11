@@ -10,7 +10,6 @@ import { SIDEBAR_LABELS } from '../views';
 export type PanelSection =
   | { kind: 'home' }
   | { kind: 'inbox' }
-  | { kind: 'timeline' }
   | { kind: 'shared' }
   | { kind: 'mine' }
   | { kind: 'team'; id: string }
@@ -37,7 +36,6 @@ export const sectionKey = (s: PanelSection): string =>
 const SIMPLE = [
   'home',
   'inbox',
-  'timeline',
   'shared',
   'mine',
   'favourites',
@@ -77,7 +75,6 @@ export function panelSectionGroups(
       id: 'more',
       // The sidebar's Library, in its order (Recent is Home's Jump Back In here).
       sections: [
-        { kind: 'timeline' },
         { kind: 'favourites' },
         ...(library ? [{ kind: 'library' as const }] : []),
         { kind: 'archived' },
@@ -93,8 +90,6 @@ export function sectionLabel(s: PanelSection, teamName: (id: string) => string |
       return SIDEBAR_LABELS.home;
     case 'inbox':
       return SIDEBAR_LABELS.inbox;
-    case 'timeline':
-      return SIDEBAR_LABELS.timeline;
     case 'shared':
       return SIDEBAR_LABELS.shared;
     case 'mine':

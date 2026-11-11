@@ -3,7 +3,6 @@
 // edit operation's `set` and the MCP's whole-element check refuse the same values the same way. A value off its list
 // used to be stored and drawn wrong in silence (`textSize: "xl"` drew tiny overlapping text).
 
-import { ACCENT_EDGES } from './accent-edge';
 import { BORDER_DASH_ARRAY } from '@liveworkspace/model-core/border-style';
 import { FONTS } from '@liveworkspace/model-core/fonts';
 import { ICON_WEIGHTS } from '@liveworkspace/model-core/icon-weight';
@@ -15,8 +14,6 @@ export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> =
   iconPosition: ['left', 'right', 'above', 'below'],
   strokeStyle: Object.keys(BORDER_DASH_ARRAY),
   borderRadius: ['none', 'sm', 'md', 'lg', 'full'],
-  // A box's accent edge (docs/specs/008-canvas/accent-edge.md).
-  accentEdge: ACCENT_EDGES,
   // A line-art icon's stroke (icon-weight.ts): an icon's strokeWidth is not its weight.
   iconWeight: ICON_WEIGHTS,
   // The editor's faces (fonts.ts): a family name ("serif", "Georgia") drew in the tab's font in silence.

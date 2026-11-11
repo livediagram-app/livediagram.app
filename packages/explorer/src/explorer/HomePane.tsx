@@ -5,10 +5,9 @@
 // (up to eight more of the same size, the latest opened of the rest), then Spaces (HomeSpaces: My Work and each team,
 // each a tile into its list), and Shared With You Recently. On a phone Jump Back
 // In is one scrolling strip of up to eight, the two groups alternating. An item kept only in this browser is one card among the rest (LocalCard): the same frame, size, menu
-// and drag, with the This Browser badge on its line and This Browser's own verbs. Last, What Happened: what other people did to the items the person can open, from the index's
-// Timeline. With the hero hidden, Home takes the ordinary page header. Four requests, each one small page: Recent
-// carries Most Used and New beside it (the index's `used` and `newest`), the spaces' previews, Shared, and one
-// Timeline page. The cards themselves are HomeCards.tsx's.
+// and drag, with the This Browser badge on its line and This Browser's own verbs. With the hero hidden, Home takes the
+// ordinary page header. Three requests, each one small page: Recent carries Most Used and New beside it (the index's
+// `used` and `newest`), the spaces' previews, and Shared. The cards themselves are HomeCards.tsx's.
 
 import { useEffect, useMemo, useState } from 'react';
 import type { ShownItem } from '../data/overlay';
@@ -30,12 +29,6 @@ import { HomeSpaces } from './HomeSpaces';
 import { useFirstRun } from '../welcome/context';
 import { HomeWelcome } from '../welcome/HomeWelcome';
 import { mergeOpened, useThisBrowserItems } from './ThisBrowser';
-import {
-  useWhatHappened,
-  useWhatHappenedGroups,
-  WhatHappenedFeed,
-  WhatHappenedSkeleton,
-} from './WhatHappened';
 
 export const HOME_SHARED = 4;
 // Jump Back In's Recent group with this browser's own items merged in.
@@ -50,8 +43,6 @@ export const HOME_COPY = {
   seeAll: 'See All',
   mostUsed: 'Most Used',
   recent: 'Recent',
-  whatHappened: 'What Happened',
-  seeTimeline: 'See Timeline',
 } as const;
 
 /** Jump Back In's grid from `md` up; below it, the strip. */
@@ -91,8 +82,6 @@ export function HomePane({ hero }: { hero: boolean }) {
     belongs: live,
     epoch,
   });
-  const happened = useWhatHappened(client, app, filter, epoch);
-  const happenedGroups = useWhatHappenedGroups(happened);
   const wide = useWide();
   const showApp = filter === 'all';
   // What this browser keeps of the host app's, by the same rule as Recent (last opened first): only where the host
@@ -189,30 +178,6 @@ export function HomePane({ hero }: { hero: boolean }) {
               link={{ view: { kind: 'shared' }, label: HOME_COPY.seeAll }}
             >
               <CardGroup items={shared.items} large showApp={showApp} />
-            </HomeSection>
-          ) : null}
-          {/* Nothing from anyone, or a failed read: the section is left out rather than a second empty state. It is
-            the page's last, so nothing moves when it goes. */}
-          {happened.loading || happenedGroups.length > 0 ? (
-            <HomeSection
-              id="what-happened"
-              title={HOME_COPY.whatHappened}
-              busy={happened.loading}
-              link={
-                happened.loading
-                  ? undefined
-                  : {
-                      view: { kind: 'timeline' },
-                      label: HOME_COPY.seeTimeline,
-                      onFollow: () => onHome?.('Selected', 'SeeTimeline'),
-                    }
-              }
-            >
-              {happened.loading ? (
-                <WhatHappenedSkeleton />
-              ) : (
-                <WhatHappenedFeed groups={happenedGroups} seenAt={happened.seenAt} />
-              )}
             </HomeSection>
           ) : null}
         </div>

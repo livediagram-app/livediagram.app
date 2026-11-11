@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createSticky, type Element } from '@livehuddle/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { computeDrawGuides } from './canvas-draw-guides';
 
 // A box the drawn box below lines up with, so a guide shows.
-const box = { ...createShape('square', 100, 100), width: 100, height: 100 } as Element;
-const square: PendingDraw = { type: 'shape', kind: 'square' };
+const box = { ...createSticky(100, 100), width: 100, height: 100 } as Element;
+const room: PendingDraw = { type: 'shape', kind: 'room' };
 const guides = (
   drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null,
   hover: { x: number; y: number } | null = null,
 ) =>
   computeDrawGuides({
     drawDrag,
-    pendingDraw: square,
+    pendingDraw: room,
     elements: [box],
     drawHover: hover,
     snapGuides: [],

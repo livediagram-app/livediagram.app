@@ -66,7 +66,7 @@ describe('show selected (R27)', () => {
   });
 
   it('reads selected as the selector, never as an element named so (VW65)', () => {
-    const tab = { id: 't', name: 'T', elements: [shapeAt('square', 'selected', 0, 0)] };
+    const tab = { id: 't', name: 'T', elements: [shapeAt('signpost', 'selected', 0, 0)] };
     const rendered = renderView({ view: 'show', ref: SELECTED_REF }, tab, {});
     expect(rendered).toMatchObject({
       ok: false,

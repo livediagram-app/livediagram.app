@@ -2,7 +2,7 @@
 
 // The Explorer's sidebar (liveplanner's ExplorerSidebar): Overview (Home, Inbox, Shared With Me), Spaces (My Work
 // and its folders, each team and its folders, This Browser and its folders while it holds anything), and More (the
-// Library: Recent, Timeline, Favourites, the host's Gallery and Shape Libraries, Archived and the Trash; then the
+// Library: Recent, Favourites, the host's Gallery and Shape Libraries, Archived and the Trash; then the
 // host's own rows). Rows carry toned
 // tiles and the current row is a raised pill, in the host app's brand colour. The tree reads the folder store, so it
 // costs no request of its own. The current view's rows are always open: its space and folders, or the Library.
@@ -18,7 +18,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
-import { TIMELINE_NEW_CAP, type Folder } from '@liveworkspace/index-client';
+import type { Folder } from '@liveworkspace/index-client';
 import { TRASH_BIN, TRASH_OVER, TRASH_WAITING, useTrashTarget, type DropPlace } from '../drag/drag';
 import {
   ClockIcon,
@@ -31,7 +31,6 @@ import {
   ShareIcon,
   StarIcon,
   TeamIcon,
-  TimelineIcon,
   TrashIcon,
   ArchiveIcon,
 } from '../ui/icons';
@@ -59,7 +58,6 @@ export { SIDEBAR_RENAME_FIELD, SidebarRow } from './SidebarRow';
 // The Library's pages: opening one unfolds the Library, so the current row is never hidden.
 const LIBRARY_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set([
   'recent',
-  'timeline',
   'favourites',
   'gallery',
   'shape-libraries',
@@ -256,17 +254,6 @@ function TrashRow({ depth = 0 }: { depth?: number }) {
   );
 }
 
-/** The Timeline row's count: what others did since the person last looked, capped by the index at 99. */
-export function timelineBadge(count: number | undefined): {
-  badge?: string;
-  badgeLabel?: string;
-  badgeTone?: 'brand';
-} {
-  if (!count) return {};
-  const shown = count > TIMELINE_NEW_CAP ? `${TIMELINE_NEW_CAP}+` : String(count);
-  return { badge: shown, badgeLabel: `${shown} new`, badgeTone: 'brand' };
-}
-
 export function Sidebar() {
   const { view, navigate, folders, teams, inbox, viewerId } = useExplorer();
   const { sidebarLinks } = useHostExtras();
@@ -275,7 +262,6 @@ export function Sidebar() {
   const libraryOpen = expanded.has(LIBRARY);
   // A drag resting on the folded Library opens it, so the Trash inside is in reach.
   const libraryDrag = useDragHoverOpen(libraryOpen ? null : () => expand(LIBRARY));
-  const timeline = timelineBadge(inbox.data?.timelineNew);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const rename: SidebarRename = { renamingId, setRenamingId };
   const myWorkMenu = useMyWorkMenu({ onRename: setRenamingId });
@@ -432,8 +418,6 @@ export function Sidebar() {
           expanded={libraryOpen}
           onToggleExpand={() => toggle(LIBRARY)}
           rowHandlers={libraryDrag}
-          // Folded, the Library carries the Timeline's count, so it is never hidden.
-          {...(libraryOpen ? {} : timeline)}
         >
           <SidebarRow
             icon={<ClockIcon />}
@@ -441,14 +425,6 @@ export function Sidebar() {
             selected={is({ kind: 'recent' })}
             onActivate={() => navigate({ kind: 'recent' })}
             depth={1}
-          />
-          <SidebarRow
-            icon={<TimelineIcon />}
-            label={SIDEBAR_LABELS.timeline}
-            selected={view.kind === 'timeline'}
-            onActivate={() => navigate({ kind: 'timeline' })}
-            depth={1}
-            {...timeline}
           />
           <SidebarRow
             icon={<StarIcon />}

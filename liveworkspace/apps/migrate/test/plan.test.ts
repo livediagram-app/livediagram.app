@@ -95,7 +95,6 @@ describe('plan, first run', async () => {
     counts: Record<string, number>;
     shareCodeCaseCollisions: { items: unknown[] };
     imageCollisions: { items: unknown[] };
-    droppedHistory: Record<string, number>;
     skipped: { items: { what: string; id: string; why: string }[] };
   };
 
@@ -401,88 +400,8 @@ describe('plan, first run', async () => {
     expect(await verifySharePassword(row!.hash, 'nope')).toBe(false);
   });
 
-  it('carries history with its old times as imported, and reports what has no new kind', () => {
-    expect(
-      all(
-        dbs.index,
-        "SELECT id, app, item_id, type, detail, occurred_at FROM timeline_events WHERE id IN ('imp:e1', 'imp:e2', 'imp:e3', 'imp:e4') ORDER BY id",
-      ),
-    ).toEqual([
-      {
-        id: 'imp:e1',
-        app: 'livediagram',
-        item_id: 'doc-diagram',
-        type: 'created',
-        detail: '{"imported":"1"}',
-        occurred_at: NOW - 9 * DAY,
-      },
-      {
-        id: 'imp:e2',
-        app: 'liveworkspace',
-        item_id: null,
-        type: 'team_joined',
-        detail: '{"imported":"1"}',
-        occurred_at: NOW - 9 * DAY,
-      },
-      {
-        id: 'imp:e4',
-        app: 'livediagram',
-        item_id: 'doc-mixed',
-        type: 'edited',
-        detail: '{"imported":"1"}',
-        occurred_at: NOW - 8 * DAY,
-      },
-    ]);
-    expect(
-      all(
-        dbs.index,
-        "SELECT scope FROM timeline_event_scopes WHERE event_id = 'imp:e1' ORDER BY scope",
-      ),
-    ).toEqual([{ scope: 'p:user_ali' }, { scope: 'p:user_newbo' }]);
-    expect(report.droppedHistory).toEqual({ theme_created: 1 });
-  });
-
-  it('maps the old kinds the index has under another name', () => {
-    const rows = all<{
-      id: string;
-      app: string;
-      item_id: string | null;
-      actor_id: string | null;
-      actor_name: string | null;
-      type: string;
-      title: string;
-      detail: string;
-    }>(
-      dbs.index,
-      "SELECT id, app, item_id, actor_id, actor_name, type, title, detail FROM timeline_events WHERE id NOT IN ('imp:e1', 'imp:e2', 'imp:e4') ORDER BY CAST(substr(id, 6) AS INTEGER)",
-    );
-    expect(rows.map((r) => [r.id, r.app, r.item_id, r.type])).toEqual([
-      ['imp:e5', 'livediagram', 'doc-diagram', 'opened_by_visitor'],
-      ['imp:e6', 'livediagram', 'doc-diagram', 'copied_by_visitor'],
-      ['imp:e7', 'livediagram', 'doc-diagram', 'synced'],
-      ['imp:e8', 'livediagram', null, 'taken_offline'],
-      ['imp:e9', 'livediagram', null, 'taken_offline'],
-      ['imp:e10', 'liveworkspace', null, 'team_joined'],
-      ['imp:e11', 'liveworkspace', null, 'team_member_removed'],
-      ['imp:e12', 'liveworkspace', null, 'team_member_removed'],
-    ]);
-    const by = Object.fromEntries(rows.map((r) => [r.id, r]));
-    // A visitor with no identity has no actor, but keeps the name the old event had.
-    expect(by['imp:e5']).toMatchObject({ actor_id: null, actor_name: 'Visitor' });
-    // Taken offline names the document as it was, from its snapshot or, failing that, its description.
-    expect(by['imp:e8']!.title).toBe('Offline plan');
-    expect(by['imp:e9']!.title).toBe('Described');
-    // A member leaving reads as Member Left (the Explorer's `left`), with the team and name it had.
-    expect(JSON.parse(by['imp:e11']!.detail)).toEqual({
-      imported: '1',
-      left: '1',
-      teamId: 'team1',
-      memberName: 'Bo',
-    });
-    expect(JSON.parse(by['imp:e12']!.detail)).toMatchObject({ left: '1', teamId: null });
-    expect(
-      all(dbs.index, "SELECT scope FROM timeline_event_scopes WHERE event_id = 'imp:e8'"),
-    ).toEqual([{ scope: 'p:user_ali' }]);
+  it('leaves the old Timeline behind: the index keeps 30 days of events, so none is imported', () => {
+    expect(all(dbs.index, "SELECT id FROM events WHERE id LIKE 'imp:%'")).toEqual([]);
   });
 
   it('marks what each person hid from Recent on their opens row, opened or not', () => {

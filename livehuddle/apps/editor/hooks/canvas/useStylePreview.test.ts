@@ -38,7 +38,7 @@ const PRESET_B: ShapeColorPreset = {
 // pointerleave→pointerenter with NO render in between, which is the window the
 // bug lived in.
 function harness() {
-  const a = createShape('square', 0, 0);
+  const a = createShape('focus-button', 0, 0);
   let committed: Tab[] = [{ id: 'tab1', name: 'Tab', elements: [a] }];
   const tabsRef = { current: committed };
   const preview = renderHook(() =>
@@ -124,8 +124,8 @@ describe('useStylePreview hover snapshot integrity', () => {
 // locked before locking left included.
 describe('useStylePreview rotation tiles', () => {
   it('turn every member of a selection', () => {
-    const free = createShape('square', 0, 0);
-    const locked = { ...createShape('square', 200, 0), locked: true };
+    const free = createShape('focus-button', 0, 0);
+    const locked = { ...createShape('focus-button', 200, 0), locked: true };
     let committed: Tab[] = [{ id: 'tab1', name: 'Tab', elements: [free, locked] }];
     const preview = renderHook(() =>
       useStylePreview({

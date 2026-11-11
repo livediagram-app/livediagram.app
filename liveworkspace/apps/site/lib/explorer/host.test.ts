@@ -76,7 +76,7 @@ describe("every app's addresses", () => {
       'https://www.liveplanner.app/help/explorer/home/',
     );
     expect(helpHrefFor('livediagram')({ kind: 'home' })).toBe(
-      'https://www.livediagram.app/help/explorer/explorer-page/',
+      'https://www.livediagram.app/help/explorer/home/',
     );
     expect(offlineHref('liveplanner')).toBe('https://www.liveplanner.app/explorer/offline');
   });
@@ -130,6 +130,7 @@ describe('addresses the Explorer used to have', () => {
     expect(retiredTarget('activity', '?from=liveplanner')).toBe('/explorer/inbox?from=liveplanner');
     expect(retiredTarget('generated', '')).toBe('/explorer/search?q=made-by%3Aai');
     expect(retiredTarget('unsorted', '?from=livedesign')).toBe('/explorer/all?from=livedesign');
+    expect(retiredTarget('timeline', '?from=livediagram')).toBe('/explorer?from=livediagram');
   });
 
   it("says why a revoked link sent the person here, in the app's words", () => {

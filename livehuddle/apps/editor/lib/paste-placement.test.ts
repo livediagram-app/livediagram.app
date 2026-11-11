@@ -3,7 +3,7 @@ import type { Element } from '@livehuddle/document';
 import { pasteTranslation } from './paste-placement';
 
 const shape = (id: string, x: number, y: number) =>
-  ({ id, type: 'shape', shape: 'square', x, y, width: 100, height: 100 }) as Element;
+  ({ id, type: 'shape', shape: 'focus-button', x, y, width: 100, height: 100 }) as Element;
 
 describe('pasteTranslation', () => {
   it('lands the copies 24px down and right with no view to measure', () => {

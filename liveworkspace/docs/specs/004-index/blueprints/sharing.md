@@ -13,7 +13,6 @@ Scope, by file:
 | `liveworkspace/apps/index/src/access.ts`           | `linkFor`, `linkAccess`                                                                     |
 | `liveworkspace/apps/index/src/password-hash.ts`    | `hashSharePassword`, `verifySharePassword`, `isRememberedSharePassword`                     |
 | `liveworkspace/apps/index/src/share-guesses.ts`    | `guessVisitorOf`, `guessRefusal`                                                            |
-| `liveworkspace/apps/index/src/share-expiry.ts`     | Share Link Expiring: `expiringStatements`, `sweepExpiringLinks`                             |
 | `liveworkspace/apps/index/src/notices.ts`          | `tellApp`, `firstVisitStatement`, `GET /app/people/:id/count`                               |
 | `liveworkspace/apps/index/src/community-states.ts` | `POST /app/community/states`: `communityStatesOf`, where each Community post's item stands  |
 | `liveworkspace/apps/index/src/codec.ts`            | `generateShareCode`, `isShareCode`                                                          |
@@ -80,14 +79,6 @@ PBKDF2-SHA256, 100,000 iterations, 16-byte salt, 256 bits, base64url. A stored v
 iterations, or malformed, is refused (`[index] malformed stored share password refused`). A right password is
 remembered per isolate by a SHA-256 of stored and given (never the password), at most 1,000.
 
-### Share Link Expiring (`share-expiry.ts`)
-
-One event per item, `sx:<item>`, type `share_link_expiring`, dated at the soonest expiry among live links lapsing
-within 7 days, detail `{ expiresAt, links }`, on the owner's scope only. Written in the batch of every link change
-(dropped, then rewritten if still due) and by the daily pass: one read of `share_links_expires` for up to 2,000
-items, soonest first, then two statements per 500. The daily pass only writes or moves, so a dismissed warning stays
-dismissed until a link changes.
-
 ### Shared with me
 
 Archiving an item deletes its links, its share password and every `shared_with` row for it
@@ -133,19 +124,17 @@ counts the person's items in that app, Trash included, up to `OWNED_COUNT_MAX` (
 
 ## Testing
 
-| Test                                                    | Pins                                                                                                                                                           |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/sharing.test.ts` (29)     | share links; share passwords; a password on links already opened; guesses; what a link opens, and Shared with me; a public link at its own level for its owner |
-| `liveworkspace/apps/index/src/share-expiry.test.ts` (7) | share link expiring                                                                                                                                            |
-| `liveworkspace/apps/index/src/notices.test.ts` (6)      | notices; a person's count of items made                                                                                                                        |
+| Test                                                | Pins                                                                                                                                                           |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/sharing.test.ts` (29) | share links; share passwords; a password on links already opened; guesses; what a link opens, and Shared with me; a public link at its own level for its owner |
+| `liveworkspace/apps/index/src/notices.test.ts` (6)  | notices; a person's count of items made                                                                                                                        |
 
 ## Constants and configuration
 
 `SHARE_LINKS_PER_ITEM` 100, `SHARE_PASSWORD_MAX` 256, `SHARE_PASSWORD_MIN` 6, `SHARE_LINK_EXPIRY_MS`,
-`DEFAULT_LINK_LEVEL` `'edit'`, `APP_LINK_LEVELS` (livehuddle `['edit', 'participate']`, the rest all three), `APP_DEFAULT_LINK_LEVEL` (livehuddle `'participate'`, the rest `'edit'`), `SHARE_EXPIRY_WARNING_MS` 7 d, `OWNED_COUNT_MAX` 1000 (`packages/index-client`);
+`DEFAULT_LINK_LEVEL` `'edit'`, `APP_LINK_LEVELS` (livehuddle `['edit', 'participate']`, the rest all three), `APP_DEFAULT_LINK_LEVEL` (livehuddle `'participate'`, the rest `'edit'`), `OWNED_COUNT_MAX` 1000 (`packages/index-client`);
 `SHARE_CODE_LENGTH` 14 (`codec.ts`); `SHARE_PASSWORD_ITERATIONS` 100,000 (`password-hash.ts`);
-`PASSWORD_MEMORY_MAX` 1,000, `SHARE_GUESS_RETRY_AFTER_S` 60 (`config.ts`); `EXPIRY_SWEEP_MAX` 2,000, `EXPIRY_CHUNK`
-500 (`share-expiry.ts`). Rate limiters: `SHARE_GUESS_VISITOR_LIMITER` namespace `1107` (staging `2107`), 10 per 60 s;
+`PASSWORD_MEMORY_MAX` 1,000, `SHARE_GUESS_RETRY_AFTER_S` 60 (`config.ts`). Rate limiters: `SHARE_GUESS_VISITOR_LIMITER` namespace `1107` (staging `2107`), 10 per 60 s;
 `SHARE_GUESS_ITEM_LIMITER` `1108` (`2108`), 30 per 60 s. Without the bindings (tests, local) nothing is limited.
 
 ## Defaults ledger

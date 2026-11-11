@@ -20,41 +20,9 @@ import type { ShapeElement, ShapeKind } from './index';
 
 // --- Factories -------------------------------------------------------------
 
-// Default size per shape kind. Uniform 120 for square / circle / diamond,
-// natural aspect ratios for the flowchart-vocabulary shapes (cylinder
-// taller than wide, parallelogram + hexagon + document wider than tall).
-// Exported so the editor can offer "reset to default aspect ratio" — the
-// width:height proportion here is each shape's canonical look.
+// Default size per shape kind, each kind's canonical look. Exported so the editor can offer "reset to default
+// aspect ratio" and an agent's `add` sizes a new box from it.
 export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: number }> = {
-  square: { width: 120, height: 120 },
-  circle: { width: 120, height: 120 },
-  diamond: { width: 120, height: 120 },
-  cylinder: { width: 100, height: 140 },
-  parallelogram: { width: 160, height: 100 },
-  hexagon: { width: 140, height: 120 },
-  document: { width: 140, height: 110 },
-  // Reaction pad: a press-me square, sized like the other Behaviour buttons.
-  // Stadium / pill — the conventional flowchart "Start / End" terminator
-  // shape. Wider than tall by default; the CSS `border-radius: 9999px`
-  // render path means the ends stay perfectly semicircular at any
-  // aspect ratio the user resizes to.
-  stadium: { width: 160, height: 64 },
-  // Actor (UML stickman): line-art figure with its label below. Taller
-  // than wide and aspect-locked on create so the figure never distorts.
-  // Default size hugs the figure tightly — earlier 90×150 left a 38-
-  // unit band below the legs which read as wasted padding under bare
-  // (unlabelled) stickmen. 90×130 keeps room for a short label
-  // (y 112..130) without dominating the box.
-  actor: { width: 90, height: 130 },
-  'final-state': { width: 32, height: 32 },
-  // Cloud: a container shape (networking / architecture). Stretches to
-  // fit its label like the other flowchart shapes.
-  cloud: { width: 180, height: 140 },
-  triangle: { width: 130, height: 120 },
-  trapezoid: { width: 160, height: 110 },
-  star: { width: 130, height: 130 },
-  // Speech bubble: wider than tall, with room for the tail beneath the body.
-  'speech-bubble': { width: 180, height: 130 },
   // Curated glyph. Square + aspect-locked on create (set in createShape) so
   // the line art never distorts; the label sits below. Sized generously so a
   // two-line caption (e.g. "Durable Objects") clears the glyph rather than
@@ -383,12 +351,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
         : {}),
       aspectLocked: true,
     };
-  }
-  // The actor is a figure with its label beneath the legs, not text
-  // inside a box. Lock the aspect ratio so resizing never warps the
-  // stickman, and default the label to the bottom band.
-  if (kind === 'actor') {
-    return { ...base, aspectLocked: true, textAlignY: 'bottom' };
   }
   // Icons: aspect-locked so the glyph never warps, label sits beneath
   // the glyph (the icon fills the box, text below reads as a caption).

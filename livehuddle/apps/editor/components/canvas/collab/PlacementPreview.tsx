@@ -214,7 +214,6 @@ export function PlacementPreview({
       {drawn ?? (
         // A kind the art layer does not draw (a Portal, a mode button): its footprint and glyph, as the drag ghost.
         <ShapeGlyph
-          kind={kind as ShapeElement['shape']}
           size={Math.max(16, Math.min(piece.width, piece.height) * 0.5)}
           stroke="currentColor"
         />

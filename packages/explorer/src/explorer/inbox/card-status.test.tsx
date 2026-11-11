@@ -72,7 +72,6 @@ const data = (threads: InboxThread[], actions: InboxAction[] = []): InboxData =>
   threads,
   actions,
   forms: [],
-  timelineNew: 0,
 });
 
 const factsOf = (d: InboxData) =>

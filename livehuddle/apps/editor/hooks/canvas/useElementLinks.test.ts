@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createLinkCard, createShape, type Element, type Tab } from '@livehuddle/document';
+import { createLinkCard, createSticky, type Element, type Tab } from '@livehuddle/document';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const api = vi.hoisted(() => ({ apiUnfurl: vi.fn() }));
@@ -10,7 +10,7 @@ vi.mock('@/lib/api-client', () => api);
 import { useElementLinks } from './useElementLinks';
 
 const linkCard: Element = { ...createLinkCard(0, 0), id: 'card' };
-const square: Element = { ...createShape('square', 0, 0), id: 'box' };
+const square: Element = { ...createSticky(0, 0), id: 'box' };
 
 function links(selected: string) {
   const tab: Tab = { id: 't', name: 'Tab', elements: [linkCard, square] };

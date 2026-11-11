@@ -54,7 +54,7 @@ afterEach(() => vi.restoreAllMocks());
 const box = (id: string, link?: ShapeElement['link']): ShapeElement => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'signpost',
   x: 0,
   y: 0,
   width: 100,

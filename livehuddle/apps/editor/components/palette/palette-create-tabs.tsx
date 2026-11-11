@@ -1,7 +1,7 @@
 'use client';
 
 import type { PendingDraw } from '@/lib/draw-mode';
-import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
+import type { PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRows } from './PaletteToolRows';
 import type { PaletteTileDef } from './palette-tile-defs';
 
@@ -23,10 +23,6 @@ type TabProps = {
   // The category's tiles in this mode, in order (palette-layouts).
   tiles: PaletteTileDef[];
 };
-
-export function PaletteShapesTab({ pendingDraw, actions, tiles }: TabProps) {
-  return <PaletteTileGrid tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
-}
 
 // The wordy elements (docs/specs/010-palette/palette-top-level-categories.md): Text and Sticky Note.
 export function PaletteWriteTab({ pendingDraw, actions, tiles }: TabProps) {

@@ -134,8 +134,7 @@ arrival").
 | `.lvd-cascade > *`      | `micro`, 10ms step to 100ms |
 | `empty-float` / `-ring` | loops: ambient indicator    |
 
-The Timeline's motion is the platform's: liveworkspace's dashboard and the Explorer (`@liveworkspace/explorer`'s
-`explorer.css`, its `lw-tl-*` rules) keep their own, under the same budget.
+The stacked cards' motion is liveworkspace's telemetry dashboard's, kept there under the same budget.
 
 ### Component classes
 

@@ -31,8 +31,6 @@ export const KEY_COLUMNS: Record<Db, Record<string, readonly string[]>> = {
     share_passwords: ['item_id'],
     shared_with: ['person_id', 'item_id'],
     placement_defaults: ['person_id', 'default_key'],
-    timeline_events: ['id'],
-    timeline_event_scopes: ['scope', 'event_id'],
   },
   media: { images: ['id'], refs: ['app', 'document', 'image_id'] },
   community: {

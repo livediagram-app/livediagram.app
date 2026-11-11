@@ -51,13 +51,13 @@ import { runLifecycle, sendWelcomes, takeWelcomes, type SendEmail } from './life
 import { sweepInvitations, type ReminderEmail } from './teams.ts';
 import { canSendEmail, cronRun } from './cron-run.ts';
 import { parseTimeZone, sendWindowOf, TIME_ZONE_HEADER } from './send-window.ts';
-import { noteExpiringTokens, sweepExpiringTokens } from './token-expiry.ts';
+import { sweepExpiringTokens } from './token-expiry.ts';
 import {
-  flushTimeline,
-  flushTimelineAfter,
-  TIMELINE_CALLS_PER_RUN,
-  trimTimelineOutbox,
-} from './index-timeline.ts';
+  flushEvents,
+  flushEventsAfter,
+  EVENTS_CALLS_PER_RUN,
+  trimEventOutbox,
+} from './index-events.ts';
 import { flushServerEvents, flushServerEventsAfter } from './telemetry.ts';
 import { WORKSPACE_TOKEN_PATH, workspaceToken } from './workspace-token.ts';
 import { closeAccountWorkbench } from './workbench/revoke.ts';
@@ -177,10 +177,10 @@ async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promis
     const response = await handleAccountApi(request, env, getAuth(env), (promise) =>
       ctx.waitUntil(promise),
     );
-    // The team emails it sent are counted after the response (telemetry.ts), and the team and token
-    // events it made go to the Timeline (index-timeline.ts).
+    // The team emails it sent are counted after the response (telemetry.ts), and the team events it made go to
+    // the index's audit log (index-events.ts).
     flushServerEventsAfter(env, ctx);
-    flushTimelineAfter(env, ctx);
+    flushEventsAfter(env, ctx);
     return response;
   }
 
@@ -301,8 +301,8 @@ export default {
   // (liveworkspace/docs/specs/003-accounts/accounts.md "The send window"): the rest of the onboarding series
   // ("Onboarding emails"); team invitations' reminders, after those nobody answered expire ("Reminders and expiry");
   // and the warning to owners of API tokens that expire within a week, once per token ("API tokens"). In the 09:17 UTC
-  // run only: those tokens go on their owners' Timelines, and the settings and profiles of guests who can never come
-  // back are deleted ("Guests who never come back").
+  // run only: the settings and profiles of guests who can never come back are deleted ("Guests who never come
+  // back").
   // Each step is isolated (`step`): one that throws is logged and the run goes on to the next.
   async scheduled(controller: ScheduledController, env: Env): Promise<void> {
     const now = Date.now();
@@ -311,19 +311,15 @@ export default {
       if (purges.sent + purges.failed + purges.dropped > 0)
         console.info('[accounts] index purges', JSON.stringify(purges));
     });
-    // Every run: Timeline events the index hasn't taken yet go again (index-timeline.ts), the oldest beyond
-    // TIMELINE_OUTBOX_MAX dropped first, so the outbox stays bounded with no index or one that is down.
-    await step('timeline', async () => {
-      const trimmed = await trimTimelineOutbox(env.AUTH_DB);
+    // Every run: team events the index hasn't taken yet go again (index-events.ts), the oldest beyond
+    // EVENTS_OUTBOX_MAX dropped first, so the outbox stays bounded with no index or one that is down.
+    await step('events', async () => {
+      const trimmed = await trimEventOutbox(env.AUTH_DB);
       if (trimmed > 0)
-        console.warn('[accounts] timeline events dropped, over the outbox limit', trimmed);
-      const timeline = await flushTimeline(
-        env.AUTH_DB,
-        indexPurgeConfig(env),
-        TIMELINE_CALLS_PER_RUN,
-      );
-      if (timeline.sent > 0 || timeline.waiting)
-        console.info('[accounts] timeline events', JSON.stringify(timeline));
+        console.warn('[accounts] team events dropped, over the outbox limit', trimmed);
+      const events = await flushEvents(env.AUTH_DB, indexPurgeConfig(env), EVENTS_CALLS_PER_RUN);
+      if (events.sent > 0 || events.waiting)
+        console.info('[accounts] team events', JSON.stringify(events));
     });
     // Every run: a welcome that failed is tried again within 15 minutes. Every hour: the whole series, the stages
     // after the welcome to those inside their send window. Without a way to send (no EMAIL binding outside
@@ -376,14 +372,6 @@ export default {
     } catch (error) {
       console.error('[tokens] expiry warning sweep failed', error);
     } finally {
-      // Once a day: tokens expiring within the week go on their owners' Timelines, then to the index.
-      try {
-        if (daily && (await noteExpiringTokens(env.AUTH_DB)) > 0) {
-          await flushTimeline(env.AUTH_DB, indexPurgeConfig(env), TIMELINE_CALLS_PER_RUN);
-        }
-      } catch (error) {
-        console.error('[tokens] expiry Timeline note failed', error);
-      }
       // The reminders and warnings that went, one batch per app once both sweeps are done.
       await step('server events', async () => {
         await flushServerEvents(env);

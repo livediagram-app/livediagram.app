@@ -100,7 +100,7 @@ export function MultiSelectionToolbar({
         </button>
       </HoverCard>
       <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
-      <HoverCard title="Delete" description="Delete the selection (arrows too).">
+      <HoverCard title="Delete" description="Delete the selection.">
         <button
           type="button"
           onClick={onDelete}

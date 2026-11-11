@@ -15,7 +15,7 @@ const box = (over: Partial<Element> = {}) =>
   ({
     id: 'e1',
     type: 'shape',
-    shape: 'square',
+    shape: 'room',
     x: 0,
     y: 0,
     width: 10,
@@ -25,8 +25,8 @@ const box = (over: Partial<Element> = {}) =>
 
 describe('elementTelemetryType', () => {
   it('title-cases a plain shape', () => {
-    expect(elementTelemetryType(box())).toBe('Square');
-    expect(elementTelemetryType(box({ shape: 'diamond' }))).toBe('Diamond');
+    expect(elementTelemetryType(box())).toBe('Room');
+    expect(elementTelemetryType(box({ shape: 'plant' }))).toBe('Plant');
   });
 
   // Not 'Mode-Button': titleCase capitalises at the hyphen, which would split
@@ -63,12 +63,12 @@ describe('trackDuplicated', () => {
   // event, so Element·Added (the census behind the Palette ranking) never
   // saw a single element born by copying.
   it('emits one Duplicated plus one Added per element', () => {
-    trackDuplicated([box({ id: 'a' }), box({ id: 'b', shape: 'circle' }), box({ id: 'c' })]);
+    trackDuplicated([box({ id: 'a' }), box({ id: 'b', shape: 'plant' }), box({ id: 'c' })]);
     expect(trackMock.mock.calls).toEqual([
       ['Element', 'Duplicated', undefined],
-      ['Element', 'Added', 'Square'],
-      ['Element', 'Added', 'Circle'],
-      ['Element', 'Added', 'Square'],
+      ['Element', 'Added', 'Room'],
+      ['Element', 'Added', 'Plant'],
+      ['Element', 'Added', 'Room'],
     ]);
   });
 
@@ -86,7 +86,7 @@ describe('trackDuplicated', () => {
     trackDuplicated([box()], 'ShiftDrag');
     expect(trackMock.mock.calls).toEqual([
       ['Element', 'Duplicated', 'ShiftDrag'],
-      ['Element', 'Added', 'Square'],
+      ['Element', 'Added', 'Room'],
     ]);
   });
 });

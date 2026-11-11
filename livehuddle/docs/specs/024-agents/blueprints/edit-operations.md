@@ -1,5 +1,12 @@
 # Edit operations: blueprint
 
+> **No diagram shapes, no lint, no arrow selectors** ([The element engine](../../002-project-scope/not-in-livehuddle.md#the-element-engine), part 5): `coerceShapeKind` is
+> deleted and nothing coerces a kind. `buildKind` refuses a kind outside `SHAPE_KINDS` and `OTHER_KINDS` (D30 in the
+> project scope's DEFAULTS.md), `set` refuses a `shape=` off `SHAPE_KINDS`, and `applyReplace` refuses a new element
+> that is a shape of a kind livehuddle does not have while one the tab holds rides through untouched (D31). The
+> selector keys `from`, `to`, `downstream`, `upstream`, the `a->b` form, `graph-walk.ts` and the `after:` placement
+> are gone (D33). The footer names no lint. The rows below that describe these record the design before part 5.
+
 > **No MCP server or CLI in livehuddle** ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
 > the REST API is the only front door, and agents reach it through the agent tools. Where this file names the MCP or
 > the CLI, it records livediagram's front doors over the same engine, where this design came from; their wire values

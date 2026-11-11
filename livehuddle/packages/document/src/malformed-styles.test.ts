@@ -15,7 +15,7 @@ const createArrow = (x1: number, y1: number, x2: number, y2: number) => ({
 
 // Style fields have their types (docs/specs/006-document/document-structure.md "Styles have their types").
 const shape = (fields: Record<string, unknown>) =>
-  ({ ...createShape('square', 0, 0), label: 'Hello', ...fields }) as unknown as Element;
+  ({ ...createShape('focus-button', 0, 0), label: 'Hello', ...fields }) as unknown as Element;
 
 describe('dropMalformedStyles', () => {
   it('keeps well-typed styles, a name this build does not know included, and hands the same array back', () => {

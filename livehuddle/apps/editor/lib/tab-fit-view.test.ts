@@ -18,7 +18,7 @@ const shape = (id: string, x: number, y: number) =>
   ({
     id,
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     x,
     y,
     width: 100,

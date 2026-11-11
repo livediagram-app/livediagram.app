@@ -693,7 +693,15 @@ describe('apiLoadTab load boundary', () => {
 
   // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine": a stored table loads as it was saved.
   it('leaves a stored table exactly as it was saved, ragged cells included', async () => {
-    const shape = { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 };
+    const shape = {
+      id: 's',
+      type: 'shape',
+      shape: 'focus-button',
+      x: 0,
+      y: 0,
+      width: 1,
+      height: 1,
+    };
     const ragged = {
       id: 'tbl',
       type: 'table',

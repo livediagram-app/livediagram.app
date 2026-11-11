@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, renderElementsToSvg, type Element, type Tab } from './index';
+import { createShape, createSticky, renderElementsToSvg, type Element, type Tab } from './index';
 import { SKETCH_FACE_FILTER, svgSketchArtDefs, svgSketchFace } from './svg-render-sketch';
 
 // docs/specs/008-canvas/finish.md "Every other face is drawn by hand too": a face's ink goes through the wobble, its
@@ -82,8 +82,8 @@ describe('renderElementsToSvg under Sketch', () => {
   });
 
   it('leaves a plain box to its sketched body', () => {
-    const square = { ...createShape('square', 0, 0), id: 's', label: 'Hi' } as Element;
-    const svg = renderElementsToSvg(tabOf([square], 'sketch'));
+    const note = { ...createSticky(0, 0), id: 's', label: 'Hi' } as Element;
+    const svg = renderElementsToSvg(tabOf([note], 'sketch'));
     expect(svg).not.toContain(FILTERED);
     expect(svg).toContain('data-finish="sketch"');
   });
@@ -99,7 +99,7 @@ describe('svgSketchArtDefs', () => {
     const faces = svgSketchArtDefs(sketch({ type: 'shape', shape: 'mode-button' }), undefined);
     expect(faces).toContain('lvd-sketch-face');
     expect(faces).not.toContain('lvd-sketch-art');
-    expect(svgSketchArtDefs(sketch({ type: 'shape', shape: 'square' }), undefined)).toBe('');
+    expect(svgSketchArtDefs(sketch({ type: 'sticky' }), undefined)).toBe('');
     expect(
       svgSketchArtDefs([{ type: 'shape', shape: 'mode-button' }] as Element[], 'flexible'),
     ).toBe('');

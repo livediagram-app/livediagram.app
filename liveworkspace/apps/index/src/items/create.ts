@@ -19,7 +19,7 @@ import { readName, getFolderRow } from '../folders';
 import { signingKey, mintGrant } from '../grants';
 import { readObject, badRequest, forbidden, notFound, fail, conflict, json } from '../http';
 import { type ItemRow, type Access, decorate } from '../rows';
-import { eventStatements } from '../timeline';
+import { eventStatements } from '../events';
 import { DEFAULT_TITLE } from './shared';
 
 export async function itemFor(env: Env, person: Person | null, row: ItemRow, access: Access) {

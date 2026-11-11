@@ -8,7 +8,7 @@ const ofType = (type: string) => ({ type }) as unknown as Element;
 
 describe('elementKindLabel', () => {
   it('title-cases a simple shape kind', () => {
-    expect(elementKindLabel(shape('square'))).toBe('Square');
+    expect(elementKindLabel(shape('room'))).toBe('Room');
     expect(elementKindLabel(shape('circle'))).toBe('Circle');
     expect(elementKindLabel(shape('cylinder'))).toBe('Cylinder');
   });

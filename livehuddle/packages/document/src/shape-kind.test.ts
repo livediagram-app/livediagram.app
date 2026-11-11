@@ -9,10 +9,9 @@ import { SHAPE_KINDS } from './validate';
 // shape name from outside). The union is compile-time only, so nothing made
 // the two agree until this.
 //
-// Drift is silent in the direction that matters. Add a kind to the union,
-// wire it through the palette, forget the Set, and `coerceShape` quietly
-// returns 'square' for it — every element an AI tool or MCP client creates
-// with that shape comes back a square, with no error anywhere.
+// Drift matters in both directions. Add a kind to the union, wire it through
+// the palette, forget the Set, and every element of it is a retired element:
+// stored ones draw as placeholders, and an agent asking for one is refused.
 //
 // The union is a type, so it cannot be enumerated at runtime; the members are
 // read out of the source instead, the same way the help centre's registry
@@ -26,7 +25,7 @@ describe('the shape vocabulary', () => {
     // If the union's formatting changes so the extraction stops matching, the
     // assertions below would pass vacuously against an empty list.
     expect(unionMembers.length).toBeGreaterThan(40);
-    expect(unionMembers).toContain('square');
+    expect(unionMembers).toContain('focus-button');
   });
 
   it('declares every kind exactly once', () => {
@@ -43,7 +42,7 @@ describe('the shape vocabulary', () => {
   // docs/specs/008-canvas/canvas-and-palette.md cites this number in its prose. Themes and
   // templates are pinned the same way, and the counts that stayed accurate
   // are exactly the ones a test held.
-  it('has 104 kinds (matches docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(unionMembers).toHaveLength(104);
+  it('has 89 kinds (matches docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(unionMembers).toHaveLength(89);
   });
 });

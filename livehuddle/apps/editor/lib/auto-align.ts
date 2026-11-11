@@ -30,32 +30,14 @@ export const AUTO_ALIGN_GRID = 10;
 
 const snap = (value: number): number => Math.round(value / AUTO_ALIGN_GRID) * AUTO_ALIGN_GRID;
 
-// Shape kinds often drawn 1:1. Snapping width and height independently would
-// warp a square one, so one that is ALREADY square keeps both sides equal. One
-// drawn otherwise keeps its own proportions: a flowchart's decision is a wide
-// diamond, and squaring it doubled its height into the steps around it.
-export const SQUARE_SHAPES: ReadonlySet<string> = new Set(['circle', 'diamond', 'actor']);
-
-const drawnSquare = (width: number, height: number) => Math.abs(width - height) <= AUTO_ALIGN_GRID;
-
 // Apply the cleanup pass to one element. Pure, idempotent, and
 // leaves every element that is not boxed unchanged.
 export function autoAlignElement(el: Element): Element {
   if (isBoxed(el)) {
     let width = Math.max(MIN_SIZE, snap(el.width));
     let height = Math.max(MIN_SIZE, snap(el.height));
-    // Aspect-locked-by-shape elements stay square. Use the larger of
-    // the two snapped sides so a "tall-ish circle" becomes a circle
-    // around the taller axis (snapping down would shrink it past
-    // user intent more often than snapping up).
-    if (el.type === 'shape' && SQUARE_SHAPES.has(el.shape) && drawnSquare(el.width, el.height)) {
-      const side = Math.max(width, height);
-      width = side;
-      height = side;
-    }
-    // Explicit aspect-lock (textually editable shapes that the user
-    // pinned via the Aspect-lock toggle). Same square-snap rule;
-    // we preserve the ratio not by shape but by user intent.
+    // Explicit aspect-lock (a kind locked on create, or one the user pinned via the Aspect-lock toggle): the ratio
+    // is kept.
     if (el.aspectLocked === true) {
       const ratio = el.width / Math.max(1, el.height);
       // Pick which axis to drive: the larger absolute change wins,

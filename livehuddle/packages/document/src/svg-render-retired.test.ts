@@ -239,8 +239,8 @@ describe('a retired element in the export', () => {
 // arrow draws a faint dashed straight line between its ends and the 160 by 96 card on its middle; a stored stroke,
 // path or annotation draws the card in its box.
 describe('a stored arrow, drawing, path and annotation in the export', () => {
-  const a = { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 60 };
-  const b = { id: 'b', type: 'shape', shape: 'square', x: 400, y: 0, width: 100, height: 60 };
+  const a = { id: 'a', type: 'shape', shape: 'focus-button', x: 0, y: 0, width: 100, height: 60 };
+  const b = { id: 'b', type: 'shape', shape: 'focus-button', x: 400, y: 0, width: 100, height: 60 };
   const arrow = (extra: Record<string, unknown> = {}): RetiredArrowElement =>
     ({
       id: 'flow',
@@ -317,5 +317,50 @@ describe('a stored arrow, drawing, path and annotation in the export', () => {
     expect(svg).not.toContain('#ff0000');
     expect(svg).not.toContain('Check the numbers');
     expect(boxedNeedsSvgRaster(el)).toBe(true);
+  });
+});
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5: a stored diagram shape draws the
+// placeholder card, named as its palette tile was (DEFAULTS.md D29), and none of its stored colours.
+describe('a stored diagram shape in the export', () => {
+  const PART_5: [string, string][] = [
+    ['square', 'Square'],
+    ['circle', 'Circle'],
+    ['diamond', 'Diamond'],
+    ['cylinder', 'Cylinder'],
+    ['parallelogram', 'Parallelogram'],
+    ['hexagon', 'Hexagon'],
+    ['document', 'Document'],
+    ['stadium', 'Stadium'],
+    ['actor', 'Actor'],
+    ['final-state', 'Final State'],
+    ['cloud', 'Cloud'],
+    ['triangle', 'Triangle'],
+    ['trapezoid', 'Trapezoid'],
+    ['star', 'Star'],
+    ['speech-bubble', 'Speech Bubble'],
+  ];
+
+  it('draws the placeholder for each, with its name, the note and its label', () => {
+    for (const [kind, name] of PART_5) {
+      const el = retired(kind, {
+        label: 'Orders',
+        fillColor: '#ff0000',
+        strokeColor: '#00ff00',
+        iconId: 'database',
+      });
+      expect(svgBoxed(el), kind).toContain(svgRetiredElement(el));
+      const svg = svgBoxed(el);
+      expect(texts(svg), kind).toEqual([name, 'No longer supported in livehuddle', 'Orders']);
+      expect(svg, kind).toContain(`fill="${RETIRED_PLACEHOLDER_COLOURS.light.fill}"`);
+      expect(svg, kind).not.toContain('#ff0000');
+      expect(svg, kind).not.toContain('#00ff00');
+    }
+  });
+
+  it('draws the same cards in a whole-tab render', () => {
+    const elements = PART_5.map(([kind], i) => ({ ...retired(kind), id: `k${i}`, x: i * 400 }));
+    const svg = renderElementsToSvg({ id: 't', name: 'T', elements });
+    for (const [, name] of PART_5) expect(svg).toContain(`>${name}<`);
   });
 });

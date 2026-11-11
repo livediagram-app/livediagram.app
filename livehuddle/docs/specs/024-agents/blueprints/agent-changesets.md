@@ -1,5 +1,11 @@
 # Agent changesets: blueprint
 
+> **No diagram lint** ([The element engine](../../002-project-scope/not-in-livehuddle.md#the-element-engine), part 5): the lint and the api's changeset lint (`lint.ts` in `changesets/`) are
+> deleted. `ChangesetResult.lint` is typed `null` and always `null` (D32 in the project scope's DEFAULTS.md), the
+> footer names no lint, and no changeset path lints. Where this file names the lint below, it records the design
+> before part 5. The engine coerces no shape kind: an unknown kind is refused, and a `replace` refuses a new shape of
+> a kind livehuddle does not have while one the tab holds rides through as stored (D30, D31).
+
 > **No MCP server or CLI in livehuddle** ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
 > the REST API is the only front door. Where this file names the MCP or the CLI, it records livediagram's front
 > doors over the same engine, where this design came from; their wire values (`mcp`, `cli`) still parse.

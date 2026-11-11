@@ -51,7 +51,7 @@ describe('findView (R17, VW35)', () => {
 describe('find on odd shapes', () => {
   it('reads past malformed rows, and skips non-matching own-line arrows', () => {
     const elements = [
-      { ...shapeAt('square', 't', 10, 10), type: 'table', cells: ['junk', ['a needle']] },
+      { ...shapeAt('signpost', 't', 10, 10), type: 'table', cells: ['junk', ['a needle']] },
       { ...arrowBetween('free', 't', 't', { label: 'other' }), from: { kind: 'free', x: 0, y: 0 } },
     ] as unknown as Element[];
     const model = buildViewModel({ id: 't', name: 'T', elements });
@@ -65,7 +65,7 @@ describe('find on odd shapes', () => {
         checklistItems: [{ text: 'thread the needle', done: false }],
       }),
       retiredShapeAt('code-block', 'code', 1000, 1000, 100, 50, { code: 'const needle = 1;' }),
-      shapeAt('square', 'talk', 3000, 0, 100, 50, {
+      shapeAt('signpost', 'talk', 3000, 0, 100, 50, {
         commentThread: {
           comments: [
             { id: 'c', text: 'Needle?', createdAt: 0, authorName: 'A', authorColor: '#000' },
@@ -82,7 +82,7 @@ describe('find on odd shapes', () => {
     const lines = findView(model, 'needle').text.split('\n').slice(1);
     expect(lines.map((l) => /^ *\S+ ?\S*/.exec(l)![0])).toEqual([
       '? checklist',
-      'square talk',
+      'signpost talk',
       '? code-block',
       '? arrow',
       '4 matches:',
@@ -97,19 +97,19 @@ describe('find on odd shapes', () => {
       retiredShapeAt('lane', 'ops', 0, 0, 1200, 300, { label: 'Ops lane' }),
       retiredShapeAt('boundary', 'vpc', 0, 400, 900, 400, { label: 'Ops VPC' }),
       retiredShapeAt('stack', 'row', 0, 900, 600, 200, { label: 'Ops stack' }),
-      shapeAt('square', 'deploy', 100, 100, 100, 50, { label: 'Deploy ops' }),
+      shapeAt('signpost', 'deploy', 100, 100, 100, 50, { label: 'Deploy ops' }),
     ] as Element[];
     const { text, json } = findView(buildViewModel({ id: 't', name: 'T', elements }), 'ops');
     expect(text.split('\n').slice(1)).toEqual([
       '? lane ops "Ops lane"',
-      'square deploy "Deploy ops"',
+      'signpost deploy "Deploy ops"',
       '? boundary vpc "Ops VPC"',
       '? stack row "Ops stack"',
       '4 matches: 4 labels',
     ]);
     expect(json.matches.map((m) => [m.ref, m.kind, m.path])).toEqual([
       ['ops', '? lane', []],
-      ['deploy', 'square', []],
+      ['deploy', 'signpost', []],
       ['vpc', '? boundary', []],
       ['row', '? stack', []],
     ]);

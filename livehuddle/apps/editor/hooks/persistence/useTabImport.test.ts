@@ -6,7 +6,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, TAB_SCHEMA_VERSION, type Tab } from '@livehuddle/document';
+import { createSticky, TAB_SCHEMA_VERSION, type Tab } from '@livehuddle/document';
 import { useTabImport } from './useTabImport';
 
 const track = vi.hoisted(() => vi.fn());
@@ -41,7 +41,7 @@ function tabJson(elements: unknown[]): string {
 describe('importing into a tab', () => {
   it('replaces the active tab with a JSON export in one step, with fresh ids, and frames it', async () => {
     const { api, deps, landed } = setup();
-    const note = { ...createShape('square', 10, 20), id: 'n1', label: 'Agenda' };
+    const note = { ...createSticky(10, 20), id: 'n1', label: 'Agenda' };
     expect(await api.importTextIntoActiveTab('json', tabJson([note]))).toEqual({ status: 'done' });
     expect(deps.commitTabs).toHaveBeenCalledTimes(1);
     const tab = landed();

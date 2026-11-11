@@ -8,7 +8,7 @@ import { resolveStockColours } from './stock-colours';
 const shape = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 's',
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 100,

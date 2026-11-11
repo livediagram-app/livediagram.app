@@ -5,13 +5,13 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Edit Operations Reference',
   description:
-    'Every livehuddle edit operation, selector, placement, flag and lint finding: the changeset vocabulary of the livehuddle API.',
+    'Every livehuddle edit operation, selector, placement and flag: the changeset vocabulary of the livehuddle API.',
   path: '/help/developers/working-with-documents/edit-operations/',
 });
 
-<ArticleLayout title="Edit Operations Reference" description="The changeset vocabulary: operations, selectors, placement, flags, results and lint findings." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Spaces", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-canvases").filter((a) => a.slug !== "edit-operations")}>
+<ArticleLayout title="Edit Operations Reference" description="The changeset vocabulary: operations, selectors, placement, flags and results." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Spaces", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-canvases").filter((a) => a.slug !== "edit-operations")}>
 
-A **changeset** changes a tab with a short list of edit operations, applied together or not at all. This page lists the whole vocabulary: every operation, how to pick the elements it acts on, where new elements go, and what the answer and the lint tell you. [Working with Spaces](/help/developers/working-with-documents/#update-a-tab) shows how to send one.
+A **changeset** changes a tab with a short list of edit operations, applied together or not at all. This page lists the whole vocabulary: every operation, how to pick the elements it acts on, where new elements go, and what the answer tells you. [Working with Spaces](/help/developers/working-with-documents/#update-a-tab) shows how to send one.
 
 It reaches a tab through the API: `POST /documents/{id}/tabs/{tabId}/changesets` with `"operations"` as a string (the line form) or an array of objects (the JSON form).
 
@@ -20,29 +20,28 @@ It reaches a tab through the API: `POST /documents/{id}/tabs/{tabId}/changesets`
 The **line form** is one operation a line, which is what an agent writes most easily. Values with spaces are quoted (`label="Sign in"`), and blank lines and lines starting with `#` are skipped:
 
 ```text
-# Rename the API box, add a database under it and a note beside it
-set n2 label="Orders API"
-add cylinder id=db label="Orders DB" below:n2
-add sticky label="Ask Sam about backups" right-of:db
+# Rename the actions note, add a risks note under it and a plant beside it
+set n2 label="Next Steps"
+add sticky id=risks label="Risks" below:n2
+add plant right-of:risks
 ```
 
 The **JSON form** is one object an operation, which is what a script produces. Any line of the text form that starts with `{` is read as JSON, so the two mix:
 
 ```json
 [
-  { "op": "set", "target": "n2", "fields": { "label": "Orders API" } },
+  { "op": "set", "target": "n2", "fields": { "label": "Next Steps" } },
   {
     "op": "add",
-    "kind": "cylinder",
-    "id": "db",
-    "fields": { "label": "Orders DB" },
+    "kind": "sticky",
+    "id": "risks",
+    "fields": { "label": "Risks" },
     "place": { "rel": "below", "ref": "n2" }
   },
   {
     "op": "add",
-    "kind": "sticky",
-    "fields": { "label": "Ask Sam about backups" },
-    "place": { "rel": "right-of", "ref": "db" }
+    "kind": "plant",
+    "place": { "rel": "right-of", "ref": "risks" }
   }
 ]
 ```
@@ -63,7 +62,7 @@ One parser turns the line form into the JSON form, so both are checked the same 
 
 A few rules hold for every operation:
 
-- **Kinds.** `add` takes a shape kind (`square`, `circle`, `diamond`, `cylinder`, `stadium`, `hexagon` and the rest) or `text`, `sticky` or `link-card`. A shape kind it does not know is turned into the nearest one, with a `shape_coerced` warning. Images are not made by name; `video`, `table`, `arrow`, `line`, `freehand`, `path` and `annotation` are refused (livehuddle no longer supports them, and a space saved with one keeps it as a placeholder), but an `add` in the JSON form can carry a whole element (`{ "op": "add", "element": { … } }`), which is how an uploaded image goes on a tab.
+- **Kinds.** `add` takes `text`, `sticky` or `link-card`, or a Space piece by its kind (`chair`, `desk`, `plant`, `room`, `door` and the rest). A kind livehuddle does not have is refused as `invalid_value`, naming the kinds `add` takes; so are `shape` and the diagram shapes (`square`, `circle`, `diamond` and the rest), which livehuddle no longer supports: add a sticky instead. Images are not made by name; `video`, `table`, `arrow`, `line`, `freehand`, `path` and `annotation` are refused (livehuddle no longer supports them, and a space saved with one keeps it as a placeholder), but an `add` in the JSON form can carry a whole element (`{ "op": "add", "element": { … } }`), which is how an uploaded image goes on a tab.
 - **Ids.** `id=` names a new element so later operations in the same changeset can use it. It is a short slug: a lowercase letter, then up to 23 lowercase letters, digits, `-` or `_`. Without one, the element takes the slug of its label (or of its kind, as `sticky`, `sticky-2`).
 - **Fields.** `label`, `note`, `shape`, `fill`, `stroke`, `text-color`, `border`, `text` (a size: `sm`, `md`, `lg` or `scale`) and `font` work on the kinds that have them, beside any stored field of the element. `fill=` takes a colour slot of the tab's theme by name (such as `theme`), which follows a theme change; a hex colour works too, with a `colour_overrides_theme` warning. A sticky takes its own colour names instead. A number, `true` or `false` is read as JSON, and a value starting with `[` or `{` is read as JSON as written.
 - **Nothing holds.** No element holds others. A lane, stack or boundary saved before livehuddle dropped them is a kind livehuddle does not know: it moves on its own, takes no space when something new is placed, and can be removed.
@@ -79,7 +78,7 @@ A selector picks the elements an operation acts on. It is a ref, a quoted label,
 | `"Orders service"`     | The element whose label is exactly that, ignoring case                   |
 | `label~orders`         | Elements whose label contains `orders`                                   |
 | `type:sticky`          | Elements of that kind, as the outline prints it, or of that element type |
-| `shape:diamond`        | Shapes of that shape kind                                                |
+| `shape:chair`          | Shapes of that shape kind                                                |
 | `selected`             | What the token's owner has selected in an editor open on that tab        |
 
 Terms combine: `type:sticky label~orders` is the stickies whose label mentions orders.
@@ -120,10 +119,10 @@ In the JSON form, a flag is a member set to `true`: `"all"`.
 A changeset answers with one line per element, the same for a dry run (`?dryRun=1`) and a write:
 
 ```text
-~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→160
-+ verify  square "Verify email" @45,300 131×120
+~ n3  label "Actions"→"Next Steps"
++ risks  sticky "Risks" @240,240 200×200
 » n4 n5 n6  +0,+160 (layout)
-rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livehuddle changeset revert 3f9c2a71-… cs_8k2m4q7d1x
+rev 41→42 · cs_8k2m4q7d1x · revert: livehuddle changeset revert 3f9c2a71-… cs_8k2m4q7d1x
 ```
 
 | Mark | Means                                              |
@@ -134,9 +133,9 @@ rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livehuddle changeset rever
 | `»`  | Moved without being named (by `layout`)            |
 | `!`  | A warning                                          |
 
-The last line carries the tab's new revision, the changeset's id, the lint verdict and the command that reverts it. A changeset that changes nothing answers `nothing changed`.
+The last line carries the tab's new revision, the changeset's id and the command that reverts it. A changeset that changes nothing answers `nothing changed`.
 
-**Warnings** do not stop a changeset: `shape_coerced` (an unknown shape kind became a known one), `value_coerced`, `label_capped` (a shape's label over 40 characters kept its heading and moved the full text into the note), `colour_overrides_theme`, and `no_base` (sent without a `base` revision).
+**Warnings** do not stop a changeset: `value_coerced`, `label_capped` (a shape's label over 40 characters kept its heading and moved the full text into the note), `colour_overrides_theme`, and `no_base` (sent without a `base` revision).
 
 ## Refusals
 
@@ -145,10 +144,10 @@ A refused changeset applies nothing. It names the operation, the code and the wa
 ```text
 error target_ambiguous · op 2 · set "Pay" fill=green
   "Pay" matches 3 elements:
-    n7  square "Pay"
-    n9  sticky "Pay"
-    n12 text "Pay"
-  hint: use a ref, narrow with type:square, or add all
+    n7  sticky "Pay"
+    n9  text "Pay"
+    n12 room "Pay"
+  hint: use a ref, narrow with type:sticky, or add all
 nothing was applied
 ```
 
@@ -167,26 +166,9 @@ nothing was applied
 | `invalid_result`     | The result would not be a valid tab                           |
 | `too_large`          | Over 500 operations, or the tab's size cap                    |
 
-## Lint Findings
-
-Every changeset lints the whole tab it leaves behind, and `GET /documents/{id}/tabs/{tabId}?view=lint` lists the findings, each ending with a fix you can send as a changeset:
-
-```text
-0 crossings · 0 behind · 0 overlaps · 1317×1196 → 1 warning, 2 info
-W label-overflow   n4 needs 4 lines, holds 3  fix: set n4 text=sm
-```
-
-| Code               | Severity | Finding                                                        | Suggested fix                              |
-| ------------------ | -------- | -------------------------------------------------------------- | ------------------------------------------ |
-| `label-overflow`   | warning  | A label needs more lines than its box holds                    | `text=sm`, or a shorter label and a `note` |
-| `duplicate-label`  | info     | Two boxes share a label                                        | Rename one                                 |
-| `colour-on-themed` | info     | A fill or stroke the theme would not paint, bound to no swatch | `set a fill=` to give it back to the theme |
-
-The verdict on a changeset's last line reads `lint clean` or, say, `lint 2 warnings, 1 info`.
-
 <Tip>
-  Send a changeset with `?dryRun=1` first while you learn the vocabulary: the answer and the lint
-  are exactly what a write would give, and nothing changes.
+  Send a changeset with `?dryRun=1` first while you learn the vocabulary: the answer is exactly what
+  a write would give, and nothing changes.
 </Tip>
 
 </ArticleLayout>

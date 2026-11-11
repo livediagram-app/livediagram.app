@@ -39,7 +39,7 @@ describe('canvasSurface', () => {
 });
 
 describe('element ink on dark paper', () => {
-  const shape = createShape('square', 0, 0);
+  const shape = createShape('focus-button', 0, 0);
 
   it('draws a shape in the blue-slate the dark canvas is built around', () => {
     expect(defaultFillColor(shape, 'dark')).toBe('#141b26');
@@ -68,7 +68,7 @@ describe('element ink on dark paper', () => {
 
 describe('element ink on light paper', () => {
   it('is exactly what it always was, with or without the argument', () => {
-    const cases = [createShape('square', 0, 0), createSticky(0, 0), createText(0, 0)];
+    const cases = [createShape('focus-button', 0, 0), createSticky(0, 0), createText(0, 0)];
     for (const el of cases) {
       expect(defaultFillColor(el, 'light')).toBe(defaultFillColor(el));
       expect(defaultStrokeColor(el, 'light')).toBe(defaultStrokeColor(el));
@@ -100,7 +100,7 @@ describe('the dark canvas', () => {
 // WCAG 2.2: 3:1 for the lines that make a shape a shape (1.4.11), 4.5:1 for
 // its words (1.4.3).
 describe('dark ink contrast', () => {
-  const shape = createShape('square', 0, 0);
+  const shape = createShape('focus-button', 0, 0);
   const canvas = DARK_CANVAS_BACKGROUND_COLOR;
 
   it('keeps outlines at 3:1 on the canvas and on the fill', () => {

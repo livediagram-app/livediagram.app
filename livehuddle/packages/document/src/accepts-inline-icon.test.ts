@@ -16,15 +16,15 @@ describe('acceptsInlineIcon', () => {
     for (const kind of own) expect(acceptsInlineIcon(createShape(kind, 0, 0)), kind).toBe(false);
   });
 
-  it('still folds into an ordinary shape', () => {
-    expect(acceptsInlineIcon(createShape('square', 0, 0))).toBe(true);
-    expect(acceptsInlineIcon(createShape('diamond', 0, 0))).toBe(true);
+  it('still folds into a kind that draws its label', () => {
+    expect(acceptsInlineIcon(createShape('room', 0, 0))).toBe(true);
+    expect(acceptsInlineIcon(createShape('meeting-table', 0, 0))).toBe(true);
   });
 });
 
 describe('positionsInlineIcon', () => {
   it('places an icon where its position says on every kind that takes one', () => {
-    expect(positionsInlineIcon(createShape('square', 0, 0))).toBe(true);
+    expect(positionsInlineIcon(createShape('room', 0, 0))).toBe(true);
     expect(positionsInlineIcon(createShape('icon', 0, 0))).toBe(false);
   });
 });

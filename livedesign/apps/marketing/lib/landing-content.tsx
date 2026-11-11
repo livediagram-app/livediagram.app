@@ -29,7 +29,6 @@ import {
   SpotlightArt,
   TeamsArt,
   ThemesArt,
-  TimelineFeedArt,
   UndoRedoArt,
   WireframePagesArt,
   ZenModeArt,
@@ -226,7 +225,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Work on it together, live',
     description:
-      'Share a link and your team is on the pages with you: live cursors, comments on anything, actions handed to teammates, and a timeline of what changed while you were away. Or hand the work to your AI.',
+      'Share a link and your team is on the pages with you: live cursors, comments on anything, and actions handed to teammates. Or hand the work to your AI.',
     metaDescription:
       'Share a link and your team is on the pages with you: live cursors, comments, assigned actions, expiring links, teams and an MCP server for AI.',
     highlights: [
@@ -283,14 +282,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Assign actions to teammates',
         description:
           'Turn anything on a page into a piece of work: name the action, describe it, and hand it to a teammate from any of your teams, with an optional email nudge. An Actions panel tracks everything still open, with your own assignments on top.',
-      },
-      {
-        art: <TimelineFeedArt />,
-        href: '/help/explorer/timeline/',
-        group: 'Work together live',
-        title: 'See what happened while you were away',
-        description:
-          'The Explorer opens on Home: the designs you return to most, and what your teammates commented, edited and assigned you while you were away. The Timeline holds the full feed, and the Inbox gathers the actions and threads still waiting on you.',
       },
       {
         art: <UndoRedoArt />,

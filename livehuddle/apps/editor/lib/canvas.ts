@@ -36,8 +36,7 @@ export function pointerToCanvas(
 // Size a newly-added boxed element. It inherits the currently-selected
 // boxed element's width / height (so adding elements one after another
 // keeps a consistent size), falling back to the factory default when
-// nothing boxed is selected. Circles + diamonds are forced square — a
-// non-square inherited size would squash them. Shared by the palette
+// nothing boxed is selected. Shared by the palette
 // tap-to-drop (addBoxed) and the combined add gesture's tap branch
 // (useShapeDrawing.commitDraw) so both paths size new elements the same.
 export function inheritedSizeFor(
@@ -69,19 +68,7 @@ export function inheritedSizeFor(
     !!donor &&
     (isRetiredBackdrop(donor) || (donor.type === 'shape' && isSelfDrawingShape(donor.shape)));
   const inherit = keepsOwnSize ? null : donor;
-  let width = inherit?.width ?? base.width;
-  let height = inherit?.height ?? base.height;
-  // A circle, a diamond and a star are 1:1: squared up from the larger side, never squashed (a star tapped while a
-  // flat process step was selected came out 160 x 56).
-  if (
-    base.type === 'shape' &&
-    (base.shape === 'circle' || base.shape === 'diamond' || base.shape === 'star')
-  ) {
-    const side = Math.max(width, height);
-    width = side;
-    height = side;
-  }
-  return { width, height };
+  return { width: inherit?.width ?? base.width, height: inherit?.height ?? base.height };
 }
 
 // Stable reorder that puts stored backdrops (a retired frame, lane, stack or boundary,

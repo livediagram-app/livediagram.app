@@ -79,12 +79,12 @@ describe('renderView', () => {
 });
 
 describe('renderView refusals (R4, R5, E17, E18)', () => {
-  const second = shapeAt('square', 'abcd1', 0, 0);
+  const second = shapeAt('signpost', 'abcd1', 0, 0);
   const tab: Tab = {
     id: 'tab-1',
     name: 'T',
     elements: [
-      shapeAt('square', 'abcd0', 0, 0, 100, 50, { label: 'Zero' }),
+      shapeAt('signpost', 'abcd0', 0, 0, 100, 50, { label: 'Zero' }),
       second,
       arrowBetween('arr', 'abcd0', 'abcd0'),
     ] as Element[],
@@ -98,8 +98,8 @@ describe('renderView refusals (R4, R5, E17, E18)', () => {
         message: '"abc" matches 2 elements now',
         input: 'abc',
         candidates: [
-          { ref: 'abcd0', kind: 'square', label: 'Zero' },
-          { ref: 'abcd1', kind: 'square', label: null },
+          { ref: 'abcd0', kind: 'signpost', label: 'Zero' },
+          { ref: 'abcd1', kind: 'signpost', label: null },
         ],
         stale: false,
       },

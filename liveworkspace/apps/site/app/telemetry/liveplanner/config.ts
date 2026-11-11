@@ -17,6 +17,7 @@ import {
 import { noun, type TelemetryAppConfig } from '../_shared/app';
 import { createCtaFunnel } from '../_shared/cta-funnel';
 import { createEventExplanation } from '../_shared/event-explanation';
+import type { RetiredCategory } from '../_shared/retired-explorer';
 import { cliCommandSentence } from './cli-commands';
 import { API_OPERATIONS, BY_ACTION, EXACT } from './event-explanations';
 import {
@@ -93,7 +94,7 @@ import {
   TABLES,
   TAB_ACTIONS,
   TEAM_ACTIVITY,
-  TIMELINE,
+  HOME,
   TRASH,
   UNDO_AND_REDO,
   VOTING,
@@ -106,8 +107,9 @@ import { isRetiredEvent } from './retired-events';
 const NOUN = noun('project');
 
 // Per-category colour for every chart (../_shared/event-vocab.ts). Keyed by the full
-// TelemetryCategory union, so a new category fails the typecheck until it gets its own colour.
-const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
+// TelemetryCategory union less the retired ones (../_shared/retired-explorer.ts), so a new category fails the typecheck
+// until it gets its own colour.
+const CATEGORY_COLORS: Record<Exclude<TelemetryCategory, RetiredCategory>, string> = {
   Project: '#0ea5e9',
   Element: '#10b981',
   Tab: '#f59e0b',
@@ -131,12 +133,9 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   // Deep green, the funnel's colour: apart from Element's emerald and the
   // lime of Comment and Action.
   Cta: '#15803d',
-  // Distinct from Project's sky (#0ea5e9) and Session's slate: the
-  // Timeline sits next to both in the stacked bar.
-  Timeline: '#0369a1',
-  // Indigo-violet: the landing view, apart from the Timeline's deep sky and Activity's amber.
+  // Indigo-violet: the landing view, apart from Activity's amber.
   Home: '#4f46e5',
-  // Amber, so the inbox reads apart from the Timeline's deep sky beside it.
+  // Amber, so the inbox reads apart from Home's indigo beside it.
   Activity: '#d97706',
   Token: '#d946ef',
   // Warm stone: a quiet backstop, apart from Project's sky and Error's red.
@@ -302,7 +301,7 @@ export const LIVEPLANNER: TelemetryAppConfig = {
       },
       {
         title: 'Explorer',
-        metrics: [TIMELINE, EXPLORER_FILTERS_PICKED, SHARE_LINKS_MADE, SHARE_PASSES, INBOX],
+        metrics: [HOME, EXPLORER_FILTERS_PICKED, SHARE_LINKS_MADE, SHARE_PASSES, INBOX],
       },
       {
         title: 'Community',

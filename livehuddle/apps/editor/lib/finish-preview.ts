@@ -1,6 +1,8 @@
-// The Finish tab's preview (docs/specs/008-canvas/finish.md "Where it is set"): a small sample scene (a step,
-// a decision and a sticky note) drawn in a finish by the same renderer the exports use,
-// so the preview is exactly what the canvas will draw. Fixed ids, so the Sketch wobble is the same every time.
+// The Finish tab's preview (docs/specs/008-canvas/finish.md "Where it is set"): a small sample scene (two sticky
+// notes and a plant) drawn in a finish by the same renderer the exports use,
+// so the preview is exactly what the canvas will draw. Fixed ids, so the Sketch wobble is the same every time. Its
+// step and decision were diagram shapes until those left livehuddle
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5).
 import {
   renderElementsToSvg,
   type Element,
@@ -12,30 +14,31 @@ import {
 } from '@livehuddle/document';
 import { withThemeApplied } from '@/lib/tab-theme-apply';
 
-const STEP: ShapeElement = {
-  id: 'finish-preview-step',
-  type: 'shape',
-  shape: 'square',
+const PLAN: StickyElement = {
+  id: 'finish-preview-plan',
+  type: 'sticky',
   x: 0,
-  y: 15,
-  width: 180,
-  height: 70,
-  label: 'Plan the work',
-};
-const DECISION: ShapeElement = {
-  id: 'finish-preview-decision',
-  type: 'shape',
-  shape: 'diamond',
-  x: 250,
   y: 0,
-  width: 130,
+  width: 160,
   height: 100,
-  label: 'Ready?',
+  label: 'Plan the work',
+  textSize: 'md',
+};
+// A Space piece, so the preview shows how the finish draws the Space as well as its notes.
+const PLANT: ShapeElement = {
+  id: 'finish-preview-plant',
+  type: 'shape',
+  shape: 'plant',
+  x: 210,
+  y: 6,
+  width: 56,
+  height: 88,
+  label: '',
 };
 const NOTE: StickyElement = {
   id: 'finish-preview-note',
   type: 'sticky',
-  x: 440,
+  x: 316,
   y: 0,
   width: 110,
   height: 100,
@@ -44,7 +47,7 @@ const NOTE: StickyElement = {
 };
 
 /** The sample scene, in drawing order. */
-export const FINISH_PREVIEW_ELEMENTS: readonly Element[] = [STEP, DECISION, NOTE];
+export const FINISH_PREVIEW_ELEMENTS: readonly Element[] = [PLAN, PLANT, NOTE];
 
 /** The sample scene drawn in `finish` on the tab's background, in the tab's theme and font, as SVG markup. */
 export function finishPreviewSvg(

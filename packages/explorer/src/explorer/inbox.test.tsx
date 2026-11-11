@@ -858,7 +858,6 @@ describe('reading', () => {
       ),
       threads: Array.from({ length: many }, (_, i) => thread({ elementId: `e${i}`, latestAt: i })),
       forms: Array.from({ length: many }, (_, i) => form({ tabId: `f${i}`, latestAt: i })),
-      timelineNew: 0,
     };
     const per =
       cpuMsOf(() => {

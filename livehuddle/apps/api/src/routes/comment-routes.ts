@@ -149,7 +149,7 @@ function appended(tab: TabDTO, elementId: string, comment: Comment): Mutation {
   };
 }
 
-// The owner's email for a posted comment (add and reply alike). The Timeline hears of it from the canvas's
+// The owner's email for a posted comment (add and reply alike). History hears of it from the canvas's
 // comment threads, pushed to the index with the tab (document-room/document-outbox.ts).
 export function afterCommentPosted(
   ctx: DocumentRouteContext,

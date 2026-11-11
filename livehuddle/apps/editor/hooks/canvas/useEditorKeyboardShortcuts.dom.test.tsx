@@ -270,7 +270,7 @@ describe('Enter with a tile armed', () => {
   it('drops it at the middle of the view and claims the key', () => {
     const onDropDrawAtCentre = vi.fn(() => true);
     const { bag } = deps({
-      pendingDraw: { type: 'shape', kind: 'circle' },
+      pendingDraw: { type: 'shape', kind: 'chair' },
       selectedId: null,
       onDropDrawAtCentre,
     });

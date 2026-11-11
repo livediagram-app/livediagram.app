@@ -1380,12 +1380,12 @@ export const articles: Article[] = [
     group: 'Your Library',
   },
   {
-    slug: 'timeline',
+    slug: 'home',
     title: 'Home',
     description:
-      'The Explorer’s landing view and the Timeline: what you opened last, what was shared with you recently, and what happened.',
+      'The Explorer\u2019s landing view: what you use most and last, and what was shared with you recently.',
     keywords:
-      'home jump back in recent last opened most used see more shared with you recently what happened while away teammates others changes see timeline timeline history feed log who changed edited renamed moved trashed restored shared calendar filter new since last visit unread count remove from timeline hide landing start every app all apps document',
+      'home jump back in within reach most used last used recent see more grid strip return often shared with you recently landing start history last 30 days',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',

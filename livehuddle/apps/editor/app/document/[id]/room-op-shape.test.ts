@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Tab } from '@livehuddle/document';
+import { createSticky, type Tab } from '@livehuddle/document';
 import { applyRoomOpToTabs } from './room-op-apply';
 import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
@@ -7,7 +7,7 @@ import { roomOpIsWellFormed } from './room-op-shape';
 // A peer's op is applied only when it has its kind's shape
 // (docs/specs/012-collaboration/realtime-conflict-resolution.md "A malformed op").
 
-const el = createShape('square', 0, 0);
+const el = createSticky(0, 0);
 const tabs: Tab[] = [{ id: 't1', name: 'T', elements: [el] }];
 const WELL_FORMED: Record<string, unknown>[] = [
   { kind: 'tab', tabId: 't1', tab: tabs[0] },

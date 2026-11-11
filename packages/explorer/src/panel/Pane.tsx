@@ -11,7 +11,7 @@ import { NewFolderIcon, TeamIcon } from '../ui/icons';
 import type { ExplorerView } from '../views';
 import { useTeams } from '../teams/context';
 import { siteOf, type AppFilter } from '../words';
-import { PanelLibrary, PanelTimeline } from './PanelLibraryTimeline';
+import { PanelLibrary } from './PanelLibrary';
 import { PanelThisBrowser } from './PanelThisBrowser';
 import { sectionKey, sectionLabel, type LibraryTab, type PanelSection } from './sections';
 import { HomeSection } from './HomeSection';
@@ -89,8 +89,6 @@ export function Pane({
       <HomeSection currentId={currentId} onOpenExplorer={onOpenExplorer} />
     ) : section.kind === 'inbox' ? (
       <InboxPane compact filterSlot={inboxSlot} />
-    ) : section.kind === 'timeline' ? (
-      <PanelTimeline />
     ) : section.kind === 'library' ? (
       <PanelLibrary tab={libraryTab} setTab={setLibraryTab} />
     ) : section.kind === 'trash' ? (

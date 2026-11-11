@@ -1,7 +1,7 @@
 // The Explorer's sections most visits never open load from their own chunks (liveworkspace/docs/specs/004-index/
-// one-explorer.md "Cost and performance"): Inbox, Timeline, Invites, Gallery and Shape Libraries were static
-// imports of Explorer.tsx, in every /explorer page's first load. A static import of any of them again, or of the
-// Timeline view from a module the Explorer loads up front, passes every other test; this one fails.
+// one-explorer.md "Cost and performance"): Inbox, Invites, Gallery and Shape Libraries were static imports of
+// Explorer.tsx, in every /explorer page's first load. A static import of any of them again, or of an item's History
+// from a module the Explorer loads up front, passes every other test; this one fails.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -14,34 +14,21 @@ const staticImports = (src: string) =>
 describe('the Explorer’s sections', () => {
   it('are not static imports of the Explorer', () => {
     const imports = staticImports(read('Explorer.tsx'));
-    for (const module of [
-      './InboxPane',
-      './TimelinePane',
-      './InvitesPane',
-      '../library/LibraryViews',
-    ])
+    for (const module of ['./InboxPane', './InvitesPane', '../library/LibraryViews'])
       expect(imports, module).not.toContain(module);
   });
 
   it('each load from their own chunk', () => {
     const src = read('lazy-panes.ts');
-    for (const module of [
-      './InboxPane',
-      './TimelinePane',
-      './InvitesPane',
-      '../library/LibraryViews',
-    ])
+    for (const module of ['./InboxPane', './InvitesPane', '../library/LibraryViews'])
       expect(src).toContain(`import('${module}')`);
   });
 
-  // A Team's page and an item's history say what an event means without the whole Timeline view.
-  it.each([
-    'TeamActivity.tsx',
-    '../library/HistoryDialog.tsx',
-    '../panel/PanelLibraryTimeline.tsx',
-  ])('%s reads the events’ words from their own module', (file) => {
-    const imports = staticImports(read(file));
-    expect(imports.some((m) => m.endsWith('/TimelinePane') || m === './TimelinePane')).toBe(false);
+  // History loads when it is first opened (livediagram/docs/specs/013-workspace/history.md "Speed").
+  it('History is not a static import of the dialogs', () => {
+    const src = read('Dialogs.tsx');
+    expect(staticImports(src)).not.toContain('../library/HistoryDialog');
+    expect(src).toContain("import('../library/HistoryDialog')");
   });
 });
 

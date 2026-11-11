@@ -74,7 +74,6 @@ Every Explorer section is its own page under `/explorer` (the chrome, meaning he
 | -------------------------------------------------------------- | ------------------------------------------------------------------ |
 | Home ([Explorer Home](explorer-home.md))                       | `/explorer/home` (default)                                         |
 | Inbox ([Inbox](inbox.md))                                      | `/explorer/inbox`                                                  |
-| Timeline ([Timeline](timeline.md))                             | `/explorer/timeline`                                               |
 | Shared With Me                                                 | `/explorer/shared`                                                 |
 | Recent designs                                                 | `/explorer/recent` (no sidebar row)                                |
 | Favourites ([Favourite designs](favourites.md))                | `/explorer/favourites` (no sidebar row)                            |
@@ -236,7 +235,7 @@ for.
   (moving is the index's item move). A malformed placement is still
   `placement_invalid`.
 - **One feed event.** A create into a team records one `design_created` event whose
-  audience is the team ([Timeline](timeline.md)); there is no separate "Shared with a Team"
+  audience is the team ([History](history.md)); there is no separate "Shared with a Team"
   event, because the design was never personal.
 - **Observability.** Every decision logs one line with the `placement:` fingerprint:
   `placement: resolved scope=personal|team folder=set|root via=explicit|default|root` (`explicit`
@@ -346,7 +345,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 `UserPreferences` dialog the editor uses ([User preferences](../007-editor/user-preferences.md)).
 
 - **Sidebar (left, fixed width):** the navigation tree of [Explorer structure](explorer-structure.md):
-  Overview (Home, Inbox, Timeline, Shared With Me), Spaces (My Work with
+  Overview (Home, Inbox, Shared With Me), Spaces (My Work with
   its root folders beneath it, each team with its
   folders, This Browser and its local folders while it holds anything, New Team), and More (Tags, Library, Trash). Each folder
   row carries an ellipsis menu with Rename, New subfolder, Change Folder,

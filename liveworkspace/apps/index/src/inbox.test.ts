@@ -472,7 +472,7 @@ describe('the Inbox at scale', () => {
     expect(res!.forms.length).toBe(100);
     expect(res!.threads.length).toBe(100);
     expect(res!.actions.length).toBe(100);
-    // Measured about 18 ms a read here (three queries and the Timeline count); the budget leaves room for a slow machine.
+    // Measured about 18 ms a read here (three queries); the budget leaves room for a slow machine.
     expect(ms).toBeLessThan(cpuBudgetMs(150));
     // wall-clock: seeding 22,000 items with their forms, threads and actions can outlast the default 5 s on a loaded machine.
   }, 30_000);

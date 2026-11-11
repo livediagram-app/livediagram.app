@@ -28,7 +28,6 @@ import {
   MUTED_RUN_OPACITY,
   wrapLabel,
   type ExportRun,
-  type ExportShape,
 } from '@livehuddle/document';
 
 // Shared options for the image exports (PNG / SVG / PDF). `pattern` paints the tab's backdrop pattern (grid / dots /
@@ -36,7 +35,6 @@ import {
 function boxedSilhouettePath(
   ctx: CanvasRenderingContext2D,
   el: BoxedElement,
-  kind: ExportShape['kind'],
   dx = 0,
   dy = 0,
   // A shape's own border (svg-render-border's borderOf): the outline is inset by half its width, as the SVG export
@@ -48,22 +46,9 @@ function boxedSilhouettePath(
   const y = el.y + dy + inset;
   const w = Math.max(0, el.width - inset * 2);
   const h = Math.max(0, el.height - inset * 2);
-  const cx = x + w / 2;
-  const cy = y + h / 2;
-  if (kind === 'ellipse') {
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, w / 2, h / 2, 0, 0, Math.PI * 2);
-  } else if (kind === 'diamond') {
-    ctx.beginPath();
-    ctx.moveTo(cx, y);
-    ctx.lineTo(x + w, cy);
-    ctx.lineTo(cx, y + h);
-    ctx.lineTo(x, cy);
-    ctx.closePath();
-  } else {
-    // rect + image both use the rounded outline.
-    roundedRect(ctx, x, y, w, h, border ? Math.max(0, border.radius - inset) : 6);
-  }
+  // Every kind uses the rounded outline: the ellipse and the diamond went with the diagram shapes
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5).
+  roundedRect(ctx, x, y, w, h, border ? Math.max(0, border.radius - inset) : 6);
 }
 
 // Draw a loaded bitmap into the element's rounded box, honouring objectFit
@@ -127,7 +112,7 @@ export function drawBoxed(
       ctx.strokeStyle = EXPORT_IMAGE_STROKE;
       ctx.fillStyle = EXPORT_IMAGE_FILL;
       ctx.setLineDash([4, 4]);
-      boxedSilhouettePath(ctx, el, 'image');
+      boxedSilhouettePath(ctx, el);
       ctx.fill();
       ctx.stroke();
       ctx.setLineDash([]);
@@ -141,7 +126,7 @@ export function drawBoxed(
     // line. Only Flexible shapes reach here (boxedNeedsSvgRaster sends the other finishes through their SVG).
     const border = el.type === 'shape' ? borderOf(el) : undefined;
     ctx.fillStyle = shape.fill;
-    boxedSilhouettePath(ctx, el, shape.kind, 0, 0, border);
+    boxedSilhouettePath(ctx, el, 0, 0, border);
     ctx.fill();
     const lineWidth = border ? border.width : 1.5;
     if (shape.stroke !== 'none' && lineWidth > 0) {

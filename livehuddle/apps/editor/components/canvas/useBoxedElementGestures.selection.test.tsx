@@ -2,7 +2,7 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { createShape, createSticky, createText, type BoxedElement } from '@livehuddle/document';
+import { createSticky, createText, type BoxedElement } from '@livehuddle/document';
 import { useBoxedElementGestures } from './useBoxedElementGestures';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Selection" (click the selected element again) and
@@ -74,7 +74,7 @@ const OUTSIDER: State = { isSelected: false, isMultiSelected: false };
 const KINDS: [string, () => BoxedElement][] = [
   ['sticky', () => createSticky(0, 0)],
   ['text', () => createText(0, 0)],
-  ['shape', () => createShape('square', 0, 0)],
+  ['shape', () => createSticky(0, 0)],
 ];
 
 afterEach(() => {

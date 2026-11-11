@@ -1,6 +1,6 @@
 // Feature illustrations for the structural elements (docs/specs/009-elements/mind-node.md,
-// lane.md, entity.md, embed-providers.md) and the Explorer's Timeline: the mind map, swimlanes,
-// and entity boxes (embeds and the activity feed are in ./embeds-timeline). Shared marks live in ./canvas-marks.
+// lane.md, entity.md, embed-providers.md): the mind map, swimlanes,
+// and entity boxes (embeds are in ./embeds). Shared marks live in ./canvas-marks.
 import {
   ARROW,
   Caret,

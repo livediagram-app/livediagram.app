@@ -24,7 +24,6 @@ import {
   ShareIcon,
   StarIcon,
   TeamIcon,
-  TimelineIcon,
   TrashIcon,
 } from '../ui/icons';
 import { SIDEBAR_LABELS } from '../views';
@@ -61,8 +60,6 @@ function SectionIcon({ kind }: { kind: PanelSection['kind'] }) {
       return <StarIcon />;
     case 'offline':
       return <BrowserIcon />;
-    case 'timeline':
-      return <TimelineIcon />;
     case 'library':
       return <LibraryIcon />;
     case 'archived':

@@ -5,7 +5,7 @@ import { migrateStoredTab } from './stored-tab';
 const square = (id: string, extra: Record<string, unknown> = {}) => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 10,

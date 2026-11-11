@@ -1,5 +1,5 @@
-/* ── Accent loops for the Plan, Sheet, Form and Timeline card art (components/feature-art/plan-more.tsx,
-   sheet-more.tsx, forms-more.tsx, embeds-timeline.tsx and their kin) ──
+/* ── Accent loops for the Plan, Sheet and Form card art (components/feature-art/plan-more.tsx,
+   sheet-more.tsx, forms-more.tsx and their kin) ──
    Each scene reads finished at rest; these move only an accent (a caret, a cursor, a packet, a
    backdrop) so any frame of the loop is a good picture. Reduced motion settles them below. */
 

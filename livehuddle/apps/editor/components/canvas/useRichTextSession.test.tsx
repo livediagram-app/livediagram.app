@@ -2,7 +2,7 @@
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape } from '@livehuddle/document';
+import { createSticky } from '@livehuddle/document';
 import type { RichTextEditorProps } from './RichTextEditor.types';
 import { useRichTextSession } from './useRichTextSession';
 
@@ -11,7 +11,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // The label editor's session (docs/specs/008-canvas/canvas-and-palette.md): it paints and selects on
 // mount, and commits on unmount only when the text changed, through the handler it has now.
 
-const element = createShape('square', 0, 0);
+const element = createSticky(0, 0);
 
 function Harness({ onCommit }: { onCommit: RichTextEditorProps['onCommit'] }) {
   const { editorRef, syncFromDom } = useRichTextSession({

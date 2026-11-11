@@ -14,7 +14,7 @@ export type Selector = string;
 export type FieldValue = JsonValue;
 export type Fields = Readonly<Record<string, FieldValue>>;
 
-// Where `add` and `move` put an element: beside, after or aligned with a reference, or at a point relative to the
+// Where `add` and `move` put an element: beside or aligned with a reference, or at a point relative to the
 // content origin. `alignTo` (from `below:<x> align:<y>`) centres the placed box on y across the side.
 export type Placement =
   | { rel: PlacementRelation; ref: Selector; gap?: number; alignTo?: Selector }
@@ -102,7 +102,7 @@ export type ApplyOutcome = ApplySuccess | ApplyRejection;
 
 // The last line of a changeset's answer, composed by the api from what only it knows.
 export type ResultFooter =
-  | { dryRun: true; rev: number; lint: string }
+  | { dryRun: true; rev: number }
   | {
       dryRun: false;
       previousRev: number;
@@ -111,5 +111,4 @@ export type ResultFooter =
       changesetId: string;
       // The document the changeset belongs to: the revert command names it (CLI26).
       documentId: string;
-      lint: string;
     };

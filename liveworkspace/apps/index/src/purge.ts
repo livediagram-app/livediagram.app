@@ -119,7 +119,7 @@ export async function drainTombstones(
 // EMPTY_ITEM_STALE_MS moves to the Trash with the reason `empty`, stamped with this moment so it waits the full 30
 // days there. Any app's, a guest's, an account's or a team's (to the team's Trash). The check and the move are one
 // statement, so an item saved a moment before is not moved; an item restored unchanged is not moved again for the
-// same change (`empty_swept_for`). No Timeline event: an empty item tidied away is not news. Bounded per run,
+// same change (`empty_swept_for`). No event: an empty item tidied away is not news. Bounded per run,
 // oldest change first, on the partial index items_empty.
 // `touched` collects the owners of the personal items it moved, for the Drive mirror's signal.
 export async function sweepEmpty(
@@ -161,22 +161,7 @@ export async function sweep(
   for (const row of results) touchItem(touched, row);
   await sendDriveSignals(env, touched, now);
   const confirmed = await drainTombstones(env, {}, now);
-  await sweepLooseEvents(env);
   // The team audit log's rows past the year (team-audit.ts).
   await sweepTeamAudit(env, now);
   return { emptied, purged: results.length, confirmed };
-}
-
-// Timeline events about no item (a team's, a token's, images uploaded) that no scope sees any more (every
-// person they reached has closed their account): at most this many a day.
-export const LOOSE_EVENTS_SWEEP_MAX = 1000;
-
-export async function sweepLooseEvents(env: Env): Promise<void> {
-  await env.INDEX_DB.prepare(
-    `DELETE FROM timeline_events WHERE rowid IN (
-       SELECT e.rowid FROM timeline_events e WHERE e.item_id IS NULL
-       AND NOT EXISTS (SELECT 1 FROM timeline_event_scopes s WHERE s.event_id = e.id) LIMIT ?)`,
-  )
-    .bind(LOOSE_EVENTS_SWEEP_MAX)
-    .run();
 }
