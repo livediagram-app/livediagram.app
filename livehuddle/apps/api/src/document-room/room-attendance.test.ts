@@ -217,7 +217,7 @@ describe('two people in a Space', () => {
 
 describe('a full room', () => {
   it('records a move in a room of ROOM_MAX_CONNECTIONS people within a small budget', async () => {
-    const people = [];
+    const people: Awaited<ReturnType<typeof connect>>[] = [];
     for (let i = 0; i < ROOM_MAX_CONNECTIONS; i++) {
       const p = await connect(`guest_${i}`);
       hello(p.ws, `P${i}`, 't1');
