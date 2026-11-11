@@ -30,7 +30,7 @@ const sketchBox = (kind: string, w: number, h: number) => () => {
 
 describe('sketch budgets', () => {
   it('an ordinary shape stays under 0.2 ms (x10 for CI and coverage)', () => {
-    expect(fastest(sketchBox('square', 400, 300))).toBeLessThan(cpuBudgetMs(2));
+    expect(fastest(sketchBox('focus-button', 400, 300))).toBeLessThan(cpuBudgetMs(2));
     expect(fastest(sketchBox('circle', 400, 300))).toBeLessThan(cpuBudgetMs(2));
     const cloud = () => {
       const o = outlineOfPath(
@@ -43,7 +43,7 @@ describe('sketch budgets', () => {
   });
 
   it('the largest shape stays under 2 ms (x10 for CI and coverage)', () => {
-    expect(fastest(sketchBox('square', 20000, 20000), 3, 20)).toBeLessThan(cpuBudgetMs(20));
+    expect(fastest(sketchBox('focus-button', 20000, 20000), 3, 20)).toBeLessThan(cpuBudgetMs(20));
     expect(fastest(sketchBox('circle', 20000, 20000), 3, 20)).toBeLessThan(cpuBudgetMs(20));
   });
 });

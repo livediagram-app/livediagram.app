@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, createText, type Element, type Tab } from '@livehuddle/document';
+import { createSticky, createText, type Element, type Tab } from '@livehuddle/document';
 import { useSelectionEditing } from './useSelectionEditing';
 
 // A mind node's lines measure this tall (jsdom lays nothing out).
@@ -59,7 +59,7 @@ function setup(el: Element, editingId: string | null = null, documentName = 'My 
 }
 
 describe('commitLabel', () => {
-  const cylinder = createShape('cylinder', 0, 0);
+  const cylinder = createSticky(0, 0);
 
   // docs/specs/006-document/document-structure.md "The first label names the document, in every mode".
   it.each(['Untitled Whiteboard', 'Untitled Illustration', 'Untitled Plan', 'Untitled Session'])(
@@ -112,7 +112,7 @@ describe('commitLabel', () => {
 // editor like any other.
 describe('an element saved locked', () => {
   it('opens its label editor', () => {
-    const square = { ...createShape('square', 0, 0), locked: true } as Element;
+    const square = { ...createSticky(0, 0), locked: true } as Element;
     const open = setup(square);
     open.editing.beginEdit(square.id);
     expect(open.setEditingId).toHaveBeenCalledWith(square.id);

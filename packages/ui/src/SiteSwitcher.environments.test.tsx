@@ -63,9 +63,9 @@ describe("the site switcher's links in each environment", () => {
   it("keeps an Explorer link's view and query on staging", () => {
     expect(
       linksOn(
-        'https://staging.liveplanner.app/explorer/timeline',
-        explorerSwitchHref('/explorer/timeline', '?id=t1'),
+        'https://staging.liveplanner.app/explorer/inbox',
+        explorerSwitchHref('/explorer/inbox', '?id=t1'),
       ),
-    ).toEqual(STAGING.map((origin) => `${origin}/explorer/timeline?id=t1`));
+    ).toEqual(STAGING.map((origin) => `${origin}/explorer/inbox?id=t1`));
   });
 });

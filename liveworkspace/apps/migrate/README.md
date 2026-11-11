@@ -46,12 +46,12 @@ people/<app>/<owner>.json  one MigrationPersonPayload per person with shape libr
 people/people.jsonl      the people in the order apply sends them
 kv/mcp-clients.json      the MCP's client registrations, as `kv bulk put` takes them
 moved-parts.json         where each split document's parts went
-report.json              counts per table, cross-product references, dropped history, collisions, skipped rows
+report.json              counts per table, cross-product references, collisions, skipped rows
 ```
 
 Read `report.json` before any apply. The lists worth checking every time: `shareCodeCaseCollisions` (two old codes
 equal but for case: the older keeps it, the other is not carried), `imageCollisions` (two images that become one
-owner's with the same bytes), `droppedHistory` (Timeline kinds with no new equivalent), `picturesMissing`,
+owner's with the same bytes), `picturesMissing`,
 `skipped`, and `ownerMap.unknownAccounts` (old account ids with no Clerk row: their documents go in under the old id,
 their tokens and settings don't).
 

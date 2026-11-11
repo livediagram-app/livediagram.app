@@ -222,7 +222,10 @@ describe('ToolbarPalette', () => {
       const popover = openSearch();
       for (const [q, gone] of [
         ['marker', /^Marker \d/],
+        ['square', /^Add Square$/],
+        ['circle', /^Add Circle$/],
         ['cylinder', /^Add Cylinder$/],
+        ['speech', /^Add Speech Bubble$/],
         ['lane', /^Add Lane$/],
         ['poll', /^Add Poll$/],
         ['frame', /^Add Frame$/],

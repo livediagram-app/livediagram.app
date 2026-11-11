@@ -40,7 +40,7 @@ describe('rowToTab', () => {
       {
         id: 'a',
         type: 'shape',
-        shape: 'square',
+        shape: 'signpost',
         x: 0,
         y: 0,
         width: 1,
@@ -70,11 +70,20 @@ describe('rowToTab', () => {
 
   it('freezes a legacy group out of the stored elements (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
     const elements = [
-      { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 40, groupId: 'g' },
+      {
+        id: 'a',
+        type: 'shape',
+        shape: 'signpost',
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 40,
+        groupId: 'g',
+      },
       {
         id: 'b',
         type: 'shape',
-        shape: 'square',
+        shape: 'signpost',
         x: 0,
         y: 60,
         width: 100,
@@ -103,7 +112,8 @@ describe('rowToTab', () => {
     expect(dto.kind).toBe('diagram');
     expect(dto.opensIn).toBe('draw');
     expect(dto.backgroundPattern).toBe('blank');
-    expect(dto.elements[0]).toMatchObject({ penColour: 'ink', fillColor: 'transparent' });
+    // A board's square is a retired element now (not-in-livehuddle.md "The element engine", part 5): kept as stored.
+    expect(dto.elements[0]).toEqual(elements[0]);
   });
 
   it('reassembles the canonical TabDTO from row columns + parsed data', () => {
@@ -142,7 +152,7 @@ describe('rowToTab', () => {
 
   it('preserves elements from the parsed body in array order', () => {
     const els = [
-      { id: 'el-a', type: 'shape', kind: 'square', x: 0, y: 0, width: 100, height: 80 },
+      { id: 'el-a', type: 'shape', kind: 'signpost', x: 0, y: 0, width: 100, height: 80 },
       { id: 'el-b', type: 'text', x: 10, y: 10, width: 50, height: 20, label: 'note' },
     ];
     const dto = rowToTab(baseRow({ data: JSON.stringify({ elements: els }) }));

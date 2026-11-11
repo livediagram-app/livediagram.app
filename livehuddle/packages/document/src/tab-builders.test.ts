@@ -6,8 +6,8 @@ import { buildTab } from './tab-builders';
 // nothing out and bends nothing, whatever layout an agent asks for.
 describe('buildTab', () => {
   const els = [
-    { id: 'p', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 60 },
-    { id: 'c', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 60 },
+    { id: 'p', type: 'shape', shape: 'focus-button', x: 0, y: 0, width: 100, height: 60 },
+    { id: 'c', type: 'shape', shape: 'focus-button', x: 0, y: 0, width: 100, height: 60 },
     {
       id: 'a',
       type: 'arrow',

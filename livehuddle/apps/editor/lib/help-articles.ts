@@ -54,15 +54,13 @@ export const HELP_ARTICLES = {
   explorerPanel: 'explorer/explorer-panel',
   minimap: 'user-interface/minimap',
   imageGallery: 'explorer/image-gallery',
-  timeline: 'explorer/timeline',
   // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
   inbox: 'explorer/activity',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
   defaultFolders: 'explorer/folders/default-folders',
   explorerFilters: 'explorer/filters',
-  // Home and the Timeline share an article.
-  home: 'explorer/timeline',
+  home: 'explorer/home',
   // The shared Explorer's other views, each its page header's Help (lib/explorer-host.ts explorerHelpHref).
   myWork: 'explorer/my-work',
   recent: 'explorer/recent',
@@ -185,10 +183,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Image Gallery',
     description: 'How uploaded images are stored and reused across spaces.',
   },
-  timeline: {
-    title: 'Learn about Home and the Timeline',
-    description: 'Jump Back In, what others did while you were away, and your own Timeline.',
-  },
   inbox: {
     title: 'Learn about the Inbox',
     description: 'Open actions assigned to you or by you, and comment threads you are in.',
@@ -210,8 +204,8 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'Narrow any list with words, chips or typed filters like made-by:ai.',
   },
   home: {
-    title: 'Learn about Home and the Timeline',
-    description: 'Jump Back In, what others did while you were away, and your own Timeline.',
+    title: 'Learn about Home',
+    description: 'Jump Back In and what was shared with you recently.',
   },
   myWork: {
     title: 'Learn about My Work',

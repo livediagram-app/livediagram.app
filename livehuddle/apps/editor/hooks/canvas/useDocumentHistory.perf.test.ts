@@ -33,7 +33,7 @@ type Box = Element & { x: number; y: number; label?: string };
 const box = (i: number): Element => ({
   id: `e${i}`,
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: i,
   y: i,
   width: 100,

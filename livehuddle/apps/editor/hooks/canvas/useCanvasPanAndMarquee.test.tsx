@@ -53,7 +53,15 @@ describe('useCanvasPanAndMarquee space-held modifier', () => {
 // docs/specs/023-draw-mode/draw-mode.md "Selecting": Shift with Select on a whiteboard always
 // drags a selection box that adds to the selection; a Shift-click on an element toggles it.
 describe('useCanvasPanAndMarquee additive marquee', () => {
-  const square = { id: 'a', type: 'shape', shape: 'square', x: 10, y: 10, width: 20, height: 20 };
+  const square = {
+    id: 'a',
+    type: 'shape',
+    shape: 'focus-button',
+    x: 10,
+    y: 10,
+    width: 20,
+    height: 20,
+  };
   function additive(current: string[] = ['z']) {
     const deps = {
       viewportZoom: 1,
@@ -132,7 +140,7 @@ describe('useCanvasPanAndMarquee rotated elements', () => {
   const bar = {
     id: 'r',
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     x: 20,
     y: 45,
     width: 60,

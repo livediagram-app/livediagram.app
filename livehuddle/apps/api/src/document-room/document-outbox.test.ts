@@ -13,7 +13,7 @@ import {
 } from './document-outbox';
 import {
   IndexError,
-  type AppTimelineEvent,
+  type AppEvent,
   type CollabPush,
   type IndexAppClient,
   type ItemSummary,
@@ -27,7 +27,7 @@ const T0 = 1_700_000_000_000;
 const box = (id: string, extra: Record<string, unknown> = {}): Element => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'signpost',
   x: 0,
   y: 0,
   width: 10,
@@ -69,9 +69,9 @@ const keys = (db: SqliteD1) =>
 function fakeIndex(fail: (kind: string) => Error | null = () => null) {
   const collab: { tab: string; push: CollabPush }[] = [];
   const summaries: { summary: ItemSummary; savedAt: number | undefined }[] = [];
-  const events: AppTimelineEvent[][] = [];
+  const events: AppEvent[][] = [];
   const client = {
-    pushEvents: async (_id: string, batch: AppTimelineEvent[]) => {
+    pushEvents: async (_id: string, batch: AppEvent[]) => {
       const err = fail('events');
       if (err) throw err;
       events.push(batch);

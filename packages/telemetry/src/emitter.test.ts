@@ -31,7 +31,7 @@ describe('the telemetry engine', () => {
     for (let i = 0; i < 6; i++)
       engine.track('liveplanner.app', 'UI', 'Toggled', 'ExplorerViewCard');
     engine.track('liveworkspace.app', 'Explorer', 'Selected', 'Text');
-    engine.track('liveplanner.app', 'Timeline', 'Changed', 'Calendar');
+    engine.track('liveplanner.app', 'Activity', 'Changed', 'Comments');
     expect(fetchMock).not.toHaveBeenCalled();
     vi.advanceTimersByTime(TELEMETRY_FLUSH_DELAY_MS);
     expect(fetchMock).toHaveBeenCalledTimes(2);
@@ -52,7 +52,7 @@ describe('the telemetry engine', () => {
       isOptedIn: () => true,
     });
     for (let i = 0; i < TELEMETRY_MAX_BUFFER; i++)
-      engine.track('livediagram.app', 'Home', 'Opened', 'Group');
+      engine.track('livediagram.app', 'Home', 'Opened', 'Welcome');
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -67,8 +67,8 @@ describe('the telemetry engine', () => {
       enabled: true,
       isOptedIn: () => false,
     });
-    off.track('liveplanner.app', 'Home', 'Opened', 'Group');
-    out.track('liveplanner.app', 'Home', 'Opened', 'Group');
+    off.track('liveplanner.app', 'Home', 'Opened', 'Welcome');
+    out.track('liveplanner.app', 'Home', 'Opened', 'Welcome');
     vi.advanceTimersByTime(TELEMETRY_FLUSH_DELAY_MS);
     expect(fetchMock).not.toHaveBeenCalled();
   });

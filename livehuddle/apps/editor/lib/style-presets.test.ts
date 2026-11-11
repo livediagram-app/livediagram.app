@@ -2,9 +2,7 @@ import type { Element } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
 import type { ShapeColorPreset } from './themes';
 import {
-  applyBorderRadiusToEl,
   applyMarkerToEl,
-  applyShapeKindToEl,
   applyBorderStrokeToEl,
   applyBorderStyleToEl,
   applyColorPresetToEl,
@@ -23,7 +21,7 @@ const el = (type: string, over: Record<string, unknown> = {}): Element =>
   ({
     id: 'e',
     type,
-    ...(type === 'shape' ? { shape: 'square' } : {}),
+    ...(type === 'shape' ? { shape: 'focus-button' } : {}),
     ...over,
   }) as unknown as Element;
 
@@ -123,12 +121,6 @@ describe('border field setters', () => {
     expect(applyBorderStrokeToEl(sticky, 'thin')).toBe(sticky);
     expect(applyBorderStyleToEl(el('shape'), 'dotted')).toMatchObject({ strokeStyle: 'dotted' });
   });
-
-  it('radius is shape-only', () => {
-    expect(applyBorderRadiusToEl(el('shape'), 'full')).toMatchObject({ borderRadius: 'full' });
-    const note = el('sticky');
-    expect(applyBorderRadiusToEl(note, 'md')).toBe(note);
-  });
 });
 
 describe('applyRotationToEl', () => {
@@ -166,11 +158,9 @@ describe('a retired element', () => {
     ['text', (e) => applyTextColorToEl(e, '#c')],
     ['border', (e) => applyBorderStrokeToEl(e, 'thick')],
     ['pattern', (e) => applyBorderStyleToEl(e, 'dotted')],
-    ['radius', (e) => applyBorderRadiusToEl(e, 'full')],
     ['shadow', (e) => applyShadowToEl(e, { offsetX: 0, offsetY: 4, blur: 12, opacity: 0.25 })],
     ['finish', (e) => applyFinishToEl(e, 'sketch')],
     ['rotation', (e) => applyRotationToEl(e, 45)],
-    ['kind', (e) => applyShapeKindToEl(e, 'circle')],
     ['marker', (e) => applyMarkerToEl(e, 'checkbox-checked')],
     ['icon weight', (e) => applyIconWeightToEl(e, 'bold')],
   ];

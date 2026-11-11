@@ -204,7 +204,6 @@ export type Tab = {
 
 export { takesTypedLabel } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
-export * from './accent-edge';
 // Retired elements (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): kinds livehuddle no longer
 // has, their names, and the placeholder card every surface draws them as.
 export * from './retired-kinds';
@@ -349,7 +348,6 @@ export * from './office-team';
 export * from './call-geometry';
 // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md).
 export * from './meeting-pieces';
-export * from './actor-figure';
 export * from '@liveworkspace/model-core/color-wash';
 export { labelOn } from './readable-colour';
 export * from './quick-swatches';
@@ -433,12 +431,10 @@ export * from './element-kind-label';
 // or "Untitled".
 export * from './element-display-label';
 
-// Shape outlines and hit tests.
+// An element's body for pointer tests.
 export * from './shape-outline';
 export * from '@liveworkspace/model-core/svg-path-outline';
-export * from './shape-hit';
 // The band a shape's label sits in (docs/specs/008-canvas/canvas-and-palette.md "Shape primitives").
-export * from './label-body';
 export * from './indicator-placement';
 export * from './geometry';
 export * from './element-grid';

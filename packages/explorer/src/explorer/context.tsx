@@ -57,7 +57,6 @@ import type {
   ShareHost,
   ShareUrl,
   TeamRef,
-  TimelineTelemetry,
   HomeTelemetry,
   OrganiseTelemetry,
 } from '../types';
@@ -76,7 +75,7 @@ export type DialogTarget =
   | { kind: 'default-folders' }
   // A Trash group's: the person's own (teamId null) or a team's, named for the confirmation.
   | { kind: 'empty-trash'; teamId: string | null; title: string }
-  // History: the item's own Timeline.
+  // History: what happened to the item.
   | { kind: 'history'; item: Item }
   // Webhooks: the item's own, for an account who edits all of it.
   | { kind: 'webhooks'; item: Item }
@@ -141,8 +140,6 @@ export type ExplorerContextValue = {
   shareUrl?: ShareUrl;
   shareHost?: ShareHost;
   inboxHost?: InboxHost;
-  // The person's API tokens page, for a token's Timeline card.
-  tokensUrl?: string;
   // New: an item of `app`'s kind (the host's own when not given) at this placement.
   onCreate: (placement: Placement, app?: App) => void;
   // The apps New offers while the list mixes every app (the All filter, with the host's newApps); null when New
@@ -157,9 +154,7 @@ export type ExplorerContextValue = {
   helpHref?: HelpHref;
   // Home's hero: the question after the greeting, and the lead.
   heroWords: HeroWords;
-  // The Timeline's reports, for the host's telemetry.
-  onTimeline?: TimelineTelemetry;
-  // Home's What Happened reports, for the host's telemetry.
+  // Home's reports, for the host's telemetry.
   onHome?: HomeTelemetry;
   // The lens's Template values: the host's template families (none: no Template filter).
   lensTemplates: readonly LensOption[];
@@ -258,10 +253,8 @@ export type ExplorerProviderProps = {
   shareUrl?: ShareUrl;
   shareHost?: ShareHost;
   inboxHost?: InboxHost;
-  tokensUrl?: string;
   helpHref?: HelpHref;
   heroWords?: HeroWords;
-  onTimeline?: TimelineTelemetry;
   onHome?: HomeTelemetry;
   lensTemplates?: readonly LensOption[];
   lensModes?: readonly LensOption[];
@@ -304,10 +297,8 @@ export function ExplorerProvider({
   shareUrl,
   shareHost,
   inboxHost,
-  tokensUrl,
   helpHref,
   heroWords,
-  onTimeline,
   onHome,
   lensTemplates = NO_TEMPLATES,
   lensModes = NO_TEMPLATES,
@@ -460,7 +451,6 @@ export function ExplorerProvider({
       shareUrl,
       shareHost,
       inboxHost,
-      tokensUrl,
       onCreate,
       createChoices: filter === 'all' && newApps && newApps.length > 1 ? newApps : null,
       renamingId,
@@ -469,7 +459,6 @@ export function ExplorerProvider({
       openDialog,
       helpHref,
       heroWords: heroWords ?? heroWordsFor(app, filter),
-      onTimeline,
       onHome,
       lensTemplates,
       lensModes,
@@ -508,14 +497,12 @@ export function ExplorerProvider({
       shareUrl,
       shareHost,
       inboxHost,
-      tokensUrl,
       onCreate,
       newApps,
       renamingId,
       dialog,
       helpHref,
       heroWords,
-      onTimeline,
       onHome,
       lensTemplates,
       lensModes,

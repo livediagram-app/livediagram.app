@@ -1,17 +1,4 @@
-import type { BorderRadius, BorderStroke, BorderStyle, ShapeKind } from '@livehuddle/document';
-
-// Curated subset of the most common shapes offered for in-place morphing in
-// the context menu's Shape category (the full set lived in the old panel).
-export const COMMON_SHAPES: ShapeKind[] = [
-  'square',
-  'circle',
-  'diamond',
-  'stadium',
-  'parallelogram',
-  'hexagon',
-  'triangle',
-  'cylinder',
-];
+import type { BorderStroke, BorderStyle } from '@livehuddle/document';
 
 // Fixed rotation angles offered in the Rotation category (and the search
 // palette's Rotate actions). 0 doubles as "reset to upright". These 45° steps
@@ -35,4 +22,3 @@ export const BORDER_STYLES: readonly BorderStyle[] = [
   'long-dash',
   'dash-dot-dot',
 ];
-export const BORDER_RADII: readonly BorderRadius[] = ['none', 'sm', 'md', 'lg', 'full'];

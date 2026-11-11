@@ -31,19 +31,19 @@ describe('buildFilterGroups', () => {
 
   it('splits shapes by kind and adds an "All Shapes" bucket when 2+ kinds', () => {
     const groups = buildFilterGroups([
-      shape('s1', 'square'),
-      shape('s2', 'square'),
-      shape('s3', 'circle'),
+      shape('s1', 'chair'),
+      shape('s2', 'chair'),
+      shape('s3', 'desk'),
     ]);
     expect(groups[0]).toMatchObject({ key: 'all-shapes', label: 'All Shapes' });
     expect(groups[0]?.ids).toEqual(['s1', 's2', 's3']);
-    expect(groups.find((g) => g.key === 'shape:square')?.label).toBe('Squares');
-    expect(groups.find((g) => g.key === 'shape:circle')?.label).toBe('Circles');
+    expect(groups.find((g) => g.key === 'shape:chair')?.label).toBe('Chairs');
+    expect(groups.find((g) => g.key === 'shape:desk')?.label).toBe('Desks');
   });
 
   it('omits the "All Shapes" bucket for a single shape kind', () => {
-    const groups = buildFilterGroups([shape('s1', 'square'), shape('s2', 'square')]);
-    expect(groups.map((g) => g.key)).toEqual(['shape:square']);
+    const groups = buildFilterGroups([shape('s1', 'chair'), shape('s2', 'chair')]);
+    expect(groups.map((g) => g.key)).toEqual(['shape:chair']);
   });
 
   it('orders buckets by size, largest first', () => {

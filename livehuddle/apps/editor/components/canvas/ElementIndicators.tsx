@@ -113,14 +113,12 @@ export function ElementIndicators({
   const zoom = useCanvasZoom();
   if (items.length === 0 || zoom < ADORNMENT_MIN_ZOOM) return null;
 
-  const shape = element.type === 'shape' ? element.shape : undefined;
-
   let position: React.CSSProperties;
   let shapeClass: string;
   let glyphPx: number;
   if (placed.form === 'pip' || !placed.box) {
     const inset = pipInsetOf(element, placed, cornerPx);
-    const round = shape === 'circle' || shape === 'stadium' || cornerPx >= ROUND_PIP_FROM_PX;
+    const round = cornerPx >= ROUND_PIP_FROM_PX;
     position = { right: inset.x, top: inset.y, transform: 'translate(50%, -50%)' };
     shapeClass = `h-[22px] px-0.5 ring-1 ring-current/15 ${round ? 'rounded-full' : 'rounded-md'} ${
       fill ? '' : 'bg-white dark:bg-slate-800'

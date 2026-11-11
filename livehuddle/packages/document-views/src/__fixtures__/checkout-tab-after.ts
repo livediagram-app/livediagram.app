@@ -28,7 +28,7 @@ function changed(el: Element): Element[] {
 export function checkoutTabAfter(): Tab {
   const before = checkoutTab();
   const redis = {
-    ...createShape('cylinder', 720, 470),
+    ...createShape('signpost', 720, 470),
     id: REDIS_ID,
     label: 'Redis cache',
     width: 160,

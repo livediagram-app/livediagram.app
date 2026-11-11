@@ -12,7 +12,7 @@ import { LINK_TOLERANCE } from './auto-align-lines';
 
 // docs/specs/008-canvas/layout-cleanup.md "Auto-align (grid snap)": boxes snap by the lines they share.
 
-function box(id: string, x: number, y: number, w: number, h: number, kind: ShapeKind = 'square') {
+function box(id: string, x: number, y: number, w: number, h: number, kind: ShapeKind = 'room') {
   return { ...createShape(kind, x, y), id, width: w, height: h } as ShapeElement;
 }
 const find = (out: Element[], id: string) => out.find((e) => e.id === id) as BoxedElement;

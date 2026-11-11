@@ -32,7 +32,7 @@ import { handleDocumentList } from './document-index-routes';
 const box = (id: string) => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'signpost',
   x: 0,
   y: 0,
   width: 100,

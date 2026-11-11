@@ -1,0 +1,11 @@
+# Retired help articles (docs/specs/018-help/help-app.md "Retired articles"). Each old URL moves permanently to
+# the closest live article, so search results and old links keep landing.
+# The router strips /help before forwarding and puts it back on a relative Location, so paths here
+# carry no /help prefix. Workers Static Assets reads this file from out/ (Next copies public/).
+# lib/retired-articles.test.ts pins every target to a live page.
+
+# The Explorer Timeline retired on 2026-11-11 (Work Item #683): its pane, What Happened, Team Activity and the
+# Upcoming view are gone, and each item's History covers the last 30 days. The article that carried the Timeline
+# (and, in four products, Home) lives at /explorer/home/.
+/explorer/timeline /explorer/home/ 301
+/explorer/timeline/ /explorer/home/ 301

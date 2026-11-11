@@ -5,7 +5,7 @@ import { cleanupVerdict, verdictNotice } from './tidy-verdict';
 // docs/specs/008-canvas/layout-cleanup.md "A tidy never trashes the work".
 
 const box = (id: string, x: number, y: number, w = 100, h = 50) =>
-  ({ ...createShape('square', x, y), id, width: w, height: h }) as ShapeElement;
+  ({ ...createShape('room', x, y), id, width: w, height: h }) as ShapeElement;
 // A stored (retired) arrow (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
 const arrow = (from: string, to: string) =>
   ({

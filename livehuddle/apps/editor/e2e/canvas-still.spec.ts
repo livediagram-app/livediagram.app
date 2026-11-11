@@ -14,8 +14,7 @@ import {
 
 const square = (i: number) => ({
   id: `sq-${i}`,
-  type: 'shape',
-  shape: 'square',
+  type: 'sticky',
   x: 200 + (i % 8) * 160,
   y: 160 + Math.floor(i / 8) * 140,
   width: 100,

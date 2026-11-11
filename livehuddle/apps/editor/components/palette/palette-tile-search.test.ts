@@ -73,29 +73,29 @@ describe('mergeByName', () => {
   const t = (id: string) => tileById(id)!;
 
   it('puts a name match from a later list above a keyword-only match from an earlier one', () => {
-    // "flowchart" is a keyword of the diamond; "Org Chart" names the hexagon (its caption here, to read in full).
-    const org = { ...t('shapes:hexagon'), caption: 'Org Chart' };
-    expect(ids(mergeByName('chart', [t('shapes:diamond')], [org]))).toEqual([
-      'shapes:hexagon',
-      'shapes:diamond',
+    // "seat" is a keyword of the chair; "Seat Bank" names the sofa (its caption here, to read in full).
+    const bank = { ...t('tools:sofa'), caption: 'Seat Bank' };
+    expect(ids(mergeByName('seat', [t('tools:chair')], [bank]))).toEqual([
+      'tools:sofa',
+      'tools:chair',
     ]);
   });
 
   it('keeps list order among equals, and on an empty query', () => {
-    const lists = [[t('shapes:square')], [t('shapes:circle')]];
-    expect(ids(mergeByName('', ...lists))).toEqual(['shapes:square', 'shapes:circle']);
-    expect(ids(mergeByName('zz', ...lists))).toEqual(['shapes:square', 'shapes:circle']);
+    const lists = [[t('tools:chair')], [t('tools:desk')]];
+    expect(ids(mergeByName('', ...lists))).toEqual(['tools:chair', 'tools:desk']);
+    expect(ids(mergeByName('zz', ...lists))).toEqual(['tools:chair', 'tools:desk']);
   });
 });
 
 describe('rankTiles', () => {
-  const tiles = ['shapes:cylinder', 'shapes:circle', 'shapes:square'].map((id) => tileById(id)!);
+  const tiles = ['tools:copier', 'tools:coffee-machine', 'tools:chair'].map((id) => tileById(id)!);
 
   it('ranks a name match above a keyword-only one', () => {
-    // "circle" is the circle's name; the cylinder and square do not mention it.
-    expect(ids(rankTiles('circle', tiles))[0]).toBe('shapes:circle');
-    // "box" is only a keyword of the square.
-    expect(ids(rankTiles('box', tiles))).toEqual(['shapes:square']);
+    // "chair" is the chair's name; the copier and the coffee machine do not mention it.
+    expect(ids(rankTiles('chair', tiles))[0]).toBe('tools:chair');
+    // "espresso" is only a keyword of the coffee machine.
+    expect(ids(rankTiles('espresso', tiles))).toEqual(['tools:coffee-machine']);
   });
 
   it('keeps input order on an empty or blank query', () => {
@@ -103,7 +103,10 @@ describe('rankTiles', () => {
   });
 
   it('keeps input order between equal ranks', () => {
-    // Both names start with "c".
-    expect(ids(rankTiles('c', tiles)).slice(0, 2)).toEqual(['shapes:cylinder', 'shapes:circle']);
+    // Every name starts with "c".
+    expect(ids(rankTiles('c', tiles)).slice(0, 2)).toEqual([
+      'tools:copier',
+      'tools:coffee-machine',
+    ]);
   });
 });

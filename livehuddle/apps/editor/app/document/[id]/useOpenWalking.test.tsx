@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createShape, createSticky, type Element } from '@livehuddle/document';
 import { useOpenWalking } from './useOpenWalking';
 
 // docs/specs/008-canvas/avatar-mode.md "Opening walking": once per tab per visit, when the tab's content has arrived,
 // for every role (the hook takes no role: walking writes nothing), never in an embed.
 const walkIn = (): Element => ({ ...createShape('mode-button', 100, 100), id: 'walk-in' });
 const pad = (): Element => ({ ...createShape('avatar-pad', 0, 0), id: 'pad' });
-const square = (): Element => ({ ...createShape('square', 0, 0), id: 'sq' });
+const square = (): Element => ({ ...createSticky(0, 0), id: 'sq' });
 
 type Props = {
   enabled?: boolean;

@@ -8,7 +8,7 @@ import type { RetiredArrowElement, Element, ShapeElement, StickyElement, Tab } f
 const square = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 'sq',
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 160,
@@ -86,8 +86,10 @@ describe('renderElementsToSvg in a finish', () => {
     const flex = renderElementsToSvg(tab([square()]));
     const pro = renderElementsToSvg(tab([square()], 'professional'));
     expect(pro).not.toBe(flex);
-    // Square corners and the thin border.
-    expect(pro).toMatch(/rx="0"[^>]*stroke-width="1"/);
+    // Square corners (no rx at all) and the thin border.
+    expect(pro).toMatch(
+      /<rect x="0\.5" y="0\.5" width="159" height="99" fill="[^"]+" stroke="[^"]+" stroke-width="1"\/>/,
+    );
     expect(flex).toMatch(/rx="7"[^>]*stroke-width="2"/);
   });
 });

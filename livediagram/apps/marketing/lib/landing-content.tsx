@@ -78,7 +78,6 @@ import {
   TechIconsArt,
   TemplatesArt,
   ThemesArt,
-  TimelineFeedArt,
   UndoRedoArt,
   UnlimitedTabsArt,
   ZenModeArt,
@@ -182,14 +181,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Assign actions to teammates',
         description:
           'Turn any element into a piece of work: name the action, describe it, and hand it to a teammate from any of your teams, with an optional email nudge. An Actions panel tracks everything still open, with your own assignments on top.',
-      },
-      {
-        art: <TimelineFeedArt />,
-        href: '/help/explorer/timeline/',
-        group: 'Work together live',
-        title: 'See what happened while you were away',
-        description:
-          'The Explorer opens on Home: the canvases you return to most, and what your teammates commented, edited and assigned you while you were away. The Timeline holds the full feed, and the Inbox gathers the actions and threads still waiting on you, with a count in the sidebar so you can tell without looking.',
       },
       {
         art: <UndoRedoArt />,

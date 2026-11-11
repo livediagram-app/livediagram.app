@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   PEN_INK,
   createShape,
+  createSticky,
   penColourHex,
   type ShapeElement,
   type Tab,
@@ -25,7 +26,7 @@ describe('tabAsSeen', () => {
   });
 
   it('exports a named line colour in its version for the appearance, on any tab', () => {
-    const named = { ...createShape('square', 0, 0), penColour: 'red' as const };
+    const named = { ...createSticky(0, 0), penColour: 'red' as const };
     const tab = { id: 't', name: 'Tab', elements: [named] } as Tab;
     expect(strokeOf(tabAsSeen(tab, 'light'), 0)).toBe(penColourHex('red', 'light'));
     expect(strokeOf(tabAsSeen(tab, 'dark'), 0)).toBe(penColourHex('red', 'dark'));
@@ -42,8 +43,8 @@ describe('tabAsSeen', () => {
       label: 'Hello',
       penTextColour: 'green' as const,
     };
-    const named = { ...createShape('circle', 0, 40), penColour: 'violet' as const };
-    const inked = { ...createShape('square', 40, 0), penColour: 'ink' as const };
+    const named = { ...createShape('room', 0, 40), penColour: 'violet' as const };
+    const inked = { ...createSticky(40, 0), penColour: 'ink' as const };
     const tab = { id: 't', name: 'Tab', elements: [text, named, inked] } as Tab;
     for (const board of ['light', 'dark'] as const) {
       const seen = tabAsSeen(tab, board);
@@ -59,7 +60,7 @@ describe('tabAsSeen', () => {
   });
 
   it('leaves an element with no stock colour as it is', () => {
-    const square = createShape('square', 0, 0);
+    const square = createSticky(0, 0);
     const tab = { id: 't', name: 'Tab', elements: [square] } as Tab;
     expect(tabAsSeen(tab, 'dark').elements[0]).toBe(square);
   });

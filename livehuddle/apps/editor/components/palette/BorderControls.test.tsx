@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The Border category's Strength, Pattern and Radius grids: each tile draws only an icon, so each carries a name for
+// The Border category's Strength and Pattern grids: each tile draws only an icon, so each carries a name for
 // its tooltip and screen readers (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md).
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
@@ -9,19 +9,16 @@ import { BorderControls } from './BorderControls';
 
 afterEach(cleanup);
 
-const show = (radius: 'md' | null = 'md') => {
+const show = () => {
   const onCommitBorderStyle = vi.fn();
   render(
     <BorderControls
       strokeWidth="thin"
       strokeStyle="solid"
-      radius={radius}
       onCommitBorderStroke={vi.fn()}
       onPreviewBorderStroke={vi.fn()}
       onCommitBorderStyle={onCommitBorderStyle}
       onPreviewBorderStyle={vi.fn()}
-      onCommitBorderRadius={vi.fn()}
-      onPreviewBorderRadius={vi.fn()}
       onPreviewStyleEnd={vi.fn()}
     />,
   );
@@ -32,22 +29,20 @@ describe('BorderControls', () => {
   it('names every tile, each name once', () => {
     show();
     const names = screen.getAllByRole('button').map((b) => b.getAttribute('aria-label') ?? '');
-    expect(names).toHaveLength(5 + 6 + 5);
+    expect(names).toHaveLength(5 + 6);
     for (const name of names) expect(name).toMatch(/^[A-Z]/);
     expect(new Set(names).size).toBe(names.length);
   });
 
-  it('leaves the Radius grid out for a shape with no corners', () => {
-    show(null);
+  it('draws no Radius grid', () => {
+    show();
     expect(screen.queryByRole('button', { name: 'Fully Round' })).toBeNull();
   });
 
   it('spells out each value', () => {
     const { onCommitBorderStyle } = show();
     expect(screen.getByRole('button', { name: 'Extra Thick' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Medium Radius' }).getAttribute('aria-pressed')).toBe(
-      'true',
-    );
+    expect(screen.getByRole('button', { name: 'Thin' }).getAttribute('aria-pressed')).toBe('true');
     expect(screen.getByRole('button', { name: 'Medium' }).getAttribute('aria-pressed')).toBe(
       'false',
     );

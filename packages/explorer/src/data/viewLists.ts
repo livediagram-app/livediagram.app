@@ -62,7 +62,7 @@ export function makeListLens(
   };
 }
 
-/** The list behind a view, or null for a view with no item list (Home, Inbox, Timeline). With a lens, a scoped
+/** The list behind a view, or null for a view with no item list (Home, Inbox). With a lens, a scoped
  *  view lists its whole scope, subfolders included, as one flat list. */
 export function viewList(
   client: IndexClient,
@@ -96,7 +96,6 @@ export function viewList(
   switch (view.kind) {
     case 'home':
     case 'inbox':
-    case 'timeline':
     case 'invites':
     case 'gallery':
     case 'shape-libraries':

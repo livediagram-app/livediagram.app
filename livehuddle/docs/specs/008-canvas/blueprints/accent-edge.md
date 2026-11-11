@@ -1,18 +1,22 @@
 # Accent edge: blueprint
 
+> **Gone from livehuddle** (Work Tracker #459, part 5): every kind that took an accent edge (the Square, the Stadium,
+> the Card) is retired ([The element engine](../../002-project-scope/not-in-livehuddle.md#the-element-engine)), so nothing in livehuddle sets or draws one; a stored
+> `accentEdge` rides on its element as stored. This blueprint records the design as livediagram has it.
+
 Derived from [Accent edge](../accent-edge.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
-| File                                                      | Role                                                                |
-| --------------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/document/src/accent-edge.ts`                    | Vocabulary, `supportsAccentEdge`, geometry, colour, `svgAccentEdge` |
-| `packages/document/src/element-types.ts`                  | `accentEdge`, `accentEdgeColor` on `ShapeElement`                   |
-| `packages/document/src/element-fields.ts`                 | Both fields listed for `shape`                                      |
-| `packages/document/src/svg-render.ts`                     | Appends `svgAccentEdge` after the box, before the face and label    |
-| `apps/editor/components/canvas/AccentEdgeOverlay.tsx`     | The canvas bar, clipped by the wrapper's own radius                 |
-| `apps/editor/components/canvas/BoxedElementView.tsx`      | Mounts the overlay (one line)                                       |
-| `apps/editor/components/palette/AccentEdgeRow.tsx`        | The Border category's Accent Edge row + colour well                 |
-| `apps/editor/lib/format-painter.ts`, `format-config.ts`   | Copied with Border                                                  |
-| `apps/editor/lib/element-telemetry.ts` / telemetry schema | `Element·Changed·AccentEdge`                                        |
+| File                                                              | Role                                                                |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `livediagram/packages/document/src/accent-edge.ts`                | Vocabulary, `supportsAccentEdge`, geometry, colour, `svgAccentEdge` |
+| `packages/document/src/element-types.ts`                          | `accentEdge`, `accentEdgeColor` on `ShapeElement`                   |
+| `packages/document/src/element-fields.ts`                         | Both fields listed for `shape`                                      |
+| `packages/document/src/svg-render.ts`                             | Appends `svgAccentEdge` after the box, before the face and label    |
+| `livediagram/apps/editor/components/canvas/AccentEdgeOverlay.tsx` | The canvas bar, clipped by the wrapper's own radius                 |
+| `apps/editor/components/canvas/BoxedElementView.tsx`              | Mounts the overlay (one line)                                       |
+| `livediagram/apps/editor/components/palette/AccentEdgeRow.tsx`    | The Border category's Accent Edge row + colour well                 |
+| `apps/editor/lib/format-painter.ts`, `format-config.ts`           | Copied with Border                                                  |
+| `apps/editor/lib/element-telemetry.ts` / telemetry schema         | `Element·Changed·AccentEdge`                                        |
 
 ## Domain and naming
 
@@ -105,14 +109,14 @@ path of its own).
 
 ## Testing
 
-| Rule                                     | Test file                                                  |
-| ---------------------------------------- | ---------------------------------------------------------- |
-| Supported kinds, resolution, E1, E2      | `packages/document/src/accent-edge.test.ts`                |
-| Thickness clamp and rects per edge       | same                                                       |
-| Export draws a clipped bar in the colour | same (`svgAccentEdge`), `svg-render.test.ts`               |
-| Canvas overlay draws per edge / nothing  | `apps/editor/components/canvas/AccentEdgeOverlay.test.tsx` |
-| Row writes, hides on unsupported         | `apps/editor/components/palette/AccentEdgeRow.test.tsx`    |
-| Format painter maps both to Border       | `apps/editor/lib/format-config.test.ts` (exhaustive table) |
+| Rule                                     | Test file                                                              |
+| ---------------------------------------- | ---------------------------------------------------------------------- |
+| Supported kinds, resolution, E1, E2      | `livediagram/packages/document/src/accent-edge.test.ts`                |
+| Thickness clamp and rects per edge       | same                                                                   |
+| Export draws a clipped bar in the colour | same (`svgAccentEdge`), `svg-render.test.ts`                           |
+| Canvas overlay draws per edge / nothing  | `livediagram/apps/editor/components/canvas/AccentEdgeOverlay.test.tsx` |
+| Row writes, hides on unsupported         | `livediagram/apps/editor/components/palette/AccentEdgeRow.test.tsx`    |
+| Format painter maps both to Border       | `apps/editor/lib/format-config.test.ts` (exhaustive table)             |
 
 ## Constants and configuration
 

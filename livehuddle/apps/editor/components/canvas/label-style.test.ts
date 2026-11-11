@@ -39,7 +39,7 @@ describe('effectiveRunStyle', () => {
   const el = (over: Record<string, unknown> = {}): BoxedElement => ({
     id: 'e',
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     x: 0,
     y: 0,
     width: 10,

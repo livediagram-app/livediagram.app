@@ -34,7 +34,7 @@ export const requestGrant = indexService.requestGrant;
 export const indexFor: (env: Env, caller: GrantCaller) => IndexClient | null =
   indexService.clientFor;
 
-// What a design pushes (design-outbox.ts): its summary, each tab's comments and actions, its Timeline events.
+// What a design pushes (design-outbox.ts): its summary, each tab's comments and actions, its events (History, webhooks, Most Used).
 export const indexAppClient = (
   env: Pick<Env, 'INDEX_ORIGIN' | 'INDEX_KEY'>,
 ): IndexAppClient | null => indexService.appClient(env);

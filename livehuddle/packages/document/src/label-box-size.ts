@@ -3,14 +3,14 @@
 // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3).
 
 import { SHAPE_DEFAULT_SIZE } from './factories';
-import { coerceShapeKind } from './validate';
+import type { ShapeKind } from './shape-kind';
 
 // A box that fits its label (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Boxes fit their labels"): the
 // shape's default size at least, widened to the label's estimated one-line
 // width up to a cap, then taller by a line for each wrap past it. An estimate
 // (no DOM here), tuned to the default label face at its default size; the
 // layout's peer sizing then gives a whole tier the size its longest label
-// needs. A diamond's text only fits its inner half, so it gets more room.
+// needs.
 const CHAR_PX = 7.4;
 // Capitals set about 30% wider than the average glyph CHAR_PX assumes, so an
 // all-caps name ("TEAM_MEMBER", an ER table) was sized short and wrapped
@@ -30,20 +30,6 @@ const MAX_BOX_W = 240;
 // `fontPx` measures at a box's own label size in place of the look's (a box an edit adds at its own text size).
 export type GraphLook = { textSize: 'sm' | 'md'; fontPx?: number };
 
-// The smallest box per kind in the template look: wide and short like the template's steps. A kind not listed keeps
-// its palette size (an actor is a figure with its name under it, a device a device).
-const LOOK_FLOOR: Readonly<Partial<Record<string, { width: number; height: number }>>> = {
-  square: { width: 180, height: 64 },
-  stadium: { width: 180, height: 60 },
-  diamond: { width: 180, height: 104 },
-  parallelogram: { width: 200, height: 64 },
-  hexagon: { width: 180, height: 72 },
-  document: { width: 180, height: 80 },
-  cylinder: { width: 140, height: 96 },
-  cloud: { width: 180, height: 100 },
-  trapezoid: { width: 180, height: 72 },
-  circle: { width: 96, height: 96 },
-};
 // The widest a box grows before its label wraps, per text size: about eighteen characters a line.
 const LOOK_MAX_W: Readonly<Record<GraphLook['textSize'], number>> = { sm: 240, md: 300 };
 // Average glyph width and line height as fractions of the font size (Inter at its label weight); CHAR_PX below is
@@ -54,38 +40,34 @@ const LOOK_FONT_PX: Readonly<Record<GraphLook['textSize'], number>> = { sm: 14, 
 
 export function labelBoxSize(
   label: string | undefined,
-  shape: string,
+  shape: ShapeKind,
   look?: GraphLook,
   hasIcon = false,
   // In the look, the smallest box in place of the kind's: a box joining siblings starts at their size.
   floor?: { width: number; height: number },
 ): { width: number; height: number } {
-  if (look) return lookBoxSize(label, coerceShapeKind(shape), look, hasIcon, floor);
-  const base = SHAPE_DEFAULT_SIZE[coerceShapeKind(shape)];
+  if (look) return lookBoxSize(label, shape, look, hasIcon, floor);
+  const base = SHAPE_DEFAULT_SIZE[shape];
   const text = (label ?? '').trim();
   if (!text) return { width: base.width, height: base.height };
-  const roomy = shape === 'diamond' ? 1.45 : 1;
   // Line by line, as the look measures: the widest line sets the width, and each wraps on its own.
-  const lineW = text.split('\n').map((l) => glyphUnits(l) * CHAR_PX * roomy);
-  const width = Math.round(
-    Math.min(MAX_BOX_W * roomy, Math.max(base.width, Math.max(...lineW) + PAD_PX)),
-  );
+  const lineW = text.split('\n').map((l) => glyphUnits(l) * CHAR_PX);
+  const width = Math.round(Math.min(MAX_BOX_W, Math.max(base.width, Math.max(...lineW) + PAD_PX)));
   const lines = lineW.reduce((n, w) => n + Math.max(1, Math.ceil(w / (width - PAD_PX))), 0);
-  const height = Math.round(Math.max(base.height, lines * LINE_PX + 28) * (lines > 1 ? roomy : 1));
+  const height = Math.round(Math.max(base.height, lines * LINE_PX + 28));
   return { width, height };
 }
 
-// A box in the template look: the kind's floor, wider for a longer label up to the cap, then taller by a line for
-// each wrap. A circle stays round and a diamond's text gets the room its inner half leaves.
+// A box in the template look: the kind's floor (its palette size, or the siblings' it joins), wider for a longer
+// label up to the cap, then taller by a line for each wrap.
 function lookBoxSize(
   label: string | undefined,
-  kind: string,
+  kind: ShapeKind,
   look: GraphLook,
   hasIcon: boolean,
   given?: { width: number; height: number },
 ): { width: number; height: number } {
-  const base = SHAPE_DEFAULT_SIZE[kind as keyof typeof SHAPE_DEFAULT_SIZE];
-  const floor = given ?? LOOK_FLOOR[kind] ?? base;
+  const floor = given ?? SHAPE_DEFAULT_SIZE[kind];
   const text = (label ?? '').trim();
   if (!text) return { ...floor };
   const px = look.fontPx ?? LOOK_FONT_PX[look.textSize];
@@ -94,13 +76,11 @@ function lookBoxSize(
   // An inline icon beside the label takes its glyph and gap (inlineIconMetrics: about 1.6 × the font, a third
   // of that again between).
   const iconRoom = hasIcon ? Math.round(px * 1.6 * 1.32) : 0;
-  const roomy =
-    kind === 'diamond' ? 1.5 : kind === 'parallelogram' || kind === 'hexagon' ? 1.15 : 1;
   // A label written over several lines is measured line by line: its widest line sets the width, and each wraps on its own.
-  const lineW = text.split('\n').map((l) => glyphUnits(l) * px * GLYPH_EM * roomy);
+  const lineW = text.split('\n').map((l) => glyphUnits(l) * px * GLYPH_EM);
   const textW = Math.max(...lineW) + iconRoom;
   const pad = 48;
-  const width = Math.round(Math.min(maxW * roomy, Math.max(floor.width, textW + pad)));
+  const width = Math.round(Math.min(maxW, Math.max(floor.width, textW + pad)));
   const lines = lineW.reduce(
     (n, w, i) => n + Math.max(1, Math.ceil((w + (i === 0 ? iconRoom : 0)) / (width - pad))),
     0,
@@ -108,12 +88,6 @@ function lookBoxSize(
   const textH = lines * px * LINE_EM + 28;
   // A box joining siblings keeps their height while it holds the one line with room above and below.
   const siblingHolds = !!given && lines === 1 && given.height >= px * LINE_EM + 16;
-  const height = siblingHolds
-    ? given.height
-    : Math.round(Math.max(floor.height, kind === 'diamond' ? textH * 1.6 : textH));
-  if (kind === 'circle') {
-    const side = Math.max(width, height);
-    return { width: side, height: side };
-  }
+  const height = siblingHolds ? given.height : Math.round(Math.max(floor.height, textH));
   return { width, height };
 }

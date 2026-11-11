@@ -64,7 +64,7 @@ never arrives.
   team's library. Personal is the default; a team is opt-in.
 - **Persistence and history**: every change is saved; undo and redo step
   back and forth through your own recent edits, and the
-  [Timeline](../013-workspace/timeline.md) records what happened to each design.
+  [History](../013-workspace/history.md) records what happened to each design.
 - **Machine access**: a public REST API with signed-in tokens
   ([Public API and API tokens](../015-api/public-api-and-tokens.md)), an MCP server so AI tools can
   read and write designs ([MCP server](../015-api/mcp-server.md)) and a CLI ([CLI](../015-api/cli.md)).

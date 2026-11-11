@@ -157,7 +157,6 @@ livediagram/apps/editor/app/new/new-document-settings.ts	livedocuments/apps/edit
 livediagram/apps/editor/app/not-found.tsx	livedocuments/apps/editor/app/not-found.tsx	livehuddle/apps/editor/app/not-found.tsx
 livediagram/apps/editor/app/page.tsx	livehuddle/apps/editor/app/page.tsx
 livediagram/apps/editor/app/sign-in/page.tsx	livedocuments/apps/editor/app/sign-in/page.tsx	livehuddle/apps/editor/app/sign-in/page.tsx
-livediagram/apps/editor/components/canvas/CanvasStillContext.tsx	livehuddle/apps/editor/components/canvas/CanvasStillContext.tsx
 livediagram/apps/editor/components/canvas/collab/comment/MentionContext.tsx	livehuddle/apps/editor/components/canvas/collab/comment/MentionContext.tsx
 livediagram/apps/editor/components/canvas/paper-kit.tsx	livehuddle/apps/editor/components/canvas/paper-kit.tsx
 livediagram/apps/editor/components/canvas/slide-transition.ts	livedocuments/apps/editor/components/canvas/slide-transition.ts
@@ -211,7 +210,6 @@ livediagram/apps/editor/lib/import-images/session.ts	livedocuments/apps/editor/l
 livediagram/apps/editor/lib/legacy-editor-path.ts	livehuddle/apps/editor/lib/legacy-editor-path.ts
 livediagram/apps/editor/lib/picker.ts	liveplanner/apps/editor/lib/picker.ts
 livediagram/apps/editor/lib/stub-resize-observer.ts	livehuddle/apps/editor/lib/stub-resize-observer.ts
-livediagram/apps/editor/lib/themes-taxonomy.ts	livehuddle/apps/editor/lib/themes-taxonomy.ts
 livediagram/apps/editor/lib/tour-tracks.ts	livehuddle/apps/editor/lib/tour-tracks.ts
 livediagram/apps/editor/lib/workbench-bindings.ts	livedocuments/apps/editor/lib/workbench-bindings.ts	livehuddle/apps/editor/lib/workbench-bindings.ts
 livediagram/apps/editor/scripts/build-signed-in.mjs	livehuddle/apps/editor/scripts/build-signed-in.mjs
@@ -236,9 +234,9 @@ livediagram/packages/agent-verbs/src/mcp/archive-tools.ts	livedocuments/packages
 livediagram/packages/agent-verbs/src/verbs/archive.ts	livedocuments/packages/agent-verbs/src/verbs/archive.ts
 livediagram/packages/agent-verbs/src/verbs/folder.ts	livedocuments/packages/agent-verbs/src/verbs/folder.ts
 livediagram/packages/agent-verbs/src/verbs/shared.ts	livedocuments/packages/agent-verbs/src/verbs/shared.ts
+livediagram/packages/api-schema/src/document-conversion.ts	livedocuments/packages/api-schema/src/document-conversion.ts	livehuddle/packages/api-schema/src/document-conversion.ts
 livediagram/packages/api-schema/src/document-paths.ts	livehuddle/packages/api-schema/src/document-paths.ts
 livediagram/packages/api-schema/src/responses.ts	livedocuments/packages/api-schema/src/responses.ts
-livediagram/packages/api-schema/src/timeline.ts	livedocuments/packages/api-schema/src/document-conversion.ts	livehuddle/packages/api-schema/src/timeline.ts
 livediagram/packages/api-schema/src/trash.ts	livehuddle/packages/api-schema/src/trash.ts
 livediagram/packages/document-views/src/__fixtures__/golden-path.ts	livedocuments/packages/document-views/src/__fixtures__/golden-path.ts	livehuddle/packages/document-views/src/__fixtures__/golden-path.ts
 livediagram/packages/document-views/src/freehand-runs.ts	livedocuments/packages/document-views/src/freehand-runs.ts	livehuddle/packages/document-views/src/freehand-runs.ts

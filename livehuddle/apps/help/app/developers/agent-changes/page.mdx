@@ -84,7 +84,7 @@ Each changeset in the list looks like this:
 }
 ```
 
-It also carries `lint`, the [lint report](/help/developers/working-with-documents/) of the tab the revert leaves. `changeset` is `null` when there was nothing to revert.
+It also carries `lint`, which is always `null`: livehuddle no longer lints a tab, and the member stays so a script that reads it keeps working. `changeset` is `null` when there was nothing to revert.
 
 Reading the history needs read access to the space; reverting needs edit access to the tab. A revert made with a token is refused with `409 elements_held` when somebody has one of its elements selected, as any agent change is; one made from the editor's **Undo** never is. See [Errors and Rate Limits](/help/developers/errors-and-rate-limits/) for the other answers.
 

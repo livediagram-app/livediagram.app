@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   LABEL_BACKDROP_CONTRAST,
   contrastRatio,
-  createShape,
+  createSticky,
   penColourHex,
   type Element,
 } from '@livehuddle/document';
@@ -10,7 +10,7 @@ import { createStockColourProjector } from './stock-colour-projector';
 
 const stroke = (over: Partial<Element> = {}): Element =>
   ({
-    ...createShape('square', 0, 0),
+    ...createSticky(0, 0),
     ...over,
   }) as Element;
 

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createShape } from '@livehuddle/document';
+import { createSticky } from '@livehuddle/document';
 import { storedArrow, storedPinnedArrow } from '@/test/retired-elements';
 import { resetDragPreviewForTests, subscribeDragPreview } from '@/lib/drag-preview';
 import { renderHook } from '@testing-library/react';
@@ -15,7 +15,7 @@ import {
 
 // docs/specs/008-canvas/drag-preview.md "Live movement for collaborators".
 
-const a = createShape('square', 0, 0);
+const a = createSticky(0, 0);
 const doc = [a];
 const role = (r: string | undefined) => () => r;
 const drawn = () => renderHook(() => useDragPreview('t', doc)).result.current;
@@ -89,7 +89,7 @@ describe("a collaborator's drag preview", () => {
 });
 
 describe("a collaborator's very large move (a ride)", () => {
-  const b = createShape('square', 300, 0);
+  const b = createSticky(300, 0);
   const free = storedArrow('free', { x: 10, y: 10 }, { x: 60, y: 60 });
   const pinned = storedPinnedArrow('pinned', a.id, 'e', b.id, 'w');
   const board = [a, b, free, pinned];

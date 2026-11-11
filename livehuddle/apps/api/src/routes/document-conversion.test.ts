@@ -6,7 +6,7 @@ import { handleDocumentIndexRoutes } from './document-index-routes';
 
 // Offline Mode's Take Offline (docs/specs/006-document/offline-mode.md) declares itself with
 // DOCUMENT_CONVERSION_HEADER: the canvas leaves the account for good, bypassing the Trash, and the index records it
-// as taken offline (its Timeline). A value the api does not recognise is never trusted: a plain delete.
+// as taken offline. A value the api does not recognise is never trusted: a plain delete.
 
 const ENV = { INDEX_ORIGIN: 'https://index.test', INDEX_KEY: 'k' } as unknown as Env;
 

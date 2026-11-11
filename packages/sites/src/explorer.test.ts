@@ -76,13 +76,13 @@ describe("the site switcher's links on an Explorer page", () => {
   });
 
   it("opens each site's Explorer at the same view, keeping the query", () => {
-    expect(links('/explorer/timeline')).toEqual({
-      liveworkspace: 'https://www.liveworkspace.app/explorer/timeline',
-      livediagram: 'https://www.livediagram.app/explorer/timeline',
-      liveplanner: 'https://www.liveplanner.app/explorer/timeline',
-      livedocuments: 'https://www.livedocuments.app/explorer/timeline',
-      livedesign: 'https://www.livedesign.app/explorer/timeline',
-      livehuddle: 'https://www.livehuddle.app/explorer/timeline',
+    expect(links('/explorer/inbox')).toEqual({
+      liveworkspace: 'https://www.liveworkspace.app/explorer/inbox',
+      livediagram: 'https://www.livediagram.app/explorer/inbox',
+      liveplanner: 'https://www.liveplanner.app/explorer/inbox',
+      livedocuments: 'https://www.livedocuments.app/explorer/inbox',
+      livedesign: 'https://www.livedesign.app/explorer/inbox',
+      livehuddle: 'https://www.livehuddle.app/explorer/inbox',
     });
     expect(explorerSwitchHref('/explorer/')!(site('liveplanner.app'))).toBe(
       'https://www.liveplanner.app/explorer',

@@ -46,7 +46,7 @@ const sticky = (id: string, extra: Record<string, unknown> = {}) => ({
 const shape = (id: string, extra: Record<string, unknown> = {}) => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'signpost',
   ...box,
   label: 'Column',
   ...extra,

@@ -17,7 +17,7 @@ describe('showView (R17, VW34)', () => {
     await expect(text).toMatchFileSnapshot(golden('checkout.show-146b.txt'));
     expect(json).toMatchObject({
       ref: '146b',
-      kind: 'square',
+      kind: 'signpost',
       // Nothing holds an element since part 3 of the element engine (not-in-livehuddle.md).
       container: null,
       fields: { label: 'Orders service', iconId: 'server', x: 720 },
@@ -47,7 +47,7 @@ describe('showView (R17, VW34)', () => {
       cells: [['x|y', 3], 'row'],
       rotation: 30,
     });
-    const e = shapeAt('square', 'e', 0, 0, 100, 50, { label: 'Box' });
+    const e = shapeAt('signpost', 'e', 0, 0, 100, 50, { label: 'Box' });
     const odd = { id: 'odd', type: 'hologram', note: 'n' };
     const arrow = {
       ...arrowBetween('arr', 'a', 'e', { label: 'go' }),
@@ -111,7 +111,7 @@ describe('person ids (security)', () => {
     mentions: [{ userId: secret, memberId: secret, name: 'Pri', handle: 'pri' }],
   };
   const el = {
-    ...shapeAt('square', 'q', 0, 0),
+    ...shapeAt('signpost', 'q', 0, 0),
     shape: 'qa-board',
     action,
     actions: [action],
@@ -142,7 +142,7 @@ describe('person ids (security)', () => {
 describe('show on malformed and mirrored fields', () => {
   it('passes malformed person-id holders through, drops mirrors, and prints resolved threads', () => {
     const el = {
-      ...shapeAt('square', 's', 0, 0),
+      ...shapeAt('signpost', 's', 0, 0),
       action: 'junk',
       actions: 'junk',
       responses: [[], 'x'],

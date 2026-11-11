@@ -34,10 +34,10 @@ describe("the Explorer's telemetry on liveworkspace.app", () => {
     t.setExplorerConsent(true);
     t.setExplorerSender('liveplanner', 'app');
     t.trackViewToggled('ExplorerViewCard');
-    t.trackTimeline('Changed', 'Calendar');
+    t.trackHome('Loaded', 'Retry');
     t.trackLens('OpensIn');
     t.setExplorerSender('liveplanner', 'all');
-    t.trackHome('Selected', 'WhatHappened');
+    t.trackWelcomeOpened();
     expect(fetchMock).not.toHaveBeenCalled();
     vi.advanceTimersByTime(TELEMETRY_FLUSH_DELAY_MS);
     expect(batches()).toEqual([
@@ -46,14 +46,14 @@ describe("the Explorer's telemetry on liveworkspace.app", () => {
         app: 'liveplanner.app',
         events: [
           { category: 'UI', action: 'Toggled', type: 'ExplorerViewCard' },
-          { category: 'Timeline', action: 'Changed', type: 'Calendar' },
+          { category: 'Home', action: 'Loaded', type: 'Retry' },
           { category: 'Explorer', action: 'Selected', type: 'OpensIn' },
         ],
       },
       {
         url: '/api/telemetry/events',
         app: 'liveworkspace.app',
-        events: [{ category: 'Home', action: 'Selected', type: 'WhatHappened' }],
+        events: [{ category: 'Home', action: 'Opened', type: 'Welcome' }],
       },
     ]);
   });
@@ -90,7 +90,9 @@ describe("the Explorer's telemetry on liveworkspace.app", () => {
 
   it('sends nothing but the Explorer’s own tokens', () => {
     t.setExplorerConsent(true);
-    t.trackTimeline('Selected', 'Someone typed this');
+    t.trackHome('Loaded', 'Someone typed this');
+    // The retired Timeline's events are no longer the Explorer's to send.
+    t.trackWelcome('SeeTimeline' as never);
     t.trackLens('NotAFacet' as never);
     vi.advanceTimersByTime(TELEMETRY_FLUSH_DELAY_MS);
     expect(fetchMock).not.toHaveBeenCalled();
@@ -118,7 +120,7 @@ describe("the Explorer's telemetry on liveworkspace.app", () => {
   it('follows the browser for a guest: Global Privacy Control sends nothing', () => {
     vi.stubGlobal('navigator', { ...navigator, globalPrivacyControl: true });
     t.setExplorerConsent(null);
-    t.trackHome('Opened', 'Group');
+    t.trackHome('Loaded', 'Retry');
     vi.advanceTimersByTime(TELEMETRY_FLUSH_DELAY_MS);
     expect(fetchMock).not.toHaveBeenCalled();
   });

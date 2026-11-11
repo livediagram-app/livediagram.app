@@ -9,6 +9,12 @@ const dropRetiredEvents = (summary: TelemetrySummary) => dropRetired(summary, is
 // reach a chart.
 
 describe('isRetiredEvent', () => {
+  it("retires Home's Landing and Nav arrivals, whose charts went, not the first-run Home", () => {
+    expect(isRetiredEvent('Home', 'Opened', 'Landing')).toBe(true);
+    expect(isRetiredEvent('Home', 'Opened', 'Nav')).toBe(true);
+    expect(isRetiredEvent('Home', 'Opened', 'Welcome')).toBe(false);
+  });
+
   it('retires the Activity panel events', () => {
     expect(isRetiredEvent('Document', 'Reverted', null)).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'Activity')).toBe(true);

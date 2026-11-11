@@ -29,7 +29,6 @@ export function sectionOfView(
       return { section: { kind: 'library' }, folderId: null, libraryTab: v.kind };
     case 'home':
     case 'inbox':
-    case 'timeline':
     case 'shared':
     case 'favourites':
     case 'offline':

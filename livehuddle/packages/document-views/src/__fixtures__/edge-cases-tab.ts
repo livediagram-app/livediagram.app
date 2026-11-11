@@ -9,12 +9,12 @@ const cell = (i: number): [number, number] => [(i % 8) * 250, 600 + Math.floor(i
 
 export function edgeCasesTab(): Tab {
   const grid: Element[] = [
-    shapeAt('square', 'bare', ...cell(0)),
-    shapeAt('square', 'quoted', ...cell(1), 100, 50, {
+    shapeAt('signpost', 'bare', ...cell(0)),
+    shapeAt('signpost', 'quoted', ...cell(1), 100, 50, {
       label: 'Line one\nsays "hi" → there | here',
     }),
-    { ...shapeAt('square', 'tilted', ...cell(2)), rotation: 30 },
-    shapeAt('square', 'secret', ...cell(3)),
+    { ...shapeAt('signpost', 'tilted', ...cell(2)), rotation: 30 },
+    shapeAt('signpost', 'secret', ...cell(3)),
     {
       id: 'holo',
       type: 'hologram',
@@ -24,11 +24,11 @@ export function edgeCasesTab(): Tab {
       height: 80,
       label: 'Unknown type',
     } as unknown as Element,
-    { ...shapeAt('square', 'blob', ...cell(5)), shape: 'blob' } as unknown as Element,
-    shapeAt('square', 'My node', ...cell(6), 100, 50, { label: 'Unsafe id' }),
-    shapeAt('square', 'Q1', ...cell(7), 100, 50, { label: 'Short id' }),
-    shapeAt('square', 'abcd', ...cell(8), 100, 50, { label: 'Slug prefix' }),
-    shapeAt('square', 'abcd9999-X', ...cell(9), 100, 50, { label: 'Longer id' }),
+    { ...shapeAt('signpost', 'blob', ...cell(5)), shape: 'blob' } as unknown as Element,
+    shapeAt('signpost', 'My node', ...cell(6), 100, 50, { label: 'Unsafe id' }),
+    shapeAt('signpost', 'Q1', ...cell(7), 100, 50, { label: 'Short id' }),
+    shapeAt('signpost', 'abcd', ...cell(8), 100, 50, { label: 'Slug prefix' }),
+    shapeAt('signpost', 'abcd9999-X', ...cell(9), 100, 50, { label: 'Longer id' }),
     storedTableAt(...cell(10), {
       id: 'ragged',
       cells: [
@@ -42,7 +42,7 @@ export function edgeCasesTab(): Tab {
       label: 'Customer',
     },
     strokeAt('lone', ...cell(12)),
-    shapeAt('square', 'splitter', ...cell(13)),
+    shapeAt('signpost', 'splitter', ...cell(13)),
     strokeAt('run-1', ...cell(14)),
     strokeAt('run-2', ...cell(15)),
     strokeAt('run-3', cell(15)[0] + 30, cell(15)[1], true),
@@ -55,9 +55,9 @@ export function edgeCasesTab(): Tab {
       // part 3): retired kinds that hold nothing, so what sits on them prints beside them.
       retiredShapeAt('boundary', 'frame-a', 0, 0, 600, 400, { label: 'A' }),
       retiredShapeAt('boundary', 'frame-b', 300, 0, 600, 400, { label: 'B' }),
-      shapeAt('square', 'both', 400, 175, 100, 50, { label: 'In both' }),
+      shapeAt('signpost', 'both', 400, 175, 100, 50, { label: 'In both' }),
       // Larger than the stored boundary its centre is on.
-      shapeAt('square', 'huge', -10, -10, 620, 420, { label: 'Huge' }),
+      shapeAt('signpost', 'huge', -10, -10, 620, 420, { label: 'Huge' }),
       ...grid,
       { id: 'nowhere', type: 'hologram', label: 'No geometry' } as unknown as Element,
       // Parallel arrows, a self-loop, an arrow to a plain element, free and on-arrow ends (E7 to E10).

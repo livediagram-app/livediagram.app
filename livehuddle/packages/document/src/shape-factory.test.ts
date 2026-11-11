@@ -41,7 +41,7 @@ describe('createShape, across the whole vocabulary', () => {
   });
 
   it('lands where it was told to', () => {
-    const el = createShape('square', 137, -42);
+    const el = createShape('focus-button', 137, -42);
     expect([el.x, el.y]).toEqual([137, -42]);
   });
 

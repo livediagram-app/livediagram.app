@@ -20,9 +20,9 @@ const one = (text: string) => operationsOf(text)[0];
 
 describe('parseEditOperations: the line form (the vocabulary)', () => {
   it('reads add with a kind, an id, fields and a placement', () => {
-    expect(one('add square id=verify label="Verify email" text=sm below:n3 gap:40')).toEqual({
+    expect(one('add sticky id=verify label="Verify email" text=sm below:n3 gap:40')).toEqual({
       op: 'add',
-      kind: 'square',
+      kind: 'sticky',
       id: 'verify',
       fields: { label: 'Verify email', text: 'sm' },
       place: { rel: 'below', ref: 'n3', gap: 40 },
@@ -38,7 +38,7 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
       kind: 'sticky',
       place: { rel: 'right-of', ref: '"Orders service"' },
     });
-    expect(one('add square RIGHT-OF:n3')).toMatchObject({ place: { rel: 'right-of', ref: 'n3' } });
+    expect(one('add sticky RIGHT-OF:n3')).toMatchObject({ place: { rel: 'right-of', ref: 'n3' } });
   });
 
   it('reads set with selector terms, JSON values, unsets and all', () => {
@@ -79,7 +79,7 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
       'connect n3 -> n4',
       'connect a->b->c',
       'rewire a3 to=n4',
-      'insert square between n3 n4',
+      'insert sticky between n3 n4',
     ]) {
       const [error] = errorsOf(line);
       expect(error, line).toMatchObject({ code: 'unknown_operation', line: 1 });
@@ -104,9 +104,9 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
   it('reads order, layout and test', () => {
     expect(one('order n3 front')).toEqual({ op: 'order', target: 'n3', to: 'front' });
     expect(one('order n3 above=n4')).toEqual({ op: 'order', target: 'n3', above: 'n4' });
-    expect(one('layout type:square')).toEqual({ op: 'layout', target: 'type:square' });
+    expect(one('layout type:sticky')).toEqual({ op: 'layout', target: 'type:sticky' });
     // The layered layout went with the arrows (part 4): `layout` takes no style or direction.
-    expect(errorsOf('layout type:square style=tree')[0]!.details[0]).toBe(
+    expect(errorsOf('layout type:sticky style=tree')[0]!.details[0]).toBe(
       'line 1, column 20: expected no key=value on layout',
     );
     expect(one('test n3 label=Login')).toEqual({
@@ -125,7 +125,7 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
     expect(errorsOf('move n4 inside:f2')[0]!.details[0]).toMatch(
       /takes exactly one of "place", "by"/,
     );
-    expect(errorsOf('add square inside:f2')[0]!.details[0]).toMatch(
+    expect(errorsOf('add sticky inside:f2')[0]!.details[0]).toMatch(
       /expected a placement: .* or align:<ref>$/,
     );
   });
@@ -189,25 +189,33 @@ describe('parseEditOperations: refusals', () => {
 
   // A word that reads as a placement but is not one (right: for right-of:) is told which placements there are.
   it('names the placements for a word that is not one', () => {
-    const [error] = errorsOf('add square label=x right:n3');
+    const [error] = errorsOf('add sticky label=x right:n3');
     expect(error!.details[0]).toBe(
-      'line 1, column 20: expected a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or align:<ref>',
+      'line 1, column 20: expected a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref> or align:<ref>',
     );
     expect(error!.hint).toBe(
-      'write a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or align:<ref>',
+      'write a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref> or align:<ref>',
     );
+  });
+
+  // `after:` named arrows' flow and left with the diagram vocabulary (not-in-livehuddle.md "The element engine",
+  // part 5, D33): it reads as a word that is no placement.
+  it('reads after: as no placement', () => {
+    const [error] = errorsOf('add sticky label=x after:n3');
+    expect(error!.details[0]).toMatch(/^line 1, column 20: expected a placement: right-of:<ref>/);
+    expect(errorsOf('move n3 after:n4')[0]!.code).toBe('parse_error');
   });
 
   it('refuses what each operation cannot read', () => {
     expect(
       [
         'add',
-        'add "square"',
-        'add square n3',
-        'add square below:n3 above:n4',
-        'add square at:1',
-        'add square gap:10',
-        'add square at:1,2 gap:10',
+        'add "sticky"',
+        'add sticky n3',
+        'add sticky below:n3 above:n4',
+        'add sticky at:1',
+        'add sticky gap:10',
+        'add sticky at:1,2 gap:10',
         'set',
         'set n3',
         'rm n3 label=x',
@@ -216,13 +224,13 @@ describe('parseEditOperations: refusals', () => {
         'set n3 tags=[1,',
       ].map(detail),
     ).toEqual([
-      'line 1, column 4: expected a kind: square, text, sticky, …',
-      'line 1, column 5: expected a kind: square, text, sticky, …',
+      'line 1, column 4: expected a kind: sticky, text, room, …',
+      'line 1, column 5: expected a kind: sticky, text, room, …',
       'line 1, column 12: expected key=value or a placement',
       'line 1, column 21: expected one placement (or align: with a side)',
       'line 1, column 12: expected at:x,y with two numbers',
-      'line 1, column 12: expected gap: with a side, after or align placement',
-      'line 1, column 19: expected gap: with a side, after or align placement',
+      'line 1, column 12: expected gap: with a side or align placement',
+      'line 1, column 19: expected gap: with a side or align placement',
       'line 1, column 4: expected a selector: a ref, a "label" or key:value terms',
       'line 1, column 7: expected key=value',
       'line 1, column 7: expected no key=value on rm',
@@ -233,11 +241,11 @@ describe('parseEditOperations: refusals', () => {
   });
 
   it('places a missing gap placement at the gap word', () => {
-    expect(errorsOf('add square label=x GAP:10')[0]).toMatchObject({ column: 20 });
+    expect(errorsOf('add sticky label=x GAP:10')[0]).toMatchObject({ column: 20 });
   });
 
   it('checks a line form operation as the JSON form is checked', () => {
-    expect(errorsOf('add square below:n3 gap:99999')[0]).toMatchObject({
+    expect(errorsOf('add sticky below:n3 gap:99999')[0]).toMatchObject({
       code: 'parse_error',
       line: 1,
       details: ['member "place": expected "gap" a whole number from 0 to 2000'],
@@ -267,7 +275,7 @@ describe('parseEditOperations: refusals', () => {
 
 describe('formatOperation round trip', () => {
   const lines = [
-    'add square id=verify label="Verify email" text=sm below:n3 gap:40',
+    'add sticky id=verify label="Verify email" text=sm below:n3 gap:40',
     'add text label=Note at:0,-20',
     'set type:sticky fill=green width=200 textBold=true note= tags=["a","b"] all',
     'set "Orders service" label="200" title="a: b" text="#tag" value="" data={"x":"a b"}',
@@ -290,7 +298,7 @@ describe('formatOperation round trip', () => {
 
   it('prints the canonical line form', () => {
     expect(operationsOf(lines.join('\n')).map(formatOperation)).toEqual([
-      'add square id=verify label="Verify email" text=sm below:n3 gap:40',
+      'add sticky id=verify label="Verify email" text=sm below:n3 gap:40',
       'add text label=Note at:0,-20',
       'set type:sticky fill=green width=200 textBold=true note= tags=["a","b"] all',
       'set "Orders service" label="200" title="a: b" text="#tag" value="" data={"x":"a b"}',
@@ -307,14 +315,14 @@ describe('formatOperation round trip', () => {
   });
 
   it('refuses gap: with no number rather than reading 0', () => {
-    for (const line of ['add square below:n3 gap:', 'add square below:n3 gap:wide']) {
+    for (const line of ['add sticky below:n3 gap:', 'add sticky below:n3 gap:wide']) {
       const [error] = errorsOf(line);
       expect(error!.details.join(' ')).toContain('a number after gap:');
     }
   });
 
   it('prints an add with no fields and no placement', () => {
-    expect(formatOperation({ op: 'add', kind: 'square' })).toBe('add square');
+    expect(formatOperation({ op: 'add', kind: 'sticky' })).toBe('add sticky');
   });
 
   it('quotes selectors from the JSON form that hold spaces', () => {

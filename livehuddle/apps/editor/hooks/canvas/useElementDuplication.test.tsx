@@ -12,7 +12,7 @@ import { useElementDuplication } from './useElementDuplication';
 const shape = (id: string, extra: Partial<ShapeElement> = {}): Element => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 50,

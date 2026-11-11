@@ -15,7 +15,7 @@ import {
 } from './plan-outbox';
 import {
   IndexError,
-  type AppTimelineEvent,
+  type AppEvent,
   type CollabPush,
   type IndexAppClient,
   type ItemSummary,
@@ -71,9 +71,9 @@ const keys = (db: SqliteD1) =>
 function fakeIndex(fail: (kind: string) => Error | null = () => null) {
   const collab: { tab: string; push: CollabPush }[] = [];
   const summaries: { summary: ItemSummary; savedAt: number | undefined }[] = [];
-  const events: AppTimelineEvent[][] = [];
+  const events: AppEvent[][] = [];
   const client = {
-    pushEvents: async (_id: string, batch: AppTimelineEvent[]) => {
+    pushEvents: async (_id: string, batch: AppEvent[]) => {
       const err = fail('events');
       if (err) throw err;
       events.push(batch);

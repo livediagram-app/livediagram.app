@@ -818,7 +818,7 @@ CREATE INDEX idx_favourites_owner ON favourites(owner_id);
 ALTER TABLE diagrams ADD COLUMN presentation TEXT NULL;
 
 -- migration: 0042_timeline.sql
--- Timeline (docs/specs/013-workspace/timeline.md) — the Explorer's landing feed.
+-- Timeline (docs/specs/013-workspace/history.md) — the Explorer's landing feed.
 --
 -- Two tables plus a per-scope state row. The split matters: an event
 -- row holds WHAT happened once, and the scopes table holds WHO should
@@ -848,7 +848,7 @@ CREATE TABLE timeline_events (
   -- '' for one-shot events (a diagram is created once). Carries
   -- '<actorId>:<YYYY-MM-DD>' for the coalesced editing event, which is
   -- the one event type that deliberately extends itself through a day
-  -- rather than emitting per save (docs/specs/013-workspace/timeline.md §4.2).
+  -- rather than emitting per save (docs/specs/013-workspace/history.md).
   dedupe_key TEXT NOT NULL DEFAULT '',
   -- Title Case category, never user content ("Comment Added").
   title TEXT NOT NULL,
@@ -869,7 +869,7 @@ CREATE TABLE timeline_events (
   UNIQUE (source_type, source_id, event_type, dedupe_key)
 );
 
--- The retention sweep's predicate (docs/specs/013-workspace/timeline.md §3.5).
+-- The retention sweep's predicate (docs/specs/013-workspace/history.md).
 CREATE INDEX timeline_events_occurred_idx ON timeline_events (occurred_at);
 
 CREATE TABLE timeline_event_scopes (
@@ -893,14 +893,14 @@ CREATE TABLE timeline_scope_state (
   scope_type TEXT NOT NULL,
   scope_id TEXT NOT NULL,
   -- NULL until the one-shot backfill has seeded this scope from the
-  -- caller's existing diagrams + team memberships (docs/specs/013-workspace/timeline.md §5).
+  -- caller's existing diagrams + team memberships (docs/specs/013-workspace/history.md).
   backfilled_at INTEGER,
   last_refreshed_at INTEGER,
   PRIMARY KEY (scope_type, scope_id)
 );
 
 -- migration: 0043_timeline_last_seen.sql
--- Timeline unread marker (docs/specs/013-workspace/timeline.md §2.5).
+-- Timeline unread marker (docs/specs/013-workspace/history.md).
 --
 -- `last_refreshed_at` was written by the Refresh button, which is gone:
 -- the feed loads on mount and seeds itself off that same read, so a
@@ -1014,7 +1014,7 @@ CREATE TABLE collab_index_state (
 );
 
 -- migration: 0045_timeline_dismissal.sql
--- Per-entry dismissal on the Timeline (docs/specs/013-workspace/timeline.md §2.9).
+-- Per-entry dismissal on the Timeline (docs/specs/013-workspace/history.md).
 --
 -- A reader can take one card off THEIR feed from its ⋯ menu. The event
 -- row is shared by everybody it was scoped to (one comment, N
@@ -1030,7 +1030,7 @@ CREATE TABLE collab_index_state (
 ALTER TABLE timeline_event_scopes ADD COLUMN deleted_at INTEGER;
 
 -- migration: 0046_timeline_no_diagram_tombstones.sql
--- A deleted diagram leaves no trace on the Timeline (docs/specs/013-workspace/timeline.md §3.5).
+-- A deleted diagram leaves no trace on the Timeline (docs/specs/013-workspace/history.md).
 --
 -- The "Diagram Deleted" card was dropped: from the feed's point of view a
 -- deleted diagram never existed, so the rows already written are swept

@@ -1,15 +1,14 @@
 // A sketched element in the SVG export (docs/specs/008-canvas/finish.md "Sketch"): the same drawing the canvas
 // overlay paints (sketch-element.ts), placed at the element's position. Layers bottom to top: solid fill,
-// pencil shading (the stroke colour, faint), outline, chrome. Marker's felt-tip body (marker-element.ts) goes the same
+// pencil shading (the stroke colour, faint), outline. Marker's felt-tip body (marker-element.ts) goes the same
 // way, its ink in see-through layers.
 import { finishSplitsFace, finishWobblesArt, resolveFinish, type Finish } from './finish';
 import { defaultStrokeColor } from './colors';
 import { handDrawnElementPaint } from './hand-drawn';
 import { handDrawnInk } from './marker-face';
 import type { BoxedElement, Element } from './index';
-import { MARKER_DETAIL_PX, MARKER_INK_OPACITY, MARKER_STREAK_OPACITY } from './marker';
+import { MARKER_INK_OPACITY, MARKER_STREAK_OPACITY } from './marker';
 import type { MarkerDrawing } from './marker-element';
-import { SHAPE_DETAIL_STROKE_PX } from './shape-geometry';
 import { SKETCH_HATCH_OPACITY, type SketchDrawing } from './sketch-element';
 import type { ExportShape } from './svg-render-describe';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -25,10 +24,7 @@ function svgSketchDrawing(
   const dash = paint.dash ? ` stroke-dasharray="${paint.dash}"` : '';
   const line = ' fill="none" stroke-linecap="round" stroke-linejoin="round"';
   const parts = [`<g transform="translate(${r2(at.x)} ${r2(at.y)})" data-finish="sketch">`];
-  if (drawing.solid)
-    parts.push(
-      `<path d="${drawing.solid}" fill="${fill}"${drawing.solidEvenOdd ? ' fill-rule="evenodd"' : ''}/>`,
-    );
+  if (drawing.solid) parts.push(`<path d="${drawing.solid}" fill="${fill}"/>`);
   if (drawing.hatch)
     parts.push(
       `<path d="${drawing.hatch}" stroke="${stroke}" stroke-opacity="${SKETCH_HATCH_OPACITY}" stroke-width="${r2(Math.max(1, paint.strokePx / 2))}"${line}/>`,
@@ -37,10 +33,6 @@ function svgSketchDrawing(
     parts.push(
       `<path d="${drawing.strokes}" stroke="${stroke}" stroke-width="${r2(paint.strokePx)}"${dash}${line}/>`,
     );
-  if (drawing.details)
-    parts.push(
-      `<path d="${drawing.details}" stroke="${stroke}" stroke-width="${SHAPE_DETAIL_STROKE_PX}"${line}/>`,
-    );
   parts.push('</g>');
   return parts.join('');
 }
@@ -48,7 +40,7 @@ function svgSketchDrawing(
 type BodyPaint = { fill: string; stroke: string; strokePx: number; dash: string | null };
 
 // Marker's body, bottom to top: the solid fill, the colouring's two layers of streaks, the outline's two layers of
-// ink, the chrome. Each layer is its own path at the ink's opacity, so a crossing between two pools darker.
+// ink. Each layer is its own path at the ink's opacity, so a crossing between two pools darker.
 function svgMarkerDrawing(
   at: { x: number; y: number },
   drawing: MarkerDrawing,
@@ -58,10 +50,7 @@ function svgMarkerDrawing(
   const dash = paint.dash ? ` stroke-dasharray="${paint.dash}"` : '';
   const line = ' fill="none" stroke-linecap="round" stroke-linejoin="round"';
   const parts = [`<g transform="translate(${r2(at.x)} ${r2(at.y)})" data-finish="marker">`];
-  if (drawing.solid)
-    parts.push(
-      `<path d="${drawing.solid}" fill="${xmlEscape(paint.fill)}"${drawing.solidEvenOdd ? ' fill-rule="evenodd"' : ''}/>`,
-    );
+  if (drawing.solid) parts.push(`<path d="${drawing.solid}" fill="${xmlEscape(paint.fill)}"/>`);
   for (const d of drawing.streaks)
     if (d)
       parts.push(
@@ -72,10 +61,6 @@ function svgMarkerDrawing(
       parts.push(
         `<path d="${d}" stroke="${stroke}" stroke-opacity="${MARKER_INK_OPACITY}" stroke-width="${r2(paint.strokePx)}"${dash}${line}/>`,
       );
-  if (drawing.details)
-    parts.push(
-      `<path d="${drawing.details}" stroke="${stroke}" stroke-opacity="${MARKER_INK_OPACITY}" stroke-width="${MARKER_DETAIL_PX}"${line}/>`,
-    );
   parts.push('</g>');
   return parts.join('');
 }
@@ -89,13 +74,7 @@ export function svgSketchedBody(
   // Something sits on this shape (sketch-backdrop.ts): a solid fill, never hatching.
   backdrop = false,
 ): string | null {
-  if (
-    shape.kind !== 'rect' &&
-    shape.kind !== 'ellipse' &&
-    shape.kind !== 'diamond' &&
-    shape.kind !== 'image'
-  )
-    return null;
+  if (shape.kind !== 'rect' && shape.kind !== 'image') return null;
   // An image has no fill of its own to shade, and its edge takes its line colour or the default ink.
   const fill = shape.kind === 'image' ? 'none' : shape.fill;
   const line =

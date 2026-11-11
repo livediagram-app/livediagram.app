@@ -41,7 +41,7 @@ async function run(
     action: 'Applied' | 'Reverted';
   },
 ): Promise<void> {
-  // The edit itself reaches the Timeline from the canvas (document-room.ts records whoever wrote).
+  // The edit itself reaches History from the canvas (document-room.ts records whoever wrote).
   const previous = w.stored?.elements ?? [];
   const work: Promise<unknown>[] = [];
   if (

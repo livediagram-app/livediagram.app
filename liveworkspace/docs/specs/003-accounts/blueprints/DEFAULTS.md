@@ -13,9 +13,9 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | ACC7  | sessions-and-guests   | a merge that fails keeps the guest cookie, so the next sign-in tries again; the sign-in itself never fails.                                                          |
 | ACC8  | teams                 | the 50-team cap bounds the access token's `teams` claim.                                                                                                             |
 | ACC9  | teams                 | a reminder that fails three sends in a row leaves the queue; the invitation still expires at 28 days.                                                                |
-| ACC10 | teams                 | a Timeline event the index refuses 96 times is dropped, and the outbox keeps at most 5,000 events.                                                                   |
+| ACC10 | teams                 | a team event the index refuses 96 times is dropped, and the outbox keeps at most 5,000 events.                                                                       |
 | ACC11 | tokens                | a token's last use is stamped at most once a minute, so a burst of MCP calls costs one write.                                                                        |
-| ACC12 | tokens                | an expiry warning is sent only to a verified address; the Timeline note goes regardless.                                                                             |
+| ACC12 | tokens                | an expiry warning is sent only to a verified address.                                                                                                                |
 | ACC13 | oauth                 | token lifetimes are left at Better Auth's defaults; the code sets only the 30-second refresh replay window.                                                          |
 | ACC14 | settings-and-profiles | where a guest's settings and the account's share a key, the account's value is kept.                                                                                 |
 | ACC15 | email                 | three failed sends in a row take an account off every due list for good; a success before then resets the count.                                                     |

@@ -832,3 +832,74 @@ describe('a stored annotation', () => {
     expect(after).toEqual([]);
   });
 });
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5: the diagram shapes, each as stored
+// before the part, named as their palette tiles named them (DEFAULTS.md D29), with fields only the deleted code knew.
+const PART_5: [string, string][] = [
+  ['square', 'Square'],
+  ['circle', 'Circle'],
+  ['diamond', 'Diamond'],
+  ['cylinder', 'Cylinder'],
+  ['parallelogram', 'Parallelogram'],
+  ['hexagon', 'Hexagon'],
+  ['document', 'Document'],
+  ['stadium', 'Stadium'],
+  ['actor', 'Actor'],
+  ['final-state', 'Final State'],
+  ['cloud', 'Cloud'],
+  ['triangle', 'Triangle'],
+  ['trapezoid', 'Trapezoid'],
+  ['star', 'Star'],
+  ['speech-bubble', 'Speech Bubble'],
+];
+
+const storedPart5 = (shape: string) =>
+  ({
+    id: `p5-${shape}`,
+    type: 'shape',
+    shape,
+    x: 0,
+    y: 0,
+    width: 280,
+    height: 160,
+    label: 'Checkout',
+    borderRadius: 'lg',
+    accentEdge: 'left',
+    iconId: 'cloud',
+  }) as unknown as ShapeElement;
+
+describe('a stored diagram shape', () => {
+  it.each(PART_5)('draws a stored %s as the placeholder named %s, with its label', (kind, name) => {
+    const { container } = render(<ElementFaceRouter {...faceProps(storedPart5(kind), false)} />);
+    const svg = container.querySelector(`svg[data-retired-element="${kind}"]`)!;
+    expect(svg).not.toBeNull();
+    expect(lines(svg)).toEqual([
+      ['name', name],
+      ['note', RETIRED_ELEMENT_NOTE],
+      ['label', 'Checkout'],
+    ]);
+    expect(container.querySelector('textarea, input, [contenteditable]')).toBeNull();
+  });
+
+  it.each(PART_5)('lets an Editor delete a stored %s, and no one else', (kind) => {
+    const el = storedPart5(kind);
+    const editor = resolveEditorCapabilities({ level: 'edit', adderKey: null });
+    const viewer = resolveEditorCapabilities({ level: 'view', adderKey: 'a'.repeat(32) });
+    const participant = resolveEditorCapabilities({
+      level: 'participate',
+      adderKey: 'b'.repeat(32),
+    });
+    expect([editor, viewer, participant].map((can) => can.remove(el))).toEqual([
+      true,
+      false,
+      false,
+    ]);
+    const onDeleteRetired = vi.fn();
+    const editable = render(<ElementFaceRouter {...faceProps(el, false, onDeleteRetired)} />);
+    fireEvent.click(editable.container.querySelector('button[data-retired-delete]')!);
+    expect(onDeleteRetired).toHaveBeenCalledWith(el.id);
+    cleanup();
+    const readOnly = render(<ElementFaceRouter {...faceProps(el, true, onDeleteRetired)} />);
+    expect(readOnly.container.querySelector('button')).toBeNull();
+  });
+});

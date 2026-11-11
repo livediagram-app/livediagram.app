@@ -9,7 +9,7 @@ import { MAX_EXPORT_CANVAS_AREA, MAX_EXPORT_CANVAS_SIDE, renderTabToCanvas } fro
 const tab = (width: number, height: number): Tab => ({
   id: 'tab-1',
   name: 'My Tab',
-  elements: [{ id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width, height }],
+  elements: [{ id: 'a', type: 'shape', shape: 'focus-button', x: 0, y: 0, width, height }],
 });
 // The padded size, at a scale.
 const padded = (n: number, scale: number) => (n + EXPORT_PADDING * 2) * scale;

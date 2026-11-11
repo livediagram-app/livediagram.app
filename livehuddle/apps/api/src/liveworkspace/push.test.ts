@@ -131,7 +131,7 @@ const box = (comments: Comment[]) =>
   ({
     id: 'e1',
     type: 'shape',
-    shape: 'square',
+    shape: 'signpost',
     x: 0,
     y: 0,
     width: 10,

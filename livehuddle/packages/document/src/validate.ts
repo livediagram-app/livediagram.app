@@ -15,7 +15,7 @@
 // the byte-size caps at the API layer (a structurally valid tab can still be
 // too big).
 
-import type { Element, ShapeKind, Tab } from './index';
+import type { Element, Tab } from './index';
 // Value imports come from the data-shapes LEAF module (types only from
 // './index'), keeping this module out of the index ⇄ factories cycle.
 import { ANCHOR_FRACTIONS } from './retired-arrow';
@@ -75,13 +75,6 @@ export const ANCHORS = new Set<string>(Object.keys(ANCHOR_FRACTIONS));
 
 // Every valid ShapeKind, as a runtime set (./shape-kinds, a leaf module so the kind predicates can read it).
 export { SHAPE_KINDS };
-
-// Map an arbitrary shape value to a real ShapeKind, defaulting an unknown /
-// synonym kind ("rectangle", "box", "oval", …) to "square" so the node always
-// renders a box instead of falling through to a bare label.
-export function coerceShapeKind(shape: unknown): ShapeKind {
-  return typeof shape === 'string' && SHAPE_KINDS.has(shape) ? (shape as ShapeKind) : 'square';
-}
 
 // Every stored element carries an id and a known type, and any colour bindings it has are named.
 const COMMON_FIELD_CHECKS: readonly FieldCheck[] = [

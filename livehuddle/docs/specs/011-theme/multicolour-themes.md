@@ -1,5 +1,13 @@
 # Multi-colour (rainbow) themes
 
+> **No branches from arrows in livehuddle** ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine), part 5, D34 in the project scope's DEFAULTS.md):
+> livehuddle draws no arrows and has no diagram shapes, so the branch walk over stored arrows (`hierarchy.ts`) and the
+> themes' per-shape overrides for the diagram kinds are deleted. A palette theme paints each box the next hue in
+> document order, the rule [How a branch is decided](#how-a-branch-is-decided) always gave loose boxes; nothing reads
+> a stored arrow, which keeps the colours it stored. livediagram keeps the walk, and
+> [its spec there](../../../../livediagram/docs/specs/011-theme/multicolour-themes.md) is the one to read and change for
+> it. The rest of this page describes it as livediagram has it.
+
 Most themes in the catalogue ([Canvas and palette](../008-canvas/canvas-and-palette.md), `packages/document/src/themes-data.ts`) paint every element one colour: a single fill / stroke / text triple applied uniformly. **Multi-colour themes** instead carry a _palette_ of several colour triples and assign each branch of the diagram's hierarchy a different one, the way XMind's "Rainbow" theme tints each main branch of a mind map a distinct hue.
 
 ## What they are
@@ -25,7 +33,7 @@ The catalogue ships three multi-colour themes, all extra:
 
 ## How a branch is decided
 
-The document model has no explicit parent/child field; hierarchy is **implicit in pinned arrows** ([Document structure](../006-document/document-structure.md), `Endpoint.kind === 'pinned'`). `packages/document/src/hierarchy.ts` derives branches from them:
+The document model has no explicit parent/child field; hierarchy is **implicit in pinned arrows** ([Document structure](../006-document/document-structure.md), `Endpoint.kind === 'pinned'`). `livediagram/packages/document/src/hierarchy.ts` derives branches from them:
 
 1. Each arrow whose **both** endpoints pin to **boxed** elements defines a directed edge `from → to` (parent → child). Free-floating arrows, arrows pinned to another arrow or to an element no longer on the tab, and self-loops contribute nothing.
 2. **Roots** are boxed elements with no incoming pinned edge but at least one outgoing one (the top of a hierarchy, the start of a flow). Roots get the sentinel `ROOT_BRANCH`.

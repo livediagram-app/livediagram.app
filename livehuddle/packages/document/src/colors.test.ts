@@ -5,7 +5,6 @@ import {
   MIN_TEXT_CONTRAST,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
-  createShape,
   deriveShapeColours,
   deriveTextColorForBg,
   inkOn,
@@ -16,25 +15,14 @@ import {
   isLightColor,
   rgbToHex,
   shade,
-  supportsBorderRadius,
   supportsFillColor,
   type Element,
-  type RetiredArrowElement,
-  type ShapeKind,
 } from './index';
 
 const channels = (hex: string): [number, number, number] => {
   const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex)!;
   return [parseInt(m[1]!, 16), parseInt(m[2]!, 16), parseInt(m[3]!, 16)];
 };
-
-const arrow = (overrides: Partial<RetiredArrowElement> = {}): RetiredArrowElement => ({
-  id: 'e',
-  type: 'arrow',
-  from: { kind: 'free', x: 0, y: 0 },
-  to: { kind: 'free', x: 10, y: 10 },
-  ...overrides,
-});
 
 describe('hexToRgb / rgbToHex', () => {
   it('parses #rrggbb with or without the #, in either case', () => {
@@ -166,45 +154,6 @@ describe('deriveShapeColours', () => {
   });
 });
 
-describe('supportsBorderRadius', () => {
-  // Only the free-corner rectangles expose a user-adjustable radius;
-  // every other shape bakes its rounding into the silhouette or is an
-  // SVG outline, so the Radius control is hidden for them.
-  const RADIUS_SHAPES: ShapeKind[] = ['square'];
-  const NO_RADIUS_SHAPES: ShapeKind[] = [
-    'circle',
-    'diamond',
-    'cylinder',
-    'parallelogram',
-    'hexagon',
-    'document',
-    'stadium',
-    'actor',
-    'cloud',
-  ];
-
-  it('is true for the free-corner rectangle shapes', () => {
-    for (const kind of RADIUS_SHAPES) {
-      expect(supportsBorderRadius(createShape(kind, 0, 0))).toBe(true);
-    }
-  });
-
-  it('is false for every other shape kind', () => {
-    for (const kind of NO_RADIUS_SHAPES) {
-      expect(supportsBorderRadius(createShape(kind, 0, 0))).toBe(false);
-    }
-  });
-
-  it('covers the whole ShapeKind union (radius + non-radius = all kinds)', () => {
-    const seen = new Set<ShapeKind>([...RADIUS_SHAPES, ...NO_RADIUS_SHAPES]);
-    expect(seen.size).toBe(RADIUS_SHAPES.length + NO_RADIUS_SHAPES.length);
-  });
-
-  it('is false for non-shape elements', () => {
-    expect(supportsBorderRadius(arrow())).toBe(false);
-  });
-});
-
 describe('supportsFillColor', () => {
   // The Background row is only worth showing where a fill is actually
   // painted. An icon's wrapper is self-painting, so the control sat there
@@ -217,7 +166,7 @@ describe('supportsFillColor', () => {
   });
 
   it('stays on for the shapes that do paint one', () => {
-    expect(supportsFillColor(shape('square'))).toBe(true);
+    expect(supportsFillColor(shape('focus-button'))).toBe(true);
     // A frame's fill defaults to transparent but is real once picked.
     expect(supportsFillColor(shape('frame'))).toBe(true);
     // The progress track is drawn FROM fillColor, self-painting or not.

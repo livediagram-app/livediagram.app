@@ -31,5 +31,5 @@ liveplanner keeps no per-tab activity log: nothing records each undoable commit 
 - There is no change-log table for tabs, no `/api/projects/:id/log` endpoint, and no `log` / `log-remove` room op.
 - liveplanner has no `activityPanelEnabled` preference and no revert hover preview ([User preferences](../007-editor/user-preferences.md)).
 - **Undo and Redo stay, unchanged in behaviour.** They are snapshot-based (`useProjectHistory`), personal to each editor and session, and sit in the bottom-right cluster and on Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z and Ctrl+Y. A continuous control (a background slider, an element colour or opacity picker) still takes one undo step per burst: the first tick checkpoints and ticks within 500 ms of the last stay in that step (`useBurstCheckpoint`).
-- Project-level history (made, renamed, moved, trashed, who edited) is the [Timeline](../013-workspace/timeline.md), kept by liveworkspace's index; the [Inbox](../013-workspace/inbox.md) is unrelated, and is liveworkspace's index's too.
+- Project-level history (made, renamed, moved, trashed, who edited) is each item's [History](../013-workspace/history.md), kept by liveworkspace's index; the [Inbox](../013-workspace/inbox.md) is unrelated, and is liveworkspace's index's too.
 - Help has no Activity Panel category.

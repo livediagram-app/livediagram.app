@@ -90,7 +90,7 @@ function liveDoc(over: Partial<DocumentDTO> = {}): DocumentDTO {
 // A one-shape first tab, in the on-disk `tabs.data` shape (body minus
 // id + name — see db/tabs.ts upsertTab).
 const TAB_DATA = JSON.stringify({
-  elements: [{ id: 'e1', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 80 }],
+  elements: [{ id: 'e1', type: 'shape', shape: 'signpost', x: 0, y: 0, width: 100, height: 80 }],
 });
 
 // A first tab as getTabBody returns it; its count is known unless the test says otherwise.
@@ -235,7 +235,7 @@ describe('a drawing of a former Pages tab', () => {
   const PICTURE = 'b'.repeat(32);
   const ON_FIRST = 'c'.repeat(32);
   const ON_SECOND = 'd'.repeat(32);
-  // Two A4 pages side by side (the second starts past the first's 794px width), each with a labelled square and an
+  // Two A4 pages side by side (the second starts past the first's 794px width), each with a labelled sticky and an
   // image; the first page has a picture background.
   const tabData = JSON.stringify({
     opensIn: 'pages',
@@ -250,8 +250,7 @@ describe('a drawing of a former Pages tab', () => {
     elements: [
       {
         id: 'a',
-        type: 'shape',
-        shape: 'square',
+        type: 'sticky',
         x: 40,
         y: 40,
         width: 100,
@@ -261,8 +260,7 @@ describe('a drawing of a former Pages tab', () => {
       { id: 'ia', type: 'image', x: 40, y: 200, width: 100, height: 80, imageId: ON_FIRST },
       {
         id: 'b',
-        type: 'shape',
-        shape: 'square',
+        type: 'sticky',
         x: 2000,
         y: 40,
         width: 100,
@@ -300,7 +298,7 @@ describe('a drawing of a Charcoal tab', () => {
             {
               id: 'e1',
               type: 'shape',
-              shape: 'square',
+              shape: 'signpost',
               x: 0,
               y: 0,
               width: 100,
@@ -321,7 +319,7 @@ describe('a drawing of a Charcoal tab', () => {
 // draws a colour stored by name in its version for the page, on any tab, whatever mode drew it.
 describe('a drawing of named stock colours', () => {
   it('draws Blue and Ink by name in the light page version', async () => {
-    const shape = { type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 80 };
+    const shape = { type: 'shape', shape: 'signpost', x: 0, y: 0, width: 100, height: 80 };
     db.getTabBody.mockResolvedValue(
       stored(
         JSON.stringify({
@@ -345,7 +343,7 @@ describe('a drawing in the reader’s appearance', () => {
   const ink = {
     id: 'e1',
     type: 'shape',
-    shape: 'square',
+    shape: 'signpost',
     x: 0,
     y: 0,
     width: 100,
@@ -401,8 +399,7 @@ describe("a Community post's drawing", () => {
       },
       {
         id: 'e1',
-        type: 'shape',
-        shape: 'square',
+        type: 'sticky',
         x: 300,
         y: 0,
         width: 100,

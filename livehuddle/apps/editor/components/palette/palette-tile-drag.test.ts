@@ -30,12 +30,10 @@ describe('tileDragStart', () => {
   beforeEach(() => vi.mocked(setPaletteDragPreview).mockClear());
 
   it('carries a shape kind and publishes its footprint for the ghost', () => {
-    const { data, dataTransfer } = drag({ type: 'shape', kind: 'speech-bubble' });
-    expect(data.get(PALETTE_DND_MIME)).toBe('speech-bubble');
+    const { data, dataTransfer } = drag({ type: 'shape', kind: 'chair' });
+    expect(data.get(PALETTE_DND_MIME)).toBe('chair');
     expect(dataTransfer.effectAllowed).toBe('copy');
-    expect(setPaletteDragPreview).toHaveBeenCalledWith(
-      expect.objectContaining({ kind: 'speech-bubble' }),
-    );
+    expect(setPaletteDragPreview).toHaveBeenCalledWith(expect.objectContaining({ kind: 'chair' }));
   });
 
   it('carries a shape’s creation-time choice alongside its kind', () => {

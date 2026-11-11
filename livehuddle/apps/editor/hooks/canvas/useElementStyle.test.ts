@@ -39,8 +39,8 @@ function harness(elements: Element[], selection: Set<string>) {
 
 describe('useElementStyle selection-wide setters on a multi-selection', () => {
   it('applies border stroke + style to every selected shape', () => {
-    const a = createShape('square', 0, 0);
-    const b = createShape('square', 200, 0);
+    const a = createShape('focus-button', 0, 0);
+    const b = createShape('focus-button', 200, 0);
     const { style, result } = harness([a, b], new Set([a.id, b.id]));
 
     style.setBorderStrokeSelected('thick');
@@ -53,8 +53,8 @@ describe('useElementStyle selection-wide setters on a multi-selection', () => {
   });
 
   it('applies stroke colour to every selected shape (parity with border)', () => {
-    const a = createShape('square', 0, 0);
-    const b = createShape('square', 200, 0);
+    const a = createShape('focus-button', 0, 0);
+    const b = createShape('focus-button', 200, 0);
     const { style, result } = harness([a, b], new Set([a.id, b.id]));
 
     style.setStrokeColorSelected('#123456');
@@ -67,9 +67,14 @@ describe('useElementStyle selection-wide setters on a multi-selection', () => {
 
 describe('useElementStyle Reset Aspect Ratio', () => {
   it('resets every shape of a multi-selection, one saved locked included', () => {
-    const a = { ...createShape('square', 0, 0), width: 300, height: 100 };
-    const b = { ...createShape('square', 400, 0), width: 100, height: 300 };
-    const locked = { ...createShape('square', 800, 0), width: 300, height: 100, locked: true };
+    const a = { ...createShape('focus-button', 0, 0), width: 300, height: 100 };
+    const b = { ...createShape('focus-button', 400, 0), width: 100, height: 300 };
+    const locked = {
+      ...createShape('focus-button', 800, 0),
+      width: 300,
+      height: 100,
+      locked: true,
+    };
     const { style, result } = harness([a, b, locked], new Set([a.id, b.id, locked.id]));
 
     style.resetAspectRatioSelected();
@@ -84,7 +89,7 @@ describe('useElementStyle Reset Aspect Ratio', () => {
 
 describe('useElementStyle shape markers (docs/specs/009-elements/shape-markers.md)', () => {
   it('sets and clears a marker on the selected shape', () => {
-    const a = createShape('square', 0, 0);
+    const a = createShape('room', 0, 0);
     const { style, result } = harness([a], new Set([a.id]));
 
     style.setMarkerSelected('green-circle');
@@ -95,7 +100,7 @@ describe('useElementStyle shape markers (docs/specs/009-elements/shape-markers.m
   });
 
   it('sets the marker size bucket', () => {
-    const a = createShape('square', 0, 0);
+    const a = createShape('room', 0, 0);
     const { style, result } = harness([a], new Set([a.id]));
 
     style.setMarkerSizeSelected('lg');
@@ -105,7 +110,7 @@ describe('useElementStyle shape markers (docs/specs/009-elements/shape-markers.m
 
 describe('useElementStyle shape style presets (docs/specs/010-palette/style-presets.md)', () => {
   it('applies a style preset (colour + matching border) in one step', () => {
-    const a = createShape('square', 0, 0);
+    const a = createShape('focus-button', 0, 0);
     const { style, result } = harness([a], new Set([a.id]));
 
     style.applyShapeColorPresetSelected({
@@ -140,7 +145,7 @@ describe('useElementStyle shape style presets (docs/specs/010-palette/style-pres
   });
 
   it('resets a preset-styled shape back to its defaults (colour + border cleared)', () => {
-    const a = createShape('square', 0, 0);
+    const a = createShape('focus-button', 0, 0);
     const { style, result } = harness([a], new Set([a.id]));
 
     style.applyShapeColorPresetSelected({
@@ -168,7 +173,7 @@ describe('useElementStyle shape style presets (docs/specs/010-palette/style-pres
   });
 
   it('clears the colour-preset binding when a colour is hand-edited', () => {
-    const a = createShape('square', 0, 0);
+    const a = createShape('focus-button', 0, 0);
     const { style, result } = harness([a], new Set([a.id]));
 
     style.applyShapeColorPresetSelected({
@@ -201,7 +206,7 @@ describe('useElementStyle on a selection holding retired elements', () => {
   ];
 
   it('restyles only the shape', () => {
-    const shape = createShape('square', 0, 200);
+    const shape = createShape('focus-button', 0, 200);
     const all = [shape, ...retired];
     const { style, result } = harness(all, new Set(all.map((e) => e.id)));
 
@@ -233,16 +238,16 @@ describe('useElementStyle on a selection holding retired elements', () => {
 
 describe('useElementStyle bring to front / send to back (docs/specs/006-document/layers.md "Stacking")', () => {
   it('moves the selection to the end of the array', () => {
-    const a = createShape('square', 0, 0);
-    const b = createShape('square', 200, 0);
+    const a = createShape('focus-button', 0, 0);
+    const b = createShape('focus-button', 200, 0);
     const { style, tab } = harness([a, b], new Set([a.id]));
     style.bringSelectedToFront();
     expect(tab().elements.map((e) => e.id)).toEqual([b.id, a.id]);
   });
 
   it('moves the selection to the start of the array', () => {
-    const a = createShape('square', 0, 0);
-    const b = createShape('square', 200, 0);
+    const a = createShape('focus-button', 0, 0);
+    const b = createShape('focus-button', 200, 0);
     const { style, tab } = harness([a, b], new Set([b.id]));
     style.sendSelectedToBack();
     expect(tab().elements.map((e) => e.id)).toEqual([b.id, a.id]);

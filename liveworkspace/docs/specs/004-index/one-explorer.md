@@ -4,7 +4,7 @@ The calls, types and tokens are in [one-explorer-contracts.md](one-explorer-cont
 [index-service.md](index-service.md).
 
 The four apps (livediagram, liveplanner, livedocuments, livedesign) share one Explorer over one index on
-liveworkspace.app: one set of folders, favourites, Trash, sharing, Recent, Timeline and Inbox, so a folder can
+liveworkspace.app: one set of folders, favourites, Trash, sharing, Recent, History and Inbox, so a folder can
 hold a Canvas, a Plan, a Document and a Design, and an Explorer fix is made once. Each item's content lives
 in its own Durable Object in its app, not in D1. This replaced a copy of the Explorer per app, each over its
 own D1 database. It builds on the RFC "Move document content from D1 to
@@ -93,7 +93,7 @@ shows every app's items, with no app filter (there is no app to narrow to, so no
 names one the person never chose), and a first run there greets the person to liveworkspace ("Welcome to
 liveworkspace."), never to the app whose starts it shows. Opening an item goes to its app. The page is described in [site.md](../010-site/site.md#the-explorer-explorer).
 
-Under All Apps each row, card and Timeline entry wears its **app's mark**: the app's logo, the Living Prism, drawn at
+Under All Apps each row, card and History entry wears its **app's mark**: the app's logo, the Living Prism, drawn at
 rest in the app's accent with each face at its own opacity (`BrandGlyph` from `@liveworkspace/brand`), never a
 letter. Its title and a screen-reader label say "<Kind> in <app>". It is a stateless drawing with no gradients or
 motion, so a list of thousands pays for paths only. Wherever the Explorer names another app (the Details view's Type
@@ -292,17 +292,17 @@ Three groups, the same in every app's Explorer and on liveworkspace.app (`explor
 - **Overview**: Home, Inbox and Shared With Me.
 - **Spaces**: My Work and its folders, each team and its folders, **This Browser** and its folders (while this
   browser holds anything, [below](#this-browser-a-space)), Invites while one waits, and New Team.
-- **More**: the **Library**, an accordion folded by default, whose rows are, in order, Recent, **Timeline**,
+- **More**: the **Library**, an accordion folded by default, whose rows are, in order, Recent,
   Favourites, the host's Image Gallery and Shape Libraries (where it has them), **Archived** and the **Trash**; then
   the host's own rows (liveworkspace.app's This Browser link, below). The Trash keeps everything it does: its drop target (an item, a folder or a
-  This Browser item dragged there), its waiting and over states, and the Trash view's This Browser group. Folded, the
-  Library row carries the Timeline's "new since you last looked" count (`timelineBadge`), so it is never hidden;
-  open, only the Timeline row does.
+  This Browser item dragged there), its waiting and over states, and the Trash view's This Browser group. The
+  Library row carries no count. (Its Timeline row and New count were retired in November 2026; an old
+  `/explorer/timeline` address opens Home.)
 
 **The current view's rows are open.** Opening a view unfolds the rows that hold its own row, however it is reached
 (a sidebar click, a breadcrumb, an address, Back): My Work for My Work, a team's row for its page, a space and every
 folder down to it for a folder (that folder too, so its subfolders show), This Browser and its folders down to a local one, and the Library for any of its pages
-(Recent, Timeline, Favourites, the Gallery, Shape Libraries, Archived, the Trash). It only ever adds to what is open,
+(Recent, Favourites, the Gallery, Shape Libraries, Archived, the Trash). It only ever adds to what is open,
 and once per change of the rows a view needs, so a row the person folds stays folded until the view (or its place)
 changes (`rowsForView`, `useOpenCurrentRows`).
 
@@ -314,7 +314,7 @@ drop. A folded folder or space opens the same way after `DRAG_HOVER_OPEN_MS`, as
 the menu button beside the page title was "too hidden"). The **sections bar** runs the full width under the page's
 header and stays stuck under it as the page scrolls: the header and the bar share one sticky block, so they never
 overlap or jump, with no scroll listener (`explorer/PhoneSections.tsx`). It shows the menu glyph, the current view's
-name (the title its heading shows: Home, Inbox, Shared With Me, Timeline, a folder's or a team's name, Search
+name (the title its heading shows: Home, Inbox, Shared With Me, a folder's or a team's name, Search
 results, Archived, the Trash; cut with an ellipsis when long) and a chevron pointing right, the way the sidebar slides in from the left. The whole row is one button, 48 px tall,
 named "Open Menu, Current: Inbox", with `aria-expanded` and `aria-controls`; the page title and Home's hero carry
 no menu button of their own. It opens the sidebar as a drawer the full width of the screen (over the header too),
@@ -324,8 +324,8 @@ or any change of view (Back included), and gives focus back to the bar. The edit
 is its way round.
 
 **The editor's panel** has no accordion: its rail lists Home, Inbox and Shared With Me under Overview, the spaces
-(This Browser last among them, by the same rule as the sidebar's), then under More the Library's order (Timeline,
-Favourites, the Library's pages, Archived, the Trash). Picking a view from a shared menu shows its section.
+(This Browser last among them, by the same rule as the sidebar's), then under More the Library's order
+(Favourites, the Library's pages, Archived, the Trash). Picking a view from a shared menu shows its section.
 
 #### This Browser, a Space
 
@@ -404,7 +404,7 @@ closed until it is moved back (the index's side is
 [one-explorer-contracts.md "Archived"](one-explorer-contracts.md#items)). The same in every app's Explorer and on
 liveworkspace.app.
 
-- **The sidebar.** A row of the Library, after Recent, Timeline, Favourites and the host's Library pages and before
+- **The sidebar.** A row of the Library, after Recent, Favourites and the host's Library pages and before
   the Trash, with the archive-box icon (`ArchiveIcon`), for anyone the index knows (an account or a guest). It has no menu, can't be renamed or deleted, has no
   subfolders and takes no drops: a drag over it shows no target. Its address is `/explorer/archived`.
 - **The view.** The person's archived documents, every app's or the app's alone as the switch says, newest change
@@ -419,7 +419,7 @@ liveworkspace.app.
   with no Undo: what archiving deleted (its links, everyone's favourites) can't come back, and Change Folder is the way
   out. Change Folder offers the same as a space of its own.
 - **Gone from everywhere else.** Home (Jump Back In, Most Used, the hero's count), Recent, Favourites, Shared With
-  Me, the Inbox, the Timeline, every folder and team, and the panel's lists leave it out. Archiving deletes its
+  Me, the Inbox, every folder and team, and the panel's lists leave it out. Archiving deletes its
   favourites, Recent, Most Used and Inbox rows for everyone, so moving it out starts fresh: not a favourite, not in
   Recent until it is opened again. Its share links (and password) are deleted for good; a team document leaves the
   team for its owner's Archived, and its teammates no longer see it.
@@ -771,13 +771,12 @@ pane takes the list's place, with Back; the filter is a dropdown in the pane's h
 own routes or editor (Reply and Resolve on a thread, Mark Done on an action in the editor that has it open); Open in
 the app is always there.
 
-The Timeline moves too, and spans apps the same way: the index records what it changes itself (made,
-renamed, moved, trashed, restored, shared, favourited) and each app reports who edited what. The
-Explorer shows it filtered to the app it is in, or All, and Home's What Happened is read from it. Coming back to the
-browser tab reads its first page again and merges it in at the head (at most once in 30 seconds, as the Inbox
-does), keeping the pages loaded and the visit's New marks. A Show More that fails keeps the events shown and says
-so, with Try Again in Show More's place, as the lists and the Audit Log do. A team's view carries **Team Activity** under its library,
-closed until opened: the team's own feed (`GET /timeline?team=`), every member seeing the team's whole history.
+The event log moves too, and spans apps the same way: the index records what it changes itself (made,
+renamed, moved, trashed, restored, shared, favourited) and each app reports who edited what, kept 30 days
+(`EVENT_RETENTION_MS`). It shows in one place: **History** on the menu of an item the person reaches directly
+(`library/HistoryDialog.tsx`, read a page at a time with `itemHistory`); an item reached through a share link has
+none, and a visitor's opens and copies show to the item's owner alone. The Timeline view, Home's What Happened and a
+team's Team Activity were retired in November 2026 ([history.md](../../../../livediagram/docs/specs/013-workspace/history.md)).
 
 ### 6. Content lives in one Durable Object per item
 
@@ -806,8 +805,8 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
    Trash, comments, actions, the Inbox query, and grants. Starts empty.
 4. **`@liveworkspace/explorer`**, built against the index service and tried on liveworkspace.app.
 5. **liveplanner first** (it holds no data): `PlanRoom` holds content, creation registers in the
-   index, its Explorer opens on liveworkspace.app, comments, actions and the Timeline go to liveworkspace,
-   and its own folders, tags, sharing, Timeline, Inbox, teams mirror and content tables are removed.
+   index, its Explorer opens on liveworkspace.app, comments, actions and the event log go to liveworkspace,
+   and its own folders, tags, sharing, timeline, Inbox, teams mirror and content tables are removed.
 6. **livedocuments, then livedesign**, the same way.
 7. **livediagram last.** It runs on the liveworkspace account like the others; its people and documents
    from the historical livediagram.app come across with the migration (docs/migration.md at the repository
@@ -835,12 +834,12 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
   offers as it opens, so a press on one of its rows finds the code in and the dialog opens in that press's own
   commit, taking focus as it always has; a dialog opened before its code lands draws once it does. A dialog whose
   code cannot load draws nothing. `dialogs-lazy-load.test.ts` keeps them out of the first load.
-- **The sections most visits never open load when shown.** Inbox, Timeline, Invites, Gallery and Shape Libraries
+- **The sections most visits never open load when shown.** Inbox, Invites, Gallery and Shape Libraries
   are each fetched from their own chunk (`packages/explorer/src/explorer/lazy-panes.ts`), and the Explorer fetches
   them all once it has drawn and the page is idle, so moving to one later draws it in the move's own commit.
-  Landing on one, its section draws as soon as its code is in. What a Timeline event says on its card
-  (`timeline-event-render.tsx`) is apart from the Timeline view, so a Team's activity and an item's history read it
-  without the view. On liveworkspace.app the Explorer also prefetches the Settings panel's All view without
+  Landing on one, its section draws as soon as its code is in. What an event in History says
+  (`library/history-model.ts`, `library/history-render.ts`) is apart from the dialog, and the dialog's code loads
+  when it is first opened. On liveworkspace.app the Explorer also prefetches the Settings panel's All view without
   loading the panel itself (`preloadSettingsPanel` sits in a module of its own in `@liveworkspace/settings-ui`): a
   one-symbol import of the panel's module had put the whole panel in the first load. Together with Lucide's
   glyphs a module each, `/explorer/*` on liveworkspace.app went from 408 to 380 KiB gzipped (measured
@@ -859,7 +858,7 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
 - Guests have one identity across every app.
 - The Explorer UI is one package, shown once on liveworkspace.app/explorer, filtered to the app the
   person came from or All, and New creates that app's kind. Each app keeps the floating panel.
-- Search covers the index only. The Timeline, comments, actions and the Inbox are centralised.
+- Search covers the index only. The event log, comments, actions and the Inbox are centralised.
 - Teams are made, run and answered in the Explorer, wherever it shows, and nowhere else.
 - The Drive mirror covers every app.
 - Item names: Canvas, Plan, Document, Design, applied as each app moves.

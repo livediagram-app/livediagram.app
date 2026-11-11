@@ -52,7 +52,7 @@ function record(over: Partial<ChangesetRecord> = {}): ChangesetRecord {
 const ops: ElementOp[] = [
   {
     kind: 'add',
-    element: { id: 'b', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 },
+    element: { id: 'b', type: 'shape', shape: 'signpost', x: 0, y: 0, width: 1, height: 1 },
     at: 0,
   },
 ];

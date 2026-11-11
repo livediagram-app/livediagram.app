@@ -6,7 +6,7 @@ import { MIN_SIZE } from './canvas';
 const square = (overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 's',
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 100,
@@ -42,29 +42,11 @@ describe('autoAlignElement', () => {
     expect(out.y % AUTO_ALIGN_GRID).toBe(0);
   });
 
-  it('keeps a square circle square by snapping to the larger side', () => {
-    const out = autoAlignElement(
-      square({ shape: 'circle', width: 97, height: 93 }),
-    ) as ShapeElement;
-    // 97 -> 100, 93 -> 90; drawn square, so the larger side wins for both.
+  it('snaps each side on its own, keeping a near-square box as drawn', () => {
+    const out = autoAlignElement(square({ shape: 'room', width: 97, height: 93 })) as ShapeElement;
+    // 97 -> 100, 93 -> 90: no kind is squared up any more.
     expect(out.width).toBe(100);
-    expect(out.height).toBe(100);
-  });
-
-  it('keeps a wide diamond wide: a flowchart decision is never squared', () => {
-    const out = autoAlignElement(
-      square({ shape: 'diamond', width: 210, height: 116 }),
-    ) as ShapeElement;
-    expect(out.width).toBe(210);
-    expect(out.height).toBe(120);
-  });
-
-  it('keeps an oval circle oval', () => {
-    const out = autoAlignElement(
-      square({ shape: 'circle', width: 97, height: 52 }),
-    ) as ShapeElement;
-    expect(out.width).toBe(100);
-    expect(out.height).toBe(50);
+    expect(out.height).toBe(90);
   });
 
   it('preserves an explicit aspect-lock by anchoring on the larger axis change', () => {

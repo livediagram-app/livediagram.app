@@ -28,7 +28,7 @@ const forest = THEMES.find((t) => t.id === 'forest')!;
 const shape = (id: string, extra: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 100,
@@ -50,16 +50,17 @@ describe('quickStyleView: which sections show', () => {
     expect(quickStyleView([sticky], forest)).toBeNull();
   });
 
-  it('gives a plain shape every section but icon alignment', () => {
-    expect(sections([shape('a')])).toEqual(['stroke', 'background', 'width', 'style', 'textAlign']);
+  it('gives a bordered button its colours and border, and no alignment (its face is its own)', () => {
+    expect(sections([shape('a')])).toEqual(['stroke', 'background', 'width', 'style']);
   });
 
   it('offers text alignment only once the shape has text', () => {
-    expect(sections([shape('a', { label: undefined })])).not.toContain('textAlign');
-    expect(sections([shape('a', { label: '' })])).not.toContain('textAlign');
-    expect(sections([shape('a', { label: '  \n ' })])).not.toContain('textAlign');
-    expect(sections([shape('a', { label: 'Hi' })])).toContain('textAlign');
-    expect(sections([shape('a', { label: '' }), shape('b')])).toContain('textAlign');
+    const room = (extra: Partial<ShapeElement>) => shape('a', { shape: 'room', ...extra });
+    expect(sections([room({ label: undefined })])).not.toContain('textAlign');
+    expect(sections([room({ label: '' })])).not.toContain('textAlign');
+    expect(sections([room({ label: '  \n ' })])).not.toContain('textAlign');
+    expect(sections([room({ label: 'Hi' })])).toContain('textAlign');
+    expect(sections([room({ label: '' }), shape('b', { shape: 'room' })])).toContain('textAlign');
   });
 
   it('offers no text alignment on a kind with its own face', () => {
@@ -72,7 +73,7 @@ describe('quickStyleView: which sections show', () => {
   });
 
   it('adds icon alignment only when a shape carries an inline icon', () => {
-    expect(sections([shape('a', { iconId: 'server' })])).toContain('iconAlign');
+    expect(sections([shape('a', { shape: 'room', iconId: 'server' })])).toContain('iconAlign');
   });
 
   it('shows nothing for a stored arrow or path, and styles only the shape beside one', () => {
@@ -108,11 +109,12 @@ describe('quickStyleView: the highlighted value', () => {
   });
 
   it('reads defaults as their option: medium, solid, centre, before', () => {
-    const view = quickStyleView([shape('a', { iconId: 'x' })], forest)!;
+    const view = quickStyleView([shape('a')], forest)!;
     expect(view.sections.width?.value).toBe('medium');
     expect(view.sections.style?.value).toBe('solid');
-    expect(view.sections.textAlign?.value).toBe('center');
-    expect(view.sections.iconAlign?.value).toBe('left');
+    const room = quickStyleView([shape('r', { shape: 'room', iconId: 'x' })], forest)!;
+    expect(room.sections.textAlign?.value).toBe('center');
+    expect(room.sections.iconAlign?.value).toBe('left');
   });
 
   it('reads a colour by its binding, by its value, or as the theme default', () => {
@@ -175,10 +177,12 @@ describe('apply transforms', () => {
   });
 
   it('applies alignment to shapes only', () => {
-    expect(applyQuickTextAlign(shape('a'), 'left')).toMatchObject({ textAlignX: 'left' });
+    expect(applyQuickTextAlign(shape('a', { shape: 'room' }), 'left')).toMatchObject({
+      textAlignX: 'left',
+    });
     const a = arrow('a');
     expect(applyQuickTextAlign(a, 'left')).toBe(a);
-    expect(applyQuickIconAlign(shape('a', { iconId: 'x' }), 'above')).toMatchObject({
+    expect(applyQuickIconAlign(shape('a', { shape: 'room', iconId: 'x' }), 'above')).toMatchObject({
       iconPosition: 'above',
     });
     const bare = shape('b');
@@ -284,7 +288,6 @@ describe('Text colour: text elements', () => {
       'textColour',
       'width',
       'style',
-      'textAlign',
     ]);
     expect(sections([shape('a')])).not.toContain('textColour');
   });

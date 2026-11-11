@@ -65,8 +65,8 @@ describe('a link to a site from a staging page', () => {
 
   it("keeps the path and query of a link (the Explorer's)", () => {
     expect(
-      siteHrefFrom(diagram, `${diagram.url}/explorer/timeline?id=t1`, 'staging.liveplanner.app'),
-    ).toBe('https://staging.livediagram.app/explorer/timeline?id=t1');
+      siteHrefFrom(diagram, `${diagram.url}/explorer/inbox?id=t1`, 'staging.liveplanner.app'),
+    ).toBe('https://staging.livediagram.app/explorer/inbox?id=t1');
   });
 
   it('leaves every link alone off staging, and before the host is known', () => {

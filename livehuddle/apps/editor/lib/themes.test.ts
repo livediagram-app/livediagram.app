@@ -78,39 +78,6 @@ describe('THEMES catalogue', () => {
   });
 });
 
-describe('UML theme (per-shape colours, docs/specs/010-palette/technology-icons.md)', () => {
-  const uml = getTheme('uml');
-
-  it('paints a new diamond its decision colour, not the base element colour', () => {
-    const diamond = createShape('diamond', 0, 0);
-    const colours = deriveNewBoxedColours(diamond, { theme: 'uml' });
-    expect(colours.fillColor).toBe(uml.shapeColors!.diamond!.fill);
-    expect(colours.strokeColor).toBe(uml.shapeColors!.diamond!.stroke);
-    expect(colours.textColor).toBe(uml.shapeColors!.diamond!.text);
-  });
-
-  it('paints a cylinder its datastore colour, distinct from the diamond', () => {
-    const cyl = deriveNewBoxedColours(createShape('cylinder', 0, 0), { theme: 'uml' });
-    expect(cyl.strokeColor).toBe(uml.shapeColors!.cylinder!.stroke);
-    expect(cyl.strokeColor).not.toBe(uml.shapeColors!.diamond!.stroke);
-  });
-
-  it('falls back to the base element colour for a kind with no override', () => {
-    // No `actor` override, so it should take the theme's element stroke.
-    const actor = deriveNewBoxedColours(createShape('actor', 0, 0), { theme: 'uml' });
-    expect(actor.strokeColor).toBe(uml.elementStroke);
-  });
-
-  it('recolours existing shapes per-kind when applied to a scaffold', () => {
-    const out = recolourElementsForTheme(
-      [createShape('diamond', 0, 0), createShape('cylinder', 0, 0)],
-      uml,
-    ) as ShapeElement[];
-    expect(out[0]!.strokeColor).toBe(uml.shapeColors!.diamond!.stroke);
-    expect(out[1]!.strokeColor).toBe(uml.shapeColors!.cylinder!.stroke);
-  });
-});
-
 describe('getTheme', () => {
   it('returns the matching theme by id', () => {
     const slate = getTheme('slate');
@@ -192,7 +159,7 @@ describe('colour-preset re-derivation across themes (docs/specs/010-palette/styl
     const midnightBold = shapeColorPresets(midnight).find((p) => p.id === 'bold')!;
 
     const shape = {
-      ...createShape('square', 0, 0),
+      ...createShape('focus-button', 0, 0),
       colorPreset: 'bold',
       fillColor: slateBold.fill,
       strokeColor: slateBold.stroke,
@@ -211,14 +178,14 @@ describe('colour-preset re-derivation across themes (docs/specs/010-palette/styl
     const slate = getTheme('slate');
     const midnight = getTheme('midnight');
     // A hand-picked colour with NO colorPreset is preserved, not re-derived.
-    const shape = { ...createShape('square', 0, 0), fillColor: '#abcdef' };
+    const shape = { ...createShape('focus-button', 0, 0), fillColor: '#abcdef' };
     const [out] = switchThemeElements([shape], slate, midnight) as Array<typeof shape>;
     expect(out!.fillColor).toBe('#abcdef');
   });
 
   it('rederiveColorPresetForTheme no-ops on an unknown preset / non-shape', () => {
     const slate = getTheme('slate');
-    const shape = { ...createShape('square', 0, 0), colorPreset: 'branch-9' };
+    const shape = { ...createShape('focus-button', 0, 0), colorPreset: 'branch-9' };
     // No 'branch-9' on a single-accent theme → untouched.
     expect(rederiveColorPresetForTheme(shape, slate)).toBe(shape);
     const arrow = storedPinnedArrow('arrow', 'a', 'e', 'b', 'w');
@@ -272,7 +239,7 @@ describe('recolourElementForTheme', () => {
   const shape: ShapeElement = {
     id: 's',
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     x: 0,
     y: 0,
     width: 100,
@@ -443,7 +410,7 @@ describe('switchThemeElement', () => {
     const el: ShapeElement = {
       id: 's',
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       x: 0,
       y: 0,
       width: 100,
@@ -462,7 +429,7 @@ describe('switchThemeElement', () => {
     const el: ShapeElement = {
       id: 's',
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       x: 0,
       y: 0,
       width: 100,
@@ -483,7 +450,7 @@ describe('switchThemeElement', () => {
     const el: ShapeElement = {
       id: 's',
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       x: 0,
       y: 0,
       width: 100,
@@ -499,7 +466,7 @@ describe('switchThemeElement', () => {
     const bar: ShapeElement = {
       id: 's',
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       x: 0,
       y: 0,
       width: 100,
@@ -590,7 +557,7 @@ describe('resetThemeElement', () => {
     const el: ShapeElement = {
       id: 's',
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       x: 0,
       y: 0,
       width: 100,
@@ -612,7 +579,7 @@ describe('resetThemeElement', () => {
     const bar: ShapeElement = {
       id: 's',
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       x: 0,
       y: 0,
       width: 100,
@@ -632,7 +599,7 @@ describe('resetThemeElement', () => {
     const el: ShapeElement = {
       id: 's',
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       x: 0,
       y: 0,
       width: 100,
@@ -682,7 +649,7 @@ describe('deriveNewBoxedColours', () => {
   const shape: ShapeElement = {
     id: 's',
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     x: 0,
     y: 0,
     width: 100,
@@ -821,9 +788,9 @@ describe('multi-colour (rainbow) themes', () => {
   // A minimal mind map: centre → two topics. Centre is the trunk; the
   // two topics are distinct branches.
   function miniMap() {
-    const center = { ...createShape('circle', 0, 0), id: 'center' };
-    const t1 = { ...createShape('square', 300, 0), id: 't1' };
-    const t2 = { ...createShape('square', -300, 0), id: 't2' };
+    const center = { ...createShape('focus-button', 0, 0), id: 'center' };
+    const t1 = { ...createShape('focus-button', 300, 0), id: 't1' };
+    const t2 = { ...createShape('focus-button', -300, 0), id: 't2' };
     return [
       center,
       t1,
@@ -837,11 +804,10 @@ describe('multi-colour (rainbow) themes', () => {
     const rainbow = THEMES.find((t) => t.id === 'rainbow')!;
     const out = recolourElementsForTheme(miniMap(), rainbow);
     const byId = Object.fromEntries(out.map((el) => [el.id, el]));
-    // Trunk gets the rootColor stroke.
-    expect((byId.center as { strokeColor?: string }).strokeColor).toBe(rainbow.rootColor!.stroke);
-    // The two topics get the first two palette entries, and they differ.
-    expect((byId.t1 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![0]!.stroke);
-    expect((byId.t2 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![1]!.stroke);
+    // Each box takes the next hue in document order (DEFAULTS.md D34), so the three differ.
+    expect((byId.center as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![0]!.stroke);
+    expect((byId.t1 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![1]!.stroke);
+    expect((byId.t2 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![2]!.stroke);
   });
 
   // A stored arrow is read for the branches but kept exactly as stored (docs/specs/002-project-scope/
@@ -869,8 +835,8 @@ describe('multi-colour (rainbow) themes', () => {
     const rainbow = THEMES.find((t) => t.id === 'rainbow')!;
     const out = switchThemeElements(miniMap(), brand, rainbow);
     const byId = Object.fromEntries(out.map((el) => [el.id, el]));
-    expect((byId.t1 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![0]!.stroke);
-    expect((byId.t2 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![1]!.stroke);
+    expect((byId.t1 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![1]!.stroke);
+    expect((byId.t2 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![2]!.stroke);
   });
 
   it('resetThemeElementsToTheme force-repaints every branch from the palette', () => {
@@ -879,7 +845,7 @@ describe('multi-colour (rainbow) themes', () => {
     const els = miniMap().map((el) => (el.id === 't1' ? { ...el, strokeColor: '#123456' } : el));
     const out = resetThemeElementsToTheme(els, rainbow);
     const byId = Object.fromEntries(out.map((el) => [el.id, el]));
-    expect((byId.t1 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![0]!.stroke);
+    expect((byId.t1 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![1]!.stroke);
   });
 
   it('reset-to-theme keeps a preset binding, re-deriving its colours for the theme', () => {
@@ -888,7 +854,7 @@ describe('multi-colour (rainbow) themes', () => {
     // A Bold-preset shape whose fill was drifted (e.g. by an older theme):
     // reset should snap it to THIS theme's Bold, not to the plain theme look,
     // and must not drop the binding.
-    const shape = { ...createShape('square', 0, 0), colorPreset: 'bold', fillColor: '#123456' };
+    const shape = { ...createShape('room', 0, 0), colorPreset: 'bold', fillColor: '#123456' };
     const [out] = resetThemeElementsToTheme([shape], slate) as [typeof shape];
     expect(out.colorPreset).toBe('bold');
     expect(out.fillColor).toBe(bold.fill);
@@ -898,7 +864,7 @@ describe('multi-colour (rainbow) themes', () => {
 
   it('reset-to-theme drops a binding the theme cannot express', () => {
     const slate = getTheme('slate');
-    const shape = { ...createShape('square', 0, 0), colorPreset: 'branch-3' };
+    const shape = { ...createShape('focus-button', 0, 0), colorPreset: 'branch-3' };
     const [out] = resetThemeElementsToTheme([shape], slate) as [typeof shape];
     expect(out.colorPreset).toBeUndefined();
     expect(out.fillColor).toBe(slate.elementFill ?? undefined);

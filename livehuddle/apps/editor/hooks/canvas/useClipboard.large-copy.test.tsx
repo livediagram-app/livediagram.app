@@ -18,7 +18,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) =
 const box = (i: number): ShapeElement => ({
   id: `s${i}`,
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: i,
   y: 0,
   width: 10,

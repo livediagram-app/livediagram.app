@@ -55,6 +55,46 @@ describe('seeded tabs compiled on create', () => {
     });
   });
 
+  // The diagram shapes left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+  // part 5, D31): an API client's seeded tab cannot carry a new one, while the editor's own create (a copy, an Offline
+  // Mode re-commit) keeps a stored one exactly as stored.
+  it("refuses a token's seeded square by its tab, and keeps a person's stored one", async () => {
+    const square = { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 120, height: 60 };
+    const tabs = [{ id: 't1', name: 'Old', elements: [square] }];
+    const agent = await handleDocuments(
+      makeTestRouteContext('POST', '/api/documents', {
+        env: db.env,
+        ...asUser('user_alice'),
+        token: { id: 'tok_1' },
+        body: { id: 'd1', name: 'Shop', tabs },
+      }),
+    );
+    expect(agent.status).toBe(400);
+    expect(await agent.json()).toEqual({
+      error: 'invalid_body',
+      message: 'shape="square": shapes are no longer supported in livehuddle: add a sticky',
+      tabId: 't1',
+    });
+    expect(await getDocument(db.env, 'd1')).toBeNull();
+    expect(compileSeededTabs([{ elements: [square] }], 'd1', { agent: true })).toMatchObject({
+      refusal: { status: 400, body: { error: 'invalid_body' } },
+    });
+    expect(
+      compileSeededTabs([{ id: 't1', elements: ['x', square] }], 'd1', { agent: true }),
+    ).toHaveProperty('refusal');
+    expect(
+      compileSeededTabs([{ id: 't1', elements: [{ ...square, shape: 'plant' }] }], 'd1', {
+        agent: true,
+      }),
+    ).toEqual({
+      tabs: [{ id: 't1', elements: [{ ...square, shape: 'plant' }] }],
+      intent: null,
+    });
+
+    expect((await create(tabs)).status).toBe(201);
+    expect((await getTab(db.env, 'd1', 't1'))?.elements).toEqual([square]);
+  });
+
   // The intent is the index's (it files the create by it, docs/specs/013-workspace/default-folders.md): what the
   // api owns is working it out from the create.
   // No template in the catalogue carries a family since the retro formats left (Work Tracker #423).

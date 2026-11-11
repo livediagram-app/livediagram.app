@@ -7,7 +7,7 @@ import type { Element } from './index';
 const shape = (id: string, x: number, y: number, w: number, h: number, over = {}): Element => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x,
   y,
   width: w,

@@ -6,7 +6,9 @@ import {
 } from './element-fingerprint';
 import type { Element, ShapeElement } from './index';
 
-const square: ShapeElement = {
+// A stored square (a retired element since part 5, docs/specs/002-project-scope/not-in-livehuddle.md "The element
+// engine"): the fingerprint reads only the JSON, so the golden value the api, MCP and CLI share stays as it was.
+const square = {
   id: 'n3',
   type: 'shape',
   shape: 'square',
@@ -15,7 +17,7 @@ const square: ShapeElement = {
   width: 140,
   height: 60,
   label: 'Login',
-};
+} as unknown as ShapeElement;
 
 describe('canonicalElementJson', () => {
   it('sorts keys at every depth and keeps array order', () => {

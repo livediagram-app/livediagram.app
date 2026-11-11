@@ -3,7 +3,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createSticky, type Element } from '@livehuddle/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasDrawGesture } from './useCanvasDrawGesture';
@@ -11,7 +11,7 @@ import { useCanvasDrawGesture } from './useCanvasDrawGesture';
 // The draw-to-size gesture (docs/specs/008-canvas/canvas-and-palette.md): a press starts one, window pointer moves
 // drive it, and the release commits it.
 
-const BOX: PendingDraw = { type: 'shape', kind: 'square' };
+const BOX: PendingDraw = { type: 'shape', kind: 'room' };
 
 type Props = {
   pendingDraw: PendingDraw | null;
@@ -102,7 +102,7 @@ describe('useCanvasDrawGesture box drag', () => {
 // Shift keeps the aspect ratio everywhere (docs/specs/008-canvas/canvas-and-palette.md "Resize"):
 // a box drawn to size with Shift is square, snapped on its leading axis.
 describe('useCanvasDrawGesture with Shift', () => {
-  const wall = { ...createShape('square', 300, 600), width: 80, height: 80 } as Element;
+  const wall = { ...createSticky(300, 600), width: 80, height: 80 } as Element;
 
   it('draws a square box', () => {
     const { result } = setup();

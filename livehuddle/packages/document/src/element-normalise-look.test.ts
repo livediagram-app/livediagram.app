@@ -9,7 +9,7 @@ const boxes = (n: number, extra: Record<string, unknown> = {}) =>
   Array.from({ length: n }, (_, i) => ({
     id: `b${i}`,
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     x: i * 200,
     y: 0,
     width: 160,
@@ -45,7 +45,7 @@ describe('raw box text size by count', () => {
         height: 999,
         label: 'VPC',
       },
-      { id: 'u', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 },
+      { id: 'u', type: 'shape', shape: 'focus-button', x: 0, y: 0, width: 10, height: 10 },
     ]);
     expect(
       sizes(framed)

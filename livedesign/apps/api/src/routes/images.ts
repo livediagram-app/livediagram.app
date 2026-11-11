@@ -15,9 +15,7 @@ import {
   parseImageGrantIds,
   type MediaClient,
 } from '@liveworkspace/media';
-import { reportImagesUploaded } from '@liveworkspace/index-app';
 import { designRoom } from '../design-client';
-import { indexAppClient } from '../index-service';
 import { imageSummary, mediaClient, mediaImageOwnerFor, mediaOwner } from '../media';
 import {
   badRequest,
@@ -97,8 +95,6 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     });
     if (!uploaded.ok) return serviceAnswer(uploaded);
     const { image, deduped } = uploaded.value;
-    // On the uploader's Timeline (one entry a day, counting up); the same bytes again are no news.
-    if (!deduped) ctx.waitUntil?.(reportImagesUploaded(indexAppClient(env), owner));
     return json({ image: imageSummary(image), deduped });
   }
 

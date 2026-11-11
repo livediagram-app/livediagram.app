@@ -19,7 +19,7 @@ const ocean = theme('ocean');
 const shape = (extra: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 's',
   type: 'shape',
-  shape: 'circle',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 100,

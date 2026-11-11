@@ -1,5 +1,10 @@
 # Document views
 
+> **No lint view** ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine), part 5): the diagram lint left livehuddle, so `lint` is no longer a
+> view and `view=lint` is refused as an unknown view. The arrow selectors (`from:`, `to:`, `->`, `downstream:`,
+> `upstream:`) left the edit operations; the views still print a stored arrow as `? arrow`. A stored square, circle or
+> other diagram shape prints as `? <kind>` like any retired element.
+
 > **No arrow joins anything** ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine), part 4): a stored arrow, stroke, path or
 > annotation prints as `? <kind>`, and the graph view lists no node and no arrow.
 

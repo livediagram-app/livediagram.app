@@ -1,8 +1,5 @@
-import type { Metadata } from 'next';
-
-// The Explorer's Timeline view: ExplorerShell (the layout) renders it from the address.
-export const metadata: Metadata = { title: 'Timeline · liveworkspace' };
-
+// A retired Explorer address, kept so links already out there land somewhere real: ExplorerShell (the layout)
+// replaces it with Home (lib/explorer/host.ts).
 export default function Page() {
   return null;
 }

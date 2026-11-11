@@ -1,16 +1,16 @@
-tab 0b34 "Checkout platform" · 30 elements: 19 boxes, 11 arrows · 15 unknown · threads 1 open/2 · rev 41
+tab 0b34 "Checkout platform" · 30 elements: 19 boxes, 11 arrows · 16 unknown · threads 1 open/2 · rev 41
 text 98eb "Checkout platform: production"
 ? boundary 048c "Edge"
-square a3cf "Web app"
-hexagon 649c "API gateway"
-actor b811 "Customer"
+signpost a3cf "Web app"
+signpost 649c "API gateway"
+signpost b811 "Customer"
 ? boundary c991 "Services"
-square 202b "Auth service"
-stadium 6406 "Event bus"
-square 12de "Inventory service"
-square 146b "Orders service"
-square e4a8 "Payments service"
-square 0556 "Notification worker"
+signpost 202b "Auth service"
+signpost 6406 "Event bus"
+signpost 12de "Inventory service"
+signpost 146b "Orders service"
+signpost e4a8 "Payments service"
+signpost 0556 "Notification worker"
 ? boundary ca76 "Data"
-cylinder d41e "Orders DB"
-… notes hidden; attributes hidden; 16 elements hidden: read_document {"budget":383}
+signpost d41e "Orders DB"
+… notes hidden; attributes hidden; 16 elements hidden: read_document {"budget":390}

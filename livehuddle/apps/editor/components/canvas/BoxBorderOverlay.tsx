@@ -1,15 +1,11 @@
-import type { ShapeKind } from '@livehuddle/document';
-
-// SVG border for the four CSS-rendered shapes (square / circle /
-// stadium / browser). Their fill + corner radius still come from the
-// wrapper div, but a CSS `border-style` can't draw the composite dash
+// SVG border for the box-path shapes (a mode button, a portal; shape-paint-path). Their fill + corner radius still
+// come from the wrapper div, but a CSS `border-style` can't draw the composite dash
 // patterns (long-dash, dash-dot, dash-dot-dot), so when one of those is
 // picked we drop the wrapper's CSS border and stroke the outline here
 // with a real `stroke-dasharray` instead. The viewBox is the element's
 // pixel size (preserveAspectRatio="none"), so coordinates are 1:1 with
 // screen pixels and the outline never distorts on a stretched box.
 export function BoxBorderOverlay({
-  shape,
   width,
   height,
   stroke,
@@ -17,7 +13,6 @@ export function BoxBorderOverlay({
   dasharray,
   radiusPx,
 }: {
-  shape: ShapeKind;
   width: number;
   height: number;
   stroke: string;
@@ -25,7 +20,7 @@ export function BoxBorderOverlay({
   // SVG dasharray string for the chosen pattern (never the solid case,
   // which is left to the cheaper CSS path).
   dasharray: string;
-  // Corner radius for the square / browser rounded rectangle, in px.
+  // The box's corner radius, in px.
   radiusPx: number;
 }) {
   if (strokeWidth <= 0 || width <= 0 || height <= 0) return null;
@@ -46,17 +41,9 @@ export function BoxBorderOverlay({
     strokeLinejoin: 'round' as const,
   };
 
-  let outline;
-  if (shape === 'circle') {
-    outline = <ellipse cx={width / 2} cy={height / 2} rx={w / 2} ry={h / 2} {...common} />;
-  } else {
-    // square / browser use the user's pixel radius; stadium is a pill
-    // (radius = half the short side). Clamp so the radius never exceeds
-    // what the box can hold.
-    const maxR = Math.min(w, h) / 2;
-    const r = shape === 'stadium' ? maxR : Math.min(Math.max(radiusPx - inset, 0), maxR);
-    outline = <rect x={inset} y={inset} width={w} height={h} rx={r} ry={r} {...common} />;
-  }
+  // The user's pixel radius, clamped so it never exceeds what the box can hold.
+  const r = Math.min(Math.max(radiusPx - inset, 0), Math.min(w, h) / 2);
+  const outline = <rect x={inset} y={inset} width={w} height={h} rx={r} ry={r} {...common} />;
 
   return (
     <svg

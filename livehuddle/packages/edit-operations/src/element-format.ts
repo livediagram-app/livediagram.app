@@ -59,7 +59,8 @@ export function elementKindsText(): string {
       .filter((k) => !isRetiredKind(k))
       .join(', ')}: made in the editor`,
     // The retired kinds (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
-    `  ${Object.keys(NOT_ADDED).filter(isRetiredKind).join(', ')}: no longer supported in livehuddle`,
+    '  no longer supported in livehuddle:',
+    ...wrapped(Object.keys(NOT_ADDED).filter(isRetiredKind), '    ', ', '),
   ].join('\n');
 }
 

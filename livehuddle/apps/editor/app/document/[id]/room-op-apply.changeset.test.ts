@@ -21,7 +21,7 @@ function randomElement(rand: () => number): Element {
   return {
     id,
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     x: Math.floor(rand() * 50),
     y: 0,
     width: 10,

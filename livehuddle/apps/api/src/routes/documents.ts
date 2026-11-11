@@ -282,7 +282,7 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
       if (!dates.ok) return badRequest('invalid document dates');
       // Seeded tabs given as a template are compiled first (docs/specs/015-api/api.md).
       if (Array.isArray(body.tabs)) {
-        const seed = compileSeededTabs(body.tabs, body.id);
+        const seed = compileSeededTabs(body.tabs, body.id, { agent: !!ctx.token });
         if ('refusal' in seed) return json(seed.refusal.body, { status: seed.refusal.status });
         body.tabs = seed.tabs as Tab[];
       }

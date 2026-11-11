@@ -3,7 +3,7 @@
 // The Explorer's search field, the filter lens's field (liveplanner/docs/specs/013-workspace/explorer-filters.md
 // "The field"): the lens string's tokens as removable pills, then the words being typed, in a WAI-ARIA combobox
 // with a listbox of suggestions (`made-by:ai`, `edited:7d`, …). On a list it narrows that list, through its
-// `?q=`; on a view that lists nothing of its own (Home, the Inbox, the Timeline, the Trash) the first word opens
+// `?q=`; on a view that lists nothing of its own (Home, the Inbox, the Trash) the first word opens
 // Search results. The address follows the field at most every 250 ms (a trailing write) and at once when it loses
 // focus, replacing the history entry rather than adding one per keystroke. Two sizes, as livediagram draws its
 // field: the header's bar, and Home's hero, drawn large with New inside its end. Typing in the hero leaves Home,

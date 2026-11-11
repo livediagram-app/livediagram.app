@@ -14,7 +14,7 @@ import {
 // announcements and the other surfaces that name an element read the same
 // names. These tests pin the formats they rely on.
 
-const square = (label?: string) => ({ ...createShape('square', 0, 0), label });
+const room = (label?: string) => ({ ...createShape('room', 0, 0), label });
 // A stored (retired) arrow (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
 const arrow = (label?: string) =>
   ({
@@ -30,7 +30,7 @@ const retiredBox = (type: string, extra: object = {}) =>
 
 describe('kindLabel', () => {
   it('names shapes by their concrete sub-kind, others by type', () => {
-    expect(kindLabel(square())).toBe('Square');
+    expect(kindLabel(room())).toBe('Room');
     expect(kindLabel(arrow())).toBe('Arrow');
     expect(kindLabel(createSticky(0, 0))).toBe('Sticky note');
     expect(kindLabel(createText(0, 0))).toBe('Text');
@@ -47,28 +47,28 @@ describe('kindLabel', () => {
 
 describe('describeOne / describeMany', () => {
   it('prefers the quoted label, falls back to the articled kind', () => {
-    expect(describeOne(square('Login'))).toBe("'Login'");
-    expect(describeOne(square())).toBe('a Square');
+    expect(describeOne(room('Login'))).toBe("'Login'");
+    expect(describeOne(room())).toBe('a Room');
     expect(describeOne(arrow('yes'))).toBe('an Arrow');
   });
 
   it('groups a mixed multi-selection by kind', () => {
-    expect(describeMany([square(), square(), arrow()])).toBe('2 Squares & an Arrow');
+    expect(describeMany([room(), room(), arrow()])).toBe('2 Rooms & an Arrow');
   });
 });
 
 describe('elementAriaLabel', () => {
   it('leads with the kind, then the quoted label when present', () => {
-    expect(elementAriaLabel(square('Login'))).toBe('Square "Login"');
-    expect(elementAriaLabel(square('  '))).toBe('Square');
+    expect(elementAriaLabel(room('Login'))).toBe('Room "Login"');
+    expect(elementAriaLabel(room('  '))).toBe('Room');
     expect(elementAriaLabel(arrow('yes'))).toBe('Arrow "yes"');
     expect(elementAriaLabel(createSticky(0, 0))).toBe('Sticky note');
   });
 });
 
 describe('shapeKindLabel', () => {
-  it('reads a shape kind as prose, for the Shape tiles of the element menu', () => {
-    expect(shapeKindLabel('square')).toBe('Square');
+  it('reads a shape kind as prose', () => {
+    expect(shapeKindLabel('coffee-machine')).toBe('Coffee machine');
     expect(shapeKindLabel('pie-chart')).toBe('Pie chart');
   });
 });
@@ -79,9 +79,9 @@ describe('describeSelected', () => {
     elementId,
     anchor: 'e' as const,
   });
-  const travel = { ...createShape('square', 0, 0), id: 'travel', label: 'Travel' };
-  const hotel = { ...createShape('square', 0, 0), id: 'hotel', label: 'Team\n offsite' };
-  const blank = { ...createShape('square', 0, 0), id: 'blank' };
+  const travel = { ...createSticky(0, 0), id: 'travel', label: 'Travel' };
+  const hotel = { ...createSticky(0, 0), id: 'hotel', label: 'Team\n offsite' };
+  const blank = { ...createSticky(0, 0), id: 'blank' };
 
   it('names what a pinned arrow joins, its own label first', () => {
     const a = { ...arrow(), from: pinned('travel'), to: pinned('hotel') };
@@ -146,7 +146,7 @@ describe('elementRole', () => {
   const shape = (kind: string) =>
     ({ id: 's', type: 'shape', shape: kind, x: 0, y: 0, width: 10, height: 10 }) as Element;
   it('keeps a drawn element a picture', () => {
-    expect(elementRole(shape('square'))).toBe('img');
+    expect(elementRole(shape('room'))).toBe('img');
     expect(
       elementRole({
         id: 'i',
@@ -189,8 +189,8 @@ describe('elementRole', () => {
   // Indicator buttons (a note, a link, an action, comments) are controls on any element's face: axe's
   // nested-interactive, and unreachable inside a picture.
   it('makes an element showing indicator buttons a group', () => {
-    expect(elementRole(shape('square'), true)).toBe('group');
-    expect(elementRole(shape('square'), false)).toBe('img');
+    expect(elementRole(shape('room'), true)).toBe('group');
+    expect(elementRole(shape('room'), false)).toBe('img');
   });
 
   it('makes a table a group: its cells edit in place and its track menus are buttons', () => {

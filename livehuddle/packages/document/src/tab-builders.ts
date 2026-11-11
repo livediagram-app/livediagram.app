@@ -4,7 +4,6 @@
 
 import { recolourElementsForTheme } from './theme-graph';
 import { getBuiltInTheme } from './themes';
-import { coerceShapeKind } from './validate';
 import type { Element, Tab } from './index';
 
 // Build a finished, persistable Tab from validated elements: paint the chosen preset theme onto the elements and the
@@ -21,15 +20,12 @@ export function buildTab(
   themeId: string | undefined,
 ): Tab {
   const theme = getBuiltInTheme(themeId);
-  // Coerce off-vocabulary shape kinds (e.g. a model emitting "rectangle", which
-  // isn't a kind — the box is "square") so every node actually renders a box.
-  const coerced = elements.map((el) =>
-    el.type === 'shape' ? { ...el, shape: coerceShapeKind(el.shape) } : el,
-  );
+  // A shape of a kind livehuddle does not have is kept as given (a retired element): nothing coerces it into a kept
+  // kind (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5).
   return {
     id: tabId,
     name,
-    elements: recolourElementsForTheme(coerced, theme),
+    elements: recolourElementsForTheme(elements, theme),
     theme: theme.id,
     backgroundColor: theme.backgroundColor,
     backgroundPattern: theme.backgroundPattern,

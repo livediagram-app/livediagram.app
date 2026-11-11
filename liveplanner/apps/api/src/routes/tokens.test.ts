@@ -5,7 +5,6 @@ const { db } = vi.hoisted(() => ({
   db: {
     // The revoke itself is tested in db/api-tokens.test.ts; here it is a seam.
     revokePresentedToken: vi.fn(),
-    retractTimelineWarning: vi.fn(),
     getParticipant: vi.fn(),
   },
 }));
@@ -33,7 +32,6 @@ const makeCtx = (
 beforeEach(() => {
   for (const fn of Object.values(db)) if (typeof fn === 'function') fn.mockReset();
   db.revokePresentedToken.mockResolvedValue(undefined);
-  db.retractTimelineWarning.mockResolvedValue(undefined);
 });
 
 // Tokens are made, listed and revoked on liveworkspace.app (liveworkspace/docs/specs/003-accounts/accounts.md "API

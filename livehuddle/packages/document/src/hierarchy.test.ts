@@ -1,201 +1,49 @@
 import { createShape } from './factories';
-import type { Element, RetiredAnchor } from './index';
+import type { Element } from './index';
 import { describe, expect, it } from 'vitest';
-import { assignBranches, ROOT_BRANCH } from './hierarchy';
+import { assignBranches } from './hierarchy';
 import { MAX_ELEMENTS_PER_TAB } from './validate';
 
-// A stored arrow pinned at both ends: a retired element, read only for which boxes hang together.
-let arrowCount = 0;
-function createPinnedArrow(
-  from: string,
-  fromAnchor: RetiredAnchor,
-  to: string,
-  toAnchor: RetiredAnchor,
-) {
-  return {
-    id: `arrow-${++arrowCount}`,
-    type: 'arrow' as const,
-    from: { kind: 'pinned' as const, elementId: from, anchor: fromAnchor },
-    to: { kind: 'pinned' as const, elementId: to, anchor: toAnchor },
-  };
-}
-
-// Helper: a square with a fixed id so tests can assert on the branch map.
+// A box with a fixed id so tests can assert on the branch map.
 function box(id: string): Element {
-  return { ...createShape('square', 0, 0), id };
+  return { ...createShape('focus-button', 0, 0), id };
 }
 
-describe('assignBranches', () => {
-  it('marks a root and gives each of its subtrees a distinct branch', () => {
-    // root → a, root → b. Two limbs, two branches.
-    const root = box('root');
-    const a = box('a');
-    const b = box('b');
-    const elements: Element[] = [
-      root,
-      a,
-      b,
-      createPinnedArrow(root.id, 's', a.id, 'n'),
-      createPinnedArrow(root.id, 's', b.id, 'n'),
-    ];
-    const branches = assignBranches(elements);
-    expect(branches.get('root')).toBe(ROOT_BRANCH);
-    expect(branches.get('a')).toBe(0);
-    expect(branches.get('b')).toBe(1);
-  });
-
-  it('propagates a branch index down a whole subtree', () => {
-    // root → a → a1, a2. The leaves inherit a's branch, not new ones.
-    const elements: Element[] = [
-      box('root'),
-      box('a'),
-      box('a1'),
-      box('a2'),
-      box('b'),
-      createPinnedArrow('root', 's', 'a', 'n'),
-      createPinnedArrow('root', 's', 'b', 'n'),
-      createPinnedArrow('a', 's', 'a1', 'n'),
-      createPinnedArrow('a', 's', 'a2', 'n'),
-    ];
-    const branches = assignBranches(elements);
-    expect(branches.get('a')).toBe(0);
-    expect(branches.get('a1')).toBe(0);
-    expect(branches.get('a2')).toBe(0);
-    // b is the second limb, so a fresh index.
-    expect(branches.get('b')).toBe(1);
-  });
-
-  it('cycles loose (graph-less) elements through branch indices by document order', () => {
-    const elements: Element[] = [box('x'), box('y'), box('z')];
-    const branches = assignBranches(elements);
-    expect(branches.get('x')).toBe(0);
-    expect(branches.get('y')).toBe(1);
-    expect(branches.get('z')).toBe(2);
-  });
-
-  it('ignores arrows with a free endpoint (no implied hierarchy)', () => {
-    const a = box('a');
-    const b = box('b');
-    // Free → free arrow shouldn't create an edge; both stay loose.
-    const elements: Element[] = [a, b, createPinnedArrow(a.id, 's', b.id, 'n')];
-    // Mutate the arrow to a free `to` endpoint.
-    const arrow = elements[2] as Extract<Element, { type: 'arrow' }>;
-    elements[2] = { ...arrow, to: { kind: 'free', x: 10, y: 10 } };
-    const branches = assignBranches(elements);
-    // No edge: a and b are both loose → indices 0 and 1.
-    expect(branches.get('a')).toBe(0);
-    expect(branches.get('b')).toBe(1);
-  });
-
-  it('does not assign a branch to arrows themselves', () => {
-    const elements: Element[] = [box('root'), box('a'), createPinnedArrow('root', 's', 'a', 'n')];
-    const branches = assignBranches(elements);
-    expect(branches.size).toBe(2); // root + a, not the arrow
-  });
-
-  it('survives a self-loop arrow without crashing', () => {
-    const elements: Element[] = [box('a'), createPinnedArrow('a', 's', 'a', 'n')];
-    const branches = assignBranches(elements);
-    // No real edge → a is loose.
-    expect(branches.get('a')).toBe(0);
-  });
-
-  it('keeps the first branch that reaches a shared (diamond) descendant', () => {
-    // root → a, root → b, a → shared, b → shared.
-    const elements: Element[] = [
-      box('root'),
-      box('a'),
-      box('b'),
-      box('shared'),
-      createPinnedArrow('root', 's', 'a', 'n'),
-      createPinnedArrow('root', 's', 'b', 'n'),
-      createPinnedArrow('a', 's', 'shared', 'n'),
-      createPinnedArrow('b', 's', 'shared', 'n'),
-    ];
-    const branches = assignBranches(elements);
-    // a is branch 0, b is branch 1; shared is painted by a's subtree first.
-    expect(branches.get('shared')).toBe(branches.get('a'));
-  });
+// A stored arrow pinned at both ends: a retired element, which takes no branch.
+const pinnedArrow = (id: string, from: string, to: string): Element => ({
+  id,
+  type: 'arrow',
+  from: { kind: 'pinned', elementId: from, anchor: 's' },
+  to: { kind: 'pinned', elementId: to, anchor: 'n' },
 });
 
-// docs/specs/011-theme/blueprints/multicolour-themes.md, E2 / E4 / E8 / E10 and I1-I3.
-describe('assignBranches edge cases', () => {
-  it('ignores an arrow pinned to another arrow or to an element not on the tab', () => {
-    const connector = createPinnedArrow('a', 's', 'b', 'n');
-    const elements: Element[] = [
-      box('a'),
-      box('b'),
-      connector,
-      createPinnedArrow('a', 's', connector.id, 'n'),
-      createPinnedArrow('a', 's', 'gone', 'n'),
-    ];
-    const branches = assignBranches(elements);
-    // Only a -> b counts, so a is the root and b its one limb.
-    expect(branches.get('a')).toBe(ROOT_BRANCH);
-    expect(branches.get('b')).toBe(0);
-    expect(branches.has('gone')).toBe(false);
-  });
-
-  it('continues the branch counter for loose elements after the limbs', () => {
-    const elements: Element[] = [
-      box('root'),
-      box('a'),
-      box('b'),
-      box('loose'),
-      createPinnedArrow('root', 's', 'a', 'n'),
-      createPinnedArrow('root', 's', 'b', 'n'),
-    ];
-    expect(assignBranches(elements).get('loose')).toBe(2);
-  });
-
-  it('paints a loop with no root in the trunk colour', () => {
-    const elements: Element[] = [
-      box('a'),
-      box('b'),
-      box('c'),
-      createPinnedArrow('a', 's', 'b', 'n'),
-      createPinnedArrow('b', 's', 'c', 'n'),
-      createPinnedArrow('c', 's', 'a', 'n'),
-    ];
-    const branches = assignBranches(elements);
-    expect([branches.get('a'), branches.get('b'), branches.get('c')]).toEqual([
-      ROOT_BRANCH,
-      ROOT_BRANCH,
-      ROOT_BRANCH,
+// docs/specs/002-project-scope/blueprints/DEFAULTS.md D34: each box takes the next branch in document order.
+describe('assignBranches', () => {
+  it('gives each boxed element the next branch in document order', () => {
+    const branches = assignBranches([box('a'), box('b'), box('c')]);
+    expect([...branches]).toEqual([
+      ['a', 0],
+      ['b', 1],
+      ['c', 2],
     ]);
   });
 
-  it('walks a single chain as long as a tab allows without exhausting the stack', () => {
-    const count = MAX_ELEMENTS_PER_TAB / 2;
-    const elements: Element[] = [];
-    for (let i = 0; i < count; i++) elements.push(box(`n${i}`));
-    for (let i = 0; i < count - 1; i++) {
-      elements.push(createPinnedArrow(`n${i}`, 's', `n${i + 1}`, 'n'));
-    }
+  it('reads no arrow: a stored tree is painted as loose boxes, and the arrow takes no branch', () => {
+    const elements = [box('root'), box('child'), pinnedArrow('e', 'root', 'child')];
     const branches = assignBranches(elements);
-    expect(branches.get('n0')).toBe(ROOT_BRANCH);
-    expect(branches.get(`n${count - 1}`)).toBe(0);
+    expect(branches.get('root')).toBe(0);
+    expect(branches.get('child')).toBe(1);
+    expect(branches.has('e')).toBe(false);
   });
 
-  it('gives every boxed element one in-range entry, no arrow any, and the same result twice', () => {
-    const elements: Element[] = [
-      box('root'),
-      box('a'),
-      box('a1'),
-      box('b'),
-      box('loose'),
-      createPinnedArrow('root', 's', 'a', 'n'),
-      createPinnedArrow('root', 's', 'b', 'n'),
-      createPinnedArrow('a', 's', 'a1', 'n'),
-    ];
+  it('is empty for an empty tab', () => {
+    expect(assignBranches([]).size).toBe(0);
+  });
+
+  it('stays linear on the largest tab allowed', () => {
+    const elements = Array.from({ length: MAX_ELEMENTS_PER_TAB }, (_, i) => box(`n${i}`));
     const branches = assignBranches(elements);
-    const boxedIds = elements.filter((el) => el.type !== 'arrow').map((el) => el.id);
-    expect([...branches.keys()].sort()).toEqual([...boxedIds].sort());
-    const issued = 3; // a, b, loose
-    for (const value of branches.values()) {
-      expect(value).toBeGreaterThanOrEqual(ROOT_BRANCH);
-      expect(value).toBeLessThan(issued);
-    }
-    expect([...assignBranches(elements)]).toEqual([...branches]);
+    expect(branches.size).toBe(MAX_ELEMENTS_PER_TAB);
+    expect(branches.get(`n${MAX_ELEMENTS_PER_TAB - 1}`)).toBe(MAX_ELEMENTS_PER_TAB - 1);
   });
 });

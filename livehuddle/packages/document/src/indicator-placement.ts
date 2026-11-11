@@ -1,18 +1,16 @@
 // Where an element's indicators sit (docs/specs/008-canvas/element-indicators.md): inside its
-// outline, never across it, on every shape. The outline is the one the canvas already hit-tests
-// against (shape-hit.ts), so a circle offers its curve, a diamond its edges and a mind node its
-// rounded box. A cluster starts tight in its corner and slides inward until it fits, or reports
-// that it cannot (the caller then draws the pip on the outline). Pure; no DOM.
+// outline, never across it. Every kept kind's outline is its rounded box: the round and pointed diagram shapes, whose
+// indicators centred on them, left with the element engine's part 5 (docs/specs/002-project-scope/not-in-livehuddle.md
+// "The element engine"). A cluster starts tight in its corner and slides inward until it fits, or reports that it
+// cannot (the caller then draws the pip on the outline). Pure; no DOM.
 
 import type { Point } from '@liveworkspace/model-core/geometry-primitives';
 import type { BoxedElement, TextAlignX, TextAlignY, TextSize } from './index';
 import { labelFontPx } from '@liveworkspace/model-core/label-font';
-import { pickedByOutline, roundedRectRing, shapeHitOutline } from './shape-hit';
-import type { ShapeKind } from './shape-kind';
 import { insidePolygon } from './inside-polygon';
 import { segmentDistance } from '@liveworkspace/model-core/segment-geometry';
 
-type IndicatorAnchor = 'top-right' | 'top-centre' | 'bottom-left' | 'bottom-centre';
+export type IndicatorAnchor = 'top-right' | 'bottom-left';
 export type IndicatorBox = { x: number; y: number; width: number; height: number };
 
 // How far the cluster keeps from the outline on every side.
@@ -29,44 +27,46 @@ const INDICATOR_STEP_PX = 1;
 const LABEL_CHAR_EM = 0.58;
 const LABEL_LINE_EM = 1.3;
 
-// The symmetric, round or pointed kinds whose indicators centre on them (along the top, or along
-// the bottom for the footer) rather than sitting in a corner they do not have.
-const CENTRED_KINDS: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
-  'circle',
-  'diamond',
-  'hexagon',
-  'cloud',
-  'triangle',
-  'trapezoid',
-  'star',
-  'actor',
-  'final-state',
-]);
+// Points per quarter turn of a rounded corner.
+const CORNER_SEGMENTS = 8;
 
-/** Whether the element's indicators centre on it rather than sit in a corner. */
-export function centredIndicators(el: BoxedElement): boolean {
-  return el.type === 'shape' && CENTRED_KINDS.has(el.shape);
+/** A rectangle with elliptical corners as a closed ring, clockwise from the top edge. */
+export function roundedRectRing(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  rxIn: number,
+  ryIn: number,
+): Point[] {
+  const rx = Math.max(0, Math.min(rxIn, w / 2));
+  const ry = Math.max(0, Math.min(ryIn, h / 2));
+  if (rx === 0 || ry === 0) {
+    return [
+      { x, y },
+      { x: x + w, y },
+      { x: x + w, y: y + h },
+      { x, y: y + h },
+    ];
+  }
+  const corners: [number, number, number][] = [
+    [x + w - rx, y + ry, -Math.PI / 2],
+    [x + w - rx, y + h - ry, 0],
+    [x + rx, y + h - ry, Math.PI / 2],
+    [x + rx, y + ry, Math.PI],
+  ];
+  return corners.flatMap(([cx, cy, from]) =>
+    Array.from({ length: CORNER_SEGMENTS + 1 }, (_, i) => {
+      const a = from + (Math.PI / 2) * (i / CORNER_SEGMENTS);
+      return { x: cx + rx * Math.cos(a), y: cy + ry * Math.sin(a) };
+    }),
+  );
 }
 
-/** The element's outline as closed rings in its local, unrotated px. */
+/** The element's outline as closed rings in its local, unrotated px: its box, rounded to `cornerPx`. */
 export function indicatorRings(el: BoxedElement, cornerPx: number): Point[][] {
   if (el.width <= 0 || el.height <= 0) return [];
-  if (pickedByOutline(el)) {
-    return shapeHitOutline(el)
-      .lines.filter((line) => line.closed && line.points.length > 2)
-      .map((line) => [...line.points]);
-  }
   return [roundedRectRing(0, 0, el.width, el.height, cornerPx, cornerPx)];
-}
-
-/** Where Top sits: top-right on a box, centred along the top of a round or pointed shape. */
-export function topAnchor(el: BoxedElement): IndicatorAnchor {
-  return centredIndicators(el) ? 'top-centre' : 'top-right';
-}
-
-/** Where the footer row starts: bottom-left on a box, centred on a round or pointed shape. */
-export function footerAnchor(el: BoxedElement): IndicatorAnchor {
-  return centredIndicators(el) ? 'bottom-centre' : 'bottom-left';
 }
 
 // An inline icon beside or above a label, as the content box needs it.
@@ -137,15 +137,10 @@ export function placeIndicators(
   label: IndicatorBox | null = null,
 ): IndicatorBox | null {
   if (rings.length === 0 || size.width <= 0 || size.height <= 0) return null;
-  const top = anchor === 'top-right' || anchor === 'top-centre';
+  const top = anchor === 'top-right';
   for (let s = INDICATOR_START_INSET_PX; ; s += INDICATOR_STEP_PX) {
     const box: IndicatorBox = {
-      x:
-        anchor === 'top-right'
-          ? width - s - size.width
-          : anchor === 'bottom-left'
-            ? s
-            : (width - size.width) / 2,
+      x: top ? width - s - size.width : s,
       y: top ? s : height - s - size.height,
       width: size.width,
       height: size.height,
@@ -166,25 +161,16 @@ export function placeIndicators(
 /**
  * Where the pip sits, as an inset from the top and right edges: where a 45° line in from the box's
  * top-right corner first meets the outline (the rule `badgeCornerInset` applies to box-drawn
- * shapes), or, `centred`, where a line down the middle first meets it (the top of a circle, a
- * diamond's or triangle's apex). On a hexagon or a cloud that is the shape itself, never the empty
- * box corner beside it. Null when there is no outline.
+ * shapes), so a rounded corner pushes it in. Null when there is no outline.
  */
 export function pipInset(
   rings: readonly (readonly Point[])[],
   width: number,
   height: number,
-  centred: boolean,
 ): { x: number; y: number } | null {
   if (rings.length === 0) return null;
   const inside = (p: Point) => rings.some((ring) => insidePolygon(p, ring));
-  // Half-pixel steps, no further in than half the shorter side (half the height, centred).
-  if (centred) {
-    for (let d = 0; d <= height / 2; d += 0.5) {
-      if (inside({ x: width / 2, y: d })) return { x: width / 2, y: d };
-    }
-    return null;
-  }
+  // Half-pixel steps, no further in than half the shorter side.
   const reach = Math.min(width, height) / 2;
   for (let d = 0; d <= reach; d += 0.5) {
     if (inside({ x: width - d, y: d })) return { x: d, y: d };

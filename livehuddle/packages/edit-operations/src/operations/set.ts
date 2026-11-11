@@ -46,8 +46,6 @@ function setOne(
   state.warnings.push(...written.warnings);
   for (const warning of written.warnings) {
     if (warning.code === 'label_capped') state.log('[edit-ops] label-capped', { operation });
-    if (warning.code === 'shape_coerced')
-      state.log('[edit-ops] coerced', { operation, field: 'shape' });
   }
   if (fitted.fit.widened || fitted.fit.taller) {
     const fits = touch(state, el.id, operation);

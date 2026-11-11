@@ -27,7 +27,6 @@ import type {
   OrganiseTelemetry,
   ShareHostTelemetry,
   SignInBannerTelemetry,
-  TimelineTelemetry,
   ViewModeTelemetry,
   WelcomeTelemetryType,
 } from '@liveworkspace/explorer';
@@ -161,31 +160,8 @@ function send(app: TelemetrySender, category: string, action: string, type?: str
 
 // ---------- The Explorer's host hooks ------------------------------------------------------------------------
 
-export const trackTimeline: TimelineTelemetry = (action, type) => {
-  switch (action) {
-    case 'Changed':
-      return track('Timeline', 'Changed', type);
-    case 'Selected':
-      return track('Timeline', 'Selected', type);
-    case 'Loaded':
-      return track('Timeline', 'Loaded', type);
-    case 'Opened':
-      return track('Timeline', 'Opened', type);
-    case 'Removed':
-      return track('Timeline', 'Removed', type);
-  }
-};
-
-export const trackHome: HomeTelemetry = (action, type) => {
-  switch (action) {
-    case 'Selected':
-      return track('Home', 'Selected', type);
-    case 'Opened':
-      return track('Home', 'Opened', type);
-    case 'Loaded':
-      return track('Home', 'Loaded', type);
-  }
-};
+// Home's own report: a failed read retried.
+export const trackHome: HomeTelemetry = (_action, type) => track('Home', 'Loaded', type);
 
 // Folders, default folders, the Trash and team libraries. An event about one item (or one app's default folder)
 // counts for that app, whatever the page is filtered to; a folder's for the page's app. An item's team events name

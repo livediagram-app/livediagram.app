@@ -6,6 +6,6 @@ Follow the references below only as needed; never upfront.
 - ./agent-presence.md - when implementing or changing agent presence or the comment verbs: the presence routes, room entries and expiry, the roster fold, focus rings, reply/resolve/reopen, the cross-tab comment list, token levels on them
 - ./document-views.md - when implementing or changing views: refs, slug ids, the outline grammar, containment, every view, budgets, the `?view=` doors
 - ./edit-operations.md - when implementing or changing edit operations: the grammar, selectors, placement, layout on edit, values, results and rejections, `applyEditOperations`
-- ./diagram-lint.md - when implementing or changing the diagram lint: the checks, summary and finding lines, and where changesets and the views call it for the agent tools
+- ./diagram-lint.md - (Gone from livehuddle, Work Tracker #459 part 5) when tracing the diagram lint livehuddle deleted (livediagram keeps it)
 - ./DEFAULTS.md - when a blueprint here applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a blueprint here covers

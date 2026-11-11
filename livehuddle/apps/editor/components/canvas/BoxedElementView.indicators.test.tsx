@@ -2,7 +2,7 @@
 import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement } from '@livehuddle/document';
+import { createShape, createSticky, type BoxedElement } from '@livehuddle/document';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import {
   ElementIndicatorStyleProvider,
@@ -14,13 +14,11 @@ import type { ElementIndicatorStyle } from '@liveworkspace/workbench/lib/element
 // inside the element, the content moves out of their way, selection fades them, Off hides them.
 
 const cloud = {
-  ...createShape('cloud', 0, 0),
+  ...createSticky(0, 0),
   width: 270,
-  height: 180,
+  height: 140,
   label: 'Cloud',
   textSize: 'md',
-  iconId: 'cloud',
-  iconPosition: 'above',
   note: 'A note',
   link: { kind: 'url', url: 'https://example.com' },
   commentThread: {
@@ -70,14 +68,13 @@ function draw(
 }
 
 describe('BoxedElementView indicators', () => {
-  it('draws the indicators along the top and moves the icon and label down', () => {
-    const { container, getByText } = draw(cloud);
+  // Moving the content out of the cluster's way is placeCluster's (ElementIndicators.test.tsx): the icon-and-label
+  // shapes it moved left with the diagram shapes (docs/specs/002-project-scope/not-in-livehuddle.md, part 5).
+  it('draws the indicators along the top', () => {
+    const { container } = draw(cloud);
     const cluster = container.querySelector<HTMLElement>('[data-indicators="top"]')!;
     expect(cluster).not.toBeNull();
     expect(cluster.querySelectorAll('button')).toHaveLength(3);
-    // The content area starts below the cluster.
-    const moved = getByText('Cloud').closest<HTMLElement>('.inset-x-0')!;
-    expect(parseFloat(moved.style.top)).toBeGreaterThan(0);
   });
 
   it('fades the indicators out while the element is selected', () => {
@@ -103,13 +100,13 @@ describe('BoxedElementView indicators', () => {
   });
 
   it('draws none on an element that carries nothing', () => {
-    const plain = { ...createShape('square', 0, 0), label: 'Plain' } as BoxedElement;
+    const plain = { ...createSticky(0, 0), label: 'Plain' } as BoxedElement;
     expect(draw(plain).container.querySelector('[data-indicators]')).toBeNull();
   });
 
   it('reads an icon with no side set as left of its label', () => {
     const box = {
-      ...createShape('square', 0, 0),
+      ...createShape('room', 0, 0),
       width: 260,
       height: 120,
       label: 'Box',
