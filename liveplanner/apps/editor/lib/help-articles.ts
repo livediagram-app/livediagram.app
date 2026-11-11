@@ -61,7 +61,7 @@ export const HELP_ARTICLES = {
   planTour: 'plan/plan-tour',
   // Automations (docs/specs/026-plan/automations.md "The Automations screen": How Rules Work). The Plan section's
   // landing until the Automations article lands; then its own path.
-  planAutomations: 'plan',
+  planAutomations: 'plan/automations',
   links: 'plan/dashboards',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
