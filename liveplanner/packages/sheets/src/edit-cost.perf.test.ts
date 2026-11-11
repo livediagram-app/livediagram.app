@@ -3,7 +3,12 @@
 // applying the write), and every drawn Sheet walked every formula's syntax tree on every store change to learn
 // whether the tab reads Plan cards (2.5 ms each). Timed in CPU time (cpuMsOf), as ratios or budgets.
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
+import {
+  cpuBudgetMs,
+  cpuGrowthRatio,
+  cpuMsOf,
+  cpuRatioCeiling,
+} from '@liveworkspace/vitest-config/cpu-time';
 import { Workbook } from './engine/workbook';
 import { compileFormula } from './formula/stored';
 import { cellKey, NOBODY, type Sheet } from './sheet';
@@ -59,23 +64,17 @@ describe('a one-cell edit on a 50,000-cell sheet', () => {
       cells: [{ r: 'row5000', c: 'col1', i: { s: 'hello' } }],
     };
     expect(validateWrite(sheet, write)).toEqual({ ok: true });
-    // Timed in turns, best of seven each, so a collection or a busy core lands on both sides alike rather than on
-    // whichever was timed second (it read 2.57 once under load, timed one after the other).
-    let apply = Infinity;
-    let check = Infinity;
-    for (let i = 0; i < 7; i++) {
-      apply = Math.min(
-        apply,
-        cpuMsOf(() => applySheetWrite(sheet, write, { now: 1, by: NOBODY })),
-      );
-      check = Math.min(
-        check,
-        cpuMsOf(() => validateWrite(sheet, write)),
-      );
-    }
-    // The check applies the write once and reads every cell's size: about 1.3x applying it, where serialising
-    // every cell made it 4x.
-    expect(check / apply).toBeLessThan(cpuRatioCeiling(2.5));
+    // Both warmed and timed in turns (cpuGrowthRatio), the fastest of each kept, so a collection or a busy core lands
+    // on both sides alike rather than on whichever was timed second (it read 2.57 once under load, timed one after
+    // the other). The check applies the write once and reads every cell's size: about 1.3x applying it, where
+    // serialising every cell made it 4x.
+    const ceiling = cpuRatioCeiling(2.5);
+    const ratio = cpuGrowthRatio(
+      () => cpuMsOf(() => applySheetWrite(sheet, write, { now: 1, by: NOBODY })),
+      () => cpuMsOf(() => validateWrite(sheet, write)),
+      { ceiling },
+    );
+    expect(ratio).toBeLessThan(ceiling);
   }, 30_000);
 
   it('counts a cell by what it stores, the same before and after the cache', () => {

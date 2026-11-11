@@ -130,7 +130,7 @@ describe('the Seasonal toggle', () => {
     vi.setSystemTime(new Date(2026, 9, 15));
     plain();
     expect(toggle().getAttribute('aria-pressed')).toBe('false');
-    expect(cards()).not.toContain(SEASONAL_LOOKS[0]!.label);
+    expect(cards()).not.toContain(SEASONAL_LOOKS[0].label);
     fireEvent.click(toggle());
     expect(track).toHaveBeenCalledWith('UI', 'Changed', 'LooksSeasonal');
     expect(toggle().getAttribute('aria-pressed')).toBe('true');
@@ -154,13 +154,13 @@ describe('the Seasonal toggle', () => {
   });
 
   it('opens on, with the look selected, when the tab already wears a seasonal look', () => {
-    const tab = withLookApplied({ id: 't', name: 'T', elements: [] }, SEASONAL_LOOKS[3]!);
+    const tab = withLookApplied({ id: 't', name: 'T', elements: [] }, SEASONAL_LOOKS[3]);
     plain(tab);
     expect(toggle().getAttribute('aria-pressed')).toBe('true');
     const selected = screen
       .getAllByRole('button')
       .find((b) => b.getAttribute('aria-pressed') === 'true' && b.textContent !== 'Seasonal');
-    expect(selected?.textContent).toContain(SEASONAL_LOOKS[3]!.label);
+    expect(selected?.textContent).toContain(SEASONAL_LOOKS[3].label);
   });
 });
 

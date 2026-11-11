@@ -76,19 +76,19 @@ describe('trimLaserBuffer', () => {
     expect(trimLaserBuffer([...stale, ...fresh], now)).toEqual(fresh);
   });
 
-  it('defaults the now reading to performance.now() when omitted', () => {
+  it('defaults the now reading to the performance.now clock when omitted', () => {
     // Smoke test: omitting `now` shouldn't throw and the default
     // behaviour matches an explicit-now call against the same
     // clock. We use a clearly-stale timestamp (well below any
-    // realistic performance.now() reading minus TTL) for the
-    // dropped point and a freshly-read performance.now() for the
+    // realistic high-resolution clock reading minus TTL) for the
+    // dropped point and a fresh reading of that clock for the
     // kept point. t=0 is NOT a reliable "stale" choice because in
-    // a fresh Node process performance.now() can still be under
+    // a fresh Node process the clock can still read under
     // LASER_BUFFER_TTL_MS, putting t=0 inside the cutoff window.
     const stale = -LASER_BUFFER_TTL_MS - 1_000_000;
     const result = trimLaserBuffer([
       { x: 0, y: 0, t: stale },
-      { x: 1, y: 1, t: performance.now() },
+      { x: 1, y: 1, t: performance.now() }, // wall-clock: the default clock under test
     ]);
     expect(result).toHaveLength(1);
     expect(result[0]?.x).toBe(1);

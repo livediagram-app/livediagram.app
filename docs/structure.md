@@ -480,6 +480,18 @@ Each step is its own PR, and both products build and pass their tests after ever
      `TrashedCard` differ only by the product's noun, so they take `noun` and each editor keeps a thin door at the old
      path that binds its word, leaving routes and copy unchanged. The menu icons' size steps sit in `menu-icon-base`,
      so an editor with its own context-menu icons pulls in none of the workbench's.
+   - Product facts handed in (a later slice, after the fifth below): editor modules that differed from their copies
+     only by one product fact, with the fact left in the editor. The seasonal looks (`lib/seasonal-looks`, written
+     as constants each editor's `TabLook` takes), the laser pen's config, trail buffer and overlay
+     (`lib/laser-config` with `laserConfigStorage(key)`, each editor binding its own `<product>:v2:laser-config`;
+     `lib/laser-buffer`; `components/canvas/LaserOverlay`), the canvas surface contexts
+     (`components/canvas/CanvasSurfaceContext`, livedesign's superset, for livediagram, livedocuments and
+     livedesign) and the editor accent (`hooks/ui/editor-accent`, and `hooks/ui/useEditorAccent`'s
+     `useEditorAccentStroke`, handed the stroke each editor's theme catalogue resolves). About 780 lines in
+     `packages/workbench` and about 3,000 fewer across the editors (tests included); the copies guard's redundant
+     lines fall by about 1,030. Each editor keeps its file at the old path, so no importer changed. Left: the
+     laser config hook (`useLaserConfig`), which sends telemetry the dashboard's scan reads in each product's
+     folders, and livehuddle's and liveplanner's surface contexts, whose theme and branch colours are their own.
    - Fifth slice: the byte-identical editor files that waited on one product import, 12 of the copies guard's
      groups (about 3,500 of the 19,700 redundant non-test lines across the five editors), each at its editor path
      as its own subpath, with their tests: about 1,800 lines in `packages/workbench` (1,200 of code, 600 of tests)
