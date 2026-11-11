@@ -18,7 +18,8 @@
   },
   "dependencies": {
     "@livehuddle/api-schema": "workspace:*",
-    "@livehuddle/document": "workspace:*"
+    "@livehuddle/document": "workspace:*",
+    "@liveworkspace/template-previews": "workspace:*"
   },
   "devDependencies": {
     "@livehuddle/avatar": "workspace:^",

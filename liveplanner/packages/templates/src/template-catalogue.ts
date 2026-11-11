@@ -1,45 +1,13 @@
-// The template library as the agent front doors list it (the MCP's list_templates, the api's GET /api/templates,
-// docs/specs/015-api/blueprints/cli.md "Catalogue routes"): the categories and one entry a template, the editor's
-// hidden onboarding templates left out. A template's category is its primary (docs/specs/008-canvas/canvas-and-palette.md
-// "Template categories"); the five blanks, in no category in the picker, are listed under `blanks` so an agent still
-// finds them.
-import { TEMPLATES, type TemplateKind } from './templates';
-import {
-  TEMPLATE_CATEGORIES,
-  templateCategory,
-  type TemplateCategory,
-} from './template-categories';
+// The template library as the agent front doors list it (docs/specs/015-api/blueprints/cli.md "Catalogue routes"):
+// @liveworkspace/template-previews/template-catalogue, bound to this product's templates and categories, the
+// editor's hidden onboarding templates and the editor-only ones (Forms holds only those, so an agent was offered an empty category) left out.
+import { createTemplateCatalogue } from '@liveworkspace/template-previews/template-catalogue';
+import { TEMPLATE_CATEGORIES, templateCategory } from './template-categories';
+import { TEMPLATES } from './templates';
 
-const BLANKS_CATALOGUE_CATEGORY = {
-  id: 'blanks',
-  label: 'Blanks',
-  description: 'An empty tab in each mode, to start from nothing.',
-} as const;
-
-type TemplateCatalogue = {
-  categories: { id: TemplateCategory | 'blanks'; label: string; description: string }[];
-  templates: {
-    kind: TemplateKind;
-    title: string;
-    description: string;
-    category: TemplateCategory | 'blanks';
-  }[];
-};
-
-export function templateCatalogue(): TemplateCatalogue {
-  const templates: TemplateCatalogue['templates'] = TEMPLATES.filter(
-    (t) => !t.hidden && !t.editorOnly,
-  ).map((t) => ({
-    kind: t.kind,
-    title: t.title,
-    description: t.description,
-    category: templateCategory(t.kind) ?? 'blanks',
-  }));
-  // Only the categories something is listed in: Forms holds only editor-only templates, so an agent was offered an
-  // empty category.
-  const used = new Set<string>(templates.map((t) => t.category));
-  return {
-    categories: [...TEMPLATE_CATEGORIES, BLANKS_CATALOGUE_CATEGORY].filter((c) => used.has(c.id)),
-    templates,
-  };
-}
+export const templateCatalogue = createTemplateCatalogue({
+  templates: TEMPLATES.filter((t) => !t.hidden && !t.editorOnly),
+  categories: TEMPLATE_CATEGORIES,
+  categoryOf: templateCategory,
+  blanksDescription: 'An empty tab in each mode, to start from nothing.',
+});
