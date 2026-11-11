@@ -182,3 +182,34 @@ export interface AutomationRuleStats {
   runsThisWeek: number;
   failuresInARow: number;
 }
+
+// ---- Values ------------------------------------------------------------------------------------------------------
+
+// The values a rule's text may hold (spec "Values"), as written between `{{` and `}}`. `card.field.<Field Name>` and
+// `now ± Nd` are patterns, matched by values.ts; these are the fixed names, in the order Insert a Value lists them.
+export const AUTOMATION_VALUE_NAMES = [
+  'card.title',
+  'card.url',
+  'card.assignee',
+  'card.column',
+  'card.due',
+  'person',
+  'now.date',
+  'card.key',
+  'rule',
+  'now',
+] as const;
+export type AutomationValueName = (typeof AUTOMATION_VALUE_NAMES)[number];
+// Insert a Value's chip labels, by name.
+export const AUTOMATION_VALUE_LABELS: Record<AutomationValueName, string> = {
+  'card.title': 'Card Title',
+  'card.url': 'Card Link',
+  'card.assignee': 'Assignee',
+  'card.column': 'Column',
+  'card.due': 'Due Date',
+  person: 'Who Did It',
+  'now.date': 'Today',
+  'card.key': 'Card Number',
+  rule: 'Rule Name',
+  now: 'Now',
+};

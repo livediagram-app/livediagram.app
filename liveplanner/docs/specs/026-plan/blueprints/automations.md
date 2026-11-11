@@ -39,8 +39,8 @@ packages/items/src/automation/
 packages/api-schema/src/automations.ts
                       AutomationsListResponse { rules: (AutomationRule & { stats, needs: string[] })[],
                         runsToday: number, runsPerDay: number },
-                      AutomationRunsResponse { runs: AutomationRun[] }, AutomationTestResponse { run: AutomationRun },
-                      AutomationRunNowResponse { run: AutomationRun }, error codes below
+                      AutomationRunsResponse { runs: AutomationRun[] }, AutomationRunResponse { run: AutomationRun },
+                      AutomationRunResponse { run: AutomationRun }, error codes below
 
 apps/api/src/plan-room/automations/
   automation-schema.ts   the tables (below), made with the plan's schema (plan-schema.ts) and in its migrations
@@ -142,21 +142,21 @@ error logged.
 
 ## Routes (inside the plan's room, `/api/projects/:id/automations`)
 
-| Route                                   | Body / answer                                                   | Errors                              |
-| --------------------------------------- | --------------------------------------------------------------- | ----------------------------------- |
-| `GET    /automations`                   | → `AutomationsListResponse`                                     | 403 `automations_need_editor`       |
-| `POST   /automations`                   | `AutomationRuleBody` → `{ rule }` (off until it has a trigger   | 400 `automation_invalid` + `path`,  |
-|                                         | and an action; else on)                                         | `automation_value_unknown`,         |
-|                                         |                                                                 | 409 `automation_name_taken`,        |
-|                                         |                                                                 | 409 `automation_rules_full`         |
-| `PUT    /automations/:ruleId`           | `AutomationRuleBody` → `{ rule }`                               | as POST, 404 `automation_not_found` |
-| `POST   /automations/:ruleId/toggle`    | `{ enabled }` → `{ rule }` (on clears `paused`, `failures`)     | 404                                 |
-| `POST   /automations/:ruleId/duplicate` | → `{ rule }` ("<name> copy", off)                               | 404, 409 full                       |
-| `DELETE /automations/:ruleId`           | → 204 (its runs stay in the log until they age out)             | 404                                 |
-| `POST   /automations/order`             | `{ ids }` → 204                                                 | 400                                 |
-| `POST   /automations/test`              | `{ rule: AutomationRuleBody, item }` → `AutomationTestResponse` | 400, 404 `item_not_found`           |
-| `POST   /automations/:ruleId/run`       | `{ item }` → `AutomationRunNowResponse` (manual rules only)     | 404, 409 `automation_not_manual`    |
-| `GET    /automations/runs`              | `?rule&result&since&limit≤200` → `AutomationRunsResponse`       | 403                                 |
+| Route                                   | Body / answer                                                  | Errors                              |
+| --------------------------------------- | -------------------------------------------------------------- | ----------------------------------- |
+| `GET    /automations`                   | → `AutomationsListResponse`                                    | 403 `automations_need_editor`       |
+| `POST   /automations`                   | `AutomationRuleBody` → `{ rule }` (off until it has a trigger  | 400 `automation_invalid` + `path`,  |
+|                                         | and an action; else on)                                        | `automation_value_unknown`,         |
+|                                         |                                                                | 409 `automation_name_taken`,        |
+|                                         |                                                                | 409 `automation_rules_full`         |
+| `PUT    /automations/:ruleId`           | `AutomationRuleBody` → `{ rule }`                              | as POST, 404 `automation_not_found` |
+| `POST   /automations/:ruleId/toggle`    | `{ enabled }` → `{ rule }` (on clears `paused`, `failures`)    | 404                                 |
+| `POST   /automations/:ruleId/duplicate` | → `{ rule }` ("<name> copy", off)                              | 404, 409 full                       |
+| `DELETE /automations/:ruleId`           | → 204 (its runs stay in the log until they age out)            | 404                                 |
+| `POST   /automations/order`             | `{ ids }` → 204                                                | 400                                 |
+| `POST   /automations/test`              | `{ rule: AutomationRuleBody, item }` → `AutomationRunResponse` | 400, 404 `item_not_found`           |
+| `POST   /automations/:ruleId/run`       | `{ item }` → `AutomationRunResponse` (manual rules only)       | 404, 409 `automation_not_manual`    |
+| `GET    /automations/runs`              | `?rule&result&since&limit≤200` → `AutomationRunsResponse`      | 403                                 |
 
 Gate on every route: `gateEdit` for the whole plan, a signed-in caller, no API token, not a tab-scoped link
 (403 `automations_need_editor`). A Browser Storage plan never calls them.
