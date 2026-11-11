@@ -4,20 +4,30 @@
 // Automations, the name editable in place, the On / Off chip, "Edited by … · when", Test on a Card, Save Rule), the
 // steps on the left and the selected step's panel on the right (under the steps on a phone), and Rule Details under
 // the steps. It holds the rule as changed; the dialog asks Discard Changes? before leaving it dirty (onDirty). A
-// refusal's `path` marks the step at fault and selects it.
+// refusal's `path` marks the step at fault and selects it. A rule opened from a template marks the steps it left to
+// pick until they are picked. It holds the plan's webhooks for its outgoing actions, read once when one first opens.
+// A save stamps the rule with this browser's time zone, the saver's (spec "Time triggers").
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { AutomationListedRule } from '@liveplanner/api-schema';
-import type { AutomationRuleBody } from '@liveplanner/items';
-import { AUTOMATION_NAME_MAX } from '@liveplanner/items';
+import {
+  AUTOMATION_NAME_MAX,
+  AUTOMATION_PICK_WORDS,
+  isTimeTrigger,
+  picksLeft,
+  type AutomationRuleBody,
+  type AutomationTemplatePickAt,
+} from '@liveplanner/items';
 import { Button, Switch, formatRelativeTimeShort } from '@liveplanner/ui';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import type { AutomationOutline } from './automation-outline';
-import { AutomationRefusal } from './automations-client';
+import { AutomationRefusal, type AutomationsScope } from './automations-client';
+import { PlanWebhooksProvider, usePlanWebhooksState } from './plan-webhooks';
 import {
   addAction,
+  addBranch,
   addCondition,
   addIfElse,
   bodyOf,
@@ -28,7 +38,7 @@ import {
 } from './rule-draft';
 import { RuleDetails } from './RuleDetails';
 import { RuleSteps, type StepsActions } from './RuleSteps';
-import { defaultAction, defaultCondition } from './step-defaults';
+import { defaultCondition, defaultStep } from './step-defaults';
 import { StepPanel } from './StepPanel';
 import { TestOnCard } from './TestOnCard';
 import type { AutomationsApi } from './use-automations';
@@ -40,6 +50,10 @@ const REFUSAL_WORDS: Readonly<Record<string, string>> = {
   automation_rules_full: 'This plan has 50 rules, the most it can hold. Delete one to add another.',
   automation_value_unknown: 'This names a value rules don’t know. Pick one under Insert a Value.',
   automation_not_found: 'This rule was deleted elsewhere.',
+  automation_condition_unsupported:
+    'A time trigger has nobody behind it: nothing here can name whoever triggered it.',
+  automation_step_unsupported:
+    'This step can’t go here: a branch or an If / Else holds no outgoing action, branch or If.',
 };
 
 const refusalMessage = (r: AutomationRefusal) => REFUSAL_WORDS[r.code] ?? r.message;
@@ -56,6 +70,11 @@ export function RuleBuilder({
   onSaved,
   onDirty,
   trailing,
+  picks = [],
+  timeZone,
+  scope,
+  signedIn = false,
+  onOpenWebhooks,
 }: {
   // The saved rule, or null for one not saved yet.
   rule: AutomationListedRule | null;
@@ -72,8 +91,18 @@ export function RuleBuilder({
   onDirty: (dirty: boolean) => void;
   // The dialog's close, at the bar's end.
   trailing?: React.ReactNode;
+  // What the template it was opened from left to pick.
+  picks?: readonly AutomationTemplatePickAt[];
+  // This browser's time zone: the rule is saved in it.
+  timeZone: string;
+  // The plan, for its webhooks; and whether the person is signed in (webhooks are an account's).
+  scope: Pick<AutomationsScope, 'projectId' | 'shareCode'>;
+  signedIn?: boolean;
+  // Opens the plan's Webhooks dialog, calling back when it closes.
+  onOpenWebhooks?: ((onClosed: () => void) => void) | undefined;
 }) {
   const toast = useToast();
+  const webhooks = usePlanWebhooksState({ scope, signedIn, onOpenDialog: onOpenWebhooks });
   const [saved, setSaved] = useState(() => bodyOf(initial));
   const [body, setBody] = useState(() => bodyOf(initial));
   const [selected, setSelected] = useState<RulePart | null>({ part: 'trigger' });
@@ -83,6 +112,10 @@ export function RuleBuilder({
   const [testing, setTesting] = useState(false);
   const dirty = !rule || !sameBody(body, saved);
   useEffect(() => onDirty(dirty), [dirty, onDirty]);
+  const pickMarks = useMemo(
+    () => new Map(picksLeft(body, picks).map((p) => [p.path, AUTOMATION_PICK_WORDS[p.pick]])),
+    [body, picks],
+  );
 
   const change = (next: AutomationRuleBody, part?: RulePart | null) => {
     setBody(next);
@@ -101,7 +134,7 @@ export function RuleBuilder({
     if (saving) return;
     setSaving(true);
     try {
-      const next = await api.save(rule?.id ?? null, body);
+      const next = await api.save(rule?.id ?? null, { ...body, timeZone });
       if (!rule) track('Plan', 'Created', 'AutomationRule');
       setSaved(bodyOf(next));
       setBody(bodyOf(next));
@@ -146,11 +179,21 @@ export function RuleBuilder({
       change(next.body, next.part);
     },
     addAction: (kind, branch) => {
-      const next = addAction(body, defaultAction(kind, outline), branch);
+      let step = defaultStep(kind, outline);
+      // A time trigger has nobody behind it: Assign starts on the plan's first person instead.
+      if (step.kind === 'assign' && isTimeTrigger(body.trigger)) {
+        const first = outline.people[0]?.id;
+        step = { kind: 'assign', to: first ? { person: first } : { nobody: true } };
+      }
+      const next = addAction(body, step, branch);
       change(next.body, next.part);
     },
     addIfElse: () => {
       const next = addIfElse(body);
+      change(next.body, next.part);
+    },
+    addBranch: () => {
+      const next = addBranch(body);
       change(next.body, next.part);
     },
   };
@@ -236,6 +279,7 @@ export function RuleBuilder({
         selected={selected}
         fault={stepFault && fault ? { part: stepFault, message: fault.message } : null}
         actions={actions}
+        picks={pickMarks}
       />
       <RuleDetails chain={body.chain} onChain={(chain) => change({ ...body, chain })} />
     </div>
@@ -249,38 +293,41 @@ export function RuleBuilder({
       faultPath={fault?.path ?? null}
       person={person}
       now={now}
+      timeZone={timeZone}
     />
   );
 
   return (
-    <div data-rule-builder="" className="flex min-h-0 flex-1 flex-col">
-      {bar}
-      {phone ? (
-        <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 py-4">
-          {steps}
-          <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
-            {panel}
-          </div>
-        </div>
-      ) : (
-        <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_380px]">
-          <div className="min-h-0 overflow-y-auto bg-slate-50/60 px-6 py-5 dark:bg-slate-950/40">
+    <PlanWebhooksProvider value={webhooks}>
+      <div data-rule-builder="" className="flex min-h-0 flex-1 flex-col">
+        {bar}
+        {phone ? (
+          <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 py-4">
             {steps}
+            <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+              {panel}
+            </div>
           </div>
-          <div className="min-h-0 overflow-y-auto border-l border-slate-100 px-5 py-5 dark:border-slate-800">
-            {panel}
+        ) : (
+          <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_380px]">
+            <div className="min-h-0 overflow-y-auto bg-slate-50/60 px-6 py-5 dark:bg-slate-950/40">
+              {steps}
+            </div>
+            <div className="min-h-0 overflow-y-auto border-l border-slate-100 px-5 py-5 dark:border-slate-800">
+              {panel}
+            </div>
           </div>
-        </div>
-      )}
-      {testing ? (
-        <TestOnCard
-          body={body}
-          outline={outline}
-          test={api.test}
-          onRefused={refused}
-          onClose={() => setTesting(false)}
-        />
-      ) : null}
-    </div>
+        )}
+        {testing ? (
+          <TestOnCard
+            body={body}
+            outline={outline}
+            test={api.test}
+            onRefused={refused}
+            onClose={() => setTesting(false)}
+          />
+        ) : null}
+      </div>
+    </PlanWebhooksProvider>
   );
 }

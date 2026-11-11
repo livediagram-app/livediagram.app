@@ -34,11 +34,14 @@ export function FieldActionPanel({
   onChange,
   outline,
   invalid,
+  branch = false,
 }: {
   action: FieldAction;
   onChange: (next: AutomationAction) => void;
   outline: AutomationOutline;
   invalid: boolean;
+  // Inside a branch: the triggering card's values join Insert a Value.
+  branch?: boolean;
 }) {
   const fields = outlineFields(outline.types);
   const field = fields.find((f) => f.id === action.field);
@@ -57,7 +60,11 @@ export function FieldActionPanel({
             )
           }
         >
-          {field ? null : <option value={action.field}>A field no longer here</option>}
+          {field ? null : (
+            <option value={action.field}>
+              {action.field ? 'A field no longer here' : 'Pick a field'}
+            </option>
+          )}
           {fields.map((f) => (
             <option key={f.id} value={f.id}>
               {f.name}
@@ -103,6 +110,7 @@ export function FieldActionPanel({
           value={value.text}
           fields={fields}
           invalid={invalid}
+          branch={branch}
           hint={cls === 'list' ? 'Labels or values, separated by commas.' : undefined}
           onChange={(text) => onChange({ ...action, value: { text } })}
         />

@@ -16,6 +16,7 @@ import {
   type ItemPerson,
   type ItemTypeDef,
   type RuleSentenceOutline,
+  type StatusPhase,
 } from '@liveplanner/items';
 import { tabKindOf, type Tab } from '@liveplanner/project';
 import { usePlan } from '@/components/plan/PlanContext';
@@ -32,6 +33,8 @@ export type AutomationOutline = RuleSentenceOutline & {
   people: readonly ItemPerson[];
   // The columns by status, in the plan's order.
   columns: readonly { status: string; name: string }[];
+  // Where each column sits in the work (a board's done columns, its in-progress ones), for the templates.
+  phases: ReadonlyMap<string, StatusPhase>;
   labels: readonly string[];
   forms: readonly { id: string; name: string }[];
   boards: readonly OutlineBoard[];
@@ -39,6 +42,7 @@ export type AutomationOutline = RuleSentenceOutline & {
 };
 
 const NO_ITEMS: ReadonlyMap<string, Item> = new Map();
+const NO_PHASES: ReadonlyMap<string, StatusPhase> = new Map();
 
 /** The Form tabs and the boards with their saved filters, from the plan's tabs. */
 export function tabsOutline(tabs: readonly Tab[]): {
@@ -103,6 +107,7 @@ export function useAutomationOutline(): AutomationOutline {
   const plan = usePlan();
   const types = plan?.types;
   const statusNames = plan?.statusNames;
+  const phases = plan?.statusPhases ?? NO_PHASES;
   const people = plan?.people;
   const items = plan?.items ?? NO_ITEMS;
   const planTabs = plan?.planTabs;
@@ -121,6 +126,7 @@ export function useAutomationOutline(): AutomationOutline {
       types: types ?? [],
       statuses,
       columns: [...statuses].map(([status, name]) => ({ status, name })),
+      phases,
       people: people ?? [],
       labels,
       tabs,
@@ -129,5 +135,5 @@ export function useAutomationOutline(): AutomationOutline {
       boards: fromTabs.boards,
       items,
     };
-  }, [types, statusNames, people, labels, fromTabs, items]);
+  }, [types, statusNames, phases, people, labels, fromTabs, items]);
 }

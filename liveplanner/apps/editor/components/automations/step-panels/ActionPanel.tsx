@@ -1,32 +1,23 @@
 'use client';
 
 // An action's panel (docs/specs/026-plan/automations.md "Actions"): its kind (changing it starts that kind afresh),
-// then the kind's own fields. Flag, Unflag and Archive have nothing to set.
+// then the kind's own fields. Flag, Unflag and Archive have nothing to set. Inside a branch the kinds leave out
+// Create Card and the text offers the triggering card's values; on a time rule nothing names whoever triggered it.
 
 import {
   AUTOMATION_STEP_NAMES,
   type AutomationAction,
   type AutomationActionKind,
-  type AutomationAssignee,
 } from '@liveplanner/items';
 import type { AutomationOutline } from '../automation-outline';
-import { ACTION_KINDS, defaultAction } from '../step-defaults';
+import { ACTION_KINDS, BRANCH_ACTION_KINDS, defaultAction } from '../step-defaults';
+import { AssignPanel } from './AssignPanel';
 import { CreateCardPanel } from './CreateCardPanel';
 import { FieldActionPanel } from './FieldActionPanel';
 import { LabelActionPanel } from './LabelActionPanel';
 import { MoveActionPanel } from './MoveActionPanel';
 import { PanelField, PanelNote, PanelSelect } from './panel-parts';
-import { PersonPicker } from './PeopleActionPanel';
 import { TextActionPanel } from './TextActionPanel';
-
-const ASSIGNEES: readonly {
-  key: 'trigger' | 'nobody';
-  label: string;
-  value: AutomationAssignee;
-}[] = [
-  { key: 'trigger', label: 'The Person Who Triggered It', value: { trigger: true } },
-  { key: 'nobody', label: 'Nobody (Unassign)', value: { nobody: true } },
-];
 
 const NOTHING_TO_SET: Partial<Record<AutomationActionKind, string>> = {
   flag: 'Flags the card. Nothing else to set.',
@@ -40,12 +31,18 @@ export function ActionPanel({
   onChange,
   outline,
   invalidPath,
+  branch = false,
+  timeRule = false,
 }: {
   action: AutomationAction;
   onChange: (next: AutomationAction) => void;
   outline: AutomationOutline;
   // The refusal's path within this action ('' for the action itself, 'text' for its text), or null.
   invalidPath: string | null;
+  // An action inside a For Related Cards branch.
+  branch?: boolean;
+  // The rule's trigger is a time.
+  timeRule?: boolean;
 }) {
   const invalid = invalidPath !== null;
   const body = (() => {
@@ -60,17 +57,12 @@ export function ActionPanel({
             onChange={onChange}
             outline={outline}
             invalid={invalid}
+            branch={branch}
           />
         );
       case 'assign':
         return (
-          <PersonPicker
-            label="Assign To"
-            value={action.to}
-            outline={outline}
-            extra={ASSIGNEES}
-            onChange={(to) => onChange({ kind: 'assign', to })}
-          />
+          <AssignPanel action={action} onChange={onChange} outline={outline} timeRule={timeRule} />
         );
       case 'add_label':
       case 'remove_label':
@@ -90,6 +82,8 @@ export function ActionPanel({
             onChange={onChange}
             outline={outline}
             invalidPath={invalidPath}
+            branch={branch}
+            timeRule={timeRule}
           />
         );
       case 'create_card':
@@ -118,7 +112,7 @@ export function ActionPanel({
               onChange(defaultAction(e.target.value as AutomationActionKind, outline))
             }
           >
-            {ACTION_KINDS.map((k) => (
+            {(branch ? BRANCH_ACTION_KINDS : ACTION_KINDS).map((k) => (
               <option key={k} value={k}>
                 {AUTOMATION_STEP_NAMES[k]}
               </option>

@@ -714,7 +714,7 @@ export const articles: Article[] = [
     description:
       'Rules that act on your cards for you: when something happens to a card, check it and move, assign, label, comment or email.',
     keywords:
-      'automation automations rules rule trigger triggers conditions actions workflow workflows jira automation auto assign auto move when then if else run rule run log smart values placeholders email on done stamp date triage form response',
+      'automation automations rules rule trigger triggers conditions actions workflow workflows jira automation auto assign auto move when then if else run rule run log audit trail history smart values placeholders email on done stamp date triage form response',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Boards and Cards',

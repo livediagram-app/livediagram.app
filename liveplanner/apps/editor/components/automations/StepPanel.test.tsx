@@ -36,6 +36,7 @@ function Panel({
       faultPath={fault}
       person="Ana Costa"
       now={Date.UTC(2026, 10, 11)}
+      timeZone="Europe/London"
     />
   );
 }

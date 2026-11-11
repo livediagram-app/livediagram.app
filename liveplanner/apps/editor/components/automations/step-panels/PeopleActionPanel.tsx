@@ -1,7 +1,7 @@
 'use client';
 
 // Assign and Send an Email's recipient (docs/specs/026-plan/automations.md "Actions"): a person of the plan, the
-// person who triggered the rule, the card's assignee (email) or nobody (assign).
+// person who triggered the rule, the card's assignee (email), nobody or people in turn (assign).
 
 import type { AutomationAssignee, AutomationRecipient } from '@liveplanner/items';
 import type { AutomationOutline } from '../automation-outline';
@@ -16,7 +16,9 @@ const keyOf = (w: Who) =>
       ? 'trigger'
       : 'nobody' in w
         ? 'nobody'
-        : 'assignee';
+        : 'rotate' in w
+          ? 'rotate'
+          : 'assignee';
 
 export function PersonPicker<T extends Who>({
   label,
@@ -30,10 +32,12 @@ export function PersonPicker<T extends Who>({
   onChange: (next: T) => void;
   outline: AutomationOutline;
   // The fixed choices above the plan's people.
-  extra: readonly { key: 'trigger' | 'nobody' | 'assignee'; label: string; value: T }[];
+  extra: readonly { key: 'trigger' | 'nobody' | 'assignee' | 'rotate'; label: string; value: T }[];
 }) {
   const key = keyOf(value);
   const known = !('person' in value) || outline.people.some((p) => p.id === value.person);
+  // A choice no longer offered (whoever triggered it, on a rule now on a time) still reads as what it is.
+  const offered = known && ('person' in value || extra.some((x) => x.key === key));
   return (
     <PanelField label={label}>
       {(id) => (
@@ -52,6 +56,7 @@ export function PersonPicker<T extends Who>({
             </option>
           ))}
           {known ? null : <option value={key}>Someone No Longer Here</option>}
+          {known && !offered ? <option value={key}>The Person Who Triggered It</option> : null}
           {outline.people.map((p) => (
             <option key={p.id} value={`person:${p.id}`}>
               {p.name}

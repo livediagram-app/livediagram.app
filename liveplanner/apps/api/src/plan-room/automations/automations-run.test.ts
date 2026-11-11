@@ -251,7 +251,7 @@ describe('copies, exports and deletes', () => {
   const ruleRows = (db: { prepare: (q: string) => { all: () => unknown[] } }) =>
     db.prepare('SELECT id, enabled, failures FROM automation_rules ORDER BY position').all();
 
-  it('a duplicate keeps the rules as they were, with an empty Run Log', async () => {
+  it('a duplicate keeps the rules as they were, with an empty Audit Trail', async () => {
     await w.rule({});
     await w.rule({ name: 'Draft', steps: [] });
     const c = await w.make('A', { title: 'Logged' });

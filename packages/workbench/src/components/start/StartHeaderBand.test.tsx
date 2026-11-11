@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { APPS } from '@liveworkspace/index-client';
 import { APP_BACKDROP, type HeroBackdropKind } from '@liveworkspace/explorer/hero-theme';
 import { startBandColours } from './start-band-colours';
+import { AutomationsHeaderBand } from './AutomationsBand';
 import { StartHeaderBand } from './StartHeaderBand';
 import { StartTitleMark } from './StartTitleMark';
 import { startHeaderTheme, useStartHeaderTheme } from './useStartHeaderTheme';
@@ -87,5 +88,41 @@ describe('the start header band', () => {
     expect(mark.getAttribute('data-start-title-mark')).toBe(kind);
     expect(mark.getAttribute('aria-hidden')).toBe('true');
     expect(mark.querySelector('svg *')).not.toBeNull();
+  });
+});
+
+// liveplanner's docs/specs/026-plan/automations.md "The Automations screen": the same band, its own pieces.
+describe('the Automations band', () => {
+  it('draws its own texture and pieces in the band, hidden and out of the pointer’s way', () => {
+    const { container } = render(<AutomationsHeaderBand band={band} />);
+    const layer = container.querySelector('[data-start-band]') as HTMLElement;
+    expect(layer.getAttribute('data-start-band')).toBe('automations');
+    expect(layer.getAttribute('aria-hidden')).toBe('true');
+    expect(layer.className).toContain('pointer-events-none');
+    expect(layer.style.backgroundImage).toContain('radial-gradient');
+    // No lanes: the flow instead, shown only from `lg`, where there is room beside the words.
+    expect(layer.querySelector('.flex-1')).toBeNull();
+    const flow = layer.querySelector('[data-automations-flow]')!;
+    expect(String(flow.getAttribute('class'))).toMatch(/\bhidden\b.*\blg:block\b/);
+    // The corner pieces show at every size.
+    const corners = [...layer.children].filter((el) => el !== flow);
+    expect(corners).toHaveLength(2);
+    for (const el of corners) expect(String(el.getAttribute('class'))).not.toContain('hidden');
+    // One motion, played twice, and only where motion is welcome.
+    const moving = layer.querySelectorAll('[class*="animate-"]');
+    expect(moving).toHaveLength(1);
+    expect(String(moving[0]!.getAttribute('class'))).toContain('motion-safe:animate-empty-ring');
+    expect(String(moving[0]!.getAttribute('class'))).toContain('[animation-iteration-count:2]');
+  });
+
+  it('marks the title with a bolt, the app’s own glyph otherwise', () => {
+    const { container, rerender } = render(
+      <StartTitleMark kind="lanes" band={band} variant="automations" />,
+    );
+    const mark = () => container.querySelector('[data-start-title-mark]')!;
+    expect(mark().getAttribute('data-start-title-mark')).toBe('automations');
+    expect(mark().querySelectorAll('path')).toHaveLength(1);
+    rerender(<StartTitleMark kind="lanes" band={band} />);
+    expect(mark().getAttribute('data-start-title-mark')).toBe('lanes');
   });
 });

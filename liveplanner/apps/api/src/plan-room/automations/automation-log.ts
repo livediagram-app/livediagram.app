@@ -1,4 +1,4 @@
-// A plan's Run Log on its own SQLite (docs/specs/026-plan/automations.md "Runs, limits and loops", "The Automations
+// A plan's Audit Trail on its own SQLite (docs/specs/026-plan/automations.md "Runs, limits and loops", "The Automations
 // screen"; blueprint automations.md "Storage", "The run"). A run's row goes in as `pending` before it does anything,
 // under the run's id, so a second wake or a retry finds it and never runs it again; then it is settled with its
 // result. Kept for 30 days or the last 2,000 runs. Also each rule's figures for the Rules list and today's count (UTC),
@@ -109,7 +109,7 @@ const RESULTS: ReadonlySet<string> = new Set<AutomationResult>([
   'failed',
 ]);
 
-// The Run Log, newest first: by rule, result and since when, at most AUTOMATION_RUNS_LIST_MAX.
+// The Audit Trail, newest first: by rule, result and since when, at most AUTOMATION_RUNS_LIST_MAX.
 export function listRuns(sql: Sql, query: AutomationRunsQuery): AutomationRun[] {
   const where: string[] = [`result != '${PENDING}'`];
   const bindings: unknown[] = [];

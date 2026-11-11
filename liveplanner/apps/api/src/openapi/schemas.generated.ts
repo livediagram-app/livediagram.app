@@ -1165,7 +1165,49 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         required: ['nobody'],
         type: 'object',
       },
+      {
+        additionalProperties: false,
+        properties: {
+          rotate: {
+            items: {
+              type: 'string',
+            },
+            type: 'array',
+          },
+        },
+        required: ['rotate'],
+        type: 'object',
+      },
     ],
+  },
+  AutomationBranch: {
+    additionalProperties: false,
+    properties: {
+      conditions: {
+        items: {
+          $ref: '#/components/schemas/AutomationCondition',
+        },
+        type: 'array',
+      },
+      kind: {
+        const: 'for',
+        type: 'string',
+      },
+      related: {
+        $ref: '#/components/schemas/AutomationRelated',
+      },
+      then: {
+        items: {
+          $ref: '#/components/schemas/AutomationAction',
+        },
+        type: 'array',
+      },
+    },
+    required: ['kind', 'related', 'conditions', 'then'],
+    type: 'object',
+  },
+  AutomationClock: {
+    type: 'string',
   },
   AutomationCondition: {
     anyOf: [
@@ -1328,6 +1370,35 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     type: 'string',
   },
+  AutomationIf: {
+    additionalProperties: false,
+    properties: {
+      conditions: {
+        items: {
+          $ref: '#/components/schemas/AutomationCondition',
+        },
+        type: 'array',
+      },
+      else: {
+        items: {
+          $ref: '#/components/schemas/AutomationAction',
+        },
+        type: 'array',
+      },
+      kind: {
+        const: 'if',
+        type: 'string',
+      },
+      then: {
+        items: {
+          $ref: '#/components/schemas/AutomationAction',
+        },
+        type: 'array',
+      },
+    },
+    required: ['kind', 'conditions', 'then', 'else'],
+    type: 'object',
+  },
   AutomationListedRule: {
     additionalProperties: false,
     properties: {
@@ -1368,6 +1439,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             type: 'number',
           },
           reason: {
+            type: 'string',
+          },
+          webhook: {
             type: 'string',
           },
         },
@@ -1419,6 +1493,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['ids'],
     type: 'object',
   },
+  AutomationOutgoing: {
+    additionalProperties: false,
+    properties: {
+      kind: {
+        const: 'notify',
+        type: 'string',
+      },
+      name: {
+        type: 'string',
+      },
+      text: {
+        type: 'string',
+      },
+      via: {
+        enum: ['webhook', 'slack', 'teams'],
+        type: 'string',
+      },
+      webhook: {
+        type: 'string',
+      },
+    },
+    required: ['kind', 'via', 'webhook', 'text'],
+    type: 'object',
+  },
   AutomationRecipient: {
     anyOf: [
       {
@@ -1451,6 +1549,74 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
         },
         required: ['person'],
+        type: 'object',
+      },
+    ],
+  },
+  AutomationRelated: {
+    anyOf: [
+      {
+        additionalProperties: false,
+        properties: {
+          field: {
+            type: 'string',
+          },
+          kind: {
+            const: 'linked',
+            type: 'string',
+          },
+        },
+        required: ['kind'],
+        type: 'object',
+      },
+      {
+        additionalProperties: false,
+        properties: {
+          kind: {
+            const: 'blocked_by',
+            type: 'string',
+          },
+        },
+        required: ['kind'],
+        type: 'object',
+      },
+      {
+        additionalProperties: false,
+        properties: {
+          kind: {
+            const: 'blocking',
+            type: 'string',
+          },
+        },
+        required: ['kind'],
+        type: 'object',
+      },
+      {
+        additionalProperties: false,
+        properties: {
+          kind: {
+            const: 'children',
+            type: 'string',
+          },
+        },
+        required: ['kind'],
+        type: 'object',
+      },
+      {
+        additionalProperties: false,
+        properties: {
+          filter: {
+            type: 'string',
+          },
+          kind: {
+            const: 'saved_filter',
+            type: 'string',
+          },
+          tab: {
+            type: 'string',
+          },
+        },
+        required: ['kind', 'tab', 'filter'],
         type: 'object',
       },
     ],
@@ -1507,6 +1673,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'number',
       },
       lastRunAt: {
+        type: ['number', 'null'],
+      },
+      nextAt: {
         type: ['number', 'null'],
       },
       runsThisWeek: {
@@ -1682,33 +1851,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         $ref: '#/components/schemas/AutomationAction',
       },
       {
-        additionalProperties: false,
-        properties: {
-          conditions: {
-            items: {
-              $ref: '#/components/schemas/AutomationCondition',
-            },
-            type: 'array',
-          },
-          else: {
-            items: {
-              $ref: '#/components/schemas/AutomationAction',
-            },
-            type: 'array',
-          },
-          kind: {
-            const: 'if',
-            type: 'string',
-          },
-          then: {
-            items: {
-              $ref: '#/components/schemas/AutomationAction',
-            },
-            type: 'array',
-          },
-        },
-        required: ['kind', 'conditions', 'then', 'else'],
-        type: 'object',
+        $ref: '#/components/schemas/AutomationOutgoing',
+      },
+      {
+        $ref: '#/components/schemas/AutomationIf',
+      },
+      {
+        $ref: '#/components/schemas/AutomationBranch',
       },
     ],
   },
@@ -1769,6 +1918,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         required: ['kind', 'ok', 'text'],
         type: 'object',
       },
+      {
+        additionalProperties: false,
+        properties: {
+          cards: {
+            type: 'number',
+          },
+          kind: {
+            const: 'branch',
+            type: 'string',
+          },
+          ok: {
+            type: 'boolean',
+          },
+          text: {
+            type: 'string',
+          },
+        },
+        required: ['kind', 'ok', 'text', 'cards'],
+        type: 'object',
+      },
     ],
   },
   AutomationTestRequest: {
@@ -1779,6 +1948,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       rule: {
         $ref: '#/components/schemas/AutomationRuleBody',
+      },
+      ruleId: {
+        type: 'string',
       },
     },
     required: ['rule', 'item'],
@@ -1884,6 +2056,64 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
         },
         required: ['kind'],
+        type: 'object',
+      },
+      {
+        additionalProperties: false,
+        properties: {
+          at: {
+            $ref: '#/components/schemas/AutomationClock',
+          },
+          dayOfMonth: {
+            type: 'number',
+          },
+          days: {
+            items: {
+              type: 'number',
+            },
+            type: 'array',
+          },
+          every: {
+            enum: ['day', 'weekday', 'week', 'month'],
+            type: 'string',
+          },
+          kind: {
+            const: 'scheduled',
+            type: 'string',
+          },
+        },
+        required: ['kind', 'every', 'at'],
+        type: 'object',
+      },
+      {
+        additionalProperties: false,
+        properties: {
+          at: {
+            $ref: '#/components/schemas/AutomationClock',
+          },
+          days: {
+            type: 'number',
+          },
+          kind: {
+            const: 'due_in',
+            type: 'string',
+          },
+        },
+        required: ['kind', 'days', 'at'],
+        type: 'object',
+      },
+      {
+        additionalProperties: false,
+        properties: {
+          at: {
+            $ref: '#/components/schemas/AutomationClock',
+          },
+          kind: {
+            const: 'overdue',
+            type: 'string',
+          },
+        },
+        required: ['kind', 'at'],
         type: 'object',
       },
     ],

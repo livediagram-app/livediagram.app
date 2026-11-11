@@ -15,6 +15,7 @@ import { handleMigrationHandoff } from './migration-handoff';
 import { handleAppPeople } from './notices';
 import { pushAppEvents } from './event-push';
 import { FUTURE_SLACK_MS } from './events';
+import { pushAutomationSends } from './webhooks/automation-sends';
 import { pushCardMoves } from './webhooks/routes';
 
 const isTime = (value: unknown): value is number =>
@@ -55,6 +56,9 @@ export async function handleApp(
     segments[5] === 'seen' &&
     isPartId(segments[4]) &&
     isId(segments[6]);
+  // /app/items/:id/automation-sends: an automation rule's messages through the plan's own webhooks (a POST).
+  const automationSends =
+    request.method === 'POST' && segments.length === 4 && segments[3] === 'automation-sends';
   // /app/items/:id/summary, /app/items/:id/collab/:tabId, /app/items/:id/events, /app/items/:id/card-moves,
   // /app/items/:id/forms/:tabId
   if (segments[1] !== 'items' || !isId(segments[2])) return notFound();
@@ -62,7 +66,7 @@ export async function handleApp(
   if (segments.length === 5 && segments[3] === 'connections') {
     return handleAppConnection(request, env, app, segments[2], segments[4]!, waitUntil);
   }
-  if (request.method !== 'PUT' && !seenRead) return notFound();
+  if (request.method !== 'PUT' && !seenRead && !automationSends) return notFound();
   const itemId = segments[2];
   const item = await env.INDEX_DB.prepare(
     'SELECT app, owner_id, team_id, updated_at FROM items WHERE id = ?',
@@ -72,6 +76,7 @@ export async function handleApp(
   if (!item) return notFound();
   if (item.app !== app) return fail(403, 'wrong_app');
   if (seenRead) return formSeen(env, itemId, segments[4]!, segments[6]!);
+  if (automationSends) return pushAutomationSends(env, itemId, app, request);
 
   if (segments.length === 4 && segments[3] === 'summary') {
     const body = await readObject(request);

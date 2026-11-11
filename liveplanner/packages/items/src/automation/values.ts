@@ -8,11 +8,15 @@ import { PRIORITY_LABELS, isPriority } from '../fields';
 import { addDays, isDay, localDay } from '../repeat-dates';
 import { dayNumber, dayParts, MONTH_SHORT } from '../plan-view-dates';
 import { zonedParts } from '../date-time-fields';
-import { AUTOMATION_VALUE_NAMES, type AutomationDay } from './types';
+import { AUTOMATION_BRANCH_VALUE_NAMES, AUTOMATION_VALUE_NAMES, type AutomationDay } from './types';
 import { fieldOfName, statusName, type AutomationOutline } from './outline';
 
 export const VALUE_NAMES = AUTOMATION_VALUE_NAMES;
 const FIXED: ReadonlySet<string> = new Set(AUTOMATION_VALUE_NAMES);
+const BRANCH: ReadonlySet<string> = new Set(AUTOMATION_BRANCH_VALUE_NAMES);
+
+// Where a text is written: a branch's text may also name the card that started the rule (`{{trigger.title}}`).
+export type ValuePlace = { branch?: boolean };
 
 const VALUE = /\{\{([^{}]*)\}\}/g;
 const SHIFT = /^now\s*([+-])\s*(\d{1,4})\s*d$/;
@@ -31,13 +35,17 @@ export function valuesIn(text: string): string[] {
   return [...text.matchAll(VALUE)].map((m) => m[1]!.trim());
 }
 
-// Whether the builder knows a value's name: a fixed name, a field by name, or a day from today.
-export const isKnownValue = (name: string): boolean =>
-  FIXED.has(name) || SHIFT.test(name) || fieldNameOf(name) !== null;
+// Whether the builder knows a value's name: a fixed name, a field by name, or a day from today; in a branch, the
+// triggering card's too.
+export const isKnownValue = (name: string, place: ValuePlace = {}): boolean =>
+  FIXED.has(name) ||
+  SHIFT.test(name) ||
+  fieldNameOf(name) !== null ||
+  (place.branch === true && BRANCH.has(name));
 
 // The first value a text holds that the builder does not know, or null.
-export const unknownValueIn = (text: string): string | null =>
-  valuesIn(text).find((name) => !isKnownValue(name)) ?? null;
+export const unknownValueIn = (text: string, place: ValuePlace = {}): string | null =>
+  valuesIn(text).find((name) => !isKnownValue(name, place)) ?? null;
 
 // ---- Days ----------------------------------------------------------------------------------------------------------
 
@@ -86,6 +94,8 @@ export interface ValueContext {
   rule: string;
   now: number;
   timeZone: string;
+  // In a branch: the card that started the rule, and its link (`card` is the related card).
+  trigger?: { card: Item; url: string };
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -124,6 +134,12 @@ function valueOf(name: string, ctx: ValueContext, iso: boolean): string {
       return ctx.person;
     case 'rule':
       return ctx.rule;
+    case 'trigger.title':
+      return ctx.trigger ? itemTitle(ctx.trigger.card) : '';
+    case 'trigger.key':
+      return ctx.trigger ? `#${ctx.trigger.card.key}` : '';
+    case 'trigger.url':
+      return ctx.trigger?.url ?? '';
     case 'now.date':
       return day(todayIn(ctx.now, ctx.timeZone));
     case 'now': {
