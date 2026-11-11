@@ -21,6 +21,8 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   change_items: 'item set',
   list_threads: 'thread ls',
   change_threads: 'thread reply',
+  list_rules: 'rule ls',
+  change_rules: 'rule set',
   add_board: 'board add',
   import_board: 'board import',
   change_board: 'board set',

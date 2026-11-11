@@ -81,6 +81,7 @@ import { registerArchiveTools } from './archive-tools';
 import { registerPlanTools } from './plan-tools';
 import { registerSheetTools } from './sheet-tools';
 import { registerFormTools } from './form-tools';
+import { registerRuleTools } from './rule-tools';
 import {
   createProjectTab,
   mcpAddTab,
@@ -99,6 +100,8 @@ import {
 export function registerTools(server: McpServer, env: Env): void {
   // The items Plan boards show (docs/specs/026-plan/plan-mode.md "Agents").
   registerPlanTools(server, env);
+  // Automations rules (docs/specs/026-plan/automations.md "Agents and the CLI").
+  registerRuleTools(server, env);
   // Sheets, by title and A1 (docs/specs/029-sheets/sheet-store.md "Agents").
   registerSheetTools(server, env);
   registerFormTools(server, env);

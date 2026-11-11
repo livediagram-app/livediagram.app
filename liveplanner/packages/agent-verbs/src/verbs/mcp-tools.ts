@@ -64,6 +64,12 @@ import {
   listThreadsShape,
 } from '../mcp/thread-schema';
 import {
+  changeRulesOutput,
+  changeRulesShape,
+  listRulesOutput,
+  listRulesShape,
+} from '../mcp/rule-schema';
+import {
   addSheetOutput,
   addSheetShape,
   changeSheetOutput,
@@ -261,6 +267,34 @@ export const mcpChangeThreads = mcpTool('change_threads', {
   outputSchema: changeThreadsOutput,
 });
 
+export const mcpListRules = mcpTool('list_rules', {
+  behaviour: 'read',
+  title: 'List a plan’s Automations rules',
+  description:
+    'Read a plan’s Automations rules, in order: each one’s id, name, on or off, paused (and why), what it needs ' +
+    'attention for, its sentence in words ("When Card Moved to Done then Add Label shipped"), last run, runs this ' +
+    'week and a time trigger’s next run, with the plan’s people and the day’s runs. rule (an id or the exact name) ' +
+    'also answers that rule whole, in the body format change_rules writes; runs: true the recent Audit Trail with each ' +
+    'run’s card, result and step lines. Rules are an Editor’s of the whole plan; a read-only token may list them.',
+  inputSchema: listRulesShape,
+  outputSchema: listRulesOutput,
+});
+
+export const mcpChangeRules = mcpTool('change_rules', {
+  behaviour: 'destructive',
+  title: 'Change a plan’s Automations rules',
+  description:
+    'Work a plan’s Automations rules, in order: add {rule} (a whole body), set {rule, name?, trigger?, conditions?, ' +
+    'steps?, chain?, timeZone?} (each part given replaces the saved one), on {rule}, off {rule}, duplicate {rule}, ' +
+    'delete {rule}, test {rule, card} (Test on a Card: a saved rule or a body, nothing changed or logged) and run ' +
+    '{rule, card} (Run Rule, for a Run from a Card rule that is on). Name a rule by its id or exact name, a card as ' +
+    'list_items does ("#12"), and columns, card types, fields and people by name or id. The rule format is in the ' +
+    'input. A refusal names the api’s code and the part at fault (steps.2.status). What you save is stamped as your ' +
+    'person’s, marked an agent’s. Needs an Editor of the whole plan.',
+  inputSchema: changeRulesShape,
+  outputSchema: changeRulesOutput,
+});
+
 export const mcpAddBoard = mcpTool('add_board', {
   behaviour: 'write',
   title: 'Add a Plan board',
@@ -451,6 +485,8 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpImportBoard,
   mcpChangeBoard,
   mcpChangeCardTypes,
+  mcpListRules,
+  mcpChangeRules,
   mcpListSheets,
   mcpReadSheet,
   mcpChangeSheet,
