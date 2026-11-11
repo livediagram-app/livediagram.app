@@ -18,7 +18,7 @@ livediagram's [Later](../../../../../livediagram/docs/specs/013-workspace/share-
 | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | `../packages/api-schema/src/access-levels.ts` (new)                                                                                      | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`        |
 | `packages/api-schema/src/index.ts`                                                                                                       | `ShareRole` becomes an alias of `AccessLevel`                                                 |
-| `packages/api-schema/src/room-messages.ts`                                                                                               | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                    |
+| `packages/api-schema/src/room-op-kinds.ts`                                                                                               | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                    |
 | `packages/document/src/participant-content.ts` (new)                                                                                     | The participant content rule: `applyParticipantOp`, the piece fields, `participantTabChange`  |
 | `packages/document/src/element-types.ts`, `validate.ts`                                                                                  | `addedBy?: string` on `StickyElement` and `TextElement`; validated                            |
 | `packages/document/src/collab-ledger.ts`                                                                                                 | `mergeLedgerAnswersIntoTab`: reactions only (responses and ideas gone in part 4, votes later) |
@@ -172,7 +172,7 @@ speech, comments). `isReadOnly` is `!canEdit`, which equals `can.level !== 'edit
 included, so the switch changes no behaviour.
 
 A walking click on a control piece reads the same gates through the face's press: Bring Focus gets one on `run`
-(`EditorCanvasHost` passes `onPressFocusButton` only then), a Selection Mode button on `!can.alwaysWalks`, a Timer or
+(`useCanvasWalkProps` passes `onPressFocusButton` only then), a Selection Mode button on `!can.alwaysWalks`, a Timer or
 Stopwatch on `takePart`. With none, `avatarPressOutcome(kind, hasMain)` (`lib/avatar-click-intent.ts`) answers
 `nothing` for the `NO_READER_KINDS` (those four), so the gesture neither walks nor opens the reader; every other Use
 piece with no main still reads. `FocusButtonFace` draws its inert target in a hover card saying who may press it.

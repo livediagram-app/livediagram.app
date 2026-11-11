@@ -15,7 +15,7 @@ Scope, by file:
 | `packages/project/src/shape-kind.ts`, `validate.ts`                                   | `'sankey'` in `ShapeKind` and `SHAPE_KINDS`                                                                  |
 | `packages/project/src/validate-shape.ts`                                              | Field checks                                                                                                 |
 | `packages/project/src/element-normalise.ts`                                           | `normaliseSankey`: agent input                                                                               |
-| `packages/project/src/shape-factory.ts`                                               | Default size and starter flows                                                                               |
+| `packages/project/src/shape-default-size.ts`, `packages/project/src/shape-factory.ts` | Default size and starter flows                                                                               |
 | `packages/project/src/data-shapes.ts`                                                 | `isSelfDrawingShape` membership, `takesChartPalette`                                                         |
 | `packages/project/src/colors.ts`                                                      | `SELF_PAINTING_SHAPES` member                                                                                |
 | `apps/editor/components/canvas/SankeyView.tsx`                                        | Canvas view (lazy chunk), hover, animations                                                                  |

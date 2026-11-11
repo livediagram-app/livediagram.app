@@ -22,10 +22,6 @@ import {
   withDefaultPageBackgrounds,
   type ThemeDefinition,
   PAGE_NAME_MAX,
-  withPageSplit,
-  withFlashcardSplit,
-  canSplitFlashcardAt,
-  articlesOf,
   withPageInkFor,
   pageAdded,
   pageAddedLike,
@@ -36,7 +32,6 @@ import {
   pageIsDark,
   pageLockRefuses,
   pageLockSet,
-  pageMargin,
   pageMovedTo,
   pageRemoved,
   pageRenamed,
@@ -54,76 +49,19 @@ import {
 import type { PageLayoutId } from '@livedocuments/templates';
 import { sameFill, withBackgroundPatch } from '@/lib/page-paint';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
-import { tidyPageElements } from '@/lib/page-tidy';
-import { lockedElementIds } from '@/lib/locked-element-ids';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { track } from '@/lib/telemetry';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
-import { cardOverflowNow } from '@/lib/flashcard-overflow-store';
 import { restoreEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { startClosedKey } from '@/components/start/start-closed-key';
-import { backgroundCopyEdits, type BackgroundCopyEdits } from './pages-background-copy-edits';
+import { backgroundCopyEdits } from './pages-background-copy-edits';
+import { pageSplitEdits } from './page-split-edits';
+import { pageTidyEdits } from './page-tidy-edits';
 
-export type CardSplitState = 'fits' | 'ready' | 'one-paragraph' | 'page-limit';
-
-export type PageEdits = BackgroundCopyEdits & {
-  setOrientation: (pageId: string, next: PageOrientation) => void;
-  setSize: (pageId: string, size: PageSizeId) => void;
-  // Empty clears the name.
-  rename: (pageId: string, name: string) => void;
-  // Laid over the page's background: `{ fill: undefined }` is back to the paper.
-  setBackground: (pageId: string, patch: Partial<PageBackground>) => void;
-  // -1 left, 1 right (past one neighbouring page or document); a no-op at the row's end.
-  movePage: (pageId: string, by: -1 | 1) => void;
-  // A page's unit (the page, or its whole document) to a place among the units (0 first), its
-  // content with it: a Contents row dragged.
-  movePageTo: (pageId: string, unitIndex: number) => void;
-  // Absent at the page limit. Right after the page someone is on (pages-mode.md "Adding a page"), else last.
-  addPage?: (kind: PageKind) => void;
-  // Another page like this one, right after it (the + beside a page): its kind and shape.
-  // Absent at the page limit.
-  // Right after `after` (Contents' page here) when given, else right after `pageId`.
-  addPageLike?: (pageId: string, after?: string) => void;
-  // The first page's kind chosen while it is the only page and empty (its own choice cards).
-  choosePageKind: (pageId: string, kind: PageKind) => void;
-  duplicatePage?: (pageId: string) => void;
-  // Whether a page's copy fits under the page limit (an article's copy is all its pages).
-  canDuplicate: (pageId: string) => boolean;
-  // Deletes a page, or its whole document; the last one empties the tab, which opens Start Making Pages again.
-  removePage?: (pageId: string) => void;
-  // A Fit to Content page split into one page per cluster of its content, nothing scaled
-  // (docs/specs/007-editor/pages-mode.md "Split Into Pages").
-  splitPage: (pageId: string) => void;
-  // Split Onto a New Card (docs/specs/007-editor/flashcards.md "Never flows"): a too-long card's
-  // writing from its first block that does not fit moves onto a new card right after it.
-  splitCard: (pageId: string) => void;
-  // Whether a card can be split now: it fits ('fits'), it can ('ready'), or why not.
-  cardSplitState: (pageId: string) => CardSplitState;
-  // Whether the page's unit can move left / right (not at the row's end).
-  canMove: (pageId: string, by: -1 | 1) => boolean;
-  // Puts a layout onto the page in place of everything on it (the panel asks first when there is
-  // anything to replace).
-  // Resolves once the layout is placed (its builders load on the first apply).
-  applyLayout: (pageId: string, layout: PageLayoutId) => Promise<void>;
-  // How many elements are on the page.
-  contentCount: (pageId: string) => number;
-  // A fill hovered in the panel: what is on the page drawn re-inked as the press would re-ink it
-  // (a preview, writing nothing); null puts it back.
-  previewInk: (preview: { pageId: string; patch: Partial<PageBackground> } | null) => void;
-  // Locking a page (docs/specs/007-editor/pages-mode.md "Locking a page"): it, and what is
-  // on it, stay as they are. Every edit above refuses a locked page.
-  isLocked: (pageId: string) => boolean;
-  setLocked: (pageId: string, locked: boolean) => void;
-  // An infographic page's Tidy Up (docs/specs/007-editor/pages-mode.md "Tidy"): its
-  // elements aligned and spaced, one edit; a page already tidy says so and writes nothing.
-  tidyPage?: (pageId: string) => void;
-  // Whether a Tidy would change the page: its button shows only then.
-  canTidy?: (pageId: string) => boolean;
-  // The tidied page drawn in place while the button is hovered (a preview, writing nothing); null
-  // puts it back.
-  previewTidy?: (pageId: string | null) => void;
-};
+export type { CardSplitState } from './page-split-edits';
+import type { PageEdits } from './page-edits-type';
+export type { PageEdits } from './page-edits-type';
 
 type TabChange = (tab: Tab) => Tab | null;
 
@@ -145,15 +83,6 @@ const KIND_ADDED_EVENT: Record<PageKind, string> = {
   slide: 'SlidePageAdded',
   flashcard: 'FlashcardAdded',
 };
-
-// Whether a page would change under a Tidy, by tab and page, with what the answer was for: the
-// page's own elements (as objects, so an edit elsewhere keeps it), the layers (a lock) and the page
-// list. Bounded: past TIDY_MEMO_MAX entries it starts over.
-const TIDY_MEMO = new Map<
-  string,
-  { on: readonly Tab['elements'][number][]; layers: unknown; pages: string; can: boolean }
->();
-const TIDY_MEMO_MAX = 256;
 
 export function pageEdits({
   tabId,
@@ -446,67 +375,6 @@ export function pageEdits({
     debugLog('[page] page removed', { tabId, pageId });
   };
 
-  // One page per cluster of the page's content, each cluster at its own size; the view goes to the
-  // first. One tab edit.
-  const splitPage = (pageId: string) => {
-    if (!takesEdits() || refusedLocked(pageId, 'split')) return;
-    // At the page limit a split has no room for a second page.
-    if (current.length >= MAX_PAGES) {
-      toastInfo(`A tab holds at most ${MAX_PAGES} pages: delete one to split this page.`);
-      debugLog('[page] split refused: page limit', { tabId, pageId });
-      return;
-    }
-    // Read from the tab as it is, as Duplicate reads its copy's id.
-    const before = pagesOf(tab);
-    const split = withPageSplit(tab, pageId);
-    const made = split ? split.pages.length - before.length + 1 : 0;
-    const first = split?.pages[before.findIndex((p) => p.id === pageId)]?.id;
-    // The split names its new pages afresh each time, so the one read is the one stored (unless the tab moved on).
-    if (made > 0) commitTab((t) => (t === tab ? split : withPageSplit(t, pageId)));
-    if (made === 0) {
-      toastInfo('This page is one group: nothing to split.');
-      debugLog('[page] split: one group', { tabId, pageId });
-      return;
-    }
-    track('Tab', 'Changed', 'PagesLaidOut');
-    toastInfo(`Split into ${made} pages. Undo puts it back.`);
-    if (first) onGoTo(first);
-    debugLog('[page] page split', { tabId, pageId, pages: made });
-  };
-
-  const cardSplitState = (pageId: string): CardSplitState => {
-    const card = page(pageId);
-    const from = card?.flow ? cardOverflowNow(card.flow) : null;
-    const doc = card?.flow ? articlesOf(tab)[card.flow] : undefined;
-    if (!from || !doc) return 'fits';
-    if (!canSplitFlashcardAt(doc, from)) return 'one-paragraph';
-    return current.length >= MAX_PAGES ? 'page-limit' : 'ready';
-  };
-  // The card's writing past its foot onto a new card after it, one edit; the view flips to it.
-  const splitCard = (pageId: string) => {
-    if (!takesEdits() || refusedLocked(pageId, 'split')) return;
-    const card = page(pageId);
-    const from = card?.flow ? cardOverflowNow(card.flow) : null;
-    if (!card || !from) return;
-    const id = nextPageId(current);
-    const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
-    const out = withFlashcardSplit(tab, pageId, from, id, flow);
-    if ('refused' in out) {
-      if (out.refused === 'page_limit')
-        toastInfo(`A tab holds at most ${MAX_PAGES} pages: delete one to split this card.`);
-      debugLog('[flashcard] split refused', { tabId, pageId, reason: out.refused });
-      return;
-    }
-    track('Tab', 'Changed', 'FlashcardSplit');
-    commitTab((t) => {
-      if (t === tab) return out.tab;
-      const again = withFlashcardSplit(t, pageId, from, id, flow);
-      return 'tab' in again ? again.tab : null;
-    });
-    onGoTo(id);
-    debugLog('[flashcard] split', { tabId, pageId, from });
-  };
-
   // Laid out in the page's content box (the page less its margins), the page's own words and
   // pictures carried into it (docs/specs/007-editor/pages-mode.md "Content carries over"),
   // one tab edit. The layout builders (every page layout set) load on the first apply rather than
@@ -559,68 +427,30 @@ export function pageEdits({
     setLocalPreview(tabId, shown.elements, elements);
   };
 
-  // The tab with the page's elements tidied, or null when nothing would change. Read from the tab
-  // it is given, so the commit tidies the tab as it is at commit time.
-  const tidied = (t: Tab, pageId: string): Tab | null => {
-    const pages = layOutPages(pagesOf(t));
-    const target = pages.find((p) => p.id === pageId);
-    // An infographic or slide page; an article flows.
-    if (!target || (pageKindOf(target) !== 'infographic' && target.kind !== 'slide')) return null;
-    const next = tidyPageElements(t.elements, {
-      ids: elementIdsOnPage(t.elements, pages, pageId),
-      rect: target.rect,
-      margin: pageMargin(target),
-      lockedIds: lockedElementIds(t.elements, t.layers),
-    });
-    return next === t.elements ? null : { ...t, elements: next };
-  };
-  const tidyPage = (pageId: string) => {
-    if (!mayEdit() || refusedLocked(pageId, 'tidy', false)) return;
-    const out = tidied(tab, pageId);
-    const changed = out !== null;
-    if (out) commitTab((t) => (t === tab ? out : tidied(t, pageId)));
-    if (localPreview()?.tabId === tabId) clearLocalPreview(changed ? 'landed' : 'cancelled');
-    if (!changed) {
-      toastInfo('This page is already tidy.');
-      debugLog('[page] tidy: already tidy', { tabId, pageId });
-      return;
-    }
-    track('Tab', 'Aligned', 'PageTidyUp');
-    debugLog('[page] tidied', { tabId, pageId });
-  };
-  // Remembered per page while its own elements stay as they are, so a pan or a zoom (which
-  // re-renders every title bar) and an edit on another page rerun no tidy (3 to 8 ms a page).
-  const canTidy = (pageId: string): boolean => {
-    const pages = JSON.stringify(current);
-    const ids = elementIdsOnPage(elements, laidOut, pageId);
-    const on = elements.filter((el) => ids.has(el.id));
-    const key = `${tabId}|${pageId}`;
-    const hit = TIDY_MEMO.get(key);
-    if (
-      hit &&
-      hit.layers === layers &&
-      hit.pages === pages &&
-      hit.on.length === on.length &&
-      hit.on.every((el, k) => el === on[k])
-    ) {
-      return hit.can;
-    }
-    const can =
-      tidied({ id: tabId, elements, layers, pages: [...current] } as Tab, pageId) !== null;
-    if (TIDY_MEMO.size >= TIDY_MEMO_MAX) TIDY_MEMO.clear();
-    TIDY_MEMO.set(key, { on, layers, pages, can });
-    return can;
-  };
-  const previewTidy = (pageId: string | null) => {
-    const shown = pageId
-      ? tidied({ id: tabId, elements, layers, pages: [...current] } as Tab, pageId)
-      : null;
-    if (!shown || isLocked(pageId!)) {
-      if (localPreview()?.tabId === tabId) clearLocalPreview();
-      return;
-    }
-    setLocalPreview(tabId, shown.elements, elements);
-  };
+  const { tidyPage, canTidy, previewTidy } = pageTidyEdits({
+    tabId,
+    tab,
+    current,
+    elements,
+    layers,
+    laidOut,
+    commitTab,
+    toastInfo,
+    mayEdit,
+    refusedLocked,
+    isLocked,
+  });
+  const { splitPage, cardSplitState, splitCard } = pageSplitEdits({
+    tabId,
+    tab,
+    current,
+    commitTab,
+    onGoTo,
+    toastInfo,
+    takesEdits,
+    refusedLocked,
+    page,
+  });
 
   const room = current.length < MAX_PAGES;
   return {

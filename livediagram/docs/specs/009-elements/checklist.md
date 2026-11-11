@@ -32,7 +32,7 @@ undoable: like a dot or an answer, they are the room's, not an edit.
 
 ## Headless render (share thumbnails, MCP, exports)
 
-`svg-render` has a `checklist` branch (`svgChecklistShape`): card + per-row square (filled + check path when done) + `<text>` row (with `text-decoration: line-through` when done), clipped to the box.
+`svg-render-boxed` has a `checklist` branch (`svgChecklistShape`): card + per-row square (filled + check path when done) + `<text>` row (with `text-decoration: line-through` when done), clipped to the box.
 
 ## Plumbing checklist
 

@@ -27,7 +27,7 @@ editor views.
 - `shape-kind.ts`: add `'plan-board'`, `'plan-card'` (62 → 64; `shape-kind.test.ts` count, canvas-and-palette prose).
 - `element-types.ts` `ShapeElement`: `planBoard?: PlanBoardSetup`, `planCard?: { itemId: string }`.
 - `element-fields.ts`: both fields listed.
-- `shape-factory.ts`: `SHAPE_DEFAULT_SIZE` board 1120×640, card 240×120; `createShape('plan-board')` seeds the
+- `shape-default-size.ts`: `SHAPE_DEFAULT_SIZE` board 1120×640, card 240×120; `shape-factory.ts`: `createShape('plan-board')` seeds the
   `blank` preset set-up; `createShape('plan-card')` seeds `planCard: { itemId: '' }` (the caller sets it).
 - `validate-shape.ts`: `planBoard` valid when `normaliseBoardSetup` (items package) reads it (1..12 columns, unique ids and
   statuses, names ≤ 40, wip 1..99, cardFields known, `cardSize` minimal (absent is detailed; the retired `compact` and anything else read as absent, `readCardSize`), budget

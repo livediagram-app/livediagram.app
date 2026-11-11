@@ -1,29 +1,11 @@
 'use client';
 
 import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
-import type { Element, Page } from '@livedesign/design';
-import {
-  useEffect,
-  useEffectEvent,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-  type RefObject,
-} from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { onToolbarSearchRequest } from '@liveworkspace/workbench/lib/toolbar-search-request';
-import {
-  ChevronDownIcon,
-  EllipsisIcon,
-  HoverCard,
-  atLeastInset,
-  safeInlinePadding,
-} from '@livedesign/ui';
-import { LANDSCAPE_HANDLE_ROOM } from '@/components/chrome/LandscapeBars';
+import { ChevronDownIcon, EllipsisIcon, HoverCard } from '@livedesign/ui';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@liveworkspace/workbench/components/primitives/SnapWidth';
-import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
-import { BAND_STRIP_FLUSH, BAND_TINT, TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from '@liveworkspace/workbench/components/palette/palette-group-state';
 import {
@@ -40,8 +22,6 @@ import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale
 import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
 import { paletteLandingCategory } from './palette-layouts';
-import type { PaletteProps } from './palette.types';
-import type { PaletteAddHandlers } from './palette-add-handlers';
 import {
   StripPopover,
   useStripPopover,
@@ -66,6 +46,8 @@ import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 import { usePaletteKindMotion } from './usePaletteKindMotion';
 import { usePaletteKind } from '@/lib/palette-kind';
+import { CARD_CLASS, CardWidth, StripRow } from './ToolbarStripRow';
+import type { ToolbarPaletteProps } from './toolbar-palette-props';
 
 // The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
 // top centre of the canvas, the way Excalidraw's tool bar works. Selection
@@ -76,81 +58,7 @@ import { usePaletteKind } from '@/lib/palette-kind';
 // The tiles, handlers and category bodies come from
 // usePaletteCatalogue, so this file is only layout.
 
-type Props = Pick<
-  PaletteProps,
-  'canvasTool' | 'onSetCanvasTool' | 'onToggleZen' | 'canvasEmpty' | 'pendingDraw' | 'themeTint'
-> &
-  PaletteAddHandlers & {
-    // The chrome is hidden (zen, the welcome flow). Hidden rather than
-    // unmounted, so the strip keeps its state for the page load.
-    hidden?: boolean;
-    // Its own card at the far left of the strip's row, the strip beside it: the
-    // Explorer menu button and mode switch on a phone, which has no room for
-    // them in a corner card above the strip. Given at all (null included), the
-    // strip takes the phone's row; null is that row with no menu card (a phone
-    // held sideways, docs/specs/007-editor/live-app.md "A phone held sideways").
-    leading?: ReactNode;
-    // The screen width of Pages mode's Contents sidebar while the menu box heads it (docs/specs/007-editor/pages-mode.md
-    // "Joined to the menu box"): the strip centres in what shows beside it, as a page is framed beside it.
-    besideWidth?: number;
-    // The active tab's elements: Search lists their element types before anything is typed.
-    tabElements?: readonly Element[];
-    // The tab's pages in Pages mode, whose kind is the palette's (lib/palette-kind.ts).
-    tabPages?: readonly Pick<Page, 'kind'>[] | null;
-    // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, its selection
-    // modes, and no Search (it would offer every element type).
-    participant?: boolean;
-    // A photo page in focus (docs/specs/031-photo/photo-pages.md "The photo tools"): its tools in place of the
-    // categories, their tiles and More, or (a Participant's) added at the strip's end.
-    photoTools?: { node: ReactNode; inPlaceOfCategories: boolean } | null;
-  };
-// The strip's card, and the leading card beside it on a phone.
-const CARD_CLASS = `${TOOLBAR_CARD} ${BAND_TINT} ${BAND_STRIP_FLUSH} ${PHONE_TOOLBAR_ITEMS}`;
-
-// On a phone's row, the menu card sits at the left gutter and the strip beside
-// it rather than centred (docs/specs/007-editor/toolbar-layout.md "On a phone");
-// held sideways there is no menu card and the strip starts at the gutter. Off a
-// phone, the strip alone, centred by its parent.
-function StripRow({
-  leading,
-  leadingRef,
-  children,
-}: {
-  leading?: ReactNode;
-  leadingRef: RefObject<HTMLDivElement | null>;
-  children: ReactNode;
-}) {
-  if (leading === undefined) return <>{children}</>;
-  return (
-    <div
-      // 12px gutters, or a landscape notch's inset where that is bigger (lib/safe-area). Held
-      // sideways, the right gutter also clears the bars handle at the canvas's top-right corner
-      // (LandscapeBarsHandle), so a long strip's rail scrolls short of it rather than under it.
-      style={{
-        ...safeInlinePadding('0.75rem'),
-        paddingRight: `calc(${atLeastInset('0.75rem', 'right')} + var(--landscape-handle-room, 0px))`,
-      }}
-      className={`pointer-events-none flex w-full items-start gap-2 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
-    >
-      {leading == null ? null : (
-        <div ref={leadingRef} data-strip-leading="" className={CARD_CLASS}>
-          {leading}
-        </div>
-      )}
-      {children}
-    </div>
-  );
-}
-
-// Centred alone (desktop), the card is whole-pixel wide with the canvas's
-// parity (see SnapWidth). Beside the menu card (a phone) it is left-aligned
-// and may shrink to the row, its rail scrolling, so it is not snapped there.
-function CardWidth({ swipe, children }: { swipe: boolean; children: ReactNode }) {
-  if (swipe) return <div className="flex min-w-0">{children}</div>;
-  return <SnapWidth matchParentParity>{children}</SnapWidth>;
-}
-
-export function ToolbarPalette(props: Props) {
+export function ToolbarPalette(props: ToolbarPaletteProps) {
   const { canvasTool, themeTint, pendingDraw, leading, besideWidth } = props;
   const photoInPlace = !!props.photoTools?.inPlaceOfCategories;
   // The phone's row: the strip at the left gutter, beside the menu card when there is one.

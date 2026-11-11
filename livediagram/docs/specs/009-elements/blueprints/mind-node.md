@@ -22,7 +22,7 @@ Scope, by file:
 | `packages/document/src/element-types.ts`                       | `mindParentId`, `mindFlow`                                                                                                         |
 | `packages/document/src/validate.ts`                            | `mindParentId` is a string; `mindFlow` a known flow                                                                                |
 | `packages/document/src/duplicate.ts`                           | Re-parents copied children onto copied parents                                                                                     |
-| `packages/document/src/svg-render.ts`                          | The export's corner radius                                                                                                         |
+| `packages/document/src/svg-render-boxed.ts`                    | The export's corner radius                                                                                                         |
 | `apps/editor/app/document/[id]/useMindGrowth.ts`               | `canGrowMindNode`, `growMindNode`, `abandonMindNode`: one commit each                                                              |
 | `apps/editor/app/document/[id]/useGrowthLanding.ts`            | Shared with flowchart growth: reveal, typed-ahead landing, Escape on an empty grown node                                           |
 | `apps/editor/app/document/[id]/useMindOutline.ts`              | `MindOutlineApi`: the open root, `canEdit`, `save` as one commit                                                                   |

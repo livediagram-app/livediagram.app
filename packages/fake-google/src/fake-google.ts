@@ -13,12 +13,18 @@ import { DriveStore, FOLDER_MIME, type FakeFile, type StoreOptions } from './dri
 import { parseFields, pickFields } from './fields';
 import { parseMultipartRelated } from './multipart';
 import { compileQuery } from './query';
-import { validateThumbnail } from './thumbnail';
+import {
+  CORS,
+  DEFAULT_FILE_FIELDS,
+  DEFAULT_PAGE_SIZE,
+  driveError,
+  driveFileShape,
+  jsonResponse,
+  MAX_PAGE_SIZE,
+  thumbnailFromHints,
+} from './drive-responses';
 
 const ACCESS_TOKEN_TTL_S = 3600;
-const DEFAULT_FILE_FIELDS = 'kind,id,name,mimeType';
-const DEFAULT_PAGE_SIZE = 100;
-const MAX_PAGE_SIZE = 1000;
 
 // Google's ceiling for a changes channel: a week.
 const CHANNEL_TTL_MS = 7 * 24 * 3600 * 1000;
@@ -49,31 +55,6 @@ type FakeGoogleOptions = Partial<StoreOptions> & {
   // the first consent without prompt=consent.
   omitRefreshToken?: boolean;
 };
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET,POST,PATCH,PUT,DELETE,OPTIONS',
-  'Access-Control-Allow-Headers':
-    'authorization,content-type,x-upload-content-type,x-goog-drive-resource-keys',
-  'Access-Control-Expose-Headers': 'Location',
-};
-
-function jsonResponse(
-  status: number,
-  body: unknown,
-  headers: Record<string, string> = {},
-): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json', ...CORS, ...headers },
-  });
-}
-
-function driveError(status: number, reason: string, message = reason): Response {
-  return jsonResponse(status, {
-    error: { code: status, message, errors: [{ domain: 'global', reason, message }] },
-  });
-}
 
 export class FakeGoogle {
   readonly store: DriveStore;
@@ -355,30 +336,9 @@ export class FakeGoogle {
     return jsonResponse(200, {});
   }
 
-  private shape(file: FakeFile, user: string): Record<string, unknown> {
-    return {
-      kind: 'drive#file',
-      id: file.id,
-      name: file.name,
-      mimeType: file.mimeType,
-      parents: [...file.parents],
-      trashed: file.trashed,
-      explicitlyTrashed: file.explicitlyTrashed,
-      appProperties: { ...file.appProperties },
-      ...(file.md5Checksum ? { md5Checksum: file.md5Checksum } : {}),
-      ...(file.headRevisionId ? { headRevisionId: file.headRevisionId } : {}),
-      version: String(file.version),
-      createdTime: file.createdTime,
-      modifiedTime: file.modifiedTime,
-      ownedByMe: file.owner === user,
-      capabilities: { canEdit: file.owner === user, canTrash: file.owner === user },
-      ...(file.thumbnail ? { hasThumbnail: true } : {}),
-    };
-  }
-
   private respondFile(file: FakeFile, user: string, url: URL): Response {
     const fields = parseFields(url.searchParams.get('fields') ?? DEFAULT_FILE_FIELDS);
-    return jsonResponse(200, pickFields(this.shape(file, user), fields));
+    return jsonResponse(200, pickFields(driveFileShape(file, user), fields));
   }
 
   private visible(user: string, id: string): FakeFile | null {
@@ -458,7 +418,7 @@ export class FakeGoogle {
           fileId: e.fileId,
           time: e.time,
           removed: e.file === null,
-          ...(e.file ? { file: this.shape(e.file, user) } : {}),
+          ...(e.file ? { file: driveFileShape(e.file, user) } : {}),
         })),
         ...(page.done
           ? { newStartPageToken: String(page.next) }
@@ -481,7 +441,7 @@ export class FakeGoogle {
       const slice = all.slice(start, start + size);
       const body = {
         kind: 'drive#fileList',
-        files: slice.map((f) => this.shape(f, user)),
+        files: slice.map((f) => driveFileShape(f, user)),
         ...(start + size < all.length ? { nextPageToken: String(start + size) } : {}),
       };
       const fields = parseFields(
@@ -546,15 +506,8 @@ export class FakeGoogle {
       appProperties: (meta.appProperties as Record<string, string>) ?? {},
       content,
       viaApp: true,
-      thumbnail: thumbnail ?? this.thumbnailOf(meta),
+      thumbnail: thumbnail ?? thumbnailFromHints(meta),
     });
-  }
-
-  private thumbnailOf(meta: Record<string, unknown>): FakeFile['thumbnail'] {
-    const hints = meta.contentHints as
-      { thumbnail?: { image?: string; mimeType?: string } } | undefined;
-    if (!hints?.thumbnail) return null;
-    return validateThumbnail(hints.thumbnail.image ?? '', hints.thumbnail.mimeType ?? '');
   }
 
   private applyMetadata(
@@ -637,7 +590,7 @@ export class FakeGoogle {
     }
     const file = this.visible(user, fileId);
     if (!file) return driveError(404, 'notFound', `File not found: ${fileId}.`);
-    this.store.writeContent(file, content, this.thumbnailOf(meta));
+    this.store.writeContent(file, content, thumbnailFromHints(meta));
     const { contentHints: _hints, ...rest } = meta;
     void _hints;
     this.applyMetadata(file, rest, url, user);

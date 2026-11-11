@@ -14,7 +14,7 @@ Scope, by file:
 | `packages/document/src/colors.ts`                                              | Default fill, stroke, text; `supportsColours` true                                                                        |
 | `packages/document/src/themes.ts`                                              | `THEME_COLOUR_FIELDS['link-card'] = []`                                                                                   |
 | `packages/document/src/validate.ts`                                            | Link card carries no extra required fields                                                                                |
-| `packages/document/src/svg-render.ts`                                          | Export: generic `rect` branch                                                                                             |
+| `packages/document/src/svg-render-boxed.ts`                                    | Export: generic `rect` branch                                                                                             |
 | `packages/api-schema/src/index.ts`                                             | `UnfurlResult`                                                                                                            |
 | `apps/api/src/routes/unfurl.ts`                                                | `handleUnfurl`: routing, the per-IP throttle, this product's User-Agent                                                   |
 | `../packages/api-kit/src/unfurl.ts`, `../packages/api-kit/src/unfurl-fetch.ts` | `UnfurlResult`, `isBlockedHost`, `parsePublicHttpUrl`, `buildUnfurlResult`; `unfurl` (the bounded fetch), every product's |
@@ -286,5 +286,5 @@ LinkUnfurled` exist.
 | `USER_AGENT`              | `livediagram-unfurl/1.0 (+https://livediagram.app)` | Spec "descriptive"; keep a contact URL             |
 | `UNFURL_RATE_LIMITER`     | 60 per 60 s, namespace `1005`                       | Spec; production and staging                       |
 | `createLinkCard` size     | 280 × 120                                           | Spec                                               |
-| Card radius               | 10 px canvas, 6 px export                           | `element-variant.ts`, `svg-render.ts` (D56)        |
+| Card radius               | 10 px canvas, 6 px export                           | `element-variant.ts`, `svg-render-boxed.ts` (D56)  |
 | Default colours           | fill `#ffffff`, stroke `#e2e8f0`, text `#1e293b`    | `colors.ts`; text on fill 14.6:1                   |

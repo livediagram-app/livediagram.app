@@ -12,7 +12,7 @@ Scope, by file:
 | `packages/document/src/factories.ts`                         | `createImage`: the 200×150 placeholder, `aspectLocked: true`            |
 | `packages/document/src/validate.ts`                          | Structural check of an image element in a tab body                      |
 | `packages/document/src/svg-render-describe.ts`               | `describeBoxedExport`: image `ExportShape` with `href` / fit / radius   |
-| `packages/document/src/svg-render.ts`                        | Image branch: `svgImageShape`, else the dashed placeholder rect         |
+| `packages/document/src/svg-render-boxed.ts`                  | Image branch: `svgImageShape`, else the dashed placeholder rect         |
 | `packages/document/src/svg-render-image-icon.ts`             | `svgImageShape`: clipped `<image>` over a white backing rect            |
 | `../packages/api-schema/src/image-limits.ts`                 | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES` for the editor's own gate     |
 | `../packages/api-schema/src/image-sniff.ts`                  | `sniffImageType`: labels embedded bytes whose stored type is missing    |

@@ -8,7 +8,7 @@ no travel, so a portal shows as an empty box with its selection ring and pressin
 ## The element
 
 - A shape kind, so it inherits colours, shadow, layers, comments and export.
-- Portal-shaped: 72 × 112 (`shape-factory.ts`), taller than wide, and kept at that intrinsic size whatever was
+- Portal-shaped: 72 × 112 (`shape-default-size.ts`), taller than wide, and kept at that intrinsic size whatever was
   selected when it was made (`lib/canvas.ts`). It ships unlinked.
 - It paints its own ring, so its box is transparent and borderless (`colors.ts`, `element-variant.ts`).
   `strokeColor` is the colour of the energy, not of a border.

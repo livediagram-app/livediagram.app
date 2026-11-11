@@ -8,7 +8,7 @@ and from [Avatar tour](../avatar-tour.md).
 | File                                                      | Role                                                                                              |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `packages/avatar/src/wire-say.ts`                         | `AvatarSayOp`, the limits, `parseAvatarSay`, `countWords`, `clampSayText`                         |
-| `packages/api-schema/src/room-messages.ts`                | `avatar-say` in `PRESENCE_OP_KINDS`                                                               |
+| `packages/api-schema/src/room-op-kinds.ts`                | `avatar-say` in `PRESENCE_OP_KINDS`                                                               |
 | `apps/api/src/room-op-gate.ts`                            | Drops a Viewer's `avatar-say`, and one `parseAvatarSay` refuses                                   |
 | `packages/avatar/src/speech.ts`                           | Pure: `flightMs`, `bubbleMotion`, `admitBubble`, `headPoint`, `SeenIds`, `speechLift`             |
 | `packages/avatar/src/speech-store.ts`                     | The bubbles on screen: `addOwnBubble`, `receivePeerSay`, `useSpeechBubbles`, `resetSpeechBubbles` |

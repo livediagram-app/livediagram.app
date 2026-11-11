@@ -4,14 +4,10 @@ import { CanvasFocusProvider } from '@/hooks/canvas/useCanvasFocus';
 import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
-import { truncateName } from '@liveplanner/project';
-import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
-import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
 import { registerUnsavedWork } from '@liveworkspace/workbench/lib/unsaved-work';
 import { useRegionCycle } from '@liveworkspace/workbench/hooks/ui/useRegionCycle';
-import { useEffect, useMemo } from 'react';
-import { addToProjectTargets } from '@/lib/add-to-project-targets';
+import { useEffect } from 'react';
 import { canvasSurface } from '@liveplanner/project';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { CanvasPatternContext } from '@/components/canvas/canvas-pattern-context';
@@ -33,30 +29,13 @@ import { useCardThreadsValue } from '@/components/plan/threads/useCardThreadsVal
 import { FormBoardContext } from '@/components/forms/form-board-context';
 import { useFormBoardValue } from '@/hooks/forms/useFormBoardValue';
 import { SheetsProviders } from '@/hooks/sheets/sheet-comments-context';
-import { EditorHeader } from '@/components/chrome/EditorHeader';
-import { useCommunityEnabled } from '@liveworkspace/community-ui';
-import {
-  itemIsPublic,
-  useAutoCopyParam,
-  useCommunityState,
-} from '@liveworkspace/community-ui/editor';
-import { API_BASE } from '@/lib/api-client';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
-import {
-  WorkbenchBackButton,
-  WorkbenchOpenLink,
-  WorkbenchReconnectLine,
-} from '@/components/chrome/WorkbenchChrome';
-import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
+import { WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
 
-// The project in a full tab, by its link when the frame opened it by one.
-const workbenchProjectHref = (projectId: string, shareCode: string | null) =>
-  appHrefOfPlace({ kind: 'project', projectId, tabId: null, shareCode });
-import { TabBar } from '@/components/chrome/TabBar';
-import { LandscapeBarFold, LandscapeBarsHandle } from '@/components/chrome/LandscapeBars';
+import { LandscapeBarsHandle } from '@/components/chrome/LandscapeBars';
 import { useLandscapeBars } from '@/hooks/ui/useLandscapeBars';
 import { SplitViewFrame } from '@/components/split/SplitViewFrame';
-import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
+import { SignInBanner } from '@/components/chrome/SignInBanner';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
@@ -66,18 +45,20 @@ import { EditorTours } from '@/components/tour/EditorTours';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
-import { useDismissibleBanner } from '@liveworkspace/workbench/hooks/ui/useDismissibleBanner';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { AutomationsHost } from '@/components/automations/AutomationsHost';
-import { automationsScopeFor } from '@/components/automations/automations-gate';
-import { useAutomationsGate } from '@/components/automations/use-automations-gate';
-import { useDelayedReveal } from '@liveworkspace/workbench/hooks/ui/useDelayedReveal';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
+import { renderEditorHeader, renderEditorTabBar } from './EditorViewBars';
+import {
+  useCanvasPattern,
+  useEditorAutomations,
+  useHeaderCommunity,
+  useSignInNudge,
+} from './editor-view-hooks';
 import { useSelectTab } from './useSelectTab';
 import { useRoleIndicator } from './useRoleIndicator';
-import { RolePill } from '@/components/chrome/RoleIndicator';
 import {
   UiScaleProvider,
   useUiScalePreview,
@@ -105,11 +86,6 @@ const PlanSheetsHost = dynamic(
   () => import('@/components/plan/PlanSheetsHost').then((m) => m.PlanSheetsHost),
   { ssr: false },
 );
-
-// How long a guest edits before the sign-in nudge appears (docs/specs/014-identity/sign-in-encouragement.md).
-// Long enough that it never greets someone the instant they open a
-// project; short enough to catch an invested session.
-const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
 
 // The editor's full view (header + canvas + tab bar + all dialogs),
 // lifted out of editor-page.tsx. Every value/handler it needs is read
@@ -142,11 +118,8 @@ export function EditorView() {
   // F6 moves between the header, palette, canvas, controls and tab bar (canvas-accessibility.md).
   useRegionCycle();
   const {
-    pasteFromClipboard,
-    hasClipboard,
     activeId,
     activeTab,
-    addTab,
     anyWelcomeOpen,
     embedMode,
     // The app's surroundings, and the workbench session (docs/specs/013-workspace/blueprints/
@@ -154,73 +127,21 @@ export function EditorView() {
     appChrome,
     workbench,
     drag,
-    clearTabContent,
     accountUserId,
-    closeContextMenu,
-    contextMenu,
     copying,
-    deleteTab,
-    projectId,
-    projectList,
-    nameProject,
     projectName,
-    projectShareable,
-    projectTeamId,
-    duplicateTab,
     hydrated,
-    setImportOpen,
-    trackerImport,
-    canShareProject,
-    isOwner,
     isReadOnly,
-    isStructureReadOnly,
-    isOutOfScope,
-    linkActiveTabTo,
-    loadAllTabs,
     makeCopy,
-    participantsByTab,
-    renameTab,
-    renameTabFolder,
-    moveTabToFolder,
-    removeTabFromFolder,
-    reorderTabs,
-    selfParticipant,
-    sessionRole,
     sessionShareCode,
-    setExportOpen,
-    setExportScope,
-    setSearchOpen,
-    setSettingsOpen,
-    openSettingsOn,
-    setShareDialogOpen,
     renameProjectNonce,
     renameTabNonce,
     tabs,
-    toggleActiveTabLock,
-    zenMode,
-    openCollaborators,
     userPreferences,
     sessionCommunity,
   } = ctx;
-  // The header badge follows the plan's Community post (docs/specs/025-community/community.md "Publishing").
-  const communityState = useCommunityState(projectId);
-  // The badge goes too while the Community is switched off. Asked only while there is a listed post to badge, and
-  // never in an embed, so other opens make no request.
-  const communityOn = useCommunityEnabled(API_BASE, communityState === 'listed' && appChrome);
-  // `?copy=1` from the Community's Make a Copy (docs/specs/025-community/community.md "The gallery").
-  useAutoCopyParam({
-    hydrated,
-    sessionShareCode,
-    // The author's own post copies nothing: their bar offers Edit Your Plan instead.
-    community: sessionCommunity !== null && !sessionCommunity.ownProjectId,
-    makeCopy,
-  });
-  // Whether the plan shows as public on the Community, for the header's share state.
-  const headerCommunity = itemIsPublic({
-    communityOn,
-    ownPostState: communityState,
-    communitySession: sessionCommunity !== null,
-  });
+  // The header's Community state, and a Community link's `?copy=1` (editor-view-hooks).
+  const headerCommunity = useHeaderCommunity(ctx);
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, so a phone resolves to 1.
   // While a Settings slider is dragged its patch wins, so the chrome resizes
   // as you go; the preference is written once, on release.
@@ -255,185 +176,25 @@ export function EditorView() {
   // The viewer's own light / dark chrome (docs/specs/007-editor/editor-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
   const { appearance } = useAppearance();
-  // Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md): the same banner the Explorer shows,
-  // but on the editor it waits ~5 minutes into the session before
-  // appearing so it never interrupts someone the moment they open a
-  // project. Hidden in embed (read-only iframe) and zen mode. zenMode
-  // is deliberately kept OUT of the timer's `enabled` so toggling zen
-  // doesn't restart the countdown; it only hides the card at render.
-  const { dismissed: signInDismissed, dismiss: dismissSignIn } =
-    useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
-  const signInTimerEnabled = !accountUserId && appChrome && !signInDismissed;
-  const signInDelayElapsed = useDelayedReveal(SIGNIN_BANNER_DELAY_MS, signInTimerEnabled);
-  const showSignInBanner = signInTimerEnabled && !zenMode && signInDelayElapsed;
+  // The guest sign-in nudge, delayed into the session (editor-view-hooks).
+  const { showSignInBanner, dismissSignIn } = useSignInNudge(ctx);
   const backdrop = resolveViewBackdrop(activeTab, appearance);
   const cursorsDrawn = !planHidesCursors(activeTab);
   // One value while the style holds, so the covers reading it stay quiet as the editor re-renders.
-  const patternScale = activeTab.backgroundPatternScale ?? 1;
-  const patternSpeed = activeTab.backgroundAnimationSpeed ?? 1;
-  const canvasPattern = useMemo(
-    () => ({
-      pattern: backdrop.backgroundPattern ?? 'grid',
-      color: backdrop.patternColor,
-      scale: patternScale,
-      speed: patternSpeed,
-      opacity: backdrop.backgroundOpacity ?? 1,
-    }),
-    [
-      backdrop.backgroundPattern,
-      backdrop.patternColor,
-      backdrop.backgroundOpacity,
-      patternScale,
-      patternSpeed,
-    ],
-  );
+  const canvasPattern = useCanvasPattern(activeTab, backdrop);
 
   // A phone held sideways folds the header and the tab bar (docs/specs/007-editor/editor-app.md "A phone
   // held sideways"); a rename asked for elsewhere shows them first, so its field can take the focus.
   const landscapeBars = useLandscapeBars([renameProjectNonce, renameTabNonce]);
 
-  // The site header. Zen / focus mode (docs/specs/007-editor/zen-mode.md) hides it entirely so the
-  // canvas gets the full height; embeds (docs/specs/013-workspace/embeds.md) never show it. Side by
-  // side (docs/specs/007-editor/split-view.md) lays it across both panes.
-  const header =
-    zenMode || !appChrome ? null : (
-      <LandscapeBarFold shown={landscapeBars.shown}>
-        <AreaErrorBoundary area="Header" fallback="panel">
-          <EditorHeader
-            projectName={projectName}
-            hideTitle={anyWelcomeOpen}
-            showShare={canShareProject && hydrated && !anyWelcomeOpen}
-            shareable={projectShareable}
-            teamProject={!!projectTeamId}
-            offline={isOffline}
-            community={headerCommunity}
-            // Visitors see "Make a copy" instead of "Share": same slot (a joined
-            // team member is no visitor: the team's projects are theirs to share),
-            // different action. Hidden during the welcome flow so the
-            // first-paint chrome stays minimal, and during hydration so
-            // we don't render the button before we know whether the user
-            // is the owner. A Community visitor gets it from the Community bar instead.
-            onMakeCopy={
-              !canShareProject && hydrated && !anyWelcomeOpen && projectId && !sessionCommunity
-                ? () => void makeCopy()
-                : undefined
-            }
-            copying={copying}
-            readOnly={isStructureReadOnly}
-            renameNonce={renameProjectNonce}
-            rolePill={<RolePill {...role} />}
-            onOpenAccount={() => openSettingsOn('account')}
-            onOpenShare={() => {
-              setShareDialogOpen(true);
-              track('UI', 'Opened', 'Share');
-            }}
-            onRename={(next) => {
-              const prev = projectName.trim();
-              // docs/specs/006-project/name-length.md: capped here so the header rename can't outrun the
-              // limit the auto-namer and the Explorer renames both respect.
-              const nextTrim = truncateName(next);
-              nameProject(nextTrim);
-              if (nextTrim && nextTrim !== prev) track('Project', 'Renamed');
-            }}
-          />
-        </AreaErrorBoundary>
-      </LandscapeBarFold>
-    );
-
-  // A workspace frame's hooks: its Back, in the tab bar.
-  const workbenchFrame = workbench?.frame ?? null;
-  // The tab bar, the editor's footer. Hidden through the welcome flow, in zen mode and in embeds.
-  // Side by side (docs/specs/007-editor/split-view.md) lays it across both panes, like the header.
-  const footer =
-    anyWelcomeOpen || zenMode || embedMode ? null : (
-      <LandscapeBarFold shown={landscapeBars.shown}>
-        <AreaErrorBoundary area="TabBar" fallback="panel">
-          <TabBar
-            workbenchBack={
-              workbenchFrame
-                ? (labelled) => (
-                    <WorkbenchBackButton
-                      onBack={workbenchFrame.back}
-                      backTitle={workbenchFrame.backTitle}
-                      labelled={labelled}
-                    />
-                  )
-                : undefined
-            }
-            workbenchLink={
-              workbench && projectId
-                ? (labelled) => (
-                    <WorkbenchOpenLink
-                      href={workbenchProjectHref(projectId, workbench.shareCode)}
-                      labelled={labelled}
-                    />
-                  )
-                : undefined
-            }
-            tabs={tabs}
-            activeId={activeId}
-            // Clicking an avatar in a presence stack opens the Collaborators
-            // modal (docs/specs/012-collaboration/collaborator-enhancements.md).
-            onOpenCollaborators={openCollaborators}
-            onMoveTabToFolder={moveTabToFolder}
-            onRemoveTabFromFolder={removeTabFromFolder}
-            onRenameFolder={renameTabFolder}
-            activeTabHasContent={activeTab.elements.length > 0}
-            onSelect={selectTab}
-            onAdd={() => addTab()}
-            onRename={renameTab}
-            onDuplicate={duplicateTab}
-            onDelete={deleteTab}
-            onConnectAgain={(id) => void ctx.connectedTabs.connectAgainTab(id)}
-            onClearContent={() => void clearTabContent()}
-            onImportTab={() => setImportOpen(true)}
-            canImportFromTool={trackerImport.canImport}
-            onExportTab={() => {
-              setExportScope('tab');
-              setExportOpen(true);
-            }}
-            otherProjects={addToProjectTargets({
-              projectId,
-              projectList,
-              isOffline,
-              workbench: workbench !== null,
-              isOwner,
-            })}
-            onCopyTabTo={linkActiveTabTo}
-            onToggleLockTab={toggleActiveTabLock}
-            onReorder={reorderTabs}
-            // A tab-scoped visitor edits their tab's content at most, never the
-            // tabs around it (docs/specs/013-workspace/tab-scoped-share-links.md).
-            readOnly={isStructureReadOnly}
-            isOutOfScope={isOutOfScope}
-            renameActiveNonce={renameTabNonce}
-            participantsByTab={participantsByTab}
-            selfId={selfParticipant.id}
-            selfRole={sessionRole}
-            onOpenSettings={() => {
-              // Preferences are user-scoped, not project-scoped, so
-              // view-role visitors can still flip them for their own
-              // browser (e.g. opt out of telemetry).
-              setSettingsOpen(true);
-              track('UI', 'Opened', 'Settings');
-            }}
-            onOpenSearch={() => openSearchWithPrefetch(setSearchOpen, loadAllTabs)}
-            // Canvas right-click (desktop) + long-press (touch) open the active
-            // tab's menu with the canvas sections folded in, rendered by the
-            // TabBar so it reuses every tab handler. Element / multi context
-            // menus stay on EditorContextMenu below.
-            canvasMenu={contextMenu?.mode === 'canvas' ? contextMenu : null}
-            onCloseCanvasMenu={closeContextMenu}
-            canvasActions={{
-              // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md).
-              onPaste: () => pasteFromClipboard(),
-              canPaste: hasClipboard,
-            }}
-          />
-        </AreaErrorBoundary>
-      </LandscapeBarFold>
-    );
-
+  // The site header and the tab bar, its footer (EditorViewBars), or null where they are hidden.
+  const header = renderEditorHeader(ctx, {
+    isOffline,
+    headerCommunity,
+    role,
+    barsShown: landscapeBars.shown,
+  });
+  const footer = renderEditorTabBar(ctx, { isOffline, selectTab, barsShown: landscapeBars.shown });
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
   // where there are bars to fold (not in zen, an embed, the workbench frame or the welcome flow).
   const landscapeBarsHandle =
@@ -441,24 +202,8 @@ export function EditorView() {
       <LandscapeBarsHandle shown={landscapeBars.shown} onToggle={landscapeBars.toggle} />
     ) : null;
 
-  // Automations (docs/specs/026-plan/automations.md "Who may do what"): a signed-in Editor of the whole plan saved to
-  // an account opens the screen; one who could edit it but for a plan in This Browser or no account opens the gate.
-  const automationsGateInput = {
-    level: ctx.can.level,
-    structureReadOnly: isStructureReadOnly,
-    offline: isOffline,
-    hydrated,
-    embed: embedMode,
-    signedIn: !!accountUserId,
-    authLoaded: ctx.authLoaded,
-    scope: ctx.plan.context?.itemsScope ?? null,
-  };
-  const automationsScope = automationsScopeFor(automationsGateInput);
-  const automationsGate = useAutomationsGate({
-    ...automationsGateInput,
-    ready: ctx.selfParticipant.id !== 'self',
-    sync: ctx.syncToCloud,
-  });
+  // Automations' scope and gate (editor-view-hooks).
+  const { automationsScope, automationsGate } = useEditorAutomations(ctx, isOffline);
 
   return (
     // Which paper the canvas is, for every element that carries no colour of
