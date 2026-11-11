@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuGrowthRatio, cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from './index';
 import { contentBounds } from './svg-render';
 import {
@@ -215,19 +215,19 @@ describe('a tab of stored arrows', () => {
       els.push(arrow(`a${i}`, pinned(`b${i - 1}`, 'e'), pinned(`b${i}`, 'w')));
     return els;
   };
-  // Fastest of seven: one garbage collection on a busy machine moved a fastest-of-five ratio to 8.07 under coverage.
-  const fastest = (els: Element[], run: (els: Element[]) => unknown) =>
-    Math.min(...Array.from({ length: 7 }, () => cpuMsOf(() => void run(els))));
+  // One sample: five measures of a tab built outside the timing, so the smaller takes long enough to time.
+  const sample = (els: Element[]) => () =>
+    cpuMsOf(() => {
+      for (let i = 0; i < 5; i++) contentBounds(els);
+    });
 
   it('measures its bounds in time that grows with the arrows, not faster', () => {
     // Four times the arrows: linear work costs about four times as much, a quadratic sixteen. 500 and 2,000, not
     // 1,000 and 4,000: the larger tab's 8,000 elements brought the collector in, which read up to 6.4 here and 8.68
-    // on CI; these read 4.5 to 4.9 (30 runs, plain and beside another suite). Unbounded under coverage.
-    const small = tabOf(500);
-    const large = tabOf(2000);
-    const bounds = (els: Element[]) => {
-      for (let i = 0; i < 5; i++) contentBounds(els);
-    };
-    expect(fastest(large, bounds) / fastest(small, bounds)).toBeLessThan(cpuRatioCeiling(8));
+    // on CI; these read 4.5 to 4.9 (30 runs, plain and beside another suite). Both warmed and timed in turns
+    // (cpuGrowthRatio), so a collection cannot land on one side alone. Unbounded under coverage.
+    const ceiling = cpuRatioCeiling(8);
+    const ratio = cpuGrowthRatio(sample(tabOf(500)), sample(tabOf(2000)), { ceiling });
+    expect(ratio).toBeLessThan(ceiling);
   });
 });
