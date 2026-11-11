@@ -10,13 +10,15 @@ import { dayNumber, dayParts, MONTH_SHORT } from '../plan-view-dates';
 import { zonedParts } from '../date-time-fields';
 import { AUTOMATION_BRANCH_VALUE_NAMES, AUTOMATION_VALUE_NAMES, type AutomationDay } from './types';
 import { fieldOfName, statusName, type AutomationOutline } from './outline';
+import { webhookPathOf, type WebhookValues } from './webhook-paths';
 
 export const VALUE_NAMES = AUTOMATION_VALUE_NAMES;
 const FIXED: ReadonlySet<string> = new Set(AUTOMATION_VALUE_NAMES);
 const BRANCH: ReadonlySet<string> = new Set(AUTOMATION_BRANCH_VALUE_NAMES);
 
-// Where a text is written: a branch's text may also name the card that started the rule (`{{trigger.title}}`).
-export type ValuePlace = { branch?: boolean };
+// Where a text is written: a branch's text may also name the card that started the rule (`{{trigger.title}}`), and
+// an Incoming Webhook rule's the call's body (`{{webhook.<path>}}`).
+export type ValuePlace = { branch?: boolean; webhook?: boolean };
 
 const VALUE = /\{\{([^{}]*)\}\}/g;
 const SHIFT = /^now\s*([+-])\s*(\d{1,4})\s*d$/;
@@ -41,7 +43,8 @@ export const isKnownValue = (name: string, place: ValuePlace = {}): boolean =>
   FIXED.has(name) ||
   SHIFT.test(name) ||
   fieldNameOf(name) !== null ||
-  (place.branch === true && BRANCH.has(name));
+  (place.branch === true && BRANCH.has(name)) ||
+  (place.webhook === true && webhookPathOf(name) !== null);
 
 // The first value a text holds that the builder does not know, or null.
 export const unknownValueIn = (text: string, place: ValuePlace = {}): string | null =>
@@ -96,6 +99,10 @@ export interface ValueContext {
   timeZone: string;
   // In a branch: the card that started the rule, and its link (`card` is the related card).
   trigger?: { card: Item; url: string };
+  // An Incoming Webhook run: the values its call's body gave, by path (missing reads nothing).
+  webhook?: WebhookValues;
+  // A run with no card (an Incoming Webhook call that named none): every `card.…` value reads nothing.
+  cardless?: boolean;
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -108,6 +115,12 @@ function valueOf(name: string, ctx: ValueContext, iso: boolean): string {
     const n = Number(shift[2]) * (shift[1] === '-' ? -1 : 1);
     return day(addDays(todayIn(ctx.now, ctx.timeZone), n));
   }
+  const path = webhookPathOf(name);
+  if (path !== null) {
+    const value = ctx.webhook?.[path.join('.')];
+    return value === undefined ? '' : String(value);
+  }
+  if (ctx.cardless && name.startsWith('card.')) return '';
   const field = fieldNameOf(name);
   if (field !== null) {
     const id = fieldOfName(ctx.type, field);

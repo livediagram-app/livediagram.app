@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Automations',
   description:
-    'How to make automation rules: triggers and times, conditions, actions, related cards, Slack and webhook posts, templates, testing, the Audit Trail and limits.',
+    'How to make automation rules: triggers, times and incoming webhooks, conditions, actions, Slack and webhook posts, templates, testing, the Audit Trail and limits.',
   path: '/help/plan/automations/',
 });
 
@@ -74,6 +74,38 @@ Text a rule writes (a comment, a card's title, an email) can hold values that ar
 ### Test on a Card
 
 **Test on a Card** runs the rule as it stands, saved or not, on a card you pick, and changes nothing: you see each step and what it would do.
+
+## Start a Rule from Another Tool
+
+A rule whose trigger is **Incoming Webhook** (under **Another Tool Sends It**) is started by another tool: your CI when a build finishes, a form service, a script. Save the rule, then in its **When** panel:
+
+1. Copy the rule's **Address**.
+2. Press **Make Secret**. The secret is shown once, with **Copy** and "You won't see it again": keep it where the other tool keeps its passwords. Afterwards the panel shows only its last 4 characters, when it was made and when it was last used.
+3. Have the tool send a `POST` with JSON to the address, proving the secret one of two ways.
+
+With the secret in a header:
+
+```bash
+curl -X POST 'https://www.liveplanner.app/api/hooks/automations/<plan>/<rule>' \
+  -H "Authorization: Bearer $SECRET" \
+  -H 'Content-Type: application/json' \
+  -d '{"cards": [12, 14], "build": {"status": "green"}}'
+```
+
+With a signature, an HMAC-SHA256 of the exact body keyed with the secret, so the secret itself never travels:
+
+```bash
+BODY='{"cards": [12, 14], "build": {"status": "green"}}'
+SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$SECRET" | sed 's/^.* //')
+curl -X POST 'https://www.liveplanner.app/api/hooks/automations/<plan>/<rule>' \
+  -H "X-Liveplanner-Signature: sha256=$SIG" \
+  -H 'Content-Type: application/json' \
+  -d "$BODY"
+```
+
+The rule runs on each card the body names by number in `cards` (up to 10). With no cards named, it runs once with no card, which suits a rule that only makes a card or posts a message; a rule whose steps change a card is skipped instead. Anything else in the body is yours to use: in Insert a Value, **Webhook Field…** takes a path such as `build.status` and fills it in as plain text, up to 5 names deep and 500 characters. The runs are by **Automation**, and Who Did It reads "Incoming webhook".
+
+The tool hears back `202` with how many runs were queued. A wrong or old secret, or a rule that is off or deleted, all answer `401`; a body that isn't JSON `415`; one over 16 KB `413`; more than 60 calls a minute, or a plan past its runs for the day, `429` with when to try again. **Regenerate** makes a new secret and stops the old one at once; turning the rule off or deleting it stops calls too. Only an Editor of the whole plan, signed in, makes or regenerates the secret.
 
 ## What You See on a Card
 

@@ -34,6 +34,12 @@ export const AUTOMATION_COLOR = '#7c3aed';
 export function automationPerson(ruleName: string): ItemPerson {
   return { id: AUTOMATION_PERSON_ID, name: ruleName, color: AUTOMATION_COLOR };
 }
+// Who an Incoming Webhook call is by: no person, so `{{person}}` (Who Did It) reads "Incoming webhook".
+export const INCOMING_WEBHOOK_PERSON: ItemPerson = {
+  id: 'incoming_webhook',
+  name: 'Incoming webhook',
+  color: AUTOMATION_COLOR,
+};
 
 // ---- Triggers ----------------------------------------------------------------------------------------------------
 
@@ -57,7 +63,9 @@ export type AutomationTrigger =
       at: AutomationClock;
     }
   | { kind: 'due_in'; days: number; at: AutomationClock }
-  | { kind: 'overdue'; at: AutomationClock };
+  | { kind: 'overdue'; at: AutomationClock }
+  // Phase 3: another tool's call to the rule's own address, proving it holds the rule's secret (incoming.ts).
+  | { kind: 'incoming_webhook' };
 
 export type AutomationTriggerKind = AutomationTrigger['kind'];
 export const AUTOMATION_TRIGGER_KINDS: readonly AutomationTriggerKind[] = [
@@ -70,12 +78,17 @@ export const AUTOMATION_TRIGGER_KINDS: readonly AutomationTriggerKind[] = [
   'scheduled',
   'due_in',
   'overdue',
+  'incoming_webhook',
 ];
 export type AutomationTimeTriggerKind = 'scheduled' | 'due_in' | 'overdue';
 export const isTimeTrigger = (
   t: AutomationTrigger,
 ): t is Extract<AutomationTrigger, { kind: AutomationTimeTriggerKind }> =>
   t.kind === 'scheduled' || t.kind === 'due_in' || t.kind === 'overdue';
+// A trigger with no person behind it (a time, another tool's call): no Who Did It, nobody to assign or email as
+// whoever triggered it.
+export const isPersonless = (t: AutomationTrigger): boolean =>
+  isTimeTrigger(t) || t.kind === 'incoming_webhook';
 
 // ---- Conditions --------------------------------------------------------------------------------------------------
 

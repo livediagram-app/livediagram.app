@@ -12,6 +12,7 @@ import {
   type AutomationRunResponse,
   type AutomationRunsQuery,
   type AutomationRunsResponse,
+  type AutomationSecretResponse,
   type AutomationsListResponse,
 } from '@liveplanner/api-schema';
 import { API_BASE, apiFetch, apiHeaders, expectOk, expectOkVoid } from '@/lib/api/core';
@@ -129,3 +130,9 @@ export function listRuns(scope: AutomationsScope, query: AutomationRunsQuery = {
     query: q ? `?${q}` : '',
   });
 }
+
+// Make Secret and Regenerate for an Incoming Webhook rule: the secret, in this answer only.
+export const makeHookSecret = (scope: AutomationsScope, id: string) =>
+  call<AutomationSecretResponse>(scope, `/${enc(id)}/secret`, 'automation secret', {
+    method: 'POST',
+  });

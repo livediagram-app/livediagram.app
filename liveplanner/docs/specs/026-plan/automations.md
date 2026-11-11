@@ -8,7 +8,8 @@ automation, sized to one plan. The engineering detail is [blueprints/automations
 This spec covers **Phase 1** (Work Item #711: card triggers and actions, the Automations screen and its footer
 button) and **Phase 2** (#712: the Scheduled, Due In and Overdue triggers, For Related Cards, Assign in Turn, the
 Send to Webhook, Post to Slack and Post to Teams actions, and the Templates gallery). Phase 3 (#713) adds the
-incoming webhook trigger, AI actions and the agent and CLI rule tools, and is specified here when it is built. The
+**Incoming Webhook** trigger (below, built), AI actions and the agent and CLI rule tools, each specified here as it
+is built. The
 design for every phase is the LivePlanner Automations canvas (the owner's design artifact): Phase 1 follows its
 screens 1, 2, 3, 4, 5 and 7; Phase 2 adds screen 6 (Empty State and Templates), the Overdue Nudge and paused Slack
 rows of screen 2, and **+ For Related Cards** on screen 3.
@@ -69,6 +70,9 @@ work. A rule does it every time, at once, and says that it did.
   `?automations=1` opening the screen) and **Cancel**. After signing in the screen opens on the
   rules. **Only an Editor Can See Rules** is for a signed-in reader the api refuses, never a guest. Run Rule waits for
   sign-in too.
+- An **Incoming Webhook** rule's secret is an Editor's of the whole plan, signed in, to make, see once and
+  regenerate ([Incoming Webhook](#incoming-webhook)); whoever holds it can start that one rule and nothing else, and
+  its runs are Automation's, an Editor's writes as any rule's.
 - An **API token**, the MCP server and the CLI read and write no rules in Phase 1 (403 `automations_need_editor`):
   agent tools for rules are Phase 3. Their card writes do trigger rules.
 
@@ -89,19 +93,21 @@ work. A rule does it every time, at once, and says that it did.
 
 ## Triggers
 
-| Trigger             | Starts when                                                                                    | Narrowed by                       |
-| ------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------- |
-| **Card Created**    | a card is added, by anyone or anything (a person, Duplicate, an import, a Repeat, an agent)    | the column it lands in (optional) |
-| **Form Response**   | a [Form](../030-forms/forms.md) response makes a card                                          | which Form tab (optional)         |
-| **Card Moved**      | a card's status changes                                                                        | From columns, To columns          |
-| **Field Changed**   | any of the chosen fields changes value (title, description, assignee, priority, labels, start, | one or more fields, required      |
-|                     | due, estimate, checklist, flag or any custom field of the plan's card types)                   |                                   |
-| **Comment Added**   | someone starts a thread on a card or replies on one (not Automation's own comments)            | none                              |
-| **Run from a Card** | an Editor picks the rule under **Run Rule** in a card's ⋯ menu                                 | none                              |
-| **Scheduled**       | a time comes round: every day, every weekday (Monday to Friday), weekly on chosen days, or     | the rule's conditions pick the    |
-|                     | monthly on a day (1 to 31), at a time (on the quarter hour)                                    | cards, as a filter                |
-| **Due In**          | a card's due date is a chosen number of days away (1 to 30), at a time on that day             | the rule's conditions             |
-| **Overdue**         | a card's due date has passed and it is not in a done column, at a time on the day after        | the rule's conditions             |
+| Trigger              | Starts when                                                                                    | Narrowed by                       |
+| -------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------- |
+| **Card Created**     | a card is added, by anyone or anything (a person, Duplicate, an import, a Repeat, an agent)    | the column it lands in (optional) |
+| **Form Response**    | a [Form](../030-forms/forms.md) response makes a card                                          | which Form tab (optional)         |
+| **Card Moved**       | a card's status changes                                                                        | From columns, To columns          |
+| **Field Changed**    | any of the chosen fields changes value (title, description, assignee, priority, labels, start, | one or more fields, required      |
+|                      | due, estimate, checklist, flag or any custom field of the plan's card types)                   |                                   |
+| **Comment Added**    | someone starts a thread on a card or replies on one (not Automation's own comments)            | none                              |
+| **Run from a Card**  | an Editor picks the rule under **Run Rule** in a card's ⋯ menu                                 | none                              |
+| **Scheduled**        | a time comes round: every day, every weekday (Monday to Friday), weekly on chosen days, or     | the rule's conditions pick the    |
+|                      | monthly on a day (1 to 31), at a time (on the quarter hour)                                    | cards, as a filter                |
+| **Due In**           | a card's due date is a chosen number of days away (1 to 30), at a time on that day             | the rule's conditions             |
+| **Overdue**          | a card's due date has passed and it is not in a done column, at a time on the day after        | the rule's conditions             |
+| **Incoming Webhook** | another tool sends the rule's own address a JSON call, proving it holds the rule's secret      | the cards the call names, then    |
+|                      | ([Incoming Webhook](#incoming-webhook))                                                        | the rule's conditions             |
 
 ### Time triggers
 
@@ -128,6 +134,68 @@ work. A rule does it every time, at once, and says that it did.
   The builder leaves those choices out on a time rule, and an Assign added to one starts on the plan's first person.
 - **Test on a Card** runs a time trigger's rule on the chosen card as if its moment had come.
 - A rule whose trigger is a time is listed with its next moment ("Next: Mon 9:00") under **Last Run**.
+
+### Incoming Webhook
+
+Another tool (a build server, a form service, a script, Zapier) starts a rule by sending it a call. It is how
+something outside a plan writes into it, so it is built to give that tool as little as possible: one rule, never the
+plan.
+
+- **The secret.** Each Incoming Webhook rule has its own secret, `lwh_` and 86 more characters (64 random bytes,
+  base64url). It can only start that one rule: it is not an account or API token and reads or writes nothing else.
+  The plan keeps only its SHA-256 hash, never the secret. **Make Secret** shows it **once**, with Copy and "You won't
+  see it again. Keep it where the other tool keeps its passwords."; afterwards the panel shows only its last 4
+  characters ("Ends in …Xf3k"), when it was made and when it was last used ("Last used 3 min ago", "Never used").
+  **Regenerate** (with a confirm: "Make a new secret? The old one stops working at once.") makes a new one and the
+  old stops at once. Turning the rule off (or its pausing), deleting it, or changing its trigger to another stops
+  the secret too: a rule off or gone answers every call as a wrong secret would. Changing the trigger away drops the
+  secret, and coming back needs a new one. A duplicate, a copy of the plan and the plan's file carry no secret: the
+  copy's rule needs Make Secret.
+- **The address** names the plan and the rule only, never the secret:
+  `POST https://www.liveplanner.app/api/hooks/automations/<plan id>/<rule id>`, the app's own address. The panel
+  shows it with Copy whether a secret is made or not (it says nothing without the secret).
+- **Proving it holds the secret**, by a header, never in the address:
+  - `Authorization: Bearer lwh_…`, or
+  - a signature of the raw body: `X-Liveplanner-Signature: sha256=<hex>`, the HMAC-SHA256 of the exact bytes sent,
+    keyed with the secret (as GitHub signs its webhooks). The secret itself never travels.
+    Both are checked in constant time. A call with neither, a wrong secret, a bad signature, a signature over other
+    bytes, an old secret after Regenerate, or for a rule that is off, deleted, not an Incoming Webhook rule or never
+    given a secret is answered **401** `webhook_unauthorized` with nothing more, the same answer every time, so a
+    caller can't tell whether the rule exists.
+- **The call** is JSON (`Content-Type: application/json`, any other is **415** `webhook_json_only`), at most
+  **16 KB** (**413** past it). Its body is an object. It may name cards by number: `{"cards": [12, 14]}`, up to
+  **10**, each a whole number from 1; a `cards` that isn't such a list is **400** `webhook_body_invalid`, as is a body
+  that isn't a JSON object. Everything else in the body is the payload the rule's values read (below).
+- **What it runs on.** With cards named, the rule runs once **for each named card the plan holds** (out of the
+  Trash) that its conditions match, as a card trigger runs for one card. A number the plan has no card for, or a
+  card in the Trash, is passed over: card numbers are the plan's own, so a call can only reach this plan's cards.
+  With **no cards named**, the rule runs **once with no card**, and only if its steps need none: no conditions, and
+  only **Create Card** (without copying from or linking to the triggering card) and the outgoing actions. A rule
+  whose steps need a card, called with none, logs one **Skipped** run, "No cards named: this rule's steps need a
+  card". The builder says which a rule is under its address: "Name cards in the call to run on them; with none, it
+  runs once with no card." or "Its steps change a card, so the call must name cards." In a run with no card,
+  `{{card.…}}` values read nothing and the Audit Trail's Card is empty.
+- **The answer** is **202** `{"queued": n}` once accepted: `n` runs wait on the plan's queue (one per named card the
+  plan holds, or 1 with none named) and run within a second or two on the room's alarm, as other triggers do; what
+  they did is in the Audit Trail. 401, 413, 415 and 429 as above and below; **404** only for an address that isn't
+  one (a missing or malformed plan or rule id); **405** for a method other than POST.
+- **Limits.** At most **60 calls a minute** per rule (verified calls; the 61st and on are **429**
+  `webhook_rate_limited` with `Retry-After` in seconds until the minute ends). Every run counts toward the plan's
+  1,000 a day; with the day's budget spent a call is **429** `automation_budget_spent`, `Retry-After` until UTC
+  midnight. The queue's cap holds as for other triggers: a burst past it drops the newest and logs one Skipped line,
+  and `queued` says how many went in. Calls from one network are also bound by the api's write limit, before the
+  plan is asked anything.
+- **No person behind it.** Its runs are by **Automation** (the card's History and comments as for any rule), the
+  Audit Trail's first line reads "Webhook received: 2 cards" ("1 card", "no card"), and `{{person}}` (Who Did It)
+  reads "Incoming webhook". **Who Did It** conditions, **Assign whoever triggered** and **Send Email to whoever
+  triggered** are refused on one (`automation_condition_unsupported`), as for a time rule, and the builder leaves them
+  out.
+- **Test on a Card** runs an Incoming Webhook rule on the chosen card as if a call had named it, with an empty
+  payload: `{{webhook.…}}` values read nothing.
+- **Who may.** Only an Editor of the whole plan, signed in (the Automations gate), makes, sees (once) or
+  regenerates the secret, never through an API token or a link to one tab. The Rules list shows an Incoming Webhook
+  rule's last 4 characters and last use, never the secret or its hash; no answer after Make Secret's, no Audit Trail
+  row and no log line holds either.
 
 - A Form Response also counts as Card Created: a rule on Card Created hears form cards too, a Form Response rule
   hears only them.
@@ -247,12 +315,21 @@ the builder and shown there as chips:
 | `{{rule}}`                     | the rule's name                                        |
 | `{{now}}`, `{{now.date}}`      | the moment the rule runs; as a day                     |
 | `{{now + 3d}}`, `{{now - 1d}}` | a day from today, for a date field                     |
+| `{{webhook.<path>}}`           | a value of an Incoming Webhook call's body, by its dot |
+|                                | path (`{{webhook.build.status}}`, Webhook Field…)      |
 
 - A value the rule cannot fill (no assignee) reads as nothing. A value the builder does not know is refused on save
   with its name (`automation_value_unknown`).
 - Days and times are in the time zone of the person who last saved the rule (kept on the rule, as a Repeat keeps its
   setter's).
 - Values are text: what a card holds is never run, and a value is never read as a value again.
+- `{{webhook.<path>}}` is known only in an Incoming Webhook rule's text (elsewhere `automation_value_unknown`), and
+  **Insert a Value** offers **Webhook Field…** (a path typed in, as `order.id`) only there. A path is 1 to 5 names
+  joined by dots, each 1 to 64 letters, digits, `_` or `-` (a list's place is its number: `items.0.name`). It reads the
+  call's body: a string, a number or a boolean (as `true` or `false`), the string cut at **500** characters; an object,
+  a list, `null` or a missing path reads as nothing. What it reads is filled in as plain text, once: a payload
+  holding `{{card.title}}` or `<b>` stays those characters, never a value and never markup. Only the values the
+  rule's text names are kept with the waiting run; the rest of the body is never stored.
 
 ## Runs, limits and loops
 
@@ -384,8 +461,12 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
 `UI · Opened · Automations`; `Plan · Created · AutomationRule`; `Plan · Toggled · AutomationOn` /
 `AutomationOff`; `Plan · Deleted · AutomationRule`; `Plan · Tested · AutomationRule`; `Plan · Ran · AutomationManual`;
 `UI · Opened · AutomationTemplate.<id>`, the template's id after the dot (an event carries no value, so the id
-rides in its type, from the fixed list above); `UI · Opened · AutomationsOffline` (the Browser Storage panel).
-The api logs `[automations] run` with the result and duration, never a card's text.
+rides in its type, from the fixed list above); `UI · Opened · AutomationsOffline` (the Browser Storage panel);
+`Plan · Created · AutomationSecret` (Make Secret), `Plan · Changed · AutomationSecret` (Regenerate) and
+`Plan · Copied · AutomationSecret` (Copy on the once-shown secret).
+The api logs `[automations] run` with the result, the trigger's kind and the duration, never a card's text, and
+`[automations] hook` with the call's answer (accepted, refused and why, rate limited) and how many runs it queued,
+never the secret, a signature or the body.
 
 ## Limits
 
@@ -406,8 +487,12 @@ The api logs `[automations] run` with the result and duration, never a card's te
 | Actions in a branch              | 10 (of the rule's 20)                  |
 | Outgoing actions per rule        | 5                                      |
 | People in turn                   | 2 to 10                                |
+| Incoming Webhook call body       | 16 KB, JSON                            |
+| Incoming Webhook calls per rule  | 60 a minute                            |
+| Cards one call names             | 10                                     |
+| A webhook value                  | 5 names deep, 500 characters           |
 
 ## Not yet
 
-The incoming webhook trigger, AI actions, agent and CLI tools for rules (Phase 3). Rules across plans, sprints,
+AI actions, agent and CLI tools for rules (Phase 3). Rules across plans, sprints,
 versions and SLAs are not planned.

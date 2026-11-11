@@ -25,6 +25,9 @@ function dispatchedSegments(): Set<string> {
   // this api's published surface.
   if (/segments\[1\] === 'workbench'[\s\S]{0,400}routeToWorkspace/.test(source))
     segments.add('workbench');
+  // An Incoming Webhook call, answered ahead of identity (docs/specs/026-plan/automations.md "Incoming Webhook").
+  if (/segments\[1\] === 'hooks'\) return handleAutomationHook\(/.test(source))
+    segments.add('hooks');
   return segments;
 }
 

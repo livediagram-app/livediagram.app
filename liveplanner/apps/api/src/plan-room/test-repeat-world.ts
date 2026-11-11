@@ -23,6 +23,9 @@ export type RepeatWorld = {
   send: (method: string, path: string, body?: unknown, person?: string) => Promise<Response>;
   items: (planId: string) => Promise<Item[]>;
   make: (planId: string, fields: Record<string, unknown>, status?: string) => Promise<Item>;
+  // A request through the real worker exactly as given (an Incoming Webhook call's own headers).
+  raw: (request: Request) => Promise<Response>;
+  env: Env;
 };
 
 export function repeatWorld(): RepeatWorld {
@@ -66,7 +69,8 @@ export function repeatWorld(): RepeatWorld {
     if (res.status !== 201) throw new Error(`create answered ${res.status}: ${await res.text()}`);
     return (await res.json<{ item: Item }>()).item;
   };
-  return { plans, levels, send, items, make };
+  const raw = (request: Request) => worker.fetch(request, env, executionCtx);
+  return { plans, levels, send, items, make, raw, env };
 }
 
 export async function createPlan(w: RepeatWorld, id: string): Promise<void> {

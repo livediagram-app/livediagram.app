@@ -101,6 +101,7 @@ import {
   broadcastOrderedSystemOp,
 } from './plan-room-sockets';
 import { webSocketMessage } from './plan-room-frames';
+import { answerHookCall, type HookAnswer, type HookCall } from './automations/automation-incoming';
 import { localNamespace, roomHead, roomParticipantWrites, roomInternal } from './plan-room-wiring';
 import { dropSession, roomPeople, broadcastPresence } from './plan-room-presence';
 
@@ -526,6 +527,25 @@ export class PlanRoom extends DurableObject<Env> {
       return relay.upserts.map((t) => t.id);
     this.bindPlan(planId);
     return threadsRelayed(this.requireEnv(), planId, relay);
+  }
+
+  // ---------- RPC: an Incoming Webhook call (automations/automation-incoming.ts) --------------------------------
+
+  // One call to a rule's address. An id nothing has written answers 401 and stays empty; a stored plan's schema is
+  // brought up to date first (V20 holds the secrets).
+  async incomingHook(planId: string, ruleId: string, call: HookCall): Promise<HookAnswer> {
+    const schema = this.storedSchema();
+    if (schema) {
+      this.bindPlan(planId);
+      ensureSchema(this);
+    }
+    const env = this.requireEnv();
+    return answerHookCall(
+      { env, planId, automations: this.automations, schema },
+      ruleId,
+      call,
+      Date.now(),
+    );
   }
 
   requireEnv(): PlanEnv {

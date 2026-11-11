@@ -17,8 +17,55 @@ export type {
   AutomationResult,
 };
 
-// A rule as the Rules list shows it: its figures, and what it names that the plan lacks (Needs Attention).
-export type AutomationListedRule = AutomationRule & { stats: AutomationRuleStats; needs: string[] };
+// An Incoming Webhook rule's address, and its secret as an Editor sees it once made: its last 4 characters, when it
+// was made and last used (null before Make Secret). Never the secret or its hash.
+export interface AutomationHookInfo {
+  url: string;
+  secret: AutomationHookSecret | null;
+}
+
+export interface AutomationHookSecret {
+  last4: string;
+  madeAt: number;
+  usedAt: number | null;
+}
+
+// A rule as the Rules list shows it: its figures, and what it names that the plan lacks (Needs Attention). An
+// Incoming Webhook rule also carries `hook`: its address, and its secret's last 4 characters once made.
+export type AutomationListedRule = AutomationRule & {
+  stats: AutomationRuleStats;
+  needs: string[];
+  hook?: AutomationHookInfo;
+};
+
+// Make Secret and Regenerate (`POST /automations/:ruleId/secret`): the secret, shown this once, and the rule's hook.
+export interface AutomationSecretResponse {
+  secret: string;
+  hook: AutomationHookInfo;
+}
+
+// An Incoming Webhook call's body (`POST /api/hooks/automations/:projectId/:ruleId`): the cards to run on, by number
+// (up to 10; none: the rule runs once with no card), beside anything else the rule's `{{webhook.…}}` values read.
+export interface AutomationHookRequest {
+  cards?: number[];
+  [key: string]: unknown;
+}
+
+// The call accepted: how many runs wait on the plan's queue.
+export interface AutomationHookAccepted {
+  queued: number;
+}
+
+// The call's refusals: 401 (the same for a wrong secret, a rule off, gone or unknown), 400, 413, 415, 429.
+export const AUTOMATION_HOOK_ERRORS = [
+  'webhook_unauthorized',
+  'webhook_body_invalid',
+  'webhook_too_large',
+  'webhook_json_only',
+  'webhook_rate_limited',
+  'automation_budget_spent',
+] as const;
+export type AutomationHookError = (typeof AUTOMATION_HOOK_ERRORS)[number];
 
 export interface AutomationsListResponse {
   rules: AutomationListedRule[];
@@ -81,6 +128,8 @@ export const AUTOMATION_ERRORS = [
   'automation_not_manual',
   // Run Rule past the day's budget (AUTOMATION_RUNS_PER_DAY): 429, nothing ran.
   'automation_budget_spent',
+  // Make Secret for a rule whose trigger is not Incoming Webhook: 409.
+  'automation_not_incoming',
 ] as const;
 export type AutomationError = (typeof AUTOMATION_ERRORS)[number];
 

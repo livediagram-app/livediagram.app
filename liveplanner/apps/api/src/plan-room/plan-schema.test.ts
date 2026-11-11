@@ -88,4 +88,30 @@ describe('migratePlanSchema', () => {
     expect(() => migratePlanSchema((q) => exec.exec(q))).not.toThrow();
     expect(turns()).toHaveLength(1);
   });
+
+  // Automations Phase 3 (docs/specs/026-plan/automations.md "Incoming Webhook"): a plan at 19 gains the hooks table,
+  // and the step runs again harmlessly. Its columns hold a hash and the last 4 characters, never a secret.
+  it('gives a plan made at version 19 the incoming webhook secrets table, once', () => {
+    const sql = new DatabaseSync(':memory:');
+    const exec = nodeItemSql(sql);
+    migratePlanSchema((q) => exec.exec(q));
+    sql.exec('DROP TABLE automation_hooks; UPDATE _plan_schema SET version = 19');
+    migratePlanSchema((q) => exec.exec(q));
+    expect(tables(sql)).toContain('automation_hooks');
+    const columns = sql
+      .prepare('PRAGMA table_info(automation_hooks)')
+      .all()
+      .map((r) => r.name as string);
+    expect(columns).toEqual([
+      'rule_id',
+      'hash',
+      'last4',
+      'made_at',
+      'used_at',
+      'window_at',
+      'window_calls',
+    ]);
+    sql.exec('UPDATE _plan_schema SET version = 19');
+    expect(() => migratePlanSchema((q) => exec.exec(q))).not.toThrow();
+  });
 });

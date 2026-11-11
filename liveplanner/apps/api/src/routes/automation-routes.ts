@@ -8,8 +8,10 @@
 import {
   AUTOMATION_RULES_MAX,
   AUTOMATION_RUNS_PER_DAY,
+  INCOMING_WEBHOOK_PERSON,
   automationPerson,
   freeRuleName,
+  isPersonless,
   isTimeTrigger,
   isTrashed,
   readRuleBody,
@@ -25,6 +27,7 @@ import {
 import type {
   AutomationError,
   AutomationErrorBody,
+  AutomationHookInfo,
   AutomationListedRule,
   AutomationRunsQuery,
   AutomationsListResponse,
@@ -36,10 +39,12 @@ import { readAutomationPlan, type AutomationPlan } from '../plan-room/automation
 import { listRuns, ruleStats, runsToday } from '../plan-room/automations/automation-log';
 import { runRule } from '../plan-room/automations/automation-runner';
 import type { PlanAutomations } from '../plan-room/automations/automation-queue';
+import { hookInfos } from '../plan-room/automations/automation-incoming';
+import { makeSecret } from './automation-hook-routes';
 import { writer } from './item-route-kit';
 import { gateEdit, missingProject, readBody, requireOwner, type PlanRouteContext } from './context';
 
-type Gated = { projectId: string; hook: PlanAutomations; by: ItemPerson };
+export type Gated = { projectId: string; hook: PlanAutomations; by: ItemPerson };
 
 const refuse = (
   status: number,
@@ -69,10 +74,14 @@ function listed(
   rule: AutomationRule,
   stats: ReturnType<typeof ruleStats>,
   nextAts: ReadonlyMap<string, number>,
+  // An Incoming Webhook rule's address and secret (never the secret itself).
+  hooks: ReadonlyMap<string, AutomationHookInfo> = new Map(),
 ): AutomationListedRule {
   const s = stats.get(rule.id);
+  const info = hooks.get(rule.id);
   return {
     ...rule,
+    ...(info ? { hook: info } : {}),
     stats: {
       lastRunAt: s?.lastRunAt ?? null,
       nextAt: isTimeTrigger(rule.trigger) ? (nextAts.get(rule.id) ?? null) : null,
@@ -86,7 +95,11 @@ function listed(
 async function answerRule(ctx: PlanRouteContext, g: Gated, rule: AutomationRule, status = 200) {
   const plan = await readAutomationPlan(ctx.env, g.projectId);
   const stats = ruleStats(g.hook.sql(), Date.now());
-  return json({ rule: listed(g.hook, plan, rule, stats, g.hook.store.nextAts()) }, { status });
+  const hooks = hookInfos(ctx.env, g.projectId, g.hook.sql(), [rule]);
+  return json(
+    { rule: listed(g.hook, plan, rule, stats, g.hook.store.nextAts(), hooks) },
+    { status },
+  );
 }
 
 async function list(ctx: PlanRouteContext, g: Gated): Promise<Response> {
@@ -94,8 +107,10 @@ async function list(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   const plan = await readAutomationPlan(ctx.env, g.projectId);
   const stats = ruleStats(g.hook.sql(), now);
   const nextAts = g.hook.store.nextAts();
+  const rules = g.hook.store.list();
+  const hooks = hookInfos(ctx.env, g.projectId, g.hook.sql(), rules);
   const answer: AutomationsListResponse = {
-    rules: g.hook.store.list().map((r) => listed(g.hook, plan, r, stats, nextAts)),
+    rules: rules.map((r) => listed(g.hook, plan, r, stats, nextAts, hooks)),
     runsToday: runsToday(g.hook.sql(), now),
     runsPerDay: AUTOMATION_RUNS_PER_DAY,
   };
@@ -237,12 +252,14 @@ async function test(ctx: PlanRouteContext, g: Gated): Promise<Response> {
     made: stamp,
     edited: stamp,
   };
-  // A time trigger's rule runs as at its moment: by Automation, no person behind it.
-  const event: AutomationEvent = isTimeTrigger(rule.trigger)
+  // A time trigger's rule runs as at its moment: by Automation, no person behind it; an Incoming Webhook rule's as if
+  // a call had named the card, with an empty payload.
+  const event: AutomationEvent = isPersonless(rule.trigger)
     ? {
         ...manualEvent(g, card.id, 't'),
-        kind: 'time',
-        by: automationPerson(rule.name),
+        ...(isTimeTrigger(rule.trigger)
+          ? { kind: 'time' as const, by: automationPerson(rule.name) }
+          : { kind: 'incoming' as const, by: INCOMING_WEBHOOK_PERSON, cards: 1 }),
         role: 'system',
       }
     : manualEvent(g, card.id, 't');
@@ -324,6 +341,8 @@ function doorOf(ctx: PlanRouteContext): Door | 'method' | null {
   if (segments[5] === 'toggle') return on('POST', ofRule(toggle));
   if (segments[5] === 'duplicate') return on('POST', ofRule(duplicate));
   if (segments[5] === 'run') return on('POST', ofRule(runNow));
+  // An Incoming Webhook rule's secret, made or made again (automation-hook-routes.ts).
+  if (segments[5] === 'secret') return on('POST', ofRule(makeSecret));
   return null;
 }
 
