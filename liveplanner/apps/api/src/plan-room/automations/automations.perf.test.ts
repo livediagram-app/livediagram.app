@@ -49,6 +49,7 @@ const saves = async (id: string) => {
     });
 };
 
+// Wall-clock timeouts are generous: the budgets are CPU time, and a loaded machine stretches only the wall clock.
 describe('Automations cost', () => {
   it('a save in a plan of 50 rules that hear it stays close to a save in a plan with none', async () => {
     const c = await w.make('A', { title: 'Busy' });
@@ -63,7 +64,7 @@ describe('Automations cost', () => {
     expect(heard).toBeLessThan(cpuBudgetMs(1000));
     // What the rules add to the 50 saves: the events they build and queue (measured: within noise of none).
     expect(heard - bare).toBeLessThan(cpuBudgetMs(250));
-  });
+  }, 30_000);
 
   it('a wake runs 25 triggers past 50 rules within its budget', async () => {
     await fiftyRules();
@@ -76,7 +77,7 @@ describe('Automations cost', () => {
     expect(n).toEqual({ n: AUTOMATION_NO_MATCH_LOG_MAX });
     expect(runsToday(w.plans.get('A')!.room.automations.sql(), Date.now())).toBe(0);
     expect(wake).toBeLessThan(cpuBudgetMs(1500));
-  });
+  }, 30_000);
 
   // Phase 2 (docs/specs/026-plan/automations.md "Time triggers"; blueprint "The wake"): a full plan and 50 time
   // rules due at once. Five hear every card (each runs on its first 100, the queue's 500), the other 45 check every
@@ -114,5 +115,5 @@ describe('Automations cost', () => {
     expect(due).toEqual({ n: 0 });
     expect(left).toEqual({ n: AUTOMATION_QUEUE_MAX - 25 });
     expect(wake).toBeLessThan(cpuBudgetMs(1500));
-  });
+  }, 30_000);
 });
