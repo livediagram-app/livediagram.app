@@ -187,17 +187,17 @@ into one card.
   out of In Progress or later; link those with Related Work Item and say so in the report instead. Just before
   writing a merge, re-read the cards' columns and skip it if a dev-loop has since moved one to In Progress.
 - **Skip a card that is Waiting** (an open question thread of the loop's with no reply). Merge it once answered.
-- **The keeper** is the card with the highest Priority (ties: the lowest number). In one `change_items` batch:
+- **The keeper** is the card furthest along (Selected for Development, then Reviewed, then Under Review), so a
+  selected card keeps its number and place; among equals, the highest Priority, then the lowest number. In one
+  `change_items` batch:
   - description: keep the keeper's Problem and add each merged card's below it, as a paragraph starting
     `**From #N <title>:**`. Keep every fact, path and PR number.
   - Acceptance Criteria: the keeper's items, then each merged card's, dropping exact duplicates. Keep done
     states.
-  - Risks: all bullets, duplicates dropped. Risk: the highest of the cards. Priority (`f-severity`): the
-    highest of the cards.
+  - Risks: all bullets, duplicates dropped. Risk: the highest of the cards. Priority (the built-in `priority`
+    field): the highest of the cards.
   - labels, App and Related Work Item: the union. Type: Feature if any card is a Feature.
   - Retitle the keeper only when its title no longer covers the merged work (plain Title Case).
-  - The keeper sits in the most advanced column of the group (Selected for Development, then Reviewed, then
-    Under Review), moving there if needed: this review has just covered the cards merged into it.
   - Each merged card moves to **Cancelled**.
 - **Threads:** in the same pass, start one thread on each merged card, `Merged into #K <title>.`, and resolve
   it. Start one thread on the keeper, `Merged in #N <title> (and ...): <one line why they belong together>.`,
