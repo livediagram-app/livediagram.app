@@ -23,7 +23,12 @@ describe('createTemplateCatalogue', () => {
   it('lists each template under its category, a blank under Blanks', () => {
     expect(templateCatalogue().templates).toEqual([
       { kind: 'blank', title: 'Blank', description: 'Nothing yet.', category: 'blanks' },
-      { kind: 'flowchart', title: 'Flowchart', description: 'Steps and decisions.', category: 'diagrams' },
+      {
+        kind: 'flowchart',
+        title: 'Flowchart',
+        description: 'Steps and decisions.',
+        category: 'diagrams',
+      },
       { kind: 'retro', title: 'Retro', description: 'What went well.', category: 'meetings' },
     ]);
   });

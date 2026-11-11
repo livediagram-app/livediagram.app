@@ -1,8 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createTemplateSearch, templateQueryWords } from './template-search';
 
-const TODO = { kind: 'todo-list', title: 'To-Do List', description: 'Tasks to tick off, one by one.' };
-const RETRO = { kind: 'retro', title: 'Retrospective', description: 'What went well, what to change.' };
+const TODO = {
+  kind: 'todo-list',
+  title: 'To-Do List',
+  description: 'Tasks to tick off, one by one.',
+};
+const RETRO = {
+  kind: 'retro',
+  title: 'Retrospective',
+  description: 'What went well, what to change.',
+};
 
 describe('templateQueryWords', () => {
   it('splits a query into lower-cased words, leaving out punctuation alone', () => {

@@ -35,12 +35,14 @@ export function createTemplateCatalogue<Kind extends string, Category extends st
     description: catalogue.blanksDescription,
   } as const;
   return () => {
-    const templates: TemplateCatalogue<Kind, Category>['templates'] = catalogue.templates.map((t) => ({
-      kind: t.kind,
-      title: t.title,
-      description: t.description,
-      category: catalogue.categoryOf(t.kind) ?? 'blanks',
-    }));
+    const templates: TemplateCatalogue<Kind, Category>['templates'] = catalogue.templates.map(
+      (t) => ({
+        kind: t.kind,
+        title: t.title,
+        description: t.description,
+        category: catalogue.categoryOf(t.kind) ?? 'blanks',
+      }),
+    );
     // Only the categories something is listed in, so an agent is never offered an empty category.
     const used = new Set<string>(templates.map((t) => t.category));
     return {
