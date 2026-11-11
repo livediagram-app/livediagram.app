@@ -8,7 +8,7 @@ import {
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
 import { useCallback, useEffect, useMemo, useRef, ViewTransition } from 'react';
-import { isAnimatedPattern } from '@livediagram/document';
+import { imageBackingInsetVar, isAnimatedPattern } from '@livediagram/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { useNoCanvasTextSelection } from '@liveworkspace/workbench/hooks/canvas/useNoCanvasTextSelection';
@@ -550,6 +550,9 @@ function CanvasView(props: CanvasProps) {
               // swinging off-screen. preserve-3d lets the depth layer's
               // translateZ stack read as real extruded height.
               transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)${isoFragment}`,
+              // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The white
+              // under a picture"): a CSS variable, so no picture re-renders on zoom; it changes only below 50%.
+              ...imageBackingInsetVar(viewportZoom),
               ...(canvasTool === 'isometric' ? { transformStyle: 'preserve-3d' as const } : null),
               // Draw-mode cursor: every intent gets a custom inline-SVG
               // cursor (crosshair at the pointer tip plus a small glyph

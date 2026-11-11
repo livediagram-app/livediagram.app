@@ -1,19 +1,47 @@
 // The white under a picture on the canvas (each product's docs/specs/009-elements/images.md "The white under a
 // picture"). A picture is drawn on white in every theme, so a transparent PNG and the bands a `contain` picture leaves
-// keep the white they were made on. Where the picture reaches the box's edge, the white stops IMAGE_BACKING_INSET_PX
-// short of it: were both drawn to the same edge, both are anti-aliased there, and at a zoom that puts the edge between
-// screen pixels the edge pixels blend the picture over part-white ones, a faint light frame round a picture on a dark
-// background. Where the picture does not reach the edge (a band), the white still does, so a band's corner meets the
-// picture's corner and nothing pokes out past the white.
+// keep the white they were made on. Where the picture reaches the box's edge, the white stops short of it (at least a
+// device pixel at any zoom): were both drawn to the same edge, both are anti-aliased there, and at a zoom that puts the
+// edge between screen pixels the edge pixels blend the picture over part-white ones, a faint light frame round a
+// picture on a dark background. Where the picture does not reach the edge (a band), the white still does, so a band's
+// corner meets the picture's corner and nothing pokes out past the white.
 //
 // Pure, and no DOM of its own: the frame's padding insets its background colour (clipped to the content box), and
-// each band is an inset box shadow with no blur, which runs to the frame's edge and sits under the picture. Shadows,
-// not gradient layers: with 600 letterboxed pictures on screen, gradient bands doubled the frame time of a zoom and
-// shadows matched the plain white (measured in Chrome, 2026-11-11). Read by every product's image frame so they agree.
+// each band is an inset box shadow with no blur on a layer of its own with square corners under the picture, which
+// the frame's rounded clip trims. On the rounded frame itself the shadow's inner edge would follow the corner radius
+// and leave a white fillet where a band meets the picture at the box's edge. Shadows, not gradient layers: with 600
+// letterboxed pictures on screen, gradient bands doubled the frame time of a zoom and shadows matched the plain white
+// (measured in Chrome, 2026-11-11). Read by every product's image frame so they agree.
 
 /** How far the white stops short of an edge the picture reaches, in canvas px: a whole screen pixel at 50% zoom and
  *  above on any screen (2 px at 0.5 zoom is 1 CSS px, at least 1 device pixel). */
 export const IMAGE_BACKING_INSET_PX = 2;
+
+/** The CSS variable the canvas's zoomed layer sets to the inset its zoom needs (imageBackingInsetVar); a frame
+ *  outside any canvas (a thumbnail, a preview) falls back to IMAGE_BACKING_INSET_PX. */
+export const IMAGE_BACKING_INSET_VAR = '--lw-image-backing-inset';
+
+/** The inset at this zoom on this screen, in canvas px: IMAGE_BACKING_INSET_PX while that is a device pixel or more
+ *  (zoom times device pixel ratio of 0.5 and up), else the next power of two at or above one device pixel. Stepped,
+ *  so zooming out changes it only at a few thresholds and zooming above half a device pixel per canvas px never does:
+ *  each change restyles every picture under the canvas (about 3.5 ms with 600 pictures, measured 2026-11-11). */
+export function imageBackingInsetPx(zoom: number, devicePixelRatio: number): number {
+  const devicePxPerCanvasPx = zoom * devicePixelRatio;
+  if (!(devicePxPerCanvasPx > 0) || devicePxPerCanvasPx * IMAGE_BACKING_INSET_PX >= 1) {
+    return IMAGE_BACKING_INSET_PX;
+  }
+  return 2 ** Math.ceil(Math.log2(1 / devicePxPerCanvasPx));
+}
+
+/** The style the canvas's zoomed layer spreads in, so every picture under it takes the inset its zoom needs from
+ *  CSS alone: no picture re-renders on zoom, and the value is the same string at every zoom above the threshold. */
+export function imageBackingInsetVar(
+  zoom: number,
+  // This screen's, where there is one (a value read, never a layout read), else 1.
+  devicePixelRatio: number = (globalThis as { devicePixelRatio?: number }).devicePixelRatio ?? 1,
+): Record<typeof IMAGE_BACKING_INSET_VAR, string> {
+  return { [IMAGE_BACKING_INSET_VAR]: `${imageBackingInsetPx(zoom, devicePixelRatio)}px` };
+}
 
 /** The white itself. */
 export const IMAGE_BACKING_COLOUR = '#fff';
@@ -21,12 +49,12 @@ export const IMAGE_BACKING_COLOUR = '#fff';
 /** A rectangle in the box's own canvas px, from its top-left corner. */
 export type ImageBackingRect = { x: number; y: number; width: number; height: number };
 
-/** The CSS a frame takes for its white: plain values, so any renderer can spread them into a style. */
+/** The CSS a frame takes for its white: plain values, so any renderer can spread them into a style. `frame` goes on
+ *  the picture's rounded, clipped frame; `bands`, when the picture leaves any, on a layer filling the frame under the
+ *  picture with no corner radius of its own. */
 export type ImageBackingStyle = {
-  padding: number;
-  backgroundColor: string;
-  backgroundClip: string;
-  boxShadow: string;
+  frame: { padding: string; backgroundColor: string; backgroundClip: string };
+  bands: { boxShadow: string } | null;
 };
 
 // A band thinner than this is no band: the picture reaches that edge.
@@ -55,16 +83,23 @@ export function imageBackingStyle(
   boxHeight: number,
   picture: ImageBackingRect | null,
 ): ImageBackingStyle {
+  const bands = picture ? bandShadows(boxWidth, boxHeight, picture) : null;
   return {
-    padding: IMAGE_BACKING_INSET_PX,
-    backgroundColor: IMAGE_BACKING_COLOUR,
-    backgroundClip: 'content-box',
-    boxShadow: picture ? bandShadows(boxWidth, boxHeight, picture) : 'none',
+    frame: {
+      padding: `var(${IMAGE_BACKING_INSET_VAR}, ${IMAGE_BACKING_INSET_PX}px)`,
+      backgroundColor: IMAGE_BACKING_COLOUR,
+      backgroundClip: 'content-box',
+    },
+    bands: bands ? { boxShadow: bands } : null,
   };
 }
 
 // An inset shadow offset by a band's depth paints exactly that band along one side.
-function bandShadows(boxWidth: number, boxHeight: number, picture: ImageBackingRect): string {
+function bandShadows(
+  boxWidth: number,
+  boxHeight: number,
+  picture: ImageBackingRect,
+): string | null {
   const top = Math.max(0, picture.y);
   const left = Math.max(0, picture.x);
   const bottom = boxHeight - Math.min(boxHeight, picture.y + picture.height);
@@ -76,7 +111,7 @@ function bandShadows(boxWidth: number, boxHeight: number, picture: ImageBackingR
   if (bottom > BAND_EPSILON_PX) band(0, -bottom);
   if (left > BAND_EPSILON_PX) band(left, 0);
   if (right > BAND_EPSILON_PX) band(-right, 0);
-  return shadows.length ? shadows.join(', ') : 'none';
+  return shadows.length ? shadows.join(', ') : null;
 }
 
 const round = (n: number) => Math.round(n * 100) / 100;

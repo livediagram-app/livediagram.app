@@ -11,7 +11,7 @@ import {
 } from '@livehuddle/document';
 import { CanvasSurfaceProvider, CanvasThemeProvider } from './CanvasSurfaceContext';
 import { ImageElementView } from './ImageElementView';
-import { IMAGE_BACKING_INSET_PX } from '@livehuddle/document';
+import { IMAGE_BACKING_INSET_PX, IMAGE_BACKING_INSET_VAR } from '@livehuddle/document';
 import {
   IMAGE_BROKEN_TONE,
   IMAGE_PLACEHOLDER_TONE,
@@ -79,6 +79,17 @@ afterEach(() => {
   cleanup();
   document.documentElement.classList.remove('dark');
 });
+
+// The white in a contained picture's bands, from the square-cornered layer under the picture ('none' when it has
+// none); the frame itself never takes a shadow.
+const bandsOf = (frame: HTMLElement): string => {
+  expect(frame.style.boxShadow).toBe('');
+  const layer = frame.querySelector<HTMLElement>(':scope > [aria-hidden]');
+  if (!layer) return 'none';
+  expect(layer.style.borderRadius).toBe('');
+  expect(layer.className).toMatch(/\binset-0\b/);
+  return layer.style.boxShadow;
+};
 
 describe('image placeholder ink', () => {
   it('takes dark ink on a light canvas in dark chrome (the reported bug)', () => {
@@ -384,7 +395,9 @@ describe('the white under a picture', () => {
     const frame = box(draw(image({ imageId: 'x' })).container);
     expect(frame.style.backgroundColor).toBe('rgb(255, 255, 255)');
     expect(frame.style.backgroundClip).toBe('content-box');
-    expect(frame.style.padding).toBe(`${IMAGE_BACKING_INSET_PX}px`);
+    expect(frame.style.padding).toBe(
+      `var(${IMAGE_BACKING_INSET_VAR}, ${IMAGE_BACKING_INSET_PX}px)`,
+    );
     // A whole screen pixel at 50% zoom on a 1x screen.
     expect(IMAGE_BACKING_INSET_PX).toBeGreaterThanOrEqual(2);
     expect(frame.className).not.toContain('bg-white');
@@ -396,20 +409,18 @@ describe('the white under a picture', () => {
     const el = image({ imageId: 'x', naturalWidth: 500, naturalHeight: 500 });
     const frame = box(draw(el).container);
     const side = (el.width - el.height) / 2;
-    expect(frame.style.boxShadow).toBe(
-      `inset ${side}px 0px 0 0 #fff, inset -${side}px 0px 0 0 #fff`,
-    );
+    expect(bandsOf(frame)).toBe(`inset ${side}px 0px 0 0 #fff, inset -${side}px 0px 0 0 #fff`);
   });
 
   it('learns a picture size it was not given when the picture loads, for its bands', () => {
     ready();
     const { container } = draw(image({ imageId: 'x' }));
-    expect(box(container).style.boxShadow).toBe('none');
+    expect(bandsOf(box(container))).toBe('none');
     const img = container.querySelector('img')!;
     Object.defineProperty(img, 'naturalWidth', { value: 300 });
     Object.defineProperty(img, 'naturalHeight', { value: 300 });
     fireEvent.load(img);
-    expect(box(container).style.boxShadow).toMatch(/^inset /);
+    expect(bandsOf(box(container))).toMatch(/^inset /);
   });
 
   it('lays the picture over the whole box, so it alone meets the edge', () => {

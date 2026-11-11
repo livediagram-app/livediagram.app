@@ -241,8 +241,17 @@ function ImageElementViewImpl({
     // picture moves inside its crop and never past it.
     <div
       className={`relative h-full w-full overflow-hidden rounded ${bodySetClass(element, 'media') ?? ''}`}
-      style={{ ...radiusStyle, ...backingStyle, clipPath: maskPath }}
+      style={{ ...radiusStyle, ...backingStyle.frame, clipPath: maskPath }}
     >
+      {backingStyle.bands ? (
+        // The white in the bands the picture leaves bare, on a layer with square corners: on the rounded frame the
+        // shadows' inner edge would follow the radius and leave a white fillet where a band meets the picture.
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={backingStyle.bands}
+        />
+      ) : null}
       {layout ? (
         // A crop or a mask: the kept part laid into the box and the picture placed around it (imageLayout). A
         // letterboxed crop keeps its own edges inside the part's box.
