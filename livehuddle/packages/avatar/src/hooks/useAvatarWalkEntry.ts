@@ -5,7 +5,8 @@ import { useEffect, useEffectEvent, useState } from 'react';
 import { mergePose, type AvatarPose } from '../pose';
 import type { DrinkKind } from '../office-geometry';
 import type { AvatarSceneElement } from '../scene';
-import { clearOfFences, fenceReachFor, type FenceSegment } from '../collision';
+import { fenceReachFor, type FenceSegment } from '../collision';
+import { freeSpawnPoint } from '../spawn-point';
 import { avatarScale, type AvatarConfig } from '../config';
 import { NO_KEYS_HELD, type AvatarHeldKeys } from './useAvatarKeys';
 import { padEntry } from '../pad';
@@ -136,10 +137,11 @@ export function useAvatarWalkEntry<E extends AvatarSceneElement>({
     };
     // Put down clear of the fences and room walls it lands beside (docs/specs/009-elements/fence.md "What does not
     // walk"): a spawn inside a wall's reach otherwise opened held there, where a click past the wall did nothing
-    // (Work Tracker #437). One put down in a wall itself stays, free to walk off either side.
+    // (Work Tracker #437). One put down in a wall itself stays, free to walk off either side. One that would appear inside
+    // a footprint (a pool's water, a plant's pot) appears on the nearest free floor instead (Work Tracker #610).
     const reach = fenceReachFor(avatarScale(config.size));
     const place = (point: AvatarPoint) => {
-      const clear = clearOfFences(point, fences, reach);
+      const clear = freeSpawnPoint(point, fences, reach);
       posRef.current = clear;
       setPos(clear);
       setFacing('down');
@@ -179,8 +181,8 @@ export function useAvatarWalkEntry<E extends AvatarSceneElement>({
     if (!centre) return;
     const current = posRef.current;
     if (!(current && onScreen(current))) place(centre);
-    // The remembered spot stays, unless a wall was put beside it while the mode was off.
-    else if (clearOfFences(current, fences, reach) !== current) place(current);
+    // The remembered spot stays, unless a wall or a piece was put beside it or on it while the mode was off.
+    else if (freeSpawnPoint(current, fences, reach) !== current) place(current);
   });
   useEffect(() => {
     enterOrLeave(active);

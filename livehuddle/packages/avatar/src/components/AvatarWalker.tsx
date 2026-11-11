@@ -71,6 +71,7 @@ function AvatarWalkerView({
   host = false,
   status = null,
   glideMs = 0,
+  chipShift = 0,
 }: {
   // Feet position in canvas coords.
   pos: { x: number; y: number };
@@ -110,7 +111,12 @@ function AvatarWalkerView({
   // A peer's character in a busy room (docs/specs/008-canvas/avatar-mode.md "A busy room"): how long it slides to
   // each new position while it walks (avatarGlideMs), or 0 to draw each packet where it lands.
   glideMs?: number;
+  // How far the chip over the head moves sideways, in canvas px, so a seated neighbour's chip never covers it
+  // (docs/specs/008-canvas/avatar-mode.md "Seated neighbours' chips never cover each other"; seatedChipShifts).
+  chipShift?: number;
 }) {
+  // A transform on top of the chip's centring (the `translate` of -translate-x-1/2), so the two add up.
+  const chipMove = chipShift ? `translateX(${chipShift}px)` : undefined;
   const scale = avatarScale(config.size);
   const box = avatarBox(scale);
   // A status worn over the head (a party hat, a "?", a thought bubble) lifts the chip clear of it.
@@ -188,6 +194,7 @@ function AvatarWalkerView({
             style={{
               ...avatarBindings.identityVars(shirt ?? AVATAR_FALLBACK_COLOUR),
               top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_NAME_CHIP_RISE - headroom,
+              transform: chipMove,
             }}
           >
             {status ? <StatusDot status={status} /> : null}
@@ -207,6 +214,7 @@ function AvatarWalkerView({
             className="absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-slate-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900/90 dark:text-slate-200 dark:ring-slate-700"
             style={{
               top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_STATUS_CHIP_RISE - headroom,
+              transform: chipMove,
             }}
           >
             <StatusDot status={status} />

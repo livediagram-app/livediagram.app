@@ -93,14 +93,18 @@ export function CalculatedPreview({
               : 'No card of this type to try it on yet'}
           </p>
         ) : (
-          <p className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          // While it waits the row keeps one line, the title shortening: a two-line problem above it then still
+          // leaves Preview over Add Field's footer on a phone (item-types.md "Formula fields").
+          <p
+            className={`flex min-w-0 items-baseline gap-x-2 gap-y-0.5 ${field ? 'flex-wrap' : ''}`}
+          >
             <span className="min-w-0 truncate text-slate-600 dark:text-slate-300">
               On{' '}
               <span className="tabular-nums text-slate-500 dark:text-slate-400">#{card.key}</span>{' '}
               {itemTitle(card) || 'Untitled'}
             </span>
             {!field ? (
-              <span className="text-slate-500 dark:text-slate-400">{waiting}</span>
+              <span className="shrink-0 text-slate-500 dark:text-slate-400">{waiting}</span>
             ) : outcome && !outcome.ok ? (
               <span className="text-red-700 dark:text-red-300">{outcome.error}</span>
             ) : (

@@ -98,9 +98,6 @@ const WALL_PIECE_KINDS: readonly string[] = [
   'hand-dryer',
   'microwave',
   'kettle',
-  // livehuddle's venue pieces (its venue-pieces.md "How each one walks"): Stage Curtains hang over a stage, walked
-  // between and in front of, never into.
-  'stage-curtains',
   // livehuddle's team pieces (its team-pieces.md "How each one walks"): the Calendar Wall and the Team Photo Wall.
   'calendar-wall',
   'photo-wall',
@@ -172,11 +169,10 @@ const OFFICE_FOOTPRINT: Partial<Record<string, GridFraction>> = {
   fridge: { x0: 4 / 72, x1: 68 / 72, y0: 108 / 136, y1: 132 / 136 },
   'toilet-cubicle': { x0: 0, x1: 1, y0: 0.6, y1: 0.96 },
   washbasin: { x0: 26 / 72, x1: 46 / 72, y0: 96 / 112, y1: 110 / 112 },
-  // livehuddle's venue pieces (its venue-pieces.md): a pillar's base full width, a column's plinth, the car park's bays
-  // full width (so a row of them is one barrier), the bike rack's stands and bikes, and the podium's foot.
+  // livehuddle's venue pieces (its venue-pieces.md): a pillar's base full width, a column's plinth, the bike rack's
+  // stands and bikes, and the podium's foot. The car park and the curtains block in several boxes, below.
   pillar: { x0: 0, x1: 1, y0: 134 / 152, y1: 150 / 152 },
   column: { x0: 4 / 64, x1: 60 / 64, y0: 148 / 168, y1: 164 / 168 },
-  'car-park': { x0: 0, x1: 1, y0: 44 / 128, y1: 124 / 128 },
   'bike-rack': { x0: 4 / 136, x1: 132 / 136, y0: 52 / 80, y1: 76 / 80 },
   podium: { x0: 8 / 56, x1: 48 / 56, y0: 74 / 88, y1: 86 / 88 },
   // livehuddle's workday pieces (its workday-pieces.md): the reception desk's counter, from the middle of its top down to
@@ -211,14 +207,10 @@ export const OFFICE_FOOTPRINT_TURNED: Partial<
   fireplace: { side: { x0: 2 / 48, x1: 46 / 48, y0: 96 / 120, y1: 116 / 120 } },
   'vending-machine': { side: { x0: 2 / 60, x1: 58 / 60, y0: 96 / 128, y1: 124 / 128 } },
   // The games, the garden seats, the venue, the stairs and the team pieces.
-  // A table from the middle of its top to its feet, down its length; the car park's bays full length (a column of
-  // them is one barrier); the rack's pad; the podium's and the suggestion box's foot.
+  // A table from the middle of its top to its feet, down its length; the rack's pad; the podium's and the suggestion
+  // box's foot.
   'pool-table': { side: { x0: 8 / 88, x1: 84 / 88, y0: 44 / 240, y1: 232 / 240 } },
   'foosball-table': { side: { x0: 22 / 84, x1: 76 / 84, y0: 30 / 190, y1: 184 / 190 } },
-  'car-park': {
-    back: { x0: 0, x1: 1, y0: 8 / 128, y1: 104 / 128 },
-    side: { x0: 4 / 128, x1: 108 / 128, y0: 0, y1: 1 },
-  },
   'bike-rack': { side: { x0: 4 / 56, x1: 52 / 56, y0: 24 / 152, y1: 144 / 152 } },
   podium: { side: { x0: 4 / 44, x1: 40 / 44, y0: 74 / 88, y1: 86 / 88 } },
   'suggestion-box': { side: { x0: 10 / 48, x1: 38 / 48, y0: 104 / 120, y1: 114 / 120 } },
@@ -251,6 +243,61 @@ export function footprintFraction(
   return mirrored ? mirrorFraction(turned.side) : turned.side;
 }
 
+/** A footprint of several boxes, per drawing: the front, the back (left out, as the front) and the side. */
+type FootprintBoxes = {
+  front: readonly GridFraction[];
+  back?: readonly GridFraction[];
+  side?: readonly GridFraction[];
+};
+
+// The pieces whose footprint is several boxes, with open floor between them (livehuddle's venue-pieces.md "How each
+// one walks", Work Tracker #609), as fractions of each drawing's grid. The car park: the kerb along its back and the two
+// parked cars, each car's box out to the piece's edge (so car parks side by side still join at their cars), the empty
+// middle bay open from the side away from the kerb. The stage curtains: each drape's hem, where it meets the floor;
+// one drawing at every facing.
+export const OFFICE_FOOTPRINT_BOXES: Partial<Record<string, FootprintBoxes>> = {
+  'car-park': {
+    front: [
+      { x0: 0, x1: 1, y0: 18 / 128, y1: 31 / 128 },
+      { x0: 0, x1: 76 / 240, y0: 36 / 128, y1: 120 / 128 },
+      { x0: 164 / 240, x1: 1, y0: 36 / 128, y1: 120 / 128 },
+    ],
+    back: [
+      { x0: 0, x1: 1, y0: 104 / 128, y1: 122 / 128 },
+      { x0: 0, x1: 76 / 240, y0: 28 / 128, y1: 104 / 128 },
+      { x0: 164 / 240, x1: 1, y0: 28 / 128, y1: 104 / 128 },
+    ],
+    side: [
+      { x0: 106 / 128, x1: 126 / 128, y0: 0, y1: 1 },
+      { x0: 4 / 128, x1: 96 / 128, y0: 0, y1: 78 / 240 },
+      { x0: 4 / 128, x1: 96 / 128, y0: 162 / 240, y1: 1 },
+    ],
+  },
+  'stage-curtains': {
+    front: [
+      { x0: 0, x1: 60 / 360, y0: 98 / 120, y1: 118 / 120 },
+      { x0: 300 / 360, x1: 1, y0: 98 / 120, y1: 118 / 120 },
+    ],
+  },
+};
+
+/** Every box of a piece's footprint, as fractions of the drawing its facing shows: none for a piece that does not block. */
+export function footprintFractions(
+  shape: string,
+  facing: SeatFacing = 'n',
+): readonly GridFraction[] {
+  const boxes = OFFICE_FOOTPRINT_BOXES[shape];
+  if (!boxes) {
+    const one = footprintFraction(shape, facing);
+    return one ? [one] : [];
+  }
+  const { view, mirrored } = facingView(facing);
+  if (view === 'front') return boxes.front;
+  if (view === 'back') return boxes.back ?? boxes.front;
+  const side = boxes.side ?? boxes.front;
+  return mirrored ? side.map(mirrorFraction) : side;
+}
+
 // livehuddle's Swimming Pool (its venue-pieces.md "How each one walks"): drawn to its size, its deck a fixed band, so
 // its footprint is the water: the pool less its deck, in px rather than fractions, matching the drawing at any size.
 export const POOL_DECK = 14;
@@ -265,30 +312,54 @@ const INSET_FOOTPRINT_KINDS: readonly string[] = ['swimming-pool'];
  * also holds a character, the Podium, whose speaker spot is walked to (venue-pieces.md "Speaking from the Podium").
  */
 export function isSceneryShape(kind: string): boolean {
-  return kind in OFFICE_FOOTPRINT || INSET_FOOTPRINT_KINDS.includes(kind);
+  return (
+    kind in OFFICE_FOOTPRINT ||
+    kind in OFFICE_FOOTPRINT_BOXES ||
+    INSET_FOOTPRINT_KINDS.includes(kind)
+  );
 }
 
-/** The footprint of a piece that blocks, in canvas coordinates, at its facing, or null for one that does not. */
-export function officeFootprint(
-  el: Rect & { shape: string; chairFacing?: SeatFacing },
-): Rect | null {
+type FootprintPiece = Rect & { shape: string; chairFacing?: SeatFacing };
+
+/** Every box of a piece's footprint, in canvas coordinates, at its facing: none for a piece that does not block. */
+export function officeFootprints(el: FootprintPiece): Rect[] {
   if (INSET_FOOTPRINT_KINDS.includes(el.shape)) {
     const d = poolDeck(el.width, el.height);
-    return {
-      x: el.x + d,
-      y: el.y + d,
-      width: Math.max(0, el.width - 2 * d),
-      height: Math.max(0, el.height - 2 * d),
-    };
+    return [
+      {
+        x: el.x + d,
+        y: el.y + d,
+        width: Math.max(0, el.width - 2 * d),
+        height: Math.max(0, el.height - 2 * d),
+      },
+    ];
   }
-  const f = footprintFraction(el.shape, el.chairFacing);
-  if (!f) return null;
-  return {
+  return footprintFractions(el.shape, el.chairFacing).map((f) => ({
     x: el.x + el.width * f.x0,
     y: el.y + el.height * f.y0,
     width: el.width * (f.x1 - f.x0),
     height: el.height * (f.y1 - f.y0),
-  };
+  }));
+}
+
+/**
+ * The footprint of a piece that blocks, in canvas coordinates, at its facing, or null for one that does not: its one
+ * box, or for a piece of several boxes (OFFICE_FOOTPRINT_BOXES) the box round them all, for a caller after one place.
+ */
+export function officeFootprint(el: FootprintPiece): Rect | null {
+  const boxes = officeFootprints(el);
+  if (boxes.length <= 1) return boxes[0] ?? null;
+  let x0 = Infinity;
+  let y0 = Infinity;
+  let x1 = -Infinity;
+  let y1 = -Infinity;
+  for (const b of boxes) {
+    x0 = Math.min(x0, b.x);
+    y0 = Math.min(y0, b.y);
+    x1 = Math.max(x1, b.x + b.width);
+    y1 = Math.max(y1, b.y + b.height);
+  }
+  return { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
 }
 
 // --- The room ----------------------------------------------------------------

@@ -99,6 +99,25 @@ describe('FormulaEditor', () => {
     expect(preview.compareDocumentPosition(fields) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  // Work Tracker #510: a long problem never pushes Preview under Add Field's footer on a phone. The line is two lines
+  // at most (a screen reader still reads it whole), and a problem quotes what was typed cut short.
+  it('holds the check line to two lines, quoting what was typed cut short', () => {
+    withPlan([card('a', 3, { title: 'Acme' })]);
+    render(<Harness start={{}} keep={false} />);
+    type(`1 "${'a very long piece of text '.repeat(10)}"`);
+    const status = screen.getByRole('status');
+    const text = status.querySelector('.line-clamp-2')!;
+    expect(text.textContent).toBe(status.textContent);
+    expect(status.textContent).toMatch(/^Unexpected ".{30,34}…" at 3$/);
+    // While it waits, Preview's row keeps one line (the title truncates, the waiting words never wrap under it).
+    const row = () => screen.getByLabelText('Preview').querySelector('p')!;
+    expect(row().className).not.toContain('flex-wrap');
+    expect(row().lastElementChild!.className).toContain('shrink-0');
+    // A value may wrap under a long title.
+    type('2');
+    expect(row().className).toContain('flex-wrap');
+  });
+
   it('shows a stored formula with names, checks it as typed, and keeps it with ids', () => {
     withPlan([card('a', 3, { title: 'Acme', 'f-budget': 5000, 'f-spent': 2000 })]);
     render(<Harness start={{ id: 'f-left', formula: '{f-budget} - {f-spent}' }} keep={false} />);

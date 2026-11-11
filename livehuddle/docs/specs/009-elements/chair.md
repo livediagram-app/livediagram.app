@@ -138,6 +138,9 @@ reaches the stored document or undo.
   highest head among them, measured from each sitter's seat and drawn size (Small, Regular or Tall), with room
   for the name chip and status over that head, so a sprite never covers it, on a tall chair or a short bean bag
   alike. It never sits lower than the piece's top edge.
+- **Each sitter's name chip stays readable.** Sitters side by side have their name chips spread apart in a row
+  rather than stacked over one another ([Avatar mode](../008-canvas/avatar-mode.md) "Seated neighbours' chips never
+  cover each other"), so on a sofa, a bench or a pod every name reads whole beneath the pill.
 - **One sitter per seat, with no lock.** A seat is taken while somebody's presence says they sit in
   it; nothing else holds it, so it cannot get stuck. Two people who arrive at the same seat at once
   (each seated before the other's presence arrived) settle it the same way on every machine: the

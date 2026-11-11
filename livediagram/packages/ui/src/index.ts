@@ -21,12 +21,10 @@ export { START_BLANK_HREF, StartBlankLink } from './StartBlankLink';
 export { SiteHeader } from './SiteHeader';
 export { EXPLORER_HOME_HREF } from './HeaderPrimaryCta';
 export { SiteFooter } from './SiteFooter';
-export { StableLabel } from './StableLabel';
 export { DiagramBuildAnimation } from '@liveworkspace/ui/diagram-build-animation';
 export { PageViewTracker } from './PageViewTracker';
 export { PageViewBoot } from './PageViewBoot';
 export { WebVitalsBoot, WebVitalsTracker } from './WebVitalsTracker';
-export { CARD_GRID, CARD_PREVIEW, CARD_SHELL } from './cardGrid';
 export { EDITOR_MODE_ICONS } from './icons';
 // The Community's card, author, counts and on switch are every app's (@liveworkspace/community-ui).
 export {

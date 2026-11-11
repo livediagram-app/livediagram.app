@@ -65,6 +65,7 @@
     "./seats": "./src/seats.ts",
     "./size-scale": "./src/size-scale.ts",
     "./speech-store": "./src/speech-store.ts",
+    "./spawn-point": "./src/spawn-point.ts",
     "./speech": "./src/speech.ts",
     "./status": "./src/status.ts",
     "./walk-guard": "./src/walk-guard.ts",

@@ -179,3 +179,124 @@ export function seatPillBottom(
   }
   return top - SEAT_PILL_GAP;
 }
+
+// --- Seated neighbours' name chips (docs/specs/008-canvas/avatar-mode.md "Seated neighbours' chips never cover each
+// other", Work Tracker #597) ---------------------------------------------------------------------------------------
+
+// A chip's measures in canvas px (AvatarWalker): 10 px semibold text, 6 px padding each side, a peer's chip at most 120
+// wide (180 with a status), the status dot 8 wide with a 4 px gap. A character's width is taken a touch wide (Inter's
+// semibold averages under 6 px at 10 px), so a spread never leaves two chips touching.
+const CHIP_PAD = 12;
+const CHIP_CHAR = 6;
+const CHIP_DOT = 12;
+const CHIP_NAME_MAX = 120;
+const CHIP_STATUS_MAX = 180;
+// A chip's height: chips whose tops are closer than this share a row and can cover each other.
+export const NAME_CHIP_HEIGHT = 16;
+/** The space kept between two spread chips, in canvas px. */
+export const NAME_CHIP_GAP = 4;
+
+/**
+ * How wide a character's chip draws, in canvas px: a peer's name (and status label, "· Busy"), or your own status chip
+ * (no name), at the widths AvatarWalker caps them to.
+ */
+export function nameChipWidth(
+  name: string | null | undefined,
+  status: string | null | undefined,
+): number {
+  if (!name) return status ? CHIP_PAD + CHIP_DOT + (status.length + 2) * CHIP_CHAR : 0;
+  if (!status) return Math.min(CHIP_NAME_MAX, CHIP_PAD + name.length * CHIP_CHAR);
+  return Math.min(
+    CHIP_STATUS_MAX,
+    CHIP_PAD + CHIP_DOT + (name.length + status.length + 3) * CHIP_CHAR,
+  );
+}
+
+/** A chip as the spread reads it: where its middle stands (over the head), its top, and its width, in canvas px. */
+export type NameChip = { key: string; x: number; top: number; width: number };
+
+/**
+ * How far each chip moves sideways so no two in a row cover each other, by key (only the chips that move). Chips
+ * whose tops are within NAME_CHIP_HEIGHT share a row; in a row, chips that would overlap (or come closer than
+ * NAME_CHIP_GAP) pack side by side in the order their middles run, the packed run centred where its chips' middles
+ * want it (the least total move), merging with a neighbouring run it then reaches.
+ */
+export function spreadNameChips(chips: readonly NameChip[]): Map<string, number> {
+  const shifts = new Map<string, number>();
+  if (chips.length < 2) return shifts;
+  const byTop = [...chips].sort((a, b) => a.top - b.top);
+  let row: NameChip[] = [];
+  for (const chip of byTop) {
+    if (row.length > 0 && chip.top - row[0]!.top >= NAME_CHIP_HEIGHT) {
+      spreadRow(row, shifts);
+      row = [];
+    }
+    row.push(chip);
+  }
+  spreadRow(row, shifts);
+  return shifts;
+}
+
+// A run of chips packed side by side: its chips in order, its packed width, its left edge, and the sum of the left
+// edge each chip wants the run to have (their mean is where the run stands).
+type ChipRun = { chips: NameChip[]; width: number; left: number; wantSum: number };
+
+function spreadRow(row: readonly NameChip[], shifts: Map<string, number>) {
+  if (row.length < 2) return;
+  const sorted = [...row].sort((a, b) => a.x - b.x || a.key.localeCompare(b.key));
+  const runs: ChipRun[] = [];
+  for (const chip of sorted) {
+    const want = chip.x - chip.width / 2;
+    let run: ChipRun = { chips: [chip], width: chip.width, left: want, wantSum: want };
+    // Merge back while the run before reaches this one.
+    while (runs.length > 0) {
+      const prev = runs[runs.length - 1]!;
+      if (prev.left + prev.width + NAME_CHIP_GAP <= run.left) break;
+      runs.pop();
+      const offset = prev.width + NAME_CHIP_GAP;
+      const chips = [...prev.chips, ...run.chips];
+      // This run's chips now stand `offset` further into the merged run, so each wants its left that much less.
+      const wantSum = prev.wantSum + run.wantSum - offset * run.chips.length;
+      run = { chips, width: offset + run.width, wantSum, left: wantSum / chips.length };
+    }
+    runs.push(run);
+  }
+  for (const run of runs) {
+    if (run.chips.length < 2) continue;
+    let at = run.left;
+    for (const chip of run.chips) {
+      const shift = at + chip.width / 2 - chip.x;
+      if (Math.abs(shift) > 1e-6) shifts.set(chip.key, shift);
+      at += chip.width + NAME_CHIP_GAP;
+    }
+  }
+}
+
+/** A character as the chip spread reads it: its feet, its size, whether it sits, and what its chip shows. */
+export type ChipBearer = {
+  key: string;
+  x: number;
+  y: number;
+  scale?: number;
+  seated: boolean;
+  // A peer's name; none for your own character, whose chip is its status alone.
+  name?: string | null;
+  // The status's label ("Busy"), or none.
+  status?: string | null;
+};
+
+/**
+ * The sideways move of each seated character's chip, by key, so seated neighbours' chips never cover each other. A
+ * walking character's chip stays over its head (it moves on at once), and a character with no chip takes no room.
+ */
+export function seatedChipShifts(bearers: readonly ChipBearer[]): Map<string, number> {
+  const chips: NameChip[] = [];
+  for (const b of bearers) {
+    if (!b.seated) continue;
+    const width = nameChipWidth(b.name, b.status);
+    if (width === 0) continue;
+    const scale = b.scale ?? avatarScale('regular');
+    chips.push({ key: b.key, x: b.x, top: b.y - AVATAR_HEIGHT * scale, width });
+  }
+  return spreadNameChips(chips);
+}

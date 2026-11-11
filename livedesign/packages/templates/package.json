@@ -20,7 +20,8 @@
   },
   "dependencies": {
     "@livedesign/api-schema": "workspace:*",
-    "@livedesign/design": "workspace:*"
+    "@livedesign/design": "workspace:*",
+    "@liveworkspace/template-previews": "workspace:*"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",

@@ -68,9 +68,14 @@ fence**, from either side.
   to the side its feet were on, so it never opens held where a click past the wall does nothing; put down in the
   wall itself, it stays there, free to walk off either side. The same nudge follows a fence or room moved,
   pasted or resized onto a standing character, once the change settles (never on each frame of a drag), and a seat
-  snap or a step aside that lands inside a wall's reach. One put down inside a footprint is not nudged (a nudge to
-  the side its feet were on would push it deeper in): it walks out. A character that starts inside a fenced area stays
-  inside until it takes a portal out.
+  snap or a step aside that lands inside a wall's reach. A character a footprint is moved onto, or a seat snap tucks
+  into one, is not nudged (a nudge to the side its feet were on would push it deeper in): it walks out. **A new
+  character never appears inside a footprint** (Work Tracker #610): entering the mode with the spot it would appear on
+  (the view's centre, below a button, the remembered spot) inside a piece that blocks (a pool's or a pond's water, a
+  plant's pot, a car) puts it on the nearest free floor instead, clear of every footprint and every wall's reach,
+  looking in front of the piece (below it) first when two spots are as near. When no free floor lies within
+  `SPAWN_SEARCH_MAX` (1200 canvas px), it appears where it would have, and walks out. A character that starts inside
+  a fenced area stays inside until it takes a portal out.
 - **A fence is not a destination.** Standing beside one does not ring it as "the element you are
   on".
 
