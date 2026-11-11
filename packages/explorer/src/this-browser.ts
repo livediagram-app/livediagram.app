@@ -21,7 +21,7 @@ export type ThisBrowserItem = {
   createdAt: number;
   // Last content or title change.
   updatedAt: number;
-  // The last time this browser opened it, for Home's Jump Back In; null when never.
+  // The last time this browser opened it, for Home's Most Used and Recent; null when never.
   lastOpenedAt: number | null;
   // In the app's local Trash since then; null while live.
   trashedAt: number | null;

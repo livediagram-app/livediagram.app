@@ -3,7 +3,7 @@
 // The editor's floating Explorer panel, drawn as liveplanner's was before it moved onto the index
 // (components/panels/Explorer.tsx with its explorer-panel/ and explorer-tree/ parts): the open item's card with the
 // host's notice under it, then a rail of sections beside a pane (a row of chips over the pane when stacked). The
-// pane names its section in full, offers New Folder (an icon) in a space, and shows Home's Jump Back In, the Inbox, a
+// pane names its section in full, offers New Folder (an icon) in a space, and shows Home's Most Used and Recent, the Inbox, a
 // space's folders and items, Favourites, This Browser or the Trash. Only where the data comes from changed: it
 // shares the full Explorer's data layer, so a rename or a star shows here at once and every list is one request a
 // page, read only while its section is shown.
@@ -92,7 +92,7 @@ export type ExplorerPanelProps = {
   client: IndexClient;
   itemHref: ItemHref;
   onCreate: (placement: Placement) => void;
-  // The item open in the editor, shown on top and left out of Home's Jump Back In.
+  // The item open in the editor, shown on top and left out of Home's Most Used and Recent.
   current?: Item | null;
   // The id of the item open in the editor, known before `current` is read.
   currentId?: string | null;

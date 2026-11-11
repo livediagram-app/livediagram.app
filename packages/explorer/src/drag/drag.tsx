@@ -7,8 +7,8 @@
 // optimistic move and rollback) and says where it went, with an Undo. Anything that drags also drops on the Trash,
 // which wakes as a target for the whole drag: an item through its own Delete (with its Undo), one of the person's
 // folders through Delete Folder (with its confirmation). Folders are not moved by dragging. An item kept only in this
-// browser (This Browser, Home's Jump Back In) drags too, and each target means what it can for something the account
-// doesn't hold (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser in Jump Back In"): the Trash deletes it for good after
+// browser (This Browser, Home's Most Used and Recent) drags too, and each target means what it can for something the account
+// doesn't hold (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser on Home"): the Trash deletes it for good after
 // a confirmation where the host can, and a place asks to sync it to the account first.
 //
 // Drags carry custom types, so dropping one outside any target (the page, the URL bar, another app) does nothing

@@ -62,7 +62,7 @@ Dark mode follows the host's `.dark` variant. The empty-state art animates only 
 `animate-empty-ring` and `animate-empty-float`; liveplanner's theme does. Without them it stands still.
 
 Every list with nothing to show says so with that one empty state (`EmptyState` from `@liveworkspace/ui`): the views, the
-panel's panes, and Home's Jump Back In ("No <items> yet"), on a phone as on a desktop. No list draws an empty
+panel's panes, and Home's Most Used and Recent ("No <items> yet"), on a phone as on a desktop. No list draws an empty
 box of its own.
 
 ## API
@@ -116,7 +116,7 @@ Views (`ExplorerView`) and their addresses under `basePath`. A list view's `q` i
 
 | View                                  | Address                         | Shows                                                                            |
 | ------------------------------------- | ------------------------------- | -------------------------------------------------------------------------------- |
-| `{ kind: 'home' }`                    | `/explorer` or `/explorer/home` | The hero, New, Jump Back In, Shared With You Recently                            |
+| `{ kind: 'home' }`                    | `/explorer` or `/explorer/home` | The hero, New, Most Used, Recent, Spaces, Shared With You Recently               |
 | `{ kind: 'all', q? }`                 | `/explorer/all`                 | My Work: your root folders and your items that are in no folder                  |
 | `{ kind: 'recent', q? }`              | `/explorer/recent`              | By last opened                                                                   |
 | `{ kind: 'favourites', q? }`          | `/explorer/favourites`          | Starred                                                                          |
@@ -220,11 +220,11 @@ follows), and the same optional props as `<Explorer>`.
 
 Its size: `EXPLORER_POPOVER_WIDTH` (`w-[54rem]`) and `EXPLORER_POPOVER_HEIGHT` (`45rem`) are the editors' popover,
 passed to each editor's movable panel so the size lives once. In it the rail is 13rem and the pane's preview cards
-(Jump Back In, up to eight, and folders) are compact: two across, three from a 24rem pane, four from 44rem (so in the 54rem popover, whose pane is about 40rem, three: each card keeps room for its name and its "This Browser" chip with the time beside it)
+(Home's Most Used and Recent, four each and each its own section, and folders) are compact: two across, three from a 24rem pane, four from 44rem (so in the 54rem popover, whose pane is about 40rem, three: each card keeps room for its name and its "This Browser" chip with the time beside it)
 (liveworkspace/docs/specs/004-index/one-explorer.md "The editors' panel: its size and the scrim"). Each card's picture
 is the host's `renderThumbnail`, which should load only once it scrolls into view, as every editor's does.
 
-Rename works in place wherever an item shows: list rows, cards, Details rows, Home's Jump Back In and the panel.
+Rename works in place wherever an item shows: list rows, cards, Details rows, Home's Most Used and Recent and the panel.
 
 Lists that span places (Recent, Favourites, Search, Shared With Me) carry a location chip on each row and card: its
 folder, its team for a team item in no folder, or My Work for one of yours in none; an item reached through a link
@@ -315,8 +315,8 @@ link, nor one being renamed) drags from its row, card or Details row.
   bounce as it swallows an item. An item goes through its own Delete (with the Trash's Undo); one of the person's
   own folders, which also drags, goes through Delete Folder and its confirmation. Never red: the Trash is undoable.
   A live region reads the Trash's words as they change.
-- **An item kept only in this browser.** Its Jump Back In card drags too, through This Browser's own verbs
-  (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser in Jump Back In"). On the Trash it is deleted for good after a
+- **An item kept only in this browser.** Its card on Home drags too, through This Browser's own verbs
+  (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser on Home"). On the Trash it is deleted for good after a
   confirmation where the host has `remove`; elsewhere a toast says to open it to delete it. On a folder, My Work or
   a team it asks to sync it to the account first: in place with `sync` (then moved there), or the page's hand-over
   with `syncHref`; with neither, a toast says to sign in and sync it first. Its menu (`ThisBrowserItemMenu`) has

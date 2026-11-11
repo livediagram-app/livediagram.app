@@ -10,7 +10,7 @@ import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 type Lensed = { q?: string };
 
 export type ExplorerView =
-  // Jump back in (Recent) and what was shared with you lately.
+  // Recent (Home's See More) and what was shared with you lately.
   | { kind: 'home' }
   // My Work: your root folders and the items in no folder.
   | ({ kind: 'all' } & Lensed)

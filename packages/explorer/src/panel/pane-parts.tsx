@@ -64,33 +64,58 @@ export function PaneList({ label, children }: { label?: string; children: ReactN
   );
 }
 
-// Preview cards (folders, Jump Back In), compact so more fit in a row: two across in a narrow pane (a phone's sheet),
+// Preview cards (folders, Home's Most Used and Recent), compact so more fit in a row: two across in a narrow pane (a phone's sheet),
 // three from 24rem (a tablet, a wide phone), four from 38rem (every desktop popover), with a touch more air between
 // them there. They cascade in as the rows do.
 export const PANE_GRID =
   'lvd-cascade grid grid-cols-2 gap-2 @sm:grid-cols-3 @[44rem]:grid-cols-4 @[44rem]:gap-x-3 @[44rem]:gap-y-3.5';
 
-// `fullRowsBelowFour`: from the seventh card on, shown only where the grid runs four across, so two and three across
-// end on a full row (six cards: three rows of two, two rows of three). Hidden with CSS, so a card that is not drawn
-// never asks for its preview (the host's thumbnails load once they scroll into view, which display: none never does).
-const FULL_ROWS_BELOW_FOUR = '@max-[44rem]:[&>li:nth-child(n+7)]:hidden';
+// `fullRows`: how many the grid holds at four across, so two and three across end on a full row too. Eight (two rows
+// of four) shows its first six below four across (three rows of two, two rows of three); four (one row) shows three at
+// three across (two rows of two at two across). Hidden with CSS, so a card that is not drawn never asks for its preview
+// (the host's thumbnails load once they scroll into view, which display: none never does).
+const FULL_ROWS = {
+  4: '@sm:@max-[44rem]:[&>li:nth-child(n+4)]:hidden',
+  8: '@max-[44rem]:[&>li:nth-child(n+7)]:hidden',
+} as const;
 
 export function PaneGrid({
   label,
   children,
-  fullRowsBelowFour = false,
+  fullRows,
 }: {
   label?: string;
   children: ReactNode;
-  fullRowsBelowFour?: boolean;
+  fullRows?: keyof typeof FULL_ROWS;
 }) {
   return (
     <ul
       aria-label={label}
-      className={fullRowsBelowFour ? `${PANE_GRID} ${FULL_ROWS_BELOW_FOUR}` : PANE_GRID}
+      className={fullRows ? `${PANE_GRID} ${FULL_ROWS[fullRows]}` : PANE_GRID}
       onKeyDown={paneListKeys}
     >
       {children}
+    </ul>
+  );
+}
+
+/** Preview cards as they load: `cards` placeholders in the cards' own grid and shape, ending on a full row as the
+ *  section's cards will. */
+export function PaneCardSkeleton({ cards }: { cards: keyof typeof FULL_ROWS }) {
+  return (
+    <ul aria-hidden className={`${PANE_GRID} ${FULL_ROWS[cards]}`} data-pane-card-skeleton="">
+      {Array.from({ length: cards }, (_, i) => (
+        <li
+          key={i}
+          className="flex flex-col overflow-hidden rounded-xl ring-1 ring-slate-200/70 dark:ring-slate-700/60"
+        >
+          <span className="block aspect-[16/9] w-full animate-pulse bg-slate-200/80 dark:bg-slate-700/70" />
+          <span className="flex flex-col gap-1.5 px-2.5 pb-2.5 pt-2">
+            <span className="h-3 w-2/3 animate-pulse rounded bg-slate-200/80 dark:bg-slate-700/70" />
+            <span className="h-2.5 w-1/3 animate-pulse rounded bg-slate-200/60 dark:bg-slate-700/50" />
+          </span>
+        </li>
+      ))}
     </ul>
   );
 }

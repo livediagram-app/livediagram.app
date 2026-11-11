@@ -33,7 +33,7 @@ function renderHome(
   return { ...utils, onNavigate, onCreate };
 }
 
-// My Work's count is asked as `mine` beside Jump Back In's read (data/homeReads.ts), or alone as a page of My Work.
+// My Work's count is asked as `mine` beside Most Used and Recent's read (data/homeReads.ts), or alone as a page of My Work.
 const countCalls = (index: ReturnType<typeof createFakeIndex>) =>
   index.calls.filter((c) => {
     const q = c.args[0] as { view?: string; mine?: number };
@@ -140,7 +140,7 @@ describe('Home’s hero', () => {
     expect(onNavigate).toHaveBeenLastCalledWith(spaces, mine.getAttribute('href'));
     fireEvent.click(screen.getByRole('link', { name: '1 open in your Inbox' }));
     expect(onNavigate).toHaveBeenLastCalledWith({ kind: 'inbox' }, '/explorer/inbox');
-    // No request of its own: the count, up to a page, rides on Jump Back In's read, in this app.
+    // No request of its own: the count, up to a page, rides on Most Used and Recent's read, in this app.
     expect(countCalls(index)).toHaveLength(1);
     expect(countCalls(index)[0]!.args[0]).toMatchObject({
       view: 'recent',

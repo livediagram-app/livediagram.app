@@ -98,7 +98,7 @@ export function PanelThisBrowser() {
   );
 }
 
-/** Home's Jump Back In card for an item kept only in this browser, as the page's Home shows one: This Browser's
+/** Home's Most Used and Recent card for an item kept only in this browser, as the page's Home shows one: This Browser's
  *  picture, the pill and when it was opened, This Browser's menu (Open, Sync, Delete) and its drag. */
 export const PanelLocalCard = memo(function PanelLocalCard({ item }: { item: ThisBrowserItem }) {
   const { app, kind } = useExplorer();

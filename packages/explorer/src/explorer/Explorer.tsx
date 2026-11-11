@@ -165,7 +165,7 @@ export type ExplorerProps = {
   sidebarLinks?: readonly SidebarLink[];
   /** The host app's items kept only in this browser, where the host can read them (the Explorer on the app's own
    *  address): This Browser's Space in the sidebar (with its local folders), `/explorer/offline`, Home's tile, a
-   *  Trash group and Jump Back In. */
+   *  Trash group and Most Used and Recent. */
   thisBrowser?: ThisBrowserHost | null;
   /** The filter's every-app choice, "All" by default ("All apps" where the Explorer is no one app's). */
   allLabel?: string;
@@ -528,7 +528,7 @@ function HeroWithCount({
 }) {
   const { client, app, filter, epoch } = useExplorerContext();
   const indexed = useItemCount(client, app, filter, true, epoch);
-  // What this browser keeps is the person's too, and Jump Back In lists it: the pill counts it beside the index's.
+  // What this browser keeps is the person's too, and Most Used and Recent lists it: the pill counts it beside the index's.
   const { live: local } = useThisBrowserItems();
   const items = useMemo(
     () => (indexed && local.length ? { ...indexed, count: indexed.count + local.length } : indexed),
