@@ -20,6 +20,7 @@ export type {
   ClientMessage,
 } from '@liveplanner/api-schema';
 
+import type { PlanAutomations } from './plan-room/automations/automation-queue';
 import type { PlanRoom } from './plan-room/plan-room';
 
 // Worker bindings injected by Cloudflare at runtime. Not part of the
@@ -145,4 +146,10 @@ export type Env = {
 // the worker reaches content through the plan's Durable Object instead.
 // `ROOM_PEOPLE`: the person tags of the sessions in the plan's room right now, so a phone notification skips someone
 // already looking at it (docs/specs/014-identity/phone-notifications.md).
-export type PlanEnv = Env & { PLAN_DB: D1Database; ROOM_PEOPLE?: () => ReadonlySet<string> };
+// `AUTOMATIONS`: the plan's rules as its writes ask of them (docs/specs/026-plan/automations.md; plan-room/automations/
+// automation-queue.ts): the kinds they hear and the queue's wake. Absent outside the room.
+export type PlanEnv = Env & {
+  PLAN_DB: D1Database;
+  ROOM_PEOPLE?: () => ReadonlySet<string>;
+  AUTOMATIONS?: PlanAutomations;
+};

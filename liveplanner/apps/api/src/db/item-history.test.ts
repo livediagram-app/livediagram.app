@@ -62,6 +62,8 @@ function onlyPlanDb(env: PlanEnv): Pick<PlanEnv, 'PLAN_DB'> {
   return new Proxy({} as Pick<PlanEnv, 'PLAN_DB'>, {
     get: (_t, prop) => {
       if (prop === 'PLAN_DB') return env.PLAN_DB;
+      // The room's own rules, in memory (absent here): no binding.
+      if (prop === 'AUTOMATIONS') return undefined;
       throw new Error(`history reached env.${String(prop)}`);
     },
   });

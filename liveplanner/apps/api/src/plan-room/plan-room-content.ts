@@ -55,6 +55,7 @@ export function restoreContentState(room: PlanRoom, maintenanceAt: number | unde
   if (due !== null) room.flushAt = Math.max(Date.now(), due);
   room.shares.restore();
   room.repeats.restore(Date.now());
+  room.automations.restore(Date.now());
   // The Community post's next check (community-post.ts), from when it last asked.
   const post = sql
     .exec<{ checked_at: number }>('SELECT checked_at FROM community_post LIMIT 1')
@@ -256,6 +257,7 @@ export async function purge(room: PlanRoom, planId?: string): Promise<void> {
   room.flushAt = null;
   room.shares.clear();
   room.repeats.clear();
+  room.automations.clear();
   room.maintenanceAt = null;
   room.communityAt = null;
   // The purged plan holds no pictures now, so the media service's sweep may take those only it held. A failure
