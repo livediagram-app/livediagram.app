@@ -1,6 +1,7 @@
 import {
   lucideAppWindow,
   lucideBrushCleaning,
+  lucideCalendarClock,
   lucideClock,
   lucideFilePlus,
   lucideFolder,
@@ -353,6 +354,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // `search-teams`, a tick with people is `done-checks`. So each takes the next
   // detail down.
   //
+  // A calendar with a clock: who was in a tab, and when. Not a person (live-presence's pointer) and not a plain clock.
+  'tab-attendance': (
+    <Glyph>
+      <Prims prims={lucideCalendarClock} />
+    </Glyph>
+  ),
   // A stopwatch, not a clock: the crown and lugs are what separate it from the
   // two clock badges already in the set.
   timer: (

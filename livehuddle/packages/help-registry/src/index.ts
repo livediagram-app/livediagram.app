@@ -1680,6 +1680,17 @@ export const articles: Article[] = [
     parentSlug: 'sharing',
   },
 
+  // ---- Sub-articles: Live Presence ----
+  {
+    slug: 'tab-attendance',
+    title: 'Attendance',
+    description: 'Who was in a tab and when: who joined, when they left and how long they stayed.',
+    keywords:
+      'attendance history who was here attended joined left visit visits log record meeting standup roll call register time spent duration how long kept 90 days guest',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/live-presence',
+    parentSlug: 'live-presence',
+  },
   // ---- Sub-articles: Session Tools ----
   {
     slug: 'timer',

@@ -538,8 +538,8 @@ export const SETTINGS_CATEGORIES_VISITED = opened(
 
 export const SHARE_OPENED = opened(
   'Share Opened',
-  'The Share dialog or the collaborators list opened.',
-  (t) => t === 'Share' || t === 'Collaborators',
+  "The Share dialog, the collaborators list or a tab's Attendance opened.",
+  (t) => t === 'Share' || t === 'Collaborators' || t === 'Attendance',
 );
 
 export const PICKERS_OPENED = opened(

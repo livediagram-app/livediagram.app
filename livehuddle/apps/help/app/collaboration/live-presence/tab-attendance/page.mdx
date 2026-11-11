@@ -1,0 +1,56 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Attendance',
+  description:
+    'See who was in a tab and when: each person who came in, when they joined and left, and how long they stayed, kept for 90 days.',
+  path: '/help/collaboration/live-presence/tab-attendance/',
+});
+
+<ArticleLayout title="Attendance" description="See who was in a tab and when, after they have gone: who joined, when they left and how long they stayed." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Live Presence", slug: "live-presence" }} subArticles={getSubArticles("live-presence").filter((a) => a.slug !== "tab-attendance")}>
+
+Live presence shows who is in a space right now. **Attendance** remembers it: who came into a tab, when they joined, when they left and how long they stayed. Use it after a meeting to see who came to the stand-up in the Team Pod, or who dropped into the Lobby while you were away.
+
+## Opening it
+
+Open the tab's menu (the **⋯** on the open tab, or right-click the tab) and choose **Attendance**. It lists the visits to that tab, newest first, grouped by day: **Today**, **Yesterday**, then the date.
+
+Each row shows:
+
+- the person's picture or initials, and their name;
+- **You** on your own visits, **Guest** for someone who isn't signed in, and **Here Now** while they are still in the tab;
+- when they joined and when they left, for example "Joined 14:02 · Left 14:47";
+- on the right, how long they stayed: "45 min", "1 hr 5 min" or "Under a minute".
+
+If nobody has been in the tab yet, it says so.
+
+## What counts as a visit
+
+- A visit starts when someone opens the tab, and ends when they move to another tab or leave the space. Having the tab open side by side counts too.
+- **One person, one visit.** Someone in the same tab on their laptop and their phone is one visit; it ends when the last of them leaves.
+- **A reconnect isn't a leave.** If someone's connection drops, they reload, or they hop to another tab and back within two minutes, their visit carries on.
+- Agents working in a space aren't counted.
+
+## Who can see it
+
+|                            | Editor | Participant | Viewer |
+| -------------------------- | ------ | ----------- | ------ |
+| Is counted when in the tab | Yes    | Yes         | Yes    |
+| Opens a tab's Attendance   | Yes    | Yes         | No     |
+
+A link that opens only one tab shows only that tab's Attendance. A space saved only in This Browser has no Attendance, since nobody else can be in it.
+
+## How long it's kept
+
+- Visits are kept for **90 days** after they end, then deleted.
+- A tab keeps its latest **500 visits**; a new one past that removes the oldest.
+- Deleting a tab deletes its Attendance, and deleting a space deletes all of it.
+- Attendance is never part of a tab's content: it isn't in exports, copies, versions or the Drive copy of a space.
+
+## If someone closes their account
+
+Their visits stay, so a meeting's head count stays right, but their name becomes "Deleted account" and their picture goes.
+
+</ArticleLayout>
