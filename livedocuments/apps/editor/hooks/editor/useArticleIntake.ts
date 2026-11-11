@@ -26,6 +26,7 @@ import {
   withZoneLanded,
   withZoneContentsRemoved,
   withZonesFitted,
+  hasZoneBlock,
   zonePlanFor,
   type ArticleFlow,
   type ArticleZoneBlock,
@@ -40,6 +41,7 @@ import {
 import { useElementGestureActive } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { articleTextBox } from '@/lib/article/article-flow-geometry';
 import { lockedArticleFlows } from '@/lib/article/article-lock';
+import { intakeHasWork } from '@/lib/article/intake-has-work';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
@@ -152,6 +154,10 @@ export function useArticleIntake({
       );
       if (res) intakes.push({ flow, ids, plan, res });
     }
+    // Nothing to settle (a typing commit on writing without zones, as every flashcard's is): no tick, so no second
+    // render of the editor on each commit (blueprints/article-pages.md "Zones", step 6).
+    const pending = relocations.length + goneZones.size + intakes.length;
+    if (!intakeHasWork({ was, now: activeTab, held, pending })) return;
     tickTabs((ts) => {
       const out = ts.map((t) => {
         if (t.id !== tabId || t.locked === true) return t;
@@ -208,12 +214,15 @@ export function useArticleIntake({
             count: ids.length,
           });
         }
-        const laid = layOutPages(pagesOf(next));
-        const heldNow = lockedArticleFlows(pagesOf(next));
+        // The pages laid out once for every article (each fit used to lay out every page again), and only writing
+        // with a zone measured and fitted: a 100-card stack's typing commit was 100 layouts of 100 pages.
+        const nextPages = pagesOf(next);
+        const laid = layOutPages(nextPages);
+        const heldNow = lockedArticleFlows(nextPages);
         for (const [flow, doc] of Object.entries(articlesOf(next)))
-          if (!heldNow.has(flow)) {
+          if (!heldNow.has(flow) && hasZoneBlock(doc)) {
             const box = textBoxOf(laid, flow, doc);
-            next = withZonesFitted(next, flow, box.width, box.height);
+            next = withZonesFitted(next, flow, box.width, box.height, laid);
           }
         return next;
       });

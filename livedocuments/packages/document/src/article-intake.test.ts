@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { ARTICLE_ZONE_MAX } from './article-flow';
-import { withZoneSize, withZonesFitted, zoneHeightMax, zonePlanFor } from './article-intake';
+import {
+  hasZoneBlock,
+  withZoneSize,
+  withZonesFitted,
+  zoneHeightMax,
+  zonePlanFor,
+} from './article-intake';
 import { layOutPages, type Page } from './page';
 import type { Element } from './index';
 
@@ -18,6 +24,37 @@ const tall = (width: number, height: number) =>
     width,
     height,
   }) as Element;
+
+// docs/specs/007-editor/blueprints/article-pages.md "Zones", step 5: writing without a zone has nothing to fit, and the
+// pages laid out once serve every article's fit.
+describe('fitting writing with and without zones', () => {
+  const zone = {
+    id: 'z',
+    type: 'zone' as const,
+    zone: 'object' as const,
+    width: 600,
+    height: 2000,
+    at: { page: 'd1', x: 100, y: 100 },
+  };
+  const para = { id: 'p', type: 'paragraph' as const, runs: [{ text: 'Hi' }] };
+
+  it('knows writing that holds a zone', () => {
+    expect(hasZoneBlock({ blocks: [para] })).toBe(false);
+    expect(hasZoneBlock({ blocks: [para, zone] })).toBe(true);
+  });
+
+  it('answers the same tab for writing without a zone', () => {
+    const tab = { elements: [tall(600, 900)], pages, articles: { f: { blocks: [para] } } };
+    expect(withZonesFitted(tab, 'f', 640)).toBe(tab);
+  });
+
+  it('fits the same with the pages handed in as laid out here', () => {
+    const tab = { elements: [tall(600, 2564)], pages, articles: { f: { blocks: [zone] } } };
+    expect(withZonesFitted(tab, 'f', 640, undefined, layOutPages(pages))).toEqual(
+      withZonesFitted(tab, 'f', 640),
+    );
+  });
+});
 
 describe('an object zone fitted to a tall object', () => {
   it('scales the object to the tallest zone, keeping its shape, and stores the zone as it reads back', () => {
