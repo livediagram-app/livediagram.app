@@ -4,6 +4,7 @@
 // would read on a real card of the plan, posted as Automation. Nothing to preview on a plan with no cards.
 
 import { itemStatus, itemTitle, type Item } from '@liveplanner/items';
+import { usePlan } from '@/components/plan/PlanContext';
 import type { AutomationOutline } from './automation-outline';
 import { AutomationDisc } from './automation-glyphs';
 import { previewText, type PreviewContext } from './preview-values';
@@ -14,15 +15,13 @@ function contextFor(
   rule: string,
   person: string,
   now: number,
+  link: string,
 ): PreviewContext {
   const status = itemStatus(card);
   return {
     card,
     column: (status && outline.statuses.get(status)) ?? '',
-    link:
-      typeof window === 'undefined'
-        ? ''
-        : `${window.location.origin}${window.location.pathname}#card-${card.key}`,
+    link,
     people: outline.people,
     person,
     rule,
@@ -53,9 +52,13 @@ export function StepPreview({
   person: string;
   now: number;
 }) {
+  const cardLink = usePlan()?.cardLink;
   const card = outline.items.values().next().value;
   if (!card || !text.trim()) return null;
-  const filled = previewText(text, contextFor(card, outline, rule, person, now));
+  const filled = previewText(
+    text,
+    contextFor(card, outline, rule, person, now, cardLink?.(card.id) ?? ''),
+  );
   return (
     <div data-step-preview="" className="flex flex-col gap-2">
       <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-200">

@@ -237,9 +237,7 @@ export function AutomationsDialog({
         />
       ) : (
         <>
-          <header
-            className={`flex items-start gap-3 ${phone ? 'px-4 pb-2 pt-4' : 'px-6 pb-3 pt-5'}`}
-          >
+          <div className={`flex items-start gap-3 ${phone ? 'px-4 pb-2 pt-4' : 'px-6 pb-3 pt-5'}`}>
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <span aria-hidden className="text-lg font-semibold text-slate-900 dark:text-slate-50">
                 Automations
@@ -255,7 +253,7 @@ export function AutomationsDialog({
               New Rule
             </Button>
             <DialogCloseButton onClick={close} />
-          </header>
+          </div>
           <div
             role="tablist"
             aria-label="Automations"

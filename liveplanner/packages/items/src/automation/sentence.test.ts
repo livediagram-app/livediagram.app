@@ -259,3 +259,15 @@ describe('the names', () => {
     expect(outlineTabName('t-x', OUTLINE)).toBe('t-x');
   });
 });
+
+describe('the automation person', () => {
+  // The author a rule's comments and history lines carry (types.ts), read by the sentence's callers.
+  it('is the rule by name, in the Automation colour', async () => {
+    const { automationPerson, AUTOMATION_PERSON_ID, AUTOMATION_COLOR } = await import('./types');
+    expect(automationPerson('Wrap Up')).toEqual({
+      id: AUTOMATION_PERSON_ID,
+      name: 'Wrap Up',
+      color: AUTOMATION_COLOR,
+    });
+  });
+});

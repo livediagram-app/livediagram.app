@@ -74,7 +74,7 @@ export function ChipToggles({
                 }
                 className={`touch-target-y relative inline-flex items-center gap-1 rounded-md px-2 py-1 text-[12px] font-medium transition motion-reduce:transition-none ${
                   on
-                    ? 'bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400'
+                    ? 'bg-brand-100 text-brand-800 ring-1 ring-inset ring-brand-300 hover:bg-brand-200 dark:bg-brand-500/25 dark:text-brand-100 dark:ring-brand-500/50 dark:hover:bg-brand-500/35'
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
