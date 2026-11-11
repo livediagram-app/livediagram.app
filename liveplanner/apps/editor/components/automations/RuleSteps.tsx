@@ -8,6 +8,7 @@
 // runs on every card; a step a template left to pick says so until it is picked.
 
 import {
+  AUTOMATION_AI_PER_DAY,
   AUTOMATION_RELATED_NAMES,
   actionChip,
   conditionChip,
@@ -16,6 +17,7 @@ import {
   stepChip,
   triggerParts,
   type AutomationAction,
+  type AutomationAi,
   type AutomationOutgoing,
   type AutomationRuleBody,
   type RuleSentenceOutline,
@@ -58,7 +60,17 @@ type CardProps = Omit<
 >;
 
 // What a step does: its chip, and under it the text it writes (a comment, a message, an email's subject).
-function stepBody(a: AutomationAction | AutomationOutgoing, outline: RuleSentenceOutline) {
+function stepBody(
+  a: AutomationAction | AutomationOutgoing | AutomationAi,
+  outline: RuleSentenceOutline,
+) {
+  if (a.kind === 'ai')
+    return (
+      <>
+        <span className={`${CHIP} self-start`}>{stepChip(a, outline)}</span>
+        <span className={QUIET}>Uses AI: counts toward {AUTOMATION_AI_PER_DAY} a day</span>
+      </>
+    );
   const sub =
     a.kind === 'comment' || a.kind === 'notify' ? a.text : a.kind === 'email' ? a.subject : '';
   return (

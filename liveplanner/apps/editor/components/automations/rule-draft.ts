@@ -6,12 +6,14 @@
 
 import {
   AUTOMATION_ACTIONS_MAX,
+  AUTOMATION_AI_STEPS_MAX,
   AUTOMATION_BRANCH_ACTIONS_MAX,
   AUTOMATION_CONDITIONS_MAX,
   AUTOMATION_OUTGOING_MAX,
   AUTOMATION_RULES_MAX,
   countActions,
   type AutomationAction,
+  type AutomationAi,
   type AutomationBranch,
   type AutomationCondition,
   type AutomationIf,
@@ -86,6 +88,9 @@ export function canAddAction(body: AutomationRuleBody, holder?: number): boolean
 export const canAddOutgoing = (body: AutomationRuleBody): boolean =>
   canAddAction(body) &&
   body.steps.filter((s) => s.kind === 'notify').length < AUTOMATION_OUTGOING_MAX;
+/** Whether another AI action fits (3 a rule, at its top level). */
+export const canAddAi = (body: AutomationRuleBody): boolean =>
+  canAddAction(body) && body.steps.filter((s) => s.kind === 'ai').length < AUTOMATION_AI_STEPS_MAX;
 export const canAddCondition = (conditions: readonly unknown[]) =>
   conditions.length < AUTOMATION_CONDITIONS_MAX;
 
@@ -235,10 +240,10 @@ export function addCondition(
  *  goes at the top level only (the panels never offer one inside). */
 export function addAction(
   body: AutomationRuleBody,
-  action: AutomationAction | AutomationOutgoing,
+  action: AutomationAction | AutomationOutgoing | AutomationAi,
   branch?: { step: number; side: Side },
 ): { body: AutomationRuleBody; part: RulePart } {
-  if (!branch || action.kind === 'notify')
+  if (!branch || action.kind === 'notify' || action.kind === 'ai')
     return {
       body: { ...body, steps: [...body.steps, action] },
       part: { part: 'step', index: body.steps.length },
@@ -383,6 +388,7 @@ export function canDuplicate(body: AutomationRuleBody, part: RulePart): boolean 
       const step = body.steps[part.index];
       if (!step) return false;
       if (step.kind === 'notify') return canAddOutgoing(body);
+      if (step.kind === 'ai') return canAddAi(body);
       return actionCount(body.steps) + actionCount([step]) <= AUTOMATION_ACTIONS_MAX;
     }
   }

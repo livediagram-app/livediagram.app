@@ -5,7 +5,7 @@
 // on its tinted tile: the trigger in the brand violet, conditions in orange, actions in blue, as the design draws them.
 
 import type { AutomationActionKind, AutomationStep, AutomationVia } from '@liveplanner/items';
-import { lucideGlyph } from '@liveplanner/ui';
+import { SparkleIcon, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideClock,
   lucideFunnel,
@@ -73,7 +73,7 @@ export const STEP_KIND_TEXT: Record<StepTone, string> = {
 };
 
 /** A step's icon on its tile: the bolt for the trigger (a clock for a time), the funnel for conditions, the action's
- *  own, and an outgoing action's by where it posts. */
+ *  own, an outgoing action's by where it posts, and the sparkle for an AI action. */
 export function StepTile({
   tone,
   kind,
@@ -96,7 +96,9 @@ export function StepTile({
         ? ConditionIcon
         : kind === 'notify'
           ? NOTIFY_GLYPHS[via ?? 'webhook']
-          : ACTION_GLYPHS[kind ?? 'move'];
+          : kind === 'ai'
+            ? SparkleIcon
+            : ACTION_GLYPHS[kind ?? 'move'];
   return (
     <span
       aria-hidden

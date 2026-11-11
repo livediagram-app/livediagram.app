@@ -868,6 +868,25 @@ export const PLAN_AUTOMATIONS_RAN = chart(
   { types: ['AutomationManual'] },
 );
 
+export const PLAN_AUTOMATIONS_AI = chart(
+  'Plan',
+  'Ran',
+  'Automation AI Steps',
+  "An automation rule's AI action asking Workers AI: Summarise Card, Suggest Card Type or Triage, each one call.",
+  {
+    types: ['AutomationAiSummarise', 'AutomationAiCardType', 'AutomationAiTriage'],
+    rising: 'neutral',
+  },
+);
+
+export const PLAN_AUTOMATIONS_AI_FAILED = chart(
+  'Plan',
+  'Ran',
+  'Automation AI Steps Failed or Capped',
+  "An AI action that couldn't write its answer (the model erred, was slow or answered something unusable), or one the plan's 100 a day skipped.",
+  { types: ['AutomationAiFailed', 'AutomationAiCapped'], rising: 'bad' },
+);
+
 export const PLAN_COLUMNS_COLLAPSED = chart(
   'Plan',
   'Toggled',
@@ -1222,6 +1241,8 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_AUTOMATIONS_TOGGLED,
   PLAN_AUTOMATIONS_TESTED,
   PLAN_AUTOMATIONS_RAN,
+  PLAN_AUTOMATIONS_AI,
+  PLAN_AUTOMATIONS_AI_FAILED,
   PLAN_COLUMNS_COLLAPSED,
   PLAN_SETUP_CHANGED,
   PLAN_CALENDAR_MOVES,

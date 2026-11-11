@@ -15,16 +15,20 @@ import {
 import { Button, PlusIcon } from '@liveplanner/ui';
 import {
   MenuActionRow,
+  MenuGroupSeparator,
   PortalMenu,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import { AUTOMATION_AI_PER_DAY } from '@liveplanner/items';
 import { ConditionIcon, StepTile } from './automation-glyphs';
-import { canAddAction, canAddCondition, canAddOutgoing, type Side } from './rule-draft';
+import { canAddAction, canAddAi, canAddCondition, canAddOutgoing, type Side } from './rule-draft';
 import {
   ACTION_KINDS,
   ADD_NAMES,
+  AI_KINDS,
   BRANCH_ACTION_KINDS,
   CONDITION_KINDS,
   OUTGOING_KINDS,
+  isAiKind,
   isOutgoingKind,
   viaOf,
   type AddKind,
@@ -39,10 +43,11 @@ export type AddActions = {
 
 const DASHED = 'border-dashed';
 
-/** A dashed add button that opens a menu of kinds. */
+/** A dashed add button that opens a menu of kinds; `group`, a second set under a rule and a heading. */
 export function AddMenu<K extends string>({
   label,
   kinds,
+  group,
   names,
   icon,
   disabled,
@@ -50,12 +55,25 @@ export function AddMenu<K extends string>({
 }: {
   label: string;
   kinds: readonly K[];
+  group?: { title: string; note: string; kinds: readonly K[] } | undefined;
   names: Readonly<Record<K, string>>;
   icon: (kind: K) => React.ReactNode;
   disabled: boolean;
   onPick: (kind: K) => void;
 }) {
   const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
+  const row = (k: K) => (
+    <MenuActionRow
+      key={k}
+      plain
+      label={names[k]}
+      icon={icon(k)}
+      onClick={() => {
+        setAnchor(null);
+        onPick(k);
+      }}
+    />
+  );
   return (
     <>
       <Button
@@ -72,18 +90,19 @@ export function AddMenu<K extends string>({
       </Button>
       {anchor ? (
         <PortalMenu anchor={anchor} placement="below" onClose={() => setAnchor(null)}>
-          {kinds.map((k) => (
-            <MenuActionRow
-              key={k}
-              plain
-              label={names[k]}
-              icon={icon(k)}
-              onClick={() => {
-                setAnchor(null);
-                onPick(k);
-              }}
-            />
-          ))}
+          {kinds.map(row)}
+          {group ? (
+            <>
+              <MenuGroupSeparator />
+              <div className="flex items-baseline justify-between gap-3 px-3 pb-1 pt-0.5">
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                  {group.title}
+                </span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">{group.note}</span>
+              </div>
+              {group.kinds.map(row)}
+            </>
+          ) : null}
         </PortalMenu>
       ) : null}
     </>
@@ -91,12 +110,16 @@ export function AddMenu<K extends string>({
 }
 
 const addIcon = (k: AddKind) =>
-  isOutgoingKind(k) ? (
+  isAiKind(k) ? (
+    <StepTile tone="action" kind="ai" size={24} />
+  ) : isOutgoingKind(k) ? (
     <StepTile tone="action" kind="notify" via={viaOf(k)} size={24} />
   ) : (
     <StepTile tone="action" kind={k} size={24} />
   );
 const conditionIcon = () => <ConditionIcon />;
+// The AI actions, at the rule's top level only, under their own heading with what they count toward.
+const AI_GROUP = { title: 'AI', note: `${AUTOMATION_AI_PER_DAY} a day per plan`, kinds: AI_KINDS };
 
 /** The rule's own add buttons: actions (outgoing ones too), conditions, If / Else and For Related Cards. */
 export function TopAddButtons({
@@ -115,6 +138,7 @@ export function TopAddButtons({
       <AddMenu
         label="Add Action"
         kinds={kinds}
+        group={canAddAi(body) ? AI_GROUP : undefined}
         names={ADD_NAMES}
         icon={addIcon}
         disabled={full}

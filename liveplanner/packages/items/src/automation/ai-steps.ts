@@ -74,14 +74,16 @@ export function readAiStep(s: Obj): { step: AutomationAi } | { path: string; mes
     return { step: { kind: 'ai', task, field } };
   }
   if (task === 'card_type') {
-    if (typeof s['set'] !== 'boolean') return { path: '.set', message: 'set must be true or false' };
+    if (typeof s['set'] !== 'boolean')
+      return { path: '.set', message: 'set must be true or false' };
     return { step: { kind: 'ai', task, set: s['set'] } };
   }
   const priority = s['priority'];
   const labels = s['labels'];
   if (typeof priority !== 'boolean' || typeof labels !== 'boolean')
     return { path: '', message: 'priority and labels must be true or false' };
-  if (!priority && !labels) return { path: '', message: 'Triage sets the priority, labels or both' };
+  if (!priority && !labels)
+    return { path: '', message: 'Triage sets the priority, labels or both' };
   return { step: { kind: 'ai', task: 'triage', priority, labels } };
 }
 
@@ -95,7 +97,8 @@ const EMPTY_OUTLINE: AutomationOutline = {
   savedFilters: [],
   formTabs: [],
 };
-const nameOfField = (o: FieldNames, id: string) => fieldName({ ...EMPTY_OUTLINE, types: o.types }, id);
+const nameOfField = (o: FieldNames, id: string) =>
+  fieldName({ ...EMPTY_OUTLINE, types: o.types }, id);
 
 /** The step as its chip reads: "Summarise Card", "Summarise Card into Notes", "Suggest and Set Card Type",
  *  "Triage Priority". `fieldLabel` names a field from the caller's outline. */
@@ -296,7 +299,11 @@ function schemaOf(task: AutomationAiTask, choices: AiChoices): Obj {
 }
 
 // The request for one step: the task's fixed instructions, then the card and its choices as one JSON object.
-export function aiRequest(task: AutomationAiTask, card: AiCardInput, choices: AiChoices = {}): AiRequest {
+export function aiRequest(
+  task: AutomationAiTask,
+  card: AiCardInput,
+  choices: AiChoices = {},
+): AiRequest {
   const lists =
     task === 'card_type'
       ? { types: (choices.types ?? []).slice(0, AI_LIST_MAX) }
@@ -325,7 +332,11 @@ function objectIn(text: string): Obj | null {
   const fenced = /```(?:json)?\s*([\s\S]*?)```/i.exec(text)?.[1];
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}');
-  for (const candidate of [text, fenced, start >= 0 && end > start ? text.slice(start, end + 1) : undefined]) {
+  for (const candidate of [
+    text,
+    fenced,
+    start >= 0 && end > start ? text.slice(start, end + 1) : undefined,
+  ]) {
     if (candidate === undefined) continue;
     try {
       const v: unknown = JSON.parse(candidate.trim());
@@ -404,7 +415,11 @@ export interface AiOutcomeContext {
   labels?: readonly string[];
 }
 
-function summarised(step: Extract<AutomationAi, { task: 'summarise' }>, reply: Obj, ctx: AiOutcomeContext): AiOutcome {
+function summarised(
+  step: Extract<AutomationAi, { task: 'summarise' }>,
+  reply: Obj,
+  ctx: AiOutcomeContext,
+): AiOutcome {
   if (typeof reply['summary'] !== 'string') return { failed: AI_UNREADABLE };
   const text = plainSummary(reply['summary'], ctx.input);
   if (text === '') return { failed: AI_EMPTY };
@@ -413,8 +428,10 @@ function summarised(step: Extract<AutomationAi, { task: 'summarise' }>, reply: O
   const name = fieldName(ctx.outline, step.field, type);
   const def = fieldDefOf(ctx.outline, step.field, type);
   if (!typeHasField(type, step.field)) return { failed: `A ${type.label} card has no ${name}` };
-  if (def?.kind !== 'text' && def?.kind !== 'longtext') return { failed: `${name} isn't a text field` };
-  if (!validateFields({ [step.field]: text }, 'patch').ok) return { failed: `${name} can't hold that value` };
+  if (def?.kind !== 'text' && def?.kind !== 'longtext')
+    return { failed: `${name} isn't a text field` };
+  if (!validateFields({ [step.field]: text }, 'patch').ok)
+    return { failed: `${name} can't hold that value` };
   return {
     patch: { set: { [step.field]: text } },
     line: `Summarised the card into ${name}`,
@@ -422,7 +439,11 @@ function summarised(step: Extract<AutomationAi, { task: 'summarise' }>, reply: O
   };
 }
 
-function typed(step: Extract<AutomationAi, { task: 'card_type' }>, reply: Obj, ctx: AiOutcomeContext): AiOutcome {
+function typed(
+  step: Extract<AutomationAi, { task: 'card_type' }>,
+  reply: Obj,
+  ctx: AiOutcomeContext,
+): AiOutcome {
   if (typeof reply['type'] !== 'string') return { failed: AI_UNREADABLE };
   const picked = key(reply['type']);
   const type = ctx.outline.types.find((t) => key(t.label) === picked);
@@ -439,7 +460,11 @@ function typed(step: Extract<AutomationAi, { task: 'card_type' }>, reply: Obj, c
   };
 }
 
-function triaged(step: Extract<AutomationAi, { task: 'triage' }>, reply: Obj, ctx: AiOutcomeContext): AiOutcome {
+function triaged(
+  step: Extract<AutomationAi, { task: 'triage' }>,
+  reply: Obj,
+  ctx: AiOutcomeContext,
+): AiOutcome {
   const type = typeIn(ctx.outline.types, ctx.card.type);
   const set: Record<string, string | string[]> = {};
   const words: string[] = [];

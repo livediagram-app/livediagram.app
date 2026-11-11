@@ -3,10 +3,12 @@
 // panel opens on something that reads. Text a person must write starts empty, and the api's refusal names it. Pure.
 
 import {
+  AUTOMATION_AI_NAMES,
   AUTOMATION_NOTIFY_NAMES,
   AUTOMATION_STEP_NAMES,
   type AutomationAction,
   type AutomationActionKind,
+  type AutomationAi,
   type AutomationCondition,
   type AutomationOutgoing,
   type AutomationVia,
@@ -36,13 +38,28 @@ export const BRANCH_ACTION_KINDS: readonly AutomationActionKind[] = ACTION_KINDS
 // + Add Action at the rule's top level offers the outgoing actions too, one per kind of webhook.
 export const OUTGOING_KINDS = ['notify_webhook', 'notify_slack', 'notify_teams'] as const;
 export type OutgoingKind = (typeof OUTGOING_KINDS)[number];
-export type AddKind = AutomationActionKind | OutgoingKind;
+// And, under them, the AI actions, while the rule holds fewer than 3 (docs/specs/026-plan/automations.md "AI actions").
+export const AI_KINDS = ['ai_summarise', 'ai_card_type', 'ai_triage'] as const;
+export type AiKind = (typeof AI_KINDS)[number];
+export type AddKind = AutomationActionKind | OutgoingKind | AiKind;
 export const ADD_NAMES: Readonly<Record<AddKind, string>> = {
   ...AUTOMATION_STEP_NAMES,
   notify_webhook: AUTOMATION_NOTIFY_NAMES.webhook,
   notify_slack: AUTOMATION_NOTIFY_NAMES.slack,
   notify_teams: AUTOMATION_NOTIFY_NAMES.teams,
+  ai_summarise: AUTOMATION_AI_NAMES.summarise,
+  ai_card_type: AUTOMATION_AI_NAMES.card_type,
+  ai_triage: AUTOMATION_AI_NAMES.triage,
 };
+export const isAiKind = (kind: AddKind): kind is AiKind =>
+  (AI_KINDS as readonly string[]).includes(kind);
+
+/** An AI action's first form: a summary as a comment, the suggested type set, a priority and labels. */
+export function defaultAi(kind: AiKind): AutomationAi {
+  if (kind === 'ai_summarise') return { kind: 'ai', task: 'summarise' };
+  if (kind === 'ai_card_type') return { kind: 'ai', task: 'card_type', set: true };
+  return { kind: 'ai', task: 'triage', priority: true, labels: true };
+}
 export const viaOf = (kind: OutgoingKind): AutomationVia =>
   kind === 'notify_webhook' ? 'webhook' : kind === 'notify_slack' ? 'slack' : 'teams';
 export const isOutgoingKind = (kind: AddKind): kind is OutgoingKind =>
@@ -57,7 +74,8 @@ export function defaultOutgoing(via: AutomationVia): AutomationOutgoing {
 export function defaultStep(
   kind: AddKind,
   outline: Outline,
-): AutomationAction | AutomationOutgoing {
+): AutomationAction | AutomationOutgoing | AutomationAi {
+  if (isAiKind(kind)) return defaultAi(kind);
   return isOutgoingKind(kind) ? defaultOutgoing(viaOf(kind)) : defaultAction(kind, outline);
 }
 

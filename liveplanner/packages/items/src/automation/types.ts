@@ -203,7 +203,11 @@ export type AutomationAi =
   // At least one of the two is on.
   | { kind: 'ai'; task: 'triage'; priority: boolean; labels: boolean };
 export type AutomationAiTask = AutomationAi['task'];
-export const AUTOMATION_AI_TASKS: readonly AutomationAiTask[] = ['summarise', 'card_type', 'triage'];
+export const AUTOMATION_AI_TASKS: readonly AutomationAiTask[] = [
+  'summarise',
+  'card_type',
+  'triage',
+];
 
 export type AutomationStep =
   AutomationAction | AutomationOutgoing | AutomationIf | AutomationBranch | AutomationAi;
