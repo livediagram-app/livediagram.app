@@ -91,10 +91,10 @@ webhook, with the same address, secret, retries, pausing and Recent Deliveries; 
   said it’s gone").
 - **Never twice.** Each send carries a key made from the run and the step; the same key again (a retried run) queues
   nothing new and answers **queued**.
-- **What it says.** A Slack or Teams post is the message as the rule wrote it, then the card (`#48 Publish pricing
-  page`) as an **Open in liveplanner** link and "Automation · <rule>" beneath; a plain webhook's `detail` is
-  `{rule, card: {key, title, url}, text}`, its `actor` `{id: null, name: 'Automation'}`. Slack's markup is escaped in
-  the message as in every other text, so a rule can't ping `<!channel>`.
+- **What it says.** A Slack or Teams post is the message as the rule wrote it, then the card
+  (`#48 Publish pricing page`) as an **Open in liveplanner** link and "Automation · <rule>" beneath; a plain
+  webhook's `detail` is `{rule, card: {key, title, url}, text}`, its `actor` `{id: null, name: 'Automation'}`.
+  Slack's markup is escaped in the message as in every other text, so a rule can't ping `<!channel>`.
 - The webhook's 500-pending cap holds: past it a send is refused ("Too many messages waiting for this webhook").
 
 ## Destinations
