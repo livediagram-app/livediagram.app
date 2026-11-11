@@ -85,7 +85,10 @@ export function ChipToggles({
           })}
         </div>
       )}
-      {hint ? <p className="text-[12px] text-slate-500 dark:text-slate-400">{hint}</p> : null}
+      {/* The hint says what an empty pick means, so it shows only while nothing is picked. */}
+      {hint && value.length === 0 ? (
+        <p className="text-[12px] text-slate-500 dark:text-slate-400">{hint}</p>
+      ) : null}
     </div>
   );
 }

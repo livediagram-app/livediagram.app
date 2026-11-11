@@ -77,12 +77,17 @@ export function RunSteps({
           <Mark line={line} />
           <span className="min-w-0 flex-1">
             <span className="sr-only">{markWords(line)}</span>
-            {line.kind === 'trigger' && line.by ? (
-              <span className="font-semibold text-slate-900 dark:text-slate-50">
-                {line.by.name}{' '}
-              </span>
-            ) : null}
-            {line.text}
+            {/* The trigger's line opens with who did it ("Ana Costa moved it from To Do to Done"): their name in bold. */}
+            {line.kind === 'trigger' && line.by && line.text.startsWith(line.by.name) ? (
+              <>
+                <span className="font-semibold text-slate-900 dark:text-slate-50">
+                  {line.by.name}
+                </span>
+                {line.text.slice(line.by.name.length)}
+              </>
+            ) : (
+              line.text
+            )}
             {line.kind === 'action' && line.already ? (
               <span className="text-slate-500 dark:text-slate-400"> (Already so)</span>
             ) : null}

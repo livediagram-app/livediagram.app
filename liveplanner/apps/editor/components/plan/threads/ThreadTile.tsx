@@ -48,6 +48,7 @@ import {
 import { initialsOf } from '@/lib/identity';
 import { useRelativeNow } from '@/lib/relative-time';
 import { isAutomationAuthor } from '@/components/automations/AutomationAuthor';
+import { BoltIcon } from '@/components/automations/automation-glyphs';
 import { TimelineDisc, TimelineTime, railClass } from './timeline-parts';
 import { ThreadSharedChip } from './ThreadSharedChip';
 import { ThreadTitleEditor } from './ThreadTitleEditor';
@@ -69,19 +70,37 @@ function Faces({ thread }: { thread: CardThread }) {
   const people = threadParticipants(thread);
   const shown = people.slice(0, FACES);
   const more = people.length - shown.length;
+  // A rule's comments show Automation's bolt, as its disc does in the thread.
+  const automated = new Set(
+    thread.comments
+      .filter((c) => isAutomationAuthor(c))
+      .map((c) => `${c.authorName}\u0000${c.authorColor}`),
+  );
   return (
     <span className="flex items-center" aria-hidden>
-      {shown.map((p, i) => (
-        <GlyphDisc
-          key={`${p.name}-${p.color}`}
-          size={18}
-          as="span"
-          style={identityVars(p.color)}
-          className={`text-[7px] font-semibold tracking-tight text-white ring-2 ring-white dark:ring-slate-900 ${IDENTITY_FILL} ${i ? '-ml-1' : ''}`}
-        >
-          {initialsOf(p.name)}
-        </GlyphDisc>
-      ))}
+      {shown.map((p, i) =>
+        automated.has(`${p.name}\u0000${p.color}`) ? (
+          <GlyphDisc
+            key={`${p.name}-${p.color}`}
+            size={18}
+            as="span"
+            data-automation-disc=""
+            className={`bg-brand-100 text-brand-700 ring-2 ring-white dark:bg-brand-500/25 dark:text-brand-200 dark:ring-slate-900 ${i ? '-ml-1' : ''}`}
+          >
+            <BoltIcon size={10} aria-hidden />
+          </GlyphDisc>
+        ) : (
+          <GlyphDisc
+            key={`${p.name}-${p.color}`}
+            size={18}
+            as="span"
+            style={identityVars(p.color)}
+            className={`text-[7px] font-semibold tracking-tight text-white ring-2 ring-white dark:ring-slate-900 ${IDENTITY_FILL} ${i ? '-ml-1' : ''}`}
+          >
+            {initialsOf(p.name)}
+          </GlyphDisc>
+        ),
+      )}
       {more > 0 ? (
         <span className="ml-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
           +{more}

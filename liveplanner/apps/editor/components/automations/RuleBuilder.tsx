@@ -163,7 +163,11 @@ export function RuleBuilder({
     <div
       className={`flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-slate-100 dark:border-slate-800 ${phone ? 'px-4 py-3' : 'px-5 py-3.5'}`}
     >
-      <nav aria-label="Breadcrumb" className="flex min-w-0 flex-1 items-center gap-1.5 text-[14px]">
+      {/* A phone gives the name its own row and puts Test and Save under it, so the name never shrinks away. */}
+      <nav
+        aria-label="Breadcrumb"
+        className={`flex min-w-0 flex-1 items-center gap-1.5 text-[14px] ${phone ? 'basis-full' : ''}`}
+      >
         <button
           type="button"
           onClick={onBack}
@@ -202,7 +206,7 @@ export function RuleBuilder({
           {formatRelativeTimeShort(Math.max(0, now - rule.edited.at))}
         </span>
       ) : null}
-      <div className="flex items-center gap-2">
+      <div className={`flex items-center gap-2 ${phone ? 'w-full justify-end' : ''}`}>
         <Button variant="secondary" size="xs" onClick={() => setTesting(true)}>
           Test on a Card
         </Button>

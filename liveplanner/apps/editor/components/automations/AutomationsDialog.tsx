@@ -238,6 +238,15 @@ export function AutomationsDialog({
       ) : (
         <>
           <div className={`flex items-start gap-3 ${phone ? 'px-4 pb-2 pt-4' : 'px-6 pb-3 pt-5'}`}>
+            {/* The design's bolt tile beside the title (desktop; a phone keeps the row for the title). */}
+            {phone ? null : (
+              <span
+                aria-hidden
+                className="inline-flex size-9 shrink-0 items-center justify-center rounded-[9px] bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
+              >
+                <BoltIcon size={18} aria-hidden />
+              </span>
+            )}
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <span aria-hidden className="text-lg font-semibold text-slate-900 dark:text-slate-50">
                 Automations
