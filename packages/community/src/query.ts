@@ -69,7 +69,8 @@ export function communitySearchTerms(q: string): string[] {
   const terms: string[] = [];
   for (const raw of q.toLowerCase().normalize('NFC').split(/\s+/)) {
     if (isTagToken(raw) || isSortToken(raw) || isCategoryToken(raw) || isMineToken(raw)) continue;
-    const term = raw.slice(0, COMMUNITY_SEARCH_TERM_MAX);
+    // Cut in code points, so a character outside the BMP (an emoji, a rare CJK character) is never split in half.
+    const term = Array.from(raw).slice(0, COMMUNITY_SEARCH_TERM_MAX).join('');
     if (term && !terms.includes(term)) terms.push(term);
     if (terms.length === COMMUNITY_SEARCH_TERMS_MAX) break;
   }

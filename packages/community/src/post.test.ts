@@ -303,6 +303,14 @@ describe('search tags', () => {
     expect(toggleCommunitySearchTag('#日本語 board', '日本語')).toBe('board');
   });
 
+  it('cuts a term at 40 code points, never splitting a character outside the BMP', () => {
+    const cut = communitySearchTerms(`${'x'.repeat(39)}🚀🚀`)[0]!;
+    expect(cut).toBe(`${'x'.repeat(39)}🚀`);
+    // No lone surrogate left at the end.
+    expect(encodeURIComponent(cut)).toContain(encodeURIComponent('🚀'));
+    expect(communitySearchTerms('𠀋'.repeat(50))).toEqual(['𠀋'.repeat(40)]);
+  });
+
   it('NFC-normalises plain terms, as the stored search text is', () => {
     expect(communitySearchTerms('Café ÉTÉ 日本語')).toEqual(['café', 'été', '日本語']);
   });
