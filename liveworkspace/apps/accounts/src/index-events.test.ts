@@ -69,7 +69,7 @@ const config: IndexPurgeConfig = { indexUrl: INDEX_URL, indexService, indexKey: 
 // What waits in the outbox, oldest first.
 const queued = () =>
   (
-    sql.prepare('SELECT body FROM index_timeline_outbox ORDER BY createdAt, id').all() as {
+    sql.prepare('SELECT body FROM index_events_outbox ORDER BY createdAt, id').all() as {
       body: string;
     }[]
   ).map((row) => JSON.parse(row.body) as Event);
@@ -272,7 +272,7 @@ describe('sending to the index', () => {
     answer = () => new Response(null, { status: 503 });
     expect(await flushEvents(db, config)).toEqual({ sent: 0, waiting: true });
     expect(queued()).toHaveLength(1);
-    sql.prepare('UPDATE index_timeline_outbox SET attempts = ?').run(EVENTS_MAX_ATTEMPTS - 1);
+    sql.prepare('UPDATE index_events_outbox SET attempts = ?').run(EVENTS_MAX_ATTEMPTS - 1);
     await flushEvents(db, config);
     expect(queued()).toEqual([]);
   });
@@ -298,21 +298,21 @@ describe('sending to the index', () => {
 describe('the outbox’s bound', () => {
   const fill = (n: number) => {
     const insert = sql.prepare(
-      'INSERT INTO index_timeline_outbox (id, body, createdAt) VALUES (?, ?, ?)',
+      'INSERT INTO index_events_outbox (id, body, createdAt) VALUES (?, ?, ?)',
     );
     sql.exec('BEGIN');
     for (let i = 0; i < n; i++) insert.run(`e${String(i).padStart(6, '0')}`, '{}', NOW + i);
     sql.exec('COMMIT');
   };
   const count = () =>
-    (sql.prepare('SELECT count(*) AS n FROM index_timeline_outbox').get() as { n: number }).n;
+    (sql.prepare('SELECT count(*) AS n FROM index_events_outbox').get() as { n: number }).n;
 
   it('keeps the newest events up to the limit, with no index to send them to', async () => {
     fill(EVENTS_OUTBOX_MAX + 25);
     expect(await flushEvents(db, {})).toEqual({ sent: 0, waiting: false });
     expect(await trimEventOutbox(db)).toBe(25);
     expect(count()).toBe(EVENTS_OUTBOX_MAX);
-    const oldest = sql.prepare('SELECT min(createdAt) AS at FROM index_timeline_outbox').get() as {
+    const oldest = sql.prepare('SELECT min(createdAt) AS at FROM index_events_outbox').get() as {
       at: number;
     };
     expect(oldest.at).toBe(NOW + 25);

@@ -36,13 +36,6 @@ export async function handleApp(
   if (segments[1] === 'migration' && segments[2] === 'handoff' && segments.length === 3) {
     return handleMigrationHandoff(request, env, app, waitUntil);
   }
-  // /app/people/events: images uploaded, which the index no longer keeps. Kept one release so an app deployed
-  // before this index is never refused: 204 whatever the body, nothing read or recorded. Then it goes.
-  if (segments[1] === 'people' && segments[2] === 'events' && segments.length === 3) {
-    if (request.method !== 'PUT') return notFound();
-    await request.body?.cancel();
-    return noContent();
-  }
   // /app/community/states: where Community posts' items stand, for the Community's sweep (community-states.ts).
   if (segments[1] === 'community' && segments[2] === 'states' && segments.length === 3) {
     if (request.method !== 'POST') return notFound();

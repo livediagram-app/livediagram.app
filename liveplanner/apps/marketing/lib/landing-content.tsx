@@ -10,6 +10,7 @@ import {
   CardDetailArt,
   CardTypesArt,
   CellCommentsArt,
+  CollaboratorsArt,
   CommentsArt,
   ConditionalFormatArt,
   DashboardArt,
@@ -29,6 +30,7 @@ import {
   RevokeArt,
   SelectCardsArt,
   SelectionGlowArt,
+  SessionToolsArt,
   ShareLinksArt,
   SharedItemsArt,
   SuggestedDashboardsArt,
@@ -430,6 +432,22 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Comments where the work is',
         description:
           "Every card has its own thread, and any cell can carry one. Reply, @mention a teammate, resolve. Comments carry the author's name and colour so it's clear who said what.",
+      },
+      {
+        art: <CollaboratorsArt />,
+        href: '/help/collaboration/live-presence/#collaborators',
+        group: 'Work together live',
+        title: 'See where the whole room is',
+        description:
+          'Click any avatar on a tab and Collaborators lists everyone in the plan by the tab they are on, with their role, whether they are online or away, and when they were last active. Go to Tab takes you straight to them.',
+      },
+      {
+        art: <SessionToolsArt />,
+        href: '/help/collaboration/session-tools/',
+        group: 'Work together live',
+        title: 'Run the session in the plan',
+        description:
+          'Time-box a retro with a countdown everyone sees ticking in sync, then dot-vote on the cards with live tallies and a results reveal. Join late or reload and the clock and the votes are right where the room left them.',
       },
       {
         art: <ShareLinksArt />,

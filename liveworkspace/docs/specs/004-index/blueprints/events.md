@@ -60,9 +60,7 @@ Timeline (0017 deletes their rows): `share_link_expiring`, `image_uploaded`, `ta
 - `PUT /app/items/:id/events`, from the item's app: `{ events: [{ type: 'edited', actorId, actorName?, at }] }` (at
   most 100). One event per person and day, the latest time kept; each also a use day (Most Used). `204`;
   `400 invalid_events`.
-- `PUT /app/people/events`, from an app: `204`, the body unread. Kept one release for apps that still report images,
-  then it goes.
-- `POST /internal/events`, from accounts (`MERGE_KEY`), and for one release the same at `POST /internal/timeline`:
+- `POST /internal/events`, from accounts (`MERGE_KEY`):
   `{ events: [{ id (≤ 300), type, actorId?, actorName?, title, at, detail? }] }` (1 to 100). One or two statements;
   resent ids change nothing new. Detail at most 12 string keys, values cut to 500; title cut to 200; actor name to
   200; `at` at most now + 5 minutes. An old body's `scopes` is ignored; `team_deleted` and `token_*` are taken and

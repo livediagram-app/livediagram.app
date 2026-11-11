@@ -146,8 +146,7 @@ export function parseAccountEvent(value: unknown, now: number): AccountEvent | '
 }
 
 /**
- * POST /internal/events from liveworkspace accounts (its key, as for the merge), and for one release the same at
- * its old path, POST /internal/timeline: up to APP_EVENTS_MAX team events in two statements (the events, then their
+ * POST /internal/events from liveworkspace accounts (its key, as for the merge): up to APP_EVENTS_MAX team events in two statements (the events, then their
  * teams' audit log rows). Each event's id is accounts' own and stable, so a batch sent again (accounts resends
  * until it lands) changes nothing.
  */

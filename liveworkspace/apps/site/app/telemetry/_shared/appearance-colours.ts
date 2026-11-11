@@ -2,7 +2,7 @@ import type { Appearance } from '@livediagram/ui';
 import { contrastRatio, shade } from './colour-maths';
 
 // The chart hues in dark (docs/specs/017-telemetry/telemetry.md): the category colours are picked
-// for a white card, and the deep ones (Page's crimson, Timeline's deep sky) sink into the dark one.
+// for a white card, and the deep ones (Page's crimson, Cli's terminal ink) sink into the dark one.
 // In dark each hue is mixed toward white just far enough to read at text contrast on the card, so
 // it stays its own hue and the bright ones stay exactly as they are.
 

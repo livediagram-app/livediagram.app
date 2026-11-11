@@ -110,8 +110,9 @@ renamed (`Folder·Renamed`), re-parented and deleted, default folders set and cl
 into, within and out of a team (`Team·Added` / `Moved` / `Removed` with the item's noun) and a
 guest's sign-in banner. They keep the names the apps always gave them, so each app's dashboard keeps
 counting them. The Timeline's events (`Timeline·*`) and Home's What Happened ones (`Home·Selected·WhatHappened`,
-`SeeTimeline`, `Home·Opened·Group`) are retired (November 2026): nothing sends them, and every app's dashboard
-drops them as a retired feature. An app that draws the shared Explorer itself (its panel, its Explorer page, the
+`SeeTimeline`, `Home·Opened·Group`) are retired (November 2026), and so are Home's old arrivals
+(`Home·Opened·Landing` / `Nav`, which stopped when the Explorer moved here): nothing sends them, and every app's
+dashboard drops them as a retired feature (`apps/site/app/telemetry/_shared/retired-explorer.ts`). An app that draws the shared Explorer itself (its panel, its Explorer page, the
 Workbench) reports the same events through its own hosts, so each is counted once, where it happened.
 
 **Returning visitors.** Shown on an app's own address (`liveplanner.app/explorer/…`), the Explorer also

@@ -11,6 +11,7 @@
 // re-exports them so callers keep importing from '@/components/FeatureArt'.
 export * from './feature-art/canvas';
 export * from './feature-art/together';
+export * from './feature-art/together-more';
 export * from './feature-art/sharing';
 export * from './feature-art/foundations';
 // Plan's boards, cards, views and dashboards (docs/specs/026-plan/plan-mode.md).

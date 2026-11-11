@@ -310,7 +310,7 @@ export * from './telemetry-schema';
 export * from './timing-telemetry';
 export * from './server-emitted-events';
 export * from './error-telemetry';
-export * from './timeline';
+export * from './document-conversion';
 export * from './activity';
 export * from './responses';
 export * from './trash';

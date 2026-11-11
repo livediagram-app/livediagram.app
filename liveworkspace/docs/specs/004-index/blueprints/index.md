@@ -42,7 +42,7 @@ the tables, configuration, logs and tests. Each feature has its own file:
 1. Outside `/api/index` is a bare `404 Not found`; `INDEX_ENABLED` `false`/`0`/`off` answers `404 not_found`;
    a path segment that won't percent-decode is `404`.
 2. `app/…` goes to `handleApp` (an app's key, or the Drive key for `/app/people/:id/drive`).
-3. `internal/merge`, `internal/events` (and `internal/timeline`, its old path, one release), `internal/purge-person`, `internal/workbench-close`: accounts' `MERGE_KEY`.
+3. `internal/merge`, `internal/events`, `internal/purge-person`, `internal/workbench-close`: accounts' `MERGE_KEY`.
 4. `callerOf`: a delegate header refused is `401`; the Drive mirror naming a guest is `403 forbidden`; no caller is
    `401 unauthorized`.
 5. An app acting for a person: on `items`, `trash`, `shared`, `inbox` (one segment) the query's `app` is
@@ -136,14 +136,13 @@ is `{}`).
 | `/webhooks`, `/webhooks/:id`, `/webhooks/:id/{test,deliveries}`                                                                        | GET, POST, PATCH, DELETE      | [webhooks.md](webhooks.md)                   |
 | `/app/items/:id/card-moves`                                                                                                            | PUT                           | [webhooks.md](webhooks.md)                   |
 | `/app/items/:id/{summary,events,collab/:tab,forms/:tab,forms/:tab/seen}`, `/app/forms/:code`, `/app/items/:id/forms/:tab/seen/:person` | PUT, GET                      | [inbox.md](inbox.md), [events.md](events.md) |
-| `/app/people/events` (a `204` no-op, one release)                                                                                      | PUT                           | [events.md](events.md)                       |
 | `/app/people/:id/count`                                                                                                                | GET                           | [sharing.md](sharing.md) (notices)           |
 | `/app/community/states`                                                                                                                | POST                          | [sharing.md](sharing.md)                     |
 | `/app/people/:id/drive`                                                                                                                | GET, PUT, DELETE              | this file                                    |
 | `/app/migration/handoff`                                                                                                               | POST                          | [guest-merge.md](guest-merge.md)             |
 | `/internal/merge`                                                                                                                      | POST                          | [guest-merge.md](guest-merge.md)             |
 | `/internal/purge-person`                                                                                                               | POST                          | [trash.md](trash.md)                         |
-| `/internal/events` (`/internal/timeline`, one release)                                                                                 | POST                          | [events.md](events.md)                       |
+| `/internal/events`                                                                                                                     | POST                          | [events.md](events.md)                       |
 | `/internal/workbench-close`                                                                                                            | POST                          | this file                                    |
 
 `POST /internal/workbench-close { app, pairingId (^[A-Za-z0-9_-]{1,64}$), itemIds (≤ 500 ids) }` with `MERGE_KEY`:

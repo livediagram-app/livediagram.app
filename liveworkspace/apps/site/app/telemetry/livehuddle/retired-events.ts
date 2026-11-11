@@ -5,7 +5,7 @@
 // Their explanation sentences stay in event-explanations.ts, except for the features livehuddle inherited from
 // livediagram and never had as its own (Work Tracker #586): nothing renders a retired event, so theirs went.
 
-import { isRetiredTimelineEvent } from '../_shared/retired-timeline';
+import { isRetiredExplorerEvent } from '../_shared/retired-explorer';
 
 // The editor's Activity panel (removed 2026-10-03, docs/specs/012-collaboration/README.md "Removed: the
 // Activity panel"): its per-entry revert, the panel opening, its Settings
@@ -342,7 +342,7 @@ export function isInheritedEvent(category: string, action: string, type: string 
 }
 
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
-  if (isRetiredTimelineEvent(category, action, type)) return true;
+  if (isRetiredExplorerEvent(category, action, type)) return true;
   if (AGENT_DOOR_CATEGORIES.has(category)) return true;
   if (isInheritedEvent(category, action, type)) return true;
   if (isEraserEvent(category, action, type)) return true;

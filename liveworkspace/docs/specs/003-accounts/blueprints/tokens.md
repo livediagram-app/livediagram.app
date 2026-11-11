@@ -57,17 +57,14 @@ A secret passes `isApiTokenFormat` when it has either prefix and more than 24 ch
    those that went stamped `expiryWarnedAt` in one update; each counted `Email·Sent·TokenExpiring` under the
    owner's sign-up app. Logged `[tokens] expiry warnings { sent, failed }`.
 
-The `expiryNotedAt` column and `api_token_expiry_note_idx` are left from the Timeline note, which is gone: nothing
-writes or reads them.
-
 ## Data and persistence
 
-| Table       | Key  | Indexes                                                                                                                                                                                                                            | Written by                         | Read by                    |
-| ----------- | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | -------------------------- |
-| `api_token` | `id` | `tokenHash` UNIQUE; `api_token_user_idx`; `api_token_expiry_warning_idx (expiresAt) WHERE revokedAt IS NULL AND expiryWarnedAt IS NULL`; `api_token_expiry_note_idx (expiresAt) WHERE revokedAt IS NULL AND expiryNotedAt IS NULL` | mint, revoke, verify stamp, sweeps | list, verify, live, sweeps |
+| Table       | Key  | Indexes                                                                                                                                 | Written by                         | Read by                    |
+| ----------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | -------------------------- |
+| `api_token` | `id` | `tokenHash` UNIQUE; `api_token_user_idx`; `api_token_expiry_warning_idx (expiresAt) WHERE revokedAt IS NULL AND expiryWarnedAt IS NULL` | mint, revoke, verify stamp, sweeps | list, verify, live, sweeps |
 
 Columns: `userId` (`ON DELETE CASCADE`), `name`, `readOnly` (default 0), `createdAt`, `lastUsedAt`, `expiresAt`,
-`revokedAt`, `expiryWarnedAt`, `expiryNotedAt`.
+`revokedAt`, `expiryWarnedAt`.
 
 ## Errors and edge cases
 

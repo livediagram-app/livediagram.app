@@ -303,7 +303,7 @@ describe('deleteAccount', () => {
     const tables = sql
       .prepare(
         `SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'
-           AND name NOT IN ('d1_migrations', 'index_timeline_outbox')`,
+           AND name NOT IN ('d1_migrations', 'index_events_outbox')`,
       )
       .all() as { name: string }[];
     const holding: string[] = [];

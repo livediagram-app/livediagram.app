@@ -403,24 +403,9 @@ export const ACTIVITY_RESOLVED = chart(
   "A thread resolved, or an action marked done in the editor's panel, from the Explorer's Inbox reading pane.",
 );
 
-// Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, designs opened
-// from each part of Home, summaries expanded, and failed reads retried.
-export const HOME_LANDINGS = chart(
-  'Home',
-  'Opened',
-  'Home Landings',
-  'The Explorer opened straight onto Home, its default page.',
-  { types: ['Landing'] },
-);
-
-export const HOME_VISITS = chart(
-  'Home',
-  'Opened',
-  'Home Visits',
-  'Home opened after starting elsewhere in the Explorer.',
-  { types: ['Nav'] },
-);
-
+// Explorer Home (docs/specs/013-workspace/explorer-home.md): first-run arrivals, designs opened from each part of
+// Home, summaries expanded, and failed reads retried. The Landing and Nav arrivals stopped when the Explorer moved
+// to liveworkspace.app, so their charts went (_shared/retired-explorer.ts).
 export const HOME_WELCOMES = chart(
   'Home',
   'Opened',
@@ -452,8 +437,6 @@ export const HOME_AND_ACTIVITY: MetricStack = {
   title: 'Home & Activity',
   blurb: "Keeping up with what changed: Explorer Home and the Explorer's Inbox.",
   members: [
-    HOME_LANDINGS,
-    HOME_VISITS,
     HOME_WELCOMES,
     HOME_DESIGNS_OPENED,
     HOME_LOADS,

@@ -124,7 +124,6 @@ const routeLabel = createApiRouteLabel(
     'app',
     'internal',
     'merge',
-    'timeline',
     'purge-person',
     'workbench-close',
     'jwks',
@@ -183,13 +182,8 @@ async function serve(request: Request, env: Env, ctx: ExecutionContext): Promise
   if (segments[0] === 'internal' && segments[1] === 'merge' && segments.length === 2) {
     return handleMerge(request, env, waitUntil);
   }
-  // Accounts' team events, for the event log and the team audit log (event-push.ts). `timeline` is the path an
-  // accounts Worker deployed before this one still posts to: kept one release, then it goes.
-  if (
-    segments[0] === 'internal' &&
-    (segments[1] === 'events' || segments[1] === 'timeline') &&
-    segments.length === 2
-  ) {
+  // Accounts' team events, for the event log and the team audit log (event-push.ts).
+  if (segments[0] === 'internal' && segments[1] === 'events' && segments.length === 2) {
     return handleAccountEvents(request, env);
   }
   if (segments[0] === 'internal' && segments[1] === 'purge-person' && segments.length === 2) {

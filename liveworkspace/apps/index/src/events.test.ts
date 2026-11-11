@@ -230,13 +230,10 @@ describe('what apps report', () => {
     expect((await asApp('/app/items/missing/events', { events: [ok] })).status).toBe(404);
   });
 
-  it('answers an old app’s images report with 204 and keeps nothing, for one release', async () => {
+  it('has no images report: the old path is not found and keeps nothing', async () => {
     tick();
     const report = { events: [{ type: 'image_uploaded', actorId: 'user_img', at: Date.now() }] };
-    expect((await asApp('/app/people/events', report)).status).toBe(204);
-    // Whatever the body: nothing is read.
-    expect((await asApp('/app/people/events', 'not json at all')).status).toBe(204);
-    expect((await asApp('/app/people/events', report, 'liveplanner', 'wrong')).status).toBe(401);
+    expect((await asApp('/app/people/events', report)).status).toBe(404);
     expect(logged()).toEqual([]);
   });
 });
@@ -394,7 +391,7 @@ describe("accounts' team events", () => {
     ]);
   });
 
-  it('takes the old path and an old body for one release, dropping the kinds no longer kept', async () => {
+  it('takes an old outbox’s body, dropping the kinds no longer kept, and not at the old path', async () => {
     tick();
     const old = {
       ...renamed(),
@@ -411,7 +408,9 @@ describe("accounts' team events", () => {
       scopes: ['p:user_acc'],
     };
     const deleted = { ...old, id: 'team_deleted:team_acc', type: 'team_deleted' };
-    expect((await send([old, token, deleted], '/internal/timeline')).status).toBe(204);
+    expect((await send([old, token, deleted], '/internal/timeline')).status).toBe(404);
+    expect(logged()).toEqual([]);
+    expect((await send([old, token, deleted])).status).toBe(204);
     // A batch of nothing but dropped kinds is taken too: an old outbox's backlog never retries forever.
     const dropped = [
       { ...token, type: 'token_expiring' },

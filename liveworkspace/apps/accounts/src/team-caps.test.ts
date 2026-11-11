@@ -175,9 +175,7 @@ describe('the member cap, racing', () => {
     // Only the invitation made is queued for the audit log.
     expect(
       sql
-        .prepare(
-          `SELECT COUNT(*) AS n FROM index_timeline_outbox WHERE id LIKE 'team_invite_sent:%'`,
-        )
+        .prepare(`SELECT COUNT(*) AS n FROM index_events_outbox WHERE id LIKE 'team_invite_sent:%'`)
         .get(),
     ).toEqual({ n: MAX_MEMBERS_PER_TEAM - 1 });
   });

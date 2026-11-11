@@ -95,7 +95,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(false);
   });
 
-  it('retires the Timeline and What Happened, not Home or the Inbox', () => {
+  it("retires the Timeline, What Happened and Home's old arrivals, not Home or the Inbox", () => {
     for (const type of ['Landing', 'Nav', 'Card', 'Stack', 'Menu'])
       expect(isRetiredEvent('Timeline', 'Opened', type)).toBe(true);
     expect(isRetiredEvent('Timeline', 'Removed', 'Entry')).toBe(true);
@@ -104,6 +104,8 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Home', 'Selected', 'WhatHappened')).toBe(true);
     expect(isRetiredEvent('Home', 'Selected', 'SeeTimeline')).toBe(true);
     expect(isRetiredEvent('Home', 'Opened', 'Group')).toBe(true);
+    expect(isRetiredEvent('Home', 'Opened', 'Landing')).toBe(true);
+    expect(isRetiredEvent('Home', 'Opened', 'Nav')).toBe(true);
     expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Timeline')).toBe(true);
     expect(isRetiredEvent('UI', 'Selected', 'ExplorerPanel.Timeline')).toBe(true);
     expect(isRetiredEvent('Home', 'Selected', 'Welcome.Blank')).toBe(false);

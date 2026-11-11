@@ -287,12 +287,13 @@ Under reduced motion nothing animates: no skeleton pulse, no smooth scrolling.
 
 One-liners on the closed vocabulary ([Telemetry](../017-telemetry/telemetry.md)), never a name or an id:
 
-- `Home·Opened·Landing` / `Nav`: Home shown, as the page the Explorer opened on or after starting elsewhere.
 - `Home·Selected·JumpBackIn.MostUsed` / `JumpBackIn.Recent`: a design opened from Jump Back In, by the group it
   belongs to (most used or recent), wherever it sits.
 - `Home·Selected·JumpBackIn.SeeMore`: See More followed to the Recent page (the link or the phone's tile).
 - `Home·Loaded·Retry`: a failed read retried.
 - Retired with What Happened: `Home·Selected·WhatHappened`, `Home·Selected·SeeTimeline` and `Home·Opened·Group`.
+- Retired when the Explorer moved to liveworkspace.app: `Home·Opened·Landing` / `Nav`, Home shown as the page the
+  Explorer opened on or after starting elsewhere. Nothing sends them, and the dashboard drops their stored rows.
 - `Home·Opened·Welcome`: the first-run Home shown.
 - `Home·Selected·Welcome.Blank` / `Welcome.Template` / `Welcome.AllTemplates` / `Welcome.Search` /
   `Welcome.StartBlank` / `Welcome.SignIn`: a start taken from it (a blank card, a template card, Browse All

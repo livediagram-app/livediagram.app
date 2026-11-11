@@ -114,7 +114,7 @@ same guard (the row exists).
 
 ### Team events for the audit log
 
-Each event is queued into `index_timeline_outbox` in the batch of its change (`INSERT OR IGNORE`, guarded by
+Each event is queued into `index_events_outbox` in the batch of its change (`INSERT OR IGNORE`, guarded by
 `memberGuard` where the change might not land), then sent after the response and by the frequent cron to
 `POST /internal/events`. Ids: `team_invite_sent:<member>`, `team_joined:<member>`, `team_declined:<member>`,
 `team_role_changed:<member>:<now>`, `team_member_removed:<member>`, `team_renamed:<team>:<now>`. Detail always

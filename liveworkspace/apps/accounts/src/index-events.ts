@@ -3,10 +3,10 @@
 // what happened to them: an invitation sent, joined or declined, a role changed, a member removed or leaving, a team
 // renamed.
 //
-// Each event is written to the outbox (`index_timeline_outbox`, its name from when it fed the Timeline) in the batch
-// that makes its change (`eventStatement`), so no change is ever recorded without its event. After the response, the
-// request's events go to the index in one call (`POST ${INDEX_URL}/internal/events`, the merge key, at most
-// EVENTS_BATCH a call); the frequent cron resends whatever is still waiting. An event's id is its own and stable, so
+// Each event is written to the outbox (`index_events_outbox`) in the batch that makes its change (`eventStatement`),
+// so no change is ever recorded without its event. After the response, the request's events go to the index in one
+// call (`POST ${INDEX_URL}/internal/events`, the merge key, at most EVENTS_BATCH a call); the frequent cron resends
+// whatever is still waiting. An event's id is its own and stable, so
 // sending one twice changes nothing at the index. An event carries its actor's name and, for a member, their name or
 // address, so the audit log can say who without asking here.
 import type { Env } from './env.ts';
@@ -59,7 +59,7 @@ export function eventStatement(
   const body = JSON.stringify(event);
   return db
     .prepare(
-      `INSERT OR IGNORE INTO index_timeline_outbox (id, body, createdAt) SELECT ?, ?, ?${
+      `INSERT OR IGNORE INTO index_events_outbox (id, body, createdAt) SELECT ?, ?, ?${
         guard ? ` WHERE ${guard.sql}` : ''
       }`,
     )
@@ -99,7 +99,7 @@ export async function flushEvents(
     for (let i = 0; i < calls; i++) {
       const { results } = await db
         .prepare(
-          'SELECT id, body, attempts FROM index_timeline_outbox ORDER BY createdAt, id LIMIT ?',
+          'SELECT id, body, attempts FROM index_events_outbox ORDER BY createdAt, id LIMIT ?',
         )
         .bind(EVENTS_BATCH)
         .all<OutboxRow>();
@@ -111,7 +111,7 @@ export async function flushEvents(
       );
       if (status >= 200 && status < 300) {
         await db
-          .prepare('DELETE FROM index_timeline_outbox WHERE id IN (SELECT value FROM json_each(?))')
+          .prepare('DELETE FROM index_events_outbox WHERE id IN (SELECT value FROM json_each(?))')
           .bind(ids)
           .run();
         sent += results.length;
@@ -121,13 +121,11 @@ export async function flushEvents(
       await db.batch([
         db
           .prepare(
-            `UPDATE index_timeline_outbox SET attempts = attempts + 1
+            `UPDATE index_events_outbox SET attempts = attempts + 1
              WHERE id IN (SELECT value FROM json_each(?))`,
           )
           .bind(ids),
-        db
-          .prepare('DELETE FROM index_timeline_outbox WHERE attempts >= ?')
-          .bind(EVENTS_MAX_ATTEMPTS),
+        db.prepare('DELETE FROM index_events_outbox WHERE attempts >= ?').bind(EVENTS_MAX_ATTEMPTS),
       ]);
       console.warn('[events] events not taken; the cron sends them again', { status });
       return { sent, waiting: true };
@@ -147,8 +145,8 @@ export async function trimEventOutbox(db: D1Database, max = EVENTS_OUTBOX_MAX): 
   try {
     const result = await db
       .prepare(
-        `DELETE FROM index_timeline_outbox WHERE id IN (
-           SELECT id FROM index_timeline_outbox ORDER BY createdAt DESC, id DESC LIMIT -1 OFFSET ?
+        `DELETE FROM index_events_outbox WHERE id IN (
+           SELECT id FROM index_events_outbox ORDER BY createdAt DESC, id DESC LIMIT -1 OFFSET ?
          )`,
       )
       .bind(max)

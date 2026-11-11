@@ -229,11 +229,10 @@ tells the index what happened to a team, marked as liveworkspace's:
 A team deleted, a withdrawn invitation, a cleared refusal, an account closing and anything about an API token
 send nothing: none of them is in a team's audit log.
 
-Each event names its team (`detail.teamId`) and is written to the outbox (`index_timeline_outbox`, its old name
-kept) in the same batch as its change, so a change is never recorded without its event, and an event is never
-recorded for a change that didn't happen (a second answer to one invitation). After the response, a request's
-events go to the index in one call (`POST /internal/events`, with the merge key, at most 100 a call). The
-15-minute cron sends again whatever is still waiting, up to 10 calls a run. An event's id is stable, so
+Each event names its team (`detail.teamId`) and is written to the outbox (`index_events_outbox`) in the same
+batch as its change, so a change is never recorded without its event, and an event is never recorded for a change
+that didn't happen (a second answer to one invitation). After the response, a request's events go to the index in
+one call (`POST /internal/events`, with the merge key, at most 100 a call). The 15-minute cron sends again whatever is still waiting, up to 10 calls a run. An event's id is stable, so
 sending it twice changes nothing; one the index keeps refusing is dropped after 96 tries. At most 5,000
 events wait: each cron run first drops the oldest beyond that, so with no index configured, or one down for
 days, the outbox stays bounded (`trimEventOutbox`). An event carries the name of the person who acted, and for a
@@ -1295,7 +1294,7 @@ nothing happens: the code is sent and checked first, by the same app's server
    [data-export.md](data-export.md#the-service)), best effort as Drive's is.
 
 After step 4 no accounts row holds the account's id but three that are there to finish the close or are about to
-go: its `pending_purges` row (cleared once the index takes it, step 5), team events in `index_timeline_outbox`
+go: its `pending_purges` row (cleared once the index takes it, step 5), team events in `index_events_outbox`
 (cleared once the index takes them), and its deletion code in `verification` (spent by the close itself). Every
 other row naming it either has a foreign key that cascades or sets null with the user (sessions and, through them,
 `sign_in_handoff`; linked sign-ins; OAuth tokens, consents and clients; API tokens; push devices; `account_app`;

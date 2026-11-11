@@ -546,8 +546,6 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null, column?: {na
   item and UTC day (a later report moves its time on), and counts that day as one of their use days (one open
   when the day has none yet, so an item only edited still reaches Most Used; it never adds to a day's opens). liveplanner sends one per person who wrote since its last push, with the time of their latest
   write.
-- `PUT /app/people/events`: kept one release for apps deployed before the index stopped keeping `image_uploaded`:
-  204 whatever the body, nothing recorded. No app calls it now.
 - `PUT /app/items/:id/card-moves`: `{moves: [{cardId, cardKey, card, from, to, actorId?, actorName?, at}]}`, up to
   100: a plan's cards that changed status (liveplanner), for the plan's own webhooks only (`card_moved`,
   [webhooks.md](webhooks.md)); nothing goes in the event log. Each is one delivery per webhook however often it is
@@ -690,10 +688,9 @@ copy for a year, so the sweep never cuts it short.
   `team_role_changed`, `team_member_removed` (`left` when they left) and `team_renamed` (`from`), each naming its team
   in `detail.teamId`. Their app is `liveworkspace` (`PLATFORM_APP`). Accounts writes each to an outbox in the batch
   that makes the change and sends them after the response, resending until the index takes them; the ids make a
-  resend change nothing. For one release the index also takes the same body at the old `POST /internal/timeline`,
-  and from either path quietly drops the kinds it no longer keeps (`team_deleted`, `token_created`, `token_revoked`,
-  `token_expiring`) and ignores `scopes`, so an accounts Worker deployed before this one (or its outbox's backlog)
-  is never refused.
+  resend change nothing. The index quietly drops the kinds it no longer keeps (`team_deleted`, `token_created`,
+  `token_revoked`, `token_expiring`) and ignores `scopes`, so events an older accounts Worker left waiting in its
+  outbox are taken, never refused.
 - The team-level events among these (a team's own; and on a team's items `shared`, `unshared`, `moved` into, out of
   or between teams with `fromTeamId`, `trashed` and `restored`) are also copied, in the same batch, into the team
   audit log its admins read, kept a year ([team-audit-log.md](team-audit-log.md)). A share link's `shared` carries
