@@ -184,12 +184,18 @@ describe('the address and secret', () => {
 describe('Webhook Field…', () => {
   function Field({ rule }: { rule?: IncomingRule }) {
     const [text, setText] = useState('Build ');
-    latestText = text;
-    const field = <ValueTextField label="Comment" value={text} onChange={setText} fields={[]} />;
+    const change = (next: string) => {
+      latestText = next;
+      setText(next);
+    };
+    const field = <ValueTextField label="Comment" value={text} onChange={change} fields={[]} />;
     return rule ? <IncomingRuleProvider value={rule}>{field}</IncomingRuleProvider> : field;
   }
   let latestText = '';
-  const wrap = (node: ReactNode) => render(<>{node}</>);
+  const wrap = (node: ReactNode) => {
+    latestText = 'Build ';
+    return render(<>{node}</>);
+  };
 
   it('is offered only in an incoming rule', () => {
     wrap(<Field />);

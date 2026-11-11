@@ -23,6 +23,7 @@ import { track } from '@/lib/telemetry';
 import { useAutomationsAccess } from '../AutomationsContext';
 import { makeHookSecret } from '../automations-client';
 import { useIncomingRule } from '../incoming-rule';
+import { foldHook } from '../use-automations';
 import { PanelNote } from './panel-parts';
 
 const CopyIcon = lucideGlyph(lucideCopy, 14);
@@ -242,6 +243,7 @@ export function IncomingWebhookPanel() {
       if (again) track('Plan', 'Changed', 'AutomationSecret');
       else track('Plan', 'Created', 'AutomationSecret');
       setMade(answer.hook);
+      foldHook(access.scope, rule.ruleId!, answer.hook);
       setSecret(answer.secret);
     } catch {
       setFailed(true);

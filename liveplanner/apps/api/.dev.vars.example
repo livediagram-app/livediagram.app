@@ -12,6 +12,8 @@ ACCOUNTS_CLIENT_ID=local-liveplanner
 ACCOUNTS_CLIENT_SECRET=local-liveplanner-client-secret
 # The router, where the browser comes back to after signing in.
 AUTH_ORIGIN=http://localhost:3200
+# The public origin for links the api writes (emails, an Incoming Webhook rule's address): the router.
+APP_BASE_URL=http://localhost:3200
 # The local index (liveworkspace/apps/index, its dev key for liveplanner).
 INDEX_ORIGIN=http://127.0.0.1:8793
 INDEX_KEY=dev-liveplanner-index-key

@@ -9,6 +9,7 @@
 
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import type {
+  AutomationHookInfo,
   AutomationListedRule,
   AutomationRuleBody,
   AutomationRunResponse,
@@ -90,6 +91,12 @@ const put = (rule: AutomationListedRule) => (rules: readonly AutomationListedRul
   rules.some((r) => r.id === rule.id)
     ? rules.map((r) => (r.id === rule.id ? rule : r))
     : [...rules, rule];
+
+/** Make Secret's or Regenerate's answer folded into its rule, so the builder opened again shows the new secret's
+ * last four, not Make Secret (the secret itself is never kept). */
+export function foldHook(scope: AutomationsScope, ruleId: string, hook: AutomationHookInfo): void {
+  change(scope, (rules) => rules.map((r) => (r.id === ruleId ? { ...r, hook } : r)));
+}
 
 /** Forgets every plan's list (tests, and signing out). */
 export function forgetAutomations(): void {

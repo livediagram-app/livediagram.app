@@ -72,7 +72,11 @@ describe('Add Action', () => {
 
   it('starts each AI action in its first form, at the top level only', () => {
     expect(defaultStep('ai_summarise', outline())).toEqual(summarise);
-    expect(defaultStep('ai_card_type', outline())).toEqual({ kind: 'ai', task: 'card_type', set: true });
+    expect(defaultStep('ai_card_type', outline())).toEqual({
+      kind: 'ai',
+      task: 'card_type',
+      set: true,
+    });
     expect(defaultStep('ai_triage', outline())).toEqual({
       kind: 'ai',
       task: 'triage',
@@ -107,7 +111,13 @@ describe('Add Action', () => {
 });
 
 let latest: AutomationRuleBody;
-function Panel({ start, o = withNotes() }: { start: AutomationAi; o?: ReturnType<typeof outline> }) {
+function Panel({
+  start,
+  o = withNotes(),
+}: {
+  start: AutomationAi;
+  o?: ReturnType<typeof outline>;
+}) {
   const [b, setB] = useState(body({ steps: [start] }));
   return (
     <StepPanel

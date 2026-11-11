@@ -176,13 +176,17 @@ export async function runAiSteps(
   const out: AiStepsOutcome = {};
   const { plan } = input;
   const { env } = deps;
-  const settle = (p: PlannedAi, ok: boolean, text: string, mark: { ai?: true; already?: true } = {}) => {
+  const settle = (
+    p: PlannedAi,
+    ok: boolean,
+    text: string,
+    mark: { ai?: true; already?: true } = {},
+  ) => {
     lines[offset + p.line] = { kind: 'action', ok, text, ...mark };
     if (!ok) out.failed ??= text;
   };
   let labels: string[] | null = null;
-  const planLabelsNow = async () =>
-    (labels ??= planLabels(await listItems(deps.env, deps.planId)));
+  const planLabelsNow = async () => (labels ??= planLabels(await listItems(deps.env, deps.planId)));
   for (const p of planned) {
     const task = p.ai.task;
     if (input.dry) {
