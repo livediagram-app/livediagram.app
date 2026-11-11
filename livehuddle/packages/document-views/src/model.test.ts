@@ -8,8 +8,8 @@ describe('buildViewModel', () => {
     id: '0b3481f3-59fb-4bd0-a21a-152f1ba9bba5',
     name: 'Checkout',
     elements: [
-      shapeAt('square', 'a', 0, 0),
-      shapeAt('square', 'h', 0, 0),
+      shapeAt('signpost', 'a', 0, 0),
+      shapeAt('signpost', 'h', 0, 0),
       { id: 'u', type: 'hologram' } as unknown as Element,
       arrowBetween('ah', 'a', 'h'),
       { ...arrowBetween('loose', 'a', 'a'), to: { kind: 'free', x: 0, y: 0 } },

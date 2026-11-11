@@ -5,7 +5,12 @@
 // Images stay references to liveplanner's image store; no bytes are embedded.
 
 import type { Tab } from './index';
-import { readItemTypeCatalogue, type Item, type ItemTypeCatalogue } from '@liveplanner/items';
+import {
+  readItemTypeCatalogue,
+  type AutomationRule,
+  type Item,
+  type ItemTypeCatalogue,
+} from '@liveplanner/items';
 import { isCardThread, type CardThread } from './card-threads';
 
 export const PROJECT_ENVELOPE_KIND = 'liveplanner.project';
@@ -32,6 +37,9 @@ export type ProjectEnvelope = {
     // The cards' comment threads the plan stores (docs/specs/026-plan/items.md "Comments"), the same way, without
     // author ids. Each names its cards by id; a file read into a new plan puts them on that plan's cards.
     threads?: CardThread[];
+    // The plan's Automations rules (docs/specs/026-plan/automations.md "Copies, exports and deletes"), the same way:
+    // a file read into a new plan brings them back off. The api checks each as a rule write is checked.
+    automations?: AutomationRule[];
   };
 };
 
@@ -47,6 +55,7 @@ export function projectToEnvelopeText(
   itemTypes: ItemTypeCatalogue | null = null,
   sheets: readonly EnvelopeSheet[] = [],
   threads: readonly CardThread[] = [],
+  automations: readonly AutomationRule[] = [],
 ): string {
   const envelope: ProjectEnvelope = {
     kind: PROJECT_ENVELOPE_KIND,
@@ -60,6 +69,7 @@ export function projectToEnvelopeText(
       ...(itemTypes ? { itemTypes } : {}),
       ...(sheets.length ? { sheets: [...sheets] } : {}),
       ...(threads.length ? { threads: [...threads] } : {}),
+      ...(automations.length ? { automations: [...automations] } : {}),
     },
   };
   return JSON.stringify(envelope, null, 2);
@@ -69,6 +79,12 @@ function isTab(value: unknown): value is EnvelopeTab {
   if (!value || typeof value !== 'object') return false;
   const t = value as Record<string, unknown>;
   return typeof t.id === 'string' && typeof t.name === 'string' && Array.isArray(t.elements);
+}
+
+function isRuleLike(value: unknown): value is AutomationRule {
+  if (!value || typeof value !== 'object') return false;
+  const r = value as Record<string, unknown>;
+  return typeof r.id === 'string' && typeof r.name === 'string';
 }
 
 function isSheetLike(value: unknown): value is EnvelopeSheet {
@@ -136,6 +152,8 @@ export function parseProjectEnvelope(
         ...(Array.isArray(d.sheets) ? { sheets: d.sheets.filter(isSheetLike) } : {}),
         // A thread that is not one is left behind, as an item is.
         ...(Array.isArray(d.threads) ? { threads: d.threads.filter(isCardThread) } : {}),
+        // A rule that is not one is left behind; the api checks the rest.
+        ...(Array.isArray(d.automations) ? { automations: d.automations.filter(isRuleLike) } : {}),
         // A catalogue that does not read back is left behind: the built-in types stand.
         ...(itemTypes ? { itemTypes } : {}),
       },

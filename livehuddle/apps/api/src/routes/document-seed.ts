@@ -4,8 +4,8 @@
 // engine refuses refuses the whole create, by its id, before anything is written.
 
 import { creationIntentOf, type CreationIntent } from '@livehuddle/api-schema';
-import type { Tab } from '@livehuddle/document';
-import { applyReplace, type ReplaceBody } from '@livehuddle/edit-operations';
+import { SHAPE_KINDS, type Tab } from '@livehuddle/document';
+import { applyReplace, SHAPES_RETIRED, type ReplaceBody } from '@livehuddle/edit-operations';
 import { isTemplateKind, templateKindOf, templateFamilyOf } from '@livehuddle/templates';
 import { engineLog } from '../changesets/log';
 import { engineRefusal } from '../changesets/request';
@@ -28,7 +28,23 @@ function sourceOf(tab: Record<string, unknown>): ReplaceBody | null {
   return { [key]: tab[key] } as ReplaceBody;
 }
 
-export function compileSeededTabs(tabs: readonly unknown[], documentId: string): CompiledSeed {
+// The first shape in a seeded tab's elements of a kind livehuddle does not have, if any.
+function retiredShapeIn(tab: Record<string, unknown>): string | null {
+  if (!Array.isArray(tab.elements)) return null;
+  for (const el of tab.elements)
+    if (isRecord(el) && el.type === 'shape' && !SHAPE_KINDS.has(String(el.shape)))
+      return String(el.shape);
+  return null;
+}
+
+// `agent`: the create came from an API token. Its seeded elements are new, so a shape of a kind livehuddle does not
+// have is refused (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5, D31). The editor's
+// own creates (a copy, an Offline Mode re-commit) carry stored tabs, which keep any retired element as stored.
+export function compileSeededTabs(
+  tabs: readonly unknown[],
+  documentId: string,
+  { agent = false }: { agent?: boolean } = {},
+): CompiledSeed {
   const out: unknown[] = [];
   let first: { tab: Tab; template: string | null } | null = null;
   for (const [index, raw] of tabs.entries()) {
@@ -42,6 +58,21 @@ export function compileSeededTabs(tabs: readonly unknown[], documentId: string):
             message:
               'a seeded tab\'s "graph" is no longer supported in livehuddle: give elements or a template',
             ...(typeof raw.id === 'string' ? { tabId: raw.id } : {}),
+          },
+        },
+      };
+    }
+    const retired = agent && isRecord(raw) ? retiredShapeIn(raw) : null;
+    if (retired !== null) {
+      const tabId = (raw as Record<string, unknown>).id;
+      console.info('[documents] seeded tab refused', { documentId, tabId, code: 'shape' });
+      return {
+        refusal: {
+          status: 400,
+          body: {
+            error: 'invalid_body',
+            message: `shape=${JSON.stringify(retired)}: ${SHAPES_RETIRED}`,
+            ...(typeof tabId === 'string' ? { tabId } : {}),
           },
         },
       };

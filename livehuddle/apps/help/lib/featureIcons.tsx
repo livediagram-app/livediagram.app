@@ -778,18 +778,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="12.5" y="13" width="8.5" height="6" rx="1.5" />
     </Glyph>
   ),
-  // A day-by-day feed: the spine, and what landed against it.
-  timeline: (
+  // Home, the Explorer's landing page: a house.
+  home: (
     <Glyph>
-      <path d="M6 3.5v17" />
-      <circle cx="6" cy="7.5" r="1.6" />
-      <circle cx="6" cy="16.5" r="1.6" />
-      <path d="M9.5 7.5h9M9.5 16.5h6" />
-      <path d="M9.5 12h4" />
+      <path d="M4 11.5 12 4.5l8 7" />
+      <path d="M6 10v9.5h4.5v-5h3v5H18V10" />
     </Glyph>
   ),
-  // An inbox tray with a tick above it: what is waiting on you, as opposed
-  // to the Timeline's spine of what happened.
+  // An inbox tray with a tick above it: what is waiting on you.
   activity: (
     <Glyph>
       <path d="M3 13.5V18a2 2 0 002 2h14a2 2 0 002-2v-4.5" />

@@ -1,5 +1,7 @@
 // The research's 30-element "Checkout platform" tab (docs/research/agent-cli/compact-representations.md
-// §3.1, appendix), built from the document factories with every id, time and position pinned.
+// §3.1, appendix), built from the document factories with every id, time and position pinned. Its boxes were
+// diagram shapes, retired in part 5 of the element engine: they are signposts (a kept Space piece) here, so the views
+// still print boxes, and the Stripe cloud stays a stored cloud, a retired element.
 import {
   createComment,
   createShape,
@@ -58,8 +60,12 @@ function shape(
   extra: Partial<ShapeElement> = {},
 ): ShapeElement {
   const [x, y, width, height] = box;
-  // A stored boundary has no factory any more: a square's box carrying the old kind word.
-  const made = createShape(kind === STORED_BOUNDARY ? 'square' : kind, x, y);
+  // A stored boundary or cloud has no factory any more: a signpost's box carrying the old kind word.
+  const made = createShape(
+    kind === STORED_BOUNDARY || kind === STORED_CLOUD ? 'signpost' : kind,
+    x,
+    y,
+  );
   return { ...made, shape: kind, id, label, x, y, width, height, ...extra };
 }
 
@@ -89,6 +95,8 @@ function arrow(
 // The three groups are stored boundaries (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
 // part 3): a retired kind that holds nothing and prints as `? boundary`, beside what sits on it.
 const STORED_BOUNDARY = 'boundary' as ShapeKind;
+// A stored cloud: a diagram shape retired in part 5 of the element engine, printed as an unknown kind.
+const STORED_CLOUD = 'cloud' as ShapeKind;
 
 export function checkoutElements(): Element[] {
   return [
@@ -102,36 +110,38 @@ export function checkoutElements(): Element[] {
     shape(STORED_BOUNDARY, ID.edge, 'Edge', [40, 100, 300, 440]),
     shape(STORED_BOUNDARY, ID.services, 'Services', [400, 100, 580, 440]),
     shape(STORED_BOUNDARY, ID.data, 'Data', [1040, 100, 280, 440]),
-    shape('actor', ID.customer, 'Customer', [150, 140, 80, 110]),
-    shape('square', ID.web, 'Web app', [90, 290, 200, 72], { iconId: 'nextjs' }),
-    shape('hexagon', ID.gateway, 'API gateway', [90, 420, 200, 72], {
+    shape('signpost', ID.customer, 'Customer', [150, 140, 80, 110]),
+    shape('signpost', ID.web, 'Web app', [90, 290, 200, 72], { iconId: 'nextjs' }),
+    shape('signpost', ID.gateway, 'API gateway', [90, 420, 200, 72], {
       note: 'Kong. Terminates TLS, rate-limits per API key, forwards to the services.',
     }),
-    shape('square', ID.auth, 'Auth service', [440, 150, 200, 72], { iconId: 'shield' }),
-    shape('square', ID.orders, 'Orders service', [720, 150, 200, 72], {
+    shape('signpost', ID.auth, 'Auth service', [440, 150, 200, 72], { iconId: 'shield' }),
+    shape('signpost', ID.orders, 'Orders service', [720, 150, 200, 72], {
       iconId: 'server',
       note: 'Owns the order lifecycle and is the source of truth for order state. Calls Payments synchronously; publishes OrderPlaced.',
     }),
-    shape('square', ID.payments, 'Payments service', [720, 280, 200, 72], {
+    shape('signpost', ID.payments, 'Payments service', [720, 280, 200, 72], {
       iconId: 'credit-card',
       commentThread: {
         comments: [comment(1, 'Stripe webhooks retried by the gateway now.', 'Priya')],
         resolved: true,
       },
     }),
-    shape('stadium', ID.bus, 'Event bus', [440, 280, 200, 72], {
+    shape('signpost', ID.bus, 'Event bus', [440, 280, 200, 72], {
       note: 'Kafka, 3 brokers, 7-day retention.',
     }),
-    shape('square', ID.inventory, 'Inventory service', [440, 410, 200, 72], { iconId: 'package' }),
-    shape('square', ID.notify, 'Notification worker', [720, 410, 200, 72], { iconId: 'mail' }),
-    shape('cylinder', ID.ordersDb, 'Orders DB', [1080, 150, 200, 90], {
+    shape('signpost', ID.inventory, 'Inventory service', [440, 410, 200, 72], {
+      iconId: 'package',
+    }),
+    shape('signpost', ID.notify, 'Notification worker', [720, 410, 200, 72], { iconId: 'mail' }),
+    shape('signpost', ID.ordersDb, 'Orders DB', [1080, 150, 200, 90], {
       note: 'Postgres 16, primary + 1 replica.',
     }),
-    shape('cylinder', ID.inventoryDb, 'Inventory DB', [1080, 300, 200, 90]),
-    shape('cloud', ID.stripe, 'Stripe', [1360, 150, 160, 90], {
+    shape('signpost', ID.inventoryDb, 'Inventory DB', [1080, 300, 200, 90]),
+    shape(STORED_CLOUD, ID.stripe, 'Stripe', [1360, 150, 160, 90], {
       link: { kind: 'url', url: 'https://stripe.com/docs/api' },
     }),
-    shape('square', ID.order, 'Order', [40, 580, 220, 140]),
+    shape('signpost', ID.order, 'Order', [40, 580, 220, 140]),
     storedTableAt(40, 760, {
       id: ID.slos,
       width: 420,

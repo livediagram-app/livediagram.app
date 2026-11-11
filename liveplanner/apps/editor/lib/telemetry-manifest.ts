@@ -104,10 +104,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Form·Shared',
   'Form·Toggled',
   'Home·Loaded',
-  // Explorer Home's What Happened (docs/specs/013-workspace/explorer-home.md): Selected (an entry opened its plan,
-  // WhatHappened; See Timeline followed, SeeTimeline), Opened (a summary dealt out, Group).
-  'Home·Opened',
-  'Home·Selected',
   'Layer·Added',
   'Layer·Changed',
   'Layer·Cleared',
@@ -135,6 +131,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Plan·Linked',
   'Plan·Moved',
   'Plan·Opened',
+  // Automations (docs/specs/026-plan/automations.md "Telemetry"): Run Rule on a card ('Ran', type AutomationManual).
+  'Plan·Ran',
   'Plan·Removed',
   // Saved filters renamed, cards selected, a saved filter applied (docs/specs/026-plan/board-widgets.md "Saved filters",
   // plan-board.md "Several cards at once").
@@ -143,6 +141,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Plan·Revealed',
   'Plan·Selected',
   'Plan·Started',
+  // Automations: Test on a Card ('Tested', type AutomationRule).
+  'Plan·Tested',
   'Plan·Toggled',
   'Plan·Unlinked',
   'Plan·Used',
@@ -194,14 +194,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Team·Removed',
   'Template·Used',
   'Theme·Changed',
-  // The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md): Changed (Cards or Calendar), Selected (a
-  // kind of event switched off, Everyone or Others), Loaded (More or Retry), Opened (a Card, a Stack or a card's
-  // Menu), Removed (an Entry or a whole Stack taken off the reader's own Timeline).
-  'Timeline·Changed',
-  'Timeline·Loaded',
-  'Timeline·Opened',
-  'Timeline·Removed',
-  'Timeline·Selected',
   'Token·Created',
   'Trash·Cleared',
   'Trash·Deleted',

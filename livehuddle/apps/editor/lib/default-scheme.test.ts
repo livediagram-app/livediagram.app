@@ -129,7 +129,7 @@ describe('Default never bakes a colour onto an element', () => {
     for (const appearance of ['light', 'dark'] as const) {
       setAppearance(appearance);
       const t = resolveTabBackdrop(tab({ theme: 'brand' }));
-      const colours = deriveNewBoxedColours(createShape('square', 0, 0), {
+      const colours = deriveNewBoxedColours(createShape('focus-button', 0, 0), {
         backgroundColor: t.backgroundColor,
         patternColor: t.patternColor,
         theme: 'brand',
@@ -144,7 +144,7 @@ describe('Default never bakes a colour onto an element', () => {
     // The opt-out is Default's, not dark's: a hand-picked backdrop still
     // drives new elements the way it always has.
     setAppearance('dark');
-    const colours = deriveNewBoxedColours(createShape('square', 0, 0), {
+    const colours = deriveNewBoxedColours(createShape('focus-button', 0, 0), {
       backgroundColor: '#fde68a',
       patternColor: '#f59e0b',
       theme: 'brand',

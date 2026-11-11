@@ -21,7 +21,7 @@ The Explorer, and everything it lists, is liveworkspace's index and its shared E
 - ./folder-content-previews.md - when working on a folder card's mosaic: the index's `GET /folders/previews` and livehuddle's canvas preview (index)
 - ./favourites.md - when working on favourites (index)
 - ./explorer-details-view.md - when working on the per-tab stats a canvas pushes to the index for the Details view (index)
-- ./timeline.md - when working on the Timeline: what the index records, the `edited` events livehuddle reports, the view (index)
+- ./history.md - when working on an item's History: what the index records, the `edited` events livehuddle reports, the History dialog, and the retired Timeline, What Happened and Team Activity
 - ./explorer-home.md - when working on Explorer Home: the words, first-run welcome manifest and Help livehuddle gives it, and recording a canvas's opens (index)
 - ./inbox.md - when working on what a canvas pushes for the Inbox (index)
 - ./explorer-filters.md - when working on the Explorer's filter lens: the shared lens, with livehuddle's template families for the Template chip (index)

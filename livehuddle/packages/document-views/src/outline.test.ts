@@ -119,7 +119,7 @@ describe('outline budgets (R20, R21)', () => {
 
   it('names a lone left-over element in the singular', () => {
     const { text, fullTokens } = outlineView(
-      buildViewModel(tabOf([shapeAt('square', 'only-one', 0, 0)])),
+      buildViewModel(tabOf([shapeAt('signpost', 'only-one', 0, 0)])),
       { budget: 1 },
     );
     expect(text.split('\n').at(-1)).toBe(
@@ -134,9 +134,9 @@ describe('outline budgets (R20, R21)', () => {
 describe('a stored layout container in the outline', () => {
   const elements: Element[] = [
     retiredShapeAt('lane', 'lane', 0, 0, 1200, 300, { label: 'Ops' }),
-    shapeAt('square', 'deploy', 100, 100, 100, 50, { label: 'Deploy' }),
+    shapeAt('signpost', 'deploy', 100, 100, 100, 50, { label: 'Deploy' }),
     retiredShapeAt('boundary', 'vpc', 0, 400, 900, 400, { label: 'VPC' }),
-    shapeAt('square', 'db', 100, 500, 100, 50, { label: 'DB' }),
+    shapeAt('signpost', 'db', 100, 500, 100, 50, { label: 'DB' }),
     retiredShapeAt('stack', 'row', 0, 900, 600, 200),
     strokeAt('s1', 10, 950),
     strokeAt('s2', 300, 950),
@@ -147,9 +147,9 @@ describe('a stored layout container in the outline', () => {
     expect(text.split('\n')).toEqual([
       'tab tab-1 "T" · 7 elements: 7 boxes · 5 unknown',
       '? lane lane "Ops"',
-      'square deploy "Deploy"',
+      'signpost deploy "Deploy"',
       '? boundary vpc "VPC"',
-      'square db "DB"',
+      'signpost db "DB"',
       '? stack row',
       'freehand ×2',
     ]);
@@ -180,7 +180,7 @@ describe('outline edge cases', () => {
       height: 10,
       label: 'Hi',
     };
-    const blob = { ...shapeAt('square', 'blob', 900, 0), shape: 'blob' };
+    const blob = { ...shapeAt('signpost', 'blob', 900, 0), shape: 'blob' };
     const model = buildViewModel(tabOf([frame, hologram, blob] as unknown as Element[]));
     const { text, json } = outlineView(model);
     expect(text).toBe(
@@ -195,7 +195,7 @@ describe('outline edge cases', () => {
   });
 
   it('prints a stored arrow as `? arrow` with its label, and folds strokes (E8, E27)', () => {
-    const a = shapeAt('square', 'a', 0, 0);
+    const a = shapeAt('signpost', 'a', 0, 0);
     const free = {
       ...arrowBetween('loose', 'a', 'a', { label: 'retry' }),
       from: { kind: 'free' as const, x: 1, y: 1 },
@@ -204,7 +204,7 @@ describe('outline edge cases', () => {
       tabOf([a, free, strokeAt('s1', 0, 300), strokeAt('s2', 50, 300, true)]),
     );
     expect(outlineView(model).text.split('\n').slice(1)).toEqual([
-      'square a',
+      'signpost a',
       'freehand ×2 (1 closed)',
       '? arrow loose "retry"',
     ]);
@@ -218,15 +218,15 @@ describe('outline edge cases', () => {
   // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4: a stored arrow is a retired
   // element, printed on its own line with its stored style like any retired kind, never on its source's line.
   it('prints a stored arrow on its own line, with its stored style', () => {
-    const a = shapeAt('square', 'a', 0, 0);
-    const b = shapeAt('square', 'b', 300, 0);
+    const a = shapeAt('signpost', 'a', 0, 0);
+    const b = shapeAt('signpost', 'b', 300, 0);
     const arrow = arrowBetween('ab', 'a', 'b', { arrowStyle: 'curved', strokeColor: '#dc2626' });
     const lines = outlineView(buildViewModel(tabOf([a, b, arrow])), { style: true }).text.split(
       '\n',
     );
     expect(lines.slice(1)).toEqual([
-      'square a',
-      'square b',
+      'signpost a',
+      'signpost b',
       '? arrow ab stroke=#dc2626 line=curved',
     ]);
   });

@@ -13,7 +13,7 @@ the tables, configuration, logs and tests. Each feature has its own file:
 | Items, folders, lists, opens | [items.md](items.md)                     |
 | Share links and passwords    | [sharing.md](sharing.md)                 |
 | What items push; the Inbox   | [inbox.md](inbox.md)                     |
-| The Timeline                 | [timeline.md](timeline.md)               |
+| The event log and History    | [events.md](events.md)                   |
 | The team audit log           | [team-audit-log.md](team-audit-log.md)   |
 | The Trash, purges, closing   | [trash.md](trash.md)                     |
 | Webhooks                     | [webhooks.md](webhooks.md)               |
@@ -42,14 +42,14 @@ the tables, configuration, logs and tests. Each feature has its own file:
 1. Outside `/api/index` is a bare `404 Not found`; `INDEX_ENABLED` `false`/`0`/`off` answers `404 not_found`;
    a path segment that won't percent-decode is `404`.
 2. `app/…` goes to `handleApp` (an app's key, or the Drive key for `/app/people/:id/drive`).
-3. `internal/merge`, `internal/timeline`, `internal/purge-person`, `internal/workbench-close`: accounts' `MERGE_KEY`.
+3. `internal/merge`, `internal/events`, `internal/purge-person`, `internal/workbench-close`: accounts' `MERGE_KEY`.
 4. `callerOf`: a delegate header refused is `401`; the Drive mirror naming a guest is `403 forbidden`; no caller is
    `401 unauthorized`.
-5. An app acting for a person: on `items`, `trash`, `shared`, `inbox`, `timeline` (one segment) the query's `app` is
+5. An app acting for a person: on `items`, `trash`, `shared`, `inbox` (one segment) the query's `app` is
    forced to that app.
 6. The Drive mirror reaches only `items`, `trash` and `folders`, never `items/:id/share*` (`404`).
 7. `jwks`, `share/:code…`, `items…`, then the person routes (`folders`, `favourites`, `recent-hidden`,
-   `placement-defaults`, `shared`, `inbox`, `trash`, `timeline`), each `401` without a person.
+   `placement-defaults`, `shared`, `inbox`, `trash`), each `401` without a person.
 8. After the answer, the people whose personal items or folders changed are signalled to Drive (`waitUntil`).
 
 ### Who may call (`auth.ts`)
@@ -110,9 +110,9 @@ Each step runs in `step()`: a throw is logged `[index] cron step failed: <name>`
 | Cron           | Steps, in order                                                                                                                                                                                                                                                               |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `*/15 * * * *` | 1. `purges` (`continuePurges`): up to 20 recorded person purges oldest first within 30 s / 300 D1 calls; then up to 300 tombstones never tried or not tried for an hour; then `drainPersonNotices`. 2. `person merges` (`drainPersonMerges`). 3. `webhooks` (`kickWebhooks`). |
-| `23 4 * * *`   | 1. `sweep`: the empty clean-up (≤ 1000), items 30 days in the Trash purged (≤ 500), Drive signals, up to 200 tombstones drained, loose events swept (≤ 1000), team audit rows past the year swept (≤ 5000). 2. `expiring links` (`sweepExpiringLinks`, ≤ 2000 items).         |
+| `23 4 * * *`   | 1. `sweep`: the empty clean-up (≤ 1000), items 30 days in the Trash purged (≤ 500), Drive signals, up to 200 tombstones drained, team audit rows past the year swept (≤ 5000). 2. `events`: events past 30 days swept (`sweepEvents`, ≤ 20,000).                              |
 
-Details are in [trash.md](trash.md), [guest-merge.md](guest-merge.md) and [timeline.md](timeline.md).
+Details are in [trash.md](trash.md), [guest-merge.md](guest-merge.md) and [events.md](events.md).
 
 ## Interfaces and contracts
 
@@ -120,31 +120,30 @@ Every answer is JSON with `Cache-Control: private, no-store` (but `GET /jwks`); 
 from `INDEX_ERRORS`. A body over 512 KiB, cut off mid-read, or not a JSON object is `400 invalid_body` (an empty body
 is `{}`).
 
-| Path (under `/api/index`)                                                                                                              | Methods                       | Blueprint                                        |
-| -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------ |
-| `/jwks`                                                                                                                                | GET                           | this file                                        |
-| `/items`, `/items/lookup`, `/items/:id`, `/items/:id/{restore,copy,open,grant}`                                                        | GET, POST, PATCH, DELETE      | [items.md](items.md)                             |
-| `/folders`, `/folders/:id`, `/folders/previews`                                                                                        | GET, POST, PATCH, DELETE      | [items.md](items.md)                             |
-| `/spaces/previews`                                                                                                                     | GET                           | [items.md](items.md)                             |
-| `/favourites`, `/favourites/:itemId`, `/recent-hidden/:itemId`                                                                         | GET, PUT, DELETE              | [items.md](items.md)                             |
-| `/items/:id/share`, `/items/:id/share-password`, `/share/:code`, `/share/:code/extend`, `/shared`, `/shared/:itemId`                   | GET, POST, PUT, PATCH, DELETE | [sharing.md](sharing.md)                         |
-| `/inbox`                                                                                                                               | GET                           | [inbox.md](inbox.md)                             |
-| `/timeline` (`?team=` for a team's Team Activity), `/timeline/seen`, `/timeline/dismiss`                                               | GET, POST                     | [timeline.md](timeline.md)                       |
-| `/trash`                                                                                                                               | GET, DELETE                   | [trash.md](trash.md)                             |
-| `/placement-defaults`, `/placement-defaults/:key`                                                                                      | GET, PUT, DELETE              | [default-folders.md](default-folders.md)         |
-| `/team-audit`                                                                                                                          | GET                           | [team-audit-log.md](team-audit-log.md)           |
-| `/webhooks`, `/webhooks/:id`, `/webhooks/:id/{test,deliveries}`                                                                        | GET, POST, PATCH, DELETE      | [webhooks.md](webhooks.md)                       |
-| `/app/items/:id/card-moves`                                                                                                            | PUT                           | [webhooks.md](webhooks.md)                       |
-| `/app/items/:id/{summary,events,collab/:tab,forms/:tab,forms/:tab/seen}`, `/app/forms/:code`, `/app/items/:id/forms/:tab/seen/:person` | PUT, GET                      | [inbox.md](inbox.md), [timeline.md](timeline.md) |
-| `/app/people/events`                                                                                                                   | PUT                           | [timeline.md](timeline.md)                       |
-| `/app/people/:id/count`                                                                                                                | GET                           | [sharing.md](sharing.md) (notices)               |
-| `/app/community/states`                                                                                                                | POST                          | [sharing.md](sharing.md)                         |
-| `/app/people/:id/drive`                                                                                                                | GET, PUT, DELETE              | this file                                        |
-| `/app/migration/handoff`                                                                                                               | POST                          | [guest-merge.md](guest-merge.md)                 |
-| `/internal/merge`                                                                                                                      | POST                          | [guest-merge.md](guest-merge.md)                 |
-| `/internal/purge-person`                                                                                                               | POST                          | [trash.md](trash.md)                             |
-| `/internal/timeline`                                                                                                                   | POST                          | [timeline.md](timeline.md)                       |
-| `/internal/workbench-close`                                                                                                            | POST                          | this file                                        |
+| Path (under `/api/index`)                                                                                                              | Methods                       | Blueprint                                    |
+| -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | -------------------------------------------- |
+| `/jwks`                                                                                                                                | GET                           | this file                                    |
+| `/items`, `/items/lookup`, `/items/:id`, `/items/:id/{restore,copy,open,grant}`                                                        | GET, POST, PATCH, DELETE      | [items.md](items.md)                         |
+| `/items/:id/history`                                                                                                                   | GET                           | [events.md](events.md)                       |
+| `/folders`, `/folders/:id`, `/folders/previews`                                                                                        | GET, POST, PATCH, DELETE      | [items.md](items.md)                         |
+| `/spaces/previews`                                                                                                                     | GET                           | [items.md](items.md)                         |
+| `/favourites`, `/favourites/:itemId`, `/recent-hidden/:itemId`                                                                         | GET, PUT, DELETE              | [items.md](items.md)                         |
+| `/items/:id/share`, `/items/:id/share-password`, `/share/:code`, `/share/:code/extend`, `/shared`, `/shared/:itemId`                   | GET, POST, PUT, PATCH, DELETE | [sharing.md](sharing.md)                     |
+| `/inbox`                                                                                                                               | GET                           | [inbox.md](inbox.md)                         |
+| `/trash`                                                                                                                               | GET, DELETE                   | [trash.md](trash.md)                         |
+| `/placement-defaults`, `/placement-defaults/:key`                                                                                      | GET, PUT, DELETE              | [default-folders.md](default-folders.md)     |
+| `/team-audit`                                                                                                                          | GET                           | [team-audit-log.md](team-audit-log.md)       |
+| `/webhooks`, `/webhooks/:id`, `/webhooks/:id/{test,deliveries}`                                                                        | GET, POST, PATCH, DELETE      | [webhooks.md](webhooks.md)                   |
+| `/app/items/:id/card-moves`                                                                                                            | PUT                           | [webhooks.md](webhooks.md)                   |
+| `/app/items/:id/{summary,events,collab/:tab,forms/:tab,forms/:tab/seen}`, `/app/forms/:code`, `/app/items/:id/forms/:tab/seen/:person` | PUT, GET                      | [inbox.md](inbox.md), [events.md](events.md) |
+| `/app/people/:id/count`                                                                                                                | GET                           | [sharing.md](sharing.md) (notices)           |
+| `/app/community/states`                                                                                                                | POST                          | [sharing.md](sharing.md)                     |
+| `/app/people/:id/drive`                                                                                                                | GET, PUT, DELETE              | this file                                    |
+| `/app/migration/handoff`                                                                                                               | POST                          | [guest-merge.md](guest-merge.md)             |
+| `/internal/merge`                                                                                                                      | POST                          | [guest-merge.md](guest-merge.md)             |
+| `/internal/purge-person`                                                                                                               | POST                          | [trash.md](trash.md)                         |
+| `/internal/events`                                                                                                                     | POST                          | [events.md](events.md)                       |
+| `/internal/workbench-close`                                                                                                            | POST                          | this file                                    |
 
 `POST /internal/workbench-close { app, pairingId (^[A-Za-z0-9_-]{1,64}$), itemIds (≤ 500 ids) }` with `MERGE_KEY`:
 each distinct item gets `POST <app>/api/internal/items/:id/workbench-close { pairingId }`, 10 at a time; `200 {
@@ -198,7 +197,6 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `warn`  | `[account-app] activity_failed`                     | `activity.ts`          |
 | `error` | `[grant] index unreachable`                         | `service.ts`           |
 | `warn`  | `[grant] refused`                                   | `service.ts`           |
-| `warn`  | `[index-app] images_report_failed`                  | `person-events.ts`     |
 | `log`   | `[index] GRANT_SIGNING_KEY is unset: signing grant` | `grants.ts`            |
 | `warn`  | `[index] copy failed`                               | `items/item-routes.ts` |
 | `error` | `[index] create failed`                             | `request.ts`           |
@@ -294,13 +292,14 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/index/src/personal.ts`          | A person's own things about items (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Folders, favourites, defaults"): favourites, what they hid from Recent, and the folder Ne…     |
 | `liveworkspace/apps/index/src/purge.ts`             | Purging (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Purging"): a permanent delete, emptying the Trash, or the daily sweep of items 30 days in it                             |
 | `liveworkspace/apps/index/src/rows.ts`              | Item rows and their wire shape                                                                                                                                                                  |
-| `liveworkspace/apps/index/src/share-expiry.ts`      | Share Link Expiring (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): a warning on an item owner's Timeline before its share links stop working                        |
 | `liveworkspace/apps/index/src/share-guesses.ts`     | Share-password guesses (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access"): each try at an item's password that this isolate hasn't already found right is…     |
 | `liveworkspace/apps/index/src/sharing.ts`           | Sharing (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access"): share links, the share password, what a link opens, and Shared with me                             |
 | `liveworkspace/apps/index/src/space-previews.ts`    | What Home's Spaces tiles show of each space the person is in (`GET /spaces/previews`): its newest few items and how many it holds                                                               |
-| `liveworkspace/apps/index/src/event-key.ts`         | The person part of a Timeline event id made per person: a one-way key, never their id                                                                                                           |
-| `liveworkspace/apps/index/src/timeline.ts`          | The Timeline (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): what happened to the items a person reaches as owner or team member, newest first, in every app or…     |
-| `liveworkspace/apps/index/src/visitors.ts`          | Opened by a Visitor and Copied by a Visitor (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): who came in to an item through one of its share links, on its owner…     |
+| `liveworkspace/apps/index/src/event-key.ts`         | The person part of an event id made per person: a one-way key, never their id                                                                                                                   |
+| `liveworkspace/apps/index/src/events.ts`            | The event log (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "The event log"): recording, kept 30 days, the daily sweep                                                          |
+| `liveworkspace/apps/index/src/event-push.ts`        | What apps (`edited`) and accounts (team events) report to the event log                                                                                                                         |
+| `liveworkspace/apps/index/src/history.ts`           | An item's History (`GET /items/:id/history`): its last 30 days of events, to whoever reaches it directly                                                                                        |
+| `liveworkspace/apps/index/src/visitors.ts`          | Opened by a Visitor and Copied by a Visitor (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "The event log"): who came in through a share link, in its owner's History            |
 | `liveworkspace/apps/index/src/workbench-close.ts`   | Accounts' workbench service ending a pairing's access (liveworkspace/docs/specs/011-workbench/workbench.md "Ending access"): it asks here, with its merge key, to tell an app to close the roo… |
 | `packages/index-client/src/browser/fake-window.ts`  | A window for node tests: the two storages, a location whose assign and replace are recorded, and globals to set.                                                                                |
 | `packages/index-client/src/browser/guest-token.ts`  | A guest's identity is liveworkspace's, the same guest in every app (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests")                                                      |
@@ -330,7 +329,6 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `packages/index-app/src/notifier.ts`                | The notification emails every app sends about its items, written once (docs/specs/014-identity/ profile-and-email-notifications.md in each app): the two milestones (the t…                     |
 | `packages/index-app/src/notify-claims.ts`           | The once-only rules of an item's notification emails (@liveworkspace/auth-client notify.ts holds the numbers), for every app: - Once per key: someone joined (one email p…                      |
 | `packages/index-app/src/outbox.ts`                  | What an item's Durable Object owes the index (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item pushes"): its summary (`PUT /app/items/:id/summary`), each change…     |
-| `packages/index-app/src/person-events.ts`           | Timeline events about a person rather than an item (docs/one-explorer-contracts.md "Timeline"): images uploaded, one entry per person, app and day whose count grows with …                     |
 | `packages/index-app/src/purge.ts`                   | Dropping items' content for good (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Purging"): the index has already removed the rows (a permanent delete, the Trash's sweep, …     |
 | `packages/index-app/src/request.ts`                 | The index's grant on the item a request is about (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"), as an app's worker settles it before the request goes to the ite…     |
 | `packages/index-app/src/room-ticket.ts`             | A socket's ticket into an item's room (`…/ws?t=`) and its renewals: the index's grant, encrypted for a workbench (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants")        |
@@ -395,7 +393,7 @@ Env fields (`env.ts`): `ACCOUNTS_URL`, `APP_ORIGIN_LIVEDESIGN`, `APP_ORIGIN_LIVE
 
 One D1 database (`INDEX_DB`). Each table's indexes, and what writes and reads it, are in the feature file that owns
 it: items, folders, favourites, opens and use days in [items.md](items.md); links, passwords and Shared with me in
-[sharing.md](sharing.md); the collab tables in [inbox.md](inbox.md); the Timeline's four in [timeline.md](timeline.md);
+[sharing.md](sharing.md); the collab tables in [inbox.md](inbox.md); the event log in [events.md](events.md);
 tombstones, purges and notices in [trash.md](trash.md); placement defaults in [default-folders.md](default-folders.md);
 person merges in [guest-merge.md](guest-merge.md); `drive_people` above. Foreign keys to `items` cascade, so a purged
 item takes every row about it.
@@ -409,31 +407,28 @@ Migrations, in order:
 - `0005_drive_people.sql`
 - `0006_person_app_merges_legacy.sql`
 
-| Table                   | Columns                                                                                                                                                                                                                             | Created in                    |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| `collab_actions`        | `app`, `item_id`, `tab_id`, `tab_name`, `element_id`, `action_id`, `element_label`, `name`, `description`, `status`, `assignee_id`, `assignee_name`, `assigner_id`, `assigner_name`, `team_id`, `card`, `created_at`, `updated_at`  | `0001_index.sql`              |
-| `collab_form_reads`     | `person_id`, `item_id`, `tab_id`, `seen`                                                                                                                                                                                            | `0001_index.sql`              |
-| `collab_forms`          | `app`, `item_id`, `tab_id`, `heading`, `board_tab_id`, `responses`, `latest_at`, `code (0004)`                                                                                                                                      | `0001_index.sql`              |
-| `collab_thread_people`  | `app`, `item_id`, `tab_id`, `element_id`, `person_id`                                                                                                                                                                               | `0001_index.sql`              |
-| `collab_threads`        | `app`, `item_id`, `tab_id`, `tab_name`, `element_id`, `element_label`, `resolved`, `comment_count`, `participant_ids`, `mentioned_ids`, `latest_text`, `latest_author_name`, `latest_author_color`, `card`, `first_at`, `latest_at` | `0001_index.sql`              |
-| `drive_people`          | `person_id`, `since`                                                                                                                                                                                                                | `0005_drive_people.sql`       |
-| `favourites`            | `person_id`, `item_id`, `created_at`                                                                                                                                                                                                | `0001_index.sql`              |
-| `folders`               | `id`, `name`, `parent_id`, `owner_id`, `team_id`, `scope`, `created_at`, `updated_at`                                                                                                                                               | `0001_index.sql`              |
-| `items`                 | `id`, `app`, `kind`, `owner_id`, `team_id`, `scope`, `folder_id`, `title`, `source`, `intent`, `summary`, `created_at`, `updated_at`, `trashed_at`, `trash_reason`, `empty_swept_for`                                               | `0001_index.sql`              |
-| `opens`                 | `person_id`, `item_id`, `last_opened_at`, `hidden`                                                                                                                                                                                  | `0001_index.sql`              |
-| `person_app_merges`     | `guest_id`, `user_id`, `app`, `created_at`, `attempts`, `last_attempt_at`, `legacy (0006)`                                                                                                                                          | `0003_person_app_merges.sql`  |
-| `person_app_notices`    | `person_id`, `app`, `item_id`, `created_at`, `attempts`, `last_attempt_at`                                                                                                                                                          | `0002_person_app_notices.sql` |
-| `person_purges`         | `person_id`, `team_ids`, `requested_at`, `finished_at`, `runs`                                                                                                                                                                      | `0001_index.sql`              |
-| `placement_defaults`    | `person_id`, `default_key`, `folder_id`, `updated_at`                                                                                                                                                                               | `0001_index.sql`              |
-| `purge_tombstones`      | `item_id`, `app`, `created_at`, `attempts`, `last_attempt_at`, `last_error`                                                                                                                                                         | `0001_index.sql`              |
-| `share_links`           | `code`, `item_id`, `level`, `tab_id`, `expiry`, `expires_at`, `created_at`, `public`                                                                                                                                                | `0001_index.sql`              |
-| `share_passwords`       | `item_id`, `hash`, `updated_at`                                                                                                                                                                                                     | `0001_index.sql`              |
-| `shared_with`           | `person_id`, `item_id`, `share_code`, `last_seen`                                                                                                                                                                                   | `0001_index.sql`              |
-| `timeline_dismissals`   | `person_id`, `event_id`, `created_at`                                                                                                                                                                                               | `0001_index.sql`              |
-| `timeline_event_scopes` | `scope`, `event_id`, `app`, `occurred_at`                                                                                                                                                                                           | `0001_index.sql`              |
-| `timeline_events`       | `id`, `app`, `item_id`, `actor_id`, `actor_name`, `type`, `title`, `detail`, `occurred_at`                                                                                                                                          | `0001_index.sql`              |
-| `timeline_scope_state`  | `person_id`, `last_seen_at`                                                                                                                                                                                                         | `0001_index.sql`              |
-| `use_days`              | `person_id`, `item_id`, `day`                                                                                                                                                                                                       | `0001_index.sql`              |
+| Table                  | Columns                                                                                                                                                                                                                             | Created in                    |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `collab_actions`       | `app`, `item_id`, `tab_id`, `tab_name`, `element_id`, `action_id`, `element_label`, `name`, `description`, `status`, `assignee_id`, `assignee_name`, `assigner_id`, `assigner_name`, `team_id`, `card`, `created_at`, `updated_at`  | `0001_index.sql`              |
+| `collab_form_reads`    | `person_id`, `item_id`, `tab_id`, `seen`                                                                                                                                                                                            | `0001_index.sql`              |
+| `collab_forms`         | `app`, `item_id`, `tab_id`, `heading`, `board_tab_id`, `responses`, `latest_at`, `code (0004)`                                                                                                                                      | `0001_index.sql`              |
+| `collab_thread_people` | `app`, `item_id`, `tab_id`, `element_id`, `person_id`                                                                                                                                                                               | `0001_index.sql`              |
+| `collab_threads`       | `app`, `item_id`, `tab_id`, `tab_name`, `element_id`, `element_label`, `resolved`, `comment_count`, `participant_ids`, `mentioned_ids`, `latest_text`, `latest_author_name`, `latest_author_color`, `card`, `first_at`, `latest_at` | `0001_index.sql`              |
+| `drive_people`         | `person_id`, `since`                                                                                                                                                                                                                | `0005_drive_people.sql`       |
+| `events`               | `id`, `app`, `item_id`, `actor_id`, `actor_name`, `type`, `title`, `detail`, `occurred_at`                                                                                                                                          | `0017_events.sql` (from 0001) |
+| `favourites`           | `person_id`, `item_id`, `created_at`                                                                                                                                                                                                | `0001_index.sql`              |
+| `folders`              | `id`, `name`, `parent_id`, `owner_id`, `team_id`, `scope`, `created_at`, `updated_at`                                                                                                                                               | `0001_index.sql`              |
+| `items`                | `id`, `app`, `kind`, `owner_id`, `team_id`, `scope`, `folder_id`, `title`, `source`, `intent`, `summary`, `created_at`, `updated_at`, `trashed_at`, `trash_reason`, `empty_swept_for`                                               | `0001_index.sql`              |
+| `opens`                | `person_id`, `item_id`, `last_opened_at`, `hidden`                                                                                                                                                                                  | `0001_index.sql`              |
+| `person_app_merges`    | `guest_id`, `user_id`, `app`, `created_at`, `attempts`, `last_attempt_at`, `legacy (0006)`                                                                                                                                          | `0003_person_app_merges.sql`  |
+| `person_app_notices`   | `person_id`, `app`, `item_id`, `created_at`, `attempts`, `last_attempt_at`                                                                                                                                                          | `0002_person_app_notices.sql` |
+| `person_purges`        | `person_id`, `team_ids`, `requested_at`, `finished_at`, `runs`                                                                                                                                                                      | `0001_index.sql`              |
+| `placement_defaults`   | `person_id`, `default_key`, `folder_id`, `updated_at`                                                                                                                                                                               | `0001_index.sql`              |
+| `purge_tombstones`     | `item_id`, `app`, `created_at`, `attempts`, `last_attempt_at`, `last_error`                                                                                                                                                         | `0001_index.sql`              |
+| `share_links`          | `code`, `item_id`, `level`, `tab_id`, `expiry`, `expires_at`, `created_at`, `public`                                                                                                                                                | `0001_index.sql`              |
+| `share_passwords`      | `item_id`, `hash`, `updated_at`                                                                                                                                                                                                     | `0001_index.sql`              |
+| `shared_with`          | `person_id`, `item_id`, `share_code`, `last_seen`                                                                                                                                                                                   | `0001_index.sql`              |
+| `use_days`             | `person_id`, `item_id`, `day`                                                                                                                                                                                                       | `0001_index.sql`              |
 
 ## Constants and configuration: named constants
 
@@ -472,11 +467,11 @@ Migrations, in order:
 | `PERSON_ITEMS_PER_CALL`         | `100`                                                                                  | `person-notices.ts`                   |
 | `NOTICE_RETRY_AFTER_MS`         | `60 * 60 * 1000`                                                                       | `person-notices.ts`                   |
 | `NOTICE_GIVE_UP_MS`             | `7 * 24 * 60 * 60 * 1000`                                                              | `person-notices.ts`                   |
-| `LOOSE_EVENTS_SWEEP_MAX`        | `1000`                                                                                 | `purge.ts`                            |
 | `ITEM_COLUMNS`                  | `'i.id, i.app, i.kind, i.owner_id, i.team_id, i.scope, i.fold…`                        | `rows.ts`                             |
 | `LIVE_LINK`                     | `(alias: string) =>`                                                                   | `rows.ts`                             |
-| `EXPIRY_SWEEP_MAX`              | `2_000`                                                                                | `share-expiry.ts`                     |
-| `FUTURE_SLACK_MS`               | `5 * 60 * 1000`                                                                        | `timeline.ts`                         |
+| `FUTURE_SLACK_MS`               | `5 * 60 * 1000`                                                                        | `events.ts`                           |
+| `EVENT_SWEEP_CHUNK`             | `500`                                                                                  | `events.ts`                           |
+| `EVENT_SWEEP_ROUNDS`            | `40`                                                                                   | `events.ts`                           |
 | `WORKBENCH_CLOSE_MAX_ITEMS`     | `500`                                                                                  | `workbench-close.ts`                  |
 | `WORKBENCH_CLOSE_CONCURRENCY`   | `10`                                                                                   | `workbench-close.ts`                  |
 | `GUEST_TOKEN_REFRESH_BEFORE_MS` | `15 * 24 * 3600 * 1000`                                                                | `guest-token.ts`                      |
@@ -527,22 +522,16 @@ Migrations, in order:
 | `OPEN_DEBOUNCE_MS`              | `60 * 1000`                                                                            | `constants.ts`                        |
 | `USE_WINDOW_DAYS`               | `90`                                                                                   | `constants.ts`                        |
 | `MOST_USED_MAX`                 | `8`                                                                                    | `constants.ts`                        |
-| `ITEM_TIMELINE_EVENT_TYPES`     | `(object or list, see file)`                                                           | `constants.ts`                        |
-| `PERSON_TIMELINE_EVENT_TYPES`   | `['image_uploaded', 'taken_offline'] as const`                                         | `constants.ts`                        |
-| `ACCOUNT_TIMELINE_EVENT_TYPES`  | `(object or list, see file)`                                                           | `constants.ts`                        |
-| `TIMELINE_EVENT_TYPES`          | `(object or list, see file)`                                                           | `constants.ts`                        |
-| `APP_TIMELINE_EVENT_TYPES`      | `['edited'] as const`                                                                  | `constants.ts`                        |
-| `APP_PERSON_EVENT_TYPES`        | `['image_uploaded'] as const`                                                          | `constants.ts`                        |
-| `TIMELINE_PLATFORM`             | `'liveworkspace' as const`                                                             | `constants.ts`                        |
-| `ACCOUNT_EVENT_SCOPES_MAX`      | `250`                                                                                  | `constants.ts`                        |
-| `SHARE_EXPIRY_WARNING_MS`       | `7 * 24 * 60 * 60 * 1000`                                                              | `constants.ts`                        |
-| `ACCOUNT_EVENT_AHEAD_MS`        | `8 * 24 * 60 * 60 * 1000`                                                              | `constants.ts`                        |
+| `ITEM_EVENT_TYPES`              | `(object or list, see file)`                                                           | `constants.ts`                        |
+| `ACCOUNT_EVENT_TYPES`           | `(object or list, see file)`                                                           | `constants.ts`                        |
+| `EVENT_TYPES`                   | `(object or list, see file)`                                                           | `constants.ts`                        |
+| `APP_EVENT_TYPES`               | `['edited'] as const`                                                                  | `constants.ts`                        |
+| `PLATFORM_APP`                  | `'liveworkspace' as const`                                                             | `constants.ts`                        |
+| `EVENT_RETENTION_MS`            | `30 * 24 * 60 * 60 * 1000`                                                             | `constants.ts`                        |
 | `COLLAB_EVENTS_MAX`             | `100`                                                                                  | `constants.ts`                        |
-| `TIMELINE_PAGE`                 | `30`                                                                                   | `constants.ts`                        |
-| `TIMELINE_LIMIT_MAX`            | `100`                                                                                  | `constants.ts`                        |
+| `HISTORY_PAGE`                  | `30`                                                                                   | `constants.ts`                        |
+| `HISTORY_LIMIT_MAX`             | `100`                                                                                  | `constants.ts`                        |
 | `APP_EVENTS_MAX`                | `100`                                                                                  | `constants.ts`                        |
-| `TIMELINE_DISMISS_MAX`          | `100`                                                                                  | `constants.ts`                        |
-| `TIMELINE_NEW_CAP`              | `99`                                                                                   | `constants.ts`                        |
 | `SHARE_LINK_EXPIRIES`           | `['never', 'week', 'month', 'sixMonths'] as const`                                     | `constants.ts`                        |
 | `SHARE_LINK_EXPIRY_MS`          | `(object or list, see file)`                                                           | `constants.ts`                        |
 | `DEFAULT_LINK_LEVEL`            | `'edit'`                                                                               | `constants.ts`                        |

@@ -3,10 +3,10 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createSticky, type Element } from '@livehuddle/document';
 import { useCloseVanishedDialogs, type DialogFor } from './useCloseVanishedDialogs';
 
-const el = (id: string) => ({ ...createShape('square', 0, 0), id }) as Element;
+const el = (id: string) => ({ ...createSticky(0, 0), id }) as Element;
 
 describe('useCloseVanishedDialogs', () => {
   it('closes only the dialogs whose element is gone, and none while their element stays', () => {

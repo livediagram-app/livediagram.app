@@ -24,7 +24,6 @@ export * from './item-head';
 export * from './notify-claims';
 export * from './notifier';
 export * from './push';
-export * from './person-events';
 export * from './item-db';
 export * from './tab-shares';
 export * from './tab-link';

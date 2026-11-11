@@ -1,8 +1,8 @@
-// Who did what, by name: What Happened and the Timeline ask the Explorer's one people store (the Owner column's)
-// for the actors the index names by id only, in one gathered request.
-import { render, waitFor } from '@testing-library/react';
+// Who did what, by name: an item's History asks the Explorer's one people store (the Owner column's) for the actors
+// the index names by id only, in one gathered request.
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createFakeIndex, makeEvent } from '../test/fakeClient';
+import { createFakeIndex, makeEvent, makeItem } from '../test/fakeClient';
 import { Explorer } from '../explorer/Explorer';
 import type { ExplorerAccounts } from './accounts';
 
@@ -21,9 +21,10 @@ function fakeAccounts(names: Record<string, string>) {
 describe('names for who did what', () => {
   beforeEach(() => localStorage.clear());
 
-  it('names What Happened’s actors through the people store, all in one request', async () => {
+  it('names History’s actors through the people store, all in one request', async () => {
     const now = Date.now();
     const index = createFakeIndex({
+      items: [makeItem(1)],
       events: [
         makeEvent(1, {
           actorId: 'user_sam',
@@ -31,8 +32,14 @@ describe('names for who did what', () => {
           detail: { from: 'A' },
           occurredAt: now - 60_000,
         }),
-        makeEvent(2, { actorId: 'user_ana', type: 'trashed', occurredAt: now - 120_000 }),
-        makeEvent(3, {
+        makeEvent(1, {
+          id: 'ev-2',
+          actorId: 'user_ana',
+          type: 'trashed',
+          occurredAt: now - 120_000,
+        }),
+        makeEvent(1, {
+          id: 'ev-3',
           actorId: 'user_kim',
           actorName: 'Kim Kept',
           type: 'trashed',
@@ -45,7 +52,7 @@ describe('names for who did what', () => {
       <Explorer
         app="liveplanner"
         client={index.client}
-        view={{ kind: 'home' }}
+        view={{ kind: 'all' }}
         onNavigate={vi.fn()}
         itemHref={(i) => `/open/${i.id}`}
         onCreate={vi.fn()}
@@ -54,11 +61,14 @@ describe('names for who did what', () => {
         accounts={accounts}
       />,
     );
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Menu for Item 1' }))[0]!);
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'History' }));
+    const dialog = await screen.findByRole('dialog', { name: 'History of Item 1' });
     await waitFor(() => {
-      const text = document.querySelector('[data-home-section="what-happened"]')?.textContent ?? '';
-      expect(text).toContain('Sam Lee renamed');
-      expect(text).toContain('Ana Ruiz moved');
-      expect(text).toContain('Kim Kept moved');
+      const text = dialog.textContent ?? '';
+      expect(text).toContain('Sam Lee');
+      expect(text).toContain('Ana Ruiz');
+      expect(text).toContain('Kim Kept');
     });
     const asked = people.mock.calls.flatMap((c) => c[0]);
     expect(asked).toEqual(expect.arrayContaining(['user_sam', 'user_ana']));

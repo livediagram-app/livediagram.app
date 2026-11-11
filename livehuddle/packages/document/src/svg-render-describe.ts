@@ -30,7 +30,6 @@ import type { BoxedElement, TextRun } from './index';
 import { runFontPx } from '@liveworkspace/model-core/label-font';
 import { resolveStockColours } from './stock-colours';
 import { DEFAULT_BACKGROUND_COLOR } from '@liveworkspace/model-core/canvas-colors';
-import { labelBodyInset } from './label-body';
 
 export const EXPORT_PADDING = 32;
 // A tab that stores no canvas colour is on the Default theme: its light canvas.
@@ -50,8 +49,6 @@ const EXPORT_IMAGE_LABEL = '#64748b'; // slate-500 alt-text label
 // column like any other box.
 export type ExportShape =
   | { kind: 'image'; href?: string; objectFit: 'cover' | 'contain'; radius: number }
-  | { kind: 'ellipse'; fill: string; stroke: string }
-  | { kind: 'diamond'; fill: string; stroke: string }
   | { kind: 'rect'; fill: string; stroke: string }
   | { kind: 'icon'; art: ExportIconArt; fill: string; stroke: string }
   // A sticker (docs/specs/010-palette/stickers.md): fully self-coloured art (plate, shadow, content)
@@ -271,14 +268,7 @@ export function describeBoxedExport(
         : null,
     };
   }
-  const shape: ExportShape =
-    el.type === 'shape' && el.shape === 'circle'
-      ? { kind: 'ellipse', fill, stroke }
-      : el.type === 'shape' && el.shape === 'diamond'
-        ? { kind: 'diamond', fill, stroke }
-        : el.type === 'text'
-          ? { kind: 'none' }
-          : { kind: 'rect', fill, stroke };
+  const shape: ExportShape = el.type === 'text' ? { kind: 'none' } : { kind: 'rect', fill, stroke };
   const baseColor = own.text ?? defaultTextColor(el, surface);
   // A sticky's label is a block of writing rather than a name, and runs
   // smaller at every preset. The canvas decides that the same way (its
@@ -306,10 +296,6 @@ export function describeBoxedExport(
   const alignX = el.textAlignX ?? defaults.x;
   const alignY = el.textAlignY ?? defaults.y;
   const pad = PADDING_PX[el.padding ?? defaultPadding(el)];
-  // A cylinder's label sits on its body, under the lid and over the base (labelBodyInset).
-  const body = labelBodyInset(el);
-  const bodyTop = el.y + body.top;
-  const bodyBottom = el.y + el.height - body.bottom;
   const label: ExportLabel | null = el.label
     ? {
         text: el.label,
@@ -321,10 +307,10 @@ export function describeBoxedExport(
               : el.x + el.width / 2,
         y:
           alignY === 'top'
-            ? bodyTop + pad + baseSize / 2
+            ? el.y + pad + baseSize / 2
             : alignY === 'bottom'
-              ? bodyBottom - pad - baseSize / 2
-              : (bodyTop + bodyBottom) / 2,
+              ? el.y + el.height - pad - baseSize / 2
+              : el.y + el.height / 2,
         anchor: alignX === 'right' ? 'end' : alignX === 'left' ? 'start' : 'middle',
         valign: alignY,
         maxWidth: labelMaxWidth(el, pad),
@@ -366,8 +352,5 @@ export function drawsStandardLabel(el: BoxedElement): boolean {
 // exactly as `describeBoxedExport` lays the label out.
 export function labelRoom(el: BoxedElement): { width: number; height: number } {
   const pad = PADDING_PX[el.padding ?? defaultPadding(el)];
-  const body = labelBodyInset(el);
-  const bodyTop = el.y + body.top;
-  const bodyBottom = el.y + el.height - body.bottom;
-  return { width: labelMaxWidth(el, pad), height: bodyBottom - pad - (bodyTop + pad) };
+  return { width: labelMaxWidth(el, pad), height: el.height - 2 * pad };
 }

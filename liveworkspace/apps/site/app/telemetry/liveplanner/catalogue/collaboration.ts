@@ -1,4 +1,4 @@
-// Working together: live sessions, embeds, discussion, the Timeline, teams and the session tools (docs/specs/017-telemetry/telemetry.md).
+// Working together: live sessions, embeds, discussion, teams and the session tools (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../../_shared/metric-series';
@@ -382,65 +382,21 @@ export const STOPWATCHES_FINISHED: Metric = {
   blurb: 'Dismissed from the tab.',
 };
 
-// The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md), reported through its onTimeline prop.
-export const TIMELINE_CARDS_OPENED = chart(
-  'Timeline',
+// Explorer Home (docs/specs/013-workspace/explorer-home.md): the first run's welcome, from the Explorer on
+// liveworkspace.app, and a failed read retried, through the Explorer's onHome prop.
+export const HOME_WELCOMES = chart(
+  'Home',
   'Opened',
-  'Timeline Cards Opened',
-  'A plan opened from its card on the Timeline.',
-  { types: ['Card'] },
+  'First-Run Homes',
+  'Home shown to someone with no plans yet, offering blanks and popular templates to start from.',
+  { types: ['Welcome'] },
 );
 
-export const TIMELINE_STACKS_EXPANDED = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Stacks Expanded',
-  'A run of one kind of change on the Timeline dealt out to show each one.',
-  { types: ['Stack'] },
-);
-
-export const TIMELINE_MENUS_OPENED = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Menus Opened',
-  'A card’s or a run’s ⋯ menu opened on the Timeline.',
-  { types: ['Menu'] },
-);
-
-export const TIMELINE_REMOVED = chart(
-  'Timeline',
-  'Removed',
-  'Removed from Timeline',
-  'An entry (Entry) or a whole run (Stack) taken off someone’s own Timeline.',
-);
-
-export const TIMELINE_LOADS = chart(
-  'Timeline',
-  'Loaded',
-  'Timeline Loads',
-  'More of the Timeline loaded, or a failed load retried.',
-);
-
-export const TIMELINE_VIEW_SWITCHED = chart(
-  'Timeline',
-  'Changed',
-  'Timeline View Switched',
-  'The Timeline switched between its cards and its calendar.',
-);
-
-export const TIMELINE_FILTERED = chart(
-  'Timeline',
-  'Selected',
-  'Timeline Filtered',
-  'The Timeline narrowed to everyone, other people, or switched off a kind of event.',
-);
-
-// Explorer Home's What Happened (docs/specs/013-workspace/explorer-home.md), reported through its onHome prop.
-export const WHAT_HAPPENED_OPENED = chart(
+export const HOME_STARTS = chart(
   'Home',
   'Selected',
-  'What Happened Entries Opened',
-  'A plan opened from Home’s What Happened, or See Timeline followed from it.',
+  'Starts Taken from Home',
+  'A start taken from the first-run Home: a blank, a template, all templates, search or sign in.',
 );
 
 export const HOME_RETRIES = chart(
@@ -452,13 +408,6 @@ export const HOME_RETRIES = chart(
     types: ['Retry'],
     rising: 'bad',
   },
-);
-
-export const WHAT_HAPPENED_GROUPS = chart(
-  'Home',
-  'Opened',
-  'What Happened Summaries Opened',
-  'A summary of several people’s doings on one plan dealt out on Home.',
 );
 
 // The Explorer's filter lens (docs/specs/013-workspace/explorer-filters.md "Telemetry"): Explorer·Selected·<Facet>,
@@ -655,24 +604,12 @@ export const INBOX: MetricStack = {
   headline: INBOX_ROWS_OPENED,
 };
 
-export const TIMELINE: MetricStack = {
+export const HOME: MetricStack = {
   stack: true,
-  title: 'Timeline',
-  blurb:
-    'What happened to people’s plans, read in the Explorer’s Timeline and Home’s What Happened: cards opened, runs expanded, menus, removals, filters and pages.',
-  members: [
-    TIMELINE_CARDS_OPENED,
-    TIMELINE_STACKS_EXPANDED,
-    TIMELINE_MENUS_OPENED,
-    TIMELINE_REMOVED,
-    TIMELINE_LOADS,
-    TIMELINE_VIEW_SWITCHED,
-    TIMELINE_FILTERED,
-    WHAT_HAPPENED_OPENED,
-    WHAT_HAPPENED_GROUPS,
-    HOME_RETRIES,
-  ],
-  headline: TIMELINE_CARDS_OPENED,
+  title: 'Home',
+  blurb: 'Explorer Home: the first-run Home shown, starts taken from it, and failed reads retried.',
+  members: [HOME_WELCOMES, HOME_STARTS, HOME_RETRIES],
+  headline: HOME_STARTS,
 };
 
 export const LIVE_TOGETHER: MetricStack = {

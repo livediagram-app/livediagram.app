@@ -220,7 +220,7 @@ records it so.
   the editor's to record, and a re-commit of an id the index already holds is no making, so neither is recorded
   here.
 - The create itself is the canvas's making, not an edit: the canvas's room records no editor for
-  `POST /api/documents` ([Timeline](../013-workspace/timeline.md)), so its seeded tabs never count a use day that
+  `POST /api/documents` ([History](../013-workspace/history.md)), so its seeded tabs never count a use day that
   `markUsed: false` withheld.
 
 ### Documents in the Trash

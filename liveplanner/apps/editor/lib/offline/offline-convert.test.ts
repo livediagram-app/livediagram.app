@@ -380,7 +380,7 @@ describe('conversions declare themselves to the worker', () => {
   // from a real delete / a real create unless the request says so — and
   // undeclared it recorded exactly that, telling the owner in danger red that a
   // project they had just moved into this browser was deleted (docs/specs/006-project/offline-mode.md +
-  // docs/specs/013-workspace/timeline.md §4.2).
+  // docs/specs/013-workspace/history.md).
   it('marks the take-offline DELETE as an offline conversion', async () => {
     await takeCloudOffline('d1', 'owner');
     const [, , opts] = vi.mocked(core.apiDelete).mock.calls[0]!;

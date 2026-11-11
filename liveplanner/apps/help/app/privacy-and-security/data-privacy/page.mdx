@@ -17,7 +17,7 @@ Your plans are the whole point, so it helps to know exactly where they live and 
 
 Plans are saved through a single Cloudflare Worker API. The browser never talks to storage directly.
 
-- **Durable storage**: each plan lives in its own Cloudflare Durable Object, which keeps its tabs, cards, sheets and forms in its own storage. Where a plan is filed, its folders, its share links and its timeline are kept by liveworkspace's index, the service every liveworkspace app files its work in.
+- **Durable storage**: each plan lives in its own Cloudflare Durable Object, which keeps its tabs, cards, sheets and forms in its own storage. Where a plan is filed, its folders, its share links and its History (the last 30 days) are kept by liveworkspace's index, the service every liveworkspace app files its work in.
 - **Real-time state** (who is in the room, live cursors, in-flight edits) is handled by the same Durable Object, one room per plan. The room also keeps a working record of collaborative input (answers, ideas, ticks, votes and comments) in its own storage, so that saves made at the same moment can be merged.
 - **A cached picture of each plan**, used for its thumbnail, live image and share-link card, is stored in Cloudflare R2 object storage and served back through the same API. liveplanner takes no image uploads.
 

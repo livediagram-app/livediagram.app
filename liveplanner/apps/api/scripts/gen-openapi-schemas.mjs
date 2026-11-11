@@ -121,6 +121,15 @@ export const ROOT_TYPES = [
   'ProjectCommentThread',
   'AgentPresenceResult',
   'TemplateCatalogueResponse',
+  'AutomationsListResponse',
+  'AutomationRuleResponse',
+  'AutomationRuleBody',
+  'AutomationToggleRequest',
+  'AutomationOrderRequest',
+  'AutomationTestRequest',
+  'AutomationRunNowRequest',
+  'AutomationRunResponse',
+  'AutomationRunsResponse',
 ];
 
 // Code names that differ from the published component name (none today: the project's type is `Project`).

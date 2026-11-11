@@ -323,6 +323,7 @@ export * from './page-views';
 export * from './room-messages';
 export * from './changesets';
 export * from './items';
+export * from './automations';
 export * from './sheets';
 export * from './telemetry-schema';
 export * from './timing-telemetry';

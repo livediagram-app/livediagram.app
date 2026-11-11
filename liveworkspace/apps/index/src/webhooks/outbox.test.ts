@@ -1,6 +1,6 @@
 // The outbox (webhooks.md "What it sends", "Delivery"): an event the index records about an item queues a delivery,
 // in the same batch, for each of that item's own live webhooks that listens for it (and, set to Only Me, only for its
-// creator's own actions), and nothing else; a plan's card moves queue the same way, off the Timeline. The request
+// creator's own actions), and nothing else; a plan's card moves queue the same way, outside the event log. The request
 // wakes the dispatcher only after answering.
 import { CARD_MOVES_MAX } from '@liveworkspace/index-client';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
@@ -29,7 +29,7 @@ const asApp = (path: string, payload: unknown, app = 'liveplanner', key = 'lp-ke
 
 const queued = () => deliveries().map((d) => `${d.type} ${d.title}`);
 
-describe('queuing Timeline events', () => {
+describe('queuing logged events', () => {
   it("queues what a document's own webhooks listen for, about that document", async () => {
     const ada = await person('user_wo1');
     const item = await makeItem(ada.auth, { title: 'Roadmap' });
@@ -189,12 +189,12 @@ describe('queuing Timeline events', () => {
       firstAt: long,
       latestAt: long,
     };
-    // Dated after the item was made would be news to the Timeline; to a webhook it is too old.
+    // Dated after the item was made would be news to History; to a webhook it is too old.
     h.db.sql.prepare('UPDATE items SET created_at = 0 WHERE id = ?').run(item.id);
     await asApp(`/app/items/${item.id}/collab/t`, { threads: [thread], actions: [] });
-    expect(
-      h.db.sql.prepare("SELECT type FROM timeline_events WHERE type = 'commented'").all(),
-    ).toHaveLength(1);
+    expect(h.db.sql.prepare("SELECT type FROM events WHERE type = 'commented'").all()).toHaveLength(
+      1,
+    );
     expect(deliveries()).toEqual([]);
   });
 });
@@ -250,11 +250,11 @@ describe('card moves', () => {
       to: 'Done',
     });
     expect(JSON.parse(rows[1]!.detail as string).card).toBe('Untitled');
-    // Nothing on the Timeline.
-    const timeline = await body<{ events: { type: string }[] }>(
-      await call('/timeline', { auth: ada.auth }),
+    // Nothing in the event log, so nothing in History.
+    const logged = await body<{ events: { type: string }[] }>(
+      await call(`/items/${plan.id}/history`, { auth: ada.auth }),
     );
-    expect(timeline.events.map((e) => e.type)).toEqual(['created']);
+    expect(logged.events.map((e) => e.type)).toEqual(['created']);
     expect((await asApp(`/app/items/${plan.id}/card-moves`, { moves: [] })).status).toBe(204);
   });
 
@@ -368,11 +368,11 @@ describe('form responses', () => {
     ]);
     // One webhook: not the Only Me one, and not Bo's on his own plan.
     expect(new Set(rows.map((d) => d.webhook_id)).size).toBe(1);
-    // Nothing on the Timeline.
-    const timeline = await body<{ events: { type: string }[] }>(
-      await call('/timeline', { auth: ada.auth }),
+    // Nothing in the event log, so nothing in History.
+    const logged = await body<{ events: { type: string }[] }>(
+      await call(`/items/${plan.id}/history`, { auth: ada.auth }),
     );
-    expect(timeline.events.map((e) => e.type)).toEqual(['created']);
+    expect(logged.events.map((e) => e.type)).toEqual(['created']);
   });
 
   it('queues nothing for a form never pushed, or published again, or for a webhook not listening', async () => {

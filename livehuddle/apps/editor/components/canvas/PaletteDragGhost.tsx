@@ -62,7 +62,7 @@ export function PaletteDragGhost({ zoom }: { zoom: number }) {
         transform: 'translate(-50%, -50%)',
       }}
     >
-      <ShapeGlyph kind={preview.kind} size={glyph} stroke="currentColor" />
+      <ShapeGlyph size={glyph} stroke="currentColor" />
     </div>
   );
 }

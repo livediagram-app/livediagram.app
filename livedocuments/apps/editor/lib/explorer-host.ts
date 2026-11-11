@@ -72,7 +72,6 @@ const VIEW_HELP: Partial<Record<ExplorerView['kind'], HelpArticleKey>> = {
   favourites: 'explorerPage',
   shared: 'sharedWithYou',
   inbox: 'inbox',
-  timeline: 'timeline',
   trash: 'trash',
   search: 'explorerFilters',
 };

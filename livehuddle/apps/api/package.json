@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "@livehuddle/api-schema": "workspace:*",
-    "@livehuddle/diagram-lint": "workspace:*",
     "@livehuddle/document": "workspace:*",
     "@livehuddle/document-views": "workspace:*",
     "@livehuddle/edit-operations": "workspace:*",

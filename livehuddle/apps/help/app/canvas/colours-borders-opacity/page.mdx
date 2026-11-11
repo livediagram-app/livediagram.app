@@ -8,7 +8,7 @@ import {
 export const metadata = helpMetadata({
   title: 'Colours, Borders and Opacity',
   description:
-    "Recolour an element's text, background and border with the colour picker, set border strength, pattern and corner radius, and fade elements with Opacity.",
+    "Recolour an element's text, background and border with the colour picker, set border strength and pattern, and fade elements with Opacity.",
   path: '/help/canvas/colours-borders-opacity/',
 });
 
@@ -55,29 +55,23 @@ With a mouse, hovering a swatch previews it on the element; clicking commits it 
 
 ## Borders
 
-Open **Style**, then **Border**. Three grids of small preview tiles set the outline, and hovering a tile previews it before you click:
+Open **Style**, then **Border**. Grids of small preview tiles set the outline, and hovering a tile previews it before you click:
 
 - **Strength**: no border (a faint dashed outline), then thin, medium, thick and extra thick. New shapes start at medium.
 - **Pattern**: solid, dashed, dotted, dash-dot, long dash and dash-dot-dot.
-- **Radius**: the corners, from none through small (4 px), medium (12 px) and large (24 px) to full. Full rounds the shorter sides completely, giving a pill on a long box and a circle on a square.
 
 <Figure caption="The Border category's Strength, Pattern and Radius grids, with a thick dashed border and large corners on the selected shape.">
   <BorderSection />
 </Figure>
 
-### Accent Edge
-
-Under the Radius grid, **Accent Edge** puts a coloured strip down the left side, or across the top or bottom, of a rectangle or a stadium: a way to colour-code nodes by team or status without filling them. **Edge Colour** picks its colour, and **Match Border** sets it back to the border's colour. It is drawn inside the shape's corners, and the format painter copies it with the border.
-
-A corner is never rounded more than a quarter of the box's shorter side, so a small rounded square stays a rounded square instead of turning into a circle (Full is the exception, by design). Unset, a shape's corners are slightly rounded and the Radius grid highlights small.
-
 ### Which Elements Have a Border
 
 - **Strength and Pattern** are offered on shapes.
-- **Radius** is offered only where a corner can be rounded: the rectangle. Circles, diamonds, hexagons and the other outlined shapes have their corners built in.
-- **No Border category** on text elements, sticky notes (a note's **Border** colour row still draws an edge), images, stickers, icons, the actor, and the elements that draw their own faces: charts, progress bars and rings, ratings, code blocks, checklists, portals, reveals, chairs, quizzes, and the banner, header bar, stat row and process components.
+- **Radius** and **Accent Edge** are offered on none of the elements livehuddle adds: the rectangle and stadium they were for are gone, and the Space pieces draw their own corners.
+- **No Border category** on text elements, sticky notes (a note's **Border** colour row still draws an edge), images, stickers, icons, and the elements that draw their own faces: portals, chairs and the other Space pieces.
+- **Shapes saved before livehuddle dropped them** (a square, circle, diamond or another diagram shape, a chart, a table) show as a placeholder that keeps its look as it was saved, with no style controls; an Editor can delete it.
 
-A few elements skip Colours too: images and stickers keep their own colours, a code block picks a colour scheme under **Presets** instead, and charts are coloured from their own data.
+A few elements skip Colours too: images and stickers keep their own colours.
 
 ## Opacity
 

@@ -9,7 +9,7 @@ import { sketchBackdropIds } from './sketch-backdrop';
 
 // docs/specs/008-canvas/finish.md "Sketch" and "Marker": one door to both pens, for the canvas and the export.
 
-const box = (extra: object = {}) => ({ ...createShape('square', 0, 0), id: 'box', ...extra });
+const box = (extra: object = {}) => ({ ...createShape('focus-button', 0, 0), id: 'box', ...extra });
 
 describe('handDrawnElementPaint', () => {
   it('draws Sketch in pencil and Marker in felt-tip', () => {
@@ -89,7 +89,7 @@ describe('a Marker tab in the export', () => {
 
   it('keeps a backdrop solid, as under Sketch', () => {
     const card = box({ id: 'card', width: 400, height: 300 });
-    const caption = { ...createShape('square', 150, 120), id: 'cap', width: 60, height: 40 };
+    const caption = { ...createShape('focus-button', 150, 120), id: 'cap', width: 60, height: 40 };
     expect(sketchBackdropIds([card, caption], 'marker').has('card')).toBe(true);
   });
 });

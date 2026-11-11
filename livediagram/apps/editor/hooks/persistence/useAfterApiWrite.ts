@@ -1,23 +1,13 @@
 'use client';
 
-// "The reader just changed something" — run a callback a beat after any
-// successful api write, so a screen that mirrors server state (the
-// Timeline, docs/specs/013-workspace/timeline.md §2.4b) can re-read itself without the reader
-// pressing refresh.
+// Run a callback a beat after an api write signal (write-signal.ts), so a screen that mirrors server state can
+// re-read itself without the person pressing refresh.
 //
 // Two timings, both deliberate:
 //
-//   - A short DELAY before the first run. The worker writes the
-//     timeline row off the response path (`ctx.waitUntil`), so a re-read
-//     fired the instant the DELETE resolves usually lands before the
-//     tombstone does, and shows the reader the feed minus the thing
-//     they just did. A second's grace covers the emit chain with room
-//     to spare.
-//   - A MIN INTERVAL between runs, trailing. An editor autosaving every
-//     600ms is a write storm, and a feed that re-read on every save
-//     would be a request storm. Writes inside the interval collapse
-//     into one run at its end, so the last write is always followed by
-//     a read and no read is wasted.
+//   - A short DELAY before the first run, so the index's merge has landed before the re-read.
+//   - A MIN INTERVAL between runs, trailing: signals inside the interval collapse into one run at its end, so the
+//     last signal is always followed by a read and no read is wasted.
 //
 // The callback is held in a ref so a caller can pass an inline arrow
 // without re-subscribing on every render, matching useReturnToTab.
@@ -59,10 +49,6 @@ export function useAfterApiWrite(
 
     const unsubscribe = subscribeApiWrites((signal) => {
       if (filter.current && !filter.current(signal)) return;
-      // A purge is handed over at once — the feed drops those cards
-      // synchronously — and only the re-read that follows is throttled,
-      // so a burst of deletes still costs one read.
-      if (signal.purge) callback.current({ purge: signal.purge });
       if (timer) return;
       const wait = Math.max(delayMs, lastRun + minIntervalMs - Date.now());
       timer = setTimeout(() => {

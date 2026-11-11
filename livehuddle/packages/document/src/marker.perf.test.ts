@@ -21,7 +21,7 @@ const fastest = (fn: () => void, rounds = 5, perRound = 50): number => {
   return best;
 };
 
-const paint = (kind: 'square' | 'circle' | 'cloud' | 'cylinder', w: number, h: number) => {
+const paint = (kind: 'focus-button' | 'room' | 'mode-button', w: number, h: number) => {
   const el = { ...createShape(kind, 0, 0), id: 'budget', width: w, height: h };
   return () => markerElementPaint(el, '#dbeafe');
 };
@@ -32,12 +32,12 @@ const PERF_TEST_TIMEOUT_MS = 30_000;
 
 describe('marker budgets', { timeout: PERF_TEST_TIMEOUT_MS }, () => {
   it('an ordinary shape stays under 0.2 ms (x10 for CI and coverage)', () => {
-    for (const kind of ['square', 'circle', 'cloud', 'cylinder'] as const)
+    for (const kind of ['focus-button', 'room', 'mode-button'] as const)
       expect(fastest(paint(kind, 400, 300)), kind).toBeLessThan(cpuBudgetMs(2));
   });
 
   it('the largest shape stays under 2 ms (x10 for CI and coverage)', () => {
-    expect(fastest(paint('square', 20000, 20000), 3, 20)).toBeLessThan(cpuBudgetMs(20));
-    expect(fastest(paint('circle', 20000, 20000), 3, 20)).toBeLessThan(cpuBudgetMs(20));
+    expect(fastest(paint('focus-button', 20000, 20000), 3, 20)).toBeLessThan(cpuBudgetMs(20));
+    expect(fastest(paint('room', 20000, 20000), 3, 20)).toBeLessThan(cpuBudgetMs(20));
   });
 });

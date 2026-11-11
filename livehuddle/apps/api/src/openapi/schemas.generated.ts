@@ -5,14 +5,6 @@
 import type { ComponentSchemas } from '@liveworkspace/api-kit/openapi-types';
 
 export const COMPONENT_SCHEMAS: ComponentSchemas = {
-  "AccentEdge": {
-    "enum": [
-      "left",
-      "top",
-      "bottom"
-    ],
-    "type": "string"
-  },
   "AccessLevel": {
     "enum": [
       "view",
@@ -421,14 +413,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "boolean"
       },
       "lint": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/LintReport"
-          },
-          {
-            "type": "null"
-          }
-        ]
+        "type": "null"
       },
       "results": {
         "items": {
@@ -2732,170 +2717,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "LintCode": {
-    "enum": [
-      "box-overlap",
-      "arrow-dangling",
-      "arrow-behind-box",
-      "edge-crossings",
-      "label-collision",
-      "label-overflow",
-      "node-isolated",
-      "duplicate-label",
-      "flow-backwards",
-      "aspect-extreme",
-      "colour-on-themed",
-      "text-overflow"
-    ],
-    "type": "string"
-  },
-  "LintFinding": {
-    "additionalProperties": false,
-    "properties": {
-      "code": {
-        "$ref": "#/components/schemas/LintCode"
-      },
-      "fix": {
-        "type": "string"
-      },
-      "message": {
-        "type": "string"
-      },
-      "refs": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "severity": {
-        "$ref": "#/components/schemas/LintSeverity"
-      }
-    },
-    "required": [
-      "code",
-      "severity",
-      "refs",
-      "message",
-      "fix"
-    ],
-    "type": "object"
-  },
-  "LintMeasures": {
-    "additionalProperties": false,
-    "properties": {
-      "arrows": {
-        "type": "number"
-      },
-      "behind": {
-        "type": "number"
-      },
-      "boxes": {
-        "type": "number"
-      },
-      "crossings": {
-        "type": [
-          "number",
-          "null"
-        ]
-      },
-      "extent": {
-        "anyOf": [
-          {
-            "additionalProperties": false,
-            "properties": {
-              "height": {
-                "type": "number"
-              },
-              "width": {
-                "type": "number"
-              }
-            },
-            "required": [
-              "width",
-              "height"
-            ],
-            "type": "object"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      },
-      "overlaps": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "crossings",
-      "behind",
-      "overlaps",
-      "extent",
-      "arrows",
-      "boxes"
-    ],
-    "type": "object"
-  },
-  "LintReport": {
-    "additionalProperties": false,
-    "properties": {
-      "counts": {
-        "additionalProperties": false,
-        "properties": {
-          "error": {
-            "type": "number"
-          },
-          "info": {
-            "type": "number"
-          },
-          "warning": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "error",
-          "warning",
-          "info"
-        ],
-        "type": "object"
-      },
-      "findings": {
-        "items": {
-          "$ref": "#/components/schemas/LintFinding"
-        },
-        "type": "array"
-      },
-      "measures": {
-        "$ref": "#/components/schemas/LintMeasures"
-      },
-      "skipped": {
-        "additionalProperties": false,
-        "properties": {
-          "crossings": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "crossings"
-        ],
-        "type": "object"
-      }
-    },
-    "required": [
-      "measures",
-      "findings",
-      "counts",
-      "skipped"
-    ],
-    "type": "object"
-  },
-  "LintSeverity": {
-    "enum": [
-      "error",
-      "warning",
-      "info"
-    ],
-    "type": "string"
-  },
   "MediaAnimation": {
     "enum": [
       "kenburns",
@@ -3912,14 +3733,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "array"
       },
       "lint": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/LintReport"
-          },
-          {
-            "type": "null"
-          }
-        ]
+        "type": "null"
       },
       "reverted": {
         "type": "number"
@@ -3997,12 +3811,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ShapeElement": {
     "additionalProperties": false,
     "properties": {
-      "accentEdge": {
-        "$ref": "#/components/schemas/AccentEdge"
-      },
-      "accentEdgeColor": {
-        "type": "string"
-      },
       "action": {
         "$ref": "#/components/schemas/ElementAction"
       },
@@ -4280,13 +4088,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "ShapeKind": {
     "enum": [
-      "square",
-      "circle",
-      "diamond",
-      "cylinder",
-      "parallelogram",
-      "hexagon",
-      "document",
       "mode-button",
       "portal",
       "chair",
@@ -4373,14 +4174,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "room-sign",
       "timer",
       "stopwatch",
-      "stadium",
-      "actor",
-      "final-state",
-      "cloud",
-      "triangle",
-      "trapezoid",
-      "star",
-      "speech-bubble",
       "focus-button",
       "icon",
       "sticker"
@@ -6088,8 +5881,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "comments",
       "show",
       "find",
-      "diff",
-      "lint"
+      "diff"
     ],
     "type": "string"
   }

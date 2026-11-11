@@ -1,4 +1,4 @@
-import { createShape, type BoxedElement, type Element } from '@livehuddle/document';
+import { createShape, createSticky, type BoxedElement, type Element } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
 import {
   cornerOf,
@@ -81,22 +81,13 @@ describe('nextBounds — aspect-locked corner resize', () => {
 });
 
 describe('inheritedSizeFor', () => {
-  it('squares a circle, a diamond and a star up from a flat selection, never squashing them', () => {
-    const step = { ...createShape('square', 0, 0), width: 160, height: 56 } as BoxedElement;
-    for (const kind of ['circle', 'diamond', 'star'] as const) {
-      expect(inheritedSizeFor(createShape(kind, 0, 0), step), kind).toEqual({
-        width: 160,
-        height: 160,
-      });
-    }
-    expect(inheritedSizeFor(createShape('hexagon', 0, 0), step)).toEqual({
-      width: 160,
-      height: 56,
-    });
+  it('takes a flat selection’s size as it is, squaring nothing up', () => {
+    const step = { ...createSticky(0, 0), width: 160, height: 56 } as BoxedElement;
+    expect(inheritedSizeFor(createSticky(0, 0), step)).toEqual({ width: 160, height: 56 });
   });
 
   it('keeps a sticker and the office scenery their own size', () => {
-    const big = { ...createShape('square', 0, 0), width: 200, height: 170 } as BoxedElement;
+    const big = { ...createSticky(0, 0), width: 200, height: 170 } as BoxedElement;
     for (const kind of ['sticker', 'plant', 'rug', 'fence'] as const) {
       const fresh = createShape(kind, 0, 0) as BoxedElement;
       expect(inheritedSizeFor(fresh, big), kind).toEqual({
@@ -107,7 +98,7 @@ describe('inheritedSizeFor', () => {
   });
 
   it('never hands a self-drawing size on to the next shape', () => {
-    const square = createShape('square', 0, 0);
+    const square = createSticky(0, 0);
     for (const kind of ['sticker', 'plant', 'rug'] as const) {
       const donor = createShape(kind, 0, 0);
       expect(inheritedSizeFor(square, donor), kind).toEqual({
@@ -118,8 +109,8 @@ describe('inheritedSizeFor', () => {
   });
 
   it('inherits the selected element size for a normal shape', () => {
-    const newShape = createShape('square', 0, 0);
-    const selected = { ...createShape('square', 0, 0), width: 300, height: 90 };
+    const newShape = createSticky(0, 0);
+    const selected = { ...createSticky(0, 0), width: 300, height: 90 };
     expect(inheritedSizeFor(newShape, selected)).toEqual({ width: 300, height: 90 });
   });
 
@@ -127,7 +118,7 @@ describe('inheritedSizeFor', () => {
     const portal = createShape('portal', 0, 0);
     // A wide banner selected when the portal is dropped must not stretch the
     // ring into a letterbox — the silhouette IS the element.
-    const wideSelected = { ...createShape('square', 0, 0), width: 1666, height: 16 };
+    const wideSelected = { ...createSticky(0, 0), width: 1666, height: 16 };
     expect(inheritedSizeFor(portal, wideSelected)).toEqual({
       width: portal.width,
       height: portal.height,
@@ -137,25 +128,25 @@ describe('inheritedSizeFor', () => {
 
 // A stored backdrop (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine") stays at the back.
 const stored = (kind: string, x: number, y: number) =>
-  ({ ...createShape('square', x, y), shape: kind }) as unknown as Element;
+  ({ ...createShape('room', x, y), shape: kind }) as unknown as Element;
 
 describe('framesFirst', () => {
   it('moves stored backdrops ahead of everything else, preserving relative order', () => {
     const frameA = stored('boundary', 0, 0);
-    const box = createShape('square', 0, 0);
+    const box = createSticky(0, 0);
     const frameB = stored('stack', 9, 9);
     const ordered = framesFirst([box, frameA, frameB]);
     expect(ordered.map((e) => e.id)).toEqual([frameA.id, frameB.id, box.id]);
   });
 
   it('puts a stored lane first too', () => {
-    const box = createShape('square', 0, 0);
+    const box = createSticky(0, 0);
     const lane = stored('lane', 0, 0);
     expect(framesFirst([box, lane]).map((e) => e.id)).toEqual([lane.id, box.id]);
   });
 
   it('returns the same array reference when there are no backdrops (no-op)', () => {
-    const arr = [createShape('square', 0, 0)];
+    const arr = [createSticky(0, 0)];
     expect(framesFirst(arr)).toBe(arr);
   });
 });

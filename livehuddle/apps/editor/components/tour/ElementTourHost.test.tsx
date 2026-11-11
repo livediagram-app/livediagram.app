@@ -5,7 +5,7 @@
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createShape, createSticky, type Element } from '@livehuddle/document';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import {
   resetTourOffersForTests,
@@ -46,7 +46,7 @@ const setUserPreferences = vi.fn();
 const writeUserPreferences = vi.fn();
 
 const portal = { ...createShape('portal', 0, 0), id: 'p1' } as Element;
-const square = { ...createShape('square', 0, 0), id: 'sq1' } as Element;
+const square = { ...createSticky(0, 0), id: 'sq1' } as Element;
 
 const editor = (over: Record<string, unknown> = {}) => {
   ctx.current = {

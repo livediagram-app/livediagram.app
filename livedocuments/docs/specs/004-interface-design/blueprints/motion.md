@@ -134,9 +134,8 @@ arrival").
 | `.lvd-cascade > *`      | 320ms, 35ms step to 700ms | `micro`, 10ms step to 100ms  |
 | `empty-float` / `-ring` | loops                     | unchanged: ambient indicator |
 
-The Timeline's `.tl-fan-out(-up)` (`micro`) lives with the one surface that still draws it, liveworkspace.app's
-telemetry dashboard (`liveworkspace/apps/site/app/telemetry/timeline-motion.css` in the monorepo); the Explorer
-keeps its own `lw-tl-*` motion, the date pulse included (`@liveworkspace/explorer`'s `explorer.css`).
+The stacked cards' `.tl-fan-out(-up)` (`micro`) lives with the one surface that draws it, liveworkspace.app's
+telemetry dashboard (`liveworkspace/apps/site/app/telemetry/timeline-motion.css` in the monorepo).
 
 ### Component classes
 

@@ -73,6 +73,7 @@ import {
   writer,
   type ItemCaller,
 } from './item-route-kit';
+import { writeSource } from './automation-source';
 import { patches } from './item-patches-route';
 import { moves } from './item-moves-route';
 import { historyTagOf, itemHistory } from './item-history-route';
@@ -298,7 +299,13 @@ async function create(ctx: PlanRouteContext, projectId: string): Promise<Respons
   const made = await createMany(ctx, caller, [input]);
   if (made instanceof Response) return made;
   relay(ctx, projectId, made.items, [], made.rev);
-  await appendItemHistory(ctx.env, projectId, made.items.map(created), historyTagOf(ctx, restores));
+  await appendItemHistory(
+    ctx.env,
+    projectId,
+    made.items.map(created),
+    historyTagOf(ctx, restores),
+    writeSource(ctx, projectId),
+  );
   await restoreThreadsOf(ctx, projectId, made.items, [read]);
   console.info('[items] created', { projectId, agent: ctx.token !== null });
   const answer: ItemResponse = { item: forCaller(caller, made.items)[0]!, rev: made.rev };
@@ -358,7 +365,13 @@ async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response>
   const made = await createMany(ctx, caller, creates);
   if (made instanceof Response) return made;
   relay(ctx, projectId, made.items, [], made.rev);
-  await appendItemHistory(ctx.env, projectId, made.items.map(created), historyTagOf(ctx, putBack));
+  await appendItemHistory(
+    ctx.env,
+    projectId,
+    made.items.map(created),
+    historyTagOf(ctx, putBack),
+    writeSource(ctx, projectId),
+  );
   await restoreThreadsOf(ctx, projectId, made.items, reads);
   console.info('[items] bulk created', { projectId, count: made.items.length });
   const answer: ItemsResponse = { items: forCaller(caller, made.items), rev: made.rev };
@@ -404,6 +417,7 @@ export async function writeItem(
         caller.projectId,
         [{ before: item, after: next }],
         historyTagOf(ctx, opts.undo === true),
+        writeSource(ctx, caller.projectId),
       );
       const answer: ItemResponse = { item: withoutLegacyThread(next), rev };
       return json(answer);

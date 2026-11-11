@@ -22,7 +22,7 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./explorer-filters.md - when looking for the Explorer's filter lens (the shared Explorer's)
 - ./explorer-details-view.md - when working on the per-tab stats a plan pushes to the index for the Details view (moved)
 - ./inbox.md - when working on what a plan pushes for the Inbox (moved)
-- ./timeline.md - when looking for the Timeline, What Happened, History or Team Activity (removed)
+- ./history.md - when working on an item's History: what the index records, the `edited` events liveplanner reports, the History dialog, and the retired Timeline, What Happened and Team Activity
 - ./embeds.md - when working on Read-only embeds (`/embed`): the iframe-able share view
 - ./workbench-embeds.md - when a developer tool (an agent workbench, VS Code) frames the editor signed in: workbench tickets and sessions, the origin handshake, workbench messages, the selection reference
 - ./live-image-share.md - when working on Live image share link: Share-link-scoped `<img>`-able SVG at `/api/share/<code>/image.svg`, served by liveworkspace's previews ([Project previews](../006-project/project-snapshots.md))

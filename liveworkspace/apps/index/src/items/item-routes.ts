@@ -13,8 +13,8 @@ import { mintGrant } from '../grants';
 import { notFound, json, readObject, badRequest, forbidden, noContent, fail } from '../http';
 import { purgeRows, drainTombstonesSoon } from '../purge';
 import { type ItemRow, type Access, getItemRow } from '../rows';
-import { eventStatements, moveScopeStatements, bulkEventStatements } from '../timeline';
-import { expiringStatements } from '../share-expiry';
+import { eventStatements } from '../events';
+import { itemHistory } from '../history';
 import { recordVisitorCopy, recordVisitorOpen } from '../visitors';
 import { recordOpen } from './opens';
 import { insertItem, itemFor, optionalId } from './create';
@@ -30,6 +30,7 @@ export async function handleItem(ctx: RouteContext, id: string): Promise<Respons
     if (method === 'PATCH') return updateItem(ctx, id);
     if (method === 'DELETE') return deleteItem(ctx, id);
   }
+  if (segments.length === 3 && method === 'GET' && sub === 'history') return itemHistory(ctx, id);
   if (segments.length === 3 && method === 'POST') {
     if (sub === 'restore') return restoreItem(ctx, id);
     if (sub === 'copy') return copyItem(ctx, id);
@@ -122,8 +123,6 @@ async function updateItem(ctx: RouteContext, id: string): Promise<Response> {
   }
   if (folderId !== row.folder_id || teamId !== row.team_id || scope !== row.scope) {
     const teamChanged = teamId !== row.team_id;
-    // Its events go where it went (who sees its history is who reaches it), then the move is recorded there.
-    events.push(...moveScopeStatements(db, id, row.scope, scope));
     events.push(
       ...eventStatements(db, {
         itemId: id,
@@ -173,23 +172,6 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
   if (loaded instanceof Response) return loaded;
   const { row } = loaded;
   const offline = url.searchParams.get('reason') === 'offline';
-  // Taken offline into one browser, its person's Timeline says where (an event about no item, keeping its name
-  // and app).
-  const takenOffline = (now: number) => {
-    const actor = caller.person?.id ?? row.owner_id;
-    return bulkEventStatements(env.INDEX_DB, [
-      {
-        id: `off:${row.id}:${now}`,
-        app: row.app,
-        itemId: null,
-        type: 'taken_offline',
-        actorId: actor,
-        title: row.title,
-        at: now,
-        scopes: [`p:${actor}`],
-      },
-    ]);
-  };
   // A joined teammate taking a team item offline (livediagram/docs/specs/006-document/offline-mode.md "Take
   // Offline"): their copy is in their browser, and from the team's side it is a deletion, so the team's copy goes
   // to the team Trash rather than for good. Only its owner's Take Offline is a move.
@@ -197,7 +179,6 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
     offline && row.team_id !== null && caller.person !== null && caller.person.id !== row.owner_id;
   if (url.searchParams.get('permanent') === 'true' && !teammate) {
     const now = Date.now();
-    if (offline) await env.INDEX_DB.batch(takenOffline(now));
     await purgeRows(env, [{ id: row.id, app: row.app }], now, {
       actorId: caller.person?.id ?? null,
       ...(offline ? { detail: { reason: 'offline' } } : {}),
@@ -211,14 +192,11 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
   const db = env.INDEX_DB;
   const now = Date.now();
   const statements = [
-    ...(teammate ? takenOffline(now) : []),
     db
       .prepare(
         'UPDATE items SET trashed_at = ?, trash_reason = ? WHERE id = ? AND trashed_at IS NULL',
       )
       .bind(now, reason, id),
-    // A trashed item's links reach nothing, so its Share Link Expiring warning goes.
-    ...expiringStatements(db, id, now),
   ];
   // An empty item tidied away by its app is not news; one already in the Trash was recorded going there.
   if (reason === 'deleted' && row.trashed_at === null) {
@@ -243,8 +221,6 @@ async function restoreItem(ctx: RouteContext, id: string): Promise<Response> {
   const db = env.INDEX_DB;
   const statements = [
     db.prepare('UPDATE items SET trashed_at = NULL, trash_reason = NULL WHERE id = ?').bind(id),
-    // Back out of the Trash, its links work again: the warning is worked out again after the restore.
-    ...expiringStatements(db, id, Date.now()),
   ];
   if (loaded.row.trashed_at !== null) {
     statements.push(
@@ -316,7 +292,7 @@ async function copyItem(ctx: RouteContext, id: string): Promise<Response> {
     return fail(502, 'copy_failed');
   }
   touchItem(ctx.drive, row);
-  // Through a link: Copied by a Visitor, on the source's owner's Timeline.
+  // Through a link: Copied by a Visitor, in the source's owner's History.
   recordVisitorCopy(env, ctx.waitUntil, from, person, access, now);
   const ownAccess: Access = { level: 'edit', tabId: null, via: 'owner', code: null };
   return json({ item: await itemFor(env, person, row, ownAccess) }, { status: 201 });
@@ -344,7 +320,7 @@ async function grantItem(ctx: RouteContext, id: string): Promise<Response> {
     link: access.via === 'link' ? access.code : null,
   });
   if (!grant) return fail(503, 'grants_unavailable');
-  // Through a link: Opened by a Visitor, on the owner's Timeline.
+  // Through a link: Opened by a Visitor, in the owner's History.
   recordVisitorOpen(env, ctx.waitUntil, row, caller.person, access);
   return json(grant);
 }

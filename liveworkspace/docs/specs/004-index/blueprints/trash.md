@@ -29,16 +29,16 @@ Scope, by file:
 
 ### An item's Trash state
 
-| From      | Event                                                | To      | Effect                                                                                |
-| --------- | ---------------------------------------------------- | ------- | ------------------------------------------------------------------------------------- |
-| live      | `DELETE /items/:id`                                  | trashed | `trashed_at = now`, `trash_reason 'deleted'`; `trashed` event                         |
-| live      | `DELETE ?reason=empty`                               | trashed | reason `empty`; no event                                                              |
-| live      | daily empty clean-up                                 | trashed | reason `empty`, `empty_swept_for = updated_at`; no event                              |
-| trashed   | `POST /items/:id/restore`                            | live    | both cleared; `restored` event; `{ item }`                                            |
-| any       | `DELETE ?permanent=true`                             | purged  | tombstone; the app told at once; `204`                                                |
-| team item | a teammate's `DELETE ?reason=offline&permanent=true` | trashed | the team's copy to its Trash (not purged); `taken_offline` on the teammate's Timeline |
-| own item  | `DELETE ?reason=offline&permanent=true`              | purged  | `taken_offline` (`off:<item>:<now>`) on the person's Timeline                         |
-| trashed   | 30 days in the Trash                                 | purged  | daily sweep                                                                           |
+| From      | Event                                                | To      | Effect                                                        |
+| --------- | ---------------------------------------------------- | ------- | ------------------------------------------------------------- |
+| live      | `DELETE /items/:id`                                  | trashed | `trashed_at = now`, `trash_reason 'deleted'`; `trashed` event |
+| live      | `DELETE ?reason=empty`                               | trashed | reason `empty`; no event                                      |
+| live      | daily empty clean-up                                 | trashed | reason `empty`, `empty_swept_for = updated_at`; no event      |
+| trashed   | `POST /items/:id/restore`                            | live    | both cleared; `restored` event; `{ item }`                    |
+| any       | `DELETE ?permanent=true`                             | purged  | tombstone; the app told at once; `204`                        |
+| team item | a teammate's `DELETE ?reason=offline&permanent=true` | trashed | the team's copy to its Trash (not purged); no event           |
+| own item  | `DELETE ?reason=offline&permanent=true`              | purged  | no event (the item and its History go)                        |
+| trashed   | 30 days in the Trash                                 | purged  | daily sweep                                                   |
 
 Delete and restore need `edit` and `manage` (owner or team, never a link). An archived item keeps `archived_at` and
 its `a:<owner>` scope in the Trash, so a restore puts it back in Archived; the Trash's list and Empty Trash read the
@@ -54,7 +54,7 @@ person's `a:` scope with their own, and `sweepEmpty` passes archived items by ([
 ### Purging (`purgeRows`)
 
 50 items a batch, two statements each: a tombstone (`ON CONFLICT DO NOTHING`) and the row's delete (its favourites,
-opens, use days, links, passwords, Shared with me, collab and Timeline rows cascade). `drainTombstones` asks each
+opens, use days, links, passwords, Shared with me, collab rows and events cascade). `drainTombstones` asks each
 app `DELETE <app>/api/internal/items/:id`, 6 at a time; a `404` counts as done; confirmed rows go, failed ones get
 `attempts + 1`, `last_attempt_at`, `last_error`, all in one batch.
 
@@ -85,8 +85,8 @@ first 25 purged items are drained at once, and person notices sent.
 4. Everything else theirs: folders (defaults cascade), favourites, opens, use days, Shared with me, placement defaults,
    form reads, thread people; their id in threads' participants and mentions becomes `deleted`; actions assigned to
    or by them name `deleted`, their name beside it null; an `action_assigned` event's and delivery's detail naming
-   them as `assigneeId` take `deleted` and `assigneeName` null (the events through the `aa:` id range); Timeline rows only they saw, then their events no one else sees, then `actor_id
-'deleted'` and `actor_name NULL` on the rest; on account events (`item_id` null) whose detail's `personId` is
+   them as `assigneeId` take `deleted` and `assigneeName` null (the events through the `aa:` id range); their `favourited` events deleted, then `actor_id
+'deleted'` and `actor_name NULL` on the rest of their events; on account events (`item_id` null) whose detail's `personId` is
    them, `personId 'deleted'` and `memberName NULL`; their `drive_people` row; `actor_id 'deleted'`, `actor_name NULL`
    on webhook deliveries they did (`webhookDeliveryPurgeStatement`). Then the team audit log
    (`teamAuditPurgeStatements`): the rows of teams closed with them go; `actor_id 'deleted'`, `actor_name NULL` where

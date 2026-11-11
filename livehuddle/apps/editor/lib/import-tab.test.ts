@@ -91,7 +91,15 @@ describe('parseImportedTab — rejections (never throws)', () => {
 
 describe('parseImportedTab — malformed elements', () => {
   it('drops elements that would crash the re-mint or land as junk', () => {
-    const good = { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 };
+    const good = {
+      id: 's',
+      type: 'shape',
+      shape: 'focus-button',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+    };
     const result = parse(
       envelope({
         tab: {
@@ -152,7 +160,15 @@ describe('parseImportedTab, a former Plan tab', () => {
       width: 400,
       height: 300,
     };
-    const box = { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 };
+    const box = {
+      id: 's',
+      type: 'shape',
+      shape: 'focus-button',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+    };
     const tab = { ...validTab, kind: 'board', opensIn: 'plan', elements: [board, box] } as never;
     const r = parseImportedTab(JSON.stringify(envelope({ tab, items: [{ id: 'i' }] } as never)));
     expect(r.ok).toBe(true);

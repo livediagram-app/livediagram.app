@@ -36,14 +36,12 @@ import {
   RotationGlyph,
   RotationMenuIcon,
   SizeMenuIcon,
-  SquareMenuIcon,
 } from '@/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
   MenuGroupSeparator,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
-import { ShapeIcon } from '@/components/primitives/shape-icon';
 import { SizeSection } from '@liveworkspace/workbench/components/palette/SizeSection';
 
 import { OpacityRow } from '@/components/palette/context-menu-rows';
@@ -54,8 +52,7 @@ import { ElementMenuQuickBar } from './ElementMenuQuickBar';
 import { ElementAppearanceSections } from './ElementAppearanceSections';
 import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
 
-import { shapeKindLabel } from '@/lib/element-names';
-import { COMMON_SHAPES, ROTATION_ANGLES } from './context-menu-constants';
+import { ROTATION_ANGLES } from './context-menu-constants';
 import { useViewportHeight } from '@liveworkspace/workbench/hooks/ui/useViewportHeight';
 
 // Cursor position + which menu to show. `element` carries the clicked
@@ -107,8 +104,8 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     const hasImage = target.type === 'image' && target.imageId != null;
     const hasLink = target.link != null;
     // Regular shapes (not the dedicated icon glyph, not a self-drawing data
-    // shape which carries its own data) can morph to another common kind in
-    // place.
+    // shape which carries its own data) can reset to their kind's aspect ratio. The diagram shapes they once morphed
+    // between are retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5).
     // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") keeps its stored look
     // and kind and has no settings or menu section of its own: no Shape, Opacity or Style, whose writes it ignores.
     const retired = isRetiredElement(target);
@@ -192,25 +189,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               }}
               showReset={morphable}
             />
-          </MenuAccordionSection>
-        ) : null}
-        {/* Shape — morph to another common kind, preserving size + colour. */}
-        {morphable ? (
-          <MenuAccordionSection title="Shape" icon={<SquareMenuIcon />} {...sectionProps('shape')}>
-            <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
-              {COMMON_SHAPES.map((kind) => (
-                <SizeButton
-                  key={kind}
-                  label={shapeKindLabel(kind)}
-                  active={target.type === 'shape' && target.shape === kind}
-                  onClick={() => props.onSetShapeKind([target.id], kind)}
-                  onPointerEnter={onMouseHover(() => props.onPreviewShapeKind([target.id], kind))}
-                  onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
-                >
-                  <ShapeIcon kind={kind} />
-                </SizeButton>
-              ))}
-            </div>
           </MenuAccordionSection>
         ) : null}
         {/* Rotation — fixed snap angles. Each tile previews the orientation

@@ -9,7 +9,7 @@ import { CONNECTION_CONFIRM_GRACE_MS, CONNECTION_SWEEP_MAX } from './config';
 import { dropStatements, tellPassesRevoked, type DropRow } from './connection-rows';
 import type { Env } from './env';
 import { noContent, notFound } from './http';
-import { eventStatements } from './timeline';
+import { eventStatements } from './events';
 
 // PUT (confirm) and DELETE (remove) /app/items/:id/connections/:connectionId?tab=<tabId>, with `app`'s key.
 export async function handleAppConnection(

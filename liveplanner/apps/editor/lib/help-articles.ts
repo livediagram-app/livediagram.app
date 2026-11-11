@@ -59,6 +59,9 @@ export const HELP_ARTICLES = {
   planDashboards: 'plan/dashboards',
   planForms: 'plan/forms',
   planTour: 'plan/plan-tour',
+  // Automations (docs/specs/026-plan/automations.md "The Automations screen": How Rules Work). The Plan section's
+  // landing until the Automations article lands; then its own path.
+  planAutomations: 'plan/automations',
   links: 'plan/dashboards',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -78,7 +81,6 @@ export const HELP_ARTICLES = {
   recent: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   inbox: 'explorer/activity',
-  timeline: 'explorer/timeline',
   teamSpaces: 'explorer/team-spaces',
   explorerPage: 'explorer/explorer-page',
   explorerFilters: 'explorer/filters',
@@ -118,6 +120,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   planCards: {
     title: 'Learn about cards',
     description: 'Open a card, fill it in, and archive, trash or present it.',
+  },
+  planAutomations: {
+    title: 'Learn about automations',
+    description: 'Rules that move, assign and tell people about cards for you.',
   },
   planCardActivity: {
     title: 'Learn about card activity',
@@ -267,10 +273,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   explorerFilters: {
     title: 'Learn about search and filters',
     description: 'Narrow any list with words, chips or typed filters like made-by:ai.',
-  },
-  timeline: {
-    title: 'Learn about the Timeline',
-    description: 'What happened to your plans and your teams’, day by day.',
   },
   teamSpaces: {
     title: 'Learn about team spaces',

@@ -36,7 +36,7 @@ describe('inlineIconGap', () => {
 describe('ShapeInlineIconLayout', () => {
   it('lays the icon above the label at the shared size and gap', () => {
     const element = {
-      ...createShape('cloud', 0, 0),
+      ...createShape('room', 0, 0),
       width: 270,
       height: 180,
       iconId: 'cloud',

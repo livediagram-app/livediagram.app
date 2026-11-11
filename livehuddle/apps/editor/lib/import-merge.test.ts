@@ -17,7 +17,15 @@ describe('mergeImportedTab', () => {
   });
 
   it('leaves an ordinary import where it was', () => {
-    const shape = { id: 's', type: 'shape', shape: 'square', x: 0, y: 130, width: 9, height: 9 };
+    const shape = {
+      id: 's',
+      type: 'shape',
+      shape: 'focus-button',
+      x: 0,
+      y: 130,
+      width: 9,
+      height: 9,
+    };
     const out = mergeImportedTab(tab(), tab({ elements: [shape as Tab['elements'][number]] }));
     expect(out.elements[0]).toMatchObject({ y: 130 });
   });

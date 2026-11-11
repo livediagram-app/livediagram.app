@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, retiredArrowEnds, type Element } from '@livehuddle/document';
+import { createSticky, retiredArrowEnds, type Element } from '@livehuddle/document';
 import { applyOverlay, resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { buildRetiredArrowLinks } from '@/components/canvas/retired-arrow-links';
 import { storedPinnedArrow } from '@/test/retired-elements';
@@ -12,9 +12,9 @@ import {
 // docs/specs/008-canvas/drag-preview.md "The preview": each element reads its own part of the preview,
 // and only the elements whose part changed are told.
 
-const a = createShape('square', 0, 0);
-const b = createShape('square', 400, 0);
-const c = createShape('square', 0, 400);
+const a = createSticky(0, 0);
+const b = createSticky(400, 0);
+const c = createSticky(0, 400);
 // A stored arrow, retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4).
 const ab = storedPinnedArrow('ab', a.id, 'e', b.id, 'w');
 const BOARD: Element[] = [a, b, c, ab];

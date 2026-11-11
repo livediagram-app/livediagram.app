@@ -29,28 +29,8 @@ const SHARE_TYPES = [
 export const TEAM_ITEM_TYPES = ['Project', 'Design', 'Document'] as const;
 
 export const EXPLORER_TELEMETRY_EVENTS = {
-  // The Timeline view: its mode, a category or the actor filter, a page read, a card, stack or menu opened, an
-  // entry or a stack removed.
-  'Timeline·Changed': ['List', 'Calendar'],
-  'Timeline·Selected': [
-    'Everyone',
-    'Others',
-    'new',
-    'edits',
-    'renames',
-    'deletions',
-    'sharing',
-    'filing',
-    'favourites',
-    'other',
-  ],
-  'Timeline·Loaded': ['More', 'Retry'],
-  'Timeline·Opened': ['Card', 'Stack', 'Menu'],
-  'Timeline·Removed': ['Entry', 'Stack'],
-  // Home: What Happened, See Timeline, and the first run's welcome.
+  // Home: the first run's welcome. (The Timeline's events and What Happened's went with them in November 2026.)
   'Home·Selected': [
-    'WhatHappened',
-    'SeeTimeline',
     'Welcome.Blank',
     'Welcome.Template',
     'Welcome.AllTemplates',
@@ -58,7 +38,7 @@ export const EXPLORER_TELEMETRY_EVENTS = {
     'Welcome.StartBlank',
     'Welcome.SignIn',
   ],
-  'Home·Opened': ['Group', 'Welcome'],
+  'Home·Opened': ['Welcome'],
   // A failed read of Home retried.
   'Home·Loaded': ['Retry'],
   // The filter lens: a facet that gained a value, never the value.

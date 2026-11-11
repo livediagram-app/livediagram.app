@@ -51,7 +51,7 @@ export function listWords(app: App, filter: AppFilter): Words {
 // under it. Each app's kind has its own; a host can pass its own through <Explorer heroWords>.
 export type HeroWords = { question: string; lead: string };
 
-const LEAD = 'Jump back into what you use most, or see what changed while you were away.';
+const LEAD = 'Jump back into what you use most, or start something new.';
 
 const HERO_WORDS: Record<Kind, HeroWords> = {
   canvas: { question: 'what are you drawing today?', lead: LEAD },

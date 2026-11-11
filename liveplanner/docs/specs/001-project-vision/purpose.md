@@ -68,7 +68,7 @@ never arrives.
   a named group with Admin and Member roles and a shared library of projects and folders. A project lives in
   exactly one place: someone's own tree, or one team's library. Personal is the default; a team is opt-in.
 - **Persistence and history**: every change is saved; undo and redo step through your own recent edits, and
-  [timeline events](../013-workspace/timeline.md) record what happened to each project.
+  [History](../013-workspace/history.md) records what happened to each project.
 - **Machine access**: a REST API with signed-in tokens
   ([Public API and API tokens](../015-api/public-api-and-tokens.md)), an MCP server so AI tools can read and
   change boards, cards, sheets and forms ([MCP server](../015-api/mcp-server.md)), and the `liveplanner`

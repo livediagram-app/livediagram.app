@@ -10,7 +10,7 @@ import {
 const shape = (id: string, over: Record<string, unknown> = {}): Element => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'room',
   x: 0,
   y: 0,
   width: 10,
@@ -46,7 +46,7 @@ describe('tabToMarkdownText', () => {
     const lines = md(tab('Flow', [shape('a', { label: 'Start' })]));
     expect(lines[0]).toBe('# Flow');
     expect(lines).toContain('## Elements');
-    expect(lines).toContain('- **Start** (square)');
+    expect(lines).toContain('- **Start** (room)');
   });
 
   it('falls back to a default title when the tab is unnamed', () => {
@@ -64,9 +64,9 @@ describe('tabToMarkdownText', () => {
     );
     const order = lines.filter((l) => l.startsWith('- **'));
     expect(order).toEqual([
-      '- **UpperLeft** (square)',
-      '- **UpperRight** (square)',
-      '- **Lower** (square)',
+      '- **UpperLeft** (room)',
+      '- **UpperRight** (room)',
+      '- **Lower** (room)',
     ]);
   });
 

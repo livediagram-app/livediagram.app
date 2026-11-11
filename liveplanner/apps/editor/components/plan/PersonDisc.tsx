@@ -3,9 +3,24 @@
 // color-scheme.md "Dark palette rules"), and optically centred.
 import { GlyphDisc, IDENTITY_FILL, identityVars } from '@liveplanner/ui';
 import { initialsOf } from '@liveplanner/project';
-import type { ItemPerson } from '@liveplanner/items';
+import { AUTOMATION_PERSON_ID, type ItemPerson } from '@liveplanner/items';
+import { BoltIcon } from '@/components/automations/automation-glyphs';
 
 export function PersonDisc({ person, label }: { person: ItemPerson; label?: string }) {
+  // A rule's change is by Automation: its bolt on the brand tint, never the rule name's initials
+  // (docs/specs/026-plan/automations.md "On cards").
+  if (person.id === AUTOMATION_PERSON_ID)
+    return (
+      <GlyphDisc
+        size={20}
+        data-automation-disc=""
+        className="bg-brand-100 text-brand-700 dark:bg-brand-500/25 dark:text-brand-200"
+        aria-label={label}
+        aria-hidden={label ? undefined : true}
+      >
+        <BoltIcon size={11} aria-hidden />
+      </GlyphDisc>
+    );
   return (
     <GlyphDisc
       size={20}

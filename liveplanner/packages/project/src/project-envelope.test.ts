@@ -60,3 +60,23 @@ describe('parseProjectEnvelope', () => {
     expect(parsed.ok && parsed.envelope.project).toEqual({ id: 'd', name: 'n', tabs: [] });
   });
 });
+
+describe('the envelope and its Automations rules', () => {
+  const rule = { id: 'r1', name: 'Done stamp' } as never;
+  type Raw = { project: { automations?: unknown[] } };
+  it('carries the rules, and reads back the ones that look like rules', () => {
+    const text = projectToEnvelopeText({ id: 'd', name: 'n' }, [tab], 1, [], null, [], [], [rule]);
+    const raw = JSON.parse(text) as Raw;
+    expect(raw.project.automations).toEqual([rule]);
+    raw.project.automations!.push({ id: 7 }, null, 'x');
+    const parsed = parseProjectEnvelope(JSON.stringify(raw));
+    expect(parsed.ok && parsed.envelope.project.automations).toEqual([rule]);
+  });
+
+  it('writes none when the plan has none', () => {
+    const text = projectToEnvelopeText({ id: 'd', name: 'n' }, [tab], 1);
+    expect((JSON.parse(text) as Raw).project.automations).toBeUndefined();
+    const parsed = parseProjectEnvelope(text);
+    expect(parsed.ok && parsed.envelope.project.automations).toBeUndefined();
+  });
+});

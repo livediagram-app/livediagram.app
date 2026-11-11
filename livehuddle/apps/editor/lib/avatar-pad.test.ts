@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { avatarPadCore, createShape, type Element, type ShapeElement } from '@livehuddle/document';
+import {
+  avatarPadCore,
+  createShape,
+  createSticky,
+  type Element,
+  type ShapeElement,
+} from '@livehuddle/document';
 import {
   AVATAR_PAD_ARRIVAL_MS,
   AVATAR_PAD_MAX_ARRIVALS,
@@ -17,7 +23,7 @@ const pad = (id: string, x: number, y: number) =>
 
 describe('avatarPads', () => {
   it('keeps the pads in layer order and nothing else', () => {
-    const square = { ...createShape('square', 0, 0), id: 'sq' } as Element;
+    const square = { ...createSticky(0, 0), id: 'sq' } as Element;
     expect(avatarPads([pad('a', 0, 0), square, pad('b', 9, 9)]).map((p) => p.id)).toEqual([
       'a',
       'b',

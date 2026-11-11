@@ -266,7 +266,7 @@ export function SelectionPopover({
 
           {showDelete ? (
             <>
-              <HoverCard title="Delete" description="Delete this element (arrows too).">
+              <HoverCard title="Delete" description="Delete this element.">
                 <button
                   type="button"
                   onClick={onDelete}

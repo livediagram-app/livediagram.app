@@ -1,7 +1,6 @@
 // A team's members (teams.ts): inviting, roles, removing, answering an invitation and leaving every team.
 
 import type { SettingsApp } from '../settings.ts';
-import { teamScopes } from '../index-timeline.ts';
 import {
   type Actor,
   appOrNull,
@@ -29,7 +28,7 @@ import {
   UNEXPIRED,
 } from './reads.ts';
 import { newDeclineToken } from './tokens.ts';
-import { deleteTeamRows, deleteTeamStatements } from './manage.ts';
+import { deleteTeamRows } from './manage.ts';
 import { ANONYMISED_PERSON } from '@liveworkspace/index-client';
 
 export async function inviteMember(
@@ -103,7 +102,6 @@ export async function inviteMember(
           teamName: me.teamName,
           actor,
           at: now,
-          scopes: teamScopes(teamId, [invitee?.id]),
           detail: { memberName: email, personId: invitee?.id ?? null, role },
         },
         { sql: 'EXISTS (SELECT 1 FROM team_member WHERE id = ?)', args: [id] },
@@ -223,7 +221,6 @@ export async function setMemberRole(
         teamName: me.teamName,
         actor,
         at: now,
-        scopes: teamScopes(teamId, [target.userId]),
         detail: { personId: target.userId, memberName: target.memberName, role: rawRole },
       },
       {
@@ -260,7 +257,7 @@ export async function removeMember(
       .bind(teamId)
       .first<{ n: number }>();
     if ((joined?.n ?? 0) <= 1) {
-      await db.batch(await deleteTeamStatements(db, actor, teamId, me.teamName, now));
+      await db.batch(deleteTeamRows(db, teamId, now));
       return ok({ id: memberId, teamDeleted: true, removed });
     }
     if ((await adminCount(db, teamId)) <= 1) return fail(409, 'last_admin');
@@ -285,7 +282,6 @@ export async function removeMember(
               teamName: me.teamName,
               actor,
               at: now,
-              scopes: teamScopes(teamId, [target.userId]),
               detail: {
                 personId: target.userId,
                 memberName: target.memberName,
@@ -383,7 +379,6 @@ export async function answerInvitation(
         teamName: row.teamName,
         actor,
         at: now,
-        scopes: teamScopes(row.teamId, [actor.id]),
         detail: { personId: actor.id, memberName: actor.name || actor.email },
       },
       memberGuard(memberId, status, now),

@@ -213,8 +213,8 @@ people connect files and follow them.
   `CONNECTIONS_PER_ITEM`. The index makes that call only after checking the person may manage the host's links and
   edit the target, in the same request; the tab's name is the host's title as the index has it, not the browser's.
 - **Removing only takes access away.** Anyone who may edit the host may remove its connected tab, which deletes a
-  pass on a target they may not own. That narrows who reaches the target and never widens it; the target's owner sees
-  it on the Timeline as `unshared`.
+  pass on a target they may not own. That narrows who reaches the target and never widens it; the target's History
+  shows it as `unshared`.
 - **Passes are links.** They count towards the target's `SHARE_LINKS_PER_ITEM`, are rate limited, closed by its
   share password, never expire unless changed in Share, and are listed in its Share dialog, so its owner sees and can
   end every way in.

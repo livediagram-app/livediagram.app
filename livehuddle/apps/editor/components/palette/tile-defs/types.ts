@@ -6,7 +6,6 @@ import type { SpaceTileGroup } from '../space-categories';
 export const TILE_GLYPH_PX = 18;
 
 export type PaletteTileSection =
-  | 'shapes'
   | 'tools'
   // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md), and the collaboration elements
   // with it (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").

@@ -1,22 +1,22 @@
 tab edge-tab "Edge cases" · 30 elements: 22 boxes, 8 arrows · 18 unknown
-square huge "Huge"
+signpost huge "Huge"
 ? boundary frame-a "A"
 ? boundary frame-b "B"
-square both "In both"
-square bare
-square quoted "Line one\nsays \"hi\" → there | here"
-square tilted
-square secret
+signpost both "In both"
+signpost bare
+signpost quoted "Line one\nsays \"hi\" → there | here"
+signpost tilted
+signpost secret
 ? hologram holo "Unknown type"
 ? blob blob
-square id:"My node" "Unsafe id"
-square Q1 "Short id"
-square abcd "Slug prefix"
-square abcd9 "Longer id"
+signpost id:"My node" "Unsafe id"
+signpost Q1 "Short id"
+signpost abcd "Slug prefix"
+signpost abcd9 "Longer id"
 ? table ragged
 sticky customer "Customer"
 ? freehand lone
-square splitter
+signpost splitter
 freehand ×3 (1 closed)
 ? hologram nowhere "No geometry"
 ? arrow par-1 "one"

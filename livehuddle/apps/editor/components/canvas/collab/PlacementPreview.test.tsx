@@ -85,9 +85,9 @@ describe('placingKind', () => {
     expect(placingKind(null, 'room', true)).toBe('room');
   });
 
-  it('leaves text, stickies and the generic shapes to the dashed footprint and the draw box', () => {
-    expect(placingKind({ type: 'shape', kind: 'circle' }, null)).toBeNull();
-    expect(placingKind(null, 'square')).toBeNull();
+  it('leaves text, stickies and icons to the dashed footprint and the draw box', () => {
+    expect(placingKind({ type: 'shape', kind: 'icon' }, null)).toBeNull();
+    expect(placingKind(null, 'icon')).toBeNull();
     expect(placingKind({ type: 'text' }, null)).toBeNull();
   });
 });

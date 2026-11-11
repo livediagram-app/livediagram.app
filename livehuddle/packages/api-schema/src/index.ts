@@ -310,7 +310,7 @@ export * from './telemetry-schema';
 export * from './timing-telemetry';
 export * from './server-emitted-events';
 export * from './error-telemetry';
-export * from './timeline';
+export * from './document-conversion';
 export * from './activity';
 export * from './responses';
 export * from './trash';
@@ -344,8 +344,6 @@ export * from '@liveworkspace/api-schema/within-reach';
 export * from '@liveworkspace/api-schema/creation-use';
 // Document views and ref refusals (docs/specs/024-agents/document-views.md).
 export * from './document-views';
-// The diagram lint's report (docs/specs/024-agents/diagram-lint.md).
-export * from './lint';
 export * from '@liveworkspace/api-schema/ref-errors';
 // The retired returning-visitor note's storage names, and the snapshot SVG helpers
 // (docs/specs/006-document/document-snapshots.md).

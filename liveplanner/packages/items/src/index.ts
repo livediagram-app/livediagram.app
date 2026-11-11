@@ -119,3 +119,4 @@ export * from './built-in-field-labels';
 export * from './built-in-field-retype';
 export * from './field-filter-removal';
 export * from './field-retype-impact';
+export * from './automation';

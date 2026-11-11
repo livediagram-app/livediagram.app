@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   RETIRED_ARROW_CARD_HEIGHT,
   RETIRED_ARROW_CARD_WIDTH,
-  createShape,
+  createSticky,
   retiredArrowEnds,
   type Element,
   type RetiredArrowElement,
@@ -33,8 +33,8 @@ vi.mock('@/lib/telemetry', () => ({ track: () => {} }));
 
 afterEach(cleanup);
 
-const a = { ...createShape('square', 0, 0), id: 'a', width: 100, height: 100 } as Element;
-const b = { ...createShape('square', 400, 0), id: 'b', width: 100, height: 100 } as Element;
+const a = { ...createSticky(0, 0), id: 'a', width: 100, height: 100 } as Element;
+const b = { ...createSticky(400, 0), id: 'b', width: 100, height: 100 } as Element;
 const pinned = storedPinnedArrow('ab', 'a', 'e', 'b', 'w', { label: 'calls' });
 
 type Role = 'edit' | 'participate' | 'view';

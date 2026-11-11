@@ -5,7 +5,7 @@ import { ridingElements } from '@liveworkspace/workbench/lib/drag-ride';
 
 // docs/specs/008-canvas/drag-preview.md "Moves ride an offset": what a preview only translates rides an offset.
 
-const box = (id: string, x: number, y = 0) => ({ ...createShape('square', x, y), id });
+const box = (id: string, x: number, y = 0) => ({ ...createShape('focus-button', x, y), id });
 const a = box('a', 0);
 const b = box('b', 400);
 // A retired arrow pinned between them (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"):

@@ -14,26 +14,26 @@ const at = (tab: Tab, id: string) => tab.elements.find((e) => e.id === id) as Bo
 
 describe('placement combinations', () => {
   it('reads a side with align, and refuses an empty alignTo', () => {
-    const parsed = parseEditOperations('add square align:n4 below:f2');
+    const parsed = parseEditOperations('add signpost align:n4 below:f2');
     expect('operations' in parsed ? parsed.operations[0] : null).toMatchObject({
       place: { rel: 'below', ref: 'f2', alignTo: 'n4' },
     });
     // Two alignments in one placement say two things.
-    expect('errors' in parseEditOperations('add square align:n4 align:n5 below:f2')).toBe(true);
+    expect('errors' in parseEditOperations('add signpost align:n4 align:n5 below:f2')).toBe(true);
     expect(placementIssue({ rel: 'below', ref: 'f2', alignTo: '' })).toMatch(
       /"alignTo" a non-empty selector/,
     );
   });
 
   it('refuses an alignment to nothing or to an arrow', () => {
-    expect(refused(run('add square below:f2 align:nowhere'))).toBeTruthy();
+    expect(refused(run('add signpost below:f2 align:nowhere'))).toBeTruthy();
     const arrowId = checkoutFlow().elements.find((e) => e.type === 'arrow')!.id;
-    const outcome = run(`add square below:f2 align:${arrowId}`);
+    const outcome = run(`add signpost below:f2 align:${arrowId}`);
     expect(JSON.stringify(refused(outcome))).toMatch(/an arrow; align to a box/);
   });
 
   it('centres a box placed right of a frame on the box it aligns to, across the side', () => {
-    const { tab } = applied(run('add square id=x label=X right-of:f2 align:n4'));
+    const { tab } = applied(run('add signpost id=x label=X right-of:f2 align:n4'));
     const [x, n4] = [at(tab, 'x'), at(tab, 'n4')];
     expect(x.y + x.height / 2).toBe(n4.y + n4.height / 2);
     expect(x.x).toBeGreaterThan(at(tab, 'f2').x + at(tab, 'f2').width);

@@ -3,8 +3,6 @@ import type { BoxedElement } from './index';
 import {
   INDICATOR_MIDDLE_CLEARANCE_PX,
   INDICATOR_OUTLINE_CLEARANCE_PX,
-  topAnchor,
-  footerAnchor,
   indicatorRings,
   contentBox,
   contentShift,
@@ -40,9 +38,10 @@ describe('placeIndicators', () => {
     expect(250 - (box!.x + box!.width)).toBe(box!.y);
   });
 
-  it('slides along the diagonal of a circle and stays inside it', () => {
-    const el = shape('circle', 160, 160);
-    const box = place(el, 0, 'top-right')!;
+  // A box rounded to half its side is a circle: the cluster slides along its diagonal.
+  it('slides along the diagonal of a fully rounded box and stays inside it', () => {
+    const el = shape('room', 160, 160);
+    const box = place(el, 80, 'top-right')!;
     expect(box).not.toBeNull();
     expect(box.y).toBeGreaterThan(20);
     const r = 80;
@@ -56,45 +55,28 @@ describe('placeIndicators', () => {
   });
 
   it('never reaches the middle band', () => {
-    const el = shape('circle', 160, 160);
-    const box = place(el, 0, 'top-right')!;
+    const el = shape('room', 160, 160);
+    const box = place(el, 80, 'top-right')!;
     expect(box.y + box.height).toBeLessThanOrEqual(80 - INDICATOR_MIDDLE_CLEARANCE_PX);
   });
 
-  it('reports no fit on a small diamond, a short pill and a thin bar', () => {
-    expect(place(shape('diamond', 120, 120), 0, 'top-right')).toBeNull();
-    expect(place(shape('stadium', 140, 40), 0, 'top-right')).toBeNull();
-    expect(place(shape('square', 200, 16), 0, 'top-right')).toBeNull();
+  it('reports no fit on a short pill and a thin bar', () => {
+    expect(place(shape('room', 140, 40), 20, 'top-right')).toBeNull();
+    expect(place(shape('focus-button', 200, 16), 0, 'top-right')).toBeNull();
   });
 
-  it('fits a wide diamond whose corner has room', () => {
-    expect(place(shape('diamond', 420, 260), 0, 'top-right')).not.toBeNull();
-  });
-
-  it('starts a box footer at the bottom-left and a circle footer at the bottom centre', () => {
+  it('starts a box footer at the bottom-left', () => {
     const rect = shape('mind-node', 250, 116);
-    const left = place(rect, 14, footerAnchor(rect))!;
+    const left = place(rect, 14, 'bottom-left')!;
     expect(left.x).toBe(116 - (left.y + left.height));
-    const circle = shape('circle', 180, 180);
-    expect(footerAnchor(circle)).toBe('bottom-centre');
-    const centre = place(circle, 0, 'bottom-centre')!;
-    expect(centre.x + centre.width / 2).toBe(90);
-    expect(centre.y).toBeGreaterThanOrEqual(90 + INDICATOR_MIDDLE_CLEARANCE_PX);
   });
 
   it('has nothing to place against on an empty element', () => {
-    expect(place(shape('square', 0, 0), 0, 'top-right')).toBeNull();
-  });
-
-  it('puts the pip on a hexagon’s edge, not in the empty box corner', () => {
-    const el = shape('hexagon', 220, 140);
-    const inset = pipInset(indicatorRings(el, 0), 220, 140, false)!;
-    expect(inset.x).toBeGreaterThan(20);
-    expect(inset.x).toBe(inset.y);
+    expect(place(shape('focus-button', 0, 0), 0, 'top-right')).toBeNull();
   });
 
   it('puts the pip on a rounded box’s corner curve', () => {
-    const inset = pipInset(indicatorRings(shape('mind-node', 250, 116), 14), 250, 116, false)!;
+    const inset = pipInset(indicatorRings(shape('mind-node', 250, 116), 14), 250, 116)!;
     expect(inset.x).toBeGreaterThan(2);
     expect(inset.x).toBeLessThan(6);
   });
@@ -143,32 +125,6 @@ describe('placeIndicators', () => {
     expect(contentBox({ ...base, label: '  ', textSize: 'md' })).toBeNull();
     const top = contentBox({ ...base, label: 'Hi', textSize: 'md', alignY: 'top' })!;
     expect(top.y).toBe(14);
-  });
-
-  it('centres Top along the top of round and pointed shapes, not boxes', () => {
-    for (const kind of ['circle', 'diamond', 'hexagon', 'cloud', 'triangle'] as const) {
-      expect(topAnchor(shape(kind, 200, 200))).toBe('top-centre');
-      expect(footerAnchor(shape(kind, 200, 200))).toBe('bottom-centre');
-    }
-    for (const kind of ['square', 'mind-node', 'stadium', 'browser'] as const) {
-      expect(topAnchor(shape(kind, 200, 200))).toBe('top-right');
-      expect(footerAnchor(shape(kind, 200, 200))).toBe('bottom-left');
-    }
-  });
-
-  it('sits a centred cluster inside the top of a circle and a hexagon', () => {
-    const circle = place(shape('circle', 200, 200), 0, 'top-centre')!;
-    expect(circle.x + circle.width / 2).toBe(100);
-    expect(circle.y).toBeGreaterThan(INDICATOR_OUTLINE_CLEARANCE_PX);
-    const hex = place(shape('hexagon', 250, 150), 0, 'top-centre')!;
-    expect(hex.x + hex.width / 2).toBe(125);
-  });
-
-  it('puts a centred pip on a diamond’s apex', () => {
-    const el = shape('diamond', 160, 120);
-    const inset = pipInset(indicatorRings(el, 0), 160, 120, true)!;
-    expect(inset.x).toBe(80);
-    expect(inset.y).toBeLessThan(6);
   });
 
   it('counts an inline icon above the label in the content box', () => {
@@ -220,8 +176,8 @@ describe('placeIndicators', () => {
   });
 
   it('finds no pip without rings or without a hit', () => {
-    expect(pipInset([], 100, 100, false)).toBeNull();
-    // A ring far from both search lines.
+    expect(pipInset([], 100, 100)).toBeNull();
+    // A ring far from the search line.
     const off = [
       [
         { x: 0, y: 90 },
@@ -230,8 +186,7 @@ describe('placeIndicators', () => {
         { x: 0, y: 100 },
       ],
     ];
-    expect(pipInset(off, 100, 100, true)).toBeNull();
-    expect(pipInset(off, 100, 100, false)).toBeNull();
+    expect(pipInset(off, 100, 100)).toBeNull();
   });
 
   it('keeps clear of a detail ring drawn inside the shape', () => {

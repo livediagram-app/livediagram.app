@@ -9,12 +9,6 @@ import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { requestToolbarSearch } from '@liveworkspace/workbench/lib/toolbar-search-request';
 
-// Shape kinds that have a single-key palette shortcut: the common
-// flowchart set. The rest of the ShapeKind union (stadium, document,
-// cloud, devices, etc.) has no memorable free letter and stays a click
-// away in the palette.
-type ShortcutShape = 'square' | 'circle' | 'diamond' | 'cylinder' | 'hexagon' | 'parallelogram';
-
 export type EditorKeyboardShortcutsDeps = {
   // Modal-interaction state. Escape clears whichever is active.
   formatSourceId: string | null;
@@ -60,7 +54,6 @@ export type EditorKeyboardShortcutsDeps = {
   // Element-add callbacks. T and N fire the dedicated handlers, each mirroring its palette counterpart so the
   // keyboard route reaches the same code path as the click route. No `9`: livehuddle adds no image
   // (docs/specs/002-project-scope/not-in-livehuddle.md "Media: Image and Link card").
-  addShape: (kind: ShortcutShape) => void;
   addText: () => void;
   addSticky: () => void;
   // Cmd/Ctrl+A: select every element on the active tab at once.
@@ -245,7 +238,7 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
     live.onCut();
     return true;
   }
-  // Duplicate. Plain `d` is Diamond; the modifier disambiguates.
+  // Duplicate.
   if (lower === 'd') {
     e.preventDefault();
     live.onDuplicate();

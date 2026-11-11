@@ -2,7 +2,7 @@
 // shape's label over LABEL_CAP_MAX keeps its heading and moves the whole text into its note; an arrow's is cut; any other element's label is its content and stays whole. A
 // shape whose label no longer fits grows around its centre, never shrinking.
 
-import { capLabel, labelBoxSize, type Element } from '@livehuddle/document';
+import { SHAPE_KINDS, capLabel, labelBoxSize, type Element } from '@livehuddle/document';
 
 type LabelWrite = { label: string; note?: string; capped: boolean };
 
@@ -26,6 +26,9 @@ export type Fit = { widened?: [number, number]; taller?: [number, number] };
 export function fitToLabel(before: Element, el: Element): { el: Element; fit: Fit } {
   if (el.type !== 'shape' || before.type !== 'shape' || el.fixedSize || el.textSize === 'scale')
     return { el, fit: {} };
+  // A retired kind (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") has no size of its own to
+  // fit: it keeps the box it was stored with.
+  if (!SHAPE_KINDS.has(el.shape) || !SHAPE_KINDS.has(before.shape)) return { el, fit: {} };
   const was = labelBoxSize(before.label, before.shape);
   const now = labelBoxSize(el.label, el.shape);
   const grown = (size: number, old: number, needed: number) =>

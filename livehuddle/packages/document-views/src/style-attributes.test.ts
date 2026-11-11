@@ -28,7 +28,7 @@ describe('styleAttributesOf', () => {
     } as unknown as Element;
     expect(style(image)).toBe('stroke="dark slate"');
     const blob = {
-      ...shapeAt('square', 'b', 0, 0),
+      ...shapeAt('signpost', 'b', 0, 0),
       shape: 'blob',
       fillColor: '#fff',
     } as unknown as Element;
@@ -37,7 +37,7 @@ describe('styleAttributesOf', () => {
 
   it('prints numbers and flags, and skips values it cannot print', () => {
     const el = {
-      ...shapeAt('square', 'x', 0, 0),
+      ...shapeAt('signpost', 'x', 0, 0),
       textSize: 12,
       font: true,
       fillColor: { r: 1 },
@@ -47,7 +47,7 @@ describe('styleAttributesOf', () => {
 
   it('builds each factory once per render', () => {
     const baselineOf = styleBaselines();
-    const a = shapeAt('square', 'a', 0, 0);
-    expect(baselineOf(a)).toBe(baselineOf(shapeAt('square', 'b', 9, 9)));
+    const a = shapeAt('signpost', 'a', 0, 0);
+    expect(baselineOf(a)).toBe(baselineOf(shapeAt('signpost', 'b', 9, 9)));
   });
 });

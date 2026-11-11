@@ -5,9 +5,27 @@ import { hasLegacyGroups, isValidElement, migrateLegacyGroups, type Element } fr
 // groupId, and an arrow end can be pinned to the group's union box.
 const legacy = (): Element[] =>
   [
-    { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 80, groupId: 'g' },
-    { id: 'b', type: 'shape', shape: 'square', x: 200, y: 0, width: 100, height: 80, groupId: 'g' },
-    { id: 'c', type: 'shape', shape: 'square', x: 0, y: 300, width: 50, height: 50 },
+    {
+      id: 'a',
+      type: 'shape',
+      shape: 'focus-button',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 80,
+      groupId: 'g',
+    },
+    {
+      id: 'b',
+      type: 'shape',
+      shape: 'focus-button',
+      x: 200,
+      y: 0,
+      width: 100,
+      height: 80,
+      groupId: 'g',
+    },
+    { id: 'c', type: 'shape', shape: 'focus-button', x: 0, y: 300, width: 50, height: 50 },
     {
       id: 'arr',
       type: 'arrow',

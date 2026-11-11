@@ -99,8 +99,6 @@ export const ELEMENT_FIELD_NAMES = {
     'strokeWidth',
     'strokeStyle',
     'borderRadius',
-    'accentEdge',
-    'accentEdgeColor',
     'colorPreset',
     'strokeSwatch',
     'fillSwatch',

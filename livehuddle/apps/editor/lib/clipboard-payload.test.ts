@@ -19,7 +19,7 @@ import {
 const shape = (id: string, over: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 120,

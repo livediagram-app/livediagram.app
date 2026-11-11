@@ -13,7 +13,7 @@ import type { TabLoadState } from './editor-page-helpers';
 const box = {
   id: 'b1',
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 10,
   y: 20,
   width: 300,

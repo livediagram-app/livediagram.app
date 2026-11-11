@@ -25,7 +25,7 @@ import { PEN_INK } from './pen-colours';
 
 describe('defaultPadding', () => {
   it('shapes get a small inset so labels read inside the stroke', () => {
-    expect(defaultPadding(createShape('square', 0, 0))).toBe('sm');
+    expect(defaultPadding(createShape('focus-button', 0, 0))).toBe('sm');
   });
 
   it('text elements have no padding so the bounding box hugs the glyphs', () => {
@@ -60,7 +60,7 @@ describe('PADDING_PX lookup', () => {
 
 describe('defaultTextColor', () => {
   it('shapes get brand-800 so labels sit on the brand-50 fill with high contrast', () => {
-    expect(defaultTextColor(createShape('square', 0, 0))).toBe('#075985');
+    expect(defaultTextColor(createShape('focus-button', 0, 0))).toBe('#075985');
   });
 
   it('stickies get a deep amber that pairs with the amber-100 fill', () => {
@@ -78,7 +78,10 @@ describe('defaultTextAlign', () => {
   });
 
   it('shapes centre their labels horizontally and vertically', () => {
-    expect(defaultTextAlign(createShape('square', 0, 0))).toEqual({ x: 'center', y: 'middle' });
+    expect(defaultTextAlign(createShape('focus-button', 0, 0))).toEqual({
+      x: 'center',
+      y: 'middle',
+    });
   });
 
   it('text elements also centre by default (caller can override)', () => {
@@ -88,7 +91,7 @@ describe('defaultTextAlign', () => {
 
 describe('defaultFillColor', () => {
   it('shapes fill with brand-50', () => {
-    expect(defaultFillColor(createShape('square', 0, 0))).toBe('#f0f9ff');
+    expect(defaultFillColor(createShape('focus-button', 0, 0))).toBe('#f0f9ff');
   });
 
   it('stickies fill with amber-100', () => {
@@ -102,7 +105,7 @@ describe('defaultFillColor', () => {
 
 describe('defaultStrokeColor', () => {
   it('shapes stroke with brand-500', () => {
-    expect(defaultStrokeColor(createShape('square', 0, 0))).toBe('#0ea5e9');
+    expect(defaultStrokeColor(createShape('focus-button', 0, 0))).toBe('#0ea5e9');
   });
 
   it('stickies stroke with amber-200 (subtle border so the corner peel reads)', () => {

@@ -187,6 +187,11 @@ const TAGS = [
     description:
       'Spreadsheet tabs on the canvas: cells, formulas and formatting by row and column id, live for everyone with the plan open.',
   },
+  {
+    name: 'Automations',
+    description:
+      "A plan's rules: a trigger, conditions and actions that run on its cards, and the Run Log of what they did.",
+  },
   { name: 'Sharing', description: 'Share links, passwords, and the plans shared with you.' },
   { name: 'Folders', description: 'Organise plans into a personal or team folder tree.' },
   {

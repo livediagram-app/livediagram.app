@@ -6,7 +6,15 @@ import { isValidTab } from './validate';
 import type { Tab } from './index';
 
 // Pages mode moved out to livedocuments: a tab stored in it opens in Diagram with its ordinary elements.
-const square = { id: 'sq', type: 'shape', shape: 'square', x: 0, y: 0, width: 120, height: 80 };
+const square = {
+  id: 'sq',
+  type: 'shape',
+  shape: 'focus-button',
+  x: 0,
+  y: 0,
+  width: 120,
+  height: 80,
+};
 const text = { id: 'tx', type: 'text', x: 0, y: 200, width: 200, height: 40, label: 'Title' };
 const tabWindow = {
   id: 'tw',

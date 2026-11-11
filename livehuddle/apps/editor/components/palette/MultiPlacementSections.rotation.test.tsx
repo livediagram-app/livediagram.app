@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement, type Element } from '@livehuddle/document';
+import { createSticky, type BoxedElement, type Element } from '@livehuddle/document';
 import { storedAnnotation } from '@/test/retired-elements';
 import { MultiPlacementSections } from './MultiPlacementSections';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
@@ -35,7 +35,7 @@ function menu(sel: Element[]) {
 const note = (id: string, rotation?: number) =>
   storedAnnotation(id, { x: 0, y: 0, width: 44, height: 44 }, rotation ? { rotation } : {});
 const square = (id: string, rotation: number) =>
-  ({ ...createShape('square', 0, 0), id, rotation }) as Element;
+  ({ ...createSticky(0, 0), id, rotation }) as Element;
 
 describe('the multi-selection Rotation', () => {
   it('is not offered for a selection of only annotation markers', () => {

@@ -61,7 +61,7 @@ describe('countElements (VW9) and threadCounts (VW11)', () => {
     const els: Element[] = [
       retiredShapeAt('boundary', 'f', 0, 0),
       retiredShapeAt('lane', 'l', 0, 0),
-      shapeAt('square', 's', 0, 0),
+      shapeAt('signpost', 's', 0, 0),
       createText(0, 0),
       { id: 'u', type: 'hologram' } as unknown as Element,
       arrowBetween('a', 's', 'f'),

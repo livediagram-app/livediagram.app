@@ -6,7 +6,7 @@ import { flowWith, run } from '../fixtures/run';
 
 describe('test', () => {
   it('passes when the element holds the values, and changes nothing', () => {
-    const outcome = applied(run('test n3 label=Login shape=square text=sm'));
+    const outcome = applied(run('test n3 label=Login shape=signpost text=sm'));
     expect(outcome.results).toEqual([]);
     expect(outcome.elementOps).toEqual([]);
   });

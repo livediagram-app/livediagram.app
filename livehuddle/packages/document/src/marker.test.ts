@@ -24,20 +24,20 @@ describe('markerStrokes', () => {
   const seed = sketchSeed('marker');
 
   it('is the same for the same element, and differs between elements', () => {
-    const box = outlineOfBox('square', 200, 100, 8, 1.5);
+    const box = outlineOfBox('focus-button', 200, 100, 8, 1.5);
     expect(markerStrokes(box, seed)).toEqual(markerStrokes(box, seed));
     expect(markerStrokes(box, seed)).not.toEqual(markerStrokes(box, sketchSeed('other')));
   });
 
   it('draws one stroke per edge, never doubled, dealt alternately into two layers', () => {
-    const [a, b] = markerStrokes(outlineOfBox('square', 200, 100, 0, 1.5), seed);
+    const [a, b] = markerStrokes(outlineOfBox('focus-button', 200, 100, 0, 1.5), seed);
     // Four edges: two in each layer, so every corner is a crossing between the layers.
     expect(strokes(a)).toBe(2);
     expect(strokes(b)).toBe(2);
   });
 
   it('draws a straight edge and the rounded corner after it in one gesture', () => {
-    const [a, b] = markerStrokes(outlineOfBox('square', 200, 100, 12, 1.5), seed);
+    const [a, b] = markerStrokes(outlineOfBox('focus-button', 200, 100, 12, 1.5), seed);
     // Four lines and four corners make four strokes, not eight.
     expect(strokes(a) + strokes(b)).toBe(4);
   });
@@ -82,7 +82,7 @@ describe('markerStrokes', () => {
 });
 
 describe('markerColouring', () => {
-  const rect = (w: number, h: number) => outlineOfBox('square', w, h, 0, 0).area!;
+  const rect = (w: number, h: number) => outlineOfBox('focus-button', w, h, 0, 0).area!;
 
   it('colours an area in overlapping rows dealt into two layers', () => {
     const { streaks, nibPx } = markerColouring(rect(240, 120), 7);

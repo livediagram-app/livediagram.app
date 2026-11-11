@@ -22,7 +22,7 @@ let ctx: Record<string, unknown>;
 vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ctx }));
 
 const square = (over: Record<string, unknown> = {}) =>
-  ({ ...createShape('square', 0, 0), id: 'sq', ...over }) as Element;
+  ({ ...createShape('room', 0, 0), id: 'sq', label: undefined, ...over }) as Element;
 
 function open(level: 'view' | 'participate', target: Element, over: Record<string, unknown> = {}) {
   ctx = {
@@ -59,7 +59,7 @@ describe('ReadOnlyElementMenuHost', () => {
         note: 'Remember',
       }),
     );
-    expect(screen.getByText('Square')).toBeTruthy();
+    expect(screen.getByText('Room')).toBeTruthy();
     expect(rows()).toEqual(['Add Comment', 'Open Link', 'View Note', 'Copy Text']);
   });
 

@@ -10,8 +10,7 @@ import { LOOK_MD_MAX_NODES } from '@liveworkspace/model-core/look-size';
 import { createShape } from './shape-factory';
 import { createSticky, createText } from './factories';
 import { migrateStoredElements } from './stored-elements';
-import { coerceShapeKind } from './validate';
-import type { Element as DocElement } from './index';
+import type { Element as DocElement, ShapeKind } from './index';
 import { isRecord } from '@liveworkspace/model-core/is-record';
 import { isRetiredElement } from './retired-kinds';
 
@@ -52,7 +51,8 @@ function withTextLabel(el: Raw): Raw {
 // kind (cached: every element of a large diagram asks).
 const factoryCache = new Map<string, Raw>();
 function factoryOf(el: Raw): Raw | undefined {
-  const kind = el.type === 'shape' ? `shape:${coerceShapeKind(str(el.shape))}` : str(el.type);
+  // A shape here is of a kind livehuddle has: normaliseElement returns a retired one before asking.
+  const kind = el.type === 'shape' ? `shape:${str(el.shape)}` : str(el.type);
   if (factoryCache.has(kind)) return factoryCache.get(kind);
   const made: Raw | undefined =
     el.type === 'text'
@@ -60,7 +60,7 @@ function factoryOf(el: Raw): Raw | undefined {
       : el.type === 'sticky'
         ? createSticky(0, 0)
         : el.type === 'shape'
-          ? createShape(coerceShapeKind(str(el.shape)), 0, 0)
+          ? createShape(str(el.shape) as ShapeKind, 0, 0)
           : undefined;
   if (made) factoryCache.set(kind, made);
   return made;
@@ -95,19 +95,11 @@ export function mergeElementUpdate(prev: unknown, patch: unknown): Raw {
 // Raw boxes take the graph look's text size by count (look-size.ts): past LOOK_MD_MAX_NODES labelled boxes, one that
 // gives no `textSize` takes `sm` before the factory's `md` fills in, so twenty hand-placed boxes do not wrap their
 // names mid-word.
-const PLAIN_BOX_EXCLUDED = new Set([
-  'code-block',
-  'bar-chart',
-  'pie-chart',
-  'line-chart',
-  'legend',
-]);
 const isPlainBox = (el: unknown): el is Raw =>
   isRecord(el) &&
   el.type === 'shape' &&
   typeof el.label === 'string' &&
   el.label.trim() !== '' &&
-  !PLAIN_BOX_EXCLUDED.has(String(el.shape)) &&
   !isRetiredElement(el as { type: string; shape?: unknown });
 function withLookTextSize(elements: unknown[], kept: ReadonlySet<string>): unknown[] {
   if (elements.filter(isPlainBox).length <= LOOK_MD_MAX_NODES) return elements;

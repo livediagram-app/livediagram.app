@@ -33,7 +33,7 @@ import {
 } from '@liveworkspace/index-client';
 import { loadItem, type Loaded } from '../access';
 import { sharedWithUpsert } from '../items';
-import { FUTURE_SLACK_MS } from '../timeline';
+import { FUTURE_SLACK_MS } from '../events';
 import { isId } from '../codec';
 import type { PersonContext } from '../context';
 import type { Env } from '../env';

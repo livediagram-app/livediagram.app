@@ -22,8 +22,8 @@ describe('the self-drawing shape family', () => {
 
   it('leaves the ordinary shapes alone', () => {
     // A regression here means a plain box lost its label, which is the user-visible cost of a guard that over-claims.
-    expect(isSelfDrawingShape('square')).toBe(false);
-    expect(isSelfDrawingShape('circle')).toBe(false);
+    expect(isSelfDrawingShape('focus-button')).toBe(false);
+    expect(isSelfDrawingShape('room')).toBe(false);
     expect(isSelfDrawingShape('icon')).toBe(false);
   });
 });

@@ -35,7 +35,7 @@ export const EXPLORER_MAIN = 'mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 pb
 /** A shape standing in for content while it loads. */
 export const SKELETON = 'rounded-md bg-slate-200/70 motion-safe:animate-pulse dark:bg-slate-800';
 
-/** A section heading's text link at its end (Home's See All and See Timeline): a line of text, its tap area reaching
+/** A section heading's text link at its end (Home's See More and See All): a line of text, its tap area reaching
  *  a finger's 44px on a touch screen without growing the line. */
 export const SECTION_LINK =
   'relative touch-target inline-flex min-h-6 items-center rounded-sm text-sm font-semibold text-brand-700 hover:underline dark:text-brand-300';

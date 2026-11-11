@@ -1,6 +1,5 @@
 // A team's join link (teams.ts).
 
-import { teamScopes } from '../index-timeline.ts';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import { base64url, randomSecret, sha256 } from './tokens.ts';
 import {
@@ -173,7 +172,6 @@ export async function joinByInviteLink(
         teamName: team.name,
         actor,
         at: now,
-        scopes: teamScopes(team.id, [actor.id]),
         detail: { personId: actor.id, memberName: actor.name || actor.email, via: 'link' },
       },
       guard,

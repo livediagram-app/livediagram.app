@@ -97,7 +97,7 @@ describe("the host app's doors", () => {
     expect(rows('connections')).toEqual([]);
     expect(rows('share_links', 'code = ?', code)).toEqual([]);
     expect(rows('shared_with')).toEqual([]);
-    expect(rows('timeline_events', "item_id = ? AND type = 'unshared'", target.id)).toHaveLength(1);
+    expect(rows('events', "item_id = ? AND type = 'unshared'", target.id)).toHaveLength(1);
     await settle();
     expect(h.appCalls.map((c) => [c.url, c.body])).toEqual([
       [`https://liveplanner.app/api/internal/items/${target.id}/revoke`, { codes: [code] }],
@@ -112,10 +112,10 @@ describe("the host app's doors", () => {
   it('remove a connection whose pass already went, and log a revoke the app missed', async () => {
     const { ada, host, id, code } = await connected();
     await call(`/share/${code}`, { method: 'DELETE', auth: ada.auth });
-    const before = rows('timeline_events', "type = 'unshared'").length;
+    const before = rows('events', "type = 'unshared'").length;
     expect((await door('DELETE', host.id, id, 'tab-1')).status).toBe(204);
     expect(rows('connections')).toEqual([]);
-    expect(rows('timeline_events', "type = 'unshared'")).toHaveLength(before);
+    expect(rows('events', "type = 'unshared'")).toHaveLength(before);
 
     const second = await connected();
     h.appAnswer = () => new Response(null, { status: 500 });

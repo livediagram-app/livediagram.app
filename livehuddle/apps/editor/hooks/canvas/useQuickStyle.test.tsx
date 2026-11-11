@@ -7,7 +7,7 @@ import { useQuickStyle } from './useQuickStyle';
 
 // docs/specs/008-canvas/quick-style-panel.md: each choice is one commit over the selection, remembered.
 describe('useQuickStyle on a selection', () => {
-  const square = { ...createShape('square', 0, 0), id: 'q1' } as Element;
+  const square = { ...createShape('focus-button', 0, 0), id: 'q1' } as Element;
   const sticky = { id: 'n1', type: 'sticky', x: 0, y: 0, width: 9, height: 9 } as Element;
   // A stored highlighter stroke: retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
   // part 4), so the panel neither styles nor counts it.
@@ -55,7 +55,7 @@ describe('useQuickStyle on a selection', () => {
     act(() => result.current.setColour('fill', '#abcdef'));
     act(() => result.current.clearStyles());
     expect(elements()[0]).not.toMatchObject({ fillColor: '#abcdef' });
-    expect(memory.forget).toHaveBeenCalledWith(['shape:square']);
+    expect(memory.forget).toHaveBeenCalledWith(['shape:focus-button']);
   });
 
   it('leaves a stored highlighter stroke as it is, and shows nothing for it alone', () => {

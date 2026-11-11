@@ -17,7 +17,6 @@ import {
   ownColours,
   isRetiredElement,
   isSelfDrawingShape,
-  labelBodyInset,
   type ShapeMarker,
   type TextSize,
   rotationOf,
@@ -29,9 +28,7 @@ import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { elementAriaLabel, elementRole } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { SelectionChromeLayer } from '@/components/canvas/element-parts';
-import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
-import { ShapeHitOutline, outlineHit } from '@/components/canvas/ShapeHitOutline';
-import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext';
+import { isSvgRenderedShape } from '@/components/canvas/shape-paint-path';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
 import { PieceArt, hasPieceArt } from '@/components/canvas/PieceArt';
@@ -44,7 +41,6 @@ import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFac
 import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
-import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators, indicatorClusterRect } from '@/components/canvas/ElementIndicators';
@@ -220,16 +216,8 @@ function BoxedElementViewImpl({
     surface,
     finish,
   );
-  // A whiteboard shape is picked by its drawn outline (docs/specs/023-draw-mode/draw-mode.md
-  // "Selecting", ShapeHitOutline below); once selected, its box catches pointers too.
-  const selected = isSelected || isMultiSelected;
-  const onWhiteboard = useCanvasPicksByOutline();
-  const shapeHit = outlineHit(element, { onWhiteboard, selected });
-  // Not yet selected, only the drawn outline picks it: the rest of its box lets pointers through.
-  const passThrough = shapeHit === 'outline';
 
   // The element's drawn corner, which its border overlay and its indicators both follow.
-  const shapeKind = element.type === 'shape' ? element.shape : undefined;
   const cornerPx = cornerRadiusPx(
     element.type === 'shape' ? finishOwnCorner(element, finish) : undefined,
     element.width,
@@ -251,7 +239,7 @@ function BoxedElementViewImpl({
   // Which surface each looping animation rides (wrapper box vs text
   // glyphs vs SVG outline), the pop-in entry class, and the CSS custom
   // properties the keyframes read (docs/specs/008-canvas/canvas-and-palette.md) — see useBoxedElementAnimation.
-  const { labelAnimClass, artAnimClass, svgAnim, wrapperAnimClass, animStyle, layer, layerAnim } =
+  const { labelAnimClass, artAnimClass, wrapperAnimClass, animStyle, layer, layerAnim } =
     useBoxedElementAnimation(element, textColor);
 
   // An icon element's caption is confined to its own band — the complement
@@ -371,9 +359,6 @@ function BoxedElementViewImpl({
         // is typing isn't hidden behind elements painted above it. (The
         // selection handles live in the grips layer, SelectionChromeLayer.)
         ...(editLook.raise ? { zIndex: 10 } : {}),
-        // Only the drawn outline picks a whiteboard shape not yet selected (ShapeHitOutline); the
-        // rest of its box lets pointers through.
-        ...(passThrough ? { pointerEvents: 'none' as const } : {}),
       }}
     >
       {/* The hand-drawn body under the content (docs/specs/008-canvas/finish.md "Sketch"); an image's edge goes over
@@ -386,21 +371,14 @@ function BoxedElementViewImpl({
         <SketchFace
           active={finish === 'sketch' && finishSplitsFace(element) && !liveFiltersRedrawOnRepaint()}
         >
-          {retired ? null : (
-            <AccentEdgeOverlay
-              element={element}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-            />
-          )}
           <ShapeContentRouter
             element={element}
             isEditing={isEditing}
             artAnimClass={artAnimClass}
             remoteBorderColor={remoteBorderColor}
             isSelected={isSelected}
-            svgAnim={svgAnim}
           />
-          {/* CSS-rendered shapes (square / circle / stadium / browser) paint
+          {/* Box-path shapes (a mode button, a portal) paint
           their border via the wrapper's CSS `border`, which can't draw the
           composite dash patterns. When one of those is picked, stroke the
           outline here instead (element-variant drops the CSS border to
@@ -412,7 +390,6 @@ function BoxedElementViewImpl({
           !remoteBorderColor &&
           !isCssNativeBorderStyle(element.strokeStyle ?? DEFAULT_BORDER_STYLE) ? (
             <BoxBorderOverlay
-              shape={element.shape}
               width={element.width}
               height={element.height}
               stroke={own.stroke ?? defaultStrokeColor(element, surface)}
@@ -466,8 +443,8 @@ function BoxedElementViewImpl({
             }
             label={label}
             labelNode={labelNode}
-            // Clear of the indicators and on the label body (a cylinder's, under its lid).
-            contentInset={clearingInset(indicators.layout?.inset, labelBodyInset(element))}
+            // Clear of the indicators.
+            contentInset={clearingInset(indicators.layout?.inset)}
             textColor={textColor}
             textSize={textSize}
             alignX={alignX}
@@ -481,24 +458,13 @@ function BoxedElementViewImpl({
       </FaceFinishProvider>
       {element.type === 'image' ? sketchOverlay() : null}
 
-      {shapeHit && element.type === 'shape' ? (
-        <ShapeHitOutline
-          element={element}
-          borderPx={typeof variant.style.borderWidth === 'number' ? variant.style.borderWidth : 0}
-        />
-      ) : null}
-
       {/* The Shape set's ring / halo / trace / gradient layer (AnimationLayer): over the face. */}
       {layer && layerAnim ? (
         <AnimationLayer
           animation={layerAnim}
           width={element.width}
           height={element.height}
-          radius={
-            shapeKind === 'circle' || shapeKind === 'stadium'
-              ? Math.min(element.width, element.height) / 2
-              : cornerPx
-          }
+          radius={cornerPx}
         />
       ) : null}
 
