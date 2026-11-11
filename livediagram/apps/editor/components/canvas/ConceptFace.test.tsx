@@ -59,7 +59,7 @@ describe('ConceptFace', () => {
   });
 
   it('draws a funnel value beside its tier', () => {
-    show(applyShapeVariant(make('pyramid'), 'funnel') as ShapeElement & { shape: 'pyramid' });
+    show(applyShapeVariant(make('pyramid'), 'funnel'));
     expect(screen.getByRole('textbox', { name: 'Tier 1 note' }).textContent).toBe('12,400');
   });
 
