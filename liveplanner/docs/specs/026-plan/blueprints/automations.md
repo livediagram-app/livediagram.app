@@ -61,7 +61,7 @@ apps/api/src/plan-room/automations/
                          loop with `by: automationPerson(name)` and tag 'automation'; a thread via the card-thread
                          store with Automation as author; Create Card via makeItem + insertItems; emails via the
                          notifier's send (opt-outs honoured, account people only)
-  automation-log.ts      Run Log insert and trim (2,000 rows, 30 days), the stats query, today's count
+  automation-log.ts      Run Log insert and trim (2,000 runs and 500 No Matches, 30 days), the stats query, today's count
 
 apps/api/src/routes/automation-routes.ts   the routes below, dispatched from project-subresource-routes.ts
 apps/api/src/routes/automation-source.ts   writeSource(ctx) (who made a route's write, worked out only when a rule
@@ -96,9 +96,10 @@ CREATE TABLE automation_runs (
   rule_id TEXT NOT NULL, at INTEGER NOT NULL, result TEXT NOT NULL, body TEXT NOT NULL);
 CREATE INDEX automation_runs_at ON automation_runs (at);
 CREATE INDEX automation_runs_rule ON automation_runs (rule_id, at);
+CREATE INDEX automation_runs_result ON automation_runs (result, at);   -- the two trims
 ```
 
-The day's count is `SELECT COUNT(*) FROM automation_runs WHERE at >= <UTC midnight>`, indexed, so the budget needs no
+The day's count is `SELECT COUNT(*) FROM automation_runs WHERE at >= <UTC midnight> AND result != 'no_match'`, indexed, so the budget needs no
 table of its own. A plan never given a rule has empty tables and `onKinds` empty.
 
 ## The event
@@ -180,7 +181,7 @@ not routed (the OpenAPI drift probe's clean 404), and every route is in the Open
 
 ## As built (Phase 1 api)
 
-- `planActions` answers `{ patch, comments, created, emails, lines }` or `{ failed, lines }` (no `ok` field); the
+- `planActions` answers `{ patch, comments, created, emails, lines }` or `{ failed, lines, done }` (no `ok` field); the
   patch holds only what differs from the card as it was (a Flag then Unflag writes nothing).
 - A rule's comment carries `automation: { ruleId, rule }` on the Comment (@liveplanner/project comments.ts), by
   `authorId: 'automation'`, `authorName: 'Automation'`; it is written through the thread store, never the routes,
@@ -190,7 +191,13 @@ not routed (the OpenAPI drift probe's clean 404), and every route is in the Open
   account and gets nothing. The template is `automationEmail` (`EmailKind` 'AutomationEmail').
 - Create Card needs a card type from the plan's catalogue: a plan whose types are not chosen fails the run with
   "Card type <id> is gone".
-- The day's budget counts every run the log keeps, a No Match too (a run is "one rule answering one trigger").
+- The day's budget counts done, failed and skipped runs; a No Match is logged and never counted. The trim keeps the
+  newest 2,000 of those and, apart from them, the newest 500 No Match rows, so a rule that matches nothing on every
+  save never pushes a real run out of the log.
+- `planActions`' failed answer carries `done`, the writes of the steps before the failed one; the runner applies
+  them, then logs the run **Failed**. A refusal from the card store itself (a Calculated field, a required field
+  emptied, the plan full on Create Card) fails at its write: the card's one patch lands first, then the card it makes,
+  then its threads, so what was written before the refused write stays.
 - Copies: a whole-plan copy that does not come through a link (its owner's or team's Duplicate) keeps the rules; a
   copy through a share link, of one tab, or of a Community post takes none, since the rules are an Editor's of the
   whole plan to see. The plan's file (`liveplanner.project`, the Drive mirror) carries `automations`; a file read

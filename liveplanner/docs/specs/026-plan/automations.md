@@ -164,8 +164,8 @@ the builder and shown there as chips:
   its own changes. A change by a rule that does not let its changes trigger others starts nothing; a rule whose
   trigger and conditions it would have met logs a **Skipped** run ("Started by another rule's change").
 - **Per run**: at most **20 actions** and **1 created card**.
-- **Per plan per day** (UTC): at most **1,000 runs**, a No Match counted like any run. Past it, triggers are dropped
-  until the next day, the Automations screen's meter reads full, a line says "Daily limit reached: rules run again
+- **Per plan per day** (UTC): at most **1,000 runs**. Only runs that did something, failed or were skipped count; a
+  **No Match** is logged and costs nothing. Past it, triggers are dropped until the next day, the Automations screen's meter reads full, a line says "Daily limit reached: rules run again
   tomorrow", and Run Rule answers that it cannot run now.
 - **Waiting**: at most **500 triggers** wait at once; a burst past that drops the newest and logs one Skipped line
   ("Too many changes at once").
@@ -189,7 +189,7 @@ A large dialog over the editor (a full-screen sheet on a phone), titled **Automa
 on this plan's cards for you when something happens.", a **New Rule** button and Close.
 
 - Two tabs: **Rules · n** and **Run Log** (Templates comes in Phase 2).
-- A **Runs today** meter at the right of the tabs: "142 of 1,000".
+- A **Runs today** meter at the right of the tabs: "142 of 1,000" (No Match runs are not counted).
 - **Rules**: a search box ("Find a rule"), **All Triggers** and **On and Off** filters, then one row per rule:
   its switch, its name, its sentence (When `Card Moved` to `Done` then `Set Completed On` `Remove Label blocked`),
   **Last Run** ("4 min ago", "Never") and **This Week** ("38 runs"), and a ⋯ menu (Edit, Duplicate, Run Log,
@@ -199,7 +199,7 @@ on this plan's cards for you when something happens.", a **New Rule** button and
   moving, assigning, labelling and telling people about cards. Build your first one.", **New Rule** and **How Rules
   Work** (the help article).
 - **Run Log**: filters **All Rules**, **Any Result** and **Last 7 Days**, the line "Kept for 30 days or the last
-  2,000 runs", and one row per run: When, Rule, Card (`#48` and title), Result (**Done**, **No Match**, **Skipped**,
+  2,000 runs, and the last 500 No Matches" (No Matches are kept apart, so they never push a run out), and one row per run: When, Rule, Card (`#48` and title), Result (**Done**, **No Match**, **Skipped**,
   **Failed** pills), Took. A row opens to its steps, one line each with a tick or a cross: who did what (the
   trigger), each condition with what it found, each action, and **Open Card**. A failed or skipped row shows its
   reason under it.
@@ -255,18 +255,18 @@ The api logs `[automations] run` with the result and duration, never a card's te
 
 ## Limits
 
-| Limit                            | Value               |
-| -------------------------------- | ------------------- |
-| Rules per plan                   | 50                  |
-| Conditions per rule (and per If) | 10                  |
-| Actions per rule                 | 20                  |
-| Chain of rules                   | 5                   |
-| Runs per plan per day            | 1,000               |
-| Triggers waiting                 | 500                 |
-| Failures in a row before pausing | 10                  |
-| Run Log                          | 2,000 runs, 30 days |
-| Comment or email body            | 2,000 characters    |
-| Rule name                        | 60 characters       |
+| Limit                            | Value                                  |
+| -------------------------------- | -------------------------------------- |
+| Rules per plan                   | 50                                     |
+| Conditions per rule (and per If) | 10                                     |
+| Actions per rule                 | 20                                     |
+| Chain of rules                   | 5                                      |
+| Runs per plan per day            | 1,000                                  |
+| Triggers waiting                 | 500                                    |
+| Failures in a row before pausing | 10                                     |
+| Run Log                          | 2,000 runs and 500 No Matches, 30 days |
+| Comment or email body            | 2,000 characters                       |
+| Rule name                        | 60 characters                          |
 
 ## Not in Phase 1
 
