@@ -34,13 +34,10 @@ const AutomationsSyncGate = dynamic(
 // What stands before the screen (automationsGateFor): a plan in This Browser syncs (the Sync Plan move, once the
 // reader is known); a guest on a server plan signs in.
 export type AutomationsGate =
-  | { kind: 'sync'; ready: boolean; sync: () => Promise<void> }
-  | { kind: 'sign_in' };
+  { kind: 'sync'; ready: boolean; sync: () => Promise<void> } | { kind: 'sign_in' };
 
 /** Whether this page was opened asking for the screen (`?automations=1`), as `?share=1` opens Share. */
-const askedOpen = () =>
-  typeof window !== 'undefined' &&
-  new URL(window.location.href).searchParams.get(AUTOMATIONS_PARAM) === '1';
+const askedOpen = () => new URL(window.location.href).searchParams.get(AUTOMATIONS_PARAM) === '1';
 
 // How long after the plan opens the list is read for the dot: past the plan's own first load.
 export const AUTOMATIONS_FIRST_READ_MS = 3000;

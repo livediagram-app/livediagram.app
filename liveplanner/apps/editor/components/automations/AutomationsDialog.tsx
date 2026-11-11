@@ -21,7 +21,7 @@ import { CompactEmptyState, Button, DialogCloseButton, useMediaQuery } from '@li
 import { ConfirmDialog } from '@liveworkspace/workbench/components/dialogs/ConfirmDialog';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { ItemWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
-import { StartHeaderBand } from '@liveworkspace/workbench/components/start/StartHeaderBand';
+import { AutomationsHeaderBand } from '@liveworkspace/workbench/components/start/AutomationsBand';
 import { StartTitleMark } from '@liveworkspace/workbench/components/start/StartTitleMark';
 import { useStartHeaderTheme } from '@liveworkspace/workbench/components/start/useStartHeaderTheme';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -292,10 +292,10 @@ export function AutomationsDialog({
         <>
           {/* The start screens' header band, drawn for rules (automations.md "The Automations screen"): 100px tall
               from `sm`, the bolt's title mark, the title and its line; on a phone, compact and without the line. */}
-          <header
+          <div
             className={`relative isolate flex items-center gap-3 ${phone ? 'px-4 py-3' : 'min-h-[100px] px-6 py-4'}`}
           >
-            <StartHeaderBand kind={band.kind} band={band.band} variant="automations" />
+            <AutomationsHeaderBand band={band.band} />
             <StartTitleMark kind={band.kind} band={band.band} variant="automations" />
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <span
@@ -318,7 +318,7 @@ export function AutomationsDialog({
               onTemplates={() => onTarget({ view: 'templates' })}
             />
             <DialogCloseButton onClick={close} />
-          </header>
+          </div>
           <ScreenTabs
             current={target.view === 'rule' ? 'rules' : target.view}
             rules={api.data ? rules.length : null}

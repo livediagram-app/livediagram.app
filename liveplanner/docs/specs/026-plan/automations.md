@@ -22,20 +22,20 @@ work. A rule does it every time, at once, and says that it did.
 
 ## Domain language
 
-| Term           | Means                                                                                       | Never called              |
-| -------------- | ------------------------------------------------------------------------------------------- | ------------------------- |
-| **rule**       | One automation: a name, on or off, a trigger, conditions and steps                          | automation (one), recipe  |
-| **trigger**    | What starts a rule: something that happened to one card, a person running it from the card, | event (in copy), hook     |
-|                | or a time (a schedule, a due date coming or passed)                                         |                           |
-| **branch**     | A step that runs its own actions on each of the card's related cards (For Related Cards)    | loop, for-each (in copy)  |
-| **template**   | A ready-made rule from the Templates gallery, opened in the builder to finish and save      | recipe, preset            |
-| **condition**  | A check on the card or on who made the change; every condition must hold                    | filter (in copy), guard   |
-| **step**       | An action, or an If / Else holding actions                                                  | node                      |
-| **action**     | One change or message a rule makes                                                          | task, job                 |
-| **run**        | One rule answering one trigger: matched (its actions ran), no match, skipped or failed      | execution                 |
-| **Audit Trail**    | The plan's list of recent runs, newest first                                                | audit log, history (here) |
-| **value**      | A placeholder in a rule's text (`{{card.title}}`), filled in when the rule runs             | smart value, variable     |
-| **Automation** | Who a rule's changes are by, on cards, comments and history, with the rule's name beside it | bot, system               |
+| Term            | Means                                                                                       | Never called              |
+| --------------- | ------------------------------------------------------------------------------------------- | ------------------------- |
+| **rule**        | One automation: a name, on or off, a trigger, conditions and steps                          | automation (one), recipe  |
+| **trigger**     | What starts a rule: something that happened to one card, a person running it from the card, | event (in copy), hook     |
+|                 | or a time (a schedule, a due date coming or passed)                                         |                           |
+| **branch**      | A step that runs its own actions on each of the card's related cards (For Related Cards)    | loop, for-each (in copy)  |
+| **template**    | A ready-made rule from the Templates gallery, opened in the builder to finish and save      | recipe, preset            |
+| **condition**   | A check on the card or on who made the change; every condition must hold                    | filter (in copy), guard   |
+| **step**        | An action, or an If / Else holding actions                                                  | node                      |
+| **action**      | One change or message a rule makes                                                          | task, job                 |
+| **run**         | One rule answering one trigger: matched (its actions ran), no match, skipped or failed      | execution                 |
+| **Audit Trail** | The plan's list of recent runs, newest first                                                | audit log, history (here) |
+| **value**       | A placeholder in a rule's text (`{{card.title}}`), filled in when the rule runs             | smart value, variable     |
+| **Automation**  | Who a rule's changes are by, on cards, comments and history, with the rule's name beside it | bot, system               |
 
 ## Who may do what
 
@@ -63,7 +63,8 @@ work. A rule does it every time, at once, and says that it did.
   plan holds none.
 - A **guest** (no account) who can edit a plan on the server sees the button too, but rules are an account's work
   (the api's gate needs a signed-in Editor and answers a guest `automations_need_editor`), so it opens the same gate
-  asking them to sign in: **Rules Run on Our Servers**, "Rules act for an Editor of this plan, even when nobody has it
+  asking them to sign in, under a person glyph (This Browser's gate keeps its cloud-off): **Rules Run on Our
+  Servers**, "Rules act for an Editor of this plan, even when nobody has it
   open, so they need you signed in. You come back here with Automations open.", with **Sign In** (back to this page,
   `?automations=1` opening the screen) and **Cancel**. After signing in the screen opens on the
   rules. **Only an Editor Can See Rules** is for a signed-in reader the api refuses, never a guest. Run Rule waits for
@@ -397,7 +398,7 @@ The api logs `[automations] run` with the result and duration, never a card's te
 | Runs per plan per day            | 1,000                                  |
 | Triggers waiting                 | 500                                    |
 | Failures in a row before pausing | 10                                     |
-| Audit Trail                          | 2,000 runs and 500 No Matches, 30 days |
+| Audit Trail                      | 2,000 runs and 500 No Matches, 30 days |
 | Comment or email body            | 2,000 characters                       |
 | Rule name                        | 60 characters                          |
 | Cards a time trigger runs on     | 100 a moment                           |

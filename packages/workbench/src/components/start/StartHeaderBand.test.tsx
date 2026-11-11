@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { APPS } from '@liveworkspace/index-client';
 import { APP_BACKDROP, type HeroBackdropKind } from '@liveworkspace/explorer/hero-theme';
 import { startBandColours } from './start-band-colours';
+import { AutomationsHeaderBand } from './AutomationsBand';
 import { StartHeaderBand } from './StartHeaderBand';
 import { StartTitleMark } from './StartTitleMark';
 import { startHeaderTheme, useStartHeaderTheme } from './useStartHeaderTheme';
@@ -93,7 +94,7 @@ describe('the start header band', () => {
 // liveplanner's docs/specs/026-plan/automations.md "The Automations screen": the same band, its own pieces.
 describe('the Automations band', () => {
   it('draws its own texture and pieces in the band, hidden and out of the pointer’s way', () => {
-    const { container } = render(<StartHeaderBand kind="lanes" band={band} variant="automations" />);
+    const { container } = render(<AutomationsHeaderBand band={band} />);
     const layer = container.querySelector('[data-start-band]') as HTMLElement;
     expect(layer.getAttribute('data-start-band')).toBe('automations');
     expect(layer.getAttribute('aria-hidden')).toBe('true');
@@ -115,7 +116,9 @@ describe('the Automations band', () => {
   });
 
   it('marks the title with a bolt, the app’s own glyph otherwise', () => {
-    const { container, rerender } = render(<StartTitleMark kind="lanes" band={band} variant="automations" />);
+    const { container, rerender } = render(
+      <StartTitleMark kind="lanes" band={band} variant="automations" />,
+    );
     const mark = () => container.querySelector('[data-start-title-mark]')!;
     expect(mark().getAttribute('data-start-title-mark')).toBe('automations');
     expect(mark().querySelectorAll('path')).toHaveLength(1);

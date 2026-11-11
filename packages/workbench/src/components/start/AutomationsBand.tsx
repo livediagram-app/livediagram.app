@@ -5,9 +5,10 @@
 // a flow: a trigger's bolt, a condition's diamond and an action's check joined by a line, a dashed arrow looping back
 // over them. The bolt's ring spreads twice, motion allowing. CSS gradients and small inline SVGs, nothing fetched, no
 // filter.
-import type { CSSProperties } from 'react';
+import { memo, useMemo, type CSSProperties } from 'react';
 import { DOTS_PX } from '@liveworkspace/explorer/hero-theme';
 import type { StartBandColours } from './start-band-colours';
+import { StartHeaderBand, type StartBandArt } from './StartHeaderBand';
 
 // The bolt's ring spreads twice, from its own centre; reduced motion keeps it still.
 const RING =
@@ -55,7 +56,13 @@ export function AutomationsBandPieces({ band }: { band: StartBandColours }) {
           strokeWidth="3"
           strokeLinecap="round"
         />
-        <path d="M29 15l6 6 1-8" fill="none" stroke={band.line} strokeWidth="3" strokeLinecap="round" />
+        <path
+          d="M29 15l6 6 1-8"
+          fill="none"
+          stroke={band.line}
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
       </svg>
       {/* A rule as a flow: When, If, Then, and round again. */}
       <svg width="176" height="64" viewBox="0 0 176 64" className={FLOW} data-automations-flow="">
@@ -71,7 +78,15 @@ export function AutomationsBandPieces({ band }: { band: StartBandColours }) {
         <path d="M34 38H66M92 38H130" stroke={band.line} strokeWidth="1.5" />
         <path d="M62 34.5L67 38l-5 3.5M126 34.5l5 3.5-5 3.5" fill={band.line} />
         {/* The trigger: a bolt on the accent, its ring spreading. */}
-        <circle cx="22" cy="38" r="11" fill="none" stroke={band.accent} strokeWidth="1.5" className={RING} />
+        <circle
+          cx="22"
+          cy="38"
+          r="11"
+          fill="none"
+          stroke={band.accent}
+          strokeWidth="1.5"
+          className={RING}
+        />
         <circle cx="22" cy="38" r="11" fill={band.accent} />
         <path d="M23.5 31L17.5 39.5h4.5L20.5 45l6-8.5H22Z" fill={band.plate} />
         {/* The condition: a diamond. */}
@@ -101,3 +116,20 @@ export function AutomationsBandPieces({ band }: { band: StartBandColours }) {
     </>
   );
 }
+
+/** The Automations screen's header band: the start band's frame, this art. */
+export const AutomationsHeaderBand = memo(function AutomationsHeaderBand({
+  band,
+}: {
+  band: StartBandColours;
+}) {
+  const art = useMemo<StartBandArt>(
+    () => ({
+      name: 'automations',
+      texture: automationsTexture(band),
+      pieces: <AutomationsBandPieces band={band} />,
+    }),
+    [band],
+  );
+  return <StartHeaderBand kind="dots" band={band} art={art} />;
+});

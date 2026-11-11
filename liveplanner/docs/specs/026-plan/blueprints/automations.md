@@ -396,10 +396,12 @@ What the editor does, where it differs from or adds to the Editor list above (ea
   the Community section's Sign In to Share), back to the same page plus `?automations=1`, which the host reads on
   mount (as `?share=1`), opens the rules and drops from the address. Telemetry `UI · Opened · AutomationsOffline` or
   `AutomationsSignIn`.
-- **Header band.** `StartHeaderBand` and `StartTitleMark` take `variant="automations"` (other products pass none, so
-  their output is unchanged): `packages/workbench/src/components/start/AutomationsBand.tsx` draws the dot grid
-  fading toward the title, the cog and looping arrow in the bottom corners and the flow from `lg`, and the mark is a
-  bolt. The dialog's palette is `planPalette` of the app's appearance, as the setup steps do.
+- **Header band.** `StartHeaderBand` takes an optional `art` (a name, a texture and pieces) in place of the app's
+  own; `packages/workbench/src/components/start/AutomationsBand.tsx` fills it as `AutomationsHeaderBand` (the dot
+  grid fading toward the title, the cog and looping arrow in the bottom corners, the flow from `lg`), and
+  `StartTitleMark` takes `variant="automations"` for a bolt. The art lives in its own module, imported only by the
+  dialog's chunk, so no start panel's bundle carries it and their output is unchanged. The dialog's palette is
+  `planPalette` of the app's appearance, as the setup steps do.
 - **Labels.** The branch values' chips read Trigger Title, Trigger Number and Trigger Link
   (`AUTOMATION_BRANCH_VALUE_LABELS`).
 

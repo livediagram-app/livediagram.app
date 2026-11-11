@@ -124,6 +124,9 @@ describe('the Automations button', () => {
     const gate = await screen.findByRole('dialog', { name: 'Automations' });
     expect(gate.textContent).toContain('Rules Run on Our Servers');
     expect(gate.textContent).toContain('so they need it saved to your account.');
+    expect(gate.querySelector('[data-prompt-glyph]')!.getAttribute('data-prompt-glyph')).toBe(
+      'cloud-off',
+    );
     // No rules to read until it is synced.
     expect(listAutomations).not.toHaveBeenCalled();
     await act(async () => {
@@ -172,6 +175,9 @@ describe('the Automations button', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'AutomationsSignIn');
     const gate = await screen.findByRole('dialog', { name: 'Automations' });
     expect(gate.textContent).toContain('so they need you signed in');
+    expect(gate.querySelector('[data-prompt-glyph]')!.getAttribute('data-prompt-glyph')).toBe(
+      'person',
+    );
     expect(screen.queryByRole('button', { name: 'Sync Plan' })).toBeNull();
     const href = screen.getByRole('link', { name: 'Sign In' }).getAttribute('href')!;
     const back = decodeURIComponent(href.split('redirect_url=')[1]!);

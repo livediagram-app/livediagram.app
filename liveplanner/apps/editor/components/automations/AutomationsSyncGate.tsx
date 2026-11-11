@@ -18,15 +18,25 @@ export const OFFLINE_RULES_COPY =
 export const GUEST_RULES_COPY =
   'Rules act for an Editor of this plan, even when nobody has it open, so they need you signed in. You come back here with Automations open.';
 
-
 /** Where a guest signs in: back to this very page (its share code and tab kept), the screen asked open. */
-export function automationsSignInHref(location: Pick<Location, 'pathname' | 'search' | 'hash'>): string {
+export function automationsSignInHref(
+  location: Pick<Location, 'pathname' | 'search' | 'hash'>,
+): string {
   const search = new URLSearchParams(location.search);
   search.set(AUTOMATIONS_PARAM, '1');
-  return authHrefWithReturn('/sign-in/', `${location.pathname}?${search.toString()}${location.hash}`);
+  return authHrefWithReturn(
+    '/sign-in/',
+    `${location.pathname}?${search.toString()}${location.hash}`,
+  );
 }
 
-export function AutomationsSyncGate({ gate, onClose }: { gate: AutomationsGate; onClose: () => void }) {
+export function AutomationsSyncGate({
+  gate,
+  onClose,
+}: {
+  gate: AutomationsGate;
+  onClose: () => void;
+}) {
   return (
     <SyncGateDialog
       title="Automations"
