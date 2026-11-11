@@ -478,7 +478,14 @@
     "./hooks/ui/useToast": "./src/hooks/ui/useToast.tsx",
     "./components/canvas/ElementIndicatorStyleContext": "./src/components/canvas/ElementIndicatorStyleContext.tsx",
     "./components/primitives/useMovablePanelMeasure": "./src/components/primitives/useMovablePanelMeasure.ts",
-    "./lib/element-indicator-style": "./src/lib/element-indicator-style.ts"
+    "./lib/element-indicator-style": "./src/lib/element-indicator-style.ts",
+    "./components/canvas/InsetContent": "./src/components/canvas/InsetContent.tsx",
+    "./hooks/canvas/useFormatConfig": "./src/hooks/canvas/useFormatConfig.ts",
+    "./hooks/canvas/useSpotlightConfig": "./src/hooks/canvas/useSpotlightConfig.ts",
+    "./hooks/canvas/useDebouncedCanvasTelemetry": "./src/hooks/canvas/useDebouncedCanvasTelemetry.ts",
+    "./hooks/persistence/tab-folder-reporting": "./src/hooks/persistence/tab-folder-reporting.ts",
+    "./lib/changeset-seen": "./src/lib/changeset-seen.ts",
+    "./hooks/editor/useChangesetSeen": "./src/hooks/editor/useChangesetSeen.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -501,6 +508,7 @@
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/settings-ui": "workspace:^",
+    "@liveworkspace/telemetry-client": "workspace:*",
     "@liveworkspace/trusted-types": "workspace:*",
     "@liveworkspace/ui": "workspace:*"
   },

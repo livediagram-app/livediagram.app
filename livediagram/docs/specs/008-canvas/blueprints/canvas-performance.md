@@ -38,13 +38,13 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `../packages/workbench/src/lib/sticky-peel-image.ts`                   | The sticky peel as a picture: `stickyPeelImage`, `stickyPeelVars` (blob-URL border-images), `useStickyPeelVars` |
 | `../packages/workbench/src/lib/png-encode.ts`                          | `encodePngRgba`: a synchronous stored PNG, for pictures the editor makes itself                                 |
 | `apps/editor/hooks/canvas/useCanvasPinchZoom.ts`                       | Touch pinch: one view change a frame (`flushPinch`), the wrapper measured at the start, `pinchOffset`           |
-| `apps/editor/e2e/perf/interactive.ts`                                  | `interactiveMs`: the open row's quiet-window rule over long tasks and long frames (pure)                        |
+| `../packages/e2e-kit/src/perf/interactive.ts`                          | `interactiveMs`: the open row's quiet-window rule over long tasks and long frames (pure)                        |
 | `apps/editor/e2e/perf/reference-board.ts`                              | `buildReferenceBoard(seed, count)`                                                                              |
 | `apps/editor/e2e/perf/budget.ts`                                       | `evaluateBudget`, `budgetTable` and the budget constants (pure)                                                 |
 | `apps/editor/e2e/perf/budget-report.ts`                                | `budgetIssueAction`, `budgetIssueComment`: what the nightly run does with the issue                             |
 | `apps/editor/e2e/perf/nightly.mjs`                                     | The nightly run's I/O: `previous` and `report`                                                                  |
-| `apps/editor/e2e/perf/calibrate.ts`                                    | `benchmarkInPage`, `calibratedThrottle`, `REFERENCE_BENCH_MS`, `TARGET_SLOWDOWN`                                |
-| `apps/editor/e2e/perf/trace-tasks.ts`                                  | `mainThreadTasks`: the renderer main thread's task durations from a trace                                       |
+| `../packages/e2e-kit/src/perf/calibrate.ts`                            | `benchmarkInPage`, `calibratedThrottle`, `REFERENCE_BENCH_MS`, `TARGET_SLOWDOWN`                                |
+| `../packages/e2e-kit/src/perf/trace-tasks.ts`                          | `mainThreadTasks`: the renderer main thread's task durations from a trace                                       |
 | `apps/editor/e2e/perf/canvas.perf.ts`                                  | The probe: seeds, runs each gesture under a trace, writes the report                                            |
 | root `.github/workflows/canvas-perf.yml`                               | The nightly run and the budget issue                                                                            |
 

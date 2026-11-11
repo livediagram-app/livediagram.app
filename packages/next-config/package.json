@@ -5,11 +5,15 @@
   "type": "module",
   "main": "index.js",
   "types": "index.d.ts",
+  "bin": {
+    "asset-size-gate": "./asset-size-gate-bin.js"
+  },
   "exports": {
     ".": {
       "types": "./index.d.ts",
       "default": "./index.js"
-    }
+    },
+    "./asset-size-gate": "./asset-size-gate.js"
   },
   "scripts": {
     "test": "vitest run",

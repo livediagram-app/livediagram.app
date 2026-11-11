@@ -12,3 +12,9 @@ export declare function cpuBudgetMs(ms: number): number;
 export declare function cpuRatioCeiling(ratio: number): number;
 /** A growth check's CPU limit on the larger input: `ms x ratio + slackMs`, unbounded under coverage; see cpu-time.js. */
 export declare function cpuGrowthLimitMs(ms: number, ratio: number, slackMs?: number): number;
+/** A growth check's ratio: two sizes sampled in turns, best kept, more rounds while over `ceiling`; see cpu-time.js. */
+export declare function cpuGrowthRatio(
+  small: () => number,
+  large: () => number,
+  options: { ceiling: number; runs?: number; attempts?: number },
+): number;

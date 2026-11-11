@@ -1,10 +1,17 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // The binding's own facts. The engine, opt-out rule, error cap and timing watch are tested in
 // @liveworkspace/telemetry-client; here, that livedesign's values reach them.
 
 type Binding = typeof import('./index');
 let mod: Binding;
+
+// The first import transforms the binding and its api-schema: done once here, under a timeout of its own, so a
+// busy machine never spends the first test's hook on it (it timed out at 10 s under load, 2026-11-11). Each test's
+// fresh import below then reuses the transform.
+beforeAll(async () => {
+  await import('./index');
+}, 60_000);
 
 beforeEach(async () => {
   // Fresh module per test: client error tracking installs once per module instance.

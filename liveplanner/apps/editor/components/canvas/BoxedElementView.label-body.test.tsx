@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, type BoxedElement } from '@liveplanner/project';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
-import { clearingInset } from '@/components/canvas/InsetContent';
+import { clearingInset } from '@liveworkspace/workbench/components/canvas/InsetContent';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
 import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
 

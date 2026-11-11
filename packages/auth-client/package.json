@@ -9,7 +9,8 @@
     "./account-name": "./src/account-name.ts",
     "./return-path": "./src/return-path.ts",
     "./pkce-cookie": "./src/pkce-cookie.ts",
-    "./sign-out": "./src/sign-out.ts"
+    "./sign-out": "./src/sign-out.ts",
+    "./api-tokens": "./src/api-tokens.ts"
   },
   "scripts": {
     "lint": "oxlint",

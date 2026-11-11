@@ -1,9 +1,9 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { firefox, webkit, type Browser, type CDPSession, type Page } from '@playwright/test';
 import { adoptGuest, expect, mintGuest, ownerHeaders, seedDocumentItem, test } from '../fixtures';
-import { benchmarkInPage, calibratedThrottle } from './calibrate';
+import { benchmarkInPage, calibratedThrottle } from '@liveworkspace/e2e-kit/perf/calibrate';
 import { buildReferenceBoard } from './reference-board';
-import { mainThreadTasks, type TraceEvent } from './trace-tasks';
+import { mainThreadTasks, type TraceEvent } from '@liveworkspace/e2e-kit/perf/trace-tasks';
 
 // The slide-transition probe (docs/specs/012-collaboration/presentation-mode.md "Motion"): a deck of small
 // (1-element) and large (100-element) slides, moved through with Slide and Fade, the CPU slowed to the
@@ -76,6 +76,7 @@ async function seedDeck(page: Page, baseURL: string, owner: string, size: Size):
 
 async function openDeck(
   browser: Browser,
+  baseURL: string,
   owner: string,
   id: string,
   transition: Transition,
@@ -86,7 +87,9 @@ async function openDeck(
     viewport: VIEW,
     colorScheme: 'dark',
     reducedMotion,
-    baseURL: process.env.E2E_BASE_URL,
+    // The test's own: `process.env.E2E_BASE_URL` is unset on the nightly run, and an undefined base URL
+    // overrode the config's, so every goto failed ("Cannot navigate to invalid URL") and the run with it.
+    baseURL,
   });
   await adoptGuest(ctx, owner);
   await ctx.addInitScript(
@@ -229,7 +232,11 @@ test('slide transitions, measured', async ({ page, browser, baseURL }) => {
   const report: Record<string, unknown> = { variant: VARIANT, throttle: round(rate) };
   for (const size of ['small', 'large'] as const) {
     for (const transition of ['slide', 'fade'] as const) {
-      const { ctx, page: p, cdp } = await openDeck(browser, owner, decks[size], transition, rate);
+      const {
+        ctx,
+        page: p,
+        cdp,
+      } = await openDeck(browser, baseURL!, owner, decks[size], transition, rate);
       const moves: MoveReading[] = [];
       for (const key of MOVES) {
         const t = await traced(cdp, p, async () => {
@@ -269,7 +276,15 @@ test('slide transitions, measured', async ({ page, browser, baseURL }) => {
     }
   }
   // Reduced motion: what animates on a move.
-  const { ctx, page: p } = await openDeck(browser, owner, decks.large, 'slide', 1, 'reduce');
+  const { ctx, page: p } = await openDeck(
+    browser,
+    baseURL!,
+    owner,
+    decks.large,
+    'slide',
+    1,
+    'reduce',
+  );
   await p.keyboard.press('ArrowRight');
   await p.waitForTimeout(60);
   report['reduced-motion'] = await leftovers(p);
@@ -290,7 +305,7 @@ for (const engine of (process.env.SLIDE_ENGINES ?? '').split(',').filter(Boolean
     const other = await launcher.launch();
     const report: Record<string, unknown> = { variant: VARIANT, engine };
     for (const transition of ['slide', 'fade'] as const) {
-      const { ctx, page: p } = await openDeck(other, owner, id, transition, 0);
+      const { ctx, page: p } = await openDeck(other, baseURL!, owner, id, transition, 0);
       const animated: string[][] = [];
       for (const key of ['ArrowRight', 'ArrowRight', 'ArrowLeft']) {
         await p.keyboard.press(key);

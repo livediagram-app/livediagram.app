@@ -28,7 +28,7 @@ import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-co
 import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { remintTabElements, useTabImport } from './useTabImport';
-import { trackTabFolderTransition } from './tab-folder-reporting';
+import { trackTabFolderTransition } from '@liveworkspace/workbench/hooks/persistence/tab-folder-reporting';
 import type { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
 import { toastName } from '@liveworkspace/workbench/lib/toast-name';

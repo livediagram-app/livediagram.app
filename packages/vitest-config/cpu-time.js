@@ -106,3 +106,36 @@ export function cpuGrowthLimitMs(ms, ratio, slackMs = 0) {
   if (process.env[UNDER_COVERAGE_ENV]) return Number.POSITIVE_INFINITY;
   return ms * ratio + slackMs;
 }
+
+/**
+ * A growth check's ratio of two CPU times, measured so noise cannot pass for growth: `large()` over `small()`,
+ * each a function that times one sample (`cpuMsOf`) and builds what it needs outside the timing. Each runs once
+ * untimed (that run pays the compile), then both are sampled `runs` times in turns, never one size after the
+ * other (the larger would take whatever collection lands on it), and the fastest sample of each is kept.
+ * Interference only ever adds CPU time, so while the ratio reads at or over `ceiling` it samples `runs` more of
+ * each, up to `attempts` rounds in all: a noisy round settles, while a quadratic step reads sixteen in every
+ * round. Under coverage the ceiling (`cpuRatioCeiling`) is unbounded, so one round runs (docs/ci.md "Speed
+ * budgets").
+ *
+ * @param {() => number} small
+ * @param {() => number} large
+ * @param {{ ceiling: number, runs?: number, attempts?: number }} options
+ * @returns {number}
+ */
+export function cpuGrowthRatio(small, large, { ceiling, runs = 5, attempts = 3 }) {
+  small();
+  large();
+  let fastestSmall = Number.POSITIVE_INFINITY;
+  let fastestLarge = Number.POSITIVE_INFINITY;
+  let ratio = Number.POSITIVE_INFINITY;
+  for (let round = 0; round < attempts; round++) {
+    for (let run = 0; run < runs; run++) {
+      fastestSmall = Math.min(fastestSmall, small());
+      fastestLarge = Math.min(fastestLarge, large());
+    }
+    // `process.cpuUsage` counts in microseconds, so a small sample can read 0: floor it there.
+    ratio = fastestLarge / Math.max(fastestSmall, 0.001);
+    if (ratio < ceiling) break;
+  }
+  return ratio;
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@liveworkspace/e2e-kit",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./contrast": "./src/contrast.ts",
+    "./optical-snap": "./src/optical-snap.ts",
+    "./perf/calibrate": "./src/perf/calibrate.ts",
+    "./perf/interactive": "./src/perf/interactive.ts",
+    "./perf/trace-tasks": "./src/perf/trace-tasks.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "devDependencies": {
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.6",
+    "oxlint": "^1.90.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

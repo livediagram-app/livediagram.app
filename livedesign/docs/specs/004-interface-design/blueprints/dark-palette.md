@@ -9,24 +9,24 @@ The Charcoal migration has its own blueprint ([Retired schemes](../../011-theme/
 
 Scope, by file:
 
-| File                                                     | Role                                                                                     |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `../packages/tailwind-config/theme.css`                  | `.dark` surfaces (the shared theme)                                                      |
-| `packages/tailwind-config/theme.css`                     | `.dark` Steel brand tokens, in rose (this product's palette)                             |
-| `../packages/ui/src/brand-classes.ts`                    | `SOLID_BRAND_DARK`, `SOLID_BRAND_DARK_CONTROL`                                           |
-| `packages/ui/src/Brand.tsx`                              | Wordmark accent `dark:text-rose-400`                                                     |
-| `../packages/model-core/src/canvas-colors.ts`            | Dark canvas + pattern constants                                                          |
-| `packages/design/src/colors.ts`                          | `DARK_INK`, `defaultArrowLabelColor`                                                     |
-| `packages/design/src/svg-render-arrows.ts`               | Export caption colour through `defaultArrowLabelColor`                                   |
-| `../packages/template-previews/src/preview-art-tile.css` | Editor `.dark` tile rule landing on the canvas colour                                    |
-| `apps/live/components/canvas/ArrowView.tsx`              | Canvas caption colour through `defaultArrowLabelColor`                                   |
-| `apps/live/components/canvas/element-variant.ts`         | `DARK_SELECTION_RING` on every single selection                                          |
-| `apps/live/components/canvas/element-parts.tsx`          | `RESIZE_HANDLE_CLASS`                                                                    |
-| `apps/live/hooks/ui/editor-accent.ts`                    | `editorAccentCss`: tint selectors that outrank the Steel base                            |
-| `../packages/ui/src/identity-fill.ts`                    | `identityDeep`, `identityVars`, `IDENTITY_FILL`                                          |
-| `apps/live/components/chrome/TabPill.tsx`                | Active pill's dark surface as `var(--color-slate-800)`                                   |
-| `apps/live/app/dark-palette.test.ts`                     | Source guards: tokens, light ramp, wordmark, solid fills, brand text, numerals, identity |
-| `apps/live/e2e/contrast.ts`, `contrast-audit.spec.ts`    | Runtime contrast guard, dark mode                                                        |
+| File                                                            | Role                                                                                     |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `../packages/tailwind-config/theme.css`                         | `.dark` surfaces (the shared theme)                                                      |
+| `packages/tailwind-config/theme.css`                            | `.dark` Steel brand tokens, in rose (this product's palette)                             |
+| `../packages/ui/src/brand-classes.ts`                           | `SOLID_BRAND_DARK`, `SOLID_BRAND_DARK_CONTROL`                                           |
+| `packages/ui/src/Brand.tsx`                                     | Wordmark accent `dark:text-rose-400`                                                     |
+| `../packages/model-core/src/canvas-colors.ts`                   | Dark canvas + pattern constants                                                          |
+| `packages/design/src/colors.ts`                                 | `DARK_INK`, `defaultArrowLabelColor`                                                     |
+| `packages/design/src/svg-render-arrows.ts`                      | Export caption colour through `defaultArrowLabelColor`                                   |
+| `../packages/template-previews/src/preview-art-tile.css`        | Editor `.dark` tile rule landing on the canvas colour                                    |
+| `apps/live/components/canvas/ArrowView.tsx`                     | Canvas caption colour through `defaultArrowLabelColor`                                   |
+| `apps/live/components/canvas/element-variant.ts`                | `DARK_SELECTION_RING` on every single selection                                          |
+| `apps/live/components/canvas/element-parts.tsx`                 | `RESIZE_HANDLE_CLASS`                                                                    |
+| `apps/live/hooks/ui/editor-accent.ts`                           | `editorAccentCss`: tint selectors that outrank the Steel base                            |
+| `../packages/ui/src/identity-fill.ts`                           | `identityDeep`, `identityVars`, `IDENTITY_FILL`                                          |
+| `apps/live/components/chrome/TabPill.tsx`                       | Active pill's dark surface as `var(--color-slate-800)`                                   |
+| `apps/live/app/dark-palette.test.ts`                            | Source guards: tokens, light ramp, wordmark, solid fills, brand text, numerals, identity |
+| `../packages/e2e-kit/src/contrast.ts`, `contrast-audit.spec.ts` | Runtime contrast guard, dark mode                                                        |
 
 ## Domain and naming
 
@@ -99,7 +99,7 @@ export function identityVars(color: string): CSSProperties; // { '--identity', '
 export const IDENTITY_FILL =
   'bg-(--identity) text-[color:var(--identity-ink,#fff)]! dark:bg-(--identity-deep) dark:text-[color:var(--identity-deep-ink,#fff)]!';
 
-// apps/live/e2e/contrast.ts
+// ../packages/e2e-kit/src/contrast.ts
 export function auditContrast(page: Page): Promise<ContrastReport>; // { measured, failures, skipped }
 ```
 

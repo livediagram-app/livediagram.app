@@ -59,7 +59,11 @@ const EMITS = [
   ...scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry')),
   ...platformEmitters(isValidTelemetryEvent, 'Project'),
   // Every app's client errors and timings, sent through the shared browser client.
-  ...sharedClientEmitters(),
+  ...sharedClientEmitters({
+    root: REPO,
+    roots: ['apps', 'packages'],
+    skip: join(REPO, 'apps', 'telemetry'),
+  }),
   // Every app's help-centre views, votes and searches, sent by the shared help site.
   ...sharedSiteEmitters(),
 ];

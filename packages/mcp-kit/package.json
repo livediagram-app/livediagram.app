@@ -17,7 +17,8 @@
     "./request-scope": "./src/request-scope.ts",
     "./server-json": "./src/server-json.ts",
     "./tool-result": "./src/tool-result.ts",
-    "./tool-scope": "./src/tool-scope.ts"
+    "./tool-scope": "./src/tool-scope.ts",
+    "./eval/summary": "./eval/summary.mjs"
   },
   "scripts": {
     "lint": "oxlint",

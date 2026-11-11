@@ -105,7 +105,9 @@ export default defineProject({ test: { environment: 'jsdom' } });
   worst 4.7 of 20 runs.
 - **A growth check times its two sizes in turns.** One warm-up run of each, then samples of each in turn,
   the best kept, several runs to a sample when the smaller takes about a millisecond: timed one after the
-  other, the smaller pays the first compile and the larger any collection (docs/ci.md "Speed budgets").
+  other, the smaller pays the first compile and the larger any collection. `cpuGrowthRatio` from
+  `@liveworkspace/vitest-config/cpu-time` does this, and samples another round while a round reads over
+  the ceiling, up to three: noise settles, a quadratic step does not (docs/ci.md "Speed budgets").
 - **A test never pays a cold module load.** When the code under test imports
   a module lazily (`await import(...)`), the test file also imports it
   statically, so its transform happens at collection, outside every test's

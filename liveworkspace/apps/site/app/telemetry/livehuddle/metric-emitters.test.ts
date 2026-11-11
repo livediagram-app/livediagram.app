@@ -60,7 +60,7 @@ const EMITS = [
   ...scanEmitters(REPO, SCAN_ROOTS, SKIP),
   ...platformEmitters(isValidTelemetryEvent, 'Document'),
   // Every app's client errors and timings, sent through the shared browser client.
-  ...sharedClientEmitters(),
+  ...sharedClientEmitters({ root: REPO, roots: SCAN_ROOTS, skip: SKIP }),
   // Every app's help-centre views, votes and searches, sent by the shared help site.
   ...sharedSiteEmitters(),
 ];
@@ -190,7 +190,9 @@ describe('hard-coded ranking types', () => {
     ...SELECTION_MODES.map(
       (t) => ['Selection modes', 'Canvas', 'Used', t] as [string, string, string, string],
     ),
-    ...NON_PATTERN_CANVAS_TYPES.map(
+    // livehuddle's tabs have no animated background (docs/specs/002-project-scope/not-in-livehuddle.md), so
+    // it never sends the speed slider's type; the shared exclusion list names it for the apps that do.
+    ...NON_PATTERN_CANVAS_TYPES.filter((t) => t !== 'BackgroundAnimationSpeed').map(
       (t) =>
         ['Canvas styles exclusion', 'Canvas', 'Changed', t] as [string, string, string, string],
     ),

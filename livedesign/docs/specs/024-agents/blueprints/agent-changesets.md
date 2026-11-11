@@ -60,9 +60,9 @@ Scope, by file:
 | `apps/live/app/design/[id]/useRoomConnection.ts`                                 | Room for every server-stored design; the `changeset` branch                                                                  |
 | `apps/live/app/design/[id]/usePresenceBroadcast.ts`                              | `select` (with `elementIds`) and `tab-focus` for every open room                                                             |
 | `apps/live/app/design/[id]/room-op-apply.ts`                                     | `applyRoomOpToTabs` case `changeset`                                                                                         |
-| `apps/live/app/design/[id]/changeset-seen.ts`                                    | `ChangesetSeen`, `noteLoadedRev`, `admitChangesetOp`, pure                                                                   |
+| `../packages/workbench/src/lib/changeset-seen.ts`                                | `ChangesetSeen`, `noteLoadedRev`, `admitChangesetOp`, pure                                                                   |
 | `apps/live/app/design/[id]/changeset-toast.ts`                                   | `coalesceChangesetToast`, `changesetToastCopy`, pure                                                                         |
-| `apps/live/app/design/[id]/useChangesetSeen.ts`                                  | `seenRef` for admission, `seen` state committed with the content it describes, `noteSeen`                                    |
+| `../packages/workbench/src/hooks/editor/useChangesetSeen.ts`                     | `seenRef` for admission, `seen` state committed with the content it describes, `noteSeen`                                    |
 | `apps/live/app/design/[id]/useChangesetFeed.ts`                                  | Gap refetch, the join check, reveal state, toast, Show, Undo                                                                 |
 | `apps/live/lib/changeset-reveals.ts`                                             | `createRevealStore`: the outlines as an external store; `boundsOfElements` for Show                                          |
 | `apps/live/app/design/[id]/{usePerTabLoad,useRoomResync,seed-fetched-...}`       | Record each loaded tab's `rev`; resync of named tabs                                                                         |

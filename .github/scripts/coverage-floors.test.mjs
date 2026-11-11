@@ -18,6 +18,8 @@ import {
   parseShard,
   raise,
   shardsByEditor,
+  shardsIn,
+  withoutPartial,
 } from './coverage-floors.mjs';
 import { coverageIn, mergeLcov } from './lcov.mjs';
 
@@ -125,6 +127,27 @@ test('shards: every shard the plan reached must be there; other editors are left
   assert.deepEqual(strict.missing, ['coverage-a-editor-2']);
 });
 
+// Run 42826405532: one liveplanner shard's artifact, uploaded 13 s before the check listed them, was not
+// listed. Merged without it, liveplanner read 16 points under its floor; an editor short a shard is not judged.
+test('an editor short a shard is left out of the judging, the others are judged', () => {
+  const found = new Map([
+    ['a', ['coverage-a-editor-1', 'coverage-a-editor-3']],
+    ['b', ['coverage-b-editor-1']],
+  ]);
+  assert.deepEqual([...withoutPartial(found, ['coverage-a-editor-2']).keys()], ['b']);
+  assert.deepEqual([...withoutPartial(found, []).keys()], ['a', 'b']);
+});
+
+test('a folder without an lcov.info is a missing shard', () => {
+  const dir = artifacts({ 'coverage-a-editor-1': lcov('a.ts', ['DA:1,1']) });
+  mkdirSync(path.join(dir, 'coverage-a-editor-2'));
+  const plan = [1, 2, 3].map((shard) => ({ group: 'a', shard, total: 3 }));
+  assert.deepEqual(shardsIn(dir, plan).missing.sort(), [
+    'coverage-a-editor-2',
+    'coverage-a-editor-3',
+  ]);
+});
+
 test('the committed floors name the five editors, each a number with one decimal at most', () => {
   const floors = JSON.parse(readFileSync(FLOORS_FILE, 'utf8'));
   assert.deepEqual(Object.keys(floors).sort(), [
@@ -176,6 +199,17 @@ test('the script: exit 1 below a floor or on a missing shard, 0 at it', () => {
   );
   assert.equal(run(artifacts(shards(report(lines, branches))), { EDITORS: plan }), 1);
   assert.equal(run(artifacts({})), 0, 'a run that reached no editor has nothing to check');
+
+  // --missing names what to fetch again, one shard a line, and never fails.
+  const missing = execFileSync(
+    'node',
+    [SCRIPT, '--missing', artifacts(shards(report(lines, branches)))],
+    {
+      encoding: 'utf8',
+      env: { ...process.env, EDITORS: plan },
+    },
+  );
+  assert.equal(missing, 'coverage-livediagram-editor-4\n');
 });
 
 test('the shared reader merges every lcov.info under each folder', () => {
