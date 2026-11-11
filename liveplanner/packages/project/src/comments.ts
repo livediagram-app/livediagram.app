@@ -44,6 +44,10 @@ export type Comment = {
   ai?: true;
   // When its author last changed its text (a card thread's edit), else absent.
   editedAt?: number;
+  // Added by a rule (docs/specs/026-plan/automations.md "On cards"): its author is Automation (`authorId`
+  // 'automation'), and this names the rule. Public, so it survives every redaction; the editor draws the bolt avatar
+  // and the rule's name. Server-stamped, never read from a request.
+  automation?: { ruleId: string; rule: string };
   // Who reacted with which of the six emoji (docs/specs/012-collaboration/comment-reactions.md), in the order
   // they did; one each per person, under their public collab key. Absent when none, so older comments read as
   // they always did.

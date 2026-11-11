@@ -102,7 +102,7 @@ export const categories: Category[] = [
     title: 'Plan',
     description:
       'Run the work: boards of cards, sheets with real formulas, forms that fill a board, and dashboards drawn from it all.',
-    articleCount: 13,
+    articleCount: 14,
     kind: 'feature',
     groups: ['Getting Going', 'Boards and Cards', 'Sheets', 'Forms and Dashboards'],
   },
@@ -704,6 +704,17 @@ export const articles: Article[] = [
       'The Activity tab on every card: who made it, moved it and changed it, and when, agents and undos marked.',
     keywords:
       'activity history card history log audit trail changes changelog who moved who changed what changed timeline tab moved edited created by ai transitioned by ai agent undo version',
+    category: 'Plan',
+    categorySlug: 'plan',
+    group: 'Boards and Cards',
+  },
+  {
+    slug: 'automations',
+    title: 'Automations',
+    description:
+      'Rules that act on your cards for you: when something happens to a card, check it and move, assign, label, comment or email.',
+    keywords:
+      'automation automations rules rule trigger triggers conditions actions workflow workflows jira automation auto assign auto move when then if else run rule run log smart values placeholders email on done stamp date triage form response',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Boards and Cards',

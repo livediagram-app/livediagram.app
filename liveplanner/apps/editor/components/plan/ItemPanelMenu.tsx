@@ -15,6 +15,7 @@ import {
   MenuGroupSeparator,
   PortalMenu,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import { RunRuleMenu, type RunRuleChoices } from '@/components/automations/RunRuleMenu';
 import { PlanBoardTileArt } from './plan-tile-art';
 import { PlanTypeGlyph } from './plan-type-glyph';
 
@@ -33,6 +34,7 @@ export function ItemPanelMenu({
   onEditType,
   onCopyLink,
   repeat,
+  runRules,
 }: {
   itemKey: number;
   // Someone who may only view gets Help alone.
@@ -52,6 +54,8 @@ export function ItemPanelMenu({
   onCopyLink?: (() => void) | undefined;
   // Repeat, or Edit Repeat and Stop Repeating on a repeating card: an Editor's on a plan in an account; absent, none.
   repeat?: { repeating: boolean; onRepeat: () => void; onStopRepeat: () => void } | null;
+  // Run Rule (docs/specs/026-plan/automations.md "On cards"): an Editor's, while a Run from a Card rule is on.
+  runRules?: RunRuleChoices | null;
 }) {
   const [open, setOpen] = useState(false);
   // Held in state so the menu anchors on its first render.
@@ -111,6 +115,7 @@ export function ItemPanelMenu({
                   ) : null}
                 </>
               ) : null}
+              {runRules ? <RunRuleMenu choices={runRules} close={() => setOpen(false)} /> : null}
               {onEditType && canRetire ? (
                 <MenuActionRow
                   plain

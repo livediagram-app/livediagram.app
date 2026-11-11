@@ -19,6 +19,8 @@ export type TimelineRun = {
   by: ItemHistoryEntry['by'];
   mine: boolean;
   ai: boolean;
+  // A rule's changes (docs/specs/026-plan/automations.md "On cards"): the bolt and Automation; `by.name` is the rule.
+  automation: boolean;
   entries: TimelineEntry[];
 };
 
@@ -67,7 +69,8 @@ const sameAuthor = (a: ItemHistoryEntry, b: ItemHistoryEntry) =>
   a.by.name === b.by.name &&
   a.by.color === b.by.color &&
   !!a.mine === !!b.mine &&
-  (a.tag === 'ai') === (b.tag === 'ai');
+  (a.tag === 'ai') === (b.tag === 'ai') &&
+  (a.tag === 'automation') === (b.tag === 'automation');
 
 // The first `limit` entries as days of runs; earlier values read from every entry, shown or not.
 export function activityTimeline(
@@ -96,6 +99,7 @@ export function activityTimeline(
       by: entry.by,
       mine: !!entry.mine,
       ai: entry.tag === 'ai',
+      automation: entry.tag === 'automation',
       entries: [item],
     });
   });

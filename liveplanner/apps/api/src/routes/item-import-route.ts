@@ -38,6 +38,7 @@ import {
   writer,
   type ItemCaller,
 } from './item-route-kit';
+import { writeSource } from './automation-source';
 import { buildCreates, itemsFull, readBulkCreates, type ReadCreate } from './item-routes';
 
 type ImportHead = { importId: string; part: number; parts: number };
@@ -196,6 +197,7 @@ async function land(
       projectId,
       made.map((after) => ({ before: null, after })),
       historyTagOf(ctx, putBack),
+      writeSource(ctx, projectId),
     );
     console.info('[items] import.landed', { projectId, cards: made.length, parts: head.parts });
     const answer: ItemsResponse = { items: forCaller(caller, made), rev: revs.at(-1)! };

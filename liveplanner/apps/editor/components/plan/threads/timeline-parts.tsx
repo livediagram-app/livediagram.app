@@ -4,6 +4,7 @@
 // shows", "History"): a person's disc on a thin rail, a value chip, a time that says when and shows the exact moment
 // on hover. The Activity tab and the comment threads both draw from here, so they read as one family.
 
+import { AutomationDisc } from '@/components/automations/automation-glyphs';
 import type { ReactNode } from 'react';
 import { GlyphDisc, IDENTITY_FILL, Tooltip, identityVars } from '@liveplanner/ui';
 import { PHASE_COLOURS } from '@liveplanner/plan-art';
@@ -31,23 +32,30 @@ export function TimelineDisc({
   color,
   size = 24,
   badge,
+  automation = false,
 }: {
   name: string;
   color: string;
   size?: 24 | 28;
+  // Automation's bolt disc in place of initials (docs/specs/026-plan/automations.md "On cards").
+  automation?: boolean;
   // A small mark on its corner (a resolved thread's check).
   badge?: ReactNode;
 }) {
   return (
     <span aria-hidden className="relative z-[1] inline-flex shrink-0">
-      <GlyphDisc
-        size={size}
-        as="span"
-        style={identityVars(color)}
-        className={`${size === 24 ? 'text-[9px]' : 'text-[10px]'} font-semibold text-white ring-[3px] ring-white dark:ring-slate-900 ${IDENTITY_FILL}`}
-      >
-        {initialsOf(name)}
-      </GlyphDisc>
+      {automation ? (
+        <AutomationDisc size={size} ringed />
+      ) : (
+        <GlyphDisc
+          size={size}
+          as="span"
+          style={identityVars(color)}
+          className={`${size === 24 ? 'text-[9px]' : 'text-[10px]'} font-semibold text-white ring-[3px] ring-white dark:ring-slate-900 ${IDENTITY_FILL}`}
+        >
+          {initialsOf(name)}
+        </GlyphDisc>
+      )}
       {badge ? <span className="absolute -bottom-1 -right-1">{badge}</span> : null}
     </span>
   );
