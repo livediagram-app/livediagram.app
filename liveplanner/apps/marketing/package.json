@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "node ../../scripts/next-dev.mjs --port 3201",
+    "dev": "node ../../../packages/next-config/scripts/next-dev.mjs --port 3201",
     "build": "node ../../../packages/licences/scripts/generate-product.ts --product ../../packages/licences --out . && next build && node ../../../packages/licences/scripts/verify.ts .",
     "licences": "node ../../../packages/licences/scripts/generate-product.ts --product ../../packages/licences --out .",
     "lint": "oxlint",

@@ -22,6 +22,8 @@ puts the api on the same origin as production does; the editor's own port can't 
 - Check what's already listening first: `lsof -nP -iTCP:3100 -sTCP:LISTEN` (and the api port). The
   owner usually has the dev servers running. Never start a second `pnpm dev` over a running one, and
   never `pkill` dev servers or workers: the registry is machine-wide and other sessions use them.
+  A Next app's `dev` refuses a port that is already held: it prints the holder's PID and folder and
+  exits, leaving it running. Don't pass `--force` (which kills the holder) unless the holder is yours.
 - To start a product only when nothing is running: `corepack pnpm dev:diagram` (or `dev:planner`,
   `dev:design`, `dev:documents`) from the monorepo root. `pnpm` is only available as `corepack pnpm`.
 - Without the api worker, creating a document fails ("Couldn't create the diagram" or similar).
