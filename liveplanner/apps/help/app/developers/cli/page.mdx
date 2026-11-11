@@ -151,6 +151,8 @@ liveplanner item move "Sprint 14" "#12" "In Progress"
 liveplanner item set "Sprint 14" "#12" --fields assignee=Sam --clear due
 liveplanner board add "Sprint 14" --preset sprint
 liveplanner board set "Sprint 14" Kanban --columns "To Do,Doing,Review,Done"
+liveplanner board set "Sprint 14" Kanban --add-widgets "Budget Sum,due"    # show widgets in the board's header
+liveplanner board set "Sprint 14" Kanban --remove-widgets people           # hide one again
 liveplanner type ls "Sprint 14"                      # card types and their fields
 liveplanner type apply "Sprint 14" -f types.json     # add, change or delete card types
 liveplanner sheet add "Budget 2027" --title Costs --csv costs.csv
@@ -159,6 +161,8 @@ liveplanner sheet set "Budget 2027" Costs B2 1200 =B2*12
 ```
 
 Cards, boards and sheets are named the way the editor shows them: a column by its name, a card by its number, a sheet by its title. These writes are not changesets: each lands at once, for everyone with the plan open.
+
+To empty a field, name it in `--clear` (`--clear due`). A field that holds several values, such as Blocked By, also clears with `key=` and nothing after it (`--fields "Blocked By="`). `board set --add-widgets` and `--remove-widgets` take widget names or ids, separated by commas.
 
 ## Comments and Waiting
 
