@@ -207,8 +207,17 @@ function ImageElementViewImpl({
     // picture moves inside its crop and never past it.
     <div
       className={`relative h-full w-full overflow-hidden rounded ${bodySetClass(element, 'media') ?? ''}`}
-      style={{ ...radiusStyle, ...backingStyle }}
+      style={{ ...radiusStyle, ...backingStyle.frame }}
     >
+      {backingStyle.bands ? (
+        // The white in the bands the picture leaves bare, on a layer with square corners: on the rounded frame the
+        // shadows' inner edge would follow the radius and leave a white fillet where a band meets the picture.
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={backingStyle.bands}
+        />
+      ) : null}
       <img
         src={state.src}
         alt={element.alt ?? ''}

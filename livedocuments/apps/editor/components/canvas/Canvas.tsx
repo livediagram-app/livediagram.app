@@ -9,7 +9,7 @@ import {
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
 import { useEffect, useMemo, useRef, ViewTransition } from 'react';
-import { isAnimatedPattern } from '@livedocuments/document';
+import { imageBackingInsetVar, isAnimatedPattern } from '@livedocuments/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { useNoCanvasTextSelection } from '@liveworkspace/workbench/hooks/canvas/useNoCanvasTextSelection';
@@ -455,6 +455,9 @@ function CanvasView(props: CanvasProps) {
                 // Translate is in canvas-coords (applied first); scale is centred
                 // on the wrapper so zooming keeps the viewport centre stable.
                 transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
+                // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The white
+                // under a picture"): a CSS variable, so no picture re-renders on zoom; it changes only below 50%.
+                ...imageBackingInsetVar(viewportZoom),
                 // Draw-mode cursor: every intent gets a custom inline-SVG
                 // cursor (crosshair at the pointer tip plus a small glyph
                 // hinting at what's about to land). Without this, tool
