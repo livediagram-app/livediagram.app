@@ -52,7 +52,7 @@ describe('publishProblems', () => {
     ]);
     // With no card type the destination's own check speaks; mappings are not judged.
     expect(publishProblems(form, undefined).map((p) => p.kind)).not.toContain('broken_mapping');
-    expect(Object.keys(PUBLISH_PROBLEM_TEXT)).toHaveLength(6);
+    expect(Object.keys(PUBLISH_PROBLEM_TEXT)).toHaveLength(7);
   });
 
   it('asks for a required question going to each required field, in a section every response sees', () => {
@@ -104,5 +104,40 @@ describe('publishProblems', () => {
       sections: [{ id: 's-1', title: '', questions: [{ ...sev, required: true }, area] }],
     };
     expect(publishProblems(fixed, required)).toEqual([]);
+  });
+});
+
+// Fields set automatically (docs/specs/030-forms/forms.md "Filled in automatically").
+describe('publishProblems with fields set automatically', () => {
+  const required: ItemTypeDef = {
+    ...type,
+    custom: [{ id: 'f-sev', label: 'Severity', kind: 'choice', options: ['Low'], required: true }],
+  };
+  const q = { id: 'q-1', type: 'short' as const, prompt: 'Name' };
+  const form = (
+    fixed: Record<string, { value: string }>,
+  ): Pick<FormDefinition, 'sections' | 'destination'> => ({
+    sections: [{ id: 's-1', title: '', questions: [q] }],
+    destination: { tabId: 't', typeId: 'bug', status: 's', fixed },
+  });
+
+  it('counts a set required field as asked', () => {
+    expect(publishProblems(form({ 'f-sev': { value: 'Low' } }), required)).toEqual([]);
+  });
+
+  it('names a set value its field no longer has, and a field gone', () => {
+    const problems = publishProblems(
+      form({ 'f-sev': { value: 'High' }, 'f-gone': { value: 'x' } }),
+      required,
+    );
+    expect(problems).toEqual([
+      { kind: 'required_unasked', fieldId: 'f-sev', field: 'Severity', type: 'Bug' },
+      { kind: 'broken_fixed', fieldId: 'f-sev', field: 'Severity' },
+      { kind: 'broken_fixed', fieldId: 'f-gone', field: 'A field' },
+    ]);
+    expect(publishProblemText(problems[1]!)).toBe(
+      'Severity is set automatically to a value its field no longer has: change or remove it.',
+    );
+    expect(PUBLISH_PROBLEM_TEXT.broken_fixed).toBeTruthy();
   });
 });

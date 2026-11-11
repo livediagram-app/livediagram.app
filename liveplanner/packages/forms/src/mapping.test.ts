@@ -176,3 +176,15 @@ describe('newFieldFor', () => {
     expect(fieldTakes(q, newFieldFor(q, 'f-a', 'A'))).toBe(true);
   });
 });
+
+// One source per field (docs/specs/030-forms/forms.md "Filled in automatically").
+describe('a field set automatically', () => {
+  it('is not offered to a question', () => {
+    const q = Q('short', { id: 'q-1' });
+    const form = {
+      sections: [{ id: 's', title: '', questions: [q] }],
+      destination: { fixed: { 'f-note': { value: 'x' } } },
+    };
+    expect(fieldChoices(form, q, type)).toEqual([]);
+  });
+});

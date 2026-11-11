@@ -11,15 +11,32 @@ import {
   type LayoutChange,
   type SheetWrite,
 } from '@liveplanner/sheets';
-import { promptOf, questionsOf, type FormDefinition, type FormQuestion } from './model';
+import {
+  promptOf,
+  questionsOf,
+  type FormDefinition,
+  type FormQuestion,
+  type SheetFixedColumn,
+} from './model';
 
 const SHEET_NUMBER_HEADER = '#';
 const SHEET_SUBMITTED_HEADER = 'Submitted';
 
-export type SheetHeader = { key: string; header: string; question?: FormQuestion };
+export type SheetHeader = {
+  key: string;
+  header: string;
+  question?: FormQuestion;
+  fixed?: SheetFixedColumn;
+};
 
-// The headers a form's rows want, in order, each distinct (a repeated wording gets " (2)", " (3)").
-export function sheetHeaders(form: Pick<FormDefinition, 'sections'>): SheetHeader[] {
+// What a sheet's columns are planned from: the questions, and the extra columns its sheet fills automatically.
+export type SheetForm = Pick<FormDefinition, 'sections'> & {
+  sheet?: { fixed?: readonly SheetFixedColumn[] | undefined } | undefined;
+};
+
+// The headers a form's rows want, in order, each distinct (a repeated wording gets " (2)", " (3)"): #, Submitted,
+// each question, then each extra column (forms.md "Columns filled in automatically").
+export function sheetHeaders(form: SheetForm): SheetHeader[] {
   const out: SheetHeader[] = [
     { key: '#', header: SHEET_NUMBER_HEADER },
     { key: 'at', header: SHEET_SUBMITTED_HEADER },
@@ -31,6 +48,12 @@ export function sheetHeaders(form: Pick<FormDefinition, 'sections'>): SheetHeade
     for (let n = 2; seen.has(header.toLowerCase()); n++) header = `${base} (${n})`;
     seen.add(header.toLowerCase());
     out.push({ key: q.id, header, question: q });
+  }
+  for (const c of form.sheet?.fixed ?? []) {
+    let header = c.header;
+    for (let n = 2; seen.has(header.toLowerCase()); n++) header = `${c.header} (${n})`;
+    seen.add(header.toLowerCase());
+    out.push({ key: c.id, header, fixed: c });
   }
   return out;
 }
@@ -46,7 +69,7 @@ const norm = (t: string) => t.trim().toLowerCase();
 // Which row holds the sheet's headers: the first top row with a cell reading one of the form's headers (ignoring
 // case), else the first with two or more text cells (a table head, below a template's title), else the first row.
 export function headerRowIndex(
-  form: Pick<FormDefinition, 'sections'>,
+  form: SheetForm,
   rows: readonly string[],
   rowTexts: RowTexts,
 ): number {
@@ -60,7 +83,7 @@ export function headerRowIndex(
 }
 
 export type SheetColumnsInput = {
-  form: Pick<FormDefinition, 'sections'>;
+  form: SheetForm;
   layout: { rows: readonly string[]; cols: readonly string[] };
   // The top rows' text (only cells holding text): the header row is found among them.
   rowTexts?: RowTexts | undefined;
