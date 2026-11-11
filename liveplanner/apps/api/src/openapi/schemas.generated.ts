@@ -1131,6 +1131,67 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
     ],
   },
+  AutomationAi: {
+    anyOf: [
+      {
+        additionalProperties: false,
+        properties: {
+          field: {
+            type: 'string',
+          },
+          kind: {
+            const: 'ai',
+            type: 'string',
+          },
+          task: {
+            const: 'summarise',
+            type: 'string',
+          },
+        },
+        required: ['kind', 'task'],
+        type: 'object',
+      },
+      {
+        additionalProperties: false,
+        properties: {
+          kind: {
+            const: 'ai',
+            type: 'string',
+          },
+          set: {
+            type: 'boolean',
+          },
+          task: {
+            const: 'card_type',
+            type: 'string',
+          },
+        },
+        required: ['kind', 'task', 'set'],
+        type: 'object',
+      },
+      {
+        additionalProperties: false,
+        properties: {
+          kind: {
+            const: 'ai',
+            type: 'string',
+          },
+          labels: {
+            type: 'boolean',
+          },
+          priority: {
+            type: 'boolean',
+          },
+          task: {
+            const: 'triage',
+            type: 'string',
+          },
+        },
+        required: ['kind', 'task', 'priority', 'labels'],
+        type: 'object',
+      },
+    ],
+  },
   AutomationAssignee: {
     anyOf: [
       {
@@ -1863,6 +1924,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         $ref: '#/components/schemas/AutomationBranch',
       },
+      {
+        $ref: '#/components/schemas/AutomationAi',
+      },
     ],
   },
   AutomationStepLine: {
@@ -1904,6 +1968,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         additionalProperties: false,
         properties: {
+          ai: {
+            const: true,
+            type: 'boolean',
+          },
           already: {
             const: true,
             type: 'boolean',
@@ -6157,7 +6225,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     type: 'object',
   },
   ItemHistoryTag: {
-    enum: ['ai', 'undo', 'form', 'repeat', 'automation'],
+    enum: ['ai', 'undo', 'form', 'repeat', 'automation', 'automation_ai'],
     type: 'string',
   },
   ItemHistoryValue: {

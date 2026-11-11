@@ -27,6 +27,12 @@ export const AUTOMATION_ROTATE_MIN = 2;
 export const AUTOMATION_ROTATE_MAX = 10;
 export const AUTOMATION_DUE_DAYS_MAX = 30;
 export const AUTOMATION_LATE_MAX_MS = 24 * 60 * 60 * 1000;
+// Phase 3's AI actions (spec "AI actions"): the calls a plan makes a day (UTC), the AI steps one rule holds, a
+// summary's length and the labels Triage adds.
+export const AUTOMATION_AI_PER_DAY = 100;
+export const AUTOMATION_AI_STEPS_MAX = 3;
+export const AUTOMATION_AI_SUMMARY_MAX = 600;
+export const AUTOMATION_AI_LABELS_MAX = 3;
 
 // Who a rule's changes are by: `name` is the rule's name at the moment it ran, the history tag says it was a rule.
 export const AUTOMATION_PERSON_ID = 'automation';
@@ -188,8 +194,23 @@ export type AutomationBranch = {
   then: AutomationAction[];
 };
 
+// Summarise Card, Suggest Card Type and Triage (spec "AI actions"): one model call each, at the rule's top level only.
+export type AutomationAi =
+  // `field`: a custom text field to set; absent, a comment.
+  | { kind: 'ai'; task: 'summarise'; field?: string }
+  // `set`: set the card type; false, comment the suggestion.
+  | { kind: 'ai'; task: 'card_type'; set: boolean }
+  // At least one of the two is on.
+  | { kind: 'ai'; task: 'triage'; priority: boolean; labels: boolean };
+export type AutomationAiTask = AutomationAi['task'];
+export const AUTOMATION_AI_TASKS: readonly AutomationAiTask[] = [
+  'summarise',
+  'card_type',
+  'triage',
+];
+
 export type AutomationStep =
-  AutomationAction | AutomationOutgoing | AutomationIf | AutomationBranch;
+  AutomationAction | AutomationOutgoing | AutomationIf | AutomationBranch | AutomationAi;
 
 // ---- A rule ------------------------------------------------------------------------------------------------------
 
@@ -228,7 +249,8 @@ export type AutomationResult = 'done' | 'no_match' | 'skipped' | 'failed';
 export type AutomationStepLine =
   | { kind: 'trigger'; text: string; by?: ItemPerson }
   | { kind: 'condition'; ok: boolean; text: string }
-  | { kind: 'action'; ok: boolean; text: string; already?: true }
+  // `ai`: an AI step that asked the model (the day's AI count reads it).
+  | { kind: 'action'; ok: boolean; text: string; already?: true; ai?: true }
   | { kind: 'branch'; ok: boolean; text: string; cards: number };
 
 export interface AutomationRun {

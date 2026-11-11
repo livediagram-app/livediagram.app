@@ -6,6 +6,7 @@
 
 import {
   AUTOMATION_CONDITION_NAMES,
+  AUTOMATION_AI_NAMES,
   AUTOMATION_NOTIFY_NAMES,
   AUTOMATION_STEP_NAMES,
   isTimeTrigger,
@@ -26,6 +27,7 @@ import {
 } from './rule-draft';
 import { StepPreview } from './StepPreview';
 import { ActionPanel } from './step-panels/ActionPanel';
+import { AiStepPanel } from './step-panels/AiStepPanel';
 import { BranchPanel } from './step-panels/BranchPanel';
 import { ConditionPanel } from './step-panels/ConditionPanel';
 import { OutgoingPanel } from './step-panels/OutgoingPanel';
@@ -141,7 +143,17 @@ export function StepPanel({
       </>,
     );
   }
-  if (step.kind === 'for' || step.kind === 'notify') return null;
+  if (step.kind === 'ai' && part.part === 'step')
+    return shell(
+      AUTOMATION_AI_NAMES[step.task],
+      <StepTile tone="action" kind="ai" size={24} />,
+      <AiStepPanel
+        step={step}
+        outline={outline}
+        onChange={(next) => onChange(setStep(body, part.index, next))}
+      />,
+    );
+  if (step.kind === 'for' || step.kind === 'notify' || step.kind === 'ai') return null;
   const branch = holderOf(body, part)?.kind === 'for';
   const text = step.kind === 'comment' ? step.text : step.kind === 'email' ? step.body : null;
   return shell(

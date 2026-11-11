@@ -7,9 +7,9 @@ automation, sized to one plan. The engineering detail is [blueprints/automations
 
 This spec covers **Phase 1** (Work Item #711: card triggers and actions, the Automations screen and its footer
 button) and **Phase 2** (#712: the Scheduled, Due In and Overdue triggers, For Related Cards, Assign in Turn, the
-Send to Webhook, Post to Slack and Post to Teams actions, and the Templates gallery). Phase 3 (#713) adds the agent
-and CLI rule tools ("Agents and the CLI", below), the incoming webhook trigger and AI actions; those two are
-specified here when they are built. The
+Send to Webhook, Post to Slack and Post to Teams actions, and the Templates gallery) and, of **Phase 3** (#713), the
+agent and CLI rule tools ("Agents and the CLI", below) and the **AI actions** (Summarise Card, Suggest Card Type,
+Triage). Phase 3's incoming webhook trigger is specified here as it is built. The
 design for every phase is the LivePlanner Automations canvas (the owner's design artifact): Phase 1 follows its
 screens 1, 2, 3, 4, 5 and 7; Phase 2 adds screen 6 (Empty State and Templates), the Overdue Nudge and paused Slack
 rows of screen 2, and **+ For Related Cards** on screen 3.
@@ -70,6 +70,9 @@ work. A rule does it every time, at once, and says that it did.
   `?automations=1` opening the screen) and **Cancel**. After signing in the screen opens on the
   rules. **Only an Editor Can See Rules** is for a signed-in reader the api refuses, never a guest. Run Rule waits for
   sign-in too.
+- **AI actions** are an Editor's like any action: whoever may write the rule may add one. They act as Automation with
+  an Editor's access, as every action does, and a Participant's change can start one. Each costs the plan one of its
+  **100 AI steps a day**, shared by every rule.
 - An **API token** (the MCP server, the CLI, a script) reaches rules as its account does: when that account is an
   Editor of the whole plan, the token may do everything above ("Agents and the CLI"). A **read-only** token lists
   the rules and the Audit Trail and nothing else (403 `read_only_token` on every other route, Test on a Card too).
@@ -184,6 +187,9 @@ with what is missing.
 | **Post to Slack**               | posts the message, with an **Open in liveplanner** link, through one of the plan's Slack webhooks |
 | **Post to Microsoft Teams**     | the same, as a card in a Teams channel through one of the plan's Teams webhooks                   |
 | **For Related Cards**           | a branch: runs its own conditions and actions on each related card (below)                        |
+| **Summarise Card** (AI)         | writes a short plain-text summary of the card to a comment, or to a text field (below)            |
+| **Suggest Card Type** (AI)      | picks one of the plan's card types from the card's text, and sets it or comments the suggestion   |
+| **Triage** (AI)                 | sets the priority and adds up to 3 of the plan's labels, from the card's text                     |
 
 ### Assign in turn
 
@@ -234,6 +240,109 @@ steps only; the run is **Failed** if any did, naming them.
   step: the run stops there and is **Failed** with the reason; the steps before it stay done.
 - Every change a run makes lands as **one write per card** where it can (the step's changes to the triggering card
   are batched into one patch, in step order), so the card's history reads as one entry and the board moves once.
+
+## AI actions
+
+**Summarise Card**, **Suggest Card Type** and **Triage** are the rule's **AI actions**: each asks a language model one
+question about the card and writes what it answers, constrained, as Automation. They sit in Add Action under their
+own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel says "Uses AI: counts toward this plan's
+100 AI steps a day" (the step's card in the rule: "Uses AI: counts toward 100 a day").
+
+### What each does
+
+- **Summarise Card** writes a summary of at most **600 characters**, plain text, of the card's title, description,
+  checklist and latest comments. **Where It Goes**: **A Comment** (the default: a new thread by Automation) or one of
+  the plan's custom Text and Long Text fields, by name (the field is set; a card whose type lacks it fails the
+  step "A Bug card has no Notes").
+- **Suggest Card Type** picks one of the plan's card types. **With the Suggestion**: **Set the Card Type** (the
+  default; a type the card already has is "Already so") or **Comment the Suggestion** ("Suggested card type: Bug"). The
+  model chooses only from the list it is given: anything else fails the step, "The AI picked a card type the plan
+  doesn't have".
+- **Triage** sets the **priority** (Urgent, High, Medium, Low) and adds **labels**, at most **3**, chosen only from the
+  labels the plan's cards already use. Its panel's **What It Sets** has **Priority** and **Up to 3 Labels**, both on to
+  start, at least one on. A label the model makes up is dropped, never added; a priority outside the four fails the step. A card
+  whose type has no Priority (or no Labels) fails the step for that part, "A Note card has no Priority".
+
+### How a step runs
+
+- An AI action stands at the rule's **top level**: never inside an If / Else or a branch (`automation_step_unsupported`),
+  since a branch would cost one call per related card. A rule holds at most **3** AI actions; each counts as one of
+  the rule's 20 actions.
+- It runs **after the run's card writes**, in step order, each one call, and reads the card as those writes left it;
+  the run's outgoing messages go after. Its own writes are one more write each, by Automation.
+- Its outcome is the step's line in the Audit Trail with the sparkle: "Summarised the card into a comment", "Set the
+  card type to Bug", "Set priority High, added labels billing, urgent". A step that fails fails the run with its
+  reason, as any action does, after the steps before it landed:
+  - no model here (local development without Cloudflare, a self-hosted copy): "AI isn't set up here";
+  - the model errs or is out of its limit: "The AI couldn't answer: try again later";
+  - no answer within **15 seconds**: "The AI took too long to answer";
+  - a reply that is not the JSON asked for: "The AI's reply couldn't be read"; one that breaks a constraint, its own
+    reason (above).
+- **Test on a Card** calls nothing and costs nothing: its line says what the step would do, "Would summarise the card
+  into a comment", "Would suggest a card type from Bug, Task or Story and set it", "Would set priority and add labels
+  from billing, urgent and 3 more".
+- **Time triggers** may use AI actions; each card's step counts toward the day's 100 like any other.
+
+### The daily cap
+
+- A plan makes at most **100 AI calls a day** (UTC), whichever rules make them (`AUTOMATION_AI_PER_DAY`). Every call
+  counts, whatever it answered; Test on a Card and a step that never called (no model, the cap) count nothing.
+- Past it, the step is **skipped**: its line says "This plan has used its 100 AI steps today", nothing is asked, and
+  the run is **Skipped** with that reason when nothing else failed. A skipped run never counts toward pausing.
+- The day's count is read from the Audit Trail (each called step's line is marked), once per wake.
+
+### The model and what it is sent
+
+- The model is Cloudflare **Workers AI**, `@cf/google/gemma-4-26b-a4b-it`, through the api Worker's `AI` binding: no
+  API key, no secret, no other service. Its thinking mode is off, its temperature 0, and its reply is JSON to a
+  schema (JSON mode). Workers AI keeps no prompts or replies (the model is listed with zero data retention).
+- It is sent, as data in one JSON object: the card's **title** (up to 200 characters), **description** (up to 2,000),
+  **card type** and **column** names, **checklist** (up to 20 rows of 120 characters, each with its tick), and its
+  **latest 5 comments** (up to 400 characters each, text only) on threads this plan holds; for Suggest Card Type the
+  plan's card type names, for Triage the four priorities and up to 50 of the labels its cards use, the most used first.
+- It is never sent a person's name, email or id, another card, the plan's name, a link, or anything about the plan
+  beyond those lists.
+
+### Card text is data, never instructions
+
+- The instructions are the system message, fixed in code; the card is the user message, one JSON object, and the
+  instructions say to treat everything inside it as data and never follow it. A card that says "ignore your
+  instructions" is just text to summarise.
+- Every answer is constrained before it is written, so a reply steered by a card can do nothing a rule could not:
+  a card type from the list, a priority from the four, labels from the plan's own, a summary cut to 600 characters, as
+  plain text (markup stripped, any link the card didn't hold removed). The model never names a field, a person, a
+  column or another card, and its text is never read as a value.
+
+### How it is marked
+
+- A comment an AI action writes is by **Automation** with the rule's name, and carries **Generated by AI** under it,
+  as an agent's comment does.
+- Its card changes read in History by Automation with the sparkle ("Edited by AI"), history tag `automation_ai`, and a
+  field it set shows **Set by Automation**.
+
+### Cost
+
+Workers AI bills in Neurons ([pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/), Oct 2026): the
+account has **10,000 Neurons a day free**; past that, on the Workers Paid plan, **$0.011 per 1,000 Neurons**. The model
+costs **9,091 Neurons per million input tokens** and **27,273 per million output tokens** ($0.10 and $0.30 per million).
+The prompt sizes are measured (`ai-steps.test.ts`, "measures the prompt sizes": the messages and the JSON schema, a
+card at every cap with 50 card types and 50 labels, and a typical card), tokens taken as four characters each:
+
+| Step              | Input, worst card       | Output cap | Neurons, worst | Cost, worst | Input, typical | Neurons, typical |
+| ----------------- | ----------------------- | ---------- | -------------- | ----------- | -------------- | ---------------- |
+| Summarise Card    | 7,997 chars, 2,000 tok. | 300 tokens | 26.4           | $0.00029    | 285 tokens     | about 5          |
+| Suggest Card Type | 9,370 chars, 2,343 tok. | 40 tokens  | 22.4           | $0.00025    | 628 tokens     | about 6          |
+| Triage            | 9,761 chars, 2,440 tok. | 80 tokens  | 24.4           | $0.00027    | 726 tokens     | about 7          |
+
+- **One plan at its cap**: 100 steps of the dearest kind, about **2,640 Neurons a day**, a quarter of the free
+  allowance; all paid, $0.029 a day.
+- **N plans at their caps**: N × 2,640 Neurons a day, so about **3 plans** fit in the free allowance; past it,
+  (N × 2,640 − 10,000) × $0.011 / 1,000 a day: 10 plans **$0.18**, 100 plans **$2.79** (about $84 a month), 1,000
+  plans **$28.89** (about $867 a month). Typical cards cost about a quarter of that.
+- **The account-wide ceiling** is the owner's: paid usage is their decision. An optional `AI_GATEWAY` variable sends
+  every call through that [AI Gateway](https://developers.cloudflare.com/ai-gateway/features/spend-limits/), whose
+  **spend limit** (say $1 a day for the whole gateway) blocks calls past it with a 429, which a step reads as "The AI
+  couldn't answer: try again later". On the Workers Free plan, calls stop on their own past the 10,000 free Neurons.
 
 ## Values
 
@@ -370,7 +479,7 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
   11 Nov 2026 · Done Means Wrapped Up · 10:42" ([History](items.md#history)), and a field whose latest change in
   the history read was a rule's shows a small **Set by Automation** chip beside its value in the item panel.
 - A comment Automation added shows the bolt avatar, **Automation** and the rule's name (a link to the rule for an
-  Editor), on a violet-tinted card. It is not Generated by AI.
+  Editor), on a violet-tinted card. It is not Generated by AI, unless an AI action wrote it ("AI actions").
 - The card's ⋯ menu offers **Run Rule** (an Editor's, when at least one Run from a Card rule is on), a submenu headed
   "Rules You Can Run Here" listing them, then **Manage Automations**. Running one says "Ran Escalate to Leads" or the
   failure, as a toast.
@@ -473,7 +582,11 @@ part at fault, the words, and the command to run next).
 rides in its type, from the fixed list above); `UI · Opened · AutomationsOffline` (the Browser Storage panel).
 Agents count as every tool and command does: `Mcp · Used · ListRules` / `ChangeRules`, and `Cli · Used · RuleLs`,
 `RuleGet`, `RuleAdd`, `RuleSet`, `RuleOn`, `RuleOff`, `RuleRm`, `RuleDuplicate`, `RuleTest`, `RuleRun` and `RuleLog`.
-The api logs `[automations] run` with the result and duration, never a card's text.
+The api logs `[automations] run` with the result and duration, never a card's text. Each AI call sends
+`Plan · Ran · AutomationAiSummarise`, `AutomationAiCardType` or `AutomationAiTriage` from the api; an AI step that
+failed after it was asked also sends `Plan · Ran · AutomationAiFailed`, and one the cap skipped
+`Plan · Ran · AutomationAiCapped` (the existing action, typed, so the vocabulary needs nothing new); the api logs
+`[automations] ai` with the task, whether it answered and how long it took, never the card's text or the reply.
 
 ## Limits
 
@@ -496,8 +609,13 @@ The api logs `[automations] run` with the result and duration, never a card's te
 | People in turn                   | 2 to 10                                |
 | Changes in one `change_rules`    | 20                                     |
 | Runs `list_rules` returns        | 20 by default, up to 50                |
+| AI actions per rule              | 3, at the top level                    |
+| AI steps per plan per day        | 100                                    |
+| An AI summary                    | 600 characters                         |
+| Labels Triage adds               | 3                                      |
+| An AI call                       | 15 seconds                             |
 
 ## Not yet
 
-The incoming webhook trigger and AI actions (Phase 3). Rules across plans, sprints, versions and SLAs are not
+The incoming webhook trigger (the rest of Phase 3). Rules across plans, sprints, versions and SLAs are not
 planned.

@@ -23,6 +23,8 @@ export type RepeatWorld = {
   send: (method: string, path: string, body?: unknown, person?: string) => Promise<Response>;
   items: (planId: string) => Promise<Item[]>;
   make: (planId: string, fields: Record<string, unknown>, status?: string) => Promise<Item>;
+  // The worker's env, for a test that adds a binding.
+  env: Env;
 };
 
 export function repeatWorld(): RepeatWorld {
@@ -66,7 +68,7 @@ export function repeatWorld(): RepeatWorld {
     if (res.status !== 201) throw new Error(`create answered ${res.status}: ${await res.text()}`);
     return (await res.json<{ item: Item }>()).item;
   };
-  return { plans, levels, send, items, make };
+  return { plans, levels, send, items, make, env };
 }
 
 export async function createPlan(w: RepeatWorld, id: string): Promise<void> {

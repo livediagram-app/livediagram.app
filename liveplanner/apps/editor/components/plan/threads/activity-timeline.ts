@@ -65,12 +65,15 @@ export function dayHeading(at: number, now: number): string {
   });
 }
 
+// An AI step's write (tag 'automation_ai') is Automation's, marked AI too.
+const byAi = (e: ItemHistoryEntry) => e.tag === 'ai' || e.tag === 'automation_ai';
+const byAutomation = (e: ItemHistoryEntry) => e.tag === 'automation' || e.tag === 'automation_ai';
 const sameAuthor = (a: ItemHistoryEntry, b: ItemHistoryEntry) =>
   a.by.name === b.by.name &&
   a.by.color === b.by.color &&
   !!a.mine === !!b.mine &&
-  (a.tag === 'ai') === (b.tag === 'ai') &&
-  (a.tag === 'automation') === (b.tag === 'automation');
+  byAi(a) === byAi(b) &&
+  byAutomation(a) === byAutomation(b);
 
 // The first `limit` entries as days of runs; earlier values read from every entry, shown or not.
 export function activityTimeline(
@@ -98,8 +101,8 @@ export function activityTimeline(
       key: `${entry.at}-${i}`,
       by: entry.by,
       mine: !!entry.mine,
-      ai: entry.tag === 'ai',
-      automation: entry.tag === 'automation',
+      ai: byAi(entry),
+      automation: byAutomation(entry),
       entries: [item],
     });
   });

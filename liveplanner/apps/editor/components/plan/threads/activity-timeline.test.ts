@@ -118,3 +118,20 @@ describe('activityTimeline', () => {
     expect(days[0]!.runs[0]!.entries[0]!.previous).toEqual(['low']);
   });
 });
+
+describe('an AI action’s writes', () => {
+  it('are Automation’s, marked AI, in a run apart from a rule’s plain writes', () => {
+    const [day] = activityTimeline(
+      [
+        entry(at(31, 12, 2), undefined, { tag: 'automation_ai' }),
+        entry(at(31, 12, 1), undefined, { tag: 'automation_ai' }),
+        entry(at(31, 12), undefined, { tag: 'automation' }),
+      ],
+      NOW,
+    );
+    expect(day!.runs.map((r) => [r.automation, r.ai, r.entries.length])).toEqual([
+      [true, true, 2],
+      [true, false, 1],
+    ]);
+  });
+});
