@@ -301,14 +301,14 @@ async function copyItem(ctx: RouteContext, id: string): Promise<Response> {
   };
   await insertItem(env, row, { copiedFrom: from.title });
   // A link scoped to one tab copies only that tab. The app hears who copies and the link they came in by, so the
-  // copy carries only what they may read, and the address they copy from, for what it counts per network (a
-  // Community post's copies).
+  // copy carries only what they may read, the address they copy from, for what it counts per network (a
+  // Community post's copies), and the row's title, so the copy opens with the name the Explorer lists.
   const copied = await callApp(
     env,
     from.app,
     'POST',
     `/items/${encodeURIComponent(from.id)}/copy-to/${encodeURIComponent(row.id)}`,
-    { tabId: access.tabId, by: person.id, code: access.code, ip: clientIpOf(request, env) },
+    { tabId: access.tabId, by: person.id, code: access.code, ip: clientIpOf(request, env), title },
   );
   if (!copied.ok) {
     await env.INDEX_DB.prepare('DELETE FROM items WHERE id = ?').bind(row.id).run();
