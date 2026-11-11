@@ -39,6 +39,10 @@ Each app offers the same Community, in its own words and look, built from the sa
 - **The landing page**: the app's home page carries a **From the Community** section, its six featured posts (the
   most liked over three months, topped up) leading to the gallery. Until an app's Community has six to feature, or
   while its service cannot be reached, the section is not shown at all: a half-empty showcase sells it short.
+- **Tags**: one rule for every app, run by the publish dialog as you type and by the service (authoritative):
+  letters and digits of any script are kept (`café`, `日本語`, `हिन्दी`), lowercased the same way in every browser and
+  NFC-normalised, so a tag publishes, searches and links the same however it was typed; livediagram's
+  [025-community](../../../../livediagram/docs/specs/025-community/community.md#tags) "Tags" has the detail.
 - **The link's doors**: the read-only view, the card image and copying, through a community link the post owns.
 - **Moderation**: reports alone, as below, the same for every app.
 - **Categories**: each app's are its Start With template categories (below), so a gallery's filters speak its
