@@ -591,6 +591,24 @@ describe('Shape', () => {
     expect(document.activeElement).toBe(kind('Formula'));
   });
 
+  // Work Tracker #510: a Formula's check line says what is wrong right above, so "Write a formula that works" is the
+  // Add button's spoken reason only, and the footer stays a row shorter with Preview in view on a phone.
+  it('says a Formula’s readiness to a screen reader only, any other readiness under the button', () => {
+    open({ missing: [] });
+    pick('Formula');
+    const hint = () => document.getElementById(addButton().getAttribute('aria-describedby')!)!;
+    expect(hint().textContent).toBe('Name the field to add it.');
+    expect(hint().className).not.toContain('sr-only');
+    fireEvent.change(name(), { target: { value: 'Left' } });
+    fireEvent.change(screen.getByLabelText('Formula'), { target: { value: '1 +' } });
+    expect((addButton() as HTMLButtonElement).disabled).toBe(true);
+    expect(hint().textContent).toBe('Write a formula that works.');
+    expect(hint().className).toBe('sr-only');
+    fireEvent.change(screen.getByLabelText('Formula'), { target: { value: '1 + 2' } });
+    expect((addButton() as HTMLButtonElement).disabled).toBe(false);
+    expect(addButton().getAttribute('aria-describedby')).toBeNull();
+  });
+
   it('shows a Children Done as a Percent bar, a switch a Child Count never offers', () => {
     const { onAddCustom } = open();
     pick('Calculated');

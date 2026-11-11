@@ -209,7 +209,13 @@ export function AddFieldShape({
           {missing ? (
             <p
               id={`${ids}-hint`}
-              className="text-center text-[11px] text-slate-500 dark:text-slate-400"
+              // A Formula's check line already says what is wrong, right above: the hint is the button's spoken
+              // reason only, so the footer stays a row shorter and Preview in view on a phone.
+              className={
+                missing === 'formula'
+                  ? 'sr-only'
+                  : 'text-center text-[11px] text-slate-500 dark:text-slate-400'
+              }
             >
               {edit && missing === 'name' ? 'Name the field to save it.' : READINESS_HINT[missing]}
             </p>

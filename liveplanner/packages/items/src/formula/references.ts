@@ -7,7 +7,7 @@ import { typeFieldLabel } from '../built-in-field-labels';
 import { FORMULA_MAX } from './limits';
 import { functionNamed } from './functions';
 import { parseFormula, type FormulaNode } from './parse';
-import { column } from './tokens';
+import { column, quoted } from './tokens';
 
 // A built-in field a formula reads: its id ('#key' and '#type' are every card's Number and Type), the name the card
 // panel gives it, and the other names people type.
@@ -151,7 +151,11 @@ export function storedFormula(text: string, scope: FormulaScope, selfId?: string
     const id = scope.byName.get(key);
     if (!id) {
       const why = scope.unreadable.get(key);
-      return { ok: false, error: why ?? `Unknown field "${r.name}" at ${column(r.at)}`, at: r.at };
+      return {
+        ok: false,
+        error: why ?? `Unknown field "${quoted(r.name)}" at ${column(r.at)}`,
+        at: r.at,
+      };
     }
     if (id === selfId) return { ok: false, error: "A formula can't read its own field", at: r.at };
     ids.set(r, id);
