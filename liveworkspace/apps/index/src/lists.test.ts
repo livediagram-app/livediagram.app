@@ -1,6 +1,7 @@
 // The Explorer's lists: every view and filter, search taken literally, paging, what each person may see,
 // the query plans (no list may scan the items table), and a time budget at 2,000 items.
 import type { Item } from '@liveworkspace/index-client';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import type { SQLInputValue } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
 import type { Person } from './auth';
@@ -597,9 +598,10 @@ describe('at 2,000 items', () => {
     db.exec('COMMIT');
 
     const time = async (label: string, run: () => Promise<number>) => {
-      const start = performance.now();
-      const count = await run();
-      const ms = performance.now() - start;
+      let count = 0;
+      const ms = await cpuMsOfAsync(async () => {
+        count = await run();
+      });
       console.log(`[perf] ${label}: ${count} items in ${ms.toFixed(1)} ms`);
       return ms;
     };
@@ -655,10 +657,10 @@ describe('at 2,000 items', () => {
     );
 
     // Generous for a loaded CI machine; locally each is a few milliseconds.
-    expect(firstPage).toBeLessThan(150);
-    expect(walk).toBeLessThan(1500);
+    expect(firstPage).toBeLessThan(cpuBudgetMs(150));
+    expect(walk).toBeLessThan(cpuBudgetMs(1500));
     for (const ms of [recent, oneApp, search, searchView, deepest, mode, modeNone, favs])
-      expect(ms).toBeLessThan(250);
+      expect(ms).toBeLessThan(cpuBudgetMs(250));
 
     const first = await list(ada.auth, 'limit=200');
     expect(first.items[0]).toMatchObject({ id: 'item-001999', favourite: false });
