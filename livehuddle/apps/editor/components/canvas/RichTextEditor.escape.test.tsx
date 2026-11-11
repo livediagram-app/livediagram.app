@@ -2,7 +2,7 @@
 
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape } from '@livehuddle/document';
+import { createSticky } from '@livehuddle/document';
 import { RichTextEditor } from './RichTextEditor';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -18,7 +18,7 @@ describe('RichTextEditor Escape', () => {
     const onCancel = vi.fn();
     const { container } = render(
       <RichTextEditor
-        element={createShape('square', 0, 0)}
+        element={createSticky(0, 0)}
         initialLabel=""
         placeholder="Label"
         textSize="md"

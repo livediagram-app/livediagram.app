@@ -22,7 +22,7 @@ Scope, by file:
 | `packages/avatar/src/components/avatar-sprite-palette.ts`         | Re-exports the sprite tones from `AVATAR_PALETTE`                         |
 | `apps/editor/components/canvas/collab/AvatarPadView.tsx`          | The canvas drawing; the shimmering lights                                 |
 | `apps/editor/components/canvas/BoxedElementView.tsx`              | Mounts `AvatarPadView`                                                    |
-| `apps/editor/components/canvas/shape-svg-overlay.tsx`             | Not an SVG-overlay shape                                                  |
+| `livediagram/apps/editor/components/canvas/shape-svg-overlay.tsx` | Not an SVG-overlay shape                                                  |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts`       | Silhouette animations on the drawing                                      |
 | `packages/avatar/src/pad.ts`                                      | `pickSpawnPad`, `padEntry`, `padUnderFeet`, `nextArrivals`, constants     |
 | `packages/avatar/src/hooks/useAvatarWalk.ts`                      | Entry order: pad, button, remembered spot, view centre; camera; telemetry |

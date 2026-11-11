@@ -19,7 +19,7 @@ const shape = (id: string, label: string, extra: Record<string, unknown> = {}): 
   ({
     id,
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     x: 0,
     y: 0,
     width: 10,

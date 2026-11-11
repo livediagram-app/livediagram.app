@@ -10,6 +10,7 @@ import {
   CardDetailArt,
   CardTypesArt,
   CellCommentsArt,
+  CollaboratorsArt,
   CommentsArt,
   ConditionalFormatArt,
   DashboardArt,
@@ -29,6 +30,7 @@ import {
   RevokeArt,
   SelectCardsArt,
   SelectionGlowArt,
+  SessionToolsArt,
   ShareLinksArt,
   SharedItemsArt,
   SuggestedDashboardsArt,
@@ -38,7 +40,6 @@ import {
   SheetsArt,
   TeamsArt,
   TemplatesArt,
-  TimelineFeedArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
 
@@ -433,12 +434,20 @@ export const LANDING_SECTIONS: LandingSection[] = [
           "Every card has its own thread, and any cell can carry one. Reply, @mention a teammate, resolve. Comments carry the author's name and colour so it's clear who said what.",
       },
       {
-        art: <TimelineFeedArt />,
-        href: '/help/explorer/home/',
+        art: <CollaboratorsArt />,
+        href: '/help/collaboration/live-presence/#collaborators',
         group: 'Work together live',
-        title: 'See what happened while you were away',
+        title: 'See where the whole room is',
         description:
-          'The Explorer opens on Home: the plans you return to most, and what your teammates commented and changed while you were away. Every plan and team keeps its own history, and the Inbox gathers the threads and form answers still waiting on you, with a count in the sidebar so you can tell without looking.',
+          'Click any avatar on a tab and Collaborators lists everyone in the plan by the tab they are on, with their role, whether they are online or away, and when they were last active. Go to Tab takes you straight to them.',
+      },
+      {
+        art: <SessionToolsArt />,
+        href: '/help/collaboration/session-tools/',
+        group: 'Work together live',
+        title: 'Run the session in the plan',
+        description:
+          'Time-box a retro with a countdown everyone sees ticking in sync, then dot-vote on the cards with live tallies and a results reveal. Join late or reload and the clock and the votes are right where the room left them.',
       },
       {
         art: <ShareLinksArt />,

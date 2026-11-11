@@ -74,7 +74,7 @@ Body `ConnectionInput { targetId, tabId, level?, both? }` (`readConnectionInput`
    with me rows are deleted first in the same batch, and the old target's app told `revoke`.
 8. One batch: the pass (`share_links`, `expiry: never`, not public), inserted only while the target has fewer than
    `SHARE_LINKS_PER_ITEM` links and the host fewer than `CONNECTIONS_PER_ITEM` connections; the `connections` row,
-   only when the pass is there; the `shared` Timeline event on the target, as any link. Both ways adds, each only when
+   only when the pass is there; the `shared` event on the target, as any link. Both ways adds, each only when
    the step before it wrote: the reverse pass on the host (under the host's link cap and the target's connection cap),
    the reverse row (`pair_id` the forward's, `host_tab_id` null) and the forward's `pair_id`. Nothing written is
    `409 connection_limit` when the host is full, else `409 share_link_limit`.
@@ -126,7 +126,7 @@ keeps its own pass; its `pair_id` is cleared (`ON DELETE SET NULL`).
 Connections still unconfirmed `CONNECTION_CONFIRM_GRACE_MS` (an hour, IDX27) after they were made, at most
 `CONNECTION_SWEEP_MAX` (200) a run, oldest first, on the partial index `connections_unconfirmed`: their rows, passes
 and the passes' Shared with me rows go in one batch of three statements, and each target's app is told `revoke`. No
-Timeline event: a tab that never appeared is not news.
+event: a tab that never appeared is not news.
 
 ### Elsewhere
 
@@ -293,7 +293,7 @@ the tab menu's connected mode for an Editor, nothing for a Viewer).
 | `connections` | `id` | `host_item_id`, `host_tab_id` (null while a reverse waits for its app), `target_item_id` (null once purged), `share_code` (null once deleted), `pair_id`, `created_at`, `confirmed_at` | `connections_host (host_item_id, host_tab_id)`, `connections_target (target_item_id)`, `connections_code (share_code)`, `connections_pair (pair_id)`, `connections_unconfirmed (created_at) WHERE confirmed_at IS NULL` |
 
 `host_item_id` cascades from `items`; `target_item_id`, `share_code` (from `share_links`) and `pair_id` (from
-`connections`) are set to null when theirs goes. Who made a connection is on the Timeline's `shared` event, not the
+`connections`) are set to null when theirs goes. Who made a connection is on the `shared` event (kept 30 days), not the
 row, so closing an account leaves nothing naming them here. `connections` is a child of `items` and of
 `share_links`: a migration that rebuilds either ([items.md](items.md#rebuilding-items)) copies it aside and back too.
 Migration `0010_connections.sql`, local only (`wrangler d1 migrations apply --local`); CI applies it remotely.

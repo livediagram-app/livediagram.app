@@ -70,7 +70,11 @@ beforeEach(() => {
   testShareLink(sql, 'd1', 'LOOK', 'view');
   testShareLink(sql, 'd1', 'EDIT', 'edit');
   testShareLink(sql, 'd1', 'TAB2', 'participate', 't2');
-  seed([box('b'), box('shut', { locked: true }), { ...box('sq'), shape: 'square' } as Element]);
+  seed([
+    box('b'),
+    box('shut', { locked: true }),
+    { ...box('sq'), shape: 'square' } as unknown as Element,
+  ]);
   info = vi.spyOn(console, 'info').mockImplementation(() => undefined);
   vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 });

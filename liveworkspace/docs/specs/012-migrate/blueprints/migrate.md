@@ -11,7 +11,7 @@ Scope, by file:
 | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/migrate/src/cli.ts`                                                                     | The `migrate` command: `snapshot`, `plan`, `apply`, `verify`                                                                                 |
 | `liveworkspace/apps/migrate/src/snapshot.ts`                                                                | A `wrangler d1 export` streamed into a local SQLite file                                                                                     |
-| `liveworkspace/apps/migrate/src/plan/*.ts`                                                                  | The bundle: accounts, folders, documents, shares, timeline, media, community, kv, files, report                                              |
+| `liveworkspace/apps/migrate/src/plan/*.ts`                                                                  | The bundle: accounts, folders, documents, shares, media, community, kv, files, report                                                        |
 | `liveworkspace/apps/migrate/src/owner-map.ts`                                                               | Every old owner to its new id                                                                                                                |
 | `liveworkspace/apps/migrate/src/sql.ts`                                                                     | `SqlWriter`: batched, chunked, ledger-guarded SQL                                                                                            |
 | `liveworkspace/apps/migrate/src/ledger.ts`                                                                  | The local ledger: rows written, units applied, the generation                                                                                |
@@ -61,9 +61,7 @@ fixed namespace), so the same inputs make the same bundle, byte for byte. In ord
 5. Shares (`plan/shares.ts`): each old link to the part that holds what it shares, codes upper-cased (a case collision:
    the oldest keeps it, the other reported); Shared with me rows on every part, with a derived link per level where a
    part holds none.
-6. Timeline (`plan/timeline.ts`): each old event once as `imp:<old id>`, its original time, its actor mapped, detail
-   `{"imported":"1"}`; a document's event on the part that kept the id; a team's or token's under `liveworkspace`; a
-   kind with no equivalent dropped and counted.
+6. No Timeline: the old events are not imported (the index keeps 30 days of History; docs/migration.md step 2).
 7. Media (`plan/media.ts`): each old `images` row under its old id, owner mapped, app `livediagram.app`, and an R2 copy
    by key; two that become one owner's with the same bytes keep the first (`imageCollisions`).
 8. Community (`plan/community.ts`): posts, tags, likes, copies, open reports, each post pointing at the part its share
@@ -132,12 +130,12 @@ The ledger:
 
 All three `WITHOUT ROWID`. Tables written on the new side, with the keys verify reads:
 
-| Database  | Tables (key)                                                                                                                                                                                                                                                                                     |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| accounts  | `"user"` (id), `team` (id), `team_member` (id), `api_token` (id), `settings` (owner_id, scope), `email_lifecycle` (user_id), `account_app` (user_id, app), `profile` (owner_id), `legacy_guest` (id)                                                                                             |
-| index     | `folders`, `items` (id), `favourites`, `opens` (person_id, item_id), `use_days` (+ day), `share_links` (code), `share_passwords` (item_id), `shared_with` (person_id, item_id), `placement_defaults` (person_id, default_key), `timeline_events` (id), `timeline_event_scopes` (scope, event_id) |
-| media     | `images` (id), `refs` (app, document, image_id)                                                                                                                                                                                                                                                  |
-| community | `posts` (id), `post_tags` (post_id, tag), `likes` (post_id, liker_key), `copies` (post_id, copier), `reports` (post_id, reporter_key)                                                                                                                                                            |
+| Database  | Tables (key)                                                                                                                                                                                                                  |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| accounts  | `"user"` (id), `team` (id), `team_member` (id), `api_token` (id), `settings` (owner_id, scope), `email_lifecycle` (user_id), `account_app` (user_id, app), `profile` (owner_id), `legacy_guest` (id)                          |
+| index     | `folders`, `items` (id), `favourites`, `opens` (person_id, item_id), `use_days` (+ day), `share_links` (code), `share_passwords` (item_id), `shared_with` (person_id, item_id), `placement_defaults` (person_id, default_key) |
+| media     | `images` (id), `refs` (app, document, image_id)                                                                                                                                                                               |
+| community | `posts` (id), `post_tags` (post_id, tag), `likes` (post_id, liker_key), `copies` (post_id, copier), `reports` (post_id, reporter_key)                                                                                         |
 
 Plus the media bucket's objects, each app's rooms, and the livediagram MCP's `OAUTH_KV` `client:` keys.
 

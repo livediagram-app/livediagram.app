@@ -1,17 +1,9 @@
 import { useCanvasViewKey } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
-import {
-  BORDER_STROKE_PX,
-  DEFAULT_BORDER_STROKE,
-  dropsAtOwnSize,
-  isSelfDrawingShape,
-  ROOM_WALL,
-} from '@livehuddle/document';
-import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
+import { dropsAtOwnSize, ROOM_WALL } from '@livehuddle/document';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
-import { PenShapePreview } from '@/components/canvas/whiteboard/BoardShapePreview';
 import { useCanvasClientOrigin } from '@liveworkspace/workbench/hooks/canvas/useCanvasClientOrigin';
 
 type CanvasDrawPreviewProps = {
@@ -23,14 +15,10 @@ type CanvasDrawPreviewProps = {
   // The canvas size. With the view, read from the viewport store here, it is what the wrapper's
   // origin follows (useCanvasViewKey), so the chrome around this takes no view.
   mainSize: { width: number; height: number };
-  // The board's ink on a whiteboard (docs/specs/023-draw-mode/draw-mode.md), what a board shape
-  // previews in. Absent elsewhere.
-  whiteboardInk?: string;
 };
 
 // Live previews shown while a draw gesture is in flight: the Room Builder's
-// walls and the draw-to-size box (a dashed rect, or a ShapeSvgOverlay
-// preview for SVG-rendered shapes). Pure SVG/markup; split out of CanvasChrome.
+// walls and the draw-to-size box (a dashed rect). Pure SVG/markup; split out of CanvasChrome.
 export function CanvasDrawPreview({
   drawDrag,
   polygonVertices,
@@ -38,12 +26,8 @@ export function CanvasDrawPreview({
   pendingDraw,
   wrapperRef,
   mainSize,
-  whiteboardInk,
 }: CanvasDrawPreviewProps) {
   const { viewportZoom, viewKey } = useCanvasViewKey(mainSize);
-  // A whiteboard shape previews as it will land (docs/specs/023-draw-mode/draw-mode.md
-  // "Shapes"): in the board's ink, solid, unfilled.
-  const ink = whiteboardInk ?? 'currentColor';
   // The Room Builder (docs/specs/009-elements/room-builder.md) previews its walls, at wall thickness.
   const roomWalls = pendingDraw?.type === 'room-walls';
   const showsPolygon = roomWalls && polygonVertices.length > 0;
@@ -148,31 +132,9 @@ export function CanvasDrawPreview({
             );
             const widthPx = Math.max(box.width * viewportZoom, 1);
             const heightPx = Math.max(box.height * viewportZoom, 1);
-            // The self-drawing shapes (progress / rail / rating / charts) render
-            // via their own views, not ShapeSvgOverlay (which would draw nothing
-            // for them), so they fall back to the dashed-rect preview. Icons
-            // (line-art AND Technology marks) are the same story: they pass
-            // isSvgRenderedShape but ShapeSvgOverlay has no glyph case, which
-            // used to leave icon draw-outs with NO preview box at all.
-            const usesSvg =
-              pendingDraw.type === 'shape' &&
-              pendingDraw.kind !== 'icon' &&
-              isSvgRenderedShape(pendingDraw.kind) &&
-              !isSelfDrawingShape(pendingDraw.kind);
-            // Box intents: square / circle / stadium use border-
-            // radius on the wrapping div (matching the BoxedElementView
-            // at-rest treatment), every SVG-rendered shape kind
-            // delegates to ShapeSvgOverlay, and text / sticky / image
-            // fall back to a simple dashed-rect. The text + sticky
-            // + image branches use 4px corners; stickies don't get
-            // their corner-fold preview here because the preview is
-            // very small and a peeled corner just reads as noise.
-            const radius =
-              pendingDraw.type === 'shape' && pendingDraw.kind === 'circle'
-                ? '50%'
-                : pendingDraw.type === 'shape' && pendingDraw.kind === 'stadium'
-                  ? '9999px'
-                  : '4px';
+            // Every box draws to size as a dashed rect: a shape's own art arrives when it lands. The diagram shapes'
+            // outlines previewed here left with the element engine's part 5
+            // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
             return (
               <div
                 aria-hidden
@@ -184,31 +146,10 @@ export function CanvasDrawPreview({
                   height: heightPx,
                 }}
               >
-                {pendingDraw.type === 'shape' && pendingDraw.board ? (
-                  <PenShapePreview
-                    kind={pendingDraw.kind}
-                    colour={ink}
-                    widthPx={BORDER_STROKE_PX[DEFAULT_BORDER_STROKE]}
-                    usesSvg={usesSvg}
-                    radius={radius}
-                    zoom={viewportZoom}
-                    aspect={heightPx > 0 ? widthPx / heightPx : 1}
-                  />
-                ) : usesSvg && pendingDraw.type === 'shape' ? (
-                  <ShapeSvgOverlay
-                    shape={pendingDraw.kind}
-                    fill="color-mix(in srgb, var(--color-brand-500) 10%, transparent)"
-                    stroke="var(--color-brand-500)"
-                    strokeWidth={1.5}
-                    strokeDasharray="4 3"
-                    aspect={heightPx > 0 ? widthPx / heightPx : 1}
-                  />
-                ) : (
-                  <div
-                    className="h-full w-full border border-dashed border-brand-500 bg-brand-500/10"
-                    style={{ borderRadius: radius }}
-                  />
-                )}
+                <div
+                  className="h-full w-full border border-dashed border-brand-500 bg-brand-500/10"
+                  style={{ borderRadius: '4px' }}
+                />
               </div>
             );
           })()
@@ -219,14 +160,8 @@ export function CanvasDrawPreview({
     <>
       {/* Draw-to-size preview. drawDrag holds canvas coords; convert
           to client coords via the wrapper rect + viewportZoom so the
-          overlay aligns with the canvas content under it. The shape
-          itself renders via ShapeSvgOverlay (the same primitive
-          BoxedElementView uses for committed shapes) with a dashed-
-          brand stroke + translucent brand fill, so "draw circle"
-          looks like an oval, "draw diamond" like a diamond, etc.
-          The three simple kinds (square / circle / stadium) bypass
-          SVG and use border-radius on the wrapping div, matching
-          how BoxedElementView renders them at rest. */}
+          overlay aligns with the canvas content under it: a dashed
+          brand box with a translucent brand fill. */}
       {drafts}
     </>
   );

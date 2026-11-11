@@ -86,10 +86,8 @@ describe('Sketch lettering', () => {
 
 describe('finishHatches', () => {
   it('hatches a filled shape', () => {
-    expect(finishHatches(createShape('square', 0, 0), '#ffffff')).toBe(true);
-    expect(finishHatches(createShape('diamond', 0, 0), '#ffffff')).toBe(true);
-    expect(finishHatches(createShape('stadium', 0, 0), '#ffffff')).toBe(true);
-    expect(finishHatches(createShape('cloud', 0, 0), '#ffffff')).toBe(true);
+    expect(finishHatches(createShape('focus-button', 0, 0), '#ffffff')).toBe(true);
+    expect(finishHatches(createShape('mode-button', 0, 0), '#ffffff')).toBe(true);
   });
 });
 
@@ -149,8 +147,8 @@ describe('finishSplitsFace (docs/specs/008-canvas/finish.md "Every other face is
     }
   });
 
-  it('leaves plain boxes, icons and stickers to their own drawing', () => {
-    for (const kind of ['square', 'circle', 'icon', 'sticker']) {
+  it('leaves icons and stickers to their own drawing', () => {
+    for (const kind of ['icon', 'sticker']) {
       expect(finishSplitsFace(shape(kind)), kind).toBe(false);
     }
     for (const type of ['text', 'sticky', 'freehand', 'image', 'path']) {
@@ -158,15 +156,15 @@ describe('finishSplitsFace (docs/specs/008-canvas/finish.md "Every other face is
     }
   });
 
-  it('splits a plain box carrying an inline icon, so the icon is drawn by hand', () => {
-    expect(finishSplitsFace(shape('square', 'lucide:star'))).toBe(true);
+  it('splits a box carrying an inline icon, so the icon is drawn by hand, and not an icon', () => {
+    expect(finishSplitsFace(shape('room', 'lucide:star'))).toBe(true);
     expect(finishSplitsFace(shape('icon', 'lucide:star'))).toBe(false);
   });
 
   it('names only real shape kinds as drawn by their body', () => {
     // Every kind not split must exist, so a renamed kind cannot quietly drop out of Sketch.
     const unsplit = [...SHAPE_KINDS].filter((k) => !finishSplitsFace(shape(k)));
-    expect(unsplit.length).toBe(17);
+    expect(unsplit).toEqual(['icon', 'sticker']);
   });
 });
 

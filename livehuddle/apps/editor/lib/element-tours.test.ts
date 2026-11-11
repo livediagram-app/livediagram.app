@@ -1,7 +1,7 @@
 // Element tours' kinds, gate and answers (docs/specs/007-editor/element-tours.md "Remembering answers", "Share roles").
 
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createShape, createSticky, type Element } from '@livehuddle/document';
 import {
   canTourElement,
   elementTourKindOf,
@@ -15,7 +15,7 @@ const portal = createShape('portal', 0, 0) as Element;
 describe('element tours', () => {
   it('tours a portal, and not a plain shape', () => {
     expect(elementTourKindOf(portal)).toBe('portal');
-    expect(elementTourKindOf(createShape('square', 0, 0) as Element)).toBeNull();
+    expect(elementTourKindOf(createSticky(0, 0) as Element)).toBeNull();
     expect(elementTourKindOf(null)).toBeNull();
   });
 

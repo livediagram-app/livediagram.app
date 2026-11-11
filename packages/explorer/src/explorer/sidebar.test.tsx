@@ -195,8 +195,6 @@ describe('the keyboard tree', () => {
     const home = await findRow('Home');
     act(() => home.focus());
     key(home, 't');
-    expect(document.activeElement).toBe(row('Timeline'));
-    key(document.activeElement!, 't');
     expect(document.activeElement).toBe(row('Trash'));
     key(document.activeElement!, 'h');
     expect(document.activeElement).toBe(home);

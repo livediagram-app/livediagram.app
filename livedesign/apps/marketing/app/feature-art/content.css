@@ -1,5 +1,4 @@
-/* ── Content card art (components/feature-art/canvas-marks.tsx, reach.tsx, pages-more.tsx,
-   embeds-timeline.tsx) ──
+/* ── Content card art (components/feature-art/canvas-marks.tsx, reach.tsx, pages-more.tsx) ──
    Each scene reads finished at rest; these move only an accent (a caret, a cursor, a packet, a
    backdrop) so any frame of the loop is a good picture. Reduced motion settles them below. */
 

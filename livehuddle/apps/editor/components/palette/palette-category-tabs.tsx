@@ -18,7 +18,6 @@ import {
   PaletteCollaborateTab,
   PaletteMediaTab,
   PaletteWriteTab,
-  PaletteShapesTab,
 } from '@/components/palette/palette-create-tabs';
 import type { ComponentProps } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -72,8 +71,6 @@ export function paletteCategoryTabs(
             loading={loading}
           />
         );
-      case 'shapes':
-        return <PaletteShapesTab {...tab} tiles={tiles} />;
       case 'write':
         return <PaletteWriteTab {...tab} tiles={tiles} />;
       case 'media':

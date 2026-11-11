@@ -376,20 +376,15 @@
   }
 }
 
-/* Explorer list / card arrival (docs/specs/013-workspace/timeline.md §2.6 borrows the idea).
- *
- * The Timeline's fan-out comes from the RIGHT because that's where a
- * collapsed stack's card layers sit — it reads as dealing from a deck.
- * A file list has no deck, so reusing that motion here would be a
- * flourish with nothing behind it. This is the calmer version: a small
- * rise and a fade, no rotation.
+/* Explorer list / card arrival: a small rise and a fade, no rotation. A
+ * file list has no deck to deal from, so the calm version reads best.
  *
  * Staggered by `nth-child` on the container rather than by threading an
  * index prop through four row/card components. That also means the
  * folders and documents in one view cascade in document order for free,
  * instead of each list restarting its own count.
  *
- * Like the Timeline's fan-out, this relies on CSS animations firing on mount:
+ * It relies on CSS animations firing on mount:
  * a row that re-renders (rename, star, menu open) keeps its end state,
  * and React only mounts a fresh node when a row is genuinely new. */
 @keyframes lvd-row-in {

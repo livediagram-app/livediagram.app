@@ -53,7 +53,7 @@ export async function route(
     (p) => room.state.waitUntil(p),
     community,
   );
-  // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
+  // A request that wrote is an edit by whoever asked: their History entry and a Most Used day
   // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not, nor is
   // the create, the canvas's making (isDocumentCreate).
   if (response.ok && identity.owner && room.writes > writesBefore) {

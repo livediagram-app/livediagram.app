@@ -4,7 +4,8 @@ The index is the One Explorer's service: one Worker at **liveworkspace.app/api/i
 database, holding where every Canvas, Plan, Document and Design is and who can reach it. It keeps
 everything about an item except its content: title, owner, team, folder, favourites, Trash
 state, opens and use days, share links and passwords, Shared with me, placement defaults, what the Inbox
-needs about comments and actions, and the Timeline. The content stays in each item's Durable Object in its app.
+needs about comments and actions, and a short-lived event log (each item's History, its webhooks, the team audit
+log). The content stays in each item's Durable Object in its app.
 
 The plan is [one-explorer.md](one-explorer.md). The calls, types and tokens are
 [one-explorer-contracts.md](one-explorer-contracts.md), and `@liveworkspace/index-client`
@@ -22,7 +23,7 @@ apps/index/src/sharing.ts     share links, passwords, what a link opens, Shared 
 apps/index/src/personal.ts    favourites, Hide from Recent, placement defaults (folders.ts: folders)
 apps/index/src/app-routes.ts  what an item pushes: its summary, each tab's comments and actions, its edits
 apps/index/src/inbox.ts       the Inbox query
-apps/index/src/timeline.ts    the Timeline: recording events, and a person's feed
+apps/index/src/events.ts      the event log: recording events, an item's History, the daily sweep
 apps/index/src/purge.ts       purging, tombstones and the daily sweep
 apps/index/src/merge.ts       a guest becoming an account (and the migration's legacy guest merge)
 apps/index/src/migration-handoff.ts  the migration's handoff of a browser's Local only parts to another app
@@ -172,11 +173,10 @@ for the person (favourite, last opened, link access) is one D1 batch. `lists.tes
 list's query plan and times 2,000 of a person's items among 20,000 others' (each page a few
 milliseconds). Opens are written at most once a minute per person and item, in memory and in SQL. Comment
 pushes go in through `json_each`, one statement per table. Most Used rides Recent's first page as one more
-query on `use_days`' person index, its opens summed per item over 14 days (`most-used.test.ts`: 14 ms beside 100,000 other rows). A Timeline page is
-one statement reading one index range of at most `limit + 1` rows per scope the person has (their own, and
-each team's), never the whole feed (`timeline.test.ts`: two pages from 10,000 of a person's events among
-100,000 others in about 15 ms); an event is recorded in the batch of the change it is about, two or three
-statements more. Each list sorts the person's matching rows to
+query on `use_days`' person index, its opens summed per item over 14 days (`most-used.test.ts`: 14 ms beside 100,000 other rows). An item's History
+page is one statement reading one range of the events' item index, at most `limit + 1` rows; an event is recorded
+in the batch of the change it is about, one statement more (two or three with its webhooks and audit log). The
+daily sweep deletes events past 30 days in chunks of 500, at most 20 a run (`events.test.ts` times it). Each list sorts the person's matching rows to
 page them, so a page's cost grows with what that person holds (a few milliseconds at 2,000). The Drive mirror's
 change signal costs a write request nothing before it answers: afterwards, one primary-key read of `drive_people`
 for the people it touched (usually one), and a call per flagged person; without the `DRIVE` binding, nothing.

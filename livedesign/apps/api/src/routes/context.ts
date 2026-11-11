@@ -121,7 +121,7 @@ export type DesignAccess = {
 
 // A Community post's link is refused unless the door passes `COMMUNITY_CONTENT` (docs/specs/025-community/
 // community.md "Viewing a post's design"): the link is a content-only pass, so the design and its tabs serve it,
-// and comments, history, the timeline and any door added later do not. Fail closed, like the tab scope.
+// and comments, history and any door added later do not. Fail closed, like the tab scope.
 export const COMMUNITY_CONTENT = { community: true } as const;
 type GateOptions = { community?: boolean };
 

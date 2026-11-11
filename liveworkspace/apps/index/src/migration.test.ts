@@ -185,12 +185,12 @@ describe('the migration handoff', () => {
     expect(door!.headers.get('X-Index-App')).toBe('livedocuments');
     // The owner and place are the index's, whatever the payload said.
     expect(door!.body).toEqual(payload({ ownerId: NEW_GUEST, teamId: null }));
-    // Its `created` event, on the guest's own Timeline.
+    // Its `created` event, in the item's History, the guest's.
     const guest = await person(NEW_GUEST, { guest: true });
-    const timeline = await body<{ events: { type: string; itemId: string }[] }>(
-      await call('/timeline', { auth: guest.auth }),
+    const history = await body<{ events: { type: string; itemId: string }[] }>(
+      await call('/items/part-1/history', { auth: guest.auth }),
     );
-    expect(timeline.events.map((e) => [e.type, e.itemId])).toEqual([['created', 'part-1']]);
+    expect(history.events.map((e) => [e.type, e.itemId])).toEqual([['created', 'part-1']]);
   });
 
   it('takes an account too', async () => {
@@ -213,7 +213,7 @@ describe('the migration handoff', () => {
     expect(res.status).toBe(502);
     expect(await body(res)).toEqual({ error: 'migration_failed' });
     expect(itemRow('part-1')).toBeUndefined();
-    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM timeline_events').get()).toEqual({ n: 0 });
+    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM events').get()).toEqual({ n: 0 });
     // And a later try makes it afresh.
     h.appAnswer = () => new Response(null, { status: 200 });
     expect(

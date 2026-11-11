@@ -18,33 +18,35 @@ const added = (text: string, tab?: Tab) => {
 
 describe('add <kind>', () => {
   it('sizes a shape like its siblings, gives it a slug id, places it and lists it', () => {
-    const outcome = run('add square label="Verify email" below:n3');
+    const outcome = run('add signpost label="Verify email" below:n3');
     const { tab, createdIds, targets } = applied(outcome);
     const el = tab.elements.find((e) => e.id === 'verify-email')!;
     expect(createdIds).toEqual(['verify-email']);
     expect(targets).toEqual(['n3']);
     expect(el).toMatchObject({
       type: 'shape',
-      shape: 'square',
+      shape: 'signpost',
       textSize: 'sm',
-      // The checkout flow's squares are 140×60: the new one matches them, not the palette's taller square.
+      // The checkout flow's squares are 140×60: the new one matches them, not the palette's taller signpost.
       width: 140,
       height: 60,
     });
-    expect(lines(outcome)[0]).toMatch(/^\+ verify-email {2}square "Verify email" @\d+,\d+ 140×60$/);
+    expect(lines(outcome)[0]).toMatch(
+      /^\+ verify-email {2}signpost "Verify email" @\d+,\d+ 140×60$/,
+    );
   });
 
   it('takes an id, fields and named geometry, which wins over a placement', () => {
-    const el = added('add stadium id=done label=Done fill=green x=500 y=900 right-of:n1');
+    const el = added('add room-sign id=done label=Done fill=green x=500 y=900 right-of:n1');
     expect(el).toMatchObject({
       id: 'done',
-      shape: 'stadium',
+      shape: 'room-sign',
       label: 'Done',
       fillSwatch: 4,
       x: 500,
       y: 900,
     });
-    expect(added('add square width=50 height=30 x=1000')).toMatchObject({
+    expect(added('add signpost width=50 height=30 x=1000')).toMatchObject({
       width: 50,
       height: 30,
       x: 1000,
@@ -55,14 +57,26 @@ describe('add <kind>', () => {
     for (const kind of ['text', 'sticky', 'link-card']) {
       expect(added(`add ${kind}`).type).toBe(kind);
     }
-    expect(added('add shape')).toMatchObject({ shape: 'square' });
+    expect(added('add plant')).toMatchObject({ type: 'shape', shape: 'plant' });
   });
 
-  it('coerces an unknown kind to a shape with a warning, and refuses what it cannot make', () => {
-    const outcome = run('add rectangle label=Box');
-    expect(applied(outcome).warnings).toEqual([
-      { code: 'shape_coerced', ref: 'box', message: 'box kind "rectangle" drawn as square' },
-    ]);
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5 (D30): no kind is coerced into a
+  // kept one. A diagram shape and `shape` are refused, and so is a word that is no kind, naming the kinds add takes.
+  it('refuses a diagram shape, `shape` and an unknown kind, and what it cannot make', () => {
+    for (const kind of ['square', 'shape', 'circle', 'speech-bubble'])
+      expect(refused(run(`add ${kind} label=Box`))).toEqual({
+        code: 'invalid_value',
+        operation: 1,
+        details: [`kind="${kind}": shapes are no longer supported in livehuddle: add a sticky`],
+      });
+    const unknown = refused(run('add banana label=Box'));
+    expect(unknown.code).toBe('invalid_value');
+    expect(unknown.details[0]).toMatch(
+      /^kind="banana": not a kind livehuddle has; kinds: text sticky link-card /,
+    );
+    expect(unknown.details[0]).toContain(' plant ');
+    expect(unknown.hint).toBeUndefined();
+    expect(refused(run('add stcky')).hint).toBe('did you mean sticky?');
     // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4: arrows, lines, drawings, paths
     // and annotations are retired.
     expect(refused(run('add arrow')).details).toEqual([
@@ -82,23 +96,21 @@ describe('add <kind>', () => {
     expect(refused(run('add table')).details).toEqual([
       'kind="table": tables are no longer supported in livehuddle',
     ]);
-    expect(refused(run('add square id=n3')).code).toBe('id_taken');
-    expect(refused(run('add square colour=red')).code).toBe('unknown_field');
-    expect(refused(run('add square below:nope')).code).toBe('target_not_found');
+    expect(refused(run('add signpost id=n3')).code).toBe('id_taken');
+    expect(refused(run('add signpost colour=red')).code).toBe('unknown_field');
+    expect(refused(run('add signpost below:nope')).code).toBe('target_not_found');
   });
 
   // docs/specs/002-project-scope/not-in-livehuddle.md: no agent verb makes a Page; a stored one still draws.
-  it('makes a square for the Page, as for any kind it does not offer', () => {
-    const outcome = run('add page label=Notes');
-    expect(applied(outcome).warnings).toEqual([
-      { code: 'shape_coerced', ref: 'notes', message: 'notes kind "page" drawn as square' },
-    ]);
-    expect(added('add page label=Notes')).toMatchObject({ shape: 'square' });
+  it('refuses the Page, as any kind it does not offer', () => {
+    expect(refused(run('add page label=Notes')).details[0]).toMatch(
+      /^kind="page": not a kind livehuddle has/,
+    );
   });
 
   it("paints with the tab's theme", () => {
     const theme = getBuiltInTheme('forest');
-    const el = added('add square label=Themed', { ...checkoutFlow(), theme: 'forest' });
+    const el = added('add signpost label=Themed', { ...checkoutFlow(), theme: 'forest' });
     expect(el).toMatchObject({ fillColor: theme.elementFill, strokeColor: theme.elementStroke });
   });
 
@@ -106,7 +118,7 @@ describe('add <kind>', () => {
   // backdrop that holds nothing. A box placed beside one that sits on it lands beside it, on the backdrop, and the
   // backdrop neither grows nor joins it.
   it('places beside a box on a stored boundary, on the backdrop, leaving the boundary as it was', () => {
-    const outcome = run('add square label="Gift wrap" right-of:n4');
+    const outcome = run('add signpost label="Gift wrap" right-of:n4');
     const { tab } = applied(outcome);
     const [n4, gift] = ['n4', 'gift-wrap'].map((id) =>
       tab.elements.find((e) => e.id === id),
@@ -124,7 +136,7 @@ describe('add <kind>', () => {
     expect(lines(outcome)).toHaveLength(1);
   });
 
-  it('makes a square for a layout container, as for any kind it does not offer', () => {
+  it('refuses a layout container, as any kind it does not offer', () => {
     for (const kind of [
       'lane',
       'boundary',
@@ -134,23 +146,18 @@ describe('add <kind>', () => {
       'badge',
       'step',
       'pointer-note',
-    ]) {
-      const outcome = run(`add ${kind} label=Held`);
-      expect(applied(outcome).warnings, kind).toEqual([
-        { code: 'shape_coerced', ref: 'held', message: `held kind "${kind}" drawn as square` },
-      ]);
-      expect(added(`add ${kind} label=Held`), kind).toMatchObject({ shape: 'square' });
-    }
+    ])
+      expect(refused(run(`add ${kind} label=Held`)).code, kind).toBe('invalid_value');
   });
 
-  it('takes the template proportions on a tab with no sibling of its shape', () => {
+  it("takes its kind's palette size on a tab with no sibling of its shape", () => {
     const empty: Tab = { id: 't', name: 'T', elements: [] };
-    const { tab } = applied(run('add square label=Pay', empty));
-    expect(tab.elements[0]).toMatchObject({ width: 180, height: 64 });
+    const { tab } = applied(run('add signpost label=Pay', empty));
+    expect(tab.elements[0]).toMatchObject({ width: 120, height: 144 });
   });
 
   it('goes beside the last element the changeset added, then right of the content', () => {
-    const outcome = run('add square label=One\nadd square label=Two');
+    const outcome = run('add signpost label=One\nadd signpost label=Two');
     const { tab } = applied(outcome);
     const [one, two] = ['one', 'two'].map(
       (id) => tab.elements.find((e) => e.id === id) as Element & { x: number },
@@ -166,14 +173,14 @@ describe('add <kind>', () => {
       const out = parseEditOperations(text);
       return 'errors' in out ? out.errors[0]!.details.join('\n') : '';
     };
-    expect(parseError('add square inside:f2')).toMatch(/inside:f2/);
-    expect(parseError('add square inside:f2 right-of:n4')).toMatch(/inside:f2/);
-    expect(parseError('add square right-of:n4 at:1,2')).toMatch(/one placement/);
-    expect(parseError('add square align:n4 align:n3')).toMatch(/one placement/);
+    expect(parseError('add signpost inside:f2')).toMatch(/inside:f2/);
+    expect(parseError('add signpost inside:f2 right-of:n4')).toMatch(/inside:f2/);
+    expect(parseError('add signpost right-of:n4 at:1,2')).toMatch(/one placement/);
+    expect(parseError('add signpost align:n4 align:n3')).toMatch(/one placement/);
   });
 
   it('places beside a frame, centred on a member with align:, outside the frame', () => {
-    const { tab } = applied(run('add square label=Store below:f2 align:n4'));
+    const { tab } = applied(run('add signpost label=Store below:f2 align:n4'));
     const store = tab.elements.find((e) => e.id === 'store') as Element & {
       x: number;
       y: number;
@@ -187,7 +194,7 @@ describe('add <kind>', () => {
     })[];
     expect(store.x + store.width / 2).toBe(n4!.x + n4!.width / 2);
     expect(store.y).toBeGreaterThanOrEqual(f2!.y + f2!.height);
-    const parsed = parseEditOperations('add square align:n4 below:f2');
+    const parsed = parseEditOperations('add signpost align:n4 below:f2');
     expect('operations' in parsed ? parsed.operations[0] : null).toMatchObject({
       place: { rel: 'below', ref: 'f2', alignTo: 'n4' },
     });
@@ -195,10 +202,10 @@ describe('add <kind>', () => {
 
   it('keeps a given md text size on a tab with no sibling, and reads a size the template sizes for', () => {
     const empty: Tab = { id: 't', name: 'T', elements: [] };
-    expect(applied(run('add square label=Pay text=md', empty)).tab.elements[0]).toMatchObject({
+    expect(applied(run('add signpost label=Pay text=md', empty)).tab.elements[0]).toMatchObject({
       textSize: 'md',
     });
-    expect(applied(run('add square label=Pay text=lg', empty)).tab.elements[0]).toMatchObject({
+    expect(applied(run('add signpost label=Pay text=lg', empty)).tab.elements[0]).toMatchObject({
       textSize: 'lg',
     });
   });
@@ -209,12 +216,12 @@ describe('add <kind>', () => {
       ...tab,
       elements: tab.elements.map((el) => (el.id === 'n2' ? { ...el, textSize: 'md' } : el)),
     };
-    const { tab: next } = applied(run('add square label="Gift wrap" below:n8', mixed));
+    const { tab: next } = applied(run('add signpost label="Gift wrap" below:n8', mixed));
     expect(next.elements.find((e) => e.id === 'gift-wrap')).toMatchObject({ textSize: 'sm' });
   });
 
   it('leaves frames alone when placed by coordinates or beside an arrow', () => {
-    for (const op of ['add square label=Far x=4000 y=4000', 'add square label=Near below:a3']) {
+    for (const op of ['add signpost label=Far x=4000 y=4000', 'add signpost label=Near below:a3']) {
       const outcome = run(op);
       if ('errors' in outcome) continue;
       expect(lines(outcome).some((l) => l.startsWith('~ f2'))).toBe(false);
@@ -227,7 +234,7 @@ describe('add <kind> beside template-look siblings', () => {
     ({
       id,
       type: 'shape',
-      shape: 'square',
+      shape: 'signpost',
       x,
       y: 0,
       width: 236,
@@ -235,7 +242,7 @@ describe('add <kind> beside template-look siblings', () => {
       label: id,
       textSize,
     }) as Element;
-  it('takes their size, not the palette square, whatever their text size', () => {
+  it('takes their size, not the palette signpost, whatever their text size', () => {
     for (const textSize of ['md', 'lg']) {
       const tab: Tab = {
         id: 't',
@@ -244,7 +251,7 @@ describe('add <kind> beside template-look siblings', () => {
       };
       const el = applied(
         run(
-          `add square label="Search service"${textSize === 'md' ? ' iconId=search' : ''} right-of:b`,
+          `add signpost label="Search service"${textSize === 'md' ? ' iconId=search' : ''} right-of:b`,
           tab,
         ),
       ).tab.elements.find((e) => e.id === 'search-service');
@@ -257,7 +264,7 @@ describe('add <kind> beside template-look siblings', () => {
   it('measures a new box at its own text size, with no sibling to match', () => {
     const tab: Tab = { id: 't', name: 'T', elements: [] };
     const at = (size: string) =>
-      added(`add square label="Search service" textSize=${size}`, tab) as Element & {
+      added(`add signpost label="Search service" textSize=${size}`, tab) as Element & {
         width: number;
       };
     expect(at('lg').width).toBeGreaterThan(at('sm').width);
@@ -267,7 +274,7 @@ describe('add <kind> beside template-look siblings', () => {
     const tall = (id: string, x: number): Element => ({
       id,
       type: 'shape',
-      shape: 'square',
+      shape: 'signpost',
       x,
       y: 0,
       width: 160,
@@ -276,7 +283,7 @@ describe('add <kind> beside template-look siblings', () => {
       textSize: 'sm',
     });
     const tab: Tab = { id: 't', name: 'T', elements: [tall('a', 0), tall('b', 300)] };
-    const el = applied(run('add square label=Next right-of:b', tab)).tab.elements.find(
+    const el = applied(run('add signpost label=Next right-of:b', tab)).tab.elements.find(
       (e) => e.id === 'next',
     );
     expect(el).toMatchObject({ width: 160, height: 180 });
@@ -286,7 +293,7 @@ describe('add <kind> beside template-look siblings', () => {
 describe('add <kind> beside a framed box with no arrow', () => {
   it('places them without failing (a 500 in an eval)', () => {
     const outcome = run(
-      'add square id=zz label=Zz right-of:n4\nadd square id=yy label=Yy below:zz',
+      'add signpost id=zz label=Zz right-of:n4\nadd signpost id=yy label=Yy below:zz',
     );
     const { tab } = applied(outcome);
     expect(tab.elements.some((e) => e.id === 'yy')).toBe(true);
@@ -295,7 +302,7 @@ describe('add <kind> beside a framed box with no arrow', () => {
 
 describe('add <kind> with icon=', () => {
   it('reads icon as the stored iconId, as graph input names it', () => {
-    const el = applied(run('add square label=Search icon=search right-of:n8')).tab.elements.find(
+    const el = applied(run('add signpost label=Search icon=search right-of:n8')).tab.elements.find(
       (e) => e.id === 'search',
     );
     expect(el).toMatchObject({ iconId: 'search' });

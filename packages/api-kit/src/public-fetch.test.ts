@@ -222,13 +222,26 @@ describe('fetchPublicBytes', () => {
     expect(
       await fetchPublicBytes('https://a.example.com/', opts({ fetch: trickle, timeoutMs: 20 })),
     ).toMatchObject({ ok: false, reason: 'timeout' });
-    // A fetch that fails after the deadline aborted it reads as the timeout too.
+    // A fetch that fails after the deadline aborted it reads as the timeout too. On a slow runner the deadline can
+    // pass before the fetch is even made, so an already-aborted signal fails it at once rather than never. The
+    // failure lands after the deadline has answered, so the test waits for it to be handled before it ends.
+    let failed!: Promise<void>;
     const late = (request: Request) =>
       new Promise<Response>((_, reject) => {
-        request.signal.addEventListener('abort', () => setTimeout(() => reject(new Error('x')), 0));
+        failed = new Promise<void>((done) => {
+          const fail = () =>
+            setTimeout(() => {
+              reject(new Error('x'));
+              done();
+            }, 0);
+          if (request.signal.aborted) fail();
+          else request.signal.addEventListener('abort', fail);
+        });
       });
     expect(
       await fetchPublicBytes('https://a.example.com/', opts({ fetch: late, timeoutMs: 10 })),
     ).toMatchObject({ ok: false, reason: 'timeout' });
+    await failed;
+    await new Promise((settle) => setTimeout(settle, 0));
   });
 });

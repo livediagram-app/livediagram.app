@@ -1,4 +1,4 @@
-/* The dashboard's stacked cards deal in (livediagram's Timeline motion, docs/specs/013-workspace/timeline.md §2.6
+/* The dashboard's stacked cards deal in (livediagram's Timeline motion, docs/specs/013-workspace/history.md
  * there). Only the dashboard draws these now, so they live with it rather than in every app's theme.
  *
  * The cascade relies on CSS animations firing on MOUNT only. An element

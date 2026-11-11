@@ -3,7 +3,7 @@ import { createShape, MAX_ELEMENTS_PER_TAB, savableElements, type Element } from
 
 // docs/specs/020-import-export/board-import.md "What lands": an import lands only what the api saves.
 describe('savableElements', () => {
-  const square = (id: string) => ({ ...createShape('square', 0, 0), id }) as Element;
+  const square = (id: string) => ({ ...createShape('focus-button', 0, 0), id }) as Element;
 
   it('keeps valid elements once per id and counts the rest', () => {
     const bad = { ...square('bad'), width: Number.NaN };

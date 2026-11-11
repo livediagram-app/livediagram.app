@@ -46,7 +46,7 @@ import {
   PANEL_SURFACE,
   THUMB_EDGE,
 } from './HomeSection';
-import { Avatar } from './WhatHappened';
+import { Avatar } from './Avatar';
 
 // A strip below `md` (each tile 15rem, the next peeking, snapping tile by tile), a grid of two from `md`, four from `lg`.
 const LIST =

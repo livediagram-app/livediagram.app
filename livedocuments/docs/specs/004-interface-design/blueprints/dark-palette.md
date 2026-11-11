@@ -201,7 +201,7 @@ The Charcoal migration logs as its blueprint states.
 | I2 solid fills, I3 brand text                                | `dark-palette.test.ts`, "solid brand fills", "brand-coloured text"           |
 | I5 identity colours                                          | `dark-palette.test.ts`, "white text on an identity colour"                   |
 | `identityDeep` at AA on every colour; fallback; pass-through | `apps/editor/lib/identity-fill.test.ts`                                      |
-| Tint outranks base (B2)                                      | `apps/editor/hooks/ui/editor-accent.test.ts`                                 |
+| Tint outranks base (B2)                                      | `../packages/workbench/src/hooks/ui/editor-accent.test.ts`                   |
 | Selection ring + glow dark-only, every kind                  | `apps/editor/components/canvas/element-variant.test.ts`                      |
 | Handle dark classes; light classes unchanged                 | `apps/editor/components/canvas/element-parts.test.ts`, "RESIZE_HANDLE_CLASS" |
 | Tile lands on canvas; marketing rule unchanged               | `apps/editor/app/dark-mode-coverage.test.ts`                                 |

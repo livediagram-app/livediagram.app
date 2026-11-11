@@ -25,7 +25,7 @@ export const HOME_TZ_MAX_LENGTH = 64;
 
 /** The event type of a person's own coalesced open: the open-day record Jump back in counts.
  *  Recorded in their `user` scope only, and deliberately outside the event catalogue's vocabulary
- *  (docs/specs/013-workspace/timeline.md §4.2). */
+ *  (docs/specs/013-workspace/history.md). */
 export const HOME_OPENED_EVENT_TYPE = 'project_opened';
 
 /** What other people did, in the order a summary sentence names them. */

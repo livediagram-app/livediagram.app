@@ -79,32 +79,9 @@ export async function handleMerge(
       )
       .bind(user, guest),
     db.prepare('DELETE FROM use_days WHERE person_id = ?').bind(guest),
-    // The Timeline: what they did is the account's, and what they saw in their own space it sees.
-    db
-      .prepare('UPDATE OR IGNORE timeline_event_scopes SET scope = ? WHERE scope = ?')
-      .bind(personal, `p:${guest}`),
-    db.prepare('DELETE FROM timeline_event_scopes WHERE scope = ?').bind(`p:${guest}`),
-    db
-      .prepare('UPDATE OR IGNORE timeline_event_scopes SET scope = ? WHERE scope = ?')
-      .bind(`a:${user}`, `a:${guest}`),
-    db.prepare('DELETE FROM timeline_event_scopes WHERE scope = ?').bind(`a:${guest}`),
-    db.prepare('UPDATE timeline_events SET actor_id = ? WHERE actor_id = ?').bind(user, guest),
-    db
-      .prepare(
-        `INSERT INTO timeline_scope_state (person_id, last_seen_at)
-         SELECT ?, last_seen_at FROM timeline_scope_state WHERE person_id = ?
-         ON CONFLICT (person_id) DO UPDATE
-           SET last_seen_at = MAX(timeline_scope_state.last_seen_at, excluded.last_seen_at)`,
-      )
-      .bind(user, guest),
-    db.prepare('DELETE FROM timeline_scope_state WHERE person_id = ?').bind(guest),
-    db
-      .prepare(
-        `INSERT OR IGNORE INTO timeline_dismissals (person_id, event_id, created_at)
-         SELECT ?, event_id, created_at FROM timeline_dismissals WHERE person_id = ?`,
-      )
-      .bind(user, guest),
-    db.prepare('DELETE FROM timeline_dismissals WHERE person_id = ?').bind(guest),
+    // The event log: what they did is the account's (their items' History follows the items, read by who reaches
+    // them now).
+    db.prepare('UPDATE events SET actor_id = ? WHERE actor_id = ?').bind(user, guest),
     db
       .prepare(
         `INSERT OR IGNORE INTO shared_with (person_id, item_id, share_code, last_seen)

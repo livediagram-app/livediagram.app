@@ -109,11 +109,11 @@ describe('queuing a send', () => {
       },
       text: 'Pricing is live',
     });
-    // Nothing on the Timeline.
-    const timeline = await body<{ events: { type: string }[] }>(
-      await call('/timeline', { auth: ada.auth }),
+    // Nothing in History.
+    const history = await body<{ events: { type: string }[] }>(
+      await call(`/items/${plan.id}/history`, { auth: ada.auth }),
     );
-    expect(timeline.events.map((e) => e.type)).toEqual(['created']);
+    expect(history.events.map((e) => e.type)).toEqual(['created']);
   });
 
   it('is never heard by another webhook, even one listening for every event', async () => {

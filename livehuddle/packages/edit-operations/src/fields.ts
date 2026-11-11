@@ -12,7 +12,7 @@ import {
   ELEMENT_FIELD_NAMES,
   ELEMENT_FIELD_VALUES,
   LIVE_ELEMENT_FIELDS,
-  coerceShapeKind,
+  SHAPE_KINDS,
   fieldValueIssue,
   isElementFieldName,
   mergeElementUpdate,
@@ -256,15 +256,10 @@ function writeAlias(
       patch[alias] = value;
       return null;
     case 'shape': {
-      if (typeof value !== 'string') return text('a shape kind');
-      const shape = coerceShapeKind(value);
-      if (shape !== value)
-        warnings.push({
-          code: 'shape_coerced',
-          ref,
-          message: `${ref} shape ${JSON.stringify(value)} drawn as ${shape}`,
-        });
-      patch.shape = shape;
+      // Only a kind livehuddle has (D30): nothing coerces an unknown or retired kind into a kept one.
+      if (typeof value !== 'string' || !SHAPE_KINDS.has(value))
+        return text('a shape kind livehuddle has (the diagram shapes are no longer supported)');
+      patch.shape = value;
       return null;
     }
     case 'fill': {

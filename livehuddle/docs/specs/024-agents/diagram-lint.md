@@ -1,5 +1,11 @@
 # Diagram lint
 
+> **Gone from livehuddle** (Work Tracker #459, part 5): the diagram lint is deleted from livehuddle
+> ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine), part 5). A changeset's result keeps its `lint` member on the wire, always `null`; its
+> footer names no lint, and `view=lint` is refused as an unknown view. livediagram keeps the lint, and
+> [its spec there](../../../../livediagram/docs/specs/024-agents/diagram-lint.md) is the one to read and change. The
+> rest of this page describes it as livediagram has it.
+
 > **No arrow is drawn as one** ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine), part 4): the arrow checks went
 > with the arrows, and so did `box-overlap` and `aspect-extreme`, which judged only boxes an arrow joins. Their codes
 > and the arrow measures stay on the wire at nothing.

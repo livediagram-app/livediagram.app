@@ -6,10 +6,8 @@ import {
 import {
   defaultFillColor,
   defaultStrokeColor,
-  supportsAccentEdge,
   DEFAULT_ICON_WEIGHT,
   defaultTextColor,
-  shownBorderRadius,
   type BorderStroke,
   type BorderStyle,
   type BoxedElement,
@@ -36,7 +34,6 @@ import { FinishSection, resolveOwnFinish } from '@/components/palette/FinishSect
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
 import { BorderControls } from '@/components/palette/BorderControls';
-import { AccentEdgeRow } from '@/components/palette/AccentEdgeRow';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { inkSwatch, shownColour } from '@/components/palette/ink-row';
 
@@ -60,7 +57,6 @@ export function MultiStyleSections({
   strokeSrc,
   borderableSel,
   borderSrc,
-  radiusSrc,
   shadowSrc,
   techIconSrc,
   onClose,
@@ -75,9 +71,6 @@ export function MultiStyleSections({
   strokeSrc: BoxedElement | undefined;
   borderableSel: boolean;
   borderSrc: { strokeWidth?: BorderStroke; strokeStyle?: BorderStyle; type: string } | undefined;
-  // First member whose kind rounds corners — gates + feeds the Radius
-  // grid, mirroring the single menu's supportsBorderRadius branch.
-  radiusSrc: ShapeElement | undefined;
   // First shadow-supporting member (docs/specs/008-canvas/element-shadows.md) — gates + feeds the Shadow
   // section, mirroring the single menu's supportsShadow branch.
   shadowSrc: { shadow?: ElementShadow } | undefined;
@@ -89,8 +82,6 @@ export function MultiStyleSections({
   // As in the single-element menu: a swatch reads the canvas's ink for any
   // element that carries no colour of its own (docs/specs/007-editor/editor-app.md).
   const surface = useCanvasSurface();
-  // The accent edge (docs/specs/008-canvas/accent-edge.md) reads off the first member that takes one.
-  const accentEdgeSrc = boxedSel.find(supportsAccentEdge);
   // First line-art icon: gates + feeds the Weight row, which applies to every line-art icon.
   // First member that takes a finish (shape, text, sticky): gates + feeds the Finish tiles,
   // whose commit sets every such member (docs/specs/008-canvas/finish.md).
@@ -181,25 +172,12 @@ export function MultiStyleSections({
           <BorderControls
             strokeWidth={borderSrc?.strokeWidth ?? 'medium'}
             strokeStyle={borderSrc?.strokeStyle ?? 'solid'}
-            radius={radiusSrc ? shownBorderRadius(radiusSrc) : null}
             onCommitBorderStroke={props.onCommitBorderStroke}
             onPreviewBorderStroke={props.onPreviewBorderStroke}
             onCommitBorderStyle={props.onCommitBorderStyle}
             onPreviewBorderStyle={props.onPreviewBorderStyle}
-            onCommitBorderRadius={props.onCommitBorderRadius}
-            onPreviewBorderRadius={props.onPreviewBorderRadius}
             onPreviewStyleEnd={props.onPreviewStyleEnd}
           />
-          {accentEdgeSrc ? (
-            <AccentEdgeRow
-              target={accentEdgeSrc}
-              ops={props.elementStyle}
-              borderColour={accentEdgeSrc.strokeColor ?? defaultStrokeColor(accentEdgeSrc, surface)}
-              colourOpen={colorProps('m-accent-edge').open}
-              onToggleColour={colorProps('m-accent-edge').onToggle}
-              colourPalette={props.colourPalette}
-            />
-          ) : null}
         </MenuAccordionSection>
       ) : null}
       {/* Shadow (docs/specs/008-canvas/element-shadows.md) — presets + sliders, selection-wide like Border.

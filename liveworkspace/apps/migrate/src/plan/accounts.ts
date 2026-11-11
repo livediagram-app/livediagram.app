@@ -244,7 +244,6 @@ export function writeTokens(ctx: PlanContext): void {
         'expiresAt',
         'revokedAt',
         'expiryWarnedAt',
-        'expiryNotedAt',
       ],
       values: [
         id,
@@ -257,7 +256,6 @@ export function writeTokens(ctx: PlanContext): void {
         Number(t.expires_at),
         null,
         n(t.expiry_warned_at),
-        null,
       ],
       conflict: ['id'],
       version: 'live',

@@ -29,7 +29,6 @@ import {
   ShareLinksArt,
   StatusArt,
   TeamsArt,
-  TimelineFeedArt,
   WalkInArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
@@ -289,14 +288,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Follow someone’s view',
         description:
           'Press Follow beside a teammate and your board goes where theirs goes: their tab, their pan, their exact zoom. The moment you move the board yourself, you have your own view back.',
-      },
-      {
-        art: <TimelineFeedArt />,
-        href: '/help/explorer/timeline/',
-        group: 'Work together live',
-        title: 'See what happened while you were away',
-        description:
-          'The Explorer opens on Home: the Spaces you return to most, and what your teammates commented, edited and assigned you while you were away. The Timeline holds the full feed.',
       },
       {
         art: <NoteUndoArt />,

@@ -30,7 +30,7 @@ The room's presence class is wider than its name suggests. `PRESENCE_OP_KINDS` i
 The precise answer to the question. A view link (role `view`, all tabs, no account needed) can:
 
 - **Read everything**: the document, every tab, its images and thumbnail, comment threads (others' author ids
-  redacted, `redactCommentAuthorIds`), and the document's Timeline feed (`../liveworkspace/apps/index/src/timeline.ts`, a row per scope that sees each event).
+  redacted, `redactCommentAuthorIds`); not its History, which the index refuses to anyone reaching it through a share link (`../liveworkspace/apps/index/src/history.ts`).
 - **Be present live**: join the room, show a cursor and current tab, appear in the roster with a Viewer badge,
   use the laser and Avatar mode (and shove another avatar), follow and be followed, press Bring focus, present
   slides on their own screen, enter zen, export PNG / SVG / Markdown.

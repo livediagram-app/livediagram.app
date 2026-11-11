@@ -23,8 +23,7 @@ const of = (type: string, extra: object = {}) =>
 
 describe('bodyAnimationSetOf', () => {
   it.each([
-    [createShape('square', 0, 0), 'shape'],
-    [createShape('diamond', 0, 0), 'shape'],
+    [createShape('room', 0, 0), 'shape'],
     [createShape('sticker', 0, 0), 'shape'],
     [of('annotation'), 'shape'],
     [of('link-card'), 'shape'],
@@ -58,7 +57,7 @@ describe('carriesWords', () => {
   it('is true for text, stickies and labelled shapes', () => {
     expect(carriesWords(createText(0, 0))).toBe(true);
     expect(carriesWords(createSticky(0, 0))).toBe(true);
-    expect(carriesWords(createShape('square', 0, 0))).toBe(true);
+    expect(carriesWords(createShape('room', 0, 0))).toBe(true);
   });
 
   it('is false for shapes whose words are art or drawn by the shape', () => {
@@ -76,7 +75,7 @@ describe('carriesWords', () => {
 
 describe('animationSetsOf', () => {
   it('a labelled shape shows Shape and Text', () => {
-    expect(animationSetsOf([createShape('square', 0, 0)])).toEqual(['shape', 'text']);
+    expect(animationSetsOf([createShape('room', 0, 0)])).toEqual(['shape', 'text']);
   });
 
   it('a text element shows Text alone', () => {
@@ -96,7 +95,7 @@ describe('animationSetsOf', () => {
   });
 
   it('inAnimationSet matches the membership rules', () => {
-    expect(inAnimationSet('text', createShape('square', 0, 0))).toBe(true);
+    expect(inAnimationSet('text', createShape('room', 0, 0))).toBe(true);
     expect(inAnimationSet('shape', createText(0, 0))).toBe(false);
     expect(inAnimationSet('media', of('image'))).toBe(true);
   });
@@ -110,8 +109,8 @@ describe('Shape motions', () => {
       expect(shapeAnimationsFor(el)).toEqual([]);
       expect(inAnimationSet('shape', el)).toBe(false);
     }
-    expect(takesShapeMotions(createShape('square', 0, 0))).toBe(false);
-    expect(shapeAnimationsFor(createShape('square', 0, 0))).toEqual(SHAPE_ANIMATIONS);
+    expect(takesShapeMotions(createShape('room', 0, 0))).toBe(false);
+    expect(shapeAnimationsFor(createShape('room', 0, 0))).toEqual(SHAPE_ANIMATIONS);
   });
 
   it('move or fade the element as a whole, never light its outline', () => {

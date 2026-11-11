@@ -13,7 +13,7 @@ import { withStyleOfTab, withThemeApplied } from './tab-theme-apply';
 const shape = (over: Partial<ShapeElement> = {}): Element => ({
   id: 's',
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 100,

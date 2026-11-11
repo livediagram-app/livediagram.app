@@ -1,8 +1,7 @@
 // One element drawn in the Sketch finish (docs/specs/008-canvas/finish.md "Sketch"): its outline as hand-drawn
-// strokes, its fill as hatching or a solid area, its thin chrome as single strokes. In the element's own
+// strokes, its fill as hatching or a solid area. In the element's own
 // coordinates (0..width, 0..height), so moving an element never changes it and the canvas can memoise it on
 // size alone. The canvas overlay and the SVG export both draw from this, so the two cannot disagree.
-import { actorFigureRect } from './actor-figure';
 import { SELF_PAINTING_SHAPES } from './colors';
 import {
   BORDER_DASH_ARRAY,
@@ -19,18 +18,14 @@ import {
   type Finish,
 } from './finish';
 import type { BoxedElement } from './index';
-import { shapeGeometry, type ShapePartRole } from './shape-geometry';
-import { FILLED_ROLES } from './shape-hit';
 import {
-  outlineOfBox,
-  outlineOfPart,
+  outlineOfRect,
   sketchAreaPath,
   sketchHatching,
   sketchSeed,
   sketchStrokes,
   type SketchOutline,
 } from './sketch';
-import { boxFit, fitShapePart } from './svg-shape-fit';
 
 /** Path data for each layer of a sketched element; an empty string draws nothing. */
 export type SketchDrawing = {
@@ -38,15 +33,11 @@ export type SketchDrawing = {
   pen: 'pencil';
   /** The outline, in the stroke colour at the border width. */
   strokes: string;
-  /** Thin chrome (bezels, keys, creases), in the stroke colour at the detail width. */
-  details: string;
   /** Pencil shading over the fill, in the stroke colour at `SKETCH_HATCH_OPACITY`. */
   hatch: string;
   /** The solid fill, in the fill colour, under the shading and the strokes. Every filled element keeps it, so
    *  its text keeps the contrast it was coloured for on either canvas (light or dark). */
   solid: string;
-  /** The solid layer is a combined path whose holes show through (a Path-tool shape): filled even-odd. */
-  solidEvenOdd?: boolean;
 };
 
 /** How strongly the pencil shading shows over a filled shape: enough to read as hand-shaded, faint enough
@@ -80,11 +71,10 @@ function sketchElement(el: BoxedElement, o: SketchElementOptions): SketchDrawing
 
   if (el.type === 'sticky') {
     // Paper stays paper: a solid sheet, its edge drawn once by hand.
-    const box = outlineOfBox('square', w, h, 0, 0);
+    const box = boxOutline(w, h, 0, 0);
     return {
       pen: 'pencil',
-      strokes: sketchStrokes(outlineOfBox('square', w, h, 0, 0.5), seed, 1),
-      details: '',
+      strokes: sketchStrokes(boxOutline(w, h, 0, 0.5), seed, 1),
       hatch: '',
       solid: sketchAreaPath(box.area!),
     };
@@ -92,64 +82,47 @@ function sketchElement(el: BoxedElement, o: SketchElementOptions): SketchDrawing
   if (el.type !== 'shape') return null;
 
   const hatches = finishHatches(el, o.fill, o.backdrop);
-  const parts = handDrawnOutlines(el, inset, o.radiusPx);
-  if (!parts) return null;
-  const strokes: string[] = [];
-  const details: string[] = [];
-  const hatch: string[] = [];
-  const solid: string[] = [];
-  for (const { outline, role, seed: partSeed } of parts) {
-    if (role === 'detail') {
-      details.push(sketchStrokes(outline, partSeed, 1));
-      continue;
-    }
-    if (outlinePx > 0) strokes.push(sketchStrokes(outline, partSeed));
-    if (fillIt && FILLED_ROLES.has(role) && outline.area) {
-      solid.push(sketchAreaPath(outline.area));
-      if (hatches) hatch.push(sketchHatching(outline.area, partSeed, outlinePx || 2));
-    }
-  }
+  const part = handDrawnOutline(el, inset, o.radiusPx);
+  if (!part) return null;
+  const { outline } = part;
+  const filled = fillIt && outline.area;
   return {
     pen: 'pencil',
-    strokes: strokes.join(' '),
-    details: details.join(' '),
-    hatch: hatch.join(' '),
-    solid: solid.join(' '),
+    strokes: outlinePx > 0 ? sketchStrokes(outline, part.seed) : '',
+    hatch: filled && hatches ? sketchHatching(outline.area!, part.seed, outlinePx || 2) : '',
+    solid: filled ? sketchAreaPath(outline.area!) : '',
   };
 }
 
-/** One outline a hand-drawn finish draws for a shape, with its part's role and the seed its wobble grows from. */
-export type HandDrawnOutline = { outline: SketchOutline; role: ShapePartRole; seed: number };
+/** A box's outline in its own px, `inset` in from each edge, its corners rounded to `radiusPx` less the inset. */
+export function boxOutline(
+  width: number,
+  height: number,
+  radiusPx: number,
+  inset: number,
+): SketchOutline {
+  return outlineOfRect(
+    inset,
+    inset,
+    Math.max(0, width - inset * 2),
+    Math.max(0, height - inset * 2),
+    Math.max(0, radiusPx - inset),
+  );
+}
 
-/** The outlines a hand-drawn finish (Sketch, Marker) draws for a shape, in its own px box: each shape-table part
- *  fitted into the box, or a box kind's own outline (square, circle, stadium, the rectangular frames) as
- *  its main part. `inset` keeps a stroke inside the box. Null for a kind drawn as it is (a self-painting face). */
-export function handDrawnOutlines(
+/** The outline a hand-drawn finish draws for a shape, with the seed its wobble grows from. */
+export type HandDrawnOutline = { outline: SketchOutline; seed: number };
+
+/** The outline a hand-drawn finish (Sketch, Marker) draws for a shape: its box, in its own px. The diagram shapes'
+ *  drawn outlines left with them (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5).
+ *  `inset` keeps a stroke inside the box. Null for a kind drawn as it is (a self-painting face). */
+export function handDrawnOutline(
   el: BoxedElement & { type: 'shape' },
   inset: number,
   radiusPx: number,
-): HandDrawnOutline[] | null {
-  const seed = sketchSeed(el.id);
-  const w = el.width;
-  const h = el.height;
-  const geometry = shapeGeometry(el.shape);
-  if (geometry) {
-    const area = el.shape === 'actor' ? actorFigureRect(el) : { x: 0, y: 0, width: w, height: h };
-    const pad = geometry.strokeInside ? inset : 0;
-    const fit = boxFit(geometry, {
-      x: area.x + pad,
-      y: area.y + pad,
-      width: Math.max(0, area.width - 2 * pad),
-      height: Math.max(0, area.height - 2 * pad),
-    });
-    return geometry.parts.map((part, i) => ({
-      outline: outlineOfPart(fitShapePart(part, fit)),
-      role: part.role,
-      seed: seed + i * 31,
-    }));
-  }
+): HandDrawnOutline | null {
   if (SELF_PAINTING_SHAPES.has(el.shape)) return null;
-  return [{ outline: outlineOfBox(el.shape, w, h, radiusPx, inset), role: 'main', seed }];
+  return { outline: boxOutline(el.width, el.height, radiusPx, inset), seed: sketchSeed(el.id) };
 }
 
 /** The width a sketched sticky's edge is drawn at, px. */

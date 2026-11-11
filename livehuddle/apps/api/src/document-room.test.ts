@@ -590,7 +590,7 @@ describe('DocumentRoom op-role enforcement', () => {
     const editor = connect(room, 'editor', 'edit');
     const other = connect(room, 'other', 'edit');
     other.ws.sent.length = 0;
-    const shape = { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 };
+    const shape = { id: 'a', type: 'shape', shape: 'signpost', x: 0, y: 0, width: 10, height: 10 };
     const add = (element: unknown) => ({ kind: 'el', tabId: 't', op: { kind: 'add', element } });
 
     sendFrame(room, editor.ws, { kind: 'op', op: add(shape) });
@@ -2221,7 +2221,7 @@ describe('DocumentRoom comment author ids (docs/specs/012-collaboration/collab-r
           element: {
             id: 'a',
             type: 'shape',
-            shape: 'square',
+            shape: 'signpost',
             x: 0,
             y: 0,
             width: 1,
@@ -2474,7 +2474,7 @@ describe('DocumentRoom and agent changesets', () => {
       {
         kind: 'add',
         at: 0,
-        element: { id: 'b', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 },
+        element: { id: 'b', type: 'shape', shape: 'signpost', x: 0, y: 0, width: 1, height: 1 },
       },
     ],
   };

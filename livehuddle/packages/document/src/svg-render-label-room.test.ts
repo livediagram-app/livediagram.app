@@ -7,12 +7,8 @@ import {
   labelMaxWidth,
   labelMeasure,
 } from './svg-render-primitives';
-import { describeBoxedExport } from './svg-render-describe';
-import { defaultPadding } from './colors';
-import { labelBodyInset } from './label-body';
 
-// The headless label measure and the label's room (docs/specs/024-agents/blueprints/diagram-lint.md LN4, LN5):
-// what the lint and every headless render wrap with.
+// The headless label measure and the label's room: what every headless render wraps with.
 
 describe('estimatedLabelMeasure', () => {
   it('measures a share of the font size a character', () => {
@@ -31,7 +27,7 @@ describe('drawsStandardLabel', () => {
     createShape(kind, 0, 0) as BoxedElement;
 
   it('is true for ordinary shapes and stickies', () => {
-    expect(drawsStandardLabel(shape('square'))).toBe(true);
+    expect(drawsStandardLabel(shape('room'))).toBe(true);
     expect(drawsStandardLabel(createSticky(0, 0))).toBe(true);
     expect(drawsStandardLabel(shape('chair'))).toBe(true);
   });
@@ -53,7 +49,7 @@ describe('drawsStandardLabel', () => {
 describe('labelRoom', () => {
   it('is the box inside its padding', () => {
     const el = {
-      ...createShape('square', 10, 20),
+      ...createShape('focus-button', 10, 20),
       width: 200,
       height: 100,
       padding: 'md',
@@ -62,36 +58,5 @@ describe('labelRoom', () => {
       width: labelMaxWidth(el, PADDING_PX.md),
       height: 100 - 2 * PADDING_PX.md,
     });
-  });
-
-  // docs/specs/008-canvas/canvas-and-palette.md "Shape primitives": on the body, under the lid.
-  it("keeps a cylinder's room to its body, under the lid and over the base", () => {
-    const cyl = { ...createShape('cylinder', 0, 0), width: 100, height: 200 } as BoxedElement;
-    const pad = PADDING_PX[cyl.padding ?? defaultPadding(cyl)];
-    const body = labelBodyInset(cyl);
-    expect(labelRoom(cyl).height).toBeCloseTo(200 - body.top - body.bottom - 2 * pad, 9);
-  });
-});
-
-describe('describeBoxedExport label on a cylinder', () => {
-  const cyl = {
-    ...createShape('cylinder', 10, 20),
-    width: 100,
-    height: 200,
-    label: 'Orders',
-  } as BoxedElement;
-  const body = labelBodyInset(cyl);
-  const pad = PADDING_PX[cyl.padding ?? defaultPadding(cyl)];
-
-  it('centres the label on the body, not the box', () => {
-    const { label } = describeBoxedExport({ ...cyl, textAlignY: 'middle' });
-    expect(label!.y).toBeCloseTo(20 + (body.top + 200 - body.bottom) / 2, 9);
-  });
-
-  it('tops the label under the lid and bottoms it over the base', () => {
-    const top = describeBoxedExport({ ...cyl, textAlignY: 'top' }).label!;
-    const bottom = describeBoxedExport({ ...cyl, textAlignY: 'bottom' }).label!;
-    expect(top.y).toBeCloseTo(20 + body.top + pad + top.size / 2, 9);
-    expect(bottom.y).toBeCloseTo(20 + 200 - body.bottom - pad - bottom.size / 2, 9);
   });
 });

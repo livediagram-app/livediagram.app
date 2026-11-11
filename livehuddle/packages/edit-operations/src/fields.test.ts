@@ -10,10 +10,10 @@ import { aliasesOf, writeFieldsOnto, type FieldsWrite } from './fields';
 import type { Fields } from './types';
 
 const theme = getBuiltInTheme(undefined);
-const square = {
+const signpost = {
   id: 'n3',
   type: 'shape',
-  shape: 'square',
+  shape: 'signpost',
   x: 0,
   y: 0,
   width: 140,
@@ -53,7 +53,7 @@ const nextOf = (out: FieldsWrite) => out.next as unknown as Record<string, unkno
 describe('aliasesOf', () => {
   it('gives each element the aliases its type takes, style keys included', () => {
     const style = ['stroke', 'text-color', 'border'];
-    expect(aliasesOf(square)).toEqual(['label', 'note', 'shape', 'fill', ...style, 'text']);
+    expect(aliasesOf(signpost)).toEqual(['label', 'note', 'shape', 'fill', ...style, 'text']);
     // A stored arrow (a retired element since part 4 of the element engine) keeps only what it stored.
     expect(aliasesOf(arrow)).toEqual(['label', 'note', 'line']);
     expect(aliasesOf(text)).toEqual(['label', 'note', ...aliasesOf(text).slice(2)]);
@@ -62,7 +62,7 @@ describe('aliasesOf', () => {
 
   it('writes back every style key the views print', () => {
     const out = writeFieldsOnto(
-      square,
+      signpost,
       { stroke: '#aa0000', 'text-color': '#00aa00', border: 'dashed' },
       theme,
       'n1',
@@ -79,7 +79,7 @@ describe('aliasesOf', () => {
       'colour_overrides_theme',
     ]);
     const unset = writeFieldsOnto(
-      { ...square, strokeColor: '#aa0000', strokeSwatch: 2 } as Element,
+      { ...signpost, strokeColor: '#aa0000', strokeSwatch: 2 } as Element,
       { stroke: null, border: null },
       theme,
       'n1',
@@ -88,18 +88,18 @@ describe('aliasesOf', () => {
     if ('code' in unset) throw new Error('refused');
     expect(nextOf(unset)).not.toHaveProperty('strokeColor');
     expect(nextOf(unset)).not.toHaveProperty('strokeSwatch');
-    const named = writeFieldsOnto(square, { stroke: 'pen-red' }, theme, 'n1', 1);
+    const named = writeFieldsOnto(signpost, { stroke: 'pen-red' }, theme, 'n1', 1);
     expect('code' in named ? null : named.warnings).toEqual([]);
-    expect(refusal(square, { border: 'wavy' }).details[0]).toMatch(
+    expect(refusal(signpost, { border: 'wavy' }).details[0]).toMatch(
       /^border="wavy": one of solid dashed dotted/,
     );
-    expect(refusal(square, { stroke: 3 }).code).toBe('invalid_value');
+    expect(refusal(signpost, { stroke: 3 }).code).toBe('invalid_value');
   });
 });
 
 describe('writeFieldsOnto', () => {
   it('writes aliases, stored names, and unsets with null', () => {
-    const out = write(square, {
+    const out = write(signpost, {
       label: 'Sign in',
       text: 'lg',
       note: null,
@@ -119,7 +119,7 @@ describe('writeFieldsOnto', () => {
   });
 
   it('unsets the fill and its binding together', () => {
-    const filled = write(square, { fill: 'red' }).next;
+    const filled = write(signpost, { fill: 'red' }).next;
     expect(nextOf(write(filled, { fill: null }))).not.toHaveProperty('fillSwatch');
     expect(nextOf(write(filled, { fill: null, text: null, label: null }))).not.toHaveProperty(
       'fillColor',
@@ -128,26 +128,30 @@ describe('writeFieldsOnto', () => {
 
   it('dresses a shape in its preset’s colours for the theme, a colour named with it winning', () => {
     const preset = shapeColorPresets(theme).find((p) => p.id === 'tinted')!;
-    expect(nextOf(write(square, { colorPreset: 'tinted' }))).toMatchObject({
+    expect(nextOf(write(signpost, { colorPreset: 'tinted' }))).toMatchObject({
       colorPreset: 'tinted',
       fillColor: preset.fill,
       strokeColor: preset.stroke,
     });
-    expect(nextOf(write(square, { colorPreset: 'tinted', fillColor: '#ff0000' })).fillColor).toBe(
+    expect(nextOf(write(signpost, { colorPreset: 'tinted', fillColor: '#ff0000' })).fillColor).toBe(
       '#ff0000',
     );
-    expect(refusal(square, { colorPreset: 'sparkly' }).hint).toMatch(/^colorPreset takes .*tinted/);
+    expect(refusal(signpost, { colorPreset: 'sparkly' }).hint).toMatch(
+      /^colorPreset takes .*tinted/,
+    );
   });
 
   it('keeps a border width and style named with a preset, over the preset’s own', () => {
     // Outline brings a medium dashed border; the write asks for thick and solid.
     expect(
-      nextOf(write(square, { colorPreset: 'outline', strokeWidth: 'thick', strokeStyle: 'solid' })),
+      nextOf(
+        write(signpost, { colorPreset: 'outline', strokeWidth: 'thick', strokeStyle: 'solid' }),
+      ),
     ).toMatchObject({ colorPreset: 'outline', strokeWidth: 'thick', strokeStyle: 'solid' });
   });
 
   it('takes a known icon id and refuses one that draws a question mark, naming icons like it', () => {
-    const icon = { ...square, id: 'ic', iconId: 'clock' } as Element;
+    const icon = { ...signpost, id: 'ic', iconId: 'clock' } as Element;
     expect(nextOf(write(icon, { iconId: 'moon' })).iconId).toBe('moon');
     const out = refusal(icon, { iconId: 'fire' });
     expect(out.details).toEqual(['iconId="fire": is not an icon']);
@@ -155,19 +159,19 @@ describe('writeFieldsOnto', () => {
     expect(refusal(icon, { iconId: 'qqqqzz' }).hint).toContain('plain words');
   });
 
-  it('coerces an off-vocabulary shape with a warning', () => {
-    const out = write(square, { shape: 'rectangle' });
-    expect(nextOf(out).shape).toBe('square');
-    expect(out.warnings).toEqual([
-      { code: 'shape_coerced', ref: 'n3', message: 'n3 shape "rectangle" drawn as square' },
-    ]);
+  it('takes only a shape kind livehuddle has, never coercing one (part 5, D30)', () => {
+    expect(nextOf(write(signpost, { shape: 'plant' })).shape).toBe('plant');
+    for (const shape of ['rectangle', 'square'])
+      expect(refusal(signpost, { shape }).details).toEqual([
+        `shape=${JSON.stringify(shape)}: a shape kind livehuddle has (the diagram shapes are no longer supported)`,
+      ]);
   });
 
   it('warns when a hex overrides the theme, by alias or by stored name, but not on a sticky', () => {
-    expect(write(square, { fill: '#ff0000' }).warnings[0]).toMatchObject({
+    expect(write(signpost, { fill: '#ff0000' }).warnings[0]).toMatchObject({
       code: 'colour_overrides_theme',
     });
-    expect(write(square, { strokeColor: '#000' }).warnings[0]!.message).toBe(
+    expect(write(signpost, { strokeColor: '#000' }).warnings[0]!.message).toBe(
       'n3 strokeColor #000 overrides the theme; a theme colour follows a theme change',
     );
     const stickyEl = { id: 'k', type: 'sticky', x: 0, y: 0, width: 1, height: 1 } as Element;
@@ -175,7 +179,7 @@ describe('writeFieldsOnto', () => {
   });
 
   it('caps a long shape label into the note it ends with, and warns', () => {
-    const out = write(square, {
+    const out = write(signpost, {
       label: 'Orders service which creates and tracks every order',
       note: 'Given',
     });
@@ -192,23 +196,23 @@ describe('writeFieldsOnto', () => {
       'a1 label kept as "Orders service"; the rest was cut',
     );
     expect(
-      write(square, { label: 'Message queue for asynchronous events now' }).next,
+      write(signpost, { label: 'Message queue for asynchronous events now' }).next,
     ).toMatchObject({
       note: 'Message queue for asynchronous events now\n\nOld',
     });
-    const bare = { ...square, note: undefined } as Element;
+    const bare = { ...signpost, note: undefined } as Element;
     expect(
       write(bare, { label: 'Message queue for asynchronous events now', note: null }).next,
     ).toMatchObject({ note: 'Message queue for asynchronous events now' });
   });
 
   it('refuses identity, live and prototype fields, and keys the type lacks', () => {
-    expect(refusal(square, { id: 'x' }).details[0]).toBe('id="x": cannot be changed');
-    expect(refusal(square, { addedBy: 'x' }).details[0]).toBe('addedBy="x": cannot be changed');
-    expect(refusal(square, { [LIVE_ELEMENT_FIELDS[0]]: [] }).code).toBe('invalid_value');
+    expect(refusal(signpost, { id: 'x' }).details[0]).toBe('id="x": cannot be changed');
+    expect(refusal(signpost, { addedBy: 'x' }).details[0]).toBe('addedBy="x": cannot be changed');
+    expect(refusal(signpost, { [LIVE_ELEMENT_FIELDS[0]]: [] }).code).toBe('invalid_value');
     // JSON.parse makes `__proto__` an own key, which an object literal cannot.
     const proto = JSON.parse('{"__proto__":1}') as Fields;
-    expect(refusal(square, proto).code).toBe('unknown_field');
+    expect(refusal(signpost, proto).code).toBe('unknown_field');
     const unknown = refusal(arrow, { fill: 'red' });
     expect(unknown.details).toEqual([
       '? arrow has no field "fill"',
@@ -219,16 +223,16 @@ describe('writeFieldsOnto', () => {
   it("checks each alias's value", () => {
     expect(
       [
-        refusal(square, { label: 3 }),
-        refusal(square, { shape: 3 }),
-        refusal(square, { fill: 3 }),
-        refusal(square, { fill: 'chartreuse' }),
-        refusal(square, { text: 'huge' }),
+        refusal(signpost, { label: 3 }),
+        refusal(signpost, { shape: 3 }),
+        refusal(signpost, { fill: 3 }),
+        refusal(signpost, { fill: 'chartreuse' }),
+        refusal(signpost, { text: 'huge' }),
         refusal(arrow, { line: 'wavy' }),
       ].map((r) => r.details),
     ).toEqual([
       ['label=3: text, in quotes when it has spaces'],
-      ['shape=3: a shape kind'],
+      ['shape=3: a shape kind livehuddle has (the diagram shapes are no longer supported)'],
       ['fill=3: a theme colour or a hex'],
       [
         'fill=chartreuse: a theme colour or a hex',
@@ -242,14 +246,14 @@ describe('writeFieldsOnto', () => {
   });
 
   it('writes an exact text px from the Text Size slider range, as a number or a numeric string', () => {
-    expect(nextOf(write(square, { text: 18 })).textSize).toBe(18);
-    expect(nextOf(write(square, { text: '6' })).textSize).toBe(6);
-    expect(nextOf(write(square, { text: 48 })).textSize).toBe(48);
-    expect(refusal(square, { text: 5 }).details).toEqual([
+    expect(nextOf(write(signpost, { text: 18 })).textSize).toBe(18);
+    expect(nextOf(write(signpost, { text: '6' })).textSize).toBe(6);
+    expect(nextOf(write(signpost, { text: 48 })).textSize).toBe(48);
+    expect(refusal(signpost, { text: 5 }).details).toEqual([
       'text=5: one of sm md lg scale or a px from 6 to 48',
     ]);
-    expect(refusal(square, { text: 49 }).details).toHaveLength(1);
-    expect(refusal(square, { text: 12.5 }).details).toHaveLength(1);
+    expect(refusal(signpost, { text: 49 }).details).toHaveLength(1);
+    expect(refusal(signpost, { text: 12.5 }).details).toHaveLength(1);
   });
 
   // The pen engine went with part 4 of the element engine: a stored stroke takes no former point fields.

@@ -68,18 +68,18 @@ function Placed({
 }
 
 describe('ElementIndicators', () => {
-  it('sits inside a circle too', () => {
-    const { container } = draw(shape('circle', 200, 200));
+  it('sits inside a roomy element along the top', () => {
+    const { container } = draw(shape('room', 200, 200));
     expect(container.querySelector('[data-indicators="top"]')).not.toBeNull();
   });
 
   it('falls back to the pip on an element with no room', () => {
-    const { container } = draw(shape('stadium', 120, 40));
+    const { container } = draw(shape('room', 120, 40));
     expect(container.querySelector('[data-indicators="pip"]')).not.toBeNull();
   });
 
   it('moves an icon and label down out of the way of the icons along the top', () => {
-    const cloud = shape('cloud', 290, 190);
+    const room = shape('room', 290, 140);
     const content = {
       label: 'Cloud',
       textSize: 'md',
@@ -93,14 +93,14 @@ describe('ElementIndicators', () => {
       link: { onFollow: vi.fn(), destination: 'example.com' },
       comments: { count: 120, onOpen: vi.fn() },
     });
-    const layout = placeCluster(cloud, 0, busy, 'top', content);
+    const layout = placeCluster(room, 0, busy, 'top', content);
     expect(layout.form).toBe('top');
     expect(layout.inset.top).toBeGreaterThan(0);
     expect(layout.inset.bottom).toBe(0);
   });
 
   it('draws a squared pip on a sharp element, on a white chip when there is no fill', () => {
-    const el = { ...shape('square', 60, 30), borderRadius: 'none' } as BoxedElement;
+    const el = { ...shape('room', 60, 30), borderRadius: 'none' } as BoxedElement;
     const placed = { form: 'pip', box: null, pip: null, inset: { top: 0, bottom: 0 } } as const;
     const { container } = render(
       <ElementIndicators

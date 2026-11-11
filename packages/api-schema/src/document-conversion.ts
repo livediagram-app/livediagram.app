@@ -4,10 +4,10 @@
 // It has to be declared because the two conversions reuse ordinary endpoints
 // and are indistinguishable from them at the boundary: "Take offline" is a
 // plain DELETE /documents/:id, and "Sync document" is a plain POST /documents. So
-// the worker recorded them as a deletion and `document_created` — a Timeline
+// the worker recorded them as a deletion and `document_created`, a history
 // that told the owner a document they had just moved into this browser was
-// gone, and that one they had just uploaded was newly *created*. The Timeline's events and their wire
-// format are liveworkspace's index's (docs/specs/013-workspace/timeline.md).
+// gone, and that one they had just uploaded was newly *created*. The events and their wire format are
+// liveworkspace's index's (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "The event log").
 //
 // Each product names the header in its own api-schema (`X-Document-Conversion`, or under its own
 // noun), because this is a two-sided contract and the alternative is the client and the worker each

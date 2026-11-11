@@ -6,7 +6,16 @@ import { elementDisplayLabel } from './element-display-label';
 // (docs/specs/013-workspace/inbox.md §2.1), so a change here changes what BOTH surfaces call a row.
 
 const shape = (label: string | undefined): BoxedElement =>
-  ({ id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, label }) as never;
+  ({
+    id: 's',
+    type: 'shape',
+    shape: 'focus-button',
+    x: 0,
+    y: 0,
+    width: 10,
+    height: 10,
+    label,
+  }) as never;
 
 const table = (cells: string[][]): BoxedElement =>
   ({ id: 't', type: 'table', x: 0, y: 0, width: 10, height: 10, cells }) as never;

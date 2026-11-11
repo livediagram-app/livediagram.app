@@ -1,4 +1,3 @@
-import { WHITEBOARD_SHAPES } from './whiteboard-tool';
 import { shapeKindLabel } from './element-names';
 import type { ComponentKind, SelectionMode, ShapeKind } from '@livehuddle/document';
 
@@ -35,9 +34,6 @@ export type PendingDraw =
       // What the tile that armed it calls it ("Funnel", "Org Chart"), for the banner: a variant or a
       // compound kind reads wrong named by its kind alone (a Funnel is a pyramid underneath).
       name?: string;
-      // A whiteboard shape (docs/specs/023-draw-mode/draw-mode.md "Shapes"): drawn in the board's ink,
-      // unfilled, at the default width. Pens never colour it.
-      board?: true;
     }
   | { type: 'text' }
   | { type: 'sticky' }
@@ -61,32 +57,16 @@ export type AddShapeOptions = Pick<
   'mode' | 'variant' | 'name'
 >;
 
-// The shape the banner names ("Click to drop or drag to draw Square"), as the tile the person just picked names it.
-// Draw mode's dock names its own shapes (Rectangle, Ellipse); everywhere else a shape is named as the palette and
-// the selection badge name it (shapeKindLabel: Square, Circle). Its own aliases (square -> Rectangle, circle ->
-// Oval) had drifted from both, so a Circle tile armed an "Oval" and a dock Ellipse did too.
+// The shape the banner names ("Click to drop or drag to draw Chair"), as the tile the person just picked names it:
+// its own name, or the kind as the palette and the selection badge name it (shapeKindLabel).
 function shapeIntentName(intent: Extract<PendingDraw, { type: 'shape' }>): string {
-  if (intent.name) return intent.name;
-  if (intent.board) {
-    const dock = WHITEBOARD_SHAPES.find(
-      (s) => s.intent.type === 'shape' && s.intent.kind === intent.kind,
-    );
-    if (dock) return dock.label;
-  }
-  return shapeKindLabel(intent.kind);
+  return intent.name ?? shapeKindLabel(intent.kind);
 }
 
 // User-facing component names for the draw-mode banner.
 const COMPONENT_LABELS: Record<ComponentKind, string> = {
   avatar: 'Avatar',
 };
-
-// A tool that exists on a whiteboard only (docs/specs/023-draw-mode/draw-mode.md "Shapes"): a shape
-// armed from the dock. Leaving the board puts it down, so the board's tools and their look never
-// carry over a mode switch.
-export function isWhiteboardOnlyIntent(intent: PendingDraw | null | undefined): boolean {
-  return intent?.type === 'shape' && intent.board === true;
-}
 
 // Whether a freshly drawn element drops straight into typing: a text box is only useful once typed into.
 export function opensForTyping(intent: PendingDraw): boolean {
@@ -121,38 +101,6 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
   }
 }
 
-// Per-shape draw-mode cursor. Returns a `cursor:` CSS value, an
-// `url(data:image/svg+xml,...)` referencing an inline SVG whose
-// hotspot sits at (4, 4): a small crosshair at the pointer tip,
-// plus a faded outline of the shape kind in the cursor's lower-
-// right so the user can see at a glance which shape is queued.
-// `crosshair` is the system fallback for browsers that won't load
-// the data URL. Three kinds get explicit outlines (square, circle,
-// diamond); everything else uses the plain crosshair branch since
-// the banner already shows the shape name.
-function drawShapeCursor(kind: ShapeKind): string {
-  if (kind === 'square') {
-    return drawCursorFromGlyph(
-      `<rect x="13" y="13" width="11" height="8" fill="none" stroke="black" stroke-width="1.4" />`,
-    );
-  }
-  if (kind === 'circle') {
-    return drawCursorFromGlyph(
-      `<ellipse cx="18.5" cy="17" rx="5.5" ry="4" fill="none" stroke="black" stroke-width="1.4" />`,
-    );
-  }
-  if (kind === 'diamond') {
-    return drawCursorFromGlyph(
-      `<path d="M18.5 12 L24 17 L18.5 22 L13 17 Z" fill="none" stroke="black" stroke-width="1.4" />`,
-    );
-  }
-  // Other shape kinds fall back to the plain crosshair (so a Tab key
-  // press never lands them on an undefined cursor): the banner
-  // carries the kind name and the palette button is pressed, so the
-  // user still sees what's queued.
-  return 'crosshair';
-}
-
 // Builds a per-tool cursor for non-shape draw intents: text, sticky,
 // image, link card. Reads the same crosshair-at-(4, 4) shape as
 // drawShapeCursor so every draw-mode pointer has the same anchor,
@@ -161,7 +109,10 @@ function drawShapeCursor(kind: ShapeKind): string {
 // rather than 'auto' / inherited so the cursor never reads as "not
 // in a mode" when one is active.
 export function drawIntentCursor(intent: PendingDraw): string {
-  if (intent.type === 'shape') return drawShapeCursor(intent.kind);
+  // A shape queues the plain crosshair: the banner names it and its palette tile is pressed. The square, circle and
+  // diamond outlines this drew left with them (docs/specs/002-project-scope/not-in-livehuddle.md "The element
+  // engine", part 5).
+  if (intent.type === 'shape') return 'crosshair';
   if (intent.type === 'text') {
     return drawCursorFromGlyph(
       `<path d="M13 13 H24 M18.5 13 V23 M16 23 H21" stroke="black" stroke-width="1.4" stroke-linecap="round" fill="none" />`,

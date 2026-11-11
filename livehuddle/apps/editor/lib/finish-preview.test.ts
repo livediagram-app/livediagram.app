@@ -5,10 +5,10 @@ import { FINISH_PREVIEW_ELEMENTS, finishPreviewSvg } from './finish-preview';
 const tab = { background: '#0d121a' };
 
 describe('finishPreviewSvg', () => {
-  it('draws the sample scene: a step, a decision and a note', () => {
-    expect(FINISH_PREVIEW_ELEMENTS.map((e) => e.type)).toEqual(['shape', 'shape', 'sticky']);
+  it('draws the sample scene: two sticky notes and a plant', () => {
+    expect(FINISH_PREVIEW_ELEMENTS.map((e) => e.type)).toEqual(['sticky', 'shape', 'sticky']);
     const svg = finishPreviewSvg('flexible', tab);
-    for (const text of ['Plan the work', 'Ready?', 'Ship it']) expect(svg).toContain(text);
+    for (const text of ['Plan the work', 'Ship it']) expect(svg).toContain(text);
   });
 
   it('draws each finish differently, on the tab’s paper', () => {

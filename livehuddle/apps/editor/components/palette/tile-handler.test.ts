@@ -14,19 +14,19 @@ const actions = () =>
     cancelDraw: ReturnType<typeof vi.fn>;
   };
 
-const square = {
-  id: 'square',
-  label: 'Square',
-  action: { type: 'shape', kind: 'square' },
+const chair = {
+  id: 'chair',
+  label: 'Chair',
+  action: { type: 'shape', kind: 'chair' },
 } as never;
 const sticky = { id: 'sticky', label: 'Sticky Note', action: { type: 'sticky' } } as never;
 
 describe('a palette tile pressed', () => {
   it('arms its tool, and puts it down when pressed again while armed', () => {
     const a = actions();
-    tileHandler(square, a, null)();
+    tileHandler(chair, a, null)();
     expect(a.addShape).toHaveBeenCalledTimes(1);
-    tileHandler(square, a, { type: 'shape', kind: 'square' } as never)();
+    tileHandler(chair, a, { type: 'shape', kind: 'chair' } as never)();
     expect(a.cancelDraw).toHaveBeenCalledTimes(1);
     expect(a.addShape).toHaveBeenCalledTimes(1);
     tileHandler(sticky, a, { type: 'sticky' } as never)();
@@ -35,7 +35,7 @@ describe('a palette tile pressed', () => {
 
   it('arms another tool over an armed one', () => {
     const a = actions();
-    tileHandler(sticky, a, { type: 'shape', kind: 'square' } as never)();
+    tileHandler(sticky, a, { type: 'shape', kind: 'chair' } as never)();
     expect(a.addSticky).toHaveBeenCalled();
     expect(a.cancelDraw).not.toHaveBeenCalled();
   });
@@ -55,10 +55,10 @@ describe('a shape tile pressed', () => {
       'pyramid',
       expect.objectContaining({ variant: 'funnel', name: 'Funnel' }),
     );
-    tileHandler({ ...(square as object), label: 'Add Square' } as never, a, null)();
+    tileHandler({ ...(chair as object), label: 'Add Chair' } as never, a, null)();
     expect(a.addShape).toHaveBeenLastCalledWith(
-      'square',
-      expect.objectContaining({ name: 'Square' }),
+      'chair',
+      expect.objectContaining({ name: 'Chair' }),
     );
   });
 });

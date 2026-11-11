@@ -19,8 +19,8 @@ import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const shape = createShape('square', 100, 100);
-const other = createShape('square', 300, 100);
+const shape = createShape('focus-button', 100, 100);
+const other = createShape('focus-button', 300, 100);
 
 function renderToolbars(multi: boolean, over: Partial<CanvasProps> = {}) {
   const elements = over.elements ?? [shape, other];

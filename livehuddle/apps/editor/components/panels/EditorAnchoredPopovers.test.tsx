@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createSticky, type Element } from '@livehuddle/document';
 import { storedPinnedArrow } from '@/test/retired-elements';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 import { EditorAnchoredPopovers } from './EditorAnchoredPopovers';
@@ -13,7 +13,7 @@ import { EditorAnchoredPopovers } from './EditorAnchoredPopovers';
 let ctx: Record<string, unknown>;
 vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ctx }));
 
-const box = { ...createShape('square', 0, 0), id: 'a' } as Element;
+const box = { ...createSticky(0, 0), id: 'a' } as Element;
 const thread = {
   resolved: false,
   comments: [

@@ -2,7 +2,7 @@
 import { act, render } from '@testing-library/react';
 import { memo } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createSticky, type Element } from '@livehuddle/document';
 import { storedPinnedArrow } from '@/test/retired-elements';
 
 // docs/specs/008-canvas/canvas-performance.md: an element view renders only for its own changes. A
@@ -83,9 +83,9 @@ const { SelectionStoreProvider } =
   await import('@liveworkspace/workbench/hooks/canvas/useSelectionStore');
 let store = createSelectionStore();
 
-const a = createShape('square', 0, 0);
-const b = createShape('square', 400, 0);
-const c = createShape('square', 0, 400);
+const a = createSticky(0, 0);
+const b = createSticky(400, 0);
+const c = createSticky(0, 400);
 const ab = storedPinnedArrow('ab', a.id, 'e', b.id, 'w');
 const BOARD: Element[] = [a, b, c, ab];
 

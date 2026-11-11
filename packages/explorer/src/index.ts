@@ -69,7 +69,6 @@ export type {
   SignInBannerHost,
   SignInBannerTelemetry,
   TeamRef,
-  TimelineTelemetry,
   HomeTelemetry,
   OrganiseEvent,
   OrganiseTelemetry,

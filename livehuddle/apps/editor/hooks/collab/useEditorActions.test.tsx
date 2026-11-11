@@ -10,6 +10,7 @@ import {
   ACTION_CARD_MAX,
   createElementAction,
   createShape,
+  createSticky,
   elementActions,
   type ElementAction,
   type Tab,
@@ -54,7 +55,7 @@ function setup(elements: Tab['elements']) {
 // A retired Action panel as it was stored: an untyped shape carrying its list.
 const panel = (actions: ElementAction[] = [], id = 'card') =>
   ({
-    ...createShape('square', 0, 0),
+    ...createShape('room', 0, 0),
     id,
     shape: 'action-card',
     actions,
@@ -132,7 +133,7 @@ describe('useEditorActions on a retired Action panel', () => {
 
 describe('useEditorActions on an ordinary element', () => {
   it('keeps exactly one action, as `action`', () => {
-    const box = createShape('square', 0, 0);
+    const box = createSticky(0, 0);
     const { result, list, raw } = setup([box]);
     act(() => result.current.saveAction(box.id, input('Only')));
     act(() => result.current.saveAction(box.id, input('Renamed')));
@@ -165,7 +166,7 @@ describe('a full retired Action panel', () => {
 
 describe('useEditorActions telling a teammate', () => {
   it('asks for the notification on every new team assignee, the email only when the box is ticked', () => {
-    const box = createShape('square', 0, 0);
+    const box = createSticky(0, 0);
     const { result, list, notify } = setup([box]);
     const team = {
       ...input('Ship it'),

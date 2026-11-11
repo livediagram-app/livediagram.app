@@ -25,7 +25,7 @@ export type ThumbnailRequest = {
   shareCode: string | null;
 };
 
-// Enough for a full Explorer grid, its folder mosaics and a Timeline feed,
+// Enough for a full Explorer grid, its folder mosaics and a History dialog,
 // while bounding the blob URLs held: each is a few KB to a few hundred KB
 // of SVG text. Evicted least recently used.
 export const THUMBNAIL_CACHE_MAX = 200;

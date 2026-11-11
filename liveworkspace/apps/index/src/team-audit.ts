@@ -2,12 +2,12 @@
 // a year. Append-only: every statement here is an `INSERT OR IGNORE` keyed by (team, event id), so an event sent
 // again, or one that moves its time on, adds nothing.
 //
-// Writing. Each statement goes in the batch that makes the change, after the Timeline event it copies (the event's
-// id, kind, app, actor, title, detail and time are read back from `timeline_events`, so the two never disagree):
-// - a team item's event (`itemAuditStatement`, from timeline.ts eventStatements): for the item's team, or for the
+// Writing. Each statement goes in the batch that makes the change, after the event it copies (the event's
+// id, kind, app, actor, title, detail and time are read back from `events`, so the two never disagree):
+// - a team item's event (`itemAuditStatement`, from events.ts eventStatements): for the item's team, or for the
 //   teams a move names (the one it left and the one it went to);
-// - accounts' team events (`accountAuditStatement`, from bulkEventStatements): for each `t:<team>` scope named;
-// - with no Timeline event of their own: a team item deleted for good (`deletedAuditStatement`, purge.ts) and a team
+// - accounts' team events (`accountAuditStatement`, from bulkEventStatements): for the team its detail names;
+// - with no event of their own: a team item deleted for good (`deletedAuditStatement`, purge.ts) and a team
 //   webhook added or removed (`webhookAuditStatement`, webhooks/routes.ts).
 // Each is one statement whatever the count, through an index lookup, so logging never slows what it logs.
 //
@@ -18,9 +18,9 @@ import {
   TEAM_AUDIT_ACCOUNT_TYPES,
   TEAM_AUDIT_ITEM_TYPES,
   TEAM_AUDIT_RETENTION_MS,
-  TIMELINE_PLATFORM,
+  PLATFORM_APP,
   type TeamAuditEventType,
-  type TimelineEventType,
+  type EventType,
 } from '@liveworkspace/index-client';
 import type { Env } from './env';
 
@@ -31,18 +31,18 @@ export const TEAM_AUDIT_SWEEP_MAX = 5000;
 
 const COLUMNS =
   'team_id, id, type, app, actor_id, actor_name, subject_id, item_id, title, detail, occurred_at';
-// From the Timeline event `e` (the team's id selected first, as `team_id`).
+// From the event `e` (the team's id selected first, as `team_id`).
 const FROM_EVENT = `e.id, e.type, e.app, e.actor_id, e.actor_name,
   json_extract(e.detail, '$.personId'), e.item_id, e.title, e.detail, e.occurred_at`;
 
 const itemTypes: ReadonlySet<string> = new Set(TEAM_AUDIT_ITEM_TYPES);
 const accountTypes: ReadonlySet<string> = new Set(TEAM_AUDIT_ACCOUNT_TYPES);
 
-/** Whether an item's Timeline event of this kind is logged for its team. */
-export const isAuditedItemEvent = (type: TimelineEventType): boolean => itemTypes.has(type);
+/** Whether an item's event of this kind is logged for its team. */
+export const isAuditedItemEvent = (type: EventType): boolean => itemTypes.has(type);
 
 /**
- * The statement logging one item's Timeline event (already written in the batch, by id): for the item's team, or,
+ * The statement logging one item's event (already written in the batch, by id): for the item's team, or,
  * given `teams`, for those (a move's: the team it left and the one it went to). None when no team is involved.
  */
 export function itemAuditStatement(
@@ -55,7 +55,7 @@ export function itemAuditStatement(
       .prepare(
         `INSERT OR IGNORE INTO team_audit_events (${COLUMNS})
          SELECT i.team_id, ${FROM_EVENT}
-         FROM timeline_events e JOIN items i ON i.id = e.item_id
+         FROM events e JOIN items i ON i.id = e.item_id
          WHERE e.id = ? AND i.team_id IS NOT NULL`,
       )
       .bind(eventId);
@@ -66,30 +66,29 @@ export function itemAuditStatement(
     .prepare(
       `INSERT OR IGNORE INTO team_audit_events (${COLUMNS})
        SELECT t.value, ${FROM_EVENT}
-       FROM json_each(?) t JOIN timeline_events e ON e.id = ?`,
+       FROM json_each(?) t JOIN events e ON e.id = ?`,
     )
     .bind(JSON.stringify(named), eventId);
 }
 
 /**
- * The statement logging accounts' team events (written in the batch by bulkEventStatements) for each team scope
- * they name; a token's event, or a team's deletion, names none that counts. None when nothing in the batch does.
+ * The statement logging accounts' team events (written in the batch by bulkEventStatements) for the team each names
+ * in its detail (`teamId`). None when nothing in the batch is a team event.
  */
 export function accountAuditStatement(
   db: Db,
-  events: readonly { id: string; type: TimelineEventType; scopes: readonly string[] }[],
+  events: readonly { id: string; type: EventType; detail?: Record<string, string | null> | null }[],
 ): D1PreparedStatement | null {
-  const pairs = events
-    .filter((e) => accountTypes.has(e.type))
-    .flatMap((e) =>
-      [...new Set(e.scopes)].filter((s) => s.startsWith('t:')).map((s) => [s.slice(2), e.id]),
-    );
+  const pairs = events.flatMap((e) => {
+    const team = e.detail?.teamId;
+    return accountTypes.has(e.type) && team ? [[team, e.id]] : [];
+  });
   if (pairs.length === 0) return null;
   return db
     .prepare(
       `INSERT OR IGNORE INTO team_audit_events (${COLUMNS})
        SELECT json_extract(p.value, '$[0]'), ${FROM_EVENT}
-       FROM json_each(?) p JOIN timeline_events e ON e.id = json_extract(p.value, '$[1]')`,
+       FROM json_each(?) p JOIN events e ON e.id = json_extract(p.value, '$[1]')`,
     )
     .bind(JSON.stringify(pairs));
 }
@@ -140,7 +139,7 @@ export function webhookAuditStatement(db: Db, audit: WebhookAudit): D1PreparedSt
       audit.teamId,
       id,
       audit.type,
-      TIMELINE_PLATFORM,
+      PLATFORM_APP,
       audit.actorId,
       audit.name,
       JSON.stringify({ webhookId: audit.webhookId, kind: audit.kind, host: audit.host }),

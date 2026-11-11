@@ -518,9 +518,13 @@ type Element = ShapeElement | ArrowElement;
 
 ## Shape primitives
 
-> **Leaving livehuddle** (Work Tracker #423): the Shapes category leaves the palette in part 3; the shape kinds stay in
-> the code for sticky notes, text and the Spaces' pieces, which are built on them
-> ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)).
+> **Gone from livehuddle** (Work Tracker #423; its code deleted by Work Tracker #459, part 5): the Shapes category
+> and the diagram shapes (`square`, `circle`, `diamond`, `cylinder`, `parallelogram`, `hexagon`, `document`,
+> `stadium`, `actor`, `final-state`, `cloud`, `triangle`, `trapezoid`, `star`, `speech-bubble`) are not part of
+> livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-element-engine)). A stored one is a [retired element](../002-project-scope/not-in-livehuddle.md#retired-elements), kept exactly
+> as stored and drawn as its placeholder named after its kind (**Square**, **Circle**, …), which an Editor can delete.
+> `ShapeKind` holds the Space pieces and the meeting palette's kinds only. livediagram keeps the shapes, and its
+> [Canvas and palette](../../../../livediagram/docs/specs/008-canvas/canvas-and-palette.md) is the spec to change; the rest of this section describes them as livediagram has them.
 
 Fourteen general-purpose shape kinds are covered here, all rendered as absolutely positioned elements on the canvas. `ShapeKind` itself is larger (114 members) because every later family of element reused the shape type rather than inventing its own: the structural element `lane`, the web component `callout` (read-only, migrated to `card`), the Behaviour and Collaborate controls (`mode-button`, `portal`, `reaction-pad`, `chair`, `desk`, `sofa`, `fence`, [`avatar-pad`](../009-elements/avatar-pad.md), the [office](../009-elements/office.md) (`room`, [`corridor`](../009-elements/corridor.md), [`window`](../009-elements/room-builder.md#window), `meeting-table`, `plant`, `bookshelf`, `water-cooler`, `coffee-machine`, `rug`, `stage`), the [social pieces](../009-elements/social-pieces.md) (`notice-board`, `world-clock`, `jukebox`, `ping-pong-table`, `arcade-machine`, `fireplace`, `campfire`, `bench`, `picnic-table`, `hammock`, `garden-umbrella`, `fountain`, `pond`), the [office amenities](../009-elements/office-amenities.md) (`printer`, `copier`, `lockers`, `coat-rack`, `umbrella-stand`, `kitchen-counter`, `kitchen-sink`, `fridge`, `microwave`, `kettle`, `toilet-cubicle`, `washbasin`, `hand-dryer`), the [venue pieces](../009-elements/venue-pieces.md) (`pillar`, `column`, `car-park`, `bike-rack`, `swimming-pool`, `stage-curtains`, `podium`), the [workday pieces](../009-elements/workday-pieces.md) (`nap-pod`, `treadmill`, `weight-bench`, `phone-booth`, `standing-desk`, `hot-desk`, `pet-bed`, `reception-desk`), the [team pieces](../009-elements/team-pieces.md) (`calendar-wall`, `suggestion-box`, `signpost`, `photo-wall`), the [Timer and Stopwatch](../009-elements/timer-and-stopwatch.md) (`timer`, `stopwatch`)), the Timeline (`timeline-rail`), the [Card](../009-elements/card.md) (`card`), the [Badge](../009-elements/badge.md) and [Step number](../009-elements/step-number.md) (`badge`, `step`), the [Pointer note](../009-elements/pointer-note.md) (`pointer-note`), the [Diagram key](../009-elements/diagram-key.md) (`diagram-key`), the [Stack](../009-elements/stack.md) (`stack`), the [Boundary](../009-elements/boundary.md) (`boundary`), `icon` / `sticker`. The diagram tools' kinds Work Tracker #459 deleted (the Page, the Banner, Stat Row, Process and Header, the progress bar and ring, the Rating, the three charts, the Legend, the code block and the checklist) are no longer members: a stored one is a [retired element](../002-project-scope/not-in-livehuddle.md#retired-elements). Each of those has its own spec; this section is the general-purpose set. The table below covers the seven general-purpose primitives the spec originally shipped with; the rest (general shapes (`stadium`, `actor`, the UML final state `final-state` (a ring round a solid dot, one element, made by graph input and Mermaid for a state machine's end, no palette tile), `cloud`, `triangle`, `trapezoid`, `star`, `speech-bubble`)) landed later and are documented in the Palette section above. livediagram's UI device frames (`browser`, `monitor`, `laptop`, `phone`, `tablet`, `foldable`, `smartwatch`) are not part of livehuddle. The canonical list is `ShapeKind` in `@livehuddle/document` (declared in `src/shape-kind.ts`); the test in `apps/editor/lib/templates.test.ts` pins shape coverage indirectly via the template catalogue.
 
@@ -541,6 +545,9 @@ Styling: a `brand-500` outline over a faint `brand-50` fill, with a subtle drop 
 Square and circle render purely via CSS (`border-radius` + `background-color` on the wrapper `div`). Every other kind renders its geometry through an **inner SVG overlay** with `viewBox="0 0 100 100"` and `preserveAspectRatio="none"`, so it stretches with the element's box. A silhouette whose outline touches the box edge (diamond, parallelogram, hexagon, document, cylinder, cloud) is marked `strokeInside` in the shared geometry table: its svg is inset by half the stroke, so the outline stays inside the box like a square's CSS border. The wrapper carries no border or background for those; only the selection ring. Resize handles attach to the wrapper's bounding box, not to the geometry. Arrow anchors on an outlined kind are projected onto its drawn outline ([Arrow anchors and auto-rebind](arrow-anchors.md)).
 
 ## Data model
+
+> **In livehuddle** the `ShapeKind` below is livediagram's: livehuddle's holds no diagram shape since Work Tracker #459,
+> part 5 ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine)). The canonical list is `packages/document/src/shape-kind.ts`.
 
 Shapes are **elements** on a tab, per [Document structure](../006-document/document-structure.md). The element type lives in `packages/document` and is consumed by the canvas and (later) the store and API code:
 
@@ -687,25 +694,20 @@ The editor's global shortcuts are bound centrally in `useEditorKeyboardShortcuts
 | --------- | ---------------------------------------------------------------------------------- |
 | `E` / `V` | Edit (`S` is a legacy alias of `V`; with the Toolbar strip's Search, `S` opens it) |
 | `W`       | Walk ([Avatar mode](avatar-mode.md#the-edit--walk-toggle)), from Edit              |
-| `P`       | Freehand pencil                                                                    |
-| `6`       | Shape Pen (the same stroke, recognised; [Stickers](../010-palette/stickers.md))    |
 
 **Add elements** (plain key: drops the element, mirroring the palette tile):
 
-| Key | Element            |
-| --- | ------------------ |
-| `R` | Rectangle (square) |
-| `O` | Oval (circle)      |
-| `D` | Diamond            |
-| `C` | Cylinder           |
-| `G` | Parallelogram      |
-| `T` | Text               |
-| `N` | Note (sticky)      |
-| `A` | Arrow              |
+| Key | Element       |
+| --- | ------------- |
+| `T` | Text          |
+| `N` | Note (sticky) |
 
-The remaining shape kinds (hexagon, stadium, document, cloud, …) have no single-key binding; like every reference tool, only the common flowchart vocabulary gets a letter; the rest stay a palette click away. (`H` belonged to Hand, which is no longer a mode, so it does nothing.)
+The diagram tools' keys (`R` Rectangle, `O` Oval, `D` Diamond, `C` Cylinder, `G` Parallelogram, `A` Arrow, `P` and
+`6` the pens) left with those tools ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-element-engine)): a press of one does nothing. (`H` belonged to Hand,
+which is no longer a mode, so it does nothing, and `F` to the Frame.)
 
-**Number keys** mirror the Excalidraw layout for quick tool reach: `1` Select, `2` Rectangle, `3` Diamond, `4` Oval, `5` Arrow, `7` Pencil, `8` Text, `9` Image. (`0` was the Eraser, which is gone.) (As with the letter shortcuts, a number typed while a single label-bearing element is selected feeds the label editor instead; see Type-to-edit below.)
+**Number keys**: `1` Select and `8` Text. The rest (`2` Rectangle, `3` Diamond, `4` Oval, `5` Arrow, `7` Pencil, `9`
+Image, `0` the Eraser) left with their tools. (As with the letter shortcuts, a number typed while a single label-bearing element is selected feeds the label editor instead; see Type-to-edit below.)
 
 **Edit** (with `⌘`):
 

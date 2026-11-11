@@ -13,7 +13,7 @@ const image = { id: 'img', type: 'image', x: 0, y: 0, width: 10, height: 10 } as
 describe('animation set writes', () => {
   it('writes a body set only to its members, leaving others the same reference', () => {
     const sticky = createSticky(0, 0);
-    const shape = createShape('square', 0, 0);
+    const shape = createShape('room', 0, 0);
     expect(withSetAnimation(sticky, 'sticky', 'flutter')).toMatchObject({ animation: 'flutter' });
     expect(withSetAnimation(shape, 'sticky', 'flutter')).toBe(shape);
     expect(withSetAnimation(image, 'shape', 'pulse')).toBe(image);
@@ -47,7 +47,7 @@ describe('animation set writes', () => {
   });
 
   it('writes Text to any element that carries words, beside its body animation', () => {
-    const shape = { ...createShape('square', 0, 0), animation: 'pulse' as const };
+    const shape = { ...createShape('room', 0, 0), animation: 'pulse' as const };
     const next = withSetAnimation(shape, 'text', 'typewriter');
     expect(next).toMatchObject({ animation: 'pulse', textAnimation: 'typewriter' });
     expect(withSetAnimation(image, 'text', 'typewriter')).toBe(image);
@@ -75,7 +75,7 @@ describe('animation set writes', () => {
   });
 
   it('stores Speed per set, and Repeat only when it differs from the set default', () => {
-    const shape = createShape('square', 0, 0);
+    const shape = createShape('room', 0, 0);
     expect(withSetAnimationSpeed(shape, 'text', 'fast')).toMatchObject({
       textAnimationSpeed: 'fast',
     });
@@ -101,7 +101,7 @@ describe('animation set writes', () => {
 
   it('Clear animation removes body and Text together', () => {
     const shape = {
-      ...createShape('square', 0, 0),
+      ...createShape('room', 0, 0),
       animation: 'pulse' as const,
       textAnimation: 'wave' as const,
     };

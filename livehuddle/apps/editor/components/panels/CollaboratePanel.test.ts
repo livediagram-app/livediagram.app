@@ -21,7 +21,7 @@ function mkShape(
   return {
     id,
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     x: 0,
     y: 0,
     width: 100,
@@ -50,7 +50,7 @@ describe('commentRowsFromElements', () => {
     const empty: BoxedElement = {
       id: 'e',
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       x: 0,
       y: 0,
       width: 10,

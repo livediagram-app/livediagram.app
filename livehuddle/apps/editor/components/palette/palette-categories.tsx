@@ -7,13 +7,7 @@
 // layouts, the whiteboard dock's shape catalogue) can import it without pulling in the category
 // bodies, and without the import cycle an earlier dialog reached from inside a body once closed.
 
-import {
-  PopularTabIcon,
-  MediaTabIcon,
-  ShapesTabIcon,
-  StickersTabIcon,
-  WriteTabIcon,
-} from '@livehuddle/ui';
+import { PopularTabIcon, MediaTabIcon, StickersTabIcon, WriteTabIcon } from '@livehuddle/ui';
 import { MEET_BAND, SPACE_CATEGORIES } from './space-categories';
 
 /**
@@ -47,13 +41,6 @@ export const PALETTE_CATEGORIES: {
     fullWidth: true,
     description: 'The tiles most reached for in this mode, from across its categories.',
     icon: <PopularTabIcon />,
-  },
-  {
-    id: 'shapes',
-    label: 'Shapes',
-    group: 0,
-    description: 'Square, circle, diamond, and the flowchart shape vocabulary.',
-    icon: <ShapesTabIcon />,
   },
   {
     id: 'write',

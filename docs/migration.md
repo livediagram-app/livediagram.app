@@ -94,7 +94,7 @@ the copy takes).
    matches) each held their own member row: the account keeps one membership per team, its first joined row, and
    the report counts the rest as skipped. A joined member carries its account's email, which a merged account's old
    rows don't. This replaces 0002's "teams are managed
-   separately". Recreating writes no `team_*` Timeline events and sends no
+   separately". Recreating writes no `team_*` events and sends no
    invitation emails at import time.
 5. **Carry over API tokens**, so scripts, the CLI and connected AI tools keep working (this replaces 0002's "old
    tokens are revoked at the switch"). Checked against both codebases:
@@ -145,18 +145,13 @@ One script, per document, in batches:
 4. Shared tabs (one tab in several documents, `tab-document-many-to-many.md`) become `tab_shares` rows once every
    document holding the tab has been copied, so run that as a second pass.
 
-**History is kept.** The old `timeline_events` (with `timeline_event_scopes`) become Timeline events in the index
-(`apps/index/src/timeline.ts`) with their original times, actors through the owner map, and a mark that they were
-imported so the import doesn't count as fresh activity or notify anyone. `agent_changesets` and their parts go into
-the document's `DocumentRoom` beside the tabs they changed. Where a tab was split off (step 3), its history goes
-with it to the product it went to, if that product keeps a Timeline for it; otherwise it stays on the livediagram
-part. The kinds the index has under another name are mapped: `document_opened_by_visitor` and
-`document_copied_by_visitor` to `opened_by_visitor` and `copied_by_visitor`, `document_synced` to `synced`,
-`document_offline` to the person's own `taken_offline` (about no item, titled with the document's name),
-`team_invite_accepted` to `team_joined`, and `team_member_left` to `team_member_removed` marked `left`. An old event
-kind with no new equivalent is reported in the rehearsal and dropped rather than guessed.
-Not copied: `collab_threads` and `collab_actions` (a projection, rebuilt from the JSON), `change_log`, `events`
-(telemetry).
+**History is not carried over.** The new side keeps an item's events only 30 days, as its History
+(`liveworkspace/docs/specs/004-index/one-explorer-contracts.md` "The event log"), so the old `timeline_events` and
+`timeline_event_scopes` are not imported: an imported event would show only until the sweep took it, and none
+would be news. `agent_changesets` and their parts go into the document's `DocumentRoom` beside the tabs they
+changed.
+Not copied: `timeline_events` and `timeline_event_scopes` (above), `collab_threads` and `collab_actions` (a
+projection, rebuilt from the JSON), `change_log`, `events` (telemetry).
 
 ## 3. Split mixed documents by product
 
@@ -293,7 +288,7 @@ the send (the table by the accounts migration `0015_drop_migration_notice.sql`).
 
 ## 9. Check
 
-- Per account: documents, tabs per product, items, images, shares, teams and Timeline events on the new side match
+- Per account: documents, tabs per product, items, images, shares and teams on the new side match
   the old counts, written to a report per run.
 - Nothing made on the new side before the switch changed: compare a count and checksum per table of rows not
   marked imported, before and after each run.
@@ -363,8 +358,7 @@ What `plan` decides for you (all reported in `report.json`):
 - **Share links**: each goes to the part holding its tab, else to the part that kept the old id. People it was
   shared with see every part; a part with no link of its own gets a generated one (`shared_with` needs a link).
   Codes that differ only in case are reported (the new side stores them upper case).
-- **History**: Timeline events are written once, as `imp:<old id>`, each old kind under its index name (step 2).
-  Kinds with no new equivalent are dropped and counted.
+- **History**: no old event is imported (step 2), so none shows in a History or the event log as `imp:<old id>`.
 - **Shape libraries**: one `MigrationPersonPayload` per person who had any, sent to livediagram's person migration
   door. Added once and never updated: a library whose id the person already has is left as it is, and one whose
   name they already use takes the next free `(n)`.

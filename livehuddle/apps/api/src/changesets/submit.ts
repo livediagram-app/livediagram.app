@@ -1,11 +1,5 @@
 import { nextOrderIndex } from '@liveworkspace/api-kit/tab-order';
-import type {
-  ChangesetResponse,
-  ChangesetWritten,
-  EditRejection,
-  LintReport,
-} from '@livehuddle/api-schema';
-import { lintFooterPart } from '@livehuddle/diagram-lint';
+import type { ChangesetResponse, ChangesetWritten, EditRejection } from '@livehuddle/api-schema';
 import { migrateIncomingTab, type Tab } from '@livehuddle/document';
 import {
   applyEditOperations,
@@ -20,12 +14,10 @@ import { capStoredName } from '../names';
 import { personTagFor } from '../person-tag';
 import { readRoomSelections, type RoomSelection } from '../room-client';
 import type { DocumentDTO, DocumentEnv } from '../types';
-import type { ChangesetBody } from './request';
 import { afterChangeset } from './after';
 import { checkBase, type BaseOutcome } from './base-check';
 import type { FrontDoor } from './front-door';
 import { heldTargets } from './held-check';
-import { lintResult } from './lint';
 import { changesetLog, engineLog } from './log';
 import { engineRefusal, type ParsedChangeset } from './request';
 import { readStoredTab, withRev, type StoredTab } from './stored-tab';
@@ -92,23 +84,17 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
     const lines = formatResultLines(compiled.results);
     if (args.dryRun) {
       changesetLog('info', '[changeset] dry-run', { ...where, targets: compiled.targets.length });
-      const lint = lintResult(compiled.tab, where, priorOf(request.body, stored));
-      const footer = formatResultFooter({
-        dryRun: true,
-        rev: stored?.rev ?? 0,
-        lint: lintFooterPart(lint),
-      });
+      const footer = formatResultFooter({ dryRun: true, rev: stored?.rev ?? 0 });
       return answer({
         dryRun: true,
         changeset: null,
         results: compiled.results,
         text: [...lines, footer].join('\n'),
         warnings,
-        lint,
+        lint: null,
       });
     }
     const next = withServerRules(compiled.tab, stored, args.author);
-    const lint = lintResult(next, where, priorOf(request.body, stored));
     const outcome = await writeChangeset(env, {
       documentId: document.id,
       tabId,
@@ -124,7 +110,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       rebasedOver: base.rebasedOver,
       prevRev,
       results: compiled.results,
-      textFor: (written) => [...lines, writtenFooter(written, document.id, lint)].join('\n'),
+      textFor: (written) => [...lines, writtenFooter(written, document.id)].join('\n'),
       revertOf: null,
     });
     if (outcome.kind === 'stale') {
@@ -169,17 +155,15 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       results: compiled.results,
       text: outcome.text,
       warnings,
-      lint,
+      lint: null,
     });
   }
   return refusal(409, 'tab_busy', 'the tab kept changing; read it again and resubmit');
 }
 
-export function writtenFooter(
-  written: ChangesetWritten,
-  documentId: string,
-  lint: LintReport | null,
-): string {
+// No lint part: the diagram lint left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "The element
+// engine", part 5, D32), and a result's `lint` is always null.
+export function writtenFooter(written: ChangesetWritten, documentId: string): string {
   return formatResultFooter({
     dryRun: false,
     previousRev: written.previousRev,
@@ -187,7 +171,6 @@ export function writtenFooter(
     rebasedOver: written.rebasedOver,
     changesetId: written.id,
     documentId,
-    lint: lintFooterPart(lint),
   });
 }
 
@@ -285,13 +268,4 @@ function refusal(status: number, error: string, message: string): SubmitResult {
 
 function answer(body: ChangesetResponse): SubmitResult {
   return { status: 200, body };
-}
-
-// What a changeset's lint judges its colours against (lint.ts): a replace landing a template is the template's own.
-function priorOf(
-  body: ChangesetBody,
-  stored: StoredTab | null,
-): StoredTab['tab'] | 'template' | null {
-  if (body.kind === 'replace' && 'template' in body.replace) return 'template';
-  return stored?.tab ?? null;
 }

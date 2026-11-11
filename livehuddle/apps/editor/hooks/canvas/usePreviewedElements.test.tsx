@@ -1,15 +1,15 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createSticky, type Element } from '@livehuddle/document';
 import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { usePreviewedElements } from './usePreviewedElements';
 
 // docs/specs/008-canvas/drag-preview.md: what depends on where the selection is (its bounds, the
 // union resize handles) follows the preview while a gesture lasts.
 
-const a = createShape('square', 0, 0);
-const b = createShape('square', 400, 0);
+const a = createSticky(0, 0);
+const b = createSticky(400, 0);
 const doc: Element[] = [a, b];
 
 afterEach(() => resetDragPreviewForTests());

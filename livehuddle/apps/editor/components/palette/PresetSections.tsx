@@ -13,7 +13,6 @@ import {
   type Element,
   type ShapeColorPreset,
   type ShapeElement,
-  type ShapeKind,
 } from '@livehuddle/document';
 import { PresetsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { ShapePresets } from '@/components/palette/StylePresets';
@@ -41,7 +40,6 @@ export function shapeSupportsPresets(el: Element): el is ShapeElement {
 // Presets (docs/specs/010-palette/style-presets.md) — one-click theme-colour + border looks for a shape, plus a
 // reset to the theme default.
 export function ShapePresetsSection({
-  shape,
   current,
   presets,
   props,
@@ -49,8 +47,6 @@ export function ShapePresetsSection({
   onClose,
   title = 'Presets',
 }: {
-  // The shape's kind, so the preview tiles match it (a circle as a circle).
-  shape: ShapeKind;
   // The grid to show. Defaults to the theme-derived shape looks; a sticky
   // passes its own pad of note colours instead, since a note is exempt from
   // theme recolouring and wants paper colours rather than the canvas's.
@@ -72,7 +68,6 @@ export function ShapePresetsSection({
   return (
     <MenuAccordionSection title={title} icon={<PresetsMenuGlyph />} {...accordion}>
       <ShapePresets
-        shape={shape}
         colorPresets={presets ?? props.shapeColorPresets}
         current={current}
         onApplyColor={(p) => props.onApplyShapeColorPreset(p)}
@@ -110,7 +105,6 @@ export function TargetPresetsSection({
   if (shapeSupportsPresets(target)) {
     return (
       <ShapePresetsSection
-        shape={target.shape}
         current={{
           fillColor: target.fillColor,
           strokeColor: target.strokeColor,
@@ -125,11 +119,10 @@ export function TargetPresetsSection({
   }
   // A sticky's own grid rather than the theme-derived shape looks: a note is
   // exempt from theme recolouring, so the canvas's palette is the wrong
-  // vocabulary for it. Previewed as a square, which is what a note is.
+  // vocabulary for it.
   if (target.type === 'sticky') {
     return (
       <ShapePresetsSection
-        shape="square"
         presets={[...STICKY_PRESETS]}
         current={{
           fillColor: target.fillColor,

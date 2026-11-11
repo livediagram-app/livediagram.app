@@ -202,14 +202,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: SLUG_WHY,
   },
   'packages/ui/src/page-view-tracker.tsx Page·View': {
-    values: [
-      '/',
-      '/document',
-      '/explorer/timeline',
-      '/help/canvas/links',
-      '/telemetry',
-      '/community',
-    ],
+    values: ['/', '/document', '/explorer', '/help/canvas/links', '/telemetry', '/community'],
     open: 'the page path, ids and query strings stripped',
   },
 

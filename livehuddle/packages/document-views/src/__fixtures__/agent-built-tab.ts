@@ -26,7 +26,7 @@ const node = (
   [x, y]: [number, number],
   extra: { shape?: ShapeKind; note?: string } = {},
 ): Element => ({
-  ...createShape(extra.shape ?? 'square', x, y),
+  ...createShape(extra.shape ?? 'signpost', x, y),
   id,
   label,
   x,
@@ -48,11 +48,11 @@ export function agentBuiltTab(): Tab {
       note: 'Owns the order lifecycle and is the source of truth for order state.',
     }),
     node('event-bus', 'Event bus', [280, 240], {
-      shape: 'stadium',
+      shape: 'signpost',
       note: 'Kafka, 3 brokers, 7-day retention.',
     }),
     node('payments', 'Payments service', [280, 0]),
-    node('orders-db', 'Orders DB', [280, 120], { shape: 'cylinder' }),
+    node('orders-db', 'Orders DB', [280, 120], { shape: 'signpost' }),
     node('inventory', 'Inventory service', [560, 180]),
     node('notification', 'Notification worker', [560, 300]),
     edge('orders', 'payments', 'charge'),

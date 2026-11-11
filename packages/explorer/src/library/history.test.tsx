@@ -1,8 +1,8 @@
-// History on an item's menu: the item's own Timeline in a dialog, one `GET /timeline?item=` page at a time, on a
+// History on an item's menu: the item's own events in a dialog, one `itemHistory` page at a time, on a
 // day-by-day rail with filter chips and runs of one kind by one person folded into one entry.
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { IndexError, type TimelineEvent } from '@liveworkspace/index-client';
+import { IndexError, type ItemEvent } from '@liveworkspace/index-client';
 import { createFakeIndex, makeEvent, makeItem } from '../test/fakeClient';
 import { Explorer } from '../explorer/Explorer';
 
@@ -35,7 +35,7 @@ const entries = (dialog: HTMLElement) =>
   dialog.querySelectorAll(':scope [data-history-event]:not([data-history-event] *)');
 
 // One of item-1's events, `i` minutes ago.
-const mine = (i: number, over: Partial<TimelineEvent> = {}) =>
+const mine = (i: number, over: Partial<ItemEvent> = {}) =>
   makeEvent(i, { id: `e-${i}`, itemId: 'item-1', ...over });
 
 describe('History', () => {
@@ -63,8 +63,8 @@ describe('History', () => {
     expect(within(dialog).getByText('Plan Renamed')).toBeTruthy();
     expect(within(dialog).getAllByText('Ada Lovelace').length).toBeGreaterThan(0);
     expect(within(dialog).getAllByText('You').length).toBeGreaterThan(0);
-    const asked = index.calls.filter((c) => c.method === 'timeline').map((c) => c.args[0]);
-    expect(asked).toEqual([{ item: 'item-1', limit: 30 }]);
+    const asked = index.calls.filter((c) => c.method === 'itemHistory').map((c) => c.args);
+    expect(asked).toEqual([['item-1', { limit: 30 }]]);
     // More remain: the counts say so.
     const summary = () => dialog.querySelector<HTMLElement>('[data-history-summary]')!;
     expect(within(summary()).getByText('30+ events')).toBeTruthy();
@@ -72,7 +72,7 @@ describe('History', () => {
     await waitFor(() => expect(entries(dialog)).toHaveLength(31));
     expect(within(dialog).queryByRole('button', { name: 'Show older events' })).toBeNull();
     expect(within(summary()).getByText('31 events')).toBeTruthy();
-    expect(index.calls.filter((c) => c.method === 'timeline')).toHaveLength(2);
+    expect(index.calls.filter((c) => c.method === 'itemHistory')).toHaveLength(2);
   });
 
   it('is an ordered list of days, each an ordered list, with machine-readable times', async () => {
@@ -145,25 +145,46 @@ describe('History', () => {
 
   it('says a failed read failed, never "nothing has happened", and tries again', async () => {
     const index = createFakeIndex({ items: [makeItem(1)], events: [mine(1, { type: 'edited' })] });
-    index.fail.set('timeline', new IndexError(500, 'internal'));
+    index.fail.set('itemHistory', new IndexError(500, 'internal'));
     page(index);
     const dialog = await openHistory();
     expect(await within(dialog).findByRole('alert')).toBeTruthy();
     expect(within(dialog).queryByText('Nothing has happened yet')).toBeNull();
-    index.fail.delete('timeline');
+    index.fail.delete('itemHistory');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Try again' }));
     await waitFor(() => expect(entries(dialog)).toHaveLength(1));
   });
 
   it('shows a busy skeleton while the first page loads', async () => {
     const index = createFakeIndex({ items: [makeItem(1)], events: [mine(1, { type: 'edited' })] });
-    index.hold.add('timeline');
+    index.hold.add('itemHistory');
     page(index);
     const dialog = await openHistory();
     expect(within(dialog).getByLabelText('Loading history').getAttribute('aria-busy')).toBe('true');
-    index.hold.delete('timeline');
+    index.hold.delete('itemHistory');
     index.release();
     await waitFor(() => expect(entries(dialog)).toHaveLength(1));
+  });
+
+  it('is left off an item reached through a share link: History is for whoever reaches it directly', async () => {
+    render(
+      <Explorer
+        app="liveplanner"
+        client={
+          createFakeIndex({ items: [makeItem(1, { sharedVia: 'code-1', ownerId: 'user_o' })] })
+            .client
+        }
+        view={{ kind: 'shared' }}
+        onNavigate={vi.fn()}
+        itemHref={(i) => `/p/${i.id}`}
+        onCreate={vi.fn()}
+        viewerId="user_me"
+        heroHidden
+      />,
+    );
+    await openMenu();
+    expect(await screen.findByRole('menuitem', { name: 'Open' })).toBeTruthy();
+    expect(screen.queryByRole('menuitem', { name: 'History' })).toBeNull();
   });
 
   it('is left off when the host turns it off', async () => {

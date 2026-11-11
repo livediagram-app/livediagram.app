@@ -26,7 +26,7 @@ const MIX = [
 ] as const;
 type Kind = (typeof MIX)[number][0];
 
-const SHAPE_KINDS: ShapeKind[] = ['square', 'circle', 'diamond', 'cylinder'];
+const SHAPE_KINDS: ShapeKind[] = ['room', 'rug', 'desk', 'plant'];
 
 // mulberry32: a small, well-mixed 32-bit PRNG, the same numbers on every machine.
 function prng(seed: number): () => number {

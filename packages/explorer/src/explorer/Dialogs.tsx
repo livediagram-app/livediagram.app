@@ -35,7 +35,7 @@ import { SIDEBAR_LABELS } from '../views';
 import { useTeams } from '../teams/context';
 import { quoted } from '../quoted';
 
-// History loads when it is first opened: its timeline, runs and chips are only for the one who asks.
+// History loads when it is first opened: its rail, runs and chips are only for the one who asks.
 const HistoryDialog = lazy(() =>
   import('../library/HistoryDialog').then((m) => ({ default: m.HistoryDialog })),
 );

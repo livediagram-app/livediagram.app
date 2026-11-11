@@ -18,9 +18,10 @@ describe('fieldValueIssue', () => {
     expect(fieldValueIssue('borderRadius', 4)).not.toBeNull();
   });
 
-  it('checks the accent edge, and no longer the retired layout kinds’ fields', () => {
-    expect(fieldValueIssue('accentEdge', 'right')).toMatch(/left, top, bottom/);
+  // The accent edge left with the square and the stadium it drew on (part 5).
+  it('no longer checks the accent edge or the retired layout kinds’ fields', () => {
     for (const field of [
+      'accentEdge',
       'chipLook',
       'cardMedia',
       'boundaryStyle',

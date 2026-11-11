@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type Element, type Tab } from '@livehuddle/document';
+import { createSticky, type Element, type Tab } from '@livehuddle/document';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { useEditorViewport } from './useEditorViewport';
 
@@ -23,7 +23,7 @@ afterEach(() => {
 function setup() {
   window.innerWidth = 400;
   const selection = createSelectionStore();
-  const near = createShape('square', 10, 10);
+  const near = createSticky(10, 10);
   const view = renderHook(
     ({ tab }) => useEditorViewport({ activeTab: tab, readSelection: selection.get }),
     { initialProps: { tab: tabOf([near]) } },
@@ -39,7 +39,7 @@ describe('useEditorViewport scrolling a new element into view', () => {
   it('scrolls to an added element that the add selected', () => {
     const { selection, near, view } = setup();
     const before = view.result.current.viewport.get().offset;
-    const far = createShape('square', 3000, 3000);
+    const far = createSticky(3000, 3000);
 
     act(() => {
       selection.setSelectedId(far.id);
@@ -56,7 +56,7 @@ describe('useEditorViewport scrolling a new element into view', () => {
     const { near, view } = setup();
     const before = view.result.current.viewport.get().offset;
 
-    act(() => view.rerender({ tab: tabOf([near, createShape('square', 3000, 3000)]) }));
+    act(() => view.rerender({ tab: tabOf([near, createSticky(3000, 3000)]) }));
 
     act(() => {
       vi.advanceTimersByTime(800);

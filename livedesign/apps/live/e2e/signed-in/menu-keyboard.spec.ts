@@ -14,7 +14,7 @@ test('the account menu walks by keyboard and returns focus', async ({ page, page
     lastName: 'Keys',
     email: 'ariel@example.com',
   });
-  await page.goto('/explorer/timeline');
+  await page.goto('/explorer');
   const trigger = page.getByRole('button', { name: 'Account menu' });
   await expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
   await trigger.focus();

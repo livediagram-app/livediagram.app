@@ -1,4 +1,4 @@
-tab 0b34 "Checkout platform ×10" · 300 elements: 190 boxes, 110 arrows · 150 unknown · threads 10 open/20
+tab 0b34 "Checkout platform ×10" · 300 elements: 190 boxes, 110 arrows · 160 unknown · threads 10 open/20
 text e712 "Checkout platform: production"
 text 024b "Checkout platform: production"
 text 9474 "Checkout platform: production"
@@ -9,4 +9,4 @@ text 2e28 "Checkout platform: production"
 text 0dad "Checkout platform: production"
 text 4ee9 "Checkout platform: production"
 text 78b0 "Checkout platform: production"
-… notes hidden; attributes hidden; 290 elements hidden: view --budget 3513
+… notes hidden; attributes hidden; 290 elements hidden: view --budget 3583

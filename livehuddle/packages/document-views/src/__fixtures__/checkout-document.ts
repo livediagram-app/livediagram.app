@@ -24,7 +24,7 @@ function sequenceTab(): Tab {
   const elements: Element[] = [];
   for (let lane = 0; lane < 6; lane++) {
     elements.push({
-      ...createShape('square', 0, lane * 200),
+      ...createShape('signpost', 0, lane * 200),
       shape: 'lane' as ShapeKind,
       id: pinnedId('51a0', lane),
       label: `Lane ${lane + 1}`,
@@ -33,7 +33,7 @@ function sequenceTab(): Tab {
     });
     for (let step = 0; step < 3; step++) {
       elements.push({
-        ...createShape('square', 100 + step * 300, lane * 200 + 50),
+        ...createShape('signpost', 100 + step * 300, lane * 200 + 50),
         id: pinnedId('51b0', lane * 3 + step),
         label: `Step ${lane + 1}.${step + 1}`,
       });

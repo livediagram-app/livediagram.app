@@ -4,6 +4,8 @@
 // moment it arrives, so no chart, stack, ranking or total ever renders them.
 // Their explanation sentences stay in event-explanations.ts for Search.
 
+import { isRetiredExplorerEvent } from '../_shared/retired-explorer';
+
 // The editor's Activity panel (removed 2026-10-03, docs/specs/012-collaboration/README.md "Removed: the
 // Activity panel"): its per-entry revert, the panel opening, its Settings
 // rows, and its help articles. The Undo and Redo articles kept their slugs
@@ -317,16 +319,6 @@ const CUSTOM_THEMES = new Set([
   'UI|Opened|custom-themes',
 ]);
 
-// The old Explorer Timeline's arrivals and sidebar rows (docs/specs/013-workspace/timeline.md). The
-// shared Explorer's Timeline reports its own (Changed, Selected, Loaded, Opened·Card/Stack/Menu,
-// Removed·Entry/Stack) through its onTimeline prop; how someone arrived is the page view.
-const EXPLORER_TIMELINE = new Set([
-  'Timeline|Opened|Landing',
-  'Timeline|Opened|Nav',
-  'UI|Selected|Sidebar.Timeline',
-  'UI|Selected|ExplorerPanel.Timeline',
-]);
-
 // The Explorer filter liveplanner's Explorer had and the shared one does not (docs/specs/013-workspace/
 // explorer-filters.md "Dimensions"): Kind.
 const EXPLORER_RETIRED_FILTERS = new Set(['Explorer|Selected|Kind']);
@@ -444,6 +436,7 @@ const PLAN_TOUR_STEP_CARDS = new Set([
 ]);
 
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
+  if (isRetiredExplorerEvent(category, action, type)) return true;
   if (isRetiredDiagramTourEvent(category, action, type)) return true;
   if (FORMAT_AND_ISOMETRIC.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isFormatPanelSetting(category, action, type)) return true;
@@ -456,7 +449,6 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   if (isRetiredWorkshopEvent(category, action, type)) return true;
   if (category === 'Project' && action === 'Reverted') return true;
   if (CUSTOM_THEMES.has(`${category}|${action}|${type ?? ''}`)) return true;
-  if (EXPLORER_TIMELINE.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (EXPLORER_RETIRED_FILTERS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isPagesModeEvent(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredEditorModeEvent(category, action, type)) return true;

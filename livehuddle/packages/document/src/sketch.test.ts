@@ -90,7 +90,7 @@ describe('outlines', () => {
     expect(outlineOfBox('stadium', 100, 40, 0, 1).segments.some((s) => s.kind === 'curve')).toBe(
       true,
     );
-    const sq = outlineOfBox('square', 100, 40, 0, 2);
+    const sq = outlineOfBox('focus-button', 100, 40, 0, 2);
     expect(sq.area![0]).toEqual({ x: 2, y: 2 });
   });
 

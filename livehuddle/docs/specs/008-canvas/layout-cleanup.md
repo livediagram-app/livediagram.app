@@ -4,8 +4,8 @@
 > product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). A Space has no tools for drawing shapes or
 > arrows, so the editor offers **Auto-align** alone, from the command palette, which has no Auto Layout command.
 > livediagram keeps both ([its spec there](../../../../livediagram/docs/specs/008-canvas/layout-cleanup.md)). The
-> Auto Layout engine (`autoLayoutElements`, `tidyLayoutElements` in `packages/document`) stays, Work Tracker #459's to
-> decide: graph input (the API's `graph` and `mermaid`) still lays out with it. The
+> Auto Layout engine was deleted with the arrows (Work Tracker #459, part 4, [The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine)): with no arrow
+> no tab is a graph. The agents' `layout` keeps its row sweep. The
 > [Auto Layout section](#auto-layout-tidy-up) below records the engine, and what the editor did with it.
 
 The editor's one layout tidier, **Auto-align**, is reached through the

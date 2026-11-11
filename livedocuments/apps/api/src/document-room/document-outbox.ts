@@ -1,7 +1,7 @@
 // What a document pushes from its Durable Object (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item
 // pushes"; docs/specs/015-api/api.md "Storage"): its summary to the index (`PUT /app/items/:id/summary`), each
 // changed tab's comment threads and actions for the Inbox (`PUT /app/items/:id/collab/:tabId`) and who edited it for
-// the Timeline and their Most Used (`PUT /app/items/:id/events`), all with this app's key through
+// History and their Most Used (`PUT /app/items/:id/events`), all with this app's key through
 // @liveworkspace/index-app's drainIndexOutbox; the images it places to liveworkspace's media service
 // (liveworkspace/docs/specs/006-media/media.md "References"); and the owner's newest save to the liveworkspace accounts Worker for
 // its onboarding emails (person/account-app.ts reportOwnerActivity).
@@ -49,7 +49,7 @@ type TabRow = {
 
 // A tab's comment threads and actions as the index takes them. Capped as the index caps one push: a tab past it
 // keeps its newest. `by` is whoever alone saved the document since the last push, when there was one person: the
-// index names them on a thread it sees turn resolved and an action it sees turn done (Timeline); with several,
+// index names them on a thread it sees turn resolved and an action it sees turn done (History); with several,
 // nobody is named rather than the wrong person.
 export function collabPushOf(
   threads: readonly CollabThreadRow[],
@@ -176,7 +176,7 @@ export function itemSummaryOf(summary: ContentSummary): ItemSummary {
 
 // ---------- Who edited -----------------------------------------------------------------------------------------
 
-// Where a person's write to the document is recorded, for the Timeline and their Most Used: the room calls
+// Where a person's write to the document is recorded, for History and their Most Used: the room calls
 // @liveworkspace/index-app's recordItemEditor with this after a request that wrote (document-room.ts route()), so the
 // edit is the person's who asked, never a guess from the content. Two plain statements on the room's storage, outside
 // the save's transaction.

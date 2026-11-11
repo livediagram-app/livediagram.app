@@ -4,10 +4,10 @@ import { drawsShapeSvgOverlay } from './ShapeContentRouter';
 import { wrapperShapeAnimation } from './useBoxedElementAnimation';
 
 describe('drawsShapeSvgOverlay', () => {
-  it('is true for SVG-drawn shapes and false for CSS boxes and self-faced kinds', () => {
-    expect(drawsShapeSvgOverlay('diamond')).toBe(true);
-    expect(drawsShapeSvgOverlay('hexagon')).toBe(true);
-    for (const k of ['square', 'circle', 'sticker'] as const) {
+  it('is true for kinds that paint their own body and false for box-path and self-faced kinds', () => {
+    expect(drawsShapeSvgOverlay('plant')).toBe(true);
+    expect(drawsShapeSvgOverlay('screen')).toBe(true);
+    for (const k of ['mode-button', 'portal', 'chair', 'sticker', 'icon'] as const) {
       expect(drawsShapeSvgOverlay(k)).toBe(false);
     }
   });
@@ -16,7 +16,7 @@ describe('drawsShapeSvgOverlay', () => {
 describe('wrapperShapeAnimation', () => {
   const sticky = (animation: string) => ({ ...createSticky(0, 0), animation }) as BoxedElement;
   it('draws a Shape member’s own value', () => {
-    expect(wrapperShapeAnimation({ ...createShape('square', 0, 0), animation: 'pulse' })).toBe(
+    expect(wrapperShapeAnimation({ ...createShape('mode-button', 0, 0), animation: 'pulse' })).toBe(
       'pulse',
     );
   });

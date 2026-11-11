@@ -274,14 +274,14 @@ describe('POST /internal/purge-person', () => {
     ]);
   });
 
-  it('deletes the Timeline only they see, and takes their name off what others still see', async () => {
+  it('deletes the events only they see, and takes their name off what others still see', async () => {
     addItem('ada-own', ADA);
     addItem('ada-in-team', ADA, { team: 'T' });
     addItem('bea-own', BEA);
     addItem('bea-team', BEA, { team: 'T' });
-    const event = (id: string, item: string, actor: string, scope: string, type = 'edited') => {
+    const event = (id: string, item: string, actor: string, type = 'edited') => {
       run(
-        `INSERT INTO timeline_events (id, app, item_id, actor_id, actor_name, type, title, occurred_at)
+        `INSERT INTO events (id, app, item_id, actor_id, actor_name, type, title, occurred_at)
          VALUES (?, 'liveplanner', ?, ?, ?, ?, ?, 1)`,
         id,
         item,
@@ -290,36 +290,22 @@ describe('POST /internal/purge-person', () => {
         type,
         item,
       );
-      run(
-        `INSERT INTO timeline_event_scopes (scope, event_id, app, occurred_at) VALUES (?, ?, 'liveplanner', 1)`,
-        scope,
-        id,
-      );
     };
-    event('e-own', 'ada-own', ADA, `p:${ADA}`); // her own item: goes with it
-    event('e-fav', 'bea-own', ADA, `p:${ADA}`, 'favourited'); // only she saw it
-    event('e-team', 'ada-in-team', ADA, 't:T'); // the team keeps it, unnamed
-    event('e-edit', 'bea-team', ADA, 't:T'); // her edit on Bea's team item, unnamed
-    event('e-bea', 'bea-own', BEA, `p:${BEA}`); // Bea's own, untouched
-    event('e-bea-ada', 'ada-in-team', BEA, 't:T'); // Bea's on Ada's team item, untouched
-    run('INSERT INTO timeline_scope_state (person_id, last_seen_at) VALUES (?, 5)', ADA);
-    run('INSERT INTO timeline_scope_state (person_id, last_seen_at) VALUES (?, 5)', BEA);
+    event('e-own', 'ada-own', ADA); // her own item: goes with it
+    event('e-fav', 'bea-own', ADA, 'favourited'); // only she saw it
+    event('e-team', 'ada-in-team', ADA); // the team keeps it, unnamed
+    event('e-edit', 'bea-team', ADA); // her edit on Bea's team item, unnamed
+    event('e-bea', 'bea-own', BEA); // Bea's own, untouched
+    event('e-bea-ada', 'ada-in-team', BEA); // Bea's on Ada's team item, untouched
 
     expect((await purge({ personId: ADA, teamIds: [] })).status).toBe(200);
     await settle();
-    expect(rows('SELECT id, actor_id, actor_name FROM timeline_events ORDER BY id')).toEqual([
+    expect(rows('SELECT id, actor_id, actor_name FROM events ORDER BY id')).toEqual([
       { id: 'e-bea', actor_id: BEA, actor_name: 'Bea' },
       { id: 'e-bea-ada', actor_id: BEA, actor_name: 'Bea' },
       { id: 'e-edit', actor_id: ANONYMISED_PERSON, actor_name: null },
       { id: 'e-team', actor_id: ANONYMISED_PERSON, actor_name: null },
     ]);
-    expect(rows('SELECT scope, event_id FROM timeline_event_scopes ORDER BY event_id')).toEqual([
-      { scope: `p:${BEA}`, event_id: 'e-bea' },
-      { scope: 't:T', event_id: 'e-bea-ada' },
-      { scope: 't:T', event_id: 'e-edit' },
-      { scope: 't:T', event_id: 'e-team' },
-    ]);
-    expect(rows('SELECT person_id FROM timeline_scope_state')).toEqual([{ person_id: BEA }]);
   });
 
   it("takes their id off a team's account events about them, and off webhook deliveries they did", async () => {
@@ -327,15 +313,11 @@ describe('POST /internal/purge-person', () => {
     // is not JSON, which must not stop the purge.
     const accountEvent = (id: string, actor: string, detail: string | null) => {
       run(
-        `INSERT INTO timeline_events (id, app, item_id, actor_id, actor_name, type, title, detail, occurred_at)
+        `INSERT INTO events (id, app, item_id, actor_id, actor_name, type, title, detail, occurred_at)
          VALUES (?, 'liveworkspace', NULL, ?, 'X', 'team_member_removed', 'Team', ?, 1)`,
         id,
         actor,
         detail,
-      );
-      run(
-        `INSERT INTO timeline_event_scopes (scope, event_id, app, occurred_at) VALUES ('t:T', ?, 'liveworkspace', 1)`,
-        id,
       );
     };
     const about = (person: string, name: string) =>
@@ -354,7 +336,7 @@ describe('POST /internal/purge-person', () => {
       ['aa:bea-hooked:tab:el:a2:user_cy', 'user_cy', 'Cy'],
     ] as const) {
       run(
-        `INSERT INTO timeline_events (id, app, item_id, actor_id, actor_name, type, title, detail, occurred_at)
+        `INSERT INTO events (id, app, item_id, actor_id, actor_name, type, title, detail, occurred_at)
          VALUES (?, 'liveplanner', 'bea-hooked', ?, 'Bea', 'action_assigned', 'Plan', ?, 1)`,
         id,
         BEA,
@@ -389,7 +371,7 @@ describe('POST /internal/purge-person', () => {
     expect((await purge({ personId: ADA, teamIds: [] })).status).toBe(200);
     await settle();
     const detailOf = (id: string) =>
-      rows('SELECT detail FROM timeline_events WHERE id = ?', id)[0]?.detail as string | null;
+      rows('SELECT detail FROM events WHERE id = ?', id)[0]?.detail as string | null;
     expect(JSON.parse(detailOf('t-removed')!)).toEqual({
       teamId: 'T',
       personId: ANONYMISED_PERSON,
@@ -424,7 +406,7 @@ describe('POST /internal/purge-person', () => {
     // Nothing on an account event or a delivery still names her.
     expect(
       count(
-        `SELECT COUNT(*) AS n FROM timeline_events WHERE item_id IS NULL AND (actor_id = ?1 OR detail LIKE '%' || ?1 || '%')`,
+        `SELECT COUNT(*) AS n FROM events WHERE item_id IS NULL AND (actor_id = ?1 OR detail LIKE '%' || ?1 || '%')`,
         ADA,
       ),
     ).toBe(0);

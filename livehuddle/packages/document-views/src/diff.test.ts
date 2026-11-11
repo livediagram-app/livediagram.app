@@ -29,13 +29,13 @@ describe('diffView (R17, VW36)', () => {
   // compares ids, so it says only what was added.
   it('reports only the added element when its id lengthens other refs', () => {
     const frame = retiredShapeAt('boundary', '0bcd1111-x', 0, 0, 500, 500, { label: 'F' });
-    const inside = shapeAt('square', 'n1', 10, 10, 100, 50, { label: 'In' });
-    const target = shapeAt('square', 'n2', 600, 0, 100, 50, { label: 'Out' });
+    const inside = shapeAt('signpost', 'n1', 10, 10, 100, 50, { label: 'In' });
+    const target = shapeAt('signpost', 'n2', 600, 0, 100, 50, { label: 'Out' });
     const arrow = arrowBetween('a1', '0bcd1111-x', 'n2');
-    const added = shapeAt('square', '0bcd2222-x', 900, 0, 100, 50, { label: 'New' });
+    const added = shapeAt('signpost', '0bcd2222-x', 900, 0, 100, 50, { label: 'New' });
     expect(
       changeLines([frame, inside, target, arrow], [frame, inside, target, arrow, added]),
-    ).toEqual(['+ square 0bcd2 "New"']);
+    ).toEqual(['+ signpost 0bcd2 "New"']);
   });
 
   it('says 0 changes for the same tab', () => {
@@ -48,11 +48,11 @@ describe('diffView (R17, VW36)', () => {
   // moving off a stored boundary is a move, never a container change.
   it('names kind, label, note and attribute changes', () => {
     const frame = retiredShapeAt('boundary', 'f', 0, 0, 500, 500, { label: undefined });
-    const a = shapeAt('square', 'a', 10, 10, 100, 50, { label: 'A', note: 'n' });
+    const a = shapeAt('signpost', 'a', 10, 10, 100, 50, { label: 'A', note: 'n' });
     const b = retiredShapeAt('checklist', 'b', 10, 100, 100, 50, {
       checklistItems: [{ text: 'x', done: false }],
     });
-    const c = shapeAt('square', 'c', 600, 0, 100, 50, { note: 'old' });
+    const c = shapeAt('signpost', 'c', 600, 0, 100, 50, { note: 'old' });
     // A flag attribute (an action turned done) diffs as none → on.
     const task = (status: 'open' | 'done') => ({
       id: 'a',
@@ -71,26 +71,26 @@ describe('diffView (R17, VW36)', () => {
         [frame, a, b, { ...c, action: task('open') } as unknown as Element],
         [
           frame,
-          { ...a, shape: 'circle', label: undefined, note: undefined, x: 900 },
+          { ...a, shape: 'plant', label: undefined, note: undefined, x: 900 },
           { ...b, checklistItems: [{ text: 'x', done: true }] } as unknown as Element,
           { ...c, note: 'new', label: 'C', action: task('done') } as unknown as Element,
         ],
       ),
     ).toEqual([
-      '~ circle a kind square → circle · label "A" → none · note removed · moved +890,+0',
+      '~ plant a kind signpost → plant · label "A" → none · note removed · moved +890,+0',
       '~ ? checklist b +1 other field',
-      '~ square c label none → "C" · note changed · done none → on',
+      '~ signpost c label none → "C" · note changed · done none → on',
     ]);
     expect(
       changeLines(
-        [shapeAt('square', 'n', 0, 0)],
-        [shapeAt('square', 'n', 0, 0, 100, 50, { note: 'hi' })],
+        [shapeAt('signpost', 'n', 0, 0)],
+        [shapeAt('signpost', 'n', 0, 0, 100, 50, { note: 'hi' })],
       ),
-    ).toEqual(['~ square n note added']);
+    ).toEqual(['~ signpost n note added']);
   });
 
   it('names size, rotation, style and other fields, and a stored arrow’s moved ends as other fields', () => {
-    const [a, b, c] = ['a', 'b', 'c'].map((id, i) => shapeAt('square', id, i * 200, 0));
+    const [a, b, c] = ['a', 'b', 'c'].map((id, i) => shapeAt('signpost', id, i * 200, 0));
     const ab = arrowBetween('ab', 'a', 'b');
     expect(
       changeLines(
@@ -107,20 +107,20 @@ describe('diffView (R17, VW36)', () => {
         ],
       ),
     ).toEqual([
-      '~ square a resized +20,-10 · rotated',
-      '~ square b restyled',
-      '~ square c +2 other fields',
+      '~ signpost a resized +20,-10 · rotated',
+      '~ signpost b restyled',
+      '~ signpost c +2 other fields',
       // A stored arrow is a retired element (part 4 of the element engine): its ends are stored fields.
       '~ ? arrow ab +2 other fields',
     ]);
-    expect(changeLines([a!], [{ ...a!, opacity: 0.5 }])).toEqual(['~ square a +1 other field']);
+    expect(changeLines([a!], [{ ...a!, opacity: 0.5 }])).toEqual(['~ signpost a +1 other field']);
     // A retired kind (docs/specs/002-project-scope/not-in-livehuddle.md), a stack among them, prints as unknown and
     // summarises nothing.
     const stack = { ...a!, shape: 'stack' } as unknown as Element;
-    expect(changeLines([a!], [stack])).toEqual(['~ ? stack a kind square → ? stack']);
-    expect(changeLines([stack], [a!])).toEqual(['~ square a kind ? stack → square']);
+    expect(changeLines([a!], [stack])).toEqual(['~ ? stack a kind signpost → ? stack']);
+    expect(changeLines([stack], [a!])).toEqual(['~ signpost a kind ? stack → signpost']);
     expect(changeLines([a!], [{ ...a!, shape: 'code-block' } as unknown as Element])).toEqual([
-      '~ ? code-block a kind square → ? code-block',
+      '~ ? code-block a kind signpost → ? code-block',
     ]);
   });
 
@@ -128,7 +128,7 @@ describe('diffView (R17, VW36)', () => {
   // it stored is an other field.
   it('reads a change to a retired element as other fields', () => {
     const box = {
-      ...shapeAt('square', 'i', 0, 0),
+      ...shapeAt('signpost', 'i', 0, 0),
       shape: 'idea-box',
       ideaCards: ['a'],
     } as unknown as Element;
@@ -138,16 +138,16 @@ describe('diffView (R17, VW36)', () => {
 
   it('lists removals in the before order, and additions flat beside a stored boundary', () => {
     const frame = retiredShapeAt('boundary', 'f', 0, 0, 500, 500, { label: undefined });
-    const gone = shapeAt('square', 'gone', 600, 0, 100, 50, { label: 'Gone' });
+    const gone = shapeAt('signpost', 'gone', 600, 0, 100, 50, { label: 'Gone' });
     const odd = { id: 'odd', type: 'hologram' } as unknown as Element;
     expect(
       changeLines(
         [frame, gone, odd],
-        [frame, shapeAt('square', 'new', 10, 10), { ...odd, label: 'x' }],
+        [frame, shapeAt('signpost', 'new', 10, 10), { ...odd, label: 'x' }],
       ),
-    ).toEqual(['- square gone "Gone"', '+ square new', '~ ? hologram odd label none → "x"']);
-    expect(changeLines([], [shapeAt('square', 'top', 0, 0, 100, 50, { label: 'Top' })])).toEqual([
-      '+ square top "Top"',
+    ).toEqual(['- signpost gone "Gone"', '+ signpost new', '~ ? hologram odd label none → "x"']);
+    expect(changeLines([], [shapeAt('signpost', 'top', 0, 0, 100, 50, { label: 'Top' })])).toEqual([
+      '+ signpost top "Top"',
     ]);
   });
 

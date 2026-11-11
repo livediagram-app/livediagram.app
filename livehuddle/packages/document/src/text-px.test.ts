@@ -46,7 +46,7 @@ describe('an exact px draws at itself on every surface', () => {
   });
 
   it('in an export, where the label carries its font-size', () => {
-    const svg = svgBoxed({ ...createShape('square', 0, 0), label: 'Hi', textSize: 27 });
+    const svg = svgBoxed({ ...createShape('room', 0, 0), label: 'Hi', textSize: 27 });
     expect(svg).toContain('font-size="27"');
   });
 

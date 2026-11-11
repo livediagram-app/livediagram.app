@@ -59,7 +59,6 @@ export function handDrawnImagePaint(el: ImageElement, finish: Finish): HandDrawn
       drawing: {
         pen: 'marker',
         ink: markerStrokes(outline, seed),
-        details: '',
         solid: '',
         streaks: ['', ''],
         nibPx: 0,
@@ -71,7 +70,6 @@ export function handDrawnImagePaint(el: ImageElement, finish: Finish): HandDrawn
     drawing: {
       pen: 'pencil',
       strokes: sketchStrokes(outline, seed),
-      details: '',
       hatch: '',
       solid: '',
     },

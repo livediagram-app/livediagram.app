@@ -266,7 +266,7 @@ describe('delete-own', () => {
   });
 });
 
-// docs/specs/013-workspace/timeline.md §4.3: a tab deleted whole takes every comment's words with it,
+// docs/specs/013-workspace/history.md: a tab deleted whole takes every comment's words with it,
 // from the document it left only; a document still holding the tab keeps its own events.
 describe('a lost race', () => {
   it('re-reads and repeats once, then answers 409 tab_busy', async () => {

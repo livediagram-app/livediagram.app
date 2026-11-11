@@ -19,7 +19,7 @@ import type { AutomationDetail } from './messages';
 
 const LISTENED: ReadonlySet<string> = new Set(WEBHOOK_EVENTS);
 
-/** Whether some webhook could listen for a Timeline event of this type. */
+/** Whether some webhook could listen for an event of this type. */
 export const isListened = (type: string) => LISTENED.has(type);
 
 let queued = 0;
@@ -49,7 +49,7 @@ const dueAt = (now: string, webhook: string) =>
   `MAX(${now}, COALESCE((SELECT p.next_at FROM webhook_deliveries p WHERE p.webhook_id = ${webhook}
      AND p.state = 'pending' ORDER BY p.id DESC LIMIT 1), ${now}))`;
 
-/** The statement queuing these Timeline events for their item's own webhooks; it goes after the events' own. */
+/** The statement queuing these events for their item's own webhooks; it goes after the events' own. */
 export function webhookOutboxStatement(
   db: D1Database,
   eventIds: readonly string[],
@@ -63,7 +63,7 @@ export function webhookOutboxStatement(
        SELECT w.id, e.id, e.type, e.app, e.item_id, e.title, e.actor_id, e.actor_name, e.detail, e.occurred_at,
               ${dueAt('?1', 'w.id')}
        FROM json_each(?2) j
-       JOIN timeline_events e ON e.id = j.value
+       JOIN events e ON e.id = j.value
        JOIN items i ON i.id = e.item_id
        ${listening('e.type', 'e.actor_id', 'j.key')}
          AND e.occurred_at >= ?1 - ?3`,
@@ -75,7 +75,7 @@ export function webhookOutboxStatement(
 export const cardMoveId = (itemId: string, move: Pick<CardMove, 'cardId' | 'at'>) =>
   `cmv:${itemId}:${move.cardId}:${move.at}`;
 
-/** The statement queuing a plan's card moves for its own webhooks (they are not Timeline events). */
+/** The statement queuing a plan's card moves for its own webhooks (they are not in the event log). */
 export function cardMovesStatement(
   db: D1Database,
   itemId: string,

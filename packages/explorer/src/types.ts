@@ -53,18 +53,8 @@ export type RenderItemMark = (item: Item, at: 'title' | 'time') => ReactNode;
 /** An app's logo, or the platform's for `'all'`: the filter's two choices wear them (the host owns the brands). */
 export type RenderAppLogo = (app: App | 'all') => ReactNode;
 
-/** What the Timeline reports, for the host's telemetry: a mode or filter changed (`Changed`, `Selected`), a page
- *  read (`Loaded`: More or Retry), a card, a stack or a card's menu opened (`Opened`), an entry or a stack taken
- *  off the reader's Timeline (`Removed`). `type` is always a fixed token. */
-export type TimelineTelemetry = (
-  action: 'Changed' | 'Selected' | 'Loaded' | 'Opened' | 'Removed',
-  type: string,
-) => void;
-
-/** What Home's What Happened reports: an entry opened its item (`Selected`, `WhatHappened`), a summary dealt out
- *  (`Opened`, `Group`), See Timeline followed (`Selected`, `SeeTimeline`); and a failed read of Home retried
- *  (`Loaded`, `Retry`). */
-export type HomeTelemetry = (action: 'Selected' | 'Opened' | 'Loaded', type: string) => void;
+/** What Home reports: a failed read of Home retried (`Loaded`, `Retry`). */
+export type HomeTelemetry = (action: 'Loaded', type: string) => void;
 
 /** What the Explorer reports about keeping things in order, as `Category·Action`, the names the apps' own Explorers
  *  always sent:

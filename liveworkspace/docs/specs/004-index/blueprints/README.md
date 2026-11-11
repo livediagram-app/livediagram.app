@@ -6,11 +6,11 @@ Follow the references below only as needed; never upfront.
   flag, crons, config, logs, constants and tests
 - ./items.md - when making, reading, moving, copying or opening items, or listing them, their folders, favourites and
   Recent
-- ./sharing.md - when working on share links, share passwords, guesses, Share Link Expiring or Shared with me
+- ./sharing.md - when working on share links, share passwords, guesses or Shared with me
 - ./inbox.md - when an app pushes a summary, threads, actions or forms, or when building the Inbox
-- ./timeline.md - when recording or reading Timeline events
+- ./events.md - when recording events, reading an item's History, or the daily sweep
 - ./connected-tabs.md - when working on connected tabs: the build order, the connections table, the make, open and removal doors, each app's column and door
-- ./team-audit-log.md - when working on the team audit log: its table, the write path beside each Timeline event, the sweep, anonymising and the admins' read and CSV, and the Audit Log on a team's view
+- ./team-audit-log.md - when working on the team audit log: its table, the write path beside each event, the sweep, anonymising and the admins' read and CSV, and the Audit Log on a team's view
 - ./webhooks.md - when working on webhooks: the tables, the outbox statement, the dispatcher, the address check, the messages
 - ./archive.md - when working on Archived: the archive, the archive scope, the move out, the refusals and the
   Explorer's Archived view

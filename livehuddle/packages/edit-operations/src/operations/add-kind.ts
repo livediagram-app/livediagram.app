@@ -7,7 +7,6 @@ import type { EditRejection } from '@livehuddle/api-schema';
 import {
   SHAPE_DEFAULT_SIZE,
   SHAPE_KINDS,
-  coerceShapeKind,
   createLinkCard,
   createShape,
   createSticky,
@@ -19,13 +18,16 @@ import {
   recolourElementForTheme,
   type BoxedElement,
   type Element,
+  type ShapeKind,
   type TextSize,
   type ThemeDefinition,
 } from '@livehuddle/document';
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';
 import { resolvePlacement, type Placed } from '../placement';
+import { nearestName } from '../nearest';
 import { invalidValue } from '../rejections';
+import { DID_YOU_MEAN_MAX_DISTANCE, SHAPES_RETIRED } from '../vocabulary';
 import { type EditState, writeFields } from '../state';
 import type { AddKindOperation, Fields } from '../types';
 
@@ -43,6 +45,27 @@ export const NOT_ADDED: Readonly<Record<string, string>> = {
   freehand: 'drawings are no longer supported in livehuddle',
   path: 'paths are no longer supported in livehuddle',
   annotation: 'annotations are no longer supported in livehuddle',
+  // The diagram shapes are retired too (part 5, DEFAULTS.md D30), and so is `shape`, which made a square.
+  ...Object.fromEntries(
+    [
+      'shape',
+      'square',
+      'circle',
+      'diamond',
+      'cylinder',
+      'parallelogram',
+      'hexagon',
+      'document',
+      'stadium',
+      'actor',
+      'final-state',
+      'cloud',
+      'triangle',
+      'trapezoid',
+      'star',
+      'speech-bubble',
+    ].map((kind) => [kind, SHAPES_RETIRED]),
+  ),
 };
 
 const FACTORIES: Readonly<Record<string, () => BoxedElement>> = {
@@ -55,23 +78,29 @@ const FACTORIES: Readonly<Record<string, () => BoxedElement>> = {
 export const OTHER_KINDS: readonly string[] = Object.keys(FACTORIES);
 
 // The shape kinds an agent may make: every one livehuddle has. A retired kind (docs/specs/002-project-scope/
-// not-in-livehuddle.md "Retired elements"), the Page or a chart among them, is an unknown kind: `add` makes a square.
+// not-in-livehuddle.md "Retired elements"), the Page or a chart among them, is an unknown kind, and `add` refuses it.
 export const AGENT_SHAPE_KINDS: readonly string[] = [...SHAPE_KINDS];
 
-export type Built = { el: BoxedElement; coerced: string | null };
+export type Built = { el: BoxedElement };
 
-// The factory element of a kind, unplaced and without an id; an unknown kind is coerced to a shape
-// kind (EO17).
-export function buildKind(kind: string): Built | { refusal: string } {
+// Every kind `add` makes, as a refusal names them.
+const ADDABLE = (): readonly string[] => [...Object.keys(FACTORIES), ...AGENT_SHAPE_KINDS];
+
+// The factory element of a kind, unplaced and without an id. A kind livehuddle does not have is refused, naming the
+// kinds `add` takes (D30): nothing is coerced into a kept kind.
+export function buildKind(kind: string): Built | { refusal: string; hint?: string } {
   const refused = NOT_ADDED[kind];
   if (refused !== undefined) return { refusal: refused };
   const factory = FACTORIES[kind];
-  if (factory) return { el: { ...factory(), textSize: 'sm' }, coerced: null };
-  const shape = kind === 'shape' ? 'square' : coerceShapeKind(kind);
-  return {
-    el: { ...createShape(shape, 0, 0), textSize: 'sm' },
-    coerced: kind === 'shape' || shape === kind ? null : shape,
-  };
+  if (factory) return { el: { ...factory(), textSize: 'sm' } };
+  if (!SHAPE_KINDS.has(kind)) {
+    const near = nearestName(kind, ADDABLE(), DID_YOU_MEAN_MAX_DISTANCE);
+    return {
+      refusal: `not a kind livehuddle has; kinds: ${ADDABLE().join(' ')}`,
+      ...(near ? { hint: `did you mean ${near}?` } : {}),
+    };
+  }
+  return { el: { ...createShape(kind as ShapeKind, 0, 0), textSize: 'sm' } };
 }
 
 // The look the tab's boxes of a shape share: their most common text size and their median size; null when the tab
@@ -111,7 +140,7 @@ export function createKind(
 ): { el: BoxedElement; placed: Placed } | { rejection: EditRejection } {
   const built = buildKind(spec.kind);
   if ('refusal' in built)
-    return { rejection: invalidValue(operation, 'kind', spec.kind, built.refusal) };
+    return { rejection: invalidValue(operation, 'kind', spec.kind, built.refusal, built.hint) };
   const label = spec.fields?.label;
   const id = newElementId(
     state,
@@ -146,7 +175,7 @@ export function createKind(
     const look = { textSize: fontPx <= LABEL_FONT_PX.sm ? 'sm' : 'md', fontPx } as const;
     if (peers) {
       // Siblings shorter than the palette's box of their shape wear the template look (graph input, templates): the
-      // new box is measured as that look measures, so a short label is not the palette's tall square beside them.
+      // new box is measured as that look measures, so a short label is not the palette's taller box beside them.
       const templated = peers.height < SHAPE_DEFAULT_SIZE[el.shape].height;
       const fit = templated
         ? labelBoxSize(el.label, el.shape, look, !!el.iconId, peers)
@@ -168,14 +197,6 @@ export function createKind(
     y: typeof named.y === 'number' ? named.y : placed.y,
   };
   state.warnings.push(...written.warnings);
-  if (built.coerced) {
-    state.warnings.push({
-      code: 'shape_coerced',
-      ref: id,
-      message: `${id} kind ${JSON.stringify(spec.kind)} drawn as ${built.coerced}`,
-    });
-    state.log('[edit-ops] coerced', { operation, field: 'kind' });
-  }
   return { el, placed };
 }
 

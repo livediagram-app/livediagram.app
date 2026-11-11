@@ -14,10 +14,10 @@ import { avatarPadCore } from './pad-art';
 // docs/specs/009-elements/avatar-pad.md, on plain elements (each product tests its own pads too).
 const pad = (id: string, x: number, y: number) =>
   ({ id, type: 'shape', shape: 'avatar-pad', x, y, width: 128, height: 80 }) as const;
-const square = {
-  id: 'sq',
+const icon = {
+  id: 'ic',
   type: 'shape',
-  shape: 'square',
+  shape: 'icon',
   x: 0,
   y: 0,
   width: 50,
@@ -29,7 +29,7 @@ describe('the pads on a board', () => {
   it('picks out the Avatar Pads in layer order', () => {
     const a = pad('a', 0, 0);
     const b = pad('b', 500, 0);
-    expect(avatarPads([a, square, arrow, b]).map((p) => p.id)).toEqual(['a', 'b']);
+    expect(avatarPads([a, icon, arrow, b]).map((p) => p.id)).toEqual(['a', 'b']);
   });
 
   it('starts on the pad nearest the view’s centre, the first on a tie, and the first with no view', () => {
@@ -43,10 +43,10 @@ describe('the pads on a board', () => {
 
   it('enters on a pad, recentring when it is off screen, and not at all on a board with none', () => {
     const a = pad('a', 0, 0);
-    const entry = padEntry([square, a], { x: 0, y: 0 }, () => false);
+    const entry = padEntry([icon, a], { x: 0, y: 0 }, () => false);
     expect(entry).toMatchObject({ pad: { id: 'a' }, feet: avatarPadCore(a), recentre: true });
     expect(padEntry([a], null, () => true)?.recentre).toBe(false);
-    expect(padEntry([square], null, () => true)).toBeNull();
+    expect(padEntry([icon], null, () => true)).toBeNull();
   });
 
   it('finds the pad under the feet, the frontmost winning, and skips a pad of no size', () => {

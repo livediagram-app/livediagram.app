@@ -120,14 +120,10 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   const artAnimClass = isDrawnArt && hasArtView ? silhouetteAnimClass : undefined;
   const ownAnimClass = isDrawnArt && !hasArtView ? silhouetteAnimClass : undefined;
 
-  // trace / gradient / pulse / glow on an SVG-rendered shape (diamond,
-  // triangle, hexagon, …) render against the true outline / fill / silhouette
-  // inside ShapeSvgOverlay, so the wrapper must NOT also paint its
-  // bounding-box version (pulse / glow as a box-shadow would ring the
-  // rectangle, not the shape; trace / gradient would double up). Every other
-  // animation — and these four on CSS-rendered shapes (circle / stadium /
-  // square / browser, where the wrapper's border-radius already matches the
-  // outline) and non-shape boxed elements — stays a wrapper class.
+  // trace / gradient / pulse / glow on a shape that paints its own body (drawsShapeSvgOverlay) get no
+  // bounding-box version on the wrapper: a box-shadow would ring an invisible rectangle, not the shape. Every other
+  // animation, these four on a box-path shape (a mode button, a portal) and non-shape boxed elements stay a wrapper
+  // class.
   const svgAnim =
     animation === 'trace' ||
     animation === 'gradient' ||
@@ -135,8 +131,6 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
     animation === 'glow'
       ? animation
       : undefined;
-  // Only when the overlay really draws the shape: a self-faced kind (a plan board, a code block)
-  // never renders it, so its effects stay on the element.
   const svgHandlesAnim =
     element.type === 'shape' && drawsShapeSvgOverlay(element.shape) && svgAnim !== undefined;
   // The pop-in entry animation must drop off the wrapper once it has run:
@@ -214,7 +208,6 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   return {
     labelAnimClass,
     artAnimClass,
-    svgAnim: svgHandlesAnim ? svgAnim : undefined,
     wrapperAnimClass,
     animStyle,
     layer,

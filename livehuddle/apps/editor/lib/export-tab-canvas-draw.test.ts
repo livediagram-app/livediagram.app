@@ -2,7 +2,7 @@
 // The PNG export's boxed element painter (docs/specs/020-import-export): a rich-text label keeps the element's opacity.
 
 import { describe, expect, it } from 'vitest';
-import { createShape, type BoxedElement } from '@livehuddle/document';
+import { createShape, createSticky, type BoxedElement } from '@livehuddle/document';
 import { drawBoxed } from './export-tab-canvas-draw';
 
 function recordingContext() {
@@ -28,7 +28,7 @@ function recordingContext() {
 describe('drawBoxed', () => {
   it('draws a rich-text label at the element’s opacity, times its layer’s', () => {
     const el = {
-      ...createShape('square', 0, 0),
+      ...createSticky(0, 0),
       label: 'Hi there',
       richText: [{ text: 'Hi', bold: true }, { text: ' there' }],
       opacity: 0.4,
@@ -57,7 +57,7 @@ describe('drawBoxed', () => {
       },
     ) as unknown as CanvasRenderingContext2D;
     const el = {
-      ...createShape('square', 0, 0),
+      ...createSticky(0, 0),
       width: 80,
       label: 'Supercalifragilisticexpialidocious',
     } as unknown as BoxedElement;
@@ -102,7 +102,7 @@ describe('drawBoxed', () => {
       return seen;
     };
     const square = {
-      ...createShape('square', 0, 0),
+      ...createShape('room', 0, 0),
       width: 200,
       height: 100,
       strokeWidth: 'thick',

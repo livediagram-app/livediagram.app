@@ -80,7 +80,7 @@ describe('notice-pin and notice-unpin', () => {
   });
 
   it('refuses another shape and a malformed note', () => {
-    const square = board({ shape: 'square' });
+    const square = board({ shape: 'focus-button' });
     expect(applyElementDelta(square, pin(note('a')))).toBe(square);
     const plain = board();
     const bad = [

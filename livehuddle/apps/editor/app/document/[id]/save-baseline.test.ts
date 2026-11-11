@@ -15,7 +15,16 @@ import {
 import { tabBroadcastOps } from './tab-broadcast-ops';
 
 const el = (id: string, over: Partial<Element> = {}): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...over }) as Element;
+  ({
+    id,
+    type: 'shape',
+    shape: 'focus-button',
+    x: 0,
+    y: 0,
+    width: 10,
+    height: 10,
+    ...over,
+  }) as Element;
 
 const tab = (elements: Element[]): Tab => ({ id: 't1', name: 'Tab 1', elements });
 
@@ -107,7 +116,7 @@ describe('tabsChangedByPeersSince', () => {
   it('names the saved tabs a peer changed after the mark, once each', () => {
     const journal = createRemoteOpJournal();
     const mark = openSaveWindow(journal);
-    const el = { id: 'e', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 };
+    const el = { id: 'e', type: 'shape', shape: 'focus-button', x: 0, y: 0, width: 1, height: 1 };
     const fold = (op: Parameters<typeof foldRemoteOpIntoBaseline>[1]) =>
       foldRemoteOpIntoBaseline(
         { tabs: { current: [] }, name: { current: '' }, journal: { current: journal } },

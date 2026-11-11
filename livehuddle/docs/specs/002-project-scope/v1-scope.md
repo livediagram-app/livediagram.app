@@ -103,7 +103,7 @@ spotlight, which are not in livehuddle ([Not in livehuddle](not-in-livehuddle.md
 - Google Drive sync for signed-in people, liveworkspace's for every app
   ([Google Drive sync](../../../../liveworkspace/docs/specs/005-drive/drive.md)): each Space they own is a
   `.livehuddle` file in their Drive, kept in step (owner, 2026-11-02).
-- The [Timeline](../013-workspace/timeline.md), undo and redo.
+- A Space's [History](../013-workspace/history.md), undo and redo.
 
 ### 7. The platform-wide features
 

@@ -16,11 +16,12 @@ import type { EditOperation } from './types';
 const FRAMES = 10;
 const GROWTH = 4;
 const RATIO_CEILING = cpuRatioCeiling(8);
-// The smaller tab of the per-element growth checks: 1,200 against 4,800, not 2,400 against 9,600, so the larger keeps
-// the collector out of the timing (docs/ci.md "Speed budgets"); measured at 4.3 to 5.1 for four times the tab.
-const SMALL_TAB = 1200;
-// Fresh states a sample of the noteTarget check fills, so it times a millisecond or more, not timer noise.
-const NOTE_PASSES = 20;
+// The noteTarget check's smaller tab and the fresh states a sample fills, one at a time: 600 against 2,400, 40
+// states, a millisecond or more a sample. Twenty states of 4,800 held at once outgrew a CI runner's cache, and four
+// times the tab read 8.52 (liveplanner) and 9.43 (livedocuments) against 8 on CI (2026-11-11) for work that is one Set
+// lookup an element; liveplanner's copy now reads 4.2 to 5.0 beside two more runs of the same suite.
+const NOTE_TAB = 600;
+const NOTE_PASSES = 40;
 // Sized to time tens of milliseconds an apply; coverage on a CI runner makes that seconds.
 const TIMEOUT_MS = 30_000;
 
@@ -43,7 +44,7 @@ function tabOf(perFrame: number): Tab {
       elements.push({
         id: `n${frame}x${i}`,
         type: 'shape',
-        shape: 'square',
+        shape: 'signpost',
         label: `Step ${frame} ${i}`,
         x: fx + 40,
         y: i * 100 + 60,
@@ -99,7 +100,7 @@ function rowOf(count: number): Tab {
   const elements: Element[] = Array.from({ length: count }, (_, i) => ({
     id: `r${i}`,
     type: 'shape',
-    shape: 'square',
+    shape: 'signpost',
     x: i * 150,
     y: 0,
     width: 140,
@@ -116,7 +117,7 @@ function boxesOf(count: number): Tab {
     elements.push({
       id: `b${i}`,
       type: 'shape',
-      shape: 'square',
+      shape: 'signpost',
       x: 10 + (i % columns) * 200,
       y: 10 + Math.floor(i / columns) * 15,
       width: 10,
@@ -128,20 +129,23 @@ function boxesOf(count: number): Tab {
 describe('performance', () => {
   // Noting each resolved target once searched the targets so far (`includes`): quadratic in a `set … all`.
   it('notes targets in time linear in their number', { timeout: TIMEOUT_MS }, () => {
-    // One pass over the tab takes a fraction of a millisecond: each sample notes it into NOTE_PASSES fresh states
-    // (made outside the timing), timed in turns with the larger tab (cpuGrowthRatio). liveplanner's copy, timed
-    // one tab after the other, read 8.86 against 8 on CI (2026-11-11).
+    // One pass over the targets takes a fraction of a millisecond, so a sample sums NOTE_PASSES passes, each into a
+    // fresh state made outside its timing; cpuGrowthRatio warms both sizes and times them in turns.
     const sample = (tab: Tab) => () => {
-      const states = Array.from({ length: NOTE_PASSES }, () => createState(tab, {}, () => {}));
-      return cpuMsOf(() => {
-        for (const state of states) for (const el of tab.elements) noteTarget(state, el.id);
-      });
+      let ms = 0;
+      for (let pass = 0; pass < NOTE_PASSES; pass++) {
+        const state = createState(tab, {}, () => {});
+        ms += cpuMsOf(() => {
+          for (const el of tab.elements) noteTarget(state, el.id);
+        });
+      }
+      return ms;
     };
-    expectLinear(sample(boxesOf(SMALL_TAB)), sample(boxesOf(SMALL_TAB * GROWTH)));
+    expectLinear(sample(boxesOf(NOTE_TAB)), sample(boxesOf(NOTE_TAB * GROWTH)));
   });
 
   it('walks past a row of boxes in time linear in the row', { timeout: TIMEOUT_MS }, () => {
-    const add = parseEditOperations('add square right-of:r0 gap:0');
+    const add = parseEditOperations('add signpost right-of:r0 gap:0');
     if ('errors' in add) throw new Error('add');
     // A row of 1,000: at 500 the small apply was so quick that timer noise reached the ceiling (9.2 against 8).
     const small = { tab: rowOf(1000), operations: add.operations };

@@ -29,7 +29,7 @@ describe('add with an element', () => {
     expect(rejection).toMatchObject({
       code: 'id_taken',
       operation: 1,
-      details: ['id "n3" is taken by square "Login"'],
+      details: ['id "n3" is taken by signpost "Login"'],
       hint: 'use id n3-2',
     });
   });

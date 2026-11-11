@@ -12,7 +12,7 @@ import {
   type WebhookKind,
 } from '@liveworkspace/index-client';
 import { quoted } from '../../quoted';
-import { SHARE_LEVEL_WORDS } from '../../timeline/share-levels';
+import { SHARE_LEVEL_WORDS } from '../../library/share-levels';
 
 // The anonymised id a closed account's rows carry.
 const ANONYMISED = 'deleted';

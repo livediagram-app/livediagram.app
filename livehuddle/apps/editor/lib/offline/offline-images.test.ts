@@ -30,7 +30,15 @@ describe('rewriteImageIds', () => {
         imageEl('a', 'img_1'),
         imageEl('b', 'img_2'),
         imageEl('c', null),
-        { id: 'd', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 } as never,
+        {
+          id: 'd',
+          type: 'shape',
+          shape: 'focus-button',
+          x: 0,
+          y: 0,
+          width: 10,
+          height: 10,
+        } as never,
       ]),
     ];
     const out = rewriteImageIds(tabs, new Map([['img_1', PNG_DATA_URL]]));

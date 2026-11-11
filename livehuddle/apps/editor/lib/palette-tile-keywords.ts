@@ -18,19 +18,6 @@ import type { PaletteTileDef } from '@/components/palette/palette-tile-defs';
 // silently fallen 22 kinds behind the palette: every Devices, Data, Media and
 // Behaviour element was unfindable from the search panel.
 export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
-  square: 'square box rect node',
-  circle: 'oval ellipse round node',
-  diamond: 'decision rhombus flowchart',
-  cylinder: 'database storage db disk',
-  parallelogram: 'input output io flowchart',
-  hexagon: 'preparation milestone',
-  document: 'page report file',
-  stadium: 'pill terminator start end rounded',
-  cloud: 'internet network external',
-  triangle: 'warning delta',
-  trapezoid: 'manual operation',
-  star: 'favourite highlight rating',
-  'speech-bubble': 'comment callout chat note',
   'mode-button': 'mode switch button press avatar',
   portal: 'teleport jump link warp travel',
   chair: 'seat sit stool furniture',
@@ -130,7 +117,6 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
     'stage platform podium all-hands all hands town hall keynote presenter speaker speak broadcast audience',
   'focus-button':
     'look here attention bring everyone jump navigate spotlight point show gather focus',
-  actor: 'person stick figure user role uml',
 };
 
 /** A tile's search keywords: for a shape, its kind's synonyms; for any other tile, its label and

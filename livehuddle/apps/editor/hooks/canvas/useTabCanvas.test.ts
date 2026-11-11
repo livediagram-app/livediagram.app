@@ -21,7 +21,7 @@ vi.mock('@/lib/telemetry', async (orig) => ({
 const box = (id: string, over: Record<string, unknown> = {}): Element => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 10,

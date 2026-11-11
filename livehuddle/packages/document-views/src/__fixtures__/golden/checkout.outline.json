@@ -12,7 +12,7 @@
       "boxes": 19,
       "arrows": 11
     },
-    "unknown": 15,
+    "unknown": 16,
     "threads": {
       "open": 1,
       "total": 2
@@ -47,7 +47,7 @@
     {
       "ref": "a3cf",
       "id": "a3cf0000-0000-4000-8000-000000000006",
-      "kind": "square",
+      "kind": "signpost",
       "unknown": false,
       "label": "Web app",
       "summary": null,
@@ -64,7 +64,7 @@
     {
       "ref": "649c",
       "id": "649c0000-0000-4000-8000-000000000007",
-      "kind": "hexagon",
+      "kind": "signpost",
       "unknown": false,
       "label": "API gateway",
       "summary": null,
@@ -81,7 +81,7 @@
     {
       "ref": "b811",
       "id": "b8110000-0000-4000-8000-000000000005",
-      "kind": "actor",
+      "kind": "signpost",
       "unknown": false,
       "label": "Customer",
       "summary": null,
@@ -105,7 +105,7 @@
     {
       "ref": "202b",
       "id": "202b0000-0000-4000-8000-000000000008",
-      "kind": "square",
+      "kind": "signpost",
       "unknown": false,
       "label": "Auth service",
       "summary": null,
@@ -122,7 +122,7 @@
     {
       "ref": "6406",
       "id": "64060000-0000-4000-8000-00000000000b",
-      "kind": "stadium",
+      "kind": "signpost",
       "unknown": false,
       "label": "Event bus",
       "summary": null,
@@ -139,7 +139,7 @@
     {
       "ref": "12de",
       "id": "12de0000-0000-4000-8000-00000000000c",
-      "kind": "square",
+      "kind": "signpost",
       "unknown": false,
       "label": "Inventory service",
       "summary": null,
@@ -156,7 +156,7 @@
     {
       "ref": "146b",
       "id": "146b0000-0000-4000-8000-000000000009",
-      "kind": "square",
+      "kind": "signpost",
       "unknown": false,
       "label": "Orders service",
       "summary": null,
@@ -177,7 +177,7 @@
     {
       "ref": "e4a8",
       "id": "e4a80000-0000-4000-8000-00000000000a",
-      "kind": "square",
+      "kind": "signpost",
       "unknown": false,
       "label": "Payments service",
       "summary": null,
@@ -198,7 +198,7 @@
     {
       "ref": "0556",
       "id": "05560000-0000-4000-8000-00000000000d",
-      "kind": "square",
+      "kind": "signpost",
       "unknown": false,
       "label": "Notification worker",
       "summary": null,
@@ -227,7 +227,7 @@
     {
       "ref": "d41e",
       "id": "d41e0000-0000-4000-8000-00000000000e",
-      "kind": "cylinder",
+      "kind": "signpost",
       "unknown": false,
       "label": "Orders DB",
       "summary": null,
@@ -244,7 +244,7 @@
     {
       "ref": "822f",
       "id": "822f0000-0000-4000-8000-00000000000f",
-      "kind": "cylinder",
+      "kind": "signpost",
       "unknown": false,
       "label": "Inventory DB",
       "summary": null,
@@ -256,8 +256,8 @@
     {
       "ref": "e6d7",
       "id": "e6d70000-0000-4000-8000-000000000010",
-      "kind": "cloud",
-      "unknown": false,
+      "kind": "? cloud",
+      "unknown": true,
       "label": "Stripe",
       "summary": null,
       "attributes": [
@@ -273,7 +273,7 @@
     {
       "ref": "cb02",
       "id": "cb020000-0000-4000-8000-000000000011",
-      "kind": "square",
+      "kind": "signpost",
       "unknown": false,
       "label": "Order",
       "summary": null,

@@ -44,7 +44,11 @@ export function recordPersonNotices(
     from('SELECT item_id FROM collab_thread_people WHERE person_id = ?1 LIMIT ?3'),
     from('SELECT item_id FROM collab_actions WHERE assignee_id = ?1 LIMIT ?3'),
     from('SELECT item_id FROM collab_actions WHERE assigner_id = ?1 LIMIT ?3'),
-    from('SELECT item_id FROM timeline_events WHERE actor_id = ?1 LIMIT ?3'),
+    // The event log keeps 30 days, so what they opened (opens: kept until the item goes) and reached by a link stand
+    // in for older edits and visits: a superset, and an app finding no name in an item changes nothing.
+    from('SELECT item_id FROM events WHERE actor_id = ?1 LIMIT ?3'),
+    from('SELECT item_id FROM opens WHERE person_id = ?1 LIMIT ?3'),
+    from('SELECT item_id FROM shared_with WHERE person_id = ?1 LIMIT ?3'),
     db
       .prepare(
         `INSERT OR IGNORE INTO person_app_notices (person_id, app, item_id, created_at)

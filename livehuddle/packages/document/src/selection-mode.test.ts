@@ -10,7 +10,9 @@ describe('fixed-size shapes', () => {
     expect(isFixedSizeShape('rectangle')).toBe(false);
     expect(isFixedSizeElement({ type: 'shape', shape: 'mode-button' })).toBe(true);
     expect(isFixedSizeElement({ type: 'shape', shape: 'rectangle' })).toBe(false);
-    expect(isFixedSizeElement({ type: 'shape', shape: 'square', fixedSize: true })).toBe(true);
+    expect(isFixedSizeElement({ type: 'shape', shape: 'focus-button', fixedSize: true })).toBe(
+      true,
+    );
     // Placed pieces keep their own size (docs/specs/010-palette/palette-drag-ghost.md); sized ones resize.
     for (const shape of ['chair', 'bar-stool', 'avatar-pad', 'door', 'plant'])
       expect(isFixedSizeElement({ type: 'shape', shape })).toBe(true);

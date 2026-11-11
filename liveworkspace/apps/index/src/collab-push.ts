@@ -3,18 +3,18 @@
 // and each form's response count and who has seen how many. Shown text is cut rather than refused; ids and times
 // must be well formed.
 //
-// The Timeline's collaboration events come from the same push (collabEvents): the index compares what a tab
+// The event log's collaboration events come from the same push (collabEvents): the index compares what a tab
 // pushes with what it held, in the batch that replaces it, so every app that reports its Inbox reports them too.
 // A thread with more comments than before is `commented`, one turned resolved `comment_resolved`, an action
-// (or open card) with a new assignee `action_assigned` (seen by the assignee too), one turned done
+// (or open card) with a new assignee `action_assigned`, one turned done
 // `action_done`. Each event's id is made from what it says, so a push sent again records nothing new, and
 // anything dated before the item was made (a copy's threads) is not news. A deleted comment's words leave the
-// Timeline with it (retractedComments): a thread with fewer comments than it held drops the `commented` events past
+// event log with it (retractedComments): a thread with fewer comments than it held drops the `commented` events past
 // its count, and one that is gone drops its `commented` and `comment_resolved` events too.
 //
 // A form push that raises its response count queues a `form_response` for the plan's own webhooks, in the batch that
 // stores the count (webhooks/outbox.ts formResponseStatement).
-import { timelinePersonKeys } from './event-key';
+import { personEventKeys } from './event-key';
 import {
   COLLAB_EVENTS_MAX,
   COLLAB_MAX_ACTIONS,
@@ -25,7 +25,7 @@ import {
 } from '@liveworkspace/index-client';
 import type { Env } from './env';
 import { badRequest, noContent, readObject } from './http';
-import { bulkEventStatements, type BulkEvent } from './timeline';
+import { bulkEventStatements, type BulkEvent } from './events';
 import { LABEL_MAX, clip, nullableId, parseAction, parseThread } from './collab-parse';
 
 export { parseAction, parseCard, parseColumn, parseThread } from './collab-parse';
@@ -46,7 +46,7 @@ export async function pushCollab(
     return badRequest('invalid_collab');
   }
   const tabName = body.tabName === undefined ? '' : clip(body.tabName, LABEL_MAX);
-  // The Timeline: who may say who wrote, resolved or closed.
+  // The event log: who may say who wrote, resolved or closed.
   for (const t of body.threads as Record<string, unknown>[]) {
     if (!nullableId(t?.latestAuthorId ?? null) || !nullableId(t?.resolvedById ?? null)) {
       return badRequest('invalid_collab');
@@ -107,7 +107,7 @@ export async function pushCollab(
         [...threads.values()],
         [...actions.values()],
         now,
-        await timelinePersonKeys(
+        await personEventKeys(
           [...actions.values()].flatMap((a) => (a.assigneeId ? [a.assigneeId] : [])),
         ),
       )
@@ -258,15 +258,15 @@ export function retractedComments(
   return out;
 }
 
-// One statement through the item's events (timeline_events_item): each event of these prefixes whose count is past
-// what is kept. Its scope rows and dismissals go with it (ON DELETE CASCADE).
+// One statement through the item's events (events_item): each event of these prefixes whose count is past what is
+// kept.
 function retractStatement(db: D1Database, itemId: string, pairs: [string, number][]) {
   return db
     .prepare(
-      `DELETE FROM timeline_events WHERE item_id = ?1 AND type IN ('commented', 'comment_resolved')
+      `DELETE FROM events WHERE item_id = ?1 AND type IN ('commented', 'comment_resolved')
        AND EXISTS (SELECT 1 FROM json_each(?2) j
-         WHERE substr(timeline_events.id, 1, length(json_extract(j.value, '$[0]'))) = json_extract(j.value, '$[0]')
-           AND CAST(substr(timeline_events.id, length(json_extract(j.value, '$[0]')) + 1) AS INTEGER)
+         WHERE substr(events.id, 1, length(json_extract(j.value, '$[0]'))) = json_extract(j.value, '$[0]')
+           AND CAST(substr(events.id, length(json_extract(j.value, '$[0]')) + 1) AS INTEGER)
                > json_extract(j.value, '$[1]'))`,
     )
     .bind(itemId, JSON.stringify(pairs));
@@ -281,7 +281,7 @@ type HeldAction = {
   assignee_id: string | null;
 };
 
-/** The Timeline events one tab's push makes, against what the tab held (at most COLLAB_EVENTS_MAX, newest). */
+/** The events one tab's push makes, against what the tab held (at most COLLAB_EVENTS_MAX, newest). */
 export function collabEvents(
   item: { app: App; itemId: string; tabId: string } & HeldItem,
   heldThreads: readonly HeldThread[],
@@ -293,7 +293,7 @@ export function collabEvents(
   personKeys: ReadonlyMap<string, string>,
 ): BulkEvent[] {
   const { app, itemId, tabId } = item;
-  const base = { app, itemId, title: item.title, scopes: [item.scope] };
+  const base = { app, itemId, title: item.title };
   const at = (time: number) => Math.min(time, now);
   const events: BulkEvent[] = [];
   const oldThreads = new Map(heldThreads.map((t) => [t.element_id, t]));
@@ -341,8 +341,6 @@ export function collabEvents(
         actorName: a.assignerName ?? null,
         detail: { action: name, assigneeId: a.assigneeId, assigneeName: a.assigneeName ?? null },
         at: at(a.updatedAt),
-        // The assignee sees it too, wherever the item is.
-        scopes: [item.scope, `p:${a.assigneeId}`],
       });
     }
     if (was && was.status === 'open' && a.status === 'done') {

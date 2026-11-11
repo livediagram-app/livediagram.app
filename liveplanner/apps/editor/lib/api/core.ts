@@ -448,7 +448,7 @@ export async function apiDelete(
     allow404?: boolean;
     // Declarative markers this DELETE carries, e.g. the Offline Mode
     // conversion header — without one the worker cannot tell "take offline"
-    // from a real delete and records the wrong timeline event.
+    // from a real delete and records the wrong event.
     extra?: Record<string, string>;
   },
 ): Promise<void> {
