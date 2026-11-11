@@ -98,7 +98,6 @@ export async function runRule(
   if (!opts.dry) {
     if (state.today >= AUTOMATION_RUNS_PER_DAY) return null;
     if (!claimRun(sql, id, rule.id, at)) return null;
-    state.today += 1;
   }
   const lines: AutomationStepLine[] = [];
   let card: AutomationRun['card'] = null;
@@ -116,6 +115,8 @@ export async function runRule(
     };
     if (opts.dry) return run;
     settleRun(sql, run);
+    // The day's budget counts what ran: a No Match is logged but costs nothing.
+    if (result !== 'no_match') state.today += 1;
     if (result === 'done' || result === 'failed')
       deps.store.settle(rule.id, result, reason ?? '', at);
     console.info('[automations] run', { result, tookMs: run.tookMs });
@@ -151,15 +152,17 @@ export async function runRule(
     if (!held.ok) return end('no_match');
     const planned = planActions(rule.steps, ctx);
     lines.push(...planned.lines);
-    if ('failed' in planned) return end('failed', planned.failed);
-    if (opts.dry) return end('done');
+    const failed = 'failed' in planned ? planned.failed : null;
+    if (opts.dry) return end(failed === null ? 'done' : 'failed', failed ?? undefined);
+    // A failed step stops the run; the steps before it stay done (spec "Actions").
+    const writes = 'failed' in planned ? planned.done : planned;
     const source = { role: 'automation' as const, rule: rule.id, chain: (event.chain ?? 0) + 1 };
-    const out = await applyPlannedRun(deps, plan, rule, item, planned, source, ctx.url);
+    const out = await applyPlannedRun(deps, plan, rule, item, writes, source, ctx.url);
     if (!out.ok) {
       lines.push({ kind: 'action', ok: false, text: out.reason });
       return end('failed', out.reason);
     }
-    return end('done');
+    return failed === null ? end('done') : end('failed', failed);
   } catch (error) {
     console.warn('[automations] run.threw', { error: String(error) });
     try {

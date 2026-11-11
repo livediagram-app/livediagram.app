@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
-import { AUTOMATION_RULES_MAX, AUTOMATION_RUNS_PER_DAY } from '@liveplanner/items';
+import { AUTOMATION_RULES_MAX } from '@liveplanner/items';
+import { AUTOMATION_NO_MATCH_LOG_MAX, runsToday } from './automation-log';
 import { endRepeatWorld } from '../test-repeat-world';
 import { automationWorld, type AutomationWorld } from './test-automation-world';
 
@@ -65,8 +66,9 @@ describe('Automations cost', () => {
     room().automations.schedule.at = Date.now();
     const wake = await cpuMsOfAsync(() => room().alarm());
     const n = w.plans.get('A')!.db.prepare('SELECT COUNT(*) AS n FROM automation_runs').get();
-    // 1,250 checks, held to the day's 1,000 runs (a run that matched nothing is a run, and counts).
-    expect(n).toEqual({ n: Math.min(25 * AUTOMATION_RULES_MAX, AUTOMATION_RUNS_PER_DAY) });
+    // 1,250 checks, every one a No Match: none spends the day's budget, and the log keeps the newest 500 of them.
+    expect(n).toEqual({ n: AUTOMATION_NO_MATCH_LOG_MAX });
+    expect(runsToday(w.plans.get('A')!.room.automations.sql(), Date.now())).toBe(0);
     expect(wake).toBeLessThan(cpuBudgetMs(1500));
   });
 });

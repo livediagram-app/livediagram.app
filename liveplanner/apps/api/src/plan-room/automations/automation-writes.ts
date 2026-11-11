@@ -23,6 +23,7 @@ import {
   newItemId,
   requiredClearedBy,
   statusExcluded,
+  typeIn,
   withDefaultStatuses,
   type AutomationRule,
   type Item,
@@ -127,7 +128,11 @@ async function createCard(
     plan.types,
   );
   const missing = createRefusal(plan.types, create!);
-  if (missing) return { ok: false, reason: `The new card needs ${missing.field}` };
+  if (missing) {
+    const type = typeIn(plan.types, planned.type);
+    const label = type.custom?.find((f) => f.id === missing.field)?.label ?? missing.field;
+    return { ok: false, reason: `${type.label} cards need ${label}` };
+  }
   for (let attempt = 1; attempt <= ITEM_WRITE_RETRIES; attempt += 1) {
     const head = await getItemStoreHead(deps.env, deps.planId);
     if (head.count >= ITEMS_MAX)

@@ -20,10 +20,14 @@ const PENDING = 'pending';
 
 const utcMidnight = (now: number) => Math.floor(now / DAY_MS) * DAY_MS;
 
-// Runs started today (UTC), pending ones too: what the daily budget counts.
+// Runs today (UTC) that did something, failed or were skipped, pending ones too: what the daily budget counts. A No
+// Match is logged and never counted.
 export function runsToday(sql: Sql, now: number): number {
   const row = sql
-    .exec('SELECT COUNT(*) AS n FROM automation_runs WHERE at >= ?', utcMidnight(now))
+    .exec(
+      "SELECT COUNT(*) AS n FROM automation_runs WHERE at >= ? AND result != 'no_match'",
+      utcMidnight(now),
+    )
     .toArray()[0];
   return Number(row?.['n'] ?? 0);
 }
@@ -62,12 +66,21 @@ export function settleRun(sql: Sql, run: AutomationRun): void {
   );
 }
 
-// The rows past 30 days, then those past the newest 2,000.
+// No Match rows kept, apart from the runs: however many there are, they never push a run out of the log.
+export const AUTOMATION_NO_MATCH_LOG_MAX = 500;
+
+// The rows past 30 days; then the newest 2,000 runs (done, failed, skipped) and, beside them, the newest 500 No Match
+// rows, each kept apart so a busy rule that matches nothing never pushes a real run out.
 export function trimRuns(sql: Sql, now: number): void {
   sql.exec('DELETE FROM automation_runs WHERE at < ?', now - AUTOMATION_LOG_MAX_AGE_MS);
   sql.exec(
     `DELETE FROM automation_runs WHERE id IN
-       (SELECT id FROM automation_runs ORDER BY at DESC, id LIMIT -1 OFFSET ?)`,
+       (SELECT id FROM automation_runs WHERE result = 'no_match' ORDER BY at DESC, id LIMIT -1 OFFSET ?)`,
+    AUTOMATION_NO_MATCH_LOG_MAX,
+  );
+  sql.exec(
+    `DELETE FROM automation_runs WHERE id IN
+       (SELECT id FROM automation_runs WHERE result != 'no_match' ORDER BY at DESC, id LIMIT -1 OFFSET ?)`,
     AUTOMATION_LOG_MAX,
   );
 }

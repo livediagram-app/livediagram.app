@@ -29,4 +29,5 @@ CREATE TABLE IF NOT EXISTS automation_runs (
 ) WITHOUT ROWID;
 CREATE INDEX IF NOT EXISTS automation_runs_at ON automation_runs (at);
 CREATE INDEX IF NOT EXISTS automation_runs_rule ON automation_runs (rule_id, at);
+CREATE INDEX IF NOT EXISTS automation_runs_result ON automation_runs (result, at);
 `;

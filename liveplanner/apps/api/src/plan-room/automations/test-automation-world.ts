@@ -74,6 +74,7 @@ export async function automationWorld(planId = 'A'): Promise<AutomationWorld> {
   const tab = {
     id: 't1',
     name: 'Board',
+    kind: 'board',
     elements: [
       {
         id: 'b1',

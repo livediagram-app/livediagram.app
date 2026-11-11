@@ -54,15 +54,18 @@ export interface PlannedEmail {
   body: string;
 }
 
+// What a run writes: the triggering card's one patch, the threads it starts, the card it makes and its emails.
+export interface PlannedWrites {
+  patch: ItemPatch;
+  comments: string[];
+  created: PlannedCard[];
+  emails: PlannedEmail[];
+}
+
+// A failed run keeps `done`, the steps before the one that failed (spec "Actions": the steps before it stay done).
 export type PlannedRun =
-  | {
-      patch: ItemPatch;
-      comments: string[];
-      created: PlannedCard[];
-      emails: PlannedEmail[];
-      lines: AutomationStepLine[];
-    }
-  | { failed: string; lines: AutomationStepLine[] };
+  | (PlannedWrites & { lines: AutomationStepLine[] })
+  | { failed: string; lines: AutomationStepLine[]; done: PlannedWrites };
 
 const DATE_FIELDS = new Set(['start', 'due']);
 const NUMBER_KINDS = new Set(['number', 'currency', 'percent', 'duration', 'rating']);
@@ -345,13 +348,14 @@ export function planActions(steps: readonly AutomationStep[], ctx: PlanActionsCo
   } catch (error) {
     if (!(error instanceof Failed)) throw error;
     plan.lines.push({ kind: 'action', ok: false, text: error.message });
-    return { failed: error.message, lines: plan.lines };
+    return { failed: error.message, lines: plan.lines, done: writesOf(plan) };
   }
-  return {
-    patch: plan.patch(),
-    comments: plan.comments,
-    created: plan.created,
-    emails: plan.emails,
-    lines: plan.lines,
-  };
+  return { ...writesOf(plan), lines: plan.lines };
 }
+
+const writesOf = (plan: Plan): PlannedWrites => ({
+  patch: plan.patch(),
+  comments: plan.comments,
+  created: plan.created,
+  emails: plan.emails,
+});
