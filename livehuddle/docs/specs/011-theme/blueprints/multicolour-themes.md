@@ -224,7 +224,7 @@ Each spec rule maps to one test, and every test is deterministic.
 | `contrastRatio`                                          | black/white = 21; equal = 1; order-independent; malformed = NaN | `colors.test.ts`                            |
 | Built-in contrast ≥ 4.5                                  | every palette entry + `rootColor` of every built-in             | `themes-data.test.ts` (new)                 |
 | Five built-ins, 26 total                                 | counts                                                          | `apps/editor/lib/themes.test.ts` (exists)   |
-| Colours reach the canvas + O1 in the browser             | Rainbow on a mind map: ≥ 3 palette hues, switch log             | `apps/editor/e2e/multicolour-theme.spec.ts` |
+| Colours reach the canvas + O1 in the browser             | Rainbow on loose text: ≥ 3 palette hues, switch log             | `apps/editor/e2e/multicolour-theme.spec.ts` |
 
 ## Constants and configuration
 

@@ -34,8 +34,7 @@ const CASES = [
 const seed = [
   ...CASES.flatMap((c, i) => {
     const x = 480 + i * 250;
-    const cover: Record<string, unknown> = box(`C${i}`, x + 120, 370, 'cover' in c ? c.cover : {});
-    if (cover.type === 'sticky') delete cover.shape;
+    const cover = box(`C${i}`, x + 120, 370, 'cover' in c ? c.cover : {});
     return [box(`T${i}`, x, 300, c.target), cover];
   }),
 ];
@@ -59,7 +58,7 @@ async function coveredGrips(page: Page): Promise<string[]> {
 }
 
 async function select(page: Page, label: string): Promise<void> {
-  const el = page.locator(`[aria-label='Square "${label}"']`);
+  const el = page.locator(`[aria-label='Sticky note "${label}"']`);
   const r = (await el.boundingBox())!;
   await page.mouse.click(r.x + r.width * 0.35, r.y + r.height * 0.35);
 }

@@ -1,4 +1,8 @@
-import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@livehuddle/document';
+import {
+  DARK_CANVAS_BACKGROUND_COLOR,
+  DEFAULT_BACKGROUND_COLOR,
+  PEN_INK,
+} from '@livehuddle/document';
 import {
   expect,
   test,
@@ -35,13 +39,18 @@ async function setting(page: import('@playwright/test').Page): Promise<string> {
   return /^Appearance: (\w+)\./.exec(label ?? '')?.[1] ?? '';
 }
 
-/** The colours the placed square is actually DRAWN in, computed. */
-async function squareInk(
-  page: import('@playwright/test').Page,
-): Promise<{ border: string; background: string }> {
-  return page.getByRole('img', { name: 'Square', exact: true }).evaluate((el) => {
-    const s = getComputedStyle(el as HTMLElement);
-    return { border: s.borderTopColor, background: s.backgroundColor };
+/** The seeded text element, by the name its view carries. */
+const inkText = (page: import('@playwright/test').Page) =>
+  page.getByRole('img', { name: 'Text "Ink"', exact: true });
+
+/** The colour the seeded text is actually DRAWN in, computed on the node that holds its words. */
+async function textInk(page: import('@playwright/test').Page): Promise<string> {
+  return inkText(page).evaluate((el) => {
+    const nodes = [el, ...el.querySelectorAll('*')];
+    const words = nodes.find(
+      (n) => n.children.length === 0 && (n.textContent ?? '').trim() === 'Ink',
+    );
+    return getComputedStyle((words ?? el) as HTMLElement).color;
   });
 }
 
@@ -57,7 +66,7 @@ async function canvasColour(page: import('@playwright/test').Page): Promise<stri
 test.describe('Appearance', () => {
   test('opens on the device setting, then cycles', async ({ page, pageErrors }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
-    // Made on the server, so a stored square can be written into it below.
+    // Made on the server, so a stored element can be written into it below.
     await openStartBlank(page);
 
     // A first-time visitor on a dark machine lands dark: System is the default
@@ -68,15 +77,16 @@ test.describe('Appearance', () => {
     // stored colours to contradict the viewer.
     await expect.poll(() => canvasColour(page)).toBe(rgb(DARK_CANVAS));
 
-    // A stored shape (livehuddle's palette draws none, Work Tracker #423, but a stored one still draws). On the
-    // Default scheme it carries NO colours of its own, so what it is drawn in is entirely the canvas's ink — the
-    // thing the merge depends on, and the thing a unit test can't see reach a memoised view.
-    await seedTab(page, [{ id: 'sq', type: 'sticky', x: 300, y: 200, width: 120, height: 120 }]);
-    const square = page.getByRole('img', { name: 'Square', exact: true });
-    await expect(square).toHaveCount(1);
+    // A text element with NO colours of its own: it is written in Ink, the appearance's own pen, so what it
+    // is drawn in is entirely the viewer's appearance, the thing the merge depends on, and the thing a unit
+    // test can't see reach a memoised view. (A sticky note keeps its paper on any canvas, so it can't show it.)
+    await seedTab(page, [
+      { id: 'ink', type: 'text', x: 300, y: 200, width: 200, height: 60, label: 'Ink' },
+    ]);
+    await expect(inkText(page)).toHaveCount(1);
     await expect
-      .poll(async () => (await squareInk(page)).border, { message: 'element ink follows too' })
-      .toBe(rgb('#64748b'));
+      .poll(() => textInk(page), { message: 'element ink follows too' })
+      .toBe(rgb(PEN_INK.dark));
 
     // System → Light. An explicit pick outranks the device, which is still dark.
     await appearanceButton(page).click();
@@ -85,7 +95,7 @@ test.describe('Appearance', () => {
     await expect
       .poll(() => canvasColour(page), { message: 'canvas follows the appearance' })
       .toBe(rgb(LIGHT_CANVAS));
-    await expect.poll(async () => (await squareInk(page)).border).toBe(rgb('#0ea5e9')); // brand-500, the light canvas's ink
+    await expect.poll(() => textInk(page)).toBe(rgb(PEN_INK.light));
 
     // Light → Dark, explicitly.
     await appearanceButton(page).click();
