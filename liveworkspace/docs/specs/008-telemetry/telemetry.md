@@ -346,7 +346,12 @@ track called on its bindings with the category written out (`avatarBindings.trac
 and each Settings catalogue row, including one built by a helper or spread from a shared base, whose kind it reads from
 the row's event (an on/off pair is a toggle, a lone `changed` a slider; `emitter-scan-settings.ts`). Each app's scan
 adds what the platform sends in its name (`platform-emitters.ts`): the accounts Worker, the Explorer and the Community
-page on liveworkspace.app, the shared browser client, editor and UI packages, and the shared help centre. A package
+page on liveworkspace.app, the shared browser client, editor and UI packages, and the shared help centre. A shared
+package's emit counts for an app only when the app's code reaches its file through its imports (`shared-reach.ts`), so
+the shared spotlight sliders are not liveplanner's events, which mounts no spotlight. The shared packages are read with
+the app's own code beside them, so an emit a shared hook makes with the app's values resolves to them (`const schedule =
+useDebouncedCanvasTelemetry(); schedule('k', 'BackgroundColor')` reads as Canvas·Changed·BackgroundColor for each app
+that calls it). A package
 only one product uses lives in that product's folder and its own scan reads it (livehuddle's Avatar mode,
 `@livehuddle/avatar`, since Work Tracker #650).
 

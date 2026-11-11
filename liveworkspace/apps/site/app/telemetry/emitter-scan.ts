@@ -76,7 +76,8 @@ const SKIP_DIRS = new Set(['node_modules', '.next', '.next-dev', 'out', 'dist', 
 // How many forwarding hops a parameter is followed through.
 const MAX_HOPS = 3;
 
-function sourceFiles(dir: string, skip: string, out: string[] = []): string[] {
+// Every non-test source file under `dir`, skipping `skip` and build output.
+export function sourceFiles(dir: string, skip: string, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
     const path = join(dir, name);
     if (SKIP_DIRS.has(name) || path === skip) continue;
@@ -376,12 +377,30 @@ function emitsIn(scan: FileScan): Emit[] {
   return out;
 }
 
-// Every emit in `roots`, skipping `skip` (the dashboard itself).
-export function scanEmitters(repoRoot: string, roots: string[], skip: string): Emit[] {
+// A tree of source files: its root, the folders under it to read, and one to skip.
+export type ScanTree = { root: string; roots: string[]; skip: string };
+
+function parseTree(repo: Repo, { root, roots, skip }: ScanTree): FileScan[] {
+  const paths = roots.flatMap((dir) => sourceFiles(join(root, dir), skip));
+  return parseSourceFiles(paths).map((sf) => {
+    const scan = new FileScan(sf, sf.fileName.slice(root.length + 1), repo);
+    repo.add(scan);
+    return scan;
+  });
+}
+
+// Every emit in `roots`, skipping `skip` (the dashboard itself). `context` is read beside them but
+// emits nothing itself: the code that calls a shared package's returned closure or callback with its
+// own values (an app's `schedule('k', 'BackgroundColor')` on the shared useDebouncedCanvasTelemetry),
+// so the shared emit resolves to them.
+export function scanEmitters(
+  repoRoot: string,
+  roots: string[],
+  skip: string,
+  context?: ScanTree,
+): Emit[] {
   const repo = new Repo();
-  const paths = roots.flatMap((root) => sourceFiles(join(repoRoot, root), skip));
-  for (const sf of parseSourceFiles(paths)) {
-    repo.add(new FileScan(sf, sf.fileName.slice(repoRoot.length + 1), repo));
-  }
-  return repo.scans.flatMap(emitsIn);
+  const scans = parseTree(repo, { root: repoRoot, roots, skip });
+  if (context) parseTree(repo, context);
+  return scans.flatMap(emitsIn);
 }

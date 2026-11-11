@@ -8,7 +8,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { runChecks } from './checks.mjs';
-import { compareRounds, summarise } from './summary.mjs';
+import { compareRounds, summarise } from '@liveworkspace/mcp-kit/eval/summary';
 import { taskById } from './tasks/index.mjs';
 import { metricsOf, parseTranscript } from './transcript.mjs';
 

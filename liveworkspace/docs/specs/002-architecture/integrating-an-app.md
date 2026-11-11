@@ -160,6 +160,14 @@ export async function accountOf(request: Request, env: Env) {
 it (owner ids, team members, API tokens) is one id across apps. `email` + `emailVerified` are what team
 invitations match on.
 
+An API token (`lwt_…`) is checked at liveworkspace, never by the app: `@liveworkspace/auth-client/api-tokens`
+holds the whole of it over the Worker's `ACCOUNTS_URL`, `ACCOUNTS_CLIENT_ID` and `ACCOUNTS_CLIENT_SECRET`.
+`resolveApiToken(env, token)` answers the account behind a token (null when liveworkspace doesn't know it, or
+on a guest-only deployment), remembering each answer for a minute per isolate, and throws
+`AccountsUnavailable` when liveworkspace can't answer, so the route answers 503. `mintApiToken` makes one for an
+AI tool being connected and `revokePresentedToken` ends the one presented. `accountCredentials(env)` is the
+client those calls use. Each product's api re-exports the module at `src/db/api-tokens.ts`.
+
 ## Installing the package
 
 It is a workspace package, `@liveworkspace/auth-client` in `packages/auth-client`: add it to the app's

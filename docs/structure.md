@@ -28,6 +28,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ diagram-lint             the numbers, line formats and ring test livediagram's and livedocuments' diagram lint judge by
 │  ├─ document-views           the agent views of a document that read no element union (budgets, elision, fields), for livediagram and livedocuments
 │  ├─ drive                    the Drive mirror's contract: cadence, formats, the plan, wire shapes, backoff
+│  ├─ e2e-kit                  the editors' Playwright measuring sticks: the contrast audit, the optical snap, the canvas probe's calibration, interactive reading and trace tasks
 │  ├─ edit-operations          the edit engine's parts that read no element union: element text, equality, result lines
 │  ├─ element-model            the element code products share over any product's union (structural types, generic where it hands elements back): grid, guides, layer order, anchors, auto-layout, finishes, strokes, web components, element defaults, themes, tables, charts, Sankey, entity and sequence rules, wordmarks, arrows and icons in the export, comment threads, fingerprints, stored-data repairs, the white under a picture
 │  ├─ email                    the one caller of Cloudflare Email Service's `send_email` binding, for accounts and every app
@@ -500,6 +501,24 @@ Each step is its own PR, and both products build and pass their tests after ever
      import a module typed on the product's element union or vocabulary (looks and seasonal looks, the laser
      config, the panel layout's ids, themes, the settings catalogue, the image import types), or a component that
      differs per product (`ModePanel`, `TopCenter`, `ShowMe`, `AreaErrorBoundary`, the palette controls).
+   - Sixth slice: 14 more of the copies guard's groups from the apps, about 3,300 of the 31,400 redundant non-test
+     lines (measured as lines times copies less one, over each group). To `@liveworkspace/workbench`: the Format and
+     Spotlight config hooks, `useDebouncedCanvasTelemetry` and `tab-folder-reporting`, which now send through
+     `workbench.track` (its actions gain `Changed`, `Moved` and `Removed`; every product's manifest already held
+     those pairs, and each telemetry coverage test reads the workbench beside its own folders);
+     `InsetContent` with its `ContentInset`; and the changeset admission (`lib/changeset-seen`, typed on the fields
+     of a relayed changeset it reads, and `hooks/editor/useChangesetSeen`). Copies that differed only in a
+     comment's noun or their api-schema import now read the same and moved whole. To
+     `@liveworkspace/auth-client/api-tokens`: the API token check, mint and revoke and `accountCredentials`, which
+     each api re-exports at `src/db/api-tokens.ts` and `src/auth/accounts.ts`. To `@liveworkspace/mcp-kit/eval/summary`:
+     the MCP benchmark's report. To `@liveworkspace/next-config`: the asset size gate, now the `asset-size-gate`
+     bin each editor's build runs. And a new `@liveworkspace/e2e-kit` (`packages/e2e-kit`) holds the pure parts of
+     the editors' Playwright suites: the contrast audit, the optical snap, and the canvas probe's calibration,
+     interactive reading and trace tasks. Left, and why: the help apps' route files, already as thin as a route
+     can be over `createHelpSite`; the canvas probe's budget and nightly report and the MCP bench's client, which
+     name each product's tabs, gestures, issue title or port; the groups only livediagram and livehuddle share
+     (Work Tracker #650); and copies over a module that differs per product (the settings catalogue, `TopCenter`,
+     `ModePanel`, `ColourPicker`, `AreaErrorBoundary`, `useSplitView`'s `SplitView`, the laser config, the looks).
 5. **`api-core`** out of the two `apps/api` Workers.
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
      now with the product's own names handed in:

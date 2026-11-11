@@ -32,7 +32,7 @@ import { useTagColours } from '@/components/canvas/TagColoursContext';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useIconDropTarget } from '@/components/canvas/useIconDropTarget';
-import { clearingInset } from '@/components/canvas/InsetContent';
+import { clearingInset } from '@liveworkspace/workbench/components/canvas/InsetContent';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { isPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through';

@@ -42,7 +42,7 @@ date, `[assets]`, `[[services]]`, Durable Object bindings, `account_id` and its 
 - **pnpm:** `9.15.0`, through corepack locally and `pnpm/action-setup` in the workflows, from the monorepo root.
 - **Wrangler:** `^4.148.0` across the workspaces.
 - **Asset size:** Workers Static Assets refuses any file over 25 MiB, and only at deploy. The editor's `build` ends
-  with `apps/editor/scripts/asset-size-gate.mjs`, which fails the build on any file in `out/` over the limit, so CI
+  with `asset-size-gate` (@liveworkspace/next-config), which fails the build on any file in `out/` over the limit, so CI
   catches it first.
 
 ## CI

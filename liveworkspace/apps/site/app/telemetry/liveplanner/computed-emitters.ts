@@ -447,7 +447,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/components/tour/CardTypesTrack.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
   'apps/editor/components/tour/BoardSetupTrack.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
   'apps/editor/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
-  'apps/editor/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
+  // The shared hook's flush on page hide sends what was scheduled: every canvas-panel slider.
+  'packages/workbench/src/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
   },
   'apps/editor/hooks/canvas/useTabCanvas.ts Tab·Aligned': {

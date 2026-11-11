@@ -2,7 +2,7 @@
 
 import { pointerToCanvas } from '@/lib/canvas';
 import { useSpotlight } from '@liveworkspace/workbench/hooks/canvas/useSpotlight';
-import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
+import { useSpotlightConfig } from '@liveworkspace/workbench/hooks/canvas/useSpotlightConfig';
 import { spotlightRadius } from '@liveworkspace/workbench/lib/spotlight-config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 

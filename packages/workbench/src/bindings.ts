@@ -11,7 +11,8 @@ import { ZOOM_MAX } from './lib/zoom-range';
  * product's own wider `track` binds as it is, and typecheck fails if a vocabulary drops one.
  */
 export type WorkbenchTelemetryCategory = 'Canvas' | 'Error' | 'Tab' | 'UI';
-export type WorkbenchTelemetryAction = 'Added' | 'Client' | 'Opened' | 'Toggled' | 'Zoomed';
+export type WorkbenchTelemetryAction =
+  'Added' | 'Changed' | 'Client' | 'Moved' | 'Opened' | 'Removed' | 'Toggled' | 'Zoomed';
 export type WorkbenchTrack = (
   category: WorkbenchTelemetryCategory,
   action: WorkbenchTelemetryAction,

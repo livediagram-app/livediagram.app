@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { auditContrast, type ContrastReport } from '../contrast';
+import { auditContrast, type ContrastReport } from '@liveworkspace/e2e-kit/contrast';
 import { expect, expectNoPageErrors, startBlankDocument, test } from '../fixtures';
 import { WEBBER } from './agent-session';
 import { freshUserId, installSession } from './session';

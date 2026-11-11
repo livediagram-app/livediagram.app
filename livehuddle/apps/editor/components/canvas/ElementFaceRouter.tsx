@@ -23,8 +23,10 @@ import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { FocusButtonFace } from '@/components/canvas/FocusButtonFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
-import { InsetContent } from '@/components/canvas/InsetContent';
-import type { ContentInset } from '@/components/canvas/useIndicatorLayout';
+import {
+  InsetContent,
+  type ContentInset,
+} from '@liveworkspace/workbench/components/canvas/InsetContent';
 import { RetiredElementFace } from '@/components/canvas/RetiredElementFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { DirectoryFace } from '@/components/canvas/wayfinding/DirectoryFace';

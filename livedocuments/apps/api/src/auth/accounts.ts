@@ -3,12 +3,7 @@ import {
   isApiTokenFormat,
   isWorkbenchSessionFormat,
 } from '@livedocuments/api-schema';
-import {
-  audiencesFor,
-  createPersonVerifier,
-  type ClientCredentials,
-  type TeamClaim,
-} from '@liveworkspace/auth-client';
+import { audiencesFor, createPersonVerifier, type TeamClaim } from '@liveworkspace/auth-client';
 import type { Env } from '../types';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
@@ -40,19 +35,9 @@ export type GuestIdentity = { kind: 'guest'; guestId: string };
 
 export type PersonIdentity = AccountIdentity | GuestIdentity;
 
-// This app's client at the accounts Worker, for the account API (liveworkspace/docs/specs/003-accounts/accounts.md):
-// checking API tokens and following teams. Null on a guest-only deployment.
-export function accountCredentials(
-  env: Pick<Env, 'ACCOUNTS_URL' | 'ACCOUNTS_CLIENT_ID' | 'ACCOUNTS_CLIENT_SECRET'>,
-): ClientCredentials | null {
-  const { ACCOUNTS_URL, ACCOUNTS_CLIENT_ID, ACCOUNTS_CLIENT_SECRET } = env;
-  if (!ACCOUNTS_URL || !ACCOUNTS_CLIENT_ID || !ACCOUNTS_CLIENT_SECRET) return null;
-  return {
-    accountsUrl: ACCOUNTS_URL,
-    clientId: ACCOUNTS_CLIENT_ID,
-    clientSecret: ACCOUNTS_CLIENT_SECRET,
-  };
-}
+// This app's client at the accounts Worker, for the account API: one reading for every product
+// (@liveworkspace/auth-client/api-tokens).
+export { accountCredentials } from '@liveworkspace/auth-client/api-tokens';
 
 type Verify = ReturnType<typeof createPersonVerifier>;
 
