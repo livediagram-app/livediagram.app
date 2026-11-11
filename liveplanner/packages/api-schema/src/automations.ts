@@ -43,6 +43,8 @@ export interface AutomationTestRequest {
   rule: AutomationRuleBody;
   // The card to try it on, by id.
   item: string;
+  // The saved rule being edited, when it is one: its Assign in Turn place says whose turn it is.
+  ruleId?: string;
 }
 
 export interface AutomationRunNowRequest {
@@ -69,6 +71,10 @@ export const AUTOMATION_ERRORS = [
   'automations_need_editor',
   'automation_invalid',
   'automation_value_unknown',
+  // A time trigger's rule naming whoever triggered it (Who Did It, Assign or Email whoever triggered it): 400.
+  'automation_condition_unsupported',
+  // A step where it can't go (an If or a branch inside a branch, Create Card or an outgoing action in one): 400.
+  'automation_step_unsupported',
   'automation_name_taken',
   'automation_rules_full',
   'automation_not_found',

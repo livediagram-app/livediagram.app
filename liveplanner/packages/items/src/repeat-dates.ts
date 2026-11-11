@@ -88,3 +88,26 @@ export function dayStart(day: string, timeZone: string): number {
   for (let i = 0; i < 3 && localDay(t, timeZone) < day; i += 1) t += HOUR_MS;
   return t;
 }
+
+const MINUTE_MS = 60_000;
+
+// The instant `timeZone`'s clock reads `minutes` past midnight on `day` (an Automations time trigger's moment). A
+// time a clock change repeats is its first; a time a change skips is the first minute after the change. The offsets a
+// day either side tell the two candidates; a candidate whose own offset agrees reads the time.
+export function clockMoment(day: string, minutes: number, timeZone: string): number {
+  const wall = dayNo(day) * DAY_MS + minutes * MINUTE_MS;
+  const before = offsetAt(wall - DAY_MS, timeZone);
+  const after = offsetAt(wall + DAY_MS, timeZone);
+  const reads = [wall - before, wall - after].filter((t) => offsetAt(t, timeZone) === wall - t);
+  if (reads.length) return Math.min(...reads);
+  // Skipped: the change lies between the two candidates; the first minute on its far side, found by halving.
+  let lo = Math.floor((wall - Math.max(before, after)) / MINUTE_MS);
+  let hi = Math.ceil((wall - Math.min(before, after)) / MINUTE_MS);
+  const far = offsetAt(hi * MINUTE_MS, timeZone);
+  while (hi - lo > 1) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (offsetAt(mid * MINUTE_MS, timeZone) === far) hi = mid;
+    else lo = mid;
+  }
+  return hi * MINUTE_MS;
+}

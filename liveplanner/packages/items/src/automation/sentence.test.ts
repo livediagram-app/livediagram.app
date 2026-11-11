@@ -271,3 +271,62 @@ describe('the automation person', () => {
     });
   });
 });
+
+// Phase 2 (#712): time triggers, branches, outgoing actions, Assign in Turn.
+describe('Phase 2 words', () => {
+  const when = (trigger: AutomationRuleBody['trigger']) => triggerParts(trigger, OUTLINE);
+  it('says a time trigger as one chip', () => {
+    expect(when({ kind: 'scheduled', every: 'weekday', at: '09:00' })).toEqual([
+      { word: 'When' },
+      { chip: 'Every Weekday at 9:00', trigger: true },
+    ]);
+    const chip = (t: AutomationRuleBody['trigger']) => (when(t)[1] as { chip: string }).chip;
+    expect(chip({ kind: 'scheduled', every: 'day', at: '17:45' })).toBe('Every Day at 17:45');
+    expect(chip({ kind: 'scheduled', every: 'week', days: [1], at: '09:00' })).toBe(
+      'Every Mon at 9:00',
+    );
+    expect(chip({ kind: 'scheduled', every: 'week', days: [1, 3, 5], at: '09:00' })).toBe(
+      'Every Mon, Wed and Fri at 9:00',
+    );
+    expect(chip({ kind: 'scheduled', every: 'week', at: '09:00' })).toBe('Every  at 9:00');
+    expect(
+      [1, 2, 3, 4, 11, 12, 13, 21, 22, 23, 31].map(
+        (dayOfMonth) =>
+          chip({ kind: 'scheduled', every: 'month', dayOfMonth, at: '09:00' }).split(' ')[3],
+      ),
+    ).toEqual(['1st', '2nd', '3rd', '4th', '11th', '12th', '13th', '21st', '22nd', '23rd', '31st']);
+    expect(chip({ kind: 'scheduled', every: 'month', at: '09:00' })).toBe(
+      'Monthly on the 1st at 9:00',
+    );
+    expect(chip({ kind: 'due_in', days: 1, at: '09:00' })).toBe('Due in 1 Day at 9:00');
+    expect(chip({ kind: 'due_in', days: 2, at: '09:00' })).toBe('Due in 2 Days at 9:00');
+    expect(chip({ kind: 'overdue', at: '09:00' })).toBe('Overdue at 9:00');
+  });
+
+  it('says a branch, an outgoing action and Assign in Turn', () => {
+    const o: RuleSentenceOutline = { ...OUTLINE, webhooks: new Map([['wh1', 'Launch Channel']]) };
+    const chip = (s: AutomationRuleBody['steps'][number], outline = o) => stepChip(s, outline);
+    const branch = (related: object) =>
+      ({ kind: 'for', related, conditions: [], then: [{ kind: 'flag' }] }) as never;
+    expect(chip(branch({ kind: 'blocked_by' }))).toBe('For each Blocked By Card');
+    expect(chip(branch({ kind: 'blocking' }))).toBe('For each Card It Blocks');
+    expect(chip(branch({ kind: 'children' }))).toBe('For each Child Card');
+    expect(chip(branch({ kind: 'linked' }))).toBe('For each Linked Card');
+    expect(chip(branch({ kind: 'linked', field: 'f-done' }))).toBe(
+      'For each Linked Card (Completed On)',
+    );
+    expect(chip(branch({ kind: 'saved_filter', tab: 't', filter: 'sf-1' }))).toBe(
+      'For each Card Matching Blocked Work',
+    );
+    expect(chip(branch({ kind: 'saved_filter', tab: 't', filter: 'sf-x' }))).toBe(
+      'For each Card Matching a Saved Filter',
+    );
+    const notify = (extra: object) =>
+      ({ kind: 'notify', via: 'slack', webhook: 'wh1', text: 'x', ...extra }) as never;
+    expect(chip(notify({}))).toBe('Post to Slack Launch Channel');
+    expect(chip(notify({ webhook: 'wh9', name: 'Kept' }))).toBe('Post to Slack Kept');
+    expect(chip(notify({ webhook: 'wh9', via: 'teams' }))).toBe('Post to Microsoft Teams');
+    expect(chip(notify({ via: 'webhook' }), OUTLINE)).toBe('Send to Webhook');
+    expect(chip({ kind: 'assign', to: { rotate: ['a', 'b'] } })).toBe('Assign in Turn');
+  });
+});

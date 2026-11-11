@@ -78,3 +78,38 @@ describe('ruleNeeds', () => {
     expect(ruleNeeds(ruleBody({ trigger: { kind: 'manual' } }), OUTLINE)).toEqual([]);
   });
 });
+
+// Phase 2 (#712): people in turn, a branch's cards, fields and conditions, and webhooks when the caller has them.
+describe('ruleNeeds, Phase 2', () => {
+  const rule = ruleBody({
+    trigger: { kind: 'scheduled', every: 'day', at: '09:00' },
+    steps: [
+      { kind: 'assign', to: { rotate: ['p-sam', 'p-gone'] } },
+      {
+        kind: 'for',
+        related: { kind: 'saved_filter', tab: 't1', filter: 'sf-gone' },
+        conditions: [{ kind: 'column', statuses: ['col-gone'] }],
+        then: [{ kind: 'move', status: 'done' }],
+      },
+      {
+        kind: 'for',
+        related: { kind: 'linked', field: 'f-gone' },
+        conditions: [],
+        then: [{ kind: 'flag' }],
+      },
+      { kind: 'for', related: { kind: 'children' }, conditions: [], then: [{ kind: 'flag' }] },
+      { kind: 'notify', via: 'slack', webhook: 'wh-gone', text: 'x' },
+      { kind: 'notify', via: 'slack', webhook: 'wh1', text: 'x' },
+    ],
+  });
+  it('names what is gone', () => {
+    expect(ruleNeeds(rule, OUTLINE)).toEqual([
+      'Person p-gone is gone',
+      'Saved filter t1/sf-gone is gone',
+      'Column col-gone is gone',
+      'Field f-gone is gone',
+    ]);
+    expect(ruleNeeds(rule, OUTLINE, new Set(['wh1']))).toContain('Webhook wh-gone is gone');
+    expect(ruleNeeds(rule, OUTLINE, new Set(['wh1']))).not.toContain('Webhook wh1 is gone');
+  });
+});

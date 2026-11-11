@@ -8,10 +8,11 @@ import type { ItemHistoryChange } from '../item-history';
 import type { AutomationTrigger, AutomationTriggerKind } from './types';
 import type { AutomationRole } from './conditions';
 
-export type AutomationEventKind = 'created' | 'moved' | 'changed' | 'comment' | 'manual';
+export type AutomationEventKind = 'created' | 'moved' | 'changed' | 'comment' | 'manual' | 'time';
 
 export interface AutomationEvent {
-  // `${cardId}:${rev}` for a card write; `c:${commentId}`; `m:${nonce}`: with the rule's id it makes the run's id.
+  // `${cardId}:${rev}` for a card write; `c:${commentId}`; `m:${nonce}`; a time trigger's from time-cards.ts: with
+  // the rule's id it makes the run's id.
   id: string;
   kind: AutomationEventKind;
   cardId: string;
@@ -27,7 +28,7 @@ export interface AutomationEvent {
   // Set when a rule made the change: that rule, and how many rules the chain has run so far.
   rule?: string;
   chain?: number;
-  // A manual run: the one rule to run.
+  // A manual run or a time trigger's: the one rule to run.
   ruleId?: string;
   at: number;
 }
@@ -42,6 +43,10 @@ export const TRIGGER_EVENT_KINDS: Readonly<
   field_changed: ['changed', 'moved'],
   comment_added: ['comment'],
   manual: ['manual'],
+  // Queued by the time scan for its one rule, never by a write.
+  scheduled: ['time'],
+  due_in: ['time'],
+  overdue: ['time'],
 };
 
 // Who and why a write was made, as the event carries it.
@@ -95,7 +100,7 @@ export function eventOfWrite(
   return fields.length ? { ...base, kind: 'changed', fields } : null;
 }
 
-// Whether `trigger` hears `event`. A manual event names its one rule (`ruleId`).
+// Whether `trigger` hears `event`. A manual or time event names its one rule (`ruleId`).
 export function triggerMatches(
   trigger: AutomationTrigger,
   event: AutomationEvent,
@@ -125,5 +130,9 @@ export function triggerMatches(
       return event.kind === 'comment';
     case 'manual':
       return event.kind === 'manual' && event.ruleId === ruleId;
+    case 'scheduled':
+    case 'due_in':
+    case 'overdue':
+      return event.kind === 'time' && event.ruleId === ruleId;
   }
 }

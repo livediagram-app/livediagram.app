@@ -235,7 +235,7 @@ describe('readRuleBody', () => {
         then: [{ kind: 'if' }],
         else: [],
       }),
-      'steps.0.then.0.kind',
+      'steps.0.then.0',
     ],
     [
       'two cards in one run',

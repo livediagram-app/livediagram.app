@@ -8,6 +8,7 @@ import {
   itemPersonId,
   normaliseBoardSetup,
   planOutline,
+  doneStatusesOf,
   finishedStatuses,
   typesOf,
   AUTOMATION_PERSON_ID,
@@ -29,6 +30,8 @@ import { readPlanOutline } from '../plan-content';
 export interface AutomationPlan {
   outline: AutomationOutline;
   types: readonly ItemTypeDef[];
+  // Whether a status is one of the plan's done columns (Overdue leaves those cards out).
+  isDone: (status: string | undefined) => boolean;
   name: string;
   ownerId: string;
   teamId: string | null;
@@ -121,18 +124,20 @@ export async function readAutomationPlan(env: PlanEnv, planId: string): Promise<
     teamId,
     (known.results ?? []).map((r) => r.person_id),
   );
+  const board = planOutline(tabs, head.itemTypes);
   const people = new Map<string, ItemPerson>();
   for (const p of [...fromAccounts.people, ...cardPeople(items)])
     if (!people.has(p.id)) people.set(p.id, p);
   return {
     outline: {
       types,
-      statuses: planOutline(tabs, head.itemTypes).statuses,
+      statuses: board.statuses,
       people: [...people.values()],
       savedFilters: savedFiltersOf(tabs),
       formTabs: outlines.filter((t) => t.kind === 'form').map((t) => t.id),
     },
     types,
+    isDone: doneStatusesOf(board.boards),
     name: head.meta?.name ?? '',
     ownerId,
     teamId,

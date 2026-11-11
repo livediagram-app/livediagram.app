@@ -290,6 +290,65 @@ ALTER TABLE automation_rules ADD COLUMN turn INTEGER NOT NULL DEFAULT 0;        
   the builder unsaved with its left-to-pick steps marked.
 - A Browser Storage plan's footer button opens the **Rules Run on Our Servers** panel instead of the screen.
 
+### As built (Phase 2 engine)
+
+What the items package and the api do, where it differs from or adds to the design above (each a decision of the
+build):
+
+- **Files.** `packages/items/src/automation/` gains `schedule.ts` (`clockMinutes`, `clockWords`, `firesOn`,
+  `momentOn`, `nextMoment`, `latestMissed`; a Scheduled rule's days are a Repeat's, through `repeat.ts occursOn`),
+  `related.ts` (`relatedCards`), `time-cards.ts` (`timeCards`: the scan's pure part, the event ids and the 100 cap),
+  `set-value.ts` and `plan-walk.ts` (split out of `plan-actions.ts`, which re-exports the Planned* types). The moment
+  of a clock time on a day is `clockMoment(day, minutes, timeZone)` in `repeat-dates.ts`, beside `dayStart`, so
+  the zone sums stay in one place. The api gains `apps/api/src/plan-room/automations/automation-time.ts` (the wake's scan) and
+  `apps/api/src/plan-room/automations/automation-sends.ts` (the one push). `templates.ts` is not built here: it belongs with the
+  Templates gallery.
+- **`AutomationOutgoing.name`** (optional, up to 80 characters): the webhook's name when the builder picked it. The
+  room holds no list of the plan's webhooks, so the Run Log's "Queued for Launch Channel" and "Would post to Launch
+  Channel: …" read it; the sentence prefers the outline's current name (`RuleSentenceOutline.webhooks`).
+- **Event kind `time`**: `TRIGGER_EVENT_KINDS` maps the three time triggers to `['time']`, which no write builds, so
+  a plan whose only rules are time rules still pays nothing on a save. `triggerMatches` hears a time event for its
+  `ruleId` alone, as a manual one.
+- **Refusals.** Who Did It, Assign whoever triggered and Send Email to whoever triggered are refused on a time
+  trigger wherever they stand (the rule's conditions, an If's, a branch's; its actions). An If / Else holds actions
+  only: an outgoing action, a branch or an If inside one is `automation_step_unsupported`, as in a branch.
+  Both new codes are in `AUTOMATION_ERRORS` (400). `{{trigger.…}}` outside a branch is `automation_value_unknown`.
+- **The wake.** One alarm step does the time scan, then drains the queue the scan just filled.
+  `AutomationSchedule.timeAt` is `MIN(next_at)` (read on restore, after every rule write through
+  `AutomationStore.onSchedule`, and after each scan); `wakeAt` is the earlier of it and the queue's, which
+  `armAlarm` takes. A due rule whose cards don't fit in the queue's room now is not dropped: its row stays due and
+  the scan asks again in 1 s (`AUTOMATION_TIME_RETRY_MS`), so a moment never loses cards to the 500 cap; the run ids
+  make the re-scan harmless. The Skipped "Ran on 100 of 340 …" row has id `time:<rule>:<moment>` and counts toward
+  the day's budget like any Skipped row. A wake that throws pushes `timeAt` a minute on, as the queue's.
+- **Copies** schedule each time rule they keep on, from the copy's moment (`copiedRuleStatements`).
+- **Branches.** The branch's actions count once toward the run's 20, not once per card. Its line reads "For each
+  Child Card: on 3 related cards" (", failed on #12, #14" when any did; "on 100 of 340" past the cap); each related
+  card's lines follow it headed by its number, and a card whose conditions don't hold gets one line naming the first
+  that failed. A related card that fails keeps the writes of its steps before (as the top level does); the run goes
+  on to its later steps and ends **Failed**, "Failed on #12, #14: <the first reason>". A write the card store
+  refuses for a related card fails that card the same way. Linked Cards reads the card type's Card fields only;
+  Cards Matching a Saved Filter leaves out the triggering card. A run reads the plan's cards only when the rule has a
+  branch.
+- **Assign in Turn.** Each assignment takes as many turns as it looked through (a person who left uses their turn),
+  so a branch gives each related card the next person; a done run adds the turns taken (`advanceTurn`), a failed,
+  unmatched or test run adds none. Test on a Card takes an optional `ruleId` (`AutomationTestRequest.ruleId`) to show
+  the saved rule's turn.
+- **Notify.** Sent after every card write, in one push, key `${runId}:${step}`, the card's link `cardUrl` (the
+  app's own origin). A message whose filled text is blank is never sent and fails its step, "The message came out
+  empty" (the index refuses a blank send, and with it the whole push). The index's reasons are shown as it words
+  them. `paused.webhook` is set when the pausing failure was a webhook paused or gone, not one that was full.
+  The index client's `pushAutomationSends` is declared in `automation-sends.ts` to the signature
+  `packages/index-client` builds (`AutomationSend`, `AutomationSendResult`), read off the app client at run time,
+  until the two branches meet; then it is that package's import.
+- **`{{person}}`** reads "Automation" whenever the trigger is by Automation (a time trigger or another rule's change).
+- **Needs Attention** names people in turn, a branch's saved filter and Card field, and its conditions' and
+  actions' names; webhooks only when the caller passes the plan's webhook ids (`ruleNeeds(rule, outline, webhooks)`,
+  the builder): the api's list does not, since the webhooks live in the index.
+- **Test on a Card** of a time rule runs on the chosen card as at its moment, without checking its due date.
+- **Measured** (`automations.perf.test.ts`): 2,000 cards and 50 overdue rules due at once (5 hearing every card, 45
+  checking a condition that never holds): the wake's CPU time is 165 to 191 ms on an M-series Mac, against the
+  1,500 ms limit.
+
 ## Editor
 
 - `ChromeControls` takes `onOpenAutomations?` and `automationsAttention?` (the amber dot); the editor passes them

@@ -22,7 +22,7 @@ import { CARD_THREADS_SCHEMA } from './card-thread-schema';
 import { IMAGE_REFS_SCHEMA } from './image-refs';
 import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
 import { ITEM_IMPORTS_SCHEMA } from './item-imports-schema';
-import { AUTOMATIONS_SCHEMA } from './automations/automation-schema';
+import { AUTOMATIONS_SCHEMA, automationsV19 } from './automations/automation-schema';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -460,6 +460,9 @@ const V17 = (exec: Exec) => {
 // waiting for its alarm and its Run Log.
 const V18 = AUTOMATIONS_SCHEMA;
 
+// Automations Phase 2 (automations/automation-schema.ts): the time triggers' schedule and Assign in Turn's place.
+const V19 = automationsV19;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -479,6 +482,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V16,
   V17,
   V18,
+  V19,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
