@@ -306,15 +306,12 @@ threads (open and resolved), so you never ask the same question twice.
   Review Work Items, reply in them and resolve them once their answer is acted on (or, on a card in any column,
   once moot, as above); correct a Work Item's
   **Type** when it's wrong or missing; add its missing **labels**; and fill its empty **Acceptance Criteria**, **Risks** and
-  **Risk** (and an empty description); and merge related Under Review, Reviewed and Selected for Development cards as "Merging related
-  cards" says (the only time it edits filled fields, retitles a card, sets Priority or moves a card to
-  Cancelled). Otherwise never edit a card's title or change a field someone already filled. Never move
-
-  **Type** when it's wrong or missing; add its missing **labels**; and add or remove the **`needs-owner`**
-  label as "Flag for the owner" says. Never edit a card's title, description or other fields. Never move
-  cards anywhere else. Never reply to, resolve, edit or delete a thread a person started, or anyone's comment
-  but the loop's own. Never touch cards in any other column or on any other board.
-
+  **Risk** (and an empty description); add or remove the **`needs-owner`** label as "Flag for the owner" says;
+  and merge related Under Review, Reviewed and Selected for Development cards as "Merging related cards" says
+  (the only time it edits filled fields, retitles a card, sets Priority or moves a card to Cancelled).
+  Otherwise never edit a card's title or change a field someone already filled. Never move cards anywhere
+  else. Never reply to, resolve, edit or delete a thread a person started, or anyone's comment but the loop's
+  own. Never touch cards in any other column or on any other board.
 - Never write code, branches or PRs from this loop. It only reviews.
 - Never use em dashes in anything you write. Use commas, colons or parentheses.
 - If the MCP refuses a change, report it and carry on with the other cards.
