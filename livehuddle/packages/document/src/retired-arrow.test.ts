@@ -21,7 +21,7 @@ import {
 const box = (id: string, x: number, y: number, extra: Record<string, unknown> = {}) => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x,
   y,
   width: 100,
@@ -140,7 +140,7 @@ describe('retiredArrowEnds', () => {
 
   it('never pins to an arrow or to an element without a box', () => {
     const other = arrow('o', free(0, 0), free(10, 10));
-    const broken = { id: 'b', type: 'shape', shape: 'square', x: 0, y: 0, width: 'wide' };
+    const broken = { id: 'b', type: 'shape', shape: 'focus-button', x: 0, y: 0, width: 'wide' };
     const a = arrow('a', pinned('o', 'n'), free(5, 5));
     expect(retiredArrowEnds(a, [other, a]).from).toEqual({ x: 5, y: 5 });
     expect(retiredArrowEnds(arrow('a', pinned('b', 'n'), free(5, 5)), [broken]).from).toEqual({

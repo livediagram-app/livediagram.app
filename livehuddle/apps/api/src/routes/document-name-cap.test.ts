@@ -42,7 +42,7 @@ const T0 = 1_700_000_000_000;
 const LONG = 'Quarterly platform migration plan for the payments team and friends';
 const LONG_CAPPED = 'Quarterly platform migration plan for the payments team…';
 
-const square = { id: 'e1', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 60 };
+const signpost = { id: 'e1', type: 'shape', shape: 'signpost', x: 0, y: 0, width: 100, height: 60 };
 
 function call(db: SqliteD1, method: string, path: string, body?: unknown) {
   return handleDocuments(makeTestRouteContext(method, path, { env: db.env, owner: 'owner', body }));
@@ -85,7 +85,7 @@ describe('POST /api/documents name cap', () => {
     await call(db, 'POST', '/api/documents', {
       id: 'D',
       name: 'Plan',
-      tabs: [{ id: 't1', name: LONG, elements: [square] }],
+      tabs: [{ id: 't1', name: LONG, elements: [signpost] }],
     });
     expect(tabName(db.sql, 't1')).toBe(LONG_CAPPED);
   });
@@ -140,7 +140,7 @@ describe('PUT /api/documents/:id/tabs/:tabId name cap', () => {
     const res = await call(db, 'PUT', '/api/documents/D/tabs/t1', {
       id: 't1',
       name: LONG,
-      elements: [square],
+      elements: [signpost],
     });
     expect(res.status).toBe(200);
     expect(tabName(db.sql, 't1')).toBe(LONG_CAPPED);
@@ -152,7 +152,11 @@ describe('PUT /api/documents/:id/tabs/:tabId name cap', () => {
     await call(db, 'POST', '/api/documents', { id: 'D', name: 'Plan' });
     await call(db, 'PUT', '/api/documents/D/tabs/t1', { id: 't1', name: 'Tab', elements: [] });
     db.sql.prepare('UPDATE tabs SET name = ? WHERE id = ?').run(LONG, 't1');
-    await call(db, 'PUT', '/api/documents/D/tabs/t1', { id: 't1', name: LONG, elements: [square] });
+    await call(db, 'PUT', '/api/documents/D/tabs/t1', {
+      id: 't1',
+      name: LONG,
+      elements: [signpost],
+    });
     expect(tabName(db.sql, 't1')).toBe(LONG);
   });
 

@@ -1,5 +1,7 @@
 // The working state made into the next tab (docs/specs/024-agents/blueprints/edit-operations.md
-// "Finalise"): touched elements normalised and their shape kinds coerced, then checked, and the whole tab validated.
+// "Finalise"): touched elements normalised, then checked, and the whole tab validated. A shape the edit gave a kind
+// livehuddle does not have is refused, never coerced (docs/specs/002-project-scope/not-in-livehuddle.md "The element
+// engine", part 5, D30).
 // Untouched elements pass through as the same objects (I2). A stored arrow is a retired element (docs/specs/
 // 002-project-scope/not-in-livehuddle.md "The element engine", part 4): nothing re-anchors it, and its pinned ends
 // follow the boxes they name when it is drawn.
@@ -7,7 +9,7 @@
 import type { EditRejection } from '@livehuddle/api-schema';
 import {
   MAX_ELEMENTS_PER_TAB,
-  coerceShapeKind,
+  SHAPE_KINDS,
   elementValidationIssue,
   isValidTab,
   normaliseElement,
@@ -16,16 +18,17 @@ import {
 } from '@livehuddle/document';
 import { kindOf } from './element-text';
 import { sameValue } from './equality';
-import { invalidResult } from './rejections';
+import { invalidResult, invalidValue } from './rejections';
 import { currentElements, replaceElement, type EditState } from './state';
 import type { EditLog } from './types';
 import { ALIAS_FIELDS } from './fields';
+import { SHAPES_RETIRED } from './vocabulary';
 
 type Raw = Record<string, unknown>;
 
 const GEOMETRY: ReadonlySet<string> = new Set(['x', 'y', 'width', 'height']);
 
-function normaliseTouched(state: EditState, log: EditLog): void {
+function normaliseTouched(state: EditState, log: EditLog): EditRejection | null {
   for (const [id, { operation, written }] of state.touched) {
     const el = state.byId.get(id);
     // Normalising settles what an operation wrote; an element only moved, carried or grown changes
@@ -46,20 +49,13 @@ function normaliseTouched(state: EditState, log: EditLog): void {
     // not-in-livehuddle.md "The element engine", part 3), keeps its kind when an agent relabels it.
     const was = state.before.get(id);
     const kept = was?.type === 'shape' && was.shape === normalised.shape;
-    if (normalised.type === 'shape' && !kept) {
-      const shape = coerceShapeKind(normalised.shape);
-      if (shape !== normalised.shape) {
-        state.warnings.push({
-          code: 'shape_coerced',
-          ref: id,
-          message: `${id} shape ${JSON.stringify(normalised.shape)} drawn as ${shape}`,
-        });
-        log('[edit-ops] coerced', { operation, field: 'shape' });
-        normalised.shape = shape;
-      }
+    if (normalised.type === 'shape' && !kept && !SHAPE_KINDS.has(String(normalised.shape))) {
+      log('[edit-ops] rejected', { code: 'invalid_value', operation, field: 'shape' });
+      return invalidValue(operation, 'shape', String(normalised.shape), SHAPES_RETIRED);
     }
     replaceElement(state, normalised as unknown as Element);
   }
+  return null;
 }
 
 function touchedIssue(state: EditState): EditRejection | null {
@@ -90,7 +86,8 @@ export function tabRejection(tab: Tab): EditRejection {
 }
 
 export function finalise(state: EditState, log: EditLog): Tab | EditRejection {
-  normaliseTouched(state, log);
+  const refused = normaliseTouched(state, log);
+  if (refused) return refused;
   const issue = touchedIssue(state);
   if (issue) return issue;
   // An element that ends as it began is the element it began as (E1, I2).

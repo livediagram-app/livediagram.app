@@ -22,7 +22,7 @@ function mkShape(id: string, comments: Comment[]): ShapeElement {
   return {
     id,
     type: 'shape',
-    shape: 'square',
+    shape: 'signpost',
     x: 0,
     y: 0,
     width: 100,
@@ -53,7 +53,7 @@ describe('rewriteCommentAuthors', () => {
     const el: Element = {
       id: 'a',
       type: 'shape',
-      shape: 'square',
+      shape: 'signpost',
       x: 0,
       y: 0,
       width: 10,

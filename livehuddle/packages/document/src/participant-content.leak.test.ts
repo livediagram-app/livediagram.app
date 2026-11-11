@@ -24,7 +24,7 @@ const theirs = (el: Element, id: string): Element => ({ ...el, id, addedBy: THEM
 const mine = (el: Element, id: string): Element => ({ ...el, id, addedBy: ME }) as Element;
 
 const SAMPLES: Sample[] = [
-  { name: 'shape (square)', el: theirs(createShape('square', 0, 0), 'sq'), allowed: [] },
+  { name: 'shape (square)', el: theirs(createShape('focus-button', 0, 0), 'sq'), allowed: [] },
   {
     name: 'shape (Behaviour: mode button)',
     el: theirs(createShape('mode-button', 0, 0), 'sb'),

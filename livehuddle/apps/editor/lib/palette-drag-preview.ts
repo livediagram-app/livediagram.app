@@ -12,7 +12,8 @@ import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 // would be awkward to thread through the editor's prop tree.
 
 type PaletteDragPreview = {
-  kind: ShapeKind;
+  // A shape kind, or a sticky note (an element type of its own, previewed as its box).
+  kind: ShapeKind | 'sticky';
   iconId?: string;
   // The dragged tile's preset (docs/specs/009-elements/office.md "Room presets", room-builder.md "Door types"), so the
   // placement preview draws the room, door, corridor or rug that lands.

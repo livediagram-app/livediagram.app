@@ -3,7 +3,7 @@ import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DragMode } from '@/lib/canvas';
 import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
-import { createShape, type Element, type Tab } from '@livehuddle/document';
+import { createSticky, type Element, type Tab } from '@livehuddle/document';
 import { useEditorDrag } from './useEditorDrag';
 import type { EditorDragDeps } from './useEditorDrag.types';
 
@@ -11,9 +11,9 @@ import type { EditorDragDeps } from './useEditorDrag.types';
 // selection, so a plain press on an element outside the multi-selection selects it alone.
 
 function harness(multi: string[]) {
-  const a = createShape('square', 0, 0);
-  const b = createShape('square', 200, 0);
-  const c = createShape('square', 400, 0);
+  const a = createSticky(0, 0);
+  const b = createSticky(200, 0);
+  const c = createSticky(400, 0);
   const elements: Element[] = [a, b, c];
   const setSelectedId = vi.fn();
   const setMultiSelectedIds = vi.fn();

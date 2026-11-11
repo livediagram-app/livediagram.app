@@ -16,8 +16,6 @@ import {
   supportsFillColor,
   defaultStrokeColor,
   defaultTextColor,
-  shownBorderRadius,
-  supportsBorderRadius,
   supportsColours,
   supportsShadow,
   supportsFinish,
@@ -34,7 +32,6 @@ import {
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { ColourRow } from '@/components/palette/context-menu-rows';
 import { BorderControls } from '@/components/palette/BorderControls';
-import { AccentEdgeRow } from '@/components/palette/AccentEdgeRow';
 import { ShadowSection } from '@/components/palette/ShadowSection';
 import { FinishSection, resolveOwnFinish } from '@/components/palette/FinishSection';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
@@ -149,7 +146,7 @@ export function ElementColourBorderSections({
           </MenuAccordionSection>
         </>
       ) : null}
-      {/* Border — strength / pattern / radius. Pie charts have no box border
+      {/* Border: strength and pattern. Pie charts have no box border
             to style, so they're excluded. */}
       {borderable ? (
         <>
@@ -157,27 +154,11 @@ export function ElementColourBorderSections({
             <BorderControls
               strokeWidth={borderStrokeVal}
               strokeStyle={borderStyleVal}
-              radius={supportsBorderRadius(target) ? shownBorderRadius(target) : null}
               onCommitBorderStroke={props.onCommitBorderStroke}
               onPreviewBorderStroke={props.onPreviewBorderStroke}
               onCommitBorderStyle={props.onCommitBorderStyle}
               onPreviewBorderStyle={props.onPreviewBorderStyle}
-              onCommitBorderRadius={props.onCommitBorderRadius}
-              onPreviewBorderRadius={props.onPreviewBorderRadius}
               onPreviewStyleEnd={props.onPreviewStyleEnd}
-            />
-            <AccentEdgeRow
-              target={target}
-              ops={props.elementStyle}
-              borderColour={shownColour(
-                target,
-                'line',
-                surface,
-                defaultStrokeColor(target as BoxedElement, surface),
-              )}
-              colourOpen={colorProps('accent-edge').open}
-              onToggleColour={colorProps('accent-edge').onToggle}
-              colourPalette={props.colourPalette}
             />
           </MenuAccordionSection>
         </>

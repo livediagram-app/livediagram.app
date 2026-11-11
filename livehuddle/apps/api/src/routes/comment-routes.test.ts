@@ -18,7 +18,7 @@ const shape = (id: string, extra: Record<string, unknown> = {}): Element =>
   ({
     id,
     type: 'shape',
-    shape: 'square',
+    shape: 'signpost',
     x: 0,
     y: 0,
     width: 100,

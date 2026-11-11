@@ -179,33 +179,12 @@ export function finishWobblesArt(el: { type: string; shape?: string }): boolean 
   return el.type === 'shape' && (el.shape === 'icon' || el.shape === 'sticker');
 }
 
-// The shapes whose whole body the sketched outline draws, their face being the label alone: Sketch has nothing
-// more of theirs to draw by hand (unless they carry an inline icon). Icons and stickers go through the wobble whole
-// (finishWobblesArt).
-const SKETCHED_BY_BODY = new Set<string>([
-  'square',
-  'circle',
-  'diamond',
-  'cylinder',
-  'parallelogram',
-  'hexagon',
-  'document',
-  'stadium',
-  'actor',
-  'final-state',
-  'cloud',
-  'triangle',
-  'trapezoid',
-  'star',
-  'speech-bubble',
-  'icon',
-  'sticker',
-]);
-
 /** The element kinds Sketch draws a face of by hand (docs/specs/008-canvas/finish.md "Every other face is drawn by
- *  hand too"): its ink through the wobble, its words crisp above it. Everything that draws more than a label, a
- *  link card, a stored embed's or table's placeholder, an annotation marker, and a plain box carrying an inline icon. */
-export function finishSplitsFace(el: { type: string; shape?: string; iconId?: string }): boolean {
+ *  hand too"): its ink through the wobble, its words crisp above it. Every shape but an icon and a sticker (which go
+ *  through the wobble whole, finishWobblesArt), a link card, a stored embed's or table's placeholder and an
+ *  annotation marker. The plain diagram boxes, whose face was their label alone, left with the element engine's
+ *  part 5 (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"). */
+export function finishSplitsFace(el: { type: string; shape?: string }): boolean {
   switch (el.type) {
     case 'link-card':
     case 'video':
@@ -213,7 +192,7 @@ export function finishSplitsFace(el: { type: string; shape?: string; iconId?: st
     case 'annotation':
       return true;
     case 'shape':
-      return !SKETCHED_BY_BODY.has(el.shape ?? '') || (!!el.iconId && !finishWobblesArt(el));
+      return !finishWobblesArt(el);
     default:
       return false;
   }

@@ -1,5 +1,9 @@
 # Multi-colour themes: blueprint
 
+> **No branch walk in livehuddle** (Work Tracker #459, part 5, D34 in the project scope's DEFAULTS.md): `hierarchy.ts`
+> and the walk over stored arrows are deleted ([The element engine](../../002-project-scope/not-in-livehuddle.md#the-element-engine)); a palette theme gives each boxed element
+> the next hue in document order. Where this file describes the walk, it records livediagram's design.
+
 Derived from [Multi-colour (rainbow) themes](../multicolour-themes.md). The spec decides; this file only adds engineering precision.
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
@@ -7,7 +11,7 @@ Scope, by file:
 
 | File                                                | Role                                                              |
 | --------------------------------------------------- | ----------------------------------------------------------------- |
-| `packages/document/src/hierarchy.ts`                | The branch walk: `assignBranches`, `branchOfArrow`, `ROOT_BRANCH` |
+| `livediagram/packages/document/src/hierarchy.ts`    | The branch walk: `assignBranches`, `branchOfArrow`, `ROOT_BRANCH` |
 | `packages/document/src/theme-graph.ts`              | The four wrappers and the per-element branch resolution           |
 | `packages/document/src/themes-data.ts`              | The five built-in multi-colour themes                             |
 | `packages/document/src/colors.ts`                   | `contrastRatio`, the WCAG contrast helper (D3)                    |

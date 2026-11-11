@@ -10,7 +10,7 @@
 // its own file so EditorContextMenu doesn't accrete more large categories
 // inline (see the no-god-files principle).
 
-import { type BorderStyle, type BorderStroke, type ShapeKind } from '@livehuddle/document';
+import { type BorderStyle, type BorderStroke } from '@livehuddle/document';
 import type { ShapeColorPreset } from '@/lib/themes';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { MenuActionButton } from '@liveworkspace/workbench/components/primitives/PortalMenu';
@@ -54,14 +54,12 @@ function PresetLabel({ children, name }: { children: React.ReactNode; name: stri
   );
 }
 
-// The colour swatch previews on the user's actual shape (a circle as a circle,
-// not a square): the silhouette filled with the preset fill + stroked with its
+// The colour swatch: a box filled with the preset fill + stroked with its
 // border colour, an "A" in the text colour overlaid for the label.
-function ColorPresetSwatch({ preset, shape }: { preset: ShapeColorPreset; shape: ShapeKind }) {
+function ColorPresetSwatch({ preset }: { preset: ShapeColorPreset }) {
   return (
     <span className="relative flex h-5 w-7 items-center justify-center" aria-hidden>
       <ShapeGlyph
-        kind={shape}
         fill={preset.fill}
         stroke={preset.stroke}
         strokeWidth={BORDER_WIDTH_SVG[preset.borderStroke]}
@@ -76,7 +74,6 @@ function ColorPresetSwatch({ preset, shape }: { preset: ShapeColorPreset; shape:
 }
 
 export function ShapePresets({
-  shape,
   colorPresets,
   current,
   onApplyColor,
@@ -84,8 +81,6 @@ export function ShapePresets({
   onPreviewEnd,
   onReset,
 }: {
-  // The selected shape's kind, so the preview tiles match it.
-  shape: ShapeKind;
   colorPresets: ShapeColorPreset[];
   // The shape's current style, to highlight a preset that matches it.
   current: {
@@ -124,7 +119,7 @@ export function ShapePresets({
             onPointerLeave={onMouseHover(onPreviewEnd)}
           >
             <PresetLabel name={p.name}>
-              <ColorPresetSwatch preset={p} shape={shape} />
+              <ColorPresetSwatch preset={p} />
             </PresetLabel>
           </SizeButton>
         ))}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, createText } from '@livehuddle/document';
+import { createShape, createSticky, createText } from '@livehuddle/document';
 import { BLANK_PAD_DROP, buildTemplate } from '@livehuddle/templates';
 import { holdsOnlyPads, padOnlyTabCentre } from './pad-only-tab';
 
@@ -19,7 +19,7 @@ describe('holdsOnlyPads', () => {
 
   it('is false once anything else is on the tab', () => {
     expect(holdsOnlyPads([pad, createText(0, 0)])).toBe(false);
-    expect(holdsOnlyPads([createShape('square', 0, 0)])).toBe(false);
+    expect(holdsOnlyPads([createSticky(0, 0)])).toBe(false);
     expect(holdsOnlyPads(buildTemplate('team-pod', 0, 0))).toBe(false);
   });
 });

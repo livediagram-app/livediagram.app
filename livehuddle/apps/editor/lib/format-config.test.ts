@@ -14,7 +14,7 @@ import {
 // A source with every paintable field actually set, so the projections below
 // produce their full key set rather than a sparse one.
 const richShape = {
-  ...createShape('square', 0, 0),
+  ...createShape('room', 0, 0),
   fillColor: '#fff',
   strokeColor: '#000',
   strokeWidth: 'bold' as const,

@@ -1,5 +1,5 @@
 import type { Element } from './index';
-import { assignBranches, ROOT_BRANCH } from './hierarchy';
+import { assignBranches } from './hierarchy';
 import { rederiveColorPresetForTheme } from './theme-presets';
 import { rederiveQuickSwatches } from './quick-swatch-rederive';
 import {
@@ -15,10 +15,11 @@ import {
 // element's hierarchy branch before delegating to the per-element
 // transforms themes.ts keeps.
 //
-// A palette theme paints each branch of the hierarchy a different hue
-// instead of one colour for everything. Branch assignment needs the
-// WHOLE element list (to read the pinned-arrow graph), so the three
-// per-element transforms can't express it directly.
+// A palette theme paints each boxed element the next hue in document order
+// instead of one colour for everything (DEFAULTS.md D34 in
+// docs/specs/002-project-scope/blueprints). Branch assignment needs the
+// WHOLE element list, so the three per-element transforms can't express it
+// directly.
 //
 // The trick: for a palette theme we resolve each element's branch
 // colours and hand the existing per-element transform a SYNTHETIC theme
@@ -36,7 +37,7 @@ export const TRUNK_FALLBACK: ThemePaletteEntry = {
   text: '#0f172a',
 };
 
-type PaletteOp = 'recolour' | 'switch' | 'reset' | 'reset-arrows';
+type PaletteOp = 'recolour' | 'switch' | 'reset';
 
 // The branch map for one wrapper call, logged once. The walk itself never
 // logs: it runs inside every wrapper, so the wrapper owns the trace.
@@ -46,9 +47,8 @@ function branchMapFor(
   elements: Element[],
 ): Map<string, number> {
   const branches = assignBranches(elements);
-  const issued = new Set([...branches.values()].filter((b) => b !== ROOT_BRANCH)).size;
   console.info(
-    `[theme-graph] ${op} theme=${theme.id} elements=${elements.length} branches=${issued}`,
+    `[theme-graph] ${op} theme=${theme.id} elements=${elements.length} branches=${branches.size}`,
   );
   if (theme.palette?.length === 0) {
     console.warn(`[theme-graph] empty palette theme=${theme.id}, painting trunk`);
@@ -58,8 +58,8 @@ function branchMapFor(
 
 // The branch colours a given element should be painted with under a
 // palette theme: the palette entry for its branch, or the trunk colour
-// (rootColor) for root + not-yet-connected elements, and for every element
-// when the palette is empty.
+// (rootColor) for an element with no branch (a stored arrow) and for every
+// element when the palette is empty.
 function branchEntryFor(
   theme: ThemeDefinition,
   el: Element,
@@ -71,17 +71,17 @@ function branchEntryFor(
     stroke: theme.elementStroke ?? TRUNK_FALLBACK.stroke,
     text: theme.elementText ?? TRUNK_FALLBACK.text,
   };
-  const index = branches.get(el.id) ?? ROOT_BRANCH;
-  if (index === ROOT_BRANCH || palette.length === 0) return root;
-  return palette[((index % palette.length) + palette.length) % palette.length]!;
+  const index = branches.get(el.id);
+  if (index === undefined || palette.length === 0) return root;
+  return palette[index % palette.length]!;
 }
 
 // A per-element theme view: the same theme, but with its single-colour
 // element fields swapped for this element's branch colours (palette
-// themes) and/or its shape kind's colours (per-shape themes like UML).
-// Identity for a plain single-colour theme. Folding both rewrites here
-// means every transform (recolour / switch / reset) is branch- AND
-// shape-aware through one code path.
+// themes). Identity for a plain single-colour theme, so every transform
+// (recolour / switch / reset) is branch-aware through one code path. A
+// theme's per-shape overrides (UML's) named only the diagram shapes, which
+// are retired and keep their stored colours, so none applies (D34).
 function elementThemeView(
   theme: ThemeDefinition,
   el: Element,
@@ -96,20 +96,6 @@ function elementThemeView(
       elementStroke: entry.stroke,
       elementText: entry.text,
     };
-  }
-  // Per-shape overrides win over the branch / base colours: a UML
-  // diamond stays amber even if it sits on a coloured branch. Unset
-  // fields fall through to whatever the view resolved above.
-  if (theme.shapeColors && el.type === 'shape') {
-    const c = theme.shapeColors[el.shape];
-    if (c) {
-      view = {
-        ...view,
-        elementFill: c.fill ?? view.elementFill,
-        elementStroke: c.stroke ?? view.elementStroke,
-        elementText: c.text ?? view.elementText,
-      };
-    }
   }
   return view;
 }

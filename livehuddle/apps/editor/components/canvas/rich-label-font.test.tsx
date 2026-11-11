@@ -14,7 +14,7 @@ afterEach(() => cleanup());
 const el = {
   id: 's',
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 10,

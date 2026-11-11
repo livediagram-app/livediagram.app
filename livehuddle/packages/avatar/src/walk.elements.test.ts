@@ -25,7 +25,7 @@ describe('elementUnderFeet on any board', () => {
   const feet = { x: 50, y: 50 };
 
   it('rings the frontmost boxed element, never an arrow', () => {
-    expect(elementUnderFeet([box('a', 'sticky'), box('b', 'shape', 'square')], feet)).toBe('b');
+    expect(elementUnderFeet([box('a', 'sticky'), box('b', 'shape', 'icon')], feet)).toBe('b');
     expect(elementUnderFeet([box('a', 'sticky'), { id: 'arrow', type: 'arrow' }], feet)).toBe('a');
     expect(elementUnderFeet([box('a', 'sticky')], { x: 500, y: 50 })).toBeNull();
   });

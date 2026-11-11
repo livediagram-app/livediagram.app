@@ -24,7 +24,6 @@ import {
   supportsFinish,
   type Finish,
   type ElementShadow,
-  type BorderRadius,
   type BorderStroke,
   type BorderStyle,
   type BoxedElement,
@@ -33,7 +32,6 @@ import {
   type IconSize,
   type IconWeight,
   type Padding,
-  type ShapeKind,
   supportsRotation,
   type ShapeMarker,
   type TextAlignX,
@@ -153,11 +151,6 @@ export function applyBorderStyleToEl(el: Element, value: BorderStyle): Element {
   return supportsBorder(el) ? { ...el, strokeStyle: value } : el;
 }
 
-export function applyBorderRadiusToEl(el: Element, value: BorderRadius): Element {
-  if (isRetiredElement(el)) return el;
-  return el.type === 'shape' ? { ...el, borderRadius: value } : el;
-}
-
 // Element drop shadow (docs/specs/008-canvas/element-shadows.md). `null` clears the field; values clamp to
 // the slider limits so a preview / commit can never write an out-of-range
 // shadow. Gated to the body-drawing boxed types (shape / sticky / image /
@@ -185,21 +178,6 @@ export function applyRotationToEl(el: Element, deg: number): Element {
   if (!supportsRotation(el)) return el;
   const next = ((Math.round(deg) % 360) + 360) % 360;
   return { ...el, rotation: next === 0 ? undefined : next };
-}
-
-// Morph a shape into a different kind, preserving width / height / label /
-// colour overrides. Circle and diamond are 1:1 shapes — coming from a
-// non-square box, snap to the larger side so the result fits the original
-// footprint. No-op on non-shapes.
-export function applyShapeKindToEl(el: Element, kind: ShapeKind): Element {
-  if (isRetiredElement(el)) return el;
-  if (el.type !== 'shape') return el;
-  const oneToOne = kind === 'circle' || kind === 'diamond';
-  if (oneToOne) {
-    const side = Math.max(el.width, el.height);
-    return { ...el, shape: kind, width: side, height: side };
-  }
-  return { ...el, shape: kind };
 }
 
 // A Technology icon's fixed tile-size preset (docs/specs/010-palette/technology-icons.md). Icon shapes only.

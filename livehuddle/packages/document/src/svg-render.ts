@@ -8,7 +8,6 @@
 // Text measurement degrades to a char-width estimate when there's no DOM
 // (Workers / jsdom), so wrapping still works headless.
 
-import { hasShapeSilhouette, scaledPolygonPoints, svgShapeSilhouette } from './svg-render-shapes';
 import { faceFinishOf, finishWobblesArt, isHandDrawn, resolveFinish, type Finish } from './finish';
 import {
   SKETCH_ART_FILTER_ID,
@@ -21,7 +20,6 @@ import { sketchBackdropIds } from './sketch-backdrop';
 import { acceptsInlineIcon, canvasSurface } from './colors';
 import { inlineIconLayout } from './svg-render-inline-icon';
 import { svgIconShape, svgImageShape } from './svg-render-image-icon';
-import { DIAMOND_POINTS } from './shape-geometry';
 // Which body an element draws, and the list of kinds that have one (docs/specs/020-import-export/export-fidelity.md).
 import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
 import { isRetiredElement } from './retired-kinds';
@@ -106,8 +104,7 @@ import {
 // declares the ones it used so the file stands on its own.
 import { googleFontsHref } from '@liveworkspace/model-core/fonts';
 import { boundsOfPoints, type Point } from '@liveworkspace/model-core/geometry-primitives';
-import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
-import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
+import { borderedRect } from './svg-render-border';
 import { resolveStockColours } from './stock-colours';
 import { rotationOf } from './rotation';
 
@@ -198,8 +195,6 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
   // this stays in lockstep without threading the def through).
   const shadow = supportsShadow(el) ? el.shadow : undefined;
   const shadowAttr = shadow ? ` filter="url(#${shadowFilterId(shadow)})"` : '';
-  const cx = el.x + el.width / 2;
-  const cy = el.y + el.height / 2;
   let shapeStr = '';
   if (isRetiredElement(el)) {
     // A kind or type livehuddle no longer has (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): its
@@ -215,41 +210,11 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       // Its hand-drawn edge (finish.md "Images"), over the image. A stored hero caption is not drawn
       // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3).
       (sketch ?? '');
-  } else if (sketch && (shape.kind === 'ellipse' || shape.kind === 'diamond')) {
-    shapeStr = sketch;
-  } else if (shape.kind === 'ellipse') {
-    // Inset by half the border, as the canvas's CSS border sits inside.
-    const b = el.type === 'shape' ? borderOf(el, finish) : { width: 1.5, dash: null };
-    shapeStr = `<ellipse cx="${r2(cx)}" cy="${r2(cy)}" rx="${r2(Math.max(0, el.width / 2 - b.width / 2))}" ry="${r2(Math.max(0, el.height / 2 - b.width / 2))}" fill="${xmlEscape(shape.fill)}"${strokeAttrs(shape.stroke, b.width, b.dash)}/>`;
-  } else if (shape.kind === 'diamond') {
-    // Native at element coordinates, from the shared table's points, inset
-    // by half the border so the tips stay inside the box (strokeInside).
-    const b = el.type === 'shape' ? borderOf(el, finish) : { width: 1.5, dash: null };
-    const inset = b.width / 2;
-    const points = scaledPolygonPoints(
-      DIAMOND_POINTS,
-      el.x + inset,
-      el.y + inset,
-      Math.max(0, el.width - b.width),
-      Math.max(0, el.height - b.width),
-    );
-    shapeStr = `<polygon points="${points}" fill="${xmlEscape(shape.fill)}"${strokeAttrs(shape.stroke, b.width, b.dash)} stroke-linejoin="round"/>`;
   } else if (shape.kind === 'rect') {
-    // Shape silhouettes (hexagon / cylinder / document / actor /
-    // frame ...) mirror the editor overlay's geometry; kinds without one
-    // (square / sticky / text-box / cards) stay a rounded rect, with the
-    // stadium's full pill radius as the one native special case.
-    const silhouette =
-      el.type === 'shape' && hasShapeSilhouette(el.shape)
-        ? svgShapeSilhouette(el, shape.fill, shape.stroke, finish)
-        : null;
-    const rx =
-      el.type === 'shape' && el.shape === 'stadium'
-        ? Math.min(el.width, el.height) / 2
-        : // A sticky is die-cut paper: square corners, matching the canvas.
-          el.type === 'sticky'
-          ? 0
-          : 6;
+    // A box: a sticky is die-cut paper, square corners as on the canvas; anything else rounds a little. The diagram
+    // shapes' silhouettes (a circle, a diamond, a cylinder) left with them
+    // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5).
+    const rx = el.type === 'sticky' ? 0 : 6;
     // What this element draws INSTEAD of (or under) a plain label: its plot,
     // its value, its rows, its face. See svg-render-body.
     const face = svgElementBody(el, {
@@ -270,37 +235,18 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
     // a face, so a self-painting kind the export cannot draw yet (portal, an
     // unresolved icon) still renders its box rather than nothing at all. A
     // record and a page are NOT self-painting: their rows and masthead sit
-    // inside a real box, so they keep it. A silhouette always wins: an actor
-    // IS its figure.
+    // inside a real box, so they keep it.
     const selfPainting = el.type === 'shape' && SELF_PAINTING_SHAPES.has(el.shape);
     const box =
       sketch ??
-      silhouette ??
       (selfPainting && face
         ? ''
         : el.type === 'shape'
           ? // A shape's border is the element's own (width, dash, radius), inset
-            // like the canvas's CSS border (svg-render-border). A stadium and a
-            // mind node keep their silhouette radius.
-            borderedRect(
-              el,
-              shape.fill,
-              shape.stroke,
-              el.shape === 'stadium' ? rx : undefined,
-              finish,
-            )
+            // like the canvas's CSS border (svg-render-border).
+            borderedRect(el, shape.fill, shape.stroke, undefined, finish)
           : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`);
-    // An accent edge (docs/specs/008-canvas/accent-edge.md): over the fill, inside the border, under the label.
-    const edgeBorder = el.type === 'shape' ? borderOf(el, finish) : null;
-    const edge =
-      el.type === 'shape' && edgeBorder
-        ? svgAccentEdge(el, {
-            stroke: shape.stroke,
-            borderWidth: edgeBorder.width,
-            radius: el.shape === 'stadium' ? rx : edgeBorder.radius,
-          })
-        : '';
-    shapeStr = box + edge + face;
+    shapeStr = box + face;
   } else if (shape.kind === 'icon') {
     shapeStr = svgIconShape(el, shape.art, shape.stroke);
   } else if (shape.kind === 'sticker') {
@@ -325,7 +271,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
     el.type === 'shape' &&
     acceptsInlineIcon(el) &&
     el.iconId &&
-    (shape.kind === 'rect' || shape.kind === 'ellipse' || shape.kind === 'diamond') &&
+    shape.kind === 'rect' &&
     !selfLabelled(el)
       ? opts.resolveIconArt?.(el.iconId)
       : undefined;
@@ -429,14 +375,11 @@ export function boxedNeedsSvgRaster(
   // A shadow renders via an feDropShadow filter def (docs/specs/008-canvas/element-shadows.md), which the
   // PNG canvas drawers can't reproduce natively.
   if (supportsShadow(el) && el.shadow) return true;
-  // An accent edge (docs/specs/008-canvas/accent-edge.md) is a clipped bar only the SVG draws.
-  if (resolvedAccentEdge(el)) return true;
   // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") is the SVG's placeholder
   // card, which the canvas drawers have no drawer for: a stored table or embed would otherwise export as a bare box.
   if (isRetiredElement(el)) return true;
   // Wordmark type (tracking, weight, case, an arc) is drawn by the SVG alone.
   if (el.type === 'text' && hasWordmarkType(el)) return true;
-  if (el.type === 'shape' && (hasShapeSilhouette(el.shape) || el.shape === 'stadium')) return true;
   // Anything whose BODY this module draws and the canvas drawers cannot: a
   // chart's plot, a progress value, a card's face, a lane's gutter, a
   // browser's chrome. Without this the PNG / PDF export kept drawing them as

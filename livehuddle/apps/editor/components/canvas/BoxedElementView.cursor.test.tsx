@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement } from '@livehuddle/document';
+import { createSticky, type BoxedElement } from '@livehuddle/document';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 
 // docs/specs/013-workspace/share-roles.md: a Participant moves stickies and what it added, nothing else, so the
@@ -13,7 +13,7 @@ function wrapperFor(props: {
   locked?: boolean;
   remoteSelectors?: { id: string; name: string; color: string; holds: boolean }[];
 }) {
-  const element = { ...createShape('square', 0, 0), locked: props.locked } as BoxedElement;
+  const element = { ...createSticky(0, 0), locked: props.locked } as BoxedElement;
   const { container } = render(
     <BoxedElementView
       element={element}

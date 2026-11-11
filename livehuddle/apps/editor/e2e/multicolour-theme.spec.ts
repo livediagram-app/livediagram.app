@@ -35,8 +35,7 @@ test.describe('Multi-colour themes', () => {
     await startBlankDocument(page);
     const box = (id: string, x: number, y: number) => ({
       id,
-      type: 'shape',
-      shape: 'square',
+      type: 'sticky',
       x,
       y,
       width: 120,

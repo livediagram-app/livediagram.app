@@ -29,7 +29,7 @@ function tabOf(perFrame: number) {
     for (let i = 0; i < perFrame; i++) {
       elements.push(
         shapeAt(
-          'square',
+          'signpost',
           `n-${frame}-${i}`,
           fx + (i % 60) * 240 + 20,
           fy + Math.floor(i / 60) * 200 + 40,
@@ -77,7 +77,9 @@ function framesOf(n: number) {
     elements.push(
       retiredShapeAt('boundary', `fr-${i}`, i * 1000, 0, 500, 500, { label: `Frame ${i}` }),
     );
-    elements.push(shapeAt('square', `bx-${i}`, i * 1000 + 50, 50, 100, 50, { label: `Box ${i}` }));
+    elements.push(
+      shapeAt('signpost', `bx-${i}`, i * 1000 + 50, 50, 100, 50, { label: `Box ${i}` }),
+    );
   }
   return { id: 'frames', name: 'Frames', elements };
 }

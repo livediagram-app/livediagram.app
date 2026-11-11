@@ -22,9 +22,9 @@ import {
 
 describe('boxed-element factories', () => {
   it('createShape sets type/shape/position and a fresh uuid', () => {
-    const s = createShape('circle', 10, 20);
+    const s = createShape('focus-button', 10, 20);
     expect(s.type).toBe('shape');
-    expect(s.shape).toBe('circle');
+    expect(s.shape).toBe('focus-button');
     expect(s).toMatchObject({ x: 10, y: 20, textSize: 'md' });
     expect(s.width).toBeGreaterThan(0);
     expect(s.height).toBeGreaterThan(0);
@@ -32,8 +32,8 @@ describe('boxed-element factories', () => {
   });
 
   it('createShape uses per-kind default sizes', () => {
-    expect(createShape('square', 0, 0)).toMatchObject({ width: 120, height: 120 });
-    expect(createShape('stadium', 0, 0)).toMatchObject({ width: 160, height: 64 });
+    expect(createShape('focus-button', 0, 0)).toMatchObject({ width: 120, height: 96 });
+    expect(createShape('room', 0, 0)).toMatchObject({ width: 480, height: 320 });
   });
 
   it('createText seeds a default label and size', () => {
@@ -92,7 +92,7 @@ describe('boxed-element factories', () => {
   });
 
   it('factories mint distinct ids on each call', () => {
-    expect(createShape('square', 0, 0).id).not.toBe(createShape('square', 0, 0).id);
+    expect(createShape('focus-button', 0, 0).id).not.toBe(createShape('focus-button', 0, 0).id);
     expect(createImage(0, 0).id).not.toBe(createImage(0, 0).id);
   });
 });
@@ -101,7 +101,7 @@ describe('duplicateElements', () => {
   const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
     id,
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     x: 0,
     y: 0,
     width: 50,
@@ -372,7 +372,7 @@ describe('comment helpers', () => {
 });
 
 // Sanity: the Element union import is exercised so the type stays referenced.
-const _typecheck: Element = createShape('square', 0, 0);
+const _typecheck: Element = createShape('focus-button', 0, 0);
 void _typecheck;
 
 describe('createShape (mode button, docs/specs/009-elements/mode-button.md)', () => {

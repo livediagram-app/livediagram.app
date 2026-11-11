@@ -42,7 +42,7 @@ describe('the shared settings ellipsis (docs/specs/008-canvas/canvas-and-palette
     expect(carriesSharedSettingsMenu('chair')).toBe(false);
     expect(carriesSharedSettingsMenu('focus-button')).toBe(false);
     expect(carriesSharedSettingsMenu('mode-button')).toBe(true);
-    expect(carriesSharedSettingsMenu('square')).toBe(false);
+    expect(carriesSharedSettingsMenu('focus-button')).toBe(false);
   });
 
   it('is not on a retired element, which has no settings', () => {
@@ -57,13 +57,13 @@ describe('hasOwnFace', () => {
     }
     expect(hasOwnFace(retired('estimate'))).toBe(true);
     expect(hasOwnFace(retired('never-a-kind'))).toBe(true);
-    expect(hasOwnFace('square')).toBe(false);
+    expect(hasOwnFace('room')).toBe(false);
   });
 });
 
 describe('opensInlineLabelEditor', () => {
   it('opens on a labelled kind, never on a self-drawing kind or a retired element', () => {
-    expect(opensInlineLabelEditor('square')).toBe(true);
+    expect(opensInlineLabelEditor('focus-button')).toBe(true);
     expect(opensInlineLabelEditor('sticker')).toBe(false);
     expect(opensInlineLabelEditor(retired('quiz'))).toBe(false);
   });
@@ -89,7 +89,7 @@ describe('supportsTextAlign', () => {
 
   it('is on for plain shapes and for kinds that render the aligned label', () => {
     // An icon's alignment places its caption around the glyph (docs/specs/010-palette/technology-icons.md).
-    for (const kind of ['square', 'circle', 'icon'] as const) {
+    for (const kind of ['room', 'office-pod', 'icon'] as const) {
       expect(supportsTextAlign(kind), kind).toBe(true);
     }
   });
@@ -105,7 +105,7 @@ describe('supportsMarkers', () => {
   });
 
   it('is on for plain shapes', () => {
-    for (const kind of ['square', 'circle'] as const) {
+    for (const kind of ['room', 'office-pod'] as const) {
       expect(supportsMarkers(kind), kind).toBe(true);
     }
   });

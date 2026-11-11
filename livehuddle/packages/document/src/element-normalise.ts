@@ -95,19 +95,11 @@ export function mergeElementUpdate(prev: unknown, patch: unknown): Raw {
 // Raw boxes take the graph look's text size by count (look-size.ts): past LOOK_MD_MAX_NODES labelled boxes, one that
 // gives no `textSize` takes `sm` before the factory's `md` fills in, so twenty hand-placed boxes do not wrap their
 // names mid-word.
-const PLAIN_BOX_EXCLUDED = new Set([
-  'code-block',
-  'bar-chart',
-  'pie-chart',
-  'line-chart',
-  'legend',
-]);
 const isPlainBox = (el: unknown): el is Raw =>
   isRecord(el) &&
   el.type === 'shape' &&
   typeof el.label === 'string' &&
   el.label.trim() !== '' &&
-  !PLAIN_BOX_EXCLUDED.has(String(el.shape)) &&
   !isRetiredElement(el as { type: string; shape?: unknown });
 function withLookTextSize(elements: unknown[], kept: ReadonlySet<string>): unknown[] {
   if (elements.filter(isPlainBox).length <= LOOK_MD_MAX_NODES) return elements;

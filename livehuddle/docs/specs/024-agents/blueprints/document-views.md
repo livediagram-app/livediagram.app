@@ -1,5 +1,10 @@
 # Document views: blueprint
 
+> **No lint view** ([The element engine](../../002-project-scope/not-in-livehuddle.md#the-element-engine), part 5): `lint` left `VIEW_NAMES`, so `view=lint` takes the
+> unknown-view refusal and `renderView` dispatches nothing to a lint; `@livehuddle/diagram-lint` is deleted. The
+> diagram shapes are retired kinds, printed as `? <kind>`. Where this file names the lint view below, it records the
+> design before part 5.
+
 > **No MCP server or CLI in livehuddle** ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
 > the REST API is the only front door, and agents reach it through the agent tools. Where this file names the MCP or
 > the CLI, it records livediagram's front doors over the same engine, where this design came from; their wire values

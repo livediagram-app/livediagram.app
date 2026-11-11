@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createElementAction,
   createShape,
+  createSticky,
   type BoxedElement,
   type ElementAction,
 } from '@livehuddle/document';
@@ -29,7 +30,7 @@ const mk = (name: string, status: 'open' | 'done' = 'open'): ElementAction => ({
 // still lists here, so nothing on it goes missing.
 const card = (actions: ElementAction[]): BoxedElement =>
   ({
-    ...createShape('square', 0, 0),
+    ...createShape('room', 0, 0),
     shape: 'action-card',
     id: 'card',
     actions,
@@ -64,12 +65,12 @@ describe('actionRowsFromElements', () => {
 
   it('still lists a legacy single `action` on a card or a plain element', () => {
     const legacyCard = {
-      ...createShape('square', 0, 0),
+      ...createShape('room', 0, 0),
       shape: 'action-card',
       id: 'old',
       action: mk('Legacy'),
     } as unknown as BoxedElement;
-    const plain = { ...createShape('square', 0, 0), id: 'sq', action: mk('Plain') } as BoxedElement;
+    const plain = { ...createSticky(0, 0), id: 'sq', action: mk('Plain') } as BoxedElement;
     expect(
       actionRowsFromElements([legacyCard, plain], null)
         .map((r) => r.actionName)

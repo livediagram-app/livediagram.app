@@ -29,7 +29,7 @@ Scope, by file:
 | `whiteboard-erase.ts` (retired with the Eraser)                        | `pathsTouched` went with it; `pathTouchesBrush` stays in the document package                                                     |
 | `apps/editor/lib/export-as-seen.ts`                                    | `tabAsSeen`: an export draws stock colours for its canvas                                                                         |
 | `apps/editor/lib/draw-mode.ts`                                         | `PendingDraw` `{ type: 'path' }`, banner, cursor                                                                                  |
-| `apps/editor/lib/whiteboard-tool.ts`                                   | `WhiteboardTool` gains `path`                                                                                                     |
+| `livediagram/apps/editor/lib/whiteboard-tool.ts`                       | `WhiteboardTool` gains `path`                                                                                                     |
 | `apps/editor/lib/quick-style.ts`, `quick-style-tool.ts`                | A path is a quick-style target; "Next path" phantom                                                                               |
 | `apps/editor/lib/style-memory.ts`                                      | Style kind `path` (`board:path` on a whiteboard)                                                                                  |
 | `apps/editor/lib/element-names.ts`                                     | "Path, N points" / "Closed path, N points"                                                                                        |
@@ -506,7 +506,7 @@ numbers only).
 | Draw gesture: press, drag, keys, commit, undo and redo while drawing                            | `livediagram/apps/editor/components/canvas/path/usePathDrawGesture.test.tsx`                                        |
 | Edit gesture: select, drag, keys, one commit                                                    | `livediagram/apps/editor/components/canvas/path/usePathEditGesture.test.tsx`                                        |
 | Commit: new, continued, edit, delete, telemetry                                                 | `livediagram/apps/editor/hooks/canvas/usePathCommits.test.tsx`                                                      |
-| Tool derivation                                                                                 | `apps/editor/lib/whiteboard-tool.test.ts`                                                                           |
+| Tool derivation                                                                                 | `livediagram/apps/editor/lib/whiteboard-tool.test.ts`                                                               |
 | Quick style and memory                                                                          | `apps/editor/lib/quick-style.test.ts`, `style-memory.test.ts`                                                       |
 | Accessible name                                                                                 | `apps/editor/lib/element-names.test.ts`                                                                             |
 | Excalidraw line                                                                                 | `../livediagram/apps/editor/lib/excalidraw-export.test.ts`                                                          |

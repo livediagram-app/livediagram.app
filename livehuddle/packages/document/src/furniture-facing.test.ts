@@ -34,7 +34,7 @@ describe('what turns', () => {
       'world-clock',
       'room',
       'door',
-      'square',
+      'focus-button',
     ])
       expect(turnsWithFacing(kind)).toBe(false);
   });
@@ -45,7 +45,7 @@ describe('what turns', () => {
       expect(art, kind).not.toBeNull();
       expect(art!.front.parts.length, kind).toBeGreaterThan(0);
     }
-    expect(pieceArt('square')).toBeNull();
+    expect(pieceArt('focus-button')).toBeNull();
   });
 
   // The Bar Stool reads the same from every side and turns only its sitter; a Rug's and a Hammock's back is its front
@@ -63,7 +63,7 @@ describe('what turns', () => {
   it('never takes the ordinary rotation, and a stored one is dropped and drawn upright', () => {
     expect(isFurnitureShape('sofa')).toBe(true);
     expect(isFurnitureShape('plant')).toBe(true);
-    expect(isFurnitureShape('square')).toBe(false);
+    expect(isFurnitureShape('focus-button')).toBe(false);
     const sofa = { ...createShape('sofa', 0, 0), rotation: 90 } as BoxedElement;
     expect(supportsRotation(sofa)).toBe(false);
     expect(rotationOf(sofa)).toBe(0);

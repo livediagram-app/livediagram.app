@@ -3,14 +3,11 @@
 // content (label and inline icon) to move out of its way when it would sit underneath.
 import { useMemo } from 'react';
 import {
-  centredIndicators,
   contentBox,
   contentShift,
-  footerAnchor,
   indicatorRings,
   pipInset,
   placeIndicators,
-  topAnchor,
   type BoxedElement,
   type IndicatorBox,
 } from '@livehuddle/document';
@@ -52,7 +49,7 @@ export function placeCluster(
   const rings = indicatorRings(element, cornerPx);
   const footer = style === 'footer';
   const forms: Exclude<IndicatorForm, 'pip'>[] = footer ? ['footer', 'footer-compact'] : ['top'];
-  const anchor = footer ? footerAnchor(element) : topAnchor(element);
+  const anchor = footer ? 'bottom-left' : 'top-right';
   for (const form of forms) {
     const size = clusterSize(items, form);
     if (fixed) {
@@ -73,7 +70,7 @@ export function placeCluster(
     const shift = contentShift(box, fixed, height, content!.padding, content!.alignY, footer);
     if (shift) return { form, box, pip: null, inset: shift };
   }
-  const pip = pipInset(rings, width, height, centredIndicators(element));
+  const pip = pipInset(rings, width, height);
   return { form: 'pip', box: null, pip, inset: NO_INSET };
 }
 

@@ -660,7 +660,8 @@ What every part does:
     sticky"); `set … shape=<kind>` takes only a kind livehuddle has. A `replace` or a seeded tab whose new element is
     a shape of a kind livehuddle does not have is refused the same way; an element the tab already holds rides
     through a `replace` exactly as stored, whatever its kind (until now a stored lane sent back was rewritten into a
-    square).
+    square). A seeded tab is refused only when an agent (an api token) creates the document: a person's own create
+    (a copy, or Offline Mode committing a document) carries its stored elements as they were.
   - **The diagram lint goes** (`packages/diagram-lint`): a changeset's result keeps its `lint` member on the wire,
     always `null`, so an agent written against it keeps parsing; the footer no longer names a lint; the `lint` tab
     view is gone (`view=lint` is refused as an unknown view).
@@ -670,6 +671,9 @@ What every part does:
   - **The diagram theming goes**: the multicolour themes' branch walk over stored arrows (`hierarchy.ts`) and the
     themes' per-shape colour overrides for the diagram kinds. A palette theme paints each box the next hue in
     document order, as it always painted boxes no arrow joined.
+  - **Radius and the accent edge go.** Only the removed kinds took a corner radius or an accent edge, so no kept
+    kind offers either control; the accent edge's fields leave the element type, and a stored one stays on the
+    element as stored.
   - **Gone with the code**: each kind's palette tile definition and shortcut (`R`, `O`, `D`, `C`), its outline,
     geometry and hit outline, its CSS and SVG faces, its default size and factory branch, its label fitting, its
     finish (sketch and marker) outline, its export renderer, its agent view summary and its specs, which turn to

@@ -22,7 +22,9 @@ The indicators are **glyphs printed inside the element**, along its top, with no
 own: they read like metadata printed on a card. On a box-like element (a rectangle, rounded
 rectangle, pill, card or panel) they sit at the **top-right**; on a round or pointed
 shape (circle, diamond, hexagon, cloud, triangle, trapezoid, star, actor) they are **centred**
-along the top, since that shape has no corner for them to sit in.
+along the top, since that shape has no corner for them to sit in. Those round and pointed kinds left livehuddle
+([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine), part 5): a stored one is a retired placeholder, a box like any other, so in livehuddle the
+shaped placements below describe livediagram.
 
 - Each is a 14px line glyph in the element's own **text colour** at 50% opacity, so they suit any
   fill, theme or style preset. While the element is hovered they rise to 85%, and the glyph under

@@ -11,7 +11,7 @@ const theme = THEMES.find((t) => t.id === 'forest')!;
 const circle = (id: string, extra: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
   type: 'shape',
-  shape: 'circle',
+  shape: 'room',
   x: 0,
   y: 0,
   width: 10,
@@ -42,7 +42,7 @@ describe('useStyleMemory', () => {
       vi.advanceTimersByTime(STYLE_MEMORY_WRITE_DEBOUNCE_MS);
     });
     expect(JSON.parse(localStorage.getItem(styleMemoryKey('d1'))!)).toEqual({
-      'shape:circle': { strokeWidth: 'thin' },
+      'shape:room': { strokeWidth: 'thin' },
     });
     first.unmount();
     const again = renderHook(() => useStyleMemory({ documentId: 'd1', theme }));
@@ -64,7 +64,7 @@ describe('useStyleMemory', () => {
   it('forgets kinds', () => {
     const { result } = renderHook(() => useStyleMemory({ documentId: 'd1', theme }));
     act(() => result.current.recordEdit([circle('a')], [circle('a', { strokeWidth: 'thin' })]));
-    act(() => result.current.forget(['shape:circle']));
+    act(() => result.current.forget(['shape:room']));
     const plain = circle('b');
     expect(result.current.styleNewElement(plain)).toBe(plain);
   });

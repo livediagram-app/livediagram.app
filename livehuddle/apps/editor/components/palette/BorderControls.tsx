@@ -1,15 +1,12 @@
-import type { BorderRadius, BorderStroke, BorderStyle } from '@livehuddle/document';
-import { BORDER_RADII, BORDER_STROKES, BORDER_STYLES } from './context-menu-constants';
+import type { BorderStroke, BorderStyle } from '@livehuddle/document';
+import { BORDER_STROKES, BORDER_STYLES } from './context-menu-constants';
 import { SizeButton } from '@/components/palette/palette-controls';
-import {
-  BorderRadiusIcon,
-  BorderStrokeIcon,
-  BorderStyleIcon,
-} from '@/components/palette/palette-style-previews';
+import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-style-previews';
 import { BorderGrid } from '@/components/palette/context-menu-rows';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 
-// The Border category's three grids: Strength, Pattern, and Radius.
+// The Border category's two grids: Strength and Pattern. Its Radius grid served only the square, and left with the
+// diagram shapes (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5).
 //
 // Two menus render them — the single-element menu and the multi-select one —
 // and both had written all three out, thirty-odd lines each, differing only in
@@ -17,33 +14,21 @@ import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hov
 // preview wiring and the revert-on-leave were identical, which is the part
 // that matters: a preview that commits on hover and reverts on leave is easy
 // to get subtly wrong in one copy and not the other.
-//
-// `radius` is nullable rather than optional-by-omission because hiding the
-// Radius grid is a real state: a shape with no corners to round (and, in the
-// multi-select menu, a selection where nothing supports radius) shows Strength
-// and Pattern alone.
 export function BorderControls({
   strokeWidth,
   strokeStyle,
-  radius,
   onCommitBorderStroke,
   onPreviewBorderStroke,
   onCommitBorderStyle,
   onPreviewBorderStyle,
-  onCommitBorderRadius,
-  onPreviewBorderRadius,
   onPreviewStyleEnd,
 }: {
   strokeWidth: BorderStroke;
   strokeStyle: BorderStyle;
-  // null hides the Radius grid entirely.
-  radius: BorderRadius | null;
   onCommitBorderStroke: (value: BorderStroke) => void;
   onPreviewBorderStroke: (value: BorderStroke) => void;
   onCommitBorderStyle: (value: BorderStyle) => void;
   onPreviewBorderStyle: (value: BorderStyle) => void;
-  onCommitBorderRadius: (value: BorderRadius) => void;
-  onPreviewBorderRadius: (value: BorderRadius) => void;
   onPreviewStyleEnd: () => void;
 }) {
   return (
@@ -76,22 +61,6 @@ export function BorderControls({
           </SizeButton>
         ))}
       </BorderGrid>
-      {radius !== null ? (
-        <BorderGrid label="Radius" cols={5}>
-          {BORDER_RADII.map((v) => (
-            <SizeButton
-              key={v}
-              label={RADIUS_LABELS[v]}
-              active={radius === v}
-              onClick={() => onCommitBorderRadius(v)}
-              onPointerEnter={onMouseHover(() => onPreviewBorderRadius(v))}
-              onPointerLeave={onMouseHover(onPreviewStyleEnd)}
-            >
-              <BorderRadiusIcon value={v} />
-            </SizeButton>
-          ))}
-        </BorderGrid>
-      ) : null}
     </div>
   );
 }
@@ -102,12 +71,3 @@ const tileLabel = (v: string) =>
     .split('-')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
-
-// The Radius tiles' names: their values are abbreviations ('sm'), and Strength already has a Medium.
-const RADIUS_LABELS: Record<BorderRadius, string> = {
-  none: 'Square Corners',
-  sm: 'Small Radius',
-  md: 'Medium Radius',
-  lg: 'Large Radius',
-  full: 'Fully Round',
-};

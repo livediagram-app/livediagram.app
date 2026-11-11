@@ -24,11 +24,11 @@ describe('the public surface', () => {
     const outcome = applied(
       applyEditOperations(checkoutFlow(), operations, { makeId: fixedIds() }),
     );
-    const footer = formatResultFooter({ dryRun: true, rev: 41, lint: 'lint unavailable' });
+    const footer = formatResultFooter({ dryRun: true, rev: 41 });
     expect([...formatResultLines(outcome.results), footer]).toEqual([
       '~ n3  label "Login"→"Sign in"',
-      '- n7  square "Charge card"',
-      'dry run · rev 41 · lint unavailable · nothing written',
+      '- n7  signpost "Charge card"',
+      'dry run · rev 41 · nothing written',
     ]);
   });
 

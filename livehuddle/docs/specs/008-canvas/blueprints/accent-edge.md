@@ -1,10 +1,14 @@
 # Accent edge: blueprint
 
+> **Gone from livehuddle** (Work Tracker #459, part 5): every kind that took an accent edge (the Square, the Stadium,
+> the Card) is retired ([The element engine](../../002-project-scope/not-in-livehuddle.md#the-element-engine)), so nothing in livehuddle sets or draws one; a stored
+> `accentEdge` rides on its element as stored. This blueprint records the design as livediagram has it.
+
 Derived from [Accent edge](../accent-edge.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
 | File                                                      | Role                                                                |
 | --------------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/document/src/accent-edge.ts`                    | Vocabulary, `supportsAccentEdge`, geometry, colour, `svgAccentEdge` |
+| `livediagram/packages/document/src/accent-edge.ts`        | Vocabulary, `supportsAccentEdge`, geometry, colour, `svgAccentEdge` |
 | `packages/document/src/element-types.ts`                  | `accentEdge`, `accentEdgeColor` on `ShapeElement`                   |
 | `packages/document/src/element-fields.ts`                 | Both fields listed for `shape`                                      |
 | `packages/document/src/svg-render.ts`                     | Appends `svgAccentEdge` after the box, before the face and label    |
@@ -107,7 +111,7 @@ path of its own).
 
 | Rule                                     | Test file                                                  |
 | ---------------------------------------- | ---------------------------------------------------------- |
-| Supported kinds, resolution, E1, E2      | `packages/document/src/accent-edge.test.ts`                |
+| Supported kinds, resolution, E1, E2      | `livediagram/packages/document/src/accent-edge.test.ts`    |
 | Thickness clamp and rects per edge       | same                                                       |
 | Export draws a clipped bar in the colour | same (`svgAccentEdge`), `svg-render.test.ts`               |
 | Canvas overlay draws per edge / nothing  | `apps/editor/components/canvas/AccentEdgeOverlay.test.tsx` |

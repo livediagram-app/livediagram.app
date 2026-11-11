@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyElementOps,
   getBuiltInTheme,
+  type Element,
   type Tab,
   type ThemeDefinition,
 } from '@livehuddle/document';
@@ -18,10 +19,10 @@ const arrowBetween = (id: string, from: string, to: string) => ({
   from: { kind: 'pinned', elementId: from, anchor: 's' },
   to: { kind: 'pinned', elementId: to, anchor: 'n' },
 });
-const square = (id: string, label: string) => ({
+const signpost = (id: string, label: string) => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'signpost',
   label,
   x: 0,
   y: 0,
@@ -30,7 +31,7 @@ const square = (id: string, label: string) => ({
 });
 // Two boxes and the arrow between them, laid out by the engine.
 const flow: ReplaceBody = {
-  elements: [square('a', 'Start'), square('b', 'Done'), arrowBetween('e1', 'a', 'b')],
+  elements: [signpost('a', 'Start'), signpost('b', 'Done'), arrowBetween('e1', 'a', 'b')],
   layout: 'auto',
 };
 const themed = (theme: string): Tab => ({ ...checkoutFlow(), theme, font: 'serif' });
@@ -47,7 +48,7 @@ describe('applyReplace: elements sent back', () => {
   const boxes = Array.from({ length: 14 }, (_, i) => ({
     id: `n${i}`,
     type: 'shape',
-    shape: 'square',
+    shape: 'signpost',
     label: `Step ${i}`,
     x: 0,
     y: i * 120,
@@ -97,7 +98,7 @@ describe('applyReplace on an existing tab', () => {
     expect(targets).toEqual([]);
     expect(createdIds).toEqual(next.elements.map((el) => el.id));
     expect(results.filter((line) => line.mark === '+')).toHaveLength(next.elements.length);
-    expect(formatResultLines(results)).toContain('- n3  square "Login"');
+    expect(formatResultLines(results)).toContain('- n3  signpost "Login"');
     expect(results.filter((line) => line.mark === '-')).toHaveLength(tab.elements.length);
   });
 
@@ -118,16 +119,53 @@ describe('applyReplace on an existing tab', () => {
   it('takes raw elements, normalised, at the positions sent', () => {
     const elements = [
       { id: 'x', type: 'shape', shape: 'rectangle', x: 0, y: 0, width: 100, height: 50 },
-      { id: 'y', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 50 },
-      { id: 'z', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 50 },
+      { id: 'y', type: 'shape', shape: 'signpost', x: 0, y: 0, width: 100, height: 50 },
+      { id: 'z', type: 'shape', shape: 'signpost', x: 0, y: 0, width: 100, height: 50 },
       arrowBetween('e1', 'x', 'y'),
       arrowBetween('e2', 'y', 'z'),
     ];
+    elements[0] = { ...elements[0]!, shape: 'plant' };
     const { tab } = applied(applyReplace(checkoutFlow(), { elements, layout: 'auto' }, options));
     const [x, y] = tab.elements as { shape: string; y: number; textSize?: string }[];
-    expect(x!.shape).toBe('square');
+    expect(x!.shape).toBe('plant');
     expect(y!.textSize).toBeDefined();
     expect(y!.y).toBe(x!.y);
+  });
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5 (D31): a new shape of a kind
+  // livehuddle does not have is refused; one the tab already holds rides through exactly as stored.
+  it('refuses a new shape livehuddle does not have, and keeps a stored one as stored', () => {
+    const square = {
+      id: 'sq',
+      type: 'shape',
+      shape: 'square',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 50,
+      label: 'Old',
+    };
+    for (const shape of ['square', 'rectangle'])
+      expect(
+        refused(applyReplace(checkoutFlow(), { elements: [{ ...square, shape }] }, options)),
+      ).toEqual({
+        code: 'invalid_result',
+        details: ['sq shape: shapes are no longer supported in livehuddle: add a sticky'],
+        hint: 'see the format: livehuddle schema shape',
+      });
+    expect(refused(applyReplace(null, { elements: [square] }, options)).code).toBe(
+      'invalid_result',
+    );
+    const stored = {
+      ...checkoutFlow(),
+      elements: [...checkoutFlow().elements, square as unknown as Element],
+    };
+    const { tab } = applied(applyReplace(stored, { elements: stored.elements }, options));
+    expect(tab.elements.find((el) => el.id === 'sq')).toEqual(square);
+    // A stored lane sent back stays a lane: nothing is coerced into a kept kind any more.
+    expect(tab.elements.find((el) => el.id === 'f2')).toEqual(
+      checkoutFlow().elements.find((el) => el.id === 'f2'),
+    );
   });
 });
 
@@ -161,7 +199,7 @@ describe('applyReplace for a new tab', () => {
 
   it('builds an elements tab as add_tab does, themed', () => {
     const elements = [
-      { id: 'x', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 },
+      { id: 'x', type: 'shape', shape: 'signpost', x: 0, y: 0, width: 10, height: 10 },
     ];
     const { tab } = applied(applyReplace(null, { elements }, options));
     expect(tab).toMatchObject({ id: 'new-tab', theme: 'brand' });

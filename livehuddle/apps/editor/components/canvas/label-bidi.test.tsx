@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createShape } from '@livehuddle/document';
+import { createSticky } from '@livehuddle/document';
 import { renderLabel } from './element-labels';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Labels": right-to-left text reads right to left. jsdom does no bidi
@@ -22,7 +22,7 @@ describe('right-to-left labels', () => {
   });
 
   it('opens the label editor with its direction taken from what is typed', () => {
-    const el = { ...createShape('square', 0, 0), id: 'a', label: 'مرحبا!' };
+    const el = { ...createSticky(0, 0), id: 'a', label: 'مرحبا!' };
     render(
       renderLabel(
         el,

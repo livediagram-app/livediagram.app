@@ -2,9 +2,9 @@
 // (./collab-shapes, ./retired-kinds) can read it without joining the index <-> factories module cycle; re-exported
 // through ./validate.
 //
-// The editor renders only these. An off-vocabulary kind from an agent (e.g. "rectangle", which is NOT a kind: the
-// rectangular box is "square") is coerced through `coerceShapeKind`; a stored one is a retired element
-// (./retired-kinds), kept as stored and drawn as a placeholder. Keep in sync with the ShapeKind union in shape-kind.ts.
+// The editor renders only these. A new element of any other kind from an agent is refused (DEFAULTS.md D30 in
+// docs/specs/002-project-scope/blueprints); a stored one is a retired element (./retired-kinds), kept as stored and
+// drawn as a placeholder. Keep in sync with the ShapeKind union in shape-kind.ts.
 export const SHAPE_KINDS = new Set<string>([
   // Mode button (docs/specs/009-elements/mode-button.md): a pressable pill that switches whoever clicks it
   // into a selection mode.

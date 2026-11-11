@@ -223,9 +223,10 @@ row-rendered section, so a new one can't ship as a bare row.
 
 There is no actor / stick-figure tile in the palette or the "Add to canvas" search catalogue: nothing creates one.
 
-The `actor` **shape kind is kept** in the model, the renderer and the wire schema: removing it would coerce every
-existing actor element to a square on next load (`coerceShape`'s fallback), silent data loss, and would break API
-callers. So it renders wherever one exists, and nothing adds one.
+The `actor` shape kind left livehuddle with the other diagram shapes ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine), part 5). A stored
+one is a [retired element](../002-project-scope/not-in-livehuddle.md#retired-elements): kept exactly as stored (no
+coercion rewrites it, the fallback that once made it a square is gone) and drawn as its placeholder named **Actor**,
+which an Editor can delete.
 
 ## The body scrolls when it has to
 

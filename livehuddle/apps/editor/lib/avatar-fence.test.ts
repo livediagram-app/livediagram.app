@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createShape,
+  createSticky,
   snapDoorToWall,
   withDoorPiece,
   type Element,
@@ -36,7 +37,7 @@ function walk(
 describe('fenceSegments', () => {
   it('collects the line of every fence, and nothing else', () => {
     const fence = { ...createShape('fence', 0, 0), id: 'f' };
-    const square = { ...createShape('square', 0, 0), id: 's' };
+    const square = { ...createSticky(0, 0), id: 's' };
     expect(fenceSegments([fence, square] as Element[])).toEqual([
       { a: { x: 0, y: 12 }, b: { x: 240, y: 12 } },
     ]);

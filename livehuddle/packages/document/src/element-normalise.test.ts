@@ -17,7 +17,7 @@ describe('content kinds', () => {
     const square = normaliseElement({
       id: 'l',
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       ...box,
       textAlignX: 'right',
     });
@@ -35,10 +35,10 @@ describe('content kinds', () => {
 
   it("gives an element without a text size the editor's size for its kind", () => {
     const [shape, text, sticky, sized] = normaliseElements([
-      { id: 'a', type: 'shape', shape: 'square', ...box },
+      { id: 'a', type: 'shape', shape: 'focus-button', ...box },
       { id: 'b', type: 'text', ...box },
       { id: 'c', type: 'sticky', ...box },
-      { id: 'd', type: 'shape', shape: 'square', ...box, textSize: 'scale' },
+      { id: 'd', type: 'shape', shape: 'focus-button', ...box, textSize: 'scale' },
     ]);
     expect(shape).toMatchObject({ textSize: 'md' });
     expect(text).toMatchObject({ textSize: 'sm' });
@@ -88,7 +88,7 @@ describe('mergeElementUpdate', () => {
 // Timeline are retired kinds. Nothing settles, attaches, numbers or trims them: each comes back as it was sent.
 describe('retired layout kinds through normaliseElements', () => {
   it('leaves an attached badge and pointer note, and a Timeline, as they were', () => {
-    const host = { ...createShape('square', 100, 100), id: 'host', width: 120, height: 60 };
+    const host = { ...createShape('focus-button', 100, 100), id: 'host', width: 120, height: 60 };
     const badge = {
       id: 'b',
       type: 'shape',
@@ -130,14 +130,14 @@ describe('retired layout kinds through normaliseElements', () => {
 
 describe('an agent’s labels', () => {
   it('writes a numbered label as text, valid', () => {
-    const shape = { ...createShape('square', 0, 0), id: 's', label: 5 };
+    const shape = { ...createShape('focus-button', 0, 0), id: 's', label: 5 };
     const [out] = normaliseElements([shape]) as Record<string, unknown>[];
     expect(out!.label).toBe('5');
     expect(isValidElement(out as never)).toBe(true);
   });
 
   it('leaves a label it cannot read for validation to refuse, rather than throwing', () => {
-    const shape = { ...createShape('square', 0, 0), id: 's', label: { n: 5 } };
+    const shape = { ...createShape('focus-button', 0, 0), id: 's', label: { n: 5 } };
     let out: unknown;
     expect(() => (out = normaliseElements([shape]))).not.toThrow();
     expect(isValidElement((out as unknown[])[0] as never)).toBe(false);

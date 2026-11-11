@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { createShape, type Element } from '@livehuddle/document';
+import { createSticky, type Element } from '@livehuddle/document';
 import { storedPinnedArrow } from '@/test/retired-elements';
 import { cleanupElements } from './tab-cleanup';
 
@@ -16,7 +16,7 @@ function bigDiagram(n: number): Element[] {
   const els: Element[] = [];
   for (let i = 0; i < n; i++)
     els.push({
-      ...createShape('square', (i * 137) % 2000, (i * 89) % 1400),
+      ...createSticky((i * 137) % 2000, (i * 89) % 1400),
       id: `n${i}`,
     });
   for (let i = 1; i < n; i++) {

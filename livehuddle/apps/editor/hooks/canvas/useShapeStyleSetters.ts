@@ -2,12 +2,11 @@ import { MAX_SIZE_PX, MIN_SIZE_PX } from '@liveworkspace/workbench/lib/element-s
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import {
   SHAPE_DEFAULT_SIZE,
-  type BorderRadius,
+  isRetiredElement,
   type BorderStroke,
   type BorderStyle,
   type Element,
   type ShapeElement,
-  type ShapeKind,
   type ShapeMarker,
   type Tab,
   type TextSizePreset,
@@ -15,11 +14,9 @@ import {
 import { getTheme, type ShapeColorPreset } from '@/lib/themes';
 import {
   applyRotationToEl,
-  applyBorderRadiusToEl,
   applyBorderStrokeToEl,
   applyBorderStyleToEl,
   applyColorPresetToEl,
-  applyShapeKindToEl,
   isStyleable,
 } from '@/lib/style-presets';
 import { track } from '@/lib/telemetry';
@@ -48,17 +45,6 @@ export function useShapeStyleSetters({
   activeTab,
   readSelection,
 }: ShapeStyleSetterDeps) {
-  // Morph the selected shape into a different kind, preserving width /
-  // height / label / colour overrides. Circle and diamond are 1:1
-  // shapes — coming from a non-square box, snap to the larger side so
-  // the result fits the original footprint.
-  const setShapeKindSelected = (kind: ShapeKind) => {
-    const { selectedId } = readSelection();
-    if (!selectedId) return;
-    commit((els) => els.map((el) => (el.id === selectedId ? applyShapeKindToEl(el, kind) : el)));
-    track('Element', 'Changed', 'ShapeMorph');
-  };
-
   // Reset the selected shape to its kind's default aspect ratio. The
   // proportion comes from SHAPE_DEFAULT_SIZE (the canonical look each
   // shape ships with); we keep the element's current visual area so it
@@ -70,7 +56,9 @@ export function useShapeStyleSetters({
     if (ids.size === 0) return;
     commit((els) =>
       els.map((el) => {
-        if (!ids.has(el.id) || el.type !== 'shape') return el;
+        // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") keeps its stored
+        // box: its kind has no default size.
+        if (!ids.has(el.id) || el.type !== 'shape' || isRetiredElement(el)) return el;
         const def = SHAPE_DEFAULT_SIZE[el.shape];
         const ratio = def.width / def.height;
         const area = el.width * el.height;
@@ -159,12 +147,6 @@ export function useShapeStyleSetters({
     commit((els) => els.map((el) => (ids.has(el.id) ? applyBorderStyleToEl(el, value) : el)));
     track('Element', 'Changed', 'BorderStyle');
   };
-  const setBorderRadiusSelected = (value: BorderRadius) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) => els.map((el) => (ids.has(el.id) ? applyBorderRadiusToEl(el, value) : el)));
-    track('Element', 'Changed', 'BorderRadius');
-  };
 
   // Set a field on every selected shape (any shape kind livehuddle draws: a retired one keeps what it stored). The
   // icon / progress / rating helpers gate to their specific shape kinds; this is for fields any shape can carry.
@@ -235,13 +217,11 @@ export function useShapeStyleSetters({
   };
 
   return {
-    setShapeKindSelected,
     resetAspectRatioSelected,
     setSizeSelected,
     setRotationSelected,
     setBorderStrokeSelected,
     setBorderStyleSelected,
-    setBorderRadiusSelected,
     setMarkerSelected,
     setMarkerSizeSelected,
     applyShapeColorPresetSelected,

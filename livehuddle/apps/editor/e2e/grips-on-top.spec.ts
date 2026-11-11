@@ -10,8 +10,7 @@ test.use({ viewport: { width: 1600, height: 1000 }, colorScheme: 'dark', ignoreH
 
 const box = (id: string, x: number, y: number, extra: Record<string, unknown> = {}) => ({
   id,
-  type: 'shape',
-  shape: 'square',
+  type: 'sticky',
   x,
   y,
   width: 160,

@@ -1,6 +1,6 @@
-tab 0b34 "Checkout platform" · 30 elements: 19 boxes, 11 arrows · 15 unknown · threads 1 open/2 · rev 41
-square 146b "Orders service" icon=server note="Owns the order lifecycle and is the source of"…
-square e4a8 "Payments service" icon=credit-card comments=1 resolved
+tab 0b34 "Checkout platform" · 30 elements: 19 boxes, 11 arrows · 16 unknown · threads 1 open/2 · rev 41
+signpost 146b "Orders service" icon=server note="Owns the order lifecycle and is the source of"…
+signpost e4a8 "Payments service" icon=credit-card comments=1 resolved
 ? table 480a
 sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
 4 matches: 2 labels, 1 note, 1 cell

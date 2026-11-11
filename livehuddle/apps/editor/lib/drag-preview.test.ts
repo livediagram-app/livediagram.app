@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createSticky, type Element } from '@livehuddle/document';
 import {
   applyOverlay,
   clearLocalPreview,
@@ -16,9 +16,9 @@ import {
 
 // docs/specs/008-canvas/drag-preview.md "The preview".
 
-const a = createShape('square', 0, 0);
-const b = createShape('square', 200, 0);
-const c = createShape('square', 400, 0);
+const a = createSticky(0, 0);
+const b = createSticky(200, 0);
+const c = createSticky(400, 0);
 const doc: Element[] = [a, b, c];
 const ids = (els: readonly Element[]) => els.map((e) => e.id);
 
@@ -141,7 +141,7 @@ describe('several readers', () => {
 describe('a dragged element keeps its look', () => {
   const LIGHT = { fillColor: '#e0e7ff', strokeColor: '#4338ca' };
   const DARK = { fillColor: '#2e3240', strokeColor: '#9eaafd' };
-  const stored = { ...createShape('square', 0, 0), ...LIGHT } as Element;
+  const stored = { ...createSticky(0, 0), ...LIGHT } as Element;
   const drawn = { ...stored, ...DARK } as Element;
   const seen = (el: Element): Element =>
     (el as { fillColor?: string }).fillColor === LIGHT.fillColor ? { ...el, ...DARK } : el;
@@ -174,7 +174,7 @@ describe('a dragged element keeps its look', () => {
   });
 
   it("lays ours, drawn, over a collaborator's", () => {
-    const other = { ...createShape('square', 300, 0), ...LIGHT } as Element;
+    const other = { ...createSticky(300, 0), ...LIGHT } as Element;
     const otherDrawn = { ...other, ...DARK } as Element;
     setPeerPreview('peer', 't', [{ id: other.id, x: 320 }]);
     setLocalPreview('t', [{ ...stored, x: 9 } as Element, other], [stored, other]);

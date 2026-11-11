@@ -10,8 +10,7 @@ test.use({ viewport: { width: 1800, height: 1000 }, colorScheme: 'dark', ignoreH
 
 const box = (id: string, x: number) => ({
   id,
-  type: 'shape',
-  shape: 'square',
+  type: 'sticky',
   x,
   y: 300,
   width: 160,

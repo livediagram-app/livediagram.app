@@ -106,7 +106,7 @@ Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" a
   (`label-box-size.ts`), its accent edge and corner radius sets, its finish outlines, its CSS face and SVG overlay
   (editor), its palette tiles and the `R`, `O`, `D`, `C` shortcuts, and its export renderer. A module left serving
   none of the kept kinds is deleted whole.
-- Part 5 deletes `packages/diagram-lint` and the api's `changesets/lint.ts`. `ChangesetResult.lint` is typed
+- Part 5 deletes `packages/diagram-lint` and the api's changeset lint (`lint.ts` in `changesets/`). `ChangesetResult.lint` is typed
   `null` and always `null` (D32); `LintReport` leaves `@livehuddle/api-schema`; `lint` leaves `VIEW_NAMES`, so
   `view=lint` takes the unknown-view refusal. The edit operations lose the arrow selector keys (`from`, `to`,
   `downstream`, `upstream`, the `a->b` form), `graph-walk.ts` and the `after:` placement (D33).

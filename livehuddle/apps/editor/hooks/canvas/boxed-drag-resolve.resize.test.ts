@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, createText, type Element, type TextElement } from '@livehuddle/document';
+import { createSticky, createText, type Element, type TextElement } from '@livehuddle/document';
 import type { DragMode, ShapeBounds } from '@/lib/canvas';
 import { resizedElement, resolveBoxedResize } from './boxed-drag-resolve';
 
@@ -8,7 +8,7 @@ import { resizedElement, resolveBoxedResize } from './boxed-drag-resolve';
 // applies on the leading axis, and a multi-selection scales uniformly.
 
 const box = (id: string, x: number, y: number, width: number, height: number, extra = {}) =>
-  ({ ...createShape('square', x, y), id, x, y, width, height, ...extra }) as Element;
+  ({ ...createSticky(x, y), id, x, y, width, height, ...extra }) as Element;
 
 const boundsOf = (els: Element[], ids: string[]) =>
   new Map<string, ShapeBounds>(

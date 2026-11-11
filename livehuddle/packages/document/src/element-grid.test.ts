@@ -15,7 +15,7 @@ import {
 // docs/specs/008-canvas/canvas-performance.md "Questions about neighbours ask a spatial index".
 
 const box = (x: number, y: number, w = 100, h = 100) => {
-  const el = createShape('square', x, y);
+  const el = createShape('focus-button', x, y);
   return { ...el, width: w, height: h };
 };
 const ids = (els: Element[]) => els.map((e) => e.id);

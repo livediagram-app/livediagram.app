@@ -515,9 +515,9 @@ export const articles: Article[] = [
   {
     slug: 'edit-operations',
     title: 'Edit Operations Reference',
-    description: 'Every changeset operation, selector, placement, flag and lint finding.',
+    description: 'Every changeset operation, selector, placement and flag.',
     keywords:
-      'changeset edit operations ops line form json selector placement flags lint findings vocabulary agent',
+      'changeset edit operations ops line form json selector placement flags vocabulary agent',
     category: 'Developers',
     categorySlug: 'developers/working-with-documents',
     parentSlug: 'working-with-documents',

@@ -10,7 +10,16 @@ import {
 } from './element-ops';
 
 const el = (id: string, over: Partial<Element> = {}): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...over }) as Element;
+  ({
+    id,
+    type: 'shape',
+    shape: 'focus-button',
+    x: 0,
+    y: 0,
+    width: 10,
+    height: 10,
+    ...over,
+  }) as Element;
 
 describe('diffToElementOps', () => {
   it('emits an add with its z-index for a new element', () => {
@@ -167,7 +176,7 @@ describe('applyElementOps, batched', () => {
   const box = (id: string, x = 0): Element => ({
     id,
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     x,
     y: 0,
     width: 10,

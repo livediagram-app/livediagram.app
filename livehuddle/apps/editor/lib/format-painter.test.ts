@@ -10,7 +10,7 @@ import { applyPaint, fitPaintToTarget, paintableBoxedFields } from './format-pai
 const fullyStyledShape: BoxedElement = {
   id: 'src',
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 100,
   y: 200,
   width: 180,
@@ -114,7 +114,7 @@ describe('paintableBoxedFields', () => {
     const sparse: BoxedElement = {
       id: 's',
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       x: 0,
       y: 0,
       width: 100,
@@ -162,7 +162,7 @@ describe('paintableBoxedFields', () => {
     const richSource: BoxedElement = {
       id: 's',
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       x: 0,
       y: 0,
       width: 100,
@@ -182,7 +182,7 @@ describe('paintableBoxedFields', () => {
     const mixedSource: BoxedElement = {
       id: 's',
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       x: 0,
       y: 0,
       width: 100,
@@ -211,7 +211,7 @@ describe('applyPaint', () => {
     const target: BoxedElement = {
       id: 't',
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       x: 0,
       y: 0,
       width: 100,
@@ -238,7 +238,7 @@ describe('applyPaint', () => {
     const target: BoxedElement = {
       id: 't',
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       x: 0,
       y: 0,
       width: 100,
@@ -322,14 +322,14 @@ describe('quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md)', (
 // Animations travel only where they mean the same thing (docs/specs/028-animation/element-animations.md).
 describe('fitPaintToTarget', () => {
   const shape = {
-    ...createShape('square', 0, 0),
+    ...createShape('room', 0, 0),
     animation: 'bounce' as const,
     textAnimation: 'typewriter' as const,
   };
 
   it('keeps a body animation between members of one set', () => {
     const patch = paintableBoxedFields(shape);
-    const out = fitPaintToTarget(shape, createShape('diamond', 0, 0), patch);
+    const out = fitPaintToTarget(shape, createShape('room', 300, 0), patch);
     expect(out.animation).toBe('bounce');
     expect((out as { textAnimation?: string }).textAnimation).toBe('typewriter');
   });
@@ -362,26 +362,26 @@ describe('fitPaintToTarget', () => {
 
 // docs/specs/028-animation/element-animations.md "Shape motions".
 describe('fitPaintToTarget with Shape motions', () => {
-  const image = { ...createShape('square', 0, 0), type: 'image' } as unknown as BoxedElement;
+  const image = { ...createSticky(0, 0), type: 'image' } as unknown as BoxedElement;
   const paint = (source: BoxedElement, target: BoxedElement) =>
     fitPaintToTarget(source, target, paintableBoxedFields(source));
 
   it('paints a motion onto any element that takes it', () => {
-    const bounce = { ...createShape('square', 0, 0), animation: 'bounce' as const };
+    const bounce = { ...createSticky(0, 0), animation: 'bounce' as const };
     expect(paint(bounce, image).animation).toBe('bounce');
-    expect(paint(bounce, createShape('circle', 0, 0)).animation).toBe('bounce');
+    expect(paint(bounce, createShape('room', 0, 0)).animation).toBe('bounce');
     expect(paint({ ...image, animation: 'float' }, createSticky(0, 0)).animation).toBe('float');
   });
 
   it('keeps an outline effect and an own-set value to their own members', () => {
-    const pulse = { ...createShape('square', 0, 0), animation: 'pulse' as const };
+    const pulse = { ...createSticky(0, 0), animation: 'pulse' as const };
     expect('animation' in paint(pulse, image)).toBe(false);
     const flutter = { ...createSticky(0, 0), animation: 'flutter' as const };
     expect('animation' in paint(flutter, image)).toBe(false);
   });
 
   it('never paints a motion onto an icon or a text element', () => {
-    const bounce = { ...createShape('square', 0, 0), animation: 'bounce' as const };
+    const bounce = { ...createSticky(0, 0), animation: 'bounce' as const };
     expect('animation' in paint(bounce, createShape('icon', 0, 0))).toBe(false);
     expect('animation' in paint(bounce, createText(0, 0))).toBe(false);
   });

@@ -69,7 +69,7 @@ test('two peers see each other, edit live, and every edit is kept', async ({
         name: 'Board',
         opensIn: 'workshop',
         elements: [
-          { id: 'a', type: 'shape', shape: 'square', x: 100, y: 100, width: 200, height: 100 },
+          { id: 'a', type: 'sticky', x: 100, y: 100, width: 200, height: 100 },
           // Avatar mode's one way in (docs/specs/008-canvas/avatar-mode.md "Where it lives").
           {
             id: 'walk',

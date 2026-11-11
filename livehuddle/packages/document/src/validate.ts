@@ -15,7 +15,7 @@
 // the byte-size caps at the API layer (a structurally valid tab can still be
 // too big).
 
-import type { Element, ShapeKind, Tab } from './index';
+import type { Element, Tab } from './index';
 // Value imports come from the data-shapes LEAF module (types only from
 // './index'), keeping this module out of the index ⇄ factories cycle.
 import { ANCHOR_FRACTIONS } from './retired-arrow';

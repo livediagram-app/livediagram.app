@@ -17,34 +17,31 @@ const base = {
   polygonCursor: null,
   wrapperRef: { current: wrapper },
   mainSize: { width: 1000, height: 1000 },
-  whiteboardInk: '#1c1917',
 };
-describe('CanvasDrawPreview on a whiteboard', () => {
-  it('previews a rectangle with a solid outline in the ink and no fill', () => {
+describe('CanvasDrawPreview draw-to-size box', () => {
+  it('previews a drawn shape as a dashed box at the zoom', () => {
     const { container } = render(
       <CanvasDrawPreview
         {...base}
-        drawDrag={{ startX: 0, startY: 0, currentX: 50, currentY: 50 }}
-        pendingDraw={{ type: 'shape', kind: 'square', board: true }}
+        drawDrag={{ startX: 0, startY: 0, currentX: 50, currentY: 40 }}
+        pendingDraw={{ type: 'shape', kind: 'rug' }}
       />,
     );
-    const box = container.querySelector('[data-pen-preview]') as HTMLElement;
-    expect(box.style.borderStyle).toBe('solid');
-    expect(box.style.borderColor).toBe('rgb(28, 25, 23)');
-    expect(box.style.backgroundColor).toBe('');
+    const box = container.querySelector('.border-dashed') as HTMLElement;
+    expect(box).not.toBeNull();
+    const outer = box.parentElement as HTMLElement;
+    expect(outer.style.width).toBe('100px');
+    expect(outer.style.height).toBe('80px');
   });
-});
 
-describe('CanvasDrawPreview rectangle corners', () => {
-  it('rounds a pen rectangle as the committed one is, at the zoom', () => {
+  it('draws no box for a placed piece, which previews itself', () => {
     const { container } = render(
       <CanvasDrawPreview
         {...base}
-        drawDrag={{ startX: 0, startY: 0, currentX: 50, currentY: 50 }}
-        pendingDraw={{ type: 'shape', kind: 'square', board: true }}
+        drawDrag={{ startX: 0, startY: 0, currentX: 50, currentY: 40 }}
+        pendingDraw={{ type: 'shape', kind: 'chair' }}
       />,
     );
-    const box = container.querySelector('[data-pen-preview]') as HTMLElement;
-    expect(box.style.borderRadius).toBe('16px');
+    expect(container.querySelector('.border-dashed')).toBeNull();
   });
 });

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement } from '@livehuddle/document';
+import { createSticky, type BoxedElement } from '@livehuddle/document';
 import { storedPinnedArrow } from '@/test/retired-elements';
 import { publishClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
@@ -20,7 +20,7 @@ const handlers = () => ({
   onOpenNote: vi.fn(),
 });
 const square = (over: Partial<BoxedElement> = {}) =>
-  ({ ...createShape('square', 0, 0), id: 'sq', ...over }) as BoxedElement;
+  ({ ...createSticky(0, 0), id: 'sq', ...over }) as BoxedElement;
 
 describe('quickBarItems', () => {
   it('offers Action, Comment, Link and Note, each reading View / Edit once the element has one', () => {

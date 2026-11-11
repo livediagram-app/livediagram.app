@@ -18,7 +18,7 @@ export type Naming = { refOf: (id: ElementId) => string };
 // Ids as they are: what a line uses when no tab names its elements.
 const plainNaming: Naming = { refOf: (id) => id };
 
-// `n7  square "Charge card"`, `a6  ? arrow "yes"`: one element on a candidate line.
+// `n7  signpost "Charge card"`, `a6  ? arrow "yes"`: one element on a candidate line.
 export function describeElement(el: Element, naming: Naming = plainNaming): string {
   const label = labelOf(el);
   return `${naming.refOf(el.id)}  ${kindOf(el)}${label ? ` ${quoteCut(label, LABEL_CUT_CHARS)}` : ''}`;

@@ -4,7 +4,16 @@ import type { Element, Tab } from '@livehuddle/document';
 import { EL_OP_BROADCAST_LIMIT, mergeRemoteTab, tabBroadcastOps } from './tab-broadcast-ops';
 
 const el = (id: string, over: Partial<Element> = {}): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...over }) as Element;
+  ({
+    id,
+    type: 'shape',
+    shape: 'focus-button',
+    x: 0,
+    y: 0,
+    width: 10,
+    height: 10,
+    ...over,
+  }) as Element;
 
 const tab = (over: Partial<Tab> = {}): Tab => ({
   id: 't1',

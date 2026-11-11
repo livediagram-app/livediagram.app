@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createShape, createSticky, type Element } from '@livehuddle/document';
 import { elementUnderFeet } from '@livehuddle/avatar/walk';
 
 describe('elementUnderFeet', () => {
-  const box: Element = { ...createShape('square', 100, 100), id: 'a', width: 200, height: 100 };
+  const box: Element = { ...createSticky(100, 100), id: 'a', width: 200, height: 100 };
   const overlapping: Element = {
-    ...createShape('square', 150, 120),
+    ...createSticky(150, 120),
     id: 'b',
     width: 200,
     height: 100,
   };
   // A stored Frame (a retired element, docs/specs/002-project-scope/not-in-livehuddle.md "The Frame").
   const frame = {
-    ...createShape('square', 0, 0),
+    ...createShape('room', 0, 0),
     shape: 'frame',
     id: 'f',
     width: 900,

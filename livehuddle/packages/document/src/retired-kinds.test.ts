@@ -9,7 +9,7 @@ import {
 } from './retired-kinds';
 import { migrateIncomingElements, migrateIncomingTab, migrateStoredTab } from './stored-tab';
 import { migrateStoredElements } from './stored-elements';
-import { coerceShapeKind, isValidElement, isValidTab, SHAPE_KINDS } from './validate';
+import { isValidElement, isValidTab, SHAPE_KINDS } from './validate';
 import { elementKindLabel } from './element-kind-label';
 import { isKnownElement, kindWordOf } from './element-refs';
 import { createShape } from './factories';
@@ -29,7 +29,6 @@ import {
   elementSupportsText,
   supportsBorder,
   supportsBorderControls,
-  supportsBorderRadius,
   supportsColours,
   supportsFillColor,
 } from './index';
@@ -52,6 +51,25 @@ const box = (id: string, shape: string, x: number, fields: Record<string, unknow
   label: '',
   ...fields,
 });
+
+// Part 5's kinds (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"), by their D29 names.
+const PART_5: [string, string][] = [
+  ['square', 'Square'],
+  ['circle', 'Circle'],
+  ['diamond', 'Diamond'],
+  ['cylinder', 'Cylinder'],
+  ['parallelogram', 'Parallelogram'],
+  ['hexagon', 'Hexagon'],
+  ['document', 'Document'],
+  ['stadium', 'Stadium'],
+  ['actor', 'Actor'],
+  ['final-state', 'Final State'],
+  ['cloud', 'Cloud'],
+  ['triangle', 'Triangle'],
+  ['trapezoid', 'Trapezoid'],
+  ['star', 'Star'],
+  ['speech-bubble', 'Speech Bubble'],
+];
 
 const answer = (participantId: string, value: string, at = 1_700_000_000_000) => ({
   participantId,
@@ -295,7 +313,10 @@ const storedTab = (): Tab =>
 describe('a stored tab of retired elements', () => {
   it('holds one of each deleted kind, none of which livehuddle still has', () => {
     const kinds = RETIRED.map((el) => el.shape as string);
-    expect(new Set(kinds)).toEqual(new Set(Object.keys(RETIRED_SHAPE_NAMES)));
+    // Part 5's diagram shapes have a tab of their own below ('a stored diagram shape').
+    expect(new Set([...kinds, ...PART_5.map(([kind]) => kind)])).toEqual(
+      new Set(Object.keys(RETIRED_SHAPE_NAMES)),
+    );
     for (const kind of kinds) expect(SHAPE_KINDS.has(kind), kind).toBe(false);
   });
 
@@ -318,8 +339,8 @@ describe('a stored tab of retired elements', () => {
   });
 
   it('keeps a retired element beside a known one exactly as stored', () => {
-    const square = { ...createShape('square', 0, 0), id: 'sq' } as Element;
-    const tab = { ...storedTab(), elements: [square, ...storedTab().elements] };
+    const known = { ...createShape('focus-button', 0, 0), id: 'known' } as Element;
+    const tab = { ...storedTab(), elements: [known, ...storedTab().elements] };
     expect(migrateStoredTab(structuredClone(tab)).elements.slice(1)).toEqual(storedTab().elements);
   });
 
@@ -445,21 +466,13 @@ describe('a stored table', () => {
   });
 });
 
-// Agent-authored input (the MCP server, the AI panel) naming a deleted kind is made as a square: only a stored
-// element keeps its retired kind.
-describe('a deleted kind from outside', () => {
-  it('coerces to a square', () => {
-    for (const kind of Object.keys(RETIRED_SHAPE_NAMES))
-      expect(coerceShapeKind(kind), kind).toBe('square');
-  });
-});
-
 describe('isRetiredElement', () => {
   it('is a shape whose kind livehuddle does not have', () => {
     expect(isRetiredElement({ type: 'shape', shape: 'qa-board' })).toBe(true);
     expect(isRetiredElement({ type: 'shape', shape: 'never-a-kind' })).toBe(true);
     expect(isRetiredElement({ type: 'shape' })).toBe(true);
-    expect(isRetiredElement({ type: 'shape', shape: 'square' })).toBe(false);
+    expect(isRetiredElement({ type: 'shape', shape: 'square' })).toBe(true);
+    expect(isRetiredElement({ type: 'shape', shape: 'focus-button' })).toBe(false);
     expect(isRetiredElement({ type: 'sticky' })).toBe(false);
   });
 });
@@ -498,7 +511,7 @@ describe('retiredElementName', () => {
   });
 
   it('is the name a selection caption gives it', () => {
-    const quiz = { ...createShape('square', 0, 0), shape: 'quiz' } as unknown as Element;
+    const quiz = { ...createShape('focus-button', 0, 0), shape: 'quiz' } as unknown as Element;
     expect(elementKindLabel(quiz)).toBe('Quiz');
   });
 });
@@ -507,7 +520,7 @@ describe('retiredElementName', () => {
 // sat on it stays put.
 describe('a stored Frame', () => {
   const frame = box('section', 'frame', 0, { label: 'Checkout' }) as unknown as Element;
-  const member = { ...createShape('square', 40, 80), id: 'member' } as Element;
+  const member = { ...createShape('focus-button', 40, 80), id: 'member' } as Element;
 
   it('still paints behind what sat on it, wherever it is in the array', () => {
     expect(paintOrder([member, frame]).map((el) => el.id)).toEqual(['section', 'member']);
@@ -576,7 +589,7 @@ describe('a stored layout container', () => {
   });
 
   it('paints a stored lane, stack and boundary at the back, and an attached badge where the array puts it', () => {
-    const member = { ...createShape('square', 40, 80), id: 'member' } as Element;
+    const member = { ...createShape('focus-button', 40, 80), id: 'member' } as Element;
     const [lane, stack, boundary] = stored();
     const badge = stored().find((el) => el.id === 'beta')!;
     expect(paintOrder([member, badge, lane!, stack!, boundary!]).map((el) => el.id)).toEqual([
@@ -627,11 +640,19 @@ describe("an image's stored hero caption", () => {
 // strokes, paths and annotations are deleted element types, each kept exactly as stored (element-engine.md D21 to
 // D24).
 describe('stored arrows, lines, drawings, paths and annotations', () => {
-  const left = { id: 'left', type: 'shape', shape: 'square', x: 0, y: 0, width: 120, height: 80 };
+  const left = {
+    id: 'left',
+    type: 'shape',
+    shape: 'focus-button',
+    x: 0,
+    y: 0,
+    width: 120,
+    height: 80,
+  };
   const right = {
     id: 'right',
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     x: 400,
     y: 0,
     width: 120,
@@ -805,7 +826,6 @@ describe('stored arrows, lines, drawings, paths and annotations', () => {
       expect(supportsFillColor(el), el.id).toBe(false);
       expect(supportsBorder(el), el.id).toBe(false);
       expect(supportsBorderControls(el), el.id).toBe(false);
-      expect(supportsBorderRadius(el), el.id).toBe(false);
       expect(elementSupportsText(el), el.id).toBe(false);
       expect(supportsFinish(el), el.id).toBe(false);
     }
@@ -832,5 +852,88 @@ describe('stored arrows, lines, drawings, paths and annotations', () => {
     expect(elementBounds(storedArrow!, all)).toEqual(retiredArrowBounds(storedArrow as never, all));
     expect(isBoxed(storedPen!)).toBe(true);
     expect(elementBounds(storedPen!, all)).toEqual({ x: 20, y: 400, width: 200, height: 80 });
+  });
+});
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5: the diagram shapes are deleted kinds,
+// each kept exactly as stored with every field a person gave it, and named as its palette tile was (DEFAULTS.md D29).
+describe('a stored diagram shape', () => {
+  const stored = () =>
+    PART_5.map(([kind], i) =>
+      box(`k${i}`, kind, i * 400, {
+        label: `My ${kind}`,
+        fillColor: '#fde68a',
+        strokeColor: '#b45309',
+        textColor: '#1f2937',
+        strokeWidth: 'thick',
+        strokeStyle: 'dashed',
+        borderRadius: 'lg',
+        iconId: 'database',
+        note: `About the ${kind}`,
+        link: { kind: 'url', url: `https://example.com/${kind}` },
+        commentThread: {
+          resolved: false,
+          comments: [
+            {
+              id: `c${i}`,
+              text: 'Looks right',
+              createdAt: 1,
+              authorName: 'Bea',
+              authorColor: '#f00',
+            },
+          ],
+        },
+      }),
+    ) as unknown as Element[];
+  const tab = () => ({ id: 't-p5', name: 'Flow', elements: stored() }) as unknown as Tab;
+
+  it('is every kind part 5 deleted, none of them still a kind', () => {
+    for (const [kind] of PART_5) expect(SHAPE_KINDS.has(kind), kind).toBe(false);
+    for (const el of stored()) expect(isRetiredElement(el), el.id).toBe(true);
+  });
+
+  it('loads deep-equal to what was stored, through every read path', () => {
+    expect(migrateStoredTab(tab())).toEqual(tab());
+    expect(migrateIncomingTab(tab())).toEqual(tab());
+    expect(migrateStoredElements(stored())).toEqual(stored());
+    expect(migrateIncomingElements(stored())).toEqual(stored());
+  });
+
+  it('saves unchanged: a load and a save write back exactly what was read', () => {
+    const saved = JSON.parse(JSON.stringify(migrateStoredTab(tab())));
+    expect(saved).toEqual(tab());
+    expect(migrateStoredTab(saved)).toEqual(tab());
+  });
+
+  it('is valid, each element and the tab', () => {
+    expect(isValidTab(tab())).toBe(true);
+    for (const el of stored()) expect(isValidElement(el), el.id).toBe(true);
+  });
+
+  it('is named as its palette tile was, in the selection caption and on the placeholder', () => {
+    stored().forEach((el, i) => {
+      expect(retiredElementName(el), el.id).toBe(PART_5[i]![1]);
+      expect(elementKindLabel(el), el.id).toBe(PART_5[i]![1]);
+      expect(RETIRED_SHAPE_NAMES[PART_5[i]![0]]).toBe(PART_5[i]![1]);
+    });
+  });
+
+  it('keeps every colour and field through a theme switch, a theme reset, a recolour and a normalise', () => {
+    const [from, to] = [THEMES[0]!, THEMES[1]!];
+    for (const el of stored()) {
+      expect(switchThemeElement(el, from, to), el.id).toEqual(el);
+      expect(resetThemeElement(el, to), el.id).toEqual(el);
+    }
+    expect(switchThemeElements(stored(), from, to)).toEqual(stored());
+    expect(resetThemeElementsToTheme(stored(), to)).toEqual(stored());
+    expect(recolourElementsForTheme(stored(), to)).toEqual(stored());
+    expect(normaliseElements(stored())).toEqual(stored());
+  });
+
+  it('is named to agents by its stored kind', () => {
+    for (const el of stored()) {
+      expect(isKnownElement(el), el.id).toBe(false);
+      expect(kindWordOf(el), el.id).toBe(`? ${(el as { shape: string }).shape}`);
+    }
   });
 });

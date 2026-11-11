@@ -51,6 +51,8 @@ The editor is real:
 - **Agent changesets** ([Agent changesets](../024-agents/agent-changesets.md)): API-token scripts change tabs with changesets that reach anyone with the tab open, live, outlined in their author's colour with a toast offering Show and Undo, survive a person's next save, refuse an element a person has selected, and revert as one unit for 30 days; every server-stored document, personal ones included, has a room. Closed livediagram-app/livediagram.app#343.
 - **Document views and edit operations** ([Document views](../024-agents/document-views.md), [Edit operations](../024-agents/edit-operations.md)): agents read a tab as compact text (outline, graph, layout, comments, show, find) addressed by refs, and change it with twelve intent-level operations (`add set rm move connect rewire insert wrap unwrap order layout test`) in the line form or JSON, by ref or selector, placed beside what they name, making room on insert, and answered with one result line per element. The [diagram lint](../024-agents/diagram-lint.md) checks every
   changeset's result (overlaps, crossings, arrows behind boxes, overflowing labels) and names a fix for each finding.
+  The diagram tools' parts of this left livehuddle with Work Tracker #459 (the arrow verbs in part 4, the diagram
+  shapes, the arrow selectors and the lint in part 5, [The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine)).
 - **Agent presence** ([Agent presence](../024-agents/agent-presence.md)): an agent shows the people on a tab what it is
   doing and looking at, under its owner's name, and comments, replies, resolves and reopens through the same endpoints
   people use.
@@ -80,7 +82,7 @@ The editor is real:
 
 **Status: Planned.** Not built yet; each item's spec marks what exists today.
 
-- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), and presence built.
+- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md) (gone since #459 part 5), and presence built.
 - **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md), and livediagram's [Later](../../../../livediagram/docs/specs/013-workspace/share-roles.md#later), which both products share): Participant links and the look-only Viewer are built; token levels, ownership as separate powers and an answers route are next.
 
 ## Later

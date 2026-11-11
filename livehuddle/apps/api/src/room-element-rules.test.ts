@@ -10,7 +10,7 @@ const box = { x: 0, y: 0, width: 100, height: 60 };
 const shape = (id: string, extra: Record<string, unknown> = {}) => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'signpost',
   label: 'A step',
   ...box,
   ...extra,

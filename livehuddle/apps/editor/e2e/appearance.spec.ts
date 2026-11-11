@@ -71,9 +71,7 @@ test.describe('Appearance', () => {
     // A stored shape (livehuddle's palette draws none, Work Tracker #423, but a stored one still draws). On the
     // Default scheme it carries NO colours of its own, so what it is drawn in is entirely the canvas's ink — the
     // thing the merge depends on, and the thing a unit test can't see reach a memoised view.
-    await seedTab(page, [
-      { id: 'sq', type: 'shape', shape: 'square', x: 300, y: 200, width: 120, height: 120 },
-    ]);
+    await seedTab(page, [{ id: 'sq', type: 'sticky', x: 300, y: 200, width: 120, height: 120 }]);
     const square = page.getByRole('img', { name: 'Square', exact: true });
     await expect(square).toHaveCount(1);
     await expect

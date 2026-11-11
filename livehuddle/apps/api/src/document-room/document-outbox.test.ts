@@ -27,7 +27,7 @@ const T0 = 1_700_000_000_000;
 const box = (id: string, extra: Record<string, unknown> = {}): Element => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'signpost',
   x: 0,
   y: 0,
   width: 10,
