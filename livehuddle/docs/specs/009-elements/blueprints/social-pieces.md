@@ -129,7 +129,7 @@ drawing and the controls.
   from the striker, or a miss giving the other seat a point.
   `ballShown` holds the ball at the far paddle line until that end's word comes; `silentAfter` is when the waiting
   seat counts as gone.
-- **The inbox**: `useRoomConnection` hands both kinds to `receiveGameOp`, which parses and notifies `onGameOp`
+- **The inbox**: `useRoomConnection` (its op chain in `room-op-receive.ts`) hands both kinds to `receiveGameOp`, which parses and notifies `onGameOp`
   listeners; each table's `usePingPong` listens and keeps only the ops for its piece on the scene's tab.
 - **The scene** (`useTableGameScene`, called by `useCanvasAvatar` after `seatsOf`): you first (`You`, your colour,
   `avatar.seatedOn`, `seatClaim.index`, `plays: takePart`), then each `remoteAvatars` row (its seat by `claimOf` over

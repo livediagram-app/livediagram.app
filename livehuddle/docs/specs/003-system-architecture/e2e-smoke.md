@@ -331,7 +331,7 @@ tests where it's cheap.
 - `apps/editor/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
   shared flows (`startBlankDocument`, `openStartBlank`, `openBlankSession`, `seedTab`,
   `dismissQuickTour`).
-- `apps/editor/e2e/fixtures/`: `audit-screens.ts`, `contrast.ts`, `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
+- `apps/editor/e2e/fixtures/`: `audit-screens.ts` and `contrast.ts`: the screens and measurements the dark-mode audits share.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, community, marketing).
 - The root's `scripts/e2e-stack/` (shared with the other product stacks): `accounts-stand-in.mjs`, `processes.mjs`,
   `proxies.mjs` (the router's forwards and the WebSocket upgrade) and `static-serving.mjs` (caching, the Trusted Types

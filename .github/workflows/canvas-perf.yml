@@ -62,7 +62,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          sha="$(node e2e/perf/nightly.mjs previous)"
+          sha="$(node ../../../packages/e2e-kit/src/perf/nightly.mjs previous)"
           echo "sha=${sha}" >> "$GITHUB_OUTPUT"
           if [ "${GITHUB_EVENT_NAME}" = "schedule" ] && [ "${sha}" = "${GITHUB_SHA}" ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
@@ -116,7 +116,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           PREVIOUS_SHA: ${{ steps.previous.outputs.sha }}
-        run: node e2e/perf/nightly.mjs report
+          PRODUCT: ${{ matrix.product }}
+        # The run's I/O is @liveworkspace/e2e-kit's (packages/e2e-kit/src/perf/nightly.mjs), run from the editor's
+        # folder so it reads that editor's test-results/perf.
+        run: node ../../../packages/e2e-kit/src/perf/nightly.mjs report "${PRODUCT}"
 
       - name: Upload traces and screenshots
         if: always() && steps.previous.outputs.skip != 'true' && hashFiles(format('{0}/test-results/perf/**', matrix.dir)) != ''

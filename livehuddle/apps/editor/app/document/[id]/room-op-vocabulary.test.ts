@@ -29,13 +29,17 @@ import {
 // alternative is another hand-kept list, and a copy can only prove it agrees
 // with itself.
 
-const HANDLER = join(__dirname, 'useRoomConnection.ts');
+// The room hook and the op chain it hands each incoming op to (room-op-receive.ts).
+const HANDLERS = ['useRoomConnection.ts', 'room-op-receive.ts'].map((name) =>
+  join(__dirname, name),
+);
+const handlerSource = () => HANDLERS.map((file) => readFileSync(file, 'utf8')).join('\n');
 
 // Every `op.kind === '…'` branch in the incoming-op chain. That chain is the
 // receiving half of the vocabulary: an op the editor sends but never handles is
 // dead, and one it handles but the schema doesn't classify is unclassified.
 function handledKinds(): string[] {
-  const source = readFileSync(HANDLER, 'utf8');
+  const source = handlerSource();
   return [...new Set([...source.matchAll(/op\.kind === '([a-z-]+)'/g)].map((m) => m[1]!))];
 }
 
@@ -76,7 +80,7 @@ describe('room op vocabulary', () => {
     // out of the session). So the editor must listen for it and must not emit
     // it — an emit would be a dropped frame at best and a forgery attempt at
     // worst.
-    const source = readFileSync(HANDLER, 'utf8');
+    const source = handlerSource();
     for (const kind of SYSTEM_OP_KINDS) {
       expect(handledKinds()).toContain(kind);
       expect(source).not.toContain(`op: { kind: '${kind}'`);

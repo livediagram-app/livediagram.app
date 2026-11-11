@@ -13,10 +13,10 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { connect } from './bench/mcp-client.mjs';
+import { connect } from '@liveworkspace/mcp-kit/eval/mcp-client';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const URL_ = process.env.MCP_URL;
+const URL_ = process.env.MCP_URL ?? 'http://127.0.0.1:8798/mcp';
 const LOG = process.env.EVAL_LOG ?? join(HERE, 'runs', 'calls.jsonl');
 const IMG_DIR = process.env.EVAL_IMG_DIR ?? join(HERE, 'runs', 'shots');
 

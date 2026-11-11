@@ -18,7 +18,7 @@ and from [Avatar tour](../avatar-tour.md).
 | `apps/editor/components/palette/AvatarPalette.tsx`        | The avatar palette, with Say                                                                      |
 | `packages/avatar/src/components/AvatarMessagePopover.tsx` | The message popover, hung from Say                                                                |
 | `apps/editor/hooks/collab/useEditorBroadcast.ts`          | `broadcastAvatarSay`                                                                              |
-| `apps/editor/app/document/[id]/useRoomConnection.ts`      | Routes a received `avatar-say` to the speech hook                                                 |
+| `apps/editor/app/document/[id]/room-op-receive.ts`        | Routes a received `avatar-say` to the speech hook                                                 |
 | `apps/editor/lib/avatar-tour.ts`                          | The relaunch event for the Receptionist's welcome ([receptionist](../receptionist.md))            |
 
 ## Domain and naming
@@ -83,7 +83,7 @@ closes the composer, tracks `Canvas · Used · AvatarMessage` or `AvatarMessageP
 
 ### Receiving
 
-`receivePeerSay(from, rawOp)` (the store, called by `useRoomConnection`): `parseAvatarSay(rawOp)` (null → drop);
+`receivePeerSay(from, rawOp)` (the store, called by `useRoomConnection` through `room-op-receive.ts`): `parseAvatarSay(rawOp)` (null → drop);
 `SeenIds.add(id)` false → drop; then a bubble with `bornAt = now`. The layer resolves its speaker and announces it
 (above). A sender who leaves keeps their bubbles until they fade. Leaving the document empties the store
 (`resetSpeechBubbles`).

@@ -18,7 +18,8 @@
     "./server-json": "./src/server-json.ts",
     "./tool-result": "./src/tool-result.ts",
     "./tool-scope": "./src/tool-scope.ts",
-    "./eval/summary": "./eval/summary.mjs"
+    "./eval/summary": "./eval/summary.mjs",
+    "./eval/mcp-client": "./eval/mcp-client.mjs"
   },
   "scripts": {
     "lint": "oxlint",
