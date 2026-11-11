@@ -83,6 +83,7 @@ async function seedDeck(page: Page, baseURL: string, owner: string, size: Size):
 
 async function openDeck(
   browser: Browser,
+  baseURL: string,
   owner: string,
   id: string,
   transition: Transition,
@@ -93,7 +94,9 @@ async function openDeck(
     viewport: VIEW,
     colorScheme: 'dark',
     reducedMotion,
-    baseURL: process.env.E2E_BASE_URL,
+    // The test's own: `process.env.E2E_BASE_URL` is unset on the nightly run, and an undefined base URL
+    // overrode the config's, so every goto failed ("Cannot navigate to invalid URL") and the run with it.
+    baseURL,
   });
   await ctx.addInitScript(
     ({ token, transition }) => {
@@ -236,7 +239,11 @@ test('slide transitions, measured', async ({ page, browser, baseURL }) => {
   const report: Record<string, unknown> = { variant: VARIANT, throttle: round(rate) };
   for (const size of ['small', 'large'] as const) {
     for (const transition of ['slide', 'fade'] as const) {
-      const { ctx, page: p, cdp } = await openDeck(browser, owner, decks[size], transition, rate);
+      const {
+        ctx,
+        page: p,
+        cdp,
+      } = await openDeck(browser, baseURL!, owner, decks[size], transition, rate);
       const moves: MoveReading[] = [];
       for (const key of MOVES) {
         const t = await traced(cdp, p, async () => {
@@ -276,7 +283,15 @@ test('slide transitions, measured', async ({ page, browser, baseURL }) => {
     }
   }
   // Reduced motion: what animates on a move.
-  const { ctx, page: p } = await openDeck(browser, owner, decks.large, 'slide', 1, 'reduce');
+  const { ctx, page: p } = await openDeck(
+    browser,
+    baseURL!,
+    owner,
+    decks.large,
+    'slide',
+    1,
+    'reduce',
+  );
   await p.keyboard.press('ArrowRight');
   await p.waitForTimeout(60);
   report['reduced-motion'] = await leftovers(p);
@@ -297,7 +312,7 @@ for (const engine of (process.env.SLIDE_ENGINES ?? '').split(',').filter(Boolean
     const other = await launcher.launch();
     const report: Record<string, unknown> = { variant: VARIANT, engine };
     for (const transition of ['slide', 'fade'] as const) {
-      const { ctx, page: p } = await openDeck(other, owner, id, transition, 0);
+      const { ctx, page: p } = await openDeck(other, baseURL!, owner, id, transition, 0);
       const animated: string[][] = [];
       for (const key of ['ArrowRight', 'ArrowRight', 'ArrowLeft']) {
         await p.keyboard.press(key);

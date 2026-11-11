@@ -7,6 +7,7 @@
 //
 //   node .github/scripts/coverage-floors.mjs <dir>            check the editors whose shards are in <dir>
 //   node .github/scripts/coverage-floors.mjs --update <dir>   raise the floors to what <dir> measures, less SLACK
+//   node .github/scripts/coverage-floors.mjs --missing <dir>  print the shards EDITORS names that <dir> lacks
 //
 // <dir> holds one folder per artifact, as `gh run download --pattern 'coverage-*-editor-*'` or
 // actions/download-artifact leave them. On CI, EDITORS (ci-plan's `editors` output) names the shards the
@@ -168,19 +169,14 @@ function readFloors() {
   return existsSync(FLOORS_FILE) ? JSON.parse(readFileSync(FLOORS_FILE, 'utf8')) : {};
 }
 
-function main() {
-  const args = process.argv.slice(2);
-  const update = args.includes('--update');
-  const dir = args.find((a) => !a.startsWith('--'));
-  if (!dir || !existsSync(dir)) {
-    console.error(
-      'usage: coverage-floors.mjs [--update] <dir of coverage-<group>-editor-<n> folders>',
-    );
-    return 2;
-  }
-  const expected = process.env.EDITORS ? JSON.parse(process.env.EDITORS) : null;
+/**
+ * The shard folders per editor in `dir`, and the shards missing from it: `shardsByEditor`, plus any folder
+ * holding no lcov.info (a shard whose suite found no files to cover uploads nothing).
+ * @param {string} dir
+ * @param {{ group: string, shard: number, total: number }[] | null} expected
+ */
+export function shardsIn(dir, expected) {
   const { found, missing } = shardsByEditor(readdirSync(dir), expected);
-  // A shard whose suite found no files to cover uploads nothing; an empty folder counts as missing too.
   for (const names of found.values())
     for (const name of names)
       if (
@@ -189,6 +185,38 @@ function main() {
         )
       )
         missing.push(name);
+  return { found, missing };
+}
+
+/**
+ * Leaves out of `found` every editor with a shard in `missing`: merged without that shard, its coverage reads
+ * as a fall it never had (liveplanner read 64.93% against a floor of 80.7% on run 42826405532, one shard short).
+ * @param {Map<string, string[]>} found
+ * @param {string[]} missing
+ */
+export function withoutPartial(found, missing) {
+  const partial = new Set(missing.map((name) => parseShard(name)?.group));
+  return new Map([...found].filter(([group]) => !partial.has(group)));
+}
+
+function main() {
+  const args = process.argv.slice(2);
+  const update = args.includes('--update');
+  const dir = args.find((a) => !a.startsWith('--'));
+  if (!dir || !existsSync(dir)) {
+    console.error(
+      'usage: coverage-floors.mjs [--update | --missing] <dir of coverage-<group>-editor-<n> folders>',
+    );
+    return 2;
+  }
+  const expected = process.env.EDITORS ? JSON.parse(process.env.EDITORS) : null;
+  const shards = shardsIn(dir, expected);
+  const missing = shards.missing;
+  if (args.includes('--missing')) {
+    for (const name of missing) console.log(name);
+    return 0;
+  }
+  const found = withoutPartial(shards.found, missing);
 
   /** @type {Map<string, Measured>} */
   const measured = new Map();
@@ -219,7 +247,10 @@ function main() {
     return 0;
   }
   const { failures, notes, rows } = judge(measured, floors);
-  for (const name of missing) failures.push(`${name}: this shard kept no coverage`);
+  for (const name of missing)
+    failures.push(
+      `${name}: this shard kept no coverage, so its editor is not judged until a rerun has every shard`,
+    );
   if (process.env.GITHUB_STEP_SUMMARY) {
     const table = [
       '## Editor coverage floors',

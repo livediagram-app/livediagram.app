@@ -146,7 +146,11 @@ always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a r
   signed-in specs, in Playwright's container, with Turbopack's build cache restored from `main`.
   **E2E** is its one result check.
 - **Canvas performance** (`canvas-perf.yml`): each product's probe, nightly against `main`. A miss
-  opens or updates that product's issue, **Canvas performance budget: <product>**.
+  opens or updates that product's issue, **Canvas performance budget: <product>**, and never fails the job;
+  the job fails only when the probe cannot run or the issue cannot be written. The issue lists the latest 30
+  commits since the last successful run, then how many more: from 2026-10-16 to 2026-11-11 every night was
+  red because the list ran to 2,219 commits (190 KB, past GitHub's 65,536-character body) and the slide
+  transition bench in livediagram and livedocuments opened its deck with no base URL.
 - **Cache prune** (`cache-prune.yml`): after CI or E2E on `main`, deletes the superseded caches (see
   [Cache pruning](#cache-pruning)).
 - **Lucide re-vendor** (`lucide-revendor.yml`): on pull requests that change `packages/icons/package.json`.
@@ -223,6 +227,13 @@ in turns after one warm-up run of each, the best sample of each kept: timed one 
 pays the first compile and the larger whatever collection lands on it. livehuddle's lint growth (75 to 300 boxes
 and arrows) read 0.66 to 7.06 against 8 that way, and 3.8 to 4.1 in turns; the container order (1,200 to 4,800
 elements) read 1.3 to 8.3, and 4.3 to 5.9 in turns.
+
+`cpuGrowthRatio(small, large, { ceiling })` in `@liveworkspace/vitest-config/cpu-time` does this for a check whose
+two sizes each time one sample: a warm-up of each, then five samples of each in turns, the fastest of each kept,
+and while the ratio reads at or over the ceiling, five more of each, up to three rounds. Interference only adds CPU
+time, so a noisy round settles while a quadratic step reads sixteen in every round. The edit-operations checks go
+through it: liveplanner's target-noting check, timed one size after the other, read 8.86 against 8 on CI
+(2026-11-11), where in turns it reads 4.8 to 5.6 (40 runs) and a quadratic `includes` scan still reads 17.4.
 
 The Checks job's **Speed budgets use CPU time** step (`.github/scripts/cpu-budget-guard.mjs`, also in
 the pre-push hook) fails a change that adds `performance.now()` to a test file. Older budgets are left
@@ -372,6 +383,13 @@ ratchet instead: it may never fall, and its floor rises as tests are added.
   there because moving code between files (a split, a move to `packages/`) shifts coverage a little,
   and a floor at the measured value would turn red at random. The job fails when either is below its
   floor, and fails when a shard kept no coverage or an editor has no floor.
+- **A shard the listing missed:** the download lists the run's artifacts once, and the listing can lag an
+  upload. Run 42826405532 (2026-11-10) missed liveplanner's second shard, finalised 13 seconds before the
+  list, and judged the other two: 64.93% of lines against a floor of 80.7%, a fall that never happened. So
+  **Fetch any shard the listing missed** asks the script (`--missing`) which shards the plan reached and the
+  folder lacks, and fetches each by name (`gh run download`), up to six times 10 seconds apart. An editor
+  still short a shard is not judged at all: the job fails on the missing shard alone, never on a slice's
+  coverage.
 - **Raising them:** when an editor beats a floor by 0.8 points or more (the slack plus half a point
   gained), the job says so in a notice (it does not fail). Raise it in the same pull request: download
   the run's editor artifacts into one folder with
