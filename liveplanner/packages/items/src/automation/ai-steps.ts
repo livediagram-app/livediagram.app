@@ -327,9 +327,20 @@ export function aiRequest(
 
 // ---- The reply -----------------------------------------------------------------------------------------------------
 
+// The body of a text's first fenced block (```, an optional `json`, then up to the next ```), found with indexOf so a
+// hostile reply (``` and a long run of whitespace, no closing fence) costs linear time, not a regex's backtracking.
+export function fencedBody(text: string): string | undefined {
+  const open = text.indexOf('```');
+  if (open < 0) return undefined;
+  let from = open + 3;
+  if (text.slice(from, from + 4).toLowerCase() === 'json') from += 4;
+  const close = text.indexOf('```', from);
+  return close < 0 ? undefined : text.slice(from, close);
+}
+
 // The JSON object a text holds: all of it, a fenced block, or the span from its first `{` to its last `}`.
 function objectIn(text: string): Obj | null {
-  const fenced = /```(?:json)?\s*([\s\S]*?)```/i.exec(text)?.[1];
+  const fenced = fencedBody(text);
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}');
   for (const candidate of [
@@ -377,17 +388,22 @@ const cardText = (input: AiCardInput): string =>
     ...(input.comments ?? []),
   ].join('\n');
 
+// The most of a reply a summary reads (a 300-token reply is about 1,200 characters).
+const AI_REPLY_READ_MAX = 8_000;
+
 /** A summary as plain text: control characters, tags and Markdown marks gone, every link the card didn't hold
  *  removed, whitespace collapsed, cut at a word to the summary's length. */
 export function plainSummary(text: string, input: AiCardInput): string {
   const own = cardText(input);
+  // A reply is at most 300 tokens; anything longer is cut before any pattern reads it.
   const plain = text
+    .slice(0, AI_REPLY_READ_MAX)
     // Control characters (a tab or a line break is a space).
     .replace(/\p{Cc}/gu, ' ')
     .replace(/```[a-z]*/gi, ' ')
-    .replace(/<[^>]*>/g, ' ')
+    .replace(/<[^<>]*>/g, ' ')
     // [words](address) reads as its words; the address stays only if the card held it.
-    .replace(/\[([^\]]*)\]\(([^)]*)\)/g, '$1 $2')
+    .replace(/\[([^[\]]*)\]\(([^()]*)\)/g, '$1 $2')
     .replace(/\*\*|__|`|^#+\s*/gm, '')
     .replace(LINK, (link) => (own.includes(link) ? link : ' '))
     .replace(/\s+/g, ' ')

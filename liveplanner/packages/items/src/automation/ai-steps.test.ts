@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { ItemTypeDef } from '../item-types';
 import type { ItemFieldValue } from '../item';
 import {
@@ -17,6 +18,7 @@ import {
   aiOutcome,
   aiRequest,
   aiStepChip,
+  fencedBody,
   planLabels,
   plainSummary,
   readAiReply,
@@ -562,5 +564,43 @@ describe('aiOutcome', () => {
         ctx(note),
       ),
     ).toEqual({ failed: 'A Note card has no Labels' });
+  });
+});
+
+// A reply is the model's, so it is read as hostile: 100,000 characters built to make a backtracking regex quadratic
+// must still read in linear time (CodeQL js/polynomial-redos).
+describe('hostile replies', () => {
+  const N = 100_000;
+  const input: AiCardInput = aiCardInput(bug({ title: 'Login fails' }), O);
+
+  it('finds a fenced block, or none, in linear time', () => {
+    expect(fencedBody('```json\n{"a":1}\n```')).toBe('\n{"a":1}\n');
+    expect(fencedBody('x ```{"a":1}``` y')).toBe('{"a":1}');
+    expect(fencedBody('```{"a":1}')).toBeUndefined();
+    expect(fencedBody('no fence')).toBeUndefined();
+    for (const text of [
+      '```' + '\t'.repeat(N),
+      '```json' + ' '.repeat(N) + '`',
+      '```'.repeat(N / 3),
+    ]) {
+      const ms = cpuMsOf(() => {
+        fencedBody(text);
+        readAiReply(text);
+      });
+      expect(ms).toBeLessThan(cpuBudgetMs(100));
+    }
+  });
+
+  it('makes a summary plain in linear time', () => {
+    for (const text of [
+      '<'.repeat(N),
+      '['.repeat(N),
+      '[]('.repeat(N / 3),
+      '**'.repeat(N / 2),
+      '`'.repeat(N),
+    ]) {
+      const ms = cpuMsOf(() => plainSummary(text, input));
+      expect(ms).toBeLessThan(cpuBudgetMs(100));
+    }
   });
 });
