@@ -69,7 +69,7 @@ export function AutomationsHost({
     if (!askedOpen()) return;
     const url = new URL(window.location.href);
     url.searchParams.delete(AUTOMATIONS_PARAM);
-    window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
+    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
   }, []);
   const { ownerId, projectId, shareCode } = scope ?? {};
   const stable = useMemo<AutomationsScope | null>(
