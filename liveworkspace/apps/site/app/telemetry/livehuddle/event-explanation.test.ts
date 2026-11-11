@@ -22,7 +22,7 @@ const eventExplanation = APP.explain;
 
 const EMITS = [
   ...scanEmitters(REPO, SCAN_ROOTS, SKIP),
-  ...sharedClientEmitters(),
+  ...sharedClientEmitters({ root: REPO, roots: SCAN_ROOTS, skip: SKIP }),
   // Every app's help-centre views, votes and searches, sent by the shared help site.
   ...sharedSiteEmitters(),
 ];

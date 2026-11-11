@@ -20,8 +20,10 @@ import { PageMasthead } from '@/components/canvas/PageMasthead';
 import { PickerFace } from '@/components/canvas/PickerFace';
 import { SessionButtonFace } from '@/components/canvas/SessionButtonFace';
 import { SessionTimerFace } from '@/components/canvas/SessionTimerFace';
-import { InsetContent } from '@/components/canvas/InsetContent';
-import type { ContentInset } from '@/components/canvas/useIndicatorLayout';
+import {
+  InsetContent,
+  type ContentInset,
+} from '@liveworkspace/workbench/components/canvas/InsetContent';
 import { loadCollabFaceRouter } from '@/lib/editor-deferred-code';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';

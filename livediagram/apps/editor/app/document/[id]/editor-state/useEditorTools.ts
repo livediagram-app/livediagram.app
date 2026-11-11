@@ -5,7 +5,7 @@ import { useDesktopOnlyToolExit } from '@/hooks/canvas/useDesktopOnlyToolExit';
 import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
 import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
-import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
+import { useFormatConfig } from '@liveworkspace/workbench/hooks/canvas/useFormatConfig';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useFormatTool } from '../useFormatTool';

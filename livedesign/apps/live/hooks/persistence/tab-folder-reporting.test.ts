@@ -13,38 +13,17 @@ vi.mock('@/lib/telemetry', () => ({
   track: (...args: Parameters<typeof track>) => track(...args),
 }));
 
-import { trackTabFolderTransition } from './tab-folder-reporting';
+import { configureWorkbench } from '@liveworkspace/workbench/bindings';
+import { testBindings } from '@liveworkspace/workbench/lib/testing/bindings';
 import { useTabFolders } from './useTabFolders';
 
-beforeEach(() => track.mockReset());
-
-describe('trackTabFolderTransition', () => {
-  it('reports joining a folder as a tab move, typed Folder', () => {
-    trackTabFolderTransition(null, 'Research');
-    expect(track).toHaveBeenCalledWith('Tab', 'Moved', 'Folder');
-  });
-
-  it('reports leaving a folder as a tab removal, typed Folder', () => {
-    trackTabFolderTransition('Research', null);
-    expect(track).toHaveBeenCalledWith('Tab', 'Removed', 'Folder');
-  });
-
-  it('reports folder-to-folder as a move (it landed somewhere)', () => {
-    trackTabFolderTransition('Research', 'Archive');
-    expect(track).toHaveBeenCalledWith('Tab', 'Moved', 'Folder');
-  });
-
-  it('never emits the untyped Tab events the metric cards count', () => {
-    trackTabFolderTransition(null, 'Research');
-    trackTabFolderTransition('Research', null);
-    for (const call of track.mock.calls) expect(call[2]).toBe('Folder');
-  });
-
-  it('emits nothing when the membership did not actually change', () => {
-    trackTabFolderTransition('Research', 'Research');
-    trackTabFolderTransition(null, null);
-    expect(track).not.toHaveBeenCalled();
-  });
+// The folder moves report through the workbench's telemetry binding, which the editor binds to its own
+// track at startup (lib/workbench-bindings.ts); bind it to the same mock here.
+beforeEach(() => {
+  track.mockReset();
+  configureWorkbench(
+    testBindings({ track: (category, action, type) => track(category, action, type) }),
+  );
 });
 
 // useTabFolders holds no React state of its own (it returns closures over the

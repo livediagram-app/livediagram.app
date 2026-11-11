@@ -1,4 +1,4 @@
-import { auditContrast, type ContrastReport } from './contrast';
+import { auditContrast, type ContrastReport } from '@liveworkspace/e2e-kit/contrast';
 import {
   CANVAS,
   darkVisitor,

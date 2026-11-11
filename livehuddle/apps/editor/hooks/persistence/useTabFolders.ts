@@ -18,7 +18,7 @@ import {
   type Tab,
 } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
-import { trackTabFolderTransition } from './tab-folder-reporting';
+import { trackTabFolderTransition } from '@liveworkspace/workbench/hooks/persistence/tab-folder-reporting';
 
 type TabFoldersDeps = {
   tabs: Tab[];

@@ -460,7 +460,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/components/tour/PagesTourHost.tsx UI·View': {
     values: PAGES_TOUR_STEP_SOURCE,
   },
-  'apps/editor/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
+  // The shared hook's flush on page hide sends what was scheduled: every canvas-panel slider.
+  'packages/workbench/src/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
   },
   'apps/editor/hooks/canvas/useShapeDrawing.ts Element·Added': {

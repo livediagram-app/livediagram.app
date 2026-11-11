@@ -16,7 +16,7 @@ import {
   benchmarkInPage,
   calibratedThrottle,
   type Calibration,
-} from './calibrate';
+} from '@liveworkspace/e2e-kit/perf/calibrate';
 import {
   budgetTable,
   evaluateBudget,
@@ -24,9 +24,9 @@ import {
   type Gesture,
   type Measurement,
 } from './budget';
-import { interactiveMs, OPEN_QUIET_MS } from './interactive';
+import { interactiveMs, OPEN_QUIET_MS } from '@liveworkspace/e2e-kit/perf/interactive';
 import { buildReferenceBoard } from './reference-board';
-import { mainThreadTasks, type TraceEvent } from './trace-tasks';
+import { mainThreadTasks, type TraceEvent } from '@liveworkspace/e2e-kit/perf/trace-tasks';
 
 // The canvas performance probe (docs/specs/008-canvas/canvas-performance.md "Measuring";
 // docs/instructions/trace-a-canvas-gesture.md): the reference board on a Plan tab, at

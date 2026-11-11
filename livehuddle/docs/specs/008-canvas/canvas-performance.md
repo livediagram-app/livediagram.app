@@ -288,7 +288,8 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
   artefact for 14 days.
 - **It reports, it never blocks**: timings on shared runners are too noisy to fail a build on. A
   run with a failing row opens one issue, **Canvas performance budget: livehuddle**, or comments on it if open,
-  with the table and the commits since the previous run; the first all-pass run closes it. No
+  with the table and the commits since the previous run (the latest 30, then how many more, so a long
+  gap never outgrows GitHub's 65,536-character body); the first all-pass run closes it. No
   one has to remember to run or read it.
 - **A branch can be measured on demand**: the same workflow, started by hand on any branch, runs
   the same probe and writes the same job summary, and leaves the issue alone; only a run on `main`

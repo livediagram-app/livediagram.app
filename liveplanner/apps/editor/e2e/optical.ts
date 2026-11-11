@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { discover, SHAPE, type Probe } from './optical-discover';
-import { inheritedSnap } from './optical-snap';
+import { inheritedSnap } from '@liveworkspace/e2e-kit/optical-snap';
 
 // Optical alignment audit (docs/specs/004-interface-design/optical-alignment.md; the algorithm is
 // .../blueprints/optical-alignment.md, "Ink audit"). Finds every small painted shape that frames a glyph

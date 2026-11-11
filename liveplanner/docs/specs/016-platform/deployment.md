@@ -46,7 +46,7 @@ account) and its public hostnames ([Custom domain](#custom-domain)). Secrets **n
 - **pnpm:** `9.15.0`, the root `packageManager`, through `pnpm/action-setup`.
 - **Wrangler:** `^4.148.0` in every app that deploys.
 - **Asset size:** Workers Static Assets refuses any file over 25 MiB, and only at deploy. The editor's `build` ends
-  with `scripts/asset-size-gate.mjs`, which fails the build on any file in `out/` over the limit, so CI catches it
+  with `asset-size-gate` (@liveworkspace/next-config), which fails the build on any file in `out/` over the limit, so CI catches it
   first.
 
 ## CI

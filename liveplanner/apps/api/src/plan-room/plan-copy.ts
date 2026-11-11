@@ -1,0 +1,408 @@
+// A plan's copies (./plan-content): what a copy carries out of a plan (its tabs, items and threads, chunked) and
+// how it lands in a new one, its tab and item ids remapped. Re-exported from ./plan-content.
+import { itemIdsShownOnTab, readItemTypeCatalogue, typesOf } from '@liveplanner/items';
+import type { TabItemElement } from '@liveplanner/items';
+import { remapTabLinks, type Element } from '@liveplanner/project';
+import { redactTabDataAuthors } from '../comments';
+import {
+  COMMUNITY_PERSON,
+  redactItemRowForCommunity,
+  redactPlanTabDataForCommunity,
+  redactSheetCellRowsForCommunity,
+  responseSheetIds,
+} from '../community-redact';
+import { listItems } from '../db/items';
+import { insertLinkStatement, insertThreadStatement, listHomeThreads } from '../db/card-threads';
+import { threadForViewer, type CardThread } from '@liveplanner/project';
+import { sheetRefIds } from '../db/sheet-refs';
+import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
+import { storedTabConnection, tabConnectionStatement } from '@liveworkspace/index-app';
+import type { TabConnection } from '@liveworkspace/index-client';
+import type { PlanEnv } from '../types';
+
+// ---------- Copies --------------------------------------------------------------------------------------------
+
+// A plan's content as one Durable Object hands it to another for a copy (docs/specs/015-api/api.md "Copies"):
+// tabs under fresh ids (their links re-pointed), the items, and the copied tabs' sheets with their cells. Sent as
+// one RPC message, so a plan past the 32 MiB a message may carry cannot be copied this way (the follow-up is to
+// stream it in pages).
+export type PlanCopy = {
+  itemTypes: string | null;
+  itemsRev: number;
+  itemsNextKey: number;
+  tabs: {
+    id: string;
+    name: string;
+    orderIndex: number;
+    folder: string | null;
+    data: string;
+    elementCount: number | null;
+    // A connected tab's connection, carried as exactly `{ id, app, itemId }` (connected-tabs.md "Copies carry
+    // nothing"): the index opens it only in its own host and tab, so in the copy it offers Connect Again.
+    connection?: TabConnection | null;
+  }[];
+  items: Record<string, unknown>[];
+  sheets: Record<string, unknown>[];
+  cells: Record<string, unknown>[];
+  // The comment threads this plan stores on the copied cards (docs/specs/026-plan/items.md "Cards coming and
+  // going"), each on those cards alone, named in the copy as COPY_PLAN until the copy lands. A thread shared in
+  // from another plan stays that plan's. Absent from a copy made before threads.
+  threads?: CardThread[];
+};
+
+// The plan a copy's threads name before it lands (importPlanCopy puts its own id in).
+export const COPY_PLAN = '~copy';
+
+// The threads this plan stores on the cards `itemIds` names (null: every card), as a copy carries them.
+export async function copiedThreads(
+  env: PlanEnv,
+  planId: string,
+  itemIds: ReadonlySet<string> | null,
+  redactAuthorsFor: string | null,
+): Promise<CardThread[]> {
+  const out: CardThread[] = [];
+  for (const t of await listHomeThreads(env, planId)) {
+    const cards = t.cards
+      .filter((c) => c.projectId === planId && (itemIds === null || itemIds.has(c.itemId)))
+      .map((c) => ({ projectId: COPY_PLAN, itemId: c.itemId, key: c.key }));
+    if (cards.length === 0) continue;
+    const seen = redactAuthorsFor === null ? t : threadForViewer(t, redactAuthorsFor);
+    out.push({ ...seen, home: COPY_PLAN, cards });
+  }
+  return out;
+}
+
+// A copy's threads as rows of the plan they land in, with their links.
+function copiedThreadStatements(
+  env: PlanEnv,
+  planId: string,
+  threads: readonly CardThread[],
+): D1PreparedStatement[] {
+  return threads.flatMap((t) => {
+    const thread: CardThread = {
+      ...t,
+      home: planId,
+      cards: t.cards.map((c) => ({ ...c, projectId: planId })),
+    };
+    return [
+      insertThreadStatement(env, thread),
+      ...thread.cards.map((c) =>
+        insertLinkStatement(env, planId, {
+          itemId: c.itemId,
+          threadId: t.id,
+          home: planId,
+          openComments: t.resolved ? 0 : t.comments.length,
+        }),
+      ),
+    ];
+  });
+}
+
+// Every tab of the plan (or one) with its body, in order: the read a copy makes, and the Drive file's
+// (project-file.ts).
+export type ContentTabRow = {
+  id: string;
+  name: string;
+  order_index: number;
+  folder: string | null;
+  data: string;
+  element_count: number | null;
+  connection: string | null;
+};
+
+export async function readContentTabRows(
+  env: PlanEnv,
+  planId: string,
+  onlyTabId: string | null,
+): Promise<ContentTabRow[]> {
+  const tabRows = await env.PLAN_DB.prepare(
+    `SELECT t.id, t.name, dt.order_index, dt.folder, t.data, t.element_count, t.connection
+       FROM plan_tabs dt
+       JOIN tabs t ON t.id = dt.tab_id
+      WHERE dt.plan_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
+      ORDER BY dt.order_index ASC`,
+  )
+    .bind(...(onlyTabId === null ? [planId] : [planId, onlyTabId]))
+    .all<ContentTabRow>();
+  return tabRows.results ?? [];
+}
+
+// The source side of a copy. `onlyTabId`: a tab-scoped visitor's copy takes that tab only (and the items it shows).
+// `redactAuthorsFor`: anyone but the owner copies the comments as the tab read serves them to them.
+// `community`: a copy through the plan's Community post's open link (docs/specs/025-community/community.md "Viewing a
+// post's plan") carries exactly what the link shows (community-redact.ts): no comment threads, no people, no votes,
+// and a form's responses without their answers.
+export async function exportPlanCopy(
+  env: PlanEnv,
+  planId: string,
+  onlyTabId: string | null,
+  redactAuthorsFor: string | null,
+  community = false,
+): Promise<PlanCopy | null> {
+  const plan = await env.PLAN_DB.prepare(
+    'SELECT item_types, items_rev, items_next_key FROM plan WHERE id = ?',
+  )
+    .bind(planId)
+    .first<{ item_types: string | null; items_rev: number; items_next_key: number }>();
+  const rows = await readContentTabRows(env, planId, onlyTabId);
+  // Every fresh tab id minted up front, so a tab or element link on one tab can be re-pointed at its sibling's copy.
+  const tabIdMap = new Map(rows.map((row) => [row.id, crypto.randomUUID()]));
+  const tabs = rows.map((row) => {
+    const remapped = remapTabDataLinks(row.data, tabIdMap);
+    return {
+      id: tabIdMap.get(row.id)!,
+      name: row.name,
+      orderIndex: row.order_index,
+      folder: row.folder,
+      data: community
+        ? redactPlanTabDataForCommunity(remapped)
+        : redactAuthorsFor !== null
+          ? redactTabDataAuthors(remapped, redactAuthorsFor)
+          : remapped,
+      // Link remapping rewrites ids inside elements, never their number, so the count carries over.
+      elementCount: row.element_count,
+      connection: storedTabConnection(row.connection),
+    };
+  });
+  const itemIds = await copiedItemIds(env, planId, rows, onlyTabId);
+  const items = await env.PLAN_DB.prepare(
+    `SELECT id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by
+       FROM items WHERE plan_id = ?${itemIds === null ? '' : ' AND id IN (SELECT value FROM json_each(?))'}`,
+  )
+    .bind(...(itemIds === null ? [planId] : [planId, JSON.stringify(itemIds)]))
+    .all<Record<string, unknown>>();
+  // The copied tabs' sheets keep their ids (the copy's Sheet elements still frame them), under the tab's new id.
+  const sourceTabs = JSON.stringify([...tabIdMap.keys()]);
+  const sheets = await env.PLAN_DB.prepare(
+    `SELECT id, tab_id, title, layout, cell_count, cell_bytes, created_at, updated_by
+       FROM sheets WHERE plan_id = ? AND tab_id IN (SELECT value FROM json_each(?))`,
+  )
+    .bind(planId, sourceTabs)
+    .all<Record<string, unknown>>();
+  const cells = await env.PLAN_DB.prepare(
+    `SELECT c.sheet_id, c.row_id, c.col_id, c.input, c.format
+       FROM sheet_cells c JOIN sheets s ON s.plan_id = c.plan_id AND s.id = c.sheet_id
+      WHERE c.plan_id = ? AND s.tab_id IN (SELECT value FROM json_each(?))`,
+  )
+    .bind(planId, sourceTabs)
+    .all<Record<string, unknown>>();
+  // A Community copy takes no conversation at all.
+  const threads = community
+    ? []
+    : await copiedThreads(
+        env,
+        planId,
+        itemIds === null ? null : new Set(itemIds),
+        redactAuthorsFor,
+      );
+  const itemRows = items.results ?? [];
+  const sheetRows = sheets.results ?? [];
+  const cellRows = cells.results ?? [];
+  const types = community ? typesOf(readItemTypeCatalogue(plan?.item_types ?? null)) : [];
+  const responseSheets = community ? responseSheetIds(rows) : new Set<string>();
+  const person = JSON.stringify(COMMUNITY_PERSON);
+  return {
+    itemTypes: plan?.item_types ?? null,
+    itemsRev: plan?.items_rev ?? 0,
+    itemsNextKey: plan?.items_next_key ?? 1,
+    tabs,
+    items: community ? itemRows.map((row) => redactItemRowForCommunity(row, types)) : itemRows,
+    ...(threads.length ? { threads } : {}),
+    sheets: sheetRows.map((s) => ({
+      ...s,
+      tab_id: tabIdMap.get(String(s.tab_id)),
+      ...(community ? { updated_by: person } : {}),
+    })),
+    cells: community
+      ? redactSheetCellRowsForCommunity(cellRows, sheetRows, responseSheets)
+      : cellRows,
+  };
+}
+
+// The items a copy takes: all of them, or for a tab-scoped copy the items its one tab shows.
+async function copiedItemIds(
+  env: PlanEnv,
+  planId: string,
+  rows: { data: string }[],
+  onlyTabId: string | null,
+): Promise<string[] | null> {
+  if (onlyTabId === null) return null;
+  const elements = rows.flatMap((row) => {
+    try {
+      const parsed = JSON.parse(row.data) as { elements?: unknown };
+      return Array.isArray(parsed.elements) ? (parsed.elements as TabItemElement[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  return [...itemIdsShownOnTab(elements, await listItems(env, planId))];
+}
+
+// Re-point the tab / element links inside one tab's stored `data` JSON at the copy's tab ids. The data is only
+// parsed when it mentions a tab id, so the common link-free tab is copied byte for byte.
+export function remapTabDataLinks(data: string, tabIdMap: Map<string, string>): string {
+  // A tab or element link, or a Tab Window's tab: nothing to re-point without one.
+  if (!data.includes('"tabId"') && !data.includes('"windowTabId"')) return data;
+  try {
+    const parsed = JSON.parse(data) as { elements?: Element[] };
+    if (!Array.isArray(parsed.elements)) return data;
+    return JSON.stringify({ ...parsed, elements: remapTabLinks(parsed.elements, tabIdMap) });
+  } catch {
+    return data;
+  }
+}
+
+// Rows per bulk insert: each chunk is one JSON parameter, kept under the 2 MB a Durable Object SQLite string
+// may hold.
+const CHUNK_BYTES = 1_000_000;
+
+// `rows` as JSON arrays of at most CHUNK_BYTES each, a bulk insert's parameter apiece: the copy's, and a whole
+// import's (routes/item-import-route.ts).
+export function chunksOf(rows: readonly unknown[]): string[] {
+  const out: string[] = [];
+  let current: string[] = [];
+  let size = 2;
+  for (const row of rows) {
+    const json = JSON.stringify(row);
+    if (current.length > 0 && size + json.length + 1 > CHUNK_BYTES) {
+      out.push(`[${current.join(',')}]`);
+      current = [];
+      size = 2;
+    }
+    current.push(json);
+    size += json.length + 1;
+  }
+  if (current.length > 0) out.push(`[${current.join(',')}]`);
+  return out;
+}
+
+// Item rows (the items table's columns by name, `fields` and the people as JSON text) in as few statements as their
+// JSON allows: one per CHUNK_BYTES, each reading its rows from one parameter, so no statement nears SQLite's
+// parameter cap and none chains compound selects. A copy's items, and a whole import's cards.
+export function insertItemRowsStatements(
+  env: PlanEnv,
+  planId: string,
+  rows: readonly unknown[],
+): D1PreparedStatement[] {
+  return chunksOf(rows).map((chunk) =>
+    env.PLAN_DB.prepare(
+      `INSERT INTO items (plan_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
+       SELECT ?1, value ->> '$.id', value ->> '$.type', value ->> '$.item_key', value ->> '$.rank',
+              value ->> '$.fields', value ->> '$.rev', value ->> '$.created_at', value ->> '$.updated_at',
+              value ->> '$.created_by', value ->> '$.updated_by'
+         FROM json_each(?2)`,
+    ).bind(planId, chunk),
+  );
+}
+
+// The target side of a copy: the plan's row and everything the export carried, in one transaction, so a copy
+// lands whole or not at all. The collaboration index and listing summary follow from the outbox.
+export async function importPlanCopy(
+  env: PlanEnv,
+  planId: string,
+  copy: PlanCopy,
+  now = Date.now(),
+): Promise<void> {
+  const db = env.PLAN_DB;
+  // A copy makes a new plan: one that already holds content keeps it, and nothing is written. Read and write
+  // run back to back in the plan's own object, so nothing lands between them.
+  const held = await db
+    .prepare(
+      `SELECT EXISTS (SELECT 1 FROM plan_tabs WHERE plan_id = ?1)
+           OR EXISTS (SELECT 1 FROM items WHERE plan_id = ?1) AS held`,
+    )
+    .bind(planId)
+    .first<{ held: number }>();
+  if (held?.held) throw new Error('plan_not_empty');
+  const stmts: D1PreparedStatement[] = [
+    db
+      .prepare(
+        // created_at stays 0: the copy's first open with a grant starts it, as its new owner (initPlan).
+        `INSERT INTO plan (id, item_types, items_rev, items_next_key, saved_at, created_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, 0)
+         ON CONFLICT (id) DO UPDATE SET item_types = excluded.item_types, items_rev = excluded.items_rev,
+           items_next_key = excluded.items_next_key, saved_at = excluded.saved_at`,
+      )
+      .bind(planId, copy.itemTypes, copy.itemsRev, copy.itemsNextKey, now),
+  ];
+  for (const tab of copy.tabs) {
+    stmts.push(
+      db
+        .prepare(
+          'INSERT INTO tabs (id, name, data, updated_at, element_count, rev) VALUES (?, ?, ?, ?, ?, 1)',
+        )
+        .bind(tab.id, tab.name, tab.data, now, tab.elementCount ?? null),
+      db
+        .prepare(
+          'INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at, folder) VALUES (?, ?, ?, ?, ?)',
+        )
+        .bind(planId, tab.id, tab.orderIndex, now, tab.folder),
+      // From the copied body itself (docs/specs/013-workspace/explorer-details-view.md).
+      tabStatsStatement(env, tab.id, tabStatsOfData(tab.data).stats, now),
+    );
+    if (tab.connection) stmts.push(tabConnectionStatement(db, tab.id, tab.connection));
+  }
+  stmts.push(...insertItemRowsStatements(env, planId, copy.items));
+  for (const chunk of chunksOf(copy.sheets)) {
+    stmts.push(
+      db
+        .prepare(
+          `INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, cell_count, cell_bytes, created_at, updated_at, updated_by)
+           SELECT ?1, value ->> '$.id', value ->> '$.tab_id', value ->> '$.title', value ->> '$.layout', 0,
+                  value ->> '$.cell_count', value ->> '$.cell_bytes', value ->> '$.created_at', ?2,
+                  value ->> '$.updated_by'
+             FROM json_each(?3)`,
+        )
+        .bind(planId, now, chunk),
+    );
+  }
+  for (const chunk of chunksOf(copy.cells)) {
+    stmts.push(
+      db
+        .prepare(
+          `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input, format)
+           SELECT ?1, value ->> '$.sheet_id', value ->> '$.row_id', value ->> '$.col_id', value ->> '$.input',
+                  value ->> '$.format'
+             FROM json_each(?2)`,
+        )
+        .bind(planId, chunk),
+    );
+  }
+  // Its threads, after the cards they are on.
+  stmts.push(...copiedThreadStatements(env, planId, copy.threads ?? []));
+  // The copy's Sheets reference the copied sheets, after the sheets, so the reference triggers find them.
+  for (const tab of copy.tabs) {
+    const ids = sheetRefsOfData(tab.data);
+    if (ids.length === 0) continue;
+    stmts.push(
+      db
+        .prepare(
+          'INSERT OR IGNORE INTO sheet_refs (tab_id, sheet_id) SELECT ?, value FROM json_each(?)',
+        )
+        .bind(tab.id, JSON.stringify(ids)),
+    );
+  }
+  await db.batch(stmts);
+}
+
+// The sheet ids a stored body's Sheet elements reference (db/sheet-refs.ts sheetRefIds): a copy's and the migration
+// door's `sheet_refs` rows.
+export function sheetRefsOfData(data: string): string[] {
+  if (!data.includes('"plan-sheet"')) return [];
+  try {
+    const parsed = JSON.parse(data) as { elements?: Element[] };
+    return Array.isArray(parsed.elements) ? sheetRefIds(parsed.elements) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Owe the index a tab's derived rows again (plan-outbox.ts), for a row made outside the tab that carries them: a new
+// form link takes its tab's name and heading from the next drain.
+export async function resendPlanTab(env: PlanEnv, tabId: string): Promise<void> {
+  const rows = "SELECT plan_id, 'tab', tab_id FROM plan_tabs WHERE tab_id = ?1";
+  await env.PLAN_DB.batch([
+    env.PLAN_DB.prepare(`DELETE FROM outbox WHERE (plan_id, kind, key) IN (${rows})`).bind(tabId),
+    env.PLAN_DB.prepare(`INSERT INTO outbox (plan_id, kind, key) ${rows}`).bind(tabId),
+  ]);
+}

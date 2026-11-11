@@ -52,7 +52,7 @@ import { useLabelTextAnimation } from '@/components/canvas/useTextAnimation';
 import { AnimationLayer } from '@liveworkspace/workbench/components/canvas/AnimationLayer';
 
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
-import { clearingInset } from '@/components/canvas/InsetContent';
+import { clearingInset } from '@liveworkspace/workbench/components/canvas/InsetContent';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { isPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through';

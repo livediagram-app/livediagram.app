@@ -322,8 +322,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/components/canvas/receptionist/ReceptionistBubble.tsx UI·View': {
     values: RECEPTIONIST_TOPIC_SOURCE,
   },
-  'apps/editor/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
-    values: Object.keys(CANVAS_CONTROLS),
+  // The shared hook's flush on page hide sends what was scheduled: livehuddle's four sliders (its tabs have no
+  // animated background, so never BackgroundAnimationSpeed).
+  'packages/workbench/src/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
+    values: Object.keys(CANVAS_CONTROLS).filter((t) => t !== 'BackgroundAnimationSpeed'),
   },
   'apps/editor/hooks/canvas/useShapeDrawing.ts Element·Added': {
     values: ['Banner', 'Callout', 'Image', 'Video', 'LinkCard'],

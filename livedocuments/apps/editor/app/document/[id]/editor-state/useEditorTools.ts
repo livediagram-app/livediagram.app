@@ -1,6 +1,6 @@
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
-import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
+import { useFormatConfig } from '@liveworkspace/workbench/hooks/canvas/useFormatConfig';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { usePanelLayout } from '../usePanelLayout';
 import { useEditorDialogs } from '../useEditorDialogs';
