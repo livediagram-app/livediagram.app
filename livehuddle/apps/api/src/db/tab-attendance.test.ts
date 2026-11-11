@@ -63,7 +63,13 @@ describe('a visit', () => {
     joinVisit(sql, 't1', 'k-ada', ADA, T0);
     leaveVisit(sql, 't1', 'k-ada', T0 + 1_000);
     expect(
-      joinVisit(sql, 't1', 'k-ada', { ...ADA, name: 'Ada L' }, T0 + 1_000 + ATTENDANCE_REJOIN_GRACE_MS),
+      joinVisit(
+        sql,
+        't1',
+        'k-ada',
+        { ...ADA, name: 'Ada L' },
+        T0 + 1_000 + ATTENDANCE_REJOIN_GRACE_MS,
+      ),
     ).toBe('reopened');
     expect(rows()).toHaveLength(1);
     expect(rows()[0]).toMatchObject({ name: 'Ada L', left_at: null, closed_at: null });

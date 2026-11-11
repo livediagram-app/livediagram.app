@@ -124,7 +124,9 @@ export function closeStaleVisits(sql: AttendanceSql, now: number): number {
 export function hasAttendanceTable(sql: AttendanceSql): boolean {
   return (
     sql
-      .exec("SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = 'tab_attendance'")
+      .exec(
+        "SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = 'tab_attendance'",
+      )
       .toArray().length > 0
   );
 }

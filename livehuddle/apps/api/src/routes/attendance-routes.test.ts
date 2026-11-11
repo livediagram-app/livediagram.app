@@ -23,7 +23,13 @@ const VISITOR = 'guest_00000000-0000-4000-8000-000000000002';
 const PICTURE = 'https://lh3.googleusercontent.com/a/ada';
 let sql: SqliteD1;
 
-type Call = { method?: string; tab?: string; owner?: string | null; code?: string; account?: string };
+type Call = {
+  method?: string;
+  tab?: string;
+  owner?: string | null;
+  code?: string;
+  account?: string;
+};
 
 function call({ method = 'GET', tab = 't1', owner = OWNER, code, account }: Call = {}) {
   return handleDocuments(
@@ -52,12 +58,36 @@ beforeEach(async () => {
   testShareLink(sql, 'd1', 'TAB2', 'participate', 't2');
   const item = nodeItemSql(sql.sql);
   const now = Date.now();
-  joinVisit(item, 't1', await collabKeyFor(OWNER), { name: 'Owner', color: '#111', picture: null, guest: true }, now - 60_000);
-  joinVisit(item, 't1', await collabKeyFor(VISITOR), { name: 'Ada', color: '#0ea5e9', picture: PICTURE, guest: false }, now - 30_000);
+  joinVisit(
+    item,
+    't1',
+    await collabKeyFor(OWNER),
+    { name: 'Owner', color: '#111', picture: null, guest: true },
+    now - 60_000,
+  );
+  joinVisit(
+    item,
+    't1',
+    await collabKeyFor(VISITOR),
+    { name: 'Ada', color: '#0ea5e9', picture: PICTURE, guest: false },
+    now - 30_000,
+  );
   leaveVisit(item, 't1', await collabKeyFor(VISITOR), now - 10_000);
-  joinVisit(item, 't1', 'k-old', { name: 'Gone', color: '#222', picture: null, guest: true }, now - ATTENDANCE_RETENTION_MS - 9);
+  joinVisit(
+    item,
+    't1',
+    'k-old',
+    { name: 'Gone', color: '#222', picture: null, guest: true },
+    now - ATTENDANCE_RETENTION_MS - 9,
+  );
   leaveVisit(item, 't1', 'k-old', now - ATTENDANCE_RETENTION_MS - 5);
-  joinVisit(item, 't2', 'k-pod', { name: 'Pod person', color: '#333', picture: null, guest: true }, now);
+  joinVisit(
+    item,
+    't2',
+    'k-pod',
+    { name: 'Pod person', color: '#333', picture: null, guest: true },
+    now,
+  );
   vi.spyOn(console, 'info').mockImplementation(() => undefined);
   vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 });
@@ -66,7 +96,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const body = async (res: Response) => (await res.json()) as TabAttendanceResponse;
+const body = async (res: Response): Promise<TabAttendanceResponse> => res.json();
 
 describe('reading a tab’s Attendance', () => {
   it('gives the owner the tab’s visits newest first, none past retention, theirs marked', async () => {
@@ -115,7 +145,10 @@ describe('reading a tab’s Attendance', () => {
     expect(
       (
         await handleDocuments(
-          makeTestRouteContext('GET', '/api/documents/zz/tabs/t1/attendance', { env: sql.env, owner: OWNER }),
+          makeTestRouteContext('GET', '/api/documents/zz/tabs/t1/attendance', {
+            env: sql.env,
+            owner: OWNER,
+          }),
         )
       ).status,
     ).toBe(404);
@@ -124,7 +157,9 @@ describe('reading a tab’s Attendance', () => {
 
   it('logs counts only, never a name', async () => {
     await call();
-    const logged = JSON.stringify((console.info as unknown as { mock: { calls: unknown[][] } }).mock.calls);
+    const logged = JSON.stringify(
+      (console.info as unknown as { mock: { calls: unknown[][] } }).mock.calls,
+    );
     expect(logged).toContain('[attendance] listed');
     expect(logged).not.toContain('Ada');
   });
@@ -140,7 +175,10 @@ describe('closing an account', () => {
     expect(rows).toEqual([{ person_key: ANONYMISED_PERSON, name: ANONYMISED_NAME, picture: null }]);
     expect(await anonymiseDocument(sql.env, 'd1', VISITOR)).toBe(0);
     // Everyone else's stay as they were.
-    expect((await body(await call())).visits.map((v) => v.name)).toEqual([ANONYMISED_NAME, 'Owner']);
+    expect((await body(await call())).visits.map((v) => v.name)).toEqual([
+      ANONYMISED_NAME,
+      'Owner',
+    ]);
   });
 
   it('goes with the tab', async () => {
@@ -148,6 +186,8 @@ describe('closing an account', () => {
       makeTestRouteContext('DELETE', '/api/documents/d1/tabs/t2', { env: sql.env, owner: OWNER }),
     );
     expect(res.status).toBe(204);
-    expect(sql.sql.prepare("SELECT COUNT(*) AS n FROM tab_attendance WHERE tab_id = 't2'").get()).toEqual({ n: 0 });
+    expect(
+      sql.sql.prepare("SELECT COUNT(*) AS n FROM tab_attendance WHERE tab_id = 't2'").get(),
+    ).toEqual({ n: 0 });
   });
 });

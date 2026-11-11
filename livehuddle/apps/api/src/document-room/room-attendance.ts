@@ -45,8 +45,10 @@ function tabsElsewhere(room: DocumentRoom, ws: WebSocket, key: string): Set<stri
 
 // Only a tab the document has is recorded, so a frame naming made-up tabs writes nothing.
 function documentHasTab(sql: AttendanceSql, tabId: string): boolean {
-  return sql.exec('SELECT 1 AS present FROM document_tabs WHERE tab_id = ? LIMIT 1', tabId).toArray()
-    .length > 0;
+  return (
+    sql.exec('SELECT 1 AS present FROM document_tabs WHERE tab_id = ? LIMIT 1', tabId).toArray()
+      .length > 0
+  );
 }
 
 /**

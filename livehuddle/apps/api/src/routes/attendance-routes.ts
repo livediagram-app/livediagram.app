@@ -34,18 +34,16 @@ async function list(ctx: DocumentRouteContext, id: string, tabId: string): Promi
     collabKeyFor(owner),
   ]);
   const pictures = ctx.accountUserId !== null;
-  const visits = rows.map(
-    (r): AttendanceVisit => ({
-      id: r.id,
-      name: r.name,
-      color: r.color,
-      ...(pictures && r.picture ? { picture: r.picture } : {}),
-      guest: r.guest === 1,
-      self: r.person_key === ownKey,
-      joinedAt: r.joined_at,
-      leftAt: r.left_at,
-    }),
-  );
+  const visits = rows.map((r): AttendanceVisit => ({
+    id: r.id,
+    name: r.name,
+    color: r.color,
+    ...(pictures && r.picture ? { picture: r.picture } : {}),
+    guest: r.guest === 1,
+    self: r.person_key === ownKey,
+    joinedAt: r.joined_at,
+    leftAt: r.left_at,
+  }));
   // Counts only: the log is read by people too.
   console.info('[attendance] listed', { documentId: id, tabId, count: visits.length });
   const res: TabAttendanceResponse = {

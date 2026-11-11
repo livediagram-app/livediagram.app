@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ATTENDANCE_REJOIN_GRACE_MS } from '@livehuddle/api-schema';
 import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
 import { nodeDurableState, nodeItemSql } from '@liveworkspace/index-app/testing';
+import { ROOM_MAX_CONNECTIONS } from '@livehuddle/api-schema';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { DocumentRoom } from './document-room';
 import { migrateDocumentSchema } from './document-schema';
 import { claimedTabs, noteAttendance, sweepStaleAttendance } from './room-attendance';
@@ -53,21 +55,44 @@ function makeRoom(): DocumentRoom {
 const rows = () =>
   db
     .prepare('SELECT tab_id, person_key, name, joined_at, left_at FROM tab_attendance ORDER BY id')
-    .all() as { tab_id: string; person_key: string; name: string; joined_at: number; left_at: number | null }[];
+    .all() as {
+    tab_id: string;
+    person_key: string;
+    name: string;
+    joined_at: number;
+    left_at: number | null;
+  }[];
 
 async function connect(person: string, opts: { scope?: string; role?: 'edit' | 'view' } = {}) {
   const ws = socket() as unknown as WebSocket;
   const key = await collabKeyFor(person);
-  room.acceptSession(ws, opts.role ?? 'edit', false, opts.scope ?? null, null, null, null, 'd1', null, key);
+  room.acceptSession(
+    ws,
+    opts.role ?? 'edit',
+    false,
+    opts.scope ?? null,
+    null,
+    null,
+    null,
+    'd1',
+    null,
+    key,
+  );
   return { ws, key };
 }
 
 const hello = (ws: WebSocket, name: string, tabId: string) =>
-  room.webSocketMessage(ws, JSON.stringify({ kind: 'hello', participant: { name, color: '#0ea5e9', tabId } }));
+  room.webSocketMessage(
+    ws,
+    JSON.stringify({ kind: 'hello', participant: { name, color: '#0ea5e9', tabId } }),
+  );
 const focus = (ws: WebSocket, tabId: string, besideTabId?: string) =>
   room.webSocketMessage(
     ws,
-    JSON.stringify({ kind: 'op', op: { kind: 'tab-focus', tabId, ...(besideTabId ? { besideTabId } : {}) } }),
+    JSON.stringify({
+      kind: 'op',
+      op: { kind: 'tab-focus', tabId, ...(besideTabId ? { besideTabId } : {}) },
+    }),
   );
 function close(ws: WebSocket) {
   sockets = sockets.filter((s) => s !== ws);
@@ -190,16 +215,43 @@ describe('two people in a Space', () => {
   });
 });
 
+describe('a full room', () => {
+  it('records a move in a room of ROOM_MAX_CONNECTIONS people within a small budget', async () => {
+    const people = [];
+    for (let i = 0; i < ROOM_MAX_CONNECTIONS; i++) {
+      const p = await connect(`guest_${i}`);
+      hello(p.ws, `P${i}`, 't1');
+      people.push(p);
+    }
+    // Every person moves to the Pod and back: 200 tab-focus frames, each a pass over 100 sockets.
+    const ms = cpuMsOf(() => {
+      for (const p of people) focus(p.ws, 't2');
+      for (const p of people) focus(p.ws, 't1');
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(1_000));
+    // Back inside the grace: still one visit each in the Lobby.
+    expect(rows().filter((r) => r.tab_id === 't1')).toHaveLength(ROOM_MAX_CONNECTIONS);
+  });
+});
+
 describe('what the room skips', () => {
   it('stores nothing in a document never started, nor for a session with no key', async () => {
     const bare = new DatabaseSync(':memory:');
     const { state } = nodeDurableState('d2', bare);
     const empty = new DocumentRoom(state as unknown as DurableObjectState);
     const ws = socket() as unknown as WebSocket;
-    const session = { presenceId: 'p', presence: { id: 'p', name: 'A', color: '', key: 'k', tabId: 't1' } };
-    noteAttendance(empty, ws, null, session as SessionAttachment);
-    expect(bare.prepare("SELECT name FROM sqlite_master WHERE name = 'tab_attendance'").all()).toEqual([]);
-    noteAttendance(room, ws, null, { ...session, presence: { ...session.presence, key: undefined } } as SessionAttachment);
+    const session: SessionAttachment = {
+      presenceId: 'p',
+      presence: { id: 'p', name: 'A', color: '', key: 'k', tabId: 't1' },
+    };
+    noteAttendance(empty, ws, null, session);
+    expect(
+      bare.prepare("SELECT name FROM sqlite_master WHERE name = 'tab_attendance'").all(),
+    ).toEqual([]);
+    noteAttendance(room, ws, null, {
+      presenceId: 'p',
+      presence: { id: 'p', name: 'A', color: '', tabId: 't1' },
+    });
     expect(rows()).toEqual([]);
   });
 
@@ -216,7 +268,13 @@ describe('what the room skips', () => {
     expect(claimedTabs({ presenceId: 'p', presence: null })).toEqual([]);
     const presence = { id: 'p', name: '', color: '', tabId: 't1', besideTabId: 't1' };
     expect(claimedTabs({ presenceId: 'p', presence })).toEqual(['t1']);
-    expect(claimedTabs({ presenceId: 'p', presence: { ...presence, besideTabId: 't2' }, tabScope: 't2' })).toEqual(['t2']);
+    expect(
+      claimedTabs({
+        presenceId: 'p',
+        presence: { ...presence, besideTabId: 't2' },
+        tabScope: 't2',
+      }),
+    ).toEqual(['t2']);
   });
 });
 
@@ -242,6 +300,12 @@ describe('a restart', () => {
     hello(ada.ws, 'Ada', 't1');
     sweepStaleAttendance(room, T0 + 5);
     expect(rows()[0]!.left_at).toBeNull();
+  });
+
+  it('sweeps nothing in a room from before the table', () => {
+    db.exec('DROP TABLE tab_attendance');
+    sweepStaleAttendance(room, T0);
+    expect(console.warn).not.toHaveBeenCalled();
   });
 
   it('logs a sweep that fails', () => {
