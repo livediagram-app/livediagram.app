@@ -3,6 +3,7 @@
 // one statement and three bound parameters whatever the number of teams.
 import type { Item } from '@liveworkspace/index-client';
 import { NEWEST_MAX } from '@liveworkspace/index-client';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import type { SQLInputValue } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
 import type { Person } from './auth';
@@ -159,10 +160,11 @@ describe('the bound', () => {
     }
     db.exec('COMMIT');
     const big = await person('user_big', { teams: teams.map((id) => ({ id })) });
-    const started = performance.now();
-    const home = await list(big.auth, 'view=recent&limit=16&used=8&newest=4&app=liveplanner');
-    const ms = performance.now() - started;
-    expect(home.newest!.map((i) => i.id)).toEqual([
+    let home: Page | undefined;
+    const ms = await cpuMsOfAsync(async () => {
+      home = await list(big.auth, 'view=recent&limit=16&used=8&newest=4&app=liveplanner');
+    });
+    expect(home!.newest!.map((i) => i.id)).toEqual([
       'nw-099996',
       'nw-099992',
       'nw-099988',
@@ -171,6 +173,7 @@ describe('the bound', () => {
     console.info(
       `[newest] 50,000 items in 51 scopes among 100,000: ${ms.toFixed(1)} ms for Home's read`,
     );
-    expect(ms).toBeLessThan(250);
-  });
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
+    // wall-clock: seeding 100,000 rows outlasts the default 5 s on a loaded machine; the CPU budget above is the gate.
+  }, 30_000);
 });
