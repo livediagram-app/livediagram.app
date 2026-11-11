@@ -14,7 +14,7 @@ import {
   type LensView,
 } from '../lens';
 import { relativeSince } from '../time';
-import { readRecentForHome, readSharedFirstPage } from './homeReads';
+import { readNewestForHome, readRecentForHome, readSharedFirstPage } from './homeReads';
 import { LIST_PAGE, type ListLoader } from './useItemList';
 
 export type SharedMeta = { level: Level; tabId: string | null; lastSeenAt: number };
@@ -283,6 +283,28 @@ export function jumpBackInLoader(
     );
     return { items: jumpBackInSet(res.mostUsed, res.items, n, extra), nextCursor: null };
   };
+}
+
+/** How many Home's New shows: one row of four on a desktop. */
+export const HOME_NEW = 4;
+
+/** Home's New: the items made most recently in the person's spaces, folded into Home's one items read. */
+export function newestLoader(
+  client: IndexClient,
+  app: App,
+  filter: AppFilter,
+  n = HOME_NEW,
+): ListLoader {
+  return async (_cursor, signal) => ({
+    items: await readNewestForHome(client, app, filter, n, signal),
+    nextCursor: null,
+  });
+}
+
+/** New's line: when it was made, and where it lives ("Made 2 hours ago · Marketing"). */
+export function newLine(item: Pick<Item, 'createdAt'>, now: number, place: string | null): string {
+  const made = `Made ${relativeSince(item.createdAt, now)}`;
+  return place ? `${made} · ${place}` : made;
 }
 
 /** What was shared with the person lately, for Home (one request, no paging). */

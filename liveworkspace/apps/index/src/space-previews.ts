@@ -34,6 +34,9 @@ export function spacePreviewQueries(
 ): { items: BuiltQuery; counts: BuiltQuery } {
   const scopes = JSON.stringify(spacesOf(person).map((s) => s.scope));
   const appWhere = app ? 'AND x.app = ?' : '';
+  // Named, so the count keeps the live index whatever the planner makes of items_new (Home's New), which holds the
+  // same rows.
+  const live = app ? 'items_live_app' : 'items_live';
   const appArgs = app ? [app] : [];
   return {
     items: {
@@ -45,7 +48,7 @@ export function spacePreviewQueries(
     },
     counts: {
       sql: `SELECT s.value AS scope, (SELECT COUNT(*) FROM (
-          SELECT 1 FROM items x WHERE x.scope = s.value AND x.trashed_at IS NULL ${appWhere}
+          SELECT 1 FROM items x INDEXED BY ${live} WHERE x.scope = s.value AND x.trashed_at IS NULL ${appWhere}
           LIMIT ${FOLDER_PREVIEW_COUNT_CAP})) AS n
         FROM json_each(?) s`,
       args: [...appArgs, scopes],

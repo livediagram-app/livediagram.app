@@ -52,6 +52,9 @@ export type ListSpec = ListFilters & {
   // three reads in one request.
   mine?: number;
   any?: boolean;
+  // A first page only: also up to this many of the person's own and their teams' live items, the most recently made
+  // first (Home's New).
+  newest?: number;
 };
 
 export type BuiltQuery = { sql: string; args: unknown[] };
@@ -364,6 +367,7 @@ export async function listItems(env: Env, person: Person, spec: ListSpec): Promi
   const withUsed = spec.view === 'recent' && first && (spec.used ?? 0) > 0;
   const withMine = first && (spec.mine ?? 0) > 0;
   const withAny = first && spec.any === true;
+  const withNewest = first && (spec.newest ?? 0) > 0;
   // The page, and what Home asks beside it, in one round trip; the items decorated together.
   const statements = [db.prepare(sql).bind(...args)];
   if (withUsed) {
@@ -380,6 +384,11 @@ export async function listItems(env: Env, person: Person, spec: ListSpec): Promi
     const any = buildAnyQuery(person, spec.app, now);
     statements.push(db.prepare(any.sql).bind(...any.args));
   }
+  const newestAt = statements.length;
+  if (withNewest) {
+    const newest = buildNewestQuery(person, spec, spec.newest!);
+    statements.push(db.prepare(newest.sql).bind(...newest.args));
+  }
   const answers = await db.batch(statements);
   const [listed, usedRows] = [answers[0], withUsed ? answers[1] : undefined] as [
     D1Result<ItemRow & { sort_at: number }>,
@@ -390,8 +399,14 @@ export async function listItems(env: Env, person: Person, spec: ListSpec): Promi
   const page = more ? results.slice(0, spec.limit) : results;
   const last = page[page.length - 1];
   const usedList = usedRows?.results ?? [];
+  const newestList = withNewest ? (answers[newestAt] as D1Result<ItemRow>).results : [];
   const seen = new Set(page.map((r) => r.id));
-  const all = [...page, ...usedList.filter((r) => !seen.has(r.id))];
+  const all: ItemRow[] = [...page];
+  for (const r of [...usedList, ...newestList]) {
+    if (seen.has(r.id)) continue;
+    seen.add(r.id);
+    all.push(r);
+  }
   const decorated = await decorate(env, person, all);
   const byId = new Map(decorated.map((item) => [item.id, item]));
   const items = page.flatMap((r) => byId.get(r.id) ?? []);
@@ -410,6 +425,7 @@ export async function listItems(env: Env, person: Person, spec: ListSpec): Promi
     out.mine = { count: Math.min(n, spec.mine!), more: n > spec.mine! };
   }
   if (withAny) out.any = Boolean((answers[anyAt] as D1Result<{ found: number }>).results[0]?.found);
+  if (withNewest) out.newest = newestList.flatMap((r) => byId.get(r.id) ?? []);
   return out;
 }
 
@@ -419,6 +435,7 @@ export type ListAnswer = {
   mostUsed?: Item[];
   mine?: MineCount;
   any?: boolean;
+  newest?: Item[];
 };
 
 /**
@@ -451,4 +468,27 @@ export function buildAnyQuery(person: Person, app: App | undefined, now = Date.n
       JOIN items i ON i.id = sw.item_id
       WHERE sw.person_id = ? AND ${LIVE_LINK('sl')} AND i.trashed_at IS NULL${inApp}) AS found`;
   return { sql, args: [scopes, ...appArgs, person.id, now, ...appArgs] };
+}
+
+/**
+ * Home's New: the live items in the person's own scope and each joined team's (or only the `team` filter's), in the
+ * app asked, the most recently made first, at most `limit`. Each scope walks its own index (`items_new_app`, or
+ * `items_new` with no app) newest made first and stops at `limit`; the newest `limit` of those are the answer. The
+ * scopes go in as one JSON parameter, so it is one statement and three bound parameters whatever the number of
+ * teams, and it costs `limit` rows a scope however many items each holds. Archived items live in `a:<owner>` and
+ * link-reached ones in other people's scopes, so neither is there.
+ */
+export function buildNewestQuery(
+  person: Person,
+  spec: Pick<ListSpec, 'app' | 'scopes'>,
+  limit: number,
+): BuiltQuery {
+  const scopes = JSON.stringify(spec.scopes ?? scopesOf(person));
+  const index = spec.app ? 'items_new_app' : 'items_new';
+  const inApp = spec.app ? ' AND x.app = ?' : '';
+  const sql = `SELECT ${ITEM_COLUMNS} FROM json_each(?) s JOIN items i ON i.id IN (
+      SELECT x.id FROM items x INDEXED BY ${index} WHERE x.scope = s.value AND x.trashed_at IS NULL${inApp}
+      ORDER BY x.created_at DESC, x.id DESC LIMIT ?)
+    ORDER BY i.created_at DESC, i.id DESC LIMIT ?`;
+  return { sql, args: [scopes, ...(spec.app ? [spec.app] : []), limit, limit] };
 }

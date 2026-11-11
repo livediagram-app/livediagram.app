@@ -2,7 +2,7 @@
 
 **Home** is the shared Explorer's landing view (`/explorer`, `/explorer/home`), read from liveworkspace's index. It
 answers the two questions a returning person brings, in one screen: "what was I working on?" and "what happened
-while I was away?". Its sections are the hero, **Jump Back In** (Most Used: up to eight items you opened in the last 14
+while I was away?". Its sections are the hero, **New** (the four Spaces made most recently in this app, newest first, mine and my teams', made by AI ones included, wearing Made by AI; hidden while there are none: [One Explorer "New, on Home"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#new-on-home)), **Jump Back In** (Most Used: up to eight items you opened in the last 14
 days, the most opened first, then Recent: up to eight of your most recently opened, from every app, four across in two
 rows on a desktop and one strip of up to eight on a phone, each with a line such as "Opened 12 times" or "Opened 2
 hours ago"), **Shared With You Recently** and **What Happened** (what other people did to what you can

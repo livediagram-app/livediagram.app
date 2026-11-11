@@ -14,6 +14,7 @@ import {
   INTENT_WORD,
   type ItemView,
   MOST_USED_MAX,
+  NEWEST_MAX,
   LIST_LIMIT_MAX,
   ITEM_VIEWS,
 } from '@liveworkspace/index-client';
@@ -161,6 +162,13 @@ export async function parseListSpec(
     // Search's whole reach, links included: not the mirror's to ask.
     if (any !== '1' || person.drive || person.export) return badRequest('invalid_query');
     spec.any = true;
+  }
+  // Home's New, beside the first page (lists.ts `buildNewestQuery`).
+  const newest = params.get('newest');
+  if (newest !== null) {
+    const n = Number(newest);
+    if (!Number.isInteger(n) || n < 1 || n > NEWEST_MAX) return badRequest('invalid_query');
+    spec.newest = n;
   }
   return spec;
 }

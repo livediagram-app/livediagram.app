@@ -1,48 +1,35 @@
 'use client';
 
-// Home (livediagram's HomePane): under the hero, Jump Back In as livediagram draws it, Most Used (up to eight large
+// Home (livediagram's HomePane): under the hero, New (HomeNew: the four items made most recently), then Jump Back In as livediagram draws it, Most Used (up to eight large
 // cards, two rows of four on a desktop: the items opened most often in the last 14 days, "Opened N times") then Recent
 // (up to eight more of the same size, the latest opened of the rest), then Spaces (HomeSpaces: My Work and each team,
 // each a tile into its list), and Shared With You Recently. On a phone Jump Back
 // In is one scrolling strip of up to eight, the two groups alternating. An item kept only in this browser is one card among the rest (LocalCard): the same frame, size, menu
 // and drag, with the This Browser badge on its line and This Browser's own verbs. Last, What Happened: what other people did to the items the person can open, from the index's
 // Timeline. With the hero hidden, Home takes the ordinary page header. Four requests, each one small page: Recent
-// carries Most Used beside it (the index's `used`), the spaces' previews, Shared, and one Timeline page.
+// carries Most Used and New beside it (the index's `used` and `newest`), the spaces' previews, Shared, and one
+// Timeline page. The cards themselves are HomeCards.tsx's.
 
-import { memo, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ShownItem } from '../data/overlay';
 import { useItemList } from '../data/useItemList';
 import {
   isMostUsed,
   JUMP_BACK_IN_PER_GROUP,
-  jumpBackInLine,
   jumpBackInLoader,
   sharedRecentlyLoader,
 } from '../data/viewLists';
-import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { EmptyState } from '@liveworkspace/ui';
-import { FOCUS_RING, MUTED, RENAME_INPUT, SKELETON } from '../ui/classes';
-import { InlineRenameInput } from '../ui/InlineRenameInput';
-import { useItemDrag, useThisBrowserDrag } from '../drag/drag';
-import { ChevronRightIcon, ClockIcon, ItemIcon } from '../ui/icons';
-import { useNow } from '../time';
-import { AppMark } from './badges';
+import { ClockIcon } from '../ui/icons';
 import { useExplorer } from './context';
-import { ItemMenu } from './menus';
 import { PaneHeader } from './PaneHeader';
-import { useItemBits } from './rows';
-import { CARD_NAME, CARD_SURFACE, HomeFailed, HomeSection, THUMB_EDGE } from './HomeSection';
+import { HomeFailed, HomeSection } from './HomeSection';
+import { CardGroup, GridSkeleton, HomeCardsProvider, Strip, StripSkeleton } from './HomeCards';
+import { HomeNew } from './HomeNew';
 import { HomeSpaces } from './HomeSpaces';
 import { useFirstRun } from '../welcome/context';
 import { HomeWelcome } from '../welcome/HomeWelcome';
-import type { ThisBrowserItem } from '../this-browser';
-import {
-  LocalPreview,
-  mergeOpened,
-  ThisBrowserItemMenu,
-  ThisBrowserPill,
-  useThisBrowserItems,
-} from './ThisBrowser';
+import { mergeOpened, useThisBrowserItems } from './ThisBrowser';
 import {
   useWhatHappened,
   useWhatHappenedGroups,
@@ -66,14 +53,6 @@ export const HOME_COPY = {
   whatHappened: 'What Happened',
   seeTimeline: 'See Timeline',
 } as const;
-
-const GROUP_LABEL =
-  'mb-2.5 h-4 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-slate-500 dark:text-slate-400';
-const LARGE_GRID = 'grid grid-cols-2 gap-4 lg:grid-cols-4';
-const COMPACT_GRID = 'grid grid-cols-2 gap-2.5 lg:grid-cols-4';
-// Readable over a thumbnail: a frosted chip rather than the row button's bare glyph.
-const MENU_CHIP =
-  '!absolute bg-white/90 shadow-sm ring-1 ring-slate-200 pointer-fine:group-focus-within:opacity-100 dark:bg-slate-900/90 dark:ring-slate-700';
 
 /** Jump Back In's grid from `md` up; below it, the strip. */
 const WIDE_QUERY = '(min-width: 768px)';
@@ -159,77 +138,85 @@ export function HomePane({ hero }: { hero: boolean }) {
       {hero ? null : (
         <PaneHeader title="Home" onCreateItem={() => onCreate({ folderId: null, teamId: null })} />
       )}
-      <div className="flex flex-col gap-10">
-        <HomeSection
-          id="jump-back-in"
-          title={HOME_COPY.jumpBackIn}
-          busy={recent.loading}
-          link={
-            wide && !recent.loading && !empty && !failed
-              ? { view: { kind: 'recent' }, label: HOME_COPY.seeMore }
-              : undefined
-          }
-        >
-          {failed ? (
-            <HomeFailed message="Couldn’t load Home." onRetry={retry} />
-          ) : recent.loading ? (
-            wide ? (
-              <GridSkeleton />
-            ) : (
-              <StripSkeleton />
-            )
-          ) : empty ? (
-            <HomeEmpty />
-          ) : !wide ? (
-            <Strip items={phoneOrder(recent.items)} local={localOpened} max={HOME_STRIP_MAX} />
-          ) : (
-            <div className="flex flex-col gap-4">
-              <CardGroup
-                label={HOME_COPY.mostUsed}
-                items={recent.items.filter(isMostUsed)}
-                large
-                showApp={showApp}
-              />
-              <CardGroup label={HOME_COPY.recent} items={recentRest} large showApp={showApp} />
-            </div>
-          )}
-        </HomeSection>
-        <HomeSpaces />
-        {shared.items.length > 0 ? (
+      <HomeCardsProvider>
+        <div className="flex flex-col gap-10">
+          <HomeNew wide={wide} showApp={showApp} />
           <HomeSection
-            id="shared-recently"
-            title={HOME_COPY.sharedRecently}
-            busy={false}
-            link={{ view: { kind: 'shared' }, label: HOME_COPY.seeAll }}
-          >
-            <CardGroup items={shared.items} large showApp={showApp} />
-          </HomeSection>
-        ) : null}
-        {/* Nothing from anyone, or a failed read: the section is left out rather than a second empty state. It is
-            the page's last, so nothing moves when it goes. */}
-        {happened.loading || happenedGroups.length > 0 ? (
-          <HomeSection
-            id="what-happened"
-            title={HOME_COPY.whatHappened}
-            busy={happened.loading}
+            id="jump-back-in"
+            title={HOME_COPY.jumpBackIn}
+            busy={recent.loading}
             link={
-              happened.loading
-                ? undefined
-                : {
-                    view: { kind: 'timeline' },
-                    label: HOME_COPY.seeTimeline,
-                    onFollow: () => onHome?.('Selected', 'SeeTimeline'),
-                  }
+              wide && !recent.loading && !empty && !failed
+                ? { view: { kind: 'recent' }, label: HOME_COPY.seeMore }
+                : undefined
             }
           >
-            {happened.loading ? (
-              <WhatHappenedSkeleton />
+            {failed ? (
+              <HomeFailed message="Couldn’t load Home." onRetry={retry} />
+            ) : recent.loading ? (
+              wide ? (
+                <GridSkeleton />
+              ) : (
+                <StripSkeleton />
+              )
+            ) : empty ? (
+              <HomeEmpty />
+            ) : !wide ? (
+              <Strip
+                items={phoneOrder(recent.items)}
+                local={localOpened}
+                max={HOME_STRIP_MAX}
+                seeMore={HOME_COPY.seeMore}
+              />
             ) : (
-              <WhatHappenedFeed groups={happenedGroups} seenAt={happened.seenAt} />
+              <div className="flex flex-col gap-4">
+                <CardGroup
+                  label={HOME_COPY.mostUsed}
+                  items={recent.items.filter(isMostUsed)}
+                  large
+                  showApp={showApp}
+                />
+                <CardGroup label={HOME_COPY.recent} items={recentRest} large showApp={showApp} />
+              </div>
             )}
           </HomeSection>
-        ) : null}
-      </div>
+          <HomeSpaces />
+          {shared.items.length > 0 ? (
+            <HomeSection
+              id="shared-recently"
+              title={HOME_COPY.sharedRecently}
+              busy={false}
+              link={{ view: { kind: 'shared' }, label: HOME_COPY.seeAll }}
+            >
+              <CardGroup items={shared.items} large showApp={showApp} />
+            </HomeSection>
+          ) : null}
+          {/* Nothing from anyone, or a failed read: the section is left out rather than a second empty state. It is
+            the page's last, so nothing moves when it goes. */}
+          {happened.loading || happenedGroups.length > 0 ? (
+            <HomeSection
+              id="what-happened"
+              title={HOME_COPY.whatHappened}
+              busy={happened.loading}
+              link={
+                happened.loading
+                  ? undefined
+                  : {
+                      view: { kind: 'timeline' },
+                      label: HOME_COPY.seeTimeline,
+                      onFollow: () => onHome?.('Selected', 'SeeTimeline'),
+                    }
+              }
+            >
+              {happened.loading ? (
+                <WhatHappenedSkeleton />
+              ) : (
+                <WhatHappenedFeed groups={happenedGroups} seenAt={happened.seenAt} />
+              )}
+            </HomeSection>
+          ) : null}
+        </div>
+      </HomeCardsProvider>
     </div>
   );
 }
@@ -260,360 +247,5 @@ function HomeEmpty() {
       title={`No ${words.lowerMany} yet`}
       description={`The ${words.lowerMany} you open will gather here.`}
     />
-  );
-}
-
-/** One labelled group of cards; a group with nothing draws nothing, label included. */
-function CardGroup({
-  label,
-  items,
-  large,
-  showApp,
-}: {
-  label?: string;
-  items: readonly (ShownItem | ThisBrowserItem)[];
-  large: boolean;
-  showApp: boolean;
-}) {
-  if (items.length === 0) return null;
-  return (
-    <div data-jump-back-in-group={large ? 'large' : 'compact'}>
-      {label ? <h3 className={GROUP_LABEL}>{label}</h3> : null}
-      <ul className={large ? LARGE_GRID : COMPACT_GRID}>
-        {items.map((item) => (
-          <li key={item.id} className="min-w-0">
-            {'app' in item ? (
-              <JumpBackInCard item={item} large={large} showApp={showApp} />
-            ) : (
-              <LocalCard item={item} large={large} showApp={showApp} />
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function Thumb({ item, className }: { item: ShownItem; className: string }) {
-  const { renderThumbnail } = useExplorer();
-  return (
-    <span className={`${className} ${THUMB_EDGE}`}>
-      {renderThumbnail?.(item, 'card') ?? (
-        <span className="text-slate-300 dark:text-slate-600 [&_svg]:h-7 [&_svg]:w-7">
-          <ItemIcon />
-        </span>
-      )}
-    </span>
-  );
-}
-
-function OpenedLine({
-  item,
-  id,
-  large,
-}: {
-  item: Parameters<typeof jumpBackInLine>[0];
-  id: string;
-  large: boolean;
-}) {
-  const now = useNow();
-  return (
-    <span
-      id={id}
-      className={`block min-w-0 truncate leading-[18px] ${large ? 'text-[12.5px]' : 'text-xs'} ${MUTED}`}
-    >
-      {now ? jumpBackInLine(item, now) : ''}
-    </span>
-  );
-}
-
-const cardClass = (large: boolean) =>
-  `flex min-w-0 ${
-    large
-      ? 'h-[12.5rem] flex-col gap-2.5 rounded-[18px] p-2 pb-3'
-      : 'h-[3.875rem] items-center gap-3 rounded-[14px] p-2 pr-11'
-  } ${CARD_SURFACE} ${FOCUS_RING}`;
-const nameSize = (large: boolean) => (large ? 'text-[15px] leading-5' : 'text-sm leading-5');
-
-/** One Jump Back In card's frame, whoever holds the item: the thumbnail area, the name row (the app's mark under All)
- *  and the line under it, the ⋯ chip, the right-click menu and the drag. The index's cards and This Browser's differ
- *  only in what fills it. */
-function CardFrame({
-  id,
-  large,
-  app,
-  thumb,
-  name,
-  line,
-  link,
-  menu,
-  menuLabel,
-  renderMenu,
-  drag,
-  attrs,
-}: {
-  id: string;
-  large: boolean;
-  // The app's mark beside the name (under All), or null.
-  app: ShownItem['app'] | null;
-  thumb: ReactNode;
-  name: ReactNode;
-  line: ReactNode;
-  // The card as a link, or null while it can't open (renaming).
-  link: ((className: string, body: ReactNode) => ReactNode) | null;
-  menu: ReturnType<typeof useRowMenu>;
-  menuLabel: string;
-  renderMenu: (anchor: HTMLElement | null, onClose: () => void) => ReactNode;
-  drag: ReturnType<typeof useItemDrag>;
-  attrs?: Record<string, string>;
-}) {
-  const body = (
-    <>
-      <span
-        className={`${large ? 'h-32 w-full rounded-xl' : 'h-11 w-16 shrink-0 rounded-lg'} ${THUMB_EDGE}`}
-      >
-        {thumb}
-      </span>
-      <span className={`flex min-w-0 flex-col gap-0.5 ${large ? 'px-1' : ''}`}>
-        <span className="flex min-w-0 items-center gap-1.5">
-          {app ? <AppMark app={app} size={14} /> : null}
-          {name}
-        </span>
-        {line}
-      </span>
-    </>
-  );
-  return (
-    <div
-      data-item-card={id}
-      {...attrs}
-      className="group relative min-w-0"
-      onContextMenu={menu.onContextMenu}
-      {...drag}
-    >
-      {link ? (
-        link(cardClass(large), body)
-      ) : (
-        // While renaming the card doesn't open: the field keeps its focus and its clicks.
-        <div className={cardClass(large)}>{body}</div>
-      )}
-      {link ? (
-        <EllipsisTriggerButton
-          {...menu.triggerProps}
-          reveal
-          size="md"
-          label={menuLabel}
-          className={`${MENU_CHIP} ${large ? 'right-3.5 top-3.5' : 'right-2.5 top-1/2 -translate-y-1/2'}`}
-        />
-      ) : null}
-      {menu.open ? renderMenu(menu.triggerRef.current, menu.close) : null}
-    </div>
-  );
-}
-
-const JumpBackInCard = memo(function JumpBackInCard({
-  item,
-  large,
-  showApp,
-}: {
-  item: ShownItem;
-  large: boolean;
-  showApp: boolean;
-}) {
-  const { Link, renamingId, renderThumbnail } = useExplorer();
-  const bits = useItemBits(item);
-  const renaming = renamingId === item.id;
-  const menu = useRowMenu({ disabled: renaming });
-  const drag = useItemDrag(item, renaming);
-  const title = item.title || 'Untitled';
-  return (
-    <CardFrame
-      id={item.id}
-      large={large}
-      app={showApp ? item.app : null}
-      thumb={
-        renderThumbnail?.(item, 'card') ?? (
-          <span className="text-slate-300 dark:text-slate-600 [&_svg]:h-7 [&_svg]:w-7">
-            <ItemIcon />
-          </span>
-        )
-      }
-      name={
-        renaming ? (
-          <InlineRenameInput
-            initial={item.title}
-            ariaLabel={`Rename ${title}`}
-            onCommit={bits.commitRename}
-            onCancel={bits.cancelRename}
-            className={`min-w-0 flex-1 ${RENAME_INPUT} ${nameSize(large)}`}
-          />
-        ) : (
-          <span className={`${CARD_NAME} ${nameSize(large)}`}>{title}</span>
-        )
-      }
-      line={<OpenedLine item={item} id={`jbi-${item.id}-${large ? 'l' : 'c'}`} large={large} />}
-      link={
-        renaming
-          ? null
-          : (className, body) => (
-              <Link href={bits.href} aria-label={title} className={className}>
-                {body}
-              </Link>
-            )
-      }
-      menu={menu}
-      menuLabel={`Menu for ${title}`}
-      renderMenu={(anchor, onClose) => <ItemMenu item={item} anchor={anchor} onClose={onClose} />}
-      drag={drag}
-    />
-  );
-});
-
-/** A Jump Back In card for an item kept only in this browser: the same card, its thumbnail area This Browser's,
- *  its line led by the This Browser badge, This Browser's menu, and a drag that its targets read as This Browser's
- *  (drag.tsx). It opens in the app's editor, by its address. */
-const LocalCard = memo(function LocalCard({
-  item,
-  large,
-  showApp,
-}: {
-  item: ThisBrowserItem;
-  large: boolean;
-  showApp: boolean;
-}) {
-  const { app } = useExplorer();
-  const { host } = useThisBrowserItems();
-  const menu = useRowMenu();
-  const drag = useThisBrowserDrag(item);
-  const title = item.title || 'Untitled';
-  return (
-    <CardFrame
-      id={item.id}
-      attrs={{ 'data-this-browser-card': '' }}
-      large={large}
-      app={showApp ? app : null}
-      // The pill on the picture's corner, as the editors' panel has it, so the line keeps its width.
-      thumb={
-        <span className="relative block h-full w-full">
-          <LocalPreview app={app} iconSize={large ? 28 : 18} className="h-full w-full" />
-          <span className="absolute left-1.5 top-1.5">
-            <ThisBrowserPill inLink />
-          </span>
-        </span>
-      }
-      name={<span className={`${CARD_NAME} ${nameSize(large)}`}>{title}</span>}
-      line={<OpenedLine item={item} id={`jbi-${item.id}-${large ? 'l' : 'c'}`} large={large} />}
-      link={(className, body) => (
-        <a href={host?.itemHref(item)} aria-label={title} className={className}>
-          {body}
-        </a>
-      )}
-      menu={menu}
-      menuLabel={`Menu for ${title}`}
-      renderMenu={(anchor, onClose) => (
-        <ThisBrowserItemMenu item={item} anchor={anchor} onClose={onClose} />
-      )}
-      drag={drag}
-    />
-  );
-});
-
-/** A phone's Jump Back In: one strip of at most `max` small tiles (the index's first, then this browser's), then See
- *  More. */
-function Strip({
-  items: all,
-  local: allLocal,
-  max,
-}: {
-  items: ShownItem[];
-  local: readonly ThisBrowserItem[];
-  max: number;
-}) {
-  const { app, Link, itemHref, viewHref, navigate } = useExplorer();
-  const { host } = useThisBrowserItems();
-  const items = all.slice(0, max);
-  const local = allLocal.slice(0, max - items.length);
-  return (
-    <div className="relative -mx-4 sm:mx-0">
-      <div className="flex h-28 snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 pt-1 sm:-mx-1 sm:scroll-px-1 sm:px-1">
-        <ul className="flex shrink-0 gap-3">
-          {items.map((item) => (
-            <li key={item.id} className="w-32 shrink-0 snap-start">
-              <Link
-                href={itemHref(item)}
-                aria-label={item.title || 'Untitled'}
-                className={`group block min-w-0 rounded-md ${FOCUS_RING}`}
-              >
-                <Thumb item={item} className="h-20 w-32 rounded-md" />
-                <span className="mt-1 block h-4 truncate text-xs leading-4 text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-slate-100">
-                  {item.title || 'Untitled'}
-                </span>
-              </Link>
-            </li>
-          ))}
-          {local.map((item) => (
-            <li key={item.id} className="w-32 shrink-0 snap-start" data-this-browser-card="">
-              <a
-                href={host?.itemHref(item)}
-                aria-label={item.title || 'Untitled'}
-                className={`group block min-w-0 rounded-md ${FOCUS_RING}`}
-              >
-                <LocalPreview app={app} iconSize={20} className="h-20 w-32 rounded-md" />
-                <span className="mt-1 block h-4 truncate text-xs leading-4 text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-slate-100">
-                  {item.title || 'Untitled'}
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
-        <a
-          href={viewHref({ kind: 'recent' })}
-          onClick={(e) => {
-            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-            e.preventDefault();
-            navigate({ kind: 'recent' });
-          }}
-          className={`group block shrink-0 snap-start rounded-md ${FOCUS_RING}`}
-        >
-          <span className="flex h-20 w-32 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-slate-300 text-xs font-medium text-brand-700 transition group-hover:border-slate-400 group-hover:bg-slate-100 dark:border-slate-600 dark:text-brand-300 dark:group-hover:border-slate-500 dark:group-hover:bg-slate-800/70">
-            <ChevronRightIcon size={16} />
-            {HOME_COPY.seeMore}
-          </span>
-        </a>
-      </div>
-    </div>
-  );
-}
-
-/** Both groups as they load: each a label over two rows of large cards (a full group on a desktop). */
-function GridSkeleton() {
-  return (
-    <div aria-hidden className="flex flex-col gap-4">
-      {['w-20', 'w-16'].map((label) => (
-        <div key={label}>
-          <div className={`mb-2.5 h-4 ${label} ${SKELETON}`} />
-          <div className={LARGE_GRID}>
-            {Array.from({ length: JUMP_BACK_IN_PER_GROUP }, (_, i) => (
-              <div key={i} className={`h-[12.5rem] rounded-[18px] ${SKELETON}`} />
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function StripSkeleton() {
-  return (
-    <div aria-hidden className="-mx-1 flex h-28 gap-3 overflow-hidden px-1 pb-2 pt-1">
-      {Array.from({ length: 4 }, (_, i) => (
-        <div key={i} className="w-32 shrink-0">
-          <div className={`h-20 w-32 ${SKELETON}`} />
-          <div className="mt-1 h-4 py-0.5">
-            <div className={`h-3 w-3/4 ${SKELETON}`} />
-          </div>
-        </div>
-      ))}
-    </div>
   );
 }

@@ -168,6 +168,11 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 |                                |                     | every space the person is in (their own and each team's; each item once)               |
 |                                |                     | counted up to N (Home's pill), and `any=1` adds `any`, whether                         |
 |                                |                     | they can open anything in `app` (Home's first run): Home's reads in one.               |
+|                                |                     | `newest=N` (1 to 8, any first page) adds `newest`: up to N live items in               |
+|                                |                     | `app` from the person's own space and each team's (never a link's, the                 |
+|                                |                     | Trash or Archived), the most recently made first (`createdAt`, then id),               |
+|                                |                     | Home's New. Each scope walks `items_new_app` (`items_new` without `app`)               |
+|                                |                     | and stops at N, the scopes going in as one `json_each` parameter.                      |
 | `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201                       |
 |                                |                     | `{item, grant}`. The index makes the id unless the client names the one it             |
 |                                |                     | minted (409 `item_exists` when taken); the item's Durable Object                       |
