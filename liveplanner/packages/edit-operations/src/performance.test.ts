@@ -20,6 +20,8 @@ const RATIO_CEILING = cpuRatioCeiling(8);
 // the collector out of the timing (docs/ci.md "Speed budgets"); measured at 4.3 to 5.1 for four times the tab.
 const SMALL_TAB = 1200;
 const RUNS = 3;
+// Fresh states a run of the noteTarget check fills, so it times a millisecond or more, not timer noise.
+const NOTE_PASSES = 20;
 // Sized to time tens of milliseconds an apply; coverage on a CI runner makes that seconds.
 const TIMEOUT_MS = 30_000;
 
@@ -73,14 +75,16 @@ function fastestApply(tab: Tab, operations: readonly EditOperation[]): number {
 describe('performance', () => {
   // Noting each resolved target once searched the targets so far (`includes`): quadratic in a `set … all`.
   it('notes targets in time linear in their number', { timeout: TIMEOUT_MS }, () => {
+    // One pass over 1,200 targets takes a fraction of a millisecond, so timer noise alone read 8.5 against 8 on CI: each
+    // run notes the whole tab into NOTE_PASSES fresh states (made outside the timing), a millisecond or more.
     const fastest = (tab: Tab) => {
       let best = Infinity;
       for (let run = 0; run < RUNS; run++) {
-        const state = createState(tab, {}, () => {});
+        const states = Array.from({ length: NOTE_PASSES }, () => createState(tab, {}, () => {}));
         best = Math.min(
           best,
           cpuMsOf(() => {
-            for (const el of tab.elements) noteTarget(state, el.id);
+            for (const state of states) for (const el of tab.elements) noteTarget(state, el.id);
           }),
         );
       }
