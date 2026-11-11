@@ -500,7 +500,7 @@ numbers only).
 | Anchors ⇄ element, rotation kept by `reshapePath`                                               | `livediagram/packages/document/src/path-element.test.ts`                                                            |
 | Validation                                                                                      | `packages/document/src/validate.test.ts`                                                                            |
 | Export twin                                                                                     | `livediagram/packages/document/src/svg-render-shapes.test.ts`                                                       |
-| Ink projection                                                                                  | `packages/document/src/whiteboard.test.ts`                                                                          |
+| Ink projection                                                                                  | `../packages/element-model/src/whiteboard.test.ts`                                                                  |
 | Drawing state machine                                                                           | `livediagram/apps/editor/lib/path-draw.test.ts`                                                                     |
 | Edit operations and hit test                                                                    | `livediagram/apps/editor/lib/path-edit.test.ts`                                                                     |
 | Draw gesture: press, drag, keys, commit, undo and redo while drawing                            | `livediagram/apps/editor/components/canvas/path/usePathDrawGesture.test.tsx`                                        |

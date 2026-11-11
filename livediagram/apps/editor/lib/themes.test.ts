@@ -115,7 +115,7 @@ describe('UML theme (per-shape colours, docs/specs/010-palette/technology-icons.
     const out = recolourElementsForTheme(
       [createShape('diamond', 0, 0), createShape('cylinder', 0, 0)],
       uml,
-    ) as ShapeElement[];
+    );
     expect(out[0]!.strokeColor).toBe(uml.shapeColors!.diamond!.stroke);
     expect(out[1]!.strokeColor).toBe(uml.shapeColors!.cylinder!.stroke);
   });
@@ -209,7 +209,7 @@ describe('colour-preset re-derivation across themes (docs/specs/010-palette/styl
       textColor: slateBold.text,
     };
 
-    const [out] = switchThemeElements([shape], slate, midnight) as Array<typeof shape>;
+    const [out] = switchThemeElements([shape], slate, midnight);
     expect(out!.fillColor).toBe(midnightBold.fill);
     expect(out!.strokeColor).toBe(midnightBold.stroke);
     expect(out!.textColor).toBe(midnightBold.text);
@@ -222,7 +222,7 @@ describe('colour-preset re-derivation across themes (docs/specs/010-palette/styl
     const midnight = getTheme('midnight');
     // A hand-picked colour with NO colorPreset is preserved, not re-derived.
     const shape = { ...createShape('square', 0, 0), fillColor: '#abcdef' };
-    const [out] = switchThemeElements([shape], slate, midnight) as Array<typeof shape>;
+    const [out] = switchThemeElements([shape], slate, midnight);
     expect(out!.fillColor).toBe('#abcdef');
   });
 
@@ -262,9 +262,7 @@ describe('table-preset re-derivation across themes (docs/specs/010-palette/style
   });
 
   it('re-derives a bound table to the matching look of the new theme', () => {
-    const [out] = switchThemeElements([painted()], slate, midnight) as Array<
-      ReturnType<typeof painted>
-    >;
+    const [out] = switchThemeElements([painted()], slate, midnight);
     expect(out!.headerFill).toBe(there.headerFill);
     expect(out!.headerTextColor).toBe(there.headerText);
     expect(out!.strokeColor).toBe(there.stroke);
@@ -273,7 +271,7 @@ describe('table-preset re-derivation across themes (docs/specs/010-palette/style
 
   it('leaves a hand-coloured table to the normal preserve-customs walk', () => {
     const custom = { ...painted(), tablePreset: undefined, headerFill: '#abcdef' };
-    const [out] = switchThemeElements([custom], slate, midnight) as Array<typeof custom>;
+    const [out] = switchThemeElements([custom], slate, midnight);
     expect(out!.headerFill).toBe('#abcdef');
   });
 });
@@ -836,7 +834,7 @@ describe('resetArrowsToTheme (docs/specs/011-theme/canvas-and-theme-dialog.md: a
       to: { kind: 'free', x: 10, y: 10 },
       strokeColor: '#ff00ff', // user override
     };
-    const [out] = resetArrowsToTheme([arrow], theme) as ArrowElement[];
+    const [out] = resetArrowsToTheme([arrow], theme);
     expect(out!.strokeColor).toBe(theme.elementStroke);
   });
 
@@ -853,7 +851,7 @@ describe('resetArrowsToTheme (docs/specs/011-theme/canvas-and-theme-dialog.md: a
       strokeColor: '#00ff00',
       textColor: '#0000ff',
     };
-    const [out] = resetArrowsToTheme([shape], theme) as ShapeElement[];
+    const [out] = resetArrowsToTheme([shape], theme);
     expect(out).toBe(shape); // referentially unchanged
   });
 });
