@@ -38,6 +38,7 @@
     "./tab-size": "./src/tab-size.ts",
     "./tab-connection": "./src/tab-connection.ts",
     "./teams": "./src/teams.ts",
+    "./timing-telemetry": "./src/timing-telemetry.ts",
     "./title-case": "./src/title-case.ts",
     "./trash": "./src/trash.ts",
     "./untitled-names": "./src/untitled-names.ts",

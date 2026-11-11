@@ -49,7 +49,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
 │  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards
 │  ├─ tailwind-config          the Tailwind theme every app paints with, sky by default; each other product re-declares its ramps
-│  ├─ template-previews        the template previews' hover motion, fan and story parts, for every editor
+│  ├─ template-previews        the template previews' hover motion, fan and story parts, and the template search and catalogue, for every editor
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 │  ├─ telemetry-client         the browser side of telemetry, which each product binds to its app
 │  ├─ trusted-types            the Trusted Types policies, boot script, header and HTML sanitiser every app's pages share
@@ -404,6 +404,17 @@ Each step is its own PR, and both products build and pass their tests after ever
      overrides, retired patterns, the conversion header); files that are already a binding; and the groups only
      livediagram and livehuddle share, which wait for livediagram's feature removal (Work Tracker #650). CI
      refuses any new copy and the rest may only shrink ([ci.md](ci.md#copies-across-products)).
+   - Product packages, the identical groups outside the model packages: the timing vocabulary livediagram,
+     livedocuments and livehuddle shared (scales, Web Vitals thresholds, buckets, `timingType`) is
+     `@liveworkspace/api-schema/timing-telemetry`, and each product's `timing-telemetry.ts` is one `export *` line
+     (liveplanner and livedesign keep theirs, which name `ProjectLoad` and `DesignLoad`). The template search and the
+     agents' template catalogue are `createTemplateSearch` and `createTemplateCatalogue` in
+     `@liveworkspace/template-previews`; each product's `templates` binds them to its catalogue, categories, search
+     words and Blanks wording, and every product's catalogue and search read the same before and after. livediagram's
+     and livehuddle's `StableLabel` and card-grid classes were exported by their `ui` and used nowhere (the Explorer
+     has its own), so they went. Left: bindings whose body names product-local modules (`define`, `folders`,
+     `addressing`, the appearance store and toggle, `seo`, `Brand`, `SiteAccount`, the help telemetry ids, licences'
+     `product.ts`) and product tables that happen to match.
 4. **Carve `workbench` out of `apps/editor`** one area at a time (`lib/split`, `lib/tags`,
    `components/chrome`, the tab system, explorer, …). Each slice is moved once and deleted from
    every editor.

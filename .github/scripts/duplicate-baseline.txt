@@ -267,7 +267,6 @@ livediagram/packages/agent-verbs/src/verbs/shared.ts	livedocuments/packages/agen
 livediagram/packages/api-schema/src/document-paths.ts	livehuddle/packages/api-schema/src/document-paths.ts
 livediagram/packages/api-schema/src/responses.ts	livedocuments/packages/api-schema/src/responses.ts
 livediagram/packages/api-schema/src/timeline.ts	livedocuments/packages/api-schema/src/document-conversion.ts	livehuddle/packages/api-schema/src/timeline.ts
-livediagram/packages/api-schema/src/timing-telemetry.ts	livedocuments/packages/api-schema/src/timing-telemetry.ts	livehuddle/packages/api-schema/src/timing-telemetry.ts
 livediagram/packages/api-schema/src/trash.ts	livehuddle/packages/api-schema/src/trash.ts
 livediagram/packages/document-views/src/__fixtures__/golden-path.ts	livedocuments/packages/document-views/src/__fixtures__/golden-path.ts	livehuddle/packages/document-views/src/__fixtures__/golden-path.ts
 livediagram/packages/document-views/src/freehand-runs.ts	livedocuments/packages/document-views/src/freehand-runs.ts	livehuddle/packages/document-views/src/freehand-runs.ts
@@ -311,8 +310,6 @@ livediagram/packages/document/src/wordmark.ts	livehuddle/packages/document/src/w
 livediagram/packages/licences/src/apps.ts	livedocuments/packages/licences/src/apps.ts	liveplanner/packages/licences/src/apps.ts
 livediagram/packages/template-previews/src/index.ts	livehuddle/packages/template-previews/src/index.ts
 livediagram/packages/templates/src/template-inks.ts	livehuddle/packages/templates/src/template-inks.ts
-livediagram/packages/ui/src/StableLabel.tsx	livehuddle/packages/ui/src/StableLabel.tsx
-livediagram/packages/ui/src/cardGrid.ts	livehuddle/packages/ui/src/cardGrid.ts
 livediagram/scripts/stroke-points-bench.ts	livehuddle/scripts/stroke-points-bench.ts
 livedocuments/apps/editor/app/new/layout.tsx	livehuddle/apps/editor/app/new/layout.tsx
 livedocuments/apps/editor/components/dialogs/settings/settings-all-apps.ts	liveplanner/apps/editor/components/dialogs/settings/settings-all-apps.ts

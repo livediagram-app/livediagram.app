@@ -29,6 +29,7 @@ Scope, by file:
 | `packages/telemetry/src/explorer-events.ts`                     | `EXPLORER_TELEMETRY_EVENTS`, `isExplorerTelemetryEvent`, `TEAM_ITEM_TYPES`                                                                      |
 | `packages/telemetry/src/error-tokens.ts`                        | `pascalToken`, `errorTypeToken`, `errorNameToken`, `errorPageToken`, `createApiRouteLabel`: error events' `type` tokens                         |
 | `packages/telemetry-client/src/*`                               | The browser side every app binds: opt-out, errors, timings, daily return, page hide                                                             |
+| `packages/api-schema/src/timing-telemetry.ts`                   | The timing vocabulary (scales, Web Vitals, buckets, `timingType`, `isTimingType`) for the apps whose load metric is `DocumentLoad`              |
 
 ## Domain and naming
 
