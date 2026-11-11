@@ -674,6 +674,18 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/documents/{id}/tabs/{tabId}/attendance',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "A tab's Attendance: who was in the tab and when (joined, left), newest first, kept 90 days and 500 per tab. Participants and Editors.",
+    auth: 'guest-or-clerk',
+    responseSchema: ref('TabAttendanceResponse'),
+    tokenUsable: true,
+    statuses: [200, 400, 401, 403, 404, 405],
+  },
+  {
+    method: 'GET',
     path: '/documents/{id}/tabs/{tabId}/render.svg',
     segment: 'documents',
     tag: 'Documents',

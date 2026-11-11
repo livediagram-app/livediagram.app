@@ -1,11 +1,12 @@
 // A closed account's name off a document that outlives them (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Closing an
 // account"): the index tells the app which documents name them (POST /api/internal/people/:id/purge), and each document's
 // Durable Object runs this over what it stores, with @liveworkspace/index-app's anonymiseJsonText: the comments and
-// assignments in each tab's elements, the changesets they wrote, the email claims they sent, and the document's owner
-// when it was their team document. Only rows that mention them are read and rewritten, in
+// assignments in each tab's elements, the changesets they wrote, the email claims they sent, their tab Attendance
+// visits, and the document's owner when it was their team document. Only rows that mention them are read and rewritten, in
 // one batch; running it again changes nothing.
 
 import { ANONYMISED_NAME, ANONYMISED_PERSON, anonymiseJsonText } from '@liveworkspace/index-app';
+import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
 import type { DocumentEnv } from '../types';
 
 export async function anonymiseDocument(
@@ -44,6 +45,13 @@ export async function anonymiseDocument(
       .prepare('UPDATE document SET owner_id = ? WHERE id = ? AND owner_id = ?')
       .bind(ANONYMISED_PERSON, documentId, personId),
     db.prepare('DELETE FROM notify_claims WHERE sender = ?').bind(personId),
+    // Their tab Attendance visits (docs/specs/012-collaboration/tab-attendance.md "Closing an account"), as the team
+    // audit log: the visit stays, so a meeting's head count stays true, with no key, no name and no picture of them.
+    db
+      .prepare(
+        'UPDATE tab_attendance SET person_key = ?, name = ?, picture = NULL WHERE person_key = ?',
+      )
+      .bind(ANONYMISED_PERSON, ANONYMISED_NAME, await collabKeyFor(personId)),
   );
   const results = await db.batch(writes);
   return results.reduce((sum, r) => sum + (r.meta.changes ?? 0), 0);

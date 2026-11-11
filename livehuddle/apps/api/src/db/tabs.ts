@@ -379,6 +379,8 @@ export async function deleteTabRow(
       documentId,
       tabId,
     ),
+    // And its Attendance (docs/specs/012-collaboration/tab-attendance.md "How long it is kept").
+    env.DOCUMENT_DB.prepare('DELETE FROM tab_attendance WHERE tab_id = ?').bind(tabId),
   ];
   type Row = { data?: string | null; connection?: string | null };
   const rowOf = (r: unknown) => (r as { results?: Row[] } | undefined)?.results?.[0];
