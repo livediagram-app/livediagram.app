@@ -551,6 +551,11 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null, column?: {na
   100: a plan's cards that changed status (liveplanner), for the plan's own webhooks only (`card_moved`,
   [webhooks.md](webhooks.md)); nothing goes on the Timeline. Each is one delivery per webhook however often it is
   sent (its id is made from the item, card and time). 204; 400 `invalid_moves`.
+- `POST /app/items/:id/automation-sends`: `{sends: [{key, webhookId, rule, card: {key, title, url} | null, text,
+  at}]}`, up to 5, from a liveplanner plan's room as an automation rule runs: each queues one `automation` delivery
+  on the named webhook of this item ([webhooks.md "Automation sends"](webhooks.md#automation-sends)). 200
+  `{results: [{key, queued: true} | {key, queued: false, reason, code}]}` in the order sent, `code` one of
+  `webhook_not_found`, `webhook_paused`, `webhook_full`; 400 `invalid_sends`; 403 `wrong_app`.
 
 ### When a push fails
 

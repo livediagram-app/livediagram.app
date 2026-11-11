@@ -45,6 +45,7 @@ liveplanner's card moves and form responses, which are not on the Timeline:
 | `action_done`     | an action or card is turned done                                  | every app   |
 | `card_moved`      | a card moves from one status (board column) to another            | liveplanner |
 | `form_response`   | a form takes one or more responses                                | liveplanner |
+| `automation`      | an automation rule posts a message to this webhook (below)        | liveplanner |
 | `ping`            | Send Test, from the dialog: proves the endpoint and the signature | any         |
 
 Every app has documents and pushes its tabs' comment threads and actions; card moves and forms are liveplanner's
@@ -72,6 +73,29 @@ A **form response** is a live form's response count going up, which the plan pus
 lands (`PUT /app/items/:id/forms/:tabId`, the Inbox's form push). The index compares the count with the one it held,
 in the batch that stores the new one, and hands the plan's webhooks one event for the rise: the form's heading, how
 many new responses and the total, never what anyone answered. A push that doesn't raise the count sends nothing.
+
+## Automation sends
+
+A liveplanner [automation rule](../../../../liveplanner/docs/specs/026-plan/automations.md#outgoing-actions) can
+post a message through one of its plan's webhooks (Send to Webhook, Post to Slack, Post to Teams). It is the same
+webhook, with the same address, secret, retries, pausing and Recent Deliveries; the rule only names it.
+
+- **Addressed, not heard.** An `automation` event goes to the one webhook the rule names, whatever events that
+  webhook picked, and its **Who Did It** doesn't apply: the rule chose it. It is never offered under **What Should It
+  Send?**, and no other webhook of the plan hears it.
+- **From the plan, as it runs.** The plan's room sends it while a rule runs (on its alarm, never in a person's
+  request): `POST /app/items/:id/automation-sends`, with the webhook's id, the rule's name, the card (its number,
+  title and link) and the message (up to 2,000 characters, the rule's values filled in). The index queues one
+  delivery per send in one batch, and answers each send **queued** or **refused** with the reason, so the rule's
+  Run Log can say which: the webhook is not this plan's, it is gone, or it is paused (its reason given, "the address
+  said it’s gone").
+- **Never twice.** Each send carries a key made from the run and the step; the same key again (a retried run) queues
+  nothing new and answers **queued**.
+- **What it says.** A Slack or Teams post is the message as the rule wrote it, then the card (`#48 Publish pricing
+  page`) as an **Open in liveplanner** link and "Automation · <rule>" beneath; a plain webhook's `detail` is
+  `{rule, card: {key, title, url}, text}`, its `actor` `{id: null, name: 'Automation'}`. Slack's markup is escaped in
+  the message as in every other text, so a rule can't ping `<!channel>`.
+- The webhook's 500-pending cap holds: past it a send is refused ("Too many messages waiting for this webhook").
 
 ## Destinations
 

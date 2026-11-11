@@ -62,6 +62,15 @@ Scope, by file:
   actor (so never an Only Me webhook), the detail `{form, responses, total}` (the heading, the rise and the new count,
   as text), `occurred_at` the form's `latestAt` (at most now). No held row (a form never pushed, or published again
   after `form: null`): nothing.
+- `automationSendStatements` (`pushAutomationSends`, liveplanner only): first one read of the named webhooks
+  (`id IN (…) AND item_id = ?`, with `paused_at`, `paused_reason` and the pending count stopped at 500), which
+  settles each send's result: not the item's (or gone) `webhook_not_found`, paused `webhook_paused` with its reason,
+  at the cap `webhook_full`. Then one batch of `INSERT OR IGNORE` deliveries for the queued ones, `type`
+  `automation`, its id `sha256(item, webhook, key)` so a resent key writes nothing, no actor (`actor_name`
+  `Automation`), the detail `{rule, card, text}` (`text` cut to 2,000, `rule` to 60, the card's title to 200),
+  `occurred_at` the send's `at` (at most now), `next_at` as `cardMovesStatement`'s. The event filter, Who Did It and
+  `WEBHOOK_FRESH_MS` are not applied: the send is addressed. `messages.ts` gains the `automation` sentence (the
+  message, then the card's link and "Automation · <rule>"), escaped as the others.
 - `pingStatement`: a `ping` for one webhook, `app` `liveworkspace`, no item, its title the webhook's name, inserted
   only while the webhook is not paused (`INSERT ... SELECT ... WHERE paused_at IS NULL`); no row written is
   `409 webhook_paused`.
@@ -115,6 +124,7 @@ Scope, by file:
 | `POST /webhooks/:id/test`       | 202 `{queued: true}`                                        | `409 webhook_paused`                                                                                                                  |
 | `GET /webhooks/:id/deliveries`  | `{deliveries}`, newest 40                                   |                                                                                                                                       |
 | `PUT /app/items/:id/card-moves` | `{moves}` (≤ `CARD_MOVES_MAX` 100) → 204                    | `400 invalid_moves`; `403 wrong_app`                                                                                                  |
+| `POST /app/items/:id/automation-sends` | `{sends}` (≤ `AUTOMATION_SENDS_MAX` 5) → 200 `{results}` | `400 invalid_sends`; `403 wrong_app`                                                                                           |
 
 Every person route takes the page's share link as the item routes do (`X-Share-Code`, and its password), and checks
 on every call (`editableItem`): `403 webhooks_need_account` for a guest, an app's delegate, the Drive mirror or the

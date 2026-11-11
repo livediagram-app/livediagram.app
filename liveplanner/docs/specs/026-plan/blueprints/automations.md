@@ -204,6 +204,92 @@ not routed (the OpenAPI drift probe's clean 404), and every route is in the Open
   into a new plan brings each back under a fresh id, off, checked by readRuleBody.
 - Tables hold no `plan_id`: each plan's SQLite is its own.
 
+## Phase 2 (Work Item #712)
+
+### Shapes (packages/items/src/automation/types.ts)
+
+```ts
+type AutomationTrigger = … // Phase 1's, plus:
+  | { kind: 'scheduled'; every: 'day' | 'weekday' | 'week' | 'month'; days?: number[]; // week: 0 Sun … 6 Sat
+      dayOfMonth?: number; at: string } // month: 1 to 31; at: 'HH:MM', minutes 00/15/30/45
+  | { kind: 'due_in'; days: number; at: string } // 1 to 30
+  | { kind: 'overdue'; at: string };
+type AutomationAssignee = … | { rotate: string[] }; // 2 to 10 person ids
+type AutomationOutgoing = { kind: 'notify'; via: 'webhook' | 'slack' | 'teams'; webhook: string; text: string };
+type AutomationRelated =
+  | { kind: 'linked'; field?: string } | { kind: 'blocked_by' } | { kind: 'blocking' } | { kind: 'children' }
+  | { kind: 'saved_filter'; tab: string; filter: string };
+type AutomationBranch = { kind: 'for'; related: AutomationRelated; conditions: AutomationCondition[];
+  then: AutomationAction[] }; // no if, for, create_card or notify inside
+type AutomationStep = AutomationAction | AutomationOutgoing | IfStep | AutomationBranch;
+```
+
+New limits beside Phase 1's: `AUTOMATION_TIME_CARDS_MAX = 100`, `AUTOMATION_BRANCH_CARDS_MAX = 100`,
+`AUTOMATION_BRANCH_ACTIONS_MAX = 10`, `AUTOMATION_OUTGOING_MAX = 5`, `AUTOMATION_ROTATE_MIN = 2`, `…_MAX = 10`,
+`AUTOMATION_LATE_MAX_MS = 24 h`. `validate.ts` refuses Who Did It conditions and `{ trigger: true }` assignees and
+recipients on a time trigger (`automation_condition_unsupported`), a branch's forbidden steps
+(`automation_step_unsupported`), more than 5 notify steps, and a minute off the quarter hour. New values:
+`{{trigger.title}}`, `{{trigger.key}}`, `{{trigger.url}}` (only inside a branch; elsewhere unknown).
+
+Pure parts, each with its own tests: `schedule.ts` (`nextMoment(trigger, timeZone, after)` and
+`latestMissed(trigger, timeZone, since, now)`, both through `Intl.DateTimeFormat` with the clock-change rules of the
+spec, shared with card-repeats' local-day helpers rather than a copy), `related.ts` (`relatedCards(card, related,
+items, ctx)`, capped and sorted by number), `templates.ts` (the 8 templates as `AutomationRuleBody` builders over a
+plan outline, filling by role, returning the steps left to pick).
+
+### Storage (plan schema V19)
+
+```sql
+CREATE TABLE automation_schedule (rule_id TEXT PRIMARY KEY, next_at INTEGER NOT NULL);  -- time triggers only
+CREATE INDEX automation_schedule_next ON automation_schedule (next_at);
+ALTER TABLE automation_rules ADD COLUMN turn INTEGER NOT NULL DEFAULT 0;              -- Assign in turn's place
+```
+
+- Saving, turning on or resuming a time-trigger rule upserts its `next_at = nextMoment(now)`; turning it off,
+  deleting it or changing its trigger to a card one deletes the row.
+- The room's alarm (plan-room-wiring's one schedule, as Repeats and the outbox share it) asks
+  `MIN(next_at)` beside its other times: one indexed read, none when the table is empty.
+
+### The wake
+
+- Due rows (`next_at <= now`): for each, `latestMissed` gives the one moment to run (older than
+  `AUTOMATION_LATE_MAX_MS` is dropped). The rule reads the plan's cards once per wake (shared by every due rule),
+  keeps those its trigger and conditions match (`due_in`: due = local day + days; `overdue`: due before the local day
+  and status not a done column), sorts by due date then number, takes 100, and enqueues one event per card with id
+  `t:${ruleId}:${localDay}:${at}:${cardId}` (scheduled) or `d:${ruleId}:${cardId}:${due}` (due_in, overdue), so
+  `runId` makes each once ever. Past 100, one Skipped line says how many waited. Then `next_at = nextMoment(now)`.
+- The event's `kind` is `time`, its `by` `automationPerson(rule.name)`, its `role` `system`, its `ruleId` the rule:
+  the runner runs only that rule for it, skipping the trigger match (the scan did it) but not the conditions (a card
+  changed since is checked again).
+- Worst case, timed by a perf test: 2,000 cards (ITEMS_MAX) and 50 time-trigger rules due at once, inside the
+  wake's CPU budget (the test's limit 1,500 ms, as Phase 1's).
+
+### Runner additions
+
+- **Branches**: `relatedCards` per branch, then each related card's conditions and actions through the same
+  `planActions`, one write per card. The run's lines gain `{ kind: 'branch'; text; ok; cards: number }`.
+- **Rotate**: the run takes `turn % people.length` (skipping people who left), and on a done run writes `turn + 1`
+  in the batch that records the run.
+- **Notify**: after the card writes, the run's notify steps go in one `POST /app/items/:id/automation-sends`
+  (index binding, the app's server credentials as card-moves uses), key `${runId}:${stepIndex}`, message filled by
+  `values.ts`; each result marks its step done ("Queued for Launch Channel") or failed with the reason. The index
+  unreachable is a failed step, "Couldn't reach webhooks: try again". A rule's `paused.webhook` holds the webhook id
+  when it paused on a notify failure, for Fix Webhook.
+- Test on a Card: branches list what they would do per related card; notify says "Would post to <name>: <text>";
+  rotate names whose turn it is; time triggers run on the chosen card as at their moment.
+
+### Editor
+
+- Trigger panel: Scheduled (Every: Day, Weekday, Week with day chips, Month with a day; At: a quarter-hour select),
+  Due In (days), Overdue; the time zone shown ("Times are Europe/London"). A time rule's row shows "Next: Mon 9:00".
+- **+ For Related Cards** adds a branch card with its inset steps and its own + Add Condition / + Add Action.
+- Notify panels list the plan's webhooks of their kind from `GET /api/index/items/:id/webhooks` (lazy, once per
+  builder), with **Add a Webhook…** opening the existing Webhooks dialog and refreshing the list on close.
+- Assign panel gains **People in Turn** (a person multi-picker, 2 to 10, order as picked).
+- Templates tab and the empty state's gallery (`TemplatesGallery`, category chips, tiles); a picked template opens
+  the builder unsaved with its left-to-pick steps marked.
+- A Browser Storage plan's footer button opens the **Rules Run on Our Servers** panel instead of the screen.
+
 ## Editor
 
 - `ChromeControls` takes `onOpenAutomations?` and `automationsAttention?` (the amber dot); the editor passes them
