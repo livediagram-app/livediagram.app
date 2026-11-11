@@ -1124,6 +1124,1173 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "AutomationAction": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "move",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "status"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "set_field",
+            "type": "string"
+          },
+          "value": {
+            "$ref": "#/components/schemas/AutomationSetValue"
+          }
+        },
+        "required": [
+          "kind",
+          "field",
+          "value"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "clear_field",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "field"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "assign",
+            "type": "string"
+          },
+          "to": {
+            "$ref": "#/components/schemas/AutomationAssignee"
+          }
+        },
+        "required": [
+          "kind",
+          "to"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "add_label",
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "label"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "remove_label",
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "label"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "comment",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "flag",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "unflag",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "archive",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "copy": {
+            "items": {
+              "enum": [
+                "assignee",
+                "labels",
+                "due"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kind": {
+            "const": "create_card",
+            "type": "string"
+          },
+          "linkField": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "type",
+          "title"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "email",
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "to": {
+            "$ref": "#/components/schemas/AutomationRecipient"
+          }
+        },
+        "required": [
+          "kind",
+          "to",
+          "subject",
+          "body"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "AutomationAssignee": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "person": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "person"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "trigger": {
+            "const": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "trigger"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "nobody": {
+            "const": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "nobody"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "AutomationCondition": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "type",
+            "type": "string"
+          },
+          "not": {
+            "const": true,
+            "type": "boolean"
+          },
+          "types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind",
+          "types"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "column",
+            "type": "string"
+          },
+          "not": {
+            "const": true,
+            "type": "boolean"
+          },
+          "statuses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind",
+          "statuses"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "field",
+            "type": "string"
+          },
+          "op": {
+            "$ref": "#/components/schemas/AutomationFieldOp"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "$ref": "#/components/schemas/AutomationDay"
+              }
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "field",
+          "op"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "who",
+            "type": "string"
+          },
+          "not": {
+            "const": true,
+            "type": "boolean"
+          },
+          "who": {
+            "items": {
+              "$ref": "#/components/schemas/AutomationWho"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind",
+          "who"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "filter": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "saved_filter",
+            "type": "string"
+          },
+          "tab": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "tab",
+          "filter"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "AutomationDay": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "day": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "day"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "today": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "today"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "AutomationFieldOp": {
+    "enum": [
+      "is",
+      "is_not",
+      "empty",
+      "not_empty",
+      "contains",
+      "not_contains",
+      "before",
+      "after",
+      "on_or_before",
+      "on_or_after",
+      "less_than",
+      "more_than"
+    ],
+    "type": "string"
+  },
+  "AutomationListedRule": {
+    "additionalProperties": false,
+    "properties": {
+      "chain": {
+        "type": "boolean"
+      },
+      "conditions": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationCondition"
+        },
+        "type": "array"
+      },
+      "edited": {
+        "$ref": "#/components/schemas/AutomationStamp"
+      },
+      "enabled": {
+        "type": "boolean"
+      },
+      "id": {
+        "type": "string"
+      },
+      "made": {
+        "$ref": "#/components/schemas/AutomationStamp"
+      },
+      "name": {
+        "type": "string"
+      },
+      "needs": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "paused": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "type": "number"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason",
+          "at"
+        ],
+        "type": "object"
+      },
+      "stats": {
+        "$ref": "#/components/schemas/AutomationRuleStats"
+      },
+      "steps": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationStep"
+        },
+        "type": "array"
+      },
+      "timeZone": {
+        "type": "string"
+      },
+      "trigger": {
+        "$ref": "#/components/schemas/AutomationTrigger"
+      }
+    },
+    "required": [
+      "chain",
+      "conditions",
+      "edited",
+      "enabled",
+      "id",
+      "made",
+      "name",
+      "needs",
+      "stats",
+      "steps",
+      "timeZone",
+      "trigger"
+    ],
+    "type": "object"
+  },
+  "AutomationOrderRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "ids": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "ids"
+    ],
+    "type": "object"
+  },
+  "AutomationRecipient": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "assignee": {
+            "const": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "assignee"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "trigger": {
+            "const": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "trigger"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "person": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "person"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "AutomationResult": {
+    "enum": [
+      "done",
+      "no_match",
+      "skipped",
+      "failed"
+    ],
+    "type": "string"
+  },
+  "AutomationRuleBody": {
+    "additionalProperties": false,
+    "properties": {
+      "chain": {
+        "type": "boolean"
+      },
+      "conditions": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationCondition"
+        },
+        "type": "array"
+      },
+      "name": {
+        "type": "string"
+      },
+      "steps": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationStep"
+        },
+        "type": "array"
+      },
+      "timeZone": {
+        "type": "string"
+      },
+      "trigger": {
+        "$ref": "#/components/schemas/AutomationTrigger"
+      }
+    },
+    "required": [
+      "name",
+      "trigger",
+      "conditions",
+      "steps",
+      "chain",
+      "timeZone"
+    ],
+    "type": "object"
+  },
+  "AutomationRuleResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "rule": {
+        "$ref": "#/components/schemas/AutomationListedRule"
+      }
+    },
+    "required": [
+      "rule"
+    ],
+    "type": "object"
+  },
+  "AutomationRuleStats": {
+    "additionalProperties": false,
+    "properties": {
+      "failuresInARow": {
+        "type": "number"
+      },
+      "lastRunAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "runsThisWeek": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "lastRunAt",
+      "runsThisWeek",
+      "failuresInARow"
+    ],
+    "type": "object"
+  },
+  "AutomationRun": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "card": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "key": {
+                "type": "number"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "key",
+              "title"
+            ],
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "id": {
+        "type": "string"
+      },
+      "reason": {
+        "type": "string"
+      },
+      "result": {
+        "$ref": "#/components/schemas/AutomationResult"
+      },
+      "ruleId": {
+        "type": "string"
+      },
+      "ruleName": {
+        "type": "string"
+      },
+      "steps": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationStepLine"
+        },
+        "type": "array"
+      },
+      "tookMs": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "ruleId",
+      "ruleName",
+      "card",
+      "at",
+      "result",
+      "tookMs",
+      "steps"
+    ],
+    "type": "object"
+  },
+  "AutomationRunNowRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "item": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "item"
+    ],
+    "type": "object"
+  },
+  "AutomationRunResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "run": {
+        "$ref": "#/components/schemas/AutomationRun"
+      }
+    },
+    "required": [
+      "run"
+    ],
+    "type": "object"
+  },
+  "AutomationRunsResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "runs": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationRun"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "runs"
+    ],
+    "type": "object"
+  },
+  "AutomationSetValue": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "number": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "number"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "list": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "list"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "$ref": "#/components/schemas/AutomationDay"
+          }
+        },
+        "required": [
+          "date"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "from"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "AutomationStamp": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "by": {
+        "$ref": "#/components/schemas/ItemPerson"
+      }
+    },
+    "required": [
+      "by",
+      "at"
+    ],
+    "type": "object"
+  },
+  "AutomationStep": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/AutomationAction"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/AutomationCondition"
+            },
+            "type": "array"
+          },
+          "else": {
+            "items": {
+              "$ref": "#/components/schemas/AutomationAction"
+            },
+            "type": "array"
+          },
+          "kind": {
+            "const": "if",
+            "type": "string"
+          },
+          "then": {
+            "items": {
+              "$ref": "#/components/schemas/AutomationAction"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind",
+          "conditions",
+          "then",
+          "else"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "AutomationStepLine": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "by": {
+            "$ref": "#/components/schemas/ItemPerson"
+          },
+          "kind": {
+            "const": "trigger",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "condition",
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "ok",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "already": {
+            "const": true,
+            "type": "boolean"
+          },
+          "kind": {
+            "const": "action",
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "ok",
+          "text"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "AutomationTestRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "item": {
+        "type": "string"
+      },
+      "rule": {
+        "$ref": "#/components/schemas/AutomationRuleBody"
+      }
+    },
+    "required": [
+      "rule",
+      "item"
+    ],
+    "type": "object"
+  },
+  "AutomationToggleRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "enabled": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "enabled"
+    ],
+    "type": "object"
+  },
+  "AutomationTrigger": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "card_created",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "formTab": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "form_response",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kind": {
+            "const": "card_moved",
+            "type": "string"
+          },
+          "to": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kind": {
+            "const": "field_changed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "fields"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "comment_added",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "manual",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "AutomationWho": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "person": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "person"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "role": {
+            "enum": [
+              "editor",
+              "participant",
+              "agent"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "AutomationsListResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "rules": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationListedRule"
+        },
+        "type": "array"
+      },
+      "runsPerDay": {
+        "type": "number"
+      },
+      "runsToday": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "rules",
+      "runsToday",
+      "runsPerDay"
+    ],
+    "type": "object"
+  },
   "Axis": {
     "enum": [
       "r",
@@ -2345,6 +3512,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "authorName": {
         "type": "string"
+      },
+      "automation": {
+        "additionalProperties": false,
+        "properties": {
+          "rule": {
+            "type": "string"
+          },
+          "ruleId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ruleId",
+          "rule"
+        ],
+        "type": "object"
       },
       "createdAt": {
         "type": "number"
@@ -5941,7 +7124,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ai",
       "undo",
       "form",
-      "repeat"
+      "repeat",
+      "automation"
     ],
     "type": "string"
   },

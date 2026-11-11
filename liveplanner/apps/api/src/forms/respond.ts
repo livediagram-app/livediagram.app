@@ -235,6 +235,7 @@ export async function respond(
     doc.id,
     made.items.map((after) => ({ before: null, after })),
     'form',
+    { role: 'system', form: tab.id },
   );
   return accepted(ctx, {
     doc,

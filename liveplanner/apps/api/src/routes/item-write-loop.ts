@@ -10,6 +10,7 @@ import { appendItemHistory } from '../db/item-history';
 import { json } from '../responses';
 import type { PlanRouteContext } from './context';
 import { forCaller, itemBusy, itemRetryPause, relay, type ItemCaller } from './item-route-kit';
+import { writeSource } from './automation-source';
 
 // One attempt's next states by id, or a refusal. `missing`: how many wanted ids were not found on this read.
 type BuildItems<T> = (
@@ -62,7 +63,7 @@ export async function writeItemsWithRetry<T extends { id: string }>(
     if (landed.length) relay(ctx, projectId, landed, [], rev);
     if (landed.length && history) {
       const writes = landed.map((after) => ({ before: stored.get(after.id)!, after }));
-      await appendItemHistory(ctx.env, projectId, writes, history.tag);
+      await appendItemHistory(ctx.env, projectId, writes, history.tag, writeSource(ctx, projectId));
     }
     for (const item of landed) done.set(item.id, item);
     pending = pending.filter((p) => !written.landed.has(p.id));

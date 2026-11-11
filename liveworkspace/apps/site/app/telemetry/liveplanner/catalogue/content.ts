@@ -834,6 +834,40 @@ export const PLAN_CARD_REPEATS = chart(
   { types: ['RepeatOn', 'RepeatOff'], rising: 'neutral' },
 );
 
+// Automations (docs/specs/026-plan/automations.md "Telemetry", in the liveplanner folder): rules made, turned on
+// and off, tried with Test on a Card, and started by hand with Run Rule. The kind only, never a rule's text.
+export const PLAN_AUTOMATION_RULES = chart(
+  'Plan',
+  'Created',
+  'Automation Rules Made',
+  'A rule saved for the first time from New Rule on the Automations screen.',
+  { types: ['AutomationRule'] },
+);
+
+export const PLAN_AUTOMATIONS_TOGGLED = chart(
+  'Plan',
+  'Toggled',
+  'Automation Rules Turned On and Off',
+  "A rule's switch flipped, on the Rules list or in the rule builder.",
+  { types: ['AutomationOn', 'AutomationOff'], rising: 'neutral' },
+);
+
+export const PLAN_AUTOMATIONS_TESTED = chart(
+  'Plan',
+  'Tested',
+  'Automation Rules Tested',
+  'A rule tried with Test on a Card: it shows what the rule would do and changes nothing.',
+  { types: ['AutomationRule'] },
+);
+
+export const PLAN_AUTOMATIONS_RAN = chart(
+  'Plan',
+  'Ran',
+  'Automation Rules Run by Hand',
+  "A Run from a Card rule started from a card's menu, under Run Rule.",
+  { types: ['AutomationManual'] },
+);
+
 export const PLAN_COLUMNS_COLLAPSED = chart(
   'Plan',
   'Toggled',
@@ -1184,6 +1218,10 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_FILL_TAB,
   PLAN_CARD_ACTIVITY,
   PLAN_CARD_REPEATS,
+  PLAN_AUTOMATION_RULES,
+  PLAN_AUTOMATIONS_TOGGLED,
+  PLAN_AUTOMATIONS_TESTED,
+  PLAN_AUTOMATIONS_RAN,
   PLAN_COLUMNS_COLLAPSED,
   PLAN_SETUP_CHANGED,
   PLAN_CALENDAR_MOVES,

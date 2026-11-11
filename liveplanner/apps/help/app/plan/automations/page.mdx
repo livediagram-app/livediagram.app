@@ -1,0 +1,76 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Automations',
+  description:
+    'How to make automation rules in a plan: triggers, conditions and actions, values, Test on a Card, Run Rule, the Run Log, limits and who can.',
+  path: '/help/plan/automations/',
+});
+
+<ArticleLayout
+  title="Automations"
+  description="A rule watches your plan and does the routine steps for you, every time, and says that it did."
+  categoryTitle="Plan"
+  categorySlug="plan"
+>
+
+An **automation rule** does the small step that always follows the same event: a card reaches Done and its finish date is stamped; a bug comes in and it is labelled and handed to whoever is on triage; a form response lands and its priority is set from the answer. Each rule has a **trigger** (what starts it), **conditions** (what the card must be) and **actions** (what it does).
+
+## Open Automations
+
+Press **Automations** in the footer, between **Search** and **Settings**. It is there for an Editor of the whole plan, on a plan saved to your account. A small amber dot on it means a rule has paused itself (below).
+
+The screen has two tabs:
+
+- **Rules**: every rule in the plan, each with its switch, its name, what it does in a sentence ("When Card Moved to Done then Set Completed On"), when it **Last Run** and how many runs it made **This Week**. Find one by name, or narrow the list by trigger or by **On and Off**. A row's **⋯** menu holds **Edit**, **Duplicate**, **Run Log** and **Delete**.
+- **Run Log**: what each rule did, newest first, kept for 30 days or the last 2,000 runs. Open a run to see its steps: who did what, each condition and what it found, and each action, with **Open Card**.
+
+At the right of the tabs, **Runs today** shows how many of the plan's 1,000 runs a day have been used.
+
+## Make a Rule
+
+Press **New Rule**. The rule reads from top to bottom:
+
+- **When**: the trigger. Pick one of **Card Created**, **Form Response** (a card made by one of the plan's forms), **Card Moved** (from and to the columns you choose), **Field Changed** (any of the fields you choose), **Comment Added**, or **Run from a Card** (you start it from a card's **⋯** menu).
+- **If all of these**: the conditions, all of which must hold. Check the **Card Type**, the **Column**, a **Field** (is, is not, is empty, contains, before or after a day, and more), **Who Did It** (a person, an Editor, a Participant, an agent), or whether it **Matches a Saved Filter** of one of your boards.
+- **Then**: the actions, in order. **Move to Column**, **Set Field**, **Clear Field**, **Assign** (a person, whoever triggered the rule, or nobody), **Add Label** or **Remove Label**, **Add Comment**, **Flag** or **Unflag**, **Archive**, **Create Card** and **Send Email**.
+
+Press **+ Add Action**, **+ Add Condition** or **+ If / Else** to add a step. An **If / Else** runs one list of actions when its conditions hold and another when they don't. Click any step to change it in the panel on the right; its **⋯** menu moves it up or down, duplicates it or deletes it. Name the rule at the top, then press **Save Rule**.
+
+### Insert a Value
+
+Text a rule writes (a comment, a card's title, an email) can hold values that are filled in when it runs. Pick one from **Insert a Value**: **Card Title**, **Card Link**, **Assignee**, **Column**, **Due Date**, **Who Did It**, **Today** and more, or **Any Field…** for one of your card type's fields. They show as violet chips in the text, and the panel's **Preview** shows the result on a real card.
+
+### Test on a Card
+
+**Test on a Card** runs the rule as it stands, saved or not, on a card you pick, and changes nothing: you see each step and what it would do.
+
+## What You See on a Card
+
+A rule's changes are by **Automation**, with the rule's name beside it:
+
+- The card's [Activity](/help/plan/card-activity/) lists them with a lightning bolt: "**Automation** set Completed On to 11 Nov 2026 · Done Means Wrapped Up".
+- A field a rule set last shows a small **Set by Automation** chip in Details.
+- A comment a rule added shows the bolt and the rule's name.
+
+## Run Rule
+
+A rule whose trigger is **Run from a Card** is started by hand: open the card, press **⋯**, then **Run Rule** and pick it. A message says it ran, or why it couldn't.
+
+## Rules and Other Rules
+
+A rule's changes don't set off other rules, so two rules can never keep changing a card back and forth. To let them, open **Rule Details** in the rule and tick **Let this rule's changes trigger other rules**. Even then, a chain stops after 5 rules, and a rule never answers its own changes.
+
+## Limits and Pausing
+
+- A plan holds up to 50 rules, each with up to 10 conditions and 20 actions.
+- A plan makes up to 1,000 runs a day; past that, rules wait for the next day.
+- A rule that fails 10 times in a row turns itself off and is marked **Paused** with the reason. Fix what it names, then press **Resume**.
+- A rule that names something the plan no longer has (a column, a card type, a field, a person) says **Needs Attention** and what is missing.
+
+## Who Can
+
+Only an Editor of the whole plan makes, changes, turns on or off, tests and runs rules. Everyone's changes, a Participant's included, can start them. A plan in This Browser has no Automations: save it to your account first. Rules are copied when you duplicate a plan.
+
+</ArticleLayout>

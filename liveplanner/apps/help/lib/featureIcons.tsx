@@ -122,6 +122,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M17 13.4v2.6l1.6 1" />
     </Glyph>
   ),
+  // A lightning bolt over a card's corner: a rule acting on a card.
+  automations: (
+    <Glyph>
+      <path d="M10 20H4.5A1.5 1.5 0 013 18.5v-14A1.5 1.5 0 014.5 3h9A1.5 1.5 0 0115 4.5V8" />
+      <path d="M6 7h6M6 10.5h3" />
+      <path d="M16.5 9.5l-4 6h3.5l-1 5 4.5-6.5h-3.5z" />
+    </Glyph>
+  ),
   // A pen over a squiggle with a dashed spotlight ring round it: a guided look at Draw.
   'plan-tour': (
     <Glyph>

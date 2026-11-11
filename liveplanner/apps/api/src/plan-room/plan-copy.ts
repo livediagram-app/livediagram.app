@@ -19,6 +19,8 @@ import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
 import { storedTabConnection, tabConnectionStatement } from '@liveworkspace/index-app';
 import type { TabConnection } from '@liveworkspace/index-client';
 import type { PlanEnv } from '../types';
+import type { AutomationRule } from '@liveplanner/items';
+import { copiedRuleStatements, copiedRules } from './automations/automation-copy';
 
 // ---------- Copies --------------------------------------------------------------------------------------------
 
@@ -48,6 +50,9 @@ export type PlanCopy = {
   // going"), each on those cards alone, named in the copy as COPY_PLAN until the copy lands. A thread shared in
   // from another plan stays that plan's. Absent from a copy made before threads.
   threads?: CardThread[];
+  // The plan's Automations rules (docs/specs/026-plan/automations.md "Copies, exports and deletes"): a whole-plan
+  // copy by its owner or team keeps them; a copy through a link, of one tab or of a Community post takes none.
+  automations?: AutomationRule[];
 };
 
 // The plan a copy's threads name before it lands (importPlanCopy puts its own id in).
@@ -138,6 +143,7 @@ export async function exportPlanCopy(
   onlyTabId: string | null,
   redactAuthorsFor: string | null,
   community = false,
+  withRules = false,
 ): Promise<PlanCopy | null> {
   const plan = await env.PLAN_DB.prepare(
     'SELECT item_types, items_rev, items_next_key FROM plan WHERE id = ?',
@@ -195,6 +201,7 @@ export async function exportPlanCopy(
         itemIds === null ? null : new Set(itemIds),
         redactAuthorsFor,
       );
+  const rules = withRules && onlyTabId === null && !community ? await copiedRules(env) : [];
   const itemRows = items.results ?? [];
   const sheetRows = sheets.results ?? [];
   const cellRows = cells.results ?? [];
@@ -208,6 +215,7 @@ export async function exportPlanCopy(
     tabs,
     items: community ? itemRows.map((row) => redactItemRowForCommunity(row, types)) : itemRows,
     ...(threads.length ? { threads } : {}),
+    ...(rules.length ? { automations: rules } : {}),
     sheets: sheetRows.map((s) => ({
       ...s,
       tab_id: tabIdMap.get(String(s.tab_id)),
@@ -370,6 +378,7 @@ export async function importPlanCopy(
   }
   // Its threads, after the cards they are on.
   stmts.push(...copiedThreadStatements(env, planId, copy.threads ?? []));
+  stmts.push(...copiedRuleStatements(env, copy.automations ?? []));
   // The copy's Sheets reference the copied sheets, after the sheets, so the reference triggers find them.
   for (const tab of copy.tabs) {
     const ids = sheetRefsOfData(tab.data);
@@ -383,6 +392,8 @@ export async function importPlanCopy(
     );
   }
   await db.batch(stmts);
+  // The rules it brought are heard from the next save on.
+  env.AUTOMATIONS?.store.load();
 }
 
 // The sheet ids a stored body's Sheet elements reference (db/sheet-refs.ts sheetRefIds): a copy's and the migration

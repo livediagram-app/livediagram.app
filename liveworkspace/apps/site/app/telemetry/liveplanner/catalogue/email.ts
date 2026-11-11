@@ -114,6 +114,13 @@ export const ACTION_EMAILS = email(
   'A teammate was emailed about work assigned to them.',
 );
 
+// docs/specs/026-plan/automations.md "Send Email": a rule's Send Email action.
+export const AUTOMATION_EMAILS = email(
+  'AutomationEmail',
+  'Automation Emails',
+  "A teammate emailed by a rule's Send Email action. The kind only, never the text.",
+);
+
 export const MENTION_EMAILS = email(
   'Mentioned',
   'Mention Notifications',
@@ -164,6 +171,7 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
   PROJECT_JOINED_EMAILS,
   COMMENT_EMAILS,
   ACTION_EMAILS,
+  AUTOMATION_EMAILS,
   MENTION_EMAILS,
   FORM_RESPONSE_EMAILS,
   FORM_SUSPENDED_EMAILS,
