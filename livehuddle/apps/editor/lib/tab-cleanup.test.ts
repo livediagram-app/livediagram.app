@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createSticky, type Element } from '@livehuddle/document';
 import { storedPinnedArrow } from '@/test/retired-elements';
 import { cleanupElements } from './tab-cleanup';
 
@@ -7,7 +7,7 @@ import { cleanupElements } from './tab-cleanup';
 // locking left (docs/specs/002-project-scope/not-in-livehuddle.md "Element and Tab Locking") snaps like any other.
 
 const at = (id: string, x: number, y: number, extra: Record<string, unknown> = {}): Element => ({
-  ...createShape('square', x, y),
+  ...createSticky(x, y),
   id,
   width: 123,
   height: 57,

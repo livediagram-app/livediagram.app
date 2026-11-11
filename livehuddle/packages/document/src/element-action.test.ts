@@ -19,7 +19,7 @@ const action = (overrides: Partial<ElementAction> = {}): ElementAction => ({
 const shape = (id: string, act?: ElementAction): ShapeElement => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 50,

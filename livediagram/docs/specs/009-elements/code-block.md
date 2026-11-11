@@ -57,7 +57,7 @@ columns as the monospace face draws them: a character takes one, a wide one
 
 ## Headless render (share thumbnails, MCP, exports)
 
-`svg-render` has a `code-block` branch (`svgCodeBlockShape`): the scheme's card + plain monospace `<text>` lines (clipped to the box, no highlighting: the tokenizer is deliberately a live-editor-only chunk, and un-highlighted mono is a faithful degrade for a thumbnail).
+`svg-render-boxed` has a `code-block` branch (`svgCodeBlockShape`): the scheme's card + plain monospace `<text>` lines (clipped to the box, no highlighting: the tokenizer is deliberately a live-editor-only chunk, and un-highlighted mono is a faithful degrade for a thumbnail).
 
 ## Plumbing checklist (per the data-shape route)
 

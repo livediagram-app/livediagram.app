@@ -2,10 +2,11 @@
 // except in tokens, which keep JWT seconds.
 
 import type {
-  AccountTimelineEventType,
+  AccountEventType,
   App,
-  AppPersonEventType,
-  AppTimelineEventType,
+  AppEventType,
+  EventApp,
+  EventType,
   ItemOwner,
   ItemSource,
   ItemView,
@@ -13,8 +14,6 @@ import type {
   Level,
   ShareLinkExpiry,
   TeamAuditEventType,
-  TimelineApp,
-  TimelineEventType,
 } from './constants';
 
 export type ItemSummary = {
@@ -130,7 +129,7 @@ export type CollabThreadInput = {
   latestAuthorName: string;
   // The latest author's colour (a CSS colour), for their avatar; '' for none.
   latestAuthorColor?: string;
-  // Who wrote the latest comment, and who resolved the thread, when the app knows: the Timeline's
+  // Who wrote the latest comment, and who resolved the thread, when the app knows: the event log's
   // `commented` and `comment_resolved` say who. Unknown, the card names `latestAuthorName` or no one.
   latestAuthorId?: string | null;
   resolvedById?: string | null;
@@ -176,7 +175,7 @@ export type CollabActionInput = {
   assignerId: string;
   assignerName?: string | null;
   teamId: string | null;
-  // Who closed it, when the app knows (the Timeline's `action_done`); unknown, its assignee.
+  // Who closed it, when the app knows (the event log's `action_done`); unknown, its assignee.
   doneById?: string | null;
   createdAt: number;
   updatedAt: number;
@@ -265,9 +264,6 @@ export type InboxResponse = {
   threads: InboxThread[];
   actions: InboxAction[];
   forms: InboxForm[];
-  // Timeline events by someone else since the person last looked, at most TIMELINE_NEW_CAP + 1 (read as
-  // "99+"); 0 before their first look. In the same filter as the rest.
-  timelineNew: number;
 };
 
 // The grant: an ES256 JWT signed by the index.
@@ -373,7 +369,7 @@ export type CreateItemInput = {
   teamId?: string | null;
   intent?: string | null;
   source?: ItemSource | null;
-  // An item kept offline in one browser, put back in the cloud under its own id: the Timeline says `synced`
+  // An item kept offline in one browser, put back in the cloud under its own id: its History says `synced`
   // rather than `created`.
   synced?: boolean;
 };
@@ -408,15 +404,12 @@ export type ShareResolution = { item: Item; level: Level; tabId: string | null; 
 // link's code when that is their only way in (liveworkspace/docs/specs/006-media/previews.md). Absent from an older index.
 export type ItemRead = { item: Item; tabId?: string | null; publicCode?: string | null };
 
-// One Timeline entry: what happened, to which item, by whom, as it was then. `title` is the item's name
-// when it happened (or the team's, the token's, the gallery's for an event about no item); `item` is the item
-// as it is now (its name since, its place, its Trash), drawn by the Explorer's cards, or null for an event
-// about no item (a team, an API token, images uploaded, an item taken offline).
-export type TimelineEvent = {
+// One event in an item's History: what happened, by whom, as it was then. `title` is the item's name when it
+// happened; `item` is the item as it is now (its name since, its place, its Trash).
+export type ItemEvent = {
   id: string;
-  // The item's app; TIMELINE_PLATFORM for an account's teams and tokens, which every app's filter shows.
-  app: TimelineApp;
-  type: TimelineEventType;
+  app: EventApp;
+  type: EventType;
   // Who did it: an account or guest id, or `deleted` once their account is closed. The index holds no
   // names; a report may carry one (`actorName`).
   actorId: string | null;
@@ -426,59 +419,35 @@ export type TimelineEvent = {
   // renamed: { from }; moved: { folderName, teamId } (null folderName: the top of the space);
   // shared: { level }; created: { source, copiedFrom }; commented: { text, count, reply };
   // comment_resolved: { text }; action_assigned: { action, assigneeId, assigneeName }; action_done: { action };
-  // image_uploaded: { count }; team_*: { teamId, memberName, role, from, inviteeId, left };
-  // token_*: { tokenId }; token_expiring: { expiresAt }; share_link_expiring: { expiresAt, links } (the soonest
-  // expiry and how many links lapse in the week); opened_by_visitor, copied_by_visitor: none (the actor is the
-  // visitor, null for one with no identity).
+  // opened_by_visitor, copied_by_visitor: none (the actor is the visitor, null for one with no identity).
   detail: Record<string, string | null> | null;
   occurredAt: number;
   item: Item | null;
 };
 
-export type TimelineQuery = {
-  // One app's events; unset, every app's.
-  app?: App;
-  // One item's events only (its History).
-  item?: string;
-  // One team's events only (its Team Activity): the team's own scope. A joined member only.
-  team?: string;
-  limit?: number;
-  cursor?: string;
-};
-
-export type TimelinePage = Page<TimelineEvent, 'events'> & {
-  // When the person last marked their Timeline seen (POST /timeline/seen), or null for never.
-  seenAt: number | null;
-};
+// `GET /items/:id/history`: one page of an item's events, newest first, kept EVENT_RETENTION_MS.
+export type HistoryQuery = { limit?: number; cursor?: string };
+export type HistoryPage = Page<ItemEvent, 'events'>;
 
 // What an app reports about an item: `edited` by `actorId` at `at`, with the name the app knows them by.
-export type AppTimelineEvent = {
-  type: AppTimelineEventType;
+export type AppEvent = {
+  type: AppEventType;
   actorId: string;
   actorName?: string | null;
   at: number;
 };
 
-// What an app reports about a person (`PUT /app/people/events`): `count` images uploaded by `actorId` at `at`.
-export type AppPersonEvent = {
-  type: AppPersonEventType;
-  actorId: string;
-  at: number;
-  count?: number;
-};
-
-// What liveworkspace accounts reports (`POST /internal/timeline`, its key): one team or API token event, with
-// the scopes that see it (`p:<person>`, `t:<team>`). `id` is stable, so a resend lands on the same event.
-export type AccountTimelineEvent = {
+// What liveworkspace accounts reports (`POST /internal/events`, its key): one team event, for its team's audit log.
+// `id` is stable, so a resend lands on the same event.
+export type AccountEvent = {
   id: string;
-  type: AccountTimelineEventType;
+  type: AccountEventType;
   actorId: string | null;
   actorName?: string | null;
-  // The team's or the token's name.
+  // The team's name.
   title: string;
   detail?: Record<string, string | null> | null;
   at: number;
-  scopes: string[];
 };
 
 // The team audit log (liveworkspace/docs/specs/004-index/team-audit-log.md "Who reads it"): one row as a team admin
@@ -488,8 +457,8 @@ export type TeamAuditPerson = { id: string; name: string | null };
 export type TeamAuditEvent = {
   id: string;
   type: TeamAuditEventType;
-  // The document's app; TIMELINE_PLATFORM for a team's own event and a webhook's.
-  app: TimelineApp;
+  // The document's app; PLATFORM_APP for a team's own event and a webhook's.
+  app: EventApp;
   // Who did it.
   actor: TeamAuditPerson | null;
   // Whom a team event is about (an invitee, a member removed or whose role changed).
@@ -497,7 +466,7 @@ export type TeamAuditEvent = {
   itemId: string | null;
   // The document's, team's or webhook's name then.
   title: string;
-  // As on the Timeline: shared: { level, public }; moved: { fromTeamId, teamId }; deleted: { reason };
+  // As in the event log: shared: { level, public }; moved: { fromTeamId, teamId }; deleted: { reason };
   // webhook_*: { webhookId, kind, host }; team_*: { teamId, memberName, role, from, inviteeId, left }.
   detail: Record<string, string | null> | null;
   occurredAt: number;

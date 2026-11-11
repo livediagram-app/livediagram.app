@@ -16,6 +16,7 @@ import type { AnswerValue } from './answers';
 import { effectiveTarget } from './mapping';
 import { promptOf, questionsOf, type FormDefinition, type FormQuestion } from './model';
 import { RATING_SCALE_DEFAULT } from './limits';
+import { fixedCardFields } from './fixed';
 
 // The field a response's card carries, naming its form: `<form tab id>:<response number>`. A plain string, so the
 // item store keeps it as any unknown field, and no card face draws it.
@@ -98,7 +99,9 @@ interface ResponseCard {
 // The card a response makes: the destination's type and status, the mapped answers in their fields, the rest in
 // Description under their prompts (in form order; unanswered questions left out). A Preview's card (`preview`) is
 // made the same way, titled "Preview: …" (its title answer, else the form's heading). `number` is the response number
-// it takes; null (a preview of a form with no link to count it) marks it as no response.
+// it takes; null (a preview of a form with no link to count it) marks it as no response. The fields the destination
+// sets automatically are filled last, so they win over any answer, their dates read from `at` (when it is made: the
+// api's clock, never the respondent's).
 export function responseCard(
   form: FormDefinition,
   tabId: string,
@@ -106,6 +109,7 @@ export function responseCard(
   type: ItemTypeDef,
   number: number | null,
   preview = false,
+  at: number = Date.now(),
 ): ResponseCard {
   const fields: ItemFields = {};
   let title: string | undefined;
@@ -145,6 +149,7 @@ export function responseCard(
       fields['description'] = cut(plain, ITEM_DESCRIPTION_MAX);
     }
   }
+  Object.assign(fields, fixedCardFields(form.destination?.fixed, type, at));
   if (form.destination) fields['status'] = form.destination.status;
   if (number !== null) fields[FROM_FORM_FIELD] = fromFormValue(tabId, number);
   return { type: type.id, fields };

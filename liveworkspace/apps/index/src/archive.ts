@@ -12,8 +12,7 @@ import { touchItem } from './drive';
 import type { Env } from './env';
 import { conflict, forbidden, json } from './http';
 import { decorate, getItemRow, type Access, type ItemRow } from './rows';
-import { expiringStatements } from './share-expiry';
-import { eventStatements, moveScopeStatements } from './timeline';
+import { eventStatements } from './events';
 
 /** Whether a row is in its owner's Archived. */
 export const isArchived = (row: Pick<ItemRow, 'archived_at'>) => row.archived_at != null;
@@ -48,17 +47,8 @@ export function archiveStatements(
          WHERE id = ? AND archived_at IS NULL AND trashed_at IS NULL`,
       )
       .bind(now, to, row.id),
-    // Its history goes where it went, and what reached other people alone (their favourites, an assignee's) goes.
-    ...moveScopeStatements(db, row.id, row.scope, to),
-    db
-      .prepare(
-        `DELETE FROM timeline_event_scopes WHERE scope <> ?
-         AND event_id IN (SELECT id FROM timeline_events WHERE item_id = ?)`,
-      )
-      .bind(to, row.id),
-    db
-      .prepare(`DELETE FROM timeline_events WHERE item_id = ? AND type = 'favourited'`)
-      .bind(row.id),
+    // Its History stays its owner's; its favourites' events go with the favourites (Archived holds none).
+    db.prepare(`DELETE FROM events WHERE item_id = ? AND type = 'favourited'`).bind(row.id),
     // "To Archived", in its team's audit log when it left one.
     ...eventStatements(db, {
       itemId: row.id,
@@ -72,7 +62,6 @@ export function archiveStatements(
     byItem('shared_with'),
     byItem('share_links'),
     byItem('share_passwords'),
-    ...expiringStatements(db, row.id, now),
     // Every person's favourite, Recent and Most Used rows, so moving it out starts fresh.
     byItem('favourites'),
     byItem('opens'),

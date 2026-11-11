@@ -92,7 +92,7 @@ describe('the element vocabulary', () => {
 const MINIMAL_BOX = { x: 0, y: 0, width: 10, height: 10 };
 
 const FIXTURES: Record<string, Record<string, unknown>> = {
-  shape: { ...MINIMAL_BOX, shape: 'square' },
+  shape: { ...MINIMAL_BOX, shape: 'focus-button' },
   text: { ...MINIMAL_BOX },
   table: { ...MINIMAL_BOX, cells: [['a', 'b']] },
   sticky: { ...MINIMAL_BOX },

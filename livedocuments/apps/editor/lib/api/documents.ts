@@ -210,7 +210,7 @@ export async function apiCreateDocument(
       indexClient,
       {
         id: d.id,
-        // Synced to the cloud from this browser (Offline Mode): the Timeline says so, not "Created".
+        // Synced to the cloud from this browser (Offline Mode): its History says so, not "Created".
         ...(opts.conversion === 'sync' ? { synced: true } : {}),
         app: 'livedocuments',
         title: d.name,

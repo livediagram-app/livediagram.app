@@ -28,7 +28,6 @@ import { useRef, type MutableRefObject } from 'react';
 import { ANIMATION_SET_TELEMETRY_TYPE, type AnimationSetId } from '@livehuddle/document';
 import { withSetAnimation } from '@/lib/animation-set-writes';
 import type {
-  BorderRadius,
   BorderStroke,
   BorderStyle,
   Element,
@@ -39,7 +38,6 @@ import type {
   IconSize,
   IconWeight,
   Padding,
-  ShapeKind,
   ShapeMarker,
   Tab,
   TextAlignX,
@@ -48,7 +46,6 @@ import type {
   TextSizePreset,
 } from '@livehuddle/document';
 import {
-  applyBorderRadiusToEl,
   applyBorderStrokeToEl,
   applyBorderStyleToEl,
   applyColorPresetToEl,
@@ -63,7 +60,6 @@ import {
   applyMarkerToEl,
   applyPaddingToEl,
   applyRotationToEl,
-  applyShapeKindToEl,
   applyStrokeColorToEl,
   applyTextAlignToEl,
   applyTextColorToEl,
@@ -225,9 +221,6 @@ export function useStylePreview(deps: {
     previewBorderStyle: (v: BorderStyle) => previewStyle((el) => applyBorderStyleToEl(el, v)),
     commitBorderStyle: (v: BorderStyle) =>
       commitStyle((el) => applyBorderStyleToEl(el, v), 'BorderStyle'),
-    previewBorderRadius: (v: BorderRadius) => previewStyle((el) => applyBorderRadiusToEl(el, v)),
-    commitBorderRadius: (v: BorderRadius) =>
-      commitStyle((el) => applyBorderRadiusToEl(el, v), 'BorderRadius'),
     // Shadow preset tiles (docs/specs/008-canvas/element-shadows.md); `null` is the None tile. The sliders
     // stay on the debounced useColorStyleSetters path — only tiles preview.
     previewShadow: (v: ElementShadow | null) => previewStyle((el) => applyShadowToEl(el, v)),
@@ -239,13 +232,6 @@ export function useStylePreview(deps: {
     // Rotation angle tiles (fixed 45° steps).
     previewRotation: (deg: number) => previewStyle((el) => applyRotationToEl(el, deg)),
     commitRotation: (deg: number) => commitStyle((el) => applyRotationToEl(el, deg), 'Rotation'),
-    // Shape morph tiles. Id-scoped: the single menu morphs the clicked
-    // element only (not its group), the multi menu passes every morphable
-    // member — so the ids come from the caller, not the resolved selection.
-    previewShapeKind: (ids: string[], kind: ShapeKind) =>
-      previewStyle((el) => applyShapeKindToEl(el, kind), new Set(ids)),
-    commitShapeKind: (ids: string[], kind: ShapeKind) =>
-      commitStyle((el) => applyShapeKindToEl(el, kind), 'ShapeMorph', new Set(ids)),
     // Tech-icon fixed tile size (docs/specs/010-palette/technology-icons.md).
     previewIconSize: (v: IconSize) => previewStyle((el) => applyIconSizeToEl(el, v)),
     commitIconSize: (v: IconSize) => commitStyle((el) => applyIconSizeToEl(el, v), 'IconSize'),

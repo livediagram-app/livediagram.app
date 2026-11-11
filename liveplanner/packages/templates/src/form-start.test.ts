@@ -7,6 +7,7 @@ import {
   planFormStart,
   responsesBoardSetup,
   responsesBoardTab,
+  typeResponsesBoardSetup,
   sheetsOf,
   uniqueTypeLabel,
   withAutoBoardName,
@@ -239,5 +240,64 @@ describe('sheetsOf', () => {
       { tabId: 's', sheetId: 'AAAAAAAAAAA1', name: 'Budget' },
       { tabId: 's', sheetId: 'AAAAAAAAAAA2', name: 'Budget 2' },
     ]);
+  });
+});
+
+// Columns follow the card type (docs/specs/030-forms/forms.md "Columns follow the card type").
+describe('a responses board for a type with its own statuses', () => {
+  const statusNames: [string, string][] = [
+    ['review~a', 'Under Review'],
+    ['ready~b', 'Ready'],
+    ['shipped~c', 'Shipped'],
+  ];
+  it('takes the type’s statuses in its order, named, coloured and done as the project has them', () => {
+    const tab = responsesBoardTab('Intake', { theme: undefined }, statusNames, undefined, random, {
+      typeId: 'work-item',
+      statuses: ['ready~b', 'review~a', 'shipped~c', 'unnamed~d'],
+      columns: [
+        { status: 'review~a', color: '#ff0000' },
+        { status: 'shipped~c', done: true },
+      ],
+    });
+    const setup = boardsOf(tab)[0]!.setup;
+    expect(setup.columns.map((c) => [c.status, c.name])).toEqual([
+      ['ready~b', 'Ready'],
+      ['review~a', 'Under Review'],
+      ['shipped~c', 'Shipped'],
+      ['unnamed~d', 'unnamed~d'],
+    ]);
+    expect(setup.columns[1]!.color).toBe('#ff0000');
+    expect(setup.columns[2]!.done).toBe(true);
+    expect(setup.doneColumnId).toBe('shipped~c');
+    expect(setup.addTypes).toEqual(['work-item']);
+  });
+
+  it('gives a type without its own statuses New, In Progress and Done', () => {
+    expect(typeResponsesBoardSetup({ typeId: 'x' }, 'T', [], random)).toBeNull();
+    const tab = responsesBoardTab('Intake', { theme: undefined }, [], undefined, random, {
+      typeId: 'x',
+      statuses: [],
+    });
+    expect(boardsOf(tab)[0]!.setup.columns.map((c) => c.name)).toEqual([
+      'New',
+      'In Progress',
+      'Done',
+    ]);
+  });
+
+  it('starts a form on the board’s first column its type uses', () => {
+    const triage = boardTab('b', presetSetup('kanban'));
+    const status = boardsOf(triage)[0]!.setup.columns[1]!.status;
+    const picky = { ...ITEM_TYPES[0], statuses: [status] };
+    const formTab: Tab = { id: 'f', name: 'Form', kind: 'form', elements: [] };
+    const plan = planFormStart({
+      starter: formStarter('blank'),
+      formTab,
+      tabs: [formTab, triage],
+      types: [picky],
+      statusNames: [],
+      board: { tabId: 'b', elementId: boardsOf(triage)[0]!.element.id },
+    });
+    expect(plan.form.destination?.status).toBe(status);
   });
 });

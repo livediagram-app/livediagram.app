@@ -147,7 +147,7 @@ focus: [elementIds], ttl }`. The room keeps a virtual roster entry with an alarm
   - Comments: `authorName: "Claude for Webber"`, `authorId` = token owner (delete-own still
     works), plus `agent: "Claude"` so the UI can badge it. Today the name would be "Webber".
   - Changes: each changeset records `{ id, agent, for, summary, at, elementIds }` in the
-    timeline (`docs/specs/013-workspace/timeline.md`) as "Claude for Webber changed 6 elements:
+    timeline (`docs/specs/013-workspace/history.md`) as "Claude for Webber changed 6 elements:
     added payment service". Per-element provenance (`createdBy`) is not needed for v1.
 
 ### 4.3 Write granularity and conflicts
@@ -317,7 +317,7 @@ mention rev=e1f3:431 tab=main el-9 "Payments" Webber: "@Claude should this be as
 | Change                                                                                     | Where                                                                        | Size   |
 | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ------ |
 | `POST /api/documents/:id/changes` (validate, room sequence, D1 apply, result)              | new route beside `document-subresource-routes.ts`                            | medium |
-| `changeset` room op (one log slot); `patch` element op                                     | `packages/api-schema/src/room-messages.ts`, `element-ops.ts`                 | small  |
+| `changeset` room op (one log slot); `patch` element op                                     | `packages/api-schema/src/room-op.ts`, `element-ops.ts`                       | small  |
 | Room: accept `changeset` on `/mutation`, lock check, authored-change ledger, before-images | `document-room/document-room.ts`, `room-ledger-store.ts`, `collab-ledger.ts` | medium |
 | Tab PUT merge re-applies changesets after the saver's cursor                               | `room-client.ts` `mergeRoomLedger`                                           | small  |
 | Room remembers each session's selection                                                    | `document-room/document-room.ts` attachment                                  | small  |
@@ -382,7 +382,7 @@ Webber decided these four forks; specs should record them when this work is spec
   `apps/api/src/document-room/document-room.ts`, `room-client.ts`, `routes/document-room-routes.ts`,
   `routes/document-subresource-routes.ts`; `apps/editor/app/document/[id]/useRoomConnection.ts`;
   `packages/document/src/element-ops.ts`, `element-deltas.ts`, `comments.ts`;
-  `packages/api-schema/src/room-messages.ts`, `index.ts` (`ParticipantPresence`).
+  `packages/api-schema/src/room-op.ts`, `room-messages.ts`, `index.ts` (`ParticipantPresence`).
 - Liveblocks (verified): <https://liveblocks.io/docs/products/sync/agentic-editing>,
   <https://liveblocks.io/docs/use-cases/agentic-users>,
   <https://liveblocks.io/docs/get-started/nextjs-ai-presence>.

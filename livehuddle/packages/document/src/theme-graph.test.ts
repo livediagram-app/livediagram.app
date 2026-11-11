@@ -11,11 +11,11 @@ import type { ThemeDefinition } from './themes';
 import { THEMES } from './themes-data';
 
 // docs/specs/011-theme/blueprints/multicolour-themes.md: colour resolution (E5, E7, E9),
-// the shared branch map (D6) and the wrapper logs (O1, O2).
+// the shared branch map (D6, in document order since DEFAULTS.md D34) and the wrapper logs (O1, O2).
 
 const theme = (id: string): ThemeDefinition => THEMES.find((t) => t.id === id)!;
-const box = (id: string): Element => ({ ...createShape('square', 0, 0), id });
-// A stored arrow pinned at both ends: retired, but read for which boxes hang together (./hierarchy).
+const box = (id: string): Element => ({ ...createShape('focus-button', 0, 0), id });
+// A stored arrow pinned at both ends: a retired element, which no branch reads (DEFAULTS.md D34).
 let arrows = 0;
 const createPinnedArrow = (from: string, fromAnchor: 's', to: string, toAnchor: 'n'): Element => ({
   id: `arrow-${++arrows}`,
@@ -26,7 +26,8 @@ const createPinnedArrow = (from: string, fromAnchor: 's', to: string, toAnchor: 
 const fillOf = (elements: Element[], id: string) =>
   (elements.find((el) => el.id === id) as { fillColor?: string }).fillColor;
 
-// root -> a, root -> b: the root is trunk, a is branch 0, b is branch 1.
+// A stored tree, root -> a, root -> b: painted as three loose boxes in document order (DEFAULTS.md D34 in
+// docs/specs/002-project-scope/blueprints), the arrows kept as stored.
 const tree = (): Element[] => [
   box('root'),
   box('a'),
@@ -40,30 +41,47 @@ afterEach(() => {
 });
 
 describe('palette colour resolution', () => {
-  it('paints the trunk with the element colours when a palette theme has no rootColor', () => {
+  it('gives each box the next palette colour in document order, the first box too', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const rainbow = theme('rainbow');
+    const out = resetThemeElementsToTheme(tree(), rainbow);
+    expect(fillOf(out, 'root')).toBe(rainbow.palette![0]!.fill);
+    expect(fillOf(out, 'a')).toBe(rainbow.palette![1]!.fill);
+    expect(fillOf(out, 'b')).toBe(rainbow.palette![2]!.fill);
+    // The stored arrows keep exactly what they stored.
+    const elements = tree();
+    expect(resetThemeElementsToTheme(elements, rainbow).slice(3)).toEqual(elements.slice(3));
+  });
+
+  it('paints the element colours on an empty palette with no rootColor', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
     const noRoot: ThemeDefinition = {
       ...theme('rainbow'),
+      palette: [],
       rootColor: undefined,
       elementFill: '#123456',
     };
     const out = resetThemeElementsToTheme(tree(), noRoot);
-    expect(fillOf(out, 'root')).toBe('#123456');
-    expect(fillOf(out, 'a')).toBe(noRoot.palette![0]!.fill);
+    for (const id of ['root', 'a', 'b']) expect(fillOf(out, id)).toBe('#123456');
   });
 
   it('falls back to the named slate trunk for a null element colour', () => {
-    const bare: ThemeDefinition = { ...theme('rainbow'), rootColor: undefined, elementFill: null };
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const bare: ThemeDefinition = {
+      ...theme('rainbow'),
+      palette: [],
+      rootColor: undefined,
+      elementFill: null,
+    };
     expect(fillOf(resetThemeElementsToTheme(tree(), bare), 'root')).toBe(TRUNK_FALLBACK.fill);
   });
 
-  it('wraps a seventh limb back to the first colour of a six-entry palette', () => {
+  it('wraps a seventh box back to the first colour of a six-entry palette', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
     const rainbow = theme('rainbow');
-    const limbs = ['l0', 'l1', 'l2', 'l3', 'l4', 'l5', 'l6'];
-    const elements: Element[] = [
-      box('root'),
-      ...limbs.map(box),
-      ...limbs.map((id) => createPinnedArrow('root', 's', id, 'n')),
-    ];
+    const elements = ['l0', 'l1', 'l2', 'l3', 'l4', 'l5', 'l6'].map(box);
     expect(rainbow.palette).toHaveLength(6);
     expect(fillOf(resetThemeElementsToTheme(elements, rainbow), 'l6')).toBe(
       rainbow.palette![0]!.fill,
@@ -82,15 +100,15 @@ describe('palette colour resolution', () => {
 });
 
 describe('switching between palette themes', () => {
-  it('moves each limb to the same branch of the next palette', () => {
+  it('moves each box to the same branch of the next palette', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const rainbow = theme('rainbow');
     const pastel = theme('pastel');
     const painted = resetThemeElementsToTheme(tree(), rainbow);
     const out = switchThemeElements(painted, rainbow, pastel);
-    expect(fillOf(out, 'root')).toBe(pastel.rootColor!.fill);
-    expect(fillOf(out, 'a')).toBe(pastel.palette![0]!.fill);
-    expect(fillOf(out, 'b')).toBe(pastel.palette![1]!.fill);
+    expect(fillOf(out, 'root')).toBe(pastel.palette![0]!.fill);
+    expect(fillOf(out, 'a')).toBe(pastel.palette![1]!.fill);
+    expect(fillOf(out, 'b')).toBe(pastel.palette![2]!.fill);
   });
 });
 
@@ -102,9 +120,9 @@ describe('wrapper logs', () => {
     switchThemeElements(tree(), rainbow, theme('pastel'));
     resetThemeElementsToTheme(tree(), rainbow);
     expect(info.mock.calls.map((c): unknown => c[0])).toEqual([
-      '[theme-graph] recolour theme=rainbow elements=5 branches=2',
-      '[theme-graph] switch theme=pastel elements=5 branches=2',
-      '[theme-graph] reset theme=rainbow elements=5 branches=2',
+      '[theme-graph] recolour theme=rainbow elements=5 branches=3',
+      '[theme-graph] switch theme=pastel elements=5 branches=3',
+      '[theme-graph] reset theme=rainbow elements=5 branches=3',
     ]);
   });
 

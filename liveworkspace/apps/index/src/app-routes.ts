@@ -1,6 +1,6 @@
 // What an item pushes (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item pushes"), from its app's
 // server with the app's key: the summary derived from its content, each tab's comment threads and
-// actions for the Inbox, and its Timeline events (timeline.ts). Only the item's own app may push for it.
+// actions for the Inbox, and its events (event-push.ts). Only the item's own app may push for it.
 
 import { SUMMARY_MAX_BYTES, type App } from '@liveworkspace/index-client';
 import { callerApp } from './auth';
@@ -13,7 +13,9 @@ import type { Env } from './env';
 import { badRequest, fail, noContent, notFound, readObject, unauthorized } from './http';
 import { handleMigrationHandoff } from './migration-handoff';
 import { handleAppPeople } from './notices';
-import { FUTURE_SLACK_MS, pushAppEvents, pushPersonEvents } from './timeline';
+import { pushAppEvents } from './event-push';
+import { FUTURE_SLACK_MS } from './events';
+import { pushAutomationSends } from './webhooks/automation-sends';
 import { pushCardMoves } from './webhooks/routes';
 
 const isTime = (value: unknown): value is number =>
@@ -35,13 +37,6 @@ export async function handleApp(
   if (segments[1] === 'migration' && segments[2] === 'handoff' && segments.length === 3) {
     return handleMigrationHandoff(request, env, app, waitUntil);
   }
-  // /app/people/events: the Timeline's events about people (images uploaded), timeline.ts.
-  if (segments[1] === 'people' && segments[2] === 'events' && segments.length === 3) {
-    if (request.method !== 'PUT') return notFound();
-    const body = await readObject(request);
-    if (!body) return badRequest();
-    return pushPersonEvents(env, app, body);
-  }
   // /app/community/states: where Community posts' items stand, for the Community's sweep (community-states.ts).
   if (segments[1] === 'community' && segments[2] === 'states' && segments.length === 3) {
     if (request.method !== 'POST') return notFound();
@@ -61,6 +56,9 @@ export async function handleApp(
     segments[5] === 'seen' &&
     isPartId(segments[4]) &&
     isId(segments[6]);
+  // /app/items/:id/automation-sends: an automation rule's messages through the plan's own webhooks (a POST).
+  const automationSends =
+    request.method === 'POST' && segments.length === 4 && segments[3] === 'automation-sends';
   // /app/items/:id/summary, /app/items/:id/collab/:tabId, /app/items/:id/events, /app/items/:id/card-moves,
   // /app/items/:id/forms/:tabId
   if (segments[1] !== 'items' || !isId(segments[2])) return notFound();
@@ -68,7 +66,7 @@ export async function handleApp(
   if (segments.length === 5 && segments[3] === 'connections') {
     return handleAppConnection(request, env, app, segments[2], segments[4]!, waitUntil);
   }
-  if (request.method !== 'PUT' && !seenRead) return notFound();
+  if (request.method !== 'PUT' && !seenRead && !automationSends) return notFound();
   const itemId = segments[2];
   const item = await env.INDEX_DB.prepare(
     'SELECT app, owner_id, team_id, updated_at FROM items WHERE id = ?',
@@ -78,6 +76,7 @@ export async function handleApp(
   if (!item) return notFound();
   if (item.app !== app) return fail(403, 'wrong_app');
   if (seenRead) return formSeen(env, itemId, segments[4]!, segments[6]!);
+  if (automationSends) return pushAutomationSends(env, itemId, app, request);
 
   if (segments.length === 4 && segments[3] === 'summary') {
     const body = await readObject(request);

@@ -1,8 +1,9 @@
 'use client';
 
 // What stands between a form and its responses (docs/specs/030-forms/forms.md "Publishing and the form link"), listed
-// in Share Form, before publishing and after: responses with nowhere to go (with Choose Where Responses Go), and each
-// publish check that fails (with Show). The status bar's Problems with this Form opens it.
+// in Share Form, before publishing and after: responses with nowhere to go (with Choose Where Responses Go), each
+// publish check that fails (with Show), and the warnings that hold nothing back (a column its card type leaves out,
+// with Choose Where Responses Go). The status bar's Problems with this Form opens it.
 import {
   DESTINATION_PROBLEM_TEXT,
   publishProblemText,
@@ -10,11 +11,12 @@ import {
   type PublishProblem,
 } from '@liveplanner/forms';
 
-/** How many problems a form has: its destination's, and each failing publish check. */
+/** How many problems a form has: its destination's, each failing publish check, and any warnings given. */
 export const formProblemCount = (
   problem: DestinationProblem | null,
   notReady: readonly PublishProblem[],
-): number => (problem ? 1 : 0) + notReady.length;
+  warnings: readonly string[] = [],
+): number => (problem ? 1 : 0) + notReady.length + warnings.length;
 
 const LINK = 'shrink-0 cursor-pointer font-semibold underline underline-offset-2';
 
@@ -22,16 +24,19 @@ export function FormProblems({
   title,
   problem,
   notReady,
+  warnings = [],
   onFixDestination,
   onShow,
 }: {
   title: string;
   problem: DestinationProblem | null;
   notReady: readonly PublishProblem[];
+  // Listed, but holding back neither Publish Form nor Accepting Responses.
+  warnings?: readonly string[];
   onFixDestination?: () => void;
   onShow?: (problem: PublishProblem) => void;
 }) {
-  if (!formProblemCount(problem, notReady)) return null;
+  if (!formProblemCount(problem, notReady, warnings)) return null;
   return (
     <div
       role="status"
@@ -60,6 +65,16 @@ export function FormProblems({
             {onShow && ('questionId' in p || 'sectionId' in p) ? (
               <button type="button" onClick={() => onShow(p)} className={LINK}>
                 Show
+              </button>
+            ) : null}
+          </li>
+        ))}
+        {warnings.map((w) => (
+          <li key={w} className="flex items-baseline justify-between gap-3">
+            <span>{w}</span>
+            {onFixDestination ? (
+              <button type="button" onClick={onFixDestination} className={LINK}>
+                Choose Where Responses Go
               </button>
             ) : null}
           </li>

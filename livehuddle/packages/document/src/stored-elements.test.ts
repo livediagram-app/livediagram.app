@@ -5,7 +5,16 @@ import type { Element } from './index';
 describe('migrateStoredElements', () => {
   it('drops a legacy group', () => {
     const elements = [
-      { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, groupId: 'g' },
+      {
+        id: 'a',
+        type: 'shape',
+        shape: 'focus-button',
+        x: 0,
+        y: 0,
+        width: 10,
+        height: 10,
+        groupId: 'g',
+      },
     ] as unknown as Element[];
     expect(migrateStoredElements(elements)[0]).not.toHaveProperty('groupId');
   });

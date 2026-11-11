@@ -1,5 +1,14 @@
 # Edit operations
 
+> **No diagram shapes, no lint, no arrow selectors** ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine), part 5): nothing coerces a kind.
+> `add <kind>` of a kind livehuddle does not have is refused (`invalid_value` on `kind`, naming the kinds `add`
+> takes), and so are `add shape` and the removed shapes (`square`, `circle`, `diamond` and the rest: "shapes are no
+> longer supported in livehuddle: add a sticky"); `set … shape=` takes only a kind livehuddle has. A `replace` refuses
+> a new shape of a kind livehuddle does not have, while an element the tab already holds rides through exactly as
+> stored. The arrow selectors (`a->b`, `from:`, `to:`, `downstream:`, `upstream:`) and the `after:` placement are
+> gone (unknown vocabulary); `layout` stays and sweeps any boxes into rows. A result's `lint` is `null` and its footer
+> names no lint. Examples below that add a `square` record the design before part 5.
+
 > **No arrows, pens, paths or annotations** ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine), part 4): `connect`,
 > `rewire` and `insert` are gone, with `keep-arrows`, `again`, `between` and `layout`'s style and direction; adding
 > one of those kinds is refused; `layout` sweeps the boxes into rows; `after:` reads as `below:`.
@@ -9,8 +18,8 @@
 > doors over the same engine, where this design came from; their wire values (`mcp`, `cli`) still parse.
 
 **Status: built.** `@livehuddle/edit-operations` reads both forms and applies every operation below, by ref or
-selector, through the changeset route. A result's footer names the [lint](diagram-lint.md)
-verdict.
+selector, through the changeset route. A result's footer names no lint since the
+[lint](diagram-lint.md) left (part 5).
 
 An **edit operation** is one step of a [changeset](agent-changesets.md): a small, closed vocabulary of
 intent-level verbs addressed by ref or selector, compiled by the api into element ops. Building from scratch and
@@ -39,8 +48,8 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   `wrap`, no `unwrap`, no `in:` selector, no `inside:` placement and no membership: a stored lane or boundary is an
   element like any other that a move, an insert or an order treats on its own. `wrap` and `unwrap` read as unknown
   operations, `in:` as an unknown selector key and `inside:` as no placement. `add lane` (or `boundary`, `stack`,
-  `card`, `callout`, `badge`, `step`, `pointer-note`, `timeline-rail`, `diagram-key`) draws a square with the
-  `shape_coerced` warning, as any kind livehuddle lacks does. A stored kind an edit does not write is kept: relabelling a stored lane
+  `card`, `callout`, `badge`, `step`, `pointer-note`, `timeline-rail`, `diagram-key`) is refused, as any kind
+  livehuddle lacks is (part 5). A stored kind an edit does not write is kept: relabelling a stored lane
   leaves it a lane, untouched but for the label.
 - **Ids** given with `id=` name the new element, so later operations in the same changeset can refer to it. An id is
   a slug id (`^[a-z][a-z0-9_-]{0,23}$`, as [Document views](document-views.md#refs) defines it). Without one, a new
@@ -49,7 +58,7 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   [element format](../../../../livediagram/docs/specs/015-api/mcp-server.md) names it. Fields that travel live between people (comment threads,
   responses, ideas) are not changed by edit operations; comments have their own endpoints. A named `x`, `y`,
   `width` or `height` is a stored, absolute coordinate.
-- **Values** use the document's vocabulary: `shape=stadium` (off-vocabulary shapes coerced as the MCP does),
+- **Values** use the document's vocabulary: `shape=plant` (a kind livehuddle has; any other is refused, part 5),
   `fill=green` (a theme slot: `theme`, the theme's own colour, or one of the six hues the quick style panel offers
   for that theme, which follow a theme change; a hex value is accepted with the warning `colour_overrides_theme`,
   a sticky's colours excepted, which take the sticky palette's names), `text=sm`, `note="…"`, `line=angled`. A shape's

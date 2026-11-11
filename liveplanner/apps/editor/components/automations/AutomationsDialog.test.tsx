@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// docs/specs/026-plan/automations.md "The Automations screen": the Rules list in every state, the Run Log, and the
+// docs/specs/026-plan/automations.md "The Automations screen": the Rules list in every state, the Audit Trail, and the
 // rule builder's save, refusal, discard and test, with the api client mocked.
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -205,13 +205,13 @@ describe('the Rules list', () => {
   });
 });
 
-describe('the Run Log', () => {
+describe('the Audit Trail', () => {
   it('opens on a rule’s runs from its menu, expands a run to its steps, and opens its card', async () => {
     list();
     const onClose = vi.fn();
     wrap(<Harness onClose={onClose} />);
     fireEvent.click(await screen.findByRole('button', { name: 'More for Done Means Wrapped Up' }));
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Run Log' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Audit Trail' }));
     await waitFor(() =>
       expect(client.listRuns).toHaveBeenCalledWith(
         SCOPE,
@@ -394,7 +394,7 @@ describe('on a wide screen', () => {
     expect(document.querySelector('[data-rule-row="r2"]')!.textContent).toContain('Never');
   });
 
-  it('lays the Run Log out in columns', async () => {
+  it('lays the Audit Trail out in columns', async () => {
     list();
     client.listRuns.mockResolvedValue({
       runs: [run({ card: null, result: 'skipped', reason: 'Over the day’s runs.' })],

@@ -17,7 +17,7 @@ Scope, by file:
 | `packages/document/src/validate.ts`                              | `'page'` in the kind vocabulary; `isHeadingStr` bound on both lines |
 | `packages/document/src/svg-render-body.ts`                       | `shapeHasBespokeBody('page')`; dispatches `svgPageMasthead`         |
 | `packages/document/src/svg-render-page.ts`                       | `svgPageMasthead`, `svgPageFold`, `pageBodyTop`, `PAGE_MASTHEAD_PX` |
-| `packages/document/src/svg-render.ts`                            | Export box (`borderedRect`) and the fold over it                    |
+| `packages/document/src/svg-render-boxed.ts`                      | Export box (`borderedRect`) and the fold over it                    |
 | `packages/document/src/svg-render-describe.ts`                   | Export body label starts at `pageBodyTop`                           |
 | `packages/document/src/themes.ts`                                | `themeColourFields`: page exempt from theme applies [QD15]          |
 | `packages/document/src/colors.ts`                                | `defaultTextColor`: a page's body ink when it stores none [QD17]    |

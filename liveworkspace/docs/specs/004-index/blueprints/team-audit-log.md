@@ -9,7 +9,7 @@ Scope, by file:
 | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/index/migrations/0011_team_audit.sql`                                                              | the `team_audit_events` table and its indexes                                                                                                 |
 | `liveworkspace/apps/index/src/team-audit.ts`                                                                           | `itemAuditStatement`, `accountAuditStatement`, `deletedAuditStatement`, `webhookAuditStatement`, `sweepTeamAudit`, `teamAuditPurgeStatements` |
-| `liveworkspace/apps/index/src/timeline.ts`                                                                             | `eventStatements` and `bulkEventStatements` add the audit statement to the event's batch                                                      |
+| `liveworkspace/apps/index/src/events.ts`                                                                               | `eventStatements` and `bulkEventStatements` add the audit statement to the event's batch                                                      |
 | `liveworkspace/apps/index/src/items/item-routes.ts`, `liveworkspace/apps/index/src/items/list-routes.ts` (Empty Trash) | a move's `auditTeams` and `fromTeamId`; Delete Forever and Empty Trash pass who did it to `purgeRows`                                         |
 | `liveworkspace/apps/index/src/purge.ts`                                                                                | `purgeRows(…, audit?)` logs team items before their rows go; `sweep` runs `sweepTeamAudit`                                                    |
 | `liveworkspace/apps/index/src/sharing.ts`                                                                              | a public link's `shared` carries `public`                                                                                                     |
@@ -28,9 +28,9 @@ Scope, by file:
 
 | Kind                                                                                                           | Written by                                         | Row id                 | Team                                 |
 | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ---------------------- | ------------------------------------ |
-| `team_invite_sent`, `team_joined`, `team_declined`, `team_role_changed`, `team_member_removed`, `team_renamed` | `bulkEventStatements` (`POST /internal/timeline`)  | the Timeline event's   | each `t:<team>` scope named          |
-| `shared`, `unshared`, `trashed`, `restored`                                                                    | `eventStatements` (sharing, connected tabs, items) | the Timeline event's   | the item's team, read in the batch   |
-| `moved`                                                                                                        | `eventStatements` (`PATCH /items/:id`)             | the Timeline event's   | `auditTeams`: the old and new team   |
+| `team_invite_sent`, `team_joined`, `team_declined`, `team_role_changed`, `team_member_removed`, `team_renamed` | `bulkEventStatements` (`POST /internal/events`)    | the event's            | the event's `detail.teamId`          |
+| `shared`, `unshared`, `trashed`, `restored`                                                                    | `eventStatements` (sharing, connected tabs, items) | the event's            | the item's team, read in the batch   |
+| `moved`                                                                                                        | `eventStatements` (`PATCH /items/:id`)             | the event's            | `auditTeams`: the old and new team   |
 | `deleted` (`reason: offline` for an owner's Take Offline)                                                      | `purgeRows` (Delete Forever, Empty Trash)          | `del:<item>:<at>`      | the item's team, read before it goes |
 | `webhook_added`, `webhook_removed` (`webhookId`, `kind`, `host`)                                               | `POST /webhooks`, `DELETE /webhooks/:id`           | `wh+:<id>`, `wh-:<id>` | the webhook's `t:<team>` scope       |
 
@@ -41,8 +41,8 @@ Scope, by file:
 
 - Every write is `INSERT OR IGNORE` on `(team_id, id)`: a resent or self-extending event adds nothing and never
   updates a row.
-- An item event's statement follows its Timeline statement in the same batch and reads it back by id
-  (`timeline_events` primary key, then `items` primary key), so a gated event (`shared`'s `when`) that wrote nothing
+- An item event's statement follows its event's statement in the same batch and reads it back by id
+  (`events` primary key, then `items` primary key), so a gated event (`shared`'s `when`) that wrote nothing
   logs nothing.
 - `moved`: `auditTeams` is `[row.team_id, teamId]` when the team changed (nulls dropped, so into or out of a team is
   one row, between teams two), and `[]` for a folder move (no statement).
@@ -105,8 +105,8 @@ secret.
 
 ## Performance and limits
 
-One statement per event or per batch, each a primary-key read of the event it copies: `POST /internal/timeline` with
-100 team events is four statements (`timeline.test.ts` "the bound"); the plans never scan `timeline_events`, `items`
+One statement per event or per batch, each a primary-key read of the event it copies: `POST /internal/events` with
+100 team events is two statements (`events.test.ts` "the bound"); the plans never scan `events`, `items`
 or the log (`team-audit.test.ts` "the bound"). The sweep is one indexed `DELETE … LIMIT 5000` a day (`IDX28`).
 
 The read is one keyset query per page, `team_id = ?` plus each filter given, `(occurred_at < ? OR (occurred_at = ?
@@ -128,7 +128,7 @@ found the team and its `myRole` is `admin`, keyed `audit-<team>`. It reuses the 
 Person and Event (an `optgroup` per `auditGroups(kind.many)` group, the middle one named in the host's word for
 its items: `useExplorer().kind`, so Designs on livedesign), `DateInput` for From and To, `Button` for Clear Filters,
 Show More, Try again and Export CSV, `EmptyState` (compact) for every empty or failed state, `MoreFailed` for a
-failed Show More, `AppMark` for the app, and `auditIcon` (the Timeline's glyphs, plus `deleted`, `webhook_added`
+failed Show More, `AppMark` for the app, and `auditIcon` (the event glyphs, plus `deleted`, `webhook_added`
 and `webhook_removed`'s own). The filters are a two-column grid on a phone (Person and Event full width) and one
 row of four from `sm:`. Day bands use `MEDIUM_DATE`, row times `TIME`, both in the reader's locale; the tooltip is
 UTC. Dark mode follows the Explorer's slate classes. The Help link is the team article's help centre with
@@ -153,7 +153,7 @@ placeholder list is `aria-busy`. Export CSV is `busy` while it runs (it keeps fo
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/index/src/team-audit.test.ts` (9)     | a team item's shares, trash, restore, delete for good, moves across teams, Take Offline and Empty Trash; nothing for personal items; accounts' team events once, never a token's; the year's sweep; anonymising; the plans                                                                  |
 | `liveworkspace/apps/index/src/webhooks/routes.test.ts`    | a team webhook added and removed; never a personal one                                                                                                                                                                                                                                      |
-| `liveworkspace/apps/index/src/timeline.test.ts`           | 100 account events in four statements, all logged                                                                                                                                                                                                                                           |
+| `liveworkspace/apps/index/src/events.test.ts`             | 100 account events in two statements, all logged                                                                                                                                                                                                                                            |
 | `packages/index-client/src/constants.test.ts`             | no token kind and no `team_deleted` in `TEAM_AUDIT_EVENT_TYPES`                                                                                                                                                                                                                             |
 | `liveworkspace/apps/index/src/team-audit-read.test.ts`    | admin allowed; member, outsider, token-claimed admin, guest, app, Drive mirror and export refused; 503 when accounts can't say; names now (left members included), fallbacks, `deleted`; every filter and pages; malformed queries; CSV content, cap, next cursor and CPU budget; the plans |
 | `liveworkspace/apps/accounts/src/account-api.test.ts`     | `POST /api/account/index/people`: the key only, unknown ids left out, at most 100                                                                                                                                                                                                           |

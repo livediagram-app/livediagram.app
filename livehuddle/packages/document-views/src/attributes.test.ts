@@ -25,12 +25,12 @@ const action = (status: 'open' | 'done', name = 'Fix retries', assignee = 'Sam')
 
 describe('attributesOf (VW14)', () => {
   it('prints nothing for a plain element', () => {
-    expect(printed(shapeAt('square', 'x', 0, 0))).toBe('');
+    expect(printed(shapeAt('signpost', 'x', 0, 0))).toBe('');
   });
 
   it('prints every attribute in order', () => {
     const el = {
-      ...shapeAt('square', 'x', 0, 0),
+      ...shapeAt('signpost', 'x', 0, 0),
       iconId: 'server',
       link: { kind: 'url', url: 'https://stripe.com/docs/api' },
       // Saved locked before locking left (livehuddle not-in-livehuddle.md): printed as nothing.
@@ -46,7 +46,7 @@ describe('attributesOf (VW14)', () => {
   });
 
   it('prints links to tabs, elements and documents (VW28)', () => {
-    const link = (l: object) => printed({ ...shapeAt('square', 'x', 0, 0), link: l } as Element);
+    const link = (l: object) => printed({ ...shapeAt('signpost', 'x', 0, 0), link: l } as Element);
     expect(link({ kind: 'tab', tabId: '51c9abcd' })).toBe('link=tab:51c9');
     expect(link({ kind: 'element', tabId: '51c9abcd', elementId: 'e4a8-1' })).toBe(
       'link=tab:51c9#e4a8-1',
@@ -75,7 +75,7 @@ describe('attributesOf (VW14)', () => {
   });
 
   it('prints an action without an assignee, quoting a spaced name (VW29)', () => {
-    const el = (a: object) => printed({ ...shapeAt('square', 'x', 0, 0), action: a } as Element);
+    const el = (a: object) => printed({ ...shapeAt('signpost', 'x', 0, 0), action: a } as Element);
     expect(el(action('open', 'Ship', 'Sam Lee'))).toBe('action="Ship" @"Sam Lee"');
     expect(el({ ...action('open', 'Ship'), assignee: null })).toBe('action="Ship"');
     expect(el({ ...action('open'), name: undefined, assignee: { name: ' ' } })).toBe('action=""');
@@ -83,14 +83,14 @@ describe('attributesOf (VW14)', () => {
 
   it('counts an actions list', () => {
     const el = (list: unknown[]) =>
-      printed({ ...shapeAt('square', 'x', 0, 0), actions: list } as Element);
+      printed({ ...shapeAt('signpost', 'x', 0, 0), actions: list } as Element);
     expect(el([action('open'), action('done'), action('open'), 'junk'])).toBe('actions=2 open/3');
     expect(el([])).toBe('');
   });
 
   it('prints an open thread', () => {
     const el = {
-      ...shapeAt('square', 'x', 0, 0),
+      ...shapeAt('signpost', 'x', 0, 0),
       commentThread: { comments: [comment, comment], resolved: false },
     } as Element;
     const [attribute] = attributesOf(el, plain);
@@ -106,7 +106,7 @@ describe('attributesOf (VW14)', () => {
 
   it('adds style that differs from the factory, only when asked (VW50)', () => {
     const styled = {
-      ...shapeAt('square', 'x', 0, 0),
+      ...shapeAt('signpost', 'x', 0, 0),
       fillColor: '#fde68a',
       strokeStyle: 'dashed',
       textSize: 'lg',
@@ -114,7 +114,7 @@ describe('attributesOf (VW14)', () => {
     expect(printed(styled)).toBe('');
     const context = { ...plain, style: styleBaselines() };
     expect(printed(styled, context)).toBe('fill=#fde68a border=dashed text=lg');
-    expect(printed(shapeAt('square', 'y', 0, 0), context)).toBe('');
+    expect(printed(shapeAt('signpost', 'y', 0, 0), context)).toBe('');
     expect(
       printed(arrowBetween('a', 'x', 'y', { arrowStyle: 'angled', strokeColor: '#f00' }), context),
     ).toBe('stroke=#f00 line=angled');

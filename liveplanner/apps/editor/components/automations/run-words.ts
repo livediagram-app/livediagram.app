@@ -1,4 +1,4 @@
-// The words the Rules list and the Run Log use for times, counts and results (docs/specs/026-plan/automations.md
+// The words the Rules list and the Audit Trail use for times, counts and results (docs/specs/026-plan/automations.md
 // "The Automations screen"): "4 min ago", "Never", "38 runs", "10:42", "Yesterday", "38 ms", "1.2 s", and each
 // result's pill. Pure.
 
@@ -54,4 +54,22 @@ export function runWhen(at: number, now: number): string {
 /** The meter's words: "142 of 1,000". */
 export function meterWords(used: number, max: number): string {
   return `${used.toLocaleString('en-GB')} of ${max.toLocaleString('en-GB')}`;
+}
+
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+const clock = (d: Date) => `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+/** A time rule's next moment, in this browser's time: "Today 9:00", "Tomorrow 9:00", "Mon 9:00" within the week,
+ *  else its day ("12 Dec 9:00"). */
+export function nextRunWords(at: number, now: number): string {
+  const d = new Date(at);
+  const day = (offset: number) => {
+    const x = new Date(now);
+    x.setDate(x.getDate() + offset);
+    return dayKey(x);
+  };
+  if (dayKey(d) === day(0)) return `Today ${clock(d)}`;
+  if (dayKey(d) === day(1)) return `Tomorrow ${clock(d)}`;
+  if (at - now < 6 * 24 * 60 * 60 * 1000) return `${WEEKDAYS[d.getDay()]!} ${clock(d)}`;
+  return `${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} ${clock(d)}`;
 }

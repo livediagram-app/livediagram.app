@@ -50,7 +50,7 @@ describe('tab revisions', () => {
     id,
     name: 'Board',
     elements: [
-      { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, label },
+      { id: 'a', type: 'shape', shape: 'signpost', x: 0, y: 0, width: 10, height: 10, label },
     ],
   });
 

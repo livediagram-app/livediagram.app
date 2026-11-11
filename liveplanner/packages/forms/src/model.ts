@@ -108,16 +108,31 @@ export interface FormSection {
 export interface FormSheetDestination {
   tabId: string;
   sheetId: string;
+  // Columns every row fills without a question (forms.md "Columns filled in automatically"), after the questions'.
+  fixed?: SheetFixedColumn[];
   // The column each header lives in, by the column's id (forms.md "Linked by column, not by heading"): `#` and `at`
   // for # and Submitted, a question's id for its answers. Absent on a form from before, which finds them by header.
   columns?: Record<string, string>;
 }
+
+// A value a card field or a sheet column takes on every response without a question (docs/specs/030-forms/forms.md
+// "Filled in automatically"): a fixed value, or the day the response was filed (plus `days`), read in `tz` (the
+// browser zone of the Editor who set it; UTC when absent). Filled by the api, never sent by a respondent.
+export type SubmittedDay = { days: number; tz?: string };
+export type FixedValue =
+  { value: string | number | readonly string[] } | { submitted: SubmittedDay };
+
+export type SheetFixedColumn = { id: string; header: string } & (
+  { value: string | number } | { submitted: SubmittedDay }
+);
 
 // Where every response goes: a Board tab, a card type, a status.
 export interface FormDestination {
   tabId: string;
   typeId: string;
   status: string;
+  // The card fields every response's card gets without a question, by field id (one source per field).
+  fixed?: Readonly<Record<string, FixedValue>>;
 }
 
 // The band across the form's top (docs/specs/030-forms/forms.md "The form card"): a colour background, a

@@ -34,6 +34,11 @@ export function outline(over: Partial<AutomationOutline> = {}): AutomationOutlin
     types: ITEM_TYPES,
     statuses,
     columns: [...statuses].map(([status, name]) => ({ status, name })),
+    phases: new Map([
+      ['todo', 'todo'],
+      ['doing', 'doing'],
+      ['done', 'done'],
+    ]),
     people: [ANA, MARCO],
     labels: ['blocked', 'launch'],
     tabs: new Map([['t-form', 'Intake Form']]),

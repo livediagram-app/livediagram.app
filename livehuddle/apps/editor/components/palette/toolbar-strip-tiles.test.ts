@@ -49,7 +49,7 @@ describe('stripTilesFor', () => {
   });
 
   it("shows the tiles a mode's layout hands it, in the layout's order", () => {
-    const [a, b] = tilesForCategory('shapes');
+    const [a, b] = tilesForCategory('collab-amenities');
     const strip = stripTilesFor('popular', { hasImage: true, tiles: [b!, a!] });
     expect(strip.tiles.map((t) => t.id)).toEqual([b!.id, a!.id]);
     expect(strip.hasMore).toBe(false);
@@ -57,18 +57,17 @@ describe('stripTilesFor', () => {
 
   // docs/specs/007-editor/toolbar-layout.md: using a tile never reorders the strip.
   it('keeps the category\u2019s own order, the first tiles on the strip and the rest behind More', () => {
-    const own = tilesForCategory('shapes').map((t) => t.id);
-    const strip = stripTilesFor('shapes', NONE);
+    const own = tilesForCategory('collab-amenities').map((t) => t.id);
+    const strip = stripTilesFor('collab-amenities', NONE);
     expect(strip.hasMore).toBe(true);
     expect(strip.tiles.map((t) => t.id)).toEqual(own.slice(0, strip.tiles.length));
   });
 
   // "Fixed dividers": each category's groups, between the tiles shown.
-  it('divides shapes into its groups', () => {
-    expect([...stripTilesFor('shapes', NONE).dividersAfter]).toEqual([
-      'shapes:diamond',
-      'shapes:stadium',
-    ]);
+  it('divides Perks into its groups', () => {
+    expect([...stripTilesFor('collab-amenities', NONE).dividersAfter]).toContain(
+      'tools:umbrella-stand',
+    );
   });
 
   it('keeps every tile of a category short of the strip', () => {
@@ -79,9 +78,9 @@ describe('stripTilesFor', () => {
   });
 
   it('gives a divided category one tile less when it overflows, to make room', () => {
-    const shapes = stripTilesFor('shapes', NONE);
-    expect(shapes.hasMore).toBe(true);
-    expect(shapes.tiles).toHaveLength(STRIP_TILE_LIMIT - 1);
+    const perks = stripTilesFor('collab-amenities', NONE);
+    expect(perks.hasMore).toBe(true);
+    expect(perks.tiles).toHaveLength(STRIP_TILE_LIMIT - 1);
   });
 
   it('spends part-tile slack on a divider rather than a whole tile', () => {

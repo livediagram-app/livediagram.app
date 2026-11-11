@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createShape } from '@livehuddle/document';
+import { createSticky } from '@livehuddle/document';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 // docs/specs/004-interface-design/canvas-accessibility.md: a screen reader hears each selection change.
@@ -24,8 +24,8 @@ beforeEach(() => {
 });
 afterEach(() => vi.useRealTimers());
 
-const a = { ...createShape('square', 0, 0), label: 'Login' };
-const b = { ...createShape('square', 200, 0), label: 'Home' };
+const a = { ...createSticky(0, 0), label: 'Login' };
+const b = { ...createSticky(200, 0), label: 'Home' };
 
 function setup(elements = [a, b]) {
   announce.mockClear();
@@ -49,7 +49,7 @@ function setup(elements = [a, b]) {
 describe('useCanvasA11y announcements', () => {
   it('announces an element that is created and selected in the same event', () => {
     const selection = setup();
-    const c = { ...createShape('square', 400, 0), label: 'Checkout' };
+    const c = { ...createSticky(400, 0), label: 'Checkout' };
     act(() => {
       selection.setSelectedId(c.id);
       selection.view.rerender({ els: [a, b, c] });

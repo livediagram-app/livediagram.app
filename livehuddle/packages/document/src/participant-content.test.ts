@@ -26,7 +26,7 @@ const shape = (id: string, extra: Record<string, unknown> = {}): Element =>
   ({
     id,
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     ...box,
     label: 'Column',
     ...extra,

@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 
-// The after-write beat the Timeline re-reads on (docs/specs/013-workspace/timeline.md §2.4b): one
-// delayed run per write, bursts collapsed to one run per interval, and
-// a purge handed over at once.
+// The after-write beat a view re-reads on: one delayed run per signal, and
+// bursts collapsed to one run per interval.
 
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -45,17 +44,6 @@ describe('useAfterApiWrite', () => {
     expect(run).toHaveBeenCalledTimes(1);
     vi.advanceTimersByTime(4000);
     expect(run).toHaveBeenCalledTimes(2);
-  });
-
-  it('hands a purge over immediately and still schedules the re-read', () => {
-    const run = vi.fn();
-    renderHook(() => useAfterApiWrite(run, { delayMs: 1000, minIntervalMs: 5000 }));
-    const purge = { sourceType: 'document', sourceId: 'd1' };
-    notifyApiWrite({ purge });
-    expect(run).toHaveBeenCalledWith({ purge });
-    vi.advanceTimersByTime(1000);
-    expect(run).toHaveBeenCalledTimes(2);
-    expect(run).toHaveBeenLastCalledWith({});
   });
 
   it('does nothing while disabled, and unsubscribes on unmount', () => {

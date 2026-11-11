@@ -23,7 +23,7 @@ function board(n: number): Element[] {
     const c = i % cols;
     const r = Math.floor(i / cols);
     return {
-      ...createShape('square', c * 180 + ((i * 7) % 13), r * 140 + ((i * 11) % 17)),
+      ...createShape('focus-button', c * 180 + ((i * 7) % 13), r * 140 + ((i * 11) % 17)),
       id: `e${i}`,
       width: 120,
       height: 80,

@@ -46,7 +46,7 @@ presence, CSV, telemetry and help. The model and pure behaviour are the engine's
   `LIVE_ELEMENT_FIELDS` (`cellComments`, so undo keeps them), `tabStatsOf` (counts them) and `freshCopyFields`
   (a copy carries none). `validate-shape.ts`: rule `cellComments` (an object of at most `CELL_THREADS_MAX` threads,
   each key `isCellKey`, each `{ comments: isComment[] ≤ COMMENTS_MAX, resolved: boolean }`).
-- `shape-factory.ts`: `SHAPE_DEFAULT_SIZE['plan-sheet'] = { width: 960, height: 560 }`; `createShape` leaves
+- `shape-default-size.ts`: `SHAPE_DEFAULT_SIZE['plan-sheet'] = { width: 960, height: 560 }`; `createShape` leaves
   `planSheet` to the caller (it needs a store id).
 - `data-shapes.ts` `isPlanShape`, `colors.ts` `SELF_PAINTING_SHAPES`, `session.ts` `NON_VOTABLE_SHAPES`,
   `svg-render-describe.ts` label exclusion, `element-kind-label.ts` `SHAPE_LABELS['plan-sheet'] = 'Sheet'`.

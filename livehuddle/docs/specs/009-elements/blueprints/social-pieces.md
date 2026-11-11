@@ -109,7 +109,7 @@ Derived from [Social pieces](../social-pieces.md).
 Built in two parts: part 1 the spec, the wire, the room's rule and the model; part 2 (this state) the session, the
 drawing and the controls.
 
-- **The wire**: `game-input` and `game-event` are presence op kinds (`PRESENCE_OP_KINDS`, room-messages.ts), so the
+- **The wire**: `game-input` and `game-event` are presence op kinds (`PRESENCE_OP_KINDS`, room-op-kinds.ts), so the
   room relays them unordered and never logs them. `gateClientOp` drops either from a Viewer, and either that fails
   its parser. `game-input` joins `ROOM_SAMPLE_KINDS` (document-room.ts), so `PresenceRelay` sends it to its `tabId`'s
   sockets only and, in a room of more than 10, coalesces it to the sender's newest sample each step. The editor sends
@@ -249,7 +249,7 @@ Editor's Clear High Scores, copies starting empty, the answers flush's no-op and
   table and the scores rebuild the same one as new objects, so every later flush (any Participant's reaction, pin or
   press on the tab) rewrote the row for nothing: `applyArcadeEvents` hands back the element itself when the table it
   ends on holds the same scores in the same order (`sameArcadeTable`), so `writeParticipantAnswers` skips the write.
-- **The room's rule**: `arcade-score` joins `PARTICIPATION_DELTA_KINDS` (room-messages.ts); `answersAsSelf` admits
+- **The room's rule**: `arcade-score` joins `PARTICIPATION_DELTA_KINDS` (room-op-kinds.ts); `answersAsSelf` admits
   it when `score.by` equals the session's non-empty adder key. `arcade-clear` is not a participation delta, so the
   gate drops a Participant's; an Editor's relays as every Editor delta does. A Viewer's either is dropped.
 

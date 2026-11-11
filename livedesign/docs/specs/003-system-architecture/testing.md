@@ -268,7 +268,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     from `@liveworkspace/index-app/testing`), the `DesignRoom` Durable Object's rules, ledger
     and multiplayer paths, every route family (designs, tabs, share, images,
     thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
-    events, AI), the Timeline's writers and its catalogue
+    events, AI), the event log's writers and its catalogue
     against its spec, the image reference index, email lifecycle, the OpenAPI
     manifest ↔ dispatch drift guards, response helpers, MIME sniffing.
   - `packages/api-schema`: the wire contracts both sides share: the SHA-256
@@ -280,8 +280,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     view-model copy, `?q=` and carry-over, the telemetry facets.
   - `packages/ui`: the shared primitives (Button, Tooltip, HoverCard, hints),
     appearance boot + store, SEO helpers, icons and glyph ink, optical centring,
-    and the Timeline's cards, stacking, grouping, tones and categories, rendered
-    in jsdom where they hold state.
+    rendered in jsdom where they hold state.
   - `../packages/icons`: the icon resolver, catalogues, markup builders, stroke
     weight, cap-band and ink centring, and the vendored Lucide set.
   - `packages/template-previews`: preview SVGs, their bounds and motion. The
@@ -334,11 +333,8 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   what they exercise; flipping the whole workspace to `jsdom` to serve the
   files that render would tax every other suite for nothing.
 
-  This exists because real bugs could not be caught without it in the
-  Timeline, whose state lives in hooks rather than in pure helpers:
-  `useTimelineFeed.test.ts` (in `@liveworkspace/explorer`) covers a failed Show More that swapped every
-  event already shown for an error ([Timeline](../013-workspace/timeline.md)). It fails if its
-  fix is reverted.
+  This exists because real bugs could not be caught without it, in state that
+  lives in hooks rather than in pure helpers.
 
   Both workspaces load the same setup file (`react-cleanup` out of
   `@liveworkspace/vitest-config`, one copy for the repo rather than one per

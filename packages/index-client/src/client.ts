@@ -47,15 +47,16 @@ import type {
   TeamAuditCsv,
   TeamAuditPage,
   TeamAuditQuery,
-  TimelinePage,
-  TimelineQuery,
-  AppTimelineEvent,
-  AppPersonEvent,
+  HistoryPage,
+  HistoryQuery,
+  AppEvent,
   UpdateFolderInput,
   UpdateItemInput,
   UpdateShareLinkInput,
 } from './types';
 import type {
+  AutomationSend,
+  AutomationSendResult,
   CardMove,
   CreateWebhookInput,
   UpdateWebhookInput,
@@ -211,7 +212,7 @@ export function createIndexClient({
     updateItem: (id: string, input: UpdateItemInput) =>
       call<{ item: Item }>(`/items/${enc(id)}`, { method: 'PATCH', body: input }),
     // To the Trash, or with `permanent` gone for good.
-    // `reason: 'offline'` (with `permanent`): taken offline into one browser, which the Timeline says.
+    // `reason: 'offline'` (with `permanent`): taken offline into one browser.
     deleteItem: (
       id: string,
       options: { permanent?: boolean; reason?: 'deleted' | 'empty' | 'offline' } = {},
@@ -330,13 +331,10 @@ export function createIndexClient({
     takeBackConnection: (id: string, grant: string) =>
       call<void>(`/connections/${enc(id)}`, { method: 'DELETE', grant }),
 
-    // Timeline: newest first, a page at a time.
-    timeline: (query: TimelineQuery = {}, options: RequestOptions = {}) =>
-      call<TimelinePage>('/timeline', { query, signal: options.signal }),
-    markTimelineSeen: () => call<{ seenAt: number }>('/timeline/seen', { method: 'POST' }),
-    // Remove from Timeline: off this person's Timeline only (up to TIMELINE_DISMISS_MAX ids).
-    dismissTimelineEvents: (ids: readonly string[]) =>
-      call<void>('/timeline/dismiss', { method: 'POST', body: { ids } }),
+    // One item's History: its events of the last EVENT_RETENTION_MS, newest first, a page at a time (HISTORY_PAGE
+    // by default, at most HISTORY_LIMIT_MAX). Its owner's and its team's only; anyone else is 404.
+    itemHistory: (itemId: string, query: HistoryQuery = {}, options: RequestOptions = {}) =>
+      call<HistoryPage>(`/items/${enc(itemId)}/history`, { query, signal: options.signal }),
 
     // Webhooks (webhooks.md): one document's, for someone who can edit all of it. `share`: the link the person
     // reaches it through, when it is not one they opened before (the index also finds those under Shared).
@@ -448,6 +446,20 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
     });
     if (!res.ok) throw await failed(res);
   }
+  // A POST of one of the index's own `/app/...` paths, answering its JSON.
+  async function post<T>(path: string, body: unknown): Promise<T> {
+    const res = await (doFetch ?? fetch)(`${base}/app${path}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        [INDEX_APP_HEADER]: app,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw await failed(res);
+    return (await res.json()) as T;
+  }
   // A read; null when the index answers 404.
   async function get<T>(path: string): Promise<T | null> {
     const res = await (doFetch ?? fetch)(`${base}/app${path}`, {
@@ -477,17 +489,21 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
           `/items/${enc(itemId)}/forms/${enc(tabId)}/seen/${enc(personId)}`,
         )
       )?.seen ?? 0,
-    // Up to APP_EVENTS_MAX Timeline events about one item. Safe to send again: an `edited` is one event per
-    // person and day whatever the count.
-    pushEvents: (itemId: string, events: readonly AppTimelineEvent[]) =>
+    // Up to APP_EVENTS_MAX events about one item, for its History, webhooks and Most Used. Safe to send again: an
+    // `edited` is one event per person and day whatever the count.
+    pushEvents: (itemId: string, events: readonly AppEvent[]) =>
       put(`/items/${enc(itemId)}/events`, { events }),
-    // Up to APP_EVENTS_MAX Timeline events about people rather than an item (images uploaded). Safe to send
-    // again only as a count: each report adds its `count` to the person's event for that day.
-    pushPersonEvents: (events: readonly AppPersonEvent[]) => put('/people/events', { events }),
     // Up to CARD_MOVES_MAX cards that changed status (liveplanner), for the item's scope's webhooks. Safe to send
     // again: each is one delivery per webhook.
     pushCardMoves: (itemId: string, moves: readonly CardMove[]) =>
       put(`/items/${enc(itemId)}/card-moves`, { moves }),
+    // Up to AUTOMATION_SENDS_MAX messages a plan's automation rules post through its own webhooks (liveplanner), each
+    // answered queued or refused, in the order sent. Safe to send again: a key already queued answers queued.
+    pushAutomationSends: (
+      itemId: string,
+      sends: readonly AutomationSend[],
+    ): Promise<{ results: AutomationSendResult[] }> =>
+      post(`/items/${enc(itemId)}/automation-sends`, { sends }),
     // Connected tabs (connected-tabs.md): the tab holding a connection is in the host now (confirm), or has left it
     // (remove, which deletes the connection's pass). Each answers 204 whether or not it matched.
     confirmConnection: (hostId: string, connectionId: string, tabId: string) =>
@@ -496,21 +512,8 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
       send('DELETE', appConnectionPath(hostId, connectionId, tabId)),
     // Where up to COMMUNITY_STATES_MAX Community posts' items stand (the Community's sweep), one answer per post, in
     // order. Read only.
-    communityStates: async (
-      posts: readonly CommunityStateAsk[],
-    ): Promise<CommunityStateAnswer[]> => {
-      const res = await (doFetch ?? fetch)(`${base}/app/community/states`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${key}`,
-          [INDEX_APP_HEADER]: app,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ posts }),
-      });
-      if (!res.ok) throw await failed(res);
-      return ((await res.json()) as { states: CommunityStateAnswer[] }).states;
-    },
+    communityStates: async (posts: readonly CommunityStateAsk[]): Promise<CommunityStateAnswer[]> =>
+      (await post<{ states: CommunityStateAnswer[] }>('/community/states', { posts })).states,
   };
 }
 

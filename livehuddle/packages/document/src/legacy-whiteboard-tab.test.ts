@@ -10,7 +10,7 @@ const board = (over: Record<string, unknown> = {}) =>
 const shape = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 's',
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 10,
@@ -100,14 +100,14 @@ describe('migrateWhiteboardKind', () => {
     expect(console.info).not.toHaveBeenCalled();
   });
 
-  it('gives an unpainted marker shape an Ink outline, Ink label and no fill', () => {
-    for (const kind of ['square', 'circle', 'triangle', 'diamond'] as const) {
-      const out = migrated(shape({ shape: kind })) as ShapeElement;
-      expect(out.penColour).toBe('ink');
-      expect(out.penTextColour).toBe('ink');
-      expect(out.fillColor).toBe('transparent');
-      expect(out.strokeColor).toBeUndefined();
-      expect(out.textColor).toBeUndefined();
+  // The board's inked square, circle, triangle and diamond are retired elements now (part 5): kept as stored.
+  it('leaves an unpainted shape exactly as stored, the same object, with no ink written on', () => {
+    for (const kind of ['focus-button', 'square', 'circle', 'triangle', 'diamond', 'cylinder']) {
+      const el = { ...shape(), shape: kind } as unknown as Element;
+      const out = migrated(el);
+      expect(out, kind).toBe(el);
+      expect(out, kind).not.toHaveProperty('penColour');
+      expect(out, kind).not.toHaveProperty('fillColor');
     }
   });
 
@@ -116,19 +116,6 @@ describe('migrateWhiteboardKind', () => {
     expect(migrated(painted)).toEqual(painted);
     const named = shape({ penColour: 'blue', penTextColour: 'red', fillColor: 'transparent' });
     expect(migrated(named)).toEqual(named);
-  });
-
-  it('fills in only what a partly painted shape lacks', () => {
-    const out = migrated(shape({ strokeColor: '#ff0000' })) as ShapeElement;
-    expect(out.strokeColor).toBe('#ff0000');
-    expect(out.penColour).toBeUndefined();
-    expect(out.fillColor).toBe('transparent');
-    expect(out.penTextColour).toBe('ink');
-  });
-
-  it('leaves a shape kind the board never inked as it was', () => {
-    const cylinder = shape({ shape: 'cylinder' });
-    expect(migrated(cylinder)).toEqual(cylinder);
   });
 
   it('leaves a stored arrow, line, path and pen stroke exactly as stored, the same object', () => {

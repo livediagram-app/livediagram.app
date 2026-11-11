@@ -132,7 +132,7 @@ originalName: originalNameOf(...), sha256 })`. The service answers a known hash 
    `upload_conflict`). A 401 or 5xx from it → 503 `images_unavailable`, logged.
 8. `rememberMediaOwner(image.id, mediaOwner(owner))`.
 9. Not deduped: `waitUntil(reportImagesUploaded(index, owner))`
-   ([Timeline](../../013-workspace/timeline.md)). 200 `{ image: imageSummary(image), deduped }`.
+   ([History](../../013-workspace/history.md)). 200 `{ image: imageSummary(image), deduped }`.
 
 Invariants:
 

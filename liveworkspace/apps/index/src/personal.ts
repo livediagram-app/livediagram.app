@@ -1,7 +1,7 @@
 // A person's own things about items (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Folders, favourites,
 // defaults"): favourites, what they hid from Recent, and the folder New files each kind of item into.
 
-import { personalScope, scopesOf, type Person } from './auth';
+import { scopesOf, type Person } from './auth';
 import { decodeCursor, encodeCursor, isId, parseLimit } from './codec';
 import { DEFAULT_KEY_MAX } from './config';
 import type { PersonContext } from './context';
@@ -11,7 +11,7 @@ import { reachableFolder } from './folders';
 import { badRequest, json, noContent, notFound, readObject } from './http';
 import { archivedRefusal, isArchived } from './archive';
 import { directAccess, getItemRow, LIVE_LINK } from './rows';
-import { eventStatements } from './timeline';
+import { eventStatements } from './events';
 
 const isForeignKeyError = (err: unknown) => String(err).includes('FOREIGN KEY');
 
@@ -75,7 +75,7 @@ export async function handleFavourites(ctx: PersonContext): Promise<Response> {
       if (!reach) return notFound();
       const now = Date.now();
       try {
-        // A new favourite is on the person's own Timeline (theirs alone), when they reach the item.
+        // A new favourite is in the item's History for the person alone, when they reach the item.
         await db.batch([
           db
             .prepare(
@@ -87,7 +87,6 @@ export async function handleFavourites(ctx: PersonContext): Promise<Response> {
             type: 'favourited',
             actorId: person.id,
             at: now,
-            scope: personalScope(person.id),
             when: {
               sql: `(SELECT created_at FROM favourites WHERE person_id = ? AND item_id = items.id) = ?
                     AND (scope IN (SELECT value FROM json_each(?))

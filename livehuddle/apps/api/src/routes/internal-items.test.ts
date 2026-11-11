@@ -72,7 +72,7 @@ const comment = (id: string, authorId: string): Comment => ({
 const commented = (comments: Comment[]): ShapeElement => ({
   id: 'box',
   type: 'shape',
-  shape: 'square',
+  shape: 'signpost',
   x: 0,
   y: 0,
   width: 100,

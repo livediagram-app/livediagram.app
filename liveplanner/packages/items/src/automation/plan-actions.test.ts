@@ -320,7 +320,15 @@ describe('If / Else, failing and the action limit', () => {
         { kind: 'action', ok: false, text: 'Column qa is gone' },
       ],
       // The Flag before it stays done; the Unflag after it never ran.
-      done: { patch: { set: { flagged: true } }, comments: [], created: [], emails: [] },
+      done: {
+        patch: { set: { flagged: true } },
+        comments: [],
+        created: [],
+        emails: [],
+        related: [],
+        sends: [],
+        turns: 0,
+      },
     });
   });
 

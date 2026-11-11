@@ -1,7 +1,6 @@
 // The secrets behind team links (teams.ts), and declining an invitation from its email.
 
 import type { SettingsApp } from '../settings.ts';
-import { teamScopes } from '../index-timeline.ts';
 import {
   appOrNull,
   BUMP,
@@ -148,7 +147,6 @@ export async function declineByToken(
         teamName: row.teamName,
         actor: { id: null, name: row.email },
         at: now,
-        scopes: teamScopes(row.teamId, []),
         detail: { memberName: row.email },
       },
       memberGuard(row.id, 'declined', now),

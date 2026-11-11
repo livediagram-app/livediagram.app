@@ -12,9 +12,11 @@ const staticImports = (src: string) =>
   [...src.matchAll(/^(?:import|export)\s+(?!type\b)[^;]*?from\s+'([^']+)'/gms)].map((m) => m[1]!);
 
 describe('the editor’s first load', () => {
-  // The editor view, and the start panels it always mounts.
+  // The editor view (its bars and hooks too), and the start panels it always mounts.
   const editorImports = () => [
     ...staticImports(read('app/project/[id]/EditorView.tsx')),
+    ...staticImports(read('app/project/[id]/EditorViewBars.tsx')),
+    ...staticImports(read('app/project/[id]/editor-view-hooks.ts')),
     ...staticImports(read('components/start/EditorStartPanels.tsx')),
   ];
 

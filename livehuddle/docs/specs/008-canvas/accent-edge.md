@@ -1,5 +1,11 @@
 # Accent edge
 
+> **Gone from livehuddle** (Work Tracker #459, part 5): the accent edge applied to the Square, the Stadium and the Card,
+> and all three are retired kinds now ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine)), so no element livehuddle has takes one. A stored
+> `accentEdge` stays on its retired element exactly as stored, never drawn. livediagram keeps it, and
+> [its spec there](../../../../livediagram/docs/specs/008-canvas/accent-edge.md) is the one to read and change. The
+> rest of this page describes it as livediagram has it.
+
 ## What
 
 A coloured bar along one edge of a box: **Left**, **Top** or **Bottom**. It is a style option on existing elements,

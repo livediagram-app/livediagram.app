@@ -65,6 +65,8 @@
 
 ## diagram-lint
 
+Gone from livehuddle (#459, part 5): kept as a record of the blueprint as it was.
+
 - [x] Domain and naming
 - [x] Behaviour and state
 - [x] Interfaces and contracts

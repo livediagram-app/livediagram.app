@@ -70,3 +70,36 @@ describe('FormStatusBar problems', () => {
     expect(screen.queryByRole('button', { name: /Problems with this Form/ })).toBeNull();
   });
 });
+
+// Problems with this Form (docs/specs/030-forms/forms.md "Columns follow the card type"): a warning is listed with
+// the problems, with its fix, and counted only where it is given.
+
+describe('FormProblems with a warning', () => {
+  it('lists the warning with Choose Where Responses Go', () => {
+    const fix = vi.fn();
+    render(
+      <FormProblems
+        title="Problems with this Form"
+        problem={null}
+        notReady={[]}
+        warnings={['Its column isn’t one of Work Item’s states.']}
+        onFixDestination={fix}
+      />,
+    );
+    expect(screen.getByText('Its column isn’t one of Work Item’s states.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Choose Where Responses Go' }));
+    expect(fix).toHaveBeenCalledTimes(1);
+  });
+
+  it('draws nothing with nothing to list, and counts warnings only when given', () => {
+    const { container } = render(<FormProblems title="T" problem={null} notReady={[]} />);
+    expect(container.textContent).toBe('');
+    expect(formProblemCount(null, [])).toBe(0);
+    expect(formProblemCount('no_destination', [], ['w'])).toBe(2);
+  });
+
+  it('lists a warning without a fix when none is offered', () => {
+    render(<FormProblems title="T" problem={null} notReady={[]} warnings={['w']} />);
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+});

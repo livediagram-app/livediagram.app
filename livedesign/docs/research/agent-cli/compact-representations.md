@@ -425,7 +425,7 @@ tab 0b34 "Checkout platform" · since your last read 3m ago · by Sam, Webber
 ```
 
 The api has no tab revision history today (the element-level Activity panel was removed; see
-[Timeline](../../specs/013-workspace/timeline.md)). The CLI can diff without an api change by keeping the last
+[Timeline](../../specs/013-workspace/history.md)). The CLI can diff without an api change by keeping the last
 tab it read in its cache directory (`--since last`, the default). A server revision counter would add
 `--since <rev>` across machines later.
 

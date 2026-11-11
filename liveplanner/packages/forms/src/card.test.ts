@@ -212,3 +212,49 @@ describe('helpers', () => {
     expect(readFromForm(4)).toBeNull();
   });
 });
+
+// Fields set automatically (docs/specs/030-forms/forms.md "Filled in automatically"): filled last, from the api's clock.
+describe('responseCard with fields set automatically', () => {
+  const at = Date.UTC(2026, 10, 11, 9, 0);
+  const t: ItemTypeDef = {
+    ...type,
+    fields: [...type.fields, 'due', 'f-kind'],
+    custom: [...type.custom!, { id: 'f-kind', label: 'Kind', kind: 'choice', options: ['Bug'] }],
+  };
+  const withFixed = (
+    fixed: NonNullable<FormDefinition['destination']>['fixed'],
+  ): FormDefinition => ({
+    ...form([Q('pick', 'short', { goesTo: { to: 'field', fieldId: 'f-pick' } })]),
+    destination: { tabId: 'board', typeId: 'guest', status: 'new~1', fixed },
+  });
+
+  it('fills set values, dates from when it is made, and wins over an answer', () => {
+    const card = responseCard(
+      withFixed({
+        'f-kind': { value: 'bug' },
+        due: { submitted: { days: 7 } },
+        'f-pick': { value: 'Always' },
+        'f-gone': { value: 'x' },
+      }),
+      'tab-f',
+      answers({ pick: 'typed' }),
+      t,
+      3,
+      false,
+      at,
+    );
+    expect(card.fields).toMatchObject({ 'f-kind': 'Bug', due: '2026-11-18', 'f-pick': 'Always' });
+    expect(card.fields).not.toHaveProperty('f-gone');
+  });
+
+  it('reads the clock when no time is given', () => {
+    const card = responseCard(
+      withFixed({ due: { submitted: { days: 0 } } }),
+      'tab-f',
+      answers({}),
+      t,
+      1,
+    );
+    expect(card.fields['due']).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});

@@ -63,7 +63,7 @@ describe('validateEditOperations', () => {
       errorsOf([
         { op: 'connect', from: 'n3', to: 'n4' },
         { op: 'rewire', target: 'a3', to: 'n5' },
-        { op: 'insert', kind: 'diamond', between: ['n3', 'n4'] },
+        { op: 'insert', kind: 'directory', between: ['n3', 'n4'] },
       ]).map((e) => [e.code, e.details[0]]),
     ).toEqual([
       ['unknown_operation', '"connect" is not an operation'],
@@ -76,7 +76,7 @@ describe('validateEditOperations', () => {
     const input = [
       {
         op: 'add',
-        kind: 'square',
+        kind: 'sticky',
         id: 'verify',
         fields: { label: 'Verify' },
         place: { rel: 'below', ref: 'n3', gap: 40 },
@@ -86,7 +86,7 @@ describe('validateEditOperations', () => {
       { op: 'move', target: 'type:sticky', by: [10, -5] },
       { op: 'order', target: 'n3', to: 'front' },
       { op: 'order', target: 'n3', below: 'n4' },
-      { op: 'layout', target: 'type:square' },
+      { op: 'layout', target: 'type:sticky' },
       { op: 'test', target: 'n3', fields: { label: 'Login' } },
     ];
     expect(validateEditOperations(input)).toEqual({ operations: input });
@@ -96,7 +96,7 @@ describe('validateEditOperations', () => {
     expect(
       errorsOf([
         { op: 'add' },
-        { op: 'add', kind: 'square', element: {} },
+        { op: 'add', kind: 'sticky', element: {} },
         { op: 'move', target: 'n1' },
         { op: 'order', target: 'n1', to: 'front', above: 'n2' },
         { op: 'add', element: {}, id: 'x' },
@@ -113,20 +113,20 @@ describe('validateEditOperations', () => {
   it('checks each placement', () => {
     expect(
       errorsOf([
-        { op: 'add', kind: 'square', place: 'below n3' },
-        { op: 'add', kind: 'square', place: { rel: 'at', x: 1, y: 2, ref: 'n3' } },
-        { op: 'add', kind: 'square', place: { rel: 'at', x: 1 } },
-        { op: 'add', kind: 'square', place: { rel: 'beside', ref: 'n3' } },
-        { op: 'add', kind: 'square', place: { rel: 'below', ref: 'n3', x: 1 } },
-        { op: 'add', kind: 'square', place: { rel: 'below' } },
-        { op: 'add', kind: 'square', place: { rel: 'below', ref: 'n3', gap: -1 } },
-        { op: 'add', kind: 'square', place: { rel: 'below', ref: 'n3', gap: 2.5 } },
+        { op: 'add', kind: 'sticky', place: 'below n3' },
+        { op: 'add', kind: 'sticky', place: { rel: 'at', x: 1, y: 2, ref: 'n3' } },
+        { op: 'add', kind: 'sticky', place: { rel: 'at', x: 1 } },
+        { op: 'add', kind: 'sticky', place: { rel: 'beside', ref: 'n3' } },
+        { op: 'add', kind: 'sticky', place: { rel: 'below', ref: 'n3', x: 1 } },
+        { op: 'add', kind: 'sticky', place: { rel: 'below' } },
+        { op: 'add', kind: 'sticky', place: { rel: 'below', ref: 'n3', gap: -1 } },
+        { op: 'add', kind: 'sticky', place: { rel: 'below', ref: 'n3', gap: 2.5 } },
       ]).map((e) => e.details[0]),
     ).toEqual([
       'member "place": expected { "rel", "ref" } or { "rel": "at", "x", "y" }',
       'member "place": expected no "ref" with "at"',
       'member "place": expected "x" and "y" numbers with "at"',
-      'member "place": expected "rel" one of right-of, left-of, above, below, after, align, at',
+      'member "place": expected "rel" one of right-of, left-of, above, below, align, at',
       'member "place": expected no "x" with "below"',
       'member "place": expected "ref" a non-empty selector',
       'member "place": expected "gap" a whole number from 0 to 2000',
@@ -160,7 +160,7 @@ describe('validateEditOperations', () => {
         { op: 'set', target: 'n1', fields: [] },
         { op: 'set', target: 'n1' },
         { op: 'rm', target: 'n1', all: 'yes' },
-        { op: 'add', element: 'square' },
+        { op: 'add', element: 'sticky' },
         { op: 'move', target: 'n1', by: [1] },
         { op: 'order', target: 'n1', to: 'middle' },
       ]).map((e) => [e.operation, e.details[0]]),

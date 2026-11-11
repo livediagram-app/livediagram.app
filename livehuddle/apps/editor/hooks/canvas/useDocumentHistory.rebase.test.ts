@@ -72,7 +72,7 @@ function randomElement(rand: () => number, id = ids[Math.floor(rand() * ids.leng
   return {
     id,
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     x: Math.floor(rand() * 100),
     y: Math.floor(rand() * 100),
     width: 10,

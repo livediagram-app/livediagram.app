@@ -42,9 +42,9 @@ team takes effect when the person's token is next minted.
 
 **The team audit log.** A team's admins can look back on who joined, left or changed role, who shared a team document or
 made or revoked its links, which documents came in, went out or were deleted, and who added or removed its webhooks:
-an append-only log the index keeps for a year beside the Timeline, written in the same batch as each event
+an append-only log the index keeps for a year beside its event log, written in the same batch as each event
 ([../004-index/team-audit-log.md](../004-index/team-audit-log.md)). The team events below reach it through the same
-`POST /internal/timeline`; API token events never do (a token is its owner's, not the team's). When an admin reads
+`POST /internal/events`; nothing about an API token does (a token is its owner's, not the team's). When an admin reads
 it, the index names the people in it by asking `POST /api/account/index/people {ids}` (with the key it shares with
 accounts): each account's display name as it is now, up to 100 a call, so a member who has left is still named.
 
@@ -211,37 +211,32 @@ message, so it can't be turned off.
   on liveworkspace.app, or before the sign-up app was recorded, isn't counted. The events go with the
   run's one batch per app.
 
-## On the Timeline
+## Team events for the audit log
 
-Teams and API tokens are run here, but their news belongs on the one Timeline the index keeps for every
-app (docs/one-explorer-contracts.md "Timeline"). Each event is shown under All apps and in every app's
-own view, marked as liveworkspace's:
+Teams are run here, but their audit log is the index's, beside its event log for every app
+([one-explorer-contracts.md "The event log"](../004-index/one-explorer-contracts.md#the-event-log)). So this Worker
+tells the index what happened to a team, marked as liveworkspace's:
 
-| Event                 | When                                                       | Who sees it                         |
-| --------------------- | ---------------------------------------------------------- | ----------------------------------- |
-| `team_invite_sent`    | An admin invites an address                                | The team, and the invitee if known  |
-| `team_joined`         | An invitation is accepted, or someone joins by the link    | The team and the person joining     |
-| `team_declined`       | An invitation is turned down, on the site or from email    | The team (and the person declining) |
-| `team_role_changed`   | An admin makes a member an admin, or an admin a member     | The team and that member            |
-| `team_member_removed` | An admin removes a member, or a member leaves              | The team and that member            |
-| `team_renamed`        | The team's name changes                                    | The team                            |
-| `team_deleted`        | An admin deletes the team, or its last member leaves       | Everyone who was in it              |
-| `token_created`       | A token is made                                            | Its owner                           |
-| `token_revoked`       | A token is revoked, from the account page or by its secret | Its owner                           |
-| `token_expiring`      | Once, in the daily run, for a live token within its week   | Its owner, dated at the expiry      |
+| Event                 | When                                                    |
+| --------------------- | ------------------------------------------------------- |
+| `team_invite_sent`    | An admin invites an address                             |
+| `team_joined`         | An invitation is accepted, or someone joins by the link |
+| `team_declined`       | An invitation is turned down, on the site or from email |
+| `team_role_changed`   | An admin makes a member an admin, or an admin a member  |
+| `team_member_removed` | An admin removes a member, or a member leaves           |
+| `team_renamed`        | The team's name changes                                 |
 
-A withdrawn invitation, a cleared refusal, and an account closing take nothing onto the Timeline.
+A team deleted, a withdrawn invitation, a cleared refusal, an account closing and anything about an API token
+send nothing: none of them is in a team's audit log.
 
-Each event is written to `index_timeline_outbox` in the same batch as its change, so a change is never
-recorded without its event, and an event is never recorded for a change that didn't happen (a token
-refused over the limit, a second answer to one invitation). After the response, a request's events go to
-the index in one call (`POST /internal/timeline`, with the merge key, at most 100 a call). The
-15-minute cron sends again whatever is still waiting, up to 10 calls a run. An event's id is stable, so
+Each event names its team (`detail.teamId`) and is written to the outbox (`index_events_outbox`) in the same
+batch as its change, so a change is never recorded without its event, and an event is never recorded for a change
+that didn't happen (a second answer to one invitation). After the response, a request's events go to the index in
+one call (`POST /internal/events`, with the merge key, at most 100 a call). The 15-minute cron sends again whatever is still waiting, up to 10 calls a run. An event's id is stable, so
 sending it twice changes nothing; one the index keeps refusing is dropped after 96 tries. At most 5,000
 events wait: each cron run first drops the oldest beyond that, so with no index configured, or one down for
-days, the outbox stays bounded (`trimTimelineOutbox`). An event carries
-the name of the person who acted, and for a member's event their name or address, so the Timeline can
-say who without asking accounts.
+days, the outbox stays bounded (`trimEventOutbox`). An event carries the name of the person who acted, and for a
+member's event their name or address, so the audit log can say who without asking accounts.
 
 ## Guests
 
@@ -987,7 +982,7 @@ has no name at all); then the guest's profile goes. Both run beside the settings
 
 Someone who signs in with Google shows their Google profile picture on their avatar, in every app and on
 liveworkspace.app: the account menu, Settings › Profile, presence avatars, cursors, comments, the Explorer's Inbox,
-Timeline and history, team lists and the Share dialog. Everyone else, and anyone whose picture can't be shown,
+an item's History, team lists and the Share dialog. Everyone else, and anyone whose picture can't be shown,
 shows the initials on their colour, exactly as before. This brings back what livediagram, liveplanner,
 livedocuments and livedesign showed under Clerk (`315dcc55b`), which went when they moved onto liveworkspace
 accounts (`b964b391d`, `46ae449b1`, `ff9a2d834`, `ff2ef0123`), since the accounts Worker kept no picture then.
@@ -1044,11 +1039,16 @@ per guest), and so does an app reading the guest's settings or writing its profi
 already knows is kept alive however it came by the id. A guest still using an app gets a fresh token before its 45 days are up (a year for
 one minted before 2026-11), so it is never more than a year unseen. Once a guest id has gone 400 days unseen its token has lapsed and browsers have
 dropped its cookie (Chrome keeps one at most 400 days), so no app can be handed it again, and the
-daily run (the hourly cron's 09:17 UTC run, `src/guest-sweep.ts`) deletes its settings and profile: up to 500 guests a
-run, the longest unseen first, checked again in the deletes so a guest seen meanwhile keeps everything.
-Its items stay in the index, as every guest's do, until someone deletes them
-([one-explorer-contracts.md](../004-index/one-explorer-contracts.md#guests)). Signing in removes the guest's stamp
-with the rest of the guest.
+daily run (the hourly cron's 09:17 UTC run, `src/guest-sweep.ts`) deletes its settings and profile and, in the same
+batch, writes a purge request for it to `pending_purges` (no teams: a guest runs none): up to 500 guests a run, the
+longest unseen first, checked again in every statement so a guest seen meanwhile keeps everything. The 15-minute cron
+sends the request to the index like a closed account's ([Closing an account](#closing-an-account) step 5), and the
+index deletes every item the guest owns, in every app and the Trash, with its content, for good
+([one-explorer-contracts.md](../004-index/one-explorer-contracts.md#guests)). Nobody could reach those items as their
+owner again, and kept forever they would only grow the storage bill. An item a guest shared goes too, though people
+with its link could still open it: a visit through a link is not the guest being seen. Each app's help says so
+(Guest identity, Deleting your data). Signing in removes the guest's stamp with the rest of the guest, so a guest who
+becomes an account is never swept; their items are the account's by then.
 
 ## Names and other typed text
 
@@ -1299,7 +1299,7 @@ nothing happens: the code is sent and checked first, by the same app's server
    [data-export.md](data-export.md#the-service)), best effort as Drive's is.
 
 After step 4 no accounts row holds the account's id but three that are there to finish the close or are about to
-go: its `pending_purges` row (cleared once the index takes it, step 5), Timeline events in `index_timeline_outbox`
+go: its `pending_purges` row (cleared once the index takes it, step 5), team events in `index_events_outbox`
 (cleared once the index takes them), and its deletion code in `verification` (spent by the close itself). Every
 other row naming it either has a foreign key that cascades or sets null with the user (sessions and, through them,
 `sign_in_handoff`; linked sign-ins; OAuth tokens, consents and clients; API tokens; push devices; `account_app`;

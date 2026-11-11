@@ -117,7 +117,7 @@ Owner-only routes require a resolved owner (see Auth above). When none resolves,
 | PUT         | `/api/documents/:id/tabs/:tabId/name`                                             | owner/share/team (edit)         | Body `{ name }`: renames the tab without a whole-tab save, relayed as the `tab-meta` an editor's rename sends; an API-token script's tab rename                                                                                                                                       |
 | POST        | `/api/documents/:id/changesets/:changesetId/revert`                               | owner/share/team (edit)         | Applies the inverse as a new changeset; elements changed since are kept and listed                                                                                                                                                                                                    |
 | PUT, DELETE | `/api/documents/:id/tabs/:tabId/presence`                                         | owner/share/team (read)         | An agent's presence on a tab ([Agent presence](../024-agents/agent-presence.md)); tokens only                                                                                                                                                                                         |
-| GET         | `/api/documents/:id/tabs/:tabId?view=<name>`                                      | owner/share/team (read)         | A [view](../024-agents/document-views.md) as `text/plain` (`json=1` for JSON), `view=lint` for the [diagram lint](../024-agents/diagram-lint.md) (only `json` applies); `GET /api/documents/:id?view=overview` for the overview                                                       |
+| GET         | `/api/documents/:id/tabs/:tabId?view=<name>`                                      | owner/share/team (read)         | A [view](../024-agents/document-views.md) as `text/plain` (`json=1` for JSON), `view=lint` is refused as an unknown view since the [diagram lint](../024-agents/diagram-lint.md) left (#459 part 5); `GET /api/documents/:id?view=overview` for the overview                          |
 | GET         | `/api/documents/:id/tabs/:tabId/render.svg`                                       | owner/share/team (read)         | The tab drawn by the shared renderer                                                                                                                                                                                                                                                  |
 | GET         | `/api/documents/:id/comments?status=open\|resolved\|all`                          | owner/share/team (read)         | Threads across tabs, with each element's ref and label                                                                                                                                                                                                                                |
 | POST        | `/api/documents/:id/tabs/:tabId/comments/:commentId/reply`, `/resolve`, `/reopen` | owner/share/team (view or edit) | The thread verbs beside add; each relayed as an `el-delta`                                                                                                                                                                                                                            |
@@ -217,7 +217,7 @@ records it so.
   the editor's to record, and a re-commit of an id the index already holds is no making, so neither is recorded
   here.
 - The create itself is the canvas's making, not an edit: the canvas's room records no editor for
-  `POST /api/documents` ([Timeline](../013-workspace/timeline.md)), so its seeded tabs never count a use day that
+  `POST /api/documents` ([History](../013-workspace/history.md)), so its seeded tabs never count a use day that
   `markUsed: false` withheld.
 
 ### Documents in the Trash
@@ -473,7 +473,7 @@ Edits and presence propagate as `op` messages. The room is **not** a stateless r
 
 ### Op classes
 
-Every op kind belongs to exactly one of three lists in `@livehuddle/api-schema` (`packages/api-schema/src/room-messages.ts`), and the class decides its ordering, its role gate, and whether a client may send it at all. The room reads `op.kind` to classify; the payload stays `op: unknown` on the wire.
+Every op kind belongs to exactly one of three lists in `@livehuddle/api-schema` (`packages/api-schema/src/room-op-kinds.ts`), and the class decides its ordering, its role gate, and whether a client may send it at all. The room reads `op.kind` to classify; the payload stays `op: unknown` on the wire.
 
 - **Presence** (`PRESENCE_OP_KINDS`): ephemeral, mutate nothing. Relayed unordered (no `seq`), never logged, never replayed, from **any** connected session, so a view-only visitor still shows peers their cursor, selection, laser, walking character and tab.
 - **Mutation** (`MUTATION_OP_KINDS`): change the document. Relayed **only from a session whose verified role is `edit`**; each gets a monotonic `seq` within the room's `epoch` and a slot in the catch-up log.

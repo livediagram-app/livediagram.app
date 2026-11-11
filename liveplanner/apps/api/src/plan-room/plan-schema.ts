@@ -22,7 +22,7 @@ import { CARD_THREADS_SCHEMA } from './card-thread-schema';
 import { IMAGE_REFS_SCHEMA } from './image-refs';
 import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
 import { ITEM_IMPORTS_SCHEMA } from './item-imports-schema';
-import { AUTOMATIONS_SCHEMA } from './automations/automation-schema';
+import { AUTOMATIONS_SCHEMA, automationsV19 } from './automations/automation-schema';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -200,7 +200,7 @@ END;
 -- triggers below so no write path can forget it, drained by the room's alarm.
 --   tab:     a tab's comment threads and actions (the Inbox), and a Form tab's name and heading on its link
 --   summary: the plan's listing summary and its last change, for the Explorer
---   edit:    who wrote to it and when (<person>@<time>, one per person), for the Timeline and Most Used
+--   edit:    who wrote to it and when (<person>@<time>, one per person), for History and Most Used
 -- A key written again while a flush is in flight is deleted and inserted again under a new id, so the flush's delete
 -- (by the ids it read) keeps it for the next one. Not INSERT OR REPLACE: inside a trigger, the conflict policy of
 -- the statement that fired it wins, and an upsert's is ABORT. A Durable Object holds one plan, so plan_id is always the same there; it keeps
@@ -457,8 +457,11 @@ const V17 = (exec: Exec) => {
 };
 
 // Automations (docs/specs/026-plan/automations.md; automations/automation-schema.ts): a plan's rules, the triggers
-// waiting for its alarm and its Run Log.
+// waiting for its alarm and its Audit Trail.
 const V18 = AUTOMATIONS_SCHEMA;
+
+// Automations Phase 2 (automations/automation-schema.ts): the time triggers' schedule and Assign in Turn's place.
+const V19 = automationsV19;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
@@ -479,6 +482,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V16,
   V17,
   V18,
+  V19,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

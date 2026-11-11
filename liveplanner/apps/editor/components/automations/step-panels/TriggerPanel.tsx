@@ -1,17 +1,23 @@
 'use client';
 
-// The When panel (docs/specs/026-plan/automations.md "Triggers"): which of the six triggers starts the rule, then
-// what narrows it: Card Created's column, Form Response's Form tab, Card Moved's From and To columns, Field
-// Changed's fields (at least one), and nothing for Comment Added and Run from a Card.
+// The When panel (docs/specs/026-plan/automations.md "Triggers"): which trigger starts the rule, a card's or a
+// time's, then what narrows it: Card Created's column, Form Response's Form tab, Card Moved's From and To columns,
+// Field Changed's fields (at least one), nothing for Comment Added and Run from a Card, and a time trigger's
+// schedule (TimeTriggerPanel).
 
 import {
   AUTOMATION_TRIGGER_KINDS,
   AUTOMATION_TRIGGER_NAMES,
+  isTimeTrigger,
   type AutomationTrigger,
   type AutomationTriggerKind,
 } from '@liveplanner/items';
 import { outlineFields, type AutomationOutline } from '../automation-outline';
 import { ChipToggles, PanelField, PanelNote, PanelSelect } from './panel-parts';
+import { TimeTriggerPanel, freshTimeTrigger } from './TimeTriggerPanel';
+
+const TIME_KINDS: readonly AutomationTriggerKind[] = ['scheduled', 'due_in', 'overdue'];
+const CARD_KINDS = AUTOMATION_TRIGGER_KINDS.filter((k) => !TIME_KINDS.includes(k));
 
 const DESCRIPTIONS: Readonly<Record<AutomationTriggerKind, string>> = {
   card_created: 'A card is added: by a person, Duplicate, an import, a Repeat or an agent.',
@@ -20,6 +26,10 @@ const DESCRIPTIONS: Readonly<Record<AutomationTriggerKind, string>> = {
   field_changed: 'Any of the chosen fields changes value.',
   comment_added: 'Someone starts a thread on a card or replies on one.',
   manual: 'An Editor picks this rule under Run Rule in a card’s ⋯ menu.',
+  scheduled: 'A time comes round. The rule runs once on each card its conditions match.',
+  due_in: 'A card’s due date is the chosen number of days away. Once for each due date it has.',
+  overdue:
+    'A card’s due date has passed and it is not in a done column. Once for each due date it has.',
 };
 
 function fresh(kind: AutomationTriggerKind, fields: readonly string[]): AutomationTrigger {
@@ -32,6 +42,10 @@ function fresh(kind: AutomationTriggerKind, fields: readonly string[]): Automati
     case 'comment_added':
     case 'manual':
       return { kind };
+    case 'scheduled':
+    case 'due_in':
+    case 'overdue':
+      return freshTimeTrigger(kind);
   }
 }
 
@@ -39,10 +53,16 @@ export function TriggerPanel({
   trigger,
   onChange,
   outline,
+  timeZone,
+  conditions,
 }: {
   trigger: AutomationTrigger;
   onChange: (next: AutomationTrigger) => void;
   outline: AutomationOutline;
+  // The zone the rule is saved in (this browser's), which a time trigger names.
+  timeZone: string;
+  // How many conditions the rule has: a time rule with none is warned about.
+  conditions: number;
 }) {
   const fields = outlineFields(outline.types);
   const columns = outline.columns.map((c) => ({ value: c.status, label: c.name }));
@@ -62,11 +82,20 @@ export function TriggerPanel({
               )
             }
           >
-            {AUTOMATION_TRIGGER_KINDS.map((k) => (
-              <option key={k} value={k}>
-                {AUTOMATION_TRIGGER_NAMES[k]}
-              </option>
-            ))}
+            <optgroup label="Something Happens to a Card">
+              {CARD_KINDS.map((k) => (
+                <option key={k} value={k}>
+                  {AUTOMATION_TRIGGER_NAMES[k]}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="A Time Comes Round">
+              {TIME_KINDS.map((k) => (
+                <option key={k} value={k}>
+                  {AUTOMATION_TRIGGER_NAMES[k]}
+                </option>
+              ))}
+            </optgroup>
           </PanelSelect>
         )}
       </PanelField>
@@ -147,6 +176,14 @@ export function TriggerPanel({
       ) : null}
       {trigger.kind === 'comment_added' ? (
         <PanelNote>Automation’s own comments start nothing.</PanelNote>
+      ) : null}
+      {isTimeTrigger(trigger) ? (
+        <TimeTriggerPanel
+          trigger={trigger}
+          onChange={onChange}
+          timeZone={timeZone}
+          conditions={conditions}
+        />
       ) : null}
       {trigger.kind === 'manual' ? (
         <PanelNote>

@@ -19,7 +19,7 @@ import {
 const card: ShapeElement = {
   id: 'card',
   type: 'shape',
-  shape: 'square',
+  shape: 'signpost',
   x: 0,
   y: 0,
   width: 100,

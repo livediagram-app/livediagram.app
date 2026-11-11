@@ -7,13 +7,19 @@
 // after) whether it might have queued something and is worth a wake; a concurrent request in the same isolate can only
 // add a spare wake, never take one away.
 
-import { WEBHOOK_EVENTS, WEBHOOK_PENDING_MAX, type CardMove } from '@liveworkspace/index-client';
+import {
+  WEBHOOK_EVENTS,
+  WEBHOOK_PENDING_MAX,
+  type CardMove,
+  type WebhookPauseReason,
+} from '@liveworkspace/index-client';
 import type { Env } from '../env';
 import { DISPATCHER_NAME, WEBHOOK_FRESH_MS } from './config';
+import type { AutomationDetail } from './messages';
 
 const LISTENED: ReadonlySet<string> = new Set(WEBHOOK_EVENTS);
 
-/** Whether some webhook could listen for a Timeline event of this type. */
+/** Whether some webhook could listen for an event of this type. */
 export const isListened = (type: string) => LISTENED.has(type);
 
 let queued = 0;
@@ -43,7 +49,7 @@ const dueAt = (now: string, webhook: string) =>
   `MAX(${now}, COALESCE((SELECT p.next_at FROM webhook_deliveries p WHERE p.webhook_id = ${webhook}
      AND p.state = 'pending' ORDER BY p.id DESC LIMIT 1), ${now}))`;
 
-/** The statement queuing these Timeline events for their item's own webhooks; it goes after the events' own. */
+/** The statement queuing these events for their item's own webhooks; it goes after the events' own. */
 export function webhookOutboxStatement(
   db: D1Database,
   eventIds: readonly string[],
@@ -57,7 +63,7 @@ export function webhookOutboxStatement(
        SELECT w.id, e.id, e.type, e.app, e.item_id, e.title, e.actor_id, e.actor_name, e.detail, e.occurred_at,
               ${dueAt('?1', 'w.id')}
        FROM json_each(?2) j
-       JOIN timeline_events e ON e.id = j.value
+       JOIN events e ON e.id = j.value
        JOIN items i ON i.id = e.item_id
        ${listening('e.type', 'e.actor_id', 'j.key')}
          AND e.occurred_at >= ?1 - ?3`,
@@ -69,7 +75,7 @@ export function webhookOutboxStatement(
 export const cardMoveId = (itemId: string, move: Pick<CardMove, 'cardId' | 'at'>) =>
   `cmv:${itemId}:${move.cardId}:${move.at}`;
 
-/** The statement queuing a plan's card moves for its own webhooks (they are not Timeline events). */
+/** The statement queuing a plan's card moves for its own webhooks (they are not in the event log). */
 export function cardMovesStatement(
   db: D1Database,
   itemId: string,
@@ -143,6 +149,92 @@ export function formResponseStatement(
       form.heading,
       Math.min(form.latestAt, now),
     );
+}
+
+/** A webhook an automation send names, as the push reads it: whether it is paused, and how many wait (stopped at
+ *  WEBHOOK_PENDING_MAX). */
+export type AutomationTarget = {
+  id: string;
+  paused_at: number | null;
+  paused_reason: WebhookPauseReason | null;
+  pending: number;
+};
+
+/**
+ * One round trip settling a push of automation sends: the named webhooks that are this item's own, and which of the
+ * sends' deliveries are already written (a retried run's). `sends` pairs each webhook id with its delivery's id.
+ */
+export async function automationTargets(
+  db: D1Database,
+  itemId: string,
+  sends: readonly { webhookId: string; id: string }[],
+): Promise<{ webhooks: AutomationTarget[]; written: Set<string> }> {
+  const pairs = JSON.stringify(sends.map((s) => ({ w: s.webhookId, e: s.id })));
+  const [webhooks, written] = await db.batch([
+    db
+      .prepare(
+        `SELECT w.id, w.paused_at, w.paused_reason,
+                (SELECT COUNT(*) FROM (SELECT 1 FROM webhook_deliveries p
+                 WHERE p.webhook_id = w.id AND p.state = 'pending' LIMIT ?3)) AS pending
+         FROM webhooks w WHERE w.item_id = ?1 AND w.id IN (SELECT j.value ->> '$.w' FROM json_each(?2) j)`,
+      )
+      .bind(itemId, pairs, WEBHOOK_PENDING_MAX),
+    db
+      .prepare(
+        `SELECT d.webhook_id || ' ' || d.event_id AS pair FROM json_each(?1) j
+         JOIN webhook_deliveries d ON d.webhook_id = j.value ->> '$.w' AND d.event_id = j.value ->> '$.e'`,
+      )
+      .bind(pairs),
+  ]);
+  return {
+    webhooks: (webhooks!.results ?? []) as AutomationTarget[],
+    written: new Set(((written!.results ?? []) as { pair: string }[]).map((r) => r.pair)),
+  };
+}
+
+/** An automation send the push settled as queued: its delivery's id, webhook, place among that webhook's queued ones
+ *  in the push, time and detail. */
+export type QueuedAutomationSend = {
+  id: string;
+  webhookId: string;
+  ahead: number;
+  at: number;
+  detail: AutomationDetail;
+};
+
+/**
+ * The statement queuing automation sends (webhooks.md "Automation sends"): each addressed to the one webhook it names,
+ * so the webhook's events and Who Did It are not read, and no other webhook hears it. No actor (`Automation` by
+ * name). The item, the webhook being live and the pending cap are checked again inside the insert, so a pause or a
+ * burst landing after the push's read can't put a row past them.
+ */
+export function automationSendStatement(
+  db: D1Database,
+  itemId: string,
+  sends: readonly QueuedAutomationSend[],
+  now = Date.now(),
+): D1PreparedStatement {
+  queued++;
+  const rows = sends.map((s) => ({
+    id: s.id,
+    w: s.webhookId,
+    ahead: s.ahead,
+    at: s.at,
+    detail: JSON.stringify(s.detail),
+  }));
+  return db
+    .prepare(
+      `INSERT OR IGNORE INTO webhook_deliveries
+         (webhook_id, event_id, type, app, item_id, title, actor_id, actor_name, detail, occurred_at, next_at)
+       SELECT w.id, j.value ->> '$.id', 'automation', i.app, i.id, i.title, NULL, 'Automation',
+              j.value ->> '$.detail', j.value ->> '$.at', ${dueAt('?1', 'w.id')}
+       FROM json_each(?2) j
+       JOIN webhooks w ON w.id = j.value ->> '$.w' AND w.item_id = ?3 AND w.paused_at IS NULL
+       JOIN items i ON i.id = w.item_id
+       WHERE (SELECT COUNT(*) FROM (SELECT 1 FROM webhook_deliveries p
+              WHERE p.webhook_id = w.id AND p.state = 'pending' LIMIT ?4)) + (j.value ->> '$.ahead') < ?4`,
+    )
+    .bind(now, JSON.stringify(rows), itemId, WEBHOOK_PENDING_MAX);
 }
 
 /** Send Test's `ping`, due now (behind a retry the webhook is waiting on, as any delivery), written only while the webhook is not paused (no row written: it was paused). The

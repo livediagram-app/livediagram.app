@@ -4,7 +4,7 @@
 
 import { APPS, type App } from './constants';
 
-/** The events a webhook can listen for: what can happen to an existing document (the Timeline's item events after
+/** The events a webhook can listen for: what can happen to an existing document (the event log's item events after
  *  it is made) and liveplanner's card moves and form responses. */
 export const WEBHOOK_EVENTS = [
   'renamed',
@@ -19,13 +19,14 @@ export const WEBHOOK_EVENTS = [
 ] as const;
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];
 
-/** What a delivery can be about: an event, or Send Test's `ping`. */
-export type WebhookDeliveryType = WebhookEvent | 'ping';
+/** What a delivery can be about: an event, an automation rule's addressed send (never one a webhook picks), or Send
+ *  Test's `ping`. */
+export type WebhookDeliveryType = WebhookEvent | 'automation' | 'ping';
 
 export const isWebhookEvent = (value: unknown): value is WebhookEvent =>
   (WEBHOOK_EVENTS as readonly unknown[]).includes(value);
 
-/** Which apps send each event: every app has documents (the Timeline's events) and pushes its comment threads and
+/** Which apps send each event: every app has documents (the event log's events) and pushes its comment threads and
  *  actions; card moves and form responses are liveplanner's alone. */
 export const WEBHOOK_EVENT_APPS: Record<WebhookEvent, readonly App[]> = {
   renamed: APPS,
@@ -61,6 +62,7 @@ export const WEBHOOK_EVENT_LABELS: Record<WebhookDeliveryType, string> = {
   action_done: 'Action or Card Done',
   card_moved: 'Card Moved',
   form_response: 'Form Response',
+  automation: 'Automation',
   ping: 'Test',
 };
 
@@ -85,6 +87,10 @@ export const WEBHOOK_DELIVERIES_KEPT = 20;
 export const WEBHOOK_PENDING_MAX = 500;
 // Card moves one push may carry.
 export const CARD_MOVES_MAX = 100;
+// Automation sends one push may carry, and how long a send's message and rule name may be (longer is cut).
+export const AUTOMATION_SENDS_MAX = 5;
+export const AUTOMATION_TEXT_MAX = 2000;
+export const AUTOMATION_RULE_MAX = 60;
 
 // The headers a signed delivery carries.
 export const WEBHOOK_SIGNATURE_HEADER = 'X-Liveworkspace-Signature';
@@ -162,3 +168,27 @@ export type CardMove = {
   actorName?: string | null;
   at: number;
 };
+
+/** One message an automation rule posts through one of its plan's webhooks, as liveplanner pushes it
+ *  (`POST /app/items/:id/automation-sends`, webhooks.md "Automation sends"). */
+export type AutomationSend = {
+  // Made from the run and the step: the same key again queues nothing new.
+  key: string;
+  // The webhook the rule names, one of the plan's own.
+  webhookId: string;
+  // The rule's name.
+  rule: string;
+  // The card the rule ran on (its number, title and link in liveplanner), or null for none.
+  card: { key: number; title: string; url: string } | null;
+  // The message, the rule's values filled in.
+  text: string;
+  at: number;
+};
+
+/** Why a send was refused: the webhook is not the plan's (or gone), it is paused, or it holds WEBHOOK_PENDING_MAX. */
+export type AutomationSendRefusal = 'webhook_not_found' | 'webhook_paused' | 'webhook_full';
+
+/** One send's answer, in the order sent: queued, or refused with words for the rule's Audit Trail. */
+export type AutomationSendResult =
+  | { key: string; queued: true }
+  | { key: string; queued: false; reason: string; code: AutomationSendRefusal };

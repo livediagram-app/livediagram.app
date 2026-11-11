@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createIndexAppClient, createIndexClient } from './client';
 import {
+  AUTOMATION_SENDS_MAX,
   isWebhookEvent,
   isWebhookKind,
   isWebhookWho,
@@ -40,6 +41,12 @@ describe('the webhooks contract', () => {
     expect(isWebhookEvent('created')).toBe(false);
     expect(isWebhookEvent('mention')).toBe(false);
     expect(isWebhookEvent('ping')).toBe(false);
+    // An automation send is addressed to one webhook by its rule: never an event a person picks.
+    expect(isWebhookEvent('automation')).toBe(false);
+    expect(WEBHOOK_EVENTS).not.toContain('automation');
+    expect(webhookEventsOf('liveplanner')).not.toContain('automation');
+    expect(WEBHOOK_EVENT_LABELS.automation).toBe('Automation');
+    expect(AUTOMATION_SENDS_MAX).toBe(5);
     expect(isWebhookEvent('edited')).toBe(false);
     for (const kind of WEBHOOK_KINDS) expect(isWebhookKind(kind)).toBe(true);
     expect(isWebhookKind('discord')).toBe(false);
@@ -119,5 +126,61 @@ describe('the webhooks contract', () => {
       'PUT /i/app/items/p1/card-moves',
     ]);
     expect(seen[1]!.body).toEqual({ moves: [move] });
+  });
+
+  it('pushes automation sends with the app client, answering each send', async () => {
+    const seen: Seen[] = [];
+    const results = [
+      { key: 'a', queued: true },
+      {
+        key: 'b',
+        queued: false,
+        reason: 'Too many messages waiting for this webhook',
+        code: 'webhook_full',
+      },
+    ];
+    const doFetch = (async (input: RequestInfo | URL, init: RequestInit = {}) => {
+      seen.push({
+        url: String(input),
+        method: init.method ?? 'GET',
+        body: JSON.parse(String(init.body)),
+        headers: new Headers(init.headers),
+      });
+      return Response.json({ results });
+    }) as typeof fetch;
+    const app = createIndexAppClient({
+      app: 'liveplanner',
+      key: 'k',
+      baseUrl: '/i',
+      fetch: doFetch,
+    });
+    const sends = [
+      {
+        key: 'a',
+        webhookId: 'w1',
+        rule: 'Tell',
+        card: { key: 48, title: 'Publish', url: 'https://liveplanner.app/project/p 1' },
+        text: 'Live',
+        at: 1,
+      },
+      { key: 'b', webhookId: 'w2', rule: 'Tell', card: null, text: 'Live', at: 1 },
+    ];
+    expect(await app.pushAutomationSends('p 1', sends)).toEqual({ results });
+    expect(seen[0]).toMatchObject({
+      method: 'POST',
+      url: '/i/app/items/p%201/automation-sends',
+      body: { sends },
+    });
+    expect(seen[0]!.headers.get('Authorization')).toBe('Bearer k');
+    expect(seen[0]!.headers.get('X-Index-App')).toBe('liveplanner');
+    const refused = createIndexAppClient({
+      app: 'livediagram',
+      key: 'k',
+      fetch: (async () => Response.json({ error: 'wrong_app' }, { status: 403 })) as typeof fetch,
+    });
+    await expect(refused.pushAutomationSends('p1', [])).rejects.toMatchObject({
+      status: 403,
+      code: 'wrong_app',
+    });
   });
 });

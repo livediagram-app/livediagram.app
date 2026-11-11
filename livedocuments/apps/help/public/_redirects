@@ -34,3 +34,9 @@
 /canvas/notes/ /canvas/ 301
 /tabs/linking-tabs /tabs/ 301
 /tabs/linking-tabs/ /tabs/ 301
+
+# The Explorer Timeline retired on 2026-11-11 (Work Item #683): its pane, What Happened, Team Activity and the
+# Upcoming view are gone, and each item's History covers the last 30 days. The article that carried the Timeline
+# (and, in four products, Home) lives at /explorer/home/.
+/explorer/timeline /explorer/home/ 301
+/explorer/timeline/ /explorer/home/ 301

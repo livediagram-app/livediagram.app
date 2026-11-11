@@ -16,7 +16,7 @@ const HELP_ARTICLES: readonly { slug: string; label: string }[] = [
   { slug: 'explorer/recent', label: 'Recent' },
   { slug: 'explorer/shared-with-you', label: 'Shared With You' },
   { slug: 'explorer/activity', label: 'Activity and the Inbox' },
-  { slug: 'explorer/timeline', label: 'The Timeline' },
+  { slug: 'explorer/home', label: 'Home' },
   { slug: 'explorer/filters', label: 'Filters and Search' },
   { slug: 'account-and-data/trash', label: 'The Trash' },
   { slug: 'getting-started/guest-vs-account', label: 'Guest or Account' },

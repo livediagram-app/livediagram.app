@@ -12,8 +12,8 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX6  | sharing         | a share password is trimmed before its length is checked, and whitespace alone clears it.                                                    |
 | IDX7  | sharing         | a password set before the 6-character rule keeps working; only a new one is held to it.                                                      |
 | IDX8  | inbox           | shown text in a push past its cap is cut rather than refused; ids and times are refused when malformed.                                      |
-| IDX9  | timeline        | an event from a clock more than 5 minutes fast is dated now, so it can't pin itself to the top.                                              |
-| IDX10 | timeline        | an empty item tidied away (`reason=empty`) records no `trashed` event.                                                                       |
+| IDX9  | events          | an event from a clock more than 5 minutes fast is dated now, so it can't pin itself to the top.                                              |
+| IDX10 | events          | an empty item tidied away (`reason=empty`) records no `trashed` event.                                                                       |
 | IDX11 | trash           | an app that does not answer a tombstone is retried hourly with no give-up; person notices and merges give up after 7 days.                   |
 | IDX12 | trash           | a person purge is kept and run again for 2 hours after the request, the life of an access token.                                             |
 | IDX13 | default-folders | with no working default an item lands at the root of the person's own space, never a team's.                                                 |
@@ -50,3 +50,6 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX45 | archive         | an archived item sent to the Trash is restored to Archived.                                                                                  |
 | IDX46 | archive         | the Archived view takes no lens; Search finds archived documents, with an Archived badge.                                                    |
 | IDX47 | archive         | Duplicate, Share, Favourites and Hide from Recent are refused while archived; Rename and Delete are not.                                     |
+| IDX48 | webhooks        | an automation send's card link is kept only on the app's own origin, else dropped (the chat opens the plan).                                 |
+| IDX49 | webhooks        | an automation send with a blank message refuses the push (`invalid_sends`); a blank rule name or card title reads `Untitled`.                |
+| IDX50 | webhooks        | an automation send dated ahead is dated now; one sent again after its delivery was trimmed (20 finished kept) queues again.                  |

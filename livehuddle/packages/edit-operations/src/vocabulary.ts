@@ -24,24 +24,21 @@ export const OPERATION_MEMBERS: Readonly<Record<EditOperationName, readonly stri
 };
 
 // Where `add` and `move` put an element (docs/specs/024-agents/edit-operations.md "Placement").
-export const PLACEMENT_RELATIONS = [
-  'right-of',
-  'left-of',
-  'above',
-  'below',
-  'after',
-  'align',
-] as const;
+export const PLACEMENT_RELATIONS = ['right-of', 'left-of', 'above', 'below', 'align'] as const;
 export type PlacementRelation = (typeof PLACEMENT_RELATIONS)[number];
 
 // The `key:value` selector keys (blueprint "Selectors").
-export const SELECTOR_KEYS = ['type', 'shape', 'from', 'to', 'downstream', 'upstream'] as const;
+export const SELECTOR_KEYS = ['type', 'shape'] as const;
 
 // The line form's flag words and the JSON members they set.
 export const FLAG_MEMBERS = {
   all: 'all',
 } as const;
 export type FlagWord = keyof typeof FLAG_MEMBERS;
+
+// What `add`, `set`, a raw element and a replace are told when they make a shape livehuddle does not have
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5, D30).
+export const SHAPES_RETIRED = 'shapes are no longer supported in livehuddle: add a sticky';
 
 // Words that always read as keywords, never as refs (EO10).
 export const RESERVED_WORDS: ReadonlySet<string> = new Set(['selected', 'all', 'front', 'back']);

@@ -8,7 +8,7 @@ nothing in livedocuments makes one any more:
 - no Tab Window menu section (Shows, Open), no **Choose a Tab**, no Open button, no element tour;
 - no agent way to add one: `RETIRED_SHAPE_KINDS` (`packages/document/src/tab-window.ts`) keeps it out of the agents'
   element format and kind list (`packages/edit-operations/src/element-format.ts`) and the MCP schema text
-  (`packages/agent-verbs/src/mcp/schema.ts`), and `add tab-window` is refused ("tab windows are retired",
+  (`packages/agent-verbs/src/mcp/element-docs.ts`), and `add tab-window` is refused ("tab windows are retired",
   `packages/edit-operations/src/operations/add-kind.ts`). The API's element schema still names the kind, since a stored one is valid;
 - no help article (`pages/tab-windows` is gone), palette description or marketing feature card.
 

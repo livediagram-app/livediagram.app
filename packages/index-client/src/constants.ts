@@ -137,22 +137,18 @@ export const MOST_USED_MAX = 8;
 // How many of the most recently made items one first page may ask for alongside it (`newest`, Home's New).
 export const NEWEST_MAX = 8;
 
-// The Timeline (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"). Where each kind comes from:
+// The event log (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "The event log"): a short-lived record of
+// what happened to items, feeding each item's History, its webhooks and its team's audit log. Where each kind comes
+// from:
 // - the index, in the batch that makes the change: created, renamed, moved, trashed, restored, shared,
-//   unshared, favourited, synced (an offline item created again) and taken_offline (an item purged to live in
-//   one browser);
+//   unshared, favourited and synced (an offline item created again);
 // - the index, from an item's pushed comment threads and actions (`PUT /app/items/:id/collab/:tab`), so every
 //   app that reports its Inbox gets them: commented, comment_resolved, action_assigned, action_done;
 // - the index, from who reaches an item through a share link: opened_by_visitor (once per visitor, item and UTC
-//   day) and copied_by_visitor (once per visitor and item), each seen by the item's owner alone; and
-//   share_link_expiring, dated at the soonest expiry of the item's live links that lapse within
-//   SHARE_EXPIRY_WARNING_MS (a daily pass, and at once when a link is made, extended or deleted), for its owner;
-// - an app's server: edited (APP_TIMELINE_EVENT_TYPES, about one item) and image_uploaded (APP_PERSON_EVENT_TYPES,
-//   about the person's gallery).
-// PERSON_TIMELINE_EVENT_TYPES are about no item (image_uploaded; taken_offline, whose item has gone): each keeps
-// its app and title, and reaches only its person.
-// - liveworkspace accounts (ACCOUNT_TIMELINE_EVENT_TYPES): its teams and API tokens, under TIMELINE_PLATFORM.
-export const ITEM_TIMELINE_EVENT_TYPES = [
+//   day) and copied_by_visitor (once per visitor and item), in its owner's History alone;
+// - an app's server: edited (APP_EVENT_TYPES);
+// - liveworkspace accounts (ACCOUNT_EVENT_TYPES): its teams' events, under PLATFORM_APP, for the team audit log.
+export const ITEM_EVENT_TYPES = [
   'created',
   'renamed',
   'moved',
@@ -167,68 +163,44 @@ export const ITEM_TIMELINE_EVENT_TYPES = [
   'action_assigned',
   'action_done',
   'synced',
-  'share_link_expiring',
   'opened_by_visitor',
   'copied_by_visitor',
 ] as const;
-export const PERSON_TIMELINE_EVENT_TYPES = ['image_uploaded', 'taken_offline'] as const;
-export const ACCOUNT_TIMELINE_EVENT_TYPES = [
+export const ACCOUNT_EVENT_TYPES = [
   'team_invite_sent',
   'team_joined',
   'team_declined',
   'team_role_changed',
   'team_member_removed',
   'team_renamed',
-  'team_deleted',
-  'token_created',
-  'token_revoked',
-  'token_expiring',
 ] as const;
-export const TIMELINE_EVENT_TYPES = [
-  ...ITEM_TIMELINE_EVENT_TYPES,
-  ...PERSON_TIMELINE_EVENT_TYPES,
-  ...ACCOUNT_TIMELINE_EVENT_TYPES,
-] as const;
-export type TimelineEventType = (typeof TIMELINE_EVENT_TYPES)[number];
-export type AccountTimelineEventType = (typeof ACCOUNT_TIMELINE_EVENT_TYPES)[number];
+export const EVENT_TYPES = [...ITEM_EVENT_TYPES, ...ACCOUNT_EVENT_TYPES] as const;
+export type EventType = (typeof EVENT_TYPES)[number];
+export type AccountEventType = (typeof ACCOUNT_EVENT_TYPES)[number];
 // What an app may report about one item. `edited` is one event per person, item and UTC day, its time moving on
 // with each report, and counts that day towards the person's Most Used.
-export const APP_TIMELINE_EVENT_TYPES = ['edited'] as const;
-export type AppTimelineEventType = (typeof APP_TIMELINE_EVENT_TYPES)[number];
-// What an app may report about a person rather than an item (`PUT /app/people/events`): `image_uploaded` is one
-// event per person, app and UTC day, counting the images.
-export const APP_PERSON_EVENT_TYPES = ['image_uploaded'] as const;
-export type AppPersonEventType = (typeof APP_PERSON_EVENT_TYPES)[number];
+export const APP_EVENT_TYPES = ['edited'] as const;
+export type AppEventType = (typeof APP_EVENT_TYPES)[number];
 // What a reference to a closed account becomes, in the index, the accounts Worker and each app
 // (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Closing an account"). Shaped like neither an
 // account (`user_…`) nor a guest (`guest_…`), so it can never match anyone.
 export const ANONYMISED_PERSON = 'deleted';
-// The app an account's events (teams, API tokens) are under: liveworkspace.app itself. They show under every
-// app's filter as well as All.
-export const TIMELINE_PLATFORM = 'liveworkspace' as const;
-export type TimelineApp = App | typeof TIMELINE_PLATFORM;
-// People one account event may reach directly (`p:<id>` or `t:<team>` scopes): a team's members and then some.
-export const ACCOUNT_EVENT_SCOPES_MAX = 250;
-// A share link lapsing within this is warned of on its item owner's Timeline (share_link_expiring).
-export const SHARE_EXPIRY_WARNING_MS = 7 * 24 * 60 * 60 * 1000;
-// An account event may be dated ahead (an API token's expiry) by at most this.
-export const ACCOUNT_EVENT_AHEAD_MS = 8 * 24 * 60 * 60 * 1000;
+// The app an account's events (teams) and a team's webhooks are under: liveworkspace.app itself.
+export const PLATFORM_APP = 'liveworkspace' as const;
+export type EventApp = App | typeof PLATFORM_APP;
+// How long the index keeps an event: a daily sweep deletes older ones (their audit log rows stay, kept a year).
+export const EVENT_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 // Collaboration events one collab push may make; past it, the newest.
 export const COLLAB_EVENTS_MAX = 100;
-// One Timeline page: this many by default, at most TIMELINE_LIMIT_MAX.
-export const TIMELINE_PAGE = 30;
-export const TIMELINE_LIMIT_MAX = 100;
+// One History page (`GET /items/:id/history`): this many by default, at most HISTORY_LIMIT_MAX.
+export const HISTORY_PAGE = 30;
+export const HISTORY_LIMIT_MAX = 100;
 // Events one app report may carry.
 export const APP_EVENTS_MAX = 100;
-// Remove from Timeline: at most this many events in one call (a day's stack at most).
-export const TIMELINE_DISMISS_MAX = 100;
-// The sidebar's Timeline count stops here and reads "99+".
-export const TIMELINE_NEW_CAP = 99;
 
 // The team audit log (liveworkspace/docs/specs/004-index/team-audit-log.md): what a team's admins can look back on.
-// Team-level events only, never a document's content: a team's own (but team_deleted), a team item's shares, moves
-// across teams, trashes, restores and permanent deletes, and the team's webhooks added or removed. Never an API
-// token's: a token is its owner's.
+// Team-level events only, never a document's content: a team's own, a team item's shares, moves across teams,
+// trashes, restores and permanent deletes, and the team's webhooks added or removed.
 export const TEAM_AUDIT_ACCOUNT_TYPES = [
   'team_invite_sent',
   'team_joined',
@@ -236,15 +208,15 @@ export const TEAM_AUDIT_ACCOUNT_TYPES = [
   'team_role_changed',
   'team_member_removed',
   'team_renamed',
-] as const satisfies readonly AccountTimelineEventType[];
+] as const satisfies readonly AccountEventType[];
 export const TEAM_AUDIT_ITEM_TYPES = [
   'shared',
   'unshared',
   'moved',
   'trashed',
   'restored',
-] as const satisfies readonly TimelineEventType[];
-// Kinds with no Timeline event of their own: a team item deleted for good, a team webhook added or removed.
+] as const satisfies readonly EventType[];
+// Kinds with no event of their own: a team item deleted for good, a team webhook added or removed.
 export const TEAM_AUDIT_OWN_TYPES = ['deleted', 'webhook_added', 'webhook_removed'] as const;
 export const TEAM_AUDIT_EVENT_TYPES = [
   ...TEAM_AUDIT_ACCOUNT_TYPES,
@@ -372,6 +344,8 @@ export const INDEX_ERRORS = [
   // The team audit log's read (team-audit-log.md): accounts can't say who runs the team.
   'team_audit_unavailable',
   'invalid_moves',
+  // An automation send malformed, or more than AUTOMATION_SENDS_MAX.
+  'invalid_sends',
   'invalid_password',
   // A new share password shorter than SHARE_PASSWORD_MIN.
   'password_too_short',

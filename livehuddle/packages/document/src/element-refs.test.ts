@@ -187,7 +187,7 @@ describe('resolveRef', () => {
 describe('slugIdFor (R7)', () => {
   it('slugs a label', () => {
     expect(slugIdFor('Redis cache', 'cylinder', new Set())).toBe('redis-cache');
-    expect(slugIdFor('  Café — Crème  ', 'square', new Set())).toBe('cafe-creme');
+    expect(slugIdFor('  Café — Crème  ', 'focus-button', new Set())).toBe('cafe-creme');
   });
 
   it('adds -2, -3 on a clash', () => {
@@ -202,24 +202,24 @@ describe('slugIdFor (R7)', () => {
   });
 
   it('prefixes the kind word to a label starting with a digit', () => {
-    expect(slugIdFor('2FA service', 'square', new Set())).toBe('square-2fa-service');
+    expect(slugIdFor('2FA service', 'room', new Set())).toBe('room-2fa-service');
   });
 
   it('cuts at 24 characters and trims a trailing dash', () => {
-    const id = slugIdFor('The quick brown fox jumps over', 'square', new Set());
+    const id = slugIdFor('The quick brown fox jumps over', 'focus-button', new Set());
     expect(id).toBe('the-quick-brown-fox-jump');
-    expect(slugIdFor('abcdefghijklmnopqrstuvw xyz', 'square', new Set())).toBe(
+    expect(slugIdFor('abcdefghijklmnopqrstuvw xyz', 'focus-button', new Set())).toBe(
       'abcdefghijklmnopqrstuvw',
     );
   });
 
   it('cuts the base to fit its suffix', () => {
     const base = 'the-quick-brown-fox-jump';
-    const id = slugIdFor('The quick brown fox jumps over', 'square', new Set([base]));
+    const id = slugIdFor('The quick brown fox jumps over', 'focus-button', new Set([base]));
     expect(id).toBe('the-quick-brown-fox-ju-2');
     const dashed = slugIdFor(
       'abcdefghijklmnopqrstu-wxyz',
-      'square',
+      'focus-button',
       new Set(['abcdefghijklmnopqrstu-wx']),
     );
     expect(dashed).toBe('abcdefghijklmnopqrstu-2');
@@ -239,8 +239,8 @@ describe('slugIdFor (R7)', () => {
 
 describe('kindWordOf (R9)', () => {
   it('names a shape by its kind', () => {
-    expect(kindWordOf(createShape('cylinder', 0, 0))).toBe('cylinder');
-    expect(kindWordOf(createShape('actor', 0, 0))).toBe('actor');
+    expect(kindWordOf(createShape('meeting-table', 0, 0))).toBe('meeting-table');
+    expect(kindWordOf(createShape('chair', 0, 0))).toBe('chair');
   });
 
   it('names an element by its type', () => {
@@ -249,9 +249,15 @@ describe('kindWordOf (R9)', () => {
   });
 
   it('marks unknown types and shapes with ? (E12)', () => {
-    const unknownShape = { ...createShape('square', 0, 0), shape: 'blob' } as unknown as Element;
+    const unknownShape = {
+      ...createShape('focus-button', 0, 0),
+      shape: 'blob',
+    } as unknown as Element;
     expect(kindWordOf(unknownShape)).toBe('? blob');
-    const noShape = { ...createShape('square', 0, 0), shape: undefined } as unknown as Element;
+    const noShape = {
+      ...createShape('focus-button', 0, 0),
+      shape: undefined,
+    } as unknown as Element;
     expect(kindWordOf(noShape)).toBe('? shape');
     const unknownType = { id: 'x', type: 'hologram' } as unknown as Element;
     expect(kindWordOf(unknownType)).toBe('? hologram');
@@ -260,10 +266,14 @@ describe('kindWordOf (R9)', () => {
   });
 
   it('knows exactly the types and shapes the document model knows', () => {
-    expect(isKnownElement(createShape('hexagon', 0, 0))).toBe(true);
+    expect(isKnownElement(createShape('chair', 0, 0))).toBe(true);
+    // A removed diagram shape is a retired element (docs/specs/002-project-scope/not-in-livehuddle.md, part 5).
+    expect(
+      isKnownElement({ ...createShape('chair', 0, 0), shape: 'hexagon' } as unknown as Element),
+    ).toBe(false);
     expect(isKnownElement(createText(0, 0))).toBe(true);
     expect(
-      isKnownElement({ ...createShape('square', 0, 0), shape: 'blob' } as unknown as Element),
+      isKnownElement({ ...createShape('focus-button', 0, 0), shape: 'blob' } as unknown as Element),
     ).toBe(false);
     expect(isKnownElement({ id: 'x', type: 'hologram' } as unknown as Element)).toBe(false);
   });

@@ -34,26 +34,25 @@ write both in one statement.
 
 ## Behaviour and state
 
-| From          | Event                                       | To       | Effect                                                                       |
-| ------------- | ------------------------------------------- | -------- | ---------------------------------------------------------------------------- |
-| live          | `POST /items/:id/archive` (owner)           | archived | `archiveStatements`, one batch; `{item}`                                     |
-| archived      | `POST /items/:id/archive`                   | archived | nothing written; `{item}`                                                    |
-| archived      | `PATCH {title}`                             | archived | renamed; `renamed` event; stays in `a:<owner>`                               |
-| archived      | `PATCH {folderId?, teamId?}` (either named) | live     | `archived_at` null, scope `p:<owner>` or `t:<team>`; Timeline moves; `moved` |
-| archived      | `DELETE /items/:id`                         | trashed  | keeps `archived_at` and `a:<owner>`; `trashed` event                         |
-| trashed + arc | `POST /items/:id/restore`                   | archived | back in Archived                                                             |
-| trashed       | `POST /items/:id/archive`                   | trashed  | `409 trashed`                                                                |
+| From          | Event                                       | To       | Effect                                                       |
+| ------------- | ------------------------------------------- | -------- | ------------------------------------------------------------ |
+| live          | `POST /items/:id/archive` (owner)           | archived | `archiveStatements`, one batch; `{item}`                     |
+| archived      | `POST /items/:id/archive`                   | archived | nothing written; `{item}`                                    |
+| archived      | `PATCH {title}`                             | archived | renamed; `renamed` event; stays in `a:<owner>`               |
+| archived      | `PATCH {folderId?, teamId?}` (either named) | live     | `archived_at` null, scope `p:<owner>` or `t:<team>`; `moved` |
+| archived      | `DELETE /items/:id`                         | trashed  | keeps `archived_at` and `a:<owner>`; `trashed` event         |
+| trashed + arc | `POST /items/:id/restore`                   | archived | back in Archived                                             |
+| trashed       | `POST /items/:id/archive`                   | trashed  | `409 trashed`                                                |
 
 ### `archiveStatements` (in order, one batch)
 
 1. `UPDATE items SET archived_at = now, scope = 'a:' || owner_id, team_id = NULL, folder_id = NULL WHERE id = ? AND
 archived_at IS NULL AND trashed_at IS NULL`.
-2. Timeline: `moveScopeStatements(old scope → a:<owner>)`; then every scope row of the item's events that is not
-   `a:<owner>` is deleted (another person's favourite, an assignee's), and its `favourited` events with them.
-3. The `moved` event, `detail {archived: true, fromTeamId?}`, scoped `a:<owner>`; in the team's audit log when it
-   left one (`auditTeams [team]`).
-4. `DELETE` from `share_links`, `share_passwords`, `shared_with`, and the Share Link Expiring warning
-   (`expiringStatements`, which finds no link and drops it).
+2. Events: the item's `favourited` events are deleted (Archived holds no favourites); its History stays, read by its
+   owner alone since no one else reaches it now ([events.md](events.md)).
+3. The `moved` event, `detail {archived: true, fromTeamId?}`; in the team's audit log when it left one
+   (`auditTeams [team]`).
+4. `DELETE` from `share_links`, `share_passwords`, `shared_with`.
 5. `DELETE` from `favourites`, `opens`, `use_days` for the item (every person).
 6. `DELETE` from `collab_thread_people`, `collab_threads`, `collab_actions`, `collab_form_reads`, `collab_forms`.
 7. After the batch, the app hears `POST /items/:id/revoke {codes}` with the deleted links' codes (`waitUntil`), and
@@ -89,8 +88,7 @@ event. Naming neither keeps `a:<owner>` whatever the title.
 ### Other paths
 
 - `sweepEmpty` adds `archived_at IS NULL` (IDX43).
-- Guest merge: `scope` becomes `a:<account>` for the guest's archived items, and the guest's `a:` Timeline rows move
-  with the `p:` ones.
+- Guest merge: `scope` becomes `a:<account>` for the guest's archived items.
 - Collab push (`collab-push.ts`) for an archived item answers `204` and writes nothing.
 - Connected tabs: an archived host or target opens as missing, as a trashed one does.
 - `GET /items/:id`, `POST /items/lookup`: unchanged; `archivedAt` is on the item.

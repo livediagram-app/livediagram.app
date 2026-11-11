@@ -6,9 +6,7 @@
 // queue and commits the next photo as one tab edit, in order.
 import type { PhotoBlobEntry } from '@livedesign/api-schema';
 import {
-  blobIdOf,
   isShown,
-  PHOTO_TILE,
   parseTileKey,
   tileKey,
   TiledRaster,
@@ -21,15 +19,19 @@ import {
   type TileMap,
 } from '@livedesign/photo-engine';
 import type { PixelsStore } from './pixels-store';
-import { photoWorkers } from './photo-worker-client';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import {
+  colRow,
+  committedTile,
+  maskId,
+  pixelsOf,
+  rgbaToMask,
+  setIn,
+  sourceTile,
+  topPixelLayer,
+} from './session-tiles';
 
-/** The set under `key`, made when missing. */
-function setIn<K, V>(map: Map<K, Set<V>>, key: K): Set<V> {
-  let set = map.get(key);
-  if (!set) map.set(key, (set = new Set()));
-  return set;
-}
+export { topPixelLayer } from './session-tiles';
 
 export type SessionDeps = {
   tabId: string;
@@ -50,27 +52,6 @@ export type SessionDeps = {
 export type TileChange = { layerId: string; target: 'layer' | 'mask'; keys: string[] };
 
 type Listener = (changes: TileChange[] | null) => void;
-
-const maskId = (layerId: string) => `${layerId}#mask`;
-
-/** A mask tile (one channel) as RGBA grey, as it is stored. */
-function maskToRgba(tile: Uint8ClampedArray): Uint8ClampedArray {
-  const out = new Uint8ClampedArray(tile.length * 4);
-  for (let i = 0; i < tile.length; i++) {
-    const v = tile[i]!;
-    out[i * 4] = v;
-    out[i * 4 + 1] = v;
-    out[i * 4 + 2] = v;
-    out[i * 4 + 3] = 255;
-  }
-  return out;
-}
-
-function rgbaToMask(tile: Uint8ClampedArray): Uint8ClampedArray {
-  const out = new Uint8ClampedArray(tile.length / 4);
-  for (let i = 0; i < out.length; i++) out[i] = tile[i * 4]!;
-  return out;
-}
 
 // A mutable object, raising `version` on each change the screen should redraw: the React Compiler's memo would
 // keep what a component read from it the first time, so the photo components that read it as they render opt
@@ -356,14 +337,7 @@ export class PhotoSession {
       if (only && k !== only) continue;
       // An explicit tile wins over the source, as the photo now says.
       if (current.tiles[k] !== undefined) continue;
-      const tile = new Uint8ClampedArray(PHOTO_TILE * PHOTO_TILE * 4);
-      for (let y = 0; y < PHOTO_TILE; y++) {
-        const py = row * PHOTO_TILE + y;
-        if (py >= pic.height) break;
-        const from = (py * pic.width + col * PHOTO_TILE) * 4;
-        const len = Math.max(0, Math.min(PHOTO_TILE, pic.width - col * PHOTO_TILE)) * 4;
-        tile.set(pic.data.subarray(from, from + len), y * PHOTO_TILE * 4);
-      }
+      const tile = sourceTile(pic, col, row);
       raster.load(k, target === 'mask' ? rgbaToMask(tile) : tile);
       keys.push(k);
     }
@@ -488,35 +462,9 @@ export class PhotoSession {
           const set = new Map<string, string | null>();
           const hasSource = !w.dropSource && !!pixelsOf(this.photo, w.layerId, w.target)?.source;
           await Promise.all(
-            w.tiles.map(async ({ key, data, cleared }) => {
-              if (!data) {
-                // Cleared (a layer's emptied tile over a source, a mask's black) is kept as such; a
-                // tile reset reads as the source, or nothing, again.
-                set.set(key, cleared && (hasSource || w.target === 'mask') ? '' : null);
-                return;
-              }
-              if (isEmptyTile(data, w.target)) {
-                // A transparent tile over a source must say so; a mask's white is its empty.
-                set.set(key, w.target === 'layer' && hasSource ? '' : null);
-                return;
-              }
-              const rgba = w.target === 'mask' ? maskToRgba(data) : data;
-              const res = await photoWorkers().run({
-                kind: 'encode',
-                width: PHOTO_TILE,
-                height: PHOTO_TILE,
-                data: new Uint8ClampedArray(rgba),
-                type: 'image/png',
-              }).result;
-              if (res.kind !== 'encode') return;
-              const id = await blobIdOf(res.bytes);
-              this.deps.store.put(
-                id,
-                rgba,
-                new Blob([res.bytes as Uint8Array<ArrayBuffer>], { type: 'image/png' }),
-              );
-              entries.push({ id, type: 'image/png', bytes: res.bytes });
-              set.set(key, id);
+            w.tiles.map(async (tile) => {
+              const id = await committedTile(tile, w.target, hasSource, this.deps.store, entries);
+              if (id !== undefined) set.set(tile.key, id);
             }),
           );
           return set;
@@ -592,35 +540,4 @@ export class PhotoSession {
   settled(): Promise<void> {
     return this.chain.then(() => undefined);
   }
-}
-
-function pixelsOf(
-  photo: Photo,
-  layerId: string,
-  target: 'layer' | 'mask',
-): LayerPixels | undefined {
-  const layer = photo.layers.find((l) => l.id === layerId);
-  if (!layer) return undefined;
-  if (target === 'mask') return layer.mask?.pixels;
-  return layer.layerKind === 'pixel' ? layer.pixels : undefined;
-}
-
-const colRow = (k: string): [number, number] => {
-  const p = parseTileKey(k)!;
-  return [p.col, p.row];
-};
-
-function isEmptyTile(data: Uint8ClampedArray, target: 'layer' | 'mask'): boolean {
-  if (target === 'mask') {
-    for (let i = 0; i < data.length; i++) if (data[i] !== 255) return false;
-    return true;
-  }
-  for (let i = 3; i < data.length; i += 4) if (data[i] !== 0) return false;
-  return true;
-}
-
-export function topPixelLayer(photo: Photo): PhotoLayer | undefined {
-  for (let i = photo.layers.length - 1; i >= 0; i--)
-    if (photo.layers[i]!.layerKind === 'pixel') return photo.layers[i];
-  return undefined;
 }

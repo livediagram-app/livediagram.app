@@ -15,7 +15,7 @@ describe('resetElementColours', () => {
     const shape: ShapeElement = {
       id: 's',
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       ...box,
       fillColor: '#ff0000',
       strokeColor: '#00ff00',

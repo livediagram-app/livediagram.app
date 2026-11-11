@@ -16,7 +16,7 @@ Scope, by file:
 | `packages/document/src/element-types.ts`, `element-fields.ts`                         | `statCountUp`                                                                                         |
 | `packages/document/src/svg-render-web.ts`                                             | The export draws value, caption and change pill from the layout                                       |
 | `packages/document-views/src/state-attribute.ts`                                      | `value caption (change)`                                                                              |
-| `packages/agent-verbs/src/mcp/schema.ts`                                              | The element docs                                                                                      |
+| `packages/agent-verbs/src/mcp/element-docs.ts`                                        | The element docs                                                                                      |
 | `apps/editor/components/canvas/web/StatRowFace.tsx`                                   | The face, the change pill, `CountUpValue`                                                             |
 | `apps/editor/components/canvas/useCountUp.ts`                                         | The animation-frame count                                                                             |
 | `apps/editor/components/canvas/PresentingContext.tsx`                                 | `PresentingProvider`, `usePresenting`                                                                 |

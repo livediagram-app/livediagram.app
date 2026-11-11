@@ -453,7 +453,7 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
   - Editor: `DateTimeInput` (`components/plan/DateTimeInput.tsx`, a `datetime-local` box with `DateInput`'s whole-
     value rules), `DateRangeField` (`components/plan/DateRangeField.tsx`, From and To), `PhoneField`
     (`components/plan/PhoneField.tsx`, a `tel` box and its `tel:` link), each from `CustomFieldEditor`; samples in
-    `CustomFieldKindParts` and `ItemTypeDisplay`; Add Field's Date and Time Range tile presets `withTime` (no switch);
+    `CustomFieldKindParts` and `item-type-display-sample.ts`; Add Field's Date and Time Range tile presets `withTime` (no switch);
     `add-field-kinds.ts` places Phone in Links and Images and Date and Time and Date Range in Dates, with the
     spec's words; the card face draws a past Date and Time or Date Range in red (`pastDue(field, value, now?, tz?)`
     in `date-range-fields.ts`), never on a done card; `CustomFieldEditor`'s `ZoneLine` (`dateTimeZones`) sits under

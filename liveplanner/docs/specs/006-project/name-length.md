@@ -87,7 +87,7 @@ already the stored name without waiting on a round trip:
 - `useSelectionEditing`: the auto-name path (the case that prompted this).
 - `useTabActions.renameTab`.
 - `useProjectListActions.renameProject` and `useTeamLibrary.renameProject`.
-- `EditorView`'s header rename.
+- `EditorViewBars`' header rename.
 - The `/new` wizard's project-name field.
 
 An Offline Mode project never reaches the server until it syncs, so for it

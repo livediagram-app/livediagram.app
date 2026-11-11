@@ -24,11 +24,13 @@ describe('the document page’s first load', () => {
     ['components/canvas/CanvasChrome.tsx', '@/components/canvas/whiteboard/WhiteboardDock'],
     ['components/canvas/ElementFaceRouter.tsx', '@/components/canvas/TableView'],
     ['components/canvas/ElementFaceRouter.tsx', '@/components/canvas/collab/CollabFaceRouter'],
+    ['components/canvas/behaviour-faces.tsx', '@/components/canvas/collab/CollabFaceRouter'],
     ['components/canvas/QuickStyleHost.tsx', '@/components/canvas/QuickStylePanel'],
     ['components/canvas/PresentationHost.tsx', '@/components/canvas/PresentationOverlay'],
     ['components/canvas/SessionTimerFace.tsx', '@/components/canvas/SessionElementSettings'],
     ['components/canvas/SessionSettingsMenu.tsx', '@/components/canvas/SessionElementSettings'],
     ['hooks/canvas/usePhotoDraft.ts', '@/lib/photo-detect'],
+    ['hooks/canvas/photo-draft.ts', '@/lib/photo-detect'],
     ['hooks/canvas/usePhotoReread.ts', '@/lib/photo-detect'],
   ])('%s loads %s on demand', (file, module) => {
     expect(importsOf(file)).not.toContain(module);

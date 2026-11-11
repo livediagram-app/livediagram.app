@@ -69,7 +69,7 @@ function withThreads(creates: ItemCreate[], rec: OfflineProjectRecord): ItemCrea
 async function upload(rec: OfflineProjectRecord, ownerId: string): Promise<void> {
   const tabs = rec.tabs;
   // Declare the conversion so the feed says "Synced to the Cloud" rather than
-  // reporting a brand-new project (docs/specs/006-project/offline-mode.md + docs/specs/013-workspace/timeline.md).
+  // reporting a brand-new project (docs/specs/006-project/offline-mode.md + docs/specs/013-workspace/history.md).
   // Everything the record holds besides tabs travels too: the local copy is
   // deleted next, so a deck or placement left behind is gone for good.
   const create = (folderId: string | null) =>

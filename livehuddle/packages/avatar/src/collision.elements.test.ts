@@ -20,7 +20,7 @@ describe('fenceSegments on any board', () => {
       shape('f', 'fence'),
       shape('r', 'room', { width: 400, height: 300, roomDoor: 's' }),
       shape('p', 'plant', { width: 56, height: 88 }),
-      shape('s', 'square'),
+      shape('s', 'icon'),
       { id: 'a', type: 'arrow' },
     ]);
     // One fence line, five walls (the front wall broken at its doorway), four edges of the pot.

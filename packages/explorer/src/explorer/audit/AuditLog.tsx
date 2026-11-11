@@ -1,8 +1,8 @@
 'use client';
 
-// A team's Audit Log, on its view under Team Activity (liveworkspace/docs/specs/004-index/team-audit-log.md "The Audit
-// Log on a team's view"): the team's admins alone see it. Closed until opened, like Team Activity, so nothing is read
-// until asked for. Open, it is the filters (Person, Event, From, To), Export CSV, and the rows under day bands, newest
+// A team's Audit Log, on its view under the team's library (liveworkspace/docs/specs/004-index/team-audit-log.md "The
+// Audit Log on a team's view"): the team's admins alone see it. Closed until opened, so nothing is read until asked
+// for. Open, it is the filters (Person, Event, From, To), Export CSV, and the rows under day bands, newest
 // first, a page at a time.
 
 import { useId, useMemo, useState } from 'react';
@@ -18,7 +18,7 @@ import { downloadBlob } from '@liveworkspace/ui/download-blob';
 import { MEDIUM_DATE, TIME } from '@liveworkspace/ui/date-format';
 import type { TeamMember } from '../../data/teams';
 import { memberName } from '../../teams/rules';
-import { auditIcon, ShieldIcon } from '../../timeline/icons';
+import { auditIcon, ShieldIcon } from '../../library/event-icons';
 import { LIST_CARD, MUTED, SKELETON } from '../../ui/classes';
 import { ChevronDownIcon } from '../../ui/icons';
 import { HistoryIcon } from '../../ui/library-icons';

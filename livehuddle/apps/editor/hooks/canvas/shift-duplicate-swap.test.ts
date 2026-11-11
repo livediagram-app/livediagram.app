@@ -5,13 +5,13 @@ import {
   type ShiftDupSwap,
   type ShiftDuplicateSwapArgs,
 } from './shift-duplicate-swap';
-import { createShape, type Element } from '@livehuddle/document';
+import { createSticky, type Element } from '@livehuddle/document';
 import { storedPinnedArrow } from '@/test/retired-elements';
 
 // Real factory output, re-keyed to a readable id: hand-rolled literals drift
 // from the Element union the moment a required field is added.
 function box(id: string, x = 0, y = 0): Element {
-  return { ...createShape('square', x, y), id };
+  return { ...createSticky(x, y), id };
 }
 
 // A stored (retired) arrow pinned at both ends (docs/specs/002-project-scope/not-in-livehuddle.md "The

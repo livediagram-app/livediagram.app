@@ -52,7 +52,7 @@ describe('Home’s requests', () => {
     );
     expect(await screen.findByRole('link', { name: '3 plans' })).toBeTruthy();
     await screen.findByRole('heading', { name: 'Shared With You Recently' });
-    await waitFor(() => expect(index.count('timeline')).toBe(1));
+    await waitFor(() => expect(index.count('spacePreviews')).toBe(1));
 
     const counts: Record<string, number> = {};
     for (const c of index.calls) counts[c.method] = (counts[c.method] ?? 0) + 1;
@@ -62,7 +62,6 @@ describe('Home’s requests', () => {
       spacePreviews: 1,
       listFolders: 1,
       listPlacementDefaults: 1,
-      timeline: 1,
       inbox: 1,
     });
     const items = index.calls.find((c) => c.method === 'listItems')!.args[0];

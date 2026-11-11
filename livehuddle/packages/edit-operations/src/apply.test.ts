@@ -21,7 +21,7 @@ const add = (element: Record<string, unknown>): EditOperation => ({ op: 'add', e
 const box = { x: 400, y: 0, width: 140, height: 60 };
 const mixed: EditOperation[] = [
   set('n3', { label: 'Sign in' }),
-  add({ id: 'verify', type: 'shape', shape: 'square', label: 'Verify email', ...box }),
+  add({ id: 'verify', type: 'shape', shape: 'signpost', label: 'Verify email', ...box }),
   { op: 'rm', target: 'n7' },
 ];
 
@@ -132,36 +132,28 @@ describe('applyEditOperations', () => {
   });
 
   describe('finalise', () => {
-    it('coerces an off-vocabulary shape kind with a warning', () => {
-      const outcome = run([add({ id: 'r', type: 'shape', shape: 'rectangle', ...box })]);
-      expect(applied(outcome).tab.elements.at(-1)).toMatchObject({ shape: 'square' });
-      expect(lines(outcome)).toContain('! shape_coerced  r shape "rectangle" drawn as square');
-    });
-
-    // A retired kind (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") is an unknown kind to an
-    // agent: it lands as a square, said in a warning, and its old fields are not read.
-    it('adds a retired kind as a square, with a warning', () => {
+    // No kind is coerced into a kept one (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+    // part 5, D30): a raw element of a kind livehuddle does not have, a removed diagram shape or a retired kind, is
+    // refused and nothing is applied.
+    it('refuses a raw shape of a kind livehuddle does not have', () => {
       const { calls, log } = recording();
-      const outcome = run(
-        [
-          add({
-            id: 'c',
-            type: 'shape',
-            shape: 'code-block',
-            code: 'x',
-            codeLanguage: 'cobol',
-            codeTheme: 'neon',
-            ...box,
-          }),
-        ],
-        checkoutFlow(),
-        log,
-      );
-      expect(applied(outcome).warnings.map((w) => w.message)).toEqual([
-        'c shape "code-block" drawn as square',
-      ]);
-      expect(calls.filter(([fingerprint]) => fingerprint === '[edit-ops] coerced')).toEqual([
-        ['[edit-ops] coerced', { operation: 1, field: 'shape' }],
+      for (const shape of ['rectangle', 'square', 'code-block']) {
+        const outcome = run(
+          [add({ id: 'r', type: 'shape', shape, code: 'x', ...box })],
+          checkoutFlow(),
+          log,
+        );
+        expect(refused(outcome)).toEqual({
+          code: 'invalid_value',
+          operation: 1,
+          details: [
+            `shape=${JSON.stringify(shape)}: shapes are no longer supported in livehuddle: add a sticky`,
+          ],
+        });
+      }
+      expect(calls.filter(([fingerprint]) => fingerprint === '[edit-ops] rejected')[0]).toEqual([
+        '[edit-ops] rejected',
+        { code: 'invalid_value', operation: 1, field: 'shape' },
       ]);
     });
 
@@ -177,23 +169,18 @@ describe('applyEditOperations', () => {
       expect(lines(outcome)).toEqual(['~ n4  @40,300→@340,200']);
     });
 
-    // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: a lane is no longer a kind, so
-    // an added one is drawn as a square where it was added, not moved behind everything.
-    it('draws an added lane as a square, appended, never moved to the back', () => {
+    // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: a lane is no longer a kind, and
+    // since part 5 an added one is refused rather than drawn as a square.
+    it('refuses an added lane', () => {
       const lane = { id: 'lane', type: 'shape', shape: 'lane', ...box, width: 800, height: 200 };
-      const outcome = run([add(lane)]);
-      const els = applied(outcome).tab.elements;
-      expect(els.at(-1)).toMatchObject({ id: 'lane', shape: 'square' });
-      expect(applied(outcome).warnings.map((w) => w.message)).toEqual([
-        'lane shape "lane" drawn as square',
-      ]);
+      expect(refused(run([add(lane)])).code).toBe('invalid_value');
     });
 
     it('refuses a touched element the format does not allow, naming field and rule', () => {
       expect(refused(run([set('n3', { width: -5 })]))).toEqual({
         code: 'invalid_result',
         details: ['n3 width: a finite number, 0 or more'],
-        hint: 'see the format: livehuddle schema square',
+        hint: 'see the format: livehuddle schema signpost',
       });
     });
 
@@ -216,7 +203,7 @@ describe('applyEditOperations', () => {
 
     it('refuses a tab an untouched element already makes invalid', () => {
       const tab = checkoutFlow();
-      tab.elements.push({ id: 'broken', type: 'shape', shape: 'square' } as Element);
+      tab.elements.push({ id: 'broken', type: 'shape', shape: 'signpost' } as Element);
       expect(refused(run([set('n3', { label: 'Sign in' })], tab)).details).toEqual([
         'broken x: a finite number',
       ]);
@@ -248,15 +235,14 @@ describe('applyEditOperations', () => {
     it('logs an applied changeset with counts only', () => {
       const { calls, log } = recording();
       run(
-        [...mixed, add({ id: 'r', type: 'shape', shape: 'blob', ...box, y: 300 })],
+        [...mixed, add({ id: 'r', type: 'shape', shape: 'plant', ...box, y: 300 })],
         checkoutFlow(),
         log,
       );
       expect(calls).toEqual([
-        ['[edit-ops] coerced', { operation: 4, field: 'shape' }],
         [
           '[edit-ops] applied',
-          { operations: 4, added: 2, changed: 1, removed: 1, moved: 0, warnings: 1 },
+          { operations: 4, added: 2, changed: 1, removed: 1, moved: 0, warnings: 0 },
         ],
       ]);
     });
@@ -281,7 +267,7 @@ describe('targets that match nothing', () => {
       ['target_not_found', 1],
       ['target_not_found', 3],
     ]);
-    const mixed = parseEditOperations('set nope1 label=A\nadd square id=n1');
+    const mixed = parseEditOperations('set nope1 label=A\nadd signpost id=n1');
     if ('errors' in mixed) throw new Error('parse');
     const stopped = applyEditOperations(checkoutFlow(), mixed.operations);
     // The refusal that stopped the read is answered too, so the retry does not meet it fresh.
@@ -303,7 +289,7 @@ describe('targets that match nothing', () => {
   // A miss on what a skipped operation would have made sends the agent to that operation, not this right line.
   it('names the skipped operation a later miss follows from', () => {
     const parsed = parseEditOperations(
-      'set nope label=A\nadd square id=fresh right-of:nope\nset fresh label=B',
+      'set nope label=A\nadd signpost id=fresh right-of:nope\nset fresh label=B',
     );
     if ('errors' in parsed) throw new Error('parse');
     const out = applyEditOperations(checkoutFlow(), parsed.operations);
@@ -318,7 +304,7 @@ describe('targets that match nothing', () => {
   // A later miss on some other id is its own mistake, and keeps its own answer.
   it('leaves a later miss on an unrelated id as it is', () => {
     const parsed = parseEditOperations(
-      'set nope label=A\nadd square id=fresh right-of:nope\nset other label=B',
+      'set nope label=A\nadd signpost id=fresh right-of:nope\nset other label=B',
     );
     if ('errors' in parsed) throw new Error('parse');
     const out = applyEditOperations(checkoutFlow(), parsed.operations);

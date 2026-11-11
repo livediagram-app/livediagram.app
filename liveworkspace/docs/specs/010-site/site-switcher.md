@@ -54,7 +54,7 @@ step for the Explorer or a landing page, one click away through the logo (Novemb
 
 On the Explorer (`/explorer` and every view under it, on liveworkspace.app and on each app's own
 address), the switcher keeps you on the Explorer: each app's row goes to **that app's Explorer at
-the same view** (`livediagram.app/explorer/timeline` → `liveplanner.app/explorer/timeline`), and
+the same view** (`livediagram.app/explorer/inbox` → `liveplanner.app/explorer/inbox`), and
 liveworkspace's row to liveworkspace.app's Explorer at that view, in no app (every app's work). The
 app whose address the page is on is the one marked; on liveworkspace.app it is liveworkspace.
 

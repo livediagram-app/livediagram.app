@@ -16,7 +16,7 @@ Scope, by file:
 | `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`                  | `beginDrag` drops the multi-selection when the pressed element is not a member                   |
 | `apps/editor/components/canvas/ArrowView.tsx`                       | The line press passes `paired` (the double-press verdict) to `onSelect`                          |
 | `apps/editor/components/canvas/BoxedElementView.tsx`                | Threads `onPlainClick` and `isPaintMode` into the gesture hook                                   |
-| `apps/editor/components/canvas/CanvasElementsLayer.tsx`             | Hands `handleElementClick` to every boxed view as `onPlainClick`                                 |
+| `apps/editor/components/canvas/useElementLayerHandlers.ts`          | Hands `handleElementClick` to every boxed view as `onPlainClick`                                 |
 | `apps/editor/components/canvas/Canvas.tsx`                          | Feeds `selectedId`, `isPaintMode` and `onDeselect` to `useCanvasSelectHandlers`                  |
 | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`              | `openCanvasMenu`: a right-click or long-press on the empty canvas deselects, then opens the menu |
 | `../packages/workbench/src/hooks/ui/useLongPress.ts`                | Exports `LONG_PRESS_MS`                                                                          |

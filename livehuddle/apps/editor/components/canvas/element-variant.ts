@@ -24,7 +24,7 @@ import {
   type Finish,
 } from '@livehuddle/document';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
-import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
+import { isSvgRenderedShape } from '@/components/canvas/shape-paint-path';
 
 // The wrapper className + inline style for a boxed element, derived purely
 // from the element + its selection state. Encodes the per-type styling
@@ -93,11 +93,8 @@ export function describeVariant(
   switch (element.type) {
     case 'shape': {
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
-      // SVG-rendered shapes (diamond, cylinder, parallelogram, hexagon,
-      // document) draw themselves via an inner SVG overlay; the wrapper div
-      // carries no border/background, just the selection ring. The
-      // border colour for those propagates through ShapeSvgOverlay's
-      // `stroke` prop, not this style block.
+      // Shapes that paint their own body (shape-paint-path): the wrapper div carries no border/background, just the
+      // selection ring.
       if (isSvgRenderedShape(element.shape)) {
         return {
           className: `text-brand-800 dark:text-white ${ring}`,
@@ -124,14 +121,8 @@ export function describeVariant(
           style: { borderRadius: '4px', ...(isRetiredElement(element) ? {} : filterShadow) },
         };
       }
-      // CSS-rendered shapes (square / circle / stadium and the
-      // rectangular device frames). The user-pickable border
-      // strength + style apply here as the HTML element's
-      // borderWidth / borderStyle; borderRadius only applies to
-      // free-corner shapes (NOT circle / stadium, whose radii
-      // are part of the silhouette).
-      const fixedRadius =
-        element.shape === 'circle' ? '50%' : element.shape === 'stadium' ? '9999px' : null;
+      // Box-path shapes (shape-paint-path: a mode button, a portal). The user-pickable border strength + style
+      // apply here as the HTML element's borderWidth / borderStyle, and the corner radius as its borderRadius.
       // Never more than a quarter of the shorter side (docs/specs/008-canvas/corner-radius.md),
       // the kind's own default corner included.
       // A kind's factory corner follows Professional like an unset one (finishOwnCorner).
@@ -164,9 +155,7 @@ export function describeVariant(
         className: `text-brand-800 ${sketched ? '' : softShadow}dark:text-white ${ring}`,
         style: {
           ...(fill === 'transparent' ? filterShadow : boxShadow),
-          borderRadius:
-            fixedRadius ??
-            `${userRadius ?? cornerRadiusPx(undefined, element.width, element.height, fallbackPx)}px`,
+          borderRadius: `${userRadius ?? cornerRadiusPx(undefined, element.width, element.height, fallbackPx)}px`,
           backgroundColor: sketched ? 'transparent' : fill,
           borderColor: remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface),
           borderWidth: useSvgBorder ? 0 : remoteBorderColor ? remoteBorderWidth : strokePx,

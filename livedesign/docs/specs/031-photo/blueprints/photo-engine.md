@@ -71,7 +71,7 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
 - **`apps/live`**:
   - `lib/photo-editor/`, loaded only once a photo page is laid out (`runtime.ts`, exposed as
     `PhotoEditorView.runtime`; `app/design/[id]/photo-lazy-load.test.ts` keeps it out of first-load JS):
-    - The session and its pixels: `session.ts` (`PhotoSession`), `pixels-store.ts` (decoded tiles by blob id,
+    - The session and its pixels: `session.ts` (`PhotoSession`; its tile helpers in `session-tiles.ts`), `pixels-store.ts` (decoded tiles by blob id,
       the memory budget), `blob-client.ts`, `offline-blobs.ts`, `upload-queue.ts`, `content-cache.ts` (fills,
       text and effects drawn for the compositor), `text-raster.ts`, `thumbnails.ts`, `preview.ts`.
     - The worker: `photo.worker.ts` with `worker-tasks.ts` (encode, decode, filter, subject, quick select,

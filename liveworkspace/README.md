@@ -11,7 +11,7 @@ spec first, then its blueprint, then the code ([AGENTS.md](AGENTS.md)).
 ```
 apps/site              www.liveworkspace.app: every page, the Explorer, Settings, the telemetry dashboard, status (a Next static export)
 apps/accounts          /api/auth and /api/account: sign-in, sessions, teams, API tokens, guests, settings, profiles, email
-apps/index             /api/index: the One Explorer's index (items, folders, sharing, Inbox, Timeline, Trash, grants)
+apps/index             /api/index: the One Explorer's index (items, folders, sharing, Inbox, a 30-day event log, Trash, grants)
 apps/drive             /api/drive: the Google Drive mirror, for every app
 apps/media             /api/media and /api/previews: every app's images, and its previews and share cards
 apps/community         /api/community: every app's Community listings

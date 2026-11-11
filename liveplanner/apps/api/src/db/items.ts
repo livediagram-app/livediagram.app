@@ -257,8 +257,8 @@ function updateAtRevStatement(
   );
 }
 
-// Returns the store's new rev and the item as it was deleted (its comments retract from the Timeline,
-// docs/specs/013-workspace/timeline.md §4.3), or null when there was no such item. The item is read
+// Returns the store's new rev and the item as it was deleted (its comments retract from History,
+// docs/specs/013-workspace/history.md), or null when there was no such item. The item is read
 // by the delete itself, so a comment written a moment before cannot slip between a read and it.
 export async function deleteItemRow(
   env: PlanEnv,

@@ -13,20 +13,20 @@ const set = (target: string, fields: Record<string, unknown>): EditOperation =>
 
 describe('set', () => {
   it('changes the named fields and nothing else', () => {
-    const outcome = run([set('n3', { label: 'Sign in', shape: 'stadium' })]);
+    const outcome = run([set('n3', { label: 'Sign in with your email', shape: 'room-sign' })]);
     const { tab, targets, elementOps } = applied(outcome);
     expect(tab.elements.find((el) => el.id === 'n3')).toMatchObject({
-      label: 'Sign in',
-      shape: 'stadium',
-      // "Sign in" needs 160 in a stadium, more than the 140 the box has: it grows around its centre.
-      x: -10,
+      label: 'Sign in with your email',
+      shape: 'room-sign',
+      // The new label needs more than the 140 the box has: it grows around its centre.
+      x: -36,
       y: 200,
-      width: 160,
+      width: 212,
     });
     expect(targets).toEqual(['n3']);
     expect(elementOps).toHaveLength(1);
     expect(lines(outcome)).toEqual([
-      '~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→160',
+      '~ n3  label "Login"→"Sign in with your email" · shape signpost→room-sign · widened 140→212',
     ]);
   });
 
@@ -53,7 +53,7 @@ describe('set', () => {
   });
 
   // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: a stored lane is a retired
-  // kind. A relabel writes the label and nothing else: no normalising, and no square in its place.
+  // kind. A relabel writes the label and nothing else: no normalising, and no signpost in its place.
   it('relabels a stored lane, keeping its kind and every other field', () => {
     const tab = checkoutFlow();
     const lane = {
@@ -76,11 +76,10 @@ describe('set', () => {
     });
   });
 
-  it('draws a stored kind changed to one livehuddle lacks as a square', () => {
-    const outcome = run([set('n1', { shape: 'lane' })]);
-    expect(applied(outcome).warnings.map((w) => w.message)).toEqual([
-      'n1 shape "lane" drawn as square',
-    ]);
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5 (D30): nothing is coerced.
+  it('refuses changing a kind to one livehuddle lacks', () => {
+    for (const shape of ['lane', 'square'])
+      expect(refused(run([set('n1', { shape })])).code).toBe('invalid_value');
   });
 
   it('prints nothing for a value the element already holds (E1)', () => {
@@ -94,7 +93,16 @@ describe('set', () => {
       id: 't',
       name: 'T',
       elements: [
-        { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 120, height: 60, label: 'a' },
+        {
+          id: 'a',
+          type: 'shape',
+          shape: 'signpost',
+          x: 0,
+          y: 0,
+          width: 120,
+          height: 60,
+          label: 'a',
+        },
       ],
     };
     const { results, elementOps } = applied(run([set('a', { label: 'a' })], bare));
@@ -167,14 +175,14 @@ describe('set', () => {
       { op: 'set' }
     >['fields'];
     expect(refused(run([{ op: 'set', target: 'n3', fields }])).details[0]).toBe(
-      'square has no field "__proto__"',
+      'signpost has no field "__proto__"',
     );
   });
 
   it('names the nearest elements when the target matches nothing', () => {
     expect(refused(run([set('n33', { label: 'x' })]))).toMatchObject({
       code: 'target_not_found',
-      details: expect.arrayContaining(['  n3  square "Login"']),
+      details: expect.arrayContaining(['  n3  signpost "Login"']),
     });
   });
 });
@@ -183,7 +191,7 @@ describe('set with aliases', () => {
   const tall = {
     id: 'wide',
     type: 'shape',
-    shape: 'square',
+    shape: 'signpost',
     x: 0,
     y: 900,
     width: 400,
@@ -214,29 +222,36 @@ describe('set with aliases', () => {
     const long = 'Orders service which creates and tracks every order';
     const outcome = applyEditOperations(
       withTall(tall),
-      [set('wide', { label: long, shape: 'rect' })],
+      [set('wide', { label: long, shape: 'plant' })],
       {
         makeId: fixedIds(),
         log: (fingerprint) => void calls.push(fingerprint),
       },
     );
     expect(lines(outcome)[0]).toBe(
-      '~ wide  label "x"→"Orders service" · textSize →md · note →"Orders service which creates and tracks every"…',
+      '~ wide  label "x"→"Orders service" · shape signpost→plant · textSize →md · note →"Orders service which creates and tracks every"…',
     );
-    expect(calls).toEqual(['[edit-ops] coerced', '[edit-ops] label-capped', '[edit-ops] applied']);
-    const diamond = applyEditOperations(
+    expect(calls).toEqual(['[edit-ops] label-capped', '[edit-ops] applied']);
+    const directory = applyEditOperations(
       checkoutFlow(),
       [set('n6', { label: 'Payment provider callback and receipt' })],
       { makeId: fixedIds() },
     );
-    expect(lines(diamond)[0]).toMatch(
-      /^~ n6 {2}label "3-D Secure\?"→"Payment provider callback and receipt" · widened 140→324$/,
+    expect(lines(directory)[0]).toMatch(
+      /^~ n6 {2}label "3-D Secure\?"→"Payment provider callback and receipt" · widened 140→240$/,
     );
-    // A cylinder needs 140 tall where a square needs 120: the 60 box grows by the difference.
-    const cylinder = applyEditOperations(checkoutFlow(), [set('n3', { shape: 'cylinder' })], {
+    // A label of many short lines needs more height and no more width: only the height grows.
+    const stacked = applyEditOperations(
+      checkoutFlow(),
+      [set('n3', { label: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].join('\n') })],
+      { makeId: fixedIds() },
+    );
+    expect(lines(stacked)[0]).toMatch(/^~ n3 {2}label "Login"→"a\\nb.*" · taller 60→\d+$/);
+    // A signpost stands taller than a plant: the 60 box grows by the difference.
+    const taller = applyEditOperations(checkoutFlow(), [set('n3', { shape: 'plant' })], {
       makeId: fixedIds(),
     });
-    expect(lines(cylinder)).toEqual(['~ n3  shape square→cylinder · taller 60→80']);
+    expect(lines(taller)).toEqual(['~ n3  shape signpost→plant']);
   });
 
   it('paints an unknown theme as the default, and logs it (E11)', () => {

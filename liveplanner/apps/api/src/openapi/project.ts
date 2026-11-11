@@ -190,7 +190,7 @@ const TAGS = [
   {
     name: 'Automations',
     description:
-      "A plan's rules: a trigger, conditions and actions that run on its cards, and the Run Log of what they did.",
+      "A plan's rules: a trigger, conditions and actions that run on its cards, and the Audit Trail of what they did.",
   },
   { name: 'Sharing', description: 'Share links, passwords, and the plans shared with you.' },
   { name: 'Folders', description: 'Organise plans into a personal or team folder tree.' },

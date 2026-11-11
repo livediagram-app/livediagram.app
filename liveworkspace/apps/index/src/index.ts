@@ -22,9 +22,9 @@ import { handleMerge } from './merge';
 import { drainPersonMerges } from './person-merges';
 import { handleFavourites, handlePlacementDefaults, handleRecentHidden } from './personal';
 import { sweep } from './purge';
-import { sweepExpiringLinks } from './share-expiry';
 import { handleWorkbenchClose } from './workbench-close';
-import { handleAccountTimeline, handleTimeline } from './timeline';
+import { handleAccountEvents } from './event-push';
+import { sweepEvents } from './events';
 import { kickWebhooks, queuedCount } from './webhooks/outbox';
 import { handleItemWebhooks, handleWebhooks } from './webhooks/routes';
 import { handleTeamAudit } from './team-audit-read';
@@ -43,7 +43,7 @@ function splitPath(path: string): string[] | null {
 }
 
 // The lists an app acting for a person sees filtered to that app.
-const LISTS = new Set(['items', 'trash', 'shared', 'inbox', 'timeline']);
+const LISTS = new Set(['items', 'trash', 'shared', 'inbox']);
 
 // What the Drive mirror acting for a person may reach: their items, Trash and folders (liveworkspace/docs/specs/005-drive/drive.md).
 const DRIVE_ROUTES = new Set(['items', 'trash', 'folders']);
@@ -58,7 +58,6 @@ const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> =
   shared: handleShared,
   inbox: handleInbox,
   trash: handleTrash,
-  timeline: handleTimeline,
   webhooks: (ctx) => handleWebhooks(ctx),
   'team-audit': (ctx) => handleTeamAudit(ctx),
 };
@@ -125,7 +124,6 @@ const routeLabel = createApiRouteLabel(
     'app',
     'internal',
     'merge',
-    'timeline',
     'purge-person',
     'workbench-close',
     'jwks',
@@ -146,7 +144,7 @@ const routeLabel = createApiRouteLabel(
     'copy',
     'open',
     'seen',
-    'dismiss',
+    'history',
     'extend',
     'all',
     'recent',
@@ -168,6 +166,7 @@ const routeLabel = createApiRouteLabel(
     'test',
     'deliveries',
     'card-moves',
+    'automation-sends',
     'connections',
   ]),
 );
@@ -184,9 +183,9 @@ async function serve(request: Request, env: Env, ctx: ExecutionContext): Promise
   if (segments[0] === 'internal' && segments[1] === 'merge' && segments.length === 2) {
     return handleMerge(request, env, waitUntil);
   }
-  // Accounts' team and API token events for the Timeline.
-  if (segments[0] === 'internal' && segments[1] === 'timeline' && segments.length === 2) {
-    return handleAccountTimeline(request, env);
+  // Accounts' team events, for the event log and the team audit log (event-push.ts).
+  if (segments[0] === 'internal' && segments[1] === 'events' && segments.length === 2) {
+    return handleAccountEvents(request, env);
   }
   if (segments[0] === 'internal' && segments[1] === 'purge-person' && segments.length === 2) {
     return handlePersonPurge(request, env, waitUntil);
@@ -237,8 +236,8 @@ const worker = {
   },
 
   // Every 15 minutes: carry on closed accounts' purges, and tell the apps what was purged and which guests
-  // became accounts. Once a day: move empty, unchanged items to the Trash, purge items 30 days in it, retry apps that missed a purge, and warn owners
-  // of share links lapsing within the week (share-expiry.ts).
+  // became accounts. Once a day: move empty, unchanged items to the Trash, purge items 30 days in it, retry apps that missed a purge, and
+  // delete events past their 30 days (events.ts).
   async scheduled(event: ScheduledController, env: Env): Promise<void> {
     if (!indexEnabled(env)) return;
     if (event.cron === FREQUENT_CRON) {
@@ -267,8 +266,9 @@ const worker = {
         `[index] sweep: ${emptied} empty items to the Trash, purged ${purged} items, apps confirmed ${confirmed}`,
       );
     });
-    await step('expiring links', async () => {
-      console.info(`[index] ${await sweepExpiringLinks(env)} items with links expiring`);
+    await step('events', async () => {
+      const { deleted, more } = await sweepEvents(env);
+      console.info(`[index] events swept: ${deleted}${more ? ', more left for tomorrow' : ''}`);
     });
   },
 };

@@ -1,11 +1,9 @@
 import type { Element, ShapeKind } from './index';
 import { isRetiredElement, retiredElementName } from './retired-kinds';
 
-// Human-readable name for a shape kind, e.g. 'square' -> 'Square',
-// 'speech-bubble' -> 'Speech Bubble'. Used in selection labels and any
+// Human-readable name for a shape kind, e.g. 'meeting-table' -> 'Meeting Table'. Used in selection labels and any
 // surface that wants to name the kind of element a user has selected.
 const SHAPE_LABELS: Partial<Record<ShapeKind, string>> = {
-  'speech-bubble': 'Speech Bubble',
   icon: 'Icon',
   // Named for what it does, not its internal kind — titleCase would say
   // 'Mode Button' (docs/specs/009-elements/mode-button.md).
@@ -19,7 +17,7 @@ function titleCase(s: string): string {
     .join(' ');
 }
 
-// A short, human-readable name for what an element IS, e.g. 'Square',
+// A short, human-readable name for what an element IS, e.g. 'Chair',
 // 'Icon', 'Text', 'Sticky'. Title-cased so callers that
 // uppercase (e.g. a selection caption) read naturally.
 export function elementKindLabel(el: Element): string {

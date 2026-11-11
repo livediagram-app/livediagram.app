@@ -48,9 +48,9 @@ async function openAs(
   return page;
 }
 
-// The seeded square and the sticky notes each peer adds.
-const squares = (page: Page) =>
-  page.locator(CANVAS).getByRole('img', { name: /^(Square|Sticky note)$/ });
+// The seeded sticky note and the ones each peer adds.
+const notes = (page: Page) =>
+  page.locator(CANVAS).getByRole('img', { name: 'Sticky note', exact: true });
 
 test('two peers see each other, edit live, and every edit is kept', async ({
   page,
@@ -69,7 +69,7 @@ test('two peers see each other, edit live, and every edit is kept', async ({
         name: 'Board',
         opensIn: 'workshop',
         elements: [
-          { id: 'a', type: 'shape', shape: 'square', x: 100, y: 100, width: 200, height: 100 },
+          { id: 'a', type: 'sticky', x: 100, y: 100, width: 200, height: 100 },
           // Avatar mode's one way in (docs/specs/008-canvas/avatar-mode.md "Where it lives").
           {
             id: 'walk',
@@ -116,7 +116,7 @@ test('two peers see each other, edit live, and every edit is kept', async ({
     await paletteTile(peerPage, 'Add Sticky Note')
   ).dragTo(peerPage.locator(CANVAS), { targetPosition: { x: 700, y: 500 } });
   await peerPage.keyboard.press('Escape');
-  await expect(squares(ownerPage)).toHaveCount(2);
+  await expect(notes(ownerPage)).toHaveCount(2);
 
   // The owner edits too; the autosave keeps both, and a reload shows both.
   await (
@@ -137,7 +137,7 @@ test('two peers see each other, edit live, and every edit is kept', async ({
     .toBe(4);
   await ownerPage.reload();
   await ownerPage.locator(CANVAS).waitFor();
-  await expect(squares(ownerPage)).toHaveCount(3);
+  await expect(notes(ownerPage)).toHaveCount(3);
 
   // The peer walks as an avatar; the owner sees the character.
   await editToggle(peerPage, 'Walk').click();

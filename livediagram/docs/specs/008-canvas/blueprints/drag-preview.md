@@ -5,26 +5,26 @@ drags for collaborators.
 
 ## Files
 
-| File                                                    | Role                                                                                     |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `apps/editor/lib/drag-preview.ts`                       | The preview store: local and peer overlays, `useDragPreview`, `applyOverlay`             |
-| `apps/editor/hooks/canvas/useEditorDrag.ts`             | Writes ticks to the preview; reads through the virtual tab; commits on release           |
-| `apps/editor/components/canvas/CanvasElementsLayer.tsx` | Lists the elements; renders for a preview only when it adds or removes some              |
-| `apps/editor/hooks/canvas/useLayerDragPreview.ts`       | The layer's preview store: one entry per previewed element and affected arrow            |
-| `apps/editor/components/canvas/CanvasElementList.tsx`   | Lists a `PreviewedElement` per element, in paint order                                   |
-| `apps/editor/components/canvas/PreviewedElement.tsx`    | One element, drawn from its preview entry or the document                                |
-| `apps/editor/components/canvas/drag-affected-arrows.ts` | The workbench's `createDragAffectedArrows`, bound to this document's model               |
-| `../packages/model-core/src/rect-grid.ts`               | `RectGrid`: rects bucketed by id, asked by neighbourhood; shared                         |
-| `../packages/workbench/src/lib/drag-ride.ts`            | `ridingElements`: what the preview only translates, by how much; shared                  |
-| `../packages/workbench/src/lib/drag-ride-dom.ts`        | `createRideWriter`: writes the offsets to nodes or planes, outside React; shared         |
-| `../packages/workbench/src/lib/drag-look.ts`            | `overlayAsDrawn`: what the preview changes, drawn as the canvas draws it at rest; shared |
-| `apps/editor/e2e/perf/large-selection-board.ts`         | The 1,770-element large-selection board                                                  |
-| `apps/editor/e2e/perf/large-selection-drag.perf.ts`     | The large-selection bench: script and frame per pointer move                             |
-| `apps/editor/hooks/canvas/useCanvasSelectionView.ts`    | Derives the selection from the previewed elements while a preview lasts                  |
-| `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`      | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label                |
-| `packages/api-schema/src/room-messages.ts`              | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                                       |
-| `apps/editor/hooks/collab/useDragPreviewBroadcast.ts`   | Sends the local preview at `DRAG_PREVIEW_SEND_MS`, and its end                           |
-| `apps/editor/hooks/collab/peer-drag-previews.ts`        | Receives peers' previews: role check, expiry, cleared by real ops                        |
+| File                                                     | Role                                                                                     |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `apps/editor/lib/drag-preview.ts`                        | The preview store: local and peer overlays, `useDragPreview`, `applyOverlay`             |
+| `apps/editor/hooks/canvas/useEditorDrag.ts`              | Writes ticks to the preview; reads through the virtual tab; commits on release           |
+| `apps/editor/components/canvas/CanvasElementsLayer.tsx`  | Lists the elements; renders for a preview only when it adds or removes some              |
+| `apps/editor/hooks/canvas/useLayerDragPreview.ts`        | The layer's preview store: one entry per previewed element and affected arrow            |
+| `apps/editor/components/canvas/CanvasElementList.tsx`    | Lists a `PreviewedElement` per element, in paint order                                   |
+| `apps/editor/components/canvas/PreviewedElement.tsx`     | One element, drawn from its preview entry or the document                                |
+| `apps/editor/components/canvas/drag-affected-arrows.ts`  | The workbench's `createDragAffectedArrows`, bound to this document's model               |
+| `../packages/model-core/src/rect-grid.ts`                | `RectGrid`: rects bucketed by id, asked by neighbourhood; shared                         |
+| `../packages/workbench/src/lib/drag-ride.ts`             | `ridingElements`: what the preview only translates, by how much; shared                  |
+| `../packages/workbench/src/lib/drag-ride-dom.ts`         | `createRideWriter`: writes the offsets to nodes or planes, outside React; shared         |
+| `../packages/workbench/src/lib/drag-look.ts`             | `overlayAsDrawn`: what the preview changes, drawn as the canvas draws it at rest; shared |
+| `apps/editor/e2e/perf/large-selection-board.ts`          | The 1,770-element large-selection board                                                  |
+| `apps/editor/e2e/perf/large-selection-drag.perf.ts`      | The large-selection bench: script and frame per pointer move                             |
+| `apps/editor/hooks/canvas/useCanvasSelectionView.ts`     | Derives the selection from the previewed elements while a preview lasts                  |
+| `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`       | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label                |
+| `packages/api-schema/src/room-op.ts`, `room-op-kinds.ts` | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                                       | `drag-preview` presence op, in `PRESENCE_OP_KINDS` |
+| `apps/editor/hooks/collab/useDragPreviewBroadcast.ts`    | Sends the local preview at `DRAG_PREVIEW_SEND_MS`, and its end                           |
+| `apps/editor/hooks/collab/peer-drag-previews.ts`         | Receives peers' previews: role check, expiry, cleared by real ops                        |
 
 ## Domain and naming
 

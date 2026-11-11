@@ -9,7 +9,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { act, cleanup, render } from '@testing-library/react';
 import { beginCanvasGesture, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { createShape, createText } from '@livehuddle/document';
+import { createSticky, createText } from '@livehuddle/document';
 import { storedPinnedArrow } from '@/test/retired-elements';
 import { Minimap } from './Minimap';
 
@@ -25,10 +25,10 @@ beforeAll(() => {
 
 const ACCENT = '#123456';
 const elements = [
-  createShape('square', 0, 0),
-  createShape('square', 400, 0),
-  createShape('square', 0, 300),
-  createShape('square', 400, 300),
+  createSticky(0, 0),
+  createSticky(400, 0),
+  createSticky(0, 300),
+  createSticky(400, 300),
 ];
 
 function mount(mainSize: { width: number; height: number }) {
@@ -131,10 +131,10 @@ describe('Minimap drawing', () => {
 describe('Minimap labels', () => {
   it('leaves every label out of the picture, keeping the shapes and the stored arrow', () => {
     const labelled = [
-      { ...createShape('square', 0, 0), id: 's1', label: 'Checkout' },
-      { ...createShape('square', 400, 0), id: 's2', label: 'Pay' },
+      { ...createSticky(0, 0), id: 's1', label: 'Checkout' },
+      { ...createSticky(400, 0), id: 's2', label: 'Pay' },
       { ...createText(0, 300), id: 't1', label: 'A note' },
-      { ...createShape('square', 400, 300), id: 's3' },
+      { ...createSticky(400, 300), id: 's3' },
       storedPinnedArrow('a1', 's1', 'e', 's2', 'w', { label: 'next' }),
     ];
     const { container } = render(

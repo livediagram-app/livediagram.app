@@ -220,7 +220,7 @@ records it so.
   the editor's to record, and a re-commit of an id the index already holds is no making, so neither is recorded
   here.
 - The create itself is the canvas's making, not an edit: the canvas's room records no editor for
-  `POST /api/documents` ([Timeline](../013-workspace/timeline.md)), so its seeded tabs never count a use day that
+  `POST /api/documents` ([History](../013-workspace/history.md)), so its seeded tabs never count a use day that
   `markUsed: false` withheld.
 
 ### Documents in the Trash
@@ -476,7 +476,7 @@ Edits and presence propagate as `op` messages. The room is **not** a stateless r
 
 ### Op classes
 
-Every op kind belongs to exactly one of three lists in `@livediagram/api-schema` (`packages/api-schema/src/room-messages.ts`), and the class decides its ordering, its role gate, and whether a client may send it at all. The room reads `op.kind` to classify; the payload stays `op: unknown` on the wire.
+Every op kind belongs to exactly one of three lists in `@livediagram/api-schema` (`packages/api-schema/src/room-op-kinds.ts`), and the class decides its ordering, its role gate, and whether a client may send it at all. The room reads `op.kind` to classify; the payload stays `op: unknown` on the wire.
 
 - **Presence** (`PRESENCE_OP_KINDS`): ephemeral, mutate nothing. Relayed unordered (no `seq`), never logged, never replayed, from **any** connected session, so a view-only visitor still shows peers their cursor, selection, laser, walking character and tab, and can answer a poll.
 - **Mutation** (`MUTATION_OP_KINDS`): change the document. Relayed **only from a session whose verified role is `edit`**; each gets a monotonic `seq` within the room's `epoch` and a slot in the catch-up log.

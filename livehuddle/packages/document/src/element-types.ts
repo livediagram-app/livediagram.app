@@ -18,7 +18,6 @@ import type {
 } from '@liveworkspace/model-core/border-style';
 import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
-import type { AccentEdge } from './accent-edge';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { SelectionMode } from './selection-mode';
@@ -162,10 +161,6 @@ export type ShapeElement = {
   strokeWidth?: BorderStroke;
   strokeStyle?: BorderStyle;
   borderRadius?: BorderRadius;
-  // A coloured bar along one edge of a box shape (docs/specs/008-canvas/accent-edge.md); absent = none. Only
-  // the kinds in ACCENT_EDGE_SHAPES draw it. Its colour is its own, else the border's as drawn.
-  accentEdge?: AccentEdge;
-  accentEdgeColor?: string;
   // Colour-preset binding (docs/specs/010-palette/style-presets.md). When a one-click colour preset is applied
   // to a shape, we store the preset's stable id (e.g. 'bold', 'soft',
   // 'branch-0') alongside the concrete fill / stroke / text it wrote. This lets

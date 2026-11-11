@@ -17,7 +17,7 @@ describe('migrateStoredTab', () => {
         {
           id: 'a',
           type: 'shape',
-          shape: 'square',
+          shape: 'focus-button',
           x: 0,
           y: 0,
           width: 1,
@@ -58,7 +58,8 @@ describe('a stored whiteboard tab', () => {
     const out = migrateStoredTab(whiteboard() as unknown as Tab);
     expect(out.kind).toBe('diagram');
     expect(out.opensIn).toBe('draw');
-    expect(out.elements[0]).toMatchObject({ penColour: 'ink', fillColor: 'transparent' });
+    // A stored circle is a retired element (part 5): kept exactly as stored, no ink written on.
+    expect(out.elements[0]).toEqual(whiteboard().elements[0]);
   });
 
   it('opens in Draw from outside (an api write, a peer, a file)', () => {
@@ -77,7 +78,7 @@ describe('migrating untrusted input', () => {
   const box = {
     id: 'a',
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     x: 0,
     y: 0,
     width: 10,

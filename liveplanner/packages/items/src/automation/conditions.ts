@@ -1,5 +1,5 @@
 // Automations: one condition against the card (docs/specs/026-plan/automations.md "Conditions"; blueprint
-// automations.md "Files"). `holds` answers whether it holds and the line the Run Log shows for it, with what it found.
+// automations.md "Files"). `holds` answers whether it holds and the line the Audit Trail shows for it, with what it found.
 // A condition on a field the card's type lacks, or naming a type, column, field, person or saved filter that is gone,
 // does not hold; it never throws. Pure.
 

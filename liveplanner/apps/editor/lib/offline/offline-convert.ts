@@ -142,7 +142,7 @@ async function downloadAndRemoveCloudCopy(
   try {
     // Declare the conversion: this DELETE is indistinguishable from a real
     // delete at the boundary, and undeclared the feed told the owner their
-    // project had been deleted (docs/specs/006-project/offline-mode.md + docs/specs/013-workspace/timeline.md).
+    // project had been deleted (docs/specs/006-project/offline-mode.md + docs/specs/013-workspace/history.md).
     await apiDelete(`${API_BASE}/projects/${projectId}`, ownerId, {
       action: 'take offline',
       extra: { [PROJECT_CONVERSION_HEADER]: 'offline' },

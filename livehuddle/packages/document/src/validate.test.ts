@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  coerceShapeKind,
   elementValidationIssue,
   isValidElement,
   isValidTab,
@@ -24,7 +23,7 @@ describe('isValidElement', () => {
   });
 
   it('accepts a well-formed shape', () => {
-    expect(isValidElement({ id: 'a', type: 'shape', shape: 'square', ...box })).toBe(true);
+    expect(isValidElement({ id: 'a', type: 'shape', shape: 'focus-button', ...box })).toBe(true);
   });
 
   it('accepts a pinned arrow', () => {
@@ -127,7 +126,7 @@ describe('isValidElement', () => {
   // shape label's stock colour, stored by name.
   it('accepts a named text colour and rejects anything else in its place', () => {
     const text = { id: 't', type: 'text', label: 'Hi', ...box };
-    const shape = { id: 's', type: 'shape', shape: 'square', label: 'Hi', ...box };
+    const shape = { id: 's', type: 'shape', shape: 'focus-button', label: 'Hi', ...box };
     for (const el of [text, shape]) {
       expect(isValidElement({ ...el, penTextColour: 'green' })).toBe(true);
       // Ink is a stock colour by name (docs/specs/007-editor/editor-modes.md "One look").
@@ -140,17 +139,19 @@ describe('isValidElement', () => {
 
   it('rejects a non-object / missing id / unknown type', () => {
     expect(isValidElement(null)).toBe(false);
-    expect(isValidElement({ type: 'shape', shape: 'square', ...box })).toBe(false);
+    expect(isValidElement({ type: 'shape', shape: 'focus-button', ...box })).toBe(false);
     expect(isValidElement({ id: 'a', type: 'wormhole', ...box })).toBe(false);
   });
 
   it('rejects a boxed element with a non-numeric / missing box', () => {
-    expect(isValidElement({ id: 'a', type: 'shape', shape: 'square', x: 0, y: 0 })).toBe(false);
+    expect(isValidElement({ id: 'a', type: 'shape', shape: 'focus-button', x: 0, y: 0 })).toBe(
+      false,
+    );
     expect(
       isValidElement({
         id: 'a',
         type: 'shape',
-        shape: 'square',
+        shape: 'focus-button',
         x: '0',
         y: 0,
         width: 1,
@@ -161,7 +162,7 @@ describe('isValidElement', () => {
       isValidElement({
         id: 'a',
         type: 'shape',
-        shape: 'square',
+        shape: 'focus-button',
         x: NaN,
         y: 0,
         width: 1,
@@ -238,7 +239,7 @@ describe('isValidTab', () => {
       isValidTab({
         id: 't',
         name: 'Tab',
-        elements: [{ id: 'a', type: 'shape', shape: 'square', ...box }],
+        elements: [{ id: 'a', type: 'shape', shape: 'focus-button', ...box }],
       }),
     ).toBe(true);
   });
@@ -260,7 +261,7 @@ describe('isValidTab', () => {
   });
 
   it('rejects duplicate element ids', () => {
-    const el = { id: 'dup', type: 'shape', shape: 'square', ...box };
+    const el = { id: 'dup', type: 'shape', shape: 'focus-button', ...box };
     expect(isValidTab({ id: 't', name: 'x', elements: [el, { ...el }] })).toBe(false);
   });
 
@@ -268,25 +269,10 @@ describe('isValidTab', () => {
     const els = Array.from({ length: MAX_ELEMENTS_PER_TAB + 1 }, (_, i) => ({
       id: `e${i}`,
       type: 'shape',
-      shape: 'square',
+      shape: 'focus-button',
       ...box,
     }));
     expect(isValidTab({ id: 't', name: 'x', elements: els })).toBe(false);
-  });
-});
-
-describe('coerceShapeKind', () => {
-  it('keeps a real kind', () => {
-    expect(coerceShapeKind('square')).toBe('square');
-    expect(coerceShapeKind('diamond')).toBe('diamond');
-    expect(coerceShapeKind('cylinder')).toBe('cylinder');
-  });
-  it('coerces an off-vocabulary or junk kind to square', () => {
-    expect(coerceShapeKind('rectangle')).toBe('square'); // the bug: not a real kind
-    expect(coerceShapeKind('box')).toBe('square');
-    expect(coerceShapeKind('oval')).toBe('square');
-    expect(coerceShapeKind(undefined)).toBe('square');
-    expect(coerceShapeKind(42)).toBe('square');
   });
 });
 
@@ -320,7 +306,7 @@ describe('mode button validation (docs/specs/009-elements/mode-button.md)', () =
 });
 
 describe('quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md)', () => {
-  const shape = { id: 's', type: 'shape', shape: 'square', ...box };
+  const shape = { id: 's', type: 'shape', shape: 'focus-button', ...box };
   const arrow = {
     id: 'a',
     type: 'arrow',
@@ -364,11 +350,13 @@ describe('text box validation', () => {
 // and the rule it broke, so the caller can fix the one value rather than guess.
 describe('elementValidationIssue', () => {
   it('finds nothing wrong with a valid element', () => {
-    expect(elementValidationIssue({ id: 'a', type: 'shape', shape: 'square', ...box })).toBeNull();
+    expect(
+      elementValidationIssue({ id: 'a', type: 'shape', shape: 'focus-button', ...box }),
+    ).toBeNull();
   });
 
   it('names a missing id', () => {
-    expect(elementValidationIssue({ type: 'shape', shape: 'square', ...box })).toEqual({
+    expect(elementValidationIssue({ type: 'shape', shape: 'focus-button', ...box })).toEqual({
       field: 'id',
       rule: 'a non-empty string',
     });
@@ -384,7 +372,7 @@ describe('elementValidationIssue', () => {
 
   it('names the box field that is wrong', () => {
     expect(
-      elementValidationIssue({ id: 'a', type: 'shape', shape: 'square', ...box, width: -1 }),
+      elementValidationIssue({ id: 'a', type: 'shape', shape: 'focus-button', ...box, width: -1 }),
     ).toEqual({ field: 'width', rule: 'a finite number, 0 or more' });
   });
 
@@ -421,7 +409,7 @@ describe('elementValidationIssue', () => {
   it('agrees with isValidElement on every case above', () => {
     const cases: unknown[] = [
       null,
-      { id: 'a', type: 'shape', shape: 'square', ...box },
+      { id: 'a', type: 'shape', shape: 'focus-button', ...box },
       { id: 'a', type: 'shape', shape: '', ...box },
       { id: 'a', type: 'text', sizing: 'grow', ...box },
       { id: 'a', type: 'image', imageId: 3, ...box },

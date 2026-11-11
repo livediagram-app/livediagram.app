@@ -1,7 +1,6 @@
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 import type {
   AnimationSpeed,
-  BorderRadius,
   BorderStroke,
   BorderStyle,
   ChairFacing,
@@ -16,7 +15,6 @@ import type {
   Padding,
   TextAlignX,
   TextAlignY,
-  ShapeKind,
   ShapeMarker,
   TextSize,
   TextSizePreset,
@@ -95,8 +93,6 @@ export type EditorContextMenuProps = {
   onCommitBorderStyle: (value: BorderStyle) => void;
   // Writes a control's own field onto the selection (lib/element-style-ops.ts).
   elementStyle: ElementStyleOps;
-  onPreviewBorderRadius: (value: BorderRadius) => void;
-  onCommitBorderRadius: (value: BorderRadius) => void;
   // Drop shadow (docs/specs/008-canvas/element-shadows.md): preset tiles commit/preview like the border
   // tiles; the four sliders use the debounced onSetShadow (one undo step
   // per gesture, like onSetOpacity). `null` clears.
@@ -184,11 +180,6 @@ export type EditorContextMenuProps = {
   onPreviewFont: (font: string | null) => void;
   onSetPadding: (padding: Padding) => void;
   onPreviewPadding: (padding: Padding) => void;
-  // Morph shape elements to another kind in place (preserving size/colour).
-  // Id-scoped: the single menu passes just the clicked element, the multi
-  // menu every morphable member. Commit + hover-preview pair.
-  onSetShapeKind: (ids: string[], kind: ShapeKind) => void;
-  onPreviewShapeKind: (ids: string[], kind: ShapeKind) => void;
   // Reset the shape back to its kind's default aspect ratio (keeps area,
   // snaps the width:height proportion back to the canonical look).
   onResetAspectRatio: () => void;

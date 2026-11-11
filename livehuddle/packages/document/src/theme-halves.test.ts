@@ -91,7 +91,7 @@ describe('a preset-styled box in the other half', () => {
     const viewed = viewElementInTheme(el, themeColourMap(brand, 'dark'));
     expect(viewed.fillColor).toBe(dark.fill);
     // Default paints with the stock colours, which the canvas then draws for its surface.
-    const drawn = resolveStockColours({ ...createShape('square', 0, 0), ...viewed }, 'dark');
+    const drawn = resolveStockColours({ ...createShape('focus-button', 0, 0), ...viewed }, 'dark');
     expect(isLightColor(drawn.fillColor)).toBe(false);
     expect(contrastRatio(drawn.textColor, drawn.fillColor)).toBeGreaterThanOrEqual(4.5);
   });

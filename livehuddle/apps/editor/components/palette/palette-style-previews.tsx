@@ -1,11 +1,10 @@
 // Style-value previews for the palette and context menus: each draws the value it picks (a border
-// weight, dash or radius) at its real proportions, so
+// weight or dash) at its real proportions, so
 // they keep their own strokes rather than the house icon weight
 // (docs/specs/004-interface-design/iconography.md, "Art").
 
 import { BORDER_STROKE_PX } from '@livehuddle/document';
-import type { BorderRadius, BorderStroke, BorderStyle } from '@livehuddle/document';
-import { Glyph } from '@livehuddle/ui';
+import type { BorderStroke, BorderStyle } from '@livehuddle/document';
 
 export function BorderStrokeIcon({ value }: { value: BorderStroke }) {
   if (value === 'none') {
@@ -79,15 +78,5 @@ export function BorderStyleIcon({ value }: { value: BorderStyle }) {
         strokeLinecap="round"
       />
     </svg>
-  );
-}
-
-export function BorderRadiusIcon({ value }: { value: BorderRadius }) {
-  // 'full' → half the 12-wide rect, so the preview reads as a circle/pill.
-  const rx = { none: 0, sm: 2, md: 4.5, lg: 7, full: 6 }[value];
-  return (
-    <Glyph size={18} units={18}>
-      <rect x="3" y="3" width="12" height="12" rx={rx} />
-    </Glyph>
   );
 }

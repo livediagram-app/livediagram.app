@@ -142,17 +142,12 @@ const VIEW_HELP: Partial<Record<ExplorerView['kind'], string>> = {
   favourites: 'explorer/explorer-page',
   shared: 'explorer/shared-with-you',
   inbox: 'explorer/activity',
-  timeline: 'explorer/timeline',
   trash: 'account-and-data/trash',
   search: 'explorer/filters',
 };
-// Home has its own article in liveplanner's help centre; the others' cover it in the Explorer page's.
-const HOME_ARTICLE: Partial<Record<App, string>> = { liveplanner: 'explorer/home' };
-
 export function helpHrefFor(app: App): HelpHref {
   return (view) => {
-    const slug =
-      view.kind === 'home' ? (HOME_ARTICLE[app] ?? 'explorer/explorer-page') : VIEW_HELP[view.kind];
+    const slug = VIEW_HELP[view.kind];
     return slug ? `${appUrl(app)}/help/${slug}/` : undefined;
   };
 }
@@ -271,6 +266,8 @@ export const RETIRED_TARGETS = {
   generated: '/explorer/search?q=made-by%3Aai',
   activity: '/explorer/inbox',
   tags: '/explorer',
+  // The Timeline (retired November 2026): Home is where the Explorer opens.
+  timeline: '/explorer',
   // Notification switches are the account's: the Settings panel on Notifications, opened in place. Every
   // notification email ever sent carries this address (or `?settings=notifications`) as its unsubscribe link.
   profile: NOTIFICATIONS_SETTINGS,

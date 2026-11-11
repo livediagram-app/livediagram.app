@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createSticky, type Element } from '@livehuddle/document';
 import { CanvasSelectionToolbars } from './CanvasSelectionToolbars';
 import type { CanvasProps } from './Canvas.types';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
@@ -15,9 +15,9 @@ import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 afterEach(cleanup);
 
-const bare = createShape('square', 100, 100);
+const bare = createSticky(100, 100);
 const discussed = {
-  ...createShape('square', 300, 100),
+  ...createSticky(300, 100),
   commentThread: {
     resolved: false,
     comments: [

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createSticky, type Element } from '@livehuddle/document';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { buildRetiredArrowLinks } from '@/components/canvas/retired-arrow-links';
@@ -12,7 +12,7 @@ import { createLayerPreviewStore, type LayerPreviewInputs } from './useLayerDrag
 const N = 2000;
 const DRAGGED = 20;
 const boxes = Array.from({ length: N }, (_, i) => ({
-  ...createShape('square', (i % 50) * 160, Math.floor(i / 50) * 120),
+  ...createSticky((i % 50) * 160, Math.floor(i / 50) * 120),
   id: `b${i}`,
 }));
 const arrows = boxes

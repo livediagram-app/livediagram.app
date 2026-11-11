@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { GUEST_IDLE_MS, GUEST_SWEEP_LIMIT, noteGuestSeen, sweepIdleGuests } from './guest-sweep.ts';
+import { recordPendingPurge, retryPendingPurges } from './index-purge.ts';
 import { testD1 } from './test-d1.ts';
 
 const guest = (n: number) => `guest_${n.toString(16).padStart(8, '0')}-6d7e-4f3b-9a51-2c1d0e9f8a7b`;
@@ -30,6 +31,14 @@ function keepFor(id: string) {
     )
     .run(id);
 }
+const queued = () =>
+  (
+    sql.prepare('SELECT userId, teamIds, createdAt FROM pending_purges ORDER BY userId').all() as {
+      userId: string;
+      teamIds: string;
+      createdAt: number;
+    }[]
+  ).map((row) => ({ ...row }));
 const count = (table: string) =>
   (sql.prepare(`SELECT count(*) AS n FROM ${table}`).get() as { n: number }).n;
 
@@ -79,5 +88,40 @@ describe('sweeping guests who can never come back', () => {
     expect(await sweepIdleGuests(db, NOW)).toBe(100);
     expect(count('profile')).toBe(0);
     expect(took).toBeLessThan(500);
+  });
+
+  it("queues the purge of an idle guest's items, and of no one else", async () => {
+    await noteGuestSeen(db, guest(1), NOW - GUEST_IDLE_MS - 1);
+    await noteGuestSeen(db, guest(2), NOW - GUEST_IDLE_MS + DAY);
+    await sweepIdleGuests(db, NOW);
+    expect(queued()).toEqual([{ userId: guest(1), teamIds: '[]', createdAt: NOW }]);
+    // A request already queued for the guest keeps its first try's time.
+    await recordPendingPurge(db, guest(3), [], 5);
+    await noteGuestSeen(db, guest(3), NOW - GUEST_IDLE_MS - 1);
+    await sweepIdleGuests(db, NOW + DAY);
+    expect(queued().find((row) => row.userId === guest(3))?.createdAt).toBe(5);
+  });
+
+  it('hands the queued guest to the index, which is never dropped as an unfinished close', async () => {
+    await noteGuestSeen(db, guest(1), NOW - GUEST_IDLE_MS - 1);
+    await sweepIdleGuests(db, NOW);
+    const sent: unknown[] = [];
+    const config = {
+      indexUrl: 'https://liveworkspace.app/api/index',
+      indexKey: 'key',
+      indexService: {
+        fetch: async (_url: RequestInfo | URL, init: RequestInit = {}) => {
+          sent.push(JSON.parse(String(init.body)));
+          return Response.json({ done: true, items: 3 });
+        },
+      } as unknown as Fetcher,
+    };
+    // Long after the 30 days that drop a request whose account never closed.
+    expect(await retryPendingPurges(db, config, NOW + 60 * DAY)).toMatchObject({
+      sent: 1,
+      dropped: 0,
+    });
+    expect(sent).toEqual([{ personId: guest(1), teamIds: [] }]);
+    expect(queued()).toEqual([]);
   });
 });

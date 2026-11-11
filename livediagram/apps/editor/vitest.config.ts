@@ -5,7 +5,7 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // Node stays the DEFAULT environment: the ~1,645 tests here are pure logic
 // (canvas geometry, parsers, config tables) and run faster without a DOM.
 // The few that render a hook or component opt in per file with a
-// `// @vitest-environment jsdom` docblock — see useTimelineFeed.test.tsx and
+// `// @vitest-environment jsdom` docblock; see useAfterApiWrite.test.tsx and
 // docs/specs/003-system-architecture/testing.md. Flipping the whole workspace would tax every other
 // suite to serve a handful of files.
 //

@@ -44,7 +44,7 @@ function tabOf(perFrame: number): Tab {
       elements.push({
         id: `n${frame}x${i}`,
         type: 'shape',
-        shape: 'square',
+        shape: 'signpost',
         label: `Step ${frame} ${i}`,
         x: fx + 40,
         y: i * 100 + 60,
@@ -100,7 +100,7 @@ function rowOf(count: number): Tab {
   const elements: Element[] = Array.from({ length: count }, (_, i) => ({
     id: `r${i}`,
     type: 'shape',
-    shape: 'square',
+    shape: 'signpost',
     x: i * 150,
     y: 0,
     width: 140,
@@ -117,7 +117,7 @@ function boxesOf(count: number): Tab {
     elements.push({
       id: `b${i}`,
       type: 'shape',
-      shape: 'square',
+      shape: 'signpost',
       x: 10 + (i % columns) * 200,
       y: 10 + Math.floor(i / columns) * 15,
       width: 10,
@@ -145,7 +145,7 @@ describe('performance', () => {
   });
 
   it('walks past a row of boxes in time linear in the row', { timeout: TIMEOUT_MS }, () => {
-    const add = parseEditOperations('add square right-of:r0 gap:0');
+    const add = parseEditOperations('add signpost right-of:r0 gap:0');
     if ('errors' in add) throw new Error('add');
     // A row of 1,000: at 500 the small apply was so quick that timer noise reached the ceiling (9.2 against 8).
     const small = { tab: rowOf(1000), operations: add.operations };

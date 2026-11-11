@@ -1,8 +1,8 @@
 'use client';
 
 // The Inbox (GET /inbox): open actions and cards assigned to or by the person, unresolved threads they are in, and
-// forms with responses they haven't seen, across every app. One request per filter, shared by the sidebar's counts
-// (the Inbox's, and the Timeline's events since the person last looked) and the Inbox view. Beside it, the host's
+// forms with responses they haven't seen, across every app. One request per filter, shared by the sidebar's count
+// and the Inbox view. Beside it, the host's
 // own rows (items only this browser holds), marked `local`, read again alone when the host says they changed
 // (`subscribeLocal`). Coming back to the browser tab reads it again, keeping
 // what it had if that read fails: a slightly stale list beats an alarm.
@@ -31,8 +31,6 @@ export type InboxState = {
   loading: boolean;
   error: boolean;
   reload: () => void;
-  /** The Timeline was just read: its count drops to nothing here, without asking the index again. */
-  clearTimelineNew: () => void;
 };
 
 const NO_LOCAL: InboxLocalRows = { actions: [], threads: [] };
@@ -154,23 +152,13 @@ export function useInbox(
     if (stale) rereadLocal();
   }, [stale, localRows, rereadLocal]);
   const reload = useCallback(() => setAttempt((n) => n + 1), []);
-  const clearTimelineNew = useCallback(
-    () =>
-      setState((prev) =>
-        prev.raw && prev.raw.timelineNew ? { ...prev, raw: { ...prev.raw, timelineNew: 0 } } : prev,
-      ),
-    [],
-  );
   const current = state.key === key ? state : null;
   const raw = current?.raw ?? null;
   const local = current?.local ?? NO_LOCAL;
   const data = useMemo(() => (raw ? merged(raw, local) : null), [raw, local]);
   const loading = !current;
   const error = current?.error ?? false;
-  return useMemo(
-    () => ({ data, loading, error, reload, clearTimelineNew }),
-    [data, loading, error, reload, clearTimelineNew],
-  );
+  return useMemo(() => ({ data, loading, error, reload }), [data, loading, error, reload]);
 }
 
 export { inboxCount } from '../explorer/inbox/sections';

@@ -46,7 +46,7 @@ describe('boundsOfElements', () => {
   const box = (id: string, x: number, y: number): Element => ({
     id,
     type: 'shape',
-    shape: 'square',
+    shape: 'focus-button',
     x,
     y,
     width: 10,

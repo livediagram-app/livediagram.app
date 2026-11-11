@@ -8,7 +8,6 @@ import {
   supportsMarkers,
   supportsTextAlign,
   supportsBorderControls,
-  supportsBorderRadius,
   supportsColours,
   supportsShadow,
   type BorderStroke,
@@ -97,7 +96,6 @@ export function MultiSelectionContextMenu({
         const borderableSel = sel.some((el) => supportsBorderControls(el));
         const borderSrc = sel.find((el) => supportsBorderControls(el)) as
           { strokeWidth?: BorderStroke; strokeStyle?: BorderStyle; type: string } | undefined;
-        const radiusSrc = sel.find((el) => supportsBorderRadius(el));
         // Shadow (docs/specs/008-canvas/element-shadows.md): the section shows when any member supports it;
         // the sliders/active-tile read off the first such member, and the
         // setters apply selection-wide (unsupported members no-op).
@@ -158,7 +156,6 @@ export function MultiSelectionContextMenu({
               <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} {...flyoutProps('style')}>
                 {presetShapeSrc ? (
                   <ShapePresetsSection
-                    shape={presetShapeSrc.shape}
                     current={{
                       fillColor: presetShapeSrc.fillColor,
                       strokeColor: presetShapeSrc.strokeColor,
@@ -181,7 +178,6 @@ export function MultiSelectionContextMenu({
                   strokeSrc={strokeSrc}
                   borderableSel={borderableSel}
                   borderSrc={borderSrc}
-                  radiusSrc={radiusSrc}
                   shadowSrc={shadowSrc}
                   techIconSrc={techIconSrc}
                   onClose={onClose}
@@ -201,7 +197,6 @@ export function MultiSelectionContextMenu({
               strokeSrc={strokeSrc}
               borderableSel={borderableSel}
               borderSrc={borderSrc}
-              radiusSrc={radiusSrc}
               shadowSrc={shadowSrc}
               techIconSrc={techIconSrc}
               onClose={onClose}

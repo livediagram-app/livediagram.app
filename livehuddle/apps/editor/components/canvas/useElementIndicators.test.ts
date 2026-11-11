@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement, type ElementAction } from '@livehuddle/document';
+import {
+  createShape,
+  createSticky,
+  type BoxedElement,
+  type ElementAction,
+} from '@livehuddle/document';
 import { elementIndicatorItems, useElementIndicators } from './useElementIndicators';
 
 // docs/specs/008-canvas/element-indicators.md: which indicators an element carries, and which
@@ -42,7 +47,7 @@ const kinds = (el: BoxedElement) => elementIndicatorItems(el, handlers()).map((i
 describe('elementIndicatorItems', () => {
   it('lists everything a shape carries, in order', () => {
     const el = {
-      ...createShape('square', 0, 0),
+      ...createSticky(0, 0),
       link: { kind: 'url', url: 'https://example.com' },
       note: 'A note',
       action: action('open'),
@@ -55,7 +60,7 @@ describe('elementIndicatorItems', () => {
     const h = handlers();
     const link = { kind: 'url', url: 'https://example.com' } as const;
     const el = {
-      ...createShape('square', 0, 0),
+      ...createSticky(0, 0),
       link,
       note: 'n',
       action: action('open'),
@@ -70,7 +75,7 @@ describe('elementIndicatorItems', () => {
 
   it('leaves out a done action, resolved comments and an unlinked kind', () => {
     const el = {
-      ...createShape('square', 0, 0),
+      ...createSticky(0, 0),
       link: { kind: 'element', elementId: 'x' },
       action: action('done'),
       commentThread: thread(3, true),
@@ -79,7 +84,7 @@ describe('elementIndicatorItems', () => {
   });
 
   it('names an unnamed assignee and still colours their disc', () => {
-    const el = { ...createShape('square', 0, 0), action: action('open', '  ') } as BoxedElement;
+    const el = { ...createSticky(0, 0), action: action('open', '  ') } as BoxedElement;
     const item = elementIndicatorItems(el, handlers())[0]!;
     expect(item.hoverCard?.description).toBe('Assigned to a teammate');
     expect(item.assignee?.initials).toBeTruthy();
@@ -88,11 +93,11 @@ describe('elementIndicatorItems', () => {
 
   it('colours an invited member by their member id, and a nameless one by the name', () => {
     const invited = {
-      ...createShape('square', 0, 0),
+      ...createSticky(0, 0),
       action: { ...action('open', 'Ada'), assignee: { userId: null, memberId: 'm1', name: 'Ada' } },
     } as BoxedElement;
     const unclaimed = {
-      ...createShape('square', 0, 0),
+      ...createSticky(0, 0),
       action: { ...action('open', 'Ada'), assignee: { userId: null, name: 'Ada' } },
     } as BoxedElement;
     const a = elementIndicatorItems(invited, handlers())[0]!.assignee!.color;
@@ -104,7 +109,7 @@ describe('elementIndicatorItems', () => {
   // docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements": its own face is gone, so its thread shows here.
   it("shows a retired comment pin's thread like any element's", () => {
     const pin = {
-      ...createShape('square', 0, 0),
+      ...createShape('room', 0, 0),
       shape: 'comment-pin',
       commentThread: thread(2),
     } as unknown as BoxedElement;
@@ -139,7 +144,7 @@ describe('elementIndicatorItems', () => {
   });
 
   it('shows no note without a way to open it', () => {
-    const el = { ...createShape('square', 0, 0), note: 'n' } as BoxedElement;
+    const el = { ...createSticky(0, 0), note: 'n' } as BoxedElement;
     expect(elementIndicatorItems(el, { ...handlers(), onOpenNote: undefined })).toEqual([]);
   });
 });
@@ -155,9 +160,9 @@ describe('useElementIndicators', () => {
 
   it('places the cluster and moves an icon-and-label block out of its way', () => {
     const el = {
-      ...createShape('cloud', 0, 0),
+      ...createShape('room', 0, 0),
       width: 270,
-      height: 180,
+      height: 140,
       iconId: 'cloud',
       iconPosition: 'above',
       note: 'n',
@@ -173,19 +178,18 @@ describe('useElementIndicators', () => {
     expect(result.current.layout?.inset.top).toBeGreaterThan(0);
   });
 
-  it('treats a circle as fully round and lays out nothing without indicators', () => {
-    const el = { ...createShape('circle', 0, 0), width: 200, height: 200 } as BoxedElement;
+  it('lays out nothing without indicators', () => {
+    const el = { ...createShape('room', 0, 0), width: 200, height: 200 } as BoxedElement;
     const { result } = renderHook(() =>
       useElementIndicators(el, handlers(), { ...label, inlineIcon: false }, 8),
     );
-    expect(result.current.cornerPx).toBe(Infinity);
     expect(result.current.items).toEqual([]);
     expect(result.current.layout).toBeNull();
   });
 
   it('defaults a side icon to the left of the label', () => {
     const el = {
-      ...createShape('square', 0, 0),
+      ...createShape('room', 0, 0),
       width: 260,
       height: 120,
       iconId: 'star',

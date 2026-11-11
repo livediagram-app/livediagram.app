@@ -7,13 +7,22 @@ import { ITEM_LABEL_MAX, ITEM_TITLE_MAX } from '../limits';
 import { isRuleTimeZone, isDay } from '../repeat-dates';
 import {
   AUTOMATION_ACTIONS_MAX,
+  AUTOMATION_BRANCH_ACTIONS_MAX,
   AUTOMATION_CONDITIONS_MAX,
   AUTOMATION_CREATED_PER_RUN,
+  AUTOMATION_DUE_DAYS_MAX,
   AUTOMATION_NAME_MAX,
+  AUTOMATION_OUTGOING_MAX,
+  AUTOMATION_ROTATE_MAX,
+  AUTOMATION_ROTATE_MIN,
   AUTOMATION_TEXT_MAX,
   AUTOMATION_TRIGGER_KINDS,
+  isTimeTrigger,
   type AutomationAction,
+  type AutomationBranch,
   type AutomationCondition,
+  type AutomationOutgoing,
+  type AutomationRelated,
   type AutomationDay,
   type AutomationFieldOp,
   type AutomationRuleBody,
@@ -22,10 +31,15 @@ import {
   type AutomationTrigger,
   type AutomationWho,
 } from './types';
-import { unknownValueIn } from './values';
+import { unknownValueIn, type ValuePlace } from './values';
+import { clockMinutes } from './schedule';
 
 export type RuleRefusal = {
-  error: 'automation_invalid' | 'automation_value_unknown';
+  error:
+    | 'automation_invalid'
+    | 'automation_value_unknown'
+    | 'automation_condition_unsupported'
+    | 'automation_step_unsupported';
   path: string;
   message: string;
 };
@@ -54,6 +68,11 @@ const DATE_OPS = new Set(['before', 'after', 'on_or_before', 'on_or_after']);
 const NUMBER_OPS = new Set(['less_than', 'more_than']);
 const ROLES = new Set(['editor', 'participant', 'agent']);
 const COPIES = new Set(['assignee', 'labels', 'due']);
+const EVERY = new Set(['day', 'weekday', 'week', 'month']);
+const VIA = new Set(['webhook', 'slack', 'teams']);
+// The steps a branch may not hold, and an If / Else's actions neither.
+const NOT_IN_BRANCH = new Set(['if', 'for', 'create_card', 'notify']);
+const NOT_IN_IF = new Set(['if', 'for', 'notify']);
 
 // A refusal thrown inside the walk and caught at its top, so each check is one line.
 class Refused extends Error {
@@ -65,6 +84,13 @@ class Refused extends Error {
 }
 const refuse = (path: string, message: string): never => {
   throw new Refused({ error: 'automation_invalid', path, message });
+};
+const unsupported = (
+  error: 'automation_condition_unsupported' | 'automation_step_unsupported',
+  path: string,
+  message: string,
+): never => {
+  throw new Refused({ error, path, message });
 };
 
 type Obj = Record<string, unknown>;
@@ -85,11 +111,16 @@ function ids(v: unknown, path: string, opts: { min?: number } = {}): string[] {
 
 const optionalIds = (v: unknown, path: string) => (v === undefined ? undefined : ids(v, path));
 
-// Text a rule writes: within its bound, every value one the builder knows.
-function text(v: unknown, path: string, max: number, opts: { empty?: boolean } = {}): string {
+// Text a rule writes: within its bound, every value one the builder knows (a branch's knows the triggering card's).
+function text(
+  v: unknown,
+  path: string,
+  max: number,
+  opts: { empty?: boolean } & ValuePlace = {},
+): string {
   if (typeof v !== 'string' || v.length > max || (!opts.empty && v.trim() === ''))
     refuse(path, `${path} must be text of up to ${max} characters`);
-  const unknown = unknownValueIn(v as string);
+  const unknown = unknownValueIn(v as string, opts);
   if (unknown !== null)
     throw new Refused({
       error: 'automation_value_unknown',
@@ -112,6 +143,41 @@ function day(v: unknown, path: string): AutomationDay {
   const n = o['today'];
   if (typeof n === 'number' && Number.isInteger(n) && Math.abs(n) <= DAYS_MAX) return { today: n };
   return refuse(path, `${path} must be a day or today ± days`);
+}
+
+function clock(v: unknown, path: string): string {
+  if (clockMinutes(v) === null)
+    refuse(path, `${path} must be a time on the quarter hour, as 09:15`);
+  return v as string;
+}
+
+const whole = (v: unknown, path: string, min: number, max: number): number =>
+  Number.isInteger(v) && (v as number) >= min && (v as number) <= max
+    ? (v as number)
+    : refuse(path, `${path} must be a whole number from ${min} to ${max}`);
+
+function readWeekdays(v: unknown, path: string): number[] {
+  if (!Array.isArray(v) || v.length === 0 || v.length > 7)
+    refuse(path, `${path} must name 1 to 7 days`);
+  const days = (v as unknown[]).map((d, i) => whole(d, `${path}.${i}`, 0, 6));
+  return [...new Set(days)].sort((a, b) => a - b);
+}
+
+function readScheduled(t: Obj): AutomationTrigger {
+  const every = t['every'];
+  if (typeof every !== 'string' || !EVERY.has(every))
+    refuse('trigger.every', 'trigger.every must be day, weekday, week or month');
+  const at = clock(t['at'], 'trigger.at');
+  if (every === 'week')
+    return { kind: 'scheduled', every, days: readWeekdays(t['days'], 'trigger.days'), at };
+  if (every === 'month')
+    return {
+      kind: 'scheduled',
+      every,
+      dayOfMonth: whole(t['dayOfMonth'], 'trigger.dayOfMonth', 1, 31),
+      at,
+    };
+  return { kind: 'scheduled', every: every as 'day' | 'weekday', at };
 }
 
 function readTrigger(v: unknown): AutomationTrigger {
@@ -139,6 +205,16 @@ function readTrigger(v: unknown): AutomationTrigger {
       return { kind: 'comment_added' };
     case 'manual':
       return { kind: 'manual' };
+    case 'scheduled':
+      return readScheduled(t);
+    case 'due_in':
+      return {
+        kind: 'due_in',
+        days: whole(t['days'], 'trigger.days', 1, AUTOMATION_DUE_DAYS_MAX),
+        at: clock(t['at'], 'trigger.at'),
+      };
+    case 'overdue':
+      return { kind: 'overdue', at: clock(t['at'], 'trigger.at') };
   }
 }
 
@@ -220,10 +296,10 @@ function readConditions(v: unknown, path: string): AutomationCondition[] {
   return (v as unknown[]).map((c, i) => readCondition(c, `${path}.${i}`));
 }
 
-function readSetValue(v: unknown, path: string): AutomationSetValue {
+function readSetValue(v: unknown, path: string, place: ValuePlace): AutomationSetValue {
   const o = obj(v, path);
   if (o['text'] !== undefined)
-    return { text: text(o['text'], `${path}.text`, AUTOMATION_TEXT_MAX) };
+    return { text: text(o['text'], `${path}.text`, AUTOMATION_TEXT_MAX, place) };
   if (o['number'] !== undefined) {
     if (typeof o['number'] !== 'number' || !Number.isFinite(o['number']))
       refuse(`${path}.number`, `${path}.number must be a number`);
@@ -235,8 +311,17 @@ function readSetValue(v: unknown, path: string): AutomationSetValue {
   return refuse(path, `${path} must be text, a number, a list, a day or a field`);
 }
 
-function readAction(v: unknown, path: string): AutomationAction {
+function readRotate(v: unknown, path: string): string[] {
+  if (!Array.isArray(v)) refuse(path, `${path} must be a list of people`);
+  const people = ids(v, path);
+  if (people.length < AUTOMATION_ROTATE_MIN || people.length > AUTOMATION_ROTATE_MAX)
+    refuse(path, `${path} must name ${AUTOMATION_ROTATE_MIN} to ${AUTOMATION_ROTATE_MAX} people`);
+  return people;
+}
+
+function readAction(v: unknown, path: string, place: ValuePlace = {}): AutomationAction {
   const a = obj(v, path);
+  const text_ = (x: unknown, p: string, max: number) => text(x, p, max, place);
   switch (a['kind']) {
     case 'move':
       return { kind: 'move', status: id(a['status'], `${path}.status`) };
@@ -244,7 +329,7 @@ function readAction(v: unknown, path: string): AutomationAction {
       return {
         kind: 'set_field',
         field: id(a['field'], `${path}.field`),
-        value: readSetValue(a['value'], `${path}.value`),
+        value: readSetValue(a['value'], `${path}.value`, place),
       };
     case 'clear_field':
       return { kind: 'clear_field', field: id(a['field'], `${path}.field`) };
@@ -254,13 +339,18 @@ function readAction(v: unknown, path: string): AutomationAction {
         return { kind: 'assign', to: { person: id(to['person'], `${path}.to.person`) } };
       if (to['trigger'] === true) return { kind: 'assign', to: { trigger: true } };
       if (to['nobody'] === true) return { kind: 'assign', to: { nobody: true } };
-      return refuse(`${path}.to`, `${path}.to must be a person, whoever triggered it, or nobody`);
+      if (to['rotate'] !== undefined)
+        return { kind: 'assign', to: { rotate: readRotate(to['rotate'], `${path}.to.rotate`) } };
+      return refuse(
+        `${path}.to`,
+        `${path}.to must be a person, whoever triggered it, nobody, or people in turn`,
+      );
     }
     case 'add_label':
     case 'remove_label':
-      return { kind: a['kind'], label: text(a['label'], `${path}.label`, ITEM_LABEL_MAX).trim() };
+      return { kind: a['kind'], label: text_(a['label'], `${path}.label`, ITEM_LABEL_MAX).trim() };
     case 'comment':
-      return { kind: 'comment', text: text(a['text'], `${path}.text`, AUTOMATION_TEXT_MAX) };
+      return { kind: 'comment', text: text_(a['text'], `${path}.text`, AUTOMATION_TEXT_MAX) };
     case 'flag':
     case 'unflag':
     case 'archive':
@@ -296,8 +386,8 @@ function readAction(v: unknown, path: string): AutomationAction {
       return {
         kind: 'email',
         to: recipient,
-        subject: text(a['subject'], `${path}.subject`, AUTOMATION_SUBJECT_MAX),
-        body: text(a['body'], `${path}.body`, AUTOMATION_TEXT_MAX),
+        subject: text_(a['subject'], `${path}.subject`, AUTOMATION_SUBJECT_MAX),
+        body: text_(a['body'], `${path}.body`, AUTOMATION_TEXT_MAX),
       };
     }
     default:
@@ -305,38 +395,135 @@ function readAction(v: unknown, path: string): AutomationAction {
   }
 }
 
-function readActions(v: unknown, path: string): AutomationAction[] {
+// The actions of an If / Else or a branch: never a step `refused` names (said as `where`).
+function readActions(
+  v: unknown,
+  path: string,
+  refused: ReadonlySet<string>,
+  where: string,
+  place: ValuePlace = {},
+): AutomationAction[] {
   if (!Array.isArray(v)) refuse(path, `${path} must be a list`);
-  return (v as unknown[]).map((a, i) => readAction(a, `${path}.${i}`));
+  return (v as unknown[]).map((a, i) => {
+    const kind = isObj(a) ? a['kind'] : undefined;
+    if (typeof kind === 'string' && refused.has(kind))
+      unsupported('automation_step_unsupported', `${path}.${i}`, `${where} can't hold ${kind}`);
+    return readAction(a, `${path}.${i}`, place);
+  });
+}
+
+function readNotify(s: Obj, path: string): AutomationOutgoing {
+  const via = s['via'];
+  if (typeof via !== 'string' || !VIA.has(via))
+    refuse(`${path}.via`, `${path}.via must be webhook, slack or teams`);
+  return {
+    kind: 'notify',
+    via: via as AutomationOutgoing['via'],
+    webhook: id(s['webhook'], `${path}.webhook`),
+    ...(s['name'] !== undefined ? { name: text(s['name'], `${path}.name`, ID_MAX).trim() } : {}),
+    text: text(s['text'], `${path}.text`, AUTOMATION_TEXT_MAX),
+  };
+}
+
+function readRelated(v: unknown, path: string): AutomationRelated {
+  const r = obj(v, path);
+  switch (r['kind']) {
+    case 'linked':
+      return r['field'] === undefined
+        ? { kind: 'linked' }
+        : { kind: 'linked', field: id(r['field'], `${path}.field`) };
+    case 'blocked_by':
+    case 'blocking':
+    case 'children':
+      return { kind: r['kind'] };
+    case 'saved_filter':
+      return {
+        kind: 'saved_filter',
+        tab: id(r['tab'], `${path}.tab`),
+        filter: id(r['filter'], `${path}.filter`),
+      };
+    default:
+      return refuse(`${path}.kind`, `${path}.kind is not a way to pick related cards`);
+  }
+}
+
+function readBranch(s: Obj, path: string): AutomationBranch {
+  const then = readActions(s['then'], `${path}.then`, NOT_IN_BRANCH, 'a branch', {
+    branch: true,
+  });
+  if (then.length === 0 || then.length > AUTOMATION_BRANCH_ACTIONS_MAX)
+    refuse(`${path}.then`, `a branch holds 1 to ${AUTOMATION_BRANCH_ACTIONS_MAX} actions`);
+  return {
+    kind: 'for',
+    related: readRelated(s['related'], `${path}.related`),
+    conditions: readConditions(s['conditions'] ?? [], `${path}.conditions`),
+    then,
+  };
 }
 
 function readStep(v: unknown, path: string): AutomationStep {
   const s = obj(v, path);
+  if (s['kind'] === 'notify') return readNotify(s, path);
+  if (s['kind'] === 'for') return readBranch(s, path);
   if (s['kind'] !== 'if') return readAction(s, path);
   const conditions = readConditions(s['conditions'], `${path}.conditions`);
   if (conditions.length === 0) refuse(`${path}.conditions`, 'an If needs a condition');
   return {
     kind: 'if',
     conditions,
-    then: readActions(s['then'], `${path}.then`),
-    else: readActions(s['else'], `${path}.else`),
+    then: readActions(s['then'], `${path}.then`, NOT_IN_IF, 'an If'),
+    else: readActions(s['else'], `${path}.else`, NOT_IN_IF, 'an If'),
   };
 }
 
 const creates = (actions: readonly AutomationAction[]) =>
   actions.filter((a) => a.kind === 'create_card').length;
 
-// How many actions the steps hold, counting those inside an If / Else.
-export function countActions(steps: readonly AutomationStep[]): number {
-  return steps.reduce((n, s) => n + (s.kind === 'if' ? s.then.length + s.else.length : 1), 0);
+// The actions a step holds: an If / Else's both lists, a branch's, else the step itself.
+export function stepActions(s: AutomationStep): readonly (AutomationAction | AutomationOutgoing)[] {
+  if (s.kind === 'if') return [...s.then, ...s.else];
+  return s.kind === 'for' ? s.then : [s];
 }
 
-// The most cards one run of the steps could make: the top level's, and the larger branch of each If.
+// How many actions the steps hold, counting those inside an If / Else and a branch.
+export function countActions(steps: readonly AutomationStep[]): number {
+  return steps.reduce((n, s) => n + stepActions(s).length, 0);
+}
+
+// The most cards one run of the steps could make: the top level's, and the larger branch of each If (a branch makes
+// none).
 function createsPerRun(steps: readonly AutomationStep[]): number {
   return steps.reduce(
-    (n, s) => n + (s.kind === 'if' ? Math.max(creates(s.then), creates(s.else)) : creates([s])),
+    (n, s) =>
+      n +
+      (s.kind === 'if'
+        ? Math.max(creates(s.then), creates(s.else))
+        : s.kind === 'create_card'
+          ? 1
+          : 0),
     0,
   );
+}
+
+// A time trigger has no person behind it: no Who Did It condition, and nobody to assign or email as whoever
+// triggered it, anywhere in the rule.
+function checkTimeRule(
+  conditions: readonly AutomationCondition[],
+  steps: readonly AutomationStep[],
+) {
+  const no = (path: string, what: string) =>
+    unsupported('automation_condition_unsupported', path, `A time trigger has no ${what}`);
+  const checkConditions = (list: readonly AutomationCondition[], path: string) =>
+    list.forEach((c, i) => {
+      if (c.kind === 'who') no(`${path}.${i}`, 'person behind it to check');
+    });
+  checkConditions(conditions, 'conditions');
+  steps.forEach((s, i) => {
+    if (s.kind === 'if' || s.kind === 'for') checkConditions(s.conditions, `steps.${i}.conditions`);
+    for (const a of stepActions(s))
+      if ((a.kind === 'assign' || a.kind === 'email') && 'trigger' in a.to)
+        no(`steps.${i}`, 'person who triggered it');
+  });
 }
 
 // Whether the rule does something: an action anywhere in its steps. A rule turns on at its first save with one.
@@ -360,6 +547,9 @@ export function readRuleBody(v: unknown): { body: AutomationRuleBody } | RuleRef
       refuse('steps', `a rule holds up to ${AUTOMATION_ACTIONS_MAX} actions`);
     if (createsPerRun(steps) > AUTOMATION_CREATED_PER_RUN)
       refuse('steps', `a run makes up to ${AUTOMATION_CREATED_PER_RUN} card`);
+    if (steps.filter((s) => s.kind === 'notify').length > AUTOMATION_OUTGOING_MAX)
+      refuse('steps', `a rule holds up to ${AUTOMATION_OUTGOING_MAX} outgoing actions`);
+    if (isTimeTrigger(trigger)) checkTimeRule(conditions, steps);
     return {
       body: {
         name,

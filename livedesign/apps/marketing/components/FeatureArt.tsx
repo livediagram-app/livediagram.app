@@ -13,7 +13,6 @@ export * from './feature-art/together';
 export * from './feature-art/sharing';
 export * from './feature-art/foundations';
 export * from './feature-art/features';
-export * from './feature-art/embeds-timeline';
 export * from './feature-art/reach';
 export * from './feature-art/versatility-more';
 // Pages (docs/specs/007-editor/pages-mode.md): pages, backgrounds, export.

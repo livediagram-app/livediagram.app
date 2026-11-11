@@ -64,8 +64,8 @@ function ExplorerImpl({
   const sheet = isMobile;
   const router = useAppNavigation();
   const { isSignedIn, authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
-  // The person: an account, or this browser's guest, as the Explorer page has them, so the Timeline, History and
-  // the Inbox name their own doings as theirs.
+  // The person: an account, or this browser's guest, as the Explorer page has them, so History and the Inbox
+  // name their own doings as theirs.
   const guestId = useSignedGuestId(authLoaded, accountUserId);
   const viewerId = accountUserId ?? guestId;
   // Take Offline and Sync Design on a design's menu.

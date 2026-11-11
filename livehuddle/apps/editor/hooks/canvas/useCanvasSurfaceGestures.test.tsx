@@ -461,7 +461,6 @@ describe('Avatar mode presses', () => {
     ['sticky', undefined],
     ['text', undefined],
     ['image', undefined],
-    ['shape', 'hexagon'],
   ])('opens a %s %s in the reader instead of walking', (type, shape) => {
     const onReadElement = vi.fn();
     const { press, walkTo } = avatarSetup([], { elements: [pieceAt(type, shape)], onReadElement });

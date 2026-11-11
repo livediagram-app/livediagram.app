@@ -14,71 +14,38 @@
 // handlers; this component only decides which items to show.
 
 import dynamic from 'next/dynamic';
-import { CardMenuSection } from '@/components/palette/CardMenuSection';
-import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
-import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSection';
-import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
-import { StackMenuSection } from '@/components/palette/StackMenuSection';
-import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
-import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
-import { SequenceMenuSection } from '@/components/palette/SequenceMenuSection';
 import {
   isChipShape,
   isConceptShape,
-  type ConceptShape,
-  type ShapeElement,
   LINE_DEFAULT_SERIES,
   chartRamp,
   chartTypeOf,
   PIE_DEFAULT_SLICES,
   RATING_DEFAULT,
-  BUTTON_MODES,
-  type ButtonMode,
   type ChecklistItem,
   type EntityField,
   type LegendItem,
   type PieSlice,
 } from '@livediagram/document';
-import {
-  EraserIcon,
-  FormatPainterIcon,
-  IsometricIcon,
-  LaserIcon,
-  PanIcon,
-  SelectIcon,
-  SpotlightIcon,
-} from '@/components/palette/palette-icons';
-import { MODE_LABEL } from '@/components/canvas/ModeButtonFace';
 import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MindMapMenuSections } from './MindMapMenuSections';
 import { FlowchartMenuSections } from '@/components/flowchart/FlowchartMenuSections';
 import { AnimationSections } from '@/components/palette/AnimationSections';
-import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { LegendTextSize } from '@/components/palette/TypographySections';
-import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import {
   AgendaMenuSection,
   DecisionMenuSection,
   EstimateMenuSection,
 } from '@/components/palette/CollabMenuSections';
-import {
-  PickerMenuSection,
-  ReactionMenuSection,
-  RevealMenuSection,
-  SessionMenuSection,
-} from '@/components/palette/BehaviourMenuSections';
 
 import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
 import { ChartAxisRows } from '@/components/palette/ChartAxisRows';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 
 import { ChartTypeTiles } from '@/components/palette/ChartTypeTiles';
-import {
-  hasWebRowsSection,
-  WebRowsMenuSection,
-} from '@/components/palette/context-menu-web-editors';
+import { hasWebRowsSection } from '@/components/palette/context-menu-web-editors';
 import {
   ChartMenuGlyph,
   ChecklistRowsEditor,
@@ -95,6 +62,8 @@ import {
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { ChartPalettePresets } from './StylePresets';
+import { ElementBehaviourToolSections } from './ElementBehaviourToolSections';
+import { ElementLayoutToolSections } from './ElementLayoutToolSections';
 
 // A Sankey's sections (docs/specs/009-elements/sankey.md "The menu") load only when a Sankey's menu opens.
 const SankeyMenuSections = dynamic(
@@ -143,18 +112,6 @@ const DEFAULT_PIE_ROWS: PieSlice[] = PIE_DEFAULT_SLICES.map((s) => ({ ...s }));
 const NO_ENTITY_FIELDS: EntityField[] = [];
 const NO_CHECKLIST_ITEMS: ChecklistItem[] = [];
 const NO_LEGEND_ITEMS: LegendItem[] = [];
-
-// The mode tiles' glyphs — the palette picker's own icons, so a button's
-// configured mode is recognisable from the same artwork everywhere (docs/specs/009-elements/mode-button.md).
-const MODE_TILE_ICON: Record<ButtonMode, React.ReactNode> = {
-  select: <SelectIcon />,
-  pan: <PanIcon />,
-  laser: <LaserIcon />,
-  spotlight: <SpotlightIcon />,
-  eraser: <EraserIcon />,
-  format: <FormatPainterIcon />,
-  isometric: <IsometricIcon />,
-};
 
 export function ElementDataSections({
   props,
@@ -328,86 +285,12 @@ export function ElementDataSections({
               onSetDrivers={props.onSetDecisionDrivers}
             />
           ) : null}
-          {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md) — a stat row's cards, a process's
-            steps, a header's links: add / remove / reorder. */}
-          {/* A concept graphic's variant; its animation is in the Animation row (docs/specs/009-elements/concept-graphics.md). */}
-          {shapeTarget && isConceptShape(shapeTarget.shape) ? (
-            <ConceptMenuSection
-              target={shapeTarget as ShapeElement & { shape: ConceptShape }}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* A boundary's style (docs/specs/009-elements/boundary.md). */}
-          {shapeTarget?.shape === 'boundary' ? (
-            <BoundaryMenuSection
-              target={shapeTarget}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* A badge's or step number's look, Detach, Renumber, Play in Order (docs/specs/009-elements/badge.md). */}
-          {shapeTarget && isChip ? (
-            <ChipMenuSection
-              target={shapeTarget}
-              ops={props.elementStyle}
-              stepsInOrder={props.elements.some(
-                (el) => el.type === 'shape' && el.shape === 'step' && el.stepSequence === true,
-              )}
-              sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* A stack's arrangement (docs/specs/009-elements/stack.md). */}
-          {shapeTarget?.shape === 'stack' ? (
-            <StackMenuSection
-              target={shapeTarget}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* A sequence diagram's summary, Edit Sequence and Numbered; Play is in the Animation row
-              (docs/specs/009-elements/sequence-diagram.md "The menu"). */}
-          {shapeTarget?.shape === 'sequence' ? (
-            <SequenceMenuSection
-              target={shapeTarget}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-              onEdit={props.onEditSequence}
-            />
-          ) : null}
-          {/* A pointer note's Detach (docs/specs/009-elements/pointer-note.md). */}
-          {shapeTarget?.shape === 'pointer-note' ? (
-            <PointerNoteMenuSection
-              target={shapeTarget}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* The card's slots (docs/specs/009-elements/card.md): band, title, meta line, media. */}
-          {shapeTarget?.shape === 'card' ? (
-            <CardMenuSection
-              target={shapeTarget}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-              tagColours={
-                props.onSetTagColour ? (
-                  <TagColoursBlock
-                    target={shapeTarget}
-                    tagColours={props.tagColours}
-                    colourPalette={props.colourPalette}
-                    onSetTagColour={props.onSetTagColour}
-                  />
-                ) : null
-              }
-            />
-          ) : null}
-          {shapeTarget && hasWebRowsSection(shapeTarget) ? (
-            <WebRowsMenuSection
-              target={shapeTarget}
-              sectionProps={sectionProps}
-              onSetRows={props.onSetWebRows}
-            />
-          ) : null}
+          <ElementLayoutToolSections
+            props={props}
+            shapeTarget={shapeTarget}
+            isChip={isChip}
+            sectionProps={sectionProps}
+          />
           {/* Record (docs/specs/009-elements/entity.md) — the fields: name + optional type, add / remove. */}
           {isEntity ? (
             <MenuAccordionSection
@@ -508,78 +391,17 @@ export function ElementDataSections({
               flyoutProps={flyoutProps('flowchart')}
             />
           ) : null}
-          {/* Mode button (docs/specs/009-elements/mode-button.md) — which selection mode pressing it hands
-            whoever clicked. Tiles rather than a list so the icons match the
-            palette's own mode picker. */}
-          {isModeButton ? (
-            <MenuAccordionSection
-              title="Button"
-              icon={<ToolsMenuGlyph />}
-              {...sectionProps('button-mode')}
-            >
-              <p className="px-3 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                Switches the presser to
-              </p>
-              <MenuTileGrid cols={3}>
-                {BUTTON_MODES.map((mode) => (
-                  <MenuTile
-                    key={mode}
-                    icon={MODE_TILE_ICON[mode]}
-                    label={MODE_LABEL[mode]}
-                    active={shapeTarget?.mode === mode}
-                    onClick={() => props.onSetButtonMode(mode)}
-                  />
-                ))}
-              </MenuTileGrid>
-            </MenuAccordionSection>
-          ) : null}
-          {/* Portal (docs/specs/009-elements/portal-element.md) — its name, where it leads (any tab), and a
-            shortcut to create the far end. See PortalMenuSection. */}
-          {isPortal && shapeTarget ? (
-            <PortalMenuSection
-              portal={shapeTarget}
-              tabs={props.tabs}
-              activeTabId={props.activeTabId}
-              onSetPortalTarget={props.onSetPortalTarget}
-              onSetPortalName={props.onSetPortalName}
-              onCreateLinkedPortal={props.onCreateLinkedPortal}
-              sectionProps={sectionProps('portal-target')}
-            />
-          ) : null}
-          {/* Session button (docs/specs/012-collaboration/session-button.md) — which tool a press starts, and its
-            one setting. See BehaviourMenuSections. */}
-          {isSessionButton && shapeTarget && props.onSetSession ? (
-            <SessionMenuSection
-              element={shapeTarget}
-              onSetSession={props.onSetSession}
-              sectionProps={sectionProps('session')}
-            />
-          ) : null}
-          {/* Reveal zone (docs/specs/009-elements/reveal-zone.md) — off for everyone, or back on. */}
-          {isReveal && shapeTarget && props.onSetRevealed ? (
-            <RevealMenuSection
-              element={shapeTarget}
-              onSetRevealed={props.onSetRevealed}
-              sectionProps={sectionProps('reveal')}
-            />
-          ) : null}
-          {/* Picker (docs/specs/012-collaboration/picker.md) — where it draws candidates from. */}
-          {isPicker && shapeTarget ? (
-            <PickerMenuSection
-              element={shapeTarget}
-              onSetPickerSource={props.onSetPickerSource}
-              onSetPickerOptions={props.onSetPickerOptions}
-              sectionProps={sectionProps('picker')}
-            />
-          ) : null}
-          {/* Reaction pad (docs/specs/009-elements/reaction-pad.md) — which burst it throws. */}
-          {isReactionPad && shapeTarget ? (
-            <ReactionMenuSection
-              element={shapeTarget}
-              onSetReaction={props.onSetReaction}
-              sectionProps={sectionProps('reaction')}
-            />
-          ) : null}
+          <ElementBehaviourToolSections
+            props={props}
+            shapeTarget={shapeTarget}
+            isModeButton={isModeButton}
+            isPortal={isPortal}
+            isSessionButton={isSessionButton}
+            isReveal={isReveal}
+            isPicker={isPicker}
+            isReactionPad={isReactionPad}
+            sectionProps={sectionProps}
+          />
           {/* Chart (docs/specs/009-elements/pie-chart.md) — display options. Legend placement: Off + 4 sides. */}
           {isChart ? (
             <MenuAccordionSection

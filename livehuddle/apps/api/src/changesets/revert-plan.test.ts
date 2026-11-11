@@ -14,7 +14,7 @@ import { planRevert } from './revert-plan';
 const box = (id: string, label = id): Element => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'signpost',
   x: 0,
   y: 0,
   width: 10,

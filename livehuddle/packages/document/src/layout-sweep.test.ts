@@ -8,7 +8,7 @@ import type { Element } from './index';
 const box = (id: string, x: number, y: number, width = 100, height = 60): Element => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x,
   y,
   width,

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createSticky, type Element } from '@livehuddle/document';
 import { DRAG_PREVIEW_MAX_ELEMENTS, DRAG_PREVIEW_MAX_RIDE_IDS } from '@livehuddle/api-schema';
 import {
   clearLocalPreview,
@@ -19,8 +19,8 @@ import {
 // docs/specs/008-canvas/drag-preview.md "Live movement for collaborators": the dragger's preview goes to
 // the room as presence, at most every 33 ms, geometry only, then an end message.
 
-const a = { ...createShape('square', 0, 0), id: 'a', label: 'secret' };
-const b = { ...createShape('square', 400, 0), id: 'b' };
+const a = { ...createSticky(0, 0), id: 'a', label: 'secret' };
+const b = { ...createSticky(400, 0), id: 'b' };
 // A stored (retired) arrow between them: a drag never writes it.
 const ab = {
   id: 'ab',
@@ -71,7 +71,7 @@ describe('useDragPreviewBroadcast', () => {
 
   it('sends nothing for a large gesture that does not only move, nor in a document nobody shares', () => {
     const many = Array.from({ length: DRAG_PREVIEW_MAX_ELEMENTS + 1 }, (_, i) => ({
-      ...createShape('square', i, 0),
+      ...createSticky(i, 0),
       id: `e${i}`,
     }));
     const sent = setup();
@@ -92,7 +92,7 @@ describe('useDragPreviewBroadcast', () => {
 describe('a very large move', () => {
   const N = DRAG_PREVIEW_MAX_ELEMENTS + 10;
   const many = Array.from({ length: N }, (_, i) => ({
-    ...createShape('square', i * 10, 0),
+    ...createSticky(i * 10, 0),
     id: `e${i}`,
   }));
   const board: Element[] = [...many];
@@ -166,7 +166,7 @@ describe('a very large move', () => {
 describe('rideOf', () => {
   it('rides the offset most elements share and patches the rest, or nothing when nothing rides', () => {
     const els = Array.from({ length: 5 }, (_, i) => ({
-      ...createShape('square', i, 0),
+      ...createSticky(i, 0),
       id: `e${i}`,
     }));
     const next = els.map((el, i) => ({ ...el, x: el.x + (i < 3 ? 4 : 9) }));
@@ -186,14 +186,14 @@ describe('rideOf', () => {
   it('sends nothing when the rest are too many to patch, or the ids too many to name', () => {
     const count = DRAG_PREVIEW_MAX_ELEMENTS * 2 + 2;
     const els = Array.from({ length: count }, (_, i) => ({
-      ...createShape('square', i, 0),
+      ...createSticky(i, 0),
       id: `e${i}`,
     }));
     // Half ride one offset, half another: the rest are more than a patch each may carry.
     const split = els.map((el, i) => ({ ...el, x: el.x + (i % 2 ? 4 : 9) }));
     expect(rideOfOverlay(overlayBetween('t', split, els), els)).toBeNull();
     const huge = Array.from({ length: DRAG_PREVIEW_MAX_RIDE_IDS + 1 }, (_, i) => ({
-      ...createShape('square', i, 0),
+      ...createSticky(i, 0),
       id: `h${i}`,
     }));
     const all = huge.map((el) => ({ ...el, x: el.x + 1 }));
