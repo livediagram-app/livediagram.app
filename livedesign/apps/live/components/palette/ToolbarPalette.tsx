@@ -23,7 +23,7 @@ import { LANDSCAPE_HANDLE_ROOM } from '@/components/chrome/LandscapeBars';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@liveworkspace/workbench/components/primitives/SnapWidth';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
-import { BAND_STRIP_FLUSH, BAND_TINT, TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
+import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from '@liveworkspace/workbench/components/palette/palette-group-state';
 import {
@@ -105,7 +105,7 @@ type Props = Pick<
     photoTools?: { node: ReactNode; inPlaceOfCategories: boolean } | null;
   };
 // The strip's card, and the leading card beside it on a phone.
-const CARD_CLASS = `${TOOLBAR_CARD} ${BAND_TINT} ${BAND_STRIP_FLUSH} ${PHONE_TOOLBAR_ITEMS}`;
+const CARD_CLASS = `${TOOLBAR_CARD} ${PHONE_TOOLBAR_ITEMS}`;
 
 // On a phone's row, the menu card sits at the left gutter and the strip beside
 // it rather than centred (docs/specs/007-editor/toolbar-layout.md "On a phone");
