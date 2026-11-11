@@ -229,8 +229,11 @@ R2 (`MEDIA`, `liveworkspace-media`): image bytes at `<uuid>` (`customMetadata { 
 
 ## Performance and limits
 
-Per-owner caps (both environments): 100 images, 104,857,600 bytes (100 MiB). One D1 statement checks both caps at
-insert. A ref sync is two statements per document in one batch. The sweep is bounded by pages of 1000. Previews: one
+Per-owner caps (both environments): 500 images, 1,073,741,824 bytes (1 GiB). A full gallery is at most 1 GiB of R2
+storage a person (about $0.015 a month at R2's standard rate). One D1 statement checks both caps at
+insert. The gallery's usage looks up every distinct document in batches of 200 ids, 4 at a time, up to
+5,000 documents. Measured over a fake index answering in 50 ms: 200 documents are 1 request (52 ms, 1.0 ms CPU),
+1,000 are 5 in 2 rounds (104 ms, 1.3 ms CPU) and 5,000 are 25 in 7 rounds (366 ms, 9.5 ms CPU). A ref sync is two statements per document in one batch. The sweep is bounded by pages of 1000. Previews: one
 index read per request (5 s), the app's door only on a miss (15 s), stores after the response. Figures are in
 [previews.md "Cost and performance"](../previews.md#cost-and-performance).
 
@@ -267,7 +270,7 @@ index read per request (5 s), the app's door only on a miss (15 s), stores after
 | `packages/media/src/media.test.ts`           | every app site listed; SVG never accepted; sniffing; guest hashing; the client's headers and refusals                                                                                                                                                                                                                                                                                                                                |
 | `packages/media/src/previews.test.ts`        | the doors match the routers'; item paths keyed by version and appearance                                                                                                                                                                                                                                                                                                                                                             |
 | `packages/media/src/share-page.test.ts`      | the share page head: name and card, budgets, fallbacks                                                                                                                                                                                                                                                                                                                                                                               |
-| `packages/media/src/usage.test.ts`           | the gallery's usage names, per app, bounded                                                                                                                                                                                                                                                                                                                                                                                          |
+| `packages/media/src/usage.test.ts`           | the gallery's usage names, per app, every document in bounded batches; unchecked past the bound or on a failed batch; Trash uses                                                                                                                                                                                                                                                                                                     |
 
 ## Constants and configuration
 
@@ -305,7 +308,9 @@ index read per request (5 s), the app's door only on a miss (15 s), stores after
 | `SHARE_CARD_MARGIN`                          | `48`                                                 | `share-card.ts`                    | the card                  |
 | `SHARE_CARD_MAX_UPSCALE`                     | `2`                                                  | `share-card.ts`                    | the card                  |
 | `SHARE_CARD_TIMEOUT_MS`                      | `1500`                                               | `packages/media/src/share-page.ts` | the apps' share page head |
-| `GALLERY_USAGE_DOCUMENTS_MAX`                | `200`                                                | `packages/media/src/usage.ts`      | the apps' gallery         |
+| `GALLERY_USAGE_DOCUMENTS_MAX`                | `5000`                                               | `packages/media/src/usage.ts`      | the apps' gallery         |
+| `GALLERY_USAGE_LOOKUP_IDS`                   | `200`                                                | `packages/media/src/usage.ts`      | the apps' gallery         |
+| `GALLERY_USAGE_LOOKUPS_AT_ONCE`              | `4`                                                  | `packages/media/src/usage.ts`      | the apps' gallery         |
 
 | Setting                     | Production                                                                                | Staging                                                  |
 | --------------------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------- |
@@ -315,8 +320,8 @@ index read per request (5 s), the app's door only on a miss (15 s), stores after
 | R2 `MEDIA`                  | `liveworkspace-media`                                                                     | `liveworkspace-media-staging`                            |
 | Service `INDEX`             | `liveworkspace-index`                                                                     | `liveworkspace-index-staging`                            |
 | Cron                        | `41 3 * * *`                                                                              | `41 3 * * *`                                             |
-| `IMAGE_MAX_PER_OWNER`       | `100`                                                                                     | `100`                                                    |
-| `IMAGE_MAX_BYTES_PER_OWNER` | `104857600`                                                                               | `104857600`                                              |
+| `IMAGE_MAX_PER_OWNER`       | `500`                                                                                     | `500`                                                    |
+| `IMAGE_MAX_BYTES_PER_OWNER` | `1073741824`                                                                              | `1073741824`                                             |
 | `INDEX_URL`                 | `https://www.liveworkspace.app/api/index`                                                 | `https://staging.liveworkspace.app/api/index`            |
 | `APP_ORIGIN_LIVEDIAGRAM`    | `https://www.livediagram.app`                                                             | `https://staging.livediagram.app`                        |
 | `APP_ORIGIN_LIVEPLANNER`    | `https://www.liveplanner.app`                                                             | `https://staging.liveplanner.app`                        |

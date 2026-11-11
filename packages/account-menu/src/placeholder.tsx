@@ -2,14 +2,23 @@
 
 // The account control's light entry (`/placeholder`): what a header can show without loading the menu.
 import { useCallback, useRef, useState, type ComponentType } from 'react';
-import { ACCOUNT_TRIGGER_CLASS, ChevronGlyph, GUEST_LABEL, GuestAvatar } from './face';
+import {
+  ACCOUNT_TRIGGER_BOX,
+  ACCOUNT_TRIGGER_CLASS,
+  ChevronGlyph,
+  GUEST_LABEL,
+  GuestAvatar,
+} from './face';
 
-// The account menu's footprint while its code or its name is on the way: the avatar's disc, in the place the
-// trigger will take, so the bar doesn't jump when it arrives.
+// The account menu's footprint while its code or its name is on the way: the avatar's disc, with the room for
+// "Guest" and the chevron kept but unseen, in the trigger's box (ACCOUNT_TRIGGER_BOX), so the Guest button
+// takes its place without moving the bar (a visitor's header, hydrating late, shifted its Explorer link 8.7px).
 export function AccountMenuPlaceholder() {
   return (
-    <span aria-hidden className="inline-flex shrink-0 items-center py-1 pr-2.5 pl-1">
-      <span className="size-7 rounded-full bg-slate-200 dark:bg-slate-800" />
+    <span aria-hidden className={`shrink-0 ${ACCOUNT_TRIGGER_BOX}`}>
+      <span className="size-7 shrink-0 rounded-full bg-slate-200 dark:bg-slate-800" />
+      <span className="invisible truncate max-sm:hidden">{GUEST_LABEL}</span>
+      <ChevronGlyph className="invisible size-4 shrink-0" />
     </span>
   );
 }

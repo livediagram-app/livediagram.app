@@ -931,10 +931,38 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/images/usage',
     segment: 'images',
     tag: 'Images',
-    summary: 'Map each image to the Spaces that reference it.',
+    summary:
+      'Map each image to the items, in every app, that reference it, and list the images that could not be checked.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    responseSchema: { type: 'object' },
+    responseSchema: {
+      type: 'object',
+      properties: {
+        // Image id to the items placing it; an image placed nowhere is absent.
+        usage: {
+          type: 'object',
+          additionalProperties: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                name: { type: 'string' },
+                app: { type: 'string' },
+                // In the owner's Trash: still a use.
+                trashed: { type: 'boolean' },
+              },
+              required: ['id', 'name', 'app'],
+            },
+          },
+        },
+        // Images whose items could not be checked (past 5,000, or a failed lookup): never unused.
+        unchecked: { type: 'array', items: { type: 'string' } },
+        // The media service or the index was unreachable: nothing was checked.
+        unknown: { type: 'boolean' },
+      },
+      required: ['usage', 'unchecked'],
+    },
     statuses: [200, 401, 503],
   },
   {

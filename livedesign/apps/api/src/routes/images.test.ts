@@ -488,12 +488,27 @@ describe('handleImages', () => {
             { id: 'D', name: 'Brief', app: 'livedocuments' },
             { id: 'P', name: 'Poster', app: 'livedesign' },
           ],
+          // In the Trash: still a use, marked, since a restore would bring the picture back.
+          b: [{ id: 'T', name: 'Board', app: 'livediagram', trashed: true }],
         },
+        unchecked: [],
+      });
+    });
+
+    it('marks an image unchecked, never unused, when the index lookup fails', async () => {
+      placed([['livedesign.app', 'P', 'a']]);
+      clientFor.mockReturnValue({ lookupItems: vi.fn().mockRejectedValue(new Error('down')) });
+      expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
+        usage: {},
+        unchecked: ['a'],
       });
     });
 
     it('answers an empty map, without the index, when nothing places them', async () => {
-      expect(await (await call('GET', '/api/images/usage')).json()).toEqual({ usage: {} });
+      expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
+        usage: {},
+        unchecked: [],
+      });
       expect(clientFor).not.toHaveBeenCalled();
     });
   });

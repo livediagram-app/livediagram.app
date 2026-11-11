@@ -31,9 +31,10 @@ globs = ["**/*.ttf", "**/*.otf"]
 #   MEDIA_KEY_EXPORT the data export service's MEDIA_KEY_EXPORT: with X-Media-App: export it reads an owner's
 #   gallery and an image's bytes alone (liveworkspace/docs/specs/003-accounts/data-export.md).
 [vars]
-# Per person, across every app: 100 images and 100 MB, as livediagram.app has today.
-IMAGE_MAX_PER_OWNER = "100"
-IMAGE_MAX_BYTES_PER_OWNER = "104857600"
+# Per person, across every app: 500 images and 1 GB (a full-window screenshot is 0.3 to 1.1 MB, so 1 GB holds
+# the 500 with room to spare).
+IMAGE_MAX_PER_OWNER = "500"
+IMAGE_MAX_BYTES_PER_OWNER = "1073741824"
 # Previews: who may see an item is the index's to say, reached through the INDEX service binding below (a Worker's
 # fetch to another Worker's route on its own zone isn't routed to it).
 INDEX_URL = "https://www.liveworkspace.app/api/index"
@@ -73,8 +74,8 @@ routes = [
 workers_dev = false
 
 [env.staging.vars]
-IMAGE_MAX_PER_OWNER = "100"
-IMAGE_MAX_BYTES_PER_OWNER = "104857600"
+IMAGE_MAX_PER_OWNER = "500"
+IMAGE_MAX_BYTES_PER_OWNER = "1073741824"
 INDEX_URL = "https://staging.liveworkspace.app/api/index"
 APP_ORIGIN_LIVEDIAGRAM = "https://staging.livediagram.app"
 APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"

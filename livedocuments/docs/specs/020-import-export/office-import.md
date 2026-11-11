@@ -119,7 +119,7 @@ file. A picture the pipeline cannot store stays an **empty image placeholder** o
 names why (gallery full, too large, no image storage, …). The pictures are read only from inside the file: a
 linked picture (an address outside the file) is never fetched.
 
-At most **100 images** are stored per import (the hosted gallery's own count); pictures past that stay
+At most **100 images** are stored per import (a fifth of the hosted gallery's 500); pictures past that stay
 placeholders and are reported.
 
 ## The report
