@@ -7,6 +7,7 @@
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { track } from '@/lib/telemetry';
+import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
 import type { AutomationsScope } from './automations-client';
 import {
   AutomationsContext,
@@ -25,8 +26,11 @@ export const AUTOMATIONS_FIRST_READ_MS = 3000;
 
 export function AutomationsHost({
   scope,
+  plan,
   children,
 }: {
+  // The plan the screen's pickers read: the host sits above the footer, outside the canvas's PlanProvider.
+  plan: PlanContextValue | undefined;
   // Null for anyone but an Editor of the whole plan saved to an account (automationsScopeFor).
   scope: AutomationsScope | null;
   children: ReactNode;
@@ -55,12 +59,14 @@ export function AutomationsHost({
     <AutomationsContext.Provider value={value}>
       {children}
       {value && target ? (
-        <AutomationsDialog
-          scope={value.scope}
-          target={target}
-          onTarget={setTarget}
-          onClose={() => setTarget(null)}
-        />
+        <PlanProvider value={plan}>
+          <AutomationsDialog
+            scope={value.scope}
+            target={target}
+            onTarget={setTarget}
+            onClose={() => setTarget(null)}
+          />
+        </PlanProvider>
       ) : null}
     </AutomationsContext.Provider>
   );

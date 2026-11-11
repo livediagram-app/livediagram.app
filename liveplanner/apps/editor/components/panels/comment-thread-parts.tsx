@@ -4,6 +4,12 @@
 // "Comments", "On Plan cards"): the list of comments, the composer with @-mentions, and the Resolve / Reopen
 // control. The canvas's comment popover and a Plan card's item panel both compose them; the panel draws them
 // `comfortable` (a feed: larger text, the composer beside your own avatar), the popover `compact`.
+import { AutomationDisc } from '@/components/automations/automation-glyphs';
+import {
+  AUTOMATION_SURFACE,
+  AutomationAuthorName,
+  isAutomationAuthor,
+} from '@/components/automations/AutomationAuthor';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useAutoHeight } from '@liveworkspace/workbench/hooks/ui/useAutoHeight';
 import { useReactionTray } from '@liveworkspace/workbench/components/comments/CommentReactions';
@@ -364,6 +370,8 @@ function CommentRow({
 }) {
   const now = useRelativeNow();
   const comfortable = density === 'comfortable';
+  // A comment a rule added (docs/specs/026-plan/automations.md "On cards"): the bolt, Automation and the rule.
+  const automation = isAutomationAuthor(comment.authorId);
   const [editing, setEditing] = useState(false);
   // Its reactions (docs/specs/012-collaboration/comment-reactions.md): the trigger beside Edit and Delete opens the
   // tray under the text, where the chips are. The scope (the canvas's, or a card thread's) says how one is sent.
@@ -374,27 +382,36 @@ function CommentRow({
   });
   return (
     <li
-      className={`group flex ${rail ? 'relative' : ''} ${comfortable ? 'gap-2.5 py-2.5' : 'gap-2 py-2'} ${resolved ? 'opacity-70' : ''}`}
+      data-comment-automation={automation ? '' : undefined}
+      className={`group flex ${rail ? 'relative' : ''} ${comfortable ? 'gap-2.5 py-2.5' : 'gap-2 py-2'} ${resolved ? 'opacity-70' : ''} ${automation ? AUTOMATION_SURFACE : ''}`}
     >
       {rail ? <span aria-hidden className={conversationRailClass(rail)} /> : null}
       <span className="relative mt-0.5 inline-flex">
-        <GlyphDisc
-          size={comfortable ? 28 : 24}
-          as="div"
-          aria-hidden
-          style={identityVars(comment.authorColor)}
-          className={`text-[10px] font-semibold text-white ${IDENTITY_FILL} ${rail ? (resolved ? RAIL_RING_RESOLVED : RAIL_RING) : ''}`}
-        >
-          {initialsOf(comment.authorName)}
-        </GlyphDisc>
+        {automation ? (
+          <AutomationDisc size={comfortable ? 28 : 24} />
+        ) : (
+          <GlyphDisc
+            size={comfortable ? 28 : 24}
+            as="div"
+            aria-hidden
+            style={identityVars(comment.authorColor)}
+            className={`text-[10px] font-semibold text-white ${IDENTITY_FILL} ${rail ? (resolved ? RAIL_RING_RESOLVED : RAIL_RING) : ''}`}
+          >
+            {initialsOf(comment.authorName)}
+          </GlyphDisc>
+        )}
       </span>
       <div className="min-w-0 flex-1">
         <div
           className={`flex items-baseline gap-1.5 ${comfortable ? 'text-[13px]' : 'text-[11px]'}`}
         >
-          <span className="truncate font-medium text-slate-900 dark:text-slate-50">
-            {comment.authorName}
-          </span>
+          {automation ? (
+            <AutomationAuthorName rule={comment.authorName} />
+          ) : (
+            <span className="truncate font-medium text-slate-900 dark:text-slate-50">
+              {comment.authorName}
+            </span>
+          )}
           <Tooltip label={when}>
             <time
               dateTime={new Date(comment.createdAt).toISOString()}
@@ -414,7 +431,7 @@ function CommentRow({
             </span>
           ) : null}
         </div>
-        {comment.ai ? (
+        {comment.ai && !automation ? (
           <p
             data-comment-ai=""
             className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-violet-50 px-1.5 py-px text-[10px] font-medium text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"

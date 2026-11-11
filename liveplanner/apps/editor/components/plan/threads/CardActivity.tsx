@@ -36,6 +36,7 @@ import {
 } from './activity-words';
 import { aiRunWords } from './activity-ai-words';
 import { activityTimeline, type TimelineEntry, type TimelineRun } from './activity-timeline';
+import { AutomationAuthorName } from '@/components/automations/AutomationAuthor';
 import { TimelineDisc, TimelineTime, ValueArrow, ValueChip, railClass } from './timeline-parts';
 
 // The entries drawn before Show N More: a tab's worth.
@@ -150,12 +151,16 @@ function ActivityRun({
   return (
     <li data-activity-run="" className={`relative flex gap-3 ${last ? '' : 'pb-5'}`}>
       {last ? null : <span aria-hidden className={railClass(24)} />}
-      <TimelineDisc name={run.by.name} color={run.by.color} />
+      <TimelineDisc name={run.by.name} color={run.by.color} automation={run.automation} />
       <div className="min-w-0 flex-1">
         <div className="flex min-h-6 items-center gap-2">
-          <span className="min-w-0 truncate text-[13px] font-semibold text-slate-900 dark:text-slate-50">
-            {run.mine ? 'You' : run.by.name}
-          </span>
+          {run.automation ? (
+            <AutomationAuthorName rule={run.by.name} className="text-[13px]" />
+          ) : (
+            <span className="min-w-0 truncate text-[13px] font-semibold text-slate-900 dark:text-slate-50">
+              {run.mine ? 'You' : run.by.name}
+            </span>
+          )}
           {aiWords ? (
             <Tooltip label={aiWords}>
               <span
