@@ -217,6 +217,35 @@ const PLAN = {
   ],
 };
 
+// A time rule that is paused and needs attention, and a run of it, for the rule tools.
+const BY = { id: 'p1', name: 'Ana', color: '#7c3aed' };
+const RULE = {
+  id: 'r1',
+  name: 'Overdue Nudge',
+  trigger: { kind: 'overdue', at: '09:00' },
+  conditions: [],
+  steps: [{ kind: 'flag' }],
+  chain: false,
+  timeZone: 'UTC',
+  enabled: true,
+  paused: { reason: 'Failed 10 times', at: 1 },
+  made: { by: BY, at: 1 },
+  edited: { by: BY, at: 2, ai: true },
+  stats: { lastRunAt: 3, nextAt: 4, runsThisWeek: 1, failuresInARow: 0 },
+  needs: ['Column qa is gone'],
+};
+const RUN = {
+  id: 'run1',
+  ruleId: 'r1',
+  ruleName: 'Overdue Nudge',
+  card: { id: 'i12', key: 12, title: 'Login fails' },
+  at: 5,
+  result: 'failed',
+  reason: 'The card is gone',
+  tookMs: 3,
+  steps: [{ kind: 'trigger', text: 'Automation · Overdue at 9:00' }],
+};
+
 // A plausible api with non-empty lists, so the array item schemas are exercised.
 async function api(request: Request): Promise<Response> {
   const url = new URL(request.url);
@@ -264,6 +293,17 @@ async function api(request: Request): Promise<Response> {
   }
   if (path.endsWith('/items') && request.method === 'GET') return json({ items: [ITEM], rev: 1 });
   if (path.endsWith('/threads') && request.method === 'GET') return json({ threads: [THREAD] });
+  // Automations (docs/specs/026-plan/automations.md "Agents and the CLI").
+  if (path.endsWith('/automations') && request.method === 'GET')
+    return json({
+      rules: [RULE],
+      runsToday: 2,
+      runsPerDay: 1000,
+      people: [{ id: 'p1', name: 'Ana' }],
+    });
+  if (path.endsWith('/automations/runs')) return json({ runs: [RUN] });
+  if (path.endsWith('/automations/test') || path.endsWith('/run')) return json({ run: RUN });
+  if (path.includes('/automations')) return json({ rule: RULE });
   if (path.endsWith('/reopen')) return new Response(null, { status: 204 });
   if (path.includes('/threads')) return json({ thread: THREAD, commentId: 'cm-3' });
   if (path.endsWith('/plan')) return json(PLAN);
@@ -379,6 +419,34 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
         { op: 'delete', item: 'item123' },
       ],
     },
+  },
+  { tool: 'list_rules', output: 'listRulesOutput', args: { projectId: 'd1' } },
+  {
+    tool: 'list_rules',
+    output: 'listRulesOutput',
+    args: { projectId: 'd1', rule: 'Overdue Nudge', runs: true, limit: 5 },
+  },
+  {
+    tool: 'change_rules',
+    output: 'changeRulesOutput',
+    args: {
+      projectId: 'd1',
+      changes: [
+        { op: 'add', rule: { name: 'New', trigger: { kind: 'manual' } } },
+        { op: 'set', rule: 'r1', steps: [{ kind: 'unflag' }] },
+        { op: 'off', rule: 'r1' },
+        { op: 'on', rule: 'r1' },
+        { op: 'duplicate', rule: 'r1' },
+        { op: 'test', rule: 'r1', card: '#12' },
+        { op: 'run', rule: 'Overdue Nudge', card: '#12' },
+        { op: 'delete', rule: 'r1' },
+      ],
+    },
+  },
+  {
+    tool: 'change_rules',
+    output: 'changeRulesOutput',
+    args: { projectId: 'd1', changes: [{ op: 'off', rule: 'r1' }] },
   },
   { tool: 'list_threads', output: 'listThreadsOutput', args: { projectId: 'd1' } },
   {

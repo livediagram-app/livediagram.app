@@ -16,6 +16,8 @@ describe('the MCP tool verbs', () => {
       'import_board',
       'change_board',
       'change_card_types',
+      'list_rules',
+      'change_rules',
       'list_sheets',
       'read_sheet',
       'change_sheet',
@@ -61,6 +63,7 @@ describe('the MCP tool verbs', () => {
     expect(reads).toEqual([
       'list_items',
       'list_threads',
+      'list_rules',
       'list_sheets',
       'read_sheet',
       'read_form',

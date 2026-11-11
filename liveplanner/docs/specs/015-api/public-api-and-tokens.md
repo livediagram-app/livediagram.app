@@ -181,6 +181,11 @@ are token-usable with the same delete authority; a read-only token may list the
 Trash but not restore or purge. The MCP server, by contrast, offers no permanent
 delete at all ([MCP server §4.9](mcp-server.md)).
 
+**Automations are the token's account's.** A token reaches a plan's rules when its account is an Editor of the
+whole plan, as a signed-in person does, and a rule it saves is stamped with that person, marked as an agent's; a
+read-only token may list the rules and their Audit Trail and nothing else
+([Automations](../026-plan/automations.md#who-may-do-what)).
+
 ### 3.5 Rate limiting
 
 Key the existing `WRITE_RATE_LIMITER` on the token id (not just the owner) so a

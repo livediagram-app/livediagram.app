@@ -14,7 +14,14 @@ export type Caller =
   | 'participant'
   | 'viewer'
   | 'token'
-  | 'guest';
+  | 'guest'
+  // Phase 3's callers (spec "Who may do what"): a read-only token, a token whose account is a Participant or holds a
+  // link to one tab, a workbench session, and a link visitor with no account.
+  | 'token_read_only'
+  | 'token_participant'
+  | 'token_tab'
+  | 'workbench'
+  | 'link_visitor';
 
 const LEVELS: Record<Caller, string> = {
   owner: 'edit',
@@ -25,29 +32,54 @@ const LEVELS: Record<Caller, string> = {
   viewer: 'view',
   token: 'edit',
   guest: 'edit',
+  token_read_only: 'edit',
+  token_participant: 'participate',
+  token_tab: 'edit',
+  workbench: 'edit',
+  link_visitor: 'edit',
 };
+
+const isToken = (who: Caller) => who === 'token' || who.startsWith('token_');
 
 export const USER = 'user_2abcdefghijklmnopqrstuvwxyz1';
 
+// A workbench session on the plan, at edit: a person's editor on one plan, never let near rules.
+const WORKBENCH = {
+  sessionId: 'wbs_1',
+  ownerId: USER,
+  tokenId: 'tok_1',
+  pairingId: 'wbp_1',
+  tabId: null,
+  origin: 'https://workbench.test',
+  level: 'edit',
+  expiresAt: 9e15,
+} as never;
+
 function identityOf(planId: string, who: Caller): RouteIdentity {
-  const account = who === 'guest' ? null : USER;
+  const account = who === 'guest' || who === 'link_visitor' ? null : USER;
+  const owner = who === 'link_visitor' ? null : (account ?? 'guest_owner');
   return {
-    accountUserId: who === 'token' ? null : account,
-    verifiedUserId: account,
+    accountUserId: isToken(who) || who === 'workbench' ? null : account,
+    verifiedUserId: who === 'workbench' ? null : account,
     accountEmail: null,
-    owner: account ?? 'guest_owner',
-    token: who === 'token' ? { id: 'tok_1' } : null,
-    workbench: null,
+    owner,
+    token: isToken(who)
+      ? { id: 'tok_1', ...(who === 'token_read_only' ? { readOnly: true } : {}) }
+      : null,
+    workbench: who === 'workbench' ? WORKBENCH : null,
     teams: who === 'team' ? [{ id: 'team_1', name: 'Team', role: 'member' } as never] : null,
     bearer: null,
     grant: {
       item: planId,
       level: LEVELS[who],
-      tab: who === 'tab_editor_link' ? 't1' : null,
+      tab: who === 'tab_editor_link' || who === 'token_tab' ? 't1' : null,
       sub: account ?? 'guest_owner',
       team: who === 'team' ? 'team_1' : null,
       exp: 9e9,
-      shareCode: who.endsWith('link') || who === 'participant' || who === 'viewer' ? 'code1' : null,
+      shareCode:
+        who.endsWith('link') || who === 'participant' || who === 'viewer' || who === 'link_visitor'
+          ? 'code1'
+          : null,
     } as never,
   };
 }

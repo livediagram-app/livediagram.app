@@ -1835,6 +1835,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   AutomationStamp: {
     additionalProperties: false,
     properties: {
+      ai: {
+        const: true,
+        type: 'boolean',
+      },
       at: {
         type: 'number',
       },
@@ -2146,6 +2150,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   AutomationsListResponse: {
     additionalProperties: false,
     properties: {
+      people: {
+        items: {
+          additionalProperties: false,
+          properties: {
+            id: {
+              type: 'string',
+            },
+            name: {
+              type: 'string',
+            },
+          },
+          required: ['id', 'name'],
+          type: 'object',
+        },
+        type: 'array',
+      },
       rules: {
         items: {
           $ref: '#/components/schemas/AutomationListedRule',

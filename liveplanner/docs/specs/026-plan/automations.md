@@ -7,8 +7,9 @@ automation, sized to one plan. The engineering detail is [blueprints/automations
 
 This spec covers **Phase 1** (Work Item #711: card triggers and actions, the Automations screen and its footer
 button) and **Phase 2** (#712: the Scheduled, Due In and Overdue triggers, For Related Cards, Assign in Turn, the
-Send to Webhook, Post to Slack and Post to Teams actions, and the Templates gallery). Phase 3 (#713) adds the
-incoming webhook trigger, AI actions and the agent and CLI rule tools, and is specified here when it is built. The
+Send to Webhook, Post to Slack and Post to Teams actions, and the Templates gallery). Phase 3 (#713) adds the agent
+and CLI rule tools ("Agents and the CLI", below), the incoming webhook trigger and AI actions; those two are
+specified here when they are built. The
 design for every phase is the LivePlanner Automations canvas (the owner's design artifact): Phase 1 follows its
 screens 1, 2, 3, 4, 5 and 7; Phase 2 adds screen 6 (Empty State and Templates), the Overdue Nudge and paused Slack
 rows of screen 2, and **+ For Related Cards** on screen 3.
@@ -69,8 +70,13 @@ work. A rule does it every time, at once, and says that it did.
   `?automations=1` opening the screen) and **Cancel**. After signing in the screen opens on the
   rules. **Only an Editor Can See Rules** is for a signed-in reader the api refuses, never a guest. Run Rule waits for
   sign-in too.
-- An **API token**, the MCP server and the CLI read and write no rules in Phase 1 (403 `automations_need_editor`):
-  agent tools for rules are Phase 3. Their card writes do trigger rules.
+- An **API token** (the MCP server, the CLI, a script) reaches rules as its account does: when that account is an
+  Editor of the whole plan, the token may do everything above ("Agents and the CLI"). A **read-only** token lists
+  the rules and the Audit Trail and nothing else (403 `read_only_token` on every other route, Test on a Card too).
+  A token whose account is a Participant, a Viewer or a tab-scoped Editor is refused as that person is
+  (`automations_need_editor`), so a token never picks an outgoing action's webhook that its account could not.
+  A **workbench session** and a **share-link visitor** with no account are always refused. Card writes by a token
+  trigger rules like anyone's.
 
 ## A rule
 
@@ -369,6 +375,86 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
   "Rules You Can Run Here" listing them, then **Manage Automations**. Running one says "Ran Escalate to Leads" or the
   failure, as a toast.
 
+## Agents and the CLI
+
+An agent (an MCP client, the `liveplanner` CLI, a script with an API token) reads and works a plan's rules through
+the same routes the Automations screen uses, as the token's person and within what that person may do ("Who may do
+what"). The two front doors are one engine (`@liveplanner/agent-verbs`), so they answer the same and refuse in the
+same words.
+
+### The MCP tools
+
+- **`list_rules`** (read) takes a `projectId` and answers every rule in the plan's order: its id, name, whether it
+  is on, **paused** (with the reason) and **needs attention** (what it names that the plan lacks), its trigger kind,
+  its **sentence** (the Rules list's, in words: "When Card Moved to Done then Add Label shipped"), **last run**,
+  **runs this week** and, for a time trigger, its **next run** (ISO times), then the day's runs and the day's limit.
+  An optional `rule` (an id or the exact name) also answers that rule's whole body, in the format `change_rules`
+  writes; `runs: true` also answers the recent Audit Trail, newest first (that rule's alone when `rule` is given;
+  `limit` 1 to 50, 20 by default), each run with its card (`#12 Title`), when, its result, its reason and its step
+  lines as the Audit Trail shows them.
+- **`change_rules`** (destructive, as it deletes rules) applies up to 20 changes in order, each seeing the ones
+  before it, a refused change stopping the rest and saying what was applied before it (as `change_items`):
+  - `add {rule}`: a new rule from a whole body. It starts off until it has a trigger and an action, then on, as
+    the builder's first save.
+  - `set {rule, name?, trigger?, conditions?, steps?, chain?, timeZone?}`: the rule `rule` names, each part given
+    replacing the saved one whole, the rest kept. A save that leaves no action turns it off.
+  - `on {rule}`, `off {rule}`: turn it on (which resumes a paused rule) or off.
+  - `duplicate {rule}`: a copy, "<name> copy", off.
+  - `delete {rule}`: deletes it; its runs stay in the Audit Trail until they age out.
+  - `test {rule, card}`: runs the saved rule (or a whole body given in place of its name) on the card as Test on a
+    Card does, changing nothing and logging nothing, and answers the run with each action saying what it would do.
+  - `run {rule, card}`: runs a **Run from a Card** rule that is on, on the card, now, as Run Rule does, and answers
+    the run (the day's limit applies).
+- A rule is named by its **id** or its **exact name** (case aside); a name matching none is refused with the rules
+  there are. A card is named as `list_items` names it (`#12`).
+- **The rule body** is the api's (`AutomationRuleBody`), described in full in the tool's input, so the tools are the
+  whole reference: `name`, `trigger`, `conditions`, `steps`, `chain` and `timeZone`, with each trigger, condition and
+  action kind and its fields, the values a text may hold, and the limits. Where a body names something of the plan,
+  the agent may write it as the board shows it and the engine puts in the id before it saves: a **column** by name
+  ("Done") for a status, a **card type** by name ("Bug"), a **field** by its name ("Completed On", "Due"), a
+  **person** by name ("Ana Costa") and a **Form tab** by its name. An id is kept as it is, and a name the plan lacks
+  is kept as written, so the rule saves and its list line says it needs attention, as a rule naming something gone
+  does.
+- **Whose time it is**: an agent has no clock of its own, so `timeZone` (an IANA zone) is the agent's to give. Left
+  out, an added rule takes `UTC` and a changed one keeps its own.
+- **Refusals** answer with the api's code and, for a rule that does not read, the part at fault as the api names it
+  (`steps.2.status`, `rule.trigger.at` for a test's body), with the words an agent acts on: what was wrong and the next
+  call to make ("Run Rule takes only a Run from a Card rule that is on: test it with test instead"). A refusal is a
+  tool error, never a protocol error.
+- **Who it was**: a rule an agent adds or changes is stamped with the token's person as **Made by** or **Edited by**,
+  marked as an agent's (`ai`), and the builder reads "Edited by Ana Costa (Agent)". A Run Rule by an agent is
+  triggered by the token's person as an **agent** (Who Did It's **an agent** holds), and the run's changes are
+  Automation's as every rule's are. Rules' own comments stay Automation's, never Generated by AI.
+
+### The CLI commands
+
+The same reach, one command a change, named as the CLI's other resources are (`liveplanner rule …`, every command
+taking `<project>` first, a rule by id or exact name, a card by number):
+
+| Command                                            | Does                                                                      |
+| -------------------------------------------------- | ------------------------------------------------------------------------- |
+| `rule ls <project>`                                | A line a rule: id, on, off or paused, attention, last run, week, sentence |
+| `rule get <project> <rule>`                        | One rule: its line, then its whole body as JSON                           |
+| `rule add <project> <file>`                        | A rule from a JSON body in a file, or `-` for stdin                       |
+| `rule set <project> <rule> <file>`                 | Change a rule from a JSON file (or stdin) of the parts to replace         |
+| `rule on\|off\|rm\|duplicate <project> <rule>`     | Turn it on or off, delete it, copy it                                     |
+| `rule test <project> <rule> <card>`                | Test on a Card: the run's lines, nothing changed                          |
+| `rule run <project> <rule> <card>`                 | Run Rule: a Run from a Card rule, now                                     |
+| `rule log <project> [--rule <rule>] [--limit <n>]` | The Audit Trail, newest first, a run a line with its steps beneath        |
+
+Each prints compact lines by default and its output object with `--json`, and refuses as the tools do (the code, the
+part at fault, the words, and the command to run next).
+
+### Limits and cost
+
+- `list_rules` and `rule ls` make two api reads (the rules and the plan, in parallel), and one more for the Audit
+  Trail when asked: never a read per rule. Its sentences are worked out once per call; 50 rules list well inside a
+  few milliseconds of CPU (blueprint "Agents and the CLI").
+- `change_rules` makes those two reads once a call, the cards once more when a test or run names one, then one write
+  a change.
+- The rule limits are the plan's (Limits below): 50 rules, 20 actions, 5 outgoing actions, and so on, refused by the
+  api with their codes.
+
 ## Copies, exports and deletes
 
 - A **duplicated** plan keeps its rules, each as it was (on or off), its Audit Trail and counts empty. A plan made from
@@ -385,6 +471,8 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
 `AutomationOff`; `Plan · Deleted · AutomationRule`; `Plan · Tested · AutomationRule`; `Plan · Ran · AutomationManual`;
 `UI · Opened · AutomationTemplate.<id>`, the template's id after the dot (an event carries no value, so the id
 rides in its type, from the fixed list above); `UI · Opened · AutomationsOffline` (the Browser Storage panel).
+Agents count as every tool and command does: `Mcp · Used · ListRules` / `ChangeRules`, and `Cli · Used · RuleLs`,
+`RuleGet`, `RuleAdd`, `RuleSet`, `RuleOn`, `RuleOff`, `RuleRm`, `RuleDuplicate`, `RuleTest`, `RuleRun` and `RuleLog`.
 The api logs `[automations] run` with the result and duration, never a card's text.
 
 ## Limits
@@ -406,8 +494,10 @@ The api logs `[automations] run` with the result and duration, never a card's te
 | Actions in a branch              | 10 (of the rule's 20)                  |
 | Outgoing actions per rule        | 5                                      |
 | People in turn                   | 2 to 10                                |
+| Changes in one `change_rules`    | 20                                     |
+| Runs `list_rules` returns        | 20 by default, up to 50                |
 
 ## Not yet
 
-The incoming webhook trigger, AI actions, agent and CLI tools for rules (Phase 3). Rules across plans, sprints,
-versions and SLAs are not planned.
+The incoming webhook trigger and AI actions (Phase 3). Rules across plans, sprints, versions and SLAs are not
+planned.

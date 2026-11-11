@@ -208,6 +208,8 @@ export interface AutomationRuleBody {
 export interface AutomationStamp {
   by: ItemPerson;
   at: number;
+  // Made through an API token (an agent), for "Edited by Ana Costa (Agent)".
+  ai?: true;
 }
 
 export interface AutomationRule extends AutomationRuleBody {
