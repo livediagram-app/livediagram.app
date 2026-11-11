@@ -3,8 +3,8 @@
 // `@livehuddle/document-views` (docs/specs/024-agents/blueprints/document-views.md, VW49).
 import type { Finish, TabKind } from '@livehuddle/document';
 
-// Every view. `lint` is answered by `@livehuddle/diagram-lint` (docs/specs/024-agents/diagram-lint.md), not
-// by `renderView`; it takes only `json`.
+// Every view. The `lint` view left with the diagram lint (docs/specs/002-project-scope/not-in-livehuddle.md "The
+// element engine", part 5): `view=lint` is an unknown view.
 export const VIEW_NAMES = [
   'overview',
   'outline',
@@ -14,9 +14,7 @@ export const VIEW_NAMES = [
   'show',
   'find',
   'diff',
-  'lint',
 ] as const;
-export const LINT_VIEW_NAME = 'lint' satisfies ViewName;
 export type ViewName = (typeof VIEW_NAMES)[number];
 
 // What each api door serves. `diff` has no api door (livediagram's CLI computes it from its cache).

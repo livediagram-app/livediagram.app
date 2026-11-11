@@ -255,6 +255,10 @@ describe('palette layouts', () => {
     const offered = new Set(allTiles());
     for (const leaving of [
       'shapes:square',
+      'shapes:circle',
+      'shapes:diamond',
+      'shapes:cylinder',
+      'shapes:speech-bubble',
       'tools:arrow',
       'tools:line',
       'tools:pencil',

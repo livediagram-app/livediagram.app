@@ -24,7 +24,7 @@ function duplicate(src: Tab): Tab {
   return update([src]).at(-1)!;
 }
 
-const square = { id: 's1', type: 'shape', shape: 'square' } as unknown as Element;
+const square = { id: 's1', type: 'shape', shape: 'focus-button' } as unknown as Element;
 
 describe('duplicating a tab', () => {
   it('names the copy as a copy and carries its elements', () => {

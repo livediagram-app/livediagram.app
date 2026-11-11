@@ -40,7 +40,7 @@ const ofType = (type: string) => ({ type }) as unknown as Element;
 
 describe('supportsBorderControls', () => {
   it('includes shapes, never a stored table, drawing, path or arrow', () => {
-    expect(supportsBorderControls(shape('square'))).toBe(true);
+    expect(supportsBorderControls(shape('focus-button'))).toBe(true);
     for (const type of ['table', 'freehand', 'path', 'annotation', 'arrow'])
       expect(supportsBorderControls(ofType(type)), type).toBe(false);
   });
@@ -66,10 +66,6 @@ describe('supportsBorderControls', () => {
     expect(selfDrawing.length).toBeGreaterThan(5);
     expect(selfDrawing.filter((k) => !SELF_PAINTING_SHAPES.has(k))).toEqual([]);
     expect(selfDrawing.filter((k) => supportsBorderControls(shape(k)))).toEqual([]);
-  });
-
-  it('excludes the actor (a stick figure with no enclosing outline)', () => {
-    expect(supportsBorderControls(shape('actor'))).toBe(false);
   });
 
   it('excludes elements that carry no stroke (text, arrow, image)', () => {

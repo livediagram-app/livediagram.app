@@ -6,13 +6,18 @@ import { contentBounds, renderElementsToSvg } from './svg-render';
 const shape = (id: string, o: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 100,
   height: 80,
   ...o,
 });
+
+// A labelled box that draws the ordinary label: a sticky note (no kept shape kind is a plain labelled box since the
+// diagram shapes left, docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5).
+const note = (id: string, o: Record<string, unknown> = {}) =>
+  ({ id, type: 'sticky', x: 0, y: 0, width: 100, height: 80, ...o }) as unknown as ShapeElement;
 
 const image = (id: string, o: Partial<ImageElement> = {}): ImageElement => ({
   id,
@@ -60,7 +65,7 @@ describe('renderElementsToSvg', () => {
 
   it('wraps a long label headlessly (no DOM canvas needed)', () => {
     const svg = renderElementsToSvg(
-      tab([shape('a', { label: 'one two three four five six seven eight nine', width: 80 })]),
+      tab([note('a', { label: 'one two three four five six seven eight nine', width: 80 })]),
     );
     // The char-width fallback measure kicks in without a document, so a long
     // label still wraps to multiple <tspan> lines rather than one overflowing run.
@@ -209,14 +214,7 @@ describe('renderElementsToSvg', () => {
     });
   });
 
-  describe('silhouettes + rotation', () => {
-    it('renders a hexagon silhouette instead of a rectangle', () => {
-      const svg = renderElementsToSvg(tab([shape('h', { shape: 'hexagon' })]));
-      // The table's 0..100 hexagon, mapped onto the 100 x 80 box inset by
-      // half the medium stroke, so the outline stays inside the box.
-      expect(svg).toContain('polygon points="25.5,1 74.5,1 99,40 74.5,79 25.5,79 1,40"');
-    });
-
+  describe('rotation', () => {
     it('applies element rotation about the centre', () => {
       const svg = renderElementsToSvg(tab([shape('r', { rotation: 45 })]));
       expect(svg).toContain('transform="rotate(45 50 40)"');
@@ -229,8 +227,7 @@ describe('renderElementsToSvg', () => {
       // box's top edge — it floated at the vertical centre before.
       const svg = renderElementsToSvg(
         tab([
-          shape('fr', {
-            shape: 'square',
+          note('fr', {
             width: 400,
             height: 300,
             label: 'Change Events',
@@ -251,7 +248,7 @@ describe('renderElementsToSvg', () => {
       // emitter must break lines (it used to lay every run on ONE line).
       const svg = renderElementsToSvg(
         tab([
-          shape('rt', {
+          note('rt', {
             width: 120,
             height: 80,
             label: 'getPartnerID (Discard other data)',
@@ -270,7 +267,7 @@ describe('renderElementsToSvg', () => {
     it('draws an extra-small run at 10 px, as the canvas does', () => {
       const svg = renderElementsToSvg(
         tab([
-          shape('xs', {
+          note('xs', {
             width: 200,
             height: 80,
             label: 'Title note',
@@ -532,7 +529,7 @@ describe('contentBounds', () => {
 // line the author typed collapsed, and the text below it moved up a line.
 describe('blank lines in a wrapped label', () => {
   it('keep their height as a non-breaking space', () => {
-    const svg = renderElementsToSvg(tab([shape('a', { label: '1\n\n2', height: 200 })]));
+    const svg = renderElementsToSvg(tab([note('a', { label: '1\n\n2', height: 200 })]));
     const tspans = [...svg.matchAll(/<tspan[^<>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]);
     expect(tspans).toEqual(['1', '\u00a0', '2']);
   });

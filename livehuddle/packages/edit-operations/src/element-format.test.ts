@@ -18,8 +18,11 @@ describe('the element format', () => {
     expect(text).not.toContain('connect');
     expect(text).toContain('  image: made in the editor');
     expect(text).toContain(
-      'video, table, arrow, line, freehand, path, annotation: no longer supported in livehuddle',
+      '  no longer supported in livehuddle:\n    video, table, arrow, line, freehand, path,',
     );
+    // The diagram shapes (part 5 of the element engine) are retired too, and no shape list names them.
+    expect(text).toContain(' square, circle, diamond,');
+    expect(text.split('no longer supported')[0]).not.toMatch(/\bsquare\b/);
   });
 
   // docs/specs/002-project-scope/not-in-livehuddle.md: no agent schema names the Page or a retired kind.

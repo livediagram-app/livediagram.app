@@ -1,20 +1,13 @@
 import {
   finishIconWeight,
   finishWobblesArt,
-  isHandDrawn,
-  actorFigureRect,
-  BORDER_DASH_ARRAY,
-  BORDER_STROKE_PX,
-  finishBorderStroke,
-  DEFAULT_BORDER_STYLE,
-  defaultFillColor,
   defaultStrokeColor,
   ICON_REMOTE_HIGHLIGHT_PX,
   iconWeightPx,
   type ShapeKind,
 } from '@livehuddle/document';
 import type { ReactNode } from 'react';
-import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
+import { isSvgRenderedShape } from '@/components/canvas/shape-paint-path';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { TechIconGlyph } from '@/components/primitives/tech-icon-glyph';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
@@ -32,27 +25,26 @@ type ShapeContentRouterProps = Pick<
   'element' | 'isSelected' | 'isEditing'
 > & {
   remoteBorderColor: string | null;
-  svgAnim: 'trace' | 'gradient' | 'pulse' | 'glow' | undefined;
   // Filter-based animation class for silhouette content (a sticker's art).
   artAnimClass: string | undefined;
 };
 
 /**
- * Whether ShapeSvgOverlay draws this shape: an SVG-rendered kind that no face of its own claims
- * first (the router below). Its Pulse, Glow, Trace and Gradient ride the overlay only then; a
- * self-faced kind takes them on the element (docs/specs/028-animation/element-animations.md).
+ * Whether this shape paints its own body over a transparent wrapper (shape-paint-path), other than a sticker or an
+ * icon, which take their Pulse, Glow, Trace and Gradient on their art (docs/specs/028-animation/element-animations.md).
+ * The wrapper then paints no box version of those four: there is no box for a ring or a halo to follow.
  */
 export function drawsShapeSvgOverlay(kind: ShapeKind): boolean {
   return isSvgRenderedShape(kind) && kind !== 'sticker' && kind !== 'icon';
 }
 
-// The per-shape-type inner content of a boxed element: stickers, tech / curated icons and the SVG-rendered geometric
-// shapes. Returns null for a plain box (whose text +
-// border render in BoxedElementView itself). Extracted from BoxedElementView.
+// The per-shape-type inner content of a boxed element: stickers and tech / curated icons. Returns null for anything
+// else (whose face, text and border render in BoxedElementView and ElementFaceRouter). The diagram shapes' SVG
+// outlines left with the element engine's part 5 (docs/specs/002-project-scope/not-in-livehuddle.md "The element
+// engine"). Extracted from BoxedElementView.
 export function ShapeContentRouter({
   element,
   remoteBorderColor,
-  svgAnim,
   artAnimClass,
   isEditing,
 }: ShapeContentRouterProps) {
@@ -76,72 +68,57 @@ export function ShapeContentRouter({
         {node}
       </div>
     );
-  return element.type === 'shape' && element.shape === 'sticker' ? (
-    // Sticker (docs/specs/010-palette/stickers.md): its own die-cut art, drawn edge to edge. Takes no
-    // element colours and gets no caption band — a sticker says what it says
-    // in its own artwork.
-    // `animClass` carries the filter-based glow / pulse / trace (docs/specs/010-palette/stickers.md):
-    // a sticker's silhouette needs a drop-shadow, not the wrapper's
-    // box-shadow, which would ring its bounding rectangle.
-    art(<StickerView stickerId={element.stickerId} animClass={artAnimClass} />)
-  ) : element.type === 'shape' && element.shape === 'icon' && isTechIconId(element.iconId) ? (
-    // Technology (brand) icon: a fixed-colour tile + white glyph
-    // (docs/specs/010-palette/technology-icons.md). Same shape kind as a curated icon, but the id
-    // resolves in the tech catalogue, so it renders coloured rather
-    // than stroke-tinted.
-    art(
-      <TechIconGlyph
-        iconId={element.iconId}
-        hasLabel={iconCaptioned}
-        size={element.iconSize}
-        labelAlignX={element.textAlignX ?? 'center'}
-        labelAlignY={element.textAlignY ?? 'bottom'}
-        animation={element.iconAnimation}
-        animationSpeed={element.iconAnimationSpeed}
-        animationRepeat={element.iconAnimationRepeat}
-      />,
-    )
-  ) : element.type === 'shape' && element.shape === 'icon' ? (
-    // Curated glyph: line art tinted by the element's stroke
-    // colour. Rendered separately from ShapeSvgOverlay because it
-    // keeps aspect ratio (the catalogue art must not warp) and is
-    // data-driven by `iconId`.
-    art(
-      <IconGlyph
-        iconId={element.iconId}
-        stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
-        // Professional draws an icon that sets no weight thin (docs/specs/008-canvas/finish.md).
-        strokeWidth={
-          remoteBorderColor
-            ? ICON_REMOTE_HIGHLIGHT_PX
-            : iconWeightPx(finishIconWeight(element.iconWeight, finish))
-        }
-        hasLabel={iconCaptioned}
-        labelAlignX={element.textAlignX ?? 'center'}
-        labelAlignY={element.textAlignY ?? 'bottom'}
-        // Per-icon looping animation (docs/specs/008-canvas/canvas-and-palette.md). Picked from the icon context
-        // menu; undefined = static.
-        animation={element.iconAnimation}
-        animationSpeed={element.iconAnimationSpeed}
-        animationRepeat={element.iconAnimationRepeat}
-      />,
-    )
-  ) : element.type === 'shape' && isSvgRenderedShape(element.shape) && !isHandDrawn(finish) ? (
-    <ShapeSvgOverlay
-      shape={element.shape}
-      fill={element.fillColor ?? defaultFillColor(element, surface)}
-      stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
-      strokeWidth={
-        remoteBorderColor ? 3 : BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]
-      }
-      strokeDasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined}
-      aspect={element.height > 0 ? element.width / element.height : 1}
-      // trace / gradient / pulse / glow render against the true SVG
-      // geometry here; blink / bounce / wobble (shape-agnostic) stay on the
-      // wrapper. svgHandlesAnim above suppresses the wrapper class so these
-      // don't double up.
-      animation={svgAnim}
-      figure={element.shape === 'actor' ? actorFigureRect(element) : undefined}
-    />
-  ) : null;
+  return element.type === 'shape' && element.shape === 'sticker'
+    ? // Sticker (docs/specs/010-palette/stickers.md): its own die-cut art, drawn edge to edge. Takes no
+      // element colours and gets no caption band: a sticker says what it says
+      // in its own artwork.
+      // `animClass` carries the filter-based glow / pulse / trace (docs/specs/010-palette/stickers.md):
+      // a sticker's silhouette needs a drop-shadow, not the wrapper's
+      // box-shadow, which would ring its bounding rectangle.
+      art(<StickerView stickerId={element.stickerId} animClass={artAnimClass} />)
+    : element.type === 'shape' && element.shape === 'icon' && isTechIconId(element.iconId)
+      ? // Technology (brand) icon: a fixed-colour tile + white glyph
+        // (docs/specs/010-palette/technology-icons.md). Same shape kind as a curated icon, but the id
+        // resolves in the tech catalogue, so it renders coloured rather
+        // than stroke-tinted.
+        art(
+          <TechIconGlyph
+            iconId={element.iconId}
+            hasLabel={iconCaptioned}
+            size={element.iconSize}
+            labelAlignX={element.textAlignX ?? 'center'}
+            labelAlignY={element.textAlignY ?? 'bottom'}
+            animation={element.iconAnimation}
+            animationSpeed={element.iconAnimationSpeed}
+            animationRepeat={element.iconAnimationRepeat}
+          />,
+        )
+      : element.type === 'shape' && element.shape === 'icon'
+        ? // Curated glyph: line art tinted by the element's stroke
+          // colour. Rendered separately from ShapeSvgOverlay because it
+          // keeps aspect ratio (the catalogue art must not warp) and is
+          // data-driven by `iconId`.
+          art(
+            <IconGlyph
+              iconId={element.iconId}
+              stroke={
+                remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
+              }
+              // Professional draws an icon that sets no weight thin (docs/specs/008-canvas/finish.md).
+              strokeWidth={
+                remoteBorderColor
+                  ? ICON_REMOTE_HIGHLIGHT_PX
+                  : iconWeightPx(finishIconWeight(element.iconWeight, finish))
+              }
+              hasLabel={iconCaptioned}
+              labelAlignX={element.textAlignX ?? 'center'}
+              labelAlignY={element.textAlignY ?? 'bottom'}
+              // Per-icon looping animation (docs/specs/008-canvas/canvas-and-palette.md). Picked from the icon context
+              // menu; undefined = static.
+              animation={element.iconAnimation}
+              animationSpeed={element.iconAnimationSpeed}
+              animationRepeat={element.iconAnimationRepeat}
+            />,
+          )
+        : null;
 }

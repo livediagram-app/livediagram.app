@@ -10,12 +10,12 @@ describe('buildViewTree', () => {
   // boundary or lane is one element in reading order like any other, and what sat on it is beside it.
   it('lists every element flat in reading order, a stored arrow too, bare strokes folded', () => {
     const tree = buildViewTree([
-      shapeAt('square', 'far', 900, 0),
+      shapeAt('signpost', 'far', 900, 0),
       retiredShapeAt('lane', 'lane', 0, 150, 500, 150),
-      shapeAt('square', 'in-lane', 10, 200),
+      shapeAt('signpost', 'in-lane', 10, 200),
       retiredShapeAt('boundary', 'frame', 0, 0, 500, 300),
-      shapeAt('square', 'b', 300, 10),
-      shapeAt('square', 'a', 10, 10),
+      shapeAt('signpost', 'b', 300, 10),
+      shapeAt('signpost', 'a', 10, 10),
       arrowBetween('arr', 'a', 'b'),
       strokeAt('s1', 1000, 500),
       strokeAt('s2', 1100, 500),
@@ -49,13 +49,13 @@ describe('buildViewTree', () => {
   });
 
   it('keeps the first of two elements sharing an id', () => {
-    const tree = buildViewTree([shapeAt('square', 'x', 0, 0), shapeAt('square', 'x', 50, 50)]);
+    const tree = buildViewTree([shapeAt('signpost', 'x', 0, 0), shapeAt('signpost', 'x', 50, 50)]);
     expect(tree.roots).toHaveLength(1);
     expect(tree.nodes.get('x')?.index).toBe(0);
   });
 
   it('starts a view from one element, or from nothing for an id it does not hold', () => {
-    const tree = buildViewTree([shapeAt('square', 'x', 0, 0)]);
+    const tree = buildViewTree([shapeAt('signpost', 'x', 0, 0)]);
     expect(outline(subtreeItems(tree, 'x'))).toEqual(['x']);
     expect(subtreeItems(tree, 'gone')).toEqual([]);
   });

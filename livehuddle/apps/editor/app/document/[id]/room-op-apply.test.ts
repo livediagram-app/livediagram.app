@@ -6,7 +6,16 @@ import { applyRoomOpToTabs } from './room-op-apply';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 
 const el = (id: string, over: Partial<Element> = {}): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...over }) as Element;
+  ({
+    id,
+    type: 'shape',
+    shape: 'focus-button',
+    x: 0,
+    y: 0,
+    width: 10,
+    height: 10,
+    ...over,
+  }) as Element;
 
 const tab = (over: Partial<Tab> = {}): Tab => ({
   id: 't1',

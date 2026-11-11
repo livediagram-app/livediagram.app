@@ -5,7 +5,6 @@
 import type { EditRejection } from '@livehuddle/api-schema';
 import { kindWordOf, resolveRef, type Element, type ElementId } from '@livehuddle/document';
 import { describeElement, kindOf, labelOf } from './element-text';
-import { reachableFrom } from './graph-walk';
 import { nearestElements } from './nearest';
 import { currentElements, namingOf, noteTarget, refsOf, type EditState } from './state';
 import {
@@ -18,17 +17,11 @@ import {
 } from './tokenise';
 import { REJECTION_CANDIDATES_MAX, RESERVED_WORDS, SELECTOR_KEYS } from './vocabulary';
 
-// Keys whose value names one element.
-const WORD_KEYS = ['from', 'to', 'downstream', 'upstream'] as const;
-type WordKey = (typeof WORD_KEYS)[number];
-
 type SelectorTerm =
   | { kind: 'ref'; text: string }
   | { kind: 'label'; text: string }
   | { kind: 'label~'; text: string }
   | { kind: 'type' | 'shape'; value: string }
-  | { [K in WordKey]: { kind: K; word: string } }[WordKey]
-  | { kind: 'arrow'; from: string; to: string }
   | { kind: 'selected' };
 
 type Resolved<T> = T | { rejection: EditRejection };
@@ -38,13 +31,10 @@ const KEYED = /^([a-zA-Z][a-zA-Z-]*):/;
 function termOf(word: Word): SelectorTerm | string {
   if (isQuotedWord(word)) return { kind: 'label', text: word.value };
   const prefix = unquotedPrefix(word);
-  // `a->b` with either end quoted: `"Sign in"->"Pay"` (an unquoted `->` anywhere in the word).
-  const parts = arrowParts(word);
-  if (parts) {
-    if (parts.length > 2) return 'a->b with one arrow: an arrow has two ends';
-    const [from, to] = parts as [string, string];
-    return from && to ? { kind: 'arrow', from, to } : 'a->b with an element on each side';
-  }
+  // The arrow selectors (`a->b`, `from:`, `to:`, `downstream:`, `upstream:`) left with the diagram vocabulary
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5, D33).
+  if (arrowParts(word))
+    return 'a->b is not a selector: arrows are no longer supported in livehuddle';
   // The always-safe ref the views print for an id that is not a plain word: `id:"…"`.
   if (prefix === 'id:' && word.raw.length > 3) return { kind: 'ref', text: word.raw };
   if (/^label~/i.test(prefix)) return { kind: 'label~', text: word.value.slice('label~'.length) };
@@ -56,10 +46,7 @@ function termOf(word: Word): SelectorTerm | string {
       return `"${keyed[1]}:" is not a selector key; keys: ${SELECTOR_KEYS.join(' ')}`;
     if (value === '') return `${key}: needs a value`;
     if (value.includes(',')) return 'one value a term; join terms with spaces';
-    if (key === 'type' || key === 'shape')
-      return { kind: key, value: word.value.slice(key.length + 1) };
-    const wordKey = WORD_KEYS.find((k) => k === key)!;
-    return { kind: wordKey, word: value };
+    return { kind: key as 'type' | 'shape', value: word.value.slice(key.length + 1) };
   }
   if (word.value === 'selected') return { kind: 'selected' };
   if (RESERVED_WORDS.has(word.value))
@@ -171,34 +158,12 @@ export function ambiguous(
   };
 }
 
-// The one element a word inside a term names (a ref or a quoted label), or its refusal.
-function resolveWord(state: EditState, word: string, operation: number): Resolved<{ el: Element }> {
-  const terms = parseSelector(word);
-  const named =
-    typeof terms !== 'string' &&
-    terms.length === 1 &&
-    (terms[0]!.kind === 'ref' || terms[0]!.kind === 'label');
-  if (!named)
-    return {
-      rejection: notFound(
-        state,
-        word,
-        operation,
-        `"${word}" must name one element: a ref or a "label"`,
-      ),
-    };
-  return resolveOne(state, word, operation);
-}
-
 function labelMatches(el: Element, text: string, partial: boolean): boolean {
   const label = labelOf(el)?.trim().toLowerCase();
   if (label === undefined) return false;
   const wanted = text.trim().toLowerCase();
   return partial ? label.includes(text.toLowerCase()) : label === wanted;
 }
-
-const pinnedTo = (el: Element, end: 'from' | 'to', id: ElementId) =>
-  el.type === 'arrow' && el[end].kind === 'pinned' && el[end].elementId === id;
 
 // The ids a term keeps of `candidates`, or its refusal.
 function applyTerm(
@@ -209,7 +174,6 @@ function applyTerm(
   operation: number,
 ): Resolved<{ kept: Element[] }> {
   const keep = (test: (el: Element) => boolean) => ({ kept: candidates.filter(test) });
-  const word = (text: string) => resolveWord(state, text, operation);
   switch (term.kind) {
     case 'ref': {
       // An exact id names its element outright, as resolveRef would.
@@ -244,26 +208,6 @@ function applyTerm(
         return { rejection: notFound(state, selector, operation, 'nothing is selected') };
       const selected = new Set(state.selected);
       return keep((el) => selected.has(el.id));
-    }
-    case 'from':
-    case 'to': {
-      const resolved = word(term.word);
-      if ('rejection' in resolved) return resolved;
-      return keep((el) => pinnedTo(el, term.kind, resolved.el.id));
-    }
-    case 'arrow': {
-      const from = word(term.from);
-      if ('rejection' in from) return from;
-      const to = word(term.to);
-      if ('rejection' in to) return to;
-      return keep((el) => pinnedTo(el, 'from', from.el.id) && pinnedTo(el, 'to', to.el.id));
-    }
-    case 'downstream':
-    case 'upstream': {
-      const resolved = word(term.word);
-      if ('rejection' in resolved) return resolved;
-      const reached = reachableFrom(currentElements(state), resolved.el.id, term.kind);
-      return keep((el) => el.type !== 'arrow' && reached.has(el.id));
     }
   }
 }

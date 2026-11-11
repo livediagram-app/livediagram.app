@@ -92,9 +92,9 @@ describe('GET /api/schema', () => {
     expect(res.status).toBe(404);
     expect(await res.json()).toMatchObject({
       error: 'unknown_kind',
-      kinds: expect.arrayContaining(['square', 'arrow']),
+      kinds: expect.arrayContaining(['signpost', 'arrow']),
     });
-    expect(get('/api/schema/square/x').status).toBe(404);
+    expect(get('/api/schema/signpost/x').status).toBe(404);
   });
 
   it('answers a malformed percent-escape as an unknown kind, never a 500', async () => {

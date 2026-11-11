@@ -6,7 +6,7 @@ import { buildSearchResults } from './search';
 const shape = (id: string, label?: string): ShapeElement => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 100,
@@ -311,10 +311,10 @@ describe('buildSearchResults — team library (docs/specs/013-workspace/team-sha
   it('surfaces palette items as an "Add to canvas" group, matched on name + keywords', () => {
     const paletteItems = [
       {
-        id: 'shape:cylinder',
-        name: 'Cylinder',
-        keywords: 'shape database storage',
-        add: { type: 'shape' as const, shapeKind: 'cylinder' as const },
+        id: 'shape:lockers',
+        name: 'Lockers',
+        keywords: 'office storage bags',
+        add: { type: 'shape' as const, shapeKind: 'lockers' as const },
       },
       {
         id: 'sticker:box',
@@ -326,7 +326,7 @@ describe('buildSearchResults — team library (docs/specs/013-workspace/team-sha
     const out = buildSearchResults({ query: 'storage', documents: [], folders: [], paletteItems });
     const palette = out.find((g) => g.key === 'palette')!;
     expect(palette.items.map((i) => (i.kind === 'palette' ? i.id : null))).toEqual([
-      'shape:cylinder',
+      'shape:lockers',
       'sticker:box',
     ]);
   });
@@ -357,10 +357,10 @@ describe('buildSearchResults — team library (docs/specs/013-workspace/team-sha
   it('does not surface palette items on an empty query (no catalogue dump)', () => {
     const paletteItems = [
       {
-        id: 'shape:square',
-        name: 'Rectangle',
-        keywords: 'shape box',
-        add: { type: 'shape' as const, shapeKind: 'square' as const },
+        id: 'shape:chair',
+        name: 'Chair',
+        keywords: 'seat furniture',
+        add: { type: 'shape' as const, shapeKind: 'chair' as const },
       },
     ];
     const out = buildSearchResults({ query: '', documents: [], folders: [], paletteItems });

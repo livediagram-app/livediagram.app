@@ -9,7 +9,7 @@ import type { Element } from './index';
 describe('a turn on an element that does not turn', () => {
   it("is dropped from an annotation marker, and kept on a shape's and a stored pointer note's", () => {
     const note = {
-      ...createShape('square', 0, 0),
+      ...createShape('focus-button', 0, 0),
       shape: 'pointer-note',
       id: 'n',
       rotation: 90,
@@ -23,7 +23,7 @@ describe('a turn on an element that does not turn', () => {
       height: 24,
       rotation: 30,
     } as unknown as Element;
-    const square = { ...createShape('square', 0, 0), id: 's', rotation: 45 } as Element;
+    const square = { ...createShape('focus-button', 0, 0), id: 's', rotation: 45 } as Element;
     const [n, m, s] = migrateIncomingElements([note, marker, square]);
     expect(n).toMatchObject({ rotation: 90 });
     expect(m).not.toHaveProperty('rotation');
@@ -31,7 +31,7 @@ describe('a turn on an element that does not turn', () => {
   });
 
   it('leaves a list with nothing to drop as it is', () => {
-    const els = [{ ...createShape('square', 0, 0), id: 's' } as Element];
+    const els = [{ ...createShape('focus-button', 0, 0), id: 's' } as Element];
     expect(migrateIncomingElements(els)[0]).toEqual(els[0]);
   });
 });

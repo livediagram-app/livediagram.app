@@ -23,7 +23,7 @@ function setup(elements: Element[]) {
   return { mutators: result.current, get: () => current };
 }
 
-const shape = { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 60 };
+const shape = { id: 's', type: 'shape', shape: 'focus-button', x: 0, y: 0, width: 100, height: 60 };
 const iconEl = {
   id: 'i',
   type: 'shape',

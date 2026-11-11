@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element, type ShapeElement, type Tab } from '@livehuddle/document';
+import {
+  createShape,
+  createSticky,
+  type Element,
+  type ShapeElement,
+  type Tab,
+} from '@livehuddle/document';
 import {
   portalExitPoint,
   portalName,
@@ -17,7 +23,7 @@ const portal = (id: string, over: Partial<ShapeElement> = {}): ShapeElement => (
 describe('portalsOnTab', () => {
   it('picks out the portals and nothing else, in element order', () => {
     const els: Element[] = [
-      createShape('square', 0, 0),
+      createSticky(0, 0),
       portal('a'),
       createShape('mode-button', 0, 0),
       portal('b'),
@@ -56,10 +62,7 @@ describe('resolvePortalTarget', () => {
   });
 
   it('refuses a target that is not a portal any more', () => {
-    const els: Element[] = [
-      portal('a', { portalTarget: 'b' }),
-      { ...createShape('square', 0, 0), id: 'b' },
-    ];
+    const els: Element[] = [portal('a', { portalTarget: 'b' }), { ...createSticky(0, 0), id: 'b' }];
     expect(resolvePortalTarget(els, els[0]! as ShapeElement)).toBeNull();
   });
 

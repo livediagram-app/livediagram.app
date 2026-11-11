@@ -36,7 +36,7 @@ function dragOver(target: HTMLElement, clientX: number, clientY: number) {
 
 function render(elements: Element[] = [neighbour]) {
   const wrapperRef = wrapper();
-  setPaletteDragPreview({ kind: 'square', width: 200, height: 200 });
+  setPaletteDragPreview({ kind: 'sticky', width: 200, height: 200 });
   const view = renderHook(() => usePaletteDragGuides({ elements, readZoom: () => 1, wrapperRef }));
   return { ...view, wrapperRef };
 }

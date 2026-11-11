@@ -5,7 +5,6 @@
 // shapes live here too and the engine re-exports them.
 
 import type { Element, ElementOp, Finish, Tab } from '@livehuddle/document';
-import type { LintReport } from './lint';
 import { MAX_TAB_BYTES } from '@liveworkspace/api-schema/tab-size';
 import { TRASH_RETENTION_DAYS } from './trash';
 
@@ -215,9 +214,9 @@ export type ChangesetResponse = {
   // The result lines and the footer as text: the same for a dry run and a write.
   text: string;
   warnings: string[];
-  // The diagram lint's report of the result tab (docs/specs/024-agents/diagram-lint.md); null when nothing was
-  // written or the lint failed.
-  lint: LintReport | null;
+  // Always null: the diagram lint left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "The element
+  // engine", part 5, D32). Kept on the wire so a client that reads it keeps parsing.
+  lint: null;
 };
 
 export type ChangesetConflict = {
@@ -253,7 +252,8 @@ export type RevertResponse = {
   changeset: ChangesetWritten | null;
   reverted: number;
   kept: RevertKept[];
-  lint: LintReport | null;
+  // Always null, as ChangesetResponse.lint.
+  lint: null;
 };
 
 // The route's refusal codes beside the engine's.

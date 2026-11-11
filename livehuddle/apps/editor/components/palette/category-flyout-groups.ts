@@ -16,13 +16,13 @@ export function barLabel(categoryId: string, label: string): string {
   return BAR_LABELS[categoryId] ?? label;
 }
 
-/** How a flyout lays its tiles out: a grid of pictures where the glyph IS the answer (a square explains a square),
+/** How a flyout lays its tiles out: a grid of pictures where the glyph IS the answer (a sticker explains a sticker),
  *  or cards with a one-line blurb where it is not (a Sankey's glyph does not explain a Sankey). The same rule as the
  *  category bodies' (docs/specs/010-palette/palette-top-level-categories.md "Rows, not tiles"). */
 type FlyoutLayout = 'grid' | 'cards';
 
-// The grid categories and their columns: Popular's twelve as three even rows of four, Shapes five to a row.
-const GRID_COLUMNS: Readonly<Record<string, number>> = { popular: 4, shapes: 5 };
+// The grid categories and their columns: Popular's twelve as three even rows of four.
+const GRID_COLUMNS: Readonly<Record<string, number>> = { popular: 4 };
 
 export function flyoutLayout(categoryId: string): FlyoutLayout {
   return categoryId in GRID_COLUMNS ? 'grid' : 'cards';
@@ -47,7 +47,6 @@ export function flyoutCardColumns(tileCount: number): 1 | 2 {
 // listed falls back to its own description.
 const TAGLINES: Readonly<Record<string, string>> = {
   popular: 'What a Space is most often furnished with.',
-  shapes: 'The basics, the flowchart vocabulary and more.',
   write: 'Words, notes and pictures.',
   draw: 'Sketch, outline and connect by hand.',
   build: 'Structures that grow as you type.',
@@ -72,9 +71,6 @@ export function flyoutTagline(categoryId: string, fallback: string): string {
 // A category shows its groups only when every one is named; otherwise it is one block, so a layout whose dividers
 // fall elsewhere (Workshop's Write) never shows half its groups headed and half bare.
 const GROUP_NAMES: Readonly<Record<string, string>> = {
-  'shapes:square': 'Basics',
-  'shapes:cylinder': 'Flowchart',
-  'shapes:cloud': 'More Shapes',
   'tools:text': 'Text',
   'tools:sticky': 'Notes',
   // Logo's Draw (palette-layouts PAGES_LOGO): the Pen first, then each person's markers as a group.

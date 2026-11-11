@@ -19,7 +19,7 @@ import { createShape } from './shape-factory';
 const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 100,
@@ -148,7 +148,7 @@ describe('type predicates', () => {
 // docs/specs/008-canvas/canvas-performance.md "Whole-board passes stay linear": one index per element list.
 describe('elementIndexFor', () => {
   it('builds one index per element list and reuses it', () => {
-    const a = createShape('square', 0, 0);
+    const a = createShape('focus-button', 0, 0);
     const list = [a];
     const first = elementIndexFor(list);
     expect(first.get(a.id)).toBe(a);

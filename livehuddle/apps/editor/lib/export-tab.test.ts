@@ -15,7 +15,7 @@ import { storedFreehand, storedPinnedArrow } from '@/test/retired-elements';
 const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'room',
   x: 0,
   y: 0,
   width: 100,
@@ -102,8 +102,8 @@ describe('exportTabAsMarkdown', () => {
       ),
     );
     expect(md).toContain('## Elements');
-    expect(md).toContain('- **Alpha** (square)');
-    expect(md).toContain('- **Gamma** (square)');
+    expect(md).toContain('- **Alpha** (room)');
+    expect(md).toContain('- **Gamma** (room)');
     // The unlabelled element contributes no bullet.
     expect(md.match(/^- \*\*/gm)?.length).toBe(2);
   });
@@ -165,7 +165,7 @@ describe('exportTabAsMarkdown', () => {
       ),
     );
     expect(md).toContain('## Elements');
-    expect(md).toContain('- **Box** (square)');
+    expect(md).toContain('- **Box** (room)');
     expect(md).toContain('- **Sketch** (freehand)');
     // The unlabelled freehand contributes no bullet.
     expect(md.match(/^- \*\*/gm)?.length).toBe(2);
@@ -185,14 +185,6 @@ describe('exportTabAsSvg', () => {
     expect(svg).toContain('viewBox=');
     expect(svg).toContain('fill="#fff7ed"'); // background rect
     expect(svg).toContain('</svg>');
-  });
-
-  it('renders a circle shape as an ellipse and a square as a rect', async () => {
-    const svg = await text(
-      exportTabAsSvg(tab({ elements: [shape('c', { shape: 'circle' }), shape('s', { x: 200 })] })),
-    );
-    expect(svg).toContain('<ellipse');
-    expect(svg).toContain('<rect'); // the square (plus the bg rect)
   });
 
   // A stored arrow exports as it draws on the canvas: a dashed line between its ends and the placeholder card on it.
@@ -255,16 +247,6 @@ describe('exportTabAsSvg', () => {
     expect(blank).not.toContain('lvd-export-bg');
     const unset = await text(exportTabAsSvg(tab({ elements: [shape('s')] })));
     expect(unset).toContain('lvd-export-bg');
-  });
-
-  it('renders a colour-deferring shape with the canvas defaults, not flat white', async () => {
-    // A shape with no explicit colours defers to the theme/type defaults; the
-    // export must match what the canvas draws (brand-50 fill / brand-500 border)
-    // rather than a white box with a slate border.
-    const svg = await text(exportTabAsSvg(tab({ elements: [shape('s')] })));
-    expect(svg).toContain('fill="#f0f9ff"'); // brand-50
-    expect(svg).toContain('stroke="#0ea5e9"'); // brand-500
-    expect(svg).not.toContain('stroke="#0f172a"'); // not the old slate-ink default
   });
 
   it('wraps a long label to multiple lines instead of one overflowing line', async () => {

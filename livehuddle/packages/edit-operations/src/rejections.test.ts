@@ -24,21 +24,21 @@ describe('formatRejections', () => {
         op: 'set "Pay" fill=green',
         details: [
           '"Pay" matches 3 elements:',
-          '  n7  square "Pay" in f2',
+          '  n7  signpost "Pay" in f2',
           '  n9  sticky "Pay"',
           '  a4  arrow n3→n7 "Pay"',
         ],
-        hint: 'use a ref, narrow with type:square, or add all',
+        hint: 'use a ref, narrow with type:signpost, or add all',
       },
     ]);
     expect(text.join('\n')).toBe(
       [
         'error target_ambiguous · op 2 · set "Pay" fill=green',
         '  "Pay" matches 3 elements:',
-        '    n7  square "Pay" in f2',
+        '    n7  signpost "Pay" in f2',
         '    n9  sticky "Pay"',
         '    a4  arrow n3→n7 "Pay"',
-        '  hint: use a ref, narrow with type:square, or add all',
+        '  hint: use a ref, narrow with type:signpost, or add all',
         'nothing was applied',
       ].join('\n'),
     );
@@ -121,7 +121,7 @@ describe('rejection builders', () => {
     expect(idTaken(1, byId('n3'), taken)).toEqual({
       code: 'id_taken',
       operation: 1,
-      details: ['id "n3" is taken by square "Login"'],
+      details: ['id "n3" is taken by signpost "Login"'],
       hint: 'use id n3-3',
     });
     expect(idTaken(1, byId('a1'), taken).details).toEqual(['id "a1" is taken by ? arrow']);

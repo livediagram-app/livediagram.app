@@ -13,27 +13,20 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // Nothing holds (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3): a stored boundary
 // draws the placeholder, and dragging it moves it alone, whatever sits on it. Driven through the real drag machine.
 
-const shape = (
-  kind: 'boundary' | 'square',
-  id: string,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-) =>
-  ({ ...createShape('square', x, y), shape: kind, id, width: w, height: h }) as unknown as Element;
+const shape = (kind: 'boundary' | 'room', id: string, x: number, y: number, w: number, h: number) =>
+  ({ ...createShape('room', x, y), shape: kind, id, width: w, height: h }) as unknown as Element;
 
 // The boundary spans 100..300 on both axes.
 const BOARD = (): Element[] => [
   shape('boundary', 'frame', 100, 100, 200, 200),
-  shape('square', 'inside', 130, 130, 40, 40),
+  shape('room', 'inside', 130, 130, 40, 40),
   // Centre (290, 150) inside; its right half outside: travels.
-  shape('square', 'straddling', 270, 130, 40, 40),
+  shape('room', 'straddling', 270, 130, 40, 40),
   // Centre (320, 150) outside; its left edge inside: stays.
-  shape('square', 'mostly-out', 300, 130, 40, 40),
+  shape('room', 'mostly-out', 300, 130, 40, 40),
   // A smaller boundary nested inside, with its own member: both travel.
   shape('boundary', 'nested', 140, 200, 120, 80),
-  shape('square', 'nested-member', 160, 220, 30, 30),
+  shape('room', 'nested-member', 160, 220, 30, 30),
   // A larger boundary that only overlaps: stays.
   shape('boundary', 'neighbour', 250, 250, 300, 300),
   storedArrow('loose', { x: 120, y: 120 }, { x: 200, y: 140 }),

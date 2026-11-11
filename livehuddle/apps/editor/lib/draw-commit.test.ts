@@ -43,18 +43,18 @@ describe('buildDrawnBoxed', () => {
     expect(stage).toMatchObject({ x: 500, y: 300, width: 400, height: 400 });
   });
 
-  const shapeIntent = { type: 'shape', kind: 'square' } as const;
+  const shapeIntent = { type: 'shape', kind: 'room' } as const;
 
   it('centres the factory-default size on a tap', () => {
     const out = buildDrawnBoxed(shapeIntent, 500, 300, 504, 303, null, tab());
-    expect(out.width).toBe(120); // square factory default
-    expect(out.height).toBe(120);
-    expect(out.x).toBe(500 - 60);
-    expect(out.y).toBe(300 - 60);
+    expect(out.width).toBe(480); // the room's factory default
+    expect(out.height).toBe(320);
+    expect(out.x).toBe(500 - 240);
+    expect(out.y).toBe(300 - 160);
   });
 
   it('sizes to the dragged box, normalising a backwards drag', () => {
-    const out = buildDrawnBoxed(shapeIntent, 200, 100, 10, 20, null, tab());
+    const out = buildDrawnBoxed({ type: 'shape', kind: 'rug' }, 200, 100, 10, 20, null, tab());
     expect({ x: out.x, y: out.y, width: out.width, height: out.height }).toEqual({
       x: 10,
       y: 20,
@@ -64,9 +64,10 @@ describe('buildDrawnBoxed', () => {
   });
 
   it("seeds the tab's default text size (docs/specs/004-interface-design/fonts.md)", () => {
-    const seeded = buildDrawnBoxed(shapeIntent, 0, 0, 3, 3, null, tab({ defaultTextSize: 'lg' }));
+    const button = { type: 'shape', kind: 'focus-button' } as const;
+    const seeded = buildDrawnBoxed(button, 0, 0, 3, 3, null, tab({ defaultTextSize: 'lg' }));
     expect(seeded.textSize).toBe('lg');
-    const unseeded = buildDrawnBoxed(shapeIntent, 0, 0, 3, 3, null, tab());
+    const unseeded = buildDrawnBoxed(button, 0, 0, 3, 3, null, tab());
     expect(unseeded.textSize).toBe('md'); // the shape factory's own default
   });
 
@@ -80,7 +81,7 @@ describe('buildDrawnBoxed', () => {
   });
 
   it('carries the icon glyph + label, unlocking aspect for a tech mark (docs/specs/010-palette/technology-icons.md)', () => {
-    const intent = { type: 'shape', kind: 'square', iconId: 'aws-s3', label: 'S3' } as const;
+    const intent = { type: 'shape', kind: 'icon', iconId: 'aws-s3', label: 'S3' } as const;
     const out = buildDrawnBoxed(intent, 0, 0, 100, 100, null, tab());
     expect(out).toMatchObject({ iconId: 'aws-s3', label: 'S3', aspectLocked: false });
   });

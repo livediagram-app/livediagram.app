@@ -16,7 +16,7 @@ const s = (id: string, name = id, orderIndex = 0): TabSummary => ({
 const box = {
   id: 'e',
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 1,

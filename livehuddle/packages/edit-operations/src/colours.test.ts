@@ -3,10 +3,10 @@ import { getBuiltInTheme, quickSwatchColor, type Element } from '@livehuddle/doc
 import { fillSlotNames, isHexColour, resolveColourValue } from './colours';
 
 const theme = getBuiltInTheme(undefined);
-const square = {
+const signpost = {
   id: 's',
   type: 'shape',
-  shape: 'square',
+  shape: 'signpost',
   x: 0,
   y: 0,
   width: 1,
@@ -28,22 +28,22 @@ describe('resolveColourValue (EO21, EO49)', () => {
   });
 
   it('binds a slot, so it follows a theme change', () => {
-    expect(resolveColourValue(square, 'Green', theme)).toEqual({
+    expect(resolveColourValue(signpost, 'Green', theme)).toEqual({
       patch: { fillColor: quickSwatchColor(theme, 'fill', 4), fillSwatch: 4 },
       overridesTheme: false,
     });
-    expect(resolveColourValue(square, 'theme', theme)).toEqual({
+    expect(resolveColourValue(signpost, 'theme', theme)).toEqual({
       patch: { fillColor: quickSwatchColor(theme, 'fill', 0), fillSwatch: undefined },
       overridesTheme: false,
     });
   });
 
   it('takes a hex as an override, and refuses anything else with the slot names', () => {
-    expect(resolveColourValue(square, '#ff0000', theme)).toEqual({
+    expect(resolveColourValue(signpost, '#ff0000', theme)).toEqual({
       patch: { fillColor: '#ff0000', fillSwatch: undefined },
       overridesTheme: true,
     });
-    expect(resolveColourValue(square, 'chartreuse', theme)).toEqual({
+    expect(resolveColourValue(signpost, 'chartreuse', theme)).toEqual({
       rule: 'a theme colour or a hex',
       allowed: ['theme', 'red', 'orange', 'yellow', 'green', 'blue', 'violet'],
     });

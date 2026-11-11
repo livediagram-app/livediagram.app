@@ -64,8 +64,6 @@ export function EditorContextMenuHost() {
     commitBorderStroke,
     previewBorderStyle,
     commitBorderStyle,
-    previewBorderRadius,
-    commitBorderRadius,
     setShadowSelected,
     previewShadow,
     commitShadow,
@@ -115,8 +113,6 @@ export function EditorContextMenuHost() {
     previewFont,
     commitPadding,
     previewPadding,
-    commitShapeKind,
-    previewShapeKind,
     resetAspectRatioSelected,
     setSizeSelected,
     openNote,
@@ -196,8 +192,6 @@ export function EditorContextMenuHost() {
       onCommitBorderStroke={commitBorderStroke}
       onPreviewBorderStyle={previewBorderStyle}
       onCommitBorderStyle={commitBorderStyle}
-      onPreviewBorderRadius={previewBorderRadius}
-      onCommitBorderRadius={commitBorderRadius}
       onSetShadow={setShadowSelected}
       onPreviewShadow={previewShadow}
       onCommitShadow={commitShadow}
@@ -258,8 +252,6 @@ export function EditorContextMenuHost() {
       onPreviewFont={previewFont}
       onSetPadding={commitPadding}
       onPreviewPadding={previewPadding}
-      onSetShapeKind={commitShapeKind}
-      onPreviewShapeKind={previewShapeKind}
       onResetAspectRatio={resetAspectRatioSelected}
       onSetSize={setSizeSelected}
       colourPalette={swatches}

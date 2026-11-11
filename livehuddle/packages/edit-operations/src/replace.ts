@@ -6,8 +6,8 @@
 
 import type { EditRejection } from '@livehuddle/api-schema';
 import {
+  SHAPE_KINDS,
   buildTab,
-  coerceShapeKind,
   contentOrigin,
   diffToElementOps,
   elementValidationIssue,
@@ -28,6 +28,7 @@ import { tabRejection } from './finalise';
 import { invalidResult } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
+import { SHAPES_RETIRED } from './vocabulary';
 
 // No `mermaid`: imports from other tools are gone, and no `graph`: the graph input went with the layout containers
 // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3).
@@ -63,11 +64,14 @@ function fromElements(
     }
   }
   const valid = normalised as Element[];
-  const coerced = valid.map((el) =>
-    el.type === 'shape' ? { ...el, shape: coerceShapeKind(el.shape) } : el,
+  // A new shape of a kind livehuddle does not have is refused; one the tab already holds rides through exactly as
+  // stored, whatever its kind (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5, D31).
+  const made = valid.find(
+    (el) => el.type === 'shape' && !kept.has(el.id) && !SHAPE_KINDS.has(el.shape),
   );
+  if (made) return invalidResult(made.id, 'shape', { field: 'shape', rule: SHAPES_RETIRED });
   return {
-    elements: buildTab('elements', 'elements', coerced, layout, themeId).elements,
+    elements: buildTab('elements', 'elements', valid, layout, themeId).elements,
     tab: (tabId, name) => buildTab(tabId, name, valid, layout, themeId),
   };
 }

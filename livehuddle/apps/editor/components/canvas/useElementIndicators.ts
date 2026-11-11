@@ -81,9 +81,7 @@ export function useElementIndicators(
   cornerPx: number,
 ): { items: IndicatorItem[]; layout: IndicatorLayout | null; cornerPx: number } {
   const items = elementIndicatorItems(element, handlers, useCommentBadges());
-  const shape = element.type === 'shape' ? element.shape : undefined;
-  // A circle or a pill is fully round however its corner preset reads.
-  const indicatorCornerPx = shape === 'circle' || shape === 'stadium' ? Infinity : cornerPx;
+  const indicatorCornerPx = cornerPx;
   const metrics = label.inlineIcon ? inlineIconMetrics(element, label.text, label.textSize) : null;
   const position = (element.type === 'shape' && element.iconPosition) || 'left';
   const layout = useIndicatorLayout(element, indicatorCornerPx, items, {

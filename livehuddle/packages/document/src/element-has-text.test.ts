@@ -4,7 +4,7 @@ import type { Element } from './index';
 
 // Minimal element stubs — elementHasText only reads `label`.
 const withLabel = (label?: string) =>
-  ({ type: 'shape', shape: 'square', label }) as unknown as Element;
+  ({ type: 'shape', shape: 'focus-button', label }) as unknown as Element;
 
 describe('elementHasText', () => {
   it('is true for a non-empty label', () => {
@@ -38,7 +38,7 @@ describe('elementSupportsText', () => {
   const el = (partial: Record<string, unknown>) => partial as unknown as Element;
 
   it('is true for an unlabelled shape / sticky', () => {
-    expect(elementSupportsText(el({ type: 'shape', shape: 'square' }))).toBe(true);
+    expect(elementSupportsText(el({ type: 'shape', shape: 'focus-button' }))).toBe(true);
     expect(elementSupportsText(el({ type: 'sticky' }))).toBe(true);
   });
 

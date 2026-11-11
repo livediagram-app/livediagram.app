@@ -1,5 +1,11 @@
 # Corner radius
 
+> **No Radius control in livehuddle** (Work Tracker #459, part 5): the boxes the Border category's Radius grid served
+> (the rectangle, the banner, the header bar, the callout card and a stat row's cards) are all retired kinds now
+> ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine)), so no element livehuddle adds
+> offers it. A stored `borderRadius` stays on its element exactly as stored. livediagram keeps the control, and
+> [its spec there](../../../../livediagram/docs/specs/008-canvas/corner-radius.md) is the one to read and change for it.
+
 A rectangle's corners (and the other free-corner boxes: the banner, the
 header bar, the callout card, a stat row's cards, an image) take a **corner
 preset**, `borderRadius`: **None**, **Small** (4 px), **Medium** (12 px), **Large** (24 px) or

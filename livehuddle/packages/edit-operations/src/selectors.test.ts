@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { EditRejection } from '@livehuddle/api-schema';
 import type { Element, Tab } from '@livehuddle/document';
-import { reachableFrom } from './graph-walk';
 import { refused } from './fixtures/outcomes';
 import { elementOf, run } from './fixtures/run';
 import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';
@@ -49,7 +48,7 @@ describe('selector rows', () => {
     const tab = withElements(sticky('frame', 'Old'), sticky('a b', 'Spaced'));
     expect(ids('id:"frame"', stateOf(tab))).toEqual(['frame']);
     expect(ids('id:"a b"', stateOf(tab))).toEqual(['a b']);
-    expect(ids('id:"n3" type:square')).toEqual(['n3']);
+    expect(ids('id:"n3" type:signpost')).toEqual(['n3']);
     expect(ids('id:"gone"')).toEqual([]);
   });
 
@@ -61,31 +60,28 @@ describe('selector rows', () => {
   });
 
   it('type: by kind word or element type; shape: by shape', () => {
-    expect(ids('type:stadium')).toEqual(['n1', 'n8']);
+    expect(ids('type:room-sign')).toEqual(['n1', 'n8']);
     expect(ids('type:text')).toEqual(['t1']);
-    expect(ids('type:shape shape:diamond')).toEqual(['n6']);
+    expect(ids('type:shape shape:directory')).toEqual(['n6']);
     // A stored boundary is a retired kind (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
     // part 3): its kind word is no kind, and shape: still finds it by what it stored.
     expect(ids('Type:boundary')).toEqual([]);
     expect(ids('shape:boundary')).toEqual(['f2']);
   });
 
-  it('arrows by their ends', () => {
-    expect(ids('from:n6')).toEqual(['a6']);
-    expect(ids('to:n6')).toEqual(['a5']);
-    expect(ids('n6->n7')).toEqual(['a6']);
-    expect(ids('n7->n6')).toEqual([]);
-    expect(ids('"3-D Secure?"->"Charge card"')).toEqual(['a6']);
-    expect(ids('n6->"Charge card"')).toEqual(['a6']);
-    expect(refusal('n5->n6->n7').details[0]).toBe(
-      'selector "n5->n6->n7": a->b with one arrow: an arrow has two ends',
+  it('reads the arrow selectors as unknown vocabulary (part 5 of the element engine)', () => {
+    expect(
+      ['from:n6', 'to:n6', 'downstream:n6', 'upstream:n3'].map((t) => refusal(t).details[0]),
+    ).toEqual(
+      ['from', 'to', 'downstream', 'upstream'].map(
+        (key) =>
+          `selector "${key}:n${key === 'upstream' ? 3 : 6}": "${key}:" is not a selector key; keys: type shape`,
+      ),
     );
-  });
-
-  it('downstream and upstream along arrows, the start left out', () => {
-    expect(ids('downstream:n6')).toEqual(['n7', 'n8']);
-    expect(ids('upstream:n3')).toEqual(['n1', 'n2']);
-    expect(ids('downstream:n4 type:diamond')).toEqual(['n6']);
+    expect(refusal('n6->n7').details[0]).toBe(
+      'selector "n6->n7": a->b is not a selector: arrows are no longer supported in livehuddle',
+    );
+    expect(refusal('n6->n7').code).toBe('parse_error');
   });
 
   it("selected: the owner's selection", () => {
@@ -103,43 +99,29 @@ describe('selector rows', () => {
   });
 
   it('every term must match', () => {
-    expect(ids('type:square label~c')).toEqual(['n2', 'n5', 'n7']);
-    expect(ids('n3 type:diamond')).toEqual([]);
-    expect(ids('type:diamond n3')).toEqual([]);
-    expect(ids('type:square n3')).toEqual(['n3']);
+    expect(ids('type:signpost label~c')).toEqual(['n2', 'n5', 'n7']);
+    expect(ids('n3 type:directory')).toEqual([]);
+    expect(ids('type:directory n3')).toEqual([]);
+    expect(ids('type:signpost n3')).toEqual(['n3']);
   });
 });
 
 describe('selector refusals', () => {
   it('reads what does not parse as a parse error naming the selector', () => {
     expect(
-      ['colour:red', 'in:f2', 'type:', 'from:f2,n4', '->n4', 'all', '"open', ''].map(
+      ['colour:red', 'in:f2', 'type:', 'type:a,b', 'all', '"open', ''].map(
         (s) => refusal(s).details[0],
       ),
     ).toEqual([
-      'selector "colour:red": "colour:" is not a selector key; keys: type shape from to downstream upstream',
+      'selector "colour:red": "colour:" is not a selector key; keys: type shape',
       // Nothing holds since the layout containers went (not-in-livehuddle.md "The element engine", part 3).
-      'selector "in:f2": "in:" is not a selector key; keys: type shape from to downstream upstream',
+      'selector "in:f2": "in:" is not a selector key; keys: type shape',
       'selector "type:": type: needs a value',
-      'selector "from:f2,n4": one value a term; join terms with spaces',
-      'selector "->n4": a->b with an element on each side',
+      'selector "type:a,b": one value a term; join terms with spaces',
       'selector "all": "all" is a keyword; reach an element named so by its label or a longer prefix',
       'selector ""open": column 1: expected a closing "',
       'selector "": an empty selector',
     ]);
-  });
-
-  it('needs a word inside a term to name one element', () => {
-    expect(refusal('from:type:square').details[0]).toBe(
-      '"type:square" must name one element: a ref or a "label"',
-    );
-    expect(refusal('from:nope').code).toBe('target_not_found');
-    expect(refusal('to:label~c').code).toBe('target_not_found');
-    expect(refusal('from:"card"').code).toBe('target_not_found');
-    const twins = stateOf(withElements(sticky('s1', 'Twin'), sticky('s2', 'Twin', 800)));
-    expect(refusal('downstream:"twin"', twins).code).toBe('target_ambiguous');
-    expect(refusal('n3->nope').code).toBe('target_not_found');
-    expect(refusal('nope->n3').code).toBe('target_not_found');
   });
 
   it('refuses an ambiguous prefix with every candidate, marking a stale one', () => {
@@ -177,7 +159,7 @@ describe('cardinality', () => {
       'error target_ambiguous · op 2 · set "Pay" fill=green',
       '  "Pay" matches 2 elements:',
       '    n9  sticky "Pay"',
-      '    n10  square "Pay"',
+      '    n10  signpost "Pay"',
       '  hint: use a ref, narrow with type:sticky',
       'nothing was applied',
     ]);
@@ -186,8 +168,8 @@ describe('cardinality', () => {
       '"Pai" matches nothing',
       'nearest:',
       '  n9  sticky "Pay"',
-      '  n10  square "Pay"',
-      '  n2  square "Cart"',
+      '  n10  signpost "Pay"',
+      '  n2  signpost "Cart"',
       '  a6  ? arrow "yes"',
     ]);
     expect(resolveOne(state(), 'n3', 1)).toMatchObject({ el: { id: 'n3' } });
@@ -231,48 +213,25 @@ describe('the working state', () => {
   it('notes each pre-existing element it resolves as a target, words included', () => {
     const state = stateOf();
     putElement(state, sticky('verify', 'New'), 1);
-    ids('n6->n7', state);
+    ids('n7', state);
     ids('verify', state);
-    ids('type:diamond', state);
-    expect(state.targets).toEqual(['n6', 'n7', 'a6']);
+    ids('type:directory', state);
+    expect(state.targets).toEqual(['n7', 'n6']);
   });
 });
 
-describe('parseSelector and reachableFrom', () => {
+describe('parseSelector', () => {
   it('reads terms', () => {
-    expect(parseSelector('"Orders service" label~pay type:square n3->n4 selected n7')).toEqual([
-      { kind: 'label', text: 'Orders service' },
-      { kind: 'label~', text: 'pay' },
-      { kind: 'type', value: 'square' },
-      { kind: 'arrow', from: 'n3', to: 'n4' },
-      { kind: 'selected' },
-      { kind: 'ref', text: 'n7' },
-    ]);
-  });
-
-  it('walks past cycles without returning the start', () => {
-    const loop = [
-      {
-        id: 'a',
-        type: 'arrow',
-        from: { kind: 'pinned', elementId: 'x', anchor: 'e' },
-        to: { kind: 'pinned', elementId: 'y', anchor: 'w' },
-      },
-      {
-        id: 'b',
-        type: 'arrow',
-        from: { kind: 'pinned', elementId: 'y', anchor: 'e' },
-        to: { kind: 'pinned', elementId: 'x', anchor: 'w' },
-      },
-      {
-        id: 'c',
-        type: 'arrow',
-        from: { kind: 'free', x: 0, y: 0 },
-        to: { kind: 'pinned', elementId: 'x', anchor: 'w' },
-      },
-    ] as Element[];
-    expect([...reachableFrom(loop, 'x', 'downstream')]).toEqual(['y']);
-    expect([...reachableFrom(loop, 'x', 'upstream')]).toEqual(['y']);
+    expect(parseSelector('"Orders service" label~pay type:sticky shape:plant selected n7')).toEqual(
+      [
+        { kind: 'label', text: 'Orders service' },
+        { kind: 'label~', text: 'pay' },
+        { kind: 'type', value: 'sticky' },
+        { kind: 'shape', value: 'plant' },
+        { kind: 'selected' },
+        { kind: 'ref', text: 'n7' },
+      ],
+    );
   });
 });
 

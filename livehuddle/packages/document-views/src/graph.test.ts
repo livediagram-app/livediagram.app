@@ -22,11 +22,13 @@ describe('graphView (R17, VW30)', () => {
 
   it('names a lone element in the singular, a stored arrow among them, and an empty tab with nothing', () => {
     expect(
-      graphView(tabOf([shapeAt('square', 'a', 0, 0)]))
+      graphView(tabOf([shapeAt('signpost', 'a', 0, 0)]))
         .text.split('\n')
         .slice(1),
     ).toEqual(['… 1 unconnected element hidden: view --view outline']);
-    const { text } = graphView(tabOf([shapeAt('square', 'a', 0, 0), arrowBetween('aa', 'a', 'a')]));
+    const { text } = graphView(
+      tabOf([shapeAt('signpost', 'a', 0, 0), arrowBetween('aa', 'a', 'a')]),
+    );
     expect(text.split('\n').slice(1)).toEqual([
       '… 2 unconnected elements hidden: view --view outline',
     ]);

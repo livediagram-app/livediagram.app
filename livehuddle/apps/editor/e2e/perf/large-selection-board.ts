@@ -4,7 +4,7 @@
 // engine's part 4 (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"). Deterministic: the
 // same board on every run.
 
-import { createShape, createText, type Element } from '@livehuddle/document';
+import { createSticky, createText, type Element } from '@livehuddle/document';
 
 export const LARGE_GRID = 30;
 export const LARGE_NODE_COUNT = LARGE_GRID * LARGE_GRID;
@@ -22,7 +22,7 @@ export function buildLargeSelectionBoard(): Element[] {
   const captions: Element[] = [];
   for (let row = 0; row < LARGE_GRID; row++)
     for (let col = 0; col < LARGE_GRID; col++) {
-      const shape = createShape('square', col * STEP_X, row * STEP_Y);
+      const shape = createSticky(col * STEP_X, row * STEP_Y);
       nodes.push({ ...shape, id: largeNodeId(row, col), label: `Step ${row * LARGE_GRID + col}` });
       if (col > 0)
         captions.push({

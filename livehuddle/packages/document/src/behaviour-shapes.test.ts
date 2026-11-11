@@ -7,7 +7,8 @@ describe('behaviour shapes', () => {
   });
 
   it('leaves ordinary shapes alone', () => {
-    expect(isBehaviourShape('square')).toBe(false);
+    expect(isBehaviourShape('icon')).toBe(false);
+    expect(isBehaviourShape('sticker')).toBe(false);
   });
 
   it('gives the shared menu to a kind with settings behind it', () => {
@@ -22,6 +23,6 @@ describe('behaviour shapes', () => {
   });
 
   it('gives nothing to a shape outside the family', () => {
-    expect(carriesSharedSettingsMenu('square')).toBe(false);
+    expect(carriesSharedSettingsMenu('icon')).toBe(false);
   });
 });

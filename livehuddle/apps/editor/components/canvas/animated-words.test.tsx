@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { createShape, createText } from '@livehuddle/document';
+import { createSticky, createText } from '@livehuddle/document';
 import {
   TEXT_ANIM_MAX_LETTERS,
   TEXT_ANIM_MAX_WORDS,
@@ -136,7 +136,7 @@ describe('textAnimationView', () => {
   it('carries the class, the play-once marker, the accent and the accessible name', () => {
     // Repeat unset: Text plays once by default.
     const shape = {
-      ...createShape('square', 0, 0),
+      ...createSticky(0, 0),
       textAnimation: 'typewriter' as const,
       strokeColor: '#ff0000',
     };

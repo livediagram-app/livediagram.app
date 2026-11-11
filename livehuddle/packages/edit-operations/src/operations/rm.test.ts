@@ -23,7 +23,7 @@ describe('rm', () => {
       );
     expect(applied(outcome).targets).toEqual(['n4']);
     expect(applied(outcome).warnings).toEqual([]);
-    expect(lines(outcome)).toEqual(['- n4  square "Address"']);
+    expect(lines(outcome)).toEqual(['- n4  signpost "Address"']);
   });
 
   it('removes a stored arrow named by its ref, as a retired element', () => {
@@ -48,16 +48,16 @@ describe('rm with selectors', () => {
   it('removes every match with all, once each', () => {
     const outcome = run([{ op: 'rm', target: 'label~s', all: true }]);
     expect(lines(outcome)).toEqual([
-      '- n1  stadium "Start"',
-      '- n4  square "Address"',
-      '- n5  square "Card details"',
-      '- n6  diamond "3-D Secure?"',
+      '- n1  room-sign "Start"',
+      '- n4  signpost "Address"',
+      '- n5  signpost "Card details"',
+      '- n6  directory "3-D Secure?"',
       '- t1  text "Retry up to 3 times"',
       '- a6  ? arrow "yes"',
     ]);
   });
 
   it('needs all for several matches', () => {
-    expect(refused(run([rm('type:stadium')])).code).toBe('target_ambiguous');
+    expect(refused(run([rm('type:room-sign')])).code).toBe('target_ambiguous');
   });
 });

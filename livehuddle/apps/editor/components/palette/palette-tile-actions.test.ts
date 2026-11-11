@@ -7,10 +7,10 @@ describe('withTileActionPreamble', () => {
     const addShape = vi.fn((kind: string) => order.push(`add:${kind}`));
     const wrapped = withTileActionPreamble({ addShape }, () => order.push('exit'));
 
-    wrapped.addShape('square');
+    wrapped.addShape('chair');
 
-    expect(order).toEqual(['exit', 'add:square']);
-    expect(addShape).toHaveBeenCalledWith('square');
+    expect(order).toEqual(['exit', 'add:chair']);
+    expect(addShape).toHaveBeenCalledWith('chair');
   });
 
   it('passes non-function entries through untouched', () => {
@@ -39,7 +39,7 @@ describe('withTileActionPreamble arguments', () => {
     const wrapped = withTileActionPreamble({ addShape: (_k: string) => {} }, (a, args) =>
       seen.push([a, ...args]),
     );
-    wrapped.addShape('square');
-    expect(seen).toEqual([['addShape', 'square']]);
+    wrapped.addShape('chair');
+    expect(seen).toEqual([['addShape', 'chair']]);
   });
 });

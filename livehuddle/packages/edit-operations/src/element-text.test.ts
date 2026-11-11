@@ -7,7 +7,7 @@ const byId = (id: string) => checkoutFlow().elements.find((el) => el.id === id)!
 
 describe('kindOf', () => {
   it('reads a shape by its kind and anything else by its type', () => {
-    expect(kindOf(byId('n6'))).toBe('diamond');
+    expect(kindOf(byId('n6'))).toBe('directory');
     expect(kindOf(byId('t1'))).toBe('text');
     // A stored arrow is a retired element (part 4 of the element engine).
     expect(kindOf(byId('a1'))).toBe('? arrow');
@@ -23,7 +23,7 @@ describe('labelOf', () => {
 
 describe('describeElement', () => {
   it('prints a box as its id, kind and label', () => {
-    expect(describeElement(byId('n7'))).toBe('n7  square "Charge card"');
+    expect(describeElement(byId('n7'))).toBe('n7  signpost "Charge card"');
   });
 
   it('prints a stored arrow as a retired element, with its label and no ends', () => {

@@ -47,7 +47,7 @@ const qaBoard = {
   height: 150,
   label: 'Questions',
 } as unknown as Element;
-const square = { ...createShape('square', 0, 0), id: 's', label: 'Box' } as Element;
+const square = { ...createShape('focus-button', 0, 0), id: 's', label: 'Box' } as Element;
 const image = {
   id: 'i',
   type: 'image',
@@ -67,9 +67,9 @@ describe('a retired shape’s element menu', () => {
     expect(screen.queryByLabelText('Opacity')).toBeNull();
   });
 
-  it('still offers them on a shape livehuddle has', () => {
+  it('still offers Style on a shape livehuddle has (the Shape section left with the diagram shapes)', () => {
     open({ mode: 'element', elementId: 's', x: 10, y: 10 }, [square]);
-    expect(button('Shape')).toBe(true);
+    expect(button('Shape')).toBe(false);
     expect(button('Style')).toBe(true);
   });
 });

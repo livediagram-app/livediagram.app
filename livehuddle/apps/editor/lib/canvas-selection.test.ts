@@ -5,7 +5,7 @@ import { deriveCanvasSelection, elementGrips } from './canvas-selection';
 const box = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'room',
   x: 0,
   y: 0,
   width: 100,
@@ -197,7 +197,7 @@ describe('deriveCanvasSelection: fixed-size elements', () => {
   const fixedShape = {
     id: 'f',
     type: 'shape',
-    shape: 'square',
+    shape: 'room',
     x: 0,
     y: 0,
     width: 200,
@@ -228,7 +228,7 @@ describe('deriveCanvasSelection — popover yields to an open context menu', () 
   const box = {
     id: 'a',
     type: 'shape',
-    shape: 'square',
+    shape: 'room',
     x: 0,
     y: 0,
     width: 100,

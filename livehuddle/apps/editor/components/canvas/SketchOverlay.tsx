@@ -2,10 +2,8 @@
 
 import { memo, useMemo } from 'react';
 import {
-  MARKER_DETAIL_PX,
   MARKER_INK_OPACITY,
   MARKER_STREAK_OPACITY,
-  SHAPE_DETAIL_STROKE_PX,
   SKETCH_HATCH_OPACITY,
   handDrawnElementPaint,
   handDrawnInk,
@@ -17,7 +15,7 @@ import {
 // A sketched element's body on the canvas (docs/specs/008-canvas/finish.md "Sketch"): the hand-drawn outline,
 // solid fill with faint pencil shading over it, and chrome from sketch-element.ts in @livehuddle/document, the same drawing the
 // SVG export emits. It stands in for the wrapper's CSS border and background (element-variant.ts drops them
-// under Sketch) and for the shape's SVG overlay (ShapeContentRouter skips it), and sits under the label. Marker's
+// under Sketch), and sits under the label. Marker's
 // felt-tip body (docs/specs/008-canvas/finish.md "Marker", marker-element.ts) takes the same place, drawn in layers of
 // see-through ink so crossings pool darker.
 
@@ -109,13 +107,7 @@ function SketchOverlayImpl({
         data-finish="marker"
         aria-hidden
       >
-        {drawing.solid ? (
-          <path
-            d={drawing.solid}
-            fill={fill}
-            fillRule={drawing.solidEvenOdd ? 'evenodd' : undefined}
-          />
-        ) : null}
+        {drawing.solid ? <path d={drawing.solid} fill={fill} /> : null}
         {drawing.streaks.map((d, i) =>
           d ? (
             <path
@@ -141,15 +133,6 @@ function SketchOverlayImpl({
             />
           ) : null,
         )}
-        {drawing.details ? (
-          <path
-            d={drawing.details}
-            stroke={stroke}
-            strokeOpacity={MARKER_INK_OPACITY}
-            strokeWidth={MARKER_DETAIL_PX}
-            {...line}
-          />
-        ) : null}
       </svg>
     );
   }
@@ -161,13 +144,7 @@ function SketchOverlayImpl({
       data-finish="sketch"
       aria-hidden
     >
-      {drawing.solid ? (
-        <path
-          d={drawing.solid}
-          fill={fill}
-          fillRule={drawing.solidEvenOdd ? 'evenodd' : undefined}
-        />
-      ) : null}
+      {drawing.solid ? <path d={drawing.solid} fill={fill} /> : null}
       {drawing.hatch ? (
         <path
           d={drawing.hatch}
@@ -185,9 +162,6 @@ function SketchOverlayImpl({
           strokeDasharray={dash ?? undefined}
           {...line}
         />
-      ) : null}
-      {drawing.details ? (
-        <path d={drawing.details} stroke={stroke} strokeWidth={SHAPE_DETAIL_STROKE_PX} {...line} />
       ) : null}
     </svg>
   );

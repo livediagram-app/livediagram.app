@@ -15,18 +15,18 @@ describe('slug ids round trip (R7)', () => {
     return id;
   };
   const cache = {
-    ...createShape('cylinder', 0, 0),
-    id: mint('Redis cache', 'cylinder'),
+    ...createShape('meeting-table', 0, 0),
+    id: mint('Redis cache', 'meeting-table'),
     label: 'Redis cache',
   };
   const twin = {
-    ...createShape('cylinder', 200, 0),
-    id: mint('Redis cache', 'cylinder'),
+    ...createShape('meeting-table', 200, 0),
+    id: mint('Redis cache', 'meeting-table'),
     label: 'Redis cache',
   };
   const list: Element = {
-    ...createShape('square', 0, 200),
-    id: mint('Launch checklist', 'square'),
+    ...createShape('focus-button', 0, 200),
+    id: mint('Launch checklist', 'focus-button'),
     label: 'Launch checklist',
   };
   // A stored arrow (a retired element, ./retired-arrow) keeps its slug id too.

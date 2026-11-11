@@ -209,9 +209,11 @@ describe('GET /api/shape-libraries/:id/previews', () => {
     });
     const bytes = JSON.stringify({ previews }).length;
     expect(Object.keys(previews)).toHaveLength(MAX_SHAPE_LIBRARY_ITEMS);
-    // CPU time, so a busy runner's waiting doesn't count (wall-clock 500 ms failed CI at 534). Measured 62 ms and
-    // 1.2 MB (before compression) on a laptop; cpuBudgetMs leaves CI room.
+    // CPU time, so a busy runner's waiting doesn't count (wall-clock 500 ms failed CI at 534). Measured 68 ms and
+    // 2.29 MB (before compression) on a laptop: the square, circle and diamond a stored library holds are retired
+    // elements now (not-in-livehuddle.md "The element engine", part 5), each drawn as its labelled placeholder,
+    // where they were 1.2 MB as plain outlines. cpuBudgetMs leaves CI room.
     expect(ms).toBeLessThan(cpuBudgetMs(200));
-    expect(bytes).toBeLessThan(2_000_000);
+    expect(bytes).toBeLessThan(2_500_000);
   });
 });

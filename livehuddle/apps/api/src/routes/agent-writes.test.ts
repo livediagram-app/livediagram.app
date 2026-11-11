@@ -14,7 +14,7 @@ import { handleDocuments } from './documents';
 const OWNER = 'user_owner';
 
 function box(id: string, x = 0, label = id): Element {
-  return { id, type: 'shape', shape: 'square', x, y: 0, width: 120, height: 60, label };
+  return { id, type: 'shape', shape: 'signpost', x, y: 0, width: 120, height: 60, label };
 }
 
 // A room that records what reached it and holds nothing.

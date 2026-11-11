@@ -3,7 +3,6 @@ import {
   drawBannerMessage,
   drawIntentCursor,
   dropsOnTap,
-  isWhiteboardOnlyIntent,
   opensForTyping,
   type PendingDraw,
 } from './draw-mode';
@@ -12,7 +11,7 @@ import {
 // means a NEW intent type also fails to compile until it's represented, so
 // neither axis of the union can drift out of the sweeps again.
 const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
-  shape: [{ type: 'shape', kind: 'square' }],
+  shape: [{ type: 'shape', kind: 'chair' }],
   text: [{ type: 'text' }],
   sticky: [{ type: 'sticky' }],
   image: [{ type: 'image' }],
@@ -40,23 +39,10 @@ describe('drawBannerMessage', () => {
     );
   });
 
-  // The banner names the shape as the tile just picked does: the palette's Square and Circle (and the selection
-  // badge's), Draw mode's dock its Rectangle and Ellipse. Its own aliases (Rectangle, Oval) matched neither.
+  // The banner names the shape as the tile just picked does, its own name when the tile gives one.
   it('names the shape as the tile that armed it', () => {
-    expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toBe(
-      'Click to drop or drag to draw Square',
-    );
-    expect(drawBannerMessage({ type: 'shape', kind: 'circle' }, false)).toBe(
-      'Click to drop or drag to draw Circle',
-    );
-    expect(drawBannerMessage({ type: 'shape', kind: 'square', board: true }, false)).toBe(
-      'Click to drop or drag to draw Rectangle',
-    );
-    expect(drawBannerMessage({ type: 'shape', kind: 'circle', board: true }, false)).toBe(
-      'Click to drop or drag to draw Ellipse',
-    );
-    expect(drawBannerMessage({ type: 'shape', kind: 'diamond' }, false)).toBe(
-      'Click to drop or drag to draw Diamond',
+    expect(drawBannerMessage({ type: 'shape', kind: 'room', name: 'Meeting Room' }, false)).toBe(
+      'Click to drop or drag to draw Meeting Room',
     );
   });
 
@@ -68,15 +54,6 @@ describe('drawBannerMessage', () => {
     );
     expect(drawBannerMessage({ type: 'shape', kind: 'water-cooler' }, false)).toBe(
       'Click to drop or drag to draw Water cooler',
-    );
-  });
-
-  it('capitalises any other shape kind for the banner', () => {
-    expect(drawBannerMessage({ type: 'shape', kind: 'cylinder' }, false)).toBe(
-      'Click to drop or drag to draw Cylinder',
-    );
-    expect(drawBannerMessage({ type: 'shape', kind: 'hexagon' }, false)).toBe(
-      'Click to drop or drag to draw Hexagon',
     );
   });
 
@@ -121,17 +98,10 @@ describe('drawIntentCursor', () => {
     }
   });
 
-  it('gives square / circle / diamond a custom glyph cursor', () => {
-    for (const kind of ['square', 'circle', 'diamond'] as const) {
-      expect(isInlineSvgCursor(drawIntentCursor({ type: 'shape', kind }))).toBe(true);
-    }
-  });
-
-  it('falls back to the plain system crosshair for shape kinds without a glyph', () => {
-    // The banner already names the kind, so non-special shapes don't need
-    // a bespoke cursor and use the system crosshair.
-    expect(drawIntentCursor({ type: 'shape', kind: 'cylinder' })).toBe('crosshair');
-    expect(drawIntentCursor({ type: 'shape', kind: 'cloud' })).toBe('crosshair');
+  it('gives every shape kind the plain system crosshair', () => {
+    // The banner already names the kind; the square, circle and diamond glyph cursors left with those kinds.
+    expect(drawIntentCursor({ type: 'shape', kind: 'chair' })).toBe('crosshair');
+    expect(drawIntentCursor({ type: 'shape', kind: 'rug' })).toBe('crosshair');
   });
 
   it('gives every component kind the stacked-blocks glyph cursor', () => {
@@ -143,7 +113,7 @@ describe('drawIntentCursor', () => {
   });
 
   it('never returns an empty or inherited ("auto") cursor', () => {
-    for (const intent of [...ALL_INTENTS, { type: 'shape', kind: 'cloud' } as PendingDraw]) {
+    for (const intent of ALL_INTENTS) {
       const c = drawIntentCursor(intent);
       expect(c).toBeTruthy();
       expect(c).not.toBe('auto');
@@ -158,16 +128,7 @@ describe('opensForTyping', () => {
 
   it('leaves stickies and shapes selected, not typing', () => {
     expect(opensForTyping({ type: 'sticky' })).toBe(false);
-    expect(opensForTyping({ type: 'shape', kind: 'square' })).toBe(false);
-  });
-});
-
-describe('isWhiteboardOnlyIntent', () => {
-  it('holds for a shape armed from the board, not a palette shape', () => {
-    expect(isWhiteboardOnlyIntent({ type: 'shape', kind: 'square', board: true })).toBe(true);
-    expect(isWhiteboardOnlyIntent({ type: 'shape', kind: 'square' })).toBe(false);
-    expect(isWhiteboardOnlyIntent({ type: 'sticky' })).toBe(false);
-    expect(isWhiteboardOnlyIntent(null)).toBe(false);
+    expect(opensForTyping({ type: 'shape', kind: 'chair' })).toBe(false);
   });
 });
 
@@ -176,7 +137,7 @@ describe('isWhiteboardOnlyIntent', () => {
 describe('dropsOnTap', () => {
   it('holds for every box and component', () => {
     const taps: PendingDraw[] = [
-      { type: 'shape', kind: 'circle' },
+      { type: 'shape', kind: 'chair' },
       { type: 'text' },
       { type: 'sticky' },
       { type: 'image' },

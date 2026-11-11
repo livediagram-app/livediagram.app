@@ -43,7 +43,6 @@ import { readElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
-import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 
 import { useCanvasAvatar } from './useCanvasAvatar';
 import { CanvasCharactersLayer } from './CanvasCharactersLayer';
@@ -324,21 +323,10 @@ function CanvasView(props: CanvasProps) {
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
     onCanvasContextMenu,
     onDeselect,
-    // On a whiteboard a double-click inside a shape edits it (lib/whiteboard-edit-target). On the bare board a
-    // finger's double-tap zooms in on the spot, a mouse's double-click drops text
+    // On the bare board a finger's double-tap zooms in on the spot, a mouse's double-click drops text
     // (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom").
     onCanvasDoubleClick: (x, y, byFinger) =>
-      routeBoardDoubleClick(
-        {
-          whiteboard: false,
-          elements,
-        },
-        { x, y },
-        {
-          edit: props.onBeginEdit,
-          board: byFinger ? (bx, by) => doubleTap.onCanvas({ x: bx, y: by }) : onCanvasDoubleClick,
-        },
-      ),
+      byFinger ? doubleTap.onCanvas({ x, y }) : onCanvasDoubleClick(x, y),
   });
 
   // Auto-focus the canvas surface on mount so clipboard paste works

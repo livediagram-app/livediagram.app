@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement } from '@livehuddle/document';
+import { createShape, createSticky, type BoxedElement } from '@livehuddle/document';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 
 // docs/specs/008-canvas/finish.md "Every other face is drawn by hand too" and "Lettering", through the real element
@@ -47,7 +47,7 @@ const shape = (kind: string, finish?: string) =>
 // placeholder, a face with more than a label (its kind, a line, the label), so Sketch splits it.
 const card = (finish?: string) =>
   ({
-    ...shape('square', finish),
+    ...shape('room', finish),
     id: 'card',
     shape: 'card',
     label: 'Launch',
@@ -66,7 +66,11 @@ describe('a sketched face', () => {
   });
 
   it('leaves a plain box to its sketched body', () => {
-    const { container } = draw(shape('square', 'sketch'));
+    const { container } = draw({
+      ...createSticky(0, 0),
+      id: 'note',
+      finish: 'sketch',
+    });
     expect(container.querySelector('[data-sketch-ink]')).toBeNull();
   });
 });

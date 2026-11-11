@@ -15,14 +15,14 @@ describe('formatResultLines', () => {
         ref: 'n3',
         changes: [
           { key: 'label', from: 'Login', to: 'Sign in' },
-          { key: 'shape', from: 'square', to: 'stadium' },
+          { key: 'shape', from: 'signpost', to: 'room-sign' },
           { key: 'widened', from: 140, to: 160 },
         ],
       },
       {
         mark: '+',
         ref: 'verify',
-        kind: 'square',
+        kind: 'signpost',
         label: 'Verify email',
         at: [45, 300],
         size: [131, 120],
@@ -44,17 +44,16 @@ describe('formatResultLines', () => {
       rebasedOver: 0,
       changesetId: 'cs_8k2m4q7d1x',
       documentId: 'd-auth',
-      lint: 'lint clean',
     });
     expect([...formatResultLines(results), footer].join('\n')).toBe(
       [
-        '~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→160',
-        '+ verify  square "Verify email" @45,300 131×120',
+        '~ n3  label "Login"→"Sign in" · shape signpost→room-sign · widened 140→160',
+        '+ verify  signpost "Verify email" @45,300 131×120',
         '~ f2  taller 200→360',
         '~ a3  to n4→verify',
         '+ arrow  verify→n4 (style of a3)',
         '» n4 n5 n6 n7 n8  +0,+160 (make room)',
-        'rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livehuddle changeset revert d-auth cs_8k2m4q7d1x',
+        'rev 41→42 · cs_8k2m4q7d1x · revert: livehuddle changeset revert d-auth cs_8k2m4q7d1x',
       ].join('\n'),
     );
   });
@@ -130,8 +129,8 @@ describe('formatResultLines', () => {
 
 describe('formatResultFooter', () => {
   it('prints a dry run', () => {
-    expect(formatResultFooter({ dryRun: true, rev: 41, lint: 'lint unavailable' })).toBe(
-      'dry run · rev 41 · lint unavailable · nothing written',
+    expect(formatResultFooter({ dryRun: true, rev: 41 })).toBe(
+      'dry run · rev 41 · nothing written',
     );
   });
 
@@ -141,10 +140,9 @@ describe('formatResultFooter', () => {
       previousRev: 41,
       changesetId: 'cs_1',
       documentId: 'd1',
-      lint: 'x',
     };
     expect(formatResultFooter({ ...write, rev: 44, rebasedOver: 3 })).toBe(
-      'rev 41→44 · rebased over 3 writes · cs_1 · x · revert: livehuddle changeset revert d1 cs_1',
+      'rev 41→44 · rebased over 3 writes · cs_1 · revert: livehuddle changeset revert d1 cs_1',
     );
     expect(formatResultFooter({ ...write, rev: 43, rebasedOver: 1 })).toContain(
       'rebased over 1 write ·',
@@ -158,7 +156,7 @@ describe('result line builders', () => {
     expect(addedLine(byId('n3'), naming)).toEqual({
       mark: '+',
       ref: 'n3',
-      kind: 'square',
+      kind: 'signpost',
       label: 'Login',
       at: [40, 200],
       size: [140, 60],
@@ -202,7 +200,7 @@ describe('result line builders', () => {
     expect(removedLine(byId('n1'), naming)).toEqual({
       mark: '-',
       ref: 'n1',
-      kind: 'stadium',
+      kind: 'room-sign',
       label: 'Start',
     });
   });

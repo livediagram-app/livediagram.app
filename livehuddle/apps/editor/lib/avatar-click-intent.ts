@@ -148,22 +148,7 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   sticky: R,
   text: R,
   image: R,
-  // Read: the element's own drawing, scaled up in the reader.
-  square: R,
-  circle: R,
-  diamond: R,
-  cylinder: R,
-  parallelogram: R,
-  hexagon: R,
-  document: R,
-  stadium: R,
-  actor: R,
-  'final-state': R,
-  cloud: R,
-  triangle: R,
-  trapezoid: R,
-  star: R,
-  'speech-bubble': R,
+  // Read: the element's own drawing, scaled up in the reader. A stored annotation still reads.
   annotation: R,
 };
 

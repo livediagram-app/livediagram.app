@@ -15,7 +15,6 @@ import {
   LayerUpIcon,
   RotationGlyph,
   RotationMenuIcon,
-  SquareMenuIcon,
 } from '@/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
@@ -23,9 +22,7 @@ import {
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
-import { ShapeIcon } from '@/components/primitives/shape-icon';
-import { shapeKindLabel } from '@/lib/element-names';
-import { COMMON_SHAPES, ROTATION_ANGLES } from './context-menu-constants';
+import { ROTATION_ANGLES } from './context-menu-constants';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
 import { Switch } from '@livehuddle/ui';
@@ -53,8 +50,6 @@ export function MultiPlacementSections({
   sectionProps: Scaffold['sectionProps'];
   onClose: () => void;
 }) {
-  const morphSrc = morphable[0];
-  const morphIds = morphable.map((el) => el.id);
   // The members that turn: a pointer note or an annotation marker does not (supportsRotation), so a selection of only
   // those offers no Rotation, and the active tile reads a member that turns.
   const turnable = boxedSel.filter(supportsRotation);
@@ -91,24 +86,9 @@ export function MultiPlacementSections({
             </button>
           </>
         ) : null}
-      </MenuAccordionSection>
-      {/* Shape — morph every morphable member to a common kind. */}
-      {morphSrc ? (
-        <MenuAccordionSection title="Shape" icon={<SquareMenuIcon />} {...sectionProps('m-shape')}>
-          <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
-            {COMMON_SHAPES.map((kind) => (
-              <SizeButton
-                key={kind}
-                label={shapeKindLabel(kind)}
-                active={morphSrc.shape === kind}
-                onClick={() => props.onSetShapeKind(morphIds, kind)}
-                onPointerEnter={onMouseHover(() => props.onPreviewShapeKind(morphIds, kind))}
-                onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
-              >
-                <ShapeIcon kind={kind} />
-              </SizeButton>
-            ))}
-          </div>
+        {/* The shapes' Reset Aspect Ratio, which the Shape section held while the diagram shapes could be morphed
+            between (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5). */}
+        {morphable.length ? (
           <div className="px-2 pb-1.5 pt-0.5">
             <MenuActionButton
               label="Reset Aspect Ratio"
@@ -118,8 +98,8 @@ export function MultiPlacementSections({
               }}
             />
           </div>
-        </MenuAccordionSection>
-      ) : null}
+        ) : null}
+      </MenuAccordionSection>
       {/* Rotation — snap angles for every boxed member. */}
       {turnable.length ? (
         <MenuAccordionSection

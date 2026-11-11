@@ -51,7 +51,7 @@ const BOARD = {
     shape('chair', 'chair'),
     shape('room', 'room', { label: 'Lounge' }),
     { id: 'link', type: 'link-card', ...box, link: { kind: 'url', url: 'https://example.com' } },
-    shape('col', 'square', { label: 'Column' }),
+    shape('col', 'signpost', { label: 'Column' }),
     sticky('theirs'),
     sticky('mine', { addedBy: ADDER }),
     shape('door', 'door', { doorClosed: true }),

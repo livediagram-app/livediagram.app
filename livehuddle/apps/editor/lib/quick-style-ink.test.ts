@@ -15,7 +15,7 @@ const forest = THEMES.find((t) => t.id === 'forest')!;
 const shape = (extra: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 's',
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 100,

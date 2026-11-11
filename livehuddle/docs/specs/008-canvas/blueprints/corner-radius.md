@@ -31,7 +31,7 @@ export function cornerRadiusPx(
 | `apps/editor/components/canvas/ImageElementView.tsx`                         | 4                           |
 | `packages/document/src/svg-render-border.ts` (`borderOf`)                    | `DEFAULT_BOX_RADIUS_PX`     |
 | `packages/document/src/svg-render-describe.ts`                               | 4 (images)                  |
-| `packages/document/src/shape-hit.ts`                                         | `CSS_DEFAULT_RADIUS_PX`     |
+| `livediagram/packages/document/src/shape-hit.ts`                             | `CSS_DEFAULT_RADIUS_PX`     |
 
 The PNG export rasterises the SVG export, so it follows.
 

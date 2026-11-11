@@ -24,7 +24,7 @@ const op = (over: Partial<ChangesetRoomOp> = {}): ChangesetRoomOp => ({
   elementOps: [
     {
       kind: 'add',
-      element: { id: 'n', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 },
+      element: { id: 'n', type: 'shape', shape: 'focus-button', x: 0, y: 0, width: 1, height: 1 },
       at: 0,
     },
     { kind: 'remove', id: 'r' },

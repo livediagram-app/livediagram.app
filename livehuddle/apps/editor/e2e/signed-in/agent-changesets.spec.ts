@@ -16,8 +16,7 @@ const paymentBox = {
       op: 'add',
       element: {
         id: 'payments',
-        type: 'shape',
-        shape: 'square',
+        type: 'sticky',
         x: 520,
         y: 200,
         width: 220,

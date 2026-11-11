@@ -33,10 +33,8 @@ vi.mock('@/components/canvas/text-hug-measure', () => ({
 
 // One of every boxed kind, each resized from its own start size.
 const KINDS: [string, () => Element][] = [
-  ['square', () => createShape('square', 0, 0)],
-  ['circle', () => createShape('circle', 0, 0)],
-  ['diamond', () => createShape('diamond', 0, 0)],
-  ['cylinder', () => createShape('cylinder', 0, 0)],
+  ['room', () => createShape('room', 0, 0)],
+  ['rug', () => createShape('rug', 0, 0)],
   ['sticky', () => createSticky(0, 0)],
   ['text', () => createText(0, 0)],
   ['image', () => createImage(0, 0)],
@@ -155,7 +153,7 @@ describe('Shift resize, every boxed kind', () => {
 describe('Shift resize, every tab kind', () => {
   it.each(['diagram'] as const)('keeps the ratio on a %s tab', (kind) => {
     syncFrames();
-    const el = { ...createShape('square', 0, 0), width: 200, height: 100 };
+    const el = { ...createSticky(0, 0), width: 200, height: 100 };
     const h = harness(el, kind);
     h.press('resize-ne');
     move(10, -80, true);
@@ -167,7 +165,7 @@ describe('Shift resize, every tab kind', () => {
 describe('Shift pressed or released mid-drag', () => {
   it('takes effect on the next pointer move, without letting go', () => {
     syncFrames();
-    const el = { ...createShape('square', 0, 0), width: 200, height: 100 };
+    const el = { ...createSticky(0, 0), width: 200, height: 100 };
     const h = harness(el);
     h.press('resize-se');
     move(100, 10, false);

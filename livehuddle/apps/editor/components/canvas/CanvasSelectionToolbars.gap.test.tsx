@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createSticky, type Element } from '@livehuddle/document';
 import { CanvasSelectionToolbars } from './CanvasSelectionToolbars';
 import type { CanvasProps } from './Canvas.types';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
@@ -45,7 +45,7 @@ function compactFor(el: Element, readOnly = false): boolean | undefined {
 
 describe('selection toolbar gap', () => {
   it('sits close over an ordinary shape, editable or read-only', () => {
-    const square = createShape('square', 0, 0);
+    const square = createSticky(0, 0);
     expect(compactFor(square)).toBe(true);
     expect(compactFor(square, true)).toBe(true);
   });

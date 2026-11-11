@@ -5,7 +5,7 @@
 > doors over the same engine, where this design came from; their wire values (`mcp`, `cli`) still parse.
 
 **Status: built.** Closed livediagram-app/livediagram.app#343. Operations are the full
-[edit operations](edit-operations.md), in the line form or JSON, plus `replace`. Every answer carries the [lint](diagram-lint.md) of the tab it leaves; the
+[edit operations](edit-operations.md), in the line form or JSON, plus `replace`. Every answer's `lint` is `null`: the [lint](diagram-lint.md) left livehuddle ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine), part 5), and the member stays so a client keeps parsing; the
 [agent presence](agent-presence.md) refresh is built: each changeset a token applies or reverts refreshes that
 token's presence on the tab.
 

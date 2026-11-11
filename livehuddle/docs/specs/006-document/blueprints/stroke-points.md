@@ -203,7 +203,7 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Factories           | `packages/document/src/factories.ts`                                             | `createFreehand` packs; geometry stays unpacked               |
 | Pen outline         | `livediagram/packages/document/src/pen-stroke.ts`                                | `freehandPenStroke` / `penStrokeSvg` decode                   |
 | Eraser              | `livediagram/packages/document/src/whiteboard-stroke.ts`                         | decode; pieces re-pack                                        |
-| SVG export          | `packages/document/src/svg-render-shapes.ts`                                     | decode                                                        |
+| SVG export          | `livediagram/packages/document/src/svg-render-shapes.ts`                         | decode                                                        |
 | Stored migration    | `packages/document/src/stored-elements.ts`                                       | adds `migrateLegacyStrokePoints`                              |
 | Canvas view         | `livediagram/apps/editor/components/canvas/boxed-element-overlays.tsx`           | decode                                                        |
 | Live ink            | `livediagram/apps/editor/components/canvas/whiteboard/LiveInk.tsx`               | unchanged: raw geometry through `PenStrokeSource`             |

@@ -21,7 +21,7 @@ const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
   label: id,
   description: '',
   icon: null,
-  section: 'shapes',
+  section: 'tools',
   action: { type: 'text' },
   ...(dividerAfter ? { dividerAfter } : {}),
 });
@@ -29,16 +29,14 @@ const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
 describe('the category bar', () => {
   it('names every category in one word', () => {
     expect(barLabel('write', 'Write & Build')).toBe('Write');
-    expect(barLabel('shapes', 'Shapes')).toBe('Shapes');
+    expect(barLabel('popular', 'Popular')).toBe('Popular');
   });
 });
 
 describe('a flyout’s layout', () => {
   it('draws pictures where the glyph is the answer, cards otherwise', () => {
-    expect(flyoutLayout('shapes')).toBe('grid');
     expect(flyoutLayout('popular')).toBe('grid');
     expect(flyoutLayout('build')).toBe('cards');
-    expect(flyoutColumns('shapes')).toBe(5);
     expect(flyoutColumns('popular')).toBe(4);
     expect(flyoutColumns('anything-else')).toBe(5);
   });
@@ -134,9 +132,9 @@ describe('a flyout’s groups', () => {
 
   it('never splits Popular, and has nothing to show for no tiles', () => {
     expect(flyoutGroups('popular', tiles('popular'))).toHaveLength(1);
-    expect(flyoutGroups('shapes', [])).toEqual([]);
+    expect(flyoutGroups('write', [])).toEqual([]);
     // One group: no heading, whatever its first tile is called.
-    expect(flyoutGroups('shapes', [tile('shapes:square')])[0]!.title).toBeNull();
+    expect(flyoutGroups('write', [tile('tools:text')])[0]!.title).toBeNull();
   });
 });
 

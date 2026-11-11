@@ -27,7 +27,7 @@ const refusal = (placement: Placement, moving: string[] = []) => {
 const box = (id: string, x: number, y: number, w = 100, h = 40): Element => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'signpost',
   x,
   y,
   width: w,
@@ -66,48 +66,6 @@ describe('the four sides (n3 is 0,200 140x60)', () => {
     expect(
       place({ rel: 'below', ref: 'n3', gap: 10 }, undefined, ['n4', 'n5', 'n6', 'n7', 'n8']),
     ).toMatchObject({ y: 270 });
-  });
-});
-
-describe('after', () => {
-  // A stored arrow is a retired element that gives nothing a direction (docs/specs/002-project-scope/
-  // not-in-livehuddle.md "The element engine", part 4): `after` is below, whatever arrows the reference stored.
-  it('places below the reference, whatever arrows it stored', () => {
-    expect(place({ rel: 'after', ref: 'n3' })).toMatchObject({
-      x: 20,
-      y: 780 + PLACEMENT_GAP,
-    });
-    const flow = (dx: number, dy: number) => {
-      const tab = withElements(box('src', 1000, 1000), box('dst', 1000 + dx, 1000 + dy), {
-        id: 'flow',
-        type: 'arrow',
-        from: { kind: 'pinned', elementId: 'src', anchor: 'e' },
-        to: { kind: 'pinned', elementId: 'dst', anchor: 'w' },
-      });
-      return place({ rel: 'after', ref: 'src', gap: 1000 }, tab);
-    };
-    expect(flow(300, 0)).toMatchObject({ x: 1000, y: 2040 });
-    expect(flow(0, -300)).toMatchObject({ x: 1000, y: 2040 });
-    expect(place({ rel: 'after', ref: 't1', gap: 0 })).toMatchObject({ y: 660 });
-  });
-
-  it('places below past stored arrows of any kind', () => {
-    const tab = withElements(
-      box('src', 1000, 1000),
-      {
-        id: 'loose',
-        type: 'arrow',
-        from: { kind: 'pinned', elementId: 'src', anchor: 'e' },
-        to: { kind: 'free', x: 5000, y: 1000 },
-      },
-      {
-        id: 'dangling',
-        type: 'arrow',
-        from: { kind: 'pinned', elementId: 'src', anchor: 'e' },
-        to: { kind: 'pinned', elementId: 'gone', anchor: 'w' },
-      },
-    );
-    expect(place({ rel: 'after', ref: 'src', gap: 0 }, tab)).toMatchObject({ y: 1040 });
   });
 });
 

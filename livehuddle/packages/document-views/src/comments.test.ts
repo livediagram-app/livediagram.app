@@ -17,7 +17,7 @@ describe('commentsView (R17, R21, VW33)', () => {
 
   it('shows resolved threads with all', () => {
     const { text, json } = commentsView(checkout(), { all: true, door: 'mcp' });
-    expect(text.split('\n')[1]).toBe('square e4a8 "Payments service" · resolved · 1');
+    expect(text.split('\n')[1]).toBe('signpost e4a8 "Payments service" · resolved · 1');
     expect(json.threads.map((t) => t.resolved)).toEqual([true, false]);
     expect(json.elision).toBeNull();
   });

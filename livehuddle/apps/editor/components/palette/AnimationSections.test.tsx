@@ -8,7 +8,7 @@ const of = (type: string) =>
 
 describe('animationCategoriesOf (one category per set present)', () => {
   it('a single labelled shape shows Shape and Text', () => {
-    expect(animationCategoriesOf([createShape('square', 0, 0)])).toEqual(['shape', 'text']);
+    expect(animationCategoriesOf([createShape('room', 0, 0)])).toEqual(['shape', 'text']);
   });
 
   it('a single text element shows Text only', () => {
@@ -16,7 +16,7 @@ describe('animationCategoriesOf (one category per set present)', () => {
   });
 
   it('a shape and a text element show Shape and Text once each', () => {
-    expect(animationCategoriesOf([createShape('square', 0, 0), createText(0, 0)])).toEqual([
+    expect(animationCategoriesOf([createShape('room', 0, 0), createText(0, 0)])).toEqual([
       'shape',
       'text',
     ]);
@@ -32,7 +32,7 @@ describe('animationCategoriesOf (one category per set present)', () => {
   });
 
   it('an icon keeps its own category, and a stored arrow adds none', () => {
-    const sel = [of('arrow'), createShape('icon', 0, 0), createShape('square', 0, 0)];
+    const sel = [of('arrow'), createShape('icon', 0, 0), createShape('room', 0, 0)];
     expect(animationCategoriesOf(sel)).toEqual(['shape', 'icon', 'text']);
     // The Shape category there is the square's: an icon alone takes none.
     expect(animationCategoriesOf([createShape('icon', 0, 0)])).toEqual(['icon']);
@@ -54,14 +54,12 @@ describe('animationCategoriesOf (one category per set present)', () => {
 
 describe('sharedShapeAnimations (what a Shape category offers)', () => {
   it('offers a shape the whole set and a photo the motions', () => {
-    expect(sharedShapeAnimations([createShape('square', 0, 0)])).toHaveLength(15);
+    expect(sharedShapeAnimations([createShape('room', 0, 0)])).toHaveLength(15);
     expect(sharedShapeAnimations([of('image')])).toEqual(SHAPE_MOTIONS);
   });
 
   it('offers a mixed selection the overlap, ignoring elements outside the category', () => {
-    expect(sharedShapeAnimations([createShape('square', 0, 0), of('image')])).toEqual(
-      SHAPE_MOTIONS,
-    );
+    expect(sharedShapeAnimations([createShape('room', 0, 0), of('image')])).toEqual(SHAPE_MOTIONS);
     expect(sharedShapeAnimations([of('image'), createText(0, 0), of('arrow')])).toEqual(
       SHAPE_MOTIONS,
     );

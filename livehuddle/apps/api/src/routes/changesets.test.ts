@@ -18,7 +18,7 @@ const OWNER = 'user_owner';
 const box = (id: string, label = id, x = 0): Element => ({
   id,
   type: 'shape',
-  shape: 'square',
+  shape: 'signpost',
   x,
   y: 0,
   width: 120,
@@ -183,7 +183,7 @@ describe('submitting a changeset', () => {
             {
               id: 'x',
               type: 'shape',
-              shape: 'square',
+              shape: 'signpost',
               x: 0,
               y: 0,
               width: 120,
@@ -333,15 +333,14 @@ describe('submitting a changeset', () => {
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
       text: string;
-      lint: { measures: { boxes: number } } | null;
+      lint: null;
     };
-    expect(body.text.split('\n').at(-1)).toMatch(
-      /^rev 1→2 · cs_\w+ · lint (clean|\d+ \w+(, \d+ \w+)*) · revert: /,
-    );
-    expect(body.lint).toMatchObject({ measures: { boxes: 1, arrows: 0 } });
+    // No lint part, and `lint` always null (not-in-livehuddle.md "The element engine", part 5, D32).
+    expect(body.text.split('\n').at(-1)).toMatch(/^rev 1→2 · cs_\w+ · revert: /);
+    expect(body.lint).toBeNull();
     expect(body.text.split('\n').slice(0, 2)).toEqual([
       '~ a  fill →green · textSize →md',
-      '- b  square "b"',
+      '- b  signpost "b"',
     ]);
     expect(stored(db).map((e) => e.id)).toEqual(['a']);
   });
@@ -359,8 +358,8 @@ describe('submitting a changeset', () => {
     expect(await res.json()).toMatchObject({
       dryRun: true,
       changeset: null,
-      text: expect.stringMatching(/dry run · rev 1 · lint clean · nothing written$/),
-      lint: { counts: { error: 0, warning: 0, info: 0 }, measures: { boxes: 1 } },
+      text: expect.stringMatching(/dry run · rev 1 · nothing written$/),
+      lint: null,
     });
     expect(stored(db).map((e) => e.id)).toEqual(['a', 'b']);
     expect(records(db)).toEqual([]);
@@ -393,6 +392,54 @@ describe('submitting a changeset', () => {
       { owner: 'guest-2', headers: { 'X-Share-Code': 'VIEWCODE' } },
     );
     expect(view.status).toBe(403);
+  });
+});
+
+// The diagram shapes left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5):
+// an agent cannot add one (D30) or send a new one in a replace (D31), and one the tab already holds rides through
+// a replace exactly as stored. Every result's `lint` is null (D32).
+describe('the diagram shapes', () => {
+  const RETIRED = 'shapes are no longer supported in livehuddle: add a sticky';
+  const storedSquare = { ...box('sq', 'Old'), shape: 'square' } as unknown as Element;
+
+  it('refuses add square, add shape and add banana, writing nothing', async () => {
+    quiet();
+    const { db } = await setUp();
+    const before = stored(db);
+    for (const [line, rule] of [
+      ['add square label=x', RETIRED],
+      ['add shape label=x', RETIRED],
+      ['add banana label=x', expect.stringContaining('not a kind livehuddle has; kinds: ')],
+    ] as const) {
+      const res = await submit(db, { operations: line });
+      expect(res.status, line).toBe(422);
+      const body = (await res.json()) as { error: string; text: string };
+      expect(body.error, line).toBe('invalid_value');
+      expect(body.text, line).toEqual(
+        typeof rule === 'string' ? expect.stringContaining(rule) : rule,
+      );
+    }
+    expect(stored(db)).toEqual(before);
+    expect(records(db)).toEqual([]);
+  });
+
+  it('refuses a replace carrying a new square, and keeps a stored one deep-equal', async () => {
+    quiet();
+    const { db } = await setUp([], [box('a'), storedSquare]);
+    const before = stored(db);
+    const fresh = await submit(db, {
+      replace: { elements: [box('a'), { ...storedSquare, id: 'new-sq' }] },
+    });
+    expect(fresh.status).toBe(422);
+    expect(await fresh.json()).toMatchObject({ error: 'invalid_result' });
+    expect(stored(db)).toEqual(before);
+
+    const back = await submit(db, {
+      replace: { elements: [{ ...box('a'), label: 'A' }, storedSquare] },
+    });
+    expect(back.status).toBe(200);
+    expect(await back.json()).toMatchObject({ lint: null });
+    expect(stored(db).find((el) => el.id === 'sq')).toEqual(before.find((el) => el.id === 'sq'));
   });
 });
 
@@ -535,7 +582,7 @@ describe('reverting', () => {
       reverted: 1,
       kept: [],
       changeset: { rev: 3 },
-      lint: { measures: { boxes: 2 } },
+      lint: null,
     });
     expect(stored(db).map((e) => e.id)).toEqual(['a', 'b']);
     expect(records(db)[1]).toMatchObject({ revert_of: cs.changeset.id, token_id: null, added: 1 });

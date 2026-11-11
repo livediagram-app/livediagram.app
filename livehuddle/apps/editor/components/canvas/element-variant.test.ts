@@ -5,7 +5,7 @@ import { describeVariant, editingLook } from '@/components/canvas/element-varian
 const shape = (over: Record<string, unknown> = {}): BoxedElement => ({
   id: 's',
   type: 'shape',
-  shape: 'square',
+  shape: 'focus-button',
   x: 0,
   y: 0,
   width: 100,
@@ -35,7 +35,7 @@ describe('describeVariant — dark selection', () => {
   it('adds the blue ring and glow to a single selection of every kind', () => {
     for (const el of [
       shape(),
-      shape({ shape: 'diamond' }),
+      shape({ shape: 'plant' }),
       make('text'),
       make('sticky'),
       make('image'),
@@ -70,8 +70,8 @@ describe('describeVariant — per-type body styling', () => {
     expect(style.borderWidth).not.toBeUndefined();
   });
 
-  it('an SVG-rendered shape carries no wrapper border/background (the overlay draws it)', () => {
-    const { style } = describeVariant(shape({ shape: 'diamond' }), false, false, null);
+  it('a shape that paints its own body carries no wrapper border/background', () => {
+    const { style } = describeVariant(shape({ shape: 'plant' }), false, false, null);
     expect(style.backgroundColor).toBeUndefined();
     expect(style.borderRadius).toBe('4px');
   });
@@ -91,15 +91,6 @@ describe('describeVariant — per-type body styling', () => {
     expect(describeVariant(retired, false, false, null).style.borderRadius).toBe('4px');
     // So does a stored table (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
     expect(describeVariant(make('table'), false, false, null).style.borderRadius).toBe('4px');
-  });
-
-  it('circle and stadium use fixed silhouette radii', () => {
-    expect(describeVariant(shape({ shape: 'circle' }), false, false, null).style.borderRadius).toBe(
-      '50%',
-    );
-    expect(
-      describeVariant(shape({ shape: 'stadium' }), false, false, null).style.borderRadius,
-    ).toBe('9999px');
   });
 
   it('a CSS-native pattern (solid/dashed/dotted) stays on the CSS border', () => {
@@ -212,8 +203,8 @@ describe('describeVariant — element shadows (docs/specs/008-canvas/element-sha
     expect(style.boxShadow).toBeUndefined();
   });
 
-  it('an SVG-rendered silhouette takes the filter path (shadow follows the drawn alpha)', () => {
-    const { style } = describeVariant(shape({ shape: 'diamond', shadow }), false, false, null);
+  it('a self-painted body takes the filter path (shadow follows the drawn alpha)', () => {
+    const { style } = describeVariant(shape({ shape: 'plant', shadow }), false, false, null);
     expect(style.filter).toBe(filterCss);
   });
 

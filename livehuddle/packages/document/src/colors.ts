@@ -11,7 +11,6 @@ import {
   type TextAlignX,
   type TextAlignY,
 } from './index';
-import type { BorderRadius } from '@liveworkspace/model-core/border-style';
 import { PEN_INK } from './pen-colours';
 import { MODE_BUTTON_SKIN } from './selection-mode';
 import { hasOwnFace } from './collab-shapes';
@@ -191,11 +190,12 @@ export function defaultTextColor(element: BoxedElement, surface: CanvasSurface =
 
 // The ink a plain shape wears when it carries no colour of its own, on the
 // given paper: what the Default scheme's elements look like, and so what a
-// "theme default" swatch shows there (docs/specs/008-canvas/quick-style-panel.md).
+// "theme default" swatch shows there (docs/specs/008-canvas/quick-style-panel.md). Any kind without a skin of its
+// own (behaviourSkin) wears it; an icon is one.
 const PLAIN_SHAPE: ShapeElement = {
   id: '',
   type: 'shape',
-  shape: 'square',
+  shape: 'icon',
   x: 0,
   y: 0,
   width: 0,
@@ -364,14 +364,10 @@ export function supportsBorder(element: Element): element is ShapeElement {
 // the menu still offered Border on a code block, a checklist, a portal and a
 // reveal long after the renderer stopped painting one.
 //
-// The actor, icons and stickers are here for a different reason — a stick
-// figure, a glyph and a die-cut plate have no enclosing outline to stroke —
-// but the outcome is the same, so they share the predicate rather than a
-// second condition.
+// Icons and stickers are here for a different reason (a glyph and a die-cut
+// plate have no enclosing outline to stroke), but the outcome is the same, so
+// they share the predicate rather than a second condition.
 export const SELF_PAINTING_SHAPES = new Set<string>([
-  'actor',
-  // A UML final state draws its ring and dot itself (shape-geometry.ts): no box to border.
-  'final-state',
   'icon',
   // A sticker paints its own plate, shadow and content (docs/specs/010-palette/stickers.md).
   'sticker',
@@ -521,25 +517,4 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
     element.shape !== 'icon' &&
     element.shape !== 'sticker'
   );
-}
-
-// Whether an element exposes a user-adjustable corner radius. Only the
-// free-corner rectangles qualify: the plain square, which renders as a
-// CSS rounded rectangle so a real pixel radius applies. Every other shape
-// either bakes its rounding into the silhouette (circle / stadium / cloud /
-// actor) or is an SVG outline (diamond / cylinder / hexagon / document /
-// parallelogram) where a corner radius is meaningless, so the Radius control
-// is hidden for them.
-//
-// The web components with a rectangular surface (docs/specs/009-elements/web-components-and-no-groups.md) take it too: the
-// banner and header bar, the callout card, and each of a stat row's cards.
-export function supportsBorderRadius(element: Element): element is ShapeElement {
-  return element.type === 'shape' && RADIUS_SHAPES.has(element.shape);
-}
-const RADIUS_SHAPES = new Set<string>(['square', 'banner', 'site-header', 'stat-row']);
-
-// The corner preset the Radius control highlights: the element's own, else the preset nearest
-// its kind's default corner (docs/specs/008-canvas/corner-radius.md): Small.
-export function shownBorderRadius(element: ShapeElement): BorderRadius {
-  return element.borderRadius ?? 'sm';
 }
