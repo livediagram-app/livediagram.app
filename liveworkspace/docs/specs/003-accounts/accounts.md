@@ -1039,11 +1039,16 @@ per guest), and so does an app reading the guest's settings or writing its profi
 already knows is kept alive however it came by the id. A guest still using an app gets a fresh token before its 45 days are up (a year for
 one minted before 2026-11), so it is never more than a year unseen. Once a guest id has gone 400 days unseen its token has lapsed and browsers have
 dropped its cookie (Chrome keeps one at most 400 days), so no app can be handed it again, and the
-daily run (the hourly cron's 09:17 UTC run, `src/guest-sweep.ts`) deletes its settings and profile: up to 500 guests a
-run, the longest unseen first, checked again in the deletes so a guest seen meanwhile keeps everything.
-Its items stay in the index, as every guest's do, until someone deletes them
-([one-explorer-contracts.md](../004-index/one-explorer-contracts.md#guests)). Signing in removes the guest's stamp
-with the rest of the guest.
+daily run (the hourly cron's 09:17 UTC run, `src/guest-sweep.ts`) deletes its settings and profile and, in the same
+batch, writes a purge request for it to `pending_purges` (no teams: a guest runs none): up to 500 guests a run, the
+longest unseen first, checked again in every statement so a guest seen meanwhile keeps everything. The 15-minute cron
+sends the request to the index like a closed account's ([Closing an account](#closing-an-account) step 5), and the
+index deletes every item the guest owns, in every app and the Trash, with its content, for good
+([one-explorer-contracts.md](../004-index/one-explorer-contracts.md#guests)). Nobody could reach those items as their
+owner again, and kept forever they would only grow the storage bill. An item a guest shared goes too, though people
+with its link could still open it: a visit through a link is not the guest being seen. Each app's help says so
+(Guest identity, Deleting your data). Signing in removes the guest's stamp with the rest of the guest, so a guest who
+becomes an account is never swept; their items are the account's by then.
 
 ## Names and other typed text
 
