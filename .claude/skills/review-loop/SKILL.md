@@ -243,8 +243,13 @@ Under Review, Reviewed or Selected for Development. Each pass checks those three
 
 1. **Cheap hits, every card, every pass.** A card is a candidate when either:
    - its **Pull Request** field links a PR that `gh pr view <n> --json state,mergedAt` says is merged; or
-   - `git log origin/main --oneline -E --grep 'Work Tracker #<n>\b|\(#<n>\)'` (or the card's own PR numbers
-     and key symbols with `-S`) finds a commit that says it builds this card.
+   - a commit on main says it builds this card ("Work Tracker #<n>", or the card's own PR numbers).
+
+   Read the history **once** per pass, not once per card: `git log origin/main --since=90.days
+--format='%H%x09%s%x09%b%x1e' > <scratchpad>/log.txt` (measured 0.11 s, 1.4 MB), then match every card number
+   against that file in one script. A `git log --grep` per card measured 0.55 s each, a minute for 120 cards.
+   Keep `git log -S <symbol>` for the deep check of a single card.
+
 2. **Deep check, a rotating slice.** Also check, by reading the code, every New and Answered Under Review card
    (step 3 already does this) and the Reviewed and Selected for Development cards whose number mod 8 equals
    `(UTC hour / 3) mod 8`, so each card is read about once a day without the pass tracking state.
