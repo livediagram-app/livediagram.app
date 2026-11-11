@@ -1,4 +1,4 @@
-import { cpuGrowthLimitMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuGrowthRatio, cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
   glyphWidth,
@@ -20,6 +20,30 @@ import {
   parseMarkdown,
   type MarkdownNode,
 } from './markdown-import';
+
+// Four times the input, under eight times the CPU; a quadratic scan reads sixteen.
+const RATIO_CEILING = cpuRatioCeiling(8);
+// The least CPU a sample of the smaller input takes: its read repeats until then, so the timer's noise reads small.
+const SAMPLE_MS = 2;
+
+// The growth of `read` from `small` to `large`, built outside the timing. A sample repeats the read as often as the
+// smaller needs for SAMPLE_MS (a long heading reads in hundredths of a millisecond), and both sizes are warmed and
+// then timed in turns (cpuGrowthRatio).
+function growthOf(read: (text: string) => unknown, small: string, large: string): number {
+  read(small);
+  const runs = Math.ceil(
+    SAMPLE_MS /
+      Math.max(
+        cpuMsOf(() => void read(small)),
+        0.01,
+      ),
+  );
+  const sample = (text: string) => () =>
+    cpuMsOf(() => {
+      for (let i = 0; i < runs; i++) read(text);
+    });
+  return cpuGrowthRatio(sample(small), sample(large), { ceiling: RATIO_CEILING });
+}
 
 // Flatten a parsed forest into "depth:label" strings for compact assertions.
 function flatten(nodes: MarkdownNode[], depth = 0): string[] {
@@ -63,11 +87,8 @@ describe('parseMarkdown — headings', () => {
 
   // A heading of a long run of spaces once cost 1.6 s: the closing-hash regex retried every space.
   it('reads a heading with a long run of spaces in linear time', () => {
-    const fastest = (text: string) =>
-      Math.min(...[0, 1, 2].map(() => cpuMsOf(() => void parseMarkdown(text))));
-    const small = fastest(`# a${' '.repeat(10_000)}b`);
-    const large = fastest(`# a${' '.repeat(40_000)}b`);
-    expect(large).toBeLessThan(cpuGrowthLimitMs(small, 8, 5));
+    const ratio = growthOf(parseMarkdown, `# a${' '.repeat(10_000)}b`, `# a${' '.repeat(40_000)}b`);
+    expect(ratio).toBeLessThan(RATIO_CEILING);
   });
 });
 
@@ -303,12 +324,9 @@ describe('buildTabFromMarkdown', () => {
 // mark refused as no emphasis moves the scan on, never back.
 describe('cleanInline on hostile input', () => {
   it('costs about four times as much for four times the text, never sixteen', () => {
-    const fastest = (text: string) =>
-      Math.min(...[0, 1, 2].map(() => cpuMsOf(() => void cleanInline(text))));
     for (const run of ['[', '![', '<', '[a](', '_a ', 'a_b ', '* a ', 'a__b ']) {
-      const small = fastest(run.repeat(5_000));
-      const large = fastest(run.repeat(20_000));
-      expect(large, run).toBeLessThan(cpuGrowthLimitMs(small, 8, 5));
+      const ratio = growthOf(cleanInline, run.repeat(5_000), run.repeat(20_000));
+      expect(ratio, run).toBeLessThan(RATIO_CEILING);
     }
   });
 
@@ -411,13 +429,11 @@ describe('markdown import node cap', () => {
   // 2026-10-10: 2,000 nodes 7.5 ms, 40,000 nodes 38 ms with the cap, 157 ms without it). A growth
   // ratio on CPU time, as cleanInline's test above, so a busy machine cannot fail it.
   it('reads four times the file past the cap for about four times the cost, never sixteen', () => {
-    const fastest = (md: string) =>
-      Math.min(...[0, 1, 2].map(() => cpuMsOf(() => void buildTabFromMarkdown(md))));
-    const smallMd = listOf(MAX_MARKDOWN_IMPORT_NODES * 10);
-    const largeMd = listOf(MAX_MARKDOWN_IMPORT_NODES * 40);
-    fastest(smallMd); // warm the JIT so the first sample is not the slow one
-    const small = fastest(smallMd);
-    const large = fastest(largeMd);
-    expect(large).toBeLessThan(cpuGrowthLimitMs(small, 8, 5));
+    const ratio = growthOf(
+      buildTabFromMarkdown,
+      listOf(MAX_MARKDOWN_IMPORT_NODES * 10),
+      listOf(MAX_MARKDOWN_IMPORT_NODES * 40),
+    );
+    expect(ratio).toBeLessThan(RATIO_CEILING);
   });
 });

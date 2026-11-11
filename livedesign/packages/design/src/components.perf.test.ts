@@ -2,7 +2,12 @@
 // 30-screen design with a component on every screen expands well inside its budget, and doubling the screens
 // roughly doubles the work rather than squaring it.
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuGrowthLimitMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import {
+  cpuBudgetMs,
+  cpuGrowthRatio,
+  cpuMsOf,
+  cpuRatioCeiling,
+} from '@liveworkspace/vitest-config/cpu-time';
 import { expandInstances } from './component-resolve';
 import { libraryLookup, libraryOf, type DesignComponent } from './components';
 import { box, instanceOf, text } from './components.test.fixtures';
@@ -50,14 +55,14 @@ describe('expandInstances, 30 screens', () => {
   it('grows linearly with the screens', () => {
     const small = screens(60);
     const large = screens(240);
-    const time = (tab: { elements: Element[] }) =>
+    // Ten expands a sample, so the smaller times a few milliseconds; both sizes are warmed and then timed in
+    // turns (cpuGrowthRatio).
+    const sample = (tab: { elements: Element[] }) => () =>
       cpuMsOf(() => {
         for (let i = 0; i < 10; i++) expandInstances(tab, lookup);
       });
-    time(small);
-    const a = time(small);
-    const b = time(large);
     // Four times the screens: well under sixteen times the work (quadratic) even on a noisy machine.
-    expect(b).toBeLessThan(cpuGrowthLimitMs(Math.max(a, 1), 10));
+    const ceiling = cpuRatioCeiling(10);
+    expect(cpuGrowthRatio(sample(small), sample(large), { ceiling })).toBeLessThan(ceiling);
   });
 });

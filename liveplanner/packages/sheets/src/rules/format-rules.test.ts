@@ -1,7 +1,7 @@
 // Format rules (docs/specs/029-sheets/conditional-formatting.md): conditions, custom formulas, colour scales, list
 // order, the layout changes and their undo, validation, the static render, and the drawing budget.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuGrowthRatio, cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import { applySheetWrite, inverseSheetWrite, type SheetWrite } from '../store';
 import { validateWrite, validateSheetCreate } from '../validate';
 import { compileFormula } from '../formula/stored';
@@ -417,14 +417,15 @@ describe('the drawing budget', () => {
   // times as much; a quadratic step would cost sixteen.
   const GROWTH = 4;
   const RATIO_CEILING = cpuRatioCeiling(8);
-  const RUNS = 3;
-  // The window drawn this many times a pass, so even the small pass measures several ms, well clear of the CPU timer's
-  // microseconds. Kept low: under coverage on a busy CI runner 5 runs of 10 overran the test's 5 s timeout (6.8 s).
+  // The window drawn this many times a sample, so even the small sample measures several ms, well clear of the CPU
+  // timer's microseconds. Kept low: under coverage on a busy CI runner 5 runs of 10 overran the test's 5 s timeout
+  // (6.8 s).
   const REPEATS = 3;
   // Room for a slow, instrumented runner: the ratio, not the clock, is what fails a slow path.
   const TIMEOUT_MS = 30_000;
 
-  function windowPass(ruleCount: number): number {
+  // One sample: REPEATS draws of the window under `ruleCount` rules, the sheet built outside the timing.
+  function windowPass(ruleCount: number): () => number {
     const cells: Record<string, string> = {};
     for (let r = 1; r <= 60; r++) cells[`A${r}`] = String(r);
     const b = book(cells, { rows: 100, cols: 26 });
@@ -441,7 +442,7 @@ describe('the drawing budget', () => {
     sheet = { ...sheet, layout: { ...sheet.layout, formatRules: rules } };
     b.sheets[0] = sheet;
     b.wb.updateSheet(sheet);
-    const pass = () =>
+    return () =>
       cpuMsOf(() => {
         for (let n = 0; n < REPEATS; n++)
           for (let r = 0; r < 60; r++)
@@ -450,17 +451,17 @@ describe('the drawing budget', () => {
               formatRuleStyle(b.wb, sheet.id, r, c, v, shownOf(v));
             }
       });
-    // The fastest of several passes, so a cold first pass never fails a fast path; a slow one fails every pass.
-    return Math.min(...Array.from({ length: RUNS }, pass));
   }
 
   it(
     'a 60 × 26 window under 100 rules on every column costs in step with the rules, not faster',
     () => {
-      const small = windowPass(100 / GROWTH);
-      const large = windowPass(100);
-      // A floor on the small pass, so a timer that rounds a tiny pass to 0 cannot make the ratio infinite.
-      expect(large / Math.max(small, 1)).toBeLessThan(RATIO_CEILING);
+      // Both warmed and timed in turns (cpuGrowthRatio), so a cold first pass never fails a fast path; a slow one
+      // fails every round.
+      const ratio = cpuGrowthRatio(windowPass(100 / GROWTH), windowPass(100), {
+        ceiling: RATIO_CEILING,
+      });
+      expect(ratio).toBeLessThan(RATIO_CEILING);
     },
     TIMEOUT_MS,
   );
