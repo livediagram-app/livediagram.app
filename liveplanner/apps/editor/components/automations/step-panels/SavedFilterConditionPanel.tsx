@@ -9,14 +9,19 @@ import { PanelField, PanelNote, PanelSelect } from './panel-parts';
 
 type SavedFilterCondition = AutomationCondition & { kind: 'saved_filter' };
 
-export function SavedFilterConditionPanel({
-  condition,
-  onChange,
+/** One of the boards' saved filters, by board (the condition's and a branch's pick). */
+export function SavedFilterSelect({
+  tab,
+  filter,
   outline,
+  hint,
+  onPick,
 }: {
-  condition: SavedFilterCondition;
-  onChange: (next: AutomationCondition) => void;
+  tab: string;
+  filter: string;
   outline: AutomationOutline;
+  hint: string;
+  onPick: (tab: string, filter: string) => void;
 }) {
   const boards = outline.boards.filter((b) => b.filters.length > 0);
   if (boards.length === 0)
@@ -26,21 +31,18 @@ export function SavedFilterConditionPanel({
       </PanelNote>
     );
   return (
-    <PanelField label="Saved Filter" hint="Applied as the person who made the change would see it.">
+    <PanelField label="Saved Filter" hint={hint}>
       {(id) => (
         <PanelSelect
           id={id}
-          value={`${condition.tab}\u0000${condition.filter}`}
+          value={`${tab}\u0000${filter}`}
           onChange={(e) => {
-            const [tab = '', filter = ''] = e.target.value.split('\u0000');
-            onChange({ kind: 'saved_filter', tab, filter });
+            const [nextTab = '', nextFilter = ''] = e.target.value.split('\u0000');
+            onPick(nextTab, nextFilter);
           }}
         >
-          {condition.filter &&
-          !boards.some((b) => b.filters.some((f) => f.id === condition.filter)) ? (
-            <option value={`${condition.tab}\u0000${condition.filter}`}>
-              A filter no longer here
-            </option>
+          {filter && !boards.some((b) => b.filters.some((f) => f.id === filter)) ? (
+            <option value={`${tab}\u0000${filter}`}>A filter no longer here</option>
           ) : null}
           {boards.map((b) => (
             <optgroup key={`${b.tabId}-${b.title}`} label={`${b.title} (${b.tabName})`}>
@@ -54,5 +56,25 @@ export function SavedFilterConditionPanel({
         </PanelSelect>
       )}
     </PanelField>
+  );
+}
+
+export function SavedFilterConditionPanel({
+  condition,
+  onChange,
+  outline,
+}: {
+  condition: SavedFilterCondition;
+  onChange: (next: AutomationCondition) => void;
+  outline: AutomationOutline;
+}) {
+  return (
+    <SavedFilterSelect
+      tab={condition.tab}
+      filter={condition.filter}
+      outline={outline}
+      hint="Applied as the person who made the change would see it."
+      onPick={(tab, filter) => onChange({ kind: 'saved_filter', tab, filter })}
+    />
   );
 }

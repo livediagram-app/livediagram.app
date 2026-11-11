@@ -30,6 +30,8 @@ function Builder({ saved = rule() as ReturnType<typeof rule> | null }) {
       onBack={() => {}}
       onSaved={() => {}}
       onDirty={() => {}}
+      timeZone="Europe/London"
+      scope={{ projectId: 'p1', shareCode: null }}
     />
   );
 }

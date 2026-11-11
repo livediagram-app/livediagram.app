@@ -2,18 +2,34 @@
 
 // A run's steps, opened under its Run Log row (docs/specs/026-plan/automations.md "The Automations screen": Run
 // Log): one line each with its mark, who did what (the trigger), each condition with what it found, each action, and
-// Open Card on the last line. A test's lines say what each action would do. Lines come from the api as written.
+// Open Card on the last line. A test's lines say what each action would do. A branch's line ("For each Child Card: on
+// 3 related cards") wears the branch mark, and each related card's lines after it, headed by its number, sit inset
+// under it. An outgoing action's line says where it was queued ("Queued for Launch Channel"). Lines come from the api
+// as written.
 
 import type { AutomationStepLine } from '@liveplanner/items';
 import { CheckIcon, CloseIcon, lucideGlyph } from '@liveplanner/ui';
-import { lucideMinus } from '@liveworkspace/icons/lucide';
+import { lucideListTree, lucideMinus } from '@liveworkspace/icons/lucide';
 import { BoltIcon } from './automation-glyphs';
 
 const AlreadyIcon = lucideGlyph(lucideMinus, 11);
+const BranchIcon = lucideGlyph(lucideListTree, 11);
+
+// A related card's own line in a branch: "#12 Removed the label blocked".
+const RELATED = /^(#\d+) (.*)$/s;
 
 const MARK = 'inline-flex size-[18px] shrink-0 items-center justify-center rounded-full';
 
 function Mark({ line }: { line: AutomationStepLine }) {
+  if (line.kind === 'branch')
+    return (
+      <span
+        aria-hidden
+        className={`${MARK} ${line.ok ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300' : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300'}`}
+      >
+        <BranchIcon />
+      </span>
+    );
   if (line.kind === 'trigger')
     return (
       <span
@@ -51,13 +67,40 @@ function Mark({ line }: { line: AutomationStepLine }) {
 
 // What a screen reader hears before a line, standing in for its mark.
 const markWords = (line: AutomationStepLine) =>
-  line.kind === 'trigger'
-    ? 'Trigger: '
-    : line.kind === 'action' && line.already
-      ? 'Already so: '
-      : line.ok
-        ? 'Held: '
-        : 'Did not hold: ';
+  line.kind === 'branch'
+    ? line.ok
+      ? 'Branch: '
+      : 'Branch, failed: '
+    : line.kind === 'trigger'
+      ? 'Trigger: '
+      : line.kind === 'action' && line.already
+        ? 'Already so: '
+        : line.ok
+          ? 'Held: '
+          : 'Did not hold: ';
+
+/** Which lines sit under a branch: the related cards' own, from the branch's line until one that names no card. */
+export function insetLines(steps: readonly AutomationStepLine[]): boolean[] {
+  const out: boolean[] = [];
+  let inBranch = false;
+  for (const line of steps) {
+    if (line.kind === 'branch') inBranch = true;
+    else inBranch = inBranch && line.kind !== 'trigger' && RELATED.test(line.text);
+    out.push(line.kind !== 'branch' && inBranch);
+  }
+  return out;
+}
+
+// A related card's line, its number first in the card's own weight.
+function RelatedText({ text }: { text: string }) {
+  const [, key = '', rest = text] = RELATED.exec(text) ?? [];
+  return (
+    <>
+      <span className="font-semibold tabular-nums text-slate-900 dark:text-slate-50">{key}</span>{' '}
+      {rest}
+    </>
+  );
+}
 
 export function RunSteps({
   steps,
@@ -67,12 +110,14 @@ export function RunSteps({
   // Open Card, on the last line; absent when the run has no card.
   openCard?: (() => void) | undefined;
 }) {
+  const inset = insetLines(steps);
   return (
     <ol data-run-steps="" className="flex flex-col gap-2.5">
       {steps.map((line, i) => (
         <li
           key={i}
-          className="flex items-center gap-2.5 text-[13px] text-slate-700 dark:text-slate-200"
+          data-run-related={inset[i] ? '' : undefined}
+          className={`flex items-center gap-2.5 text-[13px] text-slate-700 dark:text-slate-200 ${inset[i] ? 'ml-7' : ''}`}
         >
           <Mark line={line} />
           <span className="min-w-0 flex-1">
@@ -85,6 +130,8 @@ export function RunSteps({
                 </span>
                 {line.text.slice(line.by.name.length)}
               </>
+            ) : inset[i] ? (
+              <RelatedText text={line.text} />
             ) : (
               line.text
             )}

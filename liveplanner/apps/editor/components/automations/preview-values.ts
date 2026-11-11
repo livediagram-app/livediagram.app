@@ -18,6 +18,8 @@ export type PreviewContext = {
   now: number;
   // A custom field's value on the card by its name ("Completed On"), as text.
   fieldByName: (name: string) => string;
+  // Inside a branch, the card that started the rule (`{{trigger.…}}`); absent, those read as nothing.
+  trigger?: { title: string; key: number; link: string };
 };
 
 /** A day as values read it: "11 Nov 2026". */
@@ -55,6 +57,12 @@ function valueOf(name: string, ctx: PreviewContext): string {
       return valueDay(ctx.now);
     case 'now':
       return new Date(ctx.now).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
+    case 'trigger.title':
+      return ctx.trigger?.title ?? '';
+    case 'trigger.key':
+      return ctx.trigger ? `#${ctx.trigger.key}` : '';
+    case 'trigger.url':
+      return ctx.trigger?.link ?? '';
   }
   const shift = SHIFT.exec(name);
   if (shift) {

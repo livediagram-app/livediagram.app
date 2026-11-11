@@ -6,7 +6,12 @@
 // Field… for a field of the card by its name. ValueChipsText draws the same text read-only (a step card's preview).
 
 import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { AUTOMATION_VALUE_LABELS, AUTOMATION_VALUE_NAMES } from '@liveplanner/items';
+import {
+  AUTOMATION_BRANCH_VALUE_LABELS,
+  AUTOMATION_BRANCH_VALUE_NAMES,
+  AUTOMATION_VALUE_LABELS,
+  AUTOMATION_VALUE_NAMES,
+} from '@liveplanner/items';
 import { FIELD_INVALID } from '@liveplanner/ui';
 import {
   MenuActionRow,
@@ -48,6 +53,19 @@ export function ValueChipsText({ text, className = '' }: { text: string; classNa
   );
 }
 
+// Insert a Value's chips: the fixed values, and inside a branch the triggering card's after them.
+const VALUE_CHIPS = AUTOMATION_VALUE_NAMES.map((name) => ({
+  name,
+  label: AUTOMATION_VALUE_LABELS[name],
+}));
+const BRANCH_VALUE_CHIPS = [
+  ...VALUE_CHIPS,
+  ...AUTOMATION_BRANCH_VALUE_NAMES.map((name) => ({
+    name,
+    label: AUTOMATION_BRANCH_VALUE_LABELS[name],
+  })),
+];
+
 const TEXT = 'whitespace-pre-wrap break-words px-2.5 py-2 text-[13px] leading-6';
 
 /** Puts `{{name}}` at the caret (over a selection), answering the text and where the caret goes after it. */
@@ -66,6 +84,7 @@ export function ValueTextField({
   placeholder,
   invalid = false,
   hint,
+  branch = false,
 }: {
   label: string;
   value: string;
@@ -78,6 +97,9 @@ export function ValueTextField({
   placeholder?: string;
   invalid?: boolean;
   hint?: ReactNode;
+  // Text inside a For Related Cards branch: {{card.…}} is the related card, and the triggering card's values join
+  // the chips.
+  branch?: boolean;
 }) {
   const id = useId();
   const area = useRef<HTMLTextAreaElement>(null);
@@ -154,14 +176,14 @@ export function ValueTextField({
           Insert a Value
         </span>
         <div className="flex flex-wrap gap-1.5">
-          {AUTOMATION_VALUE_NAMES.map((name) => (
+          {(branch ? BRANCH_VALUE_CHIPS : VALUE_CHIPS).map(({ name, label: chip }) => (
             <button
               key={name}
               type="button"
               onClick={() => insert(name)}
               className="touch-target-y relative rounded-md bg-slate-100 px-2 py-0.5 text-[12px] font-medium leading-[18px] text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 motion-reduce:transition-none dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
             >
-              {AUTOMATION_VALUE_LABELS[name]}
+              {chip}
             </button>
           ))}
           {fields.length > 0 ? (

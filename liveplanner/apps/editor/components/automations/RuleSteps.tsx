@@ -1,165 +1,73 @@
 'use client';
 
 // The rule as a column of steps (docs/specs/026-plan/automations.md "The rule builder"): When, each condition (If all
-// of these), each action (Then), joined by a line, and + Add Action, + Add Condition and + If / Else under them. An
-// If / Else step holds its own conditions and its Then and Else lists, each with its own add buttons. Every step but
-// the trigger has a ⋯ menu.
+// of these, or for a time trigger the cards it runs on), each step (Then), joined by a line, and + Add Action, + Add
+// Condition, + If / Else and + For Related Cards under them. An If / Else holds its own conditions and its Then and
+// Else lists; a For Related Cards branch ("For each Blocked By Card") its own conditions and actions; each inset under
+// it with its own add buttons. Every step but the trigger has a ⋯ menu. A time rule with no conditions warns that it
+// runs on every card; a step a template left to pick says so until it is picked.
 
-import { useState } from 'react';
 import {
-  AUTOMATION_CONDITION_NAMES,
-  AUTOMATION_STEP_NAMES,
+  AUTOMATION_RELATED_NAMES,
   actionChip,
   conditionChip,
+  isTimeTrigger,
+  notifyChip,
   stepChip,
   triggerParts,
   type AutomationAction,
-  type AutomationActionKind,
-  type AutomationCondition,
+  type AutomationOutgoing,
   type AutomationRuleBody,
+  type RuleSentenceOutline,
 } from '@liveplanner/items';
-import { Button, PlusIcon } from '@liveplanner/ui';
-import {
-  MenuActionRow,
-  PortalMenu,
-} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import type { AutomationOutline } from './automation-outline';
-import { ConditionIcon, StepTile } from './automation-glyphs';
 import {
-  canAddAction,
-  canAddCondition,
+  canDuplicate,
   canMove,
   pathOf,
   samePart,
+  type HolderStep,
   type RulePart,
   type StepEdit,
 } from './rule-draft';
 import { CHIP, SentenceChips } from './SentenceChips';
-import { ACTION_KINDS, CONDITION_KINDS } from './step-defaults';
+import { HolderAddButtons, TopAddButtons, type AddActions } from './StepAddButtons';
 import { StepCard, StepJoin } from './StepCard';
 import { StepMenu } from './StepMenu';
+import { EveryCardWarning } from './step-panels/TimeTriggerPanel';
 import { ValueChipsText } from './ValueInsert';
 
-export type StepsActions = {
+export type StepsActions = AddActions & {
   select: (part: RulePart) => void;
   edit: (part: RulePart, edit: StepEdit) => void;
-  addCondition: (kind: AutomationCondition['kind'], ifStep?: number) => void;
-  addAction: (kind: AutomationActionKind, branch?: { step: number; side: 'then' | 'else' }) => void;
-  addIfElse: () => void;
 };
-
-/** A dashed add button that opens a menu of kinds. */
-function AddMenu<K extends string>({
-  label,
-  kinds,
-  names,
-  icon,
-  disabled,
-  onPick,
-}: {
-  label: string;
-  kinds: readonly K[];
-  names: Readonly<Record<K, string>>;
-  icon: (kind: K) => React.ReactNode;
-  disabled: boolean;
-  onPick: (kind: K) => void;
-}) {
-  const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
-  return (
-    <>
-      <Button
-        variant="secondary"
-        size="xs"
-        className="border-dashed"
-        aria-haspopup="menu"
-        aria-expanded={anchor !== null}
-        disabled={disabled}
-        onClick={(e) => setAnchor(anchor ? null : e.currentTarget)}
-      >
-        <PlusIcon size={12} />
-        {label}
-      </Button>
-      {anchor ? (
-        <PortalMenu anchor={anchor} placement="below" onClose={() => setAnchor(null)}>
-          {kinds.map((k) => (
-            <MenuActionRow
-              key={k}
-              plain
-              label={names[k]}
-              icon={icon(k)}
-              onClick={() => {
-                setAnchor(null);
-                onPick(k);
-              }}
-            />
-          ))}
-        </PortalMenu>
-      ) : null}
-    </>
-  );
-}
 
 // An If / Else's own conditions, in the condition tone.
 const IF_CHIP =
   'inline-flex max-w-full items-center truncate rounded-md bg-orange-50 px-2 py-px text-[12px] font-medium leading-[18px] text-orange-800 dark:bg-orange-500/15 dark:text-orange-200';
+const INSET =
+  'ml-[31px] mt-2 flex flex-col gap-3 border-l-2 border-slate-200 pl-5 dark:border-slate-700';
+const SIDE_HEAD =
+  'text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
+const SUB = 'text-[12px] text-slate-600 dark:text-slate-300';
+const QUIET = 'text-[12px] text-slate-500 dark:text-slate-400';
 
-const actionIcon = (k: AutomationActionKind) => <StepTile tone="action" kind={k} size={24} />;
-const conditionIcon = () => <ConditionIcon />;
+type CardProps = Omit<
+  Parameters<typeof StepCard>[0],
+  'selected' | 'fault' | 'pick' | 'onSelect' | 'menu'
+>;
 
-function AddButtons({
-  body,
-  ifStep,
-  branch,
-  actions,
-  withIf,
-}: {
-  body: AutomationRuleBody;
-  ifStep?: number;
-  branch?: { step: number; side: 'then' | 'else' };
-  actions: StepsActions;
-  withIf: boolean;
-}) {
-  const conditions =
-    ifStep === undefined
-      ? body.conditions
-      : (() => {
-          const s = body.steps[ifStep];
-          return s?.kind === 'if' ? s.conditions : [];
-        })();
-  const full = !canAddAction(body);
+// What a step does: its chip, and under it the text it writes (a comment, a message, an email's subject).
+function stepBody(a: AutomationAction | AutomationOutgoing, outline: RuleSentenceOutline) {
+  const sub =
+    a.kind === 'comment' || a.kind === 'notify' ? a.text : a.kind === 'email' ? a.subject : '';
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <AddMenu
-        label="Add Action"
-        kinds={ACTION_KINDS}
-        names={AUTOMATION_STEP_NAMES}
-        icon={actionIcon}
-        disabled={full}
-        onPick={(k) => actions.addAction(k, branch)}
-      />
-      {branch ? null : (
-        <AddMenu
-          label="Add Condition"
-          kinds={CONDITION_KINDS}
-          names={AUTOMATION_CONDITION_NAMES}
-          icon={conditionIcon}
-          disabled={!canAddCondition(conditions)}
-          onPick={(k) => actions.addCondition(k, ifStep)}
-        />
-      )}
-      {withIf ? (
-        <Button
-          variant="secondary"
-          size="xs"
-          className="border-dashed"
-          disabled={full}
-          onClick={actions.addIfElse}
-        >
-          <PlusIcon size={12} />
-          If / Else
-        </Button>
-      ) : null}
-    </div>
+    <>
+      <span className={`${CHIP} self-start`}>
+        {a.kind === 'notify' ? notifyChip(a, outline) : actionChip(a, outline)}
+      </span>
+      {sub ? <ValueChipsText text={sub} className={SUB} /> : null}
+    </>
   );
 }
 
@@ -169,6 +77,7 @@ export function RuleSteps({
   selected,
   fault,
   actions,
+  picks,
 }: {
   body: AutomationRuleBody;
   outline: AutomationOutline;
@@ -176,17 +85,16 @@ export function RuleSteps({
   // The step a refusal names, and why.
   fault: { part: RulePart; message: string } | null;
   actions: StepsActions;
+  // What a template left to pick, by the path of the part it sits on ("steps.0" → "Pick a webhook").
+  picks?: ReadonlyMap<string, string> | undefined;
 }) {
   const faultFor = (part: RulePart) => (fault && samePart(fault.part, part) ? fault.message : null);
-  const card = (
-    part: RulePart,
-    props: Omit<Parameters<typeof StepCard>[0], 'selected' | 'fault' | 'onSelect' | 'menu'>,
-    menuName?: string,
-  ) => (
+  const card = (part: RulePart, props: CardProps, menuName?: string) => (
     <StepCard
       {...props}
       selected={samePart(selected, part)}
       fault={faultFor(part)}
+      pick={picks?.get(pathOf(part)) ?? null}
       onSelect={() => actions.select(part)}
       menu={
         menuName ? (
@@ -194,28 +102,57 @@ export function RuleSteps({
             name={menuName}
             canUp={canMove(body, part, 'up')}
             canDown={canMove(body, part, 'down')}
-            canDuplicate={part.part === 'condition' || canAddAction(body)}
+            canDuplicate={canDuplicate(body, part)}
             onEdit={(edit) => actions.edit(part, edit)}
           />
         ) : undefined
       }
     />
   );
-  const actionBody = (a: AutomationAction) => (
-    <>
-      <span className={`${CHIP} self-start`}>{actionChip(a, outline)}</span>
-      {a.kind === 'comment' && a.text ? (
-        <ValueChipsText text={a.text} className="text-[12px] text-slate-600 dark:text-slate-300" />
+  const conditionCard = (part: RulePart & { part: 'condition' }, label: string) => {
+    const holder = part.ifStep === undefined ? undefined : (body.steps[part.ifStep] as HolderStep);
+    const name = conditionChip((holder ?? body).conditions[part.index]!, outline);
+    return card(
+      part,
+      { tone: 'condition', label, children: <span className={`${CHIP} self-start`}>{name}</span> },
+      name,
+    );
+  };
+
+  // A holder's own conditions and actions, inset under it: an If's Then and Else, a branch's Then.
+  const inset = (step: HolderStep, i: number) => (
+    <div className={INSET}>
+      {step.conditions.map((_, j) => (
+        <div key={`c${j}`}>
+          {conditionCard({ part: 'condition', index: j, ifStep: i }, j === 0 ? 'If' : 'And')}
+        </div>
+      ))}
+      {(step.kind === 'if' ? (['then', 'else'] as const) : (['then'] as const)).map((side) => {
+        const list = side === 'else' && step.kind === 'if' ? step.else : step.then;
+        const label = side === 'then' ? 'Then' : 'Else';
+        return (
+          <div key={side} className="flex flex-col gap-2">
+            {step.kind === 'if' ? <span className={SIDE_HEAD}>{label}</span> : null}
+            {list.map((a, j) => (
+              <div key={`${side}${j}`}>
+                {card(
+                  { part: 'branch', step: i, side, index: j },
+                  { tone: 'action', kind: a.kind, label, children: stepBody(a, outline) },
+                  actionChip(a, outline),
+                )}
+              </div>
+            ))}
+            <HolderAddButtons body={body} step={i} side={side} actions={actions} />
+          </div>
+        );
+      })}
+      {step.kind === 'if' ? (
+        <HolderAddButtons body={body} step={i} side="then" actions={actions} conditionsOnly />
       ) : null}
-      {a.kind === 'email' && a.subject ? (
-        <ValueChipsText
-          text={a.subject}
-          className="text-[12px] text-slate-600 dark:text-slate-300"
-        />
-      ) : null}
-    </>
+    </div>
   );
 
+  const time = isTimeTrigger(body.trigger);
   return (
     <ol aria-label="Steps" className="flex flex-col">
       <li key="trigger">
@@ -223,40 +160,85 @@ export function RuleSteps({
           { part: 'trigger' },
           {
             tone: 'trigger',
+            time,
             label: 'When',
-            children: <SentenceChips parts={triggerParts(body.trigger, outline)} />,
+            children: (
+              <>
+                <SentenceChips parts={triggerParts(body.trigger, outline)} />
+                {time && body.conditions.length === 0 ? <EveryCardWarning compact /> : null}
+              </>
+            ),
           },
         )}
       </li>
-      {body.conditions.map((c, i) => {
-        const part: RulePart = { part: 'condition', index: i };
-        return (
-          <li key={`c${pathOf(part)}`}>
-            <StepJoin />
-            {card(
-              part,
-              {
-                tone: 'condition',
-                label: i === 0 ? 'If all of these' : 'And',
-                children: <span className={`${CHIP} self-start`}>{conditionChip(c, outline)}</span>,
-              },
-              conditionChip(c, outline),
-            )}
-          </li>
-        );
-      })}
+      {body.conditions.map((_, i) => (
+        <li key={`c${i}`}>
+          <StepJoin />
+          {conditionCard(
+            { part: 'condition', index: i },
+            i > 0 ? 'And' : time ? 'For cards where' : 'If all of these',
+          )}
+        </li>
+      ))}
       {body.steps.map((step, i) => {
         const part: RulePart = { part: 'step', index: i };
         const name = stepChip(step, outline);
-        if (step.kind !== 'if')
+        if (step.kind === 'if')
           return (
             <li key={`s${i}`}>
               <StepJoin />
               {card(
                 part,
-                { tone: 'action', kind: step.kind, label: 'Then', children: actionBody(step) },
+                {
+                  tone: 'action',
+                  kind: 'if',
+                  label: 'If / Else',
+                  children:
+                    step.conditions.length === 0 ? (
+                      <span className={QUIET}>Add a condition to decide.</span>
+                    ) : (
+                      <span className="flex flex-wrap gap-1">
+                        {step.conditions.map((c, j) => (
+                          <span key={j} className={IF_CHIP}>
+                            {conditionChip(c, outline)}
+                          </span>
+                        ))}
+                      </span>
+                    ),
+                },
                 name,
               )}
+              {inset(step, i)}
+            </li>
+          );
+        if (step.kind === 'for')
+          return (
+            <li key={`s${i}`} data-branch-step="">
+              <StepJoin />
+              {card(
+                part,
+                {
+                  tone: 'action',
+                  kind: 'for',
+                  label: 'For Related Cards',
+                  children: (
+                    <>
+                      <span className="flex flex-wrap items-center gap-1 text-[13px] font-medium">
+                        For each
+                        <span className={CHIP}>
+                          {name.slice('For each '.length) ||
+                            AUTOMATION_RELATED_NAMES[step.related.kind]}
+                        </span>
+                      </span>
+                      {step.then.length === 0 ? (
+                        <span className={QUIET}>Add an action to run on each one.</span>
+                      ) : null}
+                    </>
+                  ),
+                },
+                name,
+              )}
+              {inset(step, i)}
             </li>
           );
         return (
@@ -266,90 +248,18 @@ export function RuleSteps({
               part,
               {
                 tone: 'action',
-                kind: 'if',
-                label: 'If / Else',
-                children:
-                  step.conditions.length === 0 ? (
-                    <span className="text-[12px] text-slate-500 dark:text-slate-400">
-                      Add a condition to decide.
-                    </span>
-                  ) : (
-                    <span className="flex flex-wrap gap-1">
-                      {step.conditions.map((c, j) => (
-                        <span key={j} className={IF_CHIP}>
-                          {conditionChip(c, outline)}
-                        </span>
-                      ))}
-                    </span>
-                  ),
+                kind: step.kind,
+                via: step.kind === 'notify' ? step.via : undefined,
+                label: 'Then',
+                children: stepBody(step, outline),
               },
               name,
             )}
-            <div className="ml-[31px] mt-2 flex flex-col gap-3 border-l-2 border-slate-200 pl-5 dark:border-slate-700">
-              {step.conditions.map((c, j) => {
-                const cp: RulePart = { part: 'condition', index: j, ifStep: i };
-                return (
-                  <div key={`ic${j}`}>
-                    {card(
-                      cp,
-                      {
-                        tone: 'condition',
-                        label: j === 0 ? 'If' : 'And',
-                        children: (
-                          <span className={`${CHIP} self-start`}>{conditionChip(c, outline)}</span>
-                        ),
-                      },
-                      conditionChip(c, outline),
-                    )}
-                  </div>
-                );
-              })}
-              {(['then', 'else'] as const).map((side) => (
-                <div key={side} className="flex flex-col gap-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    {side === 'then' ? 'Then' : 'Else'}
-                  </span>
-                  {step[side].map((a, j) => {
-                    const bp: RulePart = { part: 'branch', step: i, side, index: j };
-                    return (
-                      <div key={`${side}${j}`}>
-                        {card(
-                          bp,
-                          {
-                            tone: 'action',
-                            kind: a.kind,
-                            label: side === 'then' ? 'Then' : 'Else',
-                            children: actionBody(a),
-                          },
-                          actionChip(a, outline),
-                        )}
-                      </div>
-                    );
-                  })}
-                  <AddButtons
-                    body={body}
-                    branch={{ step: i, side }}
-                    actions={actions}
-                    withIf={false}
-                  />
-                </div>
-              ))}
-              <div>
-                <AddMenu
-                  label="Add Condition to If"
-                  kinds={CONDITION_KINDS}
-                  names={AUTOMATION_CONDITION_NAMES}
-                  icon={conditionIcon}
-                  disabled={!canAddCondition(step.conditions)}
-                  onPick={(k) => actions.addCondition(k, i)}
-                />
-              </div>
-            </div>
           </li>
         );
       })}
       <li key="add" className="pt-4">
-        <AddButtons body={body} actions={actions} withIf />
+        <TopAddButtons body={body} actions={actions} />
       </li>
     </ol>
   );

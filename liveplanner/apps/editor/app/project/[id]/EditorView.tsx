@@ -70,6 +70,7 @@ import { useDismissibleBanner } from '@liveworkspace/workbench/hooks/ui/useDismi
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { AutomationsHost } from '@/components/automations/AutomationsHost';
 import { automationsScopeFor } from '@/components/automations/automations-gate';
+import { useAutomationsOffline } from '@/components/automations/use-automations-offline';
 import { useDelayedReveal } from '@liveworkspace/workbench/hooks/ui/useDelayedReveal';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -449,6 +450,16 @@ export function EditorView() {
     embed: embedMode,
     scope: ctx.plan.context?.itemsScope ?? null,
   });
+  // On a plan in Browser Storage, whoever can edit it sees the button, which says rules need the plan on an account.
+  const automationsOffline = useAutomationsOffline({
+    level: ctx.can.level,
+    structureReadOnly: isStructureReadOnly,
+    offline: isOffline,
+    hydrated,
+    embed: embedMode,
+    signedIn: !!accountUserId,
+    save: ctx.syncToCloud,
+  });
 
   return (
     // Which paper the canvas is, for every element that carries no colour of
@@ -458,7 +469,13 @@ export function EditorView() {
     // a Default tab's paper is the viewer's, not the tab's.
     // Only a Dashboard draws participant cursors (plan-cursors.ts), so only there do Settings, the Collaborators
     // modal and search offer Hide Participant Cursors (docs/specs/012-collaboration/collaborator-enhancements.md).
-    <AutomationsHost scope={automationsScope} plan={ctx.plan.context}>
+    <AutomationsHost
+      scope={automationsScope}
+      plan={ctx.plan.context}
+      offline={automationsOffline}
+      planName={projectName}
+      signedIn={!!accountUserId}
+    >
       <CursorsDrawnContext.Provider value={cursorsDrawn}>
         <SelectionStoreProvider store={ctx.selectionStore}>
           <ViewportStoreProvider store={ctx.viewport}>

@@ -2,10 +2,14 @@
 // or + Add Condition starts filled from the plan where it can (its first column, card type, field or label), so the
 // panel opens on something that reads. Text a person must write starts empty, and the api's refusal names it. Pure.
 
-import type {
-  AutomationAction,
-  AutomationActionKind,
-  AutomationCondition,
+import {
+  AUTOMATION_NOTIFY_NAMES,
+  AUTOMATION_STEP_NAMES,
+  type AutomationAction,
+  type AutomationActionKind,
+  type AutomationCondition,
+  type AutomationOutgoing,
+  type AutomationVia,
 } from '@liveplanner/items';
 import { outlineFields, type AutomationOutline } from './automation-outline';
 
@@ -23,6 +27,39 @@ export const ACTION_KINDS: readonly AutomationActionKind[] = [
   'create_card',
   'email',
 ];
+
+// A branch takes no Create Card (nor an If, a branch or an outgoing action, which its menu never offers).
+export const BRANCH_ACTION_KINDS: readonly AutomationActionKind[] = ACTION_KINDS.filter(
+  (k) => k !== 'create_card',
+);
+
+// + Add Action at the rule's top level offers the outgoing actions too, one per kind of webhook.
+export const OUTGOING_KINDS = ['notify_webhook', 'notify_slack', 'notify_teams'] as const;
+export type OutgoingKind = (typeof OUTGOING_KINDS)[number];
+export type AddKind = AutomationActionKind | OutgoingKind;
+export const ADD_NAMES: Readonly<Record<AddKind, string>> = {
+  ...AUTOMATION_STEP_NAMES,
+  notify_webhook: AUTOMATION_NOTIFY_NAMES.webhook,
+  notify_slack: AUTOMATION_NOTIFY_NAMES.slack,
+  notify_teams: AUTOMATION_NOTIFY_NAMES.teams,
+};
+export const viaOf = (kind: OutgoingKind): AutomationVia =>
+  kind === 'notify_webhook' ? 'webhook' : kind === 'notify_slack' ? 'slack' : 'teams';
+export const isOutgoingKind = (kind: AddKind): kind is OutgoingKind =>
+  (OUTGOING_KINDS as readonly string[]).includes(kind);
+
+/** An outgoing action's first form: no webhook picked yet, the card's title and link as its message. */
+export function defaultOutgoing(via: AutomationVia): AutomationOutgoing {
+  return { kind: 'notify', via, webhook: '', text: '{{card.title}} {{card.url}}' };
+}
+
+/** A new step of any kind + Add Action offers. */
+export function defaultStep(
+  kind: AddKind,
+  outline: Outline,
+): AutomationAction | AutomationOutgoing {
+  return isOutgoingKind(kind) ? defaultOutgoing(viaOf(kind)) : defaultAction(kind, outline);
+}
 
 export const CONDITION_KINDS: readonly AutomationCondition['kind'][] = [
   'type',

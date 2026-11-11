@@ -349,6 +349,47 @@ build):
   checking a condition that never holds): the wake's CPU time is 165 to 191 ms on an M-series Mac, against the
   1,500 ms limit.
 
+### As built (Phase 2 editor)
+
+What the editor does, where it differs from or adds to the Editor list above (each a decision of the build):
+
+- **Files** (`apps/editor/components/automations/`): `StepAddButtons.tsx` (the add menus, top level and per holder),
+  `step-panels/TimeTriggerPanel.tsx`, `BranchPanel.tsx`, `AssignPanel.tsx` and `OutgoingPanel.tsx`,
+  `plan-webhooks.tsx` (the builder's webhooks state and context), `TemplatesGallery.tsx`, `NewRuleMenu.tsx`,
+  `ScreenTabs.tsx`, `screen-clock.ts` (the minute clock and `localZone`, out of the dialog),
+  `AutomationsOfflineDialog.tsx` and `use-automations-offline.ts`. `rule-draft.ts` treats an If / Else and a branch
+  as one "holder" (`HolderStep`, `holderOf`, `sideOf`); a branch has no Else. `templates.ts` is in the items package,
+  as designed, with `picksLeft(body, picks)`, which the builder runs on each change, so a mark goes as its step is
+  filled.
+- **Holders.** The `RulePart` paths are the api's (`steps.i.conditions.j`, `steps.i.then.j`) for both kinds, so a
+  refusal inside a branch marks its step as one inside an If does. Add Action in a branch leaves out Create Card and
+  the outgoing actions; at the top level the outgoing ones join the menu while the rule holds fewer than 5.
+  Duplicate is greyed where the copy would pass a limit (`canDuplicate`).
+- **Time rules.** The trigger list groups its kinds ("Something Happens to a Card", "A Time Comes Round"). Every is
+  a SegmentedToggle; the week's chips run Monday first; Due In reads "Days Before It's Due". A rule saves with this
+  browser's IANA zone (`timeZone`, the saver's), and the panel names it. The When card of a time rule with no
+  conditions carries the one-line warning, the panel the full one. The first condition's label reads "For cards
+  where". "Whoever triggered it" is left out of Assign and Send Email; an Assign added starts on the plan's first
+  person. The Rules row adds "Next: Mon 9:00" (Today, Tomorrow, a weekday within six days, else the date) from
+  `stats.nextAt` while the rule is on.
+- **Webhooks.** The list is read once per builder, the first time an outgoing panel opens, and again when the
+  Webhooks dialog it opened closes; Try Again after a failed read. A guest asks nothing (webhooks need an account).
+  The dialog holds one `ItemWebhooksDialog`, for **Add a Webhook…** and **Fix Webhook** (shown when `paused.webhook`
+  is set), titled with the plan's name. The step's Preview header names the webhook ("To Launch Channel").
+- **Templates.** The gallery's chips are the screen's own (not saved). A template opens as the target
+  `{ view: 'rule', ruleId: null, template }`, built by `templateStart` with the outline's phases
+  (`PlanContextValue.statusPhases`) and named by `freeRuleName`. Telemetry is `UI · Opened · AutomationTemplate.<id>`
+  (an event has no value field); the site's catalogue declares the computed type and charts it as Automation
+  Templates Opened.
+- **Run Log.** A branch line wears its own mark (blue, a list tree; red when it failed on a card), and the lines after
+  it that start with a card number are inset under it, the number in the card's weight (`insetLines`).
+- **Browser Storage.** `automationsOfflineFor` (offline, hydrated, not an embed, edit level, structure editable)
+  gives the footer an `AutomationsDoorContext` door without any `AutomationsContext`, so Run Rule and the list stay
+  absent. The panel is its own lazy chunk; Save to Your Account runs `syncToCloud` signed in (a failure toasts
+  `syncFailureMessage` and keeps the panel), and is the sign-in link for a guest, who saves on return.
+- **Labels.** The branch values' chips read Trigger Title, Trigger Number and Trigger Link
+  (`AUTOMATION_BRANCH_VALUE_LABELS`).
+
 ## Editor
 
 - `ChromeControls` takes `onOpenAutomations?` and `automationsAttention?` (the amber dot); the editor passes them

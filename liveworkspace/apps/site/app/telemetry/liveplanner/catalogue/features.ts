@@ -600,6 +600,14 @@ export const LOCAL_MOVE_OFFERED = opened(
 
 OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);
 
+// Automations' Templates gallery (docs/specs/026-plan/automations.md "Telemetry", in the liveplanner folder): a
+// template picked to open in the rule builder, its id after the dot. The template, never the rule it became.
+export const AUTOMATION_TEMPLATES_OPENED = opened(
+  'Automation Templates Opened',
+  'A ready-made rule picked from the Automations Templates gallery, opening it in the rule builder unsaved.',
+  (t) => t?.startsWith('AutomationTemplate.') ?? false,
+);
+
 export const OTHER_OPENED = chart(
   'UI',
   'Opened',
@@ -620,6 +628,7 @@ export const PANELS_OPENED: MetricStack = {
     HELP_FROM_EDITOR,
     SHORTCUTS_OPENED,
     MIND_OUTLINE_OPENED,
+    AUTOMATION_TEMPLATES_OPENED,
     OTHER_OPENED,
   ],
   seeAlso: { section: 'editing', label: 'See Each Dialog in Features › Editing' },

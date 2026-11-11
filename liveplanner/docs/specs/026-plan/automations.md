@@ -116,6 +116,7 @@ work. A rule does it every time, at once, and says that it did.
 - A time trigger has no person behind it: **Who Did It** conditions are refused on one
   (`automation_condition_unsupported`), **Assign whoever triggered** and **Send Email to whoever triggered** too,
   and `{{person}}` reads "Automation". Its runs show "Automation · Every Weekday at 9:00" as their trigger line.
+  The builder leaves those choices out on a time rule, and an Assign added to one starts on the plan's first person.
 - **Test on a Card** runs a time trigger's rule on the chosen card as if its moment had come.
 - A rule whose trigger is a time is listed with its next moment ("Next: Mon 9:00") under **Last Run**.
 
@@ -186,6 +187,8 @@ fails or matches nothing doesn't move the turn, and Test on a Card shows whose t
   It fails when the platform refuses it: the webhook is paused ("Launch Channel is paused: the address said it’s
   gone"), deleted, or the platform can't be reached. Ten such failures pause the rule like any other, and a rule
   paused on a webhook shows **Fix Webhook** (the Webhooks dialog) beside **Resume**.
+- The webhooks are an account's: a guest's panel says only someone signed in can pick one, with **Sign In**, and
+  asks the index nothing. A paused webhook is listed "(Paused)"; one the rule names that is gone, "(No Longer Here)".
 - A rule holds at most **5** outgoing actions, at its top level (never inside a branch or an If / Else), so one run
   posts at most 5 messages.
 - **Test on a Card** sends nothing and says "Would post to Launch Channel: …" with the message filled in.
@@ -306,7 +309,8 @@ on this plan's cards for you when something happens.", a **New Rule** button and
   filled in by its role (its done columns, its In Progress column, a date field named like Completed On, a Bug
   type); what it lacks or the template leaves to you (a label, the people in turn, a Slack webhook) is left empty,
   its step marked "Pick a field" (or a label, people, a webhook) until picked. Nothing is saved until **Save Rule**.
-  **New Rule** offers **Start From a Template** too.
+  **New Rule** is a menu: **Blank Rule** (the builder, empty) and **Start From a Template** (the Templates tab). With
+  the plan at its 50 rules the tiles show but don't open.
 
 - **Run Log**: filters **All Rules**, **Any Result** and **Last 7 Days**, the line "Kept for 30 days or the last
   2,000 runs, and the last 500 No Matches" (No Matches are kept apart, so they never push a run out), and one row per run: When, Rule, Card (`#48` and title), Result (**Done**, **No Match**, **Skipped**,
@@ -362,7 +366,8 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
 
 `UI · Opened · Automations`; `Plan · Created · AutomationRule`; `Plan · Toggled · AutomationOn` /
 `AutomationOff`; `Plan · Deleted · AutomationRule`; `Plan · Tested · AutomationRule`; `Plan · Ran · AutomationManual`;
-`UI · Opened · AutomationTemplate` with the template's id as its value (from the fixed list above).
+`UI · Opened · AutomationTemplate.<id>`, the template's id after the dot (an event carries no value, so the id
+rides in its type, from the fixed list above); `UI · Opened · AutomationsOffline` (the Browser Storage panel).
 The api logs `[automations] run` with the result and duration, never a card's text.
 
 ## Limits

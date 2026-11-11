@@ -1,12 +1,13 @@
 // Who sees Automations (docs/specs/026-plan/automations.md "Who may do what"): an Editor of the whole plan, on a plan
-// saved to an account. A Participant, a Viewer, a tab-scoped link, an embed and a plan in Browser Storage see no
-// button and no Run Rule; the api refuses them all the same (403 `automations_need_editor`), so this is
-// presentation, never the rule. Pure.
+// saved to an account. A Participant, a Viewer, a tab-scoped link and an embed see no button and no Run Rule; the api
+// refuses them all the same (403 `automations_need_editor`), so this is presentation, never the rule. A plan in
+// Browser Storage has no rules, but whoever can edit it still sees the button, which opens Rules Run on Our Servers
+// (automationsOfflineFor). Pure.
 
 import type { AccessLevel } from '@liveplanner/api-schema';
 import type { AutomationsScope } from './automations-client';
 
-export function automationsScopeFor(input: {
+type GateInput = {
   level: AccessLevel;
   // Read-only for structure (a Viewer, a Participant, or a link scoped to one tab).
   structureReadOnly: boolean;
@@ -20,9 +21,17 @@ export function automationsScopeFor(input: {
     shareCode: string | null;
     tabId: string | null;
   } | null;
-}): AutomationsScope | null {
+};
+
+export function automationsScopeFor(input: GateInput): AutomationsScope | null {
   const { level, structureReadOnly, offline, hydrated, embed, scope } = input;
   if (!scope || !hydrated || embed || offline || structureReadOnly || level !== 'edit') return null;
   if (scope.tabId !== null) return null;
   return { ownerId: scope.ownerId, projectId: scope.projectId, shareCode: scope.shareCode };
+}
+
+/** Whether the footer shows Automations on a plan in Browser Storage: to whoever can edit it, outside an embed. */
+export function automationsOfflineFor(input: Omit<GateInput, 'scope'>): boolean {
+  const { level, structureReadOnly, offline, hydrated, embed } = input;
+  return offline && hydrated && !embed && !structureReadOnly && level === 'edit';
 }

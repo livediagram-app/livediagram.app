@@ -27,7 +27,7 @@ import {
 } from '@liveplanner/api-schema';
 import { countedVerbs } from '@liveplanner/agent-verbs';
 import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@liveplanner/forms';
-import { TRACKER_SOURCE_NAMES } from '@liveplanner/items';
+import { AUTOMATION_TEMPLATE_IDS, TRACKER_SOURCE_NAMES } from '@liveplanner/items';
 import { MCP_TOOL_VERBS } from '@liveplanner/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from '../_shared/event-vocab';
 
@@ -388,6 +388,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/editor/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },
   'apps/editor/app/new/useCtaAttribution.ts Cta·Created': { values: ALL_CTA_SOURCES },
+  'apps/editor/components/automations/AutomationsDialog.tsx UI·Opened': {
+    values: AUTOMATION_TEMPLATE_IDS.map((id) => `AutomationTemplate.${id}`),
+  },
   'apps/editor/components/dialogs/SettingsDialog.tsx UI·Opened': {
     values: ['SettingsAppearance', 'SettingsEditor', 'SettingsAccount', 'SettingsPrivacy'],
     open: 'Settings<Category>, one per Settings category',

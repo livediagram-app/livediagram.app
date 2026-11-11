@@ -277,9 +277,9 @@ export const AUTOMATION_BRANCH_VALUE_NAMES = [
 ] as const;
 export type AutomationBranchValueName = (typeof AUTOMATION_BRANCH_VALUE_NAMES)[number];
 export const AUTOMATION_BRANCH_VALUE_LABELS: Record<AutomationBranchValueName, string> = {
-  'trigger.title': 'Triggering Card Title',
-  'trigger.key': 'Triggering Card Number',
-  'trigger.url': 'Triggering Card Link',
+  'trigger.title': 'Trigger Title',
+  'trigger.key': 'Trigger Number',
+  'trigger.url': 'Trigger Link',
 };
 // Insert a Value's chip labels, by name.
 export const AUTOMATION_VALUE_LABELS: Record<AutomationValueName, string> = {

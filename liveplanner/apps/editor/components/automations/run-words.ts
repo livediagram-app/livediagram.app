@@ -55,3 +55,21 @@ export function runWhen(at: number, now: number): string {
 export function meterWords(used: number, max: number): string {
   return `${used.toLocaleString('en-GB')} of ${max.toLocaleString('en-GB')}`;
 }
+
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+const clock = (d: Date) => `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+/** A time rule's next moment, in this browser's time: "Today 9:00", "Tomorrow 9:00", "Mon 9:00" within the week,
+ *  else its day ("12 Dec 9:00"). */
+export function nextRunWords(at: number, now: number): string {
+  const d = new Date(at);
+  const day = (offset: number) => {
+    const x = new Date(now);
+    x.setDate(x.getDate() + offset);
+    return dayKey(x);
+  };
+  if (dayKey(d) === day(0)) return `Today ${clock(d)}`;
+  if (dayKey(d) === day(1)) return `Tomorrow ${clock(d)}`;
+  if (at - now < 6 * 24 * 60 * 60 * 1000) return `${WEEKDAYS[d.getDay()]!} ${clock(d)}`;
+  return `${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} ${clock(d)}`;
+}

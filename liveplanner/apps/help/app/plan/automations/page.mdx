@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Automations',
   description:
-    'How to make automation rules in a plan: triggers, conditions and actions, values, Test on a Card, Run Rule, the Run Log, limits and who can.',
+    'How to make automation rules: triggers and times, conditions, actions, related cards, Slack and webhook posts, templates, testing, the Run Log and limits.',
   path: '/help/plan/automations/',
 });
 
@@ -15,28 +15,57 @@ export const metadata = helpMetadata({
   categorySlug="plan"
 >
 
-An **automation rule** does the small step that always follows the same event: a card reaches Done and its finish date is stamped; a bug comes in and it is labelled and handed to whoever is on triage; a form response lands and its priority is set from the answer. Each rule has a **trigger** (what starts it), **conditions** (what the card must be) and **actions** (what it does).
+An **automation rule** does the small step that always follows the same event: a card reaches Done and its finish date is stamped; a bug comes in and it is labelled and handed to whoever is on triage; every weekday at 9:00 the overdue cards are flagged; a card ships and the team's Slack channel hears about it. Each rule has a **trigger** (what starts it), **conditions** (what the card must be) and **actions** (what it does).
 
 ## Open Automations
 
 Press **Automations** in the footer, between **Search** and **Settings**. It is there for an Editor of the whole plan, on a plan saved to your account. A small amber dot on it means a rule has paused itself (below).
 
-The screen has two tabs:
+The screen has three tabs:
 
-- **Rules**: every rule in the plan, each with its switch, its name, what it does in a sentence ("When Card Moved to Done then Set Completed On"), when it **Last Run** and how many runs it made **This Week**. Find one by name, or narrow the list by trigger or by **On and Off**. A row's **⋯** menu holds **Edit**, **Duplicate**, **Run Log** and **Delete**.
-- **Run Log**: what each rule did, newest first, kept for 30 days or the last 2,000 runs. Open a run to see its steps: who did what, each condition and what it found, and each action, with **Open Card**.
+- **Rules**: every rule in the plan, each with its switch, its name, what it does in a sentence ("When Card Moved to Done then Set Completed On"), when it **Last Run** and how many runs it made **This Week**. A rule on a time also says when it runs next ("Next: Mon 9:00"). Find one by name, or narrow the list by trigger or by **On and Off**. A row's **⋯** menu holds **Edit**, **Duplicate**, **Run Log** and **Delete**.
+- **Run Log**: what each rule did, newest first, kept for 30 days or the last 2,000 runs. Open a run to see its steps: who did what, each condition and what it found, and each action, with **Open Card**. A For Related Cards step says how many cards it ran on, each card's own steps beneath it, headed by its number.
+- **Templates**: ready-made rules (below).
 
 At the right of the tabs, **Runs today** shows how many of the plan's 1,000 runs a day have been used.
 
+## Start From a Template
+
+The **Templates** tab, and the empty Rules list, show ready-made rules: **Stamp the Finish Date**, **Assign on Start**, **Overdue Nudge**, **Share Out Form Responses**, **Post Shipped Work to Slack**, **Triage New Bugs**, **Unblock the Next Card** and **Due Soon Reminder**. The chips above them (**Status**, **Assigning**, **Due Dates**, **Forms**, **Telling People**) narrow the list.
+
+Pick one and it opens in the builder, filled in from your plan: its done columns, its In Progress column, a date field named like Completed On, a Bug card type. Whatever your plan doesn't have, or the rule leaves to you (a label, the people in turn, a Slack channel), is marked on its step ("Pick a label", "Pick a webhook") until you pick it. Nothing is saved, and the rule stays off, until you press **Save Rule**. **New Rule** offers **Start From a Template** too.
+
 ## Make a Rule
 
-Press **New Rule**. The rule reads from top to bottom:
+Press **New Rule**, then **Blank Rule**. The rule reads from top to bottom:
 
-- **When**: the trigger. Pick one of **Card Created**, **Form Response** (a card made by one of the plan's forms), **Card Moved** (from and to the columns you choose), **Field Changed** (any of the fields you choose), **Comment Added**, or **Run from a Card** (you start it from a card's **⋯** menu).
+- **When**: the trigger. Pick one of **Card Created**, **Form Response** (a card made by one of the plan's forms), **Card Moved** (from and to the columns you choose), **Field Changed** (any of the fields you choose), **Comment Added**, or **Run from a Card** (you start it from a card's **⋯** menu). Or pick a time (below).
 - **If all of these**: the conditions, all of which must hold. Check the **Card Type**, the **Column**, a **Field** (is, is not, is empty, contains, before or after a day, and more), **Who Did It** (a person, an Editor, a Participant, an agent), or whether it **Matches a Saved Filter** of one of your boards.
-- **Then**: the actions, in order. **Move to Column**, **Set Field**, **Clear Field**, **Assign** (a person, whoever triggered the rule, or nobody), **Add Label** or **Remove Label**, **Add Comment**, **Flag** or **Unflag**, **Archive**, **Create Card** and **Send Email**.
+- **Then**: the actions, in order. **Move to Column**, **Set Field**, **Clear Field**, **Assign**, **Add Label** or **Remove Label**, **Add Comment**, **Flag** or **Unflag**, **Archive**, **Create Card** and **Send Email**, and **Send to Webhook**, **Post to Slack** and **Post to Microsoft Teams** (below).
 
-Press **+ Add Action**, **+ Add Condition** or **+ If / Else** to add a step. An **If / Else** runs one list of actions when its conditions hold and another when they don't. Click any step to change it in the panel on the right; its **⋯** menu moves it up or down, duplicates it or deletes it. Name the rule at the top, then press **Save Rule**.
+Press **+ Add Action**, **+ Add Condition**, **+ If / Else** or **+ For Related Cards** to add a step. An **If / Else** runs one list of actions when its conditions hold and another when they don't. Click any step to change it in the panel on the right; its **⋯** menu moves it up or down, duplicates it or deletes it. Name the rule at the top, then press **Save Rule**.
+
+### Rules on a Time
+
+Three triggers start a rule at a time instead of when something happens to a card:
+
+- **Scheduled**: every **Day**, **Weekday**, **Week** (on the days you pick) or **Month** (on a day from the 1st to the 31st; past the month's end, its last day), **At** a time on the quarter hour.
+- **Due In**: 1 to 30 days before a card is due, at a time. A card is reminded once for each due date it has.
+- **Overdue**: on the day after a card was due, at a time. A Done card is never overdue.
+
+At its time, the rule runs once for each card its conditions match: "Every Weekday at 9:00 **for cards** Overdue, not Done". A rule on a time with no conditions runs on every card in the plan, and the builder warns you. Times are in your time zone when you save the rule, which the trigger's panel names ("Times are Europe/London"). A rule on a time has nobody behind it, so it can't check **Who Did It** or assign or email whoever triggered it.
+
+### Assign in Turn
+
+**Assign** gives the card to a person, to whoever triggered the rule, to nobody, or to **People in Turn**: 2 to 10 people, in the order you pick them. Each run assigns the next one, then starts again from the first.
+
+### For Related Cards
+
+A **For Related Cards** step runs its own steps on each of the card's related cards: its **Linked Cards** (through one Card field, or any), the cards it is **Blocked By**, the **Cards It Blocks**, its **Child Cards**, or the **Cards Matching a Saved Filter** of one of your boards. It shows as a card, "For each Blocked By Card", with its own conditions and up to 10 actions beneath it, each added with its own **+ Add Condition** and **+ Add Action**. It runs on up to 100 related cards. Inside it, the card values are the related card's, and **Trigger Title**, **Trigger Number** and **Trigger Link** are the card that started the rule.
+
+### Post to Slack, Teams or a Webhook
+
+**Post to Slack**, **Post to Microsoft Teams** and **Send to Webhook** send a message through one of the plan's [webhooks](/help/explorer/explorer-page/). Pick the webhook by name, or press **Add a Webhook…** to make one; then write the message, with values and a **Preview**. Picking a webhook needs you signed in, since webhooks belong to an account. A rule holds up to 5 of these steps. **Test on a Card** sends nothing and shows the message it would post.
 
 ### Insert a Value
 
@@ -64,13 +93,13 @@ A rule's changes don't set off other rules, so two rules can never keep changing
 
 ## Limits and Pausing
 
-- A plan holds up to 50 rules, each with up to 10 conditions and 20 actions.
+- A plan holds up to 50 rules, each with up to 10 conditions and 20 actions (a For Related Cards step's count too), of which up to 5 post messages.
 - A plan makes up to 1,000 runs a day; past that, rules wait for the next day.
-- A rule that fails 10 times in a row turns itself off and is marked **Paused** with the reason. Fix what it names, then press **Resume**.
+- A rule that fails 10 times in a row turns itself off and is marked **Paused** with the reason. Fix what it names, then press **Resume**. When a webhook stopped it, **Fix Webhook** opens the plan's webhooks.
 - A rule that names something the plan no longer has (a column, a card type, a field, a person) says **Needs Attention** and what is missing.
 
 ## Who Can
 
-Only an Editor of the whole plan makes, changes, turns on or off, tests and runs rules. Everyone's changes, a Participant's included, can start them. A plan in This Browser has no Automations: save it to your account first. Rules are copied when you duplicate a plan.
+Only an Editor of the whole plan makes, changes, turns on or off, tests and runs rules. Everyone's changes, a Participant's included, can start them. Rules run on our servers, even when nobody has the plan open, so a plan in [Browser Storage](/help/privacy-and-security/offline-mode/) has none: its **Automations** button says so and offers **Save to Your Account** (signing in first, if you aren't). Rules are copied when you duplicate a plan.
 
 </ArticleLayout>
