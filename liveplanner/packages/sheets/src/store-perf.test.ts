@@ -2,35 +2,31 @@
 // and its undo over 10,000 rows once each scanned the layout per id. Timed as growth in CPU time (cpuMsOf), not as a
 // ceiling: four times the rows should cost about four times as much; a scan per id would cost sixteen.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuGrowthRatio, cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import { makeSheets } from './testing/book';
 import { applySheetWrite, inverseSheetWrite, type SheetWrite } from './store';
 
 const ctx = { now: 1, by: { id: '', name: '', color: '#000000' } };
 const RATIO_CEILING = cpuRatioCeiling(8);
 
-function costOf(rows: number): number {
+// One sample: each write applied and undone on a sheet of `rows` rows, built outside the timing.
+function costOf(rows: number): () => number {
   const sheet = makeSheets({ S: { A1: '1' } }, { rows, cols: 3 })[0]!;
   const ids = sheet.layout.rows;
   const writes: SheetWrite[] = [
     { kind: 'layout', changes: [{ k: 'orderRows', ids: [...ids].reverse() }] },
     { kind: 'layout', changes: [{ k: 'deleteRows', ids: ids.slice(1) }] },
   ];
-  let fastest = Infinity;
-  for (let run = 0; run < 3; run++) {
-    fastest = Math.min(
-      fastest,
-      cpuMsOf(() => {
-        for (const w of writes) inverseSheetWrite(sheet, applySheetWrite(sheet, w, ctx));
-      }),
-    );
-  }
-  return fastest;
+  return () =>
+    cpuMsOf(() => {
+      for (const w of writes) inverseSheetWrite(sheet, applySheetWrite(sheet, w, ctx));
+    });
 }
 
 describe('row operations as a sheet grows', () => {
   it('cost about linearly more, never quadratically', { timeout: 30_000 }, () => {
-    costOf(2_500);
-    expect(costOf(10_000) / costOf(2_500)).toBeLessThan(RATIO_CEILING);
+    // Both sizes warmed and timed in turns (cpuGrowthRatio), the fastest sample of each kept.
+    const ratio = cpuGrowthRatio(costOf(2_500), costOf(10_000), { ceiling: RATIO_CEILING });
+    expect(ratio).toBeLessThan(RATIO_CEILING);
   });
 });

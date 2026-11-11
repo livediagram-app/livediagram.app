@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuGrowthLimitMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuGrowthRatio, cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import { capLabel, GRAPH_LABEL_MAX } from './label-box';
 
 // A label is a heading (docs/specs/024-agents/blueprints/edit-operations.md "Fields and values"):
@@ -61,6 +61,8 @@ describe('label cap', () => {
 // times, quadratic work sixteen.
 
 const RUN = 20_000;
+// Four times the text, under eight times the CPU.
+const RATIO_CEILING = cpuRatioCeiling(8);
 // The sweeps time a few hundred inputs of tens of thousands of characters: under a second here, but over vitest's 5 s
 // default on a loaded CI runner under coverage (5.3 s, main 2026-10-14), so each has room. Linearity is what the test
 // holds, by growth, not by this limit.
@@ -81,34 +83,39 @@ function cases(samples: string[], prefix = ''): Case[] {
   });
 }
 
-// CPU time, best of `tries`: wall-clock time also counts waiting for a core while other suites run, which read
-// as growth under CI coverage (cpu-time.js).
-function timeOf(text: string, run: (text: string) => unknown, tries = 3): number {
-  let best = Infinity;
-  for (let i = 0; i < tries; i += 1)
-    best = Math.min(
-      best,
-      cpuMsOf(() => void run(text)),
-    );
-  return best;
-}
+// The CPU time of `run` over `text`: wall-clock time also counts waiting for a core while other suites run, which
+// read as growth under CI coverage (cpu-time.js).
+const timeOf = (text: string, run: (text: string) => unknown): number =>
+  cpuMsOf(() => void run(text));
 
-// The sweep only picks the three slowest cases, so one timing each will do; the two times compared
-// for growth are each best of three, at two and eight times the sweep's length, so the smaller takes
-// milliseconds enough that noise cannot read as growth. Never past eight: at sixteen the largest input,
+// The least CPU a sample of the smaller text takes: its run repeats until then, so the timer's noise reads small.
+const SAMPLE_MS = 2;
+
+// The sweep only picks the three slowest cases, so one timing each will do. Each is then timed for
+// growth at two and eight times the sweep's length, the texts built outside the timing, a sample
+// repeating the run as often as the smaller needs for SAMPLE_MS, and both sizes warmed and then timed in turns
+// (cpuGrowthRatio), so noise cannot read as growth. Never past eight: at sixteen the largest input,
 // over a million characters, is past a cliff in V8's memory handling (the same linear scan took 3.2
 // times the CPU for twice the text there), so four times the text cost seven to nine times the CPU
 // (median 6.9, worst 9.0 of 20 runs) against the ceiling of 8. Two to eight measures 4.1 (worst 4.7),
 // and a quadratic scan still reads 16.
 function expectLinear(all: Case[], run: (text: string) => unknown): void {
   const slowest = all
-    .map((c) => ({ c, ms: timeOf(c.build(RUN), run, 1) }))
+    .map((c) => ({ c, ms: timeOf(c.build(RUN), run) }))
     .sort((a, b) => b.ms - a.ms)
     .slice(0, 3);
   for (const { c } of slowest) {
-    const ms = timeOf(c.build(RUN * 2), run);
-    const grown = timeOf(c.build(RUN * 8), run);
-    expect(grown, c.build(8)).toBeLessThan(cpuGrowthLimitMs(ms, 8, 5));
+    const [small, large] = [c.build(RUN * 2), c.build(RUN * 8)];
+    run(small);
+    const runs = Math.ceil(SAMPLE_MS / Math.max(timeOf(small, run), 0.01));
+    const sample = (text: string) => () =>
+      cpuMsOf(() => {
+        for (let i = 0; i < runs; i += 1) run(text);
+      });
+    expect(
+      cpuGrowthRatio(sample(small), sample(large), { ceiling: RATIO_CEILING }),
+      c.build(8),
+    ).toBeLessThan(RATIO_CEILING);
   }
 }
 

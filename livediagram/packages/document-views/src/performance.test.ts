@@ -3,9 +3,10 @@
 // a ratio barely, and coverage judges neither (docs/ci.md "Speed budgets"). Four times the elements in the same containers
 // should cost about four to five times as much (n log n); a quadratic step would cost sixteen.
 // Timed in CPU time (cpuMsOf), not wall-clock: under turbo's parallel suites a wall-clock run also
-// counts the time spent waiting for a core, which pushed the ratio past its ceiling.
+// counts the time spent waiting for a core, which pushed the ratio past its ceiling. Each size is warmed and
+// then the two are timed in turns (cpuGrowthRatio), never one after the other.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuGrowthRatio, cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from '@livediagram/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { buildViewModel } from './model';
@@ -15,7 +16,6 @@ import { showSelectedView } from './show-selected';
 const FRAMES = 10;
 const GROWTH = 8;
 const RATIO_CEILING = cpuRatioCeiling(24);
-const RUNS = 5;
 // Sized to time tens of milliseconds a render; coverage on a CI runner makes that seconds.
 const TIMEOUT_MS = 30_000;
 
@@ -41,17 +41,16 @@ function tabOf(perFrame: number) {
   return { id: 'growth', name: 'Growth', elements };
 }
 
-// The fastest of a few renders, full and fitted to the MCP budget: the least noisy estimate.
-function fastestRender(tab: ReturnType<typeof tabOf>): number {
-  let fastest = Infinity;
-  for (let run = 0; run < RUNS; run++) {
-    const spent = cpuMsOf(() => {
-      outlineView(buildViewModel(tab));
-      outlineView(buildViewModel(tab), { budget: 8000 });
-    });
-    fastest = Math.min(fastest, spent);
-  }
-  return fastest;
+// One sample of a tab's renders, full and fitted to the MCP budget, the model built in each as a call builds it.
+const renderMs = (tab: ReturnType<typeof tabOf>) => () =>
+  cpuMsOf(() => {
+    outlineView(buildViewModel(tab));
+    outlineView(buildViewModel(tab), { budget: 8000 });
+  });
+
+// The growth from `small` to `large` (each one sample's CPU time), held under the ceiling.
+function expectLinear(small: () => number, large: () => number): void {
+  expect(cpuGrowthRatio(small, large, { ceiling: RATIO_CEILING })).toBeLessThan(RATIO_CEILING);
 }
 
 describe('views as tabs grow', () => {
@@ -60,10 +59,8 @@ describe('views as tabs grow', () => {
     () => {
       const small = tabOf(120);
       const large = tabOf(120 * GROWTH);
-      fastestRender(small);
-      const ratio = fastestRender(large) / fastestRender(small);
       expect(large.elements.length).toBeGreaterThan(GROWTH * (small.elements.length - FRAMES));
-      expect(ratio).toBeLessThan(RATIO_CEILING);
+      expectLinear(renderMs(small), renderMs(large));
     },
     TIMEOUT_MS,
   );
@@ -79,10 +76,10 @@ function framesOf(n: number) {
   return { id: 'frames', name: 'Frames', elements };
 }
 
-const fastestOf = (work: () => void) => {
-  let fastest = Infinity;
-  for (let run = 0; run < RUNS; run++) fastest = Math.min(fastest, cpuMsOf(work));
-  return fastest;
+// One sample of `view` over `n` containers, the model built outside the timing.
+const viewMs = (n: number, view: (model: ReturnType<typeof buildViewModel>) => unknown) => {
+  const model = buildViewModel(framesOf(n));
+  return () => cpuMsOf(() => void view(model));
 };
 
 describe('views over many containers or a whole selection', () => {
@@ -92,12 +89,9 @@ describe('views over many containers or a whole selection', () => {
     'fit many containers to a budget about linearly',
     () => {
       // A budget small enough that both sizes collapse every container, so both take the same path.
-      const time = (n: number) => {
-        const model = buildViewModel(framesOf(n));
-        return fastestOf(() => outlineView(model, { budget: 2000 }));
-      };
-      time(500);
-      expect(time(500 * GROWTH) / time(500)).toBeLessThan(RATIO_CEILING);
+      const fit = (model: ReturnType<typeof buildViewModel>) =>
+        outlineView(model, { budget: 2000 });
+      expectLinear(viewMs(500, fit), viewMs(500 * GROWTH, fit));
     },
     TIMEOUT_MS,
   );
@@ -107,12 +101,9 @@ describe('views over many containers or a whole selection', () => {
   it(
     'show a whole selection about linearly',
     () => {
-      const time = (n: number) => {
-        const model = buildViewModel(framesOf(n));
-        return fastestOf(() => showSelectedView(model, model.printed));
-      };
-      time(250);
-      expect(time(250 * GROWTH) / time(250)).toBeLessThan(RATIO_CEILING);
+      const show = (model: ReturnType<typeof buildViewModel>) =>
+        showSelectedView(model, model.printed);
+      expectLinear(viewMs(250, show), viewMs(250 * GROWTH, show));
     },
     TIMEOUT_MS,
   );

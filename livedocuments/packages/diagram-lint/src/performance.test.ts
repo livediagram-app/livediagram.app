@@ -4,7 +4,12 @@
 // times the tab costs under eight times as much. Timed from 75 to 300, inside the cap, the quadratic pair check read
 // up to 11 for four times the tab, and the ceiling of 8 failed at random.
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
+import {
+  cpuBudgetMs,
+  cpuGrowthRatio,
+  cpuMsOf,
+  cpuRatioCeiling,
+} from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from '@livedocuments/document';
 import { LINT_MAX_ARROWS } from './constants';
 import { arrow, box, lint, tabOf } from './fixtures/build';
@@ -37,6 +42,7 @@ const LINT_BUDGET_CPU_MS = 50;
 
 const RUNS_PER_SAMPLE = 10;
 
+// The budget's estimate: the fastest of five samples, each RUNS_PER_SAMPLE lints of the tab.
 const fastest = (els: Element[]) => {
   const tab = tabOf(...els);
   return Math.min(
@@ -62,10 +68,16 @@ describe('performance', () => {
     'grows with the tab past the arrow cap, not faster: 400 to 1,600 boxes and arrows',
     { timeout: 30_000 },
     () => {
-      const small = fastest(grid(400));
-      const large = fastest(grid(1600));
+      // One lint a sample (the smaller takes milliseconds), both sizes warmed and then timed in turns.
+      const sampleOf = (els: Element[]) => {
+        const tab = tabOf(...els);
+        return () => cpuMsOf(() => void lint(tab));
+      };
       expect(grid(1600).filter((el) => el.type === 'arrow')).toHaveLength(1600);
-      expect(large / small).toBeLessThan(RATIO_CEILING);
+      const ratio = cpuGrowthRatio(sampleOf(grid(400)), sampleOf(grid(1600)), {
+        ceiling: RATIO_CEILING,
+      });
+      expect(ratio).toBeLessThan(RATIO_CEILING);
     },
   );
 });

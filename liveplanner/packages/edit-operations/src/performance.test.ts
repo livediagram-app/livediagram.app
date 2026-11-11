@@ -16,11 +16,12 @@ import type { EditOperation } from './types';
 
 const GROWTH = 4;
 const RATIO_CEILING = cpuRatioCeiling(8);
-// The smaller tab of the per-element growth checks: 1,200 against 4,800, not 2,400 against 9,600, so the larger keeps
-// the collector out of the timing (docs/ci.md "Speed budgets"); measured at 4.3 to 5.1 for four times the tab.
-const SMALL_TAB = 1200;
-// Fresh states a run of the noteTarget check fills, so it times a millisecond or more, not timer noise.
-const NOTE_PASSES = 20;
+// The noteTarget check's smaller tab and the fresh states a sample fills, one at a time: 600 against 2,400, 40
+// states, a millisecond or more a sample. Twenty states of 4,800 held at once outgrew a CI runner's cache, and four
+// times the tab read 8.52 against 8 on main (2026-11-11) for work that is one Set lookup an element; these read 4.2
+// to 5.0 here, beside two more runs of the same suite.
+const NOTE_TAB = 600;
+const NOTE_PASSES = 40;
 // Sized to time tens of milliseconds an apply; coverage on a CI runner makes that seconds.
 const TIMEOUT_MS = 30_000;
 
@@ -74,17 +75,19 @@ function expectLinear(small: () => number, large: () => number): void {
 describe('performance', () => {
   // Noting each resolved target once searched the targets so far (`includes`): quadratic in a `set … all`.
   it('notes targets in time linear in their number', { timeout: TIMEOUT_MS }, () => {
-    // One pass over 1,200 targets takes a fraction of a millisecond, so timer noise alone read 8.5 against 8 on CI: each
-    // sample notes the whole tab into NOTE_PASSES fresh states (made outside the timing), a millisecond or more.
-    // Timed one tab after the other, best of three each, it still read 8.86 on CI (2026-11-11): cpuGrowthRatio times
-    // them in turns after a warm-up, and samples again while a round reads over the ceiling.
+    // One pass over the targets takes a fraction of a millisecond, so a sample sums NOTE_PASSES passes, each into a
+    // fresh state made outside its timing; cpuGrowthRatio warms both sizes and times them in turns.
     const sample = (tab: Tab) => () => {
-      const states = Array.from({ length: NOTE_PASSES }, () => createState(tab, {}, () => {}));
-      return cpuMsOf(() => {
-        for (const state of states) for (const el of tab.elements) noteTarget(state, el.id);
-      });
+      let ms = 0;
+      for (let pass = 0; pass < NOTE_PASSES; pass++) {
+        const state = createState(tab, {}, () => {});
+        ms += cpuMsOf(() => {
+          for (const el of tab.elements) noteTarget(state, el.id);
+        });
+      }
+      return ms;
     };
-    expectLinear(sample(tabOf(SMALL_TAB)), sample(tabOf(SMALL_TAB * GROWTH)));
+    expectLinear(sample(tabOf(NOTE_TAB)), sample(tabOf(NOTE_TAB * GROWTH)));
   });
 
   it('grows about linearly with the tab', { timeout: TIMEOUT_MS }, () => {

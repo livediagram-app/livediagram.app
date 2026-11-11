@@ -94,6 +94,15 @@ The rules:
   drop targets match (`STICKER_DND_MIME`, `TECH_ICON_DND_MIME`) lives beside its `ICON_DND_MIME` in
   `lib/icons.ts`, so the shared catalogue modules carry none. A product difference becomes a binding value, never a
   dropped behaviour.
+- **A fact one module reads is handed to that module.** Where a module differs from its copies only by one
+  product fact, the editor keeps the fact and its file at the old path binds it, rather than a new global binding:
+  `lib/laser-config` exports `laserConfigStorage(key)`, and each editor's `lib/laser-config.ts` re-exports the module
+  and binds `loadLaserConfig` and `saveLaserConfig` under its own `<product>:v2:laser-config`, unchanged;
+  `hooks/ui/useEditorAccent` exports `useEditorAccentStroke(accent)`, and each editor's `useEditorAccent(themeId)`
+  hands it the stroke its own theme catalogue resolves; `lib/seasonal-looks` writes the looks as constants
+  (`as const satisfies`), so each editor's `TabLook`, with its own id and pattern unions, takes them as they are and
+  typecheck fails if one ever stops fitting. Hooks that send telemetry stay in the editors until the telemetry
+  scan reads this package.
 
 ## Use
 

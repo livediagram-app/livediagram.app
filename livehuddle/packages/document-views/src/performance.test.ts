@@ -5,7 +5,7 @@
 // Timed in CPU time (cpuMsOf), not wall-clock: under turbo's parallel suites a wall-clock run also
 // counts the time spent waiting for a core, which pushed the ratio past its ceiling.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuGrowthRatio, cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from '@livehuddle/document';
 import { arrowBetween, retiredShapeAt, shapeAt } from './__fixtures__/build';
 import { buildViewModel } from './model';
@@ -15,7 +15,6 @@ import { showSelectedView } from './show-selected';
 const FRAMES = 10;
 const GROWTH = 8;
 const RATIO_CEILING = cpuRatioCeiling(24);
-const RUNS = 5;
 // Sized to time tens of milliseconds a render; coverage on a CI runner makes that seconds.
 const TIMEOUT_MS = 30_000;
 
@@ -42,18 +41,16 @@ function tabOf(perFrame: number) {
   return { id: 'growth', name: 'Growth', elements };
 }
 
-// The fastest of a few renders, full and fitted to an agent's 8,000-token budget: the least noisy estimate.
-function fastestRender(tab: ReturnType<typeof tabOf>): number {
-  let fastest = Infinity;
-  for (let run = 0; run < RUNS; run++) {
-    const spent = cpuMsOf(() => {
-      outlineView(buildViewModel(tab));
-      outlineView(buildViewModel(tab), { budget: 8000 });
-    });
-    fastest = Math.min(fastest, spent);
-  }
-  return fastest;
-}
+// One sample: a render full and fitted to an agent's 8,000-token budget, of a tab built outside the timing.
+const renderMs = (tab: ReturnType<typeof tabOf>) => () =>
+  cpuMsOf(() => {
+    outlineView(buildViewModel(tab));
+    outlineView(buildViewModel(tab), { budget: 8000 });
+  });
+
+// The growth from `small` to `large` (each one sample's CPU time), warmed and timed in turns.
+const growth = (small: () => number, large: () => number) =>
+  cpuGrowthRatio(small, large, { ceiling: RATIO_CEILING });
 
 describe('views as tabs grow', () => {
   it(
@@ -61,10 +58,8 @@ describe('views as tabs grow', () => {
     () => {
       const small = tabOf(120);
       const large = tabOf(120 * GROWTH);
-      fastestRender(small);
-      const ratio = fastestRender(large) / fastestRender(small);
       expect(large.elements.length).toBeGreaterThan(GROWTH * (small.elements.length - FRAMES));
-      expect(ratio).toBeLessThan(RATIO_CEILING);
+      expect(growth(renderMs(small), renderMs(large))).toBeLessThan(RATIO_CEILING);
     },
     TIMEOUT_MS,
   );
@@ -82,12 +77,6 @@ function framesOf(n: number) {
   return { id: 'frames', name: 'Frames', elements };
 }
 
-const fastestOf = (work: () => void) => {
-  let fastest = Infinity;
-  for (let run = 0; run < RUNS; run++) fastest = Math.min(fastest, cpuMsOf(work));
-  return fastest;
-};
-
 describe('views over many containers or a whole selection', () => {
   // Cutting lines to a budget measures each step from prefix sums, never re-joining the outline: linear in its lines.
   it(
@@ -96,10 +85,9 @@ describe('views over many containers or a whole selection', () => {
       // A budget small enough that both sizes cut lines, so both take the same path.
       const time = (n: number) => {
         const model = buildViewModel(framesOf(n));
-        return fastestOf(() => outlineView(model, { budget: 2000 }));
+        return () => cpuMsOf(() => outlineView(model, { budget: 2000 }));
       };
-      time(500);
-      expect(time(500 * GROWTH) / time(500)).toBeLessThan(RATIO_CEILING);
+      expect(growth(time(500), time(500 * GROWTH))).toBeLessThan(RATIO_CEILING);
     },
     TIMEOUT_MS,
   );
@@ -111,10 +99,9 @@ describe('views over many containers or a whole selection', () => {
     () => {
       const time = (n: number) => {
         const model = buildViewModel(framesOf(n));
-        return fastestOf(() => showSelectedView(model, model.printed));
+        return () => cpuMsOf(() => showSelectedView(model, model.printed));
       };
-      time(250);
-      expect(time(250 * GROWTH) / time(250)).toBeLessThan(RATIO_CEILING);
+      expect(growth(time(250), time(250 * GROWTH))).toBeLessThan(RATIO_CEILING);
     },
     TIMEOUT_MS,
   );

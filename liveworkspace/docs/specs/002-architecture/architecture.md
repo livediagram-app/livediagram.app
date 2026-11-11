@@ -202,6 +202,11 @@ shape kinds, its fields. Code that reads elements the same way in two or more pr
 - Editor code the same in three or more editors, and naming no product, lives once in `@liveworkspace/workbench`,
   which reads the shared element model where it needs element code; each editor keeps a one-line binding at the old
   path.
+- Editor code that differs from its copies only by one product fact (a storage key, the product's theme lookup, a
+  product's own union) moves too, and the fact stays in the editor: the shared module takes it, as a factory the
+  editor's file at the old path binds with its own value (`laserConfigStorage('<product>:v2:laser-config')`), a hook
+  handed the value the product resolves (`useEditorAccentStroke(accent)`), or constants each product's own type takes
+  as they are (`SEASONAL_LOOKS` as each editor's `TabLook`). The shared module never imports a product.
 - `@liveworkspace/model-core` stays the vocabulary below it, with nothing of an element union.
 
 ## Adding an app
