@@ -155,7 +155,8 @@ export async function initDesign(env: DesignEnv, designId: string, d: DesignStar
      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
      ON CONFLICT (id) DO UPDATE SET
        saved_at = excluded.saved_at,
-       name = excluded.name,
+       -- A copy lands unstarted with the index's title for it (its import): starting it keeps that name.
+       name = CASE WHEN design.created_at = 0 AND design.name <> '' THEN design.name ELSE excluded.name END,
        created_at = CASE WHEN design.created_at = 0 THEN excluded.created_at ELSE design.created_at END,
        owner_id = CASE WHEN design.created_at = 0 THEN excluded.owner_id ELSE design.owner_id END,
        team_id = CASE WHEN design.created_at = 0 THEN excluded.team_id ELSE design.team_id END,
@@ -218,6 +219,9 @@ export async function claimCommentNotify(
 // copied tabs hold. Sent as one RPC message, so a design past the 32 MiB a message may carry cannot be copied this
 // way (the follow-up is to stream it in pages).
 export type DesignCopy = {
+  // The copy's name, the index's title for it (internal-items.ts); absent from an index that does not send one,
+  // and from a Drive file's import, which names the design as it starts it.
+  name?: string;
   // The source's creation intent (docs/specs/013-workspace/default-folders.md): the copy opens as it did.
   opensIn: string | null;
   tabKind: string | null;
@@ -375,11 +379,13 @@ export async function importDesignCopy(
     db
       .prepare(
         // created_at stays 0: the copy's first open with a grant starts it, as its new owner (initDesign).
-        `INSERT INTO design (id, saved_at, created_at, opens_in, tab_kind) VALUES (?1, ?2, 0, ?3, ?4)
+        // Its name is the index's title for it, which that start keeps (initDesign).
+        `INSERT INTO design (id, saved_at, created_at, opens_in, tab_kind, name) VALUES (?1, ?2, 0, ?3, ?4, ?5)
          ON CONFLICT (id) DO UPDATE SET saved_at = excluded.saved_at,
-           opens_in = excluded.opens_in, tab_kind = excluded.tab_kind`,
+           opens_in = excluded.opens_in, tab_kind = excluded.tab_kind,
+           name = CASE WHEN design.created_at = 0 AND excluded.name <> '' THEN excluded.name ELSE design.name END`,
       )
-      .bind(designId, now, copy.opensIn ?? null, copy.tabKind ?? null),
+      .bind(designId, now, copy.opensIn ?? null, copy.tabKind ?? null, copy.name ?? ''),
   ];
   for (const tab of copy.tabs) {
     stmts.push(

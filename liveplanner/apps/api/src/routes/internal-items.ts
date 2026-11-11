@@ -30,6 +30,7 @@ import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importProjectFileFor } from './internal-file';
 import { indexAppClient } from '../index-service';
+import { capStoredName } from '../names';
 import type { Env } from '../types';
 
 export function handleInternalItems(
@@ -109,7 +110,7 @@ export function handleInternalItems(
         return planRoom(env, payload.id).importMigrated(payload);
       },
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
-      copy: async (from, to, tabId, copier) => {
+      copy: async (from, to, tabId, copier, title) => {
         // The source as the copier may take it; through the plan's Community post's link, without its comments, its
         // people or its form responses' answers (community-redact.ts).
         const source = await planRoom(env, from).exportCopy(tabId, copier);
@@ -118,7 +119,10 @@ export function handleInternalItems(
         const { copy } = source;
         // The target is a new plan: a copy into one that already holds this content fails its keys, and nothing
         // is written (importCopy is one transaction); the kit answers that as a conflict.
-        await planRoom(env, to).importCopy(copy);
+        // Named as the index titled the copy (an older index sends none), so its first open starts it with the
+        // name the Explorer lists, never as Untitled.
+        const name = title ? capStoredName(title, null, 'project') : '';
+        await planRoom(env, to).importCopy(name ? { ...copy, name } : copy);
         // A copy through a Community post's link counts toward the post (docs/specs/025-community/community.md
         // "Likes, reports and moderation"), once per copier and at most a few from one network: the copier's address
         // as the index saw it (an Explorer's copy). The api's own copy door counted it first
