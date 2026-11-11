@@ -28,7 +28,7 @@ packages/items/src/automation/
   attention.ts        ruleNeeds(rule, outline) → string[]: what a rule names that the plan lacks
   values.ts           VALUE_NAMES, valuesIn(text), fillValues(text, ctx) and the {{now ± Nd}} day maths, in the
                       rule's time zone
-  conditions.ts       holds(condition, ctx) → { ok, text }: one condition, with the line the Run Log shows
+  conditions.ts       holds(condition, ctx) → { ok, text }: one condition, with the line the Audit Trail shows
   matches.ts          AutomationEvent; eventOfWrite(before, after, changes, source) → the event a landed write makes
                       (or null); triggerMatches(trigger, event, ruleId) → boolean; TRIGGER_EVENT_KINDS
   plan-actions.ts     planActions(steps, ctx) → { patch, comments, created, emails, lines } | { failed, lines }:
@@ -56,12 +56,12 @@ apps/api/src/plan-room/automations/
   plan-room-automations.ts  the room's alarm step (runAutomations) and what a run needs from the room
   automation-copy.ts     the rules in a copy and in the plan's file
   automation-runner.ts   one event against every rule it matches: run id, budget, chain, conditions, planActions,
-                         then the writes (below), the Run Log row, the failure count and pausing
+                         then the writes (below), the Audit Trail row, the failure count and pausing
   automation-writes.ts   applies a planned run: one items patch for the triggering card via the shared write
                          loop with `by: automationPerson(name)` and tag 'automation'; a thread via the card-thread
                          store with Automation as author; Create Card via makeItem + insertItems; emails via the
                          notifier's send (opt-outs honoured, account people only)
-  automation-log.ts      Run Log insert and trim (2,000 runs and 500 No Matches, 30 days), the stats query, today's count
+  automation-log.ts      Audit Trail insert and trim (2,000 runs and 500 No Matches, 30 days), the stats query, today's count
 
 apps/api/src/routes/automation-routes.ts   the routes below, dispatched from project-subresource-routes.ts
 apps/api/src/routes/automation-source.ts   writeSource(ctx) (who made a route's write, worked out only when a rule
@@ -70,7 +70,7 @@ apps/api/src/routes/automation-source.ts   writeSource(ctx) (who made a route's 
 apps/api/src/routes/automation-routes.ts   the routes below; gate: whole-plan edit, signed-in person, no API token
 apps/editor/components/automations/
   AutomationsButton.tsx       the footer button (in ChromeControls between Search and Settings), amber dot
-  AutomationsDialog.tsx       the screen: tabs, meter, Rules and Run Log views, phone sheet
+  AutomationsDialog.tsx       the screen: tabs, meter, Rules and Audit Trail views, phone sheet
   RulesList.tsx, RuleRow.tsx, RulesEmpty.tsx
   RunLog.tsx, RunRow.tsx
   RuleBuilder.tsx             breadcrumb bar, step cards, add buttons, Rule Details accordion, Discard Changes?
@@ -133,7 +133,7 @@ type AutomationEvent = {
 - The comment write (card-thread-store / comment routes) enqueues `comment` for a new thread or reply whose author is
   not Automation.
 - `POST …/automations/:ruleId/run` enqueues nothing: it runs at once and answers the run.
-- Queue past `AUTOMATION_QUEUE_MAX`: the new events are dropped and one Skipped Run Log row says so (once per wake).
+- Queue past `AUTOMATION_QUEUE_MAX`: the new events are dropped and one Skipped Audit Trail row says so (once per wake).
 - After enqueueing, the room's schedule asks for a wake now (`noteWrite`), as Repeats do; the alarm drains up to
   25 events per wake, then asks again in 1 s while more wait.
 
@@ -304,7 +304,7 @@ build):
   `apps/api/src/plan-room/automations/automation-sends.ts` (the one push). `templates.ts` is not built here: it belongs with the
   Templates gallery.
 - **`AutomationOutgoing.name`** (optional, up to 80 characters): the webhook's name when the builder picked it. The
-  room holds no list of the plan's webhooks, so the Run Log's "Queued for Launch Channel" and "Would post to Launch
+  room holds no list of the plan's webhooks, so the Audit Trail's "Queued for Launch Channel" and "Would post to Launch
   Channel: …" read it; the sentence prefers the outline's current name (`RuleSentenceOutline.webhooks`).
 - **Event kind `time`**: `TRIGGER_EVENT_KINDS` maps the three time triggers to `['time']`, which no write builds, so
   a plan whose only rules are time rules still pays nothing on a save. `triggerMatches` hears a time event for its
@@ -353,11 +353,11 @@ build):
 
 What the editor does, where it differs from or adds to the Editor list above (each a decision of the build):
 
-- **Files** (`apps/editor/components/automations/`): `StepAddButtons.tsx` (the add menus, top level and per holder),
-  `step-panels/TimeTriggerPanel.tsx`, `BranchPanel.tsx`, `AssignPanel.tsx` and `OutgoingPanel.tsx`,
-  `plan-webhooks.tsx` (the builder's webhooks state and context), `TemplatesGallery.tsx`, `NewRuleMenu.tsx`,
-  `ScreenTabs.tsx`, `screen-clock.ts` (the minute clock and `localZone`, out of the dialog),
-  `AutomationsOfflineDialog.tsx` and `use-automations-offline.ts`. `rule-draft.ts` treats an If / Else and a branch
+- **Files**, in `apps/editor/components/automations/`: `StepAddButtons.tsx` (the add menus, top level and per
+  holder), the panels `TimeTriggerPanel.tsx`, `BranchPanel.tsx`, `AssignPanel.tsx` and `OutgoingPanel.tsx` in its
+  step-panels folder, `plan-webhooks.tsx` (the builder's webhooks state and context), `TemplatesGallery.tsx`,
+  `NewRuleMenu.tsx`, `ScreenTabs.tsx`, `screen-clock.ts` (the minute clock and `localZone`, out of the dialog),
+  `AutomationsSyncGate.tsx` and `use-automations-offline.ts`. `rule-draft.ts` treats an If / Else and a branch
   as one "holder" (`HolderStep`, `holderOf`, `sideOf`); a branch has no Else. `templates.ts` is in the items package,
   as designed, with `picksLeft(body, picks)`, which the builder runs on each change, so a mark goes as its step is
   filled.
@@ -381,12 +381,25 @@ What the editor does, where it differs from or adds to the Editor list above (ea
   (`PlanContextValue.statusPhases`) and named by `freeRuleName`. Telemetry is `UI · Opened · AutomationTemplate.<id>`
   (an event has no value field); the site's catalogue declares the computed type and charts it as Automation
   Templates Opened.
-- **Run Log.** A branch line wears its own mark (blue, a list tree; red when it failed on a card), and the lines after
+- **Audit Trail.** A branch line wears its own mark (blue, a list tree; red when it failed on a card), and the lines after
   it that start with a card number are inset under it, the number in the card's weight (`insetLines`).
-- **Browser Storage.** `automationsOfflineFor` (offline, hydrated, not an embed, edit level, structure editable)
-  gives the footer an `AutomationsDoorContext` door without any `AutomationsContext`, so Run Rule and the list stay
-  absent. The panel is its own lazy chunk; Save to Your Account runs `syncToCloud` signed in (a failure toasts
-  `syncFailureMessage` and keeps the panel), and is the sign-in link for a guest, who saves on return.
+- **The gate.** `automationsGateFor` gives whoever could edit the whole plan (hydrated, not an embed, edit level,
+  structure editable, no tab scope) a kind: `sync` on a plan in This Browser, `sign_in` for a guest on a server plan
+  once sign-in has answered (`authLoaded`), else none; `automationsScopeFor` now also needs `signedIn`, so a guest
+  never reads rules and never meets Only an Editor Can See Rules (the api's 403 for a guest, live in Phase 1). Either
+  kind gives the footer an `AutomationsDoorContext` door without any `AutomationsContext`, so Run Rule and the list
+  stay absent. The door opens the Share dialog's own gate, pulled out of `ShareOfflineGate` as
+  `components/dialogs/SyncGateDialog.tsx` (header, `SyncProjectPrompt` with a `title`, Cancel held while syncing)
+  and used by both; `AutomationsSyncGate.tsx` fills it with the spec's copy and is its own lazy chunk. Sync Plan is
+  `syncToCloud`, waiting for the reader as Share's does; once synced the scope arrives and the same opening becomes
+  the screen, as Share goes on to sharing. A guest's prompt offers Sign In instead (`signInHref`, a link styled as
+  the Community section's Sign In to Share), back to the same page plus `?automations=1`, which the host reads on
+  mount (as `?share=1`), opens the rules and drops from the address. Telemetry `UI · Opened · AutomationsOffline` or
+  `AutomationsSignIn`.
+- **Header band.** `StartHeaderBand` and `StartTitleMark` take `variant="automations"` (other products pass none, so
+  their output is unchanged): `packages/workbench/src/components/start/AutomationsBand.tsx` draws the dot grid
+  fading toward the title, the cog and looping arrow in the bottom corners and the flow from `lg`, and the mark is a
+  bolt. The dialog's palette is `planPalette` of the app's appearance, as the setup steps do.
 - **Labels.** The branch values' chips read Trigger Title, Trigger Number and Trigger Link
   (`AUTOMATION_BRANCH_VALUE_LABELS`).
 

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// docs/specs/026-plan/automations.md "The rule builder", "For Related Cards", "Outgoing actions" and "Run Log": a
+// docs/specs/026-plan/automations.md "The rule builder", "For Related Cards", "Outgoing actions" and "Audit Trail": a
 // branch's card with its own steps inset under it and its own add buttons, an outgoing action's card and its place in
 // Add Action, a time rule's When card, the marks a template leaves, and a branch's lines in a run.
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';

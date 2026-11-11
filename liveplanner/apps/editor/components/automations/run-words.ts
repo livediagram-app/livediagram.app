@@ -1,4 +1,4 @@
-// The words the Rules list and the Run Log use for times, counts and results (docs/specs/026-plan/automations.md
+// The words the Rules list and the Audit Trail use for times, counts and results (docs/specs/026-plan/automations.md
 // "The Automations screen"): "4 min ago", "Never", "38 runs", "10:42", "Yesterday", "38 ms", "1.2 s", and each
 // result's pill. Pure.
 

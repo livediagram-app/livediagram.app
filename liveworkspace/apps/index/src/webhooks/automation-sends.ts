@@ -28,7 +28,7 @@ import { automationSendStatement, automationTargets, type QueuedAutomationSend }
 const KEY_MAX = 200;
 const CARD_TITLE_MAX = 200;
 
-// The words a rule's Run Log shows for a refused send.
+// The words a rule's Audit Trail shows for a refused send.
 const NOT_FOUND = 'This webhook isn’t on this plan any more';
 const FULL = 'Too many messages waiting for this webhook';
 const PAUSED: Record<WebhookPauseReason, string> = {

@@ -188,7 +188,7 @@ export type AutomationSend = {
 /** Why a send was refused: the webhook is not the plan's (or gone), it is paused, or it holds WEBHOOK_PENDING_MAX. */
 export type AutomationSendRefusal = 'webhook_not_found' | 'webhook_paused' | 'webhook_full';
 
-/** One send's answer, in the order sent: queued, or refused with words for the rule's Run Log. */
+/** One send's answer, in the order sent: queued, or refused with words for the rule's Audit Trail. */
 export type AutomationSendResult =
   | { key: string; queued: true }
   | { key: string; queued: false; reason: string; code: AutomationSendRefusal };

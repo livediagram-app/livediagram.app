@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { automationsOfflineFor, automationsScopeFor } from './automations-gate';
+import { automationsGateFor, automationsScopeFor } from './automations-gate';
 
 // docs/specs/026-plan/automations.md "Who may do what": an Editor of the whole plan, on a plan saved to an account.
 const SCOPE = { ownerId: 'me', projectId: 'p1', shareCode: null, tabId: null };
@@ -9,6 +9,8 @@ const EDITOR = {
   offline: false,
   hydrated: true,
   embed: false,
+  signedIn: true,
+  authLoaded: true,
   scope: SCOPE,
 };
 
@@ -32,6 +34,7 @@ describe('automationsScopeFor', () => {
     ['a tab-scoped Editor link', { structureReadOnly: true, scope: { ...SCOPE, tabId: 't1' } }],
     ['a tab-scoped scope alone', { scope: { ...SCOPE, tabId: 't1' } }],
     ['a plan in Browser Storage', { offline: true }],
+    ['a guest', { signedIn: false }],
     ['an embed', { embed: true }],
     ['a plan still loading', { hydrated: false }],
     ['no plan', { scope: null }],
@@ -40,20 +43,23 @@ describe('automationsScopeFor', () => {
   });
 });
 
-describe('automationsOfflineFor', () => {
-  // A plan in Browser Storage has no rules, but its editor still sees the button (Rules Run on Our Servers).
-  const OFFLINE = { ...EDITOR, offline: true };
-  it('shows to whoever can edit a plan in Browser Storage', () => {
-    expect(automationsOfflineFor(OFFLINE)).toBe(true);
+describe('automationsGateFor', () => {
+  it('asks a plan in This Browser to sync, a guest to sign in, and a signed-in Editor nothing', () => {
+    expect(automationsGateFor({ ...EDITOR, offline: true })).toBe('sync');
+    expect(automationsGateFor({ ...EDITOR, offline: true, scope: null })).toBe('sync');
+    expect(automationsGateFor({ ...EDITOR, offline: true, signedIn: false })).toBe('sync');
+    expect(automationsGateFor({ ...EDITOR, signedIn: false })).toBe('sign_in');
+    expect(automationsGateFor(EDITOR)).toBeNull();
   });
   it.each([
-    ['a plan on the server', { offline: false }],
-    ['a Participant', { level: 'participate' as const, structureReadOnly: true }],
-    ['a Viewer', { level: 'view' as const, structureReadOnly: true }],
-    ['a read-only structure', { structureReadOnly: true }],
-    ['an embed', { embed: true }],
-    ['a plan still loading', { hydrated: false }],
+    ['sign-in not answered yet', { signedIn: false, authLoaded: false }],
+    ['a guest with no plan scope', { signedIn: false, scope: null }],
+    ['a Participant', { level: 'participate' as const, structureReadOnly: true, offline: true }],
+    ['a Viewer', { level: 'view' as const, structureReadOnly: true, signedIn: false }],
+    ['a tab-scoped link', { signedIn: false, scope: { ...SCOPE, tabId: 't1' } }],
+    ['an embed', { embed: true, offline: true }],
+    ['a plan still loading', { hydrated: false, offline: true }],
   ])('stays shut for %s', (_, over) => {
-    expect(automationsOfflineFor({ ...OFFLINE, ...over })).toBe(false);
+    expect(automationsGateFor({ ...EDITOR, ...over })).toBeNull();
   });
 });

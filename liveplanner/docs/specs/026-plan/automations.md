@@ -33,7 +33,7 @@ work. A rule does it every time, at once, and says that it did.
 | **step**       | An action, or an If / Else holding actions                                                  | node                      |
 | **action**     | One change or message a rule makes                                                          | task, job                 |
 | **run**        | One rule answering one trigger: matched (its actions ran), no match, skipped or failed      | execution                 |
-| **Run Log**    | The plan's list of recent runs, newest first                                                | audit log, history (here) |
+| **Audit Trail**    | The plan's list of recent runs, newest first                                                | audit log, history (here) |
 | **value**      | A placeholder in a rule's text (`{{card.title}}`), filled in when the rule runs             | smart value, variable     |
 | **Automation** | Who a rule's changes are by, on cards, comments and history, with the rule's name beside it | bot, system               |
 
@@ -55,11 +55,19 @@ work. A rule does it every time, at once, and says that it did.
   a rule that posts to one shows them nothing new.
 - A plan in **Browser Storage** has no Automations: rules run on the plan's server-side alarm (as [Repeating
   cards](items.md#repeating-cards)), even while nobody has the plan open, and a Browser Storage plan has none. Its
-  footer still shows **Automations** to whoever can edit it, and the screen says why instead of listing rules:
-  **Rules Run on Our Servers**, "Rules, schedules and due-date reminders run even when nobody has this plan open,
-  so they need it saved to your account.", with **Save to Your Account** (the Sync Plan to Server switch's own
-  action, which asks a guest to sign in first) and **How Rules Work**. Sync to cloud carries no rules: an offline
+  footer still shows **Automations** to whoever can edit it, and it opens the same gate the Share dialog does for a
+  plan in This Browser: titled **Automations**, saying **Rules Run on Our Servers**, "Rules, schedules and due-date
+  reminders run even when nobody has this plan open, so they need it saved to your account.", with **Sync Plan**
+  (Share's own sync, in place, with no reload), **Cancel** and the help link (How Rules Work). Once synced, the same
+  opening goes on to the Automations screen, as Share goes on to sharing. Sync to cloud carries no rules: an offline
   plan holds none.
+- A **guest** (no account) who can edit a plan on the server sees the button too, but rules are an account's work
+  (the api's gate needs a signed-in Editor and answers a guest `automations_need_editor`), so it opens the same gate
+  asking them to sign in: **Rules Run on Our Servers**, "Rules act for an Editor of this plan, even when nobody has it
+  open, so they need you signed in. You come back here with Automations open.", with **Sign In** (back to this page,
+  `?automations=1` opening the screen) and **Cancel**. After signing in the screen opens on the
+  rules. **Only an Editor Can See Rules** is for a signed-in reader the api refuses, never a guest. Run Rule waits for
+  sign-in too.
 - An **API token**, the MCP server and the CLI read and write no rules in Phase 1 (403 `automations_need_editor`):
   agent tools for rules are Phase 3. Their card writes do trigger rules.
 
@@ -183,7 +191,7 @@ fails or matches nothing doesn't move the turn, and Test on a Card shows whose t
   built once on the platform: the webhook keeps the address, the secret, the retries, the pausing and Recent
   Deliveries. The action's panel picks one of the plan's webhooks of its kind (Your Own Service, Slack, Teams) by
   name, with **Add a Webhook…** opening the plan's Webhooks dialog. A message is 1 to 2,000 characters with values.
-- The step is **done** when the platform has queued the message, and the Run Log says "Queued for Launch Channel".
+- The step is **done** when the platform has queued the message, and the Audit Trail says "Queued for Launch Channel".
   It fails when the platform refuses it: the webhook is paused ("Launch Channel is paused: the address said it’s
   gone"), deleted, or the platform can't be reached. Ten such failures pause the rule like any other, and a rule
   paused on a webhook shows **Fix Webhook** (the Webhooks dialog) beside **Resume**.
@@ -281,11 +289,19 @@ a small amber dot on the icon until it is resumed or turned off. It opens the Au
 A large dialog over the editor (a full-screen sheet on a phone), titled **Automations** with the line "Rules that act
 on this plan's cards for you when something happens.", a **New Rule** button and Close.
 
-- Three tabs: **Rules · n**, **Run Log** and **Templates**.
+Its header is the start screens' header band (start-panel.md "The header band"), drawn for rules: 100px tall from
+`sm`, a bolt as the title mark, then the title and its line, in the app's light or dark colours. Behind them, hidden
+from screen readers and the pointer, a faint dot grid fading out toward the title, a cog rising from the bottom left
+and a looping arrow from the bottom right (both at every size), and, from `lg` only, between the line (which wraps
+short of it) and the header's buttons, a rule as a flow: a trigger's bolt, a condition's diamond and an action's
+check joined by a line, a dashed arrow looping back over them. The bolt's ring spreads twice, motion allowing. On a
+phone the header stays compact: the mark and title, no line.
+
+- Three tabs: **Rules · n**, **Audit Trail** and **Templates**.
 - A **Runs today** meter at the right of the tabs: "142 of 1,000" (No Match runs are not counted).
 - **Rules**: a search box ("Find a rule"), **All Triggers** and **On and Off** filters, then one row per rule:
   its switch, its name, its sentence (When `Card Moved` to `Done` then `Set Completed On` `Remove Label blocked`),
-  **Last Run** ("4 min ago", "Never") and **This Week** ("38 runs"), and a ⋯ menu (Edit, Duplicate, Run Log,
+  **Last Run** ("4 min ago", "Never") and **This Week** ("38 runs"), and a ⋯ menu (Edit, Duplicate, Audit Trail,
   Delete). A paused rule's row is amber, with **Paused**, the reason, and **Resume**. A rule needing attention
   says what is missing. Clicking a row opens the builder.
 - **Empty**: the bolt glyph, **No Rules Yet**, "A rule watches this plan and does the routine steps for you:
@@ -312,7 +328,7 @@ on this plan's cards for you when something happens.", a **New Rule** button and
   **New Rule** is a menu: **Blank Rule** (the builder, empty) and **Start From a Template** (the Templates tab). With
   the plan at its 50 rules the tiles show but don't open.
 
-- **Run Log**: filters **All Rules**, **Any Result** and **Last 7 Days**, the line "Kept for 30 days or the last
+- **Audit Trail**: filters **All Rules**, **Any Result** and **Last 7 Days**, the line "Kept for 30 days or the last
   2,000 runs, and the last 500 No Matches" (No Matches are kept apart, so they never push a run out), and one row per run: When, Rule, Card (`#48` and title), Result (**Done**, **No Match**, **Skipped**,
   **Failed** pills), Took. A row opens to its steps, one line each with a tick or a cross: who did what (the
   trigger), each condition with what it found, each action, and **Open Card**. A failed or skipped row shows its
@@ -337,7 +353,7 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
   from setting each other off. Chains stop after 5 rules.", and "Runs as Automation, with an Editor's access, for
   changes anyone with edit or participate access makes."
 - **Test on a Card** picks a card (the card finder) and runs the rule as it stands in the builder, unsaved, without
-  changing anything: the result shows as a Run Log row with its steps, each action saying what it would do.
+  changing anything: the result shows as an Audit Trail row with its steps, each action saying what it would do.
 - Leaving with unsaved changes asks **Discard Changes?**. A save the api refuses keeps the builder open and marks
   the step at fault.
 
@@ -354,13 +370,13 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
 
 ## Copies, exports and deletes
 
-- A **duplicated** plan keeps its rules, each as it was (on or off), its Run Log and counts empty. A plan made from
+- A **duplicated** plan keeps its rules, each as it was (on or off), its Audit Trail and counts empty. A plan made from
   a template has none.
 - An **export** of a plan (its file) carries its rules; an import of that file brings them back off.
 - A copy made through a share link, of one tab, or of a Community post takes no rules: the rules are an Editor's of the
   whole plan to see.
 - A rule naming a card type, column, field or person the copy lacks needs attention there (above).
-- **Deleting** a plan deletes its rules, queue and Run Log with it.
+- **Deleting** a plan deletes its rules, queue and Audit Trail with it.
 
 ## Telemetry
 
@@ -381,7 +397,7 @@ The api logs `[automations] run` with the result and duration, never a card's te
 | Runs per plan per day            | 1,000                                  |
 | Triggers waiting                 | 500                                    |
 | Failures in a row before pausing | 10                                     |
-| Run Log                          | 2,000 runs and 500 No Matches, 30 days |
+| Audit Trail                          | 2,000 runs and 500 No Matches, 30 days |
 | Comment or email body            | 2,000 characters                       |
 | Rule name                        | 60 characters                          |
 | Cards a time trigger runs on     | 100 a moment                           |

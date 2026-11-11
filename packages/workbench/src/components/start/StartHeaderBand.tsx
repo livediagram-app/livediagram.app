@@ -6,6 +6,9 @@
 // The texture and the corner pieces show at every size. The piece drawn in the gap between the words and the search
 // shows only from `xl`, where the panel is at its widest (max-w-5xl) and the gap is wide enough that it never meets the
 // line; it stands 1.5rem left of where the search starts (the search's 17rem plus the header's 6rem right padding).
+//
+// `variant="automations"` draws liveplanner's Automations screen header in the same band (AutomationsBand): its own
+// texture and pieces in place of the app's, everything else as here.
 import { memo, type CSSProperties, type ReactNode } from 'react';
 import { SHEET_HANDLE_PX } from '@liveworkspace/ui';
 import {
@@ -16,6 +19,7 @@ import {
   HUDDLE_RING_PX,
   type HeroBackdropKind,
 } from '@liveworkspace/explorer/hero-theme';
+import { AutomationsBandPieces, automationsTexture } from './AutomationsBand';
 import type { StartBandColours } from './start-band-colours';
 
 // One motion each, at most, and only twice or three times over: the board's card bobs as it is dragged, the
@@ -80,9 +84,12 @@ export const StartHeaderBand = memo(function StartHeaderBand({
   kind,
   band,
   underHandle = false,
+  variant,
 }: {
   kind: HeroBackdropKind;
   band: StartBandColours;
+  // A screen's own band in place of the app's (the Automations screen's flow of rules).
+  variant?: 'automations' | undefined;
   // On a phone the panel is a sheet with a grab handle over its header: the band runs up under it, so the sheet's
   // top is the band's colour, not a strip of plain card. The handle stands over it (`relative z-10`).
   underHandle?: boolean;
@@ -90,19 +97,19 @@ export const StartHeaderBand = memo(function StartHeaderBand({
   return (
     <div
       aria-hidden
-      data-start-band={kind}
+      data-start-band={variant ?? kind}
       className={`pointer-events-none absolute inset-0 -z-10 overflow-hidden ${
         underHandle ? 'max-sm:top-[calc(var(--start-band-lift)*-1)]' : ''
-      } ${kind === 'huddle' ? HUDDLE_AT : ''}`}
+      } ${kind === 'huddle' && !variant ? HUDDLE_AT : ''}`}
       style={
         {
           backgroundColor: band.paper,
           '--start-band-lift': `${SHEET_HANDLE_PX}px`,
-          ...texture(kind, band),
+          ...(variant ? automationsTexture(band) : texture(kind, band)),
         } as CSSProperties
       }
     >
-      {pieces(kind, band)}
+      {variant ? <AutomationsBandPieces band={band} /> : pieces(kind, band)}
     </div>
   );
 });

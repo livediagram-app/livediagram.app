@@ -1,5 +1,5 @@
 // One trigger against the rules that hear it (docs/specs/026-plan/automations.md "Runs, limits and loops"; blueprint
-// automations.md "The run"). A run's id is a hash of the trigger and the rule, claimed in the Run Log before anything
+// automations.md "The run"). A run's id is a hash of the trigger and the rule, claimed in the Audit Trail before anything
 // is done, so a retry or a second wake never runs a rule twice for one trigger. Then the day's budget, the chain
 // (never its own changes; a rule that keeps its changes to itself starts nothing; five rules at most), the card,
 // the conditions, the planned steps (@liveplanner/items planActions) and the writes (automation-writes.ts); the row
@@ -58,7 +58,7 @@ const hex = (bytes: Uint8Array) =>
 export const runIdOf = async (eventId: string, ruleId: string): Promise<string> =>
   hex(await sha256(new TextEncoder().encode(`${eventId}:${ruleId}`)));
 
-// The Run Log's first line: who did what to the card, or a time trigger's "Automation · Every Weekday at 9:00".
+// The Audit Trail's first line: who did what to the card, or a time trigger's "Automation · Every Weekday at 9:00".
 function triggerLine(
   event: AutomationEvent,
   plan: AutomationPlan | null,
@@ -233,7 +233,7 @@ export async function runRule(
 }
 
 // One wake: the oldest waiting triggers, each against every rule that is on and hears it, in the list's order; a
-// burst the queue dropped logged once; the Run Log trimmed. Asks for the next wake while more wait. Never throws.
+// burst the queue dropped logged once; the Audit Trail trimmed. Asks for the next wake while more wait. Never throws.
 export async function runAutomationWake(
   deps: RunnerDeps,
   schedule: AutomationSchedule,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { Button, Glyph } from '@liveplanner/ui';
+import { Button, ButtonContent, Glyph, buttonClassName } from '@liveplanner/ui';
 import { useToast } from '@/hooks/ui/useToast';
 import { syncFailureMessage } from '@/lib/offline/offline-convert';
 import { Spinner } from '@/components/palette/template-picker-icons';
@@ -10,19 +10,27 @@ import { Spinner } from '@/components/palette/template-picker-icons';
 // project in This Browser"), drawn inside a dialog: the project Share dialog's gate and Share Form's
 // (docs/specs/030-forms/forms.md "Publishing and the form link"). It says the project is offline and offers Sync
 // Project; the sync converts the open project in place, and the dialog around it swaps this prompt for what it was
-// opened for as the project stops being offline. Sync waits for `ready` (the reader is known).
+// opened for as the project stops being offline. Sync waits for `ready` (the reader is known). Automations draws it
+// too, with its own title ("Rules Run on Our Servers"), and for a guest on a server plan in place of Sync Plan its
+// Sign In (`signInHref`), the way Share's Community section asks a guest to sign in.
 export function SyncProjectPrompt({
   onSyncToCloud,
   ready = true,
+  title = 'This Plan Is in This Browser',
   message,
   onBusyChange,
+  signInHref,
 }: {
   onSyncToCloud: () => Promise<void>;
   ready?: boolean;
+  // What the prompt says first; the dialog's own reason when it has one.
+  title?: ReactNode;
   // Why this dialog needs the project on liveplanner.
   message: ReactNode;
   // Told while the sync runs, so the dialog can hold its own buttons.
   onBusyChange?: (busy: boolean) => void;
+  // A guest's way on: the prompt offers Sign In (back to this plan) instead of Sync Plan.
+  signInHref?: string | undefined;
 }) {
   const [busy, setBusyState] = useState(false);
   const toast = useToast();
@@ -54,13 +62,19 @@ export function SyncProjectPrompt({
         </Glyph>
       </span>
       <div className="flex flex-col gap-1.5">
-        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-          This Plan Is in This Browser
-        </p>
+        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{title}</p>
         <p className="mx-auto max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">
           {message}
         </p>
       </div>
+      {signInHref ? (
+        <a
+          href={signInHref}
+          className={buttonClassName({ variant: 'primary', size: 'sm', className: 'mt-1 shadow-sm' })}
+        >
+          <ButtonContent>Sign In</ButtonContent>
+        </a>
+      ) : (
       <Button
         onClick={() => void sync()}
         // Keeps the keyboard while it syncs (busy-buttons.md); only a canvas not ready yet disables it.
@@ -77,6 +91,7 @@ export function SyncProjectPrompt({
           'Sync Plan'
         )}
       </Button>
+      )}
     </div>
   );
 }

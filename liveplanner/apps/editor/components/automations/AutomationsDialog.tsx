@@ -1,7 +1,7 @@
 'use client';
 
 // The Automations screen (docs/specs/026-plan/automations.md "The Automations screen"): the header (Automations,
-// what rules do, New Rule), the Rules · n, Run Log and Templates tabs with the Runs today meter, then the tab, or a
+// what rules do, New Rule), the Rules · n, Audit Trail and Templates tabs with the Runs today meter, then the tab, or a
 // rule's builder in its place. Full screen on a phone, its meter at the foot. Leaving a builder with unsaved changes
 // asks Discard Changes? first, whether by the breadcrumb, a tab or the close. A template picked opens the builder
 // filled from the plan, unsaved and off, named uniquely. The plan's Webhooks dialog opens over it, for Fix Webhook
@@ -21,10 +21,15 @@ import { CompactEmptyState, Button, DialogCloseButton, useMediaQuery } from '@li
 import { ConfirmDialog } from '@liveworkspace/workbench/components/dialogs/ConfirmDialog';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { ItemWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
+import { StartHeaderBand } from '@liveworkspace/workbench/components/start/StartHeaderBand';
+import { StartTitleMark } from '@liveworkspace/workbench/components/start/StartTitleMark';
+import { useStartHeaderTheme } from '@liveworkspace/workbench/components/start/useStartHeaderTheme';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import { usePlan } from '@/components/plan/PlanContext';
+import { planPalette } from '@/components/plan/plan-palette';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useAutomationOutline } from './automation-outline';
 import { BoltIcon } from './automation-glyphs';
 import { AutomationRefusal, type AutomationsScope } from './automations-client';
@@ -83,6 +88,9 @@ export function AutomationsDialog({
   const toast = useToast();
   const now = useMinuteClock();
   const phone = !useMediaQuery('(min-width: 640px)');
+  // The header wears the start screens' band, in the app's light or dark colours (never a board's).
+  const palette = planPalette(useAppearance().appearance === 'dark' ? 'dark' : 'light');
+  const band = useStartHeaderTheme('liveplanner', palette);
   const titleId = useId();
   const [busy, setBusy] = useState<ReadonlySet<string>>(new Set());
   const [dirty, setDirty] = useState(false);
@@ -282,22 +290,24 @@ export function AutomationsDialog({
         />
       ) : (
         <>
-          <div className={`flex items-start gap-3 ${phone ? 'px-4 pb-2 pt-4' : 'px-6 pb-3 pt-5'}`}>
-            {/* The design's bolt tile beside the title (desktop; a phone keeps the row for the title). */}
-            {phone ? null : (
+          {/* The start screens' header band, drawn for rules (automations.md "The Automations screen"): 100px tall
+              from `sm`, the bolt's title mark, the title and its line; on a phone, compact and without the line. */}
+          <header
+            className={`relative isolate flex items-center gap-3 ${phone ? 'px-4 py-3' : 'min-h-[100px] px-6 py-4'}`}
+          >
+            <StartHeaderBand kind={band.kind} band={band.band} variant="automations" />
+            <StartTitleMark kind={band.kind} band={band.band} variant="automations" />
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <span
                 aria-hidden
-                className="inline-flex size-9 shrink-0 items-center justify-center rounded-[9px] bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
+                className={`leading-tight ${phone ? 'text-[18px]' : 'text-[20px]'} ${band.face}`}
+                style={{ color: palette.text }}
               >
-                <BoltIcon size={18} aria-hidden />
-              </span>
-            )}
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <span aria-hidden className="text-lg font-semibold text-slate-900 dark:text-slate-50">
                 Automations
               </span>
+              {/* From `lg` it wraps short of the flow, so the two never meet. */}
               {phone ? null : (
-                <p className="text-[13px] text-slate-500 dark:text-slate-400">
+                <p className="text-[13px] lg:max-w-[26rem]" style={{ color: band.band.muted }}>
                   Rules that act on this plan’s cards for you when something happens.
                 </p>
               )}
@@ -308,7 +318,7 @@ export function AutomationsDialog({
               onTemplates={() => onTarget({ view: 'templates' })}
             />
             <DialogCloseButton onClick={close} />
-          </div>
+          </header>
           <ScreenTabs
             current={target.view === 'rule' ? 'rules' : target.view}
             rules={api.data ? rules.length : null}

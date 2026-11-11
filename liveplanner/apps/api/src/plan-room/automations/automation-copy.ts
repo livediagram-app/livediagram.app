@@ -1,5 +1,5 @@
 // A plan's rules in its copies and its file (docs/specs/026-plan/automations.md "Copies, exports and deletes"): a
-// duplicated plan keeps each rule as it was, on or off, with an empty Run Log and no failures counted; the plan's
+// duplicated plan keeps each rule as it was, on or off, with an empty Audit Trail and no failures counted; the plan's
 // file carries them, and a file read into a new plan brings them back off, each checked as a rule write is checked
 // (one that does not read back is left behind). A plan's delete drops them with the rest of its SQLite.
 import {

@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Automations',
   description:
-    'How to make automation rules: triggers and times, conditions, actions, related cards, Slack and webhook posts, templates, testing, the Run Log and limits.',
+    'How to make automation rules: triggers and times, conditions, actions, related cards, Slack and webhook posts, templates, testing, the Audit Trail and limits.',
   path: '/help/plan/automations/',
 });
 
@@ -23,8 +23,8 @@ Press **Automations** in the footer, between **Search** and **Settings**. It is 
 
 The screen has three tabs:
 
-- **Rules**: every rule in the plan, each with its switch, its name, what it does in a sentence ("When Card Moved to Done then Set Completed On"), when it **Last Run** and how many runs it made **This Week**. A rule on a time also says when it runs next ("Next: Mon 9:00"). Find one by name, or narrow the list by trigger or by **On and Off**. A row's **⋯** menu holds **Edit**, **Duplicate**, **Run Log** and **Delete**.
-- **Run Log**: what each rule did, newest first, kept for 30 days or the last 2,000 runs. Open a run to see its steps: who did what, each condition and what it found, and each action, with **Open Card**. A For Related Cards step says how many cards it ran on, each card's own steps beneath it, headed by its number.
+- **Rules**: every rule in the plan, each with its switch, its name, what it does in a sentence ("When Card Moved to Done then Set Completed On"), when it **Last Run** and how many runs it made **This Week**. A rule on a time also says when it runs next ("Next: Mon 9:00"). Find one by name, or narrow the list by trigger or by **On and Off**. A row's **⋯** menu holds **Edit**, **Duplicate**, **Audit Trail** and **Delete**.
+- **Audit Trail**: what each rule did, newest first, kept for 30 days or the last 2,000 runs. Open a run to see its steps: who did what, each condition and what it found, and each action, with **Open Card**. A For Related Cards step says how many cards it ran on, each card's own steps beneath it, headed by its number.
 - **Templates**: ready-made rules (below).
 
 At the right of the tabs, **Runs today** shows how many of the plan's 1,000 runs a day have been used.
@@ -100,6 +100,6 @@ A rule's changes don't set off other rules, so two rules can never keep changing
 
 ## Who Can
 
-Only an Editor of the whole plan makes, changes, turns on or off, tests and runs rules. Everyone's changes, a Participant's included, can start them. Rules run on our servers, even when nobody has the plan open, so a plan in [Browser Storage](/help/privacy-and-security/offline-mode/) has none: its **Automations** button says so and offers **Save to Your Account** (signing in first, if you aren't). Rules are copied when you duplicate a plan.
+Only an Editor of the whole plan makes, changes, turns on or off, tests and runs rules. Everyone's changes, a Participant's included, can start them. Rules run on our servers, even when nobody has the plan open, so a plan in [Browser Storage](/help/privacy-and-security/offline-mode/) has none: its **Automations** button says so and offers **Sync Plan**, as **Share** does; once it is synced, Automations opens. Rules are also an account's work: if you aren't signed in, **Automations** asks you to sign in first, then opens on your rules. Rules are copied when you duplicate a plan.
 
 </ArticleLayout>

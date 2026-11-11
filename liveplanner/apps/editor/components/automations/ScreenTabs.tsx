@@ -1,6 +1,6 @@
 'use client';
 
-// The Automations screen's tabs (docs/specs/026-plan/automations.md "The Automations screen"): Rules · n, Run Log
+// The Automations screen's tabs (docs/specs/026-plan/automations.md "The Automations screen"): Rules · n, Audit Trail
 // and Templates, with the Runs today meter at the right (under the tab on a phone, where the dialog draws it).
 
 import type { ReactNode } from 'react';
@@ -29,7 +29,7 @@ export function ScreenTabs({
 }) {
   const tabs: readonly { tab: ScreenTab; label: string }[] = [
     { tab: 'rules', label: rules === null ? 'Rules' : `Rules · ${rules}` },
-    { tab: 'runs', label: 'Run Log' },
+    { tab: 'runs', label: 'Audit Trail' },
     { tab: 'templates', label: 'Templates' },
   ];
   return (

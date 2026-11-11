@@ -457,7 +457,7 @@ const V17 = (exec: Exec) => {
 };
 
 // Automations (docs/specs/026-plan/automations.md; automations/automation-schema.ts): a plan's rules, the triggers
-// waiting for its alarm and its Run Log.
+// waiting for its alarm and its Audit Trail.
 const V18 = AUTOMATIONS_SCHEMA;
 
 // Automations Phase 2 (automations/automation-schema.ts): the time triggers' schedule and Assign in Turn's place.

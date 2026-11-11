@@ -87,7 +87,7 @@ webhook, with the same address, secret, retries, pausing and Recent Deliveries; 
   request): `POST /app/items/:id/automation-sends`, with the webhook's id, the rule's name, the card (its number,
   title and link) and the message (up to 2,000 characters, the rule's values filled in). The index queues one
   delivery per send in one batch, and answers each send **queued** or **refused** with the reason, so the rule's
-  Run Log can say which: the webhook is not this plan's, it is gone, or it is paused (its reason given, "the address
+  Audit Trail can say which: the webhook is not this plan's, it is gone, or it is paused (its reason given, "the address
   said it’s gone").
 - **Never twice.** Each send carries a key made from the run and the step; the same key again (a retried run) queues
   nothing new and answers **queued**.

@@ -158,7 +158,7 @@ export type AutomationOutgoing = {
   kind: 'notify';
   via: 'webhook' | 'slack' | 'teams';
   webhook: string;
-  // The webhook's name when it was picked, for the Run Log's "Queued for Launch Channel" (the room holds no list of
+  // The webhook's name when it was picked, for the Audit Trail's "Queued for Launch Channel" (the room holds no list of
   // the plan's webhooks); the builder's sentence reads the current name where it has one.
   name?: string;
   text: string;

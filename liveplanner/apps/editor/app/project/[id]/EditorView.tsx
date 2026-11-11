@@ -70,7 +70,7 @@ import { useDismissibleBanner } from '@liveworkspace/workbench/hooks/ui/useDismi
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { AutomationsHost } from '@/components/automations/AutomationsHost';
 import { automationsScopeFor } from '@/components/automations/automations-gate';
-import { useAutomationsOffline } from '@/components/automations/use-automations-offline';
+import { useAutomationsGate } from '@/components/automations/use-automations-gate';
 import { useDelayedReveal } from '@liveworkspace/workbench/hooks/ui/useDelayedReveal';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -441,24 +441,23 @@ export function EditorView() {
       <LandscapeBarsHandle shown={landscapeBars.shown} onToggle={landscapeBars.toggle} />
     ) : null;
 
-  // Automations (docs/specs/026-plan/automations.md "Who may do what"): an Editor of the whole plan saved to an account.
-  const automationsScope = automationsScopeFor({
-    level: ctx.can.level,
-    structureReadOnly: isStructureReadOnly,
-    offline: isOffline,
-    hydrated,
-    embed: embedMode,
-    scope: ctx.plan.context?.itemsScope ?? null,
-  });
-  // On a plan in Browser Storage, whoever can edit it sees the button, which says rules need the plan on an account.
-  const automationsOffline = useAutomationsOffline({
+  // Automations (docs/specs/026-plan/automations.md "Who may do what"): a signed-in Editor of the whole plan saved to
+  // an account opens the screen; one who could edit it but for a plan in This Browser or no account opens the gate.
+  const automationsGateInput = {
     level: ctx.can.level,
     structureReadOnly: isStructureReadOnly,
     offline: isOffline,
     hydrated,
     embed: embedMode,
     signedIn: !!accountUserId,
-    save: ctx.syncToCloud,
+    authLoaded: ctx.authLoaded,
+    scope: ctx.plan.context?.itemsScope ?? null,
+  };
+  const automationsScope = automationsScopeFor(automationsGateInput);
+  const automationsGate = useAutomationsGate({
+    ...automationsGateInput,
+    ready: ctx.selfParticipant.id !== 'self',
+    sync: ctx.syncToCloud,
   });
 
   return (
@@ -472,7 +471,7 @@ export function EditorView() {
     <AutomationsHost
       scope={automationsScope}
       plan={ctx.plan.context}
-      offline={automationsOffline}
+      gate={automationsGate}
       planName={projectName}
       signedIn={!!accountUserId}
     >

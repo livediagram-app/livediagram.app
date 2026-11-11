@@ -2,7 +2,7 @@
 
 // Send to Webhook, Post to Slack and Post to Microsoft Teams (docs/specs/026-plan/automations.md "Outgoing
 // actions"): which of the plan's webhooks of that kind it posts through (Your Own Service, Slack, Teams), picked by
-// name and kept with its name for the Run Log, with Add a Webhook… opening the plan's Webhooks dialog; and the message,
+// name and kept with its name for the Audit Trail, with Add a Webhook… opening the plan's Webhooks dialog; and the message,
 // with its values and a Preview. The list is the index's, read when the panel first opens (plan-webhooks.tsx). A rule
 // never holds an address: a plan with no webhook of the kind says so and offers to add one.
 

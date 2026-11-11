@@ -284,7 +284,7 @@ describe('Phase 2 words', () => {
       { word: 'When' },
       { chip: 'Overdue at 9:00', trigger: true },
     ]);
-    // The whole words, as the Run Log's trigger line reads them.
+    // The whole words, as the Audit Trail's trigger line reads them.
     const chip = (t: AutomationRuleBody['trigger']) => {
       const [word, part] = when(t) as [{ word: string }, { chip: string }];
       return word.word === 'Every' ? `Every ${part.chip}` : part.chip;

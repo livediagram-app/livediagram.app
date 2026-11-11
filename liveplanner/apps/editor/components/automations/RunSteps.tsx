@@ -1,6 +1,6 @@
 'use client';
 
-// A run's steps, opened under its Run Log row (docs/specs/026-plan/automations.md "The Automations screen": Run
+// A run's steps, opened under its Audit Trail row (docs/specs/026-plan/automations.md "The Automations screen": Run
 // Log): one line each with its mark, who did what (the trigger), each condition with what it found, each action, and
 // Open Card on the last line. A test's lines say what each action would do. A branch's line ("For each Child Card: on
 // 3 related cards") wears the branch mark, and each related card's lines after it, headed by its number, sit inset

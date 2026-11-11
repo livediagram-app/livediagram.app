@@ -1,6 +1,6 @@
 // A plan's Automations in its own SQLite (docs/specs/026-plan/automations.md; blueprint automations.md "Storage"): the
 // plan schema's step V18 (plan-schema.ts). Its rules (each the rule's JSON, its on or off and its place in the list
-// mirrored in columns, and its failures in a row), the triggers waiting for the alarm, and the Run Log, whose id is
+// mirrored in columns, and its failures in a row), the triggers waiting for the alarm, and the Audit Trail, whose id is
 // the run's (a hash of the trigger and the rule) so a second insert of one run is ignored: a rule never runs twice
 // for one trigger. A plan never given a rule has three empty tables and does no rule work on any save.
 //

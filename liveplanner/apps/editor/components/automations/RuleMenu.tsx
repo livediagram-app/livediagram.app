@@ -1,7 +1,7 @@
 'use client';
 
 // A rule's ⋯ menu in the Rules list (docs/specs/026-plan/automations.md "The Automations screen"): Edit, Duplicate,
-// Run Log, then Delete after a separator, which asks first. Icon-left rows, as every ⋯ menu in the editor.
+// Audit Trail, then Delete after a separator, which asks first. Icon-left rows, as every ⋯ menu in the editor.
 
 import { useState } from 'react';
 import { ConfirmPopover, DuplicateIcon, TrashIcon, lucideGlyph } from '@liveplanner/ui';
@@ -54,7 +54,7 @@ export function RuleMenu({
             icon={<DuplicateIcon />}
             onClick={run(onDuplicate)}
           />
-          <MenuActionRow plain label="Run Log" icon={<LogIcon />} onClick={run(onRunLog)} />
+          <MenuActionRow plain label="Audit Trail" icon={<LogIcon />} onClick={run(onRunLog)} />
           <MenuGroupSeparator />
           <MenuActionRow
             plain
@@ -67,7 +67,7 @@ export function RuleMenu({
       {confirming && button ? (
         <ConfirmPopover
           anchor={button}
-          message={`Delete “${name}”? Its runs stay in the Run Log until they age out.`}
+          message={`Delete “${name}”? Its runs stay in the Audit Trail until they age out.`}
           confirmLabel="Delete Rule"
           onCancel={() => setConfirming(false)}
           onConfirm={() => {

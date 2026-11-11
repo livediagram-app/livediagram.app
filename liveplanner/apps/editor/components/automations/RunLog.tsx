@@ -1,6 +1,6 @@
 'use client';
 
-// The Run Log tab (docs/specs/026-plan/automations.md "The Automations screen": Run Log): the All Rules, Any Result
+// The Audit Trail tab (docs/specs/026-plan/automations.md "The Automations screen": Audit Trail): the All Rules, Any Result
 // and Last 7 Days filters, the line saying how long runs are kept, then the runs newest first, each opening to its
 // steps. Read when the tab opens and whenever a filter changes; a skeleton while it loads, an empty state with no
 // runs, and Try Again when the read failed.
@@ -50,7 +50,7 @@ export function RunLog({
   rules: readonly AutomationListedRule[];
   now: number;
   phone: boolean;
-  // A rule's ⋯ Run Log opens on its runs.
+  // A rule's ⋯ Audit Trail opens on its runs.
   initialRule?: string | undefined;
   onOpenCard: (cardId: string) => void;
 }) {
@@ -151,7 +151,7 @@ export function RunLog({
           <CompactEmptyState
             role="status"
             icon={<BoltIcon size={18} />}
-            title="Couldn’t Load the Run Log"
+            title="Couldn’t Load the Audit Trail"
             description="Check your connection and try again."
             action={
               <button
