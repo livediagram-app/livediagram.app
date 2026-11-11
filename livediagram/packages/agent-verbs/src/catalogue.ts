@@ -31,7 +31,7 @@ import {
   watch,
 } from './verbs/local';
 import { iconSearch, schemaView, templateLs, templateView } from './verbs/catalogues';
-import { imageLs } from './verbs/image';
+import { imageAdd, imageLs, imageRm } from './verbs/image';
 import { changesetApply, elementVerbs, tabDiff } from './verbs/edit';
 import { graphLintVerb } from './verbs/graph';
 import {
@@ -86,6 +86,8 @@ export const VERBS: readonly Verb[] = [
   templateView,
   iconSearch,
   imageLs,
+  imageAdd,
+  imageRm,
   schemaView,
   guide,
   skillPrint,

@@ -4,7 +4,7 @@ import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
 import { VERBS } from '@livediagram/agent-verbs';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { legacyToolName } from './legacy-tool-names';
-import { TOOL_ANNOTATIONS } from './tool-annotations';
+import { toolAnnotations } from './tool-annotations';
 import { registerTools } from './tools';
 
 // One catalogue (docs/specs/015-api/cli.md "One catalogue for the CLI and the MCP", blueprint "The verb"): every tool
@@ -42,7 +42,7 @@ describe('the MCP tools and their verbs', () => {
       expect(tool.config.description).toBe(verb.description);
       expect(tool.config.inputSchema).toBe(verb.mcpShapes.input);
       expect(tool.config.outputSchema).toBe(verb.mcpShapes.output);
-      expect(tool.config.annotations).toEqual(TOOL_ANNOTATIONS[verb.behaviour]);
+      expect(tool.config.annotations).toEqual(toolAnnotations(verb));
       expect(Object.keys(verb.input.shape)).toEqual(Object.keys(verb.mcpShapes.input));
     }
   });

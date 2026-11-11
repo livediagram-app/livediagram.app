@@ -6,6 +6,7 @@ import {
   requireToken,
   textResult,
   TOOL_ANNOTATIONS,
+  toolAnnotations,
   ToolInputError,
   viewResult,
   type Extra,
@@ -117,6 +118,17 @@ describe('TOOL_ANNOTATIONS', () => {
     expect(TOOL_ANNOTATIONS.read).toEqual({ readOnlyHint: true, openWorldHint: false });
     expect(TOOL_ANNOTATIONS.write.destructiveHint).toBe(false);
     expect(TOOL_ANNOTATIONS.destructive.destructiveHint).toBe(true);
+  });
+});
+
+describe('toolAnnotations', () => {
+  it('is the behaviour’s preset, with a tool’s own hints on top', () => {
+    expect(toolAnnotations({ behaviour: 'write' })).toEqual(TOOL_ANNOTATIONS.write);
+    expect(toolAnnotations({ behaviour: 'destructive', idempotent: true })).toEqual({
+      ...TOOL_ANNOTATIONS.destructive,
+      idempotentHint: true,
+    });
+    expect(toolAnnotations({ behaviour: 'write', openWorld: true }).openWorldHint).toBe(true);
   });
 });
 

@@ -8,6 +8,10 @@ import type { VerbBehaviour } from '../define';
 
 export type ToolDecl<S extends z.ZodRawShape, O extends z.ZodRawShape> = {
   behaviour: VerbBehaviour;
+  // Calling it again with the same input changes nothing more (MCP's idempotentHint).
+  idempotent?: true;
+  // It reaches beyond the caller's library, as a fetch of a URL does (MCP's openWorldHint).
+  openWorld?: true;
   title: string;
   description: string;
   inputSchema: S;
@@ -24,6 +28,8 @@ export type McpToolVerb<
   summary: string;
   description: string;
   behaviour: VerbBehaviour;
+  idempotent?: true;
+  openWorld?: true;
   input: z.ZodObject<S>;
   output: z.ZodObject<O>;
   mcp: { tool: string; title: string };
@@ -39,6 +45,8 @@ export function mcpTool<S extends z.ZodRawShape, O extends z.ZodRawShape>(
     summary: decl.title,
     description: decl.description,
     behaviour: decl.behaviour,
+    ...(decl.idempotent ? { idempotent: true as const } : {}),
+    ...(decl.openWorld ? { openWorld: true as const } : {}),
     input: z.object(decl.inputSchema),
     output: z.object(decl.outputSchema),
     mcp: { tool, title: decl.title },

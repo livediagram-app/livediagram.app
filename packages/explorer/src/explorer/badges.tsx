@@ -119,7 +119,11 @@ export const CardStatusChip = memo(function CardStatusChip({
 
 /** An item an AI tool made through MCP (its source is `ai`): what the Made by AI filter reads, shown. */
 export function MadeByAiBadge({ item }: { item: Pick<Item, 'source'> }) {
-  if (item.source !== 'ai') return null;
+  return item.source === 'ai' ? <MadeByAiChip /> : null;
+}
+
+/** The Made by AI chip, wherever something an AI tool made is shown: an item, or a picture in the Image Gallery. */
+export function MadeByAiChip() {
   return (
     <span
       data-made-by-ai=""

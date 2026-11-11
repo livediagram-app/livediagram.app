@@ -1,7 +1,7 @@
 // The images index (liveworkspace/docs/specs/006-media/media.md "Storage"): one row per stored image, its bytes in R2
 // under the same id.
 
-import type { MediaApp, MediaImage, MediaUsage } from '@liveworkspace/media';
+import type { ImageSource, MediaApp, MediaImage, MediaUsage } from '@liveworkspace/media';
 import type { Env } from './env';
 
 export type ImageRow = {
@@ -17,6 +17,8 @@ export type ImageRow = {
   created_at: number;
   // The document it was uploaded for (migrations/0002_image_document.sql), or null.
   document: string | null;
+  // The tool that uploaded it (migrations/0003_image_source.sql), or null for a person's upload.
+  source: ImageSource | null;
 };
 
 // The gallery's view of a row. The owner and the hash never leave the service through it.
@@ -30,6 +32,7 @@ export function rowToImage(row: ImageRow): MediaImage {
     originalName: row.original_name ?? undefined,
     createdAt: row.created_at,
     app: row.app,
+    ...(row.source ? { source: row.source } : {}),
   };
 }
 
@@ -81,8 +84,8 @@ export async function insertImage(
 ): Promise<MediaImage | null> {
   const createdAt = Date.now();
   const result = await env.MEDIA_DB.prepare(
-    `INSERT OR IGNORE INTO images (id, owner, app, content_type, byte_size, width, height, sha256, original_name, created_at, document)
-     SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?13
+    `INSERT OR IGNORE INTO images (id, owner, app, content_type, byte_size, width, height, sha256, original_name, created_at, document, source)
+     SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?13, ?14
      WHERE (?11 IS NULL OR (SELECT COUNT(*) FROM images WHERE owner = ?2) < ?11)
        AND (?12 IS NULL OR (SELECT COALESCE(SUM(byte_size), 0) FROM images WHERE owner = ?2) + ?5 <= ?12)`,
   )
@@ -100,6 +103,7 @@ export async function insertImage(
       caps.maxImages,
       caps.maxBytes,
       row.document,
+      row.source,
     )
     .run();
   if (!result.meta.changes) return null;

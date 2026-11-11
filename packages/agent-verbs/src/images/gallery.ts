@@ -34,6 +34,15 @@ type GalleryListing = {
   more: number;
 };
 
+const KIB = 1024;
+
+// A size as people read it: bytes, KB or MB.
+export function sizeText(bytes: number): string {
+  if (bytes < KIB) return `${bytes} B`;
+  if (bytes < KIB * KIB) return `${Math.round(bytes / KIB)} KB`;
+  return `${(bytes / (KIB * KIB)).toFixed(1)} MB`;
+}
+
 // The name an image is listed by: its file's name, or, for one uploaded without, its type and id.
 export function imageName(image: GalleryUpload): string {
   if (image.originalName?.trim()) return image.originalName.trim();

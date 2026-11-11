@@ -185,11 +185,13 @@ browser. A token minted for the CLI is named "livedesign CLI".
 
 ## 4. Tools
 
-Fifteen tools: thirteen for designs, one for pages ([§4.9d](#49d-the-pages-tools)) and one for components
+Seventeen tools: fifteen for designs and their gallery, one for pages ([§4.9d](#49d-the-pages-tools)) and one for components
 ([§4.9e](#49e-the-components-tool)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates)), search_icons the icon catalogue
-([§4.5a](#45a-search_icons)) and list_images the user's image gallery ([§4.5b](#45b-list_images));
+([§4.5a](#45a-search_icons)), list_images the user's image gallery ([§4.5b](#45b-list_images)), and
+upload_image and delete_image add pictures to it and remove them ([§4.5c](#45c-upload_image),
+[§4.5d](#45d-delete_image));
 share, rename, and delete complete the CRUD verbs, with list_trash and
 restore_design as the way back from a delete
 ([§4.8](#48-share_design), [§4.9](#49-rename_design-and-delete_design), [§4.9a](#49a-list_trash-and-restore_design)).
@@ -391,8 +393,65 @@ that keeps a placeholder captioned "too large to draw here", and its bytes are n
 only): a teammate's uploads are not in it. Read-only, so a read-only token may call it. A deployment without image
 storage answers that images are not available here.
 
-There is no upload tool: a chat assistant cannot pass an attachment's bytes to a tool, so pictures reach the gallery
-through the editor (upload, paste or drop) and the assistant places them from there.
+Pictures reach the gallery through the editor (upload, paste or drop) and through `upload_image`
+([§4.5c](#45c-upload_image)); `delete_image` ([§4.5d](#45d-delete_image)) removes them.
+
+### 4.5c `upload_image`
+
+Adds a picture to the user's image gallery, so an `image` element can show something the assistant made itself (a
+render, a chart, a logo from a repository): `{ data?, url?, name? }`, exactly one of `data` and `url`, answers
+`{ id, name, width, height, size, uploadedAt, deduped }`, the same image fields `list_images` gives, its `id` what an
+element's `imageId` takes. The shared code is `@liveworkspace/agent-verbs`'s `packages/agent-verbs/src/images/upload.ts`; the tool is
+`packages/agent-verbs/src/mcp/image-tools.ts`'s, wired by `apps/mcp/src/image-tools.ts`.
+
+- **The bytes.** `data` is base64, or a `data:` URL whose payload is base64 (`data:image/png;base64,...`); line
+  breaks are allowed. The request carrying it is at most 15 MiB (`@liveworkspace/mcp-kit`'s `MCP_MAX_REQUEST_BYTES`, room for a 10 MB picture's base64, where the SDK's own default of 4 MiB would stop at about 3 MB), so the text is decoded and the decoded bytes are held to the cap. `url` is a public https URL of the picture itself, which the server fetches
+  (below). `name` is the name the gallery lists it by; without one, a URL's last path segment, else none.
+- **What it takes.** What the media service stores
+  ([liveworkspace media "Uploads"](../../../../liveworkspace/docs/specs/006-media/media.md#uploads)): PNG, JPEG, WebP
+  and GIF, at most `MAX_IMAGE_BYTES` (10 MB). The type is read from the bytes (`sniffImageType`), never a header or a
+  file name, and the width and height from the format's own header (`imageDimensions`). SVG is refused with words of
+  its own ("SVG or other markup, which the gallery never stores"): it can carry a script, so the service never stores
+  it on any path and an assistant renders it to a PNG first. A file whose header gives no size is refused as damaged.
+- **The upload.** `POST /api/images` as the caller, with their own bearer token, the route the editor's upload uses:
+  the service checks the type against the bytes again, dedupes the same bytes to the image the gallery already holds
+  (`deduped: true`), strips a JPEG's metadata and holds the per-person caps. The upload names its tool
+  (`X-Image-Source: mcp`), so the Image Gallery shows the picture **Made by AI**, as it shows a design an AI tool
+  made ([liveworkspace media "Uploaded by a tool"](../../../../liveworkspace/docs/specs/006-media/media.md#uploads)).
+- **Refusals, in words.** Too large ("That picture is 12.4 MB; the gallery takes files up to 10 MB."), not a picture
+  it takes, not valid base64, a URL it will not fetch (each reason below), and a full gallery, with how full it is:
+  "The image gallery is full: it holds 100 of its 100 images. Remove pictures it no longer needs with delete_image
+  (list_images lists them), then upload again." (or, by bytes, "it holds 99.2 MB of its 100.0 MB").
+- **Fetching a URL.** `@liveworkspace/api-kit`'s `fetchPublicBytes` (`public-fetch.ts`), the server-side fetch of a
+  URL someone else chose: https on port 443 only, with no user name or password; a literal address is judged as it
+  stands and a name is resolved (DNS over HTTPS, A and AAAA) and refused when any answer is private, loopback,
+  link-local, carrier NAT, multicast, reserved or a cloud metadata address (`public-address.ts`, the index's webhook
+  checks), or an internal name (`localhost`, `.local`, `.internal`, a single label). Redirects are followed by hand,
+  at most 3, each target checked the same way; the whole exchange, body included, has 10 seconds; the body is read
+  through a byte counter that stops one chunk past 10 MB, so a huge or endless answer is cut off there. The answer's
+  `Content-Type` is never read: the bytes are sniffed as any upload's are.
+- Behaviour **write**, with `openWorldHint: true`: a URL reaches the open web. A read-only token is refused, as for
+  any write.
+
+### 4.5d `delete_image`
+
+Removes pictures from the user's own image gallery: `{ imageIds, force? }`, 1 to 20 ids from `list_images`, answers
+`{ results: [{ id, outcome, name?, usedIn? }], deleted, kept }`, one result per id asked for, in order. The shared
+code is `@liveworkspace/agent-verbs`'s `packages/agent-verbs/src/images/remove.ts`.
+
+- **Only the caller's own.** The gallery (`GET /api/images`, owner only) is read once for the call; an id not in it
+  (another person's picture, one already gone, or no image at all) answers `not_found` and is never sent to the
+  delete.
+- **Never a placed picture by default.** The Image Gallery's own usage (`GET /api/images/usage`, the caller's items in
+  every app that place each picture, not in the Trash) is read once, beside the gallery. A picture something places
+  is kept and answered `in_use` with `usedIn: [{ id, name, app }]`. `force: true` removes it anyway; every element
+  that placed it then shows a broken picture until someone picks another, and the result still names where it was
+  used.
+- **The delete.** `DELETE /api/images/:id` as the caller, the route the Gallery's own delete uses; the service
+  removes the row, then the bytes. A picture gone between the read and the delete answers `not_found`. There is no
+  Trash for pictures.
+- Behaviour **destructive**, with `idempotentHint: true`: the same call again removes nothing more (each id answers
+  `not_found`).
 
 ### 4.6 Schema resource (not a tool)
 
@@ -691,14 +750,18 @@ while a destructive one always asks. Directory listings (the Claude connectors
 portal among them) also require them, and a missing block is a listing blocker,
 which is how the gap was found.
 
-Three behaviours cover the seventeen tools, and each is a preset in
+Three behaviours cover the nineteen tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                             |
-| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_designs`, `read_design`, `list_templates`, `search_icons`, `list_trash`, `list_images`      |
-| **write**       | `false`        | `false`           | `create_design`, `add_tab`, `share_design`, `rename_design`, `restore_design`, `unarchive_design` |
-| **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `archive_design`, `change_pages`, `change_components`           |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                             |
+| --------------- | -------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_designs`, `read_design`, `list_templates`, `search_icons`, `list_trash`, `list_images`                      |
+| **write**       | `false`        | `false`           | `create_design`, `add_tab`, `share_design`, `rename_design`, `restore_design`, `unarchive_design`, `upload_image` |
+| **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `archive_design`, `change_pages`, `change_components`, `delete_image`           |
+
+Two tools state one hint more than their behaviour's preset, through the verb (`idempotent`, `openWorld` on
+`mcpTool`) and `@liveworkspace/mcp-kit`'s `toolAnnotations`: `delete_image` is `idempotentHint: true` (removing
+the same pictures again changes nothing), and `upload_image` is `openWorldHint: true` (its `url` reaches the open web).
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a

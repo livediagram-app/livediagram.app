@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@liveworkspace/api-client';
 import { createApiRefusal, createDeleteRefusal } from './api-refusal';
+import { VerbRefusal } from './define';
 import { TEST_PRODUCT, WORDED_PRODUCT } from './testing/product';
 
 const apiRefusalOf = createApiRefusal(TEST_PRODUCT);
@@ -25,6 +26,19 @@ describe('apiRefusalOf', () => {
       'The api refused it: that is more than the sketch can hold.',
     );
     expect(refusal(429)?.message).toMatch(/^The api refused it: too many calls in the last minute/);
+  });
+
+  it('says a refusal a verb words itself as it is', () => {
+    const refusal = new VerbRefusal({
+      status: 403,
+      code: 'gallery_full',
+      message: 'The image gallery is full.',
+      hint: 'remove some',
+    });
+    expect(apiRefusalOf(refusal)).toEqual({
+      code: 'gallery_full',
+      message: 'The image gallery is full.',
+    });
   });
 
   it('keeps the api’s code, and names an unknown refusal by it', () => {

@@ -9,6 +9,8 @@ describe('the MCP tool verbs', () => {
   it('name each tool once, under an id of its own, with words and a behaviour', () => {
     expect(MCP_TOOL_VERBS.map((v) => v.mcp.tool)).toEqual([
       'list_images',
+      'upload_image',
+      'delete_image',
       'find_documents',
       'read_document',
       'list_templates',

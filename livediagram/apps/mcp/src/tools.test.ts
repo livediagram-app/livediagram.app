@@ -12,7 +12,7 @@ vi.mock('./image-result', () => ({
 
 import { registerTools } from './tools';
 import { deleteDocumentShape } from '@livediagram/agent-verbs/mcp';
-import { TOOL_ANNOTATIONS, type ToolBehaviour } from './tool-annotations';
+import { TOOL_ANNOTATIONS, toolAnnotations, type ToolBehaviour } from './tool-annotations';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 
 // Every registered MCP tool must report itself (docs/specs/015-api/mcp-server.md §4, docs/specs/017-telemetry/telemetry.md).
@@ -68,6 +68,17 @@ function okResponse(request: Request): Response {
   }
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
+  if (path === '/images' && request.method === 'POST') {
+    const image = {
+      id: 'img-1',
+      contentType: 'image/png',
+      byteSize: 33,
+      width: 64,
+      height: 48,
+      createdAt: 1,
+    };
+    return json({ image, deduped: false });
+  }
   if (path === '/documents' && request.method === 'GET') return json({ documents: [] });
   if (path === '/teams') return json({ teams: [] });
   if (path === '/trash') return json({ trash: [] });
@@ -151,6 +162,9 @@ const ARGS = {
   ops: [],
   limit: 5,
   changes: [],
+  // upload_image's picture: the first bytes of a 64 by 48 PNG, which is all its checks read.
+  data: 'iVBORw0KGgoAAAANSUhEUgAAAEAAAAAwCAYAAAA=',
+  imageIds: ['img-1'],
 };
 
 const AUTHED = { authInfo: { token: 'tok_test' } };
@@ -165,7 +179,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the fifteen documented tools, each with a description', () => {
+  it('registers the seventeen documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered.filter((r) => !isDeprecated(r));
     expect(current.map((r) => r.name).sort()).toEqual([
@@ -173,6 +187,7 @@ describe('registerTools', () => {
       'archive_document',
       'create_document',
       'delete_document',
+      'delete_image',
       'find_documents',
       'list_images',
       'list_templates',
@@ -184,6 +199,7 @@ describe('registerTools', () => {
       'share_document',
       'unarchive_document',
       'update_document',
+      'upload_image',
     ]);
     // The description is what the calling model reads to pick a tool, so an
     // undescribed tool is effectively unreachable.
@@ -288,6 +304,9 @@ describe('tool annotations', () => {
     unarchive_document: 'write',
     // docs/specs/015-api/mcp-server.md §4.5b: the gallery is read, never written.
     list_images: 'read',
+    // docs/specs/015-api/mcp-server.md §4.5c and §4.5d: upload adds a picture; delete removes them for good.
+    upload_image: 'write',
+    delete_image: 'destructive',
     update_document: 'destructive',
     delete_document: 'destructive',
   };
@@ -300,11 +319,20 @@ describe('tool annotations', () => {
     // stops a hand-rolled block drifting from the table in docs/specs/015-api/mcp-server.md §4.14.
     const presets = Object.values(TOOL_ANNOTATIONS);
     for (const r of registered) {
-      expect(presets, `${r.name} uses an off-catalogue annotations block`).toContainEqual(
-        r.config.annotations,
-      );
+      // A tool's own hints (delete_image's idempotentHint, upload_image's openWorldHint) sit on top of its preset.
+      const { idempotentHint: _idempotent, ...preset } = r.config.annotations!;
+      expect(presets, `${r.name} uses an off-catalogue annotations block`).toContainEqual({
+        ...preset,
+        openWorldHint: false,
+      });
     }
   });
+
+  // The hints a tool states beyond its behaviour (docs/specs/015-api/mcp-server.md §4.14).
+  const HINTS: Record<string, { idempotent?: true; openWorld?: true }> = {
+    upload_image: { openWorld: true },
+    delete_image: { idempotent: true },
+  };
 
   it('annotates each tool with the behaviour docs/specs/015-api/mcp-server.md §4.14 assigns it', () => {
     const { registered } = harness();
@@ -314,7 +342,9 @@ describe('tool annotations', () => {
       // A tool missing from the table is a new tool whose behaviour nobody has
       // decided yet. Decide it here and in the spec; don't delete this line.
       expect(behaviour, `${r.name} has no documented behaviour`).toBeDefined();
-      expect(r.config.annotations).toEqual(TOOL_ANNOTATIONS[behaviour!]);
+      expect(r.config.annotations).toEqual(
+        toolAnnotations({ behaviour: behaviour!, ...HINTS[r.name] }),
+      );
     }
   });
 
@@ -353,7 +383,12 @@ describe('tool annotations', () => {
       .filter((r) => r.config.annotations?.destructiveHint === true)
       .map((r) => r.name)
       .sort();
-    expect(destructive).toEqual(['archive_document', 'delete_document', 'update_document']);
+    expect(destructive).toEqual([
+      'archive_document',
+      'delete_document',
+      'delete_image',
+      'update_document',
+    ]);
   });
 });
 

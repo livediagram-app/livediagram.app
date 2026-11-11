@@ -11,6 +11,7 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // And the image embedder: a gap draws a picture past the preview's budget or out of document order.
 // And the ledger store: a gap there cuts an entry a save still needs, or hands a save less than it merges.
 // And the tab order: a gap there lands a new tab on a place another holds.
+// And the public fetch and its address checks: a gap there lets a typed URL reach a private network.
 export default defineProject({
   test: {
     coverage: {
@@ -27,6 +28,8 @@ export default defineProject({
         'src/d1-compound.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/d1-compound-guard.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/request-body.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
+        'src/public-address.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
+        'src/public-fetch.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/request-failure.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/room-element-ops.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/tab-order.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },

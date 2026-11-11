@@ -2,6 +2,7 @@
 // words on the CLI and the MCP. A 5xx or anything not from the api is not a refusal: the caller lets it throw.
 // The words name the product's files and its MCP tools (`find_<collection>`, `restore_<noun>`).
 import { ApiError } from '@liveworkspace/api-client';
+import { VerbRefusal } from './define';
 import { wordOf, type AgentProduct } from './product';
 
 export interface ApiRefusal {
@@ -39,6 +40,8 @@ export function createApiRefusal(product: Pick<AgentProduct, 'noun' | 'collectio
   const BY_CODE = archiveRefusalWords(product);
 
   return function apiRefusalOf(err: unknown): ApiRefusal | null {
+    // A refusal a shared verb words itself (an upload too large, a full gallery), said as it is.
+    if (err instanceof VerbRefusal) return { code: err.code, message: err.message };
     if (!(err instanceof ApiError) || err.status >= 500) return null;
     const code = err.code ?? `http_${err.status}`;
     const coded = BY_CODE[code];

@@ -6,6 +6,8 @@ import {
   isGuestOwner,
   isMediaApp,
   MEDIA_APPS,
+  IMAGE_SOURCE_HEADER,
+  isImageSource,
   MEDIA_DOCUMENT_HEADER,
   mediaGuestOwner,
   sniffImageType,
@@ -123,5 +125,31 @@ describe('createMediaClient', () => {
     await client.upload({ ...file, bytes: new ArrayBuffer(4) });
     expect(seen[0]!.get(MEDIA_DOCUMENT_HEADER)).toBe('plan-1');
     expect(seen[1]!.has(MEDIA_DOCUMENT_HEADER)).toBe(false);
+  });
+
+  it('names the tool an upload came from, and leaves it out for a person', async () => {
+    const seen: Headers[] = [];
+    const client = createMediaClient({
+      app: 'livedocuments.app',
+      key: 'k',
+      fetch: async (_input, init) => {
+        seen.push(new Headers(init?.headers));
+        return Response.json({ image: {}, deduped: false });
+      },
+    });
+    const file = { owner: 'user_1', contentType: 'image/png', byteSize: 4, width: 1, height: 1 };
+    await client.upload({ ...file, bytes: new ArrayBuffer(4), source: 'mcp' });
+    await client.upload({ ...file, bytes: new ArrayBuffer(4), source: null });
+    expect(seen[0]!.get(IMAGE_SOURCE_HEADER)).toBe('mcp');
+    expect(seen[1]!.has(IMAGE_SOURCE_HEADER)).toBe(false);
+  });
+});
+
+describe('isImageSource', () => {
+  it('knows the MCP and the CLI, and nothing else', () => {
+    expect(isImageSource('mcp')).toBe(true);
+    expect(isImageSource('cli')).toBe(true);
+    expect(isImageSource('ai')).toBe(false);
+    expect(isImageSource(null)).toBe(false);
   });
 });
