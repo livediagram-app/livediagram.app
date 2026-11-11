@@ -92,6 +92,8 @@ export function stageParts(width: number, height: number): FurniturePart[];
 export function stageTop(el: Box): Box;
 export function roomWalls(el: Box & { roomDoor?: RoomDoor }): WallSegment[];
 export function officeFootprint(el: Box & { shape: string }): Box | null;
+// Every box that blocks (a car park's cars and kerb, venue-pieces.md); [] for a piece that does not block.
+export function officeFootprints(el: Box & { shape: string }): Box[];
 // AvatarPresence
 holding?: 'water' | 'coffee' | null;
 ```

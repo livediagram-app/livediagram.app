@@ -39,6 +39,11 @@ import {
   oneOfRule,
 } from '@liveworkspace/model-core/validate-primitives';
 import { isRecord } from '@liveworkspace/model-core/is-record';
+import {
+  TABLE_CELLS_MAX,
+  TABLE_COLS_MAX,
+  TABLE_ROWS_MAX,
+} from '@liveworkspace/element-model/table';
 
 export type { ElementValidationIssue } from '@liveworkspace/model-core/validate-primitives';
 
@@ -50,9 +55,10 @@ export const TEXT_SCALE_MIN = 0.1;
 export const TEXT_SCALE_MAX = 40;
 const isHeadingStr = (v: unknown) => typeof v === 'string' && v.length <= PAGE_HEADING_MAX;
 // Exported so a caller building a table truncates to exactly what validation accepts.
-export const MAX_TABLE_ROWS = 1_000;
-export const MAX_TABLE_COLS = 1_000;
-export const MAX_TABLE_CELLS = 50_000;
+// The shared table helpers' limits (@liveworkspace/element-model/table), so a table edit and validation agree.
+export const MAX_TABLE_ROWS = TABLE_ROWS_MAX;
+export const MAX_TABLE_COLS = TABLE_COLS_MAX;
+export const MAX_TABLE_CELLS = TABLE_CELLS_MAX;
 
 // Exported so the MCP schema resource (docs/specs/015-api/mcp-server.md §4.5) lists the real element
 // types + anchors rather than a hand-maintained copy that can drift.

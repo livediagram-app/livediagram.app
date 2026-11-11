@@ -11,6 +11,9 @@ export const FORMULA_STEPS_MAX = 10_000;
 export const FORMULA_ROUND_PLACES_MAX = 10;
 // Compiled formulas kept, by stored text, before the oldest is dropped.
 export const FORMULA_CACHE_MAX = 512;
+// The most of what was typed (a name, a function, some text) a problem quotes, an ellipsis after: the longest field
+// name (CUSTOM_FIELD_LABEL_MAX), so a real one is quoted whole and the line under the Formula box stays short.
+export const FORMULA_QUOTE_MAX = 32;
 
 // How a Formula's value reads, sorts and exports, in the order the editor offers them.
 export const FORMULA_RESULTS = [

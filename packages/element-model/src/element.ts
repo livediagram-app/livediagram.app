@@ -9,11 +9,14 @@
 
 import type {
   ElementId,
+  IconPosition,
   Padding,
   TextAlignX,
   TextAlignY,
   TextSize,
 } from '@liveworkspace/model-core/basics';
+import type { IconSize } from '@liveworkspace/model-core/icon-size';
+import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type {
   BorderRadius,
@@ -27,15 +30,24 @@ import type { CardMedia } from './card';
 import type { ChartPaletteId } from './chart-palettes';
 import type { ChipLook } from './chip';
 import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
-import type { LineSeries, PieSlice } from './data-shapes';
+import type { EntityField, LineSeries, PieSlice } from './data-shapes';
 import type { KeyRow } from './diagram-key';
 import type { Finish } from './finish';
 import type { MindFlow } from './mind-flow';
 import type { MindLook } from './person-node';
+import type {
+  SankeyAlign,
+  SankeyFlow,
+  SankeyLeftover,
+  SankeyLinkColor,
+  SankeyNodeStyle,
+  SankeyValueLabel,
+} from './sankey-model';
+import type { SequenceElementMessage, SequenceElementParticipant } from './sequence-element';
 import type { StackAlign, StackDirection } from './stack';
 import type { HeroCaption, StatItem } from './web-components';
 
-export type { ElementId, TextSize };
+export type { ElementId, IconPosition, TextSize };
 
 /** Which ends of an arrow carry a head. */
 export type ArrowEnds = 'from' | 'to' | 'both' | 'none';
@@ -96,6 +108,9 @@ export type BoxBase = {
   headerFill?: string;
   textBold?: boolean;
   textItalic?: boolean;
+  /** A label's underline and strikethrough (liveplanner). */
+  textUnderline?: boolean;
+  textStrikethrough?: boolean;
   richText?: TextRun[];
 };
 
@@ -103,8 +118,11 @@ export type ShapeElement = BoxBase & {
   type: 'shape';
   shape: string;
   iconId?: string;
-  /** An entity's fields (livediagram, liveplanner): only how many is read here. */
-  entityFields?: readonly unknown[];
+  iconSize?: IconSize;
+  iconWeight?: IconWeight;
+  iconPosition?: IconPosition;
+  /** An entity's fields (livediagram, liveplanner): its rows, read by the entity modules and the geometry. */
+  entityFields?: readonly EntityField[];
   tags?: string[];
   accentEdge?: 'left' | 'top' | 'bottom';
   accentEdgeColor?: string;
@@ -157,9 +175,29 @@ export type ShapeElement = BoxBase & {
   stackPadding?: number;
   stackGap?: number;
   stackColumns?: number;
+  // A sequence diagram's rows (sequence-element.ts), where a product holds one.
+  sequenceParticipants?: SequenceElementParticipant[];
+  sequenceMessages?: SequenceElementMessage[];
+  sequenceNumbered?: boolean;
+  // A Sankey diagram's flows and look (sankey-model.ts, sankey-frame.ts), where a product holds one.
+  sankeyFlows?: SankeyFlow[];
+  sankeyNodes?: SankeyNodeStyle[];
+  sankeyLinkColor?: SankeyLinkColor;
+  sankeyAlign?: SankeyAlign;
+  sankeyValueLabel?: SankeyValueLabel;
+  sankeyUnit?: string;
+  sankeyLeftover?: SankeyLeftover;
+  sankeyLeftoverName?: string;
 };
 
-export type TextElement = BoxBase & { type: 'text' };
+/** A text box, with its wordmark type (wordmark.ts) where a product offers it. */
+export type TextElement = BoxBase & {
+  type: 'text';
+  letterSpacing?: number;
+  fontWeight?: 400 | 500 | 700;
+  textCase?: 'upper' | 'lower';
+  textArc?: number;
+};
 
 export type FreehandElement = BoxBase & {
   type: 'freehand';

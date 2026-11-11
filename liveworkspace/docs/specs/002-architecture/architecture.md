@@ -191,6 +191,14 @@ shape kinds, its fields. Code that reads elements the same way in two or more pr
 - A product's own extra on a shared module sits beside its binding, in the same file: the binding re-exports the
   shared module and the product adds or wraps what is its own (livediagram's retired pieces in `isSelfDrawingShape`,
   liveplanner's Sheet charts beside `containment`). The shared module never asks which product it is in.
+- A shared rule that reads a list each product keeps for itself takes the list as data, and the product binds it at
+  the module's old path: the element fingerprint is the shared `fingerprintsFor(liveFields)` over each product's
+  `LIVE_ELEMENT_FIELDS`, so the fields an agent's changeset ignores stay the ones that product's undo keeps. A limit
+  every product holds the same way lives with the shared code that needs it (the table helpers' sizes), and each
+  product's validator reads it from there.
+- A shared module over a product's own record (a comment, a table cell's style) is generic over it, naming only the
+  fields it reads (`threadWithComment<C extends { id: string }>`, the table helpers over `TableGrid`), so each product
+  keeps its own types and gets them back.
 - Editor code the same in three or more editors, and naming no product, lives once in `@liveworkspace/workbench`,
   which reads the shared element model where it needs element code; each editor keeps a one-line binding at the old
   path.

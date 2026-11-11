@@ -10,7 +10,7 @@
 import { distToSegment, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 import { segmentDistance as sharedSegmentDistance } from '@liveworkspace/model-core/segment-geometry';
 import { fenceLine, type FencePoint } from './fence';
-import { boxEdges, officeFootprint, roomWalls } from './office-geometry';
+import { boxEdges, officeFootprints, roomWalls } from './office-geometry';
 import { cutByDoors, doorLine } from './room-outline';
 import { corridorWalls } from './corridor';
 import { podWalls } from './pod';
@@ -93,8 +93,8 @@ export function fenceSegments(elements: readonly AvatarSceneElement[]): FenceSeg
     // An Office Pod (office.md "Office Pod"): its walls, its doorway shut while both seats are held.
     else if (el.shape === 'office-pod') out.push(...podWalls(el));
     else {
-      const footprint = officeFootprint(el);
-      if (footprint)
+      // Each box of its footprint (a car park's cars and kerb, venue-pieces.md) is its own solid.
+      for (const footprint of officeFootprints(el))
         for (const edge of boxEdges(footprint)) out.push({ ...edge, solid: footprint });
     }
   }

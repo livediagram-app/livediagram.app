@@ -503,7 +503,7 @@ numbers only).
 | Anchors ⇄ element, rotation kept by `reshapePath`                                               | `packages/document/src/path-element.test.ts`                                                                        |
 | Validation                                                                                      | `packages/document/src/validate.test.ts`                                                                            |
 | Export twin                                                                                     | `packages/document/src/svg-render-shapes.test.ts`                                                                   |
-| Ink projection                                                                                  | `packages/document/src/whiteboard.test.ts`                                                                          |
+| Ink projection                                                                                  | `../packages/element-model/src/whiteboard.test.ts`                                                                  |
 | Drawing state machine                                                                           | `apps/editor/lib/path-draw.test.ts`                                                                                 |
 | Edit operations and hit test                                                                    | `apps/editor/lib/path-edit.test.ts`                                                                                 |
 | Draw gesture: press, drag, keys, commit, undo and redo while drawing                            | `apps/editor/components/canvas/path/usePathDrawGesture.test.tsx`                                                    |

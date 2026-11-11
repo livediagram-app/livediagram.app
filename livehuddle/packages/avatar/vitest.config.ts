@@ -24,6 +24,7 @@ const PURE = [
   'scene',
   'seat-claims',
   'seats',
+  'spawn-point',
   'speech',
   'speech-store',
   'status',

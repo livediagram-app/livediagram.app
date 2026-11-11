@@ -178,7 +178,7 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 | pick, custom Use, value matching, yours cap               | `ColourPicker.test.tsx`                                                                                                     |
 | preview and revert                                        | `ColourPicker.test.tsx`                                                                                                     |
 | skins open, pick closes, Escape refocuses                 | `ColourSkins.test.tsx`                                                                                                      |
-| custom colours kept and listed                            | `packages/design/src/custom-colours.test.ts`, `apps/live/lib/design-colours.test.ts`                                        |
+| custom colours kept and listed                            | `../packages/element-model/src/custom-colours.test.ts`, `apps/live/lib/design-colours.test.ts`                              |
 | no new pickers: no colour well, editor only in the picker | `apps/live/components/colour/one-picker.test.ts`                                                                            |
 | element menu rows                                         | `components/palette/context-menu-input-rows.test.tsx`                                                                       |
 | Quick Style rows, More colours, keys                      | `components/canvas/QuickStyleBar.test.tsx`, `quick-style-rows.test.tsx`, `hooks/canvas/useQuickStyle.test.tsx`              |

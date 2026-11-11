@@ -3,7 +3,13 @@ import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { compileFormula } from './compile';
 import { evaluateTree } from './evaluate';
 import { FUNCTION_NAMES, arityText, functionNamed } from './functions';
-import { FORMULA_CACHE_MAX, FORMULA_DEPTH_MAX, FORMULA_MAX, FORMULA_STEPS_MAX } from './limits';
+import {
+  FORMULA_CACHE_MAX,
+  FORMULA_DEPTH_MAX,
+  FORMULA_MAX,
+  FORMULA_QUOTE_MAX,
+  FORMULA_STEPS_MAX,
+} from './limits';
 import { parseFormula, refsOf } from './parse';
 import {
   formulaScopeOf,
@@ -12,7 +18,7 @@ import {
   shownFormula,
   storedFormula,
 } from './references';
-import { tokenize } from './tokens';
+import { quoted, tokenize } from './tokens';
 import { FormulaFail, dateOf, dayText, toText, truthy, type FormulaValue } from './values';
 
 // The formula language (docs/specs/026-plan/item-types.md "Formula fields"): tokens, syntax, values, functions,
@@ -125,6 +131,22 @@ describe('parseFormula', () => {
     expect(run('abs(1, 2)')).toEqual({ error: 'abs takes 1 value' });
     expect(run('if(1)')).toEqual({ error: 'if takes 2 or 3 values' });
     expect(run('round(1 2)')).toEqual({ error: 'Expected ) at 9' });
+  });
+
+  // Work Tracker #510: a problem quotes at most FORMULA_QUOTE_MAX of what was typed, so its line stays short.
+  it('quotes what was typed cut to FORMULA_QUOTE_MAX, an ellipsis after', () => {
+    const long = 'a very long piece of text '.repeat(10);
+    expect(run(`1 "${long}"`)).toEqual({
+      error: `Unexpected ""a very long piece of text a ver…" at 3`,
+    });
+    expect(run(`${'x'.repeat(40)}(1)`)).toEqual({
+      error: `Unknown function "${'x'.repeat(FORMULA_QUOTE_MAX)}…"`,
+    });
+    // Up to the limit, whole.
+    expect(run(`${'y'.repeat(FORMULA_QUOTE_MAX)}(1)`)).toEqual({
+      error: `Unknown function "${'y'.repeat(FORMULA_QUOTE_MAX)}"`,
+    });
+    expect(quoted('ab')).toBe('ab');
   });
 
   it('holds nesting to FORMULA_DEPTH_MAX', () => {
@@ -383,6 +405,10 @@ describe('names and ids', () => {
       ok: false,
       error: 'Unknown field "Spnt" at 10',
       at: 9,
+    });
+    // A name longer than any field's is quoted cut short (Work Tracker #510).
+    expect(storedFormula(`{${'z'.repeat(50)}}`, scope)).toMatchObject({
+      error: `Unknown field "${'z'.repeat(32)}…" at 1`,
     });
     expect(storedFormula('len(Photo)', scope)).toMatchObject({
       error: "An Image can't be used in a formula",

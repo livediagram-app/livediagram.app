@@ -1110,6 +1110,9 @@ importers:
       '@livedesign/design':
         specifier: workspace:*
         version: link:../design
+      '@liveworkspace/template-previews':
+        specifier: workspace:*
+        version: link:../../../packages/template-previews
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
@@ -2295,6 +2298,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
+      '@liveworkspace/template-previews':
+        specifier: workspace:*
+        version: link:../../../packages/template-previews
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
@@ -3430,6 +3436,9 @@ importers:
       '@livedocuments/document':
         specifier: workspace:*
         version: link:../document
+      '@liveworkspace/template-previews':
+        specifier: workspace:*
+        version: link:../../../packages/template-previews
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
@@ -4428,6 +4437,9 @@ importers:
       '@livehuddle/document':
         specifier: workspace:*
         version: link:../document
+      '@liveworkspace/template-previews':
+        specifier: workspace:*
+        version: link:../../../packages/template-previews
     devDependencies:
       '@livehuddle/avatar':
         specifier: workspace:^
@@ -5673,6 +5685,9 @@ importers:
       '@liveplanner/sheets':
         specifier: workspace:*
         version: link:../sheets
+      '@liveworkspace/template-previews':
+        specifier: workspace:*
+        version: link:../../../packages/template-previews
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*

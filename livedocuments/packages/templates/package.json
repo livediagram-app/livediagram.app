@@ -19,7 +19,8 @@
   },
   "dependencies": {
     "@livedocuments/api-schema": "workspace:*",
-    "@livedocuments/document": "workspace:*"
+    "@livedocuments/document": "workspace:*",
+    "@liveworkspace/template-previews": "workspace:*"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",
