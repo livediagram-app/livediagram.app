@@ -16,7 +16,15 @@ const FIXED: ReadonlySet<string> = new Set(AUTOMATION_VALUE_NAMES);
 
 const VALUE = /\{\{([^{}]*)\}\}/g;
 const SHIFT = /^now\s*([+-])\s*(\d{1,4})\s*d$/;
-const FIELD = /^card\.field\.(.*\S.*)$/;
+const FIELD_PREFIX = 'card.field.';
+
+// `card.field.<Field Name>`: the name after the prefix, when it holds more than spaces. A prefix check, never a
+// regular expression, so a long hostile name costs one linear pass (CodeQL polynomial-regex).
+function fieldNameOf(name: string): string | null {
+  if (!name.startsWith(FIELD_PREFIX)) return null;
+  const rest = name.slice(FIELD_PREFIX.length);
+  return rest.trim() ? rest : null;
+}
 
 // The names a text's values give, in order, as written between the braces (trimmed).
 export function valuesIn(text: string): string[] {
@@ -25,7 +33,7 @@ export function valuesIn(text: string): string[] {
 
 // Whether the builder knows a value's name: a fixed name, a field by name, or a day from today.
 export const isKnownValue = (name: string): boolean =>
-  FIXED.has(name) || SHIFT.test(name) || FIELD.test(name);
+  FIXED.has(name) || SHIFT.test(name) || fieldNameOf(name) !== null;
 
 // The first value a text holds that the builder does not know, or null.
 export const unknownValueIn = (text: string): string | null =>
@@ -90,9 +98,9 @@ function valueOf(name: string, ctx: ValueContext, iso: boolean): string {
     const n = Number(shift[2]) * (shift[1] === '-' ? -1 : 1);
     return day(addDays(todayIn(ctx.now, ctx.timeZone), n));
   }
-  const field = FIELD.exec(name);
-  if (field) {
-    const id = fieldOfName(ctx.type, field[1]!);
+  const field = fieldNameOf(name);
+  if (field !== null) {
+    const id = fieldOfName(ctx.type, field);
     return id ? fieldText(ctx.card.fields[id], id) : '';
   }
   switch (name) {

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   dayFrom,
   dayText,
@@ -107,5 +108,19 @@ describe('fillValues', () => {
       ),
     ).toBe('[][][][][]');
     expect(fillValues('{{card.title}}', ctx({ title: '{{rule}}' }))).toBe('{{rule}}');
+  });
+});
+
+describe('hostile text', () => {
+  // CodeQL polynomial-regex: a long run that almost names a value must stay one linear pass.
+  it('checks a long near-miss field name within budget', () => {
+    const name = `card.field.${'!'.repeat(100_000)}`;
+    const spaces = `card.field.${' '.repeat(100_000)}`;
+    const ms = cpuMsOf(() => {
+      expect(isKnownValue(name)).toBe(true);
+      expect(isKnownValue(spaces)).toBe(false);
+      expect(unknownValueIn(`{{${spaces}}}`)).toBe(spaces.trim());
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(200));
   });
 });

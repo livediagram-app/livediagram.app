@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { previewText, valueDay, type PreviewContext } from './preview-values';
 import { ANA, MARCO, NOW, card } from './test-fixtures';
 
@@ -31,5 +32,14 @@ describe('previewText', () => {
   it('reads a value it cannot fill as nothing', () => {
     const bare = ctx({ card: card(1, 'X') });
     expect(previewText('[{{card.assignee}}][{{card.due}}][{{nope}}]', bare)).toBe('[][][]');
+  });
+});
+
+describe('hostile text', () => {
+  // CodeQL polynomial-regex: an unclosed value full of spaces must stay one linear pass.
+  it('previews a long unclosed value within budget', () => {
+    const text = `{{${' '.repeat(100_000)}`;
+    const ms = cpuMsOf(() => expect(previewText(text, ctx())).toBe(text));
+    expect(ms).toBeLessThan(cpuBudgetMs(200));
   });
 });

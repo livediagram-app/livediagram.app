@@ -67,5 +67,6 @@ function valueOf(name: string, ctx: PreviewContext): string {
 
 /** A rule's text with every value filled. */
 export function previewText(text: string, ctx: PreviewContext): string {
-  return text.replace(/\{\{\s*([^{}]+?)\s*\}\}/g, (_, name: string) => valueOf(name, ctx));
+  // One class between the braces, trimmed after: no overlapping quantifiers, so a hostile text is one linear pass.
+  return text.replace(/\{\{([^{}]+)\}\}/g, (_, raw: string) => valueOf(raw.trim(), ctx));
 }
