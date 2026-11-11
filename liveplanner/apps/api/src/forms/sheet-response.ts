@@ -28,7 +28,7 @@ export async function writeResponseRow(
   input: {
     projectId: string;
     sheet: FormSheetDestination;
-    form: Pick<FormDefinition, 'sections'>;
+    form: Pick<FormDefinition, 'sections' | 'sheet'>;
     answers: ReadonlyMap<string, AnswerValue>;
     number: number | null;
     preview: boolean;

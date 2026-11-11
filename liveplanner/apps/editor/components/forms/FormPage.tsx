@@ -136,7 +136,8 @@ export function FormPage({
   const locked = canEdit && !!link.link?.link?.open && !overdue;
   const building = canEdit && !preview && !locked;
   // Where responses go: a Sheet (a row each) when the form names one, else its board.
-  const { destTab, problem } = formDestinationOf(form, tabs, types, tabScope);
+  const { destTab, problem, warning } = formDestinationOf(form, tabs, types, tabScope);
+  const warnings = useMemo(() => (warning ? [warning] : []), [warning]);
   const type = destinationType(form.destination, types);
   // What else stops publishing (docs/specs/030-forms/forms.md "Publishing and the form link").
   const notReady = useMemo(
@@ -255,7 +256,7 @@ export function FormPage({
                         onFix={() => openSettings('destination')}
                         onOpenResponses={destTab ? () => openTab(destTab.id) : null}
                         destinationName={destTab?.name ?? null}
-                        problems={formProblemCount(problem, notReady)}
+                        problems={formProblemCount(problem, notReady, warnings)}
                         onProblems={() => setShareOpen(true)}
                         onNotTaking={(fix) => {
                           if (fix === 'share') setShareOpen(true);
@@ -364,6 +365,7 @@ export function FormPage({
           openSettings('destination');
         }}
         notReady={notReady}
+        warnings={warnings}
         toSheet={!!form.sheet}
         onSyncToCloud={onSyncToCloud}
         syncReady={syncReady}
