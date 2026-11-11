@@ -226,6 +226,71 @@ The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a 
   its last choice **+ New Card Type**: a type named after the form, which a board confining its types also takes),
   **Column** (the board's columns, as chips); a pencil beside Card Type opens that type's editor (its fields), to shape it before mapping answers. A sentence under it reads the result back: "Each response becomes a
   **Bug** card in **New** on **Bugs**." A destination that no longer holds says why instead.
+- **Columns follow the card type** ([the statuses a type uses](../026-plan/item-types.md#the-statuses-a-type-uses)):
+  **Column** offers only the board's columns whose status the chosen card type uses, so a response never lands in a
+  status its type leaves out and misses the type's own boards. A legacy type (one stored before its list) uses every
+  status but those it left out, so it keeps offering every column. Choosing a board, or a card type, keeps the
+  column while the type uses it and otherwise takes the board's first column the type uses. When none of the board's
+  columns is one the type uses, Column says so ("None of {Board}'s columns is a {Type} state. Add one to the board, or
+  choose another board.") and **Problems with this Form** lists it.
+  - **+ New Board** for a type with its own statuses makes the responses board from them: one column per status, in
+    the type's order, each named (and coloured) as the project's boards name it, the board taking that type alone. A
+    type without its own list (a legacy one) gets New, In Progress and Done, as before.
+  - **A saved column outside the type's statuses** (a form from before, or a type changed since) is a warning, never
+    a pause: responses keep arriving where they did, and Problems with this Form lists "Its column isn't one of
+    {Type}'s states, so its cards miss {Type}'s boards. Choose another column." with Choose Where Responses Go,
+    until the column is changed. It does not hold back Publish Form or Accepting Responses, and the api never
+    checks it.
+- **Questions from the card type's fields**: picking a card type under **Card Type** while the form has no questions
+  adds one question per field a respondent can fill, in the type's field order, each already mapped to its field, as
+  one undo step of its own (Undo takes the questions away and leaves the type chosen). The fields and the questions
+  they become:
+
+  | Field               | Question                                             |
+  | ------------------- | ---------------------------------------------------- |
+  | Title               | Short Answer, to Title                               |
+  | Description         | Paragraph, to Description                            |
+  | Text                | Short Answer                                         |
+  | Long Text           | Paragraph                                            |
+  | Number, Currency    | Number                                               |
+  | Email, Phone, Link  | Email, Phone, Link                                   |
+  | Date, Date and Time | Date, Date and Time                                  |
+  | Date Range          | Date Range (with Include Time when the field has it) |
+  | Choice              | Single Choice, the field's options                   |
+  | Multiple Choice     | Multiple Choice, the field's options                 |
+  | Rating              | Rating, the field's scale                            |
+  | Checkbox            | Checkbox                                             |
+
+  Each question is worded as the type names the field, and a [required field](../026-plan/item-types.md#required-fields)
+  makes a required question. Fields a respondent cannot sensibly fill are left out: the built-ins other than Title and
+  Description (Status, Assignee, Priority, Labels, dates and the rest), and the custom kinds Person, Labels, Colour,
+  Checklist, Image, Comments, Votes, Percent, Duration, Link to Card (Pull Request and Blocked By among them) and
+  Calculated. The added questions are ordinary questions: worded, reordered, changed and removed as any other.
+  - On a form that already has questions, Responses Go To offers **Add Questions for {Type}'s Fields** under Card
+    Type (only while some fillable field has no question going to it, and none has a fixed value): it adds a question
+    for each of those fields only, at the end of the last section, as one undo step. Title counts as asked when a
+    question goes to Title, and Description when any question's answer goes there.
+  - Changing the card type later never deletes or rewrites a question: an answer whose field the new type lacks goes
+    to Description, its question saying so, as a [broken mapping](#mapping-where-an-answer-goes) does. Fields set
+    automatically keep only those the new type still has with the same value (one undo step brings the rest back).
+    Choosing another board keeps them while the card type stays.
+
+- **Filled in automatically** (fixed and automatic values; `destination.fixed`): under the column, **Set
+  Automatically** (closed until opened) lists card fields every response's card gets without a question, and **+ Set
+  a Field** adds one, offering each field of the type that no question goes to and that is not set already (one
+  source per field: a field set here is not offered under Answer Goes To, and one a question goes to is not offered
+  here). A field set here takes:
+  - a **Choice** field: one of its options; **Multiple Choice**: some of its options; **Labels** (the built-in or a
+    Labels field): labels, typed and split by commas; **Text** and **Long Text**: text (up to 500 characters);
+    **Number** and **Currency**: a number; **Priority**: Urgent, High, Medium or Low;
+  - a **Date** field (Start, Due or a custom Date): **Submitted Date**, or the submitted date plus a number of days
+    (0 to 365, "Submitted Date + 7 days" for a due date). The day is read in the time zone of the browser that set it
+    (stored with it, so "submitted" means that Editor's day), else UTC.
+    The api fills them when it makes the card (after the answers, so a set value always wins), never the respondent's
+    browser: a response carries answers to questions only, and these fields have none. A value whose field was removed
+    from the type, no longer fits (its kind changed), or names an option the field no longer has is left off the card,
+    and Problems with this Form lists "{Field} is set automatically to a value its field no longer has: change or
+    remove it." (`broken_fixed`, a publish problem). A required field set here needs no required question.
 - **Settings**: **Accepting Responses** (the link's switch; dimmed until published), **Close On** (a date and time,
   with Clear; a time already past says the form is closed) beside **Response Limit** (1 to 2,000), **Confirmation
   Message** (up to 500 characters, default "Thanks, your response has been recorded."), **Closed Message** (up to
@@ -618,6 +683,12 @@ board settings, for switching back.
   form's preview is written by the api too (`.../form-preview` with no link), its # reading **Preview**.
 - **Elsewhere**: the response count opens the sheet's tab; the Inbox names the sheet's tab; no board shows the
   form's Form strip. Publishing checks no mappings for a sheet form.
+- **Columns filled in automatically** (`form.sheet.fixed`): under the sheet, **Extra Columns** (closed until opened)
+  adds up to 10 columns every response's row fills without a question: each a header (made distinct from the form's
+  others, as a repeated wording is) and a value, **Text** (up to 500 characters), **Number**, or **Submitted Date**
+  (plus 0 to 365 days, read as a board's is, in the zone of the browser that set it, else UTC; written YYYY-MM-DD).
+  They take their columns after the questions', remembered by column (`columns`, the extra column's id) as a
+  question's are. The api writes them into the row it plans, never the respondent's browser.
 
 ## Hearing about responses
 
@@ -813,6 +884,7 @@ showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the 
 | Form     | Created  | the starter (`Blank`, `BugReport`, `Rsvp`, ...)         | A starter is chosen on Start Planning                 |
 | Form     | Created  | `FromBoard`                                             | New Form on a board's cog                             |
 | Form     | Added    | the question type (`ShortAnswer`, `Rating`, ...)        | Add Question                                          |
+| Form     | Added    | `FromCardType`                                          | Questions made from a card type's fields              |
 | Form     | Linked   | `ConnectNewBoard` / `ConnectNewSheet` / `ConnectChoose` | The connect box's three choices                       |
 | Form     | Shared   | `Link`                                                  | Publish Form                                          |
 | Form     | Shared   | `BoardCopy`                                             | Copy Form Link on a board's Form strip                |
