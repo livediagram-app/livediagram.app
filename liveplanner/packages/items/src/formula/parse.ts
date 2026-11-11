@@ -3,7 +3,7 @@
 // before a comparison. A field stays a name here; references.ts turns names into ids and back.
 import { FORMULA_DEPTH_MAX } from './limits';
 import { FUNCTIONS, arityText, functionNamed, type FunctionName } from './functions';
-import { column, tokenize, type FormulaSyntaxError, type Op, type Token } from './tokens';
+import { column, quoted, tokenize, type FormulaSyntaxError, type Op, type Token } from './tokens';
 
 export type FormulaNode =
   | { k: 'num'; v: number }
@@ -125,7 +125,7 @@ export function parseFormula(src: string): FormulaNode | FormulaSyntaxError {
 
   function call(name: Extract<Token, { t: 'name' }>): FormulaNode {
     const fn = functionNamed(name.v);
-    if (!fn) throw new Fail(`Unknown function "${name.v}"`, name.at);
+    if (!fn) throw new Fail(`Unknown function "${quoted(name.v)}"`, name.at);
     enter(name.at);
     pos += 1; // (
     const args: FormulaNode[] = [];
@@ -148,7 +148,10 @@ export function parseFormula(src: string): FormulaNode | FormulaSyntaxError {
     const tree = comparison();
     const rest = peek();
     if (rest)
-      throw new Fail(`Unexpected "${src.slice(rest.at, rest.end)}" at ${column(rest.at)}`, rest.at);
+      throw new Fail(
+        `Unexpected "${quoted(src.slice(rest.at, rest.end))}" at ${column(rest.at)}`,
+        rest.at,
+      );
     return tree;
   } catch (e) {
     // Only a Fail is thrown in here.

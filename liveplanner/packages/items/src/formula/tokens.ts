@@ -2,6 +2,7 @@
 // characters, no regular expressions over the text, so its cost is linear in the formula's length whatever it holds.
 // A field is a run of plain words (`Story Points`) or anything in braces (`{Children Done (%)}`, `\}` and `\\` its
 // escapes); in a stored formula the braces hold the field's id.
+import { FORMULA_QUOTE_MAX } from './limits';
 
 export type Token =
   | { t: 'num'; v: number; at: number; end: number }
@@ -21,6 +22,10 @@ export interface FormulaSyntaxError {
 
 // Where a problem is, as people count: the first character is 1.
 export const column = (at: number) => at + 1;
+
+// What a problem quotes of the text: up to FORMULA_QUOTE_MAX characters, an ellipsis after.
+export const quoted = (text: string) =>
+  text.length > FORMULA_QUOTE_MAX ? `${text.slice(0, FORMULA_QUOTE_MAX).trimEnd()}…` : text;
 
 const isDigit = (c: string) => c >= '0' && c <= '9';
 // A letter of any script, or `_`: a name starts with one. One character at a time, never a regex over the text.
