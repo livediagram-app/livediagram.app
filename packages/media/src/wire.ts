@@ -27,6 +27,21 @@ export const IMAGE_SHA256_HEADER = 'X-Image-Sha256';
 // it (liveworkspace/docs/specs/006-media/media.md "Uploads"). Left out for a document the server never sees.
 export const MEDIA_DOCUMENT_HEADER = 'X-Media-Document';
 
+// The tool that uploaded the picture (liveworkspace/docs/specs/006-media/media.md "Uploaded by a tool"): `mcp` for an AI
+// assistant through an app's MCP server, `cli` for the app's command line. Absent, or anything else, is a person's.
+export const IMAGE_SOURCE_HEADER = 'X-Image-Source';
+export const IMAGE_SOURCES = ['mcp', 'cli'] as const;
+export type ImageSource = (typeof IMAGE_SOURCES)[number];
+
+export function isImageSource(value: unknown): value is ImageSource {
+  return IMAGE_SOURCES.some((source) => source === value);
+}
+
+/** The tool an upload's `X-Image-Source` names, or null for a person's upload (no header, or any other value). */
+export function imageSourceOf(header: string | null): ImageSource | null {
+  return isImageSource(header) ? header : null;
+}
+
 // The bytes route names the image's owner in this response header, so an app can apply its own rule
 // ("the image's owner owns this document") from the one request that fetched the bytes.
 export const MEDIA_OWNER_HEADER = 'X-Media-Owner';
@@ -42,6 +57,8 @@ export type MediaImage = {
   createdAt: number;
   // The app it was uploaded in.
   app: MediaApp;
+  // The tool that uploaded it; absent for a person's own upload.
+  source?: ImageSource;
 };
 
 export type MediaListResponse = { images: MediaImage[] };

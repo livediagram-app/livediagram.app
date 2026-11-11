@@ -1,7 +1,12 @@
 'use client';
 
 import { memo, useMemo, useState } from 'react';
-import { imageCornerPx, type ImageElement } from '@livediagram/document';
+import {
+  containedPictureRect,
+  imageBackingStyle,
+  imageCornerPx,
+  type ImageElement,
+} from '@livediagram/document';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { useCanvasSurface, useCanvasTheme } from '@/components/canvas/CanvasSurfaceContext';
 import { ImageEmptyFace } from '@/components/canvas/ImageEmptyFace';
@@ -80,6 +85,36 @@ function ImageElementViewImpl({
   const radius = imageCornerPx(element, useElementFinish(undefined));
   const radiusStyle = { borderRadius: radius };
   const fit = element.objectFit ?? 'contain';
+  // The picture's own size: the element's, else the bitmap's once it loads (for a contained picture's bands).
+  const [loadedSize, setLoadedSize] = useState<{ width: number; height: number } | null>(null);
+  const natural =
+    element.naturalWidth && element.naturalHeight
+      ? { width: element.naturalWidth, height: element.naturalHeight }
+      : loadedSize;
+  const noteSize = (img: HTMLImageElement) => {
+    if (natural || !img.naturalWidth || !img.naturalHeight) return;
+    setLoadedSize({ width: img.naturalWidth, height: img.naturalHeight });
+  };
+  // Where the picture is drawn in the box (a contained one's own rectangle, else the whole box): the white runs to
+  // the box's edge only where the picture leaves it bare (imageBackingStyle).
+  const pictureRect =
+    fit === 'contain' && natural
+      ? containedPictureRect(element.width, element.height, natural.width, natural.height)
+      : null;
+  const { width: boxW, height: boxH } = element;
+  const [pictureX, pictureY, pictureW, pictureH] = pictureRect
+    ? [pictureRect.x, pictureRect.y, pictureRect.width, pictureRect.height]
+    : [0, 0, boxW, boxH];
+  const backingStyle = useMemo(
+    () =>
+      imageBackingStyle(boxW, boxH, {
+        x: pictureX,
+        y: pictureY,
+        width: pictureW,
+        height: pictureH,
+      }),
+    [boxW, boxH, pictureX, pictureY, pictureW, pictureH],
+  );
 
   // The paper under the element (the canvas), never the app's chrome: a light canvas in dark
   // chrome keeps dark ink (docs/specs/009-elements/images.md "Placeholder rendering").
@@ -163,11 +198,16 @@ function ImageElementViewImpl({
     // anti-aliased edges. Image element content is independent of
     // editor theme by convention (matches GitHub / Notion).
     //
+    // Where the picture reaches the box's edge the white stops short of it (docs/specs/009-elements/images.md
+    // "The white under a picture"): drawn to the same edge, both were anti-aliased there, and at a fractional zoom
+    // the edge pixels blended the picture over part-white ones, a light hairline round a picture on a dark
+    // background. The padding only insets the background; the picture is laid over the whole box.
+    //
     // A Media animation (docs/specs/028-animation/element-animations.md) sits on this frame, so the
     // picture moves inside its crop and never past it.
     <div
-      className={`h-full w-full overflow-hidden rounded bg-white ${bodySetClass(element, 'media') ?? ''}`}
-      style={radiusStyle}
+      className={`relative h-full w-full overflow-hidden rounded ${bodySetClass(element, 'media') ?? ''}`}
+      style={{ ...radiusStyle, ...backingStyle }}
     >
       <img
         src={state.src}
@@ -175,8 +215,10 @@ function ImageElementViewImpl({
         // Decoded off the main thread, so a picture coming into view never stalls a pan.
         decoding="async"
         onError={() => setUndecodable(state.src)}
+        // A picture with no stored size learns it here, so a contained one's bands are known (once per load).
+        onLoad={(e) => noteSize(e.currentTarget)}
         draggable={false}
-        className="block h-full w-full select-none"
+        className="absolute inset-0 block h-full w-full select-none"
         style={{ objectFit: fit }}
       />
     </div>

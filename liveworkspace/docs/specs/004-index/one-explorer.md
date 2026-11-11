@@ -183,6 +183,40 @@ in the brand ramp under the chrome's light or dark class, the start header in th
 light or dark colours, never the tab's theme). The All Apps dots are no app's, so no start header shows
 them.
 
+#### New, on Home
+
+Directly above Jump Back In, Home shows what was **made** lately: the section **New**, the four items created most
+recently, newest first (`HomeNew` in `@liveworkspace/explorer`). Jump Back In ranks what the person opened, so
+something just made and never opened (a batch an AI tool made over MCP, which leaves Recent and Most Used alone on
+purpose) would otherwise be found again only by searching. The same in every app's Explorer and on
+liveworkspace.app; the editors' panel keeps its own Home without it, and a first run shows its starting points in its
+place, as it does for the rest.
+
+- **Which.** The live items in the person's own space (My Work) and in each team they are in, by when each was made
+  (`createdAt`, then id), at most four. Filtered to one app, that app's: documents in livedocuments, canvases in
+  livediagram, plans in liveplanner, designs in livedesign, Spaces in livehuddle. Under All Apps, and on
+  liveworkspace.app in no app, every app's, each card wearing its app's mark as Jump Back In's do: the site's
+  Explorer lists every app everywhere else, so its Home would be the one place where something just made in any app
+  could not be found, and hiding the section there would leave the site's Home without it for no gain. Nothing in
+  the Trash or in Archived, and nothing reached only through a link (that lives in someone else's space; Shared
+  With You Recently has it). An item the person can no longer open (a team they left, an item moved out of reach) is
+  gone from the next read; one they trash or archive here leaves at once.
+- **A card** is Jump Back In's large card (the same component, frame, size, thumbnail, ⋯ menu, right-click and
+  drag): the item's thumbnail, its name, and a quiet line saying when it was made and where it lives ("Made 2 hours
+  ago · Marketing": its folder, its team's name for a team item in no folder, My Work for one of the person's own).
+  An item an AI tool made carries the Explorer's **Made by AI** badge on its thumbnail's corner (`MadeByAiBadge`, as
+  rows and Details show it); Jump Back In's cards carry it the same way. Each opens the item.
+- **This Browser.** Where the Explorer reads this browser's store, the items it keeps are merged in by the same rule
+  (made most recently first, four in all), as Jump Back In merges the opened ones: the same This Browser card.
+- **Loading** draws Jump Back In's placeholders, one row of four cards (the strip's on a phone). **Nothing made yet**, or a failed read,
+  leaves the section out (Jump Back In below says when Home could not load), so Home never shows two empty states.
+- **Phones.** Below `md` the four are one scrolling strip of small tiles, Jump Back In's strip (its picture and
+  name), with no See More: four is all there is.
+- **The read** rides on Home's one items read (`newest=4` beside `used`, `mine` and `any`, [contracts](one-explorer-contracts.md#items)),
+  so the section adds no request. It is one statement: each of the person's scopes walks its own index newest made
+  first and stops at four, and the four newest of those are the answer, so it costs four rows a space however much
+  each holds.
+
 #### Spaces, on Home
 
 Directly under Jump Back In (its Most Used and Recent), Home lists the person's **Spaces**: the places that hold

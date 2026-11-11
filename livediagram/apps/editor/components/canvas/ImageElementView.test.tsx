@@ -11,6 +11,7 @@ import {
 } from '@livediagram/document';
 import { CanvasSurfaceProvider, CanvasThemeProvider } from './CanvasSurfaceContext';
 import { ImageElementView } from './ImageElementView';
+import { IMAGE_BACKING_INSET_PX } from '@livediagram/document';
 import {
   IMAGE_BROKEN_TONE,
   IMAGE_PLACEHOLDER_TONE,
@@ -368,5 +369,53 @@ describe('imagePlaceholderMetrics', () => {
       gapPx: 4,
       showLabel: false,
     });
+  });
+});
+
+// docs/specs/009-elements/images.md "The white under a picture": white under a transparent picture and a contain
+// picture's bands, stopping short of the box's edge so a fractional zoom never shows it as a light hairline.
+describe('the white under a picture', () => {
+  const ready = () => {
+    blob.state = { status: 'ready', src: 'data:image/png;base64,AAAA' } as typeof blob.state;
+  };
+
+  it('backs the picture with white, inset from the edge', () => {
+    ready();
+    const frame = box(draw(image({ imageId: 'x' })).container);
+    expect(frame.style.backgroundColor).toBe('rgb(255, 255, 255)');
+    expect(frame.style.backgroundClip).toBe('content-box');
+    expect(frame.style.padding).toBe(`${IMAGE_BACKING_INSET_PX}px`);
+    // A whole screen pixel at 50% zoom on a 1x screen.
+    expect(IMAGE_BACKING_INSET_PX).toBeGreaterThanOrEqual(2);
+    expect(frame.className).not.toContain('bg-white');
+  });
+
+  it('runs the white to the edge in the bands a contained picture leaves', () => {
+    ready();
+    // A square picture contained in its box: centred, with bands beside it.
+    const el = image({ imageId: 'x', naturalWidth: 500, naturalHeight: 500 });
+    const frame = box(draw(el).container);
+    const side = (el.width - el.height) / 2;
+    expect(frame.style.boxShadow).toBe(
+      `inset ${side}px 0px 0 0 #fff, inset -${side}px 0px 0 0 #fff`,
+    );
+  });
+
+  it('learns a picture size it was not given when the picture loads, for its bands', () => {
+    ready();
+    const { container } = draw(image({ imageId: 'x' }));
+    expect(box(container).style.boxShadow).toBe('none');
+    const img = container.querySelector('img')!;
+    Object.defineProperty(img, 'naturalWidth', { value: 300 });
+    Object.defineProperty(img, 'naturalHeight', { value: 300 });
+    fireEvent.load(img);
+    expect(box(container).style.boxShadow).toMatch(/^inset /);
+  });
+
+  it('lays the picture over the whole box, so it alone meets the edge', () => {
+    ready();
+    const img = box(draw(image({ imageId: 'x' })).container).querySelector('img')!;
+    expect(img.className).toMatch(/\babsolute\b/);
+    expect(img.className).toMatch(/\binset-0\b/);
   });
 });

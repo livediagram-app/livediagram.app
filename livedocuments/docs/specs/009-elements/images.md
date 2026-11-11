@@ -113,6 +113,21 @@ When `imageId === null`, `<ImageElementView>` (`apps/editor/components/canvas/Im
 - **The broken state is sized to the box.** It shows whenever the picture cannot be drawn: its bytes could not be fetched, or they arrived and will not decode (a truncated `data:` URL, a corrupt upload), never the browser's own broken-image glyph. Its label is a tenth of the box's shorter side, between 10 and 40 canvas px, and the icon twice the label (at least 16 px, at most 40% of the shorter side) (`imagePlaceholderMetrics`). A box too small to hold the label under the icon shows the icon alone and carries the label as its accessible name.
 - **Telemetry.** Pressing Select Image tracks `Element / Used / ImagePlaceholder`.
 
+### The white under a picture
+
+A picture is drawn on white in every theme, so a transparent PNG and the bands a `contain` picture leaves keep the
+white they were made on. Where the picture reaches the box's edge, the white stops 2 canvas px short of it (and of its
+rounded corners), so at that edge only the picture meets what lies behind it; where the picture leaves a band, the
+white runs to the edge, so a band's corner meets the picture's corner and the picture never pokes out past it
+(`imageBackingStyle`, `packages/element-model/src/image-backing.ts`, shared by every product). Were the white to reach
+an edge the picture also reaches, a zoom that puts the edge between screen pixels (66%, say) would blend the picture's
+edge pixels over part-white ones, and a picture that fills its box on a dark background (a logo on its own background)
+would wear a faint light frame. 2 px keeps the white a whole screen pixel in from the edge at 50% zoom and above on any
+screen; the 2 px rim it leaves under a transparent edge shows what lies behind, too thin to read as a gap. A picture
+whose size is not stored learns it when it loads; until then its white is inset all round. The frame's clip (the corner
+radius, or a mask's shape) still bounds the white, and a crop's part counts as the picture. Exports draw at whole
+pixels and keep their full-size white backing.
+
 ### Shown at the size they are seen
 
 A picture is kept whole in the gallery, and exports draw the original, but the editor shows a copy
@@ -300,7 +315,7 @@ Setting or clearing an image is one undoable step. Undo restores the prior `imag
 
 ## Agents
 
-An assistant places the user's own pictures through the MCP and the CLI; it never uploads them.
+An assistant places the user's own pictures through the MCP and the CLI, and adds or removes pictures of its own.
 
 - **Finding a picture.** `list_images` (MCP, [MCP server §4.5b](../015-api/mcp-server.md#45b-list_images)) and
   `image ls` (CLI, [CLI](../015-api/cli.md)) list the caller's gallery (`GET /api/images`): each image's id, name,
@@ -319,9 +334,15 @@ your image gallery: list_images lists the pictures you can place`). That keeps t
 - **Seeing it.** The MCP's preview embeds placed images ([Preview / live
   image](#preview--live-image-server-rendered-svg)), so the assistant's own picture of the page shows the
   screenshot, not a box.
-- **Why no upload.** A chat assistant cannot hand an attachment's bytes to a tool, and a fetch from a URL would bring
-  server-side requests to arbitrary hosts and pictures the user never chose. Pictures reach the gallery through the
-  editor (upload, paste, drop or Image search), where the user chooses them.
+- **Adding a picture.** `upload_image` (MCP, [MCP server §4.5c](../015-api/mcp-server.md#45c-upload_image)) and
+  `image add <file|url>` (CLI) upload one picture the assistant made or found (a render, a chart, a logo from a
+  repository) to the caller's gallery and answer its id, so it can go straight into an element. Base64 bytes (MCP), a
+  file (CLI) or a public https URL the server fetches with SSRF checks; PNG, JPEG, WebP or GIF up to 10 MB, judged by
+  their bytes, never SVG. An MCP upload is marked Made by AI in the Image Gallery; a CLI one is not, as with a file's
+  source.
+- **Removing pictures.** `delete_image` (MCP, [§4.5d](../015-api/mcp-server.md#45d-delete_image)) and `image rm
+<ids…>` (CLI) remove the caller's own pictures. A picture still placed is kept, naming the items that use it, unless
+  forced (`force: true`, `--force`), which leaves those elements showing a broken picture.
 
 ## Out of scope
 

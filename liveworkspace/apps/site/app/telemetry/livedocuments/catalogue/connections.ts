@@ -70,6 +70,8 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'List Images',
     'Listing the user’s image gallery, to place their pictures.',
   ),
+  mcpTool('UploadImage', 'Upload Image', 'Adding a picture to the user’s image gallery.'),
+  mcpTool('DeleteImage', 'Delete Image', 'Removing pictures from the user’s image gallery.'),
   mcpTool('CreateDocument', 'Create Document', 'Making a new document.'),
   mcpTool('AddTab', 'Add Tab', 'Adding a tab to an existing document.'),
   mcpTool('UpdateDocument', 'Update Document', 'Editing a document’s elements.'),

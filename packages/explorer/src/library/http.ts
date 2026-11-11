@@ -12,6 +12,7 @@ import {
   MAX_IMAGE_BYTES,
   MAX_IMAGE_MB,
 } from '@liveworkspace/api-schema/image-limits';
+import { isMadeByAiSource } from '@liveworkspace/api-schema/document-source';
 import { APP_ITEMS, isAppName, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { ShapePreview } from './ShapePreview';
 import type {
@@ -77,6 +78,8 @@ type WireImage = {
   height: number;
   originalName?: string;
   createdAt: number;
+  // The tool that uploaded it (liveworkspace/docs/specs/006-media/media.md "Uploaded by a tool").
+  source?: string;
 };
 
 async function imageSize(file: File): Promise<{ width: number; height: number }> {
@@ -131,6 +134,7 @@ function galleryHost(app: AppName, path: string, token: Token, origin: string): 
         width: i.width,
         height: i.height,
         createdAt: i.createdAt,
+        ...(isMadeByAiSource(i.source) ? { madeByAi: true } : {}),
       }));
     },
     usage: async (signal) => {

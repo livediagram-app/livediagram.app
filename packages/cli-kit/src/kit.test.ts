@@ -5,7 +5,7 @@ import { storedCredential } from './credentials';
 import { debugLog } from './debug';
 import { didYouMean } from './did-you-mean';
 import { EXIT, exitCodeForStatus } from './exit-codes';
-import { inputReader } from './input';
+import { bytesReader, inputReader } from './input';
 import { discover } from './oauth';
 import type { CliIo } from './io';
 import { cacheDir, configDir } from './paths';
@@ -35,7 +35,11 @@ function io(over: Partial<Omit<CliIo, 'files'>> & { files?: Record<string, strin
     now: () => 0,
     runtime: 'node/22 test',
     ...over,
-    files: { read: async (path: string) => files[path] ?? null },
+    files: {
+      read: async (path: string) => files[path] ?? null,
+      readBytes: async (path: string) =>
+        path in files ? new TextEncoder().encode(files[path]) : null,
+    },
   };
   return { io: base as unknown as CliIo, err: () => err };
 }
@@ -244,6 +248,15 @@ describe('versions', () => {
     expect(isBelow('1.3.0-x-y', '1.3.0-x-z')).toBe(true);
     expect(isBelow('1.3.0+build.5', '1.3.0')).toBe(false);
     expect(isBelow('1.2.9', '1.3.0-rc.1')).toBe(true);
+  });
+});
+
+describe('bytesReader', () => {
+  it('reads a file’s bytes, relative or absolute, and refuses a missing one', async () => {
+    const read = bytesReader(io({ files: { '/work/a.png': 'PNG', '/abs.png': 'ABS' } }).io);
+    expect(await read('a.png')).toEqual(new TextEncoder().encode('PNG'));
+    expect(await read('/abs.png')).toEqual(new TextEncoder().encode('ABS'));
+    await expect(read('nope.png')).rejects.toThrow('no file nope.png');
   });
 });
 

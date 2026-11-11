@@ -354,6 +354,9 @@ export type ItemListQuery = ItemFilters & {
   // and each of your teams, in `app`) counted up to this many (LIST_LIMIT_MAX), as `mine`; and whether you can open anything at all in `app`, as `any`.
   mine?: number;
   any?: boolean;
+  // A first page only: also up to this many (NEWEST_MAX) live items from your own space and each of your teams', in
+  // `app`, the most recently made first, as `newest` (Home's New).
+  newest?: number;
 };
 
 /** The count of every space's items beside a first page (`mine`): up to the cap asked, and whether there are more. */

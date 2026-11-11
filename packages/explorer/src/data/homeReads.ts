@@ -1,17 +1,24 @@
-// Home's reads, folded (README "How it loads"). Home opens with three questions about items, each asked from its own
+// Home's reads, folded (README "How it loads"). Home opens with four questions about items, each asked from its own
 // part of the page, and two about what was shared:
 //
 //   - Jump Back In: Recent's first page with Most Used beside it (HomePane);
+//   - New: the items made most recently in the person's spaces (HomeNew);
 //   - the hero's pill: how many items are in every space the person is in, My Work and each team (HomeHero);
 //   - the first run: whether the person can open anything at all (WelcomeProvider);
 //   - Shared With You Recently (HomePane) and the sidebar's Shared With Me count (one page of the same list).
 //
 // Asked in the same tick (the effects of one commit), the items' questions go to the index as one request
-// (`view=recent&used=…&mine=…&any=1`), and the two Shared reads as one page of the larger size, each asker taking
+// (`view=recent&used=…&newest=…&mine=…&any=1`), and the two Shared reads as one page of the larger size, each asker taking
 // its own part. Asked alone, each is the one request it always was. A request is cancelled only once every asker
 // has let go of it.
 
-import { LIST_LIMIT_MAX, type App, type IndexClient, type Item } from '@liveworkspace/index-client';
+import {
+  LIST_LIMIT_MAX,
+  NEWEST_MAX,
+  type App,
+  type IndexClient,
+  type Item,
+} from '@liveworkspace/index-client';
 import type { AppFilter } from '../words';
 
 /** Recent's first page and its Most Used. */
@@ -19,8 +26,8 @@ export type RecentAsk = { limit: number; used: number };
 export type RecentAnswer = { items: Item[]; nextCursor: string | null; mostUsed: Item[] };
 export type MineAnswer = { count: number; more: boolean };
 
-type HomeAsk = { recent?: RecentAsk; mine?: number; any?: true };
-type HomeAnswer = { recent?: RecentAnswer; mine?: MineAnswer; any?: boolean };
+type HomeAsk = { recent?: RecentAsk; mine?: number; any?: true; newest?: number };
+type HomeAnswer = { recent?: RecentAnswer; mine?: MineAnswer; any?: boolean; newest?: Item[] };
 
 type SharedPage = Awaited<ReturnType<IndexClient['listShared']>>;
 
@@ -104,6 +111,8 @@ const homeBatch = batcher<HomeAsk & { scope: { app: App; filter: AppFilter } }, 
         : null;
     const mine = mines.length > 0 ? Math.min(Math.max(...mines), LIST_LIMIT_MAX) : undefined;
     const any = asks.some((a) => a.any);
+    const newests = asks.flatMap((a) => (a.newest ? [a.newest] : []));
+    const newest = newests.length > 0 ? Math.min(Math.max(...newests), NEWEST_MAX) : undefined;
     // Recent's page carries the others; without it, the smallest page of everything that opens carries them, and
     // itself says whether anything does.
     const res = await client.listItems(
@@ -114,9 +123,10 @@ const homeBatch = batcher<HomeAsk & { scope: { app: App; filter: AppFilter } }, 
             used: recent.used,
             mine,
             any: any || undefined,
+            newest,
             ...appOf(app, filter),
           }
-        : { view: 'search', limit: 1, mine, ...appOf(app, filter) },
+        : { view: 'search', limit: 1, mine, newest, ...appOf(app, filter) },
       { signal },
     );
     const answer: HomeAnswer = {};
@@ -128,6 +138,7 @@ const homeBatch = batcher<HomeAsk & { scope: { app: App; filter: AppFilter } }, 
       };
     if (mine !== undefined && res.mine) answer.mine = res.mine;
     if (any) answer.any = recent ? res.any : res.items.length > 0;
+    if (newest !== undefined) answer.newest = res.newest ?? [];
     return answer;
   },
 );
@@ -152,6 +163,22 @@ export async function readRecentForHome(
 ): Promise<RecentAnswer> {
   const answer = await askHome(c, app, filter, { recent }, signal);
   return answer.recent!;
+}
+
+/**
+ * New's read: up to `limit` items made most recently in the person's own space and their teams', folded with Home's
+ * other reads asked with it. An index that doesn't answer `newest` answers none, so the section stays away rather
+ * than costing a request of its own.
+ */
+export async function readNewestForHome(
+  c: IndexClient,
+  app: App,
+  filter: AppFilter,
+  limit: number,
+  signal?: AbortSignal,
+): Promise<Item[]> {
+  const answer = await askHome(c, app, filter, { newest: limit }, signal);
+  return answer.newest!.slice(0, limit);
 }
 
 /** The count of every space the person is in (My Work and each team) up to `cap`, for the hero's pill. */

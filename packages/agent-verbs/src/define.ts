@@ -25,6 +25,8 @@ export type VerbContext<Copies = unknown> = {
   sleep: (ms: number) => Promise<void>;
   // A file's text, or stdin's for `-`.
   readInput: (path: string) => Promise<string>;
+  // A file's bytes (a picture `image add` uploads). The CLI reads them; a front door without files has none.
+  readBytes?: (path: string) => Promise<Uint8Array>;
   // The read copies; null where the front door keeps none.
   copies: Copies | null;
 };

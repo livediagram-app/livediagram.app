@@ -1,18 +1,21 @@
 // The user's image gallery for agents (docs/specs/015-api/mcp-server.md §4.5b, docs/specs/009-elements/images.md
-// "Agents"): list_images, and the check every element-writing tool runs so an imageId names a picture the caller may
-// place. Pictures reach the gallery through the editor; no tool uploads.
+// "Agents"): list_images, upload_image and delete_image (§4.5c, §4.5d, over the shared @liveworkspace/agent-verbs
+// images/upload.ts and images/remove.ts), and the check every element-writing tool runs so an imageId names a picture
+// the caller may place.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ImageSummary } from '@livediagram/api-schema';
 import {
+  addImage,
   CONTACT_SHEET_MAX,
   galleryListing,
+  removeFromGallery,
   imagesPlacedIn,
   unknownImageIssue,
   type GalleryImage,
 } from '@livediagram/agent-verbs';
-import { mcpListImages } from '@livediagram/agent-verbs/mcp';
+import { mcpDeleteImage, mcpListImages, mcpUploadImage } from '@livediagram/agent-verbs/mcp';
 import type { Element, Tab } from '@livediagram/document';
-import { ApiError, apiJson } from './api';
+import { ApiError, apiJson, clientFor } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { imageResult } from './image-result';
 import {
@@ -121,4 +124,23 @@ export function registerImageTools(server: McpServer, env: Env): void {
     if (!args.image || listing.images.length === 0) return textResult(listing);
     return imageResult(listing, contactSheetTab(listing.images), { env, token });
   });
+
+  // As the caller, through their own api: the same auth and gallery the editor's upload uses. A refusal (too large,
+  // not a picture, a private URL, a full gallery) is a tool error in words (registerTool).
+  registerTool(server, env, mcpUploadImage, async (args, extra) => {
+    const token = requireToken(extra);
+    return textResult(
+      await addImage(clientFor(env, token), args, { source: 'mcp', words: MCP_GALLERY_WORDS }),
+    );
+  });
+
+  registerTool(server, env, mcpDeleteImage, async (args, extra) => {
+    const token = requireToken(extra);
+    return textResult(
+      await removeFromGallery(clientFor(env, token), args.imageIds, { force: args.force === true }),
+    );
+  });
 }
+
+// How a refusal names the gallery's other tools.
+const MCP_GALLERY_WORDS = { list: 'list_images', remove: 'delete_image' };

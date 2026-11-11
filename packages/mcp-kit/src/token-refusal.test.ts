@@ -2,7 +2,7 @@
 // the /mcp response into the OAuth challenge, so the client signs in again instead of retrying a dead token.
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { describe, expect, it, vi } from 'vitest';
-import { createMcpApp } from './app';
+import { createMcpApp, MCP_MAX_REQUEST_BYTES } from './app';
 import { mcpListing, serverIdentity } from './listing';
 import type { OauthEnv } from './oauth-clients';
 import { watchTokenRefusal } from './token-refusal';
@@ -117,5 +117,33 @@ describe('watchTokenRefusal', () => {
     expect(res.headers.get('WWW-Authenticate')).toBe(
       'Bearer resource_metadata="http://localhost:8788/.well-known/oauth-protected-resource"',
     );
+  });
+});
+
+describe('/mcp request bodies', () => {
+  const sized = (bytes: number) =>
+    app.request(
+      'https://mcp.liveexample.app/mcp',
+      {
+        method: 'POST',
+        headers: RPC_HEADERS,
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'tools/call',
+          params: { name: 'find_examples', arguments: { data: 'A'.repeat(bytes) } },
+        }),
+      },
+      { OAUTH_KV: KV, API: apiAnswering(200) },
+    );
+
+  it('takes the base64 of a 10 MB picture, past the SDK default of 4 MiB', async () => {
+    const res = await sized(Math.ceil((10 * 1024 * 1024) / 3) * 4);
+    expect(res.status).toBe(200);
+  });
+
+  it('answers 413 to a body over the cap', async () => {
+    const res = await sized(MCP_MAX_REQUEST_BYTES);
+    expect(res.status).toBe(413);
   });
 });

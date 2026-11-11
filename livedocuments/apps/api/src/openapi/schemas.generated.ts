@@ -3721,6 +3721,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "originalName": {
         "type": "string"
       },
+      "source": {
+        "enum": [
+          "mcp",
+          "cli"
+        ],
+        "type": "string"
+      },
       "width": {
         "type": "number"
       }

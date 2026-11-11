@@ -5,4 +5,4 @@ import { AGENT_PRODUCT } from '../agent-product';
 
 export { sizeText } from '@liveworkspace/agent-verbs/verbs/image';
 
-export const { imageLs } = createImageVerbs(AGENT_PRODUCT);
+export const { imageLs, imageAdd, imageRm } = createImageVerbs(AGENT_PRODUCT);

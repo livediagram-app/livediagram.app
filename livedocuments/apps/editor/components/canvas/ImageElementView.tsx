@@ -2,6 +2,8 @@
 
 import { memo, useEffect, useMemo, useState } from 'react';
 import {
+  containedPictureRect,
+  imageBackingStyle,
   imageCornerPx,
   imageDrawsCover,
   imageIsShaped,
@@ -125,6 +127,27 @@ function ImageElementViewImpl({
     setLoadedSize({ width: img.naturalWidth, height: img.naturalHeight });
   };
   const layout = shaped ? imageLayout(element, natural, element.crop, fit) : null;
+  // Where the picture is drawn in the box: a crop's part, a contained picture's own rectangle, else the whole box.
+  // The white runs to the box's edge only where the picture leaves it bare (imageBackingStyle).
+  const pictureRect = layout
+    ? layout.part
+    : fit === 'contain' && natural
+      ? containedPictureRect(element.width, element.height, natural.width, natural.height)
+      : null;
+  const { width: boxW, height: boxH } = element;
+  const [pictureX, pictureY, pictureW, pictureH] = pictureRect
+    ? [pictureRect.x, pictureRect.y, pictureRect.width, pictureRect.height]
+    : [0, 0, boxW, boxH];
+  const backingStyle = useMemo(
+    () =>
+      imageBackingStyle(boxW, boxH, {
+        x: pictureX,
+        y: pictureY,
+        width: pictureW,
+        height: pictureH,
+      }),
+    [boxW, boxH, pictureX, pictureY, pictureW, pictureH],
+  );
 
   // The paper under the element (its page's fill, else the canvas), never the app's chrome: a
   // light page in dark chrome keeps dark ink (docs/specs/009-elements/images.md "Placeholder rendering").
@@ -209,11 +232,16 @@ function ImageElementViewImpl({
     // anti-aliased edges. Image element content is independent of
     // editor theme by convention (matches GitHub / Notion).
     //
+    // Where the picture reaches the box's edge the white stops short of it (docs/specs/009-elements/images.md
+    // "The white under a picture"): drawn to the same edge, both were anti-aliased there, and at a fractional zoom
+    // the edge pixels blended the picture over part-white ones, a light hairline round a picture on a dark page.
+    // The padding only insets the background; the picture is laid over the whole box.
+    //
     // A Media animation (docs/specs/028-animation/element-animations.md) sits on this frame, so the
     // picture moves inside its crop and never past it.
     <div
-      className={`relative h-full w-full overflow-hidden rounded bg-white ${bodySetClass(element, 'media') ?? ''}`}
-      style={{ ...radiusStyle, clipPath: maskPath }}
+      className={`relative h-full w-full overflow-hidden rounded ${bodySetClass(element, 'media') ?? ''}`}
+      style={{ ...radiusStyle, ...backingStyle, clipPath: maskPath }}
     >
       {layout ? (
         // A crop or a mask: the kept part laid into the box and the picture placed around it (imageLayout). A
@@ -251,8 +279,10 @@ function ImageElementViewImpl({
           // Decoded off the main thread, so a picture coming into view never stalls a pan.
           decoding="async"
           onError={() => setUndecodable(state.src)}
+          // A picture with no stored size learns it here, so a contained one's bands are known (once per load).
+          onLoad={(e) => noteSize(e.currentTarget)}
           draggable={false}
-          className="block h-full w-full select-none"
+          className="absolute inset-0 block h-full w-full select-none"
           style={{ objectFit: fit, filter: grey }}
         />
       )}
@@ -269,7 +299,6 @@ function ImageElementViewImpl({
 }
 
 export const ImageElementView = memo(ImageElementViewImpl);
-
 function BrokenIcon({ size }: { size: number }) {
   return (
     <Glyph size={size} units={24}>

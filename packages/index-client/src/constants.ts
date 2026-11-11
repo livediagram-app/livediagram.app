@@ -134,6 +134,8 @@ export const OPEN_DEBOUNCE_MS = 60 * 1000;
 export const USE_WINDOW_DAYS = 14;
 // How many Most Used items one Recent request may ask for alongside its page (`used`).
 export const MOST_USED_MAX = 8;
+// How many of the most recently made items one first page may ask for alongside it (`newest`, Home's New).
+export const NEWEST_MAX = 8;
 
 // The Timeline (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"). Where each kind comes from:
 // - the index, in the batch that makes the change: created, renamed, moved, trashed, restored, shared,

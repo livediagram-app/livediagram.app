@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { IMAGE_ACCEPT_ATTR } from '@liveworkspace/api-schema/image-limits';
 import { Button, ConfirmDialog, EmptyState, HoverCard } from '@liveworkspace/ui';
+import { MadeByAiChip } from '../explorer/badges';
 import { TrashIcon } from '../ui/icons';
 import { ImageIcon, UploadIcon } from '../ui/library-icons';
 import { isAbort } from '../data/errors';
@@ -301,7 +302,8 @@ function GalleryCard({
           <TrashIcon />
         </button>
       </div>
-      <div className="mt-1">
+      <div className="mt-1 flex flex-wrap items-center gap-1">
+        {image.madeByAi ? <MadeByAiChip /> : null}
         {usage.length === 0 ? (
           <HoverCard
             title={unchecked ? 'Couldn’t check' : 'Not used'}

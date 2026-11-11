@@ -11,6 +11,8 @@ describe('the MCP tool verbs', () => {
       'change_pages',
       'change_components',
       'list_images',
+      'upload_image',
+      'delete_image',
       'find_designs',
       'read_design',
       'list_templates',

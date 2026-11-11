@@ -1,6 +1,6 @@
 # Explorer Home
 
-`/explorer` and `/explorer/home` render the shared Explorer's Home view: the hero, Jump Back In (Most Used: up to eight items you opened in the last 14 days, the most opened first, then Recent: up to eight of your most recently opened, from every app, four across in two rows on a desktop and one strip of up to eight on a phone, each with a line such as "Opened 12 times" or "Opened 2 hours ago") Shared With You Recently, and What Happened, read from the index.
+`/explorer` and `/explorer/home` render the shared Explorer's Home view: the hero, New (the four documents made most recently in this app, newest first, mine and my teams', made by AI ones included, wearing Made by AI; hidden while there are none: [One Explorer "New, on Home"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#new-on-home)), Jump Back In (Most Used: up to eight items you opened in the last 14 days, the most opened first, then Recent: up to eight of your most recently opened, from every app, four across in two rows on a desktop and one strip of up to eight on a phone, each with a line such as "Opened 12 times" or "Opened 2 hours ago") Shared With You Recently, and What Happened, read from the index.
 
 ## The hero
 

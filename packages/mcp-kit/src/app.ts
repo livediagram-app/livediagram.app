@@ -14,6 +14,11 @@ import type { OauthEnv } from './oauth-clients';
 import { runInRequest } from './request-scope';
 import { bearerChallenge, watchTokenRefusal } from './token-refusal';
 
+// The largest /mcp request body: room for upload_image's base64 of a picture at the gallery's 10 MB cap (4/3 of it,
+// about 13.4 MB) and its JSON around it, where the SDK's default of 4 MiB would refuse a picture over about 3 MB. The
+// transport reads the body through a counter and answers 413 past it, so no request holds more than this.
+export const MCP_MAX_REQUEST_BYTES = 15 * 1024 * 1024;
+
 export function createMcpApp<E extends OauthEnv>(options: {
   // A fresh server per request: the caller's token arrives through the transport's authInfo and is read inside
   // each tool, so nothing carries over between requests.
@@ -77,6 +82,7 @@ export function createMcpApp<E extends OauthEnv>(options: {
     const transport = new WebStandardStreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
       enableJsonResponse: true,
+      maxRequestBodySize: MCP_MAX_REQUEST_BYTES,
     });
     await server.connect(transport);
     // Tools post telemetry fire-and-forget; the request's waitUntil keeps those

@@ -13,9 +13,12 @@
     "./find": "./src/find.ts",
     "./folders": "./src/folders.ts",
     "./images/gallery": "./src/images/gallery.ts",
+    "./images/remove": "./src/images/remove.ts",
+    "./images/upload": "./src/images/upload.ts",
     "./listing": "./src/listing.ts",
     "./mcp/archive-tools": "./src/mcp/archive-tools.ts",
     "./mcp/image-schema": "./src/mcp/image-schema.ts",
+    "./mcp/image-tools": "./src/mcp/image-tools.ts",
     "./mcp/tool": "./src/mcp/tool.ts",
     "./product": "./src/product.ts",
     "./refs": "./src/refs.ts",
@@ -35,6 +38,8 @@
   },
   "dependencies": {
     "@liveworkspace/api-client": "workspace:*",
+    "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/media": "workspace:*",
     "zod": "^4.6.7"
   },
   "devDependencies": {

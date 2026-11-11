@@ -8,6 +8,8 @@ import {
   IMAGE_HEIGHT_HEADER,
   IMAGE_NAME_HEADER,
   IMAGE_SHA256_HEADER,
+  IMAGE_SOURCE_HEADER,
+  imageSourceOf,
   MEDIA_DOCUMENT_HEADER,
   IMAGE_WIDTH_HEADER,
   isAcceptedImageType,
@@ -327,6 +329,7 @@ async function upload(
     return badRequest('invalid_dimensions');
   }
   const originalName = originalNameOf(request.headers.get(IMAGE_NAME_HEADER));
+  const source = imageSourceOf(request.headers.get(IMAGE_SOURCE_HEADER));
 
   const bytes = await request.arrayBuffer();
   // Content-Length is the caller's word; the body is the fact.
@@ -370,6 +373,7 @@ async function upload(
         sha256,
         original_name: originalName,
         document,
+        source,
       },
       caps,
     );

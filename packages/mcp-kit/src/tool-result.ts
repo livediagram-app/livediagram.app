@@ -84,6 +84,19 @@ export const TOOL_ANNOTATIONS: Record<ToolBehaviour, ToolAnnotations> = {
   destructive: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
 };
 
+// What a tool says beside its behaviour: that calling it again with the same input changes nothing more
+// (`idempotentHint`), or that it reaches beyond the caller's library (`openWorldHint`: upload_image fetches a URL).
+export type ToolHints = { behaviour: ToolBehaviour; idempotent?: true; openWorld?: true };
+
+// The annotations a tool ships: its behaviour's preset, with its own hints on top.
+export function toolAnnotations({ behaviour, idempotent, openWorld }: ToolHints): ToolAnnotations {
+  return {
+    ...TOOL_ANNOTATIONS[behaviour],
+    ...(idempotent ? { idempotentHint: true } : {}),
+    ...(openWorld ? { openWorldHint: true } : {}),
+  };
+}
+
 // A mistake the caller can fix is a tool error that says so, never a thrown protocol error ("Errors that teach"): a
 // named input refusal, or an api 4xx in words (the product's refusalOf). A 5xx or anything else still throws, and is
 // reported as Error·Api underneath.

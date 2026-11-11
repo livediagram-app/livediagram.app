@@ -8,7 +8,7 @@ uploading it again. livehuddle is one of the apps it serves, as it was while reg
 ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)).
 
 ```
-packages/media               @liveworkspace/media: apps, upload limits, sniffing, guest owners, wire shapes, a client
+packages/media               @liveworkspace/media: apps, upload limits, sniffing, dimensions, guest owners, wire shapes, a client
 liveworkspace/apps/media     the API Worker (@liveworkspace/media-service) and its D1 migrations
 ```
 
@@ -74,8 +74,8 @@ time; a key speaks only for its own app. Answers are JSON except the bytes; erro
 | `POST /owners/merge`         | `{ from, to }`: a guest signed up. `{ moved, kept }`                                |
 | `DELETE /owners/<owner>`     | An account deleted: every image it uploaded goes. `{ deleted }`                     |
 
-`MediaImage` is `{ id, contentType, byteSize, width, height, originalName?, createdAt, app }`, `app` being
-where it was uploaded. The owner and the hash never appear in it. The bytes route names the owner in a
+`MediaImage` is `{ id, contentType, byteSize, width, height, originalName?, createdAt, app, source? }`, `app` being
+where it was uploaded and `source` the tool that uploaded it (below), absent for a person's own upload. The owner and the hash never appear in it. The bytes route names the owner in a
 header so an app can apply its "the image's owner owns this document" rule from the one request.
 
 The data export's service ([data-export.md](../003-accounts/data-export.md#the-media-service)) calls with
@@ -90,7 +90,7 @@ set to `false`, `0` or `off`, every route answers 404.
 
 The body is the file's raw bytes. Headers: `Content-Type`, `Content-Length`, `X-Image-Width`,
 `X-Image-Height`, optionally `X-Image-Original-Name` (percent-encoded, cut to 200 characters),
-`X-Image-Sha256` and `X-Media-Document`. The service refuses, cheapest first:
+`X-Image-Sha256`, `X-Media-Document` and `X-Image-Source`. The service refuses, cheapest first:
 
 1. A declared type not in `ACCEPTED_IMAGE_TYPES` (PNG, JPEG, WebP, GIF; never SVG): `415 unsupported_type`
    with `acceptedTypes`.
@@ -125,6 +125,19 @@ and a new image remembers that document as the one it was **claimed** by (a dedu
 had, so an older image is never claimed after the fact). Only that document's own report can then take the
 reference away (References, below). An app sends it whenever it knows the document; an upload for a
 document the server never sees (a This Browser plan) leaves it out.
+
+**Uploaded by a tool.** `X-Image-Source` names the tool that uploaded the picture: `mcp` (an AI assistant, through
+an app's MCP server) or `cli` (the app's command line). Any other value, or none, is a person's upload. The service
+keeps it on a new image's row (`images.source`) and answers it as `MediaImage.source`; a deduped image keeps what it
+had, so a picture a person uploaded first never turns into one an AI made. It is the same rule a document's source
+follows (`isMadeByAiSource` in `@liveworkspace/api-schema`): only `mcp` counts as **Made by AI**, and the Explorer's
+Image Gallery shows those pictures with the Made by AI chip it shows on documents. An app sends the header only from
+its MCP's and CLI's uploads, which reach it with an API token; its own editor never sends one.
+
+The MCP's `upload_image` reads a picture's width and height from its bytes, as the editor reads them from the
+browser's decode: `@liveworkspace/media`'s `imageDimensions` parses the PNG `IHDR`, a JPEG's first frame header, the
+GIF screen descriptor and the WebP `VP8 `, `VP8L` and `VP8X` headers, without decoding a pixel. A picture whose
+size it cannot read is refused before it is sent.
 
 ## References
 
