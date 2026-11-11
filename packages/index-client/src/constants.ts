@@ -372,6 +372,8 @@ export const INDEX_ERRORS = [
   // The team audit log's read (team-audit-log.md): accounts can't say who runs the team.
   'team_audit_unavailable',
   'invalid_moves',
+  // An automation send malformed, or more than AUTOMATION_SENDS_MAX.
+  'invalid_sends',
   'invalid_password',
   // A new share password shorter than SHARE_PASSWORD_MIN.
   'password_too_short',

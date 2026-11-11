@@ -168,6 +168,7 @@ const routeLabel = createApiRouteLabel(
     'test',
     'deliveries',
     'card-moves',
+    'automation-sends',
     'connections',
   ]),
 );
