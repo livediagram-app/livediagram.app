@@ -3,9 +3,9 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 // Every request the api client makes goes through `apiFetch` in core.ts, which
-// is the one place that sees them all. Today it raises the write signal that
-// makes the Timeline notice a change without a refresh; the point is that it is
-// the funnel, so anything it grows later applies everywhere at once.
+// is the one place that sees them all: it reports network failures and reads
+// the release signal; the point is that it is the funnel, so anything it grows
+// later applies everywhere at once.
 //
 // A module calling `fetch` directly still works, which is what makes this worth
 // pinning: a GET that skips the funnel behaves no differently and fails nothing,

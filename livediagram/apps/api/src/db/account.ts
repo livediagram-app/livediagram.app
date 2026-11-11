@@ -36,7 +36,7 @@ export async function deleteAccount(env: Env, ownerId: string): Promise<{ images
 }
 
 // A guest who became an account (accounts merged them, with their settings and profile; the index moved their
-// canvases, folders, stars and Timeline): what this app keeps for the guest becomes the account's. Their images in
+// canvases, folders, stars and History): what this app keeps for the guest becomes the account's. Their images in
 // the media service, their shape libraries, and their Community copies. Idempotent, so a retry moves nothing twice.
 // A guest has no workbench (it needs a token).
 export async function mergeGuest(env: Env, guestId: string, userId: string): Promise<void> {

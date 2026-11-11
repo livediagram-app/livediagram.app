@@ -1,0 +1,65 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Home',
+  description:
+    'The Explorer opens on Home: the documents you use most and last, and what was shared with you recently.',
+  path: '/help/explorer/home/',
+});
+
+<ArticleLayout
+  title="Home"
+  description="The documents you use most and last, and what was shared with you recently, on one page."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+**Home** is the page the [Explorer](/explorer) opens on, and the first row of its sidebar, above the [Inbox](/help/explorer/activity/). It answers the question you bring back with you, on one screen: **what was I working on?**
+
+Home opens with a greeting across the top of the page. Under it, two pills say how many documents you have across My Work and your teams and whether anything waits in your **Inbox**; click one to go there. The search field sits right there in the greeting, with **New Document** inside it, so the first screen always offers a way to find something or start something. On a wide screen a Slide Deck, an Event Poster and a Year in Review fan out beside it: a glimpse of what a document can hold.
+
+Prefer a plainer Home? Press the **×** beside **Help** in the greeting's corner to hide it. Home then opens with its title and the search field in the header, like every other page, and stays that way on your other devices. Turn it back on in **Settings > Explorer** with **Show Home Banner**.
+
+Rather skip the homepage? Turn on **Automatically Open Explorer** in **Settings > Explorer**, and opening livedocuments.app while you're signed in comes straight here.
+
+Your first visit looks different. With nothing made yet, Home welcomes you and offers ways to start instead: the search field looks through the templates, **Start Blank** offers the blank Pages templates, and below it sit the most popular templates, each one click from a new document. If you have used livedocuments before and see nothing, **Sign In** brings your documents back. Once you have a document, Home shows your work instead.
+
+Below the greeting, Home is one column: **Jump Back In**, then **Shared With You Recently**, each with its link at the right of its heading.
+
+## Jump Back In
+
+**Jump Back In** holds up to sixteen documents within reach: the **eight you opened most** lately, then the **eight you used last**.
+
+- **Most Used** counts how many times you opened a document over the last 14 days, so a document you open a lot over a few days rises to the top. A day you only edited or made it counts as one open. A document you have not opened in 14 days drops off, so the list stays about what you are working on now.
+- **The last ones** are the documents you opened, edited or made most recently, newest first.
+- **What you make is in at once**, opened or not: a new document, a duplicate, a single imported document, or one an AI tool made for you. An import of several documents at once is the exception, so a big import never pushes your work aside; those join when you first open one.
+- A document is never shown twice: if one of the last ones is also among the most used, it stays with the most used, and the next most recent takes its place.
+
+On a computer or a tablet they sit as cards in two groups: **Most Used** first, with a line under each saying how many times you opened it, then **Recent**, saying when you last used each. Each group is up to two rows of four on a computer. On a phone they share one strip of up to eight you scroll sideways, taking turns, and the strip ends in a **See More** tile.
+
+Each document shows a picture of what is drawn on it, with its name underneath; click one to open it. A document saved only in this browser wears the **Browser Storage** pill and takes its place like any other, counted in this browser. Documents in the [Trash](/help/account-and-data/trash/), and ones whose share link has lapsed or whose team you have left, never appear. With nothing yet to show, the section says "The documents you use most and last will gather here."
+
+Opening a document is private: it counts towards your own Jump Back In, and nobody else ever sees that you opened it.
+
+**See More** opens [Recent](/help/explorer/recent/): the 12 documents you opened most recently, newest first, with the same filters as the rest of the Explorer. Its breadcrumb leads back to Home.
+
+## Shared With You Recently
+
+Under Jump Back In sit the four items most recently [shared with you](/help/explorer/shared-with-you/) through a link. **See All** opens Shared With Me.
+
+## Guests and signing in
+
+Home works without an account, like the rest of livedocuments.
+
+**Your work follows you.** Signing up moves what you open, to your new account alongside your documents, so a week of work as a guest is still there afterwards.
+
+## A document's History
+
+The **History** item in a document's menu opens everything that has happened to that document: created, commented on, shared, filed. History covers the **last 30 days**; anything older is no longer listed.
+
+<Tip>
+  To step back your own recent edits on a document, use [Undo](/help/canvas/undo/) in the editor.
+</Tip>
+
+</ArticleLayout>

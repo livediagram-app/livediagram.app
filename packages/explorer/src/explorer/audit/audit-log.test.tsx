@@ -126,7 +126,6 @@ describe('the Audit Log', () => {
   it('is an admin’s alone: a member sees no section and reads nothing', async () => {
     const index = createFakeIndex({ audit: [row(1, 'shared')] });
     renderTeam(index, details('member'));
-    expect(await screen.findByRole('button', { name: /Team Activity/ })).toBeTruthy();
     // The card has loaded (its headline says the reader's not an admin), and still no section.
     await screen.findByText(/2 members/);
     expect(screen.queryByRole('button', { name: /Audit Log/ })).toBeNull();

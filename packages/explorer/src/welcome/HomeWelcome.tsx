@@ -1,7 +1,7 @@
 'use client';
 
 // Home's first run (livediagram's HomeWelcome): for a person with nothing yet, three sections in place of Jump Back
-// In and What Happened. Start Blank (the app's blanks), Popular Templates (its Popular list's first eight, with
+// In. Start Blank (the app's blanks), Popular Templates (its Popular list's first eight, with
 // Browse All Templates), and Already Have Work? (the way back for a guest who may have been signed out). Each start
 // makes its item at once in its app. The pictures are the manifest's static SVGs, drawn as images.
 

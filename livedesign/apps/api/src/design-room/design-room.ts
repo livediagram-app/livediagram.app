@@ -96,7 +96,7 @@ import { dropSession, roomPeople, broadcastPresence } from './design-room-presen
 //     refs and the changeset log, in its own SQLite (design-schema.ts), which the content modules reach as
 //     `env.DESIGN_DB` (index-app item-db.ts). Every API request about the design runs here (`route`,
 //     design-route.ts), so a save is one call to this object and one SQLite transaction. What the index's cross-design reads need (the
-//     Inbox, the listing summary, the Timeline) and the media service's references are pushed from the outbox on
+//     Inbox, the listing summary, History) and the media service's references are pushed from the outbox on
 //     idle (design-outbox.ts).
 //   - The realtime room: connected WebSockets and their identity, presence, and the ordered op stream. It
 //     classifies each op by kind, orders mutations (seq within an epoch, kept in storage), rewrites comment

@@ -98,22 +98,14 @@ export const TELEMETRY_CATEGORIES = [
   // 'Uncaught', 'UnhandledRejection', 'AiQuota.BrowserReader') — never a
   // message, stack, or URL.
   'Error',
-  // Timeline (docs/specs/013-workspace/timeline.md): the Explorer's landing feed. 'Opened' with
-  // `type` 'Landing' | 'Nav' separates the new default landing view
-  // from a deliberate visit, so the landing-page change is measurable;
-  // 'Opened'/'Stack' counts stacked-run expansions, which is how we
-  // learn whether the stacking thresholds are right. 'Changed' carries
-  // the view mode, 'Selected' a filter chip's source type, and 'Loaded'
-  // 'More' | 'Retry' — the second being a read that failed hard enough
-  // that the reader pressed Try again (docs/specs/013-workspace/timeline.md §2.4), which is the
-  // only signal we get for a feed nobody could load. Never a document
-  // name, team name, or comment text.
+  // Timeline: the Explorer's retired feed (docs/specs/013-workspace/history.md). Nothing sends it since
+  // November 2026; kept so stored rows still validate and read on the dashboard.
   'Timeline',
   // Explorer Home (docs/specs/013-workspace/explorer-home.md): the landing view. 'Opened' with
-  // `type` 'Landing' | 'Nav' (the page the Explorer opened on, or a later visit) and 'Group' (a
-  // What happened summary expanded); 'Selected' with 'JumpBackIn.MostUsed' | 'JumpBackIn.Recent'
+  // `type` 'Landing' | 'Nav' (the page the Explorer opened on, or a later visit) ('Group', a
+  // What happened summary expanded, is retired); 'Selected' with 'JumpBackIn.MostUsed' | 'JumpBackIn.Recent'
   // (a document opened from Jump back in, by the half it belongs to), 'JumpBackIn.SeeMore' (See
-  // more followed to the Recent page) | 'WhatHappened' | 'Hero.Documents' | 'Hero.Inbox' (a hero
+  // more followed to the Recent page) | 'WhatHappened' (retired) | 'Hero.Documents' | 'Hero.Inbox' (a hero
   // status pill followed) | 'Hero.NewDocument' (the hero's New document) | 'Welcome.Blank' | 'Welcome.Template' |
   // 'Welcome.AllTemplates' | 'Welcome.Search' | 'Welcome.StartBlank' | 'Welcome.SignIn' (a start taken from the
   // first-run Home); 'Opened' with 'Welcome' (the first-run Home shown); 'Loaded' with 'Retry' (a failed read

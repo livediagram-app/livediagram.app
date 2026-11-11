@@ -109,7 +109,7 @@ describe('making a connection', () => {
         public: 0,
       }),
     ]);
-    expect(rows('timeline_events', "item_id = ? AND type = 'shared'", target.id)).toHaveLength(1);
+    expect(rows('events', "item_id = ? AND type = 'shared'", target.id)).toHaveLength(1);
     await settle();
     // The target app's first-share notice; nothing to the host.
     expect(h.appCalls.map((c) => c.url)).toEqual([
@@ -331,7 +331,7 @@ describe('both ways', () => {
     expect(rows('share_links', 'item_id = ?', host.id)).toEqual([
       expect.objectContaining({ code: back.share_code, level: 'edit' }),
     ]);
-    expect(rows('timeline_events', "item_id = ? AND type = 'shared'", host.id)).toHaveLength(1);
+    expect(rows('events', "item_id = ? AND type = 'shared'", host.id)).toHaveLength(1);
   });
 
   it('takes the reverse back when the door fails, answers badly or the caps refuse it', async () => {
@@ -357,7 +357,7 @@ describe('both ways', () => {
     }
     expect(rows('connections', 'host_item_id = ?', target.id)).toEqual([]);
     expect(rows('share_links', 'item_id = ?', host.id)).toEqual([]);
-    expect(rows('timeline_events', "item_id = ? AND type = 'shared'", host.id)).toEqual([]);
+    expect(rows('events', "item_id = ? AND type = 'shared'", host.id)).toEqual([]);
 
     // The host's links full: no reverse is written, and the door is never called.
     h.appCalls = [];
@@ -576,7 +576,7 @@ describe('taking a connection back', () => {
     expect(res.status).toBe(204);
     expect(rows('connections')).toEqual([]);
     expect(rows('share_links', 'code = ?', code)).toEqual([]);
-    expect(rows('timeline_events', "item_id = ? AND type = 'unshared'", target.id)).toHaveLength(1);
+    expect(rows('events', "item_id = ? AND type = 'unshared'", target.id)).toHaveLength(1);
     await settle();
     expect(h.appCalls.map((c) => [c.url, c.body])).toEqual([
       [`https://liveplanner.app/api/internal/items/${target.id}/revoke`, { codes: [code] }],
@@ -599,7 +599,7 @@ describe('taking a connection back', () => {
     }
     const code = rows('connections', 'id = ?', ids[1]!)[0]!.share_code as string;
     await call(`/share/${code}`, { method: 'DELETE', auth: ada.auth });
-    const before = rows('timeline_events', "type = 'unshared'").length;
+    const before = rows('events', "type = 'unshared'").length;
     for (const id of ids) {
       const res = await call(`/connections/${id}`, {
         method: 'DELETE',
@@ -609,7 +609,7 @@ describe('taking a connection back', () => {
     }
     expect(rows('connections')).toEqual([]);
     // One event for the pass it ended (no one signed in did it); none for the one already gone.
-    const events = rows('timeline_events', "type = 'unshared'");
+    const events = rows('events', "type = 'unshared'");
     expect(events).toHaveLength(before + 1);
     expect(events.at(-1)).toMatchObject({ actor_id: null });
   });

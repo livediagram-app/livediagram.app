@@ -1,13 +1,11 @@
 // Making, renaming and deleting a team (teams.ts).
 
-import { teamScopes } from '../index-timeline.ts';
 import {
   type Actor,
   BUMP,
   cleanOrganisation,
   cleanTeamName,
   fail,
-  joinedPeople,
   MAX_TEAMS_PER_ACCOUNT,
   ok,
   type Result,
@@ -94,7 +92,6 @@ export async function updateTeam(
             teamName: name,
             actor,
             at: now,
-            scopes: teamScopes(teamId, []),
             detail: { from: me.teamName },
           }),
         ]
@@ -103,30 +100,8 @@ export async function updateTeam(
   return ok({ id: teamId, name, organisation });
 }
 
-// The team and every open row in it go; the apps' copies follow from the change feed. Its members (no
-// longer in it, so each by name) see it go on their Timelines.
-export async function deleteTeamStatements(
-  db: D1Database,
-  actor: Actor,
-  teamId: string,
-  teamName: string,
-  now: number,
-): Promise<D1PreparedStatement[]> {
-  return [
-    teamEvent(db, {
-      id: `team_deleted:${teamId}`,
-      type: 'team_deleted',
-      teamId,
-      teamName,
-      actor,
-      at: now,
-      scopes: teamScopes(null, await joinedPeople(db, teamId)),
-    }),
-    ...deleteTeamRows(db, teamId, now),
-  ];
-}
-
-// A team closing with the account that ran it alone: nobody is left to tell.
+// The team and every open row in it go; the apps' copies follow from the change feed. Also a team closing with the
+// account that ran it alone.
 export function deleteTeamRows(db: D1Database, teamId: string, now: number): D1PreparedStatement[] {
   return [
     db.prepare(BUMP),
@@ -156,6 +131,7 @@ export async function deleteTeam(
   const me = await getMembership(db, teamId, actor.id);
   if (!me) return fail(404, 'not_found');
   if (me.role !== 'admin') return fail(403, 'admin_only');
-  await db.batch(await deleteTeamStatements(db, actor, teamId, me.teamName, now));
+  // Nothing goes to the audit log: the team is gone, so nobody can read it.
+  await db.batch(deleteTeamRows(db, teamId, now));
   return ok({ id: teamId });
 }

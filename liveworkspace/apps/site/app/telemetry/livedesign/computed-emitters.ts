@@ -312,37 +312,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: TEMPLATE_WHY,
   },
   'apps/live/app/design/[id]/useDesignTrashed.ts Trash·Restored': { values: TRASH_TYPES },
-  // The shared Explorer's Timeline, through its onTimeline prop (@liveworkspace/explorer TimelinePane.tsx): each a
-  // fixed token from the package.
-  'apps/live/app/embed/workbench/ExplorerHost.tsx Timeline·Changed': {
-    values: ['List', 'Calendar'],
-  },
-  'apps/live/app/embed/workbench/ExplorerHost.tsx Timeline·Selected': {
-    values: [
-      'Everyone',
-      'Others',
-      'new',
-      'edits',
-      'renames',
-      'deletions',
-      'sharing',
-      'filing',
-      'favourites',
-      'other',
-    ],
-  },
-  'apps/live/app/embed/workbench/ExplorerHost.tsx Timeline·Loaded': { values: ['More', 'Retry'] },
-  'apps/live/app/embed/workbench/ExplorerHost.tsx Timeline·Opened': {
-    values: ['Card', 'Stack', 'Menu'],
-  },
-  'apps/live/app/embed/workbench/ExplorerHost.tsx Timeline·Removed': {
-    values: ['Entry', 'Stack'],
-  },
-  // Home's What Happened, through the Explorer's onHome prop (@liveworkspace/explorer WhatHappened.tsx).
+  // Home's first-run welcome, through the Explorer's welcome host, and a failed read of Home retried, through its
+  // onHome prop (@liveworkspace/explorer).
   'apps/live/app/embed/workbench/ExplorerHost.tsx Home·Selected': {
-    values: ['WhatHappened', 'SeeTimeline'],
+    values: EXPLORER_TELEMETRY_EVENTS['Home·Selected'],
   },
-  'apps/live/app/embed/workbench/ExplorerHost.tsx Home·Opened': { values: ['Group'] },
   'apps/live/app/embed/workbench/ExplorerHost.tsx Home·Loaded': {
     values: EXPLORER_TELEMETRY_EVENTS['Home·Loaded'],
   },

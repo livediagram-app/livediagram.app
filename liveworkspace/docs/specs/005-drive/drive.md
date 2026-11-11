@@ -122,7 +122,7 @@ Drive empties the rest after 30 days; the row is forgotten when Drive reports th
 ## Inbound: Drive to liveworkspace
 
 The service reads `changes.list` from the stored page token and applies each change whose file it recognises (by
-`lwItemId` or a recorded folder id), through the index acting as the person, so authorisation, the Timeline, the
+`lwItemId` or a recorded folder id), through the index acting as the person, so authorisation, the event log, the
 Explorer and open rooms behave exactly as if the person had done it in an app:
 
 | In Drive                                                | In liveworkspace                                                                |

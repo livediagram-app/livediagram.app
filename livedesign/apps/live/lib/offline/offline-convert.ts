@@ -138,7 +138,7 @@ async function downloadAndRemoveCloudCopy(
   try {
     // Declare the conversion: this DELETE is indistinguishable from a real
     // delete at the boundary, and undeclared the feed told the owner their
-    // design had been deleted (docs/specs/006-design/offline-mode.md + docs/specs/013-workspace/timeline.md).
+    // design had been deleted (docs/specs/006-design/offline-mode.md + docs/specs/013-workspace/history.md).
     await apiDelete(`${API_BASE}/designs/${designId}`, ownerId, {
       action: 'take offline',
       extra: { [DESIGN_CONVERSION_HEADER]: 'offline' },

@@ -1,7 +1,7 @@
 // What a design pushes from its Durable Object (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item pushes";
 // docs/specs/015-api/api.md "Storage"): its summary to the index (`PUT /app/items/:id/summary`), each changed
-// tab's comment threads and actions for the Inbox (`PUT /app/items/:id/collab/:tabId`), who edited it for the
-// Timeline and their Most Used (`PUT /app/items/:id/events`), all with this app's key, the images it places to
+// tab's comment threads and actions for the Inbox (`PUT /app/items/:id/collab/:tabId`), who edited it for
+// History and their Most Used (`PUT /app/items/:id/events`), all with this app's key, the images it places to
 // liveworkspace's media service (`POST /app/refs`, src/media.ts), and the owner's newest save to the liveworkspace
 // accounts Worker for its onboarding emails (@liveworkspace/index-app reportOwnerActivity).
 //
@@ -155,7 +155,7 @@ export function itemSummaryOf(summary: ContentSummary): ItemSummary {
 
 // ---------- Who edited -----------------------------------------------------------------------------------------
 
-// Where a person's write to the design is recorded, for the Timeline and their Most Used: the room calls
+// Where a person's write to the design is recorded, for History and their Most Used: the room calls
 // @liveworkspace/index-app's recordItemEditor with this after a request that wrote (design-room.ts route()), so the
 // edit is the person's who asked, never a guess from the content. Two plain statements on the room's storage, outside
 // the save's transaction.

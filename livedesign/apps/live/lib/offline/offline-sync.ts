@@ -52,7 +52,7 @@ async function upload(rec: OfflineDesignRecord, ownerId: string): Promise<Map<st
   // per image; a kept data URI still renders.
   const { tabs, imageIds } = await uploadEmbeddedImages(ownerId, rec.tabs);
   // Declare the conversion so the feed says "Synced to the Cloud" rather than
-  // reporting a brand-new design (docs/specs/006-design/offline-mode.md + docs/specs/013-workspace/timeline.md).
+  // reporting a brand-new design (docs/specs/006-design/offline-mode.md + docs/specs/013-workspace/history.md).
   // Everything the record holds besides tabs travels too: the local copy is
   // deleted next, so a placement left behind is gone for good.
   const create = (folderId: string | null) =>

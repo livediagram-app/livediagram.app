@@ -71,7 +71,7 @@ export async function patchSharedSettings(
     : answer(result);
 }
 
-// The account's display name, for the Timeline's "by …" and the invitation email (a token carries none).
+// The account's display name, for the audit log's "by …" and the invitation email (a token carries none).
 export async function accountName(db: Env['AUTH_DB'], userId: string): Promise<string> {
   const row = await db
     .prepare('SELECT name FROM "user" WHERE id = ?')

@@ -189,8 +189,7 @@ const TONES: Record<PaneTone, string> = {
   rose: 'from-rose-50 to-rose-100/70 text-rose-600 ring-rose-200/70 dark:from-rose-500/20 dark:to-rose-500/10 dark:text-rose-200 dark:ring-rose-400/25',
 };
 
-// `mark` is the compact one, for rows that stand for an event or a place rather than a project (the Timeline, This
-// Browser): a small square beside the name, so the row stays one line high and never reads as a thumbnail.
+// `mark` is the compact one, for rows that stand for an event or a place rather than a project (This Browser): a small square beside the name, so the row stays one line high and never reads as a thumbnail.
 export function PaneTile({
   children,
   tone = 'slate',

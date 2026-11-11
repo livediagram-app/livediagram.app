@@ -11,7 +11,7 @@
 // Every call is synchronous underneath (the Durable Object's SQLite is in-process); the promises are D1's shape.
 //
 // `onWrite` runs only when a call changed a row (a statement or a trigger it fired: SQLite's `total_changes()`
-// moved). The room counts those calls to tell a request that wrote from a read (its edit key for the Timeline
+// moved). The room counts those calls to tell a request that wrote from a read (its edit key for History
 // and Most Used, outbox.ts recordItemEditor), so a read, a batch of reads, and a write that matched nothing call it
 // never.
 

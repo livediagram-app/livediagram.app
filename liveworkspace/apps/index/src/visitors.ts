@@ -1,7 +1,7 @@
-// Opened by a Visitor and Copied by a Visitor (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): who came in
-// to an item through one of its share links, on its owner's Timeline (theirs alone: who an item is shared with is
-// the owner's business). An open is one event per visitor, item and UTC day, its time moving on, so a visitor
-// reloading all day is one card; a copy is one per visitor and item. A visitor with no identity is known by the link
+// Opened by a Visitor and Copied by a Visitor (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "The event
+// log"): who came in to an item through one of its share links, in its owner's History (theirs alone: who an item is
+// shared with is the owner's business). An open is one event per visitor, item and UTC day, its time moving on, so a
+// visitor reloading all day is one event; a copy is one per visitor and item. A visitor with no identity is known by the link
 // they came in through. Recorded off the response path, and an open at most once a day per isolate.
 
 import type { Person } from './auth';
@@ -9,7 +9,7 @@ import { OPEN_MEMORY_MAX } from './config';
 import type { Env } from './env';
 import { useDayOf } from './items';
 import type { Access, ItemRow } from './rows';
-import { eventStatements } from './timeline';
+import { eventStatements } from './events';
 
 // The open events this isolate has written today, so a visitor's grant renewals never reach D1. Oldest out first.
 const written = new Set<string>();
@@ -51,7 +51,6 @@ export function recordVisitorOpen(
           type: 'opened_by_visitor',
           actorId: person?.id ?? null,
           at,
-          scope: `p:${row.owner_id}`,
         }),
       )
       .catch((err: unknown) => {
@@ -61,7 +60,7 @@ export function recordVisitorOpen(
   );
 }
 
-/** A copy made through a share link, on the source item's owner's Timeline. */
+/** A copy made through a share link, in the source item's owner's History. */
 export function recordVisitorCopy(
   env: Env,
   waitUntil: (promise: Promise<unknown>) => void,
@@ -81,7 +80,6 @@ export function recordVisitorCopy(
           type: 'copied_by_visitor',
           actorId: person.id,
           at,
-          scope: `p:${from.owner_id}`,
         }),
       )
       .catch((err: unknown) => {

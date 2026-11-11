@@ -148,7 +148,7 @@ export async function handleSignedIn(
   const tokens = await tokenRoutes(request, env, actor.id, parts, waitUntil);
   if (tokens) return tokens;
 
-  // Other people's display names and pictures, by id (the Explorer's Owner column, its Inbox and Timeline).
+  // Other people's display names and pictures, by id (the Explorer's Owner column, its Inbox and History).
   if (section === 'people' && !id && method === 'GET') {
     return peopleNames(request, db, { pictures: true });
   }

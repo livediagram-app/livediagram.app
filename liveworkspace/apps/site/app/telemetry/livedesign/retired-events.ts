@@ -4,6 +4,8 @@
 // moment it arrives, so no chart, stack, ranking or total ever renders them.
 // Their explanation sentences stay in event-explanations.ts for Search.
 
+import { isRetiredExplorerEvent } from '../_shared/retired-explorer';
+
 // The editor's Activity panel (removed 2026-10-03, docs/specs/012-collaboration/README.md "Removed: the
 // Activity panel"): its per-entry revert, the panel opening, its Settings
 // rows, and its help articles. The Undo and Redo articles kept their slugs
@@ -191,6 +193,7 @@ function isRetiredTabWindow(category: string, action: string, type: string | nul
 }
 
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
+  if (isRetiredExplorerEvent(category, action, type)) return true;
   if (isRetiredTabWindow(category, action, type)) return true;
   if (isRetiredLayersPanel(category, action, type)) return true;
   if (ISOMETRIC_VIEW.has(`${category}|${action}|${type ?? ''}`)) return true;

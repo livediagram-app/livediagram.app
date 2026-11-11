@@ -16,6 +16,7 @@ import * as LIVEHUDDLE_CATALOGUE from '../livehuddle/metric-catalogue';
 import { LIVEPLANNER } from '../liveplanner/config';
 import * as LIVEPLANNER_CATALOGUE from '../liveplanner/metric-catalogue';
 import type { TelemetryAppConfig } from './app';
+import { RETIRED_CATEGORIES } from './retired-explorer';
 
 export type TestApp = {
   name: string;
@@ -24,35 +25,39 @@ export type TestApp = {
   catalogue: Record<string, unknown>;
 };
 
+// The categories a dashboard still charts: the retired ones are dropped before anything renders, so they have no colour.
+const RETIRED: ReadonlySet<string> = new Set(RETIRED_CATEGORIES);
+const charted = (categories: readonly string[]) => categories.filter((c) => !RETIRED.has(c));
+
 export const TEST_APPS: TestApp[] = [
   {
     name: 'livediagram',
     config: LIVEDIAGRAM,
-    categories: LIVEDIAGRAM_CATEGORIES,
+    categories: charted(LIVEDIAGRAM_CATEGORIES),
     catalogue: LIVEDIAGRAM_CATALOGUE,
   },
   {
     name: 'liveplanner',
     config: LIVEPLANNER,
-    categories: LIVEPLANNER_CATEGORIES,
+    categories: charted(LIVEPLANNER_CATEGORIES),
     catalogue: LIVEPLANNER_CATALOGUE,
   },
   {
     name: 'livedocuments',
     config: LIVEDOCUMENTS,
-    categories: LIVEDOCUMENTS_CATEGORIES,
+    categories: charted(LIVEDOCUMENTS_CATEGORIES),
     catalogue: LIVEDOCUMENTS_CATALOGUE,
   },
   {
     name: 'livedesign',
     config: LIVEDESIGN,
-    categories: LIVEDESIGN_CATEGORIES,
+    categories: charted(LIVEDESIGN_CATEGORIES),
     catalogue: LIVEDESIGN_CATALOGUE,
   },
   {
     name: 'livehuddle',
     config: LIVEHUDDLE,
-    categories: LIVEHUDDLE_CATEGORIES,
+    categories: charted(LIVEHUDDLE_CATEGORIES),
     catalogue: LIVEHUDDLE_CATALOGUE,
   },
 ];

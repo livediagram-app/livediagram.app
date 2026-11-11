@@ -1,6 +1,6 @@
 // What an item's Durable Object owes the index (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item
 // pushes"): its summary (`PUT /app/items/:id/summary`), each changed tab's comment threads and actions for the
-// Inbox (`PUT /app/items/:id/collab/:tabId`), and who edited it, for the Timeline and their Most Used days
+// Inbox (`PUT /app/items/:id/collab/:tabId`), and who edited it, for its History, its webhooks and their Most Used days
 // (`PUT /app/items/:id/events`), all with the app's key.
 //
 // The item keeps an outbox in its own SQLite: a key per changed thing, written in the same transaction as the
@@ -20,7 +20,7 @@ import {
   COLLAB_MAX_ACTIONS,
   COLLAB_MAX_THREADS,
   IndexError,
-  type AppTimelineEvent,
+  type AppEvent,
   type CardMove,
   type CollabPush,
   type IndexAppClient,
@@ -140,7 +140,7 @@ export const editKeyRange = (personId: string): [string, string] => [
   `${personId}A`,
 ];
 
-export function editedOf(key: string): AppTimelineEvent | null {
+export function editedOf(key: string): AppEvent | null {
   const at = key.lastIndexOf(EDITOR_SEP);
   const actorId = key.slice(0, at);
   const time = Number(key.slice(at + 1));
@@ -273,7 +273,7 @@ export async function drainIndexOutbox(
   const done: number[] = [];
   const failed: OutboxFailure[] = [];
   const tasks: (() => Promise<void>)[] = [];
-  const edits: { id: number; event: AppTimelineEvent }[] = [];
+  const edits: { id: number; event: AppEvent }[] = [];
   const moves: { id: number; move: CardMove }[] = [];
   let activity: Promise<void> | null = null;
 

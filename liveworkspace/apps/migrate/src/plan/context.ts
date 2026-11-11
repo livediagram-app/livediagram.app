@@ -29,8 +29,6 @@ export const TABLE_ORDER = {
     'share_passwords',
     'shared_with',
     'placement_defaults',
-    'timeline_events',
-    'timeline_event_scopes',
   ],
   media: ['images', 'refs'],
   community: ['posts', 'post_tags', 'likes', 'copies', 'reports'],
@@ -43,7 +41,7 @@ export const KIND_OF: Record<MigrationApp, 'canvas' | 'plan' | 'document' | 'des
   livedesign: 'design',
 };
 
-/** Where an old document's id landed, and what the later passes (Timeline, Community) need of it. */
+/** Where an old document's id landed, and what the later passes (Community) need of it. */
 export type KeptPart = {
   app: MigrationApp;
   scope: string;

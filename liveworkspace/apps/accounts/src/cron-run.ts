@@ -3,7 +3,7 @@
 import type { Env } from './env.ts';
 import { PURGE_RETRY_CRON } from './index-purge.ts';
 
-// The UTC hour of the hourly cron's run that does the daily steps (the token Timeline notes, idle guests).
+// The UTC hour of the hourly cron's run that does the daily steps (idle guests).
 export const DAILY_RUN_HOUR_UTC = 9;
 
 export function cronRun(controller: Pick<ScheduledController, 'cron' | 'scheduledTime'>): {

@@ -65,8 +65,7 @@ export const HELP_ARTICLES = {
   explorerPanel: 'explorer/explorer-panel',
   layers: 'canvas/layers',
   minimap: 'user-interface/minimap',
-  // Home and the Timeline share an article.
-  home: 'explorer/timeline',
+  home: 'explorer/home',
   folders: 'explorer/folders',
   defaultFolders: 'explorer/folders/default-folders',
   // The shared Explorer's other views, each its page header's Help (lib/explorer-host.ts explorerHelpHref).
@@ -74,7 +73,6 @@ export const HELP_ARTICLES = {
   recent: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   inbox: 'explorer/activity',
-  timeline: 'explorer/timeline',
   teamSpaces: 'explorer/team-spaces',
   explorerPage: 'explorer/explorer-page',
   explorerFilters: 'explorer/filters',
@@ -231,13 +229,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Map',
     description: 'Tips for finding your way around a big canvas.',
   },
-  timeline: {
-    title: 'Learn about Home and the Timeline',
-    description: 'Jump Back In, what others did while you were away, and your own Timeline.',
-  },
   home: {
-    title: 'Learn about Home and the Timeline',
-    description: 'Jump Back In, what others did while you were away, and your own Timeline.',
+    title: 'Learn about Home',
+    description: 'Jump Back In and what was shared with you recently.',
   },
   myWork: {
     title: 'Learn about My Work',

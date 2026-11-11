@@ -15,7 +15,6 @@ import {
   Explorer,
   type ExplorerView,
   type LensTelemetryType,
-  type TimelineTelemetry,
   type HomeTelemetry,
   type WelcomeManifest,
   type WelcomeOptions,
@@ -64,35 +63,8 @@ function loadWelcome(): Promise<WelcomeManifest> {
   return welcomeLoad;
 }
 
-// The Timeline's reports (docs/specs/017-telemetry/telemetry.md "Timeline"), each a literal pair so the telemetry
-// manifest's coverage test sees it. The type is a fixed token from the Explorer: a mode, a filter, More or Retry,
-// Card or Stack.
-const trackTimeline: TimelineTelemetry = (action, type) => {
-  switch (action) {
-    case 'Changed':
-      return track('Timeline', 'Changed', type);
-    case 'Selected':
-      return track('Timeline', 'Selected', type);
-    case 'Loaded':
-      return track('Timeline', 'Loaded', type);
-    case 'Opened':
-      return track('Timeline', 'Opened', type);
-    case 'Removed':
-      return track('Timeline', 'Removed', type);
-  }
-};
-
-// Home's What Happened: literal calls, so the telemetry manifest scan sees each pair.
-const trackHome: HomeTelemetry = (action, type) => {
-  switch (action) {
-    case 'Selected':
-      return track('Home', 'Selected', type);
-    case 'Opened':
-      return track('Home', 'Opened', type);
-    case 'Loaded':
-      return track('Home', 'Loaded', type);
-  }
-};
+// A failed read of Home retried: a literal call, so the telemetry manifest scan sees the pair.
+const trackHome: HomeTelemetry = (_action, type) => track('Home', 'Loaded', type);
 
 // The filter lens (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet that gained a value, never the
 // value. Literal calls, so the telemetry manifest scan sees the pair.
@@ -206,7 +178,6 @@ export function ExplorerHost({
         trashedOnArrival={trashedOnArrival}
         heroHidden={prefs.homeBanner === false}
         onHideHero={hideHero}
-        onTimeline={trackTimeline}
         onHome={trackHome}
         onOrganise={trackOrganise}
         onLensSelected={trackLens}

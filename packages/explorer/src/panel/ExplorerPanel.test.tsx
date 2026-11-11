@@ -214,7 +214,7 @@ describe('<ExplorerPanel>', () => {
 
   it('has no Open Page: every section stays in the panel', () => {
     renderPanel(createFakeIndex({ items: [] }), { teams: [{ id: 't1', name: 'Design' }] });
-    for (const name of ['Home', 'Timeline', 'My Work', 'Design', 'Trash']) {
+    for (const name of ['Home', 'My Work', 'Design', 'Trash']) {
       fireEvent.click(within(rail()).getByRole('button', { name }));
       expect(screen.queryByRole('link', { name: /Open Page/ })).toBeNull();
       expect(screen.queryByText('Open Page')).toBeNull();

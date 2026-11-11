@@ -222,7 +222,7 @@ export function createIndexService<A extends App>(app: A) {
     clientFor,
     appOptions,
 
-    // What an item pushes (outbox.ts): its summary, each tab's comments and actions, its Timeline events.
+    // What an item pushes (outbox.ts): its summary, each tab's comments and actions, its events.
     appClient: (env: IndexEnv): IndexAppClient | null => {
       const options = appOptions(env);
       return options ? createIndexAppClient(options) : null;

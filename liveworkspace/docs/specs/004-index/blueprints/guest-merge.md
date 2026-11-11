@@ -38,8 +38,7 @@ differ. Then one batch, in order:
 3. Favourites, opens (the later `last_opened_at`, hidden only if both), use days, Shared with me, placement defaults,
    form reads (the further `seen`), thread people: copied with `INSERT OR IGNORE` or the upsert shown (the account's
    own wins), then the guest's deleted.
-4. The Timeline: scope rows `p:<guest>` to `p:<user>` (`UPDATE OR IGNORE`, then the rest dropped), `actor_id`, the
-   later `last_seen_at`, dismissals.
+4. Events: `actor_id` the user (`UPDATE events`); the items they are about moved in step 2, so their History follows.
 5. Actions assigned to or by the guest name the user.
 
 Answer `200 { items }` (items moved). After it: Drive signalled when items or folders moved; `drainPersonMerges` run

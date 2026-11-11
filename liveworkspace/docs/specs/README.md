@@ -19,7 +19,7 @@ Paths in these specs are relative to `liveworkspace/` (`apps/accounts/…`), exc
 - ./001-platform-scope/README.md - when you need the why: what the platform is, what it owns and what each app keeps
 - ./002-architecture/README.md - when touching how the services fit together: one origin, routes, environments, deploys, local ports, wiring an app to the platform
 - ./003-accounts/README.md - when working on sign-in, sessions, guests, teams, API tokens, OAuth and the device grant, settings, profiles or email
-- ./004-index/README.md - when working on the One Explorer's index: items, folders, sharing, grants, the Inbox, the Timeline, the Trash, default folders, guest merges
+- ./004-index/README.md - when working on the One Explorer's index: items, folders, sharing, grants, the Inbox, the event log and History, the Trash, default folders, guest merges
 - ./005-drive/README.md - when working on the Google Drive mirror
 - ./006-media/README.md - when working on uploaded images, previews, live images or share cards
 - ./007-community/README.md - when working on Community listings

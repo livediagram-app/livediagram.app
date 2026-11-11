@@ -52,7 +52,7 @@ function room(selections: Selection[] | 'down' = []) {
 
 type Who = { owner?: string; token?: boolean; headers?: Record<string, string> };
 
-// Work the routes schedule off the response path (telemetry, the Timeline), awaited by `settled`.
+// Work the routes schedule off the response path (telemetry, the index's events), awaited by `settled`.
 const pending: Promise<unknown>[] = [];
 const settled = () => Promise.all(pending.splice(0));
 

@@ -72,7 +72,7 @@
 - [ ] Assets and external resources
 - [x] Defaults ledger
 
-## timeline
+## events
 
 - [x] Domain and naming
 - [x] Behaviour and state

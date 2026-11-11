@@ -39,22 +39,22 @@ afterEach(() => {
 describe("a guest's telemetry choice in the Explorer", () => {
   it("sends nothing on the app's address once the guest turned it off in the app", () => {
     localStorage.setItem(PREFS, JSON.stringify({ telemetryEnabled: false }));
-    t.trackHome('Opened', 'Group');
+    t.trackHome('Loaded', 'Retry');
     t.setExplorerConsent(null);
-    t.trackHome('Opened', 'Group');
+    t.trackHome('Loaded', 'Retry');
     expect(sentSomething()).toBe(false);
   });
 
   it('sends when the guest left it on, or never chose', () => {
     t.setExplorerConsent(null);
-    t.trackHome('Opened', 'Group');
+    t.trackHome('Loaded', 'Retry');
     expect(sentSomething()).toBe(true);
   });
 
   it('reads an unreadable copy as on', () => {
     localStorage.setItem(PREFS, '{not json');
     t.setExplorerConsent(null);
-    t.trackHome('Opened', 'Group');
+    t.trackHome('Loaded', 'Retry');
     expect(sentSomething()).toBe(true);
   });
 
@@ -66,7 +66,7 @@ describe("a guest's telemetry choice in the Explorer", () => {
     t.setExplorerConsent(null);
     localStorage.setItem(PREFS, JSON.stringify({ telemetryEnabled: false }));
     window.dispatchEvent(new StorageEvent('storage', { key: PREFS }));
-    t.trackHome('Opened', 'Group');
+    t.trackHome('Loaded', 'Retry');
     expect(sentSomething()).toBe(false);
   });
 
@@ -74,7 +74,7 @@ describe("a guest's telemetry choice in the Explorer", () => {
     host.app = null;
     localStorage.setItem(PREFS, JSON.stringify({ telemetryEnabled: false }));
     t.setExplorerConsent(null);
-    t.trackHome('Opened', 'Group');
+    t.trackHome('Loaded', 'Retry');
     expect(sentSomething()).toBe(true);
   });
 
@@ -82,13 +82,13 @@ describe("a guest's telemetry choice in the Explorer", () => {
     localStorage.setItem(PREFS, JSON.stringify({ telemetryEnabled: false }));
     t.setExplorerConsent(null);
     t.setGuestTelemetryChoice(true);
-    t.trackHome('Opened', 'Group');
+    t.trackHome('Loaded', 'Retry');
     expect(sentSomething()).toBe(true);
 
     fetchMock.mockClear();
     vi.stubGlobal('navigator', { ...navigator, doNotTrack: '1' });
     t.setGuestTelemetryChoice(true);
-    t.trackHome('Opened', 'Group');
+    t.trackHome('Loaded', 'Retry');
     expect(sentSomething()).toBe(false);
   });
 
@@ -98,7 +98,7 @@ describe("a guest's telemetry choice in the Explorer", () => {
     localStorage.setItem(PREFS, JSON.stringify({ telemetryEnabled: false }));
     t.setExplorerConsent(true);
     window.dispatchEvent(new StorageEvent('storage', { key: PREFS }));
-    t.trackHome('Opened', 'Group');
+    t.trackHome('Loaded', 'Retry');
     expect(sentSomething()).toBe(true);
   });
 });

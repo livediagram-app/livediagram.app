@@ -20,7 +20,6 @@ import { parseLimit } from './codec';
 import type { PersonContext } from './context';
 import { badRequest, json } from './http';
 import { LIVE_LINK } from './rows';
-import { timelineNewQuery } from './timeline';
 
 // Reached as owner, through a scope, or through a live link the person opened, on the tab that link opens: a link
 // scoped to one tab reaches that tab's threads and actions alone, as it opens that tab alone, and the cards on that
@@ -173,13 +172,10 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
   if (limit === null) return badRequest('invalid_query');
   const q = inboxQueries(person.id, scopesOf(person), app, limit);
   const db = env.INDEX_DB;
-  // The sidebar's Timeline count rides along, so the Explorer reads it with the Inbox it already asks for.
-  const fresh = timelineNewQuery(person, app, Date.now());
-  const [threadRes, actionRes, formRes, freshRes] = (await db.batch([
+  const [threadRes, actionRes, formRes] = (await db.batch([
     db.prepare(q.threads.sql).bind(...q.threads.args),
     db.prepare(q.actions.sql).bind(...q.actions.args),
     db.prepare(q.forms.sql).bind(...q.forms.args),
-    db.prepare(fresh.sql).bind(...fresh.args),
   ])) as D1Result<Record<string, unknown>>[];
   const threads: InboxThread[] = (threadRes!.results as ThreadRow[]).map((r) => ({
     app: r.app,
@@ -235,6 +231,5 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
     unseen: r.unseen,
     latestAt: r.latest_at,
   }));
-  const timelineNew = Number((freshRes!.results[0] as { n?: number } | undefined)?.n ?? 0);
-  return json({ threads, actions, forms, timelineNew });
+  return json({ threads, actions, forms });
 }
