@@ -135,7 +135,7 @@ export function automationDayWords(day: AutomationDay): string {
 
 // A stored value as a person reads it: a priority by its label, a list joined.
 function valueWords(field: string, value: string | number | readonly string[]): string {
-  if (Array.isArray(value)) return value.map((v) => valueWords(field, v)).join(', ');
+  if (typeof value === 'object') return value.map((v: string) => valueWords(field, v)).join(', ');
   if (field === 'priority' && isPriority(value)) return PRIORITY_LABELS[value];
   return String(value);
 }
