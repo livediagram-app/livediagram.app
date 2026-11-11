@@ -6,16 +6,16 @@ Derived from [Automations](../automations.md). Phase 1 (#711).
 
 | Spec term           | Identifier                                                                                   |
 | ------------------- | -------------------------------------------------------------------------------------------- |
-| rule                | `AutomationRule` / `AutomationRuleBody` (`packages/items/src/automation/types.ts`)               |
+| rule                | `AutomationRule` / `AutomationRuleBody` (`packages/items/src/automation/types.ts`)           |
 | trigger             | `AutomationTrigger` (`kind`: `card_created`, `form_response`, `card_moved`, `field_changed`, |
 |                     | `comment_added`, `manual`)                                                                   |
 | condition           | `AutomationCondition` (`type`, `column`, `field`, `who`, `saved_filter`)                     |
 | step / action       | `AutomationStep` / `AutomationAction`; If / Else is the step `{ kind: 'if' }`                |
 | run                 | `AutomationRun` (`result`: `done`, `no_match`, `skipped`, `failed`)                          |
-| value               | `{{…}}` placeholders, `packages/items/src/automation/values.ts`                                                 |
+| value               | `{{…}}` placeholders, `packages/items/src/automation/values.ts`                              |
 | Automation (person) | `automationPerson(ruleName)`: `{ id: 'automation', name: <rule name>, color: '#7c3aed' }`    |
 | history tag         | `ItemHistoryTag` gains `'automation'`                                                        |
-| a waiting trigger   | `AutomationEvent` (packages/items `automation/matches.ts`, queued by the api)                |
+| a waiting trigger   | `AutomationEvent` (`packages/items/src/automation/matches.ts`, queued by the api)            |
 
 ## Files
 
