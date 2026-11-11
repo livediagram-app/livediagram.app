@@ -16,8 +16,11 @@ Six shared risks, each closed by a rule below.
 3. **The save baseline must include remote ops**, or the next local save re-broadcasts a peer's elements in an older
    form.
 4. **A remote op must not cancel a local save.**
-5. **The store is last writer wins.** Every client PUTs whole tabs, and the api replaces the stored tab, so a reload
-   or late joiner sees whichever save landed last.
+5. **The store is last writer wins.** Every client PUTs whole tabs, and the api used to replace the stored tab, so a
+   reload or late joiner saw whichever save landed last: two Editors adding a page in the same second kept one page,
+   and two writing in different paragraphs of one article kept one person's words (Work Tracker #669, #670). Closed by
+   the ledger for ticks and comments, the changeset merge for agents' elements, and the merge of a save's pages and
+   writing by id ([A save is merged with the stored tab](#a-save-is-merged-with-the-stored-tab)).
 6. **Whole-tab ops replace every element on receivers**, wiping their unsaved presses.
 
 ## The client keeps its own and its peers' work
@@ -92,6 +95,53 @@ Residual: the merge and the store's write are two steps, so two saves whose merg
 the older merge last. The window is the length of one store write, not the 600 ms debounce, and the next save from
 anybody repairs it.
 
+### A save is merged with the stored tab
+
+A tab's pages and its articles' writing are many people's at once too, and their ops reach the room after the save
+that made them, so the ledger never sees them. So a save says what it changed, by id, and the api applies only that
+over the tab it has stored (risk 5):
+
+- **The save sends its changes.** Beside the whole tab, the PUT carries `X-Save-Changes`
+  (`@liveworkspace/api-schema/tab-save-changes`): URI-encoded JSON of the save's page steps and, for each article it
+  changed, its block steps, `whole` (a new article, taken as saved) or `removed`. A step names a page or block by id,
+  where it goes (after one id, else before another) when it is new or moved, and carries no payload: the saved tab
+  holds it. The steps are those from the save baseline (`lastSavedTabsRef`, which already holds every peer's change
+  this editor has seen) to the saved tab (`tabSaveChanges`, `packages/document/src/tab-save-changes.ts`), plus a
+  removal of anything this editor's previous save of the tab held and this one lacks, since that save may still be in
+  flight: a page added and deleted across two quick saves does not come back.
+- **The api applies them over the stored tab** (`mergeSaveOverStored`), on every attempt of the save's
+  compare-and-swap, against the tab that attempt read, so a peer's save that lands first is merged and never
+  overwritten. A page or block the save did not change keeps the stored copy; a peer's one the save never saw stays;
+  what the save removed goes; what it changed or added is taken from the saved tab, new or moved ones placed after
+  their neighbour as in the saved tab. Block steps apply through `applyArticleOps`, the function a receiver of the
+  `article` ops runs, and a table's changed cell takes its text from the saved table, so different cells of one table
+  merge too. An article the stored tab no longer has (a peer deleted it) comes back only when the save made it, or a
+  page of the merged tab still shows it. Elements are not part of it: they keep the changeset merge and the ledger.
+- **Too big, less detail.** A header is kept under `TAB_SAVE_CHANGES_MAX_CHARS` (8,000). A save whose block steps
+  would pass it sends each changed article `whole` instead (the last writer wins for that article alone); past that
+  too, it sends no header.
+- **No header, stored as sent.** A save without one (an editor from before the header, open through a deploy; a
+  tab's first save; changes past the cap) or with an unreadable one (logged `[tab-save] changes-invalid`) stores the
+  tab as sent, as every save did before. An api from before the header ignores it, so a deploy in either order loses
+  nothing a save did not already lose. The unload beacon sends the header too.
+- **A write again changes nothing of it.** A save that writes again over a peer's change sends no steps, so it keeps
+  the stored pages and writing as they are.
+
+### Pages
+
+The page list rides a `tab-meta` patch (or a whole `tab` op) as the whole list, which older receivers take as it is.
+Beside it the op carries `pageSteps`, the same page steps a save sends (`pageStepsOf`), and a receiver applies those
+over its own pages by id (`withPeerPageSteps`, through `applyIdListSteps` in
+`@liveworkspace/model-core/id-list-steps`), to the tabs on screen and to the save baseline alike. A page added here
+and not yet seen by the sender stays. Two pages added at the same place converge: a placed page goes past the pages
+its sender did not know whose id sorts before its own, so every screen and the store end with them in id order. A
+page a peer changed that was removed here comes back: a change wins over a concurrent removal. An agent's page
+change (`pagesRoomOps`, [Pages for agents](../024-agents/pages-for-agents.md)) sends its steps too.
+
+Residual: two people changing the same page at once (its background, its name) still keep the later change. Two
+article writers whose writing each adds an overflow page at once keep both pages until the next lay-out drops the one
+left empty.
+
 ## The rest of the transport
 
 - **A cleared tab field travels by name** (risk 6). A `tab-meta` op carries a `clear` list of the fields the sender
@@ -137,7 +187,8 @@ screen shows the peer's change, but a reload would lose it.
 So a save's window stays open `SAVE_RESAVE_GRACE_MS` (1.5 s) after it lands, and if a peer's element change (`el`,
 `tab` or `tab-meta`) to a tab it wrote arrived from its snapshot to the end of that window
 (`tabsChangedByPeersSince`), the tab is written again with what is on screen. The peer's change is already in the
-save baseline, so the second save sends no ops; it is the PUT alone. The grace covers a peer whose op left only after
+save baseline, so the second save sends no ops; it is the PUT alone, and its empty changes leave the stored pages and
+writing as they are ([A save is merged with the stored tab](#a-save-is-merged-with-the-stored-tab)). The grace covers a peer whose op left only after
 their own write landed, a round trip behind ours. A failed write again stays queued for the retry. It stops by itself:
 a write again sends nothing, so it starts no further one, and only a peer still editing keeps it going.
 

@@ -35,7 +35,9 @@ Six shared causes. Most element bugs are one of these showing through.
    replaces the stored blob, so a reload or late joiner sees whichever save
    landed last. (Multi-writer fields merge since phase 3; element content is
    written again by the saver that may have landed last, see
-   [A save that wrote over a peer's change writes again](#a-save-that-wrote-over-a-peers-change-writes-again).)
+   [A save that wrote over a peer's change writes again](#a-save-that-wrote-over-a-peers-change-writes-again).
+   The page list merges by id since two Editors adding a page in the same second kept only one (Work Tracker #669),
+   see [A save is merged with the stored tab](#a-save-is-merged-with-the-stored-tab).)
 6. **Whole-tab fallbacks.** A cleared tab field (a reset background) or a
    change of more than 20 elements travels as a whole `tab` op, which
    replaces every element on receivers, wiping their unsaved presses.
@@ -217,9 +219,47 @@ runs out of nine.
 So a save's window stays open `SAVE_RESAVE_GRACE_MS` (1.5 s) after it lands, and if a peer's element change (`el`,
 `tab` or `tab-meta`) to a tab it wrote arrived from its snapshot to the end of that window
 (`tabsChangedByPeersSince`), the tab is written again with what is on screen. The peer's change is already in the
-save baseline, so the second save sends no ops; it is the PUT alone. The grace covers a peer whose op left only after
+save baseline, so the second save sends no ops; it is the PUT alone, and its empty changes leave the stored pages as
+they are. The grace covers a peer whose op left only after
 their own write landed, a round trip behind ours. A failed write again stays queued for the retry. It stops by itself:
 a write again sends nothing, so it starts no further one, and only a peer still editing keeps it going.
+
+### A save is merged with the stored tab
+
+A tab's pages are many people's at once, and their `tab-meta` op reaches the room after the save that made it, so the
+ledger never sees it. So a save says how it changed the pages, by id, and the api applies only that over the tab it
+has stored (risk 5):
+
+- **The save sends its page steps.** Beside the whole tab, the PUT carries `X-Save-Changes`
+  (`@liveworkspace/api-schema/tab-save-changes`): URI-encoded JSON of the save's page steps (`tabSaveChanges`,
+  `packages/design/src/tab-save-changes.ts`). A step names a page by id, where it goes (after one id, else before
+  another) when it is new or moved, and carries no payload: the saved tab holds it. The steps are those from the save
+  baseline (`lastSavedTabsRef`, which already holds every peer's change this editor has seen) to the saved tab, plus
+  a removal of any page this editor's previous save of the tab held and this one lacks, since that save may still be
+  in flight.
+- **The api applies them over the stored tab** (`mergeSaveOverStored`), on every attempt of the save's
+  compare-and-swap, against the tab that attempt read, so a peer's save that lands first is merged and never
+  overwritten. A page the save did not change keeps the stored copy; a peer's page the save never saw stays; a page
+  the save removed goes; one it changed or added is taken from the saved tab, a new or moved one placed after its
+  neighbour as in the saved tab. Everything else in the tab is stored as sent (elements keep the changeset merge and
+  the ledger; photos are their `photo` ops').
+- **No header, stored as sent.** A save without one (an editor from before the header, open through a deploy; a
+  tab's first save; steps past `TAB_SAVE_CHANGES_MAX_CHARS`, 8,000) or with an unreadable one (logged
+  `[tab-save] changes-invalid`) stores the tab as sent. An api from before the header ignores it. The unload beacon
+  sends the header too.
+
+### Pages
+
+The page list rides a `tab-meta` patch (or a whole `tab` op) as the whole list, which older receivers take as it is.
+Beside it the op carries `pageSteps`, the same page steps a save sends (`pageStepsOf`), and a receiver applies those
+over its own pages by id (`withPeerPageSteps`, through `applyIdListSteps` in
+`@liveworkspace/model-core/id-list-steps`), to the tabs on screen and to the save baseline alike. A page added here
+and not yet seen by the sender stays. Two pages added at the same place converge: a placed page goes past the pages
+its sender did not know whose id sorts before its own, so every screen and the store end with them in id order. A
+page a peer changed that was removed here comes back: a change wins over a concurrent removal. An agent's page
+change (`pagesRoomOps`, [Pages for agents](../024-agents/pages-for-agents.md)) sends its steps too.
+
+Residual: two people changing the same page at once (its background, its name) still keep the later change.
 
 ## Tab lists
 
