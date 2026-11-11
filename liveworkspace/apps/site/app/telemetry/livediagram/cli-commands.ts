@@ -80,6 +80,8 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'TemplateView', command: 'template view', what: 'reading a template as an outline' },
   { type: 'IconSearch', command: 'icon search', what: 'finding an icon' },
   { type: 'ImageLs', command: 'image ls', what: 'listing the image gallery' },
+  { type: 'ImageAdd', command: 'image add', what: 'adding an image to the gallery' },
+  { type: 'ImageRm', command: 'image rm', what: 'removing images from the gallery' },
   { type: 'SchemaView', command: 'schema', what: 'reading the element format' },
   { type: 'Api', command: 'api', what: 'calling an api route directly' },
   { type: 'AuthLogin', command: 'auth login', what: 'signing in' },
