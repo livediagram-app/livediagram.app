@@ -39,7 +39,6 @@ liveplanner/packages/templates/src/plan-template-catalogue.ts
 liveplanner/packages/templates/src/plan-template-seed-data.ts
 liveworkspace/apps/site/app/telemetry/livedesign/catalogue/features.ts
 liveworkspace/apps/site/app/telemetry/livedesign/event-explanations.ts
-liveworkspace/apps/site/app/telemetry/livediagram/catalogue/collaboration.ts
 liveworkspace/apps/site/app/telemetry/livediagram/catalogue/content.ts
 liveworkspace/apps/site/app/telemetry/livediagram/catalogue/features.ts
 liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts
