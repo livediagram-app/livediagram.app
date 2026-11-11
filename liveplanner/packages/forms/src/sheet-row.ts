@@ -5,14 +5,15 @@
 import { makeAxisIds, type CellInput, type SheetWrite } from '@liveplanner/sheets';
 import type { AnswerValue } from './answers';
 import { answerText } from './card';
-import { questionsOf, type FormDefinition, type FormQuestion } from './model';
-import { sheetColumnPlan, type RowTexts } from './sheet-columns';
+import { submittedDay } from './fixed';
+import { questionsOf, type FormQuestion, type SheetFixedColumn } from './model';
+import { sheetColumnPlan, type RowTexts, type SheetForm } from './sheet-columns';
 
 // What a preview's "#" cell reads.
 export const SHEET_PREVIEW_MARK = 'Preview';
 
 export type SheetRowInput = {
-  form: Pick<FormDefinition, 'sections'>;
+  form: SheetForm;
   answers: ReadonlyMap<string, AnswerValue>;
   // The response number; null for a preview of a form with no link to count it.
   number: number | null;
@@ -35,6 +36,12 @@ const pad = (n: number) => String(n).padStart(2, '0');
 export function submittedText(at: number): string {
   const d = new Date(at);
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`;
+}
+
+// An extra column's cell: its number or text, or the submitted day (YYYY-MM-DD in its zone).
+function fixedCell(c: SheetFixedColumn, at: number): CellInput {
+  if ('submitted' in c) return { s: submittedDay(at, c.submitted.tz, c.submitted.days) };
+  return typeof c.value === 'number' ? { n: c.value } : { s: c.value };
 }
 
 function cellFor(q: FormQuestion, value: AnswerValue): CellInput {
@@ -78,5 +85,6 @@ export function responseRowWrite(input: SheetRowInput): SheetWrite {
     const value = input.answers.get(q.id);
     if (value !== undefined) put(q.id, cellFor(q, value));
   }
+  for (const c of input.form.sheet?.fixed ?? []) put(c.id, fixedCell(c, input.at));
   return changes.length ? { kind: 'layout', changes, cells } : { kind: 'cells', cells };
 }

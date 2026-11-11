@@ -25,8 +25,15 @@ describe('formDestinationOf', () => {
     expect(formDestinationOf(form, [formTab, board], ITEM_TYPES, null)).toEqual({
       destTab: board,
       problem: null,
+      warning: null,
     });
     expect(formDestinationOf(form, [formTab], ITEM_TYPES, null).problem).toBe('board_missing');
+    // A column its card type leaves out: a warning in words, the destination still holding.
+    const picky = ITEM_TYPES.map((t) => (t.id === 'task' ? { ...t, statuses: ['elsewhere'] } : t));
+    expect(formDestinationOf(form, [formTab, board], picky, null)).toMatchObject({
+      problem: null,
+      warning: expect.stringContaining('None of Applicants’s columns'),
+    });
   });
 
   it('never reads a destination on a tab out of a tab-scoped link’s reach as removed', () => {
@@ -34,6 +41,7 @@ describe('formDestinationOf', () => {
     expect(formDestinationOf(form, [formTab, stub], ITEM_TYPES, 'form')).toEqual({
       destTab: undefined,
       problem: null,
+      warning: null,
     });
     const toSheet: FormDefinition = {
       ...form,
@@ -43,6 +51,7 @@ describe('formDestinationOf', () => {
     expect(formDestinationOf(toSheet, [formTab, stub], ITEM_TYPES, 'form')).toEqual({
       destTab: undefined,
       problem: null,
+      warning: null,
     });
   });
 

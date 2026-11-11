@@ -355,3 +355,35 @@ describe('responseRowWrite with the header row below the top', () => {
     ).toBe(true);
   });
 });
+
+// Columns filled in automatically (docs/specs/030-forms/forms.md "Columns filled in automatically").
+describe('extra columns', () => {
+  const sheet = {
+    fixed: [
+      { id: 'x-src', header: 'Source', value: 'Web' },
+      { id: 'x-n', header: 'Batch', value: 2 },
+      { id: 'x-due', header: 'Name', submitted: { days: 3 } },
+    ],
+  };
+  it('take headers after the questions, made distinct', () => {
+    expect(sheetHeaders({ ...form, sheet }).slice(-3)).toEqual([
+      { key: 'x-src', header: 'Source', fixed: sheet.fixed[0] },
+      { key: 'x-n', header: 'Batch', fixed: sheet.fixed[1] },
+      { key: 'x-due', header: 'Name (3)', fixed: sheet.fixed[2] },
+    ]);
+  });
+
+  it('fill every row with their text, number or submitted day', () => {
+    const write = responseRowWrite(
+      base({
+        form: { ...form, sheet },
+        layout: {
+          rows: ['r1', 'r2'],
+          cols: ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10'],
+        },
+      }),
+    );
+    const cells = cellsOf(write).filter((c) => c.r !== 'r1');
+    expect(cells.slice(-3).map((c) => c.i)).toEqual([{ s: 'Web' }, { n: 2 }, { s: '2026-10-18' }]);
+  });
+});

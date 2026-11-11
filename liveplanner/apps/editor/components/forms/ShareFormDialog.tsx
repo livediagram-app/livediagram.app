@@ -24,6 +24,7 @@ export function ShareFormDialog({
   problem,
   onFixDestination,
   notReady = [],
+  warnings = [],
   onShow,
   toSheet = false,
   onSyncToCloud,
@@ -36,6 +37,8 @@ export function ShareFormDialog({
   onFixDestination: () => void;
   // What else stops publishing (publishProblems), and Show for a question's or section's.
   notReady?: readonly PublishProblem[];
+  // Listed with the problems, holding nothing back (a column its card type leaves out).
+  warnings?: readonly string[];
   onShow?: (problem: PublishProblem) => void;
   // Responses go to a sheet (a row each) rather than a board.
   toSheet?: boolean;
@@ -129,6 +132,7 @@ export function ShareFormDialog({
                 title="Problems with this Form"
                 problem={problem}
                 notReady={notReady}
+                warnings={warnings}
                 onFixDestination={onFixDestination}
                 onShow={onShow}
               />
@@ -154,11 +158,12 @@ export function ShareFormDialog({
                 <p className="rounded-lg bg-red-50 px-3 py-2 text-[13px] text-red-900 dark:bg-red-500/10 dark:text-red-100">
                   This plan can’t publish more forms: its form links were suspended after reports.
                 </p>
-              ) : formProblemCount(problem, notReady) ? (
+              ) : formProblemCount(problem, notReady, warnings) ? (
                 <FormProblems
                   title="Before publishing:"
                   problem={problem}
                   notReady={notReady}
+                  warnings={warnings}
                   onFixDestination={onFixDestination}
                   onShow={onShow}
                 />

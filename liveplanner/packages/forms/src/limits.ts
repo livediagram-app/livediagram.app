@@ -27,8 +27,14 @@ export const RATING_SCALE_DEFAULT = 5;
 export const MESSAGE_MAX = 500;
 export const SECTIONS_MAX = 10;
 export const QUESTIONS_MAX = 100;
-// A sheet form's remembered columns: # and Submitted, and one a question.
-export const SHEET_COLUMNS_MAX = QUESTIONS_MAX + 2;
+// Fields set automatically on a board destination, and extra columns on a sheet one (forms.md "Filled in
+// automatically"); a set text's length; the most days after submitting a date may be.
+export const FIXED_FIELDS_MAX = 20;
+export const SHEET_FIXED_MAX = 10;
+export const FIXED_TEXT_MAX = 500;
+export const FIXED_DAYS_MAX = 365;
+// A sheet form's remembered columns: # and Submitted, one a question, and one each extra column.
+export const SHEET_COLUMNS_MAX = QUESTIONS_MAX + 2 + SHEET_FIXED_MAX;
 export const FORM_RESPONSE_LIMIT_MAX = ITEMS_MAX;
 // A response body, as the api reads it.
 export const RESPONSE_BODY_MAX = 65_536;
