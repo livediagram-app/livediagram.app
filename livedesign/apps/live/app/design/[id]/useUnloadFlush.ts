@@ -9,6 +9,7 @@
 import { useEffect, useRef, type MutableRefObject, type RefObject } from 'react';
 import { flushSync } from 'react-dom';
 import type { Tab } from '@livedesign/design';
+import { tabSaveChangesHeader } from '@livedesign/api-schema';
 import {
   claimPlacedImagesOnUnload,
   flushDesignSavesBeacon,
@@ -105,6 +106,14 @@ export function useUnloadFlush(opts: {
         name: o.designName,
         tabs: o.tabs,
         changesetSeen: o.changesetSeen,
+        // What each save changed by id, as the debounced save sends it (tab-save-flow.ts PreparedTabSave).
+        saveChanges: new Map(
+          changedTabs.flatMap((t) => {
+            const before = o.lastSavedTabsRef.current.find((s) => s.id === t.id);
+            const changes = tabSaveChangesHeader(before, t);
+            return changes ? [[t.id, changes] as const] : [];
+          }),
+        ),
       });
     };
     // The page going: a label still being typed commits on blur, which this never fires, so commit it first, and

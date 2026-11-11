@@ -561,6 +561,8 @@ export * from './stored-elements';
 export { isSafeColourValue } from './unsafe-colours';
 export * from './stored-tab';
 export { settleTabFields } from './tab-fields';
+// What a save changed, merged over the stored tab by id (docs/specs/012-collaboration/collab-race-hardening.md).
+export * from './tab-save-changes';
 export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';
 
 // Photoshop-style layers (docs/specs/006-design/layers.md): the Layer type used by the Tab field

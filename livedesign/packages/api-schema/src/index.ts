@@ -320,6 +320,7 @@ export * from './community-paths';
 export * from './workbench-messages';
 export * from './pages';
 export * from './photo-frames';
+export * from './tab-save-header';
 export * from './photo-blob-batch';
 export * from './pages-summary';
 export * from './mcp-origin';
