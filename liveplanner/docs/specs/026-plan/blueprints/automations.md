@@ -519,7 +519,7 @@ queued }`, never a secret, a signature, a hash or the body.
 ### Editor
 
 - `TriggerPanel` groups its kinds under "Something Happens to a Card", "A Time Comes Round" and "Another Tool Sends
-  It" (Incoming Webhook), and draws `step-panels/IncomingWebhookPanel.tsx` for it: **Address** (the URL in a
+  It" (Incoming Webhook), and draws `components/automations/step-panels/IncomingWebhookPanel.tsx` for it: **Address** (the URL in a
   monospace field with Copy; before the first save, "Save the rule to get its address."), **Secret** (Make Secret, or
   "Ends in …Xf3k · Made 2 days ago · Last used 3 min ago" with Regenerate behind `ConfirmPopover`), the once-shown
   secret (a monospace field, Copy, "You won't see it again. Keep it where the other tool keeps its passwords.",
