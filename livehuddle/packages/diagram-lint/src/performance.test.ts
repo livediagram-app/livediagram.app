@@ -4,10 +4,10 @@
 // A stored arrow is a retired element no check reads (part 4 of the element engine), but its line still counts toward
 // the extent, which once indexed the tab per arrow (quadratic). A run is now well under a millisecond on the small
 // tab, so each sample times several runs to rise above the timer's noise, and the two sizes are warmed and timed in
-// turns, so neither pays for the first compile or a collection alone (the growth read 0.66 to 7.06 timed one after
-// the other).
+// turns (cpuGrowthRatio), so neither pays for the first compile or a collection alone (the growth read 0.66 to 7.06
+// timed one after the other).
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuGrowthRatio, cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from '@livehuddle/document';
 import { arrow, box, lint, tabOf } from './fixtures/build';
 
@@ -37,30 +37,17 @@ const RATIO_CEILING = cpuRatioCeiling(8);
 
 const RUNS_PER_SAMPLE = 10;
 
-const sample = (tab: ReturnType<typeof tabOf>) =>
+// One sample: RUNS_PER_SAMPLE lints of a tab built outside the timing.
+const sample = (tab: ReturnType<typeof tabOf>) => () =>
   cpuMsOf(() => {
     for (let run = 0; run < RUNS_PER_SAMPLE; run++) lint(tab);
   });
 
-// The fastest sample of each tab, warmed first and timed in turns.
-const fastestOfBoth = (smallEls: Element[], largeEls: Element[]) => {
-  const smallTab = tabOf(...smallEls);
-  const largeTab = tabOf(...largeEls);
-  sample(smallTab);
-  sample(largeTab);
-  let small = Infinity;
-  let large = Infinity;
-  for (let i = 0; i < 7; i++) {
-    small = Math.min(small, sample(smallTab));
-    large = Math.min(large, sample(largeTab));
-  }
-  return { small, large };
-};
-
 describe('performance', () => {
   it('grows with the tab, not faster: 75 to 300 boxes and arrows', { timeout: 30_000 }, () => {
-    const { small, large } = fastestOfBoth(grid(75), grid(300));
     expect(grid(300).filter((el) => el.type === 'arrow')).toHaveLength(300);
-    expect(large / small).toBeLessThan(RATIO_CEILING);
+    const small = sample(tabOf(...grid(75)));
+    const large = sample(tabOf(...grid(300)));
+    expect(cpuGrowthRatio(small, large, { ceiling: RATIO_CEILING })).toBeLessThan(RATIO_CEILING);
   });
 });
