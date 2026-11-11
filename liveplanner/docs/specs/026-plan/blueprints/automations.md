@@ -1,6 +1,6 @@
 # Automations blueprint
 
-Derived from [Automations](../automations.md). Phase 1 (#711).
+Derived from [Automations](../automations.md). Phase 1 (#711), Phase 2 (#712), Phase 3's AI actions (#713).
 
 ## Domain and naming
 
@@ -404,6 +404,106 @@ What the editor does, where it differs from or adds to the Editor list above (ea
   `planPalette` of the app's appearance, as the setup steps do.
 - **Labels.** The branch values' chips read Trigger Title, Trigger Number and Trigger Link
   (`AUTOMATION_BRANCH_VALUE_LABELS`).
+
+## Phase 3: AI actions (Work Item 713)
+
+### Shapes (packages/items/src/automation/types.ts)
+
+```ts
+type AutomationAi =
+  | { kind: 'ai'; task: 'summarise'; field?: string } // absent field: a comment
+  | { kind: 'ai'; task: 'card_type'; set: boolean } // false: comment the suggestion
+  | { kind: 'ai'; task: 'triage'; priority: boolean; labels: boolean }; // at least one true
+type AutomationStep = AutomationAction | AutomationOutgoing | AutomationIf | AutomationBranch | AutomationAi;
+// The step line a call made carries `ai: true` (the day's count reads it).
+type AutomationStepLine = … | { kind: 'action'; ok: boolean; text: string; already?: true; ai?: true };
+```
+
+Constants beside Phase 2's: `AUTOMATION_AI_PER_DAY = 100`, `AUTOMATION_AI_STEPS_MAX = 3`,
+`AUTOMATION_AI_SUMMARY_MAX = 600`, `AUTOMATION_AI_LABELS_MAX = 3`, and in `ai-steps.ts` the prompt's caps
+(`AI_TITLE_MAX = 200`, `AI_DESCRIPTION_MAX = 2000`, `AI_CHECKLIST_ROWS = 20`, `AI_CHECKLIST_TEXT_MAX = 120`,
+`AI_COMMENTS_MAX = 5`, `AI_COMMENT_TEXT_MAX = 400`, `AI_LIST_MAX = 50`) and output caps (`AI_MAX_TOKENS`:
+summarise 300, card_type 40, triage 80). `ItemHistoryTag` gains `'automation_ai'`.
+
+`validate.ts` reads `kind: 'ai'` through `readAiStep` (ai-steps.ts): an unknown task, a summarise field that is not an
+id, card_type without a boolean `set`, triage with neither part on are `automation_invalid`; an AI step inside an If /
+Else or a branch is `automation_step_unsupported` (`NOT_IN_IF`, `NOT_IN_BRANCH` gain `'ai'`); more than 3 at the top
+level is `automation_invalid` at `steps`. An AI step counts as one action. `attention.ts` names a summarise field.
+
+### Pure parts (packages/items/src/automation/ai-steps.ts)
+
+- `planAi(step, index, walk)`: what `planActions` does for an AI step: the action counted, a `PlannedAi { step, ai,
+  line }` on the run (`PlannedWrites.ai`, present only when a rule has one, so every Phase 1 and 2 answer is
+  unchanged), and a placeholder line the api settles.
+- `aiCardInput(card, ctx)`: the card as sent (title, description, type and column names, checklist, comments), every
+  part cut to its cap; `planLabels(items)`: the labels the plan's cards use, most used first (ties by name), 50 at most.
+- `aiRequest(task, input, lists)`: `{ messages: [system, user], response_format: { type: 'json_schema', json_schema:
+  { name, schema, strict: true } }, max_tokens, temperature: 0 }`. The system message is fixed per task; the user
+  message is `JSON.stringify({ card, choices })` alone.
+- `readAiReply(raw)`: the reply's JSON object from any of the binding's shapes (`{ response: object | string }`,
+  `{ choices: [{ message: { content } }] }`, a string), tolerating a fenced block; null when none parses.
+- `constrainSummary(reply, input)`, `constrainCardType(reply, types)`, `constrainTriage(reply, labels, wanted)`: the
+  answer kept within the spec's bounds, or `{ failed: reason }`. A summary: string, control characters and markup
+  (`<…>`, Markdown emphasis, headings, list marks and fences) stripped, whitespace collapsed, every `http(s)://…` that
+  the card's own text lacks removed, cut at a word to 600; empty fails. A card type: matched to the list by name,
+  case and spacing aside. Triage: priority one of `PRIORITIES`; labels matched to the plan's (case aside), deduped,
+  the card's own skipped, 3 at most, the rest dropped.
+- `aiDryLine(step, outline, lists)`: Test on a Card's "Would …" line; `aiStepChip(step, outline)`: the sentence's chip
+  (sentence.ts `stepChip` calls it).
+
+### The api (apps/api/src/plan-room/automations/automation-ai.ts)
+
+- `AutomationsAi = { run(model, inputs, options?) => Promise<unknown> }` is `PlanEnv.AI` (optional, the `[ai]` binding),
+  `AI_GATEWAY` an optional var naming an AI Gateway (`{ gateway: { id } }` on every call).
+  `AUTOMATION_AI_MODEL = '@cf/google/gemma-4-26b-a4b-it'`, `chat_template_kwargs: { enable_thinking: false }`,
+  `AUTOMATION_AI_TIMEOUT_MS = 15_000` (a race with a timer, cleared after).
+- `aiToday(sql, now)`: `SELECT COUNT(*) FROM automation_runs r, json_each(r.body, '$.steps') s WHERE r.at >= <UTC
+  midnight> AND s.value ->> '$.ai' = 1`, read once per wake into `RunState.ai` when a rule with an AI step runs. No
+  schema step: the Audit Trail keeps every run of the day (at most 1,000 counted runs, under its 2,000).
+- `runAiSteps(deps, input, planned, lines, offset)`: after `applyPlannedRun` and the branches, before `sendMessages`.
+  Per step: dry → the "Would …" line; no binding → `AI_NOT_SET_UP`; `state.ai >= 100` → the step's line and the
+  run's reason `AI_CAPPED`, result **skipped** unless something failed; else `state.ai += 1`, the card read again
+  (`readItem`), its latest comments (`linksOfItem` home this plan, `readThreads`, newest 5 comments across them), the
+  plan's labels (`listItems`, triage only), the call, `readAiReply`, the constraint, then the write:
+  - summarise to a comment: `addComment(deps, rule, card, text, { ai: true })` (automation-writes.ts), the Comment
+    carrying `ai: true` beside `automation`;
+  - summarise to a field, card type set, triage: `patchCard(…, tag 'automation_ai')` with the run's `source`, so the
+    events it causes chain as the rule's do; a patch that changes nothing is "Already so";
+  - card type comment: `addComment`, "Suggested card type: Bug".
+  The line is `{ kind: 'action', ok, text, ai: true }`; the first failure is the run's reason.
+- Errors: `AI_NOT_SET_UP` "AI isn't set up here", `AI_FAILED` "The AI couldn't answer: try again later", `AI_SLOW`
+  "The AI took too long to answer", `AI_UNREADABLE` "The AI's reply couldn't be read", `AI_CAPPED` "This plan has
+  used its 100 AI steps today". Logged `[automations] ai` `{ task, ok, tookMs, reason? }` (a reason code, never text).
+- Telemetry: `reportServerEvent(env, 'Plan', 'Ran', 'AutomationAiSummarise' | 'AutomationAiCardType' |
+  'AutomationAiTriage')` per call, plus `AutomationAiFailed` on a failure after the call and `AutomationAiCapped`, each
+  through `deps.defer`.
+- The wake stops taking new triggers once it has run `AUTOMATION_WAKE_MS = 60_000` (wall time; three 15 s calls a run
+  could otherwise hold a wake of 25 triggers for minutes); the rest wait for the next wake, at once.
+- `wrangler.toml`: `[ai] binding = "AI"` and `[env.staging.ai] binding = "AI"`. Absent at run time (tests, a fork
+  without it), every AI step fails "AI isn't set up here" and nothing else changes.
+
+### Editor
+
+- `StepAddButtons` lists **AI** after the other actions, under its own heading, with the sparkle glyph (`AI_GLYPH` in
+  automation-glyphs.tsx): Summarise Card, Suggest Card Type, Triage, each disabled with a reason past 3 AI steps, and
+  absent inside an If / Else or a branch.
+- `step-panels/AiStepPanel.tsx`: the task's panel. Summarise: **Where It Goes** (a SegmentedToggle: A Comment, A Text
+  Field; a field Select of the plan's custom text fields). Suggest Card Type: **With the Suggestion** (Set the Card
+  Type, Comment the Suggestion). Triage: **Set Priority** and **Add Labels** switches (the last one on can't turn off).
+  Each ends with the "Uses AI" note (`AiCostNote`): the sparkle, "Uses AI: counts toward this plan's 100 AI steps a
+  day.", and what is sent, in one line.
+- `RunSteps` draws a line with `ai` with the sparkle mark; `CardActivity` reads `automation_ai` as Automation with the
+  sparkle; `comment-thread-parts` shows Generated by AI on an Automation comment that has `ai`.
+
+### Tests
+
+- items `ai-steps.test.ts`: every branch of the reader, the prompt (data never in the system message), each shape of
+  reply, each constraint (injected text, made-up labels and types, links, markup, length), the dry lines; the prompt
+  sizes measured for the cost table.
+- api `automations-ai.test.ts` with a stand-in `env.AI`: each task end to end (writes, marks, tag, Generated by AI),
+  no binding, a throwing model, a slow model (fake timers), an unreadable reply, the cap at 100 (and a new UTC day),
+  Test on a Card calling nothing, an AI step in a branch or an If refused, the gateway option.
+- editor: the AI group in Add Action, each panel's states, the dry line, the sparkle line.
 
 ## Editor
 

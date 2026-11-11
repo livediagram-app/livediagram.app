@@ -18,7 +18,9 @@ import {
   AUTOMATION_TEXT_MAX,
   AUTOMATION_TRIGGER_KINDS,
   isTimeTrigger,
+  AUTOMATION_AI_STEPS_MAX,
   type AutomationAction,
+  type AutomationAi,
   type AutomationBranch,
   type AutomationCondition,
   type AutomationOutgoing,
@@ -33,6 +35,7 @@ import {
 } from './types';
 import { unknownValueIn, type ValuePlace } from './values';
 import { clockMinutes } from './schedule';
+import { readAiStep } from './ai-steps';
 
 export type RuleRefusal = {
   error:
@@ -71,8 +74,8 @@ const COPIES = new Set(['assignee', 'labels', 'due']);
 const EVERY = new Set(['day', 'weekday', 'week', 'month']);
 const VIA = new Set(['webhook', 'slack', 'teams']);
 // The steps a branch may not hold, and an If / Else's actions neither.
-const NOT_IN_BRANCH = new Set(['if', 'for', 'create_card', 'notify']);
-const NOT_IN_IF = new Set(['if', 'for', 'notify']);
+const NOT_IN_BRANCH = new Set(['if', 'for', 'create_card', 'notify', 'ai']);
+const NOT_IN_IF = new Set(['if', 'for', 'notify', 'ai']);
 
 // A refusal thrown inside the walk and caught at its top, so each check is one line.
 class Refused extends Error {
@@ -465,6 +468,10 @@ function readStep(v: unknown, path: string): AutomationStep {
   const s = obj(v, path);
   if (s['kind'] === 'notify') return readNotify(s, path);
   if (s['kind'] === 'for') return readBranch(s, path);
+  if (s['kind'] === 'ai') {
+    const read = readAiStep(s);
+    return 'step' in read ? read.step : refuse(`${path}${read.path}`, read.message);
+  }
   if (s['kind'] !== 'if') return readAction(s, path);
   const conditions = readConditions(s['conditions'], `${path}.conditions`);
   if (conditions.length === 0) refuse(`${path}.conditions`, 'an If needs a condition');
@@ -480,7 +487,9 @@ const creates = (actions: readonly AutomationAction[]) =>
   actions.filter((a) => a.kind === 'create_card').length;
 
 // The actions a step holds: an If / Else's both lists, a branch's, else the step itself.
-export function stepActions(s: AutomationStep): readonly (AutomationAction | AutomationOutgoing)[] {
+export function stepActions(
+  s: AutomationStep,
+): readonly (AutomationAction | AutomationOutgoing | AutomationAi)[] {
   if (s.kind === 'if') return [...s.then, ...s.else];
   return s.kind === 'for' ? s.then : [s];
 }
@@ -549,6 +558,8 @@ export function readRuleBody(v: unknown): { body: AutomationRuleBody } | RuleRef
       refuse('steps', `a run makes up to ${AUTOMATION_CREATED_PER_RUN} card`);
     if (steps.filter((s) => s.kind === 'notify').length > AUTOMATION_OUTGOING_MAX)
       refuse('steps', `a rule holds up to ${AUTOMATION_OUTGOING_MAX} outgoing actions`);
+    if (steps.filter((s) => s.kind === 'ai').length > AUTOMATION_AI_STEPS_MAX)
+      refuse('steps', `a rule holds up to ${AUTOMATION_AI_STEPS_MAX} AI actions`);
     if (isTimeTrigger(trigger)) checkTimeRule(conditions, steps);
     return {
       body: {

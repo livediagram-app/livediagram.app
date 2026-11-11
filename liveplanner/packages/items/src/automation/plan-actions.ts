@@ -28,6 +28,7 @@ import { fieldText, fillValues } from './values';
 import { relatedCards } from './related';
 import { branchWords, notifyChip } from './sentence';
 import { Failed, fail, fieldKind, setValueOf } from './set-value';
+import { planAi } from './ai-steps';
 import {
   walkOf,
   type Plan,
@@ -288,6 +289,10 @@ export function planActions(steps: readonly AutomationStep[], ctx: PlanActionsCo
         count(run);
         return notify(s, index, w);
       }
+      if (s.kind === 'ai') {
+        count(run);
+        return planAi(s, index, w);
+      }
       if (s.kind !== 'if') {
         count(run);
         return apply(s, w);
@@ -315,4 +320,5 @@ const writesOf = (plan: Plan): PlannedWrites => ({
   related: plan.run.related,
   sends: plan.run.sends,
   turns: plan.run.turns,
+  ...(plan.run.ai.length ? { ai: plan.run.ai } : {}),
 });
