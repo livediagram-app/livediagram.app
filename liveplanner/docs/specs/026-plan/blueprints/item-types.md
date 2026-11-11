@@ -289,8 +289,9 @@ target.id } })`, announced "Linked #12 as {Field}" and tracked `('Plan', 'Linked
   Currency result). `readCustom` keeps `formula` as any string up to `FORMULA_MAX` (a broken one is kept: the field
   shows the problem), refuses an unknown `result` or a bad `currency`.
   - The language, `packages/items/src/formula/`: `limits.ts` (`FORMULA_MAX` 1,000, `FORMULA_DEPTH_MAX` 32,
-    `FORMULA_STEPS_MAX` 10,000, `FORMULA_ROUND_PLACES_MAX` 10, `FORMULA_CACHE_MAX` 512, the results and their
-    labels), `tokens.ts` (`tokenize`: one character loop, no regex over the text; names as runs of words or
+    `FORMULA_STEPS_MAX` 10,000, `FORMULA_ROUND_PLACES_MAX` 10, `FORMULA_CACHE_MAX` 512, `FORMULA_QUOTE_MAX` 32 (`CUSTOM_FIELD_LABEL_MAX`, so a
+    real field name is quoted whole), the results and their labels), `tokens.ts` (`quoted(text)`: what a problem quotes, cut to
+    `FORMULA_QUOTE_MAX` with an ellipsis; `tokenize`: one character loop, no regex over the text; names as runs of words or
     braces, `\}` and `\\` the escapes inside braces (any other `\` kept as it is), `""` in text, `==`/`<>` aliases), `parse.ts` (`parseFormula`: recursive descent, comparison < sum <
     product < unary < primary, depth counted on brackets, calls and signs; arity checked from `FUNCTIONS`;
     `refsOf`), `functions.ts` (`FUNCTIONS` with min/max arity and lazy arguments, `functionNamed` by own key only,
@@ -318,11 +319,13 @@ selfId)` names to ids by token spans, `shownFormula` ids to names (`nameAsWritte
     (`withFormula`, resolved after the change's fields with `resolveFormulas`; "The formula for "Left" doesn't
     work: ..."). `plan-listing.ts` lists `formula` (shown), `result` and `formulaError`; the api answers the
     widened `calculated`; the SVG export draws a Formula with or without the cards.
-  - Editor: `FormulaEditor.tsx` (Result and Currency, the Formula box, the check line `role="status"`, `CalculatedPreview` (right under the check
-    line, above the chips, so it clears Add Field's sticky footer on a 390 px phone) on the type's first live card
+  - Editor: `FormulaEditor.tsx` (Result and Currency, the Formula box, the check line `role="status"` (its text
+    `line-clamp-2`, read whole by a screen reader), `CalculatedPreview` (right under the check
+    line, above the chips, so it clears Add Field's sticky footer on a 390 px phone with a two-line problem:
+    measured in the e2e stack at 390x844, Work Tracker #510) on the type's first live card
     through `calculatedFieldOutcome`, then Fields and Functions chips inserting at the caret), made from Add Field's Formula tile (`KIND_VARIANTS.formula`; `CalculationSelect` offers only
     `COUNT_CALCULATIONS` and shows only while `pickOf(field)` is `calculated`), `CustomFieldForm` (keeps the last working formula) and `AddFieldShape`
-    (`kindReadiness` 'formula', "Write a formula that works."). `PlanCardFace` draws a problem as a red "Error"
+    (`kindReadiness` 'formula', "Write a formula that works.", kept `sr-only` for that one readiness: the check line says the problem). `PlanCardFace` draws a problem as a red "Error"
     pill with the problem in its spoken label; `CalculatedFieldValue` shows the problem in red,
     "No value" for none, and a Percent result shown as a Percent (`showAs`) through `percentShown`, as Children Done.
     `FormulaEditor`'s Result menu drops `showAs` when the result leaves Percent (`calculationPatch` too); `readCustom`
@@ -355,7 +358,8 @@ index, through?)` filters without a second pass. A Lookup reads the first live l
     `calculatedValuesOf`; the SVG export passes `isDone` and the types.
   - Editor: `RollupEditor.tsx` (Through, Calculate, Field, `CalculatedPreview`, then the `role="status"` line, so a longer line never pushes Preview under Add Field's footer on a phone; `rollupPatch`) in
     `CustomFieldForm` and `AddFieldShape` (`kindReadiness` 'through' and 'source'); `CalculatedPreview.tsx` is
-    shared with `FormulaEditor` (a Rollup's prefers the first card with a value other than 0).
+    shared with `FormulaEditor` (a Rollup's prefers the first card with a value other than 0). While it waits (`field` null)
+    its row does not wrap: the card's title truncates and the waiting words keep one line (Work Tracker #510).
 - Percent fields (spec "Percent"): `percent-fields.ts` (packages/items) is the one reading, shared by every surface:
   `PERCENT_MIN` 0 and `PERCENT_MAX` 100; `percentValue(v)` (a finite number, or numeric text with an optional "%",
   rounded and held to 0..100 by `clampPercent` from `@liveworkspace/model-core/progress-label`, else undefined; the

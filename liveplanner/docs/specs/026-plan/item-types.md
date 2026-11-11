@@ -744,7 +744,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     `currency` beside it.
   - **Errors never break a board.** A formula that can't be read (bad syntax, an unknown field, too long, too deep)
     is refused where it is written: the editor and `change_card_types` name the problem and where ("Unknown field
-    "Spnt" at 10", "Expected ) at 14"). A stored formula that stopped working (a field it reads was deleted or taken off
+    "Spnt" at 10", "Expected ) at 14"), quoting what was typed cut to 32 characters with an ellipsis. A stored formula that stopped working (a field it reads was deleted or taken off
     the type, or a field it reads became a kind it can't read) and a value that can't be worked out on one card
     (dividing by 0, a list in a sum, a formula that reads itself through another) read as an **error**: the card
     panel shows the message in place of the value, the card face reads "Error" in red (the message spoken with it), and
@@ -762,12 +762,17 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     Field's Shape step) shows the formula editor, and no Calculation menu (a Formula never turns into a count, nor a
     count into a Formula): a **Result** menu (and **Currency** for a Currency result, **Show as Percent Bar** for a Percent one), a monospaced **Formula** box, the type's
     fields as chips under it (pressing one writes its name at the caret), and a line that checks the formula as it is
-    typed: "Works" with a tick, or the problem in red. **Preview** works it out on a real card: the type's first
+    typed: "Works" with a tick, or the problem in red. The line is two lines at most: a problem quotes what was
+    typed (a name, a function, some text) cut to 32 characters with an ellipsis, so it rarely needs a second line,
+    and anything longer still ends in an ellipsis after two (a screen reader reads the whole problem). **Preview** works it out on a real card: the type's first
     live card ("On #12 Website: £2,500"), or "No {Type} card to try it on yet". Preview sits straight under that
-    line, above the chips, so on a 390 px phone it is in view above the footer's Add button without scrolling (a
+    line, above the chips, so on a 390 px phone it is in view above the footer's Add button without scrolling, with
+    a two-line problem too (while it waits for a formula that works, its card's title shortens with an ellipsis so
+    the waiting words keep one line; a
     Rollup's and a Lookup's sit straight under their menus, above the line saying what they work out, for the same
     reason). Add {Name} waits until the formula
-    works ("Write a formula that works"). In an existing field's form, a formula that doesn't work is not kept: the
+    works ("Write a formula that works": said to a screen reader on the button, but not drawn under it, since the
+    line above already says what is wrong and the footer stays one row shorter). In an existing field's form, a formula that doesn't work is not kept: the
     field keeps its last working one, and the line says so ("Not saved: Unknown field "Spnt"").
   - **Agents**: `change_card_types` takes `formula` (by names) and `result` on `custom`, `addCustom` and
     `editCustom` (and `showAs: "percent"` with a Percent result), refusing a formula that can't be read with its problem; `list_items` lists a Formula field's
