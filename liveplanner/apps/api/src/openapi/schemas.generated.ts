@@ -4139,6 +4139,47 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "FixedValue": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ]
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "submitted": {
+            "$ref": "#/components/schemas/SubmittedDay"
+          }
+        },
+        "required": [
+          "submitted"
+        ],
+        "type": "object"
+      }
+    ]
+  },
   "FlowchartDirection": {
     "enum": [
       "down",
@@ -4274,6 +4315,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "FormDestination": {
     "additionalProperties": false,
     "properties": {
+      "fixed": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/FixedValue"
+        },
+        "type": "object"
+      },
       "status": {
         "type": "string"
       },
@@ -4601,6 +4648,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "object"
+      },
+      "fixed": {
+        "items": {
+          "$ref": "#/components/schemas/SheetFixedColumn"
+        },
+        "type": "array"
       },
       "sheetId": {
         "type": "string"
@@ -10602,6 +10655,53 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "SheetFixedColumn": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "header": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "value": {
+            "type": [
+              "string",
+              "number"
+            ]
+          }
+        },
+        "required": [
+          "header",
+          "id",
+          "value"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "header": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "submitted": {
+            "$ref": "#/components/schemas/SubmittedDay"
+          }
+        },
+        "required": [
+          "header",
+          "id",
+          "submitted"
+        ],
+        "type": "object"
+      }
+    ]
+  },
   "SheetJson": {
     "additionalProperties": false,
     "properties": {
@@ -11382,6 +11482,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       }
     },
+    "type": "object"
+  },
+  "SubmittedDay": {
+    "additionalProperties": false,
+    "properties": {
+      "days": {
+        "type": "number"
+      },
+      "tz": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "days"
+    ],
     "type": "object"
   },
   "SwimlaneBy": {
