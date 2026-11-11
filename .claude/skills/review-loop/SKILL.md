@@ -175,7 +175,7 @@ hides the ones that matter.
 ### Merging related cards
 
 Fewer, fuller cards keep the board readable and make sure related work is built together, in one PR. While
-reviewing, look across **Under Review** and **Reviewed** for cards that belong in the same change: the same
+reviewing, look across **Under Review**, **Reviewed** and **Selected for Development** for cards that belong in the same change: the same
 code area or feature, one following on from the other, or several small fixes to the same screen. Merge them
 into one card.
 
@@ -183,9 +183,9 @@ into one card.
   that only makes sense with its parent. **Don't merge** cards that only share a product or a theme, work in
   different products unless it is the same shared package, or anything that would make the card too big to
   build and review in one go (roughly more than 12 Acceptance Criteria items, or two Large pieces of work).
-- **Only Under Review and Reviewed cards.** Never merge into or out of Selected for Development, In Progress or
-  later. If an Under Review card belongs with one in Selected or beyond, link them with Related Work Item and
-  say so in the report instead.
+- **Only cards not yet picked up:** Under Review, Reviewed and Selected for Development. Never merge into or
+  out of In Progress or later; link those with Related Work Item and say so in the report instead. Just before
+  writing a merge, re-read the cards' columns and skip it if a dev-loop has since moved one to In Progress.
 - **Skip a card that is Waiting** (an open question thread of the loop's with no reply). Merge it once answered.
 - **The keeper** is the card with the highest Priority (ties: the lowest number). In one `change_items` batch:
   - description: keep the keeper's Problem and add each merged card's below it, as a paragraph starting
@@ -196,7 +196,8 @@ into one card.
     highest of the cards.
   - labels, App and Related Work Item: the union. Type: Feature if any card is a Feature.
   - Retitle the keeper only when its title no longer covers the merged work (plain Title Case).
-  - If any merged card was in Under Review, the keeper goes (or stays) in Under Review and is reviewed whole.
+  - The keeper sits in the most advanced column of the group (Selected for Development, then Reviewed, then
+    Under Review), moving there if needed: this review has just covered the cards merged into it.
   - Each merged card moves to **Cancelled**.
 - **Threads:** in the same pass, start one thread on each merged card, `Merged into #K <title>.`, and resolve
   it. Start one thread on the keeper, `Merged in #N <title> (and ...): <one line why they belong together>.`,
@@ -278,7 +279,7 @@ threads (open and resolved), so you never ask the same question twice.
   Review Work Items, reply in them and resolve them once their answer is acted on (or, on a card in any column,
   once moot, as above); correct a Work Item's
   **Type** when it's wrong or missing; add its missing **labels**; and fill its empty **Acceptance Criteria**, **Risks** and
-  **Risk** (and an empty description); and merge related Under Review and Reviewed cards as "Merging related
+  **Risk** (and an empty description); and merge related Under Review, Reviewed and Selected for Development cards as "Merging related
   cards" says (the only time it edits filled fields, retitles a card, sets Priority or moves a card to
   Cancelled). Otherwise never edit a card's title or change a field someone already filled. Never move
   cards anywhere else. Never reply to, resolve, edit or delete a thread a person started, or anyone's comment
