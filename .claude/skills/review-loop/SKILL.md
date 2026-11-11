@@ -133,8 +133,10 @@ For each card, in order:
    - **Labels missing:** add them in the same batch (see "Labels"). Like a Type fix, this never holds a card back.
    - **Problem, Solution, Risks or Risk missing:** fill only the empty ones in the same batch, from the card and
      what step 3 found: description is the Problem; Solution is `**What**` then `**Done when**`; Risks is 1 to 3
-     concrete bullets; Risk is a level from "Risk levels" below. Never overwrite one a person filled in. Like a
-     Type fix, this never holds a card back.
+     concrete bullets; Risk is a level from "Risk levels" below. Never overwrite one a person filled in, with one
+     exception: when step 3 finds a risk the card's Risks miss (security, data loss, sharing roles, hot-path
+     performance, migrations), add it as a bullet and raise Risk to match, saying so in the report. Never lower a
+     Risk someone set. Like a Type fix, this never holds a card back.
    - **Issues or important questions:** leave it in Under Review. Start one thread per question (step 4).
    - **An answer that can't be acted on** (unclear, contradicting another answer, or asking for something the
      code shows can't work): reply in **that** thread saying what's missing, rather than starting a new one.
