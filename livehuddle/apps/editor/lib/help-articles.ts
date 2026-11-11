@@ -47,6 +47,8 @@ export const HELP_ARTICLES = {
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
+  // A tab's Attendance (docs/specs/012-collaboration/tab-attendance.md), its dialog's help link.
+  tabAttendance: 'collaboration/live-presence/tab-attendance',
   // The call group's article (CallStripGroup); it links on to Cameras and Screen Sharing.
   assignedActions: 'collaboration/assigned-actions',
   // Explorer / data
@@ -250,6 +252,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   livePresence: {
     title: 'Learn about live presence',
     description: 'Who is in the canvas, where they are, and following them.',
+  },
+  tabAttendance: {
+    title: 'Learn about attendance',
+    description: 'Who was in a tab and when, and how long it is kept.',
   },
   keyboardShortcuts: {
     title: 'Learn about keyboard shortcuts',

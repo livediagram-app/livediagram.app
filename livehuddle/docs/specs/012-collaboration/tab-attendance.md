@@ -86,7 +86,7 @@ becomes `anonymised`, its name "Deleted account" and its picture goes. Running i
     right the time spent ("45 min", "1 hr 5 min", "Under a minute").
   - Empty: "Nobody has been in this tab yet." with a line saying visits show here for 90 days.
   - Loading: placeholder rows. Failure: "Couldn't load attendance." with Try Again.
-- The help article [Attendance](../../../apps/help/app/collaboration/tab-attendance/page.mdx).
+- The help article [Attendance](../../../apps/help/app/collaboration/live-presence/tab-attendance/page.mdx).
 
 ## The wire
 

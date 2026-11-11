@@ -120,10 +120,10 @@ leftAt: number | null }`. Newest first by `joined_at`, then id; at most `ATTENDA
   Another Space"; in a connected tab's menu above Remove Tab. With `attendanceOnly` (a Participant, or a tab-scoped
   Editor whose tab structure is read only) the menu is that one row.
 - `TabPill` shows the ⋯ and the right-click menu when `!readOnly || onOpenAttendance`.
-- `TabAttendanceDialog` (`components/dialogs/TabAttendanceDialog.tsx`), size `md`, its list scrolls under a fixed
+- `TabAttendanceDialog` (`apps/editor/components/dialogs/TabAttendanceDialog.tsx`), size `md`, its list scrolls under a fixed
   header:
   - Header: "Attendance", subtitle "<tab name> · Last 90 days", help link (`tabAttendance`), close.
-  - Day groups (`groupVisitsByDay`, `lib/tab-attendance.ts`): "Today", "Yesterday", else "Mon 9 Nov" (weekday, day,
+  - Day groups (`groupVisitsByDay`, `apps/editor/lib/tab-attendance.ts`): "Today", "Yesterday", else "Mon 9 Nov" (weekday, day,
     month; the year too when not this year).
   - Row: `ParticipantAvatar` (28px), name, badges ("You", "Guest", "Here Now" in brand), detail "Joined 14:02 · Left
     14:47" or "Joined 14:02" with "Here Now"; the duration right-aligned in tabular figures (`formatVisitLength`).
@@ -135,7 +135,7 @@ leftAt: number | null }`. Newest first by `joined_at`, then id; at most `ATTENDA
 
 - The dialog is the shared `Dialog` (focus trap, Escape, labelled by its title).
 - Each day group is a `section` labelled by its heading; rows are a list.
-- The duration carries an `aria-label` in words ("45 minutes").
+- The duration reads in words to a screen reader ("45 minutes", visually hidden beside the short "45 min").
 - Colours from the slate and brand ramps the Collaborators dialog uses, in both appearances.
 
 ## Observability

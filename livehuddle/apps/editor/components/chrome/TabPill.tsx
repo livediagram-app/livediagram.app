@@ -28,6 +28,8 @@ export type TabPillCtx = {
   menuFor: string | null;
   setMenuFor: Dispatch<SetStateAction<string | null>>;
   readOnly: boolean;
+  // The session may open a tab's Attendance: a read-only one still gets the tab menu, with that row alone.
+  attendance?: boolean;
   isDark: boolean;
   onSelect: (id: string) => void;
   onRename: (id: string, name: string) => void;
@@ -67,6 +69,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
     menuFor,
     setMenuFor,
     readOnly,
+    attendance,
     isDark,
     onSelect,
     onRename,
@@ -102,7 +105,9 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
       onOpenCollaborators={onOpenCollaborators}
     />
   );
-  const onContextMenu = readOnly
+  // The tab menu: every verb for an Editor, Attendance alone for a read-only session that may see it.
+  const hasMenu = !readOnly || attendance === true;
+  const onContextMenu = !hasMenu
     ? undefined
     : (e: MouseEvent) => {
         // Right-click anywhere on the tab (name, gap, avatars, menu button) opens the tab menu, switching to
@@ -132,7 +137,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
         hasPresence={(participantsByTab.get(tab.id)?.length ?? 0) > 0}
         presence={presenceStack}
         menu={
-          isActive && !readOnly ? (
+          isActive && hasMenu ? (
             <EllipsisMenuButton
               open={menuFor === tab.id}
               onToggle={() => setMenuFor(menuFor === tab.id ? null : tab.id)}
@@ -192,7 +197,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
       hasPresence={(participantsByTab.get(tab.id)?.length ?? 0) > 0}
       presence={presenceStack}
       menu={
-        isActive && !isEditing && !readOnly ? (
+        isActive && !isEditing && hasMenu ? (
           <EllipsisMenuButton
             open={menuFor === tab.id}
             onToggle={() => setMenuFor(menuFor === tab.id ? null : tab.id)}
