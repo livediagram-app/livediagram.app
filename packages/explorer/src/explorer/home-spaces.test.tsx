@@ -226,10 +226,17 @@ describe('Spaces on Home', () => {
         .map((l) => l.getAttribute('aria-label')),
     ).toEqual(['My Work', 'Design']);
     index.fail.delete('spacePreviews');
+    // Held, so the re-read's placeholders are seen apart from its answer: the alert goes the moment Try again is
+    // pressed, long before the tiles come back, so waiting on the alert alone raced the answer on a slow runner.
+    index.hold.add('spacePreviews');
     fireEvent.click(within(alert).getByRole('button', { name: 'Try again' }));
-    await waitFor(() => expect(within(s).queryByRole('alert')).toBeNull());
-    expect(index.count('spacePreviews')).toBe(2);
-    const mine = within(s).getByRole('link', { name: 'My Work' });
+    await waitFor(() => expect(index.count('spacePreviews')).toBe(2));
+    expect(within(s).queryByRole('alert')).toBeNull();
+    expect(s.getAttribute('aria-busy')).toBe('true');
+    index.release();
+    const mine = await within(s).findByRole('link', { name: 'My Work' });
+    expect(s.getAttribute('aria-busy')).toBe('false');
+    expect(within(s).queryByRole('alert')).toBeNull();
     expect(document.getElementById(mine.getAttribute('aria-describedby')!)!.textContent).toMatch(
       /^1 plan · Edited /,
     );
