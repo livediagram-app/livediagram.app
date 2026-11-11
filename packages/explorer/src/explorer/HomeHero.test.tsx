@@ -101,7 +101,7 @@ describe('Home’s hero', () => {
     expect(screen.getByRole('region', { name: heading.textContent! })).toBeTruthy();
     expect(
       screen.getByText(
-        'Jump back into what you use most, or see what changed while you were away.',
+        'Jump back into what you use most, or start something new.',
       ),
     ).toBeTruthy();
   });

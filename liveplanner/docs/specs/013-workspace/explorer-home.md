@@ -18,7 +18,7 @@ Top to bottom, left column:
 - **The greeting**, the page's `h1`: "Good morning,", "Good afternoon," or "Good evening," by the reader's local
   hour (5 to 11 morning, 12 to 17 afternoon, else evening), then "what are you planning today?". Large display type
   (about 56 px on a desktop, 36 px on a phone), extra bold, tight tracking. The tab's title stays **Home**.
-- **The lead**: "Jump back into what you use most, or see what changed while you were away."
+- **The lead**: "Jump back into what you use most, or start something new."
 - **The search field**: the Explorer's search drawn large (60 px high, a 2 px accent edge and a soft glow), with
   **New Plan** as a solid button inside its right end. On Home it is the only search field: the header's is not
   drawn, so the page never shows two. Typing in it opens Search results, and the header's field there takes the
