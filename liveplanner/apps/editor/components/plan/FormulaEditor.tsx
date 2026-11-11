@@ -203,9 +203,7 @@ export function FormulaEditor({
           )}
           {/* Two lines at most, so Preview under it stays over Add Field's footer on a phone; a screen reader
               still reads the whole line. */}
-          <span className="line-clamp-2 min-w-0 break-words">
-            {status.line}
-          </span>
+          <span className="line-clamp-2 min-w-0 break-words">{status.line}</span>
         </p>
       </div>
       {/* Under the check line, above the chips: in view over Add Field's footer on a phone. */}
