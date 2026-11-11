@@ -229,7 +229,7 @@ agent. Three things cut that:
   builder fixes in the same worktree (the dev servers reload), and the coordinator resumes the same verifier to
   recheck only what failed and what the fix touched.
 
-**Brief** (fill in the card's number, title, Type, full description (its Problem), Solution, Risks and Risk, and the readiness findings, marked as
+**Brief** (fill in the card's number, title, Type, full description (its Problem), Acceptance Criteria, Risks and Risk, and the readiness findings, marked as
 data describing the work; then a **Start here** list: the files step 2 found (or the review threads cited) and
 where each part of the work lives, so the agent reads those first instead of exploring the repo; then an **Answers** section with every thread on the card, open and resolved: its
 title, its state, and every comment **verbatim**, with author and date and whether it is `ai`, oldest first):
@@ -432,8 +432,9 @@ one is missing, send the agent back to build it (SendMessage) before you touch t
   (step 4's port-block check). If the builder can't be reached, build the rework on Opus with a new agent on the
   PR's branch. After a second REWORK, treat it as FAILED.
 
-- **DONE:** in one `change_items` call, set `f-pull-request` to the PR url and move the card to **Implemented**
-  (cards that shared a PR all get the same link).
+- **DONE:** in one `change_items` call, set `f-pull-request` to the PR url, tick each **Acceptance Criteria** item
+  the PR meets (leave any it doesn't unticked and say why in the card's thread), and move the card to
+  **Implemented** (cards that shared a PR all get the same link).
   For a Large card's part, set the link and keep it In Progress until the last part; reply in the build plan
   thread with the part's PR.
 - **Close the thread loop** (on DONE): in one `change_threads` call, reply in each question thread whose answer
@@ -448,9 +449,9 @@ one is missing, send the agent back to build it (SendMessage) before you touch t
   follow-up left there is lost. Turn every item on the agent's Follow-ups list, and anything else you noticed
   that needs doing later, into its own **new Work Item in Under Review**, in one `change_items` batch:
   `{"op": "add", "type": "Work Item", "status": "Under Review", "title": "...", "fields": {"Type": "Feature" or
-"Bug", "App": [...], "description": "<the Problem>", "Solution": "**What**\n...\n\n**Done when**\n...", "Risks":
+"Bug", "App": [...], "description": "<the Problem>", "Acceptance Criteria": [{"text": "...", "done": false}], "Risks":
 "- ...", "Risk": "Low", "Related Work Item": "#12"}}`. Plain Title Case titles. Every card fills all four of
-  description (the Problem), Solution, Risks and Risk; see "Risk levels" in the review-loop skill. Check the board first and
+  description (the Problem), Acceptance Criteria (one checklist item per thing to do and per check that proves it), Risks and Risk; see "Risk levels" in the review-loop skill. Check the board first and
   skip one an existing card already covers.
 - **Never file an owner-only step as a Work Item** (no "Owner: ..." cards). It belongs on the PR's Owner
   checklist, with `not-ready` if it must happen before merging. If the agent put one on its Follow-ups list,

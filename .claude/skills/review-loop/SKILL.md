@@ -131,8 +131,8 @@ For each card, in order:
    - **No issues or important questions:** move it to **Reviewed**:
      `change_items` → `{"op": "move", "item": "#12", "status": "Reviewed"}`.
    - **Labels missing:** add them in the same batch (see "Labels"). Like a Type fix, this never holds a card back.
-   - **Problem, Solution, Risks or Risk missing:** fill only the empty ones in the same batch, from the card and
-     what step 3 found: description is the Problem; Solution is `**What**` then `**Done when**`; Risks is 1 to 3
+   - **Problem, Acceptance Criteria, Risks or Risk missing:** fill only the empty ones in the same batch, from the card and
+     what step 3 found: description is the Problem; Acceptance Criteria is a checklist, one item per thing to do and per check that proves it; Risks is 1 to 3
      concrete bullets; Risk is a level from "Risk levels" below. Never overwrite one a person filled in, with one
      exception: when step 3 finds a risk the card's Risks miss (security, data loss, sharing roles, hot-path
      performance, migrations), add it as a bullet and raise Risk to match, saying so in the report. Never lower a
@@ -243,7 +243,7 @@ threads (open and resolved), so you never ask the same question twice.
 - Only ever do these: move Work Items from **Under Review** to **Reviewed**; start question threads on Under
   Review Work Items, reply in them and resolve them once their answer is acted on (or, on a card in any column,
   once moot, as above); correct a Work Item's
-  **Type** when it's wrong or missing; add its missing **labels**; and fill its empty **Solution**, **Risks** and
+  **Type** when it's wrong or missing; add its missing **labels**; and fill its empty **Acceptance Criteria**, **Risks** and
   **Risk** (and an empty description). Never edit a card's title or change a field someone already filled. Never move
   cards anywhere else. Never reply to, resolve, edit or delete a thread a person started, or anyone's comment
   but the loop's own. Never touch cards in any other column or on any other board.
