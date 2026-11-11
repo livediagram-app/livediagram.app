@@ -335,6 +335,29 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
   default sizes, `createText`, `createTable`, `createSticky`, `createFreehand`, `createArrow`, `createPinnedArrow`).
   With them, 24 tests moved in from the products (one copy each, the identical copies deleted); the package's floor
   is what they reach.
+- Moved (part 5, the model packages' remaining copies that read no product-only module): `element-action`,
+  `comment-thread` (D's put-back `before` for every product, generic over a product's `Comment`), `custom-colours`,
+  `legacy-text-sizing`, `legacy-links`, `malformed-styles` (D, H, P; O and S keep their `textScale` check),
+  `tab-has-drawing`, `whiteboard`, `retired-custom-themes`, `quick-swatch-rederive` and `theme-graph` (H keeps its
+  arrow-swatch rederive and its own themes), `accent-edge` (every product's straight-edged kinds), `shape-variants`,
+  `element-field-values` (O and S; D, H and P keep the lists of their own kinds), the entity rules and rows
+  (`entity-fields`, `entity-look`, `svg-render-entity`, D and P), the sequence diagram's rows and text
+  (`sequence-element`, `sequence-text`, D and P; `SequenceElementDiagram` is assignable to each product's Mermaid
+  `SequenceDiagram`), the wordmark (`wordmark`, `svg-render-wordmark`, D and H), the Sankey frame and export
+  (`sankey-frame`, `svg-render-sankey`: S's page ground, unused by D and P), the export's image and icon bodies
+  (`svg-render-image-icon`, `svg-render-inline-icon` with O's and S's `textScale`), the table helpers (`table`, D, S and P,
+  over `TableGrid`; O keeps its comparison-table copy), and `element-fingerprint` as `fingerprintsFor`, bound in each
+  product's `element-fingerprint.ts` to its `LIVE_ELEMENT_FIELDS`. `@liveworkspace/model-core` gains `civil-dates`;
+  livediagram's and livehuddle's `slug.ts` bind model-core's. New shared fields: a shape's icon size, weight and
+  position, its Sankey fields, its sequence rows and its entity fields as `EntityField`; a text's wordmark type; a
+  label's underline and strikethrough. Each product's `MAX_TABLE_*` is the shared `TABLE_*_MAX`.
+- Left per product, and why: the flowchart modules, `mind-grow` and `component-factories` (D, P) build with each
+  product's own `createShape` and factories; `svg-render-sequence` and `svg-render-temperature` (D, P) draw through
+  each product's renderer and Collaborate kinds; `label-backdrop`, `tab-as-seen`, `retired-themes` and
+  `collab-index-rows` read livediagram's wrapped or livehuddle's own colours, themes and labels; `savable` and
+  `malformed-ids` read each product's validator and catalogue keys; the page modules (`page-lock`, `page-of`,
+  `page-paint`, `page-ink-ground`, `chart-ink`) and `indicator-placement` (O, S) read each product's page model and
+  hit outlines.
 - `@liveworkspace/workbench/components/canvas/useFaceFinishPass` is the canvas finish pass of livediagram,
   livedocuments, livedesign and livehuddle; liveplanner keeps its own (its Plan boards spend a frame budget).
 
