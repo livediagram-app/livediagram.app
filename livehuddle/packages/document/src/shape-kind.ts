@@ -1,6 +1,6 @@
-// The shape vocabulary: every kind a shape element can be, from the basic
-// geometry through the flowchart symbols, the UML set and the self-drawing data
-// shapes.
+// The shape vocabulary: every kind a shape element can be, the Space pieces and the meeting palette's kinds. The
+// diagram shapes (square, circle, the flowchart and UML symbols) left with the element engine's part 5
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"): a stored one is a retired element.
 //
 // Split out of index.ts the same way element-types.ts and arrow-types.ts were,
 // and it is the easiest of the three to justify: one union, ~100 members, and
@@ -13,13 +13,6 @@
 // `@livehuddle/document` surface is unchanged.
 
 export type ShapeKind =
-  | 'square'
-  | 'circle'
-  | 'diamond'
-  | 'cylinder'
-  | 'parallelogram'
-  | 'hexagon'
-  | 'document'
   // Mode button (docs/specs/009-elements/mode-button.md): a pressable pill that switches whoever clicks it
   // into a selection mode — Avatar by default. Which mode lives in the
   // element's `mode` field.
@@ -140,17 +133,6 @@ export type ShapeKind =
   // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md): a meeting room's clock, counting down or up.
   | 'timer'
   | 'stopwatch'
-  | 'stadium'
-  | 'actor'
-  // UML final state (docs/specs/008-canvas/canvas-and-palette.md "UML"): a ring around a solid dot, one element, so the
-  // bullseye moves, pins and lints as one stop.
-  | 'final-state'
-  | 'cloud'
-  | 'triangle'
-  | 'trapezoid'
-  | 'star'
-  // Speech bubble / callout: a rounded body with a tail at the bottom-left.
-  | 'speech-bubble'
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): press it and everyone else in the room is offered
   // a jump to it, on your tab.
   | 'focus-button'

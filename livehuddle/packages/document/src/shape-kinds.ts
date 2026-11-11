@@ -6,13 +6,6 @@
 // rectangular box is "square") is coerced through `coerceShapeKind`; a stored one is a retired element
 // (./retired-kinds), kept as stored and drawn as a placeholder. Keep in sync with the ShapeKind union in shape-kind.ts.
 export const SHAPE_KINDS = new Set<string>([
-  'square',
-  'circle',
-  'diamond',
-  'cylinder',
-  'parallelogram',
-  'hexagon',
-  'document',
   // Mode button (docs/specs/009-elements/mode-button.md): a pressable pill that switches whoever clicks it
   // into a selection mode.
   'mode-button',
@@ -121,14 +114,6 @@ export const SHAPE_KINDS = new Set<string>([
   // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
   'timer',
   'stopwatch',
-  'stadium',
-  'actor',
-  'final-state',
-  'cloud',
-  'triangle',
-  'trapezoid',
-  'star',
-  'speech-bubble',
   'focus-button',
   'icon',
   'sticker',

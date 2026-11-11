@@ -56,6 +56,22 @@ export const RETIRED_SHAPE_NAMES: Readonly<Record<string, string>> = {
   badge: 'Badge',
   step: 'Step Number',
   'pointer-note': 'Pointer Note',
+  // Part 5: the diagram shapes, the Shapes category's kinds and the UML ones (DEFAULTS.md D29).
+  square: 'Square',
+  circle: 'Circle',
+  diamond: 'Diamond',
+  cylinder: 'Cylinder',
+  parallelogram: 'Parallelogram',
+  hexagon: 'Hexagon',
+  document: 'Document',
+  stadium: 'Stadium',
+  actor: 'Actor',
+  'final-state': 'Final State',
+  cloud: 'Cloud',
+  triangle: 'Triangle',
+  trapezoid: 'Trapezoid',
+  star: 'Star',
+  'speech-bubble': 'Speech Bubble',
 };
 
 // The element TYPES the element engine deleted (docs/specs/002-project-scope/not-in-livehuddle.md "The element
