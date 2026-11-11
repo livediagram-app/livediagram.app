@@ -15,20 +15,22 @@ Derived from [Automations](../automations.md). Phase 1 (#711).
 | value               | `{{…}}` placeholders, `automation/values.ts`                                                 |
 | Automation (person) | `automationPerson(ruleName)`: `{ id: 'automation', name: <rule name>, color: '#7c3aed' }`    |
 | history tag         | `ItemHistoryTag` gains `'automation'`                                                        |
-| a waiting trigger   | `AutomationEvent` (api, `plan-room/automations/`)                                            |
+| a waiting trigger   | `AutomationEvent` (packages/items `automation/matches.ts`, queued by the api)                |
 
 ## Files
 
 ```
 packages/items/src/automation/
   types.ts            the shapes and limits (written first; the contract both sides build on)
-  validate.ts         readRuleBody(v, plan) → { body } | { error, path }: every limit, every kind, values known,
-                      names unique; plan = the outline (types, statuses, fields, people) for Needs Attention
+  validate.ts         readRuleBody(v) → { body } | { error, path, message }: every limit, every kind, values known;
+                      ruleNameTaken / freeRuleName for names (what the plan lacks is attention.ts's, never a refusal)
+  outline.ts          AutomationOutline { types, statuses, people, savedFilters, formTabs }: the plan as rules read it
   attention.ts        ruleNeeds(rule, outline) → string[]: what a rule names that the plan lacks
   values.ts           VALUE_NAMES, valuesIn(text), fillValues(text, ctx) and the {{now ± Nd}} day maths, in the
                       rule's time zone
   conditions.ts       holds(condition, ctx) → { ok, text }: one condition, with the line the Run Log shows
-  matches.ts          triggerMatches(trigger, event) → boolean: the event kinds below against a trigger
+  matches.ts          AutomationEvent; eventOfWrite(before, after, changes, source) → the event a landed write makes
+                      (or null); triggerMatches(trigger, event, ruleId) → boolean; TRIGGER_EVENT_KINDS
   plan-actions.ts     planActions(steps, ctx) → { patch, comments, created, emails, lines } | { failed, lines }:
                       the pure run: walks steps and If / Else, folds every change to the triggering card into ONE
                       patch (set / clear, in order), marks "Already so", never touches storage
@@ -43,11 +45,16 @@ packages/api-schema/src/automations.ts
                       AutomationRunResponse { run: AutomationRun }, error codes below
 
 apps/api/src/plan-room/automations/
-  automation-schema.ts   the tables (below), made with the plan's schema (plan-schema.ts) and in its migrations
-  automation-store.ts    rules CRUD on PLAN_DB; an in-memory `onKinds: Set<kind>` of the kinds some rule that is on
-                         listens for, rebuilt on every rule write and on wake (the hot-path check)
-  automation-queue.ts    enqueueEvents(env, writes, tag, ctx) used by appendItemHistory and the comment write;
-                         AutomationSchedule (at / noteWrite / due / restore / run) as RepeatSchedule
+  automation-schema.ts   the tables (below): the plan schema's step V18 (plan-schema.ts)
+  automation-store.ts    rules CRUD on the room's SQL; an in-memory `kinds: Set<kind>` of the kinds some rule that is
+                         on listens for, rebuilt on every rule write and on wake (the hot-path check)
+  automation-queue.ts    eventsOfWrites + enqueueStatement (appendItemHistory adds it to its own batch),
+                         enqueueComment (the thread routes); AutomationSchedule (at / queued / due / restore / next /
+                         done) as RepeatSchedule; PlanAutomations, the room's `automations` and its env's AUTOMATIONS
+  automation-plan.ts     readAutomationPlan: the AutomationOutline, the plan's name and the account ids behind its
+                         people's hashed ids (owner, joined team members, known_people), once per wake or request
+  plan-room-automations.ts  the room's alarm step (runAutomations) and what a run needs from the room
+  automation-copy.ts     the rules in a copy and in the plan's file
   automation-runner.ts   one event against every rule it matches: run id, budget, chain, conditions, planActions,
                          then the writes (below), the Run Log row, the failure count and pausing
   automation-writes.ts   applies a planned run: one items patch for the triggering card via the shared write
@@ -55,6 +62,10 @@ apps/api/src/plan-room/automations/
                          store with Automation as author; Create Card via makeItem + insertItems; emails via the
                          notifier's send (opt-outs honoured, account people only)
   automation-log.ts      Run Log insert and trim (2,000 rows, 30 days), the stats query, today's count
+
+apps/api/src/routes/automation-routes.ts   the routes below, dispatched from project-subresource-routes.ts
+apps/api/src/routes/automation-source.ts   writeSource(ctx) (who made a route's write, worked out only when a rule
+                                           hears it) and queueComment
 
 apps/api/src/routes/automation-routes.ts   the routes below; gate: whole-plan edit, signed-in person, no API token
 apps/editor/components/automations/
@@ -79,7 +90,7 @@ CREATE TABLE automation_rules (
   enabled INTEGER NOT NULL, position INTEGER NOT NULL,
   failures INTEGER NOT NULL DEFAULT 0);
 CREATE TABLE automation_queue (
-  id INTEGER PRIMARY KEY AUTOINCREMENT, event TEXT NOT NULL, at INTEGER NOT NULL);
+  id INTEGER PRIMARY KEY, event TEXT NOT NULL, at INTEGER NOT NULL);  -- rowid order, no AUTOINCREMENT
 CREATE TABLE automation_runs (
   id TEXT PRIMARY KEY,                                 -- runId(event.id, rule.id): INSERT OR IGNORE = never twice
   rule_id TEXT NOT NULL, at INTEGER NOT NULL, result TEXT NOT NULL, body TEXT NOT NULL);
@@ -102,17 +113,21 @@ type AutomationEvent = {
   fields?: string[]; // changed field ids, for changed (a moved write can also be changed)
   form?: string; // the Form tab, when the history tag was 'form'
   by: ItemPerson;
-  role: 'editor' | 'participant' | 'agent' | 'automation';
+  role: 'editor' | 'participant' | 'agent' | 'automation' | 'system';
   rule?: string;
   chain?: number; // set when by is Automation: the rule that made it and the chain length
   ruleId?: string; // manual: the one rule to run
 };
 ```
 
-- `appendItemHistory` (db/item-history.ts) calls `enqueueEvents` after its batch with the same writes and tag: it
-  builds events from `historyChangesOf(before, after)` (created / moved / changed), skips the Trash and archive
-  moves, and inserts them **only when `onKinds` holds a matching kind** (the hot-path cost for a plan with no rule
-  that is on is one Set lookup). A tag of `'automation'` carries the rule and chain from the write's context; a write
+- `appendItemHistory` (db/item-history.ts) takes a fifth argument, `source` (`{ role, rule, chain, form }`; `role`
+  may be a function, called only when an event is built), and adds ONE insert to its own batch: it builds events from
+  `historyChangesOf(before, after)` (created / moved / changed), skips the Trash and archive moves, and queues them
+  **only when `kinds` holds a matching kind** (the hot-path cost for a plan with no rule that is on is one Set
+  lookup and no statement). The insert is `INSERT … SELECT … FROM json_each(?) LIMIT MAX(0, 500 - COUNT(*))`, so the
+  cap needs no read; its `meta.changes` says how many were dropped. A write with no `role` takes it from its tag
+  (`ai` agent, `automation` automation, `form` / `repeat` system, else editor); `system` (a form response, a
+  Repeat) is never an Editor, a Participant or an agent to Who Did It. A tag of `'automation'` carries the rule and chain from the write's context; a write
   whose rule has `chain: false` enqueues nothing but records the Skipped line for rules it would have met (runner).
 - The comment write (card-thread-store / comment routes) enqueues `comment` for a new thread or reply whose author is
   not Automation.
@@ -125,9 +140,9 @@ type AutomationEvent = {
 
 For each event, for each rule that is on, in `position` order, whose trigger matches:
 
-1. `runId = sha256(event.id + ':' + rule.id)` (packages/items sha256.ts); `INSERT OR IGNORE` the run row as
+1. Budget: today's count (read once per wake) ≥ `AUTOMATION_RUNS_PER_DAY` → drop (no row; the meter says why).
+2. `runId = sha256(event.id + ':' + rule.id)` (@liveworkspace/model-core sha256); `INSERT OR IGNORE` the run row as
    `pending`. Not inserted means it ran already: skip.
-2. Budget: today's count ≥ `AUTOMATION_RUNS_PER_DAY` → drop (no row; the meter says why).
 3. Chain: the event's `rule === rule.id` → nothing (never its own changes). Event by Automation from a rule with
    `chain: false`, or `chain >= AUTOMATION_CHAIN_MAX` → **skipped** with its reason, only if the conditions hold.
 4. Read the card; gone or trashed → **no_match** "The card is gone".
@@ -159,7 +174,28 @@ error logged.
 | `GET    /automations/runs`              | `?rule&result&since&limit≤200` → `AutomationRunsResponse`      | 403                                 |
 
 Gate on every route: `gateEdit` for the whole plan, a signed-in caller, no API token, not a tab-scoped link
-(403 `automations_need_editor`). A Browser Storage plan never calls them.
+(403 `automations_need_editor`). A Browser Storage plan never calls them. An unknown path under `/automations` is
+not routed (the OpenAPI drift probe's clean 404), and every route is in the OpenAPI manifest under the tag
+**Automations**. Run Rule past the day's budget answers 429 `automation_budget_spent` and runs nothing.
+
+## As built (Phase 1 api)
+
+- `planActions` answers `{ patch, comments, created, emails, lines }` or `{ failed, lines }` (no `ok` field); the
+  patch holds only what differs from the card as it was (a Flag then Unflag writes nothing).
+- A rule's comment carries `automation: { ruleId, rule }` on the Comment (@liveplanner/project comments.ts), by
+  `authorId: 'automation'`, `authorName: 'Automation'`; it is written through the thread store, never the routes,
+  so it starts no Comment Added rule.
+- Send Email resolves the recipient's account by hashing the owner, the team's joined members and `known_people`,
+  and honours the **assigned actions** email setting (`notifyActionAssigned`); a name typed onto a card has no
+  account and gets nothing. The template is `automationEmail` (`EmailKind` 'AutomationEmail').
+- Create Card needs a card type from the plan's catalogue: a plan whose types are not chosen fails the run with
+  "Card type <id> is gone".
+- The day's budget counts every run the log keeps, a No Match too (a run is "one rule answering one trigger").
+- Copies: a whole-plan copy that does not come through a link (its owner's or team's Duplicate) keeps the rules; a
+  copy through a share link, of one tab, or of a Community post takes none, since the rules are an Editor's of the
+  whole plan to see. The plan's file (`liveplanner.project`, the Drive mirror) carries `automations`; a file read
+  into a new plan brings each back under a fresh id, off, checked by readRuleBody.
+- Tables hold no `plan_id`: each plan's SQLite is its own.
 
 ## Editor
 

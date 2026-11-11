@@ -164,8 +164,9 @@ the builder and shown there as chips:
   its own changes. A change by a rule that does not let its changes trigger others starts nothing; a rule whose
   trigger and conditions it would have met logs a **Skipped** run ("Started by another rule's change").
 - **Per run**: at most **20 actions** and **1 created card**.
-- **Per plan per day** (UTC): at most **1,000 runs**. Past it, triggers are dropped until the next day, the
-  Automations screen's meter reads full, and a line says "Daily limit reached: rules run again tomorrow".
+- **Per plan per day** (UTC): at most **1,000 runs**, a No Match counted like any run. Past it, triggers are dropped
+  until the next day, the Automations screen's meter reads full, a line says "Daily limit reached: rules run again
+  tomorrow", and Run Rule answers that it cannot run now.
 - **Waiting**: at most **500 triggers** wait at once; a burst past that drops the newest and logs one Skipped line
   ("Too many changes at once").
 - **Pausing**: a rule that fails **10 runs in a row** turns itself off and is marked **Paused** with the last
@@ -241,6 +242,8 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
 - A **duplicated** plan keeps its rules, each as it was (on or off), its Run Log and counts empty. A plan made from
   a template has none.
 - An **export** of a plan (its file) carries its rules; an import of that file brings them back off.
+- A copy made through a share link, of one tab, or of a Community post takes no rules: the rules are an Editor's of the
+  whole plan to see.
 - A rule naming a card type, column, field or person the copy lacks needs attention there (above).
 - **Deleting** a plan deletes its rules, queue and Run Log with it.
 
