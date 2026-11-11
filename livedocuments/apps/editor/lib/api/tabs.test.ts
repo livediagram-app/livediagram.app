@@ -221,6 +221,33 @@ describe('the changeset seen revision', () => {
     expect(new Headers(calls[0]!.init.headers).get('X-Changeset-Seen')).toBe('9');
   });
 
+  // collab-race-hardening.md "A save is merged with the stored tab": a save names what it changed beside the tab,
+  // the beacon per tab, and sends no header without changes.
+  it('a save and the beacon send the save changes, and none without them', async () => {
+    await apiSaveTab('owner-1', 'diag-1', makeTab('a'), null, { saveChanges: '%7B%7D' });
+    await apiSaveTab('owner-1', 'diag-1', makeTab('a'), null, { saveChanges: null });
+    expect(new Headers(calls[0]!.init.headers).get('X-Save-Changes')).toBe('%7B%7D');
+    expect(new Headers(calls[1]!.init.headers).get('X-Save-Changes')).toBeNull();
+    calls.length = 0;
+    flushDocumentSavesBeacon({
+      ownerId: 'owner-1',
+      documentId: 'diag-1',
+      shareCode: null,
+      loadedTabIds: new Set(),
+      orderChanged: false,
+      nameChanged: false,
+      name: 'D',
+      changedTabs: [makeTab('a'), makeTab('b')],
+      deletedIds: [],
+      tabs: [makeTab('a'), makeTab('b')],
+      saveChanges: new Map([['a', '%7B%7D']]),
+    });
+    const headersFor = (id: string) =>
+      calls.find((c) => c.url.endsWith(`/tabs/${id}`))!.init.headers as Record<string, string>;
+    expect(headersFor('a')['X-Save-Changes']).toBe('%7B%7D');
+    expect(headersFor('b')['X-Save-Changes']).toBeUndefined();
+  });
+
   // The selection reference names the revision the editor knows (docs/specs/013-workspace/blueprints/
   // workbench-embeds.md "The selection reference"): a save answers the one it wrote.
   it('a save answers the revision it wrote, or null when the answer names none', async () => {
