@@ -36,7 +36,6 @@ livedesign/apps/live/app/design/[id]/useSelectTab.ts	livediagram/apps/editor/app
 livedesign/apps/live/app/oauth/consent/page.tsx	livediagram/apps/editor/app/oauth/consent/page.tsx	livedocuments/apps/editor/app/oauth/consent/page.tsx	liveplanner/apps/editor/app/oauth/consent/page.tsx
 livedesign/apps/live/app/oauth/device/page.tsx	livediagram/apps/editor/app/oauth/device/page.tsx	livedocuments/apps/editor/app/oauth/device/page.tsx	liveplanner/apps/editor/app/oauth/device/page.tsx
 livedesign/apps/live/components/canvas/InsetContent.tsx	livediagram/apps/editor/components/canvas/InsetContent.tsx	livedocuments/apps/editor/components/canvas/InsetContent.tsx	livehuddle/apps/editor/components/canvas/InsetContent.tsx	liveplanner/apps/editor/components/canvas/InsetContent.tsx
-livedesign/apps/live/components/canvas/LaserOverlay.tsx	livediagram/apps/editor/components/canvas/LaserOverlay.tsx	livedocuments/apps/editor/components/canvas/LaserOverlay.tsx
 livedesign/apps/live/components/canvas/PaletteDragGhost.tsx	livedocuments/apps/editor/components/canvas/PaletteDragGhost.tsx
 livedesign/apps/live/components/canvas/boxed-shared.ts	livedocuments/apps/editor/components/canvas/boxed-shared.ts
 livedesign/apps/live/components/canvas/canvas-pattern-context.ts	liveplanner/apps/editor/components/canvas/canvas-pattern-context.ts
@@ -94,12 +93,10 @@ livedesign/apps/live/lib/image-search/telemetry.ts	livediagram/apps/editor/lib/i
 livedesign/apps/live/lib/import-images/index.ts	livediagram/apps/editor/lib/import-images/index.ts
 livedesign/apps/live/lib/import-images/test-fakes.ts	livediagram/apps/editor/lib/import-images/test-fakes.ts	livedocuments/apps/editor/lib/import-images/test-fakes.ts	livehuddle/apps/editor/lib/import-images/test-fakes.ts
 livedesign/apps/live/lib/import-images/upload-error.ts	livediagram/apps/editor/lib/import-images/upload-error.ts	livedocuments/apps/editor/lib/import-images/upload-error.ts	livehuddle/apps/editor/lib/import-images/upload-error.ts
-livedesign/apps/live/lib/laser-buffer.ts	livediagram/apps/editor/lib/laser-buffer.ts	livedocuments/apps/editor/lib/laser-buffer.ts
 livedesign/apps/live/lib/live-stroke-test-utils.ts	livediagram/apps/editor/lib/live-stroke-test-utils.ts
 livedesign/apps/live/lib/page-motion-frame.ts	livedocuments/apps/editor/lib/page-motion-frame.ts
 livedesign/apps/live/lib/page-motion-parts-page-four.ts	livedocuments/apps/editor/lib/page-motion-parts-page-four.ts
 livedesign/apps/live/lib/page-panel-request.ts	livedocuments/apps/editor/lib/page-panel-request.ts
-livedesign/apps/live/lib/seasonal-looks.ts	livediagram/apps/editor/lib/seasonal-looks.ts	livedocuments/apps/editor/lib/seasonal-looks.ts	liveplanner/apps/editor/lib/seasonal-looks.ts
 livedesign/apps/live/lib/settings-search-items.ts	livediagram/apps/editor/lib/settings-search-items.ts	livedocuments/apps/editor/lib/settings-search-items.ts	livehuddle/apps/editor/lib/settings-search-items.ts	liveplanner/apps/editor/lib/settings-search-items.ts
 livedesign/apps/live/lib/tidy-engine.ts	livediagram/apps/editor/lib/tidy-engine.ts	livedocuments/apps/editor/lib/tidy-engine.ts	liveplanner/apps/editor/lib/tidy-engine.ts
 livedesign/apps/live/scripts/asset-size-gate.mjs	livediagram/apps/editor/scripts/asset-size-gate.mjs	livedocuments/apps/editor/scripts/asset-size-gate.mjs	livehuddle/apps/editor/scripts/asset-size-gate.mjs	liveplanner/apps/editor/scripts/asset-size-gate.mjs
