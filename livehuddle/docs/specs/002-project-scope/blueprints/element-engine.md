@@ -1,7 +1,7 @@
 # The element engine: blueprint
 
 Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" and "Retired elements". It holds parts 1 to
-4 of Work Tracker #459 and the rules every later part follows.
+5 of Work Tracker #459 and the rules every later part follows.
 
 ## Domain and naming
 
@@ -26,6 +26,9 @@ Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" a
   `t`), and the optional shared fields the generic paths read (`label`, `arrowEnds`, `opacity`, `link`,
   `commentThread`, `action`, `note`, `noteRich`). It is in `Element` but not in `BoxedElement`: `isBoxed` is false
   for it. `RetiredTypeElement` takes `freehand`, `path` and `annotation` (boxed, as `video` and `table`).
+- Part 5's names (shape kinds, D29): Square, Circle, Diamond, Cylinder, Parallelogram, Hexagon, Document, Stadium,
+  Actor, Final State (`final-state`), Cloud, Triangle, Trapezoid, Star, Speech Bubble (`speech-bubble`). They leave
+  `SHAPE_KINDS` and the `ShapeKind` union; `RETIRED_SHAPE_NAMES` names them.
 - **Retired backdrop**: `isRetiredBackdrop(el)` (`retired-kinds.ts`), a stored `frame`, `lane`, `stack` or `boundary`;
   `paintOrder` draws it first (D19).
 
@@ -92,6 +95,23 @@ Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" a
   `fill`), `LiveInk`, `WhiteboardPenPreview`, the path draft and edit layers and every arrow gesture hook. A load-time
   rewrite that only served them (the stroke points' and the bends' settling) goes, so stored fields are never
   touched.
+
+- Part 5 deletes `coerceShapeKind` (`validate.ts`): nothing turns an unknown kind into a kept one. `buildTab` and
+  `normaliseElement` keep an unknown kind as given. The edit operations' `buildKind` refuses a kind that is not in
+  `SHAPE_KINDS` or `OTHER_KINDS` (D30), `set` refuses a `shape=` off `SHAPE_KINDS`, and `applyReplace` refuses a new
+  element (id not on the tab) that is a shape of a kind livehuddle does not have, while one the tab holds rides
+  through untouched (D31). The api's seed path refuses the same.
+- Part 5 deletes each removed kind's code: its `SHAPE_DEFAULT_SIZE` row and factory branch, its outline and
+  geometry (`shape-outline.ts`, `shape-geometry.ts`, `shape-hit.ts` entries), its label fitting
+  (`label-box-size.ts`), its accent edge and corner radius sets, its finish outlines, its CSS face and SVG overlay
+  (editor), its palette tiles and the `R`, `O`, `D`, `C` shortcuts, and its export renderer. A module left serving
+  none of the kept kinds is deleted whole.
+- Part 5 deletes `packages/diagram-lint` and the api's `changesets/lint.ts`. `ChangesetResult.lint` is typed
+  `null` and always `null` (D32); `LintReport` leaves `@livehuddle/api-schema`; `lint` leaves `VIEW_NAMES`, so
+  `view=lint` takes the unknown-view refusal. The edit operations lose the arrow selector keys (`from`, `to`,
+  `downstream`, `upstream`, the `a->b` form), `graph-walk.ts` and the `after:` placement (D33).
+- Part 5 deletes `hierarchy.ts` (`assignBranches`): a palette theme takes each boxed element's branch from its
+  place in document order (D34). The themes' per-shape overrides for the removed kinds go.
 
 ## Interfaces and contracts
 
@@ -200,6 +220,12 @@ height }`.
   retired arrow's line and card and a stroke's placeholder. `RetiredArrowView.test.tsx` draws the line and card,
   selects on press, gives Delete to an Editor only (not a Participant, not a Viewer), and survives its pinned element
   moving and being deleted. Edit operations refuse `add arrow` and `connect`.
+
+- Part 5: `retired-kinds.test.ts` holds one of each of the 15 removed shape kinds with a label, colours and a note:
+  each loads deep-equal, saves unchanged, validates and is named (D29). `svg-render-retired.test.ts` draws their
+  placeholders; `RetiredElementFace.test.tsx` draws them and gives Delete to an Editor only. Edit operations refuse
+  `add square`, `add shape` and an unknown kind, refuse a `replace` with a new square and keep a stored square a
+  `replace` sends back; the api answers `lint: null` and refuses `view=lint`.
 
 ## Constants and configuration
 
