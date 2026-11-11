@@ -1,5 +1,6 @@
 // Automations: a plan's rules, their triggers, conditions and steps, and their runs (docs/specs/026-plan/automations.md,
-// blueprint automations.md). The shapes only; checks are validate.ts, the run's pure parts evaluate.ts and values.ts.
+// blueprint automations.md). The shapes only; checks are validate.ts, the run's pure parts plan-actions.ts, values.ts,
+// schedule.ts and related.ts.
 // Plain JSON throughout: a rule is stored, sent and copied as written.
 
 import type { ItemPerson } from '../item';
@@ -157,8 +158,12 @@ export type AutomationOutgoing = {
   kind: 'notify';
   via: 'webhook' | 'slack' | 'teams';
   webhook: string;
+  // The webhook's name when it was picked, for the Run Log's "Queued for Launch Channel" (the room holds no list of
+  // the plan's webhooks); the builder's sentence reads the current name where it has one.
+  name?: string;
   text: string;
 };
+export type AutomationVia = AutomationOutgoing['via'];
 
 // Which cards a branch runs on, from the triggering card.
 export type AutomationRelated =
@@ -264,6 +269,18 @@ export const AUTOMATION_VALUE_NAMES = [
   'now',
 ] as const;
 export type AutomationValueName = (typeof AUTOMATION_VALUE_NAMES)[number];
+// The values only a branch's text may hold: the card that started the rule, beside `card.…` (the related card).
+export const AUTOMATION_BRANCH_VALUE_NAMES = [
+  'trigger.title',
+  'trigger.key',
+  'trigger.url',
+] as const;
+export type AutomationBranchValueName = (typeof AUTOMATION_BRANCH_VALUE_NAMES)[number];
+export const AUTOMATION_BRANCH_VALUE_LABELS: Record<AutomationBranchValueName, string> = {
+  'trigger.title': 'Triggering Card Title',
+  'trigger.key': 'Triggering Card Number',
+  'trigger.url': 'Triggering Card Link',
+};
 // Insert a Value's chip labels, by name.
 export const AUTOMATION_VALUE_LABELS: Record<AutomationValueName, string> = {
   'card.title': 'Card Title',

@@ -9,9 +9,13 @@ import { BUILT_IN_FIELD_NAMES, builtInFieldLabel } from '../built-in-field-label
 import { isPriority, PRIORITY_LABELS } from '../fields';
 import type { ItemPerson } from '../item';
 import type { ItemTypeDef } from '../item-types';
+import { clockWords, type AutomationTimeTrigger } from './schedule';
 import type {
   AutomationAction,
   AutomationActionKind,
+  AutomationOutgoing,
+  AutomationRelated,
+  AutomationVia,
   AutomationCondition,
   AutomationFieldOp,
   AutomationRuleBody,
@@ -30,6 +34,8 @@ export interface RuleSentenceOutline {
   people: readonly Pick<ItemPerson, 'id' | 'name'>[];
   tabs?: ReadonlyMap<string, string>;
   filters?: ReadonlyMap<string, string>;
+  // The plan's webhooks by id, named (the builder's list from the index); absent, a step's kept name reads.
+  webhooks?: ReadonlyMap<string, string>;
 }
 
 // A joining word, or a chip (the trigger's own chip is drawn in the brand tint).
@@ -42,6 +48,9 @@ export const AUTOMATION_TRIGGER_NAMES: Readonly<Record<AutomationTriggerKind, st
   field_changed: 'Field Changed',
   comment_added: 'Comment Added',
   manual: 'Run from a Card',
+  scheduled: 'Scheduled',
+  due_in: 'Due In',
+  overdue: 'Overdue',
 };
 
 export const AUTOMATION_CONDITION_NAMES: Readonly<Record<AutomationCondition['kind'], string>> = {
@@ -52,7 +61,9 @@ export const AUTOMATION_CONDITION_NAMES: Readonly<Record<AutomationCondition['ki
   saved_filter: 'Matches a Saved Filter',
 };
 
-export const AUTOMATION_STEP_NAMES: Readonly<Record<AutomationActionKind | 'if', string>> = {
+export const AUTOMATION_STEP_NAMES: Readonly<
+  Record<AutomationActionKind | 'if' | 'for' | 'notify', string>
+> = {
   move: 'Move to Column',
   set_field: 'Set Field',
   clear_field: 'Clear Field',
@@ -66,7 +77,76 @@ export const AUTOMATION_STEP_NAMES: Readonly<Record<AutomationActionKind | 'if',
   create_card: 'Create Card',
   email: 'Send Email',
   if: 'If / Else',
+  for: 'For Related Cards',
+  notify: 'Send a Message',
 };
+
+// An outgoing action by where it posts.
+export const AUTOMATION_NOTIFY_NAMES: Readonly<Record<AutomationVia, string>> = {
+  webhook: 'Send to Webhook',
+  slack: 'Post to Slack',
+  teams: 'Post to Microsoft Teams',
+};
+
+// The ways a branch picks its cards, as "For each …" names them.
+export const AUTOMATION_RELATED_NAMES: Readonly<Record<AutomationRelated['kind'], string>> = {
+  linked: 'Linked Card',
+  blocked_by: 'Blocked By Card',
+  blocking: 'Card It Blocks',
+  children: 'Child Card',
+  saved_filter: 'Card Matching a Saved Filter',
+};
+
+const WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+
+// 1st, 2nd, 3rd, 4th … 31st.
+const ordinal = (n: number): string => {
+  const tens = n % 100;
+  const suffix = tens >= 11 && tens <= 13 ? 'th' : (['th', 'st', 'nd', 'rd'][n % 10] ?? 'th');
+  return `${n}${suffix}`;
+};
+
+/** A time trigger in words: "Every Weekday at 9:00", "Every Mon and Thu at 17:30", "Monthly on the 31st at 9:00",
+ *  "Due in 2 Days at 9:00", "Overdue at 9:00". */
+export function timeTriggerWords(trigger: AutomationTimeTrigger): string {
+  const at = `at ${clockWords(trigger.at)}`;
+  if (trigger.kind === 'due_in')
+    return `Due in ${trigger.days} Day${trigger.days === 1 ? '' : 's'} ${at}`;
+  if (trigger.kind === 'overdue') return `Overdue ${at}`;
+  switch (trigger.every) {
+    case 'day':
+      return `Every Day ${at}`;
+    case 'weekday':
+      return `Every Weekday ${at}`;
+    case 'week': {
+      const days = (trigger.days ?? []).map((d) => WEEKDAY_NAMES[d]!);
+      const list =
+        days.length <= 1 ? (days[0] ?? '') : `${days.slice(0, -1).join(', ')} and ${days.at(-1)!}`;
+      return `Every ${list} ${at}`;
+    }
+    case 'month':
+      return `Monthly on the ${ordinal(trigger.dayOfMonth ?? 1)} ${at}`;
+  }
+}
+
+/** An outgoing action as its chip reads: "Post to Slack Launch Channel", or its kind alone with no name known. */
+export function notifyChip(
+  step: AutomationOutgoing,
+  outline?: Pick<RuleSentenceOutline, 'webhooks'>,
+): string {
+  const name = outline?.webhooks?.get(step.webhook) ?? step.name;
+  return name ? `${AUTOMATION_NOTIFY_NAMES[step.via]} ${name}` : AUTOMATION_NOTIFY_NAMES[step.via];
+}
+
+/** How a branch picks its cards: "For each Blocked By Card", "For each Linked Card (Parent)". */
+export function branchWords(related: AutomationRelated, outline?: RuleSentenceOutline): string {
+  const head = `For each ${AUTOMATION_RELATED_NAMES[related.kind]}`;
+  if (related.kind === 'linked' && related.field)
+    return outline ? `${head} (${outlineFieldName(related.field, outline)})` : head;
+  if (related.kind === 'saved_filter')
+    return `For each Card Matching ${outline?.filters?.get(related.filter) ?? 'a Saved Filter'}`;
+  return head;
+}
 
 export const AUTOMATION_FIELD_OP_WORDS: Readonly<Record<AutomationFieldOp, string>> = {
   is: 'is',
@@ -185,6 +265,7 @@ export function actionChip(action: AutomationAction, outline: RuleSentenceOutlin
     case 'clear_field':
       return `Clear ${outlineFieldName(action.field, outline)}`;
     case 'assign':
+      if ('rotate' in action.to) return 'Assign in Turn';
       return 'person' in action.to
         ? `Assign ${outlinePersonName(action.to.person, outline)}`
         : 'trigger' in action.to
@@ -210,9 +291,12 @@ export function actionChip(action: AutomationAction, outline: RuleSentenceOutlin
   }
 }
 
-/** A step as its chip reads: an action's words, or If / Else. */
+/** A step as its chip reads: an action's words, If / Else, a branch's "For each …" or where a message goes. */
 export function stepChip(step: AutomationStep, outline: RuleSentenceOutline): string {
-  return step.kind === 'if' ? AUTOMATION_STEP_NAMES.if : actionChip(step, outline);
+  if (step.kind === 'if') return AUTOMATION_STEP_NAMES.if;
+  if (step.kind === 'for') return branchWords(step.related, outline);
+  if (step.kind === 'notify') return notifyChip(step, outline);
+  return actionChip(step, outline);
 }
 
 // Chips for several names, "or" between them.
@@ -225,6 +309,8 @@ export function triggerParts(
   trigger: AutomationTrigger,
   outline: RuleSentenceOutline,
 ): RuleSentencePart[] {
+  if (trigger.kind === 'scheduled' || trigger.kind === 'due_in' || trigger.kind === 'overdue')
+    return [{ word: 'When' }, { chip: timeTriggerWords(trigger), trigger: true }];
   const parts: RuleSentencePart[] = [
     { word: 'When' },
     { chip: AUTOMATION_TRIGGER_NAMES[trigger.kind], trigger: true },

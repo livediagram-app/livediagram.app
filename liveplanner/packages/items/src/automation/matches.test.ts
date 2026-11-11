@@ -178,3 +178,29 @@ describe('triggerMatches', () => {
     expect(TRIGGER_EVENT_KINDS.field_changed).toEqual(['changed', 'moved']);
   });
 });
+
+// Phase 2 (#712): a time trigger hears only the time scan's events for its own rule.
+describe('time triggers', () => {
+  const event = (extra: Partial<AutomationEvent> = {}): AutomationEvent => ({
+    id: 't:r1:2026-11-11:09:00:c1',
+    kind: 'time',
+    cardId: 'c1',
+    by: SAM,
+    role: 'system',
+    ruleId: 'r1',
+    at: 0,
+    ...extra,
+  });
+  it('hears its own rule’s time events and nothing else', () => {
+    for (const trigger of [
+      { kind: 'scheduled', every: 'day', at: '09:00' },
+      { kind: 'due_in', days: 2, at: '09:00' },
+      { kind: 'overdue', at: '09:00' },
+    ] as const) {
+      expect(TRIGGER_EVENT_KINDS[trigger.kind]).toEqual(['time']);
+      expect(triggerMatches(trigger, event(), 'r1')).toBe(true);
+      expect(triggerMatches(trigger, event(), 'r2')).toBe(false);
+      expect(triggerMatches(trigger, event({ kind: 'manual' }), 'r1')).toBe(false);
+    }
+  });
+});
