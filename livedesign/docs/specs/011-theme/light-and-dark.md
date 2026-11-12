@@ -77,8 +77,8 @@ the header (`colourIsOpaque`).
   white, each at 4.5:1 or more, where the 3:1 walk above drew all three as one dim grey. A logo's espresso wordmark
   is drawn a pale warm brown. Words on a card or a block keep the 3:1 walk against it; a quiet caption the author
   made under 4.5:1 on white stays as quiet. Nothing stored changes, and an export prints the words as made.
-  `apps/live/lib/pages-template-contrast.test.ts` holds every Wireframes template and the Logo Design template
-  (Sunny Side) at 4.5:1 against the sheet or the card each word sits on, as the canvas draws them in the light
+  `apps/live/lib/pages-template-contrast.test.ts` holds every Wireframes template, the Logo Design template
+  (Sunny Side) and the four logo explorations at 4.5:1 against the sheet or the card each word sits on, as the canvas draws them in the light
   and the dark editor.
 - **A page's own paper.** An element on a page with a fill of its own (a solid, a gradient, an
   image) is drawn for that page, not for the viewer's chrome: its theme colours in the half whose surface matches

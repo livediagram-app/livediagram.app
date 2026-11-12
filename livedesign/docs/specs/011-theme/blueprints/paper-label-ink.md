@@ -54,7 +54,7 @@ an element on a page with a fill of its own as `elementAsSeen` drew it.
 - `packages/design/src/paper-label-ink.test.ts`: each rule above (paper label walked to its made contrast, hue kept;
   light editor untouched; card labels, filled backdrops, new labels and light words untouched; floor of 3:1; identity
   kept).
-- `apps/live/lib/pages-template-contrast.test.ts`: every Wireframes template and the Logo Design template at 4.5:1
+- `apps/live/lib/pages-template-contrast.test.ts`: every Wireframes template, the Logo Design template and the four logo explorations at 4.5:1
   in the light and the dark editor, as the canvas draws them.
 
 ## Constants and configuration

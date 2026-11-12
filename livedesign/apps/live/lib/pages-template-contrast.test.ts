@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, buildTemplate, templateCanvasOverrides } from '@livedesign/templates';
+import {
+  TEMPLATES,
+  buildTemplate,
+  isLogoExplorationKind,
+  templateCanvasOverrides,
+} from '@livedesign/templates';
 import {
   THEME_TEXT_CONTRAST,
   canvasSurface,
@@ -16,18 +21,19 @@ import { themeViewMap } from './themes';
 import { createStockColourProjector, pageViewOf, plainPaper } from './stock-colour-projector';
 
 // docs/specs/011-theme/light-and-dark.md "Words on the plain paper keep the contrast they were made with" and
-// docs/specs/007-editor/wireframe-pages.md "Wireframe layouts" (Work Item 445): every Wireframes template and the
-// Logo Design template (Sunny Side) reads at 4.5:1 in the light and the dark editor, as the canvas draws it. Each
-// label is held to what is drawn behind it: its own fill, else the card or block it sits on, else the sheet (the
+// docs/specs/007-editor/wireframe-pages.md "Wireframe layouts" (Work Item 445): every Wireframes template, the
+// Logo Design template (Sunny Side) and the four logo explorations (Lockups, Wordmarks, Emblems, Marks) read at
+// 4.5:1 in the light and the dark editor, as the canvas draws them. Each label is held to what is drawn behind it: its own fill, else the card or block it sits on, else the sheet (the
 // plain paper, white in the light editor and slate in the dark, or the page's own fill). template-overlay-contrast
 // leaves Pages templates out; this is their check.
 
 const APPEARANCES: Appearance[] = ['light', 'dark'];
 
-/** The templates the card names: every Wireframes template with content, and Sunny Side's Logo Design. */
+/** Every Wireframes template with content, Sunny Side's Logo Design and the logo explorations. */
 const CHECKED = TEMPLATES.map((t) => t.kind).filter(
   (kind) =>
     kind === 'logo-design' ||
+    isLogoExplorationKind(kind) ||
     (!kind.startsWith('blank') &&
       (templateCanvasOverrides(kind).pages ?? []).some((p) => p.kind === 'wireframe')),
 );
@@ -71,10 +77,11 @@ function shortLabels(kind: (typeof CHECKED)[number], appearance: Appearance): st
 }
 
 describe('Pages templates read at 4.5:1 on their sheets in the light and the dark editor', () => {
-  it('checks every Wireframes template and Sunny Side', () => {
-    expect(CHECKED).toContain('logo-design');
+  it('checks every Wireframes template, Sunny Side and the four logo explorations', () => {
+    const logos = ['logo-design', 'logo-lockups', 'logo-wordmarks', 'logo-emblems', 'logo-marks'];
+    expect(CHECKED).toEqual(expect.arrayContaining(logos));
     expect(CHECKED.length).toBe(
-      TEMPLATES.filter((t) => t.kind.startsWith('wireframe-')).length + 1,
+      TEMPLATES.filter((t) => t.kind.startsWith('wireframe-')).length + logos.length,
     );
   });
 
