@@ -116,7 +116,7 @@ The route owns:
 
 A back/forward-cache restore of `/new` never re-creates: `/new` creates as it mounts, so a restore backs out to the
 page that opened it (`history.back()` when the browser came from another page of this site, else the home page),
-logging `[new] restored, back out <target>`.
+logging `[new] restored, back out <target>` (`../packages/workbench/src/hooks/ui/useBackOutOnRestore.ts`).
 
 ## What `/new` makes
 

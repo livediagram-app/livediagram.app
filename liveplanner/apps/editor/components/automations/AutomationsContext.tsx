@@ -14,11 +14,14 @@ import type { GithubResult } from './github/github-hash';
 // round trip to GitHub went).
 export type AutomationsTarget =
   | { view: 'rules' }
+  // `draft`: the rule Describe a Rule drafted, which the screen holds (never in the address). `kept`: the rule kept
+  // for the round trip to GitHub, with how it went.
   | {
       view: 'rule';
       ruleId: string | null;
       template?: AutomationTemplateId;
-      draft?: AutomationRuleBody;
+      draft?: true;
+      kept?: AutomationRuleBody;
       github?: GithubResult;
     }
   | { view: 'runs'; ruleId?: string }

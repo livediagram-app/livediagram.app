@@ -36,7 +36,8 @@ the toast stack clears ([Toasts](../004-interface-design/toasts.md) "Placement")
 top instead of landing on its words, as a "Project deleted · Undo" once did.
 
 **Editor** (`app/project/[id]/EditorView.tsx`): shown only **after a
-~5 minute delay** into the session (`SIGNIN_BANNER_DELAY_MS`), so it
+~5 minute delay** into the session (`SIGNIN_BANNER_DELAY_MS` in the shared
+`../packages/workbench/src/hooks/ui/useSignInNudge.ts`), so it
 never greets someone the instant they open a project. It **stands on the
 bottom chrome**, 8px above the tab bar, the bottom-right cluster (Undo / Redo, the
 Session strip's Timer, Vote and Poll, Layers, Zoom), measured as

@@ -126,7 +126,7 @@ describe('AutomationsHost: back from GitHub', () => {
     expect(JSON.parse(screen.getByTestId('target').textContent)).toEqual({
       view: 'rule',
       ruleId: null,
-      draft: DRAFT,
+      kept: DRAFT,
       github: 'requested',
     });
     expect(takeGithubDraft('p1')).toBeNull();
@@ -140,7 +140,7 @@ describe('AutomationsHost: back from GitHub', () => {
     expect(JSON.parse(screen.getByTestId('target').textContent)).toEqual({
       view: 'rule',
       ruleId: null,
-      draft: DRAFT,
+      kept: DRAFT,
       github: 'connected',
     });
   });

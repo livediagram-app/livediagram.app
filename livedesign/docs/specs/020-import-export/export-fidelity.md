@@ -109,7 +109,8 @@ known gap is the Callout body's indent, a few pixels off the canvas's.
 A downloaded export is named `<design> - <tab>` (and the page's label for a page export, the element's
 name for an Inspect export, `Logo Kit` for a logo kit), run through the shared `sanitizeFilename`
 (`../packages/model-core/src/file-name.ts`, the one rule every editor's exports use; `tabExportBaseName` and
-`pageFileLabel` in `apps/live/lib/export-pages.ts` apply it) so it is safe on Windows, macOS and Linux:
+`pageFileLabel` in `apps/live/lib/export-pages.ts` apply it, the first through the shared
+`../packages/workbench/src/lib/tab-export-name.ts` with "design" as its fallback) so it is safe on Windows, macOS and Linux:
 brackets `() [] {}` are dropped, any other character that is not a letter or digit (in any script, so a
 Japanese or Russian name stays itself), dot, dash, underscore or space (a colon, a slash, a `×`, an emoji)
 becomes a dash, repeated dashes collapse to one, and dashes and spaces left at either end are trimmed.

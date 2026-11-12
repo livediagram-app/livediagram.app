@@ -17,6 +17,10 @@ import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { handleEvents } from './routes/events';
 import { handleImages } from './routes/images';
+import {
+  createTokenBearer,
+  createWorkbenchBearer,
+} from '@liveworkspace/api-kit/bearer-credentials';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import {
   guardRequest,
@@ -108,78 +112,27 @@ async function routeApiRequest(
   // The caller's address. ONLY the verified `email` claim from the checked access token is trusted, never a
   // client-supplied header.
   const accountEmail = account?.email ?? null;
-  // API token (docs/specs/015-api/public-api-and-tokens.md): a `Bearer lwt_…` (or an `lvd_…` carried over from the old
-  // livediagram.app) resolves to its owner — always a
-  // account — via the hashed-token lookup. Only consulted when no account
-  // access token verified (a token and a JWT can't both be the bearer). The resolved
-  // owner is the token's account id, so a token request flows through the
-  // exact same ownership / gate checks as a signed-in one.
+  // An API token (docs/specs/015-api/public-api-and-tokens.md), consulted only when no account access token
+  // verified: its owner is the token's account id, so a token request flows through the same ownership and gate
+  // checks as a signed-in one. Then, when neither resolved, a workbench session
+  // (docs/specs/013-workspace/workbench-embeds.md). @liveworkspace/api-kit/bearer-credentials.ts reads each, and a bearer
+  // shaped like one that does not resolve is refused there, never read as a guest.
   let tokenAuth: ResolvedApiToken | null = null;
   if (!person) {
-    const bearer = bearerTokenOf(request.headers.get('Authorization'));
-    // A bearer that carries the token prefix claims to be a token even when it is cut short or mistyped (a
-    // copy-paste slip): it is refused as one below, never read as a guest or handed to the account path.
-    if (bearer && hasApiTokenPrefix(bearer)) {
-      // The token is the liveworkspace account's, checked with liveworkspace (db/api-tokens.ts). When
-      // liveworkspace can't answer, the token is neither good nor bad: 503, so a client retries rather
-      // than drops its credential.
-      try {
-        tokenAuth = isApiTokenFormat(bearer) ? await resolveApiToken(env, bearer) : null;
-      } catch (err) {
-        if (!(err instanceof AccountsUnavailable)) throw err;
-        return accountsUnavailable();
-      }
-      // A token-shaped bearer claims to be a token: unknown, revoked or expired, it is refused here, never
-      // read as a guest or as nobody (docs/specs/015-api/public-api-and-tokens.md §3.3).
-      if (!tokenAuth) {
-        console.warn('[tokens] invalid bearer refused', { path: url.pathname });
-        return json(
-          { error: 'invalid_token' },
-          { status: 401, headers: { 'WWW-Authenticate': 'Bearer error="invalid_token"' } },
-        );
-      }
-    }
+    const read = await readTokenBearer(
+      env,
+      bearerTokenOf(request.headers.get('Authorization')),
+      url.pathname,
+    );
+    if (!read.ok) return read.response;
+    tokenAuth = read.value;
   }
-  // Workbench session (docs/specs/013-workspace/workbench-embeds.md): a `Bearer lvw_…` is a person's editor
-  // on one design, minted from their token's ticket. Consulted only when neither an account access token nor a token
-  // resolved. A session-shaped bearer that does not resolve is refused, never read as a guest. A resolved one
-  // is confined at once (auth/workbench-confinement.ts): another design reads as absent, any route outside
-  // the allow-list is refused, and a view session writes nothing.
   let workbench: WorkbenchContext | null = null;
   if (!person && !tokenAuth) {
     const bearer = bearerTokenOf(request.headers.get('Authorization'));
-    if (bearer?.startsWith(WORKBENCH_SESSION_PREFIX)) {
-      // Cut short or mistyped, a session-shaped bearer is refused as a session too (as a token is, above).
-      // When liveworkspace can't answer, the session is neither good nor bad: 503, as for a token.
-      let resolved:
-        | Awaited<ReturnType<typeof resolveWorkbenchSession>>
-        | {
-            ok: false;
-            reason: 'malformed';
-            sessionPrefix: string;
-          };
-      try {
-        resolved = isWorkbenchSessionFormat(bearer)
-          ? await resolveWorkbenchSession(env, bearer)
-          : { ok: false, reason: 'malformed', sessionPrefix: '' };
-      } catch (err) {
-        if (!(err instanceof AccountsUnavailable)) throw err;
-        return accountsUnavailable();
-      }
-      if (!resolved.ok) {
-        console.warn('[workbench] bearer-refused', {
-          reason: resolved.reason,
-          sessionPrefix: resolved.sessionPrefix,
-        });
-        return json(
-          { error: 'invalid_session' },
-          { status: 401, headers: { 'WWW-Authenticate': 'Bearer error="invalid_token"' } },
-        );
-      }
-      workbench = resolved.workbench;
-      const refusal = workbenchRefusal(workbench, request.method, segments, request.headers);
-      if (refusal) return refusal;
-    }
+    const read = await readWorkbenchBearer(env, bearer, segments, request);
+    if (!read.ok) return read.response;
+    workbench = read.value;
   }
   const guestId = person?.kind === 'guest' ? person.guestId : null;
   // The caller's id: an account (signed in, or behind an API token or a workbench session), else a guest.
@@ -366,6 +319,27 @@ const accountsUnavailable = (): Response =>
     { error: 'accounts_unavailable' },
     { status: 503, headers: { 'Retry-After': String(UNAVAILABLE_RETRY_AFTER_SECONDS) } },
   );
+
+// The API token and workbench session readers (@liveworkspace/api-kit/bearer-credentials.ts), bound once to this
+// api's lookups and responses.
+const bearerResponses = {
+  json,
+  unavailable: accountsUnavailable,
+  isUnavailable: (err: unknown) => err instanceof AccountsUnavailable,
+};
+const readTokenBearer = createTokenBearer({
+  ...bearerResponses,
+  hasTokenPrefix: hasApiTokenPrefix,
+  isTokenFormat: isApiTokenFormat,
+  resolve: resolveApiToken,
+});
+const readWorkbenchBearer = createWorkbenchBearer({
+  ...bearerResponses,
+  sessionPrefix: WORKBENCH_SESSION_PREFIX,
+  isSessionFormat: isWorkbenchSessionFormat,
+  resolve: resolveWorkbenchSession,
+  refusal: workbenchRefusal,
+});
 
 const worker = {
   // Every response carries the server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).

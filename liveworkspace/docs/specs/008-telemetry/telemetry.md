@@ -32,7 +32,9 @@ The same three fields as before, plus the app it came from:
 There is no identity, IP address, owner id or document id. Each app keeps its own closed vocabulary
 in its own api-schema (`telemetry-schema.ts`), because its editors and its vocabulary change
 together. The service imports each sending app's vocabulary (livediagram's, liveplanner's,
-livedocuments', livedesign's and livehuddle's), and only stores an event that its app could have sent.
+livedocuments', livedesign's and livehuddle's), and only stores an event that its app could have sent. The check
+itself is one copy (`@liveworkspace/telemetry` `telemetryEventCheck`): each api-schema binds it to its categories,
+actions and its page-view, call-to-action and timing checks.
 
 ## Sending events
 

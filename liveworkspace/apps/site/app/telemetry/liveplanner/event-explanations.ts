@@ -786,6 +786,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     "An automation rule's AI action failed: the model erred or was slow, its reply couldn't be read or didn't fit, or the card refused the write.",
   'Plan|Ran|AutomationAiCapped':
     "An automation rule's AI action was skipped because the plan had used its 100 AI steps that day.",
+  'Plan|Ran|AutomationAiDraft':
+    "Describe a Rule asked the AI to draft an automation rule from someone's words; a draft that didn't read is asked once more.",
+  'Plan|Ran|AutomationAiOffTopic':
+    "Describe a Rule's request wasn't an automation rule for the plan, so nothing was drafted.",
+  'Plan|Created|AutomationDraft':
+    'Someone opened a rule Describe a Rule drafted in the rule builder, unsaved and off until they save it.',
+  'UI|Opened|AutomationDescribe':
+    'Someone opened Describe a Rule on the Automations screen, to draft a rule from words with AI.',
   'Plan|Created|AutomationSecret':
     'Someone made the secret for an Incoming Webhook automation rule, so another tool can start it.',
   'Plan|Changed|AutomationSecret':

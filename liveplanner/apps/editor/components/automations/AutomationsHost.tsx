@@ -105,7 +105,9 @@ export function AutomationsHost({
     if (githubDraft.current === undefined) githubDraft.current = takeGithubDraft(stable.projectId);
     const draft = githubDraft.current;
     setTarget(
-      draft ? { view: 'rule', ruleId: null, draft, github } : { view: 'github', result: github },
+      draft
+        ? { view: 'rule', ruleId: null, kept: draft, github }
+        : { view: 'github', result: github },
     );
     track('UI', 'Opened', 'Automations');
   }, [github, stable]);

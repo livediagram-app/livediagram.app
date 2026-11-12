@@ -25,6 +25,7 @@ import { ITEM_IMPORTS_SCHEMA } from './item-imports-schema';
 import {
   AUTOMATION_HOOKS_SCHEMA,
   AUTOMATION_WAITING_SCHEMA,
+  AUTOMATION_AI_DRAFTS_SCHEMA,
   AUTOMATIONS_SCHEMA,
   automationsV19,
 } from './automations/automation-schema';
@@ -481,6 +482,8 @@ const V22 = AUTOMATION_WAITING_SCHEMA;
 // GitHub pull requests part 3: each pull request's latest state and its commits' check suites (github/github-schema.ts;
 // docs/specs/026-plan/github-pull-requests.md "Pull request state on cards").
 const V23 = GITHUB_PULLS_SCHEMA;
+// Describe a Rule (automations/automation-schema.ts): each ask, for the day's AI count and the drafts a day.
+const V24 = AUTOMATION_AI_DRAFTS_SCHEMA;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
@@ -506,6 +509,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V21,
   V22,
   V23,
+  V24,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

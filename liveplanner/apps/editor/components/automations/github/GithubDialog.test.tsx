@@ -105,7 +105,7 @@ describe('the Automations screen and GitHub', () => {
     client.createRule.mockImplementation((_s: unknown, body: AutomationRuleBody) =>
       Promise.resolve({ rule: rule({ ...body, id: 'r9' }) }),
     );
-    render(<Harness initial={{ view: 'rule', ruleId: null, draft, github: 'connected' }} />);
+    render(<Harness initial={{ view: 'rule', ruleId: null, kept: draft, github: 'connected' }} />);
     expect(await screen.findByRole('textbox', { name: 'Rule name' })).toHaveProperty(
       'value',
       'Done on Merge',
@@ -131,7 +131,7 @@ describe('the Automations screen and GitHub', () => {
     client.createRule.mockImplementation((_s: unknown, body: AutomationRuleBody) =>
       Promise.resolve({ rule: rule({ ...body, id: 'r9' }) }),
     );
-    render(<Harness initial={{ view: 'rule', ruleId: null, draft, github: 'failed' }} />);
+    render(<Harness initial={{ view: 'rule', ruleId: null, kept: draft, github: 'failed' }} />);
     await screen.findByRole('textbox', { name: 'Rule name' });
     expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/didn’t connect/));
     fireEvent.click(screen.getByRole('button', { name: 'Save Rule' }));

@@ -229,7 +229,7 @@ Mode's second effect off):
 
 `/new` creates as it mounts, so a back/forward-cache restore of it (before its handoff) backs out instead of creating
 again or stranding the person on a frozen screen: to the page of ours that opened it (`history.back()`), else to the
-home page (`backOutTarget`, `../packages/workbench/src/lib/back-out.ts`), logging `[new] restored, back out <target>`.
+home page (`backOutTarget`, `../packages/workbench/src/lib/back-out.ts`), logging `[new] restored, back out <target>` (the shared `../packages/workbench/src/hooks/ui/useBackOutOnRestore.ts`).
 
 ### In-place handoff to the editor
 

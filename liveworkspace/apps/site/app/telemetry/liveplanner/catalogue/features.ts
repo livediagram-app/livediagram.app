@@ -608,6 +608,14 @@ export const AUTOMATION_TEMPLATES_OPENED = opened(
   (t) => t?.startsWith('AutomationTemplate.') ?? false,
 );
 
+// Describe a Rule (docs/specs/026-plan/automations.md "Describe a Rule", in the liveplanner folder): its dialog opened
+// from New Rule or the empty Rules list. Never the words typed.
+export const AUTOMATION_DESCRIBE_OPENED = opened(
+  'Describe a Rule Opened',
+  'The Describe a Rule dialog opened from the Automations screen, to draft a rule from words with AI.',
+  (t) => t === 'AutomationDescribe',
+);
+
 export const OTHER_OPENED = chart(
   'UI',
   'Opened',
@@ -629,6 +637,7 @@ export const PANELS_OPENED: MetricStack = {
     SHORTCUTS_OPENED,
     MIND_OUTLINE_OPENED,
     AUTOMATION_TEMPLATES_OPENED,
+    AUTOMATION_DESCRIBE_OPENED,
     OTHER_OPENED,
   ],
   seeAlso: { section: 'editing', label: 'See Each Dialog in Features › Editing' },

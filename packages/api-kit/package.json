@@ -7,6 +7,7 @@
   "exports": {
     "./agent-presence-stamps": "./src/agent-presence-stamps.ts",
     "./api-token": "./src/api-token.ts",
+    "./bearer-credentials": "./src/bearer-credentials.ts",
     "./bytes": "./src/bytes.ts",
     "./client-ip": "./src/client-ip.ts",
     "./collab-key": "./src/collab-key.ts",

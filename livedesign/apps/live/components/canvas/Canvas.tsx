@@ -9,7 +9,8 @@ import {
 } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
+import { useFocusCanvasOnMount } from '@liveworkspace/workbench/hooks/canvas/useFocusCanvasOnMount';
 import { isAnimatedPattern } from '@livedesign/design';
 import { canvasMainStyle } from './canvas-main-style';
 import { canvasToolOverlays } from './canvas-tool-overlays';
@@ -271,17 +272,8 @@ function CanvasView(props: CanvasProps) {
       byFinger ? doubleTap.onCanvas({ x, y }) : onCanvasDoubleClick(x, y),
   });
 
-  // Auto-focus the canvas surface on mount so clipboard paste works
-  // before the user has clicked anywhere. The browser only dispatches
-  // `paste` events on a focusable element; <main> has tabIndex=-1 to
-  // be a valid focus target, but it doesn't grab focus by itself.
-  // Without this, a freshly-loaded editor swallows Cmd/Ctrl+V silently
-  // until the first canvas click. preventScroll keeps the viewport
-  // from jumping if the page was scrolled at load time.
-  useEffect(() => {
-    const node = mainRef && 'current' in mainRef ? mainRef.current : null;
-    node?.focus({ preventScroll: true });
-  }, [mainRef]);
+  // Focus the canvas on mount, so a paste works before the first click (useFocusCanvasOnMount).
+  useFocusCanvasOnMount(mainRef);
   return (
     // The image store's access (page-image-access): the pages' pictures, and the Contents thumbnails'
     // pictures in the chrome.

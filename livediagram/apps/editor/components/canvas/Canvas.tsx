@@ -8,7 +8,8 @@ import {
 } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
-import { useEffect, useRef, ViewTransition } from 'react';
+import { useRef, ViewTransition } from 'react';
+import { useFocusCanvasOnMount } from '@liveworkspace/workbench/hooks/canvas/useFocusCanvasOnMount';
 import { isAnimatedPattern } from '@livediagram/document';
 import { canvasMainStyle } from './canvas-main-style';
 import { canvasToolOverlays } from './canvas-tool-overlays';
@@ -312,17 +313,8 @@ function CanvasView(props: CanvasProps) {
       ),
   });
 
-  // Auto-focus the canvas surface on mount so clipboard paste works
-  // before the user has clicked anywhere. The browser only dispatches
-  // `paste` events on a focusable element; <main> has tabIndex=-1 to
-  // be a valid focus target, but it doesn't grab focus by itself.
-  // Without this, a freshly-loaded editor swallows Cmd/Ctrl+V silently
-  // until the first canvas click. preventScroll keeps the viewport
-  // from jumping if the page was scrolled at load time.
-  useEffect(() => {
-    const node = mainRef && 'current' in mainRef ? mainRef.current : null;
-    node?.focus({ preventScroll: true });
-  }, [mainRef]);
+  // Focus the canvas on mount, so a paste works before the first click (useFocusCanvasOnMount).
+  useFocusCanvasOnMount(mainRef);
   return (
     // This canvas's tab's finish (docs/specs/008-canvas/finish.md), over the editor's active tab's.
     <CanvasFinishProvider finish={props.tabFinish}>

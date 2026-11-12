@@ -402,6 +402,17 @@ export function readAiReply(raw: unknown): Obj | null {
 
 const LINK = /\b(?:https?:\/\/|www\.)[^\s<>()"']+/gi;
 
+/** A replacer for LINK that keeps a link `own` already holds and blanks any other: an AI's text never brings a link
+ *  the person's own words lacked. */
+export const keepOwnLink =
+  (own: string) =>
+  (link: string): string =>
+    own.includes(link) ? link : ' ';
+
+/** Every link in `text` that `own` lacks, blanked; the rest of the text as it was. */
+export const dropForeignLinks = (text: string, own: string): string =>
+  text.replace(LINK, keepOwnLink(own));
+
 // The card's own text, where a summary's links must already be.
 const cardText = (input: AiCardInput): string =>
   [
@@ -428,7 +439,7 @@ export function plainSummary(text: string, input: AiCardInput): string {
     // [words](address) reads as its words; the address stays only if the card held it.
     .replace(/\[([^[\]]*)\]\(([^()]*)\)/g, '$1 $2')
     .replace(/\*\*|__|`|^#+\s*/gm, '')
-    .replace(LINK, (link) => (own.includes(link) ? link : ' '))
+    .replace(LINK, keepOwnLink(own))
     .replace(/\s+/g, ' ')
     .trim();
   if (plain.length <= AUTOMATION_AI_SUMMARY_MAX) return plain;

@@ -18,7 +18,7 @@
 import { isCtaSource } from './cta-sources';
 import { isValidPageViewPath } from './page-views';
 import { isTimingType } from './timing-telemetry';
-import { TELEMETRY_TYPE_PATTERN } from '@liveworkspace/telemetry';
+import { telemetryEventCheck } from '@liveworkspace/telemetry';
 
 // The generic half of telemetry (the type-token bound, the dashboard's windows and summary) is
 // liveworkspace's, shared by every app (liveworkspace/docs/specs/008-telemetry/telemetry.md); re-exported so liveplanner
@@ -281,12 +281,16 @@ export const TELEMETRY_ACTIONS = [
   // Automations (docs/specs/026-plan/automations.md "Telemetry"): a rule tried on a card (Test on a Card, which
   // changes nothing) and a Run from a Card rule run by hand. Typed 'AutomationRule' and 'AutomationManual'. 'Ran'
   // also counts the api's AI action calls ('AutomationAiSummarise', 'AutomationAiCardType', 'AutomationAiTriage'),
-  // the ones that failed ('AutomationAiFailed') and the steps the daily cap skipped ('AutomationAiCapped').
+  // the ones that failed ('AutomationAiFailed'), the steps the daily cap skipped ('AutomationAiCapped'), and Describe a
+  // Rule's asks ('AutomationAiDraft') and requests that weren't a rule ('AutomationAiOffTopic').
   'Tested',
   'Ran',
 ] as const;
 export type TelemetryAction = (typeof TELEMETRY_ACTIONS)[number];
 
+// One event, and the ingest's check of one event against the closed vocabulary: the rule is the
+// liveworkspace telemetry contract's (@liveworkspace/telemetry event-check.ts), bound here to this app's words. The
+// worker filters the ingest batch through it so only known, safe rows ever land in D1 / the public dashboard.
 export type TelemetryEvent = {
   category: TelemetryCategory;
   action: TelemetryAction;
@@ -298,27 +302,14 @@ export type TelemetryEvent = {
   type?: string | null;
 };
 
-// Validate one event against the closed vocabulary. The worker filters
-// the ingest batch through this so only known, safe rows ever land in
-// D1 / the public dashboard.
-export function isValidTelemetryEvent(value: unknown): value is TelemetryEvent {
-  if (typeof value !== 'object' || value === null) return false;
-  const e = value as Record<string, unknown>;
-  if (!TELEMETRY_CATEGORIES.includes(e.category as TelemetryCategory)) return false;
-  if (!TELEMETRY_ACTIONS.includes(e.action as TelemetryAction)) return false;
-  // A page view is only a page view with a path (docs/specs/017-telemetry/page-view-telemetry.md).
-  if (e.category === 'Page') {
-    return e.action === 'View' && typeof e.type === 'string' && isValidPageViewPath(e.type);
-  }
-  // A CTA event is only ever one of our own buttons (docs/specs/019-marketing/landing-funnel.md).
-  if (e.category === 'Cta') {
-    return (e.action === 'Opened' || e.action === 'Created') && isCtaSource(e.type);
-  }
-  // A timing is only ever a known metric with one of its own buckets (docs/specs/017-telemetry/timing-telemetry.md).
-  if (e.category === 'Timing') return e.action === 'Measured' && isTimingType(e.type);
-  if (e.type === undefined || e.type === null) return true;
-  return typeof e.type === 'string' && TELEMETRY_TYPE_PATTERN.test(e.type);
-}
+export const isValidTelemetryEvent: (value: unknown) => value is TelemetryEvent =
+  telemetryEventCheck({
+    categories: TELEMETRY_CATEGORIES,
+    actions: TELEMETRY_ACTIONS,
+    isValidPageViewPath,
+    isCtaSource,
+    isTimingType,
+  });
 
 // The `Element·Added` type tokens that correspond to a PALETTE item, in
 // the buckets the public dashboard ranks them by (docs/specs/017-telemetry/telemetry.md).

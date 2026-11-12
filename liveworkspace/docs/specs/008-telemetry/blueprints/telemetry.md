@@ -24,6 +24,7 @@ Scope, by file:
 | `packages/telemetry/src/wire.ts`                                | `TELEMETRY_URL`, the two paths, `TelemetryWireEvent`, `TelemetryBatch`, `TELEMETRY_BATCH_MAX`, `TELEMETRY_KEY_HEADER`, `TELEMETRY_TYPE_PATTERN` |
 | `packages/telemetry/src/summary.ts`                             | `TelemetrySummary` and friends, `TELEMETRY_WINDOW_DAYS`, `metricKey`, `telemetrySeriesStart`, `telemetryQueryStart`, `buildTelemetrySummary`    |
 | `packages/telemetry/src/audience.ts`                            | `TELEMETRY_AUDIENCE_KEYS`, `TelemetryAudience`, `audienceKeyOf` (the five audience events), the per-app buckets the fold adds to                |
+| `packages/telemetry/src/event-check.ts`                         | `telemetryEventCheck`, `TelemetryEventOf`: the one ingest check of an event over an app vocabulary each api-schema binds                        |
 | `packages/telemetry/src/emitter.ts`                             | `createTelemetryEngine`: the browser's buffer, timer, one retry, per-app batches, page-hide beacon                                              |
 | `packages/telemetry/src/server.ts`                              | `postServerEvents`: an app Worker's keyed send                                                                                                  |
 | `packages/telemetry/src/explorer-events.ts`                     | `EXPLORER_TELEMETRY_EVENTS`, `isExplorerTelemetryEvent`, `TEAM_ITEM_TYPES`                                                                      |
