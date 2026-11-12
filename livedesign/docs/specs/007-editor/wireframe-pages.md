@@ -180,6 +180,11 @@ column where that suits it (centred, at most 560 wide, for Onboarding, Sign In, 
 Product Detail; across the width for Notifications, Calendar, Inbox and the Music Player). The top
 navigation drops the links that would meet its buttons, and a dashboard's Recent Orders shows only
 with room for its rows. Charts carry their own sample data in wireframe greys, with no legend.
+Every word reads at 4.5:1 or more on what it sits on: the muted grey is a slate that reads at
+4.5:1 on the soft grey of a table's header and a chat bubble, and the calendar's today is a labelled
+disc, its number white on the ink. On the dark paper of the dark editor the words straight on the
+sheet keep that contrast ([Light and dark](../011-theme/light-and-dark.md#what-a-viewer-sees),
+"Words on the plain paper keep the contrast they were made with").
 Whatever still does not fit the safe area is scaled down as one. A watch keeps 12 px from the
 face's sides and 24 px above its rounded foot.
 
