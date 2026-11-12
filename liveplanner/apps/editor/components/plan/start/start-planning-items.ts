@@ -65,7 +65,7 @@ export type StartCategory =
   | 'visualisations'
   | 'dashboards'
   | 'inspiration'
-  // Not on the rail: Import is one card, in Recommended and in a search's results.
+  // Not a category: Import is the rail's own entry below Connect File, and one card in a search's results.
   | 'import';
 
 export const START_CATEGORIES: readonly {
@@ -224,7 +224,8 @@ const START_KEYWORDS: Readonly<Record<string, readonly string[]>> = {
   'dashboard:report': ['metrics', 'charts', 'summary', 'stakeholders', 'update', 'kpi'],
 };
 
-// Recommended, in order: Import last, for someone moving from another tool.
+// Recommended, in order. Import is not here: it is the rail's entry below Connect File (plan-mode.md "Starting a
+// board").
 const RECOMMENDED_IDS = [
   'board:roadmap',
   'board:kanban',
@@ -232,11 +233,10 @@ const RECOMMENDED_IDS = [
   'dashboard:overview',
   'sheet:blank',
   'form:feedback',
-  'import',
 ] as const;
 
-// The one Import card (docs/specs/026-plan/plan-mode.md "Starting a board"): found by the tools' names and what moving
-// work in is called.
+// The one Import card, a search's (docs/specs/026-plan/plan-mode.md "Starting a board"): found by the tools' names and
+// what moving work in is called. The rail's Import entry does what it does.
 export const IMPORT_ITEM: StartItem = {
   id: 'import',
   kind: 'import',

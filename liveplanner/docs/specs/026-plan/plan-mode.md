@@ -84,6 +84,12 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
     press connects the file: the plan gains the connected tab, which takes the place of this empty tab unless it is
     the plan's only tab, and opens ready. Offered only to a signed-in Editor of a plan on the server, outside a
     tab-scoped link, an embed and a workbench.
+  - **Import**, for an Editor: directly below Connect File, in the same group at the rail's foot (under Connect File
+    when it shows, else alone under the hairline), drawn like its row in the panel's colours: the import glyph, then
+    **Import** on one line. On a phone it is the chip after Connect File, and the Tab order reaches it after Connect
+    File. Choosing it opens the one [Import dialog](plan-tabs.md#the-import-dialog) on its list (nothing is placed;
+    the tab stays empty until the import lands), so every way in stays in that dialog; there is no row per tool here.
+    It is never chosen: the grid keeps what it shows. A Participant or Viewer sees no Import entry.
   - **The grid** beside the rail: the chosen category's heading and line, then its cards, three a row (two on a narrow
     panel, one on a phone), cascading in when the category changes (the shared cascade, within the motion budget; the
     first paint does not animate), scrolled back to its top each time.
@@ -92,12 +98,11 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
     card is a row (its picture 96 by 72 px at the left, its name, badge and line, two lines at most, beside it, no
     card-type chips), so a screen holds several.
     - **Recommended** ("The quickest ways to start, picked for most teams."): the Roadmap, Kanban and To-do List boards,
-      the Overview dashboard, the Empty Sheet, and the Feedback form, then, for an Editor, **Import** ("Bring work in
+      the Overview dashboard, the Empty Sheet, and the Feedback form. Import is not among them: it is the rail's own
+      entry, below Connect File. A search still finds it, for an Editor, by "import", a tool's name (Trello, Asana,
+      Jira, Linear), "csv", "json", "migrate" and the like, as a card under its own **Import** heading ("Bring work in
       from Trello, Asana, Jira or Linear, or a file you exported."; a picture of the four tools' marks flowing into a
-      board, no kind badge). Choosing it opens the one [Import dialog](plan-tabs.md#the-import-dialog) on its list
-      (nothing is placed; the tab stays empty until the import lands), so every way in stays in that dialog; there is
-      no row per tool here. It shows in no other category; a search finds it by "import", a tool's name, "csv",
-      "json", "migrate" and the like, under its own **Import** heading.
+      board, no kind badge), which does what the rail entry does. It shows in no category.
     - **Boards** ("Columns of cards for the work to move through."): every board type in `PLAN_BOARD_TILES`' order,
       Blank first, All Cards last, the Archive board left out.
     - **Spreadsheets** ("Cells, formulas and charts, beside your boards."): **Empty Sheet** ("A blank grid, ready to

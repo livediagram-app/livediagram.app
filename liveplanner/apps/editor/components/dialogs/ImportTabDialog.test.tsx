@@ -12,10 +12,12 @@ import type { ImportOutcome } from '@/lib/import-tab';
 import { ImportTabDialog } from './ImportTabDialog';
 import type { IntoTab } from './import/into-tab';
 import {
+  DROP_INLINE_MAX_BYTES,
   DROP_NOT_CSV,
   DROP_TAB_JSON_HERE,
   DROP_UNKNOWN,
   DROP_WANTS_CSV,
+  DROP_WANTS_JSON,
 } from './import/import-drop';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -299,6 +301,119 @@ describe('ImportTabDialog: a dropped file', () => {
     open({ intoTab, tracker });
     drop(new File([text], 'file.txt'));
     expect((await screen.findByRole('alert')).textContent).toBe(message);
+  });
+});
+
+// A drop on the liveplanner Tab step, and a large tab JSON held rather than put in the box (plan-tabs.md "The Import
+// dialog").
+describe('ImportTabDialog: a file dropped on the liveplanner Tab step', () => {
+  const body = () => screen.getByTestId('import-drop');
+  const dropOnStep = (file: File) =>
+    fireEvent.drop(body(), { dataTransfer: { types: ['Files'], files: [file] } });
+  // A tab's export just past the box's limit: the envelope, then a long name.
+  const largeTab = () =>
+    `{"schemaVersion": 2, "kind": "liveplanner.tab", "tab": {"name": "${'x'.repeat(DROP_INLINE_MAX_BYTES)}"}}`;
+
+  it('outlines the step while a file is dragged over it, and leaves text drags to the box', () => {
+    open({ tracker: NO_TRACKER });
+    const box = screen.getByRole('textbox');
+    // Text dragged into the box is the box's: not taken, no outline.
+    expect(fireEvent.dragOver(box, { dataTransfer: { types: ['text/plain'] } })).toBe(true);
+    expect(screen.queryByText('Drop to Import')).toBeNull();
+    fireEvent.dragEnter(box, { dataTransfer: { types: ['Files'] } });
+    expect(fireEvent.dragOver(box, { dataTransfer: { types: ['Files'] } })).toBe(false);
+    expect(screen.getByText('Drop to Import')).toBeTruthy();
+  });
+
+  it('picks a file from Import a File Instead, a drop’s refusal going', async () => {
+    const onImportFile = vi.fn(async (): Promise<ImportOutcome> => ({ status: 'cancelled' }));
+    render(
+      <ImportTabDialog
+        tabName="Overview"
+        intoTab={JSON_TAB}
+        onImportFile={onImportFile}
+        onImportText={vi.fn()}
+        tracker={NO_TRACKER}
+        onClose={vi.fn()}
+      />,
+    );
+    dropOnStep(new File(['A,B'], 'cards.csv'));
+    expect(await screen.findByText(DROP_WANTS_JSON)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Import a file instead' }));
+    await waitFor(() => expect(onImportFile).toHaveBeenCalledOnce());
+    expect(screen.queryByText(DROP_WANTS_JSON)).toBeNull();
+  });
+
+  it('puts a second small tab JSON in the box in place of what was there', async () => {
+    open({ tracker: NO_TRACKER });
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'typed' } });
+    dropOnStep(new File([TAB_JSON], 'b.json'));
+    await waitFor(() => expect(screen.getByRole('textbox')).toHaveProperty('value', TAB_JSON));
+  });
+
+  it('says why it can’t take a file, keeping what was typed, until Import is pressed', async () => {
+    const { onImportText } = open({ tracker: NO_TRACKER });
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'typed' } });
+    dropOnStep(new File(['A,B\n1,2'], 'cards.csv'));
+    expect((await screen.findByRole('alert')).textContent).toBe(DROP_WANTS_JSON);
+    expect(screen.getByRole('textbox')).toHaveProperty('value', 'typed');
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    await waitFor(() => expect(onImportText).toHaveBeenCalledWith('typed'));
+    expect(screen.queryByText(DROP_WANTS_JSON)).toBeNull();
+  });
+
+  it('holds a large tab JSON in the box’s place and imports it straight from the file', async () => {
+    const { onImportText, onClose } = open();
+    const text = largeTab();
+    dropOnStep(new File([text], 'roadmap.liveplanner-tab.json'));
+    const held = await screen.findByTestId('held-file');
+    expect(held.textContent).toContain('roadmap.liveplanner-tab.json');
+    expect(held.textContent).toContain('1.0 MB, ready to import');
+    // No box holds it, and the warning still says what it replaces.
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.getByText(/This replaces everything on/)).toBeTruthy();
+    expect(
+      screen.getByText('Import the file you dropped, or remove it to paste instead.'),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
+    // The same runner a paste goes through, with the file's text whole.
+    expect(onImportText).toHaveBeenCalledWith(text);
+  });
+
+  it('says a held file’s refusal in a paste’s words, and Remove brings the box back', async () => {
+    open({ outcome: { status: 'error', error: "File isn't valid JSON." } });
+    dropOnStep(new File([largeTab()], 'big.json'));
+    await screen.findByTestId('held-file');
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    expect((await screen.findByRole('alert')).textContent).toBe("File isn't valid JSON.");
+    fireEvent.click(screen.getByRole('button', { name: 'Remove big.json' }));
+    expect(screen.getByRole('textbox')).toHaveProperty('value', '');
+    expect(screen.getByRole('button', { name: 'Import' })).toHaveProperty('disabled', true);
+  });
+
+  it('lets a drop go while an import runs', async () => {
+    const onImportText = vi.fn(() => new Promise<ImportOutcome>(() => {}));
+    render(
+      <ImportTabDialog
+        tabName="Overview"
+        intoTab={JSON_TAB}
+        onImportFile={vi.fn()}
+        onImportText={onImportText}
+        tracker={NO_TRACKER}
+        onClose={vi.fn()}
+      />,
+    );
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: '{}' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    await waitFor(() => expect(onImportText).toHaveBeenCalledOnce());
+    const file = new File([TAB_JSON], 'b.json');
+    const read = vi.spyOn(file, 'text');
+    fireEvent.dragEnter(body(), { dataTransfer: { types: ['Files'] } });
+    expect(screen.queryByText('Drop to Import')).toBeNull();
+    dropOnStep(file);
+    expect(read).not.toHaveBeenCalled();
+    expect(screen.getByRole('textbox')).toHaveProperty('value', '{}');
   });
 });
 

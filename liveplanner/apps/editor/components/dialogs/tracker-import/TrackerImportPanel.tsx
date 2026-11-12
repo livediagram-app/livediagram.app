@@ -16,9 +16,12 @@ export function TrackerImportPanel({
   head,
   flow,
   preview,
+  error = flow.error,
 }: {
   // What heads the body (the dialog's back bar).
   head?: ReactNode;
+  // What is said under the preview: the flow's own error, or why a file dropped on it was not taken.
+  error?: string | null;
   flow: TrackerFlow;
   preview: TrackerPreviewState;
 }) {
@@ -31,6 +34,8 @@ export function TrackerImportPanel({
     <>
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-6 py-5">
         {head}
+        {/* Above the preview, where it is seen: a file dropped on a long preview was refused out of sight below. */}
+        {error ? <ImportError>{error}</ImportError> : null}
         <TrackerPreviewView
           preview={shown}
           target={preview.target}
@@ -38,7 +43,6 @@ export function TrackerImportPanel({
           onTarget={(t) => void flow.changeTarget(t)}
           disabled={busy}
         />
-        {flow.error ? <ImportError>{flow.error}</ImportError> : null}
         {/* A phone's footer has room for its buttons alone: the line goes at the end of the preview. */}
         <p className={`sm:hidden ${SUMMARY}`}>{summary}</p>
       </div>

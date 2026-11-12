@@ -264,6 +264,9 @@ Every editor mounts the shared UI through thin doors of its own; the shared part
   the editor's add, `Tab·Added·Connected` or `·ConnectedBoth`, then `onConnected`.
 - **`ConnectRailEntry.tsx`**: the rail's last row, stuck to its bottom under a hairline (`sm:sticky sm:bottom-0
 sm:mt-auto` inside the rail's scroller), every app's logo fanned where its icon goes, its name on one line; on a phone, the last chip.
+  Its group and row are `RailFoot` and `RailFootButton` (`components/start/RailFoot.tsx`), which an app's own foot
+  entries reuse: its optional `children` are drawn after its button in the same group (liveplanner's Import), and
+  without them its markup is unchanged (`ConnectRailEntry.test.tsx`'s inline snapshot, taken before the slot).
 - **`useConnectedTabActions.ts`**: the doors every editor shares, generic over its tab type: `grant` (stable), the
   `connected` map, `addConnectedTab(made, tabId, replacing?)` (the app's whole-tab save awaited, then one commit
   appending the tab and dropping the empty start tab `replacing` unless it is the only one), `showConnected` (the new

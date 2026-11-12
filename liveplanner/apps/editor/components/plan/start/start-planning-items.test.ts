@@ -61,11 +61,11 @@ describe('Start Planning’s choices', () => {
       'dashboard:overview',
       'sheet:blank',
       'form:feedback',
-      'import',
     ]);
   });
 
-  it('offers Import once, in Recommended and a search only, found by the tools’ names', () => {
+  // Import is the rail's entry below Connect File (plan-mode.md "Starting a board"): no category holds it.
+  it('offers Import once, in a search only, found by the tools’ names', () => {
     const imports = items.filter((i) => i.kind === 'import');
     expect(imports.map((i) => i.id)).toEqual(['import']);
     expect(START_CATEGORIES.map((c) => c.id)).not.toContain('import');
@@ -74,6 +74,7 @@ describe('Start Planning’s choices', () => {
         imports,
       );
     expect(itemsIn(items, 'import')).toEqual(imports);
+    for (const c of START_CATEGORIES) expect(itemsIn(items, c.id)).not.toContainEqual(imports[0]);
     expect(KIND_NAMES.import).toBe('Import');
   });
 

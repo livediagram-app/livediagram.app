@@ -191,6 +191,56 @@ describe('TrackerImportPanel: reading the file', () => {
   });
 });
 
+// A drop on the preview's step (plan-tabs.md "The Import dialog": every step takes a dropped file).
+describe('TrackerImportPanel: a file dropped on the preview', () => {
+  const dropOn = (text: string, name: string) =>
+    fireEvent.drop(screen.getByTestId('import-drop'), {
+      dataTransfer: { types: ['Files'], files: [new File([text], name)] },
+    });
+  const onPreview = async () => {
+    pick(JIRA);
+    open();
+    await choose();
+    expect(await screen.findByRole('heading', { name: 'Import from Jira' })).toBeTruthy();
+  };
+
+  it('previews another tool’s export in its place', async () => {
+    await onPreview();
+    dropOn(ASANA, 'Launch.csv');
+    expect(await screen.findByRole('heading', { name: 'Import from Asana' })).toBeTruthy();
+  });
+
+  it('says why it can’t take a file, the preview staying, until another file is chosen', async () => {
+    await onPreview();
+    dropOn('{"a":1}', 'notes.json');
+    expect((await screen.findByRole('alert')).textContent).toBe(
+      "That file isn't a liveplanner tab or a Trello, Asana, Jira or Linear export.",
+    );
+    expect(screen.getByRole('heading', { name: 'Import from Jira' })).toBeTruthy();
+    picker.pickTabFile.mockResolvedValueOnce(null);
+    fireEvent.click(screen.getByRole('button', { name: 'Choose Another File' }));
+    await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
+  });
+
+  it('takes a tab’s JSON to its step, and All Imports goes back to the list, not the preview', async () => {
+    await onPreview();
+    dropOn('{"kind": "liveplanner.tab", "schemaVersion": 1, "tab": {}}', 'tab.json');
+    expect(await screen.findByRole('heading', { name: 'Import to Tab' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /All Imports/ }));
+    expect(screen.getByTestId('import-choose')).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Import from Jira' })).toBeNull();
+  });
+
+  it('goes back to the list from the back bar, a drop’s refusal going with it', async () => {
+    await onPreview();
+    dropOn('{"a":1}', 'notes.json');
+    expect(await screen.findByRole('alert')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /All Imports/ }));
+    expect(screen.getByTestId('import-choose')).toBeTruthy();
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+});
+
 describe('TrackerImportPanel: the preview', () => {
   it('shows the source, columns, fields, people, comments and what is left out', async () => {
     pick(JIRA);

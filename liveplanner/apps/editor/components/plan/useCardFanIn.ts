@@ -17,6 +17,10 @@ const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
 // Cards that arrive this long after the board is ready (one added later, on a board that opened empty) just show.
 const WINDOW_MS = 2000;
+// A board holding more cards than this just shows them: reading where its cards land lays the whole board out in one
+// task, which grows with it (measured in the dev build, Work Item 245: about 118 ms at 400 cards, about 600 ms at
+// 2,000, on opening the board and on importing a tab's whole plan onto it alike). Under it the pass stays near 150 ms.
+export const FAN_IN_MAX_BOARD_CARDS = 500;
 
 export function useCardFanIn(
   gridRef: RefObject<HTMLElement | null>,
@@ -33,6 +37,7 @@ export function useCardFanIn(
     if (count === 0) return;
     done.current = true;
     if (performance.now() - readyAt.current > WINDOW_MS) return;
+    if (count > FAN_IN_MAX_BOARD_CARDS) return;
     if (
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
