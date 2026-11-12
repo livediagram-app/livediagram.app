@@ -171,7 +171,8 @@ describe('the outbox', () => {
     });
     const sheet = box('sh', {
       shape: 'plan-sheet',
-      label: 'Budget',
+      // A template's Sheet leaves its own label empty: the stored title names it.
+      label: '',
       planSheet: { sheetId: 'sheet01' },
       cellComments: { 'row002:colb01': thread('b2'), 'row999:colb01': thread('gone') },
     });

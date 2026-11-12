@@ -71,9 +71,20 @@ export type CollabIndexRows = {
   threads: CollabThreadRow[];
 };
 
-// The A1 of a Sheet's cell for its Inbox label: a string, null when the cell's row or column is gone, undefined
-// when the sheet is not at hand (the label is then the Sheet's alone).
-export type CellRefOf = (el: Element, cell: string) => string | null | undefined;
+// A plan's stored sheets as an Inbox label names them (docs/specs/029-sheets/sheet.md "Cell comments" "Inbox"), by
+// store id: a Sheet's title, and a cell key's A1 (null when its row or column is gone, undefined when the sheet is not
+// at hand). The shape of @liveplanner/sheets `sheetNamesFrom`, which this package never imports.
+export type SheetNamesOf = {
+  title: (sheetId: string) => string | undefined;
+  cellRef: (sheetId: string, cell: string) => string | null | undefined;
+};
+
+const NO_SHEETS: SheetNamesOf = { title: () => undefined, cellRef: () => undefined };
+
+// The store id of a Sheet element's sheet, or undefined.
+function sheetIdOf(el: Element): string | undefined {
+  return el.type === 'shape' ? el.planSheet?.sheetId : undefined;
+}
 
 type ThreadLike = { comments?: Comment[]; resolved?: boolean };
 
@@ -136,7 +147,7 @@ function latestAtOf(comments: Comment[]): number {
 function cellThreadRows(
   el: Element,
   labelOf: () => string,
-  cellRefOf: CellRefOf,
+  sheets: SheetNamesOf,
 ): CollabThreadRow[] {
   const cells = cellThreadsOf(el);
   if (!cells || !takesCellThreads(el)) return [];
@@ -156,8 +167,9 @@ function cellThreadRows(
   picked.sort((a, b) => (a[0] < b[0] ? -1 : 1));
   const rows: CollabThreadRow[] = [];
   const label = picked.length > 0 ? labelOf() : '';
+  const sheetId = sheetIdOf(el);
   for (const [cell, comments, resolved] of picked) {
-    const ref = cellRefOf(el, cell);
+    const ref = sheetId === undefined ? undefined : sheets.cellRef(sheetId, cell);
     const cellLabel =
       ref === undefined ? label : ref === null ? `${label} (Deleted Cell)` : `${label}!${ref}`;
     rows.push(threadRow(cellThreadKey(el.id, cell), cellLabel, comments, resolved));
@@ -165,11 +177,9 @@ function cellThreadRows(
   return rows;
 }
 
-const noCellRefs: CellRefOf = () => undefined;
-
 export function collabIndexRowsFromElements(
   elements: Element[],
-  cellRefOf: CellRefOf = noCellRefs,
+  sheets: SheetNamesOf = NO_SHEETS,
 ): CollabIndexRows {
   const actions: CollabActionRow[] = [];
   const threads: CollabThreadRow[] = [];
@@ -179,7 +189,14 @@ export function collabIndexRowsFromElements(
     if (!isBoxed(el)) continue;
     // Worked out only for an element with something to list.
     let label: string | undefined;
-    const labelOf = () => (label ??= elementDisplayLabel(el));
+    // A Sheet goes by its stored sheet's title, as its toolbar shows it; anything else by its own label.
+    const labelOf = () => {
+      if (label !== undefined) return label;
+      const sheetId = sheetIdOf(el);
+      label =
+        (sheetId !== undefined ? sheets.title(sheetId) : undefined) ?? elementDisplayLabel(el);
+      return label;
+    };
     // One row per action: an Action panel holds a list (docs/specs/012-collaboration/action-panel.md).
     // Capped like the stored list, so the index stays bounded even for a tab
     // written before the cap existed.
@@ -206,7 +223,7 @@ export function collabIndexRowsFromElements(
     if (own?.comments?.length)
       threads.push(threadRow(el.id, labelOf(), own.comments, own.resolved));
     // A Sheet's cells' threads follow its own.
-    for (const row of cellThreadRows(el, labelOf, cellRefOf)) threads.push(row);
+    for (const row of cellThreadRows(el, labelOf, sheets)) threads.push(row);
   }
   return { actions, threads };
 }

@@ -84,20 +84,55 @@ describe('collabIndexRowsFromElements: cell threads', () => {
     expect([b4.firstAt, b4.latestAt]).toEqual([100, 200]);
   });
 
-  it('labels a row by the Sheet and the A1, or the deleted cell, from the sheet when at hand', () => {
+  it('names a row by the stored sheet title and the A1, or the deleted cell, when the sheet is at hand', () => {
     const refs: Record<string, string | null> = { [B4]: 'B4', [C9]: null };
+    const sheets = {
+      title: (id: string) => (id === 'store-1' ? 'Budget 2026' : undefined),
+      cellRef: (id: string, cell: string) => (id === 'store-1' ? refs[cell] : undefined),
+    };
     const { threads } = collabIndexRowsFromElements(
       [
+        // The element's own label is empty, as a template's Sheet leaves it: the store's title names it.
         sheet('s1', {
+          label: '',
+          commentThread: { comments: [comment('own', 0)], resolved: false },
           cellComments: {
             [B4]: { comments: [comment('b', 1)], resolved: false },
             [C9]: { comments: [comment('c', 2)], resolved: false },
           },
         }),
+        // A Sheet whose store is not at hand keeps its own label and no A1.
+        sheet('s2', {
+          planSheet: { sheetId: 'store-2' },
+          cellComments: { [B4]: { comments: [comment('x', 3)], resolved: false } },
+        }),
+        // A Sheet with no store reference at all.
+        sheet('s3', {
+          planSheet: undefined,
+          cellComments: { [B4]: { comments: [comment('y', 4)], resolved: false } },
+        }),
+        // Not a Sheet: its own label, whatever the store holds.
+        {
+          id: 'n1',
+          type: 'sticky',
+          x: 0,
+          y: 0,
+          width: 10,
+          height: 10,
+          label: 'Note',
+          commentThread: { comments: [comment('n', 5)], resolved: false },
+        } as never,
       ],
-      (el, cell) => (el.id === 's1' ? refs[cell] : undefined),
+      sheets,
     );
-    expect(threads.map((t) => t.elementLabel)).toEqual(['Budget!B4', 'Budget (Deleted Cell)']);
+    expect(threads.map((t) => t.elementLabel)).toEqual([
+      'Budget 2026',
+      'Budget 2026!B4',
+      'Budget 2026 (Deleted Cell)',
+      'Budget',
+      'Budget',
+      'Note',
+    ]);
   });
 
   it('drops a cell whose last comment was deleted, and a cell thread on an element that takes none', () => {
@@ -175,7 +210,8 @@ describe('collabIndexRowsFromElements: cell threads', () => {
     }
     let rows = 0;
     const ms = cpuMsOf(() => {
-      rows = collabIndexRowsFromElements(sheets, () => 'B4').threads.length;
+      rows = collabIndexRowsFromElements(sheets, { title: () => 'Budget', cellRef: () => 'B4' })
+        .threads.length;
     });
     expect(rows).toBe(5 * CELL_INBOX_ROWS_MAX);
     expect(ms).toBeLessThan(cpuBudgetMs(150));

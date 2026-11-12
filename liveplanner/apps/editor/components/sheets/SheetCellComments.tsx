@@ -73,15 +73,20 @@ export function SheetCellComments({ hover }: { hover: { r: number; c: number } |
     // oxlint-disable-next-line react/exhaustive-deps -- `c` changes every render; what the listener reads of it is read when the key lands
   }, [c.gridEl, open, elementId, c.interactive]);
 
-  // The Comments panel names this Sheet's cell threads by A1, and asks it to bring one into view.
+  // The Comments panel names this Sheet's threads by its title and their cells by A1, and asks it to bring one into view.
   const layout = c.sheet.layout;
+  const title = c.sheet.title;
   useEffect(() => {
     if (!elementId) return;
-    return registerCellNamer(elementId, (cell) => {
-      const at = positionIn(layout, cell);
-      return at ? formatA1(at.r, at.c) : null;
-    });
-  }, [elementId, layout]);
+    return registerCellNamer(
+      elementId,
+      (cell) => {
+        const at = positionIn(layout, cell);
+        return at ? formatA1(at.r, at.c) : null;
+      },
+      title,
+    );
+  }, [elementId, layout, title]);
   const latest = useLatest(c);
   useEffect(() => {
     if (!elementId) return;

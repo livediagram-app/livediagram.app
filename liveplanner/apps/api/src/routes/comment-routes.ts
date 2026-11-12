@@ -21,7 +21,7 @@ import {
   type ElementDelta,
 } from '@liveplanner/project';
 import { findCommentHost, removeComment, threadsOfTab } from '../comments';
-import { sheetCellRefs } from '../sheet-cell-refs';
+import { sheetCellNames } from '../sheet-cell-refs';
 import { getProject, getTab, isTabRevStale, tabIdsWithComments, upsertTabAtRev } from '../db';
 import { getParticipant } from '../person/profiles';
 import { emailEnabled } from '../email/client';
@@ -330,8 +330,12 @@ async function listThreads(ctx: PlanRouteContext, id: string): Promise<Response>
       const tab = await getTab(ctx.env, id, tabId);
       if (tab) {
         // A cell whose Sheet is not stored on the tab has no A1 either.
-        const refs = await sheetCellRefs(ctx.env, id, tab.id, tab.elements);
-        threads.push(...threadsOfTab(tab, status, viewer, (el, cell) => refs(el, cell) ?? null));
+        const names = await sheetCellNames(ctx.env, id, tab.id, tab.elements);
+        const refOf = (el: Element, cell: string) => {
+          const sheetId = el.type === 'shape' ? el.planSheet?.sheetId : undefined;
+          return (sheetId ? names.cellRef(sheetId, cell) : undefined) ?? null;
+        };
+        threads.push(...threadsOfTab(tab, status, viewer, refOf));
       }
       tabsRead++;
     } catch (err) {

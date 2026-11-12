@@ -19,7 +19,7 @@ import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { initialsOf } from '@/lib/identity';
 import type { ActionRow, CommentRow } from '@/components/panels/CollaboratePanel';
 import { firstName } from '@liveworkspace/workbench/components/panels/collaborate/collaborate-model';
-import { useCellRef } from '@/hooks/sheets/sheet-cell-refs';
+import { useCellRef, useSheetTitle } from '@/hooks/sheets/sheet-cell-refs';
 
 // A comment author's colour as ink: as chosen on light, lifted toward white on
 // dark, where a deep blue or purple name would sink into the panel.
@@ -229,10 +229,12 @@ export function CommentRowItem({
 
 // A row's name: its element's label, and for a Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments")
 // the cell, `Budget!B4` once the Sheet is drawn, "(Deleted Cell)" when its row or column is gone; a Sheet not drawn
-// yet is named alone.
+// yet is named by its element's label alone. A drawn Sheet's name is its stored title.
 export function useCommentRowLabel(row: Pick<CommentRow, 'elementId' | 'cell' | 'label'>): string {
   const ref = useCellRef(row.elementId, row.cell);
-  if (row.cell === undefined || ref === undefined) return row.label;
-  if (ref === null) return `${row.label} (Deleted Cell)`;
-  return `${row.label}!${ref}`;
+  // A drawn Sheet goes by its stored title, as its toolbar and its Inbox rows name it.
+  const label = useSheetTitle(row.elementId) ?? row.label;
+  if (row.cell === undefined || ref === undefined) return label;
+  if (ref === null) return `${label} (Deleted Cell)`;
+  return `${label}!${ref}`;
 }

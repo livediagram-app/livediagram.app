@@ -17,6 +17,7 @@ import {
   threadTitle,
   type CardThread,
 } from '@liveplanner/project';
+import { sheetNamesFrom } from '@liveplanner/sheets/sheet-names';
 import { recordThreads } from './offline-threads';
 import {
   ARCHIVED_FIELD,
@@ -105,9 +106,11 @@ function collector(reader: OfflineReader) {
     // A project in the local Trash waits there; the server read skips trashed projects the same way.
     if (rec.trashedAt !== undefined) return;
     const place = placeOf(rec);
+    // A Sheet's threads are named by its stored sheet's title and their cell's A1, as the server's push names them.
+    const sheets = rec.sheets?.length ? sheetNamesFrom(rec.sheets) : undefined;
     rec.tabs.forEach((tab) => {
       const elements = tab.elements ?? [];
-      const rows = collabIndexRowsFromElements(elements);
+      const rows = collabIndexRowsFromElements(elements, sheets);
       const tabPlace = { ...place, tabId: tab.id, tabName: tab.name };
       for (const a of rows.actions) {
         if (a.status !== 'open') continue;

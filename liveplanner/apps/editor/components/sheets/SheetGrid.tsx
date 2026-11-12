@@ -102,17 +102,20 @@ export function SheetGrid({ elementId, actions, input, pointRef, peers, zoom = 1
     return () => el.removeEventListener('wheel', onWheel);
   }, [c.gridEl, c.interactive]);
 
-  // Keep the active cell in view as it moves.
+  // Keep the active cell in view as it moves. Not before the grid is measured: against a zero-sized view every cell
+  // reads as past the far edge and the scroll would overshoot it. A cell chosen by then (an Inbox link landing as the
+  // tab loads, docs/specs/029-sheets/sheet.md "Cell comments") is revealed once the size is known.
   const { r: ar, c: ac } = c.selection.active;
+  const measured = c.view.width > 0 && c.view.height > 0;
   useEffect(() => {
     const el = c.gridEl;
-    if (!el) return;
+    if (!el || !measured) return;
     const next = scrollToReveal(c.geometry, ar, ac, c.scroll, {
       width: c.view.width - c.geometry.headW,
       height: c.view.height - c.geometry.headH,
     });
     if (next) el.scrollTo({ top: next.top, left: next.left });
-  }, [ar, ac]); // oxlint-disable-line react/exhaustive-deps -- only as the active cell moves, never on a scroll
+  }, [ar, ac, measured]); // oxlint-disable-line react/exhaustive-deps -- only as the active cell moves or the grid is first measured, never on a scroll
 
   const outlines = useSheetGridPresence(c, presence, presenceVersion, peers, pointer.hover, window);
 

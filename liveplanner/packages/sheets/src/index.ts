@@ -6,6 +6,7 @@ export * from './address';
 export * from './sheet';
 export * from './sheet-json';
 export * from './layout';
+export * from './sheet-names';
 export * from './dates';
 export * from './input';
 export * from './typed-input';

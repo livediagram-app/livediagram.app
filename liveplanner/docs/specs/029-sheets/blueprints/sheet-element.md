@@ -414,8 +414,10 @@ interactive)`, a `BoxedElementView` with the layer's `boxedShared` (the props ev
   the sheets bridge and `SheetCommentsProvider` (`open(elementId, cell)` from `useEditorComments.openComments`, the
   open cell from `commentThreadOpenId` + `commentThreadOpenCell`, `canComment` = `can.takePart`);
   `cellCommentAnchorSelector` names the anchor (`[data-cell-comment-anchor="<elementId>:<cell>"]`).
-  `hooks/sheets/sheet-cell-refs.ts`: a drawn Sheet registers a namer (cell key to A1, null when gone) and a focuser
-  (select a cell); `useCellRef` re-renders on registration.
+  `hooks/sheets/sheet-cell-refs.ts`: a drawn Sheet registers a namer (cell key to A1, null when gone, and its stored
+  title) and a focuser (select a cell); `useCellRef` and `useSheetTitle` re-render on registration, and
+  `useCommentRowLabel` names a Sheet's rows by the title. `SheetGrid` reveals the active cell only once its view is
+  measured, and again when it first is, so a cell selected before (an Inbox link) is scrolled into view.
 - `SheetWorkspace` (`PlanSheetView.tsx`) provides `SheetCellThreadsProvider` `{ elementId, threads:
 element.cellComments }`.
 - `SheetCellComments` (`SheetGrid`, beside `SheetCardRows`, given `pointer.hover`): `cellMarkers` (`sheet-cell-comments.ts`,
@@ -426,11 +428,13 @@ element.cellComments }`.
   first `CELL_PREVIEW_CHARS` of the first comment, "N more"). The open cell's anchor is drawn over its cell. A
   `keydown` listener on the grid takes Ctrl/⌘ + Alt + M (`isCommentShortcut`, by `code`) for the active cell (its
   merge's top-left, `threadCellAt`).
-- Inbox (`packages/project/src/collab-index-rows.ts`): `collabIndexRowsFromElements(elements, cellRefOf?)` emits a
-  row per cell thread with comments after the Sheet's own (`cellThreadKey`, label `Sheet!A1`, `(Deleted Cell)` or the
-  Sheet alone by `cellRefOf`), at most `CELL_INBOX_ROWS_MAX` a Sheet by newest comment, none past
-  `INDEX_ID_MAX` (`@liveworkspace/index-client/constants`). The api's outbox (`plan-room/plan-outbox.ts`) hands it `sheetCellRefs`
-  (`apps/api/src/sheet-cell-refs.ts`, also the comment listing's A1). Schema step V25 (`plan-room/plan-schema.ts`) adds
+- Inbox (`packages/project/src/collab-index-rows.ts`): `collabIndexRowsFromElements(elements, sheets?)` emits a
+  row per cell thread with comments after the Sheet's own (`cellThreadKey`, label `<title>!A1`, `(Deleted Cell)` or the
+  title alone; `sheets` is `SheetNamesOf`, by store id: `title` names every row of the Sheet, `cellRef` the cell), at most `CELL_INBOX_ROWS_MAX` a Sheet by newest comment, none past
+  `INDEX_ID_MAX` (`@liveworkspace/index-client/constants`). The api's outbox (`plan-room/plan-outbox.ts`) hands it `sheetCellNames`
+  (`apps/api/src/sheet-cell-refs.ts`, also the comment listing's A1), over `sheetNamesFrom`
+  (`@liveplanner/sheets/sheet-names`, which the editor's This Browser Inbox, `lib/offline/offline-activity.ts`, reads
+  the plan's own sheets with). Schema step V25 (`plan-room/plan-schema.ts`) adds
   `outbox_sheet_layout`: a `sheets.layout` change queues its tab's `tab` key when the tab's data holds `"cellComments"`. The editor's `useCollabDeepLink` takes an `el`
   no element has through `splitCellThreadKey`: the Sheet selected, `focusSheetCell` (held until the Sheet is drawn)
   and `openComments(id, cell)`. Phone push (`person/push.ts`) places a cell's comment at the same key.

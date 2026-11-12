@@ -172,6 +172,40 @@ describe('offlineActivityFromRecords', () => {
     ]);
   });
 
+  it('names a Sheet cell’s thread by the stored sheet’s title and its A1 (sheet.md "Cell comments" "Inbox")', async () => {
+    const rec = testRecord({
+      sheets: [
+        {
+          id: 'store-1',
+          title: 'Budget',
+          layout: { rows: ['row001', 'row002'], cols: ['cola01', 'colb01'] },
+        },
+      ] as never,
+      tabs: [
+        testTab('t1', {
+          elements: [
+            shape('sh', '', {
+              shape: 'plan-sheet',
+              planSheet: { sheetId: 'store-1' },
+              cellComments: {
+                'row002:colb01': {
+                  comments: [
+                    { id: 'k', text: 'k', createdAt: 1, authorName: 'k', authorColor: '#111' },
+                  ],
+                  resolved: false,
+                },
+              },
+            }),
+          ],
+        }),
+      ],
+    });
+    const { threads } = offlineActivityFromRecords([rec], await reader('guest-1'));
+    expect(threads.map((t) => [t.elementId, t.elementLabel])).toEqual([
+      ['sh:row002:colb01', 'Budget!B2'],
+    ]);
+  });
+
   it('lists open, unlinked cards on the reader and places them on the board holding their status', async () => {
     const me = await itemPersonId('guest-1');
     const mine = { id: me, name: 'Me', color: '#123' };
