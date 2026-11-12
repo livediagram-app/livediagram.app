@@ -10,7 +10,21 @@ import type { Node as PMNode } from 'prosemirror-model';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { LaidOutPage } from '@livedocuments/document';
 import { columnAt, type flowFrame } from './article-flow-geometry';
-import { footnoteKey, sameFootBreaks, setFootBreaks, type FootBreak } from './article-footnotes';
+import {
+  footnoteKey,
+  sameFootBreak,
+  sameFootBreaks,
+  setFootBreaks,
+  type FootBreak,
+} from './article-footnotes';
+import {
+  hasHeader,
+  rowFoot,
+  splitFoot,
+  splitRowOf,
+  tableCut,
+  type RowReader,
+} from './article-footnote-rows';
 import type { FootnoteNotes, NotePage } from './article-footnote-notes';
 import { articleSchema } from './article-schema';
 
@@ -87,6 +101,35 @@ function lineAt(r: Reader, at: number): Line {
   };
 }
 
+// The last line of the writing before `pos` (the text before a block, a row or a table), or null at its start.
+function lineBefore(r: Reader, pos: number): Line | null {
+  const sel = Selection.findFrom(r.view.state.doc.resolve(pos), -1, true);
+  return sel ? lineAt(r, sel.from) : null;
+}
+
+// The line a break ends its page on: the text before it. Before a block that follows a table (or a row, or the table
+// itself), the last line before it, never read forward into what it moves.
+function lineEnding(r: Reader, b: FootBreak): Line | null {
+  if (!b.block || r.view.state.doc.resolve(b.pos - 1).parent.inlineContent)
+    return lineAt(r, b.pos - 1);
+  return lineBefore(r, b.pos);
+}
+
+// What a block break leaves to fit on its page, were it taken away: a row's or a table's foot (a row never breaks
+// inside on its own, so it moves back whole or not at all) and where that row ends, else the first line after it.
+function lineAfterBreak(r: Reader, rows: RowReader, pos: number): { line: Line; to: number } {
+  const node = r.view.state.doc.nodeAt(pos);
+  if (node?.type === S.nodes.table_row)
+    return { line: rowFoot(rows, node, pos), to: pos + node.nodeSize };
+  if (node?.type === S.nodes.table && node.firstChild) {
+    // A table moved at its first row, or at its second under its header row: the last of them.
+    const last = node.childCount > 1 && hasHeader(node) ? 1 : 0;
+    const at = pos + 1 + (last ? node.firstChild.nodeSize : 0);
+    return { line: rowFoot(rows, node.child(last), at), to: at + node.child(last).nodeSize };
+  }
+  return { line: lineAt(r, pos), to: pos };
+}
+
 // The first place in the writing on a page after `col`, or on page `col` with its line's foot below `limit`.
 // The writing's order is its pages' order, top to bottom: a binary search, O(log size) reads.
 function firstPast(r: Reader, col: number, limit: number): number {
@@ -119,7 +162,12 @@ export type FootLayout = {
   changed: boolean;
   // Each page's text foot above its notes, by page index (layout px from the text area's top).
   limits: ReadonlyMap<number, number>;
+  // Each table row split above a page's notes: the row's position, the page, and where its part there ends (layout
+  // px from the text area's top: its cells' lowest kept line, never past the notes' top, `limit`).
+  splits: readonly FootSplit[];
 };
+
+export type FootSplit = { row: number; page: number; bottom: number; limit: number };
 
 /**
  * Lays the footnotes out: the breaks above each page's notes, then the notes drawn at each page's foot. `pages`: the
@@ -137,13 +185,17 @@ export function layoutFootnotes(
 ): FootLayout {
   const { frame, pages, notes } = ctx;
   const r: Reader = { view, frame, root: ctx.root, z: ctx.z };
+  const rows: RowReader = {
+    lineAt: (pos) => lineAt(r, pos),
+    lineBefore: (pos) => lineBefore(r, pos),
+  };
   const initial = footnoteKey.getState(view.state);
   const limits = new Map<number, number>();
   if (!initial || initial.refs.length === 0) {
     notes.render([]);
-    if (!initial || initial.breaks.length === 0) return { changed: false, limits };
+    if (!initial || initial.breaks.length === 0) return { changed: false, limits, splits: [] };
     setFootBreaks(view, []);
-    return { changed: true, limits };
+    return { changed: true, limits, splits: [] };
   }
   notes.setVars(view.dom);
   const columnHeight = frame.height;
@@ -174,7 +226,7 @@ export function layoutFootnotes(
     const refs = refsNow();
     landed ??= {
       lines: refs.map((pos) => lineAt(r, pos)),
-      breakCols: breaks.map((b) => (b.pos > 0 ? lineAt(r, b.pos - 1).col : -1)),
+      breakCols: breaks.map((b) => (b.pos > 0 ? (lineEnding(r, b)?.col ?? -1) : -1)),
     };
     const { lines, breakCols } = landed;
     // This page's references, by their index through the article.
@@ -205,11 +257,15 @@ export function layoutFootnotes(
     const cut = firstPast(r, page, footOf);
     const cutLine = cut < view.state.doc.content.size ? lineAt(r, cut) : null;
     // Where the page's text should end: nowhere early when it ends above the notes as it is (or nothing is above).
+    // At a table, its first row past the notes moves whole or splits (article-footnote-rows.ts).
+    const atTable = tableCut(view.state.doc, rows, page, footOf, cut);
     const wanted =
-      cutLine && cutLine.col === page && cutLine.top > 1
-        ? breakAt(view.state.doc, page, cut)
-        : null;
-    if (wanted && (own?.pos !== wanted.pos || own.block !== wanted.block)) {
+      atTable !== undefined
+        ? atTable
+        : cutLine && cutLine.col === page && cutLine.top > 1
+          ? breakAt(view.state.doc, page, cut)
+          : null;
+    if (wanted && (!own || !sameFootBreak(own, wanted))) {
       debugLog('[article-footnotes] page ends earlier', { page, at: wanted.pos, was: own?.pos });
       apply([...others, wanted]);
       page--;
@@ -217,11 +273,17 @@ export function layoutFootnotes(
     }
     if (!wanted && own && own.pos > 1 && own.pos < view.state.doc.content.size) {
       // The page's text ended early: the line after its break, with its references' notes, may fit now.
-      const next = lineAt(r, own.pos);
-      const end = lineAt(r, own.pos - 1);
-      const along = refs.flatMap((_p, i) =>
+      const after = own.block
+        ? lineAfterBreak(r, rows, own.pos)
+        : { line: lineAt(r, own.pos), to: own.pos };
+      const next = after.line;
+      const end = lineEnding(r, own) ?? next;
+      // The references that would come back: this page's, those on the line after the break and those in a row
+      // that would come back whole.
+      const along = refs.flatMap((p, i) =>
         lines[i]!.col === page ||
-        (lines[i]!.col === page + 1 && Math.abs(lines[i]!.bottom - next.bottom) < 1)
+        (lines[i]!.col === page + 1 &&
+          (Math.abs(lines[i]!.bottom - next.bottom) < 1 || (p >= own.pos && p < after.to)))
           ? [i]
           : [],
       );
@@ -253,5 +315,14 @@ export function layoutFootnotes(
   }
   if (budget <= 0) debugLog('[article-footnotes] layout did not settle', { breaks });
   notes.render(drawn);
-  return { changed: !sameFootBreaks(initial.breaks, breaks), limits };
+  // Where each split row's part ends above its page's notes, for its look (article-footnote-split-look.ts).
+  const splits: FootSplit[] = [];
+  for (const b of breaks) {
+    const row = splitRowOf(view.state.doc, b);
+    if (!row) continue;
+    const bottom = splitFoot(rows, row.node, row.pos, b.page, [b.pos, ...(b.also ?? [])]);
+    const limit = limits.get(b.page) ?? columnHeight;
+    if (bottom !== null) splits.push({ row: row.pos, page: b.page, bottom, limit });
+  }
+  return { changed: !sameFootBreaks(initial.breaks, breaks), limits, splits };
 }

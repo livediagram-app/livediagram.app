@@ -5,6 +5,7 @@
 // code) and border (a quote's bar, a heading's rule, a divider), each list marker and to-do box, as
 // draw operations in canvas coordinates. article-draw.ts paints them into an SVG or onto a canvas.
 import type { ArticleDrawOp } from '@livedocuments/document';
+import { splitPartsOf, type PartRect } from './article-footnote-split-look';
 
 export type { ArticleDrawOp } from '@livedocuments/document';
 
@@ -28,6 +29,49 @@ function metricsOf(cs: CSSStyleDeclaration, text: string): { ascent: number; des
   };
 }
 const ascentOf = (cs: CSSStyleDeclaration, text: string) => metricsOf(cs, text).ascent;
+
+// A split row's own rules, its side rules (drawn as backgrounds on screen) on each part as cut, and a closing rule
+// where a part ends early; a split header row's tint (its outline colour carries it, resolved) likewise.
+function splitRowOps(
+  el: HTMLElement,
+  split: { rects: PartRect[]; cut: PartRect[] },
+  toCanvas: (x: number, y: number) => { x: number; y: number },
+  ops: ArticleDrawOp[],
+): void {
+  const table = el.closest('table');
+  const rule = table ? getComputedStyle(table).borderTopColor : '';
+  // A 1 px rule inside the box's edge (`dx`, `dy`: canvas px inwards), as a border is drawn.
+  const line = (x1: number, y1: number, x2: number, y2: number, dx: number, dy: number) => {
+    const a = toCanvas(x1, y1);
+    const b = toCanvas(x2, y2);
+    ops.push({
+      k: 'line',
+      x1: a.x + dx,
+      y1: a.y + dy,
+      x2: b.x + dx,
+      y2: b.y + dy,
+      stroke: rule,
+      width: 1,
+    });
+  };
+  if (el.tagName === 'TR') {
+    const tint = el.querySelector(':scope > th') ? getComputedStyle(el).outlineColor : '';
+    if (tint && !transparent(tint))
+      for (const r of split.rects) {
+        const p = toCanvas(r.left, r.top);
+        const q = toCanvas(r.right, r.bottom);
+        ops.push({ k: 'rect', x: p.x, y: p.y, w: q.x - p.x, h: q.y - p.y, fill: tint, r: 0 });
+      }
+    return;
+  }
+  if (!rule || transparent(rule)) return;
+  const first = el.parentElement?.firstElementChild === el;
+  for (const r of split.rects) {
+    line(r.right, r.top, r.right, r.bottom, -0.5, 0);
+    if (first) line(r.left, r.top, r.left, r.bottom, 0.5, 0);
+  }
+  for (const r of split.cut) line(r.left, r.bottom, r.right, r.bottom, 0, -0.5);
+}
 
 /**
  * The writing under `root` as draw operations. `toCanvas` maps a screen point to the canvas;
@@ -54,7 +98,10 @@ export function snapshotWriting(
     // tint of cells selected by a drag.
     if (el.classList.contains('article-note')) continue;
     const cs = getComputedStyle(el);
-    const rects = Array.from(el.getClientRects());
+    // A table row split above a page's notes is drawn ending there (article-footnote-split-look.ts).
+    const split = splitPartsOf(el, Array.from(el.getClientRects()), scale);
+    const rects = split?.rects ?? Array.from(el.getClientRects());
+    if (split) splitRowOps(el, split, toCanvas, ops);
     // A table's rules: its top and left edges, each cell's right and bottom; a table split across
     // pages is ruled on each.
     const inTable = el.closest('.article-table') !== null;

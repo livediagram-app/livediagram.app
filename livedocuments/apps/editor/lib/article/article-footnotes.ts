@@ -22,19 +22,29 @@ import { articleSchema } from './article-schema';
 const S = articleSchema;
 
 /** Where a page's text ends above its notes: before the text at `pos` (`block` false, a break inside a block's
- *  lines), or before the block, table row or object at `pos` (`block` true). `page`: the page (column) it ends. */
-export type FootBreak = { page: number; pos: number; block: boolean };
+ *  lines), or before the block, table row or object at `pos` (`block` true). `page`: the page (column) it ends.
+ *  `also`: a table row split above the notes breaks in each of its cells, `pos` in one and the rest here. */
+export type FootBreak = { page: number; pos: number; block: boolean; also?: readonly number[] };
+
+/** A table row split above a page's notes, drawn ending there (article-footnote-split-look.ts): the row's position
+ *  and the attributes its node decoration carries. */
+export type SplitRowLook = { row: number; attrs: Readonly<Record<string, string>> };
 
 export type FootState = {
   // Every reference's position, in the writing's order: number n is refs[n - 1].
   refs: readonly number[];
   breaks: readonly FootBreak[];
+  looks: readonly SplitRowLook[];
   // A reference just put in, whose note takes the caret once it is laid out.
   pending: number | null;
   decorations: DecorationSet;
 };
 
-type FootMeta = { breaks?: readonly FootBreak[]; pending?: number | null };
+type FootMeta = {
+  breaks?: readonly FootBreak[];
+  pending?: number | null;
+  looks?: readonly SplitRowLook[];
+};
 
 export const footnoteKey = new PluginKey<FootState>('article-footnotes');
 
@@ -87,10 +97,20 @@ function breakBox(): HTMLElement {
   return el;
 }
 
-function decorationsOf(doc: PMNode, refs: readonly number[], breaks: readonly FootBreak[]) {
+function decorationsOf(
+  doc: PMNode,
+  refs: readonly number[],
+  breaks: readonly FootBreak[],
+  looks: readonly SplitRowLook[],
+) {
   const decos: Decoration[] = refs.map((pos, i) =>
     Decoration.node(pos, pos + 1, { 'data-n': String(i + 1) }, { footnote: i + 1 }),
   );
+  for (const l of looks) {
+    const row = l.row >= 0 && l.row < doc.content.size ? doc.nodeAt(l.row) : null;
+    if (row?.type === S.nodes.table_row)
+      decos.push(Decoration.node(l.row, l.row + row.nodeSize, { ...l.attrs }));
+  }
   for (const b of breaks) {
     if (b.pos < 0 || b.pos > doc.content.size) continue;
     const node = b.block ? doc.nodeAt(b.pos) : null;
@@ -99,13 +119,16 @@ function decorationsOf(doc: PMNode, refs: readonly number[], breaks: readonly Fo
         Decoration.node(b.pos, b.pos + node.nodeSize, { class: 'article-foot-break-before' }),
       );
     else if (!b.block)
-      decos.push(
-        Decoration.widget(b.pos, breakBox, {
-          key: `foot-break:${b.page}`,
-          side: -1,
-          ignoreSelection: true,
-        }),
-      );
+      [b.pos, ...(b.also ?? [])].forEach((at, i) => {
+        if (at < 0 || at > doc.content.size) return;
+        decos.push(
+          Decoration.widget(at, breakBox, {
+            key: i === 0 ? `foot-break:${b.page}` : `foot-break:${b.page}:${i}`,
+            side: -1,
+            ignoreSelection: true,
+          }),
+        );
+      });
   }
   return DecorationSet.create(doc, decos);
 }
@@ -135,11 +158,21 @@ export function mapBreaks(tr: Transaction, breaks: readonly FootBreak[]): FootBr
           $to.parent.inlineContent ? $to.end() : to,
         ] as const;
       });
+  const inChanged = (pos: number) => changed.some(([from, to]) => from <= pos && pos <= to);
   for (const b of breaks) {
     const r = tr.mapping.mapResult(b.pos, b.block ? 1 : -1);
     if (r.deleted) continue;
-    if (!b.block && changed.some(([from, to]) => from <= r.pos && r.pos <= to)) continue;
-    out.push({ ...b, pos: r.pos });
+    if (!b.block && inChanged(r.pos)) continue;
+    if (!b.also) {
+      out.push({ ...b, pos: r.pos });
+      continue;
+    }
+    // A split row's other cells: each kept while its cell did not change.
+    const also = b.also.flatMap((at) => {
+      const m = tr.mapping.mapResult(at, -1);
+      return m.deleted || inChanged(m.pos) ? [] : [m.pos];
+    });
+    out.push({ ...b, pos: r.pos, also });
   }
   return out;
 }
@@ -152,7 +185,13 @@ export function footnotesPlugin(onRef: (n: number) => void): Plugin<FootState> {
     state: {
       init: (_c, state) => {
         const refs = footnoteRefs(state.doc);
-        return { refs, breaks: [], pending: null, decorations: decorationsOf(state.doc, refs, []) };
+        return {
+          refs,
+          breaks: [],
+          looks: [],
+          pending: null,
+          decorations: decorationsOf(state.doc, refs, [], []),
+        };
       },
       apply: (tr, value) => {
         const meta = tr.getMeta(footnoteKey) as FootMeta | undefined;
@@ -164,6 +203,14 @@ export function footnotesPlugin(onRef: (n: number) => void): Plugin<FootState> {
             ? footnoteRefs(tr.doc)
             : value.refs.map((pos) => tr.mapping.map(pos, 1));
         const breaks = meta?.breaks ?? (tr.docChanged ? mapBreaks(tr, value.breaks) : value.breaks);
+        const looks =
+          meta?.looks ??
+          (tr.docChanged
+            ? value.looks.flatMap((l) => {
+                const m = tr.mapping.mapResult(l.row, 1);
+                return m.deleted ? [] : [{ ...l, row: m.pos }];
+              })
+            : value.looks);
         const mapped = value.pending === null ? null : tr.mapping.mapResult(value.pending, 1);
         const pending =
           meta?.pending !== undefined
@@ -172,11 +219,16 @@ export function footnotesPlugin(onRef: (n: number) => void): Plugin<FootState> {
               ? mapped.pos
               : null;
         // Only moved (typing, the usual change): the drawn numbers and breaks move with the writing, never drawn anew.
-        const moved = !meta?.breaks && !recount && breaks.length === value.breaks.length;
+        const moved =
+          !meta?.breaks &&
+          !meta?.looks &&
+          !recount &&
+          breaks.length === value.breaks.length &&
+          looks.length === value.looks.length;
         const decorations = moved
           ? value.decorations.map(tr.mapping, tr.doc)
-          : decorationsOf(tr.doc, refs, breaks);
-        return { refs, breaks, pending, decorations };
+          : decorationsOf(tr.doc, refs, breaks, looks);
+        return { refs, breaks, looks, pending, decorations };
       },
     },
     props: {
@@ -195,6 +247,10 @@ export function footnotesPlugin(onRef: (n: number) => void): Plugin<FootState> {
 export const setFootBreaks = (view: EditorView, breaks: readonly FootBreak[]): void =>
   view.dispatch(view.state.tr.setMeta(footnoteKey, { breaks }).setMeta('addToHistory', false));
 
+/** How the split table rows are drawn, as the layout measured them (meta only, never committed). */
+export const setSplitRowLooks = (view: EditorView, looks: readonly SplitRowLook[]): void =>
+  view.dispatch(view.state.tr.setMeta(footnoteKey, { looks }).setMeta('addToHistory', false));
+
 /** The new note has taken the caret. */
 export const clearPendingNote = (view: EditorView): void =>
   view.dispatch(
@@ -203,8 +259,20 @@ export const clearPendingNote = (view: EditorView): void =>
 
 /** The same breaks: the layout dispatches only a change. */
 export const sameFootBreaks = (a: readonly FootBreak[], b: readonly FootBreak[]): boolean =>
-  a.length === b.length &&
-  a.every((x, i) => x.page === b[i]!.page && x.pos === b[i]!.pos && x.block === b[i]!.block);
+  a.length === b.length && a.every((x, i) => sameFootBreak(x, b[i]!));
+
+/** The same break: its page, place, kind and a split row's other cells. */
+export function sameFootBreak(a: FootBreak, b: FootBreak): boolean {
+  const x = a.also ?? [];
+  const y = b.also ?? [];
+  return (
+    a.page === b.page &&
+    a.pos === b.pos &&
+    a.block === b.block &&
+    x.length === y.length &&
+    x.every((p, i) => p === y[i])
+  );
+}
 
 /** Puts a footnote's reference in at the caret, or after the selection, its note empty, the caret after it; its
  *  note takes the caret once laid out. Not in a code block, nor anywhere text cannot go. */
