@@ -38,6 +38,7 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'ItemSet', command: 'item set', what: 'changing an item' },
   { type: 'ItemMove', command: 'item move', what: 'moving an item to a column' },
   { type: 'ItemRm', command: 'item rm', what: 'deleting an item' },
+  { type: 'ImageAdd', command: 'image add', what: 'uploading a picture for a plan’s cards' },
   { type: 'ThreadLs', command: 'thread ls', what: 'listing the comment threads on cards' },
   { type: 'ThreadStart', command: 'thread start', what: 'starting a comment thread on a card' },
   { type: 'ThreadReply', command: 'thread reply', what: 'replying to a card’s comment thread' },
