@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useItemList } from '../data/useItemList';
-import { isMostUsed, jumpBackInLoader } from '../data/viewLists';
+import { homeEmptyLine, isMostUsed, jumpBackInLoader } from '../data/viewLists';
 import type { ShownItem } from '../data/overlay';
 import { useExplorer } from '../explorer/context';
 import { mergeOpened, useThisBrowserItems } from '../explorer/ThisBrowser';
@@ -27,8 +27,10 @@ import { JumpBackInCard } from './pane-items';
 // Recent takes two (PANEL_RECENT_ALONE) while nothing is most used yet, so a newcomer still sees two full rows.
 const PANEL_PER_GROUP = 4;
 const PANEL_RECENT_ALONE = 8;
-// The recent ones asked past PANEL_PER_GROUP: enough for Recent alone, and one for the open item.
-const PANEL_RECENT_EXTRA = PANEL_RECENT_ALONE + 1 - PANEL_PER_GROUP;
+// One more most used than the section shows, so leaving out the open item (usually among them) still fills its row.
+const PANEL_USED_ASKED = PANEL_PER_GROUP + 1;
+// The recent ones asked past PANEL_USED_ASKED: enough for Recent alone, and one for the open item.
+const PANEL_RECENT_EXTRA = PANEL_RECENT_ALONE + 1 - PANEL_USED_ASKED;
 const live = (i: ShownItem) => i.trashedAt === null;
 const notHidden = (i: ShownItem) => live(i) && !i.hiddenFromRecent;
 // The index's item, or one kept only in this browser (which has no app: it is the host's).
@@ -48,7 +50,7 @@ export function HomeSection({
   // Most used then recent (one request): enough recent ones to fill Recent alone, plus one, so a person with no most
   // used yet, or leaving out the open item, still sees two full rows.
   const load = useMemo(
-    () => jumpBackInLoader(client, app, filter, PANEL_PER_GROUP, PANEL_RECENT_EXTRA),
+    () => jumpBackInLoader(client, app, filter, PANEL_USED_ASKED, PANEL_RECENT_EXTRA),
     [client, app, filter],
   );
   const list = useItemList({
@@ -98,11 +100,18 @@ export function HomeSection({
     );
   // The index's most used, then its recent with this browser's opened ones merged in by last open, as the page's
   // Home does (mergeOpened); the open item left out of both.
+  // The open item leaves before the cut to four; a most used one past the four joins Recent by its last open.
   const others = list.items.filter((i) => i.id !== currentId);
-  const mostUsed = others.filter(isMostUsed).slice(0, PANEL_PER_GROUP);
+  const used = others.filter(isMostUsed);
+  const mostUsed = used.slice(0, PANEL_PER_GROUP);
   const recentMax = mostUsed.length ? PANEL_PER_GROUP : PANEL_RECENT_ALONE;
+  const spare = used.slice(PANEL_PER_GROUP);
+  const indexRecent = others.filter((i) => !isMostUsed(i));
+  const recentPool = spare.length
+    ? [...indexRecent, ...spare].sort((a, b) => (b.lastOpenedAt ?? 0) - (a.lastOpenedAt ?? 0))
+    : indexRecent;
   const recent = mergeOpened(
-    others.filter((i) => !isMostUsed(i)),
+    recentPool,
     localOpened.filter((i) => i.id !== currentId),
     recentMax,
   ).slice(0, recentMax);
@@ -141,11 +150,7 @@ export function HomeSection({
             <PaneEmpty
               icon={<ClockIcon />}
               title={onlyOpen ? 'Nothing else yet' : `No ${words.lowerMany} yet`}
-              description={
-                onlyOpen
-                  ? `The other ${words.lowerMany} you use most and last will gather here.`
-                  : `The ${words.lowerMany} you use most and last will gather here.`
-              }
+              description={homeEmptyLine(words.lowerMany, onlyOpen)}
             />
           )}
         </PaneSection>

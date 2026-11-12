@@ -105,8 +105,8 @@ describe('<ExplorerPanel>', () => {
     const recent = screen.getByRole('region', { name: 'Recent' });
     expect(used.compareDocumentPosition(recent) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.queryByText('Jump Back In')).toBeNull();
-    // Four of each: the four most used, then the four latest opened of the rest (the fifth and sixth most used among
-    // them, as the index sends only four as most used).
+    // Four of each: the four most used, then the four latest opened of the rest (the fifth most used, asked as a
+    // spare for the open item and not needed, joins Recent by its last open; the sixth comes back as a recent one).
     const names = (el: HTMLElement) =>
       within(within(el).getByRole('list'))
         .getAllByRole('listitem')
@@ -124,9 +124,28 @@ describe('<ExplorerPanel>', () => {
     expect(index.count('listItems')).toBe(1);
     expect(index.calls.find((c) => c.method === 'listItems')!.args[0]).toMatchObject({
       view: 'recent',
-      used: 4,
-      limit: 13,
+      used: 5,
+      limit: 14,
     });
+  });
+
+  it('keeps Most Used on a full row when the open item is among the most used', async () => {
+    const items = Array.from({ length: 12 }, (_, i) =>
+      makeItem(i + 1, { lastOpenedAt: 5_000_000 - i, ...(i < 6 ? { useOpens: 20 - i } : {}) }),
+    );
+    const index = createFakeIndex({ items });
+    renderPanel(index, { current: items[0], currentId: items[0]!.id });
+    const used = await screen.findByRole('region', { name: 'Most Used' });
+    const names = (el: HTMLElement) =>
+      within(within(el).getByRole('list'))
+        .getAllByRole('listitem')
+        .map((c) => c.textContent);
+    // The open item left out first, then cut to four: still a full row of four, two full rows of two.
+    expect(names(used)).toEqual([2, 3, 4, 5].map((k) => expect.stringContaining(`Item ${k}`)));
+    expect(names(screen.getByRole('region', { name: 'Recent' }))).toEqual(
+      [6, 7, 8, 9].map((k) => expect.stringContaining(`Item ${k}`)),
+    );
+    expect(index.count('listItems')).toBe(1);
   });
 
   it('leaves Most Used out while nothing is most used, and lets Recent fill two rows of four, the open one left out', async () => {
@@ -543,6 +562,7 @@ describe("the panel's This Browser", () => {
       currentId: 'l1',
     });
     expect(await screen.findByText('Nothing else yet')).toBeTruthy();
+    expect(screen.getByText('The other plans you open will gather here.')).toBeTruthy();
   });
 });
 
