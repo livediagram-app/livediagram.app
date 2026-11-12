@@ -97,6 +97,10 @@ describe('fillValues', () => {
     expect(fillValues('{{now - 1d}}|{{now.date}}|{{card.due}}', ctx(), { iso: true })).toBe(
       '2026-11-10|2026-11-11|2026-11-20',
     );
+    // A date field read by name, too, so Set Field Due to {{card.field.Deadline}} takes it.
+    expect(
+      fillValues('{{card.field.deadline}}|{{card.field.Severity}}', ctx(), { iso: true }),
+    ).toBe('2026-11-20|High');
   });
 
   it('reads what it cannot fill as nothing, and never reads a value twice', () => {
