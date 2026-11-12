@@ -21,7 +21,6 @@ function Builder({ saved = rule() }: { saved?: ReturnType<typeof rule> }) {
       api={api}
       person="Ana Costa"
       now={NOW}
-      phone
       onBack={() => {}}
       onSaved={() => {}}
       onDirty={() => {}}
