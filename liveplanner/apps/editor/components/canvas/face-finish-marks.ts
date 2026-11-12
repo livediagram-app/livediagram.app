@@ -14,6 +14,8 @@ export const TAKING_ATTR = 'data-marker-taking';
 export const MEASURE_ATTR = 'data-sketch-measure';
 /** Marks a part a face wants drawn as a shape whatever its size or roundness (a progress bar's track and fill). */
 export const SHAPE_ATTR = 'data-marker-shape';
+/** Marks an outlined box a face wants drawn as a frame whatever its size (a Plan card: a Minimal one is 40 px tall). */
+export const FRAME_ATTR = 'data-marker-frame';
 /** Marks a box this pass made its own stacking context, so its colouring can sit under its contents. */
 export const ISOLATED_ATTR = 'data-marker-isolated';
 /** Marks a grid cell's sides whose border the grid's marker rules replace (`r`, `b`: face-finish.css). */

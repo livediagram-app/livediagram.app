@@ -67,6 +67,18 @@ describe('facePartRole', () => {
     expect(roleOf(120, 60, paint({ fill: '#fff', stroke: '#ccc', strokePx: 1 }))).toBe('frame');
   });
 
+  it('outlines a box marked a frame at any size or roundness (a Minimal Plan card)', () => {
+    const card = paint({ fill: '#fff', stroke: '#ccc', strokePx: 1 });
+    // Unmarked, a 36 px tall card is under the frame's least size: coloured in, which a card never is.
+    expect(roleOf(513, 36, card, 6)).toBe('shape');
+    expect(roleOf(513, 36, { ...card, frame: true }, 6)).toBe('frame');
+    expect(roleOf(513, 36, { ...card, frame: true }, 18)).toBe('frame');
+    // Still only an outlined rectangle, never dashed.
+    expect(roleOf(513, 36, { ...card, stroke: null, frame: true }, 6)).toBe('shape');
+    expect(roleOf(513, 36, { ...card, strokePx: 0, frame: true }, 6)).toBe('shape');
+    expect(roleOf(513, 36, { ...card, dashed: true, frame: true }, 6)).toBeNull();
+  });
+
   it('colours in a band or a bar', () => {
     expect(roleOf(300, 40, paint({ fill: '#38bdf8' }))).toBe('shape');
     expect(roleOf(12, 90, paint({ fill: '#38bdf8' }))).toBe('shape');

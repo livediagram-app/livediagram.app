@@ -314,6 +314,10 @@ is. `svgChecklistShape`, `svgLegendShape` and a stored tab window's frame letter
   `shape` or `line` from `MARKER_FACE_FRAME_MIN_PX` (40), `MARKER_FACE_SHAPE_MIN_PX` (24), `MARKER_FACE_DISC_MIN_PX`
   (14), `MARKER_FACE_SHAPE_THIN_PX` (6), `MARKER_FACE_BACKDROP_SHARE` (0.6, rectangles only),
   `MARKER_FACE_BODY_SLACK_PX` (6, the face's own box: coloured in when filled), a pill or a dashed line is null.
+  A part painted `frame: true` (the face's `data-marker-frame`, `FRAME_ATTR` in `face-finish-marks.ts`, set on each
+  `PlanCardFace` frame) is a `frame` whenever it is an outlined, undashed rectangle, before the pill and size rules,
+  and `frameInk` keeps a round one: a Minimal card's inset rectangle is 36 px tall, under `MARKER_FACE_FRAME_MIN_PX`,
+  and was coloured in as a shape, which a card never is, so it kept its plain line.
   Colour: a line its stroke; a part with no line a deeper shade of its fill (`markerFrameInk`,
   `MARKER_FACE_FRAME_INK_SHIFT` 0.45) streaked at `MARKER_FACE_STREAK_OPACITY` (0.2); a frame `markerFrameInk` at
   `MARKER_FACE_FRAME_PX` (2.5). `handDrawnInk(stroke, fill)` draws a line under `HAND_DRAWN_INK_MIN_CONTRAST` (1.8)
@@ -339,7 +343,12 @@ is. `svgChecklistShape`, `svgLegendShape` and a stored tab window's frame letter
   `<g data-marker-ink>` after it, and a `[data-marker-grid]` (a table)'s cell borders joined into whole rules
   (`marker-grid-rules.ts`; the marks it sets are named in `face-finish-marks.ts`). A take skips a busy board's card
   whose contents the browser skips (`offScreenCard`: `checkVisibility` with `contentVisibilityAuto` on its first child;
-  plan-board.md "A busy board").
+  plan-board.md "A busy board"), and hands the cards it skipped to `face-arrivals.ts` `watchFaceArrivals`: one
+  `IntersectionObserver` (implicit root, so the board's scroll box clips it) per pass watches only those cards, and a
+  card entering the view re-takes the face (`take('frame')`) once the arrivals pause (`SKETCH_INK_SETTLE_MS` after the
+  last, at most `SKETCH_INK_MAX_WAIT_MS` after the first). A card is counted once per arrival (a `WeakSet`, cleared
+  when it leaves the view), so a card the take still skips in view never re-takes in a loop. No scroll listener: the
+  observer fires only when a skipped card crosses into view.
   - A take sets `data-marker-taking` on the root for its whole length; face-finish.css holds `transition: none` under
     it, and reads a hovered `.plan-card-hover` at its resting `--card-line`. It reads every part first (sizes, computed
     style, the part's drawing) and only then runs each part's write (its ink, `data-marker-drawn`, isolation), then

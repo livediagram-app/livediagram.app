@@ -153,7 +153,8 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
 - **Faces: frames and shapes.** What an element draws for itself is drawn in marker where it is a frame or a shape:
   - A **frame** (a Plan card, a column, a panel, a web component's card, any outlined box inside a face at least
     `MARKER_FACE_FRAME_MIN_PX` on both sides) loses its own border and shadow and is outlined in one marker stroke
-    per edge, its fill kept solid behind its words. The face's own box (a panel's, a banner's, a timer's), whichever
+    per edge, its fill kept solid behind its words. A Plan card is a frame at every size and roundness, a Minimal
+    card (40 px tall, every card on a phone) included. The face's own box (a panel's, a banner's, a timer's), whichever
     part paints it, is coloured in as a shape's body is.
   - A **shape** (a concept graphic's band, tier, disc, ring or arc, a chart's bar, slice or ring, a Sankey's
     node) is coloured in and outlined in marker in its own colour: the outline in its stroke, or its fill when it

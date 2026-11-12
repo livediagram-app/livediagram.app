@@ -87,6 +87,9 @@ export type FacePartPaint = {
   dashed?: boolean;
   // The face marks this part a shape (`data-marker-shape`: a progress bar's track and fill), pill or not.
   shape?: boolean;
+  // The face marks this outlined box a frame (`data-marker-frame`: a Plan card, whose Minimal size is shorter than
+  // MARKER_FACE_FRAME_MIN_PX), whatever its size.
+  frame?: boolean;
 };
 
 /** What a part is under Marker: a frame (outlined, its fill kept solid), a shape (coloured in and outlined in its
@@ -263,6 +266,15 @@ export function facePartRole(
   face: FaceBox,
 ): FacePartRole | null {
   if (paint.shape && isInkColour(paint.fill) && outline.area) return 'shape';
+  // A marked frame is outlined at any size or roundness (a Minimal Plan card on a round look).
+  if (
+    paint.frame &&
+    !paint.dashed &&
+    shape.kind === 'rect' &&
+    isInkColour(paint.stroke) &&
+    paint.strokePx > 0
+  )
+    return 'frame';
   if (shape.kind === 'rect' && isPillRect(shape.width, shape.height, shape.rx)) return null;
   if (paint.dashed) return null;
   const b = boundsOf(outline);
