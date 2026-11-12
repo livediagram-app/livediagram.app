@@ -371,7 +371,9 @@ own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel says 
 ### What each does
 
 - **Summarise Card** writes a summary of at most **600 characters**, plain text, of the card's title, description,
-  checklist and latest comments. **Where It Goes**: **A Comment** (the default: a new thread by Automation) or one of
+  checklist, latest comments and its own text fields. It is in English unless the card's own text is plainly written
+  in one other language, which it then uses; a short or mixed card is summarised in English, never in a language the card
+  doesn't use. **Where It Goes**: **A Comment** (the default: a new thread by Automation) or one of
   the plan's custom Text and Long Text fields, by name (the field is set; a card whose type lacks it fails the
   step "A Bug card has no Notes").
 - **Suggest Card Type** picks one of the plan's card types. **With the Suggestion**: **Set the Card Type** (the
@@ -420,7 +422,9 @@ own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel says 
   schema (JSON mode). Workers AI keeps no prompts or replies (the model is listed with zero data retention).
 - It is sent, as data in one JSON object: the card's **title** (up to 200 characters), **description** (up to 2,000),
   **card type** and **column** names, **checklist** (up to 20 rows of 120 characters, each with its tick), and its
-  **latest 5 comments** (up to 400 characters each, text only) on threads this plan holds; for Suggest Card Type the
+  **latest 5 comments** (up to 400 characters each, text only) on threads this plan holds, and up to 5 of its card
+  type's filled **Text, Long Text, Choice and Multiple Choice** fields by name (up to 400 characters each; never a
+  Link, Email, Phone or Person field); for Suggest Card Type the
   plan's card type names, for Triage the four priorities and up to 50 of the labels its cards use, the most used first.
 - It is never sent a person's name, email or id, another card, the plan's name, a link, or anything about the plan
   beyond those lists.
@@ -448,19 +452,19 @@ Workers AI bills in Neurons ([pricing](https://developers.cloudflare.com/workers
 account has **10,000 Neurons a day free**; past that, on the Workers Paid plan, **$0.011 per 1,000 Neurons**. The model
 costs **9,091 Neurons per million input tokens** and **27,273 per million output tokens** ($0.10 and $0.30 per million).
 The prompt sizes are measured (`ai-steps.test.ts`, "measures the prompt sizes": the messages and the JSON schema, a
-card at every cap with 50 card types and 50 labels, and a typical card), tokens taken as four characters each:
+card at every cap with 50 card types, 50 labels and five filled text fields, and a typical card), tokens taken as four characters each:
 
-| Step              | Input, worst card       | Output cap | Neurons, worst | Cost, worst | Input, typical | Neurons, typical |
-| ----------------- | ----------------------- | ---------- | -------------- | ----------- | -------------- | ---------------- |
-| Summarise Card    | 7,997 chars, 2,000 tok. | 300 tokens | 26.4           | $0.00029    | 285 tokens     | about 5          |
-| Suggest Card Type | 9,370 chars, 2,343 tok. | 40 tokens  | 22.4           | $0.00025    | 628 tokens     | about 6          |
-| Triage            | 9,761 chars, 2,440 tok. | 80 tokens  | 24.4           | $0.00027    | 726 tokens     | about 7          |
+| Step              | Input, worst card        | Output cap | Neurons, worst | Cost, worst | Input, typical | Neurons, typical |
+| ----------------- | ------------------------ | ---------- | -------------- | ----------- | -------------- | ---------------- |
+| Summarise Card    | 10,537 chars, 2,634 tok. | 300 tokens | 32.1           | $0.00035    | 285 tokens     | about 5          |
+| Suggest Card Type | 11,701 chars, 2,925 tok. | 40 tokens  | 27.7           | $0.00030    | 628 tokens     | about 6          |
+| Triage            | 12,092 chars, 3,023 tok. | 80 tokens  | 29.7           | $0.00033    | 726 tokens     | about 7          |
 
-- **One plan at its cap**: 100 steps of the dearest kind, about **2,640 Neurons a day**, a quarter of the free
-  allowance; all paid, $0.029 a day.
-- **N plans at their caps**: N × 2,640 Neurons a day, so about **3 plans** fit in the free allowance; past it,
-  (N × 2,640 − 10,000) × $0.011 / 1,000 a day: 10 plans **$0.18**, 100 plans **$2.79** (about $84 a month), 1,000
-  plans **$28.89** (about $867 a month). Typical cards cost about a quarter of that.
+- **One plan at its cap**: 100 steps of the dearest kind, about **3,210 Neurons a day**, a third of the free
+  allowance; all paid, $0.035 a day.
+- **N plans at their caps**: N × 3,210 Neurons a day, so about **3 plans** fit in the free allowance; past it,
+  (N × 3,210 − 10,000) × $0.011 / 1,000 a day: 10 plans **$0.24**, 100 plans **$3.42** (about $103 a month), 1,000
+  plans **$35.20** (about $1,056 a month). Typical cards cost about a quarter of that.
 - **The account-wide ceiling** is the owner's: paid usage is their decision. An optional `AI_GATEWAY` variable sends
   every call through that [AI Gateway](https://developers.cloudflare.com/ai-gateway/features/spend-limits/), whose
   **spend limit** (say $1 a day for the whole gateway) blocks calls past it with a 429, which a step reads as "The AI
