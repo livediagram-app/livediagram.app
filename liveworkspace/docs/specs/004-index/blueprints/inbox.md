@@ -82,6 +82,10 @@ rows of one app whose `card.id` is set and whose `elementId` is the same (a thre
 the newer. Such a row's title is its `elementLabel` (the thread's title), its place `card.id` and `threadId`, and its
 verbs go to `…/threads/:elementId/comments` and `…/threads/:elementId/resolve` (`inbox-actions.ts`).
 
+An element part's thread (a Sheet cell's, `elementId` `<elementId>:<cell>`) is found in the item's listing
+(`GET …/comments?status=all`) by `listedThreadKey` (`inbox-actions.ts`: `elementId`, then `:cell` when the listing
+gives one); Reply posts the listed thread's own `elementId` and `cell`, Resolve its first comment as any thread's.
+
 A Plan card's row (an action or thread with `card`) draws `CardStatusChip` (`packages/explorer/src/explorer/badges.tsx`)
 from `card.column` beside its title: no read of its own, the column rides in the row's `card` JSON. `inboxCount`
 (`sections.ts`) is `forMe` plus the threads whose `threadReason` is `mention` or `yours`; `threadReason` reads a

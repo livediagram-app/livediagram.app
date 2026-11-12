@@ -703,6 +703,19 @@ whole Sheet.
   cell (`Budget!B4`) once the Sheet is drawn ("Budget (Deleted Cell)" when its row or column is gone, "Budget" alone
   before it is drawn), opening the popover on that cell, the cell selected and scrolled into view first. The project's thread listing (`GET /api/projects/:id/comments`) gives each cell thread its
   `cell` and, where the sheet is stored, its A1 (`cellRef`).
+- **Inbox**: each cell thread with at least one comment, open or resolved, is an Inbox row of its own
+  ([Inbox](../013-workspace/inbox.md)), as an element's thread is: listed for the people who wrote in it or are
+  @-mentioned in it, and in "threads I'm in or mentioned in". Its row is keyed by the cell: `elementId` is
+  `<sheetElementId>:<rowId>:<colId>` (the Sheet element's id, then the cell key), so two cells on one Sheet never
+  share a row and the key holds through inserted, moved and sorted lines. Its label is the Sheet's label and the
+  cell's A1 (`Budget!B4`), worked out from the stored sheet when the tab is pushed: "Budget (Deleted Cell)" when the
+  cell's row or column is gone, "Budget" alone where the sheet is not at hand (a This Browser plan). An A1 that an
+  inserted row moves is renamed on the tab's next push. Its link (`#t=<tab>&el=<sheetElementId>:<cell>&open=comments`)
+  lands on the tab with the cell selected and its thread popover open, as the Comments panel row does; a phone
+  notice for a cell comment lands there too. Reply and Resolve in the Inbox's reading pane reach the cell's thread.
+  A Sheet sends at most 100 cell rows (`CELL_INBOX_ROWS_MAX`), those with the newest comments, so one big Sheet
+  never crowds the tab's other threads out of the 500 a tab sends; a Sheet whose element id would make a key longer
+  than the index's 128 characters sends none.
 - **Copies**: a Sheet copied and pasted, or duplicated, never carries its cell threads: the copy frames a new sheet,
   and a thread is a conversation about the original's cells (`freshCopyFields`, as a pasted element leaves its own
   thread behind).
@@ -712,7 +725,8 @@ whole Sheet.
 - Telemetry: the comment events (`Comment · Opened`, `Added`, `Deleted`, `Resolved`, `Unresolved`), as on an element.
 - **Cost**: the markers (each open thread's cell and position) are worked out once per change to `cellComments` or
   the layout and kept; a scroll frame or a hover reads the kept list, one step per open thread (at most 1,000), and
-  draws only those in view. A Sheet without cell threads draws nothing for them.
+  draws only those in view. A Sheet without cell threads draws nothing for them. The Inbox rows are built once per tab push, one step per
+  comment, and the stored sheets are read (one query for the tab) only when a Sheet on the tab carries cell threads.
 
 ## Card tables
 

@@ -39,7 +39,8 @@ presence, CSV, telemetry and help. The model and pure behaviour are the engine's
 - `cell-comments.ts` (Cell comments): `CellCommentThreads`, `CELL_THREADS_MAX` 1,000, `CELL_KEY_PATTERN` (two axis
   ids, the engine's `AXIS_ID_PATTERN` repeated), `isCellKey`, `takesCellThreads` (a `plan-sheet` only), `threadAt` and
   `withThreadAt` (an element's own thread with no cell, else a cell's), `elementThreads` (own first, then cells in key
-  order), `mapElementThreads`, `threadHolding`. Every thread reader goes through them: the comment deltas
+  order), `mapElementThreads`, `threadHolding`, `cellThreadKey` and `splitCellThreadKey` (the Inbox key
+  `<elementId>:<cell>` and back), `CELL_INBOX_ROWS_MAX` 100. Every thread reader goes through them: the comment deltas
   (`comment-add` and `comment-resolve` take `cell?`; `comment-remove` and `comment-rekey` find their comment in any
   thread), `mergeIncomingElement` (keeps the receiver's `cellComments`), `elementChangeIsDeltaOnly`, the room ledger
   (`adds[id].cell`, `comments.cells[cell]` each cell's latest resolve), `withoutCommentAuthorIds`,
@@ -425,6 +426,13 @@ element.cellComments }`.
   first `CELL_PREVIEW_CHARS` of the first comment, "N more"). The open cell's anchor is drawn over its cell. A
   `keydown` listener on the grid takes Ctrl/⌘ + Alt + M (`isCommentShortcut`, by `code`) for the active cell (its
   merge's top-left, `threadCellAt`).
+- Inbox (`packages/project/src/collab-index-rows.ts`): `collabIndexRowsFromElements(elements, cellRefOf?)` emits a
+  row per cell thread with comments after the Sheet's own (`cellThreadKey`, label `Sheet!A1`, `(Deleted Cell)` or the
+  Sheet alone by `cellRefOf`), at most `CELL_INBOX_ROWS_MAX` a Sheet by newest comment, none past
+  `INDEX_PART_ID_MAX`. The api's outbox (`plan-room/plan-outbox.ts`) hands it `sheetCellRefs`
+  (`apps/api/src/sheet-cell-refs.ts`, also the comment listing's A1). The editor's `useCollabDeepLink` takes an `el`
+  no element has through `splitCellThreadKey`: the Sheet selected, `focusSheetCell` (held until the Sheet is drawn)
+  and `openComments(id, cell)`. Phone push (`person/push.ts`) places a cell's comment at the same key.
 - `SheetCellCommentRow` in `SheetCellMenu` after the toolbar: **Insert Comment** (Editor, Participant) or **Show
   Comments** (anyone, where a thread is).
 - `EditorAnchoredPopovers`: with an open cell, `CommentThreadPopover` gets `anchorSelector` and `title` "Cell
@@ -543,6 +551,7 @@ Editor logs (`[sheets]`): `sheets.load.failed`, `sheets.write.failed <error>`, `
 | Cell comments: markers, preview, menu row, keys, panel                  | `components/sheets/SheetCellComments.test.tsx`, `components/panels/collaborate/CollaborateRows.cells.test.tsx`                                 |
 | Cell comments over the api: roles, verbs, listing, trust                | `apps/api/src/routes/comment-routes-cells.test.ts`, `apps/api/src/comments-cells.test.ts`                                                      |
 | Cell comments by agents: `--cell`                                       | `packages/agent-verbs/src/verbs/comment-cells.test.ts`                                                                                         |
+| Cell comments in the Inbox: rows, cap, budget, link, verbs              | `collab-index-rows-cells.test.ts`, `useCollabDeepLink.test.tsx`, `sheet-cell-refs.test.ts`, `plan-outbox.test.ts`                              |
 
 ## Assets and external resources
 
