@@ -5,7 +5,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('./globals.css', () => ({}));
 const { default: GlobalError } = await import('./global-error');
-const { PAGE_ERROR_TITLE } = await import('@/components/PageError');
+const { PAGE_ERROR_TITLE } = await import('@/components/page-error-title');
+const { LazyPageError } = await import('@/components/LazyPageError');
 
 // liveworkspace/docs/specs/010-site/site.md "Behaviour": the root error boundary is the site's own page, never
 // Next's bare one (no title, no lang, no main landmark).
@@ -14,8 +15,9 @@ const { PAGE_ERROR_TITLE } = await import('@/components/PageError');
 afterEach(() => vi.restoreAllMocks());
 
 describe('GlobalError', () => {
-  it('stands in for the layout with a title, lang, a main landmark, an h1, Try Again and the way home', () => {
+  it('stands in for the layout with a title, lang, a main landmark, an h1, Try Again and the way home', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
+    await LazyPageError.preload();
     const reload = vi.fn();
     vi.spyOn(window, 'location', 'get').mockReturnValue({ ...window.location, reload });
     const root = createRoot(document);

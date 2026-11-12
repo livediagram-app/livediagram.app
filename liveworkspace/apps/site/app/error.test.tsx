@@ -2,7 +2,8 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PAGE_ERROR_TITLE } from '@/components/PageError';
+import { LazyPageError } from '@/components/LazyPageError';
+import { PAGE_ERROR_TITLE } from '@/components/page-error-title';
 import PageErrorBoundary from './error';
 
 // liveworkspace/docs/specs/010-site/site.md "Behaviour": a page that throws shows the site's card inside the layout.
@@ -22,8 +23,10 @@ afterEach(() => {
 });
 
 describe('the error page', () => {
-  it('has its own title, a main landmark with an h1, Try Again that renders again, and the way home', () => {
+  it('has its own title, a main landmark with an h1, Try Again that renders again, and the way home', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
+    // The card is its own chunk (components/LazyPageError.tsx): fetched first, it draws in the render's own commit.
+    await LazyPageError.preload();
     const reset = vi.fn();
     act(() => root.render(<PageErrorBoundary error={new Error('boom')} reset={reset} />));
     expect(document.title).toBe(PAGE_ERROR_TITLE);
