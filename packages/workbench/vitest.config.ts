@@ -34,6 +34,10 @@ const HELD_AT_100 = [
   'src/components/canvas/VoteStepper.tsx',
   'src/components/canvas/VoteDot.tsx',
   'src/components/canvas/vote-badge.ts',
+  // The new version prompt all five editors bind (docs/specs/016-platform/new-version-prompt.md).
+  'src/components/chrome/NewVersionPrompt.tsx',
+  'src/hooks/ui/useNewerEditorLive.ts',
+  'src/lib/live-editor-build.ts',
 ];
 
 export default defineProject({

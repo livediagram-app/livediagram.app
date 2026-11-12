@@ -12,7 +12,7 @@ import { ZOOM_MAX } from './lib/zoom-range';
  */
 export type WorkbenchTelemetryCategory = 'Canvas' | 'Error' | 'Tab' | 'UI';
 export type WorkbenchTelemetryAction =
-  'Added' | 'Changed' | 'Client' | 'Moved' | 'Opened' | 'Removed' | 'Toggled' | 'Zoomed';
+  'Added' | 'Changed' | 'Client' | 'Moved' | 'Opened' | 'Removed' | 'Toggled' | 'Used' | 'Zoomed';
 export type WorkbenchTrack = (
   category: WorkbenchTelemetryCategory,
   action: WorkbenchTelemetryAction,
