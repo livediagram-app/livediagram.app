@@ -19,19 +19,20 @@ import {
   type TitleBarItem,
 } from './page-title-bar';
 
-/** Notes: a page with three lines of writing (PageNotesButton.tsx). */
+/** Notes: the card stack a slide's note cards wear (NoteCardsIcon.tsx, 16 units drawn at 14). */
 function NotesGlyph({ cx, cy }: { cx: number; cy: number; on?: boolean }) {
   return (
     <g
-      transform={`translate(${cx} ${cy})`}
+      transform={`translate(${cx - 7} ${cy - 7}) scale(0.875)`}
       fill="none"
       className="stroke-slate-500"
-      strokeWidth={1.3}
+      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M-4.5 -5.5 h6 l3 3 v8 h-9 Z" />
-      <path d="M-2.5 -0.5 h5 M-2.5 2.5 h5" />
+      <path d="M4.5 3.5V3a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1H12" />
+      <rect x="2" y="5" width="9.5" height="9" rx="1.2" />
+      <path d="M4.5 8.5h4.5M4.5 11h3" />
     </g>
   );
 }

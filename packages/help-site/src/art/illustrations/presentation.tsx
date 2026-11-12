@@ -249,13 +249,18 @@ export function SlideTransition() {
 /** The presenter's strip: position, pacing, step buttons, jump, notes, cog and
  *  close, in the order the HUD carries them. The budget chip is drawn in its
  *  over-time state, which is the only state that needs explaining. */
-export function PresenterHud() {
+export function PresenterHud({ noteCards = false }: { noteCards?: boolean }) {
+  // With note cards (livedocuments), the notes button wears the card stack and its viewer is open under it:
+  // the card in front, the cards still to come behind, then Previous, a dot per card and Next. The slide's
+  // shapes sit lower so the viewer does not hide them.
+  const sy = noteCards ? 168 : 110;
+  const sh = noteCards ? 30 : 44;
   return (
     <Scene w={420} h={230} bg="none">
       {/* The slide behind the strip */}
       <rect x={8} y={16} width={404} height={198} rx={10} className="fill-slate-50" />
-      <Shape x={60} y={110} w={110} h={44} label="Rollout" />
-      <Shape x={230} y={110} w={110} h={44} accent label="Week one" />
+      <Shape x={60} y={sy} w={110} h={sh} label="Rollout" />
+      <Shape x={230} y={sy} w={110} h={sh} accent label="Week one" />
       {/* The HUD itself, dark in both appearances */}
       <g className="help-art-as-drawn">
         <rect x={40} y={32} width={364} height={30} rx={9} className="fill-slate-800" />
@@ -284,11 +289,26 @@ export function PresenterHud() {
           <rect x={326} y={48} width={6} height={6} rx={1.5} />
           <rect x={334} y={48} width={6} height={6} rx={1.5} />
         </g>
-        {/* Notes: a written card, shown only on a slide that has any. */}
-        <g className="stroke-white" strokeWidth={1.3} fill="none">
-          <rect x={348} y={39} width={13} height={16} rx={2} />
-          <path d="M351 44h7M351 48h4" strokeLinecap="round" />
-        </g>
+        {/* Notes: a written card (the card stack, with note cards), shown only on a slide that has any. */}
+        {noteCards ? (
+          <g
+            className="stroke-white"
+            strokeWidth={1.3}
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            transform="translate(347 39) scale(0.95)"
+          >
+            <path d="M4.5 3.5V3a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1H12" />
+            <rect x="2" y="5" width="9.5" height="9" rx="1.2" />
+            <path d="M4.5 8.5h4.5M4.5 11h3" />
+          </g>
+        ) : (
+          <g className="stroke-white" strokeWidth={1.3} fill="none">
+            <rect x={348} y={39} width={13} height={16} rx={2} />
+            <path d="M351 44h7M351 48h4" strokeLinecap="round" />
+          </g>
+        )}
         {/* Settings, then close. */}
         <g className="stroke-white" strokeWidth={1.3} fill="none" transform="translate(375 47)">
           <circle r={5} />
@@ -298,9 +318,56 @@ export function PresenterHud() {
           <path d="M391 43l8 8M399 43l-8 8" />
         </g>
       </g>
-      <Label x={210} y={196} size={10} tone="muted" anchor="middle">
+      {noteCards ? <PresenterCardViewer /> : null}
+      <Label x={210} y={noteCards ? 209 : 196} size={10} tone="muted" anchor="middle">
         Fades when the pointer rests, back the moment you move
       </Label>
     </Scene>
+  );
+}
+
+/** The presenter's note card viewer (PresenterNoteCards.tsx), under the strip's notes button: the card in
+ *  front with its place ("Card 1 of 3"), two cards still to come stacked behind it, then Previous (off on the
+ *  first card), a dot per card and Next. Dark in both appearances, like the strip. */
+function PresenterCardViewer() {
+  return (
+    <g className="help-art-as-drawn">
+      {[2, 1].map((step) => (
+        <rect
+          key={step}
+          x={228 + step * 6}
+          y={68 + step * 6}
+          width={176 - step * 12}
+          height={56}
+          rx={8}
+          className="fill-slate-800 stroke-white/10"
+          opacity={1 - step * 0.22}
+        />
+      ))}
+      <rect
+        x={228}
+        y={68}
+        width={176}
+        height={56}
+        rx={8}
+        className="fill-slate-800 stroke-white/20"
+        strokeWidth={1}
+      />
+      <Label x={238} y={82} size={9} weight={600} className="fill-slate-400">
+        Card 1 of 3
+      </Label>
+      <rect x={238} y={92} width={140} height={5} rx={2.5} className="fill-slate-300" />
+      <rect x={238} y={103} width={104} height={5} rx={2.5} className="fill-slate-500" />
+      <rect x={228} y={138} width={176} height={20} rx={8} className="fill-slate-900/80" />
+      <Label x={238} y={148} size={9} weight={500} className="fill-white/25">
+        ‹ Previous
+      </Label>
+      <rect x={299} y={146} width={12} height={4} rx={2} className="fill-brand-300" />
+      <circle cx={320} cy={148} r={2} className="fill-white/30" />
+      <circle cx={328} cy={148} r={2} className="fill-white/30" />
+      <Label x={394} y={148} size={9} weight={500} anchor="end" className="fill-white/85">
+        Next ›
+      </Label>
+    </g>
   );
 }
