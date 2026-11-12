@@ -54,6 +54,19 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
     expect(await res.json()).toEqual({ error: 'read_only_token' });
   });
 
+  // An agent with a view token never adds a picture to a plan (docs/specs/026-plan/item-types.md "Image fields",
+  // "Agents"): neither the upload nor the grant check a card write makes first.
+  it('403s an image upload and a grant check from a read-only token', async () => {
+    for (const path of ['/api/images?p=plan-1', '/api/images/grants?p=plan-1']) {
+      const res = await worker.fetch(
+        new Request(`https://api.test${path}`, { method: 'POST', headers: RO, body: '{}' }),
+        env(),
+      );
+      expect(res.status, path).toBe(403);
+      expect(await res.json()).toEqual({ error: 'read_only_token' });
+    }
+  });
+
   it('403s a PUT from a read-only token', async () => {
     const res = await worker.fetch(
       new Request('https://api.test/api/projects/d1', { method: 'PUT', headers: RO }),

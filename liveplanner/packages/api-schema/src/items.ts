@@ -174,3 +174,18 @@ export type PlanResponse = {
   // The catalogue's revision, for a change of card types to name as its `expectedRev`.
   itemTypesRev: number;
 };
+
+// The pictures uploaded for a plan, as `POST /api/images/grants?p=` answers them (docs/specs/015-api/api.md): what an
+// agent may place on its cards (docs/specs/015-api/mcp-server.md §4.5b), each with its upload's name, size and type,
+// which an Attachments entry is made from. A request asks about at most IMAGE_GRANT_CHECK_MAX ids: a change_items
+// call's pictures, a Several Images field's 20 on each of five cards.
+export const IMAGE_GRANT_CHECK_MAX = 100;
+
+export type GrantedImage = {
+  id: string;
+  name: string | null;
+  size: number;
+  type: string;
+};
+
+export type ImageGrantsResponse = { images: GrantedImage[] };

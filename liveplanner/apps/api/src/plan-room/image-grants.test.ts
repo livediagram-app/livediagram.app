@@ -3,7 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { nodeItemSql } from '@liveworkspace/index-app/testing';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { Env } from '../types';
-import { IMAGE_GRANTS_MAX, IMAGE_ID_MAX, planServesImage, recordImageGrant } from './image-grants';
+import {
+  IMAGE_GRANTS_MAX,
+  IMAGE_ID_MAX,
+  planGrantedImages,
+  planServesImage,
+  recordImageGrant,
+} from './image-grants';
 import { migratePlanSchema } from './plan-schema';
 import { planNamespace } from './test-plan-namespace';
 
@@ -177,6 +183,19 @@ describe('planServesImage', () => {
   });
 });
 
+describe('planGrantedImages', () => {
+  it('answers the granted ids in the order asked, each once, and skips an empty or overlong id', () => {
+    const { sql } = store();
+    recordImageGrant(sql, PLAN, 'a', 1);
+    recordImageGrant(sql, PLAN, 'c', 2);
+    recordImageGrant(sql, 'other-plan', 'b', 3);
+    expect(
+      planGrantedImages(sql, PLAN, ['c', 'b', 'a', 'c', '', 'x'.repeat(IMAGE_ID_MAX + 1)]),
+    ).toEqual(['c', 'a']);
+    expect(planGrantedImages(sql, PLAN, [])).toEqual([]);
+  });
+});
+
 describe('the plan room', () => {
   const rooms = () => planNamespace(() => ({}) as Env);
 
@@ -247,6 +266,19 @@ describe('the plan room', () => {
     const plan = open('never');
     expect(await plan.room.servesImage('never', IMAGE)).toBe(false);
     expect(plan.db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all()).toEqual(
+      [],
+    );
+  });
+
+  it('answers which pictures it holds a grant for, and a plan never started holds none', async () => {
+    const { open } = rooms();
+    const plan = open(PLAN);
+    await plan.room.grantImage(PLAN, IMAGE);
+    await plan.room.grantImage(PLAN, 'b');
+    expect(await plan.room.grantedImages(PLAN, ['b', 'other', IMAGE, 'b'])).toEqual(['b', IMAGE]);
+    const never = open('never');
+    expect(await never.room.grantedImages('never', [IMAGE])).toEqual([]);
+    expect(never.db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all()).toEqual(
       [],
     );
   });

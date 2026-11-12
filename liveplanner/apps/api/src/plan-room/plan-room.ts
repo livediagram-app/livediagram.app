@@ -80,6 +80,7 @@ import {
   exportComments,
   addConnectedTab,
   servesImage,
+  grantedImages,
   exportCopy,
   revokeCodes,
   joined,
@@ -418,6 +419,11 @@ export class PlanRoom extends DurableObject<Env> {
 
   servesImage(planId: string, imageId: string, tabScope: string | null = null): Promise<boolean> {
     return servesImage(this, planId, imageId, tabScope);
+  }
+
+  // Which of these pictures were uploaded for this plan: the ones an agent may place on its cards.
+  async grantedImages(planId: string, imageIds: readonly string[]): Promise<string[]> {
+    return grantedImages(this, planId, imageIds);
   }
 
   exportCopy(
