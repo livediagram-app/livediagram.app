@@ -7,7 +7,6 @@ import {
   lucideFootprints,
   lucideHeadphones,
   lucideLayoutGrid,
-  lucideLink,
   lucideMagnet,
   lucidePanelLeft,
   lucidePanelsTopLeft,
@@ -272,11 +271,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucidePanelsTopLeft} />
     </Glyph>
   ),
-  comments: (
-    <Glyph>
-      <path d="M21 12a8 8 0 01-11.6 7.1L3 21l1.9-6.4A8 8 0 1121 12z" />
-    </Glyph>
-  ),
   // A baton being passed: one hand open, the bar crossing to it. Not a person
   // (live-presence has the pointer-and-dot) and not a clock (the timer's).
   facilitator: (
@@ -302,12 +296,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'cameras-and-screen-sharing': (
     <Glyph>
       <Prims prims={lucideVideo} />
-    </Glyph>
-  ),
-  links: (
-    <Glyph>
-      <path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.5 1.5" />
-      <path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7L12 19" />
     </Glyph>
   ),
   images: (
@@ -389,15 +377,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // Work on an element, with a name against it.
-  'assigned-actions': (
-    <Glyph>
-      <rect x="3" y="5" width="13" height="14" rx="2" />
-      <path d="M6 10l1.6 1.6 3.4-3.6" />
-      <path d="M6 15h6" />
-      <circle cx="18.5" cy="15.5" r="2" />
-      <path d="M15.7 20a3 3 0 015.6 0" />
-    </Glyph>
-  ),
   // Collaboration → Sharing guides. Most of the obvious drawings were already
   // taken: a chain is `links`, a picture is `images`. So
   // each of these draws the thing that makes it a SHARING article — the password
@@ -695,14 +674,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M4.5 6.5v-2h2M4.5 12.5v-2h2M4.5 18.5v-2h2" />
     </Glyph>
   ),
-  notes: (
-    <Glyph>
-      <rect x="3" y="4" width="11" height="11" rx="1.5" />
-      <path d="M6 8h5M6 11h3" />
-      <rect x="11" y="12" width="10" height="8" rx="1.5" />
-      <path d="M14 15.5h4M14 18h2.5" />
-    </Glyph>
-  ),
   size: (
     <Glyph>
       <rect x="4" y="4" width="16" height="16" rx="2" />
@@ -753,14 +724,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A card with small marks along its top-right: the badges an element wears.
-  'element-indicators': (
-    <Glyph>
-      <rect x="3" y="5" width="18" height="15" rx="2" />
-      <path d="M6.5 15.5h7" />
-      <circle cx="13.5" cy="9" r="1.1" fill="currentColor" stroke="none" />
-      <path d="M16 7.5h3.5v2.6h-1.6l-1.2 1.1v-1.1H16z" />
-    </Glyph>
-  ),
   // A magnet, not another set of guide lines: `alignment-guides` in the Palette
   // settings already draws those, and two cards showing the same thing is the
   // problem these glyphs exist to solve.
@@ -786,13 +749,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // An inbox tray with a tick above it: what is waiting on you.
-  activity: (
-    <Glyph>
-      <path d="M3 13.5V18a2 2 0 002 2h14a2 2 0 002-2v-4.5" />
-      <path d="M3 13.5h4.5l1.5 2.5h6l1.5-2.5H21" />
-      <path d="M8.5 7.5 11 10l4.5-5" />
-    </Glyph>
-  ),
   // One folder inside another, which is the whole point of a nestable tree.
   folders: (
     <Glyph>
@@ -861,11 +817,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M3 7a2 2 0 0 1 2-2h3l2 2h9a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
       <path d="M3 11h18" />
-    </Glyph>
-  ),
-  'linking-tabs': (
-    <Glyph>
-      <Prims prims={lucideLink} />
     </Glyph>
   ),
   'add-to-document': (

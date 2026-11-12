@@ -72,7 +72,7 @@ and right-click opens the ordinary element menu.
 - **Read-only** surfaces show the thread with no composer and no resolve.
 - **A Participant** writes, resolves and reopens on a panel as on the popover ([Share roles](../013-workspace/share-roles.md)).
   It has no autosave, so its changes go through the comment endpoints, the same way the popover sends them
-  (`commentPersisters` in `apps/editor/lib/comment-persistence.ts`, shared by both surfaces); an Editor's ride the room
+  (`commentPersisters` in apps/editor/lib/comment-persistence.ts (deleted, Work Item 714), shared by both surfaces); an Editor's ride the room
   and the tab save. Before the two shared it, a Participant's panel comment stayed on its own screen, unsaved.
   A change the server refuses goes back on screen (`useEditorComments`): a refused resolve or reopen puts the
   thread back, a refused comment is taken off again with `[comments] comment not saved`, and a refused delete puts

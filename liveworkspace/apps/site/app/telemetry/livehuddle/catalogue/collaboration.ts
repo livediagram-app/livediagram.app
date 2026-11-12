@@ -59,30 +59,6 @@ export const AVATARS_CUSTOMISED = chart(
   { typeIn: (t) => (t ?? '').startsWith('Avatar') },
 );
 
-export const FEED_RETRIES = chart(
-  'Activity',
-  'Loaded',
-  'Inbox Retries',
-  "The Explorer's Inbox retried after failing to load.",
-  { rising: 'bad' },
-);
-
-export const COMMENTS_DELETED = chart(
-  'Comment',
-  'Deleted',
-  'Comments Deleted',
-  'A comment removed.',
-  { rising: 'neutral' },
-);
-
-export const COMMENTS_REOPENED = chart(
-  'Comment',
-  'Unresolved',
-  'Comments Reopened',
-  'A resolved thread opened again.',
-  { rising: 'neutral' },
-);
-
 export const FACILITATOR_CONTROLS = chart(
   'Facilitator',
   'Changed',
@@ -205,39 +181,6 @@ export const VIEWERS_JOINED: Metric = {
     'People who came into a document through a view-only link. Counted once per person per document, not on every revisit.',
 };
 
-export const COMMENTS_ADDED: Metric = {
-  category: 'Comment',
-  action: 'Added',
-  // Canvas comments send no type; a Plan card's comments sent Item, and still count while they age out.
-  allTypes: true,
-  title: 'Comments Added',
-};
-
-export const COMMENT_POPOVERS_OPENED: Metric = {
-  category: 'Comment',
-  action: 'Opened',
-  type: null,
-  title: 'Comment Popovers Opened',
-  blurb:
-    "Someone opened an element's comments to read or reply. Not a new thread: a new comment is Comments Added.",
-};
-
-export const COMMENTS_RESOLVED: Metric = {
-  category: 'Comment',
-  action: 'Resolved',
-  // On the canvas, and on Plan cards (Item) while those age out.
-  allTypes: true,
-  title: 'Comments Resolved',
-};
-
-export const COMMENTS_MENTIONED: Metric = {
-  category: 'Comment',
-  action: 'Mentioned',
-  type: null,
-  title: 'Comments With Mentions',
-  blurb: 'A comment was sent that @-mentioned at least one teammate.',
-};
-
 export const TEAMS_CREATED: Metric = {
   category: 'Team',
   action: 'Created',
@@ -355,21 +298,6 @@ export const SHARING_AND_JOINING: MetricStack = {
   headline: SHARE_LINKS_COPIED,
 };
 
-export const DISCUSSION: MetricStack = {
-  stack: true,
-  title: 'Discussion',
-  blurb: 'Comments left on elements, opened to read or reply, and resolved.',
-  members: [
-    COMMENTS_ADDED,
-    COMMENT_POPOVERS_OPENED,
-    COMMENTS_RESOLVED,
-    COMMENTS_MENTIONED,
-    COMMENTS_REOPENED,
-    COMMENTS_DELETED,
-  ],
-  headline: COMMENTS_ADDED,
-};
-
 export const TEAM_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Team Activity',
@@ -390,43 +318,6 @@ export const TEAM_ACTIVITY: MetricStack = {
   ],
   headline: INVITES_ACCEPTED,
 };
-
-export const ACTIVITY_OPENED = chart(
-  'Activity',
-  'Opened',
-  'Inbox Opened',
-  "The Explorer's Inbox opened, once per visit.",
-);
-
-export const ACTIVITY_THREADS = chart(
-  'Activity',
-  'Selected',
-  'Inbox Items Opened',
-  "An action or a comment thread opened from the Explorer's Inbox.",
-);
-
-export const ACTIVITY_FILTERS = chart(
-  'Activity',
-  'Changed',
-  'Inbox Filters Chosen',
-  "A filter chosen over the Explorer's Inbox: All, My Actions, Assigned by Me, Comments or Form Responses.",
-  { rising: 'neutral' },
-);
-
-export const ACTIVITY_REPLIES = chart(
-  'Activity',
-  'Added',
-  'Inbox Replies',
-  "A reply to a comment thread sent from the Explorer's Inbox reading pane.",
-  { types: ['Reply'] },
-);
-
-export const ACTIVITY_RESOLVED = chart(
-  'Activity',
-  'Resolved',
-  'Inbox Threads Resolved and Actions Done',
-  "A thread resolved, or an action marked done in the editor's panel, from the Explorer's Inbox reading pane.",
-);
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md): first-run arrivals, documents opened from each part of
 // Home, summaries expanded, and failed reads retried.
@@ -450,18 +341,8 @@ export const HOME_LOADS = chart('Home', 'Loaded', 'Home Retries', 'A failed read
 export const HOME_AND_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Home & Activity',
-  blurb: "Keeping up with what changed: Explorer Home and the Explorer's Inbox.",
-  members: [
-    HOME_WELCOMES,
-    HOME_DOCUMENTS_OPENED,
-    HOME_LOADS,
-    ACTIVITY_OPENED,
-    ACTIVITY_THREADS,
-    ACTIVITY_FILTERS,
-    ACTIVITY_REPLIES,
-    ACTIVITY_RESOLVED,
-    FEED_RETRIES,
-  ],
+  blurb: "Keeping up with what changed: Explorer Home (livehuddle's Explorer has no Inbox).",
+  members: [HOME_WELCOMES, HOME_DOCUMENTS_OPENED, HOME_LOADS],
 };
 
 // The Timer and Stopwatch pieces (docs/specs/009-elements/timer-and-stopwatch.md): set running, paused, reset, and a

@@ -125,7 +125,7 @@ describe('legacyHelpRedirect', () => {
       ['/help/palette/icons/', '/help/palette/stickers/'],
       // Image and Link card left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md).
       ['/help/palette/tools/images/', '/help/palette/tools/'],
-      ['/help/canvas/links/link-cards/', '/help/canvas/links/'],
+      ['/help/canvas/links/link-cards/', '/help/collaboration/'],
       // Element and Tab Locking left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md).
       ['/help/canvas/locking/', '/help/canvas/selecting-and-grouping/'],
       ['/help/tabs/locking-tabs/', '/help/tabs/using-tabs/'],
@@ -184,8 +184,8 @@ describe('legacyHelpRedirect', () => {
       ['/help/palette/behaviour/reveal-zones/', '/help/palette/behaviour/'],
       ['/help/palette/collaborate/', '/help/collaboration/session-tools/'],
       ['/help/palette/collaborate/quizzes/', '/help/collaboration/session-tools/'],
-      ['/help/palette/collaborate/comment-panels/', '/help/collaboration/comments/'],
-      ['/help/palette/collaborate/action-panels/', '/help/collaboration/assigned-actions/'],
+      ['/help/palette/collaborate/comment-panels/', '/help/collaboration/'],
+      ['/help/palette/collaborate/action-panels/', '/help/collaboration/'],
       ['/help/palette/shapes/', '/help/canvas/the-canvas/adding-elements/'],
       ['/help/palette/shapes/style-presets/', '/help/canvas/the-canvas/adding-elements/'],
       ['/help/palette/arrows/', '/help/palette/tools/'],
@@ -198,7 +198,15 @@ describe('legacyHelpRedirect', () => {
       ['/help/palette/tools/tables/', '/help/palette/write/'],
       ['/help/palette/tools/drawing/shape-recognition/', '/help/palette/tools/'],
       ['/help/palette/tools/data-elements/pie-chart/', '/help/palette/tools/'],
-      ['/help/canvas/annotations/', '/help/canvas/notes/'],
+      ['/help/canvas/annotations/', '/help/collaboration/'],
+      // Comments, actions, links and notes left livehuddle (not-in-livehuddle.md).
+      ['/help/collaboration/comments/', '/help/collaboration/'],
+      ['/help/collaboration/assigned-actions/', '/help/collaboration/'],
+      ['/help/canvas/links/', '/help/collaboration/'],
+      ['/help/canvas/notes/', '/help/collaboration/'],
+      ['/help/canvas/element-indicators/', '/help/collaboration/'],
+      ['/help/tabs/linking-tabs/', '/help/tabs/using-tabs/'],
+      ['/help/explorer/activity/', '/help/explorer/home/'],
       [
         '/help/getting-started/adding-shapes-and-arrows/',
         '/help/canvas/the-canvas/adding-elements/',

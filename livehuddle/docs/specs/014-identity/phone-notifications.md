@@ -36,9 +36,9 @@ A title names who and the diagram, never what they wrote: `Ada commented on Road
 
 ## Code
 
-- `apps/api/src/liveworkspace/push.ts`: the pusher, the links and tags; `liveworkspace/action-notices.ts`: an
+- `apps/api/src/liveworkspace/push.ts`: the pusher, the links and tags; liveworkspace/action-notices.ts (deleted, Work Item 714): an
   assignment's push and email, sent from the document room so an assignee already in it is skipped.
 - The triggers: the tab save route, `changesets/after.ts`, the comment routes and the
   team notify routes' action notice.
 - The room's `ROOM_PEOPLE` on its env facade.
-- The editor: `hooks/collab/useEditorActions.ts` asks `notify-action` with `email`, `tabId` and `elementId`.
+- The editor: hooks/collab/useEditorActions.ts (deleted, Work Item 714) asks `notify-action` with `email`, `tabId` and `elementId`.

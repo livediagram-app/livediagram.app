@@ -100,56 +100,61 @@ export const EXACT: Readonly<Record<string, string>> = {
   'AI|Used|PhotoNotes':
     'Someone imported the sticky notes from a photo of a real wall onto an event-storming board, a workshop-style tab built as a timeline of business events.',
   'Action|Changed|Edited':
-    "Someone edited the details of an action assigned to an element, without changing who it's assigned to.",
+    "Someone edited the details of an action assigned to an element, without changing who it's assigned to. No longer recorded: livehuddle has no assigned actions.",
   'Action|Changed|Reassigned':
-    'Someone changed who an action assigned to an element is assigned to.',
+    'Someone changed who an action assigned to an element is assigned to. No longer recorded: livehuddle has no assigned actions.',
   'Action|Created|EmailOff':
-    'Someone assigned an action to a teammate, or to themselves, on an element, without sending an email.',
+    'Someone assigned an action to a teammate, or to themselves, on an element, without sending an email. No longer recorded: livehuddle has no assigned actions.',
   'Action|Created|EmailOn':
-    'Someone assigned an action to a teammate on an element and chose to email them about it.',
-  'Action|Deleted|': 'Someone removed an assigned action from an element.',
+    'Someone assigned an action to a teammate on an element and chose to email them about it. No longer recorded: livehuddle has no assigned actions.',
+  'Action|Deleted|':
+    'Someone removed an assigned action from an element. No longer recorded: livehuddle has no assigned actions.',
   'Action|Moved|DocumentToTeam':
-    "While assigning an action to someone, the document was moved into that person's team so they'd have access to it.",
+    "While assigning an action to someone, the document was moved into that person's team so they'd have access to it. No longer recorded: livehuddle has no assigned actions.",
   'Action|Linked|Board':
-    "Someone added a document's first action, which made its Actions board: a board tab where every action in the document has a card, kept in step with the canvas.",
-  'Action|Opened|': 'Someone opened the popover for an action already assigned to an element.',
+    "Someone added a document's first action, which made its Actions board: a board tab where every action in the document has a card, kept in step with the canvas. No longer recorded: livehuddle has no assigned actions.",
+  'Action|Opened|':
+    'Someone opened the popover for an action already assigned to an element. No longer recorded: livehuddle has no assigned actions.',
   'Action|Opened|Board':
-    "Someone went from an action on the canvas to the document's Actions board, from the action's popover or an Action panel's Board chip.",
+    "Someone went from an action on the canvas to the document's Actions board, from the action's popover or an Action panel's Board chip. No longer recorded: livehuddle has no assigned actions.",
   'Action|Opened|Canvas':
-    "Someone went from a card on the Actions board to its action on the canvas, with the card's Show on Canvas.",
-  'Action|Resolved|': 'Someone marked an assigned action as done.',
+    "Someone went from a card on the Actions board to its action on the canvas, with the card's Show on Canvas. No longer recorded: livehuddle has no assigned actions.",
+  'Action|Resolved|':
+    'Someone marked an assigned action as done. No longer recorded: livehuddle has no assigned actions.',
   'Action|Resolved|WontDo':
-    "Someone closed an assigned action as Won't Do: decided against, closed without being done.",
-  'Action|Unresolved|': 'Someone reopened an assigned action that had been marked done.',
+    "Someone closed an assigned action as Won't Do: decided against, closed without being done. No longer recorded: livehuddle has no assigned actions.",
+  'Action|Unresolved|':
+    'Someone reopened an assigned action that had been marked done. No longer recorded: livehuddle has no assigned actions.',
   'Activity|Changed|All':
-    "Someone showed every row of the Explorer's Inbox again, from the filter bar over its list.",
+    "Someone showed every row of the Explorer's Inbox again, from the filter bar over its list. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Activity|Changed|MyActions':
-    "Someone filtered the Explorer's Inbox to My Actions: the actions and cards assigned to them.",
+    "Someone filtered the Explorer's Inbox to My Actions: the actions and cards assigned to them. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Activity|Changed|AssignedByMe':
-    "Someone filtered the Explorer's Inbox to Assigned by Me: the work they handed to others.",
+    "Someone filtered the Explorer's Inbox to Assigned by Me: the work they handed to others. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Activity|Changed|Comments':
-    "Someone filtered the Explorer's Inbox to Comments: mentions, threads on their items and replies.",
+    "Someone filtered the Explorer's Inbox to Comments: mentions, threads on their items and replies. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Activity|Changed|FormResponses':
-    "Someone filtered the Explorer's Inbox to Form Responses: forms with responses they haven't seen.",
+    "Someone filtered the Explorer's Inbox to Form Responses: forms with responses they haven't seen. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Activity|Added|Reply':
-    "Someone replied to a comment thread from the Explorer's Inbox reading pane, without opening the item.",
+    "Someone replied to a comment thread from the Explorer's Inbox reading pane, without opening the item. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Activity|Resolved|Thread':
-    "Someone resolved a comment thread from the Explorer's Inbox reading pane.",
+    "Someone resolved a comment thread from the Explorer's Inbox reading pane. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Activity|Resolved|Action':
-    "Someone marked an assigned action done from the Explorer's Inbox, in the editor's panel beside it.",
-  'Activity|Resolved|Card': "Someone marked a Plan card done from the Explorer's Inbox.",
+    "Someone marked an assigned action done from the Explorer's Inbox, in the editor's panel beside it. No longer recorded: livehuddle's Explorer has no Inbox.",
+  'Activity|Resolved|Card':
+    "Someone marked a Plan card done from the Explorer's Inbox. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Activity|Loaded|Retry':
-    'Someone clicked "Try again" after the Explorer\'s Inbox failed to load, retrying the read.',
+    'Someone clicked "Try again" after the Explorer\'s Inbox failed to load, retrying the read. No longer recorded: livehuddle\'s Explorer has no Inbox.',
   'Activity|Opened|':
-    "Someone opened the Explorer's Inbox, which lists open actions and Plan cards assigned to them, actions they assigned to others, and comment threads they're in. Counted once per visit, not on every re-fetch.",
+    "Someone opened the Explorer's Inbox, which lists open actions and Plan cards assigned to them, actions they assigned to others, and comment threads they're in. Counted once per visit, not on every re-fetch. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Activity|Selected|Action':
-    "Someone clicked an action row in the Explorer's Inbox, jumping to the element it's assigned on.",
+    "Someone clicked an action row in the Explorer's Inbox, jumping to the element it's assigned on. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Activity|Selected|Card':
-    "Someone clicked a Plan card row in the Explorer's Inbox, jumping to the card on its board.",
+    "Someone clicked a Plan card row in the Explorer's Inbox, jumping to the card on its board. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Activity|Selected|FormResponses':
-    "Someone clicked a form's row in the Explorer's Inbox (its new responses), jumping to the board they land on.",
+    "Someone clicked a form's row in the Explorer's Inbox (its new responses), jumping to the board they land on. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Activity|Selected|Thread':
-    "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on.",
+    "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Canvas|Used|WaterCooler':
     'Someone walked their Avatar-mode character up to a water cooler and took a cup of water.',
   'Canvas|Used|CoffeeMachine':
@@ -228,12 +233,18 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Canvas|Zoomed|Out': 'Someone tapped the zoom-out button.',
   'Canvas|Zoomed|Preset':
     'Someone jumped straight to a preset zoom level from the zoom-percentage popover.',
-  'Comment|Added|': 'A comment was added to an element thread.',
-  'Comment|Deleted|': 'A comment was removed from a thread.',
-  'Comment|Opened|': 'Someone opened the comment popover on an element.',
-  'Comment|Mentioned|': 'A comment was sent that @-mentioned at least one teammate.',
-  'Comment|Resolved|': 'A comment thread was marked resolved.',
-  'Comment|Unresolved|': 'A resolved comment thread was reopened.',
+  'Comment|Added|':
+    'A comment was added to an element thread. No longer recorded: livehuddle has no comments.',
+  'Comment|Deleted|':
+    'A comment was removed from a thread. No longer recorded: livehuddle has no comments.',
+  'Comment|Opened|':
+    'Someone opened the comment popover on an element. No longer recorded: livehuddle has no comments.',
+  'Comment|Mentioned|':
+    'A comment was sent that @-mentioned at least one teammate. No longer recorded: livehuddle has no comments.',
+  'Comment|Resolved|':
+    'A comment thread was marked resolved. No longer recorded: livehuddle has no comments.',
+  'Comment|Unresolved|':
+    'A resolved comment thread was reopened. No longer recorded: livehuddle has no comments.',
   'Document|Created|Cloud': 'A brand-new document was created.',
   'Document|Created|Offline': 'A brand-new document was created.',
   'Document|Deleted|': 'A document was deleted.',
@@ -796,10 +807,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Mcp|Used|RenameDocument': 'An AI tool connected over MCP renamed a document.',
   'Mcp|Used|ShareDocument': 'An AI tool connected over MCP generated a share link for a document.',
   'Mcp|Used|UpdateDocument': "An AI tool connected over MCP updated a tab's content in a document.",
-  'Note|Added|': 'A note was added to an element (first non-empty save).',
-  'Note|Changed|': "An existing note's text was edited.",
-  'Note|Deleted|': 'A note was cleared from an element.',
-  'Note|Opened|': 'Someone opened the note popover on an element.',
+  'Note|Added|':
+    'A note was added to an element (first non-empty save). No longer recorded: livehuddle has no notes on elements.',
+  'Note|Changed|':
+    "An existing note's text was edited. No longer recorded: livehuddle has no notes on elements.",
+  'Note|Deleted|':
+    'A note was cleared from an element. No longer recorded: livehuddle has no notes on elements.',
+  'Note|Opened|':
+    'Someone opened the note popover on an element. No longer recorded: livehuddle has no notes on elements.',
   'Page|View|/': 'Someone visited the marketing homepage.',
   'Page|View|/document':
     "Someone opened a document in the editor. Every document's page counts under this same path, with no document-specific detail recorded.",
@@ -1110,11 +1125,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|HighlighterWidth':
     "Someone changed the Highlighter's width for their next stroke, in the Quick style panel.",
   'UI|Changed|ElementIndicatorsTop':
-    'Someone set element indicators (link, note, action, comments) to quiet icons along the top of each element, in Settings > Editor.',
+    'Someone set element indicators (link, note, action, comments) to quiet icons along the top of each element, in Settings > Editor. No longer recorded: livehuddle has no element indicators.',
   'UI|Changed|ElementIndicatorsOff':
-    'Someone turned element indicators (link, note, action, comments) off, in Settings > Editor.',
+    'Someone turned element indicators (link, note, action, comments) off, in Settings > Editor. No longer recorded: livehuddle has no element indicators.',
   'UI|Changed|ElementIndicatorsFooter':
-    'Someone set element indicators (link, note, action, comments) to a labelled row along the bottom of each element, in Settings > Editor.',
+    'Someone set element indicators (link, note, action, comments) to a labelled row along the bottom of each element, in Settings > Editor. No longer recorded: livehuddle has no element indicators.',
   'UI|Changed|MapSize':
     'Someone resized the minimap, in Settings > Editor. An earlier version of this event, before it recorded which size was chosen. No longer recorded.',
   'UI|Changed|MapSizeMedium': 'Someone set the minimap to its medium size, in Settings > Editor.',
@@ -1304,7 +1319,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Moved|PanelDock':
     'Someone dragged a panel, such as the Map or the AI panel, to a different corner of the screen, or let it go free.',
   'UI|Opened|ActionSignInNudge':
-    'A signed-out visitor opened the "Assign action" dialog and saw the sign-in nudge, since a guest can only assign work to themself. Counted once per dialog open.',
+    'A signed-out visitor opened the "Assign action" dialog and saw the sign-in nudge, since a guest can only assign work to themself. Counted once per dialog open. No longer recorded: livehuddle has no assigned actions.',
   'UI|Opened|Activity': 'Someone expanded the since-removed Activity panel.',
   'UI|Opened|Collaborate': 'Someone opened the Collaborate panel from its bottom-bar button.',
   'UI|Opened|TidyUp':
@@ -1589,21 +1604,21 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|NotificationsOn':
     'Someone turned on in-editor toast notifications, in Settings > Notifications.',
   'UI|Toggled|NotifyActionAssignedOff':
-    'Someone turned off the email that arrives when a teammate assigns them an action, in Settings > Notifications.',
+    'Someone turned off the email that arrives when a teammate assigns them an action, in Settings > Notifications. No longer recorded: livehuddle has no assigned actions.',
   'UI|Toggled|NotifyActionAssignedOn':
-    'Someone turned on the email that arrives when a teammate assigns them an action, in Settings > Notifications.',
+    'Someone turned on the email that arrives when a teammate assigns them an action, in Settings > Notifications. No longer recorded: livehuddle has no assigned actions.',
   'UI|Toggled|NotifyFormResponsesOff':
     'Someone turned off the email they get when somebody fills in one of their forms.',
   'UI|Toggled|NotifyFormResponsesOn':
     'Someone turned back on the email they get when somebody fills in one of their forms.',
   'UI|Toggled|NotifyMentionsOff':
-    'Someone turned off the email that arrives when a teammate @-mentions them in a comment, in Settings > Notifications.',
+    'Someone turned off the email that arrives when a teammate @-mentions them in a comment, in Settings > Notifications. No longer recorded: livehuddle has no comments.',
   'UI|Toggled|NotifyMentionsOn':
-    'Someone turned on the email that arrives when a teammate @-mentions them in a comment, in Settings > Notifications.',
+    'Someone turned on the email that arrives when a teammate @-mentions them in a comment, in Settings > Notifications. No longer recorded: livehuddle has no comments.',
   'UI|Toggled|NotifyCommentsOff':
-    'Someone turned off the email that arrives when someone comments on a document they own, in Settings > Notifications.',
+    'Someone turned off the email that arrives when someone comments on a document they own, in Settings > Notifications. No longer recorded: livehuddle has no comments.',
   'UI|Toggled|NotifyCommentsOn':
-    'Someone turned on the email that arrives when someone comments on a document they own, in Settings > Notifications.',
+    'Someone turned on the email that arrives when someone comments on a document they own, in Settings > Notifications. No longer recorded: livehuddle has no comments.',
   'UI|Toggled|NotifyDocumentJoinOff':
     'Someone turned off the email that arrives when a new person opens one of their shared documents, in Settings > Notifications.',
   'UI|Toggled|NotifyDocumentJoinOn':
@@ -2200,30 +2215,48 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone turned an AI setting on or off in Settings under AI Tools, before the in-editor AI assistant was removed.',
   'AI|Used':
     'Someone used an AI-powered tool in the editor: the sticky-note photo import, or (before it was removed) the AI Assistant panel.',
-  'Action|Changed': 'Someone changed something about an action assigned to an element.',
-  'Action|Created': 'Someone assigned an action to a teammate, or to themselves, on an element.',
-  'Action|Deleted': 'Someone removed an assigned action from an element.',
-  'Action|Linked': "Someone added a document's first action, which made its Actions board.",
-  'Action|Moved': "A document was moved into a teammate's team while assigning them an action.",
-  'Action|Opened': 'Someone opened the popover for an action already assigned to an element.',
-  'Action|Resolved': 'Someone marked an assigned action as done.',
-  'Action|Unresolved': 'Someone reopened an assigned action that had been marked done.',
-  'Activity|Changed': "Someone changed the filter over the Explorer's Inbox.",
-  'Activity|Added': "Someone replied from the Explorer's Inbox reading pane.",
+  'Action|Changed':
+    'Someone changed something about an action assigned to an element. No longer recorded: livehuddle has no assigned actions.',
+  'Action|Created':
+    'Someone assigned an action to a teammate, or to themselves, on an element. No longer recorded: livehuddle has no assigned actions.',
+  'Action|Deleted':
+    'Someone removed an assigned action from an element. No longer recorded: livehuddle has no assigned actions.',
+  'Action|Linked':
+    "Someone added a document's first action, which made its Actions board. No longer recorded: livehuddle has no assigned actions.",
+  'Action|Moved':
+    "A document was moved into a teammate's team while assigning them an action. No longer recorded: livehuddle has no assigned actions.",
+  'Action|Opened':
+    'Someone opened the popover for an action already assigned to an element. No longer recorded: livehuddle has no assigned actions.',
+  'Action|Resolved':
+    'Someone marked an assigned action as done. No longer recorded: livehuddle has no assigned actions.',
+  'Action|Unresolved':
+    'Someone reopened an assigned action that had been marked done. No longer recorded: livehuddle has no assigned actions.',
+  'Activity|Changed':
+    "Someone changed the filter over the Explorer's Inbox. No longer recorded: livehuddle's Explorer has no Inbox.",
+  'Activity|Added':
+    "Someone replied from the Explorer's Inbox reading pane. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Activity|Resolved':
-    "Someone closed something from the Explorer's Inbox: a thread resolved, or an action marked done.",
+    "Someone closed something from the Explorer's Inbox: a thread resolved, or an action marked done. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Activity|Loaded':
-    "Something happened while loading the Explorer's Inbox (the list of outstanding actions and comment threads).",
-  'Activity|Opened': "Someone opened or interacted with the Explorer's Inbox.",
-  'Activity|Selected': "Someone clicked a row in the Explorer's Inbox, jumping to what it's about.",
+    "Something happened while loading the Explorer's Inbox (the list of outstanding actions and comment threads). No longer recorded: livehuddle's Explorer has no Inbox.",
+  'Activity|Opened':
+    "Someone opened or interacted with the Explorer's Inbox. No longer recorded: livehuddle's Explorer has no Inbox.",
+  'Activity|Selected':
+    "Someone clicked a row in the Explorer's Inbox, jumping to what it's about. No longer recorded: livehuddle's Explorer has no Inbox.",
   'Canvas|Used': 'Someone picked up one of the canvas tools or modes, or used a canvas feature.',
   'Canvas|Zoomed': 'Someone changed the zoom from the zoom controls.',
-  'Comment|Added': 'A comment was added to an element thread.',
-  'Comment|Deleted': 'A comment was removed from a thread.',
-  'Comment|Opened': 'Someone opened the comment popover on an element.',
-  'Comment|Mentioned': 'A comment was sent that @-mentioned at least one teammate.',
-  'Comment|Resolved': 'A comment thread was marked resolved.',
-  'Comment|Unresolved': 'A resolved comment thread was reopened.',
+  'Comment|Added':
+    'A comment was added to an element thread. No longer recorded: livehuddle has no comments.',
+  'Comment|Deleted':
+    'A comment was removed from a thread. No longer recorded: livehuddle has no comments.',
+  'Comment|Opened':
+    'Someone opened the comment popover on an element. No longer recorded: livehuddle has no comments.',
+  'Comment|Mentioned':
+    'A comment was sent that @-mentioned at least one teammate. No longer recorded: livehuddle has no comments.',
+  'Comment|Resolved':
+    'A comment thread was marked resolved. No longer recorded: livehuddle has no comments.',
+  'Comment|Unresolved':
+    'A resolved comment thread was reopened. No longer recorded: livehuddle has no comments.',
   'Document|Created': 'A brand-new document was created.',
   'Document|Deleted': 'A document was deleted.',
   'Document|Exported': 'Someone exported a tab, a selection or a page to a file or the clipboard.',
@@ -2316,13 +2349,17 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Community|Selected':
     'Someone picked a filter in the Community gallery: a category, a tag, a sort order or My Shares.',
   'Mcp|Used': 'An AI tool connected to livehuddle over MCP used one of its actions on a document.',
-  'Note|Added': 'A note was added to an element (first non-empty save).',
+  'Note|Added':
+    'A note was added to an element (first non-empty save). No longer recorded: livehuddle has no notes on elements.',
   'Cli|Used': 'Someone ran a livehuddle command from the command line, and it succeeded.',
-  'Note|Changed': "An existing note's text was edited.",
-  'Note|Deleted': 'A note was cleared from an element.',
-  'Note|Opened': 'Someone opened the note popover on an element.',
+  'Note|Changed':
+    "An existing note's text was edited. No longer recorded: livehuddle has no notes on elements.",
+  'Note|Deleted':
+    'A note was cleared from an element. No longer recorded: livehuddle has no notes on elements.',
+  'Note|Opened':
+    'Someone opened the note popover on an element. No longer recorded: livehuddle has no notes on elements.',
   'Note|Used':
-    "Someone applied rich-text formatting, such as bold, a colour, a bullet or numbered list, a heading, or a link, to part of a note's text.",
+    "Someone applied rich-text formatting, such as bold, a colour, a bullet or numbered list, a heading, or a link, to part of a note's text. No longer recorded: livehuddle has no notes on elements.",
   'Page|View':
     'Someone loaded or navigated to a page on the site. Counted once per distinct page, not on every scroll or in-page action.',
   'Participant|Created':

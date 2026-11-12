@@ -110,7 +110,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your spaces, folders, teams, and assets easy to find and manage.',
-    articleCount: 13,
+    articleCount: 12,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets'],
   },
@@ -136,7 +136,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas: place, select, link, add notes to, rotate, animate and theme elements, undo changes, and start from templates.',
-    articleCount: 18,
+    articleCount: 15,
     kind: 'feature',
     groups: ['Basics', 'Text and Notes', 'Styling Elements'],
   },
@@ -145,7 +145,7 @@ export const categories: Category[] = [
     title: 'Tabs',
     description:
       'Keep a whole project in one canvas: organise, link, and move between multiple boards with tabs.',
-    articleCount: 9,
+    articleCount: 8,
     kind: 'feature',
   },
   {
@@ -153,7 +153,7 @@ export const categories: Category[] = [
     title: 'Collaboration',
     description:
       'Work together in real time: comments, assigned actions, live presence, calls, teams, sharing, and session tools.',
-    articleCount: 9,
+    articleCount: 7,
     kind: 'feature',
   },
   {
@@ -552,9 +552,9 @@ export const articles: Article[] = [
   {
     slug: 'agent-comments-presence',
     title: 'Comments and Presence for Agents',
-    description: 'Reply to and resolve comments, and show what your agent is doing.',
+    description: 'Show what your agent is doing, and read the comment threads a space still holds.',
     keywords:
-      'agent comments reply resolve reopen threads presence status focus ring card comments api script bot',
+      'agent comments threads read list presence status focus ring card api script bot gone 410',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -1000,15 +1000,6 @@ export const articles: Article[] = [
     categorySlug: 'tabs',
   },
   {
-    slug: 'linking-tabs',
-    title: 'Linking Across Tabs',
-    description:
-      'Turn an element into a jump point to another tab, another space, or a web address.',
-    keywords: 'jump navigation cross reference hyperlink go to connect boards document',
-    category: 'Tabs',
-    categorySlug: 'tabs',
-  },
-  {
     slug: 'connected-files',
     title: 'Connected Files',
     description:
@@ -1064,28 +1055,11 @@ export const articles: Article[] = [
     categorySlug: 'tabs',
   },
   {
-    slug: 'comments',
-    title: 'Comments',
-    description: 'Leave threaded comments on the canvas and resolve them.',
-    keywords:
-      'thread feedback reply resolve discussion note annotate mention reaction reactions react emoji thumbs up like heart hooray eyes laugh',
-    category: 'Collaboration',
-    categorySlug: 'collaboration',
-  },
-  {
     slug: 'facilitator',
     title: 'Facilitator',
     description: 'Give one person Bring Focus and the room for a live meeting.',
     keywords:
       'facilitator workshop host run the room session lead moderator driver baton timer poll control handover take over step down chair meeting workshop',
-    category: 'Collaboration',
-    categorySlug: 'collaboration',
-  },
-  {
-    slug: 'assigned-actions',
-    title: 'Assigned Actions',
-    description: 'Assign work on an element to a teammate and track it until done.',
-    keywords: 'task assign todo work teammate track tickets delegate owner',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1115,16 +1089,6 @@ export const articles: Article[] = [
       'camera video webcam face screen share sharing present presenting window tab bubble maximise maximize restore stop sharing video paused call calls',
     category: 'Collaboration',
     categorySlug: 'collaboration',
-  },
-  {
-    slug: 'links',
-    title: 'Links',
-    description: 'Link elements across tabs, spaces or URLs, and follow them.',
-    keywords:
-      'url hyperlink bookmark card website jump navigate external resources add link edit link remove link',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Basics',
   },
   {
     slug: 'explorer-page',
@@ -1166,17 +1130,6 @@ export const articles: Article[] = [
       'The Explorer\u2019s landing view: what you use most and last, and what was shared with you recently.',
     keywords:
       'home jump back in within reach most used last used recent see more grid strip return often shared with you recently landing start history last 30 days',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Activity',
-  },
-  {
-    slug: 'activity',
-    title: 'Inbox',
-    description:
-      'What is outstanding for you across every app: actions assigned to you or by you, and open comment threads.',
-    keywords:
-      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross document all documents cross diagram all diagrams local only offline this browser canvas space spaces',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -1316,17 +1269,6 @@ export const articles: Article[] = [
     categorySlug: 'tools',
   },
   {
-    slug: 'notes',
-    title: 'Notes',
-    description:
-      'Attach a longer written note to any element, formatted and out of sight until opened.',
-    keywords:
-      'note notes memo remark caveat detail context description rich text formatting bold italic underline heading bullet numbered list link popover badge resources',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Text and Notes',
-  },
-  {
     slug: 'size',
     title: 'Size',
     description: 'Type an exact width and height, lock the ratio, or reset a stretched shape.',
@@ -1373,17 +1315,6 @@ export const articles: Article[] = [
       'Draw a tab or an element Flexible, Professional, hand-drawn Sketch or bold Marker.',
     keywords:
       'finish sketch sketchy hand drawn handdrawn whiteboard rough wobbly hatching professional crisp print clean flexible look style drawing marker felt tip sharpie flip chart bold ink',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Styling Elements',
-  },
-  {
-    slug: 'element-indicators',
-    title: 'Element Indicators',
-    description:
-      'The small icons that show an element has a link, a note, an action or comments, and how to set them to Top, Footer or Off.',
-    keywords:
-      'indicators indicator badges badge icons markers chip pip status metadata link note action comment comments count top footer off hide hidden settings editor color colour',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
