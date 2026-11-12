@@ -194,3 +194,49 @@ describe('a listed type’s statuses', () => {
     ]);
   });
 });
+
+// A board's header widgets in list_items (docs/specs/026-plan/plan-agents.md "Reading the plan"): by the names
+// change_board takes and answers.
+describe('a board’s widgets in list_items', () => {
+  const budget = {
+    ...ITEM_TYPES[0],
+    id: 'task',
+    fields: [...ITEM_TYPES[0].fields, 'f-budget'],
+    custom: [{ id: 'f-budget', label: 'Budget', kind: 'number' as const }],
+  };
+  const note = { ...ITEM_TYPES[0], id: 'note', label: 'Note' };
+  const board = (widgets: string[] | undefined, types: string[] | null = null) => ({
+    tabId: 't1',
+    tabName: 'Board',
+    elementId: 'b1',
+    title: 'Sprint',
+    kind: 'board',
+    types,
+    columns: [{ status: 'todo', name: 'To Do' }],
+    ...(widgets ? { widgets } : {}),
+  });
+  const listed = (b: ReturnType<typeof board>) =>
+    planListing({
+      items: [],
+      plan: { boards: [b], statuses: [], types: [budget, note] } as unknown as PlanState['plan'],
+    }).boards[0]!;
+
+  it('names built-in widgets by their gallery names and a field widget by its field and view', () => {
+    expect(listed(board(['count', 'due', 'field:sum:f-budget'])).widgets).toEqual([
+      'Item Count',
+      'Due Soon',
+      'Budget Sum',
+    ]);
+  });
+
+  it('names a field widget whose field the board no longer takes by its key, which remove takes', () => {
+    expect(listed(board(['progress', 'field:sum:f-budget'], ['note'])).widgets).toEqual([
+      'Completion',
+      'field:sum:f-budget',
+    ]);
+  });
+
+  it('leaves widgets out when the api did not send them', () => {
+    expect(listed(board(undefined))).not.toHaveProperty('widgets');
+  });
+});

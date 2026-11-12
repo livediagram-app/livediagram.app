@@ -9580,6 +9580,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "null"
           }
         ]
+      },
+      "widgets": {
+        "items": {
+          "$ref": "#/components/schemas/BoardWidgetId"
+        },
+        "type": "array"
       }
     },
     "required": [

@@ -758,6 +758,13 @@ const listedBoard = z.object({
     .describe(
       'Sort Cards, as "Priority (Highest First)": its columns list their cards in that order.',
     ),
+  widgets: z
+    .array(z.string())
+    .optional()
+    .describe(
+      'Its header widgets, in order, by the names change_board takes ("Item Count", "Budget Sum"); a field ' +
+        'widget whose field is gone, by its key (field:<view>:<fieldId>).',
+    ),
   columns: z
     .array(
       z.object({
