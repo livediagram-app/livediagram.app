@@ -4,7 +4,7 @@
 // only while nothing is picked.
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { automationPerson } from '@liveplanner/items';
+import { GITHUB_PERSON, automationPerson } from '@liveplanner/items';
 import { PersonDisc } from '@/components/plan/PersonDisc';
 import { RunSteps } from './RunSteps';
 import { ChipToggles } from './step-panels/panel-parts';
@@ -21,6 +21,10 @@ describe('Automation stamps and run lines', () => {
     rerender(<PersonDisc person={{ id: 'u-ana', name: 'Ana Costa', color: '#be123c' }} />);
     expect(container.querySelector('[data-automation-disc]')).toBeNull();
     expect(container.textContent).toBe('AC');
+    // GitHub's moves (github-pull-requests.md "GitHub rules"): its mark, never "GI".
+    rerender(<PersonDisc person={GITHUB_PERSON} />);
+    expect(container.querySelector('[data-github-disc]')).not.toBeNull();
+    expect(container.textContent).toBe('');
   });
 
   it('names who triggered a run once, in bold', () => {

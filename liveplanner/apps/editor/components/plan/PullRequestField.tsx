@@ -77,10 +77,10 @@ export function PullRequestField({
         ) : null}
       </div>
       {status ? (
-        <div data-pull-request-state="" className="mt-1.5 flex min-w-0 items-start gap-2">
+        <div data-pull-request-state="" className="mt-1.5 flex min-w-0 flex-col items-start gap-1">
           <PullRequestChip status={status} />
           {status.title ? (
-            <span className="line-clamp-2 min-w-0 text-[12px] text-slate-600 [overflow-wrap:anywhere] dark:text-slate-300">
+            <span className="line-clamp-2 min-w-0 max-w-full text-[12px] text-slate-600 [overflow-wrap:anywhere] dark:text-slate-300">
               {status.title}
             </span>
           ) : null}
