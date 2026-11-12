@@ -105,6 +105,23 @@ export interface AutomationRunResponse {
   run: AutomationRun;
 }
 
+// Describe a Rule (spec "Describe a Rule"): the person's words and their time zone, answered with a rule body to open
+// in the builder, unsaved and off, and what is left to pick in it (a webhook). Nothing is saved.
+export interface AutomationDraftRequest {
+  prompt: string;
+  timeZone: string;
+}
+
+export interface AutomationDraftPick {
+  path: string;
+  pick: 'column' | 'type' | 'field' | 'label' | 'people' | 'webhook';
+}
+
+export interface AutomationDraftResponse {
+  rule: AutomationRuleBody;
+  picks: AutomationDraftPick[];
+}
+
 export interface AutomationRunsQuery {
   rule?: string;
   result?: AutomationResult;
@@ -132,6 +149,14 @@ export const AUTOMATION_ERRORS = [
   'automation_budget_spent',
   // Make Secret for a rule whose trigger is not Incoming Webhook: 409.
   'automation_not_incoming',
+  // Describe a Rule: an empty or over-long request, or no time zone (400); a request that is not a rule for the plan,
+  // or a reply that never read as one (422); the day's AI steps or drafts spent (429); no model, or one that erred
+  // or was slow (503). Each `message` is fixed words, never the model's.
+  'automation_draft_invalid',
+  'automation_draft_off_topic',
+  'automation_draft_unreadable',
+  'automation_ai_capped',
+  'automation_ai_unavailable',
 ] as const;
 export type AutomationError = (typeof AUTOMATION_ERRORS)[number];
 

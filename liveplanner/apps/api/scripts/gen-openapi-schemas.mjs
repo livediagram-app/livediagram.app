@@ -128,6 +128,8 @@ export const ROOT_TYPES = [
   'AutomationOrderRequest',
   'AutomationTestRequest',
   'AutomationRunNowRequest',
+  'AutomationDraftRequest',
+  'AutomationDraftResponse',
   'AutomationRunResponse',
   'AutomationRunsResponse',
   'AutomationSecretResponse',

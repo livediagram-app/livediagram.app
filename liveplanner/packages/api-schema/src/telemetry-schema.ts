@@ -281,7 +281,8 @@ export const TELEMETRY_ACTIONS = [
   // Automations (docs/specs/026-plan/automations.md "Telemetry"): a rule tried on a card (Test on a Card, which
   // changes nothing) and a Run from a Card rule run by hand. Typed 'AutomationRule' and 'AutomationManual'. 'Ran'
   // also counts the api's AI action calls ('AutomationAiSummarise', 'AutomationAiCardType', 'AutomationAiTriage'),
-  // the ones that failed ('AutomationAiFailed') and the steps the daily cap skipped ('AutomationAiCapped').
+  // the ones that failed ('AutomationAiFailed'), the steps the daily cap skipped ('AutomationAiCapped'), and Describe a
+  // Rule's asks ('AutomationAiDraft') and requests that weren't a rule ('AutomationAiOffTopic').
   'Tested',
   'Ran',
 ] as const;

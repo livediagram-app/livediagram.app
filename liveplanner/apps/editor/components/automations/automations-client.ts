@@ -6,6 +6,7 @@
 import {
   AUTOMATION_ERRORS,
   type AutomationError,
+  type AutomationDraftResponse,
   type AutomationErrorBody,
   type AutomationRuleBody,
   type AutomationRuleResponse,
@@ -111,6 +112,13 @@ export const testRule = (scope: AutomationsScope, rule: AutomationRuleBody, item
   call<AutomationRunResponse>(scope, '/test', 'automation test', {
     method: 'POST',
     body: { rule, item },
+  });
+
+// Describe a Rule: the person's words drafted into a rule to open in the builder, unsaved and off.
+export const draftRule = (scope: AutomationsScope, prompt: string, timeZone: string) =>
+  call<AutomationDraftResponse>(scope, '/draft', 'automation draft', {
+    method: 'POST',
+    body: { prompt, timeZone },
   });
 
 export const runRule = (scope: AutomationsScope, id: string, item: string) =>

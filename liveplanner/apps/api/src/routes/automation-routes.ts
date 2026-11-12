@@ -41,6 +41,7 @@ import { listRuns, ruleStats, runsToday } from '../plan-room/automations/automat
 import { runRule } from '../plan-room/automations/automation-runner';
 import type { PlanAutomations } from '../plan-room/automations/automation-queue';
 import { hookInfos } from '../plan-room/automations/automation-incoming';
+import { draftRule } from './automation-draft-route';
 import { makeSecret } from './automation-hook-routes';
 import { writer } from './item-route-kit';
 import { gateEdit, missingProject, readBody, requireOwner, type PlanRouteContext } from './context';
@@ -360,6 +361,8 @@ function doorOf(ctx: PlanRouteContext): Door | 'method' | null {
   if (segments.length === 5) {
     if (segments[4] === 'order') return on('POST', (g) => order(ctx, g));
     if (segments[4] === 'test') return on('POST', (g) => test(ctx, g));
+    // Describe a Rule (automation-draft-route.ts): a rule drafted from words, saved nowhere.
+    if (segments[4] === 'draft') return on('POST', (g) => draftRule(ctx, g));
     if (segments[4] === 'runs') return on('GET', (g) => runs(ctx, g));
     if (method === 'PUT') return ofRule(save);
     return on('DELETE', ofRule(remove));

@@ -19,6 +19,7 @@ import {
   planLabels,
   readAiReply,
   type AiOutcome,
+  type AiRequest,
   type AutomationAiTask,
   type AutomationRule,
   type AutomationStepLine,
@@ -48,16 +49,39 @@ export function aiClient(env: Pick<PlanEnv, 'AI'>): AutomationsAi | null {
   return env.AI ?? null;
 }
 
-// The AI calls the plan made today (UTC): the Audit Trail's lines marked `ai`, pending runs' too once settled.
+const midnight = (now: number) => Math.floor(now / DAY_MS) * DAY_MS;
+
+// The AI calls the plan made today (UTC): the Audit Trail's lines marked `ai`, pending runs' too once settled, and
+// Describe a Rule's asks.
 export function aiToday(sql: Sql, now: number): number {
+  const day = midnight(now);
   const row = sql
     .exec(
-      `SELECT COUNT(*) AS n FROM automation_runs r, json_each(r.body, '$.steps') s
-        WHERE r.at >= ? AND s.value ->> '$.ai' = 1`,
-      Math.floor(now / DAY_MS) * DAY_MS,
+      `SELECT (SELECT COUNT(*) FROM automation_runs r, json_each(r.body, '$.steps') s
+                WHERE r.at >= ? AND s.value ->> '$.ai' = 1)
+            + (SELECT COUNT(*) FROM automation_ai_drafts WHERE at >= ?) AS n`,
+      day,
+      day,
     )
     .toArray()[0];
   return Number(row?.['n'] ?? 0);
+}
+
+// The rules Describe a Rule drafted today (UTC): each draft's first ask.
+export function draftsToday(sql: Sql, now: number): number {
+  const row = sql
+    .exec(
+      'SELECT COUNT(*) AS n FROM automation_ai_drafts WHERE at >= ? AND retry = 0',
+      midnight(now),
+    )
+    .toArray()[0];
+  return Number(row?.['n'] ?? 0);
+}
+
+// One Describe a Rule ask, counted; asks past two days go.
+export function countDraftAsk(sql: Sql, now: number, retry: boolean): void {
+  sql.exec('DELETE FROM automation_ai_drafts WHERE at < ?', midnight(now) - DAY_MS);
+  sql.exec('INSERT INTO automation_ai_drafts (at, retry) VALUES (?, ?)', now, retry ? 1 : 0);
 }
 
 // Each call's telemetry, by task (literal types, so the telemetry catalogue's scan reads them).
@@ -94,12 +118,12 @@ export type AiStepsOutcome = {
 
 const SLOW = Symbol('slow');
 
-type Asked = { ok: true; raw: unknown } | { ok: false; reason: string };
+export type Asked = { ok: true; raw: unknown } | { ok: false; reason: string };
 
 // One call, bounded by the timeout; the model's own error and a gateway's refusal are the same failure to a rule.
-async function ask(
+export async function ask(
   client: AutomationsAi,
-  request: ReturnType<typeof aiRequest>,
+  request: AiRequest,
   gateway: string | undefined,
 ): Promise<Asked> {
   let timer: ReturnType<typeof setTimeout> | undefined;

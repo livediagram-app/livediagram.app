@@ -904,3 +904,92 @@ Threads and Wait (spec "Actions", "Wait").
 
 - **Template scenes** live in `apps/editor/components/automations/template-scenes/` (`first.tsx`, `board.tsx`,
   `linked.tsx`); `TemplateScene.tsx` maps each template id to its scene.
+
+## Describe a Rule (Work Item 759)
+
+The spec's "Describe a Rule": a request in words drafted into a rule body by the AI actions' model, answered to the
+builder unsaved and off. Nothing here saves, enables or runs a rule.
+
+### Pure parts (packages/items/src/automation/ai-draft.ts, named.ts)
+
+- `AI_DRAFT_PROMPT_MAX = 500`, `AI_DRAFT_PER_DAY = 20`, `AI_DRAFT_MAX_TOKENS = 1500`, and the plan's caps:
+  40 columns, 20 card types, 20 fields a type and 120 across them, 30 labels, each name 40 characters.
+- `aiDraftPlan(outline, labels)`: what the model sees of the plan, names only: column names (once each), card types
+  (each with its custom fields' names and kinds), the built-in field names and the labels. Never people, cards or
+  webhooks.
+- The catalogue is `rule-format.ts` (`RULE_TRIGGER_FORMAT`, `RULE_CONDITIONS_FORMAT`, `RULE_STEPS_FORMAT`), moved
+  here from `packages/agent-verbs/src/mcp/rule-schema.ts`, which now reads it (its trigger line adds the MCP's naming sentence).
+  `rule-format.test.ts` holds a typed record of every trigger, condition and step kind and fails until the format
+  describes each (it found Incoming Webhook and the AI steps missing from the agents' format: both are described now).
+- `aiDraftRequest(prompt, plan, previous?)`: `{ messages, response_format, max_tokens, temperature: 0 }` as
+  `aiRequest` is. The system message is fixed: the task, the data rule, the naming and no-invention rules, the
+  catalogue and the two outcomes. The user message is `JSON.stringify({ request, plan })` alone; a retry
+  adds `{ previous: { refused: "<path>: <message>" } }` with the validator's words, never the model's earlier text.
+  The schema: `{ outcome: 'rule' | 'not_a_rule', rule: { name, trigger, conditions, steps } }`, the rule's parts
+  loose objects (the validator is the check, not the schema).
+- `readAiDraft(reply, ctx)`: `{ off: true }` for `not_a_rule`; `{ body, picks }` for a rule that reads; `{ refused:
+{ path, message } }` otherwise. In order: names put back to ids (`namedRuleBody`, moved here from agent-verbs as
+  `named.ts` so the api and agents share one resolver), `chain: false`, `timeZone` the caller's, each outgoing step's
+  webhook set to a placeholder for the check and back to `''` after (a `webhook` pick at its path), every text cut
+  and cleaned (`draftText`: control characters, links the request lacks, via ai-steps' `dropForeignLinks`), then
+  `readRuleBody`, then the name made free (`freeRuleName`, from "New Rule" when it came out empty). Lists are cut to
+  25 before they are walked, a text to twice its limit before a pattern reads it: a hostile reply reads in linear
+  time.
+- `packages/agent-verbs/src/rules/rule-names.ts` keeps `namedRuleBody(body, state)` as a thin adapter over items'
+  `namedRuleBody(body, names)`.
+
+### The api (apps/api/src/routes/automation-draft-route.ts, plan-room/automations/automation-ai.ts)
+
+- `POST /api/projects/:id/automations/draft` `{ prompt, timeZone }` behind the Automations `gate` (an Editor of the
+  whole plan, signed in or their token, never read-only). Answers `200 { rule, picks }`, or:
+  `400 automation_draft_invalid` (empty or over 500, a bad time zone), `422 automation_draft_off_topic`,
+  `422 automation_draft_unreadable`, `429 automation_ai_capped` (the day's 100, or 20 drafts, the message saying
+  which), `503 automation_ai_unavailable` (no binding, a model error, slow: the message is `AI_NOT_SET_UP`, or
+  `AI_DRAFT_FAILED` for a model that errs or is slow, since `AI_FAILED` and `AI_SLOW` are the Audit Trail's words).
+- The ask goes through `ask()` (the 15 s race and the gateway) and `readAiReply`, with `AUTOMATION_AI_MODEL`.
+- **Storage, plan schema V24**: `automation_ai_drafts (at INTEGER NOT NULL)`, indexed on `at`; one row per ask (so a
+  retry is two), rows older than two days deleted on each insert (at most 40 a day are kept). `aiToday` adds that
+  day's rows to the Audit Trail's count, so drafts and AI steps share the 100; `draftsToday` counts the distinct
+  drafts (`retry = 0`, each draft's first ask) toward the 20. A second ask is not made once the first spent the
+  day's last AI step.
+- Telemetry and the log as the spec says, through `ctx.waitUntil`.
+
+### api-schema and the manifest
+
+`AutomationDraftRequest`, `AutomationDraftResponse` (`{ rule: AutomationRuleBody; picks: { path; pick }[] }`) and the
+four new codes in `AUTOMATION_ERRORS`; the route in `openapi/manifest.ts`, `schemas.generated.ts` regenerated.
+
+### Editor
+
+- `automations-client.ts` `draftRule(scope, prompt, timeZone)`.
+- `DescribeRuleDialog.tsx`: the dialog (the shared `Dialog`, `DialogHeader`, `TextArea`, the examples as secondary
+  Buttons, the `AiNote` sparkle line shared with the AI steps' `AiCostNote`), its states (idle, drafting, said). A
+  refusal says the api's `message` (fixed words from items); anything else "That didn't work. Check your
+  connection and try again.".
+- `DraftedNote.tsx`: the builder's note, passed as RuleBuilder's `notice` above the steps.
+- `NewRuleMenu` gains **Describe a Rule**; `RulesEmpty` gains its button. `AutomationsDialog` holds the draft (`{ body,
+picks, n }`) in state, the target `{ view: 'rule', ruleId: null, draft: true }`, the builder keyed `draft:<n>` and
+  given `picks` as a template's are, plus `drafted` for the note (`DraftedNote` in RuleBuilder's header).
+
+### Tests
+
+- items `ai-draft.test.ts`: the request (the request and plan only in the user message, nothing personal), every
+  catalogue kind described, the measured ask; the reader: off topic, a valid rule, names resolved, chain forced off,
+  time zone forced, webhook picks, links and control characters cleaned, an injected request whose reply tries
+  extra keys, unknown kinds, an enabled flag, a huge reply (linear time), every refusal.
+- api `automations-draft.test.ts` with a stand-in `env.AI`: drafted, off topic, a retry that reads, a retry that
+  doesn't, capped by the 100 and by the 20, no binding, a throwing and a slow model, roles (Participant, Viewer,
+  read-only token, tab-scoped link refused), the prompt never logged, nothing written but the count.
+- editor `DescribeRule.test.tsx`: the menu row and empty state button, the chips, the count, each refusal's
+  words, the draft opening the builder with the note and its picks, Discard Changes? on leaving.
+
+### Cost (measured in ai-draft.test.ts "measures the ask")
+
+| Plan                                                          | System | User   | Schema | Tokens in   | Neurons (1,500 out) |
+| ------------------------------------------------------------- | ------ | ------ | ------ | ----------- | ------------------- |
+| Past every cap (60 columns, 32 types of 40 fields, 50 labels) | 7,848  | 11,287 | 509    | about 4,900 | about 86            |
+| Typical (5 columns, 2 types, 5 labels)                        | 7,848  | 737    | 509    | about 2,260 | about 21 + output   |
+
+Characters, four to a token; Neurons at 9,091 per million in and 27,273 per million out (spec "Cost"). A typical
+draft's reply is about 300 tokens, so about 29 Neurons. Before the caps were added the first measurement was 145,503
+characters for the wide plan; the field budget brought it to 19,603.

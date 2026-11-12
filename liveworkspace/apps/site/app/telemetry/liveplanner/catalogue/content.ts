@@ -887,6 +887,24 @@ export const PLAN_AUTOMATIONS_AI_FAILED = chart(
   { types: ['AutomationAiFailed', 'AutomationAiCapped'], rising: 'bad' },
 );
 
+// Describe a Rule (docs/specs/026-plan/automations.md "Describe a Rule", in the liveplanner folder): each ask the api
+// made, the requests that weren't a rule, and the drafts opened in the builder. Never the words or the reply.
+export const PLAN_AUTOMATION_DRAFTS = chart(
+  'Plan',
+  'Ran',
+  'Describe a Rule Asks',
+  "Describe a Rule asking Workers AI to draft a rule from someone's words (a draft that didn't read is asked once more), and the requests it answered weren't a rule.",
+  { types: ['AutomationAiDraft', 'AutomationAiOffTopic'], rising: 'neutral' },
+);
+
+export const PLAN_AUTOMATION_DRAFTS_OPENED = chart(
+  'Plan',
+  'Created',
+  'Drafted Rules Opened',
+  'A rule Describe a Rule drafted, opened in the rule builder unsaved and off for someone to check and save.',
+  { types: ['AutomationDraft'] },
+);
+
 // Incoming Webhook secrets (docs/specs/026-plan/automations.md "Incoming Webhook", in the liveplanner folder): made,
 // regenerated, and copied from the field that shows a new one once. Never the secret.
 export const PLAN_AUTOMATION_SECRETS_MADE = chart(
@@ -1269,6 +1287,8 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_AUTOMATIONS_RAN,
   PLAN_AUTOMATIONS_AI,
   PLAN_AUTOMATIONS_AI_FAILED,
+  PLAN_AUTOMATION_DRAFTS,
+  PLAN_AUTOMATION_DRAFTS_OPENED,
   PLAN_AUTOMATION_SECRETS_MADE,
   PLAN_AUTOMATION_SECRETS_REGENERATED,
   PLAN_AUTOMATION_SECRETS_COPIED,

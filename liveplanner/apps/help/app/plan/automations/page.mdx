@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Automations',
   description:
-    'How to make automation rules: triggers, incoming webhooks, conditions, actions, Slack and webhook posts, AI actions, the Audit Trail and the CLI.',
+    'How to make automation rules: triggers, conditions, actions, Slack and webhook posts, AI actions, rules drafted from your words, the Audit Trail and the CLI.',
   path: '/help/plan/automations/',
 });
 
@@ -34,6 +34,14 @@ At the right of the tabs, **Runs today** shows how many of the plan's 1,000 runs
 The **Templates** tab, and the empty Rules list, show ready-made rules: **Stamp the Finish Date**, **Assign on Start**, **Overdue Nudge**, **Share Out Form Responses**, **Post Shipped Work to Slack**, **Triage New Bugs**, **Unblock the Next Card**, **Due Soon Reminder**, **Clean Up Done**, **Escalate Urgent Work**, **Reopen on New Comment**, **Route Reviews**, **Give It a Due Date**, **Flag Blocked Cards**, **Verify the Fix**, **Back to the Backlog**, **Close the Parent**, **Tell Them It’s Unblocked**, **Nudge Stuck Cards**, **Done When Feedback Is Resolved**, and two that use AI: **Sort Incoming Cards** and **Summarise Form Requests**. The chips above them (**Status**, **Assigning**, **Due Dates**, **Forms**, **Telling People**, **AI**) narrow the list. Hover a template to watch it at work on a small board.
 
 Pick one and it opens in the builder, filled in from your plan: its done columns, its In Progress and Review columns, a date field named like Completed On, a Bug card type. Whatever your plan doesn't have, or the rule leaves to you (a label, the people in turn, a Slack channel), is marked on its step ("Pick a label", "Pick a webhook") until you pick it. Nothing is saved, and the rule stays off, until you press **Save Rule**. **New Rule** offers **Start From a Template** too.
+
+## Describe a Rule
+
+Press **New Rule**, then **Describe a Rule** (or **Describe a Rule** under an empty Rules list), and say in your own words when the rule should run and what it should do: "When a card moves to Done, set Completed On to today and remove the blocked label". The examples under the box fill it in for you. Press **Draft Rule**, or Ctrl or ⌘ Enter.
+
+A few seconds later the rule opens in the builder, filled in from your plan, with **Drafted by AI** above its steps. It is not saved and it is off: check each step, try it with **Test on a Card**, then press **Save Rule**. Anything your plan doesn't have (a person it can't find, say) is marked on its step, and a Slack, Teams or webhook post waits for you to pick the webhook. If the request isn't a rule for this plan, or no rule could be made from it, the dialog says so and keeps your words to change.
+
+Describing a rule uses AI: each draft counts toward the plan's 100 AI steps a day, and a plan drafts up to 20 rules a day. Only your words and the names of your plan's columns, card types, fields and labels are sent, never a person, a card's text or a webhook. Whatever it answers, nothing is saved or turned on until you save the rule.
 
 ## Make a Rule
 
