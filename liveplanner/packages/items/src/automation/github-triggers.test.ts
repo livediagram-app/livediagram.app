@@ -23,7 +23,7 @@ const event = (github: AutomationEvent['github']): AutomationEvent => ({
   id: 'g:d1:c1',
   kind: 'github',
   cardId: 'c1',
-  by: { id: 'github', name: 'GitHub' },
+  by: { id: 'github', name: 'GitHub', color: '#1f2328' },
   role: 'system',
   github,
   pr: 'acme/web#42',
