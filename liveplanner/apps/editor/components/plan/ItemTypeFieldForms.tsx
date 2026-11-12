@@ -51,6 +51,7 @@ export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   daterange: 'Date Range',
   checkbox: 'Checkbox',
   link: 'Link',
+  pullrequest: 'Pull Request',
   email: 'Email',
   phone: 'Phone',
   choice: 'Choice',

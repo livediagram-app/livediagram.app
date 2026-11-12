@@ -4531,6 +4531,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "daterange",
       "checkbox",
       "link",
+      "pullrequest",
       "email",
       "phone",
       "choice",
