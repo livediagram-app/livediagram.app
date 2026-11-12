@@ -51,15 +51,18 @@ INSERT OR IGNORE INTO outbox (plan_id, kind, key)
   SELECT plan_id, 'images', '' FROM card_image_grants LIMIT 1;
 `;
 
-// The query: ?1 the plan.
-export const PLACED_IMAGES_SQL = `SELECT id FROM (
+// The query: ?1 the plan; `scoped` keeps it to the cards ?2 names (a JSON list of item ids), as a tab-scoped copy
+// takes them (image-grants.ts copiedImageGrants).
+export function placedImagesSql(scoped: boolean): string {
+  const cards = scoped ? 'AND items.id IN (SELECT value FROM json_each(?2))' : '';
+  return `SELECT id FROM (
        SELECT json_extract(a.value, '$.id') AS id
          FROM items, json_each(items.fields, '$.attachments') AS a
-        WHERE items.plan_id = ?1 AND items.fields LIKE '%"attachments"%'
+        WHERE items.plan_id = ?1 ${cards} AND items.fields LIKE '%"attachments"%'
        UNION
        SELECT f.value AS id
          FROM items, json_each(items.fields) AS f
-        WHERE items.plan_id = ?1
+        WHERE items.plan_id = ?1 ${cards}
           AND EXISTS (SELECT 1 FROM card_image_grants WHERE plan_id = ?1)
           AND f.type = 'text'
           AND f.value IN (SELECT image_id FROM card_image_grants WHERE plan_id = ?1)
@@ -67,12 +70,16 @@ export const PLACED_IMAGES_SQL = `SELECT id FROM (
        SELECT v.value AS id
          FROM items, json_each(items.fields) AS f,
               json_each(CASE WHEN f.type = 'array' THEN f.value ELSE '[]' END) AS v
-        WHERE items.plan_id = ?1
+        WHERE items.plan_id = ?1 ${cards}
           AND EXISTS (SELECT 1 FROM card_image_grants WHERE plan_id = ?1)
           AND f.type = 'array'
           AND v.type = 'text'
           AND v.value IN (SELECT image_id FROM card_image_grants WHERE plan_id = ?1)
      ) WHERE typeof(id) = 'text' ORDER BY id`;
+}
+
+// Every card of the plan: what the media report reads.
+export const PLACED_IMAGES_SQL = placedImagesSql(false);
 
 // The pictures the plan's cards hold now, sorted: each Attachments entry's id (only cards whose JSON names the field
 // are parsed), and each text field value, or text inside a list field's value (a Several Images field's ids), the

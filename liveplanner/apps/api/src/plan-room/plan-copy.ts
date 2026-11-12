@@ -21,6 +21,7 @@ import type { TabConnection } from '@liveworkspace/index-client';
 import type { PlanEnv } from '../types';
 import type { AutomationRule } from '@liveplanner/items';
 import { copiedRuleStatements, copiedRules } from './automations/automation-copy';
+import { copiedGrantsStatement, copiedImageGrants } from './image-grants';
 
 // ---------- Copies --------------------------------------------------------------------------------------------
 
@@ -56,6 +57,10 @@ export type PlanCopy = {
   // The plan's Automations rules (docs/specs/026-plan/automations.md "Copies, exports and deletes"): a whole-plan
   // copy by its owner or team keeps them; a copy through a link, of one tab or of a Community post takes none.
   automations?: AutomationRule[];
+  // The pictures the copied cards hold that the source plan holds a grant for (image-grants.ts copiedImageGrants;
+  // docs/specs/026-plan/item-types.md "Image fields", Copies), granted in the copy so it serves them. Only a room's
+  // copy carries them: a Drive file's import drops them (project-file.ts). Absent with none.
+  imageGrants?: string[];
 };
 
 // The plan a copy's threads name before it lands (importPlanCopy puts its own id in).
@@ -205,6 +210,7 @@ export async function exportPlanCopy(
         redactAuthorsFor,
       );
   const rules = withRules && onlyTabId === null && !community ? await copiedRules(env) : [];
+  const imageGrants = await copiedImageGrants(env, planId, itemIds);
   const itemRows = items.results ?? [];
   const sheetRows = sheets.results ?? [];
   const cellRows = cells.results ?? [];
@@ -219,6 +225,7 @@ export async function exportPlanCopy(
     items: community ? itemRows.map((row) => redactItemRowForCommunity(row, types)) : itemRows,
     ...(threads.length ? { threads } : {}),
     ...(rules.length ? { automations: rules } : {}),
+    ...(imageGrants.length ? { imageGrants } : {}),
     sheets: sheetRows.map((s) => ({
       ...s,
       tab_id: tabIdMap.get(String(s.tab_id)),
@@ -355,6 +362,9 @@ export async function importPlanCopy(
     );
     if (tab.connection) stmts.push(tabConnectionStatement(db, tab.id, tab.connection));
   }
+  // The pictures' grants before the cards, so the cards' insert queues the copy's media report (image-refs.ts).
+  const grants = copiedGrantsStatement(env, planId, copy.imageGrants, now);
+  if (grants) stmts.push(grants);
   stmts.push(...insertItemRowsStatements(env, planId, copy.items));
   for (const chunk of chunksOf(copy.sheets)) {
     stmts.push(

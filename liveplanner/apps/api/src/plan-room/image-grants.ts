@@ -2,8 +2,13 @@
 // items.md "Attachments"), in the plan's own
 // SQLite (plan-schema.ts `card_image_grants`). A grant is recorded when someone who may edit the plan's cards
 // uploads a picture for it (routes/images.ts); the plan serves the picture while it holds that grant AND one of its
-// cards holds the id as a field value. An id pasted into another plan, or carried there by a copy, serves nothing
-// there until it is uploaded there again.
+// cards holds the id as a field value. An id pasted into another plan serves nothing there until it is uploaded there
+// again. A copy carries the source's grant for each picture its copied cards hold (copiedImageGrants, owner
+// 2026-11-12, Work Item 215), so a copy shows its cards' pictures as the source does; a Drive file and the migration
+// door carry none.
+
+import type { PlanEnv } from '../types';
+import { placedImagesSql } from './image-refs';
 
 type Sql = {
   exec(query: string, ...bindings: unknown[]): { toArray(): Record<string, unknown>[] };
@@ -56,6 +61,45 @@ export function planGrantedImages(sql: Sql, planId: string, imageIds: readonly s
       .map((r) => r.image_id as string),
   );
   return asked.filter((id) => held.has(id));
+}
+
+// The grants a copy carries (docs/specs/026-plan/item-types.md "Image fields", Copies): each picture the copied cards
+// hold (an Attachments entry, an Image field value, an id in a Several Images list), kept to the ones this plan holds
+// a grant for, so a copy never serves a picture its source could not. `itemIds` null takes every card, a list only
+// those (a tab-scoped copy's). One query, the ids as one JSON parameter; nothing read when the plan holds no grant.
+export async function copiedImageGrants(
+  env: PlanEnv,
+  planId: string,
+  itemIds: readonly string[] | null,
+): Promise<string[]> {
+  const scoped = itemIds !== null;
+  const rows = await env.PLAN_DB.prepare(
+    `SELECT id FROM (${placedImagesSql(scoped)})
+      WHERE id IN (SELECT image_id FROM card_image_grants WHERE plan_id = ?1)`,
+  )
+    .bind(...(scoped ? [planId, JSON.stringify(itemIds)] : [planId]))
+    .all<{ id: string }>();
+  return rows.results.map((r) => r.id);
+}
+
+// Where a copy's grants land, in its import's transaction (plan-copy.ts importPlanCopy), before its cards, so their
+// insert queues the copy's `images` report (image-refs.ts). One statement, the ids as one JSON parameter; an id past
+// IMAGE_ID_MAX is dropped and at most IMAGE_GRANTS_MAX land. Null with nothing to write.
+export function copiedGrantsStatement(
+  env: PlanEnv,
+  planId: string,
+  imageIds: readonly string[] | undefined,
+  now: number,
+): D1PreparedStatement | null {
+  const ids = [...new Set(imageIds ?? [])]
+    .filter((id) => typeof id === 'string' && id.length > 0 && id.length <= IMAGE_ID_MAX)
+    .slice(0, IMAGE_GRANTS_MAX);
+  if (ids.length === 0) return null;
+  return env.PLAN_DB.prepare(
+    `INSERT INTO card_image_grants (plan_id, image_id, created_at)
+     SELECT ?1, value, ?2 FROM json_each(?3) WHERE true
+       ON CONFLICT (plan_id, image_id) DO NOTHING`,
+  ).bind(planId, now, JSON.stringify(ids));
 }
 
 // LIKE's own characters in an id, escaped, so the prefilter matches the id's text and nothing wider.
