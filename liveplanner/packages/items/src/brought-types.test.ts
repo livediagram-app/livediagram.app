@@ -218,4 +218,28 @@ describe('the catalogue boards leave', () => {
       ITEM_TYPES_MAX,
     );
   });
+
+  // docs/specs/026-plan/item-types.md "Custom field kinds": a Deal brought in follows the person's currency.
+  it('gives a newly brought Deal the given currency, and keeps GBP when none or GBP', () => {
+    const valueOf = (cat: ReturnType<typeof catalogueWithBoardTypes>) =>
+      cat!.types.find((t) => t.id === 'deal')!.custom!.find((f) => f.id === 'f-value')!.currency;
+    expect(valueOf(catalogueWithBoardTypes(null, [board(['deal'])], { currency: 'USD' }))).toBe(
+      'USD',
+    );
+    expect(valueOf(catalogueWithBoardTypes(null, [board(['deal'])]))).toBe('GBP');
+    expect(valueOf(catalogueWithBoardTypes(null, [board(['deal'])], { currency: 'GBP' }))).toBe(
+      'GBP',
+    );
+    expect(valueOf(catalogueWithBoardTypes(null, [board(['deal'])], { currency: 'usd' }))).toBe(
+      'GBP',
+    );
+    // A type without a Currency field is untouched.
+    const bug = catalogueWithBoardTypes(null, [board(['bug'])], { currency: 'USD' })!.types[0]!;
+    expect(bug).toEqual(READY_MADE_CARD_TYPES.find((t) => t.id === 'bug'));
+  });
+
+  it('never changes a Deal the project already has', () => {
+    const stored = { version: 1, types: [READY_MADE_CARD_TYPES.find((t) => t.id === 'deal')!] };
+    expect(catalogueWithBoardTypes(stored, [board(['deal'])], { currency: 'EUR' })).toBeNull();
+  });
 });
