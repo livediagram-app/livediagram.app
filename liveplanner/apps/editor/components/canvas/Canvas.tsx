@@ -1,3 +1,4 @@
+import { canvasIsBusy } from '@liveworkspace/workbench/lib/tab-style-ease';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { CanvasMenu } from './canvas-menu-context';
 import { CanvasFinishProvider } from './CanvasFinishContext';
@@ -275,8 +276,10 @@ function CanvasView(props: CanvasProps) {
           // ink is tuned for light paper and vanishes on a dark wall. Flagged
           // here so the peel's CSS can respond without knowing about themes.
           data-dark-canvas={isDarkCanvas(tabBackgroundColor) ? '' : undefined}
-          // The Tab Style colour ease scopes to the canvas (@liveworkspace/workbench/lib/tab-style-ease.ts).
+          // The Tab Style colour ease scopes to the canvas (@liveworkspace/workbench/lib/tab-style-ease.ts); on a busy
+          // canvas it eases this surface alone, the parts snapping (canvasIsBusy).
           data-canvas-root=""
+          data-canvas-busy={canvasIsBusy(elements.length) ? '' : undefined}
           onContextMenu={surface.onContextMenu}
           onPointerUp={surface.onContextMenuPointerUp}
           onPointerDown={surface.onPointerDown}

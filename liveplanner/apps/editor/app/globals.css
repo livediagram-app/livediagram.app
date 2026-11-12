@@ -814,9 +814,11 @@ body:has([data-mode-message]) [data-yields-to-mode] {
 }
 
 /* A Tab Style change (@liveworkspace/workbench/lib/tab-style-ease.ts, docs/specs/011-theme/canvas-and-theme-dialog.md "Eased changes") eases the canvas's colours instead of snapping them. On only for the moment of the change, so it
-   costs nothing the rest of the time; Reduce motion (above) zeroes it. */
+   costs nothing the rest of the time; Reduce motion (above) zeroes it. On a busy canvas (`data-canvas-busy`,
+   canvasIsBusy in the same module; docs/specs/008-canvas/canvas-performance.md) only the surface eases: easing every
+   part of every element restyled thousands of nodes each frame and held the page in long frames. */
 :root.lvd-style-transition [data-canvas-root],
-:root.lvd-style-transition [data-canvas-root] * {
+:root.lvd-style-transition [data-canvas-root]:not([data-canvas-busy]) * {
   transition-property: background-color, border-color, color, fill, stroke, opacity;
   transition-duration: 250ms;
   transition-timing-function: ease-out;
