@@ -108,7 +108,7 @@ SheetColourSwatches.tsx  Text Colour's and Fill Colour's toolbar swatches (TOOLB
 SheetMergeConfirm.tsx    the merge confirm, shared by the toolbar and the cell menu
 sheet-charts.ts          Insert Chart: chartRangeOf (selection, or regionAround one cell), newChartAnchor,
                          placeSheetChart (a chart element with chartSource and sheetAnchor, through
-                         bridge.placeElement), movedAnchor, resizedChart
+                         bridge.placeElement), movedAnchor, resizedChart, chartsClip
 sheet-charts-context.ts  SheetChartsContext: the tab's elements for a Sheet to draw its charts from
 SheetChartsLayer.tsx     the charts in a Sheet over its cells: select, move, resize, delete (Editor)
 SheetLinkedChart.tsx     a chart with chartSource: reads sheetChartTable live from the store (sheetStoreOf) and draws
@@ -360,6 +360,11 @@ non-top-left cell holds an input.
   `sheetAnchor`, through `bridge.placeElement` with `{ select: false }`; its canvas x/y over the Sheet's top right;
   `takePlacedChart` lets the Sheet select it once it draws). `movedAnchor` (clamped 0 to `SHEET_ANCHOR_MAX`) and
   `resizedChart` (at least `CHART_MIN_WIDTH` 160 by `CHART_MIN_HEIGHT` 120) are the drag maths.
+  `chartsClip(geometry, scroll)` is the charts layer's clip under the frozen rows and columns, set as the
+  `SheetChartsLayer`'s `clip-path`: `inset(top 0 0 left)`, where top is `frozenHeight + FROZEN_EDGE_PX` (1, the lower
+  half of the 2 px frozen edge line) while the Sheet has frozen rows and `scroll.top > 0`, and left is
+  `frozenWidth + FROZEN_EDGE_PX` while it has frozen columns and `scroll.left > 0`, each else 0; undefined when both
+  are 0. A clip-path hides presses as well as paint, so the frozen cells take presses over a chart's hidden part.
 - `sheet-charts-context.ts`: `SheetChartsContext` `{ elements, chartPalette, editable, renderChart? }`, provided by
   `CanvasElementsLayer` (the open tab, editable) and by `DashboardTabPreview` (another tab's elements, not editable:
   Insert Chart toasts `OPEN_TAB_TO_CHART`; it passes the outer `renderChart` on).
@@ -369,7 +374,7 @@ interactive)`, a `BoxedElementView` with the layer's `boxedShared` (the props ev
   y 0, no `rotation`), never selected, editing, movable, writable or resizable. Not `interactive` (a Dashboard slot):
   read-only, wrapped in `ElementIndicatorStyleProvider style="off"`.
 - `SheetChartsLayer` (inside `SheetGrid`'s cells area, z 6): `chartsInSheet` of the context's elements, each at
-  `sheetAnchor - scroll`, drawn through `SheetLinkedChart` and the context's `renderChart(live, editable)`
+  `sheetAnchor - scroll` (the layer clipped by `chartsClip`, above), drawn through `SheetLinkedChart` and the context's `renderChart(live, editable)`
   (`DataChartView` on a card, the `cardStyle`, when there is none; otherwise only `ringStyle`, a 2 px focus outline
   2 px outside, when selected). Its frame takes presses in the capture phase (`framePress`: not on
   `[data-sheet-chart-control]` or `[data-indicators]`; `viewPress` for up and click also skips the frame itself, where

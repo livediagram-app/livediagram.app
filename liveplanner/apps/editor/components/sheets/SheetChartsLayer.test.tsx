@@ -6,6 +6,7 @@ import { act, cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import type { Element, ShapeElement } from '@liveplanner/project';
+import { freeze } from '@liveplanner/sheets';
 import { SheetsBridgeContext, type SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { SheetChartsContext } from './sheet-charts-context';
 import type { SheetChartRenderer } from '@/components/canvas/sheet-chart-renderer';
@@ -129,6 +130,28 @@ describe('the charts in a Sheet', () => {
     act(() => h.ctl().setScroll({ top: 30, left: 40 }));
     expect(box('mine').style.left).toBe('60px');
     expect(box('mine').style.top).toBe('20px');
+  });
+
+  // Work Item 604: scrolled, they pass under the frozen header rows instead of drawing over them.
+  it('passes under the frozen rows and columns once the Sheet scrolls past them', async () => {
+    elements = [chart('mine')];
+    mount();
+    const layer = () => document.querySelector<HTMLElement>('[data-sheet-charts]')!;
+    act(() => h.ctl().setScroll({ top: 30, left: 40 }));
+    // Nothing frozen: nothing hidden.
+    expect(layer().style.clipPath).toBe('');
+    await act(async () => {
+      h.store.write(SHEET_ID, freeze(1, 1));
+      await h.store.settle();
+    });
+    const g = h.ctl().geometry;
+    expect([g.frozenRows, g.frozenCols]).toEqual([1, 1]);
+    expect(layer().style.clipPath).toBe(
+      `inset(${g.frozenHeight + 1}px 0px 0px ${g.frozenWidth + 1}px)`,
+    );
+    // Back at the top left, a chart placed over the frozen lines shows whole.
+    act(() => h.ctl().setScroll({ top: 0, left: 0 }));
+    expect(layer().style.clipPath).toBe('');
   });
 
   it('sits in a row and cell of its own, since the grid it lives in owns only rows', () => {
