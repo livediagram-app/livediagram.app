@@ -129,6 +129,11 @@ work. A rule does it every time, at once, and says that it did.
 |                          | time the column goes over, the card that tipped it running the rule                            | required                          |
 | **Card Stuck**           | a card has not changed for a number of days (1 to 90), checked daily at a time; done columns   | the columns (optional), then the  |
 |                          | and archived cards never match                                                                 | rule's conditions                 |
+| **Pull Request Opened**  | a linked GitHub pull request opens ready for review, reopens, or leaves draft                  | the rule's conditions             |
+|                          | ([GitHub triggers](#github-triggers))                                                          |                                   |
+| **Pull Request Merged**  | a linked pull request merges                                                                   | the rule's conditions             |
+| **Pull Request Closed**  | a linked pull request closes without merging                                                   | the rule's conditions             |
+| **Checks Finished**      | a linked pull request's checks turn Failing, or Passing (picked; Failing first)                | Failing or Passing, required      |
 
 - **Card Stuck** is a time trigger (below). It fires once for each stretch a card sits unchanged: the run id holds
   when the card last changed, so any change re-arms it.
@@ -224,6 +229,59 @@ plan.
   regenerates the secret, never through an API token or a link to one tab. The Rules list shows an Incoming Webhook
   rule's last 4 characters and last use, never the secret or its hash; no answer after Make Secret's, no Audit Trail
   row and no log line holds either.
+
+### GitHub triggers
+
+A plan [connected to GitHub](github-pull-requests.md#the-github-connection) hears its linked pull requests: the
+GitHub group of Pick a Trigger (**Pull Request Opened**, **Pull Request Merged**, **Pull Request Closed**, **Checks
+Finished**). Their engineering and their guarantees (once per delivery, never backwards) are
+[GitHub pull requests](github-pull-requests.md#github-triggers); here is what they are in a rule.
+
+- **Which card.** The rule runs once on each card the pull request links (a Pull Request field, a Link field holding
+  its address, or its title or body naming the card as "{plan name} #N"), up to 50.
+- **Nobody behind it.** Its writes are by **GitHub** in card History, with the rule's name ("GitHub · Move on
+  Merge"), its comments are Automation's as any rule's, the Audit Trail's first line reads "GitHub: acme/web#42
+  merged" (opened, closed, checks failing, checks passing), and `{{person}}` reads "GitHub". Who Did It conditions and
+  "whoever triggered" are refused, as for a time rule.
+- **Test on a Card** runs it on the chosen card as if one of its pull requests had just done so.
+- **Off when GitHub is.** The group, and everything below, show only where the deployment has liveplanner's GitHub
+  App (`githubEnabled`). A plan not yet connected may pick and save a GitHub trigger; its panel shows **Connect
+  GitHub** in place, and the rule hears nothing until the plan connects.
+
+#### The GitHub view
+
+The Automations screen's way to the plan's GitHub connection, inside the dialog (never the plan's settings):
+
+- **Reached** from a **GitHub** button in the screen's header (GitHub's mark and "GitHub", icon-only on a phone, with
+  its tooltip "Connect GitHub to start rules from pull requests"), from a **Connect GitHub** row at the end of Pick a
+  Trigger's GitHub group while the plan is not connected, and from a GitHub trigger's panel. It is drawn as the builder
+  is: a breadcrumb back to **Automations**, then the view.
+- **Not connected**: GitHub's mark, **Connect GitHub**, "Link pull requests to cards: a card shows its pull request's
+  state, and rules run when one opens, merges, closes or its checks finish.", three short lines on what it asks
+  ("Read-only: pull requests, checks and metadata.", "No personal GitHub token is kept.", "Pick which repositories
+  this plan hears."), **Connect GitHub** (the api's install page, a full-page visit to GitHub) and **How It Works**
+  (the help article).
+- **Connected**: the installation's account (as GitHub names it) and who connected it and when, then **Repositories**:
+  each the installation lists, with a lock for a private one, and a check for each one the plan hears, **Save
+  Repositories** while the picks differ from what is saved (up to 20; "Pick up to 20" past it), then **Change on
+  GitHub** and **Disconnect**. With more than 20 listed and
+  none picked, a line says so: "Pick up to 20 repositories for this plan to hear." While a private repository is
+  picked, a note says what that shares: "Anyone who can see this plan's cards, share links included, sees these pull
+  requests' titles and states." **Change on GitHub** starts a connect again, so GitHub's own page adds or removes the
+  installation's repositories.
+- **Disconnect** asks first, in the app (never a browser dialog): **Disconnect GitHub?**, "Cards stop showing pull
+  request states, and GitHub rules stop running until you connect again. Your rules and fields stay.",
+  **Disconnect** and **Cancel**.
+- **Coming back from GitHub**: the page reads `#github=connected`, `#github=failed` or `#github=requested` once,
+  opens Automations on the GitHub view with a line in the view ("GitHub is connected. Pick the repositories this plan
+  hears." / "GitHub didn't connect. Try again, or check the App is installed on that account." / "An owner of that
+  organisation must approve the install on GitHub. Connect again once they have."), and drops the hash. Someone who
+  left from a GitHub trigger's panel comes back to that rule, unsaved as they left it (kept in this tab's session
+  storage for the round trip), with the line above the builder.
+- **Who**: the screen is an Editor's already; connecting, choosing and disconnecting are a signed-in Editor's of the
+  whole plan (the api refuses anyone else `github_needs_editor`, shown as "Only an Editor signed in can connect
+  GitHub"). A guest reaches the screen only through sign-in.
+- On a phone the view fills the sheet and its buttons stack.
 
 - A Form Response also counts as Card Created: a rule on Card Created hears form cards too, a Form Response rule
   hears only them.
@@ -675,7 +733,9 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
   groups, each one thing: **Cards** (Card Created, Form Response, Card Moved, Field Changed, Card Archived, Card
   Restored, Checklist Completed, Column Over Limit, Run from a Card), **Comments** (Comment Added, All Threads
   Resolved, Someone Mentioned), **Links** (Card Unblocked, Related Cards Done), **Times** (Scheduled, Due In,
-  Overdue, Card Stuck) and **Other Tools** (Incoming Webhook).
+  Overdue, Card Stuck), **GitHub** (Pull Request Opened, Pull Request Merged, Pull Request Closed, Checks Finished;
+  only where GitHub is set up, noted "Not connected" with a **Connect GitHub** row while the plan is not) and **Other
+  Tools** (Incoming Webhook).
   The current trigger is marked **Current**; picking another starts that trigger afresh.
 - An action's step panel opens on its **Action** field: the action's icon and name and **Change**, which opens the same
   picker, titled **Change the Action**, offering what the step can become (the plain actions: every group but Timing, Other Tools and AI), the
@@ -803,7 +863,9 @@ part at fault, the words, and the command to run next).
 `UI · Opened · AutomationTemplate.<id>`, the template's id after the dot (an event carries no value, so the id
 rides in its type, from the fixed list above); `UI · Opened · AutomationsOffline` (the Browser Storage panel);
 `Plan · Created · AutomationSecret` (Make Secret), `Plan · Changed · AutomationSecret` (Regenerate) and
-`Plan · Copied · AutomationSecret` (Copy on the once-shown secret).
+`Plan · Copied · AutomationSecret` (Copy on the once-shown secret); `Plan · Created · AutomationRuleGithub` beside
+`AutomationRule` for a new rule with a GitHub trigger, and the GitHub view's own events
+([GitHub pull requests](github-pull-requests.md#telemetry)).
 Agents count as every tool and command does: `Mcp · Used · ListRules` / `ChangeRules`, and `Cli · Used · RuleLs`,
 `RuleGet`, `RuleAdd`, `RuleSet`, `RuleOn`, `RuleOff`, `RuleRm`, `RuleDuplicate`, `RuleTest`, `RuleRun` and `RuleLog`.
 The api logs `[automations] run` with the result, the trigger's kind and the duration, never a card's text, and
