@@ -8,7 +8,6 @@ import {
   DialogHeader,
 } from '@livehuddle/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { normaliseUrl } from '@liveworkspace/workbench/lib/url-safety';
 import type { ElementLink } from '@livehuddle/document';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
@@ -96,7 +95,6 @@ export function LinkPickerDialog({
         title={title}
         subtitle="Jump to a tab, open another space, or go to a web address."
       >
-        <HelpArticleLink size="md" article={mode === 'tab' ? 'linkingTabs' : 'links'} />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
 

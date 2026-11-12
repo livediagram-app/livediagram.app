@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, type Element } from './index';
-import { duplicateElements, freshCopyFields } from './duplicate';
+import { droppedAttachments, duplicateElements, freshCopyFields } from './duplicate';
 
 const carrying = (): Element =>
   ({
@@ -34,6 +34,25 @@ describe('freshCopyFields', () => {
     const copy = JSON.parse(JSON.stringify(newElements[0])) as Record<string, unknown>;
     expect(copy.arcadeScores).toBeUndefined();
     expect(copy.shape).toBe('arcade-machine');
+  });
+
+  it("drops a link and a note from a copy, but keeps a link card's link and an annotation's note", () => {
+    const shape = {
+      ...createShape('focus-button', 0, 0),
+      id: 's',
+      link: { kind: 'url', url: 'https://a.b' },
+      note: 'n',
+    };
+    const { newElements } = duplicateElements([shape as Element], new Set(['s']), 10, 10);
+    const copy = JSON.parse(JSON.stringify(newElements[0])) as Record<string, unknown>;
+    expect(copy.link).toBeUndefined();
+    expect(copy.note).toBeUndefined();
+    expect(
+      droppedAttachments({ type: 'link-card', link: {}, note: 'n' } as unknown as Element),
+    ).toEqual(['note']);
+    expect(
+      droppedAttachments({ type: 'annotation', link: {}, note: 'n' } as unknown as Element),
+    ).toEqual(['link']);
   });
 
   it('adds no keys an element never had', () => {

@@ -51,8 +51,9 @@ export type EditorContextMenuProps = {
   // Alignment / Markers) treat "being edited" as having text — otherwise a
   // fresh shape's menu hides exactly the options the user is typing for.
   editingId: string | null;
-  // Open the link picker for the element, optionally pre-selecting a mode
-  // (webpage / tab / document) so the modal lands on the right tab.
+  // Open the link picker for a stored link card's destination (its own Link category), optionally pre-selecting a
+  // mode (webpage / tab / document) so the modal lands on the right tab. No other element takes a link
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes").
   onLinkElement: (elementId: string, mode?: 'url' | 'tab' | 'document') => void;
   // Remove an inline icon from the element. Only surfaced when the
   // clicked element actually carries one (a non-'icon' shape with iconId).
@@ -207,12 +208,6 @@ export type EditorContextMenuProps = {
   // Commit + hover-preview pair.
   onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
   onPreviewTextAlign: (x: TextAlignX, y: TextAlignY) => void;
-  onOpenNote: (elementId: string) => void;
-  onOpenComments: (elementId: string) => void;
-  // Assigned actions (docs/specs/012-collaboration/assigned-actions.md): the Collaborate category's Assign Action
-  // tile, shown for everyone (signed-out users can self-assign). Opens
-  // the assign dialog (no action yet) or the action popover (one exists).
-  onAssignAction: (elementId: string) => void;
   // The selected elements (multi-selection / group members), so the 'multi'
   // menu can surface the formatting categories that match their types (Colours
   // / Text / Border for boxed). The format setters above apply to the whole selection. Duplicate / Group / Export /

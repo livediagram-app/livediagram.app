@@ -10,7 +10,6 @@ import {
   RETIRED_ELEMENT_NOTE,
   RETIRED_PLACEHOLDER_COLOURS,
   retiredPlaceholderLayout,
-  type BoxedElement,
   type Element,
   type ShapeElement,
 } from '@livehuddle/document';
@@ -22,9 +21,6 @@ import { ElementFaceRouter } from './ElementFaceRouter';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { HIT_PAD_INWARD } from './element-parts';
 import { SelectionGripsContext } from '@liveworkspace/workbench/components/canvas/SelectionGripsLayer';
-import { indicatorClusterRect } from './ElementIndicators';
-import type { IndicatorItem } from './indicator-items';
-import { placeCluster } from './useIndicatorLayout';
 import {
   RETIRED_DELETE_INSET,
   RETIRED_DELETE_MIN_HEIGHT,
@@ -395,67 +391,13 @@ describe('the placeholder Delete button', () => {
     expect(shown).toBeGreaterThan(0);
   });
 
-  it('steps left of the comment pip, and of a cluster of several indicators, with a 4px gap', () => {
-    const item = (kind: IndicatorItem['kind'], count?: number): IndicatorItem => ({
-      kind,
-      label: kind,
-      onClick: () => {},
-      ...(count ? { count } : {}),
-    });
-    const el = board({ width: 320, height: 220, shape: 'pie-chart' }) as BoxedElement;
-    for (const items of [[item('comment', 1)], [item('link'), item('note'), item('comment', 12)]]) {
-      for (const style of ['top', 'footer'] as const) {
-        const placed = placeCluster(el, 8, items, style);
-        const cluster = indicatorClusterRect(el, items, placed, 8)!;
-        for (const zoom of [0.5, 1, 2]) {
-          const place = retiredDeletePlacement(layoutOf(320, 220), 320, 220, zoom, cluster);
-          expect(place, `${items.length} at ${zoom}`).not.toBeNull();
-          const drawn = {
-            x0: cluster.x * zoom - 4,
-            y0: cluster.y * zoom - 4,
-            x1: (cluster.x + cluster.width) * zoom + 4,
-            y1: (cluster.y + cluster.height) * zoom + 4,
-          };
-          expect(overlaps(binRect(place!), drawn), `${items.length} ${style} at ${zoom}`).toBe(
-            false,
-          );
-          expect(place!.top).toBe(RETIRED_DELETE_INSET);
-          expect(place!.size).toBe(RETIRED_DELETE_SIZE);
-        }
-      }
-    }
-    // The pip sits across the top-right corner, so the bin leaves its corner for it.
-    const pipItems = [item('comment', 1)];
-    const pip = indicatorClusterRect(
-      el,
-      pipItems,
-      { form: 'pip', box: null, pip: null, inset: { top: 0, bottom: 0 } },
-      8,
-    )!;
-    const stepped = retiredDeletePlacement(layoutOf(320, 220), 320, 220, 1, pip)!;
-    expect(stepped.left + RETIRED_DELETE_SIZE).toBeLessThanOrEqual(pip.x - 4);
-    // Below the zoom the indicators stop drawing at, there is nothing to step round.
-    const far = retiredDeletePlacement(layoutOf(800, 600), 800, 600, 0.3, pip)!;
-    expect(far.left).toBeCloseTo(800 * 0.3 - RETIRED_DELETE_INSET - RETIRED_DELETE_SIZE);
-  });
-
-  it('is hidden where there is no room: on a small card, or with no room left of the indicators', () => {
+  it('is hidden where there is no room: on a small card, or where it would sit on the words', () => {
     expect(retiredDeletePlacement(layoutOf(40, 30), 40, 30, 1)).toBeNull();
     expect(retiredDeletePlacement(layoutOf(0, 0), 0, 0, 1)).toBeNull();
-    // A cluster across the whole top leaves no room left of it.
-    const across = { x: 0, y: 0, width: 160, height: 24 };
-    expect(retiredDeletePlacement(layoutOf(160, 140), 160, 140, 1, across)).toBeNull();
-    // Stepped left onto the words: hidden too.
-    const wide = { x: 60, y: 0, width: 100, height: 24 };
     expect(wordsClearOfDelete(layoutOf(160, 80), 160, 1, 56)).toBe(false);
-    expect(retiredDeletePlacement(layoutOf(160, 80), 160, 80, 1, wide)).toBeNull();
-    // The face draws no button then.
+    // The face draws no button on a card too small to hold it.
     const { container } = render(
-      <RetiredElementFace
-        element={board({ width: 160, height: 140 })}
-        indicators={across}
-        onDelete={() => {}}
-      />,
+      <RetiredElementFace element={board({ width: 40, height: 30 })} onDelete={() => {}} />,
     );
     expect(button(container)).toBeNull();
   });

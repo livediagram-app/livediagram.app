@@ -242,7 +242,7 @@ describe('settings catalogue', () => {
     const without = visibleCategories({ emailEnabled: false, signedIn: true });
     const guest = visibleCategories({ emailEnabled: true, signedIn: false });
     const guestRows = guest.find((c) => c.id === 'notifications')!.rows;
-    expect(guestRows.map((r) => r.key)).not.toContain('notifyComments');
+    expect(guestRows.map((r) => r.key)).not.toContain('notifyDocumentJoin');
     // ...but the section still says the settings exist, the same way the API
     // tokens row does, rather than vanishing without explanation.
     expect(guestRows.map((r) => r.key)).toContain('emailSignIn');
@@ -254,8 +254,12 @@ describe('settings catalogue', () => {
     }
     const notifyRows = (cats: typeof withEmail) =>
       cats.find((c) => c.id === 'notifications')!.rows.map((r) => r.key);
-    expect(notifyRows(withEmail)).toContain('notifyComments');
-    expect(notifyRows(without)).not.toContain('notifyComments');
+    expect(notifyRows(withEmail)).toContain('notifyDocumentJoin');
+    expect(notifyRows(without)).not.toContain('notifyDocumentJoin');
+    // livehuddle sends no comment, mention or action email (docs/specs/002-project-scope/not-in-livehuddle.md
+    // "Comments, actions, links and notes"), so it offers no switch for one.
+    for (const gone of ['notifyComments', 'notifyMentions', 'notifyActionAssigned'])
+      expect(notifyRows(withEmail)).not.toContain(gone);
     // The category survives either way: in-editor notifications are not
     // gated on email, so Notifications never becomes a dead end.
     expect(notifyRows(without)).toContain('notificationsEnabled');
@@ -282,7 +286,7 @@ describe('settings sub-categories', () => {
 
   it('keeps every setting that acts in both modes on Editor itself', () => {
     const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows.map((r) => r.key);
-    expect(keys).toEqual(['alignmentGuides', 'elementIndicatorStyle', 'middleMousePan']);
+    expect(keys).toEqual(['alignmentGuides', 'middleMousePan']);
   });
 
   it('files each panel as a section of Panels, after Panel Opacity', () => {
@@ -297,11 +301,13 @@ describe('settings sub-categories', () => {
     expect(panels.aliases).toEqual(['map', 'collaborate']);
   });
 
-  it('opens every panel section with its Enable switch, on by default', () => {
+  it('opens the Map section with its Enable switch, on by default', () => {
     const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
+    // The Collaborate Panel and its switch left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md
+    // "Comments, actions, links and notes"); its section keeps the cursor and hearing-ring rows.
+    expect(panels.rows.map((r) => r.key)).not.toContain('collaboratePanelEnabled');
     const switches: Record<string, [string, string]> = {
       Map: ['showMinimap', 'Enable Map'],
-      Collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
     };
     for (const [section, [key, label]] of Object.entries(switches)) {
       const row = panels.rows.find((r) => r.section === section)!;

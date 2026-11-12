@@ -252,9 +252,6 @@ function faceFor(kind: 'directory' | 'elevator', readOnly: boolean, wayfinding: 
       onCommitLabel={vi.fn()}
       onCancelEdit={vi.fn()}
       onFollowLink={vi.fn()}
-      onOpenComments={vi.fn()}
-      onOpenAction={vi.fn()}
-      onOpenNote={vi.fn()}
       onContextSelect={vi.fn()}
       onEnterPortal={() => ({ targetName: null, wayfinding })}
       tabSummaries={[]}

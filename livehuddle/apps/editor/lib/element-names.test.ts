@@ -186,13 +186,6 @@ describe('elementRole', () => {
     ).toBe('group');
   });
 
-  // Indicator buttons (a note, a link, an action, comments) are controls on any element's face: axe's
-  // nested-interactive, and unreachable inside a picture.
-  it('makes an element showing indicator buttons a group', () => {
-    expect(elementRole(shape('room'), true)).toBe('group');
-    expect(elementRole(shape('room'), false)).toBe('img');
-  });
-
   it('makes a table a group: its cells edit in place and its track menus are buttons', () => {
     expect(
       elementRole({

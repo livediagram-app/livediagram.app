@@ -5,15 +5,12 @@
 // canvases written before the list existed, or by another tab, are listed too.
 
 import { thisBrowserPublisher } from '@liveworkspace/explorer/this-browser';
-import { inboxSnapshot } from './inbox-snapshot';
 import { localOpensOf } from './offline-opens';
 import type { OfflineDocumentRecord } from './offline-store';
 
 const list = thisBrowserPublisher<OfflineDocumentRecord>(
   'livehuddle',
   (opens) => localOpensOf(opens)?.lastOpenedAt ?? null,
-  // Each write may change the Inbox's rows too: the snapshot is worked out again once the store is quiet.
-  () => inboxSnapshot.schedule(),
 );
 
 export const thisBrowserItemOf = list.itemOf;

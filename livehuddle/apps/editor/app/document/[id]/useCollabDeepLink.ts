@@ -5,11 +5,10 @@ import type { Element } from '@livehuddle/document';
 import { parseCollabDeepLink, type CollabDeepLink } from '@/lib/collab-deep-link';
 import type { TabLoadState } from './editor-page-helpers';
 
-// Consumes the element deep link an Inbox row opens the editor with
-// (docs/specs/013-workspace/inbox.md §1): `#t=<tab>&el=<element>&open=action|comments`. Once the
-// pinned tab's elements have loaded, select the element, bring it into
-// view, and open the named popover — exactly what a Collaborate Panel
-// row click does in-editor.
+// Consumes an element deep link (docs/specs/013-workspace/inbox.md §1): `#t=<tab>&el=<element>`, from an old email
+// or Inbox row. Once the pinned tab's elements have loaded, select the element and bring it into view. Its `open=`
+// (action or comments) opens nothing: livehuddle has neither any more (docs/specs/002-project-scope/
+// not-in-livehuddle.md "Comments, actions, links and notes").
 //
 // Two hooks because of WHEN the fragment can be read. useTabEntryEffects
 // rewrites the hash to the plain `#t=` pin on the hydration commit, so
@@ -23,7 +22,7 @@ import type { TabLoadState } from './editor-page-helpers';
 // to null and never overwrites a capture), and `useCollabDeepLink`
 // consumes it once the tab is ready. Held in a ref: nothing re-renders
 // on it. Consumed once, so a refresh lands on the tab without
-// re-opening the popover.
+// selecting the element again.
 export function useCollabDeepLinkCapture(): MutableRefObject<CollabDeepLink | null> {
   const link = useRef<CollabDeepLink | null>(null);
   useEffect(() => {
@@ -42,8 +41,6 @@ export function useCollabDeepLink({
   elements,
   select,
   scrollIntoView,
-  openActionPopover,
-  openComments,
 }: {
   link: MutableRefObject<CollabDeepLink | null>;
   hydrated: boolean;
@@ -52,21 +49,14 @@ export function useCollabDeepLink({
   elements: Element[];
   select: (elementId: string) => void;
   scrollIntoView: (x: number, y: number, w: number, h: number, opts?: { center?: boolean }) => void;
-  openActionPopover: (elementId: string) => void;
-  openComments: (elementId: string) => void;
 }): void {
   const consumed = useRef(false);
   // The stable editor callbacks are read when the link lands, not depended on: re-running on their
   // identity would only re-evaluate an already-consumed link.
   const arriveAt = useEffectEvent(
-    (
-      el: { id: string; x: number; y: number; width: number; height: number },
-      open: string | null | undefined,
-    ) => {
+    (el: { id: string; x: number; y: number; width: number; height: number }) => {
       select(el.id);
       scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
-      if (open === 'action') openActionPopover(el.id);
-      else if (open === 'comments') openComments(el.id);
     },
   );
 
@@ -84,6 +74,6 @@ export function useCollabDeepLink({
     // Deleted since the Inbox loaded: the tab is open, which is
     // as close as the link can get (docs/specs/013-workspace/inbox.md §1).
     if (!el || el.type === 'arrow') return;
-    arriveAt(el, target.open);
+    arriveAt(el);
   }, [link, hydrated, activeId, activeTabLoadState, elements]);
 }

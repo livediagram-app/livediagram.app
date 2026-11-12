@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { apiNotifyMention, apiTeamMembers } from './team-people';
+import { apiTeamMembers } from './team-people';
 
 vi.mock('../guest-token', () => ({ readGuestToken: () => null }));
 
@@ -19,18 +19,5 @@ describe('team people', () => {
     expect(b).toBe(a);
     expect(fetchSpy).toHaveBeenCalledOnce();
     expect(fetchSpy.mock.calls[0]![0]).toBe('/api/teams/team%201/members');
-  });
-
-  it('sends a mention notice to the team’s door', async () => {
-    const fetchSpy = vi.fn(async () => Response.json({ ok: true }, { status: 202 }));
-    vi.stubGlobal('fetch', fetchSpy);
-    await apiNotifyMention('guest_1', 't1', {
-      documentId: 'd1',
-      commentText: 'hi',
-      mentions: [{ userId: 'u2' }],
-    });
-    const [url, init] = fetchSpy.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toBe('/api/teams/t1/notify-mention');
-    expect(init.method).toBe('POST');
   });
 });

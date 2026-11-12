@@ -1,13 +1,7 @@
 import { useRef, type ReactNode } from 'react';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@liveworkspace/workbench/components/chrome/FloatingTitle';
-import {
-  CommentIcon,
-  DuplicateIcon,
-  FormatPainterIcon,
-  TrashIcon,
-  HoverCard,
-} from '@livehuddle/ui';
+import { DuplicateIcon, FormatPainterIcon, TrashIcon, HoverCard } from '@livehuddle/ui';
 import {
   BringToFrontIcon,
   EllipsisIcon,
@@ -49,13 +43,6 @@ type SelectionPopoverProps = {
   // layers, which is what the element menu's Bring to Front does.
   onBringToFront?: () => void;
   onSendToBack?: () => void;
-  // Open the comment thread. The toolbar shows the Comment button
-  // whenever this is passed, regardless of any other props, which
-  // is how view-role visitors get the comments-only toolbar (no
-  // edit affordances next to it).
-  onOpenComments?: () => void;
-  // Someone who may comment adds one; a Viewer only reads the thread there is (docs/specs/013-workspace/share-roles.md).
-  commentsReadOnly?: boolean;
   // Open the same context menu that a right-click on the element
   // would open, anchored under the ellipsis button. Surfaces the
   // full action list on touch devices that can't right-click.
@@ -93,8 +80,6 @@ export function SelectionPopover({
   onFormatPainter,
   onBringToFront,
   onSendToBack,
-  onOpenComments,
-  commentsReadOnly = false,
   onOpenContextMenu,
   compact = false,
   suspended = false,
@@ -242,26 +227,6 @@ export function SelectionPopover({
               </PopoverButton>
               <Divider />
             </>
-          ) : null}
-
-          {/* Comment stays on the toolbar (it's the only edit-adjacent
-          action a view-role visitor gets, so it has to be reachable
-          without right-clicking on a comment badge). For an editor
-          session it duplicates the context menu entry, which is
-          fine: comments are high-traffic and a one-click affordance
-          beats a two-click context menu open + click. */}
-          {onOpenComments ? (
-            <PopoverButton
-              label={commentsReadOnly ? 'Show Comments' : 'Add Comment'}
-              description={
-                commentsReadOnly
-                  ? 'Read the comments on this element.'
-                  : 'Open the comment thread for this element.'
-              }
-              onClick={onOpenComments}
-            >
-              <CommentIcon />
-            </PopoverButton>
           ) : null}
 
           {showDelete ? (

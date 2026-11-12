@@ -11,7 +11,6 @@ type Pos = { x: number; y: number };
 // remembers its spot.
 export function usePanelLayout() {
   const [mapPosition, setMapPosition] = useState<Pos | null>(null);
-  const [commentsPanelPosition, setCommentsPanelPosition] = useState<Pos | null>(null);
   // Format Panel (docs/specs/008-canvas/format-panel.md): present only while the painter is on, so position only:
   // there is nothing to minimise when leaving the tool dismisses the panel outright.
   const [formatPanelPosition, setFormatPanelPosition] = useState<Pos | null>(null);
@@ -19,8 +18,6 @@ export function usePanelLayout() {
   return {
     mapPosition,
     setMapPosition,
-    commentsPanelPosition,
-    setCommentsPanelPosition,
     formatPanelPosition,
     setFormatPanelPosition,
   };

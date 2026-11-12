@@ -9,7 +9,7 @@ import type { EditorDialogsSlice } from './useEditorDialogs';
 import type { EditorToolsSlice } from './useEditorTools';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorRoomSlice } from './useEditorRoom';
-import type { EditorCommentsSlice } from './useEditorComments';
+import type { EditorActiveTabSlice } from './useEditorActiveTab';
 import type { EditorViewportSlice } from './useEditorViewport';
 import type { EditorEditingSlice } from './useEditorEditing';
 import type { EditorCreationSlice } from './useEditorCreation';
@@ -24,7 +24,7 @@ export function useEditorKeyboard({
   fromTools,
   fromCollaboration,
   fromRoom,
-  fromComments,
+  fromActiveTab,
   fromViewport,
   fromEditing,
   fromCreation,
@@ -36,7 +36,7 @@ export function useEditorKeyboard({
   fromTools: EditorToolsSlice;
   fromCollaboration: EditorCollaborationSlice;
   fromRoom: EditorRoomSlice;
-  fromComments: EditorCommentsSlice;
+  fromActiveTab: EditorActiveTabSlice;
   fromViewport: EditorViewportSlice;
   fromEditing: EditorEditingSlice;
   fromCreation: EditorCreationSlice;
@@ -55,7 +55,7 @@ export function useEditorKeyboard({
   const { canvasTool, pickCanvasTool, shortcutsEnabled } = fromTools;
   const { isReadOnly } = fromCollaboration;
   const { loadAllTabs } = fromRoom;
-  const { activeTab } = fromComments;
+  const { activeTab } = fromActiveTab;
   const { fitToScreen, getViewportCenter, setViewportZoom } = fromViewport;
   const { redo, undo } = fromEditing;
   const {

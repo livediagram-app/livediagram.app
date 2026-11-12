@@ -16,7 +16,7 @@ import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorToolsSlice } from './useEditorTools';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
-import type { EditorCommentsSlice } from './useEditorComments';
+import type { EditorActiveTabSlice } from './useEditorActiveTab';
 
 // The viewport (pan, zoom, the canvas element), Avatar mode's camera, and what is broadcast beside it: cursors,
 // avatars, calls, drags and Bring Focus. A slice of useEditorState (../useEditorState.ts): it takes the slices
@@ -27,14 +27,14 @@ export function useEditorViewport({
   fromSelection,
   fromTools,
   fromCollaboration,
-  fromComments,
+  fromActiveTab,
 }: {
   fromDocument: EditorDocumentSlice;
   fromHistory: EditorHistorySlice;
   fromSelection: EditorSelectionSlice;
   fromTools: EditorToolsSlice;
   fromCollaboration: EditorCollaborationSlice;
-  fromComments: EditorCommentsSlice;
+  fromActiveTab: EditorActiveTabSlice;
 }) {
   const { documentId, hydrated, toast } = fromDocument;
   const { tabs } = fromHistory;
@@ -42,7 +42,7 @@ export function useEditorViewport({
   const { canvasTool } = fromTools;
   const { documentShareable, documentTeamId, livePresence, remoteViewports, roomRef } =
     fromCollaboration;
-  const { activeTab } = fromComments;
+  const { activeTab } = fromActiveTab;
   // Outbound realtime broadcasters (cursor, avatar, viewport ...) live in useEditorBroadcast.
   const {
     broadcastCursor,

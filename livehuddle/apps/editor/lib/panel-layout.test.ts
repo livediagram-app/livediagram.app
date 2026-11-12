@@ -22,17 +22,17 @@ describe('panel-layout', () => {
     // The tool panels home bottom-right (docs/specs/007-editor/panel-docking.md "Default layout").
     expect(layout.corners['top-right']).toEqual([]);
     expect(layout.corners['bottom-left']).toEqual(['minimap']);
-    expect(layout.corners['bottom-right']).toEqual(['collaborate']);
+    expect(layout.corners['bottom-right']).toEqual([]);
     expect(layout.free).toEqual({});
   });
 
   it('docks a panel to the bottom of a corner stack, removing it from its old spot', () => {
-    const next = dockPanel(defaultPanelLayout(), 'collaborate', 'top-right');
+    const next = dockPanel(defaultPanelLayout(), 'minimap', 'top-right');
     // Left its old corner...
-    expect(next.corners['bottom-right']).toEqual([]);
+    expect(next.corners['bottom-left']).toEqual([]);
     // ...and joined below whatever is in the target corner.
     expect(dockPanel(next, 'format', 'top-right').corners['top-right']).toEqual([
-      'collaborate',
+      'minimap',
       'format',
     ]);
   });
@@ -59,10 +59,10 @@ describe('panel-layout', () => {
 
   it('reflow: removing a stacked panel shifts the rest up', () => {
     // Stack two in the bottom-right, then move the first away; the second leads the stack.
-    const stacked = dockPanel(defaultPanelLayout(), 'format', 'bottom-right');
-    expect(stacked.corners['bottom-right']).toEqual(['collaborate', 'format']);
-    const next = dockPanel(stacked, 'collaborate', 'top-left');
-    expect(next.corners['bottom-right']).toEqual(['format']);
+    const stacked = dockPanel(defaultPanelLayout(), 'format', 'bottom-left');
+    expect(stacked.corners['bottom-left']).toEqual(['minimap', 'format']);
+    const next = dockPanel(stacked, 'minimap', 'top-left');
+    expect(next.corners['bottom-left']).toEqual(['format']);
   });
 
   it('resolves an unmentioned panel to its default corner', () => {
@@ -120,10 +120,10 @@ describe('panel-layout', () => {
     // The in-editor AI assistant is gone; its stored panel placement is ignored.
     it('ignores the retired AI panel in a stored layout', () => {
       const layout = normalizePanelLayout({
-        corners: { 'bottom-right': ['collaborate', 'ai'] },
+        corners: { 'bottom-right': ['format', 'ai'] },
         free: { ai: { x: 5, y: 6 } },
       });
-      expect(layout.corners['bottom-right']).toEqual(['collaborate']);
+      expect(layout.corners['bottom-right']).toEqual(['format']);
       expect(layout.free).toEqual({});
     });
 
@@ -131,20 +131,31 @@ describe('panel-layout', () => {
     // naming it drops it.
     it('ignores the retired Eraser panel in a stored layout', () => {
       const layout = normalizePanelLayout({
-        corners: { 'bottom-right': ['collaborate', 'eraser', 'format'] },
+        corners: { 'bottom-right': ['minimap', 'eraser', 'format'] },
         free: { eraser: { x: 5, y: 6 } },
       });
-      expect(layout.corners['bottom-right']).toEqual(['collaborate', 'format']);
+      expect(layout.corners['bottom-right']).toEqual(['minimap', 'format']);
+      expect(layout.free).toEqual({});
+    });
+
+    // The Collaborate Panel left with comments and actions (docs/specs/002-project-scope/not-in-livehuddle.md
+    // "Comments, actions, links and notes"); a stored layout naming it drops it.
+    it('ignores the retired Collaborate panel in a stored layout', () => {
+      const layout = normalizePanelLayout({
+        corners: { 'bottom-right': ['collaborate', 'format'] },
+        free: { collaborate: { x: 5, y: 6 } },
+      });
+      expect(layout.corners['bottom-right']).toEqual(['format']);
       expect(layout.free).toEqual({});
     });
 
     it('keeps a valid free position but ignores a malformed one', () => {
       const layout = normalizePanelLayout({
         corners: {},
-        free: { format: { x: 5, y: 6 }, collaborate: { x: 'nope' } },
+        free: { format: { x: 5, y: 6 }, minimap: { x: 'nope' } },
       });
       expect(layout.free.format).toEqual({ x: 5, y: 6 });
-      expect(layout.free.collaborate).toBeUndefined();
+      expect(layout.free.minimap).toBeUndefined();
     });
 
     it('falls back to the default layout for non-object input', () => {

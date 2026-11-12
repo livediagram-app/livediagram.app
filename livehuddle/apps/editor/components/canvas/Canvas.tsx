@@ -38,8 +38,6 @@ import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useC
 import { useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
-import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
-import { readElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
@@ -453,30 +451,28 @@ function CanvasView(props: CanvasProps) {
               (docs/specs/008-canvas/canvas-performance.md). */}
               <CanvasZoomProvider zoom={viewportZoom}>
                 <SpeakingStageContext value={speakingStage}>
-                  <ElementIndicatorStyleProvider style={readElementIndicatorStyle(props.settings)}>
-                    <CanvasElementsLayer
-                      {...props}
-                      // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
-                      // so the prop from the host is overridden with the local resolver.
-                      onEnterPortal={resolvePortal}
-                      // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
-                      // lives, rather than threaded from the page.
-                      chairSitters={sittersOf}
-                      // Pressing a Selection Mode button that hands out Avatar mode drops
-                      // the character at THAT button (see avatarSpawn), not the viewport
-                      // centre: you pressed a thing on the canvas, so the character should
-                      // appear where you pressed it.
-                      // None for a Participant, who is always walking: its buttons draw inert.
-                      onPressModeButton={props.onPressModeButton ? pressModeButton : undefined}
-                      onPressAvatarPad={pressAvatarPad}
-                      onPressFocusButton={props.onPressFocusButton}
-                      selectionInput={selectionInput}
-                      isPaintMode={isPaintMode}
-                      handleArrowSelect={handleArrowSelect}
-                      handleElementClick={handleElementClick}
-                      handleElementContextSelect={handleElementContextSelect}
-                    />
-                  </ElementIndicatorStyleProvider>
+                  <CanvasElementsLayer
+                    {...props}
+                    // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
+                    // so the prop from the host is overridden with the local resolver.
+                    onEnterPortal={resolvePortal}
+                    // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
+                    // lives, rather than threaded from the page.
+                    chairSitters={sittersOf}
+                    // Pressing a Selection Mode button that hands out Avatar mode drops
+                    // the character at THAT button (see avatarSpawn), not the viewport
+                    // centre: you pressed a thing on the canvas, so the character should
+                    // appear where you pressed it.
+                    // None for a Participant, who is always walking: its buttons draw inert.
+                    onPressModeButton={props.onPressModeButton ? pressModeButton : undefined}
+                    onPressAvatarPad={pressAvatarPad}
+                    onPressFocusButton={props.onPressFocusButton}
+                    selectionInput={selectionInput}
+                    isPaintMode={isPaintMode}
+                    handleArrowSelect={handleArrowSelect}
+                    handleElementClick={handleElementClick}
+                    handleElementContextSelect={handleElementContextSelect}
+                  />
                 </SpeakingStageContext>
               </CanvasZoomProvider>
             </CanvasArrivalProvider>

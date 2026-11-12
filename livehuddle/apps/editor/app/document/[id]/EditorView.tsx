@@ -1,8 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { CommentBadgesContext } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
-import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
 import { truncateName } from '@livehuddle/document';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { track } from '@/lib/telemetry';
@@ -42,7 +40,6 @@ import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
 import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
 import { EditorTours } from '@/components/tour/EditorTours';
-import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { ModifierHintBanner } from '@/components/chrome/ModifierHintBanner';
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
 import { useDismissibleBanner } from '@liveworkspace/workbench/hooks/ui/useDismissibleBanner';
@@ -125,7 +122,6 @@ export function EditorView() {
     setImportOpen,
     canShareDocument,
     isOwner,
-    isReadOnly,
     isStructureReadOnly,
     isOutOfScope,
     linkActiveTabTo,
@@ -378,20 +374,12 @@ export function EditorView() {
                         <ChangesetRevealContext.Provider value={ctx.changesetReveals}>
                           {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
                           <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
-                            {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
-                            <CommentBadgesContext.Provider
-                              value={!(embedMode && isReadOnly) && !sessionCommunity}
-                            >
-                              {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
-                              {/* A connected tab's page stands in the canvas's place (connected-tabs.md), once a visitor's name prompt (drawn by the canvas host) is answered. */}
-                              {ctx.activeTabConnected && !anyWelcomeOpen ? (
-                                <ConnectedTabHost />
-                              ) : (
-                                <SuppressElementIndicators when={embedMode}>
-                                  <EditorCanvasHost />
-                                </SuppressElementIndicators>
-                              )}
-                            </CommentBadgesContext.Provider>
+                            {/* A connected tab's page stands in the canvas's place (connected-tabs.md), once a visitor's name prompt (drawn by the canvas host) is answered. */}
+                            {ctx.activeTabConnected && !anyWelcomeOpen ? (
+                              <ConnectedTabHost />
+                            ) : (
+                              <EditorCanvasHost />
+                            )}
                           </AgentFocusContext.Provider>
                         </ChangesetRevealContext.Provider>
                       </AreaErrorBoundary>
@@ -432,9 +420,6 @@ export function EditorView() {
                       />
                       <AreaErrorBoundary area="Modals">
                         <EditorModals />
-                      </AreaErrorBoundary>
-                      <AreaErrorBoundary area="Popovers">
-                        <EditorAnchoredPopovers />
                       </AreaErrorBoundary>
                       <AreaErrorBoundary area="ContextMenu">
                         <EditorContextMenuHost />

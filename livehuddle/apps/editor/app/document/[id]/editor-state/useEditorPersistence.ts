@@ -97,10 +97,6 @@ export function useEditorPersistence({
       passwordGated: sharePasswordGate !== null,
     });
 
-  // Per-element note popover (state + open/close/setNote handlers)
-  // lives in useEditorNotes. Invoked further down, after `commit`
-  // exists.
-
   // Element link picker (open + anchor state) and the link read/write
   // handlers live in useElementLinks. Invoked further down, after
   // `openDocument` + the selection helpers exist.

@@ -64,12 +64,9 @@ export type UserPreferences = {
   // How tall the map is. A big canvas is unreadable in a 144px strip; a
   // small one doesn't need more.
   mapSize?: MapSize;
-  // Panel switches (docs/specs/007-editor/user-preferences.md), each ON
-  // unless stored `false`. Off removes the panel and the chrome that reaches
-  // it, never the feature underneath. Read them through `panelEnabled`.
-  //
-  // Collaborate: the panel and its button. Comments and actions stay.
-  collaboratePanelEnabled?: boolean;
+  // `collaboratePanelEnabled` is not read: the Collaborate Panel left livehuddle with comments and actions
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes"). A stored value is kept,
+  // unread, like any key this version does not know.
   // `quickStylePanelEnabled` is not read: livehuddle has no Quick Style panel
   // (docs/specs/002-project-scope/not-in-livehuddle.md#quick-style). A stored
   // value is kept, unread, like any key this version does not know.
@@ -93,11 +90,8 @@ export type UserPreferences = {
   uiScaleCornerButtons?: number;
   // (`quickAddOnHover` left livehuddle with Quick Connect, docs/specs/002-project-scope/not-in-livehuddle.md: a
   // stored value stays, unread, like any key this version does not know.)
-  // How an element shows its link, note, action and comments
-  // (docs/specs/008-canvas/element-indicators.md): glyphs inside its top, at the top-right of a box
-  // ('top', the default), a labelled row along its bottom edge ('footer'), or none ('off').
-  // Read through `readElementIndicatorStyle`, which maps anything else to the default.
-  elementIndicatorStyle?: 'top' | 'footer' | 'off';
+  // `elementIndicatorStyle` is not read either: the element indicators went with comments, actions, links and notes
+  // (docs/specs/008-canvas/element-indicators.md). A stored value is kept, unread.
   // Alignment guides (docs/specs/008-canvas/canvas-and-palette.md). When `false`, the editor skips the
   // faint guide lines drawn along the edges / centres a dragged or
   // resized element shares with its neighbours (the snap itself is
@@ -349,12 +343,4 @@ export async function fetchUserPreferences(ownerId: string): Promise<UserPrefere
     savePreferences(ownerId, merged);
   }
   return merged;
-}
-
-// Whether a panel switch is on (docs/specs/007-editor/user-preferences.md):
-// on unless stored `false`, so the Settings row and every surface it gates
-// read one rule.
-export type PanelSwitch = 'collaboratePanelEnabled';
-export function panelEnabled(prefs: UserPreferences | undefined, key: PanelSwitch): boolean {
-  return prefs?.[key] !== false;
 }

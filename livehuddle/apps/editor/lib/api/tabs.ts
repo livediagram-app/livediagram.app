@@ -6,7 +6,7 @@ import {
   type TabResponse,
   type TabSummary,
 } from '@livehuddle/api-schema';
-import type { CommentMention, Tab } from '@livehuddle/document';
+import type { Tab } from '@livehuddle/document';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
   isOfflineId,
@@ -297,94 +297,6 @@ export function flushDocumentSavesBeacon(args: {
       NO_GRANT_WAIT,
     ).catch(() => {});
   }
-}
-
-// Append a comment to one element's thread on a specific tab.
-// View-role visitors can call this (the only write path open to
-// them): owner / edit-role visitors also could but already get
-// the same write via the tab autosave, so the editor only invokes
-// this for view-role sessions so a viewer's contribution actually
-// persists. Returns the freshly-created comment so the caller can
-// merge it into local state without a tab refetch.
-export async function apiAddComment(
-  ownerId: string,
-  documentId: string,
-  tabId: string,
-  elementId: string,
-  text: string,
-  shareCode: string | null = null,
-  // Teammates the comment @-tags (docs/specs/012-collaboration/comment-mentions.md); cleaned server-side.
-  mentions?: CommentMention[],
-): Promise<{
-  id: string;
-  text: string;
-  createdAt: number;
-  authorName: string;
-  authorColor: string;
-}> {
-  const res = await apiFetch(
-    `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/comments`,
-    {
-      method: 'POST',
-      headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
-      body: JSON.stringify({
-        elementId,
-        text,
-        ...(mentions?.length ? { mentions } : {}),
-      }),
-    },
-  );
-  return expectOk<{
-    comment: {
-      id: string;
-      text: string;
-      createdAt: number;
-      authorName: string;
-      authorColor: string;
-    };
-  }>(res, 'add comment').then((b) => b.comment);
-}
-
-// Delete a single comment you authored. The server authorises this on
-// the comment's stamped authorId === caller, so a view-role visitor can
-// remove their OWN comment (the matching write path to apiAddComment)
-// without edit rights. Owner / edit-role sessions persist their
-// delete-own through the normal tab autosave, so the editor only calls
-// this for view-role; deleting someone else's comment still requires
-// edit rights via the tab PUT.
-export async function apiDeleteComment(
-  ownerId: string,
-  documentId: string,
-  tabId: string,
-  commentId: string,
-  shareCode: string | null = null,
-): Promise<void> {
-  const res = await apiFetch(
-    `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/comments/${encodeURIComponent(commentId)}`,
-    {
-      method: 'DELETE',
-      headers: await apiHeaders(ownerId, { share: shareCode }),
-    },
-  );
-  await expectOkVoid(res, 'delete comment');
-}
-
-// Resolve or reopen a thread through the comment endpoints (docs/specs/024-agents/agent-presence.md "Comments"): the
-// path of a session that may comment but not edit, which has no autosave. The thread is named by any of its comments.
-export async function apiSetThreadResolved(
-  ownerId: string,
-  documentId: string,
-  tabId: string,
-  commentId: string,
-  resolved: boolean,
-  shareCode: string | null = null,
-): Promise<void> {
-  const verb = resolved ? 'resolve' : 'reopen';
-  const res = await apiFetch(
-    `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/comments/${encodeURIComponent(commentId)}/${verb}`,
-    { method: 'POST', headers: await apiHeaders(ownerId, { share: shareCode }) },
-  );
-  await expectOkVoid(res, `${verb} thread`);
 }
 
 // Share a tab of `fromDocumentId` into another of the caller's documents (docs/specs/006-document/tab-document-many-to-many.md).

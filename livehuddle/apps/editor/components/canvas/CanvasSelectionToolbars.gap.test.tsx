@@ -44,10 +44,12 @@ function compactFor(el: Element, readOnly = false): boolean | undefined {
 }
 
 describe('selection toolbar gap', () => {
-  it('sits close over an ordinary shape, editable or read-only', () => {
+  it('sits close over an ordinary shape', () => {
     const square = createSticky(0, 0);
     expect(compactFor(square)).toBe(true);
-    expect(compactFor(square, true)).toBe(true);
+    // A read-only session draws no toolbar at all (docs/specs/002-project-scope/not-in-livehuddle.md "Comments,
+    // actions, links and notes"), so there is no gap to measure.
+    expect(compactFor(square, true)).toBeUndefined();
   });
 
   it('keeps the wide gap on an arrow, whose move frame sits in it', () => {

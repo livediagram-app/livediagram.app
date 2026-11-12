@@ -258,25 +258,6 @@ export type CanvasProps = {
   // Bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;
-  // Floating Comments panel. Only mounted when commentRows is
-  // non-empty: the panel exists to list discussion that already
-  // exists, so on documents without it the panel stays out of the
-  // chrome entirely.
-  commentRows: import('@/components/panels/CollaboratePanel').CommentRow[];
-  commentsPanelPosition: { x: number; y: number } | null;
-  onMoveCommentsPanel: (x: number, y: number) => void;
-  onResetCommentsPanel: () => void;
-  // Row click: editor selects the element + opens its thread popover.
-  onOpenCommentsForElement: (elementId: string) => void;
-  // Floating Actions panel (docs/specs/012-collaboration/assigned-actions.md). Mirrors the Comments panel: only
-  // mounted when actionRows is non-empty (at least one OPEN action on
-  // the active tab).
-  actionRows: import('@/components/panels/CollaboratePanel').ActionRow[];
-  // Row click: editor selects the element + opens its action popover.
-  onOpenActionForElement: (elementId: string) => void;
-  // The Collaborate panel row's round check (docs/specs/012-collaboration/assigned-actions.md §5): complete
-  // (done) or reopen the action in place. Absent for a read-only visitor.
-  onToggleActionDone?: (elementId: string, done: boolean, actionId: string) => void;
   currentDocumentId: string | null;
   // The link this session came in on, so the Explorer panel reads the open document as the link allows.
   currentShareCode?: string | null;
@@ -325,12 +306,6 @@ export type CanvasProps = {
   // The selection toolbar's Format Painter: the painter on, `id` loaded as its brush. Absent where it may not paint.
   onStartFormatPainter?: (id: string) => void;
   onFollowLink: (link: import('@livehuddle/document').ElementLink) => void;
-  onOpenComments: (elementId: string) => void;
-  // Open the element's assigned-action popover (docs/specs/012-collaboration/assigned-actions.md). Available in
-  // read-only sessions too — visitors may read an action; the popover
-  // gates its mutations itself.
-  onOpenAction: (elementId: string) => void;
-  onOpenNote?: (elementId: string) => void;
   // Open the link picker for a link-card element (docs/specs/009-elements/link-cards.md), on double-click.
   // Omitted for read-only viewers.
   onEditLink?: (id: string) => void;

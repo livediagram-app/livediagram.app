@@ -26,9 +26,6 @@ function draw(element: BoxedElement, remoteSelectors: RemoteSelector[]) {
       onCommitLabel={vi.fn()}
       onCancelEdit={vi.fn()}
       onFollowLink={vi.fn()}
-      onOpenComments={vi.fn()}
-      onOpenAction={vi.fn()}
-      onOpenNote={vi.fn()}
       onContextSelect={vi.fn()}
       tabSummaries={[]}
       readOnly={false}
