@@ -41,7 +41,6 @@ import { accountsServiceFor, type TestAccountsService } from '../test-accounts-s
 import { sqliteD1, testDocument, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from '../routes/test-route-context';
 import { handleDocuments } from '../routes/documents';
-import { handleTeamNotifyRoutes } from '../routes/team-notify-routes';
 import type { Env } from '../types';
 import { pushNewComments, pushTag, pusher } from './push';
 
@@ -229,34 +228,21 @@ describe('a comment in a changeset', () => {
   });
 });
 
+// livehuddle has no comments (not-in-livehuddle.md "Comments, actions, links and notes"): a post over REST answers
+// 410 and tells no one.
 describe('a comment posted over REST', () => {
-  it('a tab comment tells the owner; an API token’s tells no one', async () => {
-    await save([box([])]);
-    const post = (as: string, token = false) =>
-      route('POST', '/api/documents/d1/tabs/t1/comments', {
-        body: { elementId: 'e1', text: 'hello' },
-        as,
-        token,
-      });
-    expect((await post(BOB)).status).toBe(201);
-    expect(fake.pushes.map((p) => [p.userId, p.kind, p.url])).toEqual([
-      [OWNER, 'comment', `${BASE}/document/d1#t=t1&el=e1&open=comments`],
-    ]);
-    fake.pushes.length = 0;
-    expect((await post(BOB, true)).status).toBe(201);
-    expect(fake.pushes).toEqual([]);
-  });
-
-  it('a reply in a thread tells who wrote in it; resolving sends nothing', async () => {
+  it('is refused, and tells no one', async () => {
     await save([box([comment('c1', BOB)])], BOB);
     fake.pushes.length = 0;
-    const res = await route('POST', '/api/documents/d1/tabs/t1/comments/c1/reply', {
+    const add = await route('POST', '/api/documents/d1/tabs/t1/comments', {
+      body: { elementId: 'e1', text: 'hello' },
+      as: BOB,
+    });
+    expect(add.status).toBe(410);
+    const reply = await route('POST', '/api/documents/d1/tabs/t1/comments/c1/reply', {
       body: { text: 'thanks' },
     });
-    expect(res.status).toBe(201);
-    expect(fake.pushes.map((p) => [p.userId, p.kind])).toEqual([[BOB, 'threadReply']]);
-    fake.pushes.length = 0;
-    expect((await route('POST', '/api/documents/d1/tabs/t1/comments/c1/resolve')).status).toBe(204);
+    expect(reply.status).toBe(410);
     expect(fake.pushes).toEqual([]);
   });
 });
@@ -349,55 +335,6 @@ describe('who may hear (share roles)', () => {
       previous: [],
       next: [box([comment('c1', 'guest_1')])],
     });
-    expect(fake.pushes).toEqual([]);
-  });
-});
-
-describe('an action assigned', () => {
-  const assign = async (body: Record<string, unknown>, documentId = 'd1') => {
-    const pending: Promise<unknown>[] = [];
-    const res = await handleTeamNotifyRoutes(
-      makeTestRouteContext('POST', `/api/teams/${TEAM}/notify-action`, {
-        env: db.env,
-        owner: OWNER,
-        accountUserId: OWNER,
-        body: { documentId, assigneeUserId: BOB, actionName: 'Ship it', ...body },
-        teams: TEAM_CLAIM,
-        waitUntil: (p) => void pending.push(p),
-      }),
-      TEAM,
-      OWNER,
-    );
-    await Promise.all(pending);
-    return res!;
-  };
-
-  it('tells the assignee, at the action, even with the Email box unticked', async () => {
-    expect((await assign({ email: false, tabId: 't1', elementId: 'e1' })).status).toBe(202);
-    expect(fake.pushes).toEqual([
-      {
-        userId: BOB,
-        kind: 'action',
-        title: 'Owen assigned you an action in Roadmap',
-        url: `${BASE}/document/d1#t=t1&el=e1&open=action`,
-        tag: 'd1:e1',
-      },
-    ]);
-  });
-
-  it('opens the canvas when the place is not given, and skips an invited teammate with no account', async () => {
-    await assign({});
-    expect(fake.pushes.map((p) => [p.url, p.tag])).toEqual([[`${BASE}/document/d1`, 'd1:action']]);
-    fake.pushes.length = 0;
-    await assign({ assigneeUserId: undefined, assigneeMemberId: 'm-inv' });
-    expect(fake.pushes).toEqual([]);
-  });
-
-  it('sends nothing to an assignee who can’t open the canvas, or who is looking at it', async () => {
-    await assign({}, 'solo');
-    expect(fake.pushes).toEqual([]);
-    present.add(await personTagFor('d1', BOB));
-    await assign({});
     expect(fake.pushes).toEqual([]);
   });
 });

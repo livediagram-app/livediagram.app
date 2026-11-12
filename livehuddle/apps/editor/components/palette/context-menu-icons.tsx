@@ -5,14 +5,11 @@
 // Option tiles (animation kinds, layout styles, rotation) are previews and keep their own drawing.
 
 import {
-  ActionIcon,
-  CommentIcon,
   CopyIcon as SharedCopyIcon,
   DuplicateIcon,
   Glyph,
   LinkIcon,
   lucideGlyph,
-  NoteIcon,
   TrashIcon,
 } from '@livehuddle/ui';
 import {
@@ -48,21 +45,7 @@ export const QUICK_ACTION_ICON_PX = 16;
 export const LayerUpIcon = lucideGlyph(lucideBringToFront, MENU_ICON_PX);
 export const LayerDownIcon = lucideGlyph(lucideSendToBack, MENU_ICON_PX);
 
-// The note / action / comment / link glyphs are the shared element-affordance drawings
-// (@livehuddle/ui), the same ones the on-element badge pill shows, at the menu step.
-export function NoteMenuIcon() {
-  return <NoteIcon size={MENU_ICON_PX} />;
-}
-
-// Clipboard-with-tick glyph for the Assign Action tile (docs/specs/012-collaboration/assigned-actions.md).
-export function ActionMenuIcon() {
-  return <ActionIcon size={MENU_ICON_PX} />;
-}
-
-export function CommentMenuIcon() {
-  return <CommentIcon size={MENU_ICON_PX} />;
-}
-
+// The link glyph is the shared drawing (@livehuddle/ui), at the menu step: a link card's Link section uses it.
 export function LinkMenuIcon() {
   return <LinkIcon size={MENU_ICON_PX} />;
 }

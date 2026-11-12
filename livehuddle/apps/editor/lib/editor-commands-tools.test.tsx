@@ -24,7 +24,6 @@ const ctx: CommandContext = {
   canUndo: false,
   canRedo: false,
   selectionCount: 0,
-  singleIsBoxed: false,
   singleRotates: false,
   singleIsShape: false,
   hasAnimation: false,

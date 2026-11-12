@@ -12,7 +12,6 @@ import type {
   ExportQuery,
   ExportResult,
 } from '@liveworkspace/index-app';
-import type { notifyActionAssigned, notifyMentioned } from './email/notifications';
 import type { DocumentCopy, DocumentOutline } from './document-room/document-content';
 import type { DocumentFileImport } from './document-room/document-file';
 import type { RouteIdentity } from './document-room/document-route';
@@ -22,16 +21,6 @@ import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/m
 import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import type { Env } from './types';
-
-// What the canvas's action-assigned and mention emails are told (email/notifications.ts): all but the canvas,
-// which the canvas names itself.
-// `email: false` (the dialog's Email box unticked) sends no email; `push` is the assignee's phone notification's link
-// and tag, sent when they can open the canvas (docs/specs/014-identity/phone-notifications.md).
-export type ActionNotice = Omit<Parameters<typeof notifyActionAssigned>[1], 'document'> & {
-  email?: boolean;
-  push?: { url: string; tag: string };
-};
-export type MentionNotice = Omit<Parameters<typeof notifyMentioned>[1], 'document'>;
 
 export type CopySource = { copy: DocumentCopy; community: boolean };
 
@@ -77,11 +66,6 @@ export type DocumentRoomClient = {
   joined(personId: string): Promise<void>;
   // A closed account's name off the canvas (document-anonymise.ts): answers the rows changed.
   anonymise(personId: string): Promise<number>;
-  // The emails of an action assigned and of a comment's mentions (routes/team-notify-routes.ts, which checked the
-  // people and the canvas): sent from the canvas, which keeps their once-only claims and knows who is looking (an
-  // action's phone notification skips an assignee already there). False for a canvas not started.
-  notifyAction(input: ActionNotice): Promise<boolean>;
-  notifyMention(input: MentionNotice): Promise<boolean>;
   // The index's reverse write of a connected tab (document-room/connected-tab.ts).
   addConnectedTab(write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
   // A tab shared between documents (document-room/tab-shares.ts): the tab and its holders for one joining, the
@@ -121,8 +105,6 @@ export function documentRoom(
     communityListing: (code) => room.communityListing(documentId, code),
     joined: (personId) => room.joined(documentId, personId),
     anonymise: (personId) => room.anonymise(documentId, personId),
-    notifyAction: (input) => room.notifyAction(documentId, input),
-    notifyMention: (input) => room.notifyMention(documentId, input),
     sharedTabCopy: (tabId) => room.sharedTabCopy(documentId, tabId),
     shareJoined: (tabId, member, seen) => room.shareJoined(documentId, tabId, member, seen),
     receiveShares: (from, messages) => room.receiveShares(documentId, from, messages),
@@ -162,8 +144,6 @@ export type DocumentRoomRpc = {
   ): Promise<{ postId: string; author: CommunityAuthor } | null>;
   joined(documentId: string, personId: string): Promise<void>;
   anonymise(documentId: string, personId: string): Promise<number>;
-  notifyAction(documentId: string, input: ActionNotice): Promise<boolean>;
-  notifyMention(documentId: string, input: MentionNotice): Promise<boolean>;
   sharedTabCopy(documentId: string, tabId: string): Promise<SharedTabCopy | null>;
   shareJoined(
     documentId: string,

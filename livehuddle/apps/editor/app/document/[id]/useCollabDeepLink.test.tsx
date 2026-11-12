@@ -7,7 +7,8 @@ import type { CollabDeepLink } from '@/lib/collab-deep-link';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import type { TabLoadState } from './editor-page-helpers';
 
-// Arriving from an Inbox row (docs/specs/013-workspace/inbox.md §1): an element and its popover.
+// Arriving from an element deep link (docs/specs/013-workspace/inbox.md §1): the element, selected and in view. Its
+// `open=` opens nothing (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes").
 // Consumed once, and only on the right tab.
 
 const box = {
@@ -27,8 +28,6 @@ function arrive(
   const calls = {
     select: vi.fn(),
     scrollIntoView: vi.fn(),
-    openActionPopover: vi.fn(),
-    openComments: vi.fn(),
   };
   const props = {
     link: { current: link },
@@ -43,11 +42,11 @@ function arrive(
 }
 
 describe('useCollabDeepLink', () => {
-  it('selects the element and opens its popover', () => {
+  it('selects the element and brings it into view, an action or comments link included', () => {
     const { calls } = arrive({ at: { tabId: 't1', elementId: 'b1' }, open: 'action' });
     expect(calls.select).toHaveBeenCalledWith('b1');
     expect(calls.scrollIntoView).toHaveBeenCalledWith(10, 20, 300, 200, { center: true });
-    expect(calls.openActionPopover).toHaveBeenCalledWith('b1');
+    expect(Object.keys(calls)).toEqual(['select', 'scrollIntoView']);
   });
 
   it('waits for the named tab and its load, then fires once', () => {
@@ -63,18 +62,12 @@ describe('useCollabDeepLink', () => {
     expect(calls.select).toHaveBeenCalledTimes(1);
   });
 
-  it('opens nothing when the tab failed to load', () => {
+  it('selects nothing when the tab failed to load', () => {
     const { calls } = arrive(
       { at: { tabId: 't1', elementId: 'b1' }, open: 'action' },
       { state: 'error' as TabLoadState },
     );
-    expect(calls.openActionPopover).not.toHaveBeenCalled();
     expect(calls.select).not.toHaveBeenCalled();
-  });
-
-  it('opens a thread’s comments', () => {
-    const { calls } = arrive({ at: { tabId: 't1', elementId: 'b1' }, open: 'comments' });
-    expect(calls.openComments).toHaveBeenCalledWith('b1');
   });
 });
 

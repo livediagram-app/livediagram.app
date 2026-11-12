@@ -19,7 +19,7 @@ import type { EditorToolsSlice } from './useEditorTools';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
 import type { EditorRoomSlice } from './useEditorRoom';
-import type { EditorCommentsSlice } from './useEditorComments';
+import type { EditorActiveTabSlice } from './useEditorActiveTab';
 import type { EditorViewportSlice } from './useEditorViewport';
 
 // Follow-me, nudges, travel that keeps walking, Bring Focus landing, the changeset reveal, server capabilities,
@@ -32,7 +32,7 @@ export function useEditorFollowing({
   fromCollaboration,
   fromPersistence,
   fromRoom,
-  fromComments,
+  fromActiveTab,
   fromViewport,
 }: {
   fromDocument: EditorDocumentSlice;
@@ -41,7 +41,7 @@ export function useEditorFollowing({
   fromCollaboration: EditorCollaborationSlice;
   fromPersistence: EditorPersistenceSlice;
   fromRoom: EditorRoomSlice;
-  fromComments: EditorCommentsSlice;
+  fromActiveTab: EditorActiveTabSlice;
   fromViewport: EditorViewportSlice;
 }) {
   const { hydrated, loadedTabIds, selfParticipant, toast } = fromDocument;
@@ -61,7 +61,7 @@ export function useEditorFollowing({
   } = fromCollaboration;
   const { documentName, tabsRef } = fromPersistence;
   const { receiveFocusRef, revealChangesetRef } = fromRoom;
-  const { activeTab } = fromComments;
+  const { activeTab } = fromActiveTab;
   const {
     broadcastViewport,
     canvasMainRef,

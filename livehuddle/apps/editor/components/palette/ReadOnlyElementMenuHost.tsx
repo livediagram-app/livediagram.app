@@ -3,15 +3,11 @@
 // The element menu for a Participant or a Viewer (docs/specs/008-canvas/element-menu-quick-bar.md "Element menu for
 // Participants and Viewers"): a right-click or a long-press on an element opens it with only what the session's
 // role may do. The rows are decided in @liveworkspace/workbench (readOnlyElementMenuItems) for every editor alike;
-// this host reads the session's `can` and runs each row with the editor's own handlers.
+// this host reads the session's `can` and runs each row with the editor's own handlers. livehuddle offers no
+// comments, links or notes (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes"),
+// so no element takes attachments here: the rows are Edit Text and Copy Text.
 
-import {
-  elementKindLabel,
-  elementSupportsText,
-  isBoxed,
-  isRetiredArrow,
-  type ElementLink,
-} from '@livehuddle/document';
+import { elementKindLabel, elementSupportsText } from '@livehuddle/document';
 import { ReadOnlyElementMenu } from '@liveworkspace/workbench/components/palette/ReadOnlyElementMenu';
 import {
   copyElementText,
@@ -21,28 +17,15 @@ import {
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 
 export function ReadOnlyElementMenuHost() {
-  const {
-    contextMenu,
-    closeContextMenu,
-    activeTab,
-    can,
-    embedMode,
-    lockedByOther,
-    openComments,
-    openNote,
-    followLink,
-    beginEdit,
-  } = useEditorContext();
+  const { contextMenu, closeContextMenu, activeTab, can, lockedByOther, beginEdit } =
+    useEditorContext();
   if (contextMenu?.mode !== 'element') return null;
   const target = activeTab.elements.find((el) => el.id === contextMenu.elementId);
   if (!target) return null;
   const facts = readOnlyElementMenuFacts(target, {
     takePart: can.takePart,
-    // Comment badges are off for a reader of an embed, and so are its comments rows.
-    commentsShown: !embedMode,
-    // A stored arrow's card takes comments, a link and a note as a box does (docs/specs/002-project-scope/
-    // not-in-livehuddle.md "The element engine", part 4).
-    attachments: isBoxed(target) || isRetiredArrow(target),
+    commentsShown: false,
+    attachments: false,
     writeText: can.writeText(target) && elementSupportsText(target) && !lockedByOther(target.id),
   });
   const items = readOnlyElementMenuItems(facts);
@@ -57,15 +40,8 @@ export function ReadOnlyElementMenuHost() {
       onClose={closeContextMenu}
       onRun={(key) => {
         switch (key) {
-          case 'comment':
-            return openComments(target.id);
           case 'edit-text':
             return beginEdit(target.id);
-          case 'open-link':
-            // Offered only on an element with a link (readOnlyElementMenuFacts).
-            return followLink((target as { link?: ElementLink }).link as ElementLink);
-          case 'note':
-            return openNote(target.id);
           case 'copy-text':
             return void copyElementText(facts.text);
         }

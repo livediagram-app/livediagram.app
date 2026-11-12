@@ -81,7 +81,6 @@ function fullAccount(): UserPreferences {
     elementToursSeen: true,
     uiScale: 1.1,
     panelOpacity: 0.85,
-    elementIndicatorStyle: 'footer',
     drawPattern: 'graph',
     reduceMotion: true,
     notifyTips: false,

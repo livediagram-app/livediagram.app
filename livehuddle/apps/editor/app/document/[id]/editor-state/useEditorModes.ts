@@ -8,7 +8,7 @@ import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorToolsSlice } from './useEditorTools';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
-import type { EditorCommentsSlice } from './useEditorComments';
+import type { EditorActiveTabSlice } from './useEditorActiveTab';
 
 // Edit and Walk: the tool a tab starts with, a tab that opens walking, and the tab's custom colours. A slice of
 // useEditorState (../useEditorState.ts): it takes the slices composed before it and returns its own, with
@@ -19,21 +19,21 @@ export function useEditorModes({
   fromSelection,
   fromTools,
   fromCollaboration,
-  fromComments,
+  fromActiveTab,
 }: {
   fromDocument: EditorDocumentSlice;
   fromHistory: EditorHistorySlice;
   fromSelection: EditorSelectionSlice;
   fromTools: EditorToolsSlice;
   fromCollaboration: EditorCollaborationSlice;
-  fromComments: EditorCommentsSlice;
+  fromActiveTab: EditorActiveTabSlice;
 }) {
   const { embedMode, loadedTabIds } = fromDocument;
   const { tickTabs } = fromHistory;
   const { setMultiSelectedIds, setSelectedId } = fromSelection;
   const { canvasTool, enterWalking, setCanvasTool } = fromTools;
   const { canEdit, participant } = fromCollaboration;
-  const { activeTab } = fromComments;
+  const { activeTab } = fromActiveTab;
   // A colour picked with + joins the tab's custom colours, which every picker offers.
   const addCustomColour = useAddCustomColour({ activeId: activeTab.id, canEdit, tickTabs });
   // The tool the editor starts with: Select, or Hand on a phone (docs/specs/007-editor/editor-modes.md).

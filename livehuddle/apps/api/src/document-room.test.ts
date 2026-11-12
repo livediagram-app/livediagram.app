@@ -2037,14 +2037,14 @@ describe('DocumentRoom collaboration ledger (docs/specs/012-collaboration/collab
     sendFrame(room, ws, { kind: 'hello', participant: { id: 'e', name: 'E', color: '#000' } });
     return ws;
   }
-  // One comment removed, a multi-writer change a room records (the `comment-remove` delta).
-  const answer = (commentId: string) => ({
+  // One notice board note unpinned, a multi-writer change a room records (the `notice-unpin` delta).
+  const answer = (noteId: string) => ({
     kind: 'op',
     op: {
       kind: 'el-delta',
       tabId: 't1',
       elementId: 'card',
-      delta: { kind: 'comment-remove', commentId },
+      delta: { kind: 'notice-unpin', noteId, by: 'e' },
     },
   });
   const ledger = async (room: DocumentRoom, epoch = room.epoch) =>
@@ -2056,9 +2056,12 @@ describe('DocumentRoom collaboration ledger (docs/specs/012-collaboration/collab
     sendFrame(room, ws, answer('a'));
     sendFrame(room, ws, answer('b'));
     const body = (await ledger(room)) as {
-      elements: Record<string, { comments: { removes: Record<string, number> } }>;
+      elements: Record<string, { notes: { unpins: Record<string, { seq: number }> } }>;
     };
-    expect(body.elements.card!.comments.removes).toEqual({ a: 1, b: 2 });
+    expect(body.elements.card!.notes.unpins).toEqual({
+      a: { by: 'e', seq: 1 },
+      b: { by: 'e', seq: 2 },
+    });
   });
 
   it('serves nothing to a cursor from another epoch', async () => {
@@ -2231,19 +2234,9 @@ describe('DocumentRoom comment author ids (docs/specs/012-collaboration/collab-r
         },
       },
     });
-    sendFrame(room, editor, {
-      kind: 'op',
-      op: {
-        kind: 'el-delta',
-        tabId: 't',
-        elementId: 'a',
-        delta: { kind: 'comment-add', comment: { ...comment, id: 'c2' } },
-      },
-    });
     const received = peer.sent.join('\n');
     expect(received).not.toContain('owner-secret');
-    // And a posted comment carries the sender's session name, not its claim.
-    expect(received).toContain('"authorName":"Ed"');
+    // A comment delta is dropped at the op gate (not-in-livehuddle.md "Comments, actions, links and notes").
   });
 });
 
@@ -2875,29 +2868,6 @@ describe('the collab key (docs/specs/013-workspace/share-roles.md "The collab ke
     const [frame] = receivedOf(join(room, null, 'visitor'), 'collab-key');
     expect(frame?.key).toMatch(/^[0-9a-f]{32}$/);
     expect(frame?.key).not.toBe(THEIRS);
-  });
-
-  it("stamps an editor's reaction with its own key and person, never the ones it names", () => {
-    const { room } = newRoom();
-    const peer = join(room, THEIRS, 'peer');
-    const me = join(room, MINE, 'me');
-    peer.sent.length = 0;
-    const delta = {
-      kind: 'comment-react',
-      commentId: 'c',
-      emoji: 'heart',
-      by: THEIRS,
-      name: 'x',
-      on: true,
-    };
-    sendFrame(room, me, {
-      kind: 'op',
-      op: { kind: 'el-delta', tabId: 't', elementId: 'e', delta },
-    });
-    const op = receivedOf(peer, 'op')[0]?.op as
-      { delta: { by: string; person?: string } } | undefined;
-    expect(op?.delta.by).toBe(MINE);
-    expect(op?.delta.person).toBe(PERSON);
   });
 
   // docs/specs/012-collaboration/realtime-conflict-resolution.md "A patch is the room's alone".

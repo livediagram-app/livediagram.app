@@ -15,6 +15,7 @@ import { ToastProvider } from '../ui/Toasts';
 import { LibraryHostProvider } from '../library/context';
 import type { LibraryHostProps } from '../library/types';
 import { explorerPath, type ExplorerView } from '../views';
+import { appHasInbox } from '../inbox-apps';
 import type { AppFilter, HeroWords } from '../words';
 import type {
   ItemHref,
@@ -282,7 +283,7 @@ export function Explorer({
 function ExplorerInner({
   app,
   client,
-  view,
+  view: askedView,
   onNavigate,
   itemHref,
   onCreate,
@@ -328,6 +329,9 @@ function ExplorerInner({
   prefetchThumbnail,
   onViewToggled,
 }: Omit<ExplorerProps, keyof LibraryHostProps | 'teamsHost'>) {
+  // An app with no Inbox (appHasInbox) opens Home at the Inbox's address, an old link or a bookmark.
+  const view: ExplorerView =
+    askedView.kind === 'inbox' && !appHasInbox(app) ? { kind: 'home' } : askedView;
   const shownTeams = useTeams().teams;
   const [filter, setFilter] = useFilter(app, controlledFilter, onFilterChange);
   const [heroHidden, hideHero] = useHeroHidden(app, controlledHeroHidden, onHideHero);

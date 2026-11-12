@@ -90,6 +90,9 @@ export function useInbox(
   app: App,
   filter: AppFilter,
   host?: InboxHost,
+  // False for an app with no Inbox (appHasInbox, ../inbox-apps.ts): GET /inbox is never read, and the Inbox stays
+  // empty and settled (no data, not loading).
+  enabled = true,
 ): InboxState {
   const [state, setState] = useState<Held>({
     key: '',
@@ -105,6 +108,7 @@ export function useInbox(
   hostRef.current = host;
   const key = `${filter}:${attempt}`;
   useEffect(() => {
+    if (!enabled) return;
     const controller = new AbortController();
     const localFrom = hostRef.current?.localRows;
     Promise.all([
@@ -123,7 +127,7 @@ export function useInbox(
         );
       });
     return () => controller.abort();
-  }, [client, app, filter, key, refresh]);
+  }, [client, app, filter, key, refresh, enabled]);
   useReturnToTab(() => setRefresh((n) => n + 1));
   // The host's rows alone, read again: the latest read wins, and the index's rows stay as they are.
   const localReads = useRef(0);
@@ -143,11 +147,11 @@ export function useInbox(
     [rereadLocal],
   );
   // The host's rows changed (an offline item saved).
-  const subscribeLocal = host?.subscribeLocal;
+  const subscribeLocal = enabled ? host?.subscribeLocal : undefined;
   useEffect(() => subscribeLocal?.(rereadLocal), [subscribeLocal, rereadLocal]);
   // The host reads for someone else than the rows on screen were read for.
   const localRows = host?.localRows;
-  const stale = state.raw !== null && state.localFrom !== localRows;
+  const stale = enabled && state.raw !== null && state.localFrom !== localRows;
   useEffect(() => {
     if (stale) rereadLocal();
   }, [stale, localRows, rereadLocal]);
@@ -156,7 +160,7 @@ export function useInbox(
   const raw = current?.raw ?? null;
   const local = current?.local ?? NO_LOCAL;
   const data = useMemo(() => (raw ? merged(raw, local) : null), [raw, local]);
-  const loading = !current;
+  const loading = enabled && !current;
   const error = current?.error ?? false;
   return useMemo(() => ({ data, loading, error, reload }), [data, loading, error, reload]);
 }

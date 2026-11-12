@@ -8,7 +8,7 @@ import { expect, test } from './fixtures';
 
 const CRASH = "This page couldn't load";
 
-async function openExplorer(page: Page, path = '/explorer/inbox') {
+async function openExplorer(page: Page, path = '/explorer/shared') {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto(path);
@@ -57,8 +57,10 @@ test.describe('stale builds', () => {
     await page.getByRole('treeitem', { name: /^Home/ }).click();
     await expect.poll(() => loads).toEqual(['/explorer/home']);
     await page.waitForLoadState('networkidle');
-    await page.getByRole('treeitem', { name: /^Inbox/ }).click();
-    await expect.poll(() => loads).toEqual(['/explorer/home', '/explorer/inbox']);
+    // livehuddle has no Inbox (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes").
+    await expect(page.getByRole('treeitem', { name: /^Inbox/ })).toHaveCount(0);
+    await page.getByRole('treeitem', { name: /^Shared With Me/ }).click();
+    await expect.poll(() => loads).toEqual(['/explorer/home', '/explorer/shared']);
     await page.waitForLoadState('networkidle');
     await page.goBack();
     await expect.poll(() => loads.length).toBe(3);

@@ -1,6 +1,5 @@
 // The caller's teams (from its token: liveworkspace manages them), a team's library, for API clients
-// (index-adapters.ts), and a team's people, for the editor's assignee picker and @-mention list
-// (assigned-actions.md, comment-mentions.md). Making a team is the one write: liveworkspace makes it for the
+// (index-adapters.ts), and a team's people. Making a team is the one write: liveworkspace makes it for the
 // person signed in (team-create.ts, createTeamFor).
 
 import type { TeamListItem, TeamMember } from '@livehuddle/api-schema';
@@ -28,11 +27,12 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   if (segments.length === 2 && request.method === 'POST') return createTeam(ctx);
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
-  // The assigned-actions and mentions endpoints (team-notify-routes.ts), for someone in the team.
+  // The assigned-actions and mentions endpoints livehuddle no longer has (team-notify-routes.ts): 410 for someone
+  // in the team, missing for anyone else.
   if (segments.length === 4 && NOTIFY_ROUTES.has(segments[3]!)) {
     const teamId = segments[2]!;
     if (!(await inTeam(ctx, owner, teamId))) return notFound();
-    return (await handleTeamNotifyRoutes(ctx, teamId, owner)) ?? notFound();
+    return handleTeamNotifyRoutes(ctx) ?? notFound();
   }
   if (request.method !== 'GET') return notFound();
   const teams = ctx.teams ?? [];

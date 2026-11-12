@@ -117,6 +117,7 @@ export function HomeHero({
     kind,
     words,
     inbox,
+    hasInbox,
     viewerId,
     viewHref,
     navigate,
@@ -139,7 +140,11 @@ export function HomeHero({
             tone: 'sky' as const,
           },
         ].filter((p) => p.label)
-      : heroPills({ items, inbox: inboxTotal(inbox.data, viewerId) }, words, teams);
+      : heroPills(
+          { items, inbox: hasInbox ? inboxTotal(inbox.data, viewerId) : undefined },
+          words,
+          teams,
+        );
   const greeting = firstRun
     ? `Welcome to ${firstRun.manifest?.name ?? ''}.`
     : hour === null

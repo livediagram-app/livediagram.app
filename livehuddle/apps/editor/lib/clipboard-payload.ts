@@ -22,6 +22,7 @@ import {
   isValidElement,
   migrateIncomingElements,
   ORIGINAL_ONLY_FIELDS,
+  droppedAttachments,
   type Element,
 } from '@livehuddle/document';
 
@@ -68,8 +69,10 @@ type ClipboardEnvelope = {
 // clipboard write is refused, so both routes carry the same thing.
 export function stripIdentity(el: Element): Element {
   const out: Record<string, unknown> = { ...el };
-  // The same list a Duplicate drops (freshCopyFields), so the two routes to a copy agree.
+  // The same list a Duplicate drops (freshCopyFields), so the two routes to a copy agree: a link and a note too
+  // (droppedAttachments), which livehuddle no longer offers.
   for (const field of ORIGINAL_ONLY_FIELDS) delete out[field];
+  for (const field of droppedAttachments(el)) delete out[field];
   return out as Element;
 }
 

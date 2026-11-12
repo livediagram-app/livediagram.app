@@ -137,9 +137,6 @@ function face(readOnly: boolean, wayfinding: Wayfinding) {
       onCommitLabel={vi.fn()}
       onCancelEdit={vi.fn()}
       onFollowLink={vi.fn()}
-      onOpenComments={vi.fn()}
-      onOpenAction={vi.fn()}
-      onOpenNote={vi.fn()}
       onContextSelect={vi.fn()}
       onEnterPortal={() => ({ targetName: null, wayfinding })}
       tabSummaries={[]}

@@ -6,8 +6,9 @@ import type { CommandContext, CommandHandlers, EditorCommand } from './editor-co
 // Split out of buildEditorCommands, which was one 250-line function assembling
 // every command in the editor. This is the block that depends on the
 // SELECTION rather than on the document, the tab or the history: duplicate,
-// delete, reorder, rotate, note, comment, animation, and the status
-// markers.
+// delete, reorder, rotate, animation, and the status markers. Notes and
+// comments left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md
+// "Comments, actions, links and notes").
 //
 // It needs nothing from the rest of that function beyond the context and the
 // handlers — the two flags it used (`hasSelection`, `isSingle`) are one
@@ -88,22 +89,6 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
       name: 'Rotate Right',
       keywords: 'rotate turn face facing furniture clockwise right quarter',
       run: () => h.turn(1),
-    });
-  }
-
-  // Note / comment are single boxed-element actions.
-  if (isSingle && ctx.singleIsBoxed) {
-    out.push({
-      id: 'note',
-      name: 'Add / Edit Note',
-      keywords: 'note annotate memo description',
-      run: h.editNote,
-    });
-    out.push({
-      id: 'comment',
-      name: 'Add Comment',
-      keywords: 'comment discuss feedback thread reply',
-      run: h.addComment,
     });
   }
 

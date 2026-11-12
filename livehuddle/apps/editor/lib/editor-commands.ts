@@ -27,9 +27,6 @@ export type CommandContext = {
   canRedo: boolean;
   // 0 = nothing selected, 1 = single selection, >1 = multi-selection.
   selectionCount: number;
-  // True when the single selection is a boxed element (rotation / note /
-  // comment / animation all target boxed elements; arrows are excluded).
-  singleIsBoxed: boolean;
   // True when the single selection can be rotated (`supportsRotation`): boxed, minus an
   // annotation marker (docs/specs/009-elements/blueprints/annotations.md). Gates the Rotate commands.
   singleRotates: boolean;
@@ -66,8 +63,6 @@ export type CommandHandlers = {
   turn: (quarters: 1 | -1) => void;
   clearAnimation: () => void;
   setMarker: (marker: ShapeMarker | null) => void;
-  addComment: () => void;
-  editNote: () => void;
   createTab: () => void;
   renameDocument: () => void;
   deleteDocument: () => void;

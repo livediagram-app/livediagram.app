@@ -124,8 +124,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     // rule. Placement always shows (Layer is unconditional), so each later
     // group's divider just gates on the group's own visibility.
     const showContentGroup = target.type === 'image' || target.type === 'link-card';
-    // A stored arrow's card attaches a comment, a note and an action as a box does (D28).
-    const showCollaborateGroup = true;
     return (
       <ContextMenu
         position={position}
@@ -134,14 +132,8 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         flush
         anchorBottom={anchorBottom}
       >
-        {/* The quick bar (docs/specs/008-canvas/element-menu-quick-bar.md): Assign Action, Comment, Link and Note, and
-            Clear Styles at its right, above every category rather than folded into Collaborate and Resources. */}
-        <ElementMenuQuickBar
-          target={target}
-          props={props}
-          attachments={showCollaborateGroup}
-          onClose={onClose}
-        />
+        {/* The quick bar (docs/specs/008-canvas/element-menu-quick-bar.md): Clear Styles, above every category. */}
+        <ElementMenuQuickBar target={target} onClose={onClose} />
         {/* Layer — pinned FIRST in the menu (before the type-specific
             categories, which render conditionally and so would otherwise
             shuffle Layer's position around). Groups front/back + opacity +

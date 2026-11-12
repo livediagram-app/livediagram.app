@@ -6,7 +6,6 @@ import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { DEFAULT_SCHEME_ID } from '@livehuddle/document';
 import { writeUserPreferences } from '@/lib/user-preferences';
 import { useEditorImages } from '@/hooks/canvas/useEditorImages';
-import { useEditorNotes } from '@/hooks/canvas/useEditorNotes';
 import { useElementSelectionActions } from '@/hooks/canvas/useElementSelectionActions';
 import { useShapeDrawing } from '@/hooks/canvas/useShapeDrawing';
 import { useElementCreation } from '../useElementCreation';
@@ -17,12 +16,12 @@ import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorToolsSlice } from './useEditorTools';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
-import type { EditorCommentsSlice } from './useEditorComments';
+import type { EditorActiveTabSlice } from './useEditorActiveTab';
 import type { EditorPresenceSlice } from './useEditorPresence';
 import type { EditorEditingSlice } from './useEditorEditing';
 import type { EditorTabsSlice } from './useEditorTabs';
 
-// Making things: images, notes, drawing (room walls included), palette creation, inline icons and selection
+// Making things: images, drawing (room walls included), palette creation, inline icons and selection
 // actions. A slice of useEditorState (../useEditorState.ts): it takes the slices composed before it and returns
 // its own, with `view`, its part of the editor's view-model.
 export function useEditorCreation({
@@ -32,7 +31,7 @@ export function useEditorCreation({
   fromTools,
   fromCollaboration,
   fromPersistence,
-  fromComments,
+  fromActiveTab,
   fromPresence,
   fromEditing,
   fromTabs,
@@ -43,7 +42,7 @@ export function useEditorCreation({
   fromTools: EditorToolsSlice;
   fromCollaboration: EditorCollaborationSlice;
   fromPersistence: EditorPersistenceSlice;
-  fromComments: EditorCommentsSlice;
+  fromActiveTab: EditorActiveTabSlice;
   fromPresence: EditorPresenceSlice;
   fromEditing: EditorEditingSlice;
   fromTabs: EditorTabsSlice;
@@ -62,7 +61,7 @@ export function useEditorCreation({
   const { canvasTool, setCanvasTool } = fromTools;
   const { isReadOnly, participant, sessionShareCode } = fromCollaboration;
   const { setUserPreferences, userPreferences } = fromPersistence;
-  const { activeTab } = fromComments;
+  const { activeTab } = fromActiveTab;
   const { lockedByOther } = fromPresence;
   const {
     addBoxedAt,
@@ -99,11 +98,6 @@ export function useEditorCreation({
     ownerId: selfParticipant.id,
     sessionShareCode,
   });
-
-  // Per-element note popover (single plain-text paragraph; see
-  // packages/document BoxedElement.note). State + handlers in
-  // useEditorNotes.
-  const { noteOpenId, openNote, closeNote, setNote } = useEditorNotes({ commit });
 
   // --- Element CRUD --------------------------------------------------------
 
@@ -224,7 +218,6 @@ export function useEditorCreation({
       beginRoomWalls,
       cancelDrawShape,
       closeImagePicker,
-      closeNote,
       commitDraw,
       commitRoomWalls,
       deleteMultiSelected,
@@ -239,13 +232,10 @@ export function useEditorCreation({
       imageContext,
       imagePickerOpenFor,
       narrowMultiSelection,
-      noteOpenId,
-      openNote,
       pendingDraw,
       refreshRecentImages,
       removeImageFromElement,
       selectMarquee,
-      setNote,
     },
   };
 }

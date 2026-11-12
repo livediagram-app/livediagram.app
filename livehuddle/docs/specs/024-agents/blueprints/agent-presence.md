@@ -60,7 +60,7 @@ Scope, by file:
 | `apps/editor/lib/collaborator-roster.ts`                                                                                                                                                 | `peopleCount` and `peopleTabCount` leave agent rows out; `collaboratorRowDetail`; `participantBadges` reads the agent's level                                                       |
 | `apps/editor/app/document/[id]/usePresenceState.ts`, `useRoomConnection.ts`                                                                                                              | `liveAgents` state, set from the frame                                                                                                                                              |
 | `apps/editor/app/document/[id]/usePresenceRows.ts`, `app/document/[id]/editor-state/useEditorPresence.ts`                                                                                | Composes the fold and the focus map; the roll call reads `withoutAgentRows`                                                                                                         |
-| `apps/editor/hooks/collab/useEditorComments.ts`, `components/panels/EditorAnchoredPopovers.tsx`, `CommentThreadPopover.tsx`                                                              | A non-edit session resolves and reopens through the endpoints; the toggle shows to anyone who may comment                                                                           |
+| apps/editor/hooks/collab/useEditorComments.ts (deleted, Work Item 714), components/panels/EditorAnchoredPopovers.tsx (deleted, Work Item 714), `CommentThreadPopover.tsx`                | A non-edit session resolves and reopens through the endpoints; the toggle shows to anyone who may comment                                                                           |
 | `apps/editor/components/primitives/ParticipantAvatar.tsx`                                                                                                                                | The status line in the hover card and the accessible name                                                                                                                           |
 | `apps/editor/components/dialogs/CollaboratorsDialog.tsx`                                                                                                                                 | The status line on a row; no Follow and no facilitator button on an agent row                                                                                                       |
 | `apps/editor/components/canvas/AgentFocusOverlay.tsx` (+ test), `CanvasElementsLayer.tsx`, `EditorView.tsx`                                                                              | `AgentFocusOverlay` beneath the remote cursors, fed by `AgentFocusContext`                                                                                                          |
@@ -155,14 +155,19 @@ All `guest-or-clerk`; tab-scoped grants reach their own tab only; a trashed docu
 | ------ | ------------------------------------------------------------ | ---------------------------------- | ------------------------------------------ |
 | PUT    | `/api/documents/:id/tabs/:tabId/presence`                    | token; `gateParticipate`           | 200 `{ presence: AgentPresenceResult }`    |
 | DELETE | `/api/documents/:id/tabs/:tabId/presence`                    | token; `gateParticipate`           | 204                                        |
-| POST   | `/api/documents/:id/tabs/:tabId/comments`                    | `gateParticipate`                  | 201 `{ comment }`                          |
-| DELETE | `/api/documents/:id/tabs/:tabId/comments/:commentId`         | `gateParticipate`; author only     | 204                                        |
-| POST   | `/api/documents/:id/tabs/:tabId/comments/:commentId/reply`   | `gateParticipate`                  | 201 `{ comment }`                          |
-| POST   | `/api/documents/:id/tabs/:tabId/comments/:commentId/resolve` | `gateParticipate`                  | 204                                        |
-| POST   | `/api/documents/:id/tabs/:tabId/comments/:commentId/reopen`  | `gateParticipate`                  | 204                                        |
+| POST   | `/api/documents/:id/tabs/:tabId/comments`                    | none: gone                         | 410 `comments_gone`                        |
+| DELETE | `/api/documents/:id/tabs/:tabId/comments/:commentId`         | none: gone                         | 410 `comments_gone`                        |
+| POST   | `/api/documents/:id/tabs/:tabId/comments/:commentId/reply`   | none: gone                         | 410 `comments_gone`                        |
+| POST   | `/api/documents/:id/tabs/:tabId/comments/:commentId/resolve` | none: gone                         | 410 `comments_gone`                        |
+| POST   | `/api/documents/:id/tabs/:tabId/comments/:commentId/reopen`  | none: gone                         | 410 `comments_gone`                        |
 | GET    | `/api/documents/:id/comments?status=open\|resolved\|all`     | `gateGrant` (any level, any token) | 200 `{ threads: DocumentCommentThread[] }` |
 
-The six writes above are gated by `gateParticipate` and belong to the participation-class routes, beside the session
+**The five comment writes are gone** ([Comments, actions, links and notes](../../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)): `commentRoute` in `comment-routes.ts` answers each with 410
+`comments_gone` before any read or gate, so nothing below about a comment write (verbs, stamping, relays, the
+lost race, the emails) runs any more; it is kept as the record of the stored data the listing still reads. A GET on a
+thread verb answers 405, and the OpenAPI manifest marks the five deprecated with 410 alone.
+
+The two presence writes above are gated by `gateParticipate` and belong to the participation-class routes, beside the session
 tools share-roles owns (live polls, the Q&A board, dots, answers, the idea box). The choke point lets a token that
 passes `gateParticipate` but not `gateEdit` reach those routes and no other write; a token that fails
 `gateParticipate` reaches none of them. Every other write keeps `gateEdit`.

@@ -16,7 +16,9 @@ vi.stubGlobal(
 );
 
 // docs/specs/008-canvas/element-menu-quick-bar.md "Element menu for Participants and Viewers": the element menu a
-// Participant or a Viewer opens holds only what the role may do (docs/specs/013-workspace/share-roles.md).
+// Participant or a Viewer opens holds only what the role may do (docs/specs/013-workspace/share-roles.md). livehuddle has
+// no comments, links or notes (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and
+// notes"), so no role gets a comment, Open Link or View Note row, even on an element that stores them.
 
 let ctx: Record<string, unknown>;
 vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ctx }));
@@ -32,9 +34,6 @@ function open(level: 'view' | 'participate', target: Element, over: Record<strin
     can: resolveEditorCapabilities({ level, adderKey: null }),
     embedMode: false,
     lockedByOther: () => false,
-    openComments: vi.fn(),
-    openNote: vi.fn(),
-    followLink: vi.fn(),
     beginEdit: vi.fn(),
     ...over,
   };
@@ -50,25 +49,26 @@ afterEach(cleanup);
 
 describe('ReadOnlyElementMenuHost', () => {
   // A Participant writes on nothing (docs/specs/013-workspace/share-roles.md "A Participant walks").
-  it('gives a Participant comments and what the element carries, and no Edit Text', () => {
-    open(
-      'participate',
-      square({
-        label: 'Login',
-        link: { kind: 'url', url: 'https://example.com' },
-        note: 'Remember',
-      }),
-    );
+  const stored = {
+    label: 'Login',
+    link: { kind: 'url', url: 'https://example.com' },
+    note: 'Remember',
+    commentThread: { resolved: false, comments: [{ id: 'c', text: 'hi' }] },
+    action: { id: 'a', name: 'Ship it', status: 'open' },
+  };
+
+  it('gives a Participant only Copy Text, whatever the element stores, and no Edit Text', () => {
+    open('participate', square(stored));
     expect(screen.getByText('Room')).toBeTruthy();
-    expect(rows()).toEqual(['Add Comment', 'Open Link', 'View Note', 'Copy Text']);
+    expect(rows()).toEqual(['Copy Text']);
   });
 
-  it('gives a Viewer no comment to start, no writing, and comments only where there are some', () => {
-    open('view', square({ label: 'Login' }));
+  it('gives a Viewer no comment, link or note row, even where some are stored', () => {
+    open('view', square(stored));
     expect(rows()).toEqual(['Copy Text']);
     cleanup();
-    open('view', square({ commentThread: { comments: [{ id: 'c' }] } }));
-    expect(rows()).toEqual(['Show Comments']);
+    open('view', square({ commentThread: stored.commentThread }));
+    expect(rows()).toEqual([]);
   });
 
   it('opens nothing where the role has nothing to do', () => {
@@ -77,7 +77,7 @@ describe('ReadOnlyElementMenuHost', () => {
     expect(rows()).toEqual([]);
   });
 
-  it('leaves out Edit Text on what someone else holds, and comments in an embed', () => {
+  it('leaves out Edit Text on what someone else holds, in an embed too', () => {
     open('participate', square({ label: 'A' }), {
       lockedByOther: () => true,
       embedMode: true,
@@ -88,23 +88,11 @@ describe('ReadOnlyElementMenuHost', () => {
   it('runs each row with the editor’s own handler', () => {
     const link = { kind: 'url', url: 'https://example.com' };
     const el = square({ label: 'Hi', link, note: 'n' });
-    open('participate', el);
-    fireEvent.click(screen.getByRole('button', { name: 'Add Comment' }));
-    expect(ctx.openComments).toHaveBeenCalledWith('sq');
-    expect(ctx.closeContextMenu).toHaveBeenCalled();
-    cleanup();
     // Edit Text is an Editor's row now: run it with an Editor's `can`.
     open('view', el, { can: resolveEditorCapabilities({ level: 'edit', adderKey: null }) });
     fireEvent.click(screen.getByRole('button', { name: 'Edit Text' }));
     expect(ctx.beginEdit).toHaveBeenCalledWith('sq');
-    cleanup();
-    open('participate', el);
-    fireEvent.click(screen.getByRole('button', { name: 'Open Link' }));
-    expect(ctx.followLink).toHaveBeenCalledWith(link);
-    cleanup();
-    open('participate', el);
-    fireEvent.click(screen.getByRole('button', { name: 'View Note' }));
-    expect(ctx.openNote).toHaveBeenCalledWith('sq');
+    expect(ctx.closeContextMenu).toHaveBeenCalled();
     cleanup();
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
@@ -113,13 +101,11 @@ describe('ReadOnlyElementMenuHost', () => {
     expect(writeText).toHaveBeenCalledWith('Hi');
   });
 
-  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4: a stored arrow's card takes
-  // comments, and its stored label can still be copied (never edited).
-  it("takes comments on a stored arrow's card, and copies its stored label", () => {
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4: a stored arrow's stored label can
+  // still be copied (never edited), and its card takes no comment now.
+  it("copies a stored arrow's stored label, and offers no comment on its card", () => {
     open('participate', storedArrow('ar', { x: 0, y: 0 }, { x: 10, y: 10 }, { label: 'yes' }));
-    expect(rows()).toContain('Add Comment');
-    expect(rows()).not.toContain('Open Link');
-    expect(rows()).toContain('Copy Text');
+    expect(rows()).toEqual(['Copy Text']);
   });
 
   // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Share roles": a stage's settings are an Editor's.

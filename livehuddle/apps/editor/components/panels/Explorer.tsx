@@ -30,7 +30,6 @@ import { itemHref, newDocumentHref, shareUrl, useTokenTeams } from '@/lib/explor
 import { API_BASE } from '@/lib/api-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerCommunity } from '@/lib/explorer-community-host';
-import { explorerInboxActions, explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { explorerImports, explorerLibraryHosts } from '@/lib/explorer-library-host';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
 import { trashOpenDocument } from '@/lib/document-delete-undo';
@@ -54,7 +53,6 @@ const NO_MOVE = () => {};
 // handlers.
 function ExplorerImpl({
   currentDocumentId,
-  inboxOpenAction = null,
   currentShareCode = null,
   onRenameCurrent,
   onNewDocument,
@@ -87,24 +85,8 @@ function ExplorerImpl({
     }),
     [accountUserId, accountDisplayName, communityOn, guestId],
   );
-  // A guest's too: their This Browser items' rows are theirs (lib/explorer-inbox-host.tsx).
-  const inboxOwner = accountUserId ?? guestId ?? null;
-  const inboxBase = useMemo(() => explorerInboxHost(inboxOwner), [inboxOwner]);
-  // The pane's verbs: this app's threads, and an action on the open canvas's active tab.
-  const inboxActions = useMemo(
-    () =>
-      explorerInboxActions(
-        inboxOwner,
-        currentDocumentId && inboxOpenAction
-          ? { itemId: currentDocumentId, ...inboxOpenAction }
-          : null,
-      ),
-    [inboxOwner, currentDocumentId, inboxOpenAction],
-  );
-  const inboxHost = useMemo(
-    () => ({ ...inboxBase, actions: inboxActions }),
-    [inboxBase, inboxActions],
-  );
+  // No Inbox host: livehuddle has no Inbox (@liveworkspace/explorer appHasInbox, docs/specs/002-project-scope/
+  // not-in-livehuddle.md "Comments, actions, links and notes").
   const library = useMemo(() => explorerLibraryHosts(), []);
   // The person's teams, made and run in place (New Team, a team's Members) for a signed-in person.
   const teams = useTokenTeams(isSignedIn);
@@ -194,7 +176,6 @@ function ExplorerImpl({
         viewerId={accountUserId ?? null}
         shareUrl={shareUrl}
         share={shareHost}
-        inbox={inboxHost}
         // The canvases kept only in this browser, which no index list holds: This Browser on the rail, in place.
         thisBrowser={thisBrowser}
         onOrganise={trackOrganise}

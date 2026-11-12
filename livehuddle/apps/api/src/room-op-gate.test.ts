@@ -141,18 +141,28 @@ describe('gateClientOp', () => {
     ).toEqual(DROP);
   });
 
-  // docs/specs/012-collaboration/comment-reactions.md "Share roles": whoever may comment may react.
-  it('relays a comment reaction from an Editor and a Participant as itself, never from a Viewer', () => {
-    const react = (by: string) => ({
+  // docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes": an older client's comment
+  // delta, a reaction included, is dropped from every level.
+  it('drops every comment delta, from an Editor, a Participant and a Viewer alike', () => {
+    const op = (delta: Record<string, unknown>) => ({
       kind: 'el-delta',
       tabId: 't',
       elementId: 'e',
-      delta: { kind: 'comment-react', commentId: 'c', emoji: 'eyes', by, name: 'Me', on: true },
+      delta,
     });
-    expect(gateClientOp(react('me'), as('edit'))).toEqual(relay(false));
-    expect(gateClientOp(react('me'), as('participate'))).toEqual(relay(false, true));
-    expect(gateClientOp(react('you'), as('participate'))).toEqual(DROP);
-    expect(gateClientOp(react('me'), as('view'))).toEqual(DROP);
+    const deltas = [
+      { kind: 'comment-react', commentId: 'c', emoji: 'eyes', by: 'me', name: 'Me', on: true },
+      {
+        kind: 'comment-add',
+        comment: { id: 'c', text: 'hi', createdAt: 1, authorName: 'Me', authorColor: '#000' },
+      },
+      { kind: 'comment-remove', commentId: 'c' },
+      { kind: 'comment-rekey', from: 'a', to: 'b' },
+      { kind: 'comment-resolve', resolved: true },
+    ];
+    for (const delta of deltas)
+      for (const level of ['edit', 'participate', 'view'] as const)
+        expect(gateClientOp(op(delta), as(level))).toEqual(DROP);
   });
 
   // docs/specs/009-elements/social-pieces.md "Notice Board": a Participant pins and unpins as itself, signed with its

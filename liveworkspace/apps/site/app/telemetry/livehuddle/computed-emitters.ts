@@ -233,10 +233,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['SettingsAppearance', 'SettingsEditor', 'SettingsAccount', 'SettingsPrivacy'],
     open: 'Settings<Category>, one per Settings category',
   },
-  'apps/editor/components/notes/useNoteRichTextSession.ts Note·Used': {
-    values: ['Bold', 'Italic', 'List', 'Heading'],
-    open: 'the rich-text command a note applied',
-  },
   'apps/editor/components/palette/PaletteCategoryBrowser.tsx UI·Searched': {
     values: ['IconSearch', 'TechSearch', 'StickerSearch'],
   },
@@ -406,18 +402,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['ShareTourCompleted', 'ShareTourSkipped'],
   },
   // The Inbox's reports, through its onTelemetry prop (@liveworkspace/explorer InboxPane.tsx, inbox/InboxRows.tsx).
-  'apps/editor/lib/explorer-inbox-host.tsx Activity·Opened': { values: [null] },
-  'apps/editor/lib/explorer-inbox-host.tsx Activity·Selected': {
-    values: ['Action', 'Card', 'Thread', 'CardThread', 'FormResponses'],
-  },
-  'apps/editor/lib/explorer-inbox-host.tsx Activity·Loaded': { values: ['Retry'] },
-  'apps/editor/lib/explorer-inbox-host.tsx Activity·Changed': {
-    values: ['All', 'MyActions', 'AssignedByMe', 'Comments', 'FormResponses'],
-  },
-  'apps/editor/lib/explorer-inbox-host.tsx Activity·Added': { values: ['Reply'] },
-  'apps/editor/lib/explorer-inbox-host.tsx Activity·Resolved': {
-    values: ['Thread', 'Action', 'Card'],
-  },
   'apps/editor/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },
   'apps/editor/lib/element-telemetry.ts Element·Added': {
     values: ELEMENT_KINDS,

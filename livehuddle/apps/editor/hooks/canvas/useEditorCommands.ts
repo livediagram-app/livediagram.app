@@ -37,8 +37,6 @@ const INERT_HANDLERS: CommandHandlers = {
   turn: noop,
   clearAnimation: noop,
   setMarker: noop,
-  addComment: noop,
-  editNote: noop,
   createTab: noop,
   renameDocument: noop,
   deleteDocument: noop,
@@ -85,8 +83,6 @@ export function useEditorCommands(open: boolean): {
     turnSelected,
     clearAnimationsSelected,
     setMarkerSelected,
-    openComments,
-    openNote,
     addTab,
     deleteDocument,
     setShareDialogOpen,
@@ -118,7 +114,6 @@ export function useEditorCommands(open: boolean): {
   // boxed-only / shape-only / animated gating can read its type + fields.
   const single =
     !isMulti && selectedId ? (activeTab.elements.find((e) => e.id === selectedId) ?? null) : null;
-  const singleIsBoxed = single ? isBoxed(single) : false;
   const singleIsShape = single?.type === 'shape';
   const singleRotates = single ? supportsRotation(single) : false;
   // Rotate Left / Right (docs/specs/009-elements/furniture-facing.md): any selected piece that turns.
@@ -144,7 +139,6 @@ export function useEditorCommands(open: boolean): {
       canUndo,
       canRedo,
       selectionCount,
-      singleIsBoxed,
       singleRotates,
       selectionTurns,
       singleIsShape,
@@ -159,7 +153,6 @@ export function useEditorCommands(open: boolean): {
       canUndo,
       canRedo,
       selectionCount,
-      singleIsBoxed,
       singleRotates,
       selectionTurns,
       singleIsShape,
@@ -183,12 +176,6 @@ export function useEditorCommands(open: boolean): {
     turn: turnSelected,
     clearAnimation: () => clearAnimationsSelected(),
     setMarker: setMarkerSelected,
-    addComment: () => {
-      if (selectedId) openComments(selectedId);
-    },
-    editNote: () => {
-      if (selectedId) openNote(selectedId);
-    },
     createTab: addTab,
     renameDocument: requestRenameDocument,
     // deleteDocument confirms internally and (for the current document)

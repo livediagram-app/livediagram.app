@@ -126,7 +126,6 @@ livedesign/scripts/ts-source-hooks.mjs	livediagram/scripts/ts-source-hooks.mjs	l
 livediagram/apps/api/src/db/content-summary.ts	livehuddle/apps/api/src/db/content-summary.ts
 livediagram/apps/api/src/document-room/document-anonymise.ts	livehuddle/apps/api/src/document-room/document-anonymise.ts
 livediagram/apps/api/src/legacy-request-forms.ts	livehuddle/apps/api/src/legacy-request-forms.ts
-livediagram/apps/api/src/liveworkspace/action-notices.ts	livehuddle/apps/api/src/liveworkspace/action-notices.ts
 livediagram/apps/api/src/liveworkspace/activity.ts	livehuddle/apps/api/src/liveworkspace/activity.ts
 livediagram/apps/api/src/redact-document.ts	livehuddle/apps/api/src/redact-document.ts
 livediagram/apps/api/src/routes/community.ts	livehuddle/apps/api/src/routes/community.ts
@@ -153,7 +152,6 @@ livediagram/apps/editor/app/new/new-document-settings.ts	livedocuments/apps/edit
 livediagram/apps/editor/app/not-found.tsx	livedocuments/apps/editor/app/not-found.tsx	livehuddle/apps/editor/app/not-found.tsx
 livediagram/apps/editor/app/page.tsx	livehuddle/apps/editor/app/page.tsx
 livediagram/apps/editor/app/sign-in/page.tsx	livedocuments/apps/editor/app/sign-in/page.tsx	livehuddle/apps/editor/app/sign-in/page.tsx
-livediagram/apps/editor/components/canvas/collab/comment/MentionContext.tsx	livehuddle/apps/editor/components/canvas/collab/comment/MentionContext.tsx
 livediagram/apps/editor/components/canvas/paper-kit.tsx	livehuddle/apps/editor/components/canvas/paper-kit.tsx
 livediagram/apps/editor/components/canvas/slide-transition.ts	livedocuments/apps/editor/components/canvas/slide-transition.ts
 livediagram/apps/editor/components/canvas/view-readers.tsx	livedocuments/apps/editor/components/canvas/view-readers.tsx
@@ -163,7 +161,6 @@ livediagram/apps/editor/components/colour/useThemeColours.ts	livehuddle/apps/edi
 livediagram/apps/editor/components/dialogs/ConversionHandoff.tsx	livehuddle/apps/editor/components/dialogs/ConversionHandoff.tsx
 livediagram/apps/editor/components/palette/ThemeBrowser.tsx	livehuddle/apps/editor/components/palette/ThemeBrowser.tsx	liveplanner/apps/editor/components/palette/ThemeBrowser.tsx
 livediagram/apps/editor/components/palette/theme-picker-cards.tsx	livehuddle/apps/editor/components/palette/theme-picker-cards.tsx	liveplanner/apps/editor/components/palette/theme-picker-cards.tsx
-livediagram/apps/editor/components/panels/Explorer.types.ts	livehuddle/apps/editor/components/panels/Explorer.types.ts
 livediagram/apps/editor/components/panels/LaserColourRow.tsx	livedocuments/apps/editor/components/panels/LaserColourRow.tsx
 livediagram/apps/editor/components/panels/LazyExplorer.tsx	livedocuments/apps/editor/components/panels/LazyExplorer.tsx	livehuddle/apps/editor/components/panels/LazyExplorer.tsx
 livediagram/apps/editor/components/panels/search-panel-sources.ts	livedocuments/apps/editor/components/panels/search-panel-sources.ts	livehuddle/apps/editor/components/panels/search-panel-sources.ts

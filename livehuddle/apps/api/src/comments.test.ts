@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Comment, Element, ShapeElement } from '@livehuddle/document';
 import {
-  findCommentHost,
   hasNewComments,
   redactCommentAuthorIds,
   redactTabDataAuthors,
-  removeComment,
   rewriteCommentAuthors,
   threadsOfTab,
 } from './comments';
@@ -186,37 +184,6 @@ describe('rewriteCommentAuthors', () => {
       createdAt: 1,
       authorName: 'Alice',
     });
-  });
-});
-
-describe('findCommentHost', () => {
-  it('finds a comment by id across elements', () => {
-    const els = [mkShape('a', [mkComment('c1', 'A', '#fff')]), mkShape('b', [])];
-    expect(findCommentHost(els, 'c1')).toMatchObject({ comment: { id: 'c1' }, elementId: 'a' });
-  });
-
-  it('returns null when the id is absent', () => {
-    expect(findCommentHost([mkShape('a', [mkComment('c1', 'A', '#fff')])], 'missing')).toBeNull();
-  });
-});
-
-describe('removeComment', () => {
-  it('removes the matching comment from its thread', () => {
-    const els = [mkShape('a', [mkComment('c1', 'A', '#fff'), mkComment('c2', 'B', '#fff')])];
-    const [out] = removeComment(els, 'c1') as [ShapeElement];
-    expect(out.commentThread!.comments.map((c) => c.id)).toEqual(['c2']);
-  });
-
-  it('drops the whole thread once its last comment is removed', () => {
-    const els = [mkShape('a', [mkComment('c1', 'A', '#fff')])];
-    const [out] = removeComment(els, 'c1');
-    expect((out as { commentThread?: unknown }).commentThread).toBeUndefined();
-  });
-
-  it('returns elements unchanged when the comment id is absent', () => {
-    const els = [mkShape('a', [mkComment('c1', 'A', '#fff')])];
-    const result = removeComment(els, 'nope');
-    expect(result[0]).toBe(els[0]);
   });
 });
 

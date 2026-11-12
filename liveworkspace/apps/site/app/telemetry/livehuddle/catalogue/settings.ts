@@ -48,7 +48,6 @@ export const EDITOR_SETTINGS = settingsStack(
   'Editor Settings',
   'How the canvas behaves while you build a Space.',
   [
-    changed('ElementIndicators', 'Element Indicators', 'Top icons, a Footer row, or Off.'),
     toggle(
       'UI',
       'AlignmentGuidesOn',
@@ -164,15 +163,8 @@ export const PANELS_SETTINGS = settingsStack('Panels Settings', 'What the minima
 
 export const COLLABORATE_SETTINGS = settingsStack(
   'Collaborate Settings',
-  'The Collaborate panel and seeing other people\u2019s cursors.',
+  'Seeing other people\u2019s cursors.',
   [
-    toggle(
-      'UI',
-      'CollaboratePanelOn',
-      'CollaboratePanelOff',
-      'Collaborate Panel',
-      'The Collaborate panel switched on or off.',
-    ),
     toggle(
       'UI',
       'HideCursorsOn',
@@ -207,27 +199,6 @@ export const NOTIFICATION_SETTINGS = settingsStack(
       'NotifyInviteResponseOff',
       'Someone Responds to a Team Invite',
       'The invite-response email.',
-    ),
-    toggle(
-      'UI',
-      'NotifyCommentsOn',
-      'NotifyCommentsOff',
-      'Someone Comments on My Document',
-      'The new-comment email.',
-    ),
-    toggle(
-      'UI',
-      'NotifyActionAssignedOn',
-      'NotifyActionAssignedOff',
-      'Someone Assigns Me an Action',
-      'The action-assigned email.',
-    ),
-    toggle(
-      'UI',
-      'NotifyMentionsOn',
-      'NotifyMentionsOff',
-      'Someone Mentions Me in a Comment',
-      'The comment-mention email.',
     ),
     toggle(
       'UI',

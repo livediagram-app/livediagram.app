@@ -10,7 +10,7 @@ import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorDialogsSlice } from './useEditorDialogs';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
-import type { EditorCommentsSlice } from './useEditorComments';
+import type { EditorActiveTabSlice } from './useEditorActiveTab';
 import type { EditorEditingSlice } from './useEditorEditing';
 import type { EditorTabsSlice } from './useEditorTabs';
 import type { EditorCreationSlice } from './useEditorCreation';
@@ -25,7 +25,7 @@ export function useEditorStyle({
   fromDialogs,
   fromCollaboration,
   fromPersistence,
-  fromComments,
+  fromActiveTab,
   fromEditing,
   fromTabs,
   fromCreation,
@@ -36,7 +36,7 @@ export function useEditorStyle({
   fromDialogs: EditorDialogsSlice;
   fromCollaboration: EditorCollaborationSlice;
   fromPersistence: EditorPersistenceSlice;
-  fromComments: EditorCommentsSlice;
+  fromActiveTab: EditorActiveTabSlice;
   fromEditing: EditorEditingSlice;
   fromTabs: EditorTabsSlice;
   fromCreation: EditorCreationSlice;
@@ -47,7 +47,7 @@ export function useEditorStyle({
   const { contextMenu } = fromDialogs;
   const { participant } = fromCollaboration;
   const { tabsRef } = fromPersistence;
-  const { activeTab } = fromComments;
+  const { activeTab } = fromActiveTab;
   const {
     activeTheme,
     commit,

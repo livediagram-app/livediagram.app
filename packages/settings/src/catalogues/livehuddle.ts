@@ -39,28 +39,6 @@ export const CATALOGUE: AppCatalogue = {
       },
     },
     {
-      key: 'notifyActionAssigned',
-      on: true,
-      off: false,
-      fallback: true,
-      event: {
-        category: 'UI',
-        on: 'NotifyActionAssignedOn',
-        off: 'NotifyActionAssignedOff',
-      },
-    },
-    {
-      key: 'notifyComments',
-      on: true,
-      off: false,
-      fallback: true,
-      event: {
-        category: 'UI',
-        on: 'NotifyCommentsOn',
-        off: 'NotifyCommentsOff',
-      },
-    },
-    {
       key: 'notifyInviteResponse',
       on: true,
       off: false,
@@ -69,17 +47,6 @@ export const CATALOGUE: AppCatalogue = {
         category: 'UI',
         on: 'NotifyInviteResponseOn',
         off: 'NotifyInviteResponseOff',
-      },
-    },
-    {
-      key: 'notifyMentions',
-      on: true,
-      off: false,
-      fallback: true,
-      event: {
-        category: 'UI',
-        on: 'NotifyMentionsOn',
-        off: 'NotifyMentionsOff',
       },
     },
     {
@@ -149,39 +116,6 @@ export const CATALOGUE: AppCatalogue = {
             category: 'UI',
             on: 'AlignmentGuidesOn',
             off: 'AlignmentGuidesOff',
-          },
-        },
-        {
-          kind: 'choice',
-          id: 'elementIndicatorStyle',
-          label: 'Element Indicators',
-          description:
-            'How an element shows it has comments, an action or other markers: quiet icons at its top, a labelled footer, or nothing.',
-          keywords:
-            'badges icons note action comment link markers indicators top corner footer metadata chip hide off',
-          section: 'Canvas',
-          key: 'elementIndicatorStyle',
-          options: [
-            {
-              id: 'top',
-              label: 'Top',
-              value: 'top',
-            },
-            {
-              id: 'footer',
-              label: 'Footer',
-              value: 'footer',
-            },
-            {
-              id: 'off',
-              label: 'Off',
-              value: 'off',
-            },
-          ],
-          fallback: 'top',
-          event: {
-            category: 'UI',
-            changed: 'ElementIndicators',
           },
         },
       ],
@@ -271,24 +205,6 @@ export const CATALOGUE: AppCatalogue = {
             changed: 'MapSize',
           },
           parent: 'showMinimap',
-        },
-        {
-          kind: 'toggle',
-          id: 'collaboratePanelEnabled',
-          label: 'Enable Collaborate Panel',
-          description:
-            "Lists the tab's comments and actions, behind a corner button that shows once there are some. Off, they still work on the elements.",
-          keywords: 'collaborate comments threads actions tasks panel enable hide show turn off',
-          section: 'Collaborate',
-          key: 'collaboratePanelEnabled',
-          on: true,
-          off: false,
-          fallback: true,
-          event: {
-            category: 'UI',
-            on: 'CollaboratePanelOn',
-            off: 'CollaboratePanelOff',
-          },
         },
         {
           kind: 'toggle',

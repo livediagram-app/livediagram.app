@@ -14,7 +14,7 @@ import type { EditorDialogsSlice } from './useEditorDialogs';
 import type { EditorToolsSlice } from './useEditorTools';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
-import type { EditorCommentsSlice } from './useEditorComments';
+import type { EditorActiveTabSlice } from './useEditorActiveTab';
 import type { EditorViewportSlice } from './useEditorViewport';
 import type { EditorFollowingSlice } from './useEditorFollowing';
 import type { EditorPresenceSlice } from './useEditorPresence';
@@ -33,7 +33,7 @@ export function useEditorInteraction({
   fromTools,
   fromCollaboration,
   fromPersistence,
-  fromComments,
+  fromActiveTab,
   fromViewport,
   fromFollowing,
   fromPresence,
@@ -48,7 +48,7 @@ export function useEditorInteraction({
   fromTools: EditorToolsSlice;
   fromCollaboration: EditorCollaborationSlice;
   fromPersistence: EditorPersistenceSlice;
-  fromComments: EditorCommentsSlice;
+  fromActiveTab: EditorActiveTabSlice;
   fromViewport: EditorViewportSlice;
   fromFollowing: EditorFollowingSlice;
   fromPresence: EditorPresenceSlice;
@@ -74,7 +74,7 @@ export function useEditorInteraction({
   const { formatToolActive, shortcutsEnabled } = fromTools;
   const { isReadOnly, participant } = fromCollaboration;
   const { alignmentGuidesRef, documentName, setDocumentName } = fromPersistence;
-  const { activeTab } = fromComments;
+  const { activeTab } = fromActiveTab;
   const { getViewportCanvasRect, scrollIntoView, zoomRef } = fromViewport;
   const { isPinchingRef } = fromFollowing;
   const { lockedByOther } = fromPresence;
