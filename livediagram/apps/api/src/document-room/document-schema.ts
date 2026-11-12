@@ -14,6 +14,7 @@
 import {
   TAB_CONNECTION_SCHEMA,
   migrationSchema,
+  outboxParkingStep,
   outboxRetrySchema,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
@@ -278,11 +279,36 @@ const V4 = outboxRetrySchema();
 // tab already there reads as not connected.
 const V5 = TAB_CONNECTION_SCHEMA;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5];
+type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
+
+// The outbox's parked keys bounded and let back in (@liveworkspace/index-app outbox-parked.ts;
+// liveworkspace/docs/specs/004-index/one-explorer-contracts.md "When a push fails"): `parked_at` (and the retry
+// columns where a room lacks them), the `(attempts, retry_at)` index the next-due read takes, and the Community
+// triggers rewritten as delete-then-insert, as every other key is, so a parked summary key never swallows a
+// Community change. Asks before each ALTER, so it is safe on a room made before the retry columns.
+const COMMUNITY_SUMMARY_KEY = `
+BEGIN
+  DELETE FROM outbox WHERE (document_id, kind, key) IN (SELECT id, 'summary', '' FROM document);
+  INSERT INTO outbox (document_id, kind, key) SELECT id, 'summary', '' FROM document;
+END;`;
+const V6 = (exec: Exec) => {
+  outboxParkingStep(exec);
+  exec('DROP TRIGGER IF EXISTS outbox_community_insert');
+  exec('DROP TRIGGER IF EXISTS outbox_community_update');
+  exec('DROP TRIGGER IF EXISTS outbox_community_delete');
+  exec(
+    `CREATE TRIGGER outbox_community_insert AFTER INSERT ON community_post${COMMUNITY_SUMMARY_KEY}`,
+  );
+  exec(`CREATE TRIGGER outbox_community_update AFTER UPDATE OF hidden_at, sent_state ON community_post
+  WHEN NEW.hidden_at IS NOT OLD.hidden_at OR NEW.sent_state IS NOT OLD.sent_state${COMMUNITY_SUMMARY_KEY}`);
+  exec(
+    `CREATE TRIGGER outbox_community_delete AFTER DELETE ON community_post${COMMUNITY_SUMMARY_KEY}`,
+  );
+};
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [V1, V2, V3, V4, V5, V6];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
-
-type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
 
 // Bring the document's SQLite up to DOCUMENT_SCHEMA_VERSION. Idempotent: every statement is IF NOT EXISTS, and the
 // version row skips what already ran. Runs inside the caller's transaction when it has one.
@@ -291,7 +317,11 @@ export function migrateDocumentSchema(exec: Exec): void {
   const row = exec('SELECT version FROM _document_schema LIMIT 1').toArray()[0];
   const at = typeof row?.version === 'number' ? row.version : 0;
   if (at >= STEPS.length) return;
-  for (let step = at; step < STEPS.length; step++) exec(STEPS[step]!);
+  for (let step = at; step < STEPS.length; step++) {
+    const run = STEPS[step]!;
+    if (typeof run === 'string') exec(run);
+    else run(exec);
+  }
   exec('DELETE FROM _document_schema');
   exec(`INSERT INTO _document_schema (version) VALUES (${STEPS.length})`);
 }
