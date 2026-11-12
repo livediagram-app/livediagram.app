@@ -993,3 +993,17 @@ picks, n }`) in state, the target `{ view: 'rule', ruleId: null, draft: true }`,
 Characters, four to a token; Neurons at 9,091 per million in and 27,273 per million out (spec "Cost"). A typical
 draft's reply is about 300 tokens, so about 29 Neurons. Before the caps were added the first measurement was 145,503
 characters for the wide plan; the field budget brought it to 19,603.
+
+## Run telemetry
+
+- `apps/api/src/plan-room/automations/automation-telemetry.ts`: `AutomationTally`, a wake's buffer. `track(category,
+action, type)` (a bound `track`, so the dashboard's emitter scan reads each literal call) pushes an event; `flush(env)`
+  hands at most `TELEMETRY_BATCH_MAX` to `reportServerEvents`, results and trouble ahead of trigger kinds, and empties.
+- `runAutomations` (plan-room-automations.ts) makes one per alarm, passes it to `runTimeTriggers` and
+  `runAutomationWake`, and flushes it through `deps.defer` in a `finally`, so a failed wake still reports.
+- `RunState.tally` (absent for Test on a Card and Run Rule): `runRule`'s `end` tracks the result and the trigger kind,
+  the store's `settle` answering true tracks `AutomationPaused`, the catch tracks `AutomationCrashed`.
+- The Incoming Webhook answer (automation-incoming.ts) sends its one event through `automations.deps()?.defer`, only
+  once the address names a live webhook rule.
+- The dashboard: `liveworkspace/apps/site/app/telemetry/liveplanner/event-explanations.ts` explains every pair, and
+  `computed-emitters.ts` lists `AutomationTrigger.<Kind>` from `AUTOMATION_TRIGGER_KINDS`.

@@ -29,6 +29,7 @@ import type { PlanEnv } from '../../types';
 import { runsToday } from './automation-log';
 import { enqueueStatement, type PlanAutomations } from './automation-queue';
 import type { Sql } from './automation-store';
+import { reportServerEvent } from '../../server-telemetry';
 
 const MINUTE_MS = 60_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -234,14 +235,18 @@ export async function answerHookCall(
   const rule = input.schema ? automations.store.get(ruleId) : null;
   const live = rule?.enabled && rule.trigger.kind === 'incoming_webhook' ? rule : null;
   const row = live ? hookRow(automations.sql(), ruleId) : null;
+  // Counted only once the address names a live webhook rule, so strangers trying addresses count nothing.
+  const defer = (p: Promise<void>) => automations.deps()?.defer(p);
   if (!(await provesSecret(call, row?.hash ?? null)) || !live) {
     log('unauthorized');
+    if (live) defer(reportServerEvent(env, 'Plan', 'Ran', 'AutomationHookUnauthorized'));
     return UNAUTHORIZED;
   }
   const sql = automations.sql();
   const minute = countCall(sql, ruleId, now);
   if (minute.calls > WEBHOOK_CALLS_PER_MINUTE) {
     log('rate_limited');
+    defer(reportServerEvent(env, 'Plan', 'Ran', 'AutomationHookRateLimited'));
     return {
       status: 429,
       body: { error: 'webhook_rate_limited' },
@@ -250,6 +255,7 @@ export async function answerHookCall(
   }
   if (runsToday(sql, now) >= AUTOMATION_RUNS_PER_DAY) {
     log('budget');
+    defer(reportServerEvent(env, 'Plan', 'Ran', 'AutomationHookBudget'));
     const midnight = (Math.floor(now / DAY_MS) + 1) * DAY_MS;
     return {
       status: 429,
@@ -260,6 +266,7 @@ export async function answerHookCall(
   const read = readHookBody(parsed(call.body));
   if ('error' in read) {
     log('invalid');
+    defer(reportServerEvent(env, 'Plan', 'Ran', 'AutomationHookInvalid'));
     return { status: 400, body: { error: 'webhook_body_invalid', message: read.error } };
   }
   const cards = read.cards.length ? await namedCards(env, planId, read.cards) : null;
@@ -277,6 +284,7 @@ export async function answerHookCall(
     at: now,
   });
   const events = cards ? cards.map((c) => event(c.id)) : [event('')];
+  defer(reportServerEvent(env, 'Plan', 'Ran', 'AutomationHookAccepted'));
   if (events.length === 0) {
     log('accepted');
     return { status: 202, body: { queued: 0 } };

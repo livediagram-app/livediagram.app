@@ -961,6 +961,20 @@ failed after it was asked also sends `Plan · Ran · AutomationAiFailed`, and on
 `Plan · Ran · AutomationAiCapped` (the existing action, typed, so the vocabulary needs nothing new); the api logs
 `[automations] ai` with the task, whether it answered and how long it took, never the card's text or the reply.
 
+**Runs** are counted from the api too, so what rules do on their own reads beside how they are set up. Each run a
+wake makes sends `Plan · Ran · AutomationDone`, `AutomationFailed`, `AutomationSkipped`, `AutomationWaiting` or
+`AutomationNoMatch` (its result), and `Plan · Ran · AutomationTrigger.<Kind>`, the trigger's kind in PascalCase
+(`AutomationTrigger.CardMoved`, `AutomationTrigger.PullRequestChecks`). Trouble has its own: `AutomationPaused` (a
+rule turned off after its failures in a row), `AutomationCrashed` (a run that threw, logged as Something went wrong),
+`AutomationQueueFull` (a wake whose queue had dropped a burst, once per wake), `AutomationTimeMissed` (a time rule's
+moment found too late to run) and `AutomationWakeFailed` (a wake that failed as a whole and tries again a minute
+later). Test on a Card and Run Rule count as above from the browser and not again here. Each Incoming Webhook call to
+a rule that is on sends `AutomationHookAccepted`, `AutomationHookUnauthorized` (a wrong secret or signature),
+`AutomationHookRateLimited`, `AutomationHookBudget` (the day's runs spent) or `AutomationHookInvalid` (a body it could
+not read); a call to an address no such rule holds counts nothing, so strangers trying addresses cannot fill the
+dashboard. A wake's events go in one post when it ends, at most 100 (the service's batch), results first, so a
+wake is one request however many rules ran. Like every row, none carries a rule's name, a card or a plan.
+
 ## Limits
 
 | Limit                            | Value                                  |
