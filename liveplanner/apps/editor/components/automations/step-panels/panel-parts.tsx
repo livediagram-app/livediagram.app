@@ -35,7 +35,9 @@ export function PanelSelect(props: SelectProps) {
   return <Select {...props} className="w-full" selectClassName={PANEL_SELECT} />;
 }
 
-/** A group of toggle chips: several of the plan's names picked at once. */
+/** A group of toggle chips: several of the plan's names picked at once. A pick the plan no longer has (a deleted
+ *  column, field or person) stays as a pressed chip named `gone`, so the panel shows what the rule holds and it can
+ *  be unpicked. */
 export function ChipToggles({
   label,
   options,
@@ -43,6 +45,7 @@ export function ChipToggles({
   onChange,
   hint,
   empty = 'Nothing to pick in this plan yet.',
+  gone = 'No longer here',
 }: {
   label: string;
   options: readonly { value: string; label: string }[];
@@ -50,19 +53,25 @@ export function ChipToggles({
   onChange: (next: string[]) => void;
   hint?: ReactNode;
   empty?: string;
+  gone?: string;
 }) {
   const id = useId();
   const picked = new Set(value);
+  const known = new Set(options.map((o) => o.value));
+  const shown = [
+    ...options,
+    ...value.filter((v) => !known.has(v)).map((v) => ({ value: v, label: gone })),
+  ];
   return (
     <div className="flex flex-col gap-1.5">
       <span id={id} className="text-[12px] font-semibold text-slate-700 dark:text-slate-200">
         {label}
       </span>
-      {options.length === 0 ? (
+      {shown.length === 0 ? (
         <p className="text-[12px] text-slate-500 dark:text-slate-400">{empty}</p>
       ) : (
         <div role="group" aria-labelledby={id} className="flex flex-wrap gap-1.5">
-          {options.map((o) => {
+          {shown.map((o) => {
             const on = picked.has(o.value);
             return (
               <button

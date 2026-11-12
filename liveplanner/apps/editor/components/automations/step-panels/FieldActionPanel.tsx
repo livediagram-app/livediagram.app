@@ -159,6 +159,11 @@ export function FieldActionPanel({
               value={value.from}
               onChange={(e) => onChange({ ...action, value: { from: e.target.value } })}
             >
+              {fields.some((f) => f.id === value.from) ? null : (
+                <option value={value.from}>
+                  {value.from ? 'A field no longer here' : 'Pick a field'}
+                </option>
+              )}
               {fields.map((f) => (
                 <option key={f.id} value={f.id}>
                   {f.name}

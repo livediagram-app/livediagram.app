@@ -148,14 +148,16 @@ export function RuleBuilder({
   const save = async () => {
     if (saving) return;
     setSaving(true);
+    // What went to the api: an edit made while it saves is kept, not replaced by the saved rule.
+    const sent = body;
     try {
-      const next = await api.save(rule?.id ?? null, { ...body, timeZone });
+      const next = await api.save(rule?.id ?? null, { ...sent, timeZone });
       if (!rule) {
         track('Plan', 'Created', 'AutomationRule');
         if (isGithubTrigger(body.trigger)) track('Plan', 'Created', 'AutomationRuleGithub');
       }
       setSaved(bodyOf(next));
-      setBody(bodyOf(next));
+      setBody((held) => (held === sent ? bodyOf(next) : held));
       setFault(null);
       toast.success(`Saved ${next.name}`);
       onSaved(next);
@@ -197,12 +199,8 @@ export function RuleBuilder({
       change(next.body, next.part);
     },
     addAction: (kind, branch) => {
-      let step = defaultStep(kind, outline);
       // A time trigger or an incoming webhook has nobody behind it: Assign starts on the plan's first person.
-      if (step.kind === 'assign' && isPersonless(body.trigger)) {
-        const first = outline.people[0]?.id;
-        step = { kind: 'assign', to: first ? { person: first } : { nobody: true } };
-      }
+      const step = defaultStep(kind, outline, isPersonless(body.trigger));
       const next = addAction(body, step, branch);
       change(next.body, next.part);
     },
@@ -357,7 +355,8 @@ export function RuleBuilder({
             <TestOnCard
               body={body}
               outline={outline}
-              test={api.test}
+              // Tried as it would save: in this browser's time zone.
+              test={(tried, item) => api.test({ ...tried, timeZone }, item)}
               onRefused={refused}
               onClose={() => setTesting(false)}
             />

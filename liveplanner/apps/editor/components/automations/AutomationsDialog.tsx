@@ -218,6 +218,8 @@ export function AutomationsDialog({
   const editing = target.view === 'rule' ? target : null;
   const fromDraft = editing && !editing.ruleId && editing.draft ? drafted : null;
   const editingRule = editing?.ruleId ? (rules.find((r) => r.id === editing.ruleId) ?? null) : null;
+  // A rule opened by its id (a comment's link to it) that the plan no longer has: said so, never a blank new rule.
+  const ruleGone = !!editing?.ruleId && !!api.data && !editingRule;
   const fromTemplate =
     editing && !editing.ruleId && editing.template
       ? templateStart(editing.template, outline, rules, zone)
@@ -269,6 +271,20 @@ export function AutomationsDialog({
             />
           ))}
         </div>
+      );
+    if (ruleGone)
+      return (
+        <CompactEmptyState
+          role="status"
+          icon={<BoltIcon size={18} />}
+          title="This Rule Was Deleted"
+          description="It’s no longer in this plan. Its runs stay in the Audit Trail until they age out."
+          action={
+            <Button variant="secondary" size="xs" onClick={() => onTarget({ view: 'rules' })}>
+              Back to Rules
+            </Button>
+          }
+        />
       );
     if (target.view === 'runs')
       return (
@@ -334,7 +350,7 @@ export function AutomationsDialog({
               trailing={<DialogCloseButton onClick={close} />}
             />
           </>
-        ) : editing && api.data ? (
+        ) : editing && api.data && !ruleGone ? (
           <>
             {/* The builder's breadcrumb stands where the header was; the dialog keeps its name for screen readers. */}
             <h2 id={titleId} className="sr-only">
@@ -401,6 +417,16 @@ export function AutomationsDialog({
               onTab={(tab) => onTarget({ view: tab })}
             />
             <div role="tabpanel" className="flex min-h-0 flex-1 flex-col">
+              {/* The plan spent its runs for the day (spec "Runs, limits and loops"): the meter is full and says why. */}
+              {api.data && api.data.runsToday >= api.data.runsPerDay ? (
+                <p
+                  role="status"
+                  data-runs-full=""
+                  className={`mt-3 rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-800 dark:bg-amber-500/10 dark:text-amber-300 ${phone ? 'mx-4' : 'mx-6'}`}
+                >
+                  Daily limit reached: rules run again tomorrow
+                </p>
+              ) : null}
               {body}
             </div>
             {phone && meter ? (

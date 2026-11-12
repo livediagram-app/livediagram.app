@@ -4,7 +4,7 @@
 // it stands in the builder (saved or not) is tried on it as a dry run. The answer shows as a run does in the Run
 // Log, its actions saying what they would do; nothing on the card changes. A refusal names the step at fault.
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { AutomationRuleBody, AutomationRun } from '@liveplanner/items';
 import { Button, DialogCloseButton, DialogFooter } from '@liveplanner/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -49,15 +49,23 @@ export function TestOnCard({
   );
   const picker = useCardPickerSearch(rows);
   const [phase, setPhase] = useState<Phase>({ at: 'pick' });
+  // The test in flight: Another Card makes its answer stale, and a stale answer is dropped.
+  const trying = useRef(0);
+  const another = () => {
+    trying.current += 1;
+    setPhase({ at: 'pick' });
+  };
 
   const run = async (card: PickCard) => {
+    const mine = ++trying.current;
     setPhase({ at: 'running', card });
     track('Plan', 'Tested', 'AutomationRule');
     try {
       const answer = await test(body, card.itemId);
-      setPhase({ at: 'ran', card, run: answer.run });
+      if (mine === trying.current) setPhase({ at: 'ran', card, run: answer.run });
     } catch (error) {
       debugLog('[automations] test.failed', { error: String(error) });
+      if (mine !== trying.current) return;
       if (error instanceof AutomationRefusal && error.path) {
         onRefused(error);
         onClose();
@@ -127,7 +135,7 @@ export function TestOnCard({
         )}
       </div>
       <DialogFooter>
-        <Button variant="secondary" onClick={() => setPhase({ at: 'pick' })}>
+        <Button variant="secondary" onClick={another}>
           Another Card
         </Button>
         <Button variant="primary" onClick={onClose}>

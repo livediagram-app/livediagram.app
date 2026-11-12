@@ -832,7 +832,10 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
   message.
 - Picking a card selects it (a violet ring) and opens it on the right in the **step panel**: its own fields (columns,
   fields, people and types picked from the plan's), and for text, **Insert a Value** chips that drop a value at the
-  caret, shown as violet chips. An action's panel shows a **Preview** on a real card of the plan, filled in.
+  caret, shown as violet chips. An action's panel shows a **Preview** on a real card of the plan, filled in. A pick
+  the plan no longer has (a deleted column, Form tab, field, card type or person) stays shown, as "A column no longer
+  here" (or "Someone No Longer Here" for a person), picked, so the panel never hides what the rule holds or shows
+  another choice in its place, and it can be unpicked.
 - A step's ⋯ menu: Move Up, Move Down, Duplicate, Delete.
 - **Rule Details** (an accordion, closed): **Let this rule's changes trigger other rules** with "Off keeps rules
   from setting each other off. Chains stop after 5 rules.", and "Runs as Automation, with an Editor's access, for
@@ -841,6 +844,9 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
   changing anything: the result shows as an Audit Trail row with its steps, each action saying what it would do.
 - Leaving with unsaved changes asks **Discard Changes?**. A save the api refuses keeps the builder open and marks
   the step at fault.
+- A rule opened by its link (an Automation comment's) that the plan no longer has opens no builder: the screen says
+  **This Rule Was Deleted**, "It's no longer in this plan. Its runs stay in the Audit Trail until they age out.", with
+  **Back to Rules**.
 
 ### On cards
 
