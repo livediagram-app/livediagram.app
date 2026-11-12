@@ -273,7 +273,7 @@ describe('the Audit Trail', () => {
       SCOPE,
       expect.objectContaining({ rule: 'r-gone' }),
     );
-    expect((screen.getByRole('combobox', { name: 'Rule' }) as HTMLSelectElement).value).toBe('');
+    expect(screen.getByRole<HTMLSelectElement>('combobox', { name: 'Rule' }).value).toBe('');
     expect(screen.queryByRole('button', { name: /Clear/ })).toBeNull();
   });
 
