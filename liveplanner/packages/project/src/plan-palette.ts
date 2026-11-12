@@ -17,6 +17,15 @@ export const PRIORITY_COLOURS = {
   low: '#64748b',
 } as const;
 
+// A Risk field's levels (docs/specs/026-plan/item-types.md "Risk"), fixed in every plan, light and dark alike: Critical,
+// High and Medium are Priority's Urgent, High and Medium; Low is green, as a low risk reads as safe.
+export const RISK_COLOURS = {
+  critical: '#dc2626',
+  high: '#ea580c',
+  medium: '#ca8a04',
+  low: '#16a34a',
+} as const;
+
 // A flagged card's flag (docs/specs/026-plan/items.md "Flags"), on the canvas and in the export alike.
 export const FLAG_COLOUR = '#e11d48';
 

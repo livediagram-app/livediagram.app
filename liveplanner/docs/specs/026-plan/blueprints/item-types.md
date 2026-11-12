@@ -506,6 +506,34 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
     Date Range as a list of its ends; `card-source.ts` (sheet card functions, card tables) as `instantIso` and
     `rangeIso`. Forms: `QuestionControl` (a `tel` box; a `datetime-local` box sending `fromLocalInput`; `RangeAnswer`,
     From and To, sending the two ends or nothing), `QuestionSettings` (Include Time), `PlaceholderField` (Phone).
+- Risk fields (spec "Risk"; kind `risk`, after `multichoice` in `CUSTOM_FIELD_KINDS`), built in parts (Work Item 700),
+  each leaving main whole; until the last, `KINDS_IN_PROGRESS` (`item-types.ts`, `['risk']`) keeps the kind out of
+  `OFFERED_FIELD_KINDS`, the kinds Add Field and agents offer, so no one can add a field a surface cannot yet draw:
+  - Part 1, the model: `risk-fields.ts` (packages/items) is the one reading: `RISKS` (`critical`, `high`, `medium`,
+    `low`, most pressing first), `Risk`, `RISK_LABELS`, `isRisk(v)`, `riskOf(text)` (a level from its id or name,
+    trimmed, any case; undefined otherwise), `riskLabel(v)` (its name, or null), `riskRank(v)` (Low 0 to Critical 3,
+    undefined for no level, so a higher rank sorts as more pressing) and `RISK_HINT` ("Pick Critical, High, Medium
+    or Low"). `RISK_COLOURS` sits beside `PRIORITY_COLOURS` in packages/project `plan-palette.ts`. `readCustom` reads
+    a `risk` field with no settings (options and any other kind's settings dropped, never refused). Readers:
+    `customFieldText` (its name); `board-csv.ts` (out: its name; in: `riskOf`); `field-kind-change.ts` (`textOf` and
+    `partsOf` read it as its name; to `risk` through `customValueOfText`, so "high", "High" and a Choice's "High"
+    keep their level; `optionsFromValues` from a Risk starts with the four names, in order). The editor's
+    exhaustive kind maps take it (`CUSTOM_KIND_LABELS` "Risk", `CUSTOM_KIND_ICONS` the `risk` glyph, Add Field's
+    `KIND_DESCRIPTIONS` and `KIND_ALIASES`, a sample chip "High" in `RISK_COLOURS.high`; `CustomFieldEditor` draws
+    nothing for it yet), but no category places its tile. The OpenAPI schema is regenerated (`gen:openapi`), as it
+    lists the stored `CustomFieldKind`; the agents' kind enum is `OFFERED_FIELD_KINDS`, so it does not change. `PROJECT_FORMAT` (packages/api-schema `project-format.ts`) is bumped to 5 with `risk` in format 5's kinds (`project-format.test.ts`), so an editor on 4 reads a Risk field as a newer field and is offered Reload.
+  - Part 2, board behaviours (packages): `board-sort.ts` (by `riskRank`, starting `desc`), filters and saved
+    filters, swimlanes (`board-lanes.ts`, `board-lane-fields.ts`, a lane per level then No Risk), card search,
+    dashboards, widgets and charts (`field-widgets.ts`, `plan-view-charts.ts`, plan-art), sheet card tables and
+    functions (`card-source.ts`), formulas (`formula-fields.ts`), forms (`fixed.ts`, `type-questions.ts`,
+    `mapping.ts`), tracker import, automations' Set Value, and `canBeRequired`.
+  - Part 3, the editor: the card panel's Risk control (the Choice control with the fixed levels and colours), the
+    card face pill, the selection bar's Set Risk menu, Add Field's Risk tile (sample, line, search words), Edit
+    Field's kind changes, filters, swimlanes and widgets on screen, and the sheet's card field options.
+  - Part 4, agents and help: `risk` leaves `KINDS_IN_PROGRESS` (so `plan-schema.ts`'s kind enum and
+    `type-change-fields.ts` take it), `plan-names.ts` `resolveFields` reads a level with `riskOf` and refuses any
+    other value with `RISK_HINT`, `plan-listing.ts` lists the levels, `change_card_types`' description names the
+    kind, the OpenAPI schema is regenerated (`gen:openapi`), and the help centre's card fields article gains Risk.
 - Duration fields (spec "Duration"): `duration-fields.ts` (packages/items) is the one reading, shared by every
   surface: `DURATION_HOURS_MAX` 99,999 and `DURATION_MINUTES_MAX`; `parseDuration(v)` (a number is minutes; text
   "2h 30m", "2h30m", "1.5h", "90m", "2:30" or a bare number of minutes, every character but spaces and commas
@@ -1183,6 +1211,7 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Date Range: read, parse, order, ends, text, CSV, agents                                                          | `packages/items/src/date-range-fields.test.ts`, `packages/items/src/board-csv.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts`                                                                                                                                                                            |
 | Times and ranges on calendars and the Gantt chart, across zones and clock changes                                | `packages/items/src/view-dates-write.test.ts`                                                                                                                                                                                                                                                                    |
 | Phone: check, tel link, CSV as text                                                                              | `packages/items/src/phone-fields.test.ts`, `packages/sheets/src/fill-csv.test.ts`                                                                                                                                                                                                                                |
+| Risk: levels, names, ranks, the in-progress gate, catalogue read, card text, CSV, kind changes                   | `packages/items/src/risk-fields.test.ts`, `packages/project/src/plan-palette.test.ts`                                                                                                                                                                                                                            |
 | Date and Time, Date Range, Phone in the card panel and its roles                                                 | `apps/editor/components/plan/DateTimeFields.test.tsx`                                                                                                                                                                                                                                                            |
 | Percent: read, parse, clamp, show as, sort, lanes, CSV                                                           | `packages/items/src/percent-fields.test.ts`                                                                                                                                                                                                                                                                      |
 | Percent: agents write, refuse, list showAs                                                                       | `packages/agent-verbs/src/verbs/item.test.ts`, `packages/items/src/type-changes.test.ts`                                                                                                                                                                                                                         |

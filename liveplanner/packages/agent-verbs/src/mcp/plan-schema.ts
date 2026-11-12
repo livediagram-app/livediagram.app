@@ -10,7 +10,7 @@ import {
   AGGREGATE_LABELS,
   BOARD_WIDGET_KINDS,
   CARD_SIZES,
-  CUSTOM_FIELD_KINDS,
+  OFFERED_FIELD_KINDS,
   FIELD_WIDGETS_MAX,
   FORMULA_MAX,
   FORMULA_RESULTS,
@@ -20,6 +20,7 @@ import {
   PLAN_GLYPH_IDS,
   PLAN_TYPE_COLOURS,
   readCardSize,
+  type CustomFieldKind,
 } from '@liveplanner/items';
 
 // A board's card size: Minimal or Detailed. The retired `compact`, which older prompts still send, reads as detailed
@@ -364,7 +365,7 @@ const assigneeNotifiesArg = z
 const customField = z.object({
   name: z.string().min(1).describe('The field’s name, as cards show it ("Severity").'),
   kind: z
-    .enum(CUSTOM_FIELD_KINDS)
+    .enum(OFFERED_FIELD_KINDS as unknown as [CustomFieldKind, ...CustomFieldKind[]])
     .describe(
       'text (one line), longtext (rich paragraphs, in a panel tab; written as Markdown), number, currency (an amount in the field’s ' +
         'currency, shown as "£12,500"), percent (how far along: a whole number from 0 to 100, ' +

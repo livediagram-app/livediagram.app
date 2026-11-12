@@ -56,6 +56,7 @@ export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   phone: 'Phone',
   choice: 'Choice',
   multichoice: 'Multiple Choice',
+  risk: 'Risk',
   rating: 'Rating',
   card: 'Link to Card',
   calculated: 'Calculated',

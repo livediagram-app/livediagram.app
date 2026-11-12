@@ -4,8 +4,8 @@ import { PROJECT_FORMAT, PROJECT_FORMAT_HEADER } from './project-format';
 
 // docs/specs/016-platform/new-version-prompt.md "The project format number".
 describe('the project format number', () => {
-  it('is 4, the Pull Request field, carried in one header', () => {
-    expect(PROJECT_FORMAT).toBe(4);
+  it('is 5, the Risk field, carried in one header', () => {
+    expect(PROJECT_FORMAT).toBe(5);
     expect(PROJECT_FORMAT_HEADER).toBe('X-Liveplanner-Format');
   });
 });
@@ -74,6 +74,38 @@ const READS: Readonly<
       'phone',
       'pullrequest',
       'rating',
+      'text',
+      'votes',
+    ],
+    calculations: ['childCount', 'childrenDone', 'formula', 'lookup', 'rollup'],
+  },
+  5: {
+    kinds: [
+      'calculated',
+      'card',
+      'checkbox',
+      'checklist',
+      'choice',
+      'colour',
+      'comments',
+      'currency',
+      'date',
+      'daterange',
+      'datetime',
+      'duration',
+      'email',
+      'image',
+      'labels',
+      'link',
+      'longtext',
+      'multichoice',
+      'number',
+      'percent',
+      'person',
+      'phone',
+      'pullrequest',
+      'rating',
+      'risk',
       'text',
       'votes',
     ],

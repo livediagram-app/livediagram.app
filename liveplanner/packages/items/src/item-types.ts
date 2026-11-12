@@ -65,6 +65,9 @@ export const CUSTOM_FIELD_KINDS = [
   'choice',
   // Several of its named options (docs/specs/030-forms/forms.md "New card field kinds").
   'multichoice',
+  // One of four fixed levels, Critical to Low, coloured and ordered as Priority's are (docs/specs/026-plan/
+  // item-types.md "Risk"; risk-fields.ts).
+  'risk',
   // A whole number from 1 to its `scale`, drawn as stars.
   'rating',
   // A link to one other card, of the type `linkType` names, or to several when it holds several
@@ -89,6 +92,14 @@ export const CUSTOM_FIELD_KINDS = [
   'votes',
 ] as const;
 export type CustomFieldKind = (typeof CUSTOM_FIELD_KINDS)[number];
+
+// Kinds still being built in parts (Work Item 700): every catalogue reads and keeps them, but neither Add Field nor
+// an agent offers one until every surface draws it (docs/specs/026-plan/blueprints/item-types.md "Risk fields").
+export const KINDS_IN_PROGRESS: readonly CustomFieldKind[] = ['risk'];
+// The kinds a person (Add Field) and an agent (change_card_types) may add.
+export const OFFERED_FIELD_KINDS = CUSTOM_FIELD_KINDS.filter(
+  (k) => !KINDS_IN_PROGRESS.includes(k),
+) as readonly CustomFieldKind[];
 
 // The built-in field each of the built-in kinds reads, is edited and is checked as (docs/specs/026-plan/item-types.md
 // "Custom field kinds"): a Person field as the Assignee, and so on. Undefined for every other kind.

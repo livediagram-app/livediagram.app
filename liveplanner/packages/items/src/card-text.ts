@@ -12,6 +12,7 @@ import { fieldCardIds, fieldPeople } from './several-values';
 import { dateTimeText } from './date-time-fields';
 import { dateRangeText } from './date-range-fields';
 import { pullRequestValueText } from './pull-request-fields';
+import { riskLabel } from './risk-fields';
 
 const FORMATS = {
   // A board card, where room is tight: "30 Oct".
@@ -98,6 +99,9 @@ export function customFieldText(
       return multiChoiceText(value);
     case 'rating':
       return ratingText(value, ratingScaleOf(field));
+    // Its level's name, "High" (docs/specs/026-plan/item-types.md "Risk").
+    case 'risk':
+      return riskLabel(value);
     // The built-in fields' kinds read as those fields do (docs/specs/026-plan/item-types.md "Custom field kinds").
     case 'person': {
       const names = fieldPeople(field, value)
