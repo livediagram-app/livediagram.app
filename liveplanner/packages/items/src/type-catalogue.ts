@@ -385,8 +385,10 @@ function readCustom(input: unknown, at: string, newer: NewerFields): CustomField
     field.required = true;
   // Kept only as true, and only on a Person field.
   if (input['notifies'] === true && field.kind === 'person') field.notifies = true;
-  // Kept only as true, and only on a Person or Card field (docs/specs/026-plan/item-types.md "Holds Several").
-  if (input['multiple'] === true && holdsSeveralKind(field.kind)) field.multiple = true;
+  // Kept only as true, and only on a Person or Card field (docs/specs/026-plan/item-types.md "Holds Several") or an
+  // Image field, a Several Images field ("Image fields").
+  if (input['multiple'] === true && (holdsSeveralKind(field.kind) || field.kind === 'image'))
+    field.multiple = true;
   // Kept only as true, and only on a Card field (docs/specs/026-plan/item-types.md "Blocked By").
   if (input['blocks'] === true && field.kind === 'card') field.blocks = true;
   return field;

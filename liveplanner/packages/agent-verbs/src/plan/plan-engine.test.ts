@@ -399,6 +399,45 @@ describe('planListing', () => {
     });
   });
 
+  // docs/specs/026-plan/item-types.md "Image fields": an Image field lists its picture's id, a Several Images field its
+  // list of ids, whichever way each value was stored.
+  describe('an Image field and a Several Images field', () => {
+    const SHOTS = {
+      ...BUG,
+      id: 'shots',
+      label: 'Shots',
+      fields: ['title', 'status', 'f-cover', 'f-designs'],
+      custom: [
+        { id: 'f-cover', label: 'Cover', kind: 'image' as const },
+        { id: 'f-designs', label: 'Designs', kind: 'image' as const, multiple: true },
+      ],
+    };
+    const plan = { boards: [BOARD()], statuses: STATUSES, types: [...ITEM_TYPES, SHOTS] };
+    const listed = async (fields: Record<string, unknown>) => {
+      const cards = [item(9, 'hhh999', { title: 'T', ...fields }, 'shots')];
+      const { api: a } = api({ [`/projects/${D}/items`]: { items: cards, rev: 1 } }, plan);
+      return planListing(await readPlanState(a, D));
+    };
+
+    it('lists one id, or the list of ids, and the switch on its type', async () => {
+      const listing = await listed({ 'f-cover': 'img-a', 'f-designs': ['img-b', 'img-c'] });
+      expect(listing.items[0]!.fields).toMatchObject({
+        Cover: 'img-a',
+        Designs: ['img-b', 'img-c'],
+      });
+      expect(listing.types.find((t) => t.id === 'shots')!.custom).toEqual([
+        { id: 'f-cover', name: 'Cover', kind: 'image' },
+        { id: 'f-designs', name: 'Designs', kind: 'image', multiple: true },
+      ]);
+    });
+
+    it('reads a list on an Image field as its first picture, and one id on Several Images as a list', async () => {
+      const listing = await listed({ 'f-cover': ['img-a', 'img-b'], 'f-designs': 'img-c' });
+      expect(listing.items[0]!.fields).toMatchObject({ Cover: 'img-a', Designs: ['img-c'] });
+      expect((await listed({ 'f-cover': [] })).items[0]!.fields).toMatchObject({ Cover: null });
+    });
+  });
+
   // docs/specs/026-plan/item-types.md "Blocked By": blockers by card number, the blocked count and the mirror.
   describe('a Blocked By field', () => {
     const JOB = {

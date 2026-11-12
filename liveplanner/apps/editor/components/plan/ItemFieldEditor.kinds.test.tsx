@@ -164,6 +164,14 @@ describe('an Image field', () => {
     expect(api.release).toHaveBeenCalledWith('blob:pic');
   });
 
+  // A list stored by a Several Images field (item-types.md "Image fields") reads as its first picture here.
+  it('shows the first picture of a stored list', async () => {
+    render(<ItemFieldEditor f="f-shot" ctx={ctx(make({ 'f-shot': ['img_2', 'img_3'] }))} />);
+    expect(await screen.findByRole('img', { name: 'Shot: image' })).toBeTruthy();
+    expect(api.url).toHaveBeenCalledWith(SCOPE, 'img_2', {});
+    expect(api.url).not.toHaveBeenCalledWith(SCOPE, 'img_3', expect.anything());
+  });
+
   it('says a picture it can’t read can’t be shown, and a Viewer sees no controls', async () => {
     api.url.mockResolvedValue(null);
     render(
@@ -264,6 +272,14 @@ describe('on the card face', () => {
     expect(screen.getByRole('img', { name: 'Shot: image' })).toBeTruthy();
     await flush();
     expect(api.url).toHaveBeenCalledWith(SCOPE, 'img_1', { maxEdge: 512 });
+  });
+
+  it('draws the first picture of a list, and fetches no other', async () => {
+    draw('f-shot', ['img_4', 'img_5']);
+    expect(screen.getByRole('img', { name: 'Shot: image' })).toBeTruthy();
+    await flush();
+    expect(api.url).toHaveBeenCalledWith(SCOPE, 'img_4', { maxEdge: 512 });
+    expect(api.url).not.toHaveBeenCalledWith(SCOPE, 'img_5', expect.anything());
   });
 
   it('draws nothing for an empty or wrong value', () => {
