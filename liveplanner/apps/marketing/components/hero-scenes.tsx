@@ -4,6 +4,7 @@
 // the one that shows its feature (FeatureScene.tsx), so a scene is declared once, here.
 
 import type { ComponentType } from 'react';
+import { AutomationsBoard } from './hero-automations-board';
 import { DashboardBoard } from './hero-dashboard-board';
 import { FormBoard } from './hero-form-board';
 import { PlanBoard } from './hero-plan-board';
@@ -21,6 +22,7 @@ const BOARDS: Record<HeroSceneKey, ComponentType<{ portrait?: boolean }>> = {
   sheet: SheetBoard,
   form: FormBoard,
   dashboard: DashboardBoard,
+  automations: AutomationsBoard,
   together: TogetherBoard,
 };
 
