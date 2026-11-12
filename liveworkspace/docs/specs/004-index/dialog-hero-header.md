@@ -31,16 +31,17 @@ liveworkspace/docs/specs/010-site/site.md "Settings"), Collaborators
 - **Not a landmark.** Its root is a plain block, not `<header>`: outside sectioning content a `<header>` is a banner
   landmark, so every dialog wearing the hero would give the page it opens over a second banner. The `<h2>` is what
   names it.
-- **Height.** From `sm` the header is exactly 100px tall in every dialog, its row centred in it. Nothing in it can
-  make it taller: the title and its line are one line each, truncated.
-- **On a phone** (below `sm`) it is compact: 12px above and below, a 32px mark, an 18px title that may wrap to a
-  second line rather than lose words, and no visible line (it stays for screen readers). The dialog decides whether
-  it is full screen or a sheet; under a sheet's grab handle the band runs up under the handle, so the sheet's top is
-  the band's colour and the handle stands over it.
-- **Title mark.** A 36px tile (32px on a phone), rounded 11px, in the band's wash with a hairline of its line colour,
+- **Height.** The header is exactly 100px tall in every dialog, at every width, its row centred in it. Nothing in it
+  can make it taller: from `sm` the title and its line are one line each, truncated.
+- **On a phone** (below `sm`) it keeps the desktop look, so a dialog is as pretty there: the same 100px, the 36px
+  mark, the 20px title and its visible line, with 16px at either side rather than 24px. A long title may wrap to a
+  second line rather than lose words (it stays inside the 100px), and the line still truncates to one. The dialog
+  decides whether it is full screen or a sheet; under a sheet's grab handle the band runs up under the handle, so the
+  sheet's top is the band's colour and the handle stands over it.
+- **Title mark.** A 36px tile, rounded 11px, in the band's wash with a hairline of its line colour,
   holding the art's glyph in a 20 x 20 box in the accent. Decorative: hidden from screen readers.
 - **Title.** A real `<h2>` whose id the dialog passes to its panel's `aria-labelledby` (a dialog may keep an
-  `aria-label` that names more, as Share does), 20px (18px on a phone), in the app's heading face (below), in the
+  `aria-label` that names more, as Share does), 20px, in the app's heading face (below), in the
   band's ink.
 - **The line.** One line, 13px, in the band's muted ink, truncated with an ellipsis, never wrapping. Words that
   can run long are said in fewer words, with the full sentence for screen readers, as Share's status does.
@@ -97,7 +98,7 @@ Automations: simple geometric SVG in the tokens, a plate or two lifted off the p
   measures (22, 24, 8 and 14px). Dots and grids may fade in from the title's side, so the words sit on plain paper;
   rings fade into the paper as they spread.
 - **Corner pieces**, rising from the band's bottom edge, shown from `sm`: at most 96 x 30. They sit behind the
-  controls, never over the title mark. On a phone the compact row's mark, title and buttons leave no corner clear,
+  controls, never over the title mark. On a phone the row's mark, title and buttons leave no corner clear,
   so the band shows its texture alone.
 - **A centre piece**, optional, shown only once the header is 56rem wide (a container query, as dialogs differ in
   width), right-anchored 12.5rem from the edge (the dialog may move it for wider actions); its width plus that
