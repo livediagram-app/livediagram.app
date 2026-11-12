@@ -18,6 +18,7 @@ import {
   elementPageTones,
   resolveStockColours,
   viewElementInTheme,
+  withPaperLabelInks,
   withReadableLabelInks,
   type CanvasSurface,
   type Element,
@@ -145,7 +146,14 @@ export function createStockColourProjector(): StockColourProjector {
     // Labels against what is behind them: only when the redraw changed an element or the canvas, so a tab drawn as
     // stored is free. A label given the same ink as last time keeps last time's object, so its view stays quiet.
     if (canvases && (changed || canvases.stored !== canvases.drawn)) {
-      const inked = withReadableLabelInks(elements, canvases.stored, lastOut, canvases.drawn);
+      // The 3:1 walk first; then the words straight on the plain paper are drawn at the contrast they were made
+      // with on white ("Words on the plain paper keep the contrast they were made with").
+      const inked = withPaperLabelInks(
+        elements,
+        canvases.stored,
+        withReadableLabelInks(elements, canvases.stored, lastOut, canvases.drawn),
+        canvases.drawn,
+      );
       if (inked !== lastOut)
         lastOut = inked.map((el, i) => {
           if (el === lastOut[i]) return el;
