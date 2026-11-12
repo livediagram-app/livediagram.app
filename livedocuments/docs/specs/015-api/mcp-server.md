@@ -248,7 +248,7 @@ of `elements`: the server materialises the hand-tuned scaffold from
 `@livedocuments/templates` ([§4.5](#45-list_templates)), keeping its curated
 layout (`layout` is ignored for a template tab) and applying that template's
 canvas overrides; the model then personalises labels via `update_document`'s
-`ops` mode. The MCP:
+`ops` mode. A template tab may also carry `elements`: once the document exists they are added to the template's first tab as `update_document`'s `add` ops would add them, in canvas coordinates, so on a page template (`blank-infographic`, `blank-slide-deck`, ...) they land on its first page, never silently dropped. They are checked like any other tab's elements before anything is written; if the api then refuses them the answer says the document was made and why. `add_tab` does the same. The MCP:
 
 1. **Validates** each tab's `elements` with `isValidTab` (reject `400`-style with
    a clear message naming the offending tab).
