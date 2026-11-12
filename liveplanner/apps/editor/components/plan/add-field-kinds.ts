@@ -21,6 +21,7 @@ export const KIND_VARIANTS = {
   'time-tracking': { kind: 'duration', preset: { timeSpent: true } },
   'datetime-range': { kind: 'daterange', preset: { withTime: true } },
   cards: { kind: 'card', preset: { multiple: true } },
+  images: { kind: 'image', preset: { multiple: true } },
   'blocked-by': { kind: 'card', preset: { blocks: true, multiple: true } },
   formula: { kind: 'calculated', preset: { calculation: 'formula' } },
   rollup: { kind: 'calculated', preset: { calculation: 'rollup' } },
@@ -64,6 +65,8 @@ export function pickOf(
       return field.withTime ? 'datetime-range' : 'daterange';
     case 'card':
       return field.blocks ? 'blocked-by' : field.multiple ? 'cards' : 'card';
+    case 'image':
+      return field.multiple ? 'images' : 'image';
     case 'calculated':
       return field.calculation === 'formula' ||
         field.calculation === 'rollup' ||
@@ -128,7 +131,7 @@ export const KIND_CATEGORIES: readonly KindCategory[] = [
     id: 'links',
     label: 'Links and Images',
     line: 'Web pages, contact details and pictures.',
-    kinds: ['link', 'email', 'phone', 'image'],
+    kinds: ['link', 'email', 'phone', 'image', 'images'],
   },
   {
     id: 'cards',
@@ -196,6 +199,7 @@ export const KIND_DESCRIPTIONS: Record<PickKind, string> = {
   votes: 'Thumbs up from the team',
   colour: 'A colour to tell cards apart',
   image: 'A picture, like a mock-up or a photo',
+  images: 'Up to 20 pictures, like a set of designs',
   card: 'Another card, like a parent or an epic',
   cards: 'Several linked cards, like an epic’s stories',
   'blocked-by': 'Cards that must be done before this one',
@@ -265,6 +269,7 @@ export const KIND_ALIASES: Record<PickKind, readonly string[]> = {
   votes: ['like', 'upvote', 'thumbs', 'poll', 'dot vote'],
   colour: ['color', 'swatch', 'hue', 'highlight', 'tint'],
   image: ['picture', 'photo', 'screenshot', 'mock-up', 'mockup', 'upload', 'attachment', 'cover'],
+  images: ['pictures', 'images', 'gallery', 'designs', 'screenshots', 'several', 'multiple'],
   card: ['parent', 'epic', 'relation', 'related', 'reference', 'child', 'linked card'],
   cards: ['related', 'children', 'stories', 'linked cards', 'several', 'multiple', 'relation'],
   'blocked-by': [

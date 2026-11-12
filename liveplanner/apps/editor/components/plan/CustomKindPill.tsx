@@ -78,11 +78,21 @@ export function customKindPill(
       ) : null;
     }
     // Its picture, or the first of a list (item-types.md "Image fields"); never more than one fetched per card.
+    // A Several Images field's first, then "+4" for the rest, named "{Field}: 5 images".
     case 'image': {
-      const first = fieldImageIds(def, value)[0];
-      return first ? (
+      const ids = fieldImageIds(def, value);
+      const first = ids[0];
+      if (!first) return null;
+      return ids.length > 1 ? (
+        <ImageThumb
+          key={def.id}
+          imageId={first}
+          more={ids.length - 1}
+          label={`${def.label}: ${ids.length} images`}
+        />
+      ) : (
         <ImageThumb key={def.id} imageId={first} label={`${def.label}: image`} />
-      ) : null;
+      );
     }
     // A Votes field: the built-in's ▲ count, of its own votes (item-types.md "Comments and Votes fields").
     case 'votes':

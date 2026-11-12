@@ -13,6 +13,7 @@ import {
   isNewerField,
   linkCandidates,
   holdsSeveral,
+  holdsSeveralImages,
   isBlocksField,
   isTimeSpent,
   linkTypesOf,
@@ -39,6 +40,7 @@ import { NewerFieldValue } from './NewerFieldValue';
 import { calculatedFieldOutcome } from './calculated-values';
 import { LinkedCardField } from './LinkedCardField';
 import { ImageFieldControl } from './ImageField';
+import { ImageGalleryField } from './ImageGalleryField';
 import { AttachmentsField } from './AttachmentsField';
 import { TimeSpentField } from './time/TimeSpentField';
 import { usePlan } from './PlanContext';
@@ -167,6 +169,19 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
         canEditAll={!!trackTime && (plan?.canEdit ?? false)}
         onTime={(op) => (trackTime ? trackTime(item.id, f, op) : Promise.resolve(false))}
         announce={plan?.announce}
+      />
+    );
+  }
+  // A Several Images field (docs/specs/026-plan/item-types.md "Image fields"): a grid of its pictures, in order.
+  if (custom && holdsSeveralImages(custom)) {
+    return (
+      <ImageGalleryField
+        id={id}
+        itemId={item.id}
+        field={custom}
+        value={value}
+        canEdit={canEdit}
+        onSave={save}
       />
     );
   }

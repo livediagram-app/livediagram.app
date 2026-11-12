@@ -37,7 +37,7 @@ export function reorderSlot(mids: readonly number[], from: number, dy: number): 
   return slot;
 }
 
-const prefersReducedMotion = () =>
+export const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
 
