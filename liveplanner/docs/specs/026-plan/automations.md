@@ -842,6 +842,9 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
   changing anything: the result shows as an Audit Trail row with its steps, each action saying what it would do.
 - Leaving with unsaved changes asks **Discard Changes?**. A save the api refuses keeps the builder open and marks
   the step at fault.
+- A rule opened by its link (an Automation comment's) that the plan no longer has opens no builder: the screen says
+  **This Rule Was Deleted**, "It's no longer in this plan. Its runs stay in the Audit Trail until they age out.", with
+  **Back to Rules**.
 
 ### On cards
 
