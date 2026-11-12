@@ -12,8 +12,9 @@ It is built in parts (Work Item 157):
    a pull request's address, or a pull request naming the card), read in pure code, with no call to GitHub. Built.
 2. **The GitHub App's webhook receiver and the repository connection**, off while its secrets are absent. Built
    (the server side; the dialog that drives it is part 4).
-3. **Pull request state on cards and the board's GitHub rules**, with moves made by GitHub in card history.
-4. **The entry points**: the plan's GitHub dialog, the help article and telemetry.
+3. **Pull request state on cards and the board's GitHub rules**, with moves made by GitHub in card history. Built
+   (the rules' server side; the dialog that sets them is part 4).
+4. **The entry points**: the plan's GitHub dialog, the help article, telemetry and the agents' listing of states.
 
 Until a part is built, what it describes below is the design it is built to.
 
@@ -157,22 +158,62 @@ before it acts: a stale or forged index entry moves nothing, and an entry a plan
 
 ## Pull request state on cards
 
-A linked pull request's state is the latest the plan's object has seen from deliveries, never fetched by a
-viewer: **Draft**, **Open** (with **Checks Running**, **Checks Passing** or **Checks Failing** once its checks report),
-**Merged** or **Closed**. The card face shows it as a chip beside the pull request's short name; the panel shows it
-with the title. A pull request no delivery has reported yet shows its short name alone.
+A linked pull request's state is the latest the plan's object has seen from deliveries, never fetched by a viewer or
+the editor:
+
+| State              | Means                                                                  |
+| ------------------ | ---------------------------------------------------------------------- |
+| **Draft**          | Open as a draft                                                        |
+| **Open**           | Open and ready for review, its checks not reported (or none)           |
+| **Checks Running** | Open (or a draft) and a check suite on its newest commit has not ended |
+| **Checks Passing** | Open (or a draft) and every check suite on its newest commit passed    |
+| **Checks Failing** | Open (or a draft) and a check suite on its newest commit failed        |
+| **Merged**         | Merged                                                                 |
+| **Closed**         | Closed without merging                                                 |
+
+- **What a delivery keeps.** A `pull_request` delivery from a connected repository keeps the pull request's number,
+  title (its first 256 characters), whether it is a draft, open, merged or closed, its newest commit, the cards its
+  title or body names ([card mentions](#how-a-card-names-its-pull-requests)), and GitHub's `updated_at`. A
+  `check_suite` delivery keeps that suite's result for its commit: running while it has not completed; passing when it
+  completed as success, neutral or skipped; failing otherwise (failure, cancelled, timed out, action required, stale).
+  A pull request's checks are its newest commit's suites together: Failing when any failed, else Running when any
+  runs, else Passing. A new commit starts with no checks until its suites report.
+- **Every pull request from a connected repository is kept**, linked to a card or not, so a pull request pasted into
+  a field after its delivery shows its state at once. A plan keeps its 500 most recent (`PULL_REQUESTS_KEPT`) and
+  the check suites of the last 2,000 commits it heard of (`CHECK_SUITES_KEPT`).
+- **Out of order.** GitHub may deliver an older event after a newer one. A pull request keeps its latest `updated_at`:
+  a delivery older than what the plan holds changes nothing and moves nothing, so a card never moves backwards. A
+  check suite keeps its own latest `updated_at` the same way. A redelivery of a delivery already acted on changes
+  nothing ([Deliveries](#deliveries)).
+- **The card face** draws each Pull Request field (and each Link field holding a pull request's address) that the
+  type's Display places as a pull request pill: the state's GitHub mark in the state's colour, the short name, and,
+  for an open pull request whose checks reported, the checks' mark (a tick, a cross, or a dot while running). A
+  linked pull request no pill shows (one that names the card, or a field the Display leaves off) shows as its state's
+  mark beside the title's flags, up to 3, so a card linked by its mention alone still says where its code stands.
+  Each says its short name and state in words to a screen reader and in its tooltip ("acme/web#42: Merged").
+- **The card panel** shows the state beside each Pull Request field (a chip in the state's colour, the pull
+  request's title after it), and lists under **Pull Requests**, after the fields, every linked pull request a field
+  does not hold, each with its mark, short name, state, title and **Open on GitHub**.
+- A pull request no delivery has reported (an unconnected plan, a repository not connected, or one that has not
+  changed since the plan connected) shows its short name alone, as part 1 drew it.
+- **Disconnecting**, or a repository leaving the plan, drops the states it held; every screen drops them at once.
 
 ## GitHub rules
 
-A connected plan's board has two GitHub rules, each off until an Editor picks a column:
+A connected plan has two GitHub rules, each off until an Editor picks a column (status) for it:
 
-- **When a linked pull request opens** (opened, or marked ready for review), move the card to the chosen column.
-- **When a linked pull request merges**, move the card to the chosen column (Implemented, Done).
+- **When a linked pull request opens**: opened ready for review, reopened, or a draft marked ready for review. A
+  draft opening is not yet open.
+- **When a linked pull request merges**: closed as merged. Closed without merging moves nothing.
 
-A move keeps every rule a manual move keeps: a card whose type leaves the column's status out
-([The statuses a type uses](item-types.md#the-statuses-a-type-uses)) stays where it is; a card already there, in
-the Trash or archived is left alone. Each move is a history entry **by GitHub** ("Moved by GitHub", with the pull
-request's short name), never by the person who connected the plan.
+The rules belong to the plan's GitHub connection: they are kept with it, set by the same Editors who connect it
+(`PUT /api/projects/:id/github/rules`), and go when it goes. A column that is no board's any longer stops its rule
+moving cards until an Editor picks again. A move keeps every rule a manual move keeps: a card whose type leaves the
+column's status out ([The statuses a type uses](item-types.md#the-statuses-a-type-uses)) stays where it is; a card
+already there, in the Trash or archived is left alone. A move lands the card at the end of its new column, as a drop
+there would, raises the plan's Automations as a move does, and is a history entry **by GitHub** (GitHub's mark and
+name, "Moved To Implemented"), never by the person who connected the plan. A pull request that links up to 20 cards
+moves up to 20 (`MENTIONS_MAX` by mention, plus its fields' cards, at most 50 in all, `RULE_MOVES_MAX`).
 
 ## Who may do what
 
@@ -185,11 +226,18 @@ request's short name), never by the person who connected the plan.
 A tab-scoped Editor link may set the field on its tab's cards but never connects the plan, since a connection acts
 on the whole plan.
 
+**What a share link sees.** Anyone who can see a card sees its linked pull requests' short names, states and titles,
+a public share link's visitor and a Viewer included: that is the warning connecting a private repository gives. A link
+to one tab sees the states of its tab's cards' pull requests alone. A Community visitor sees none: a Community post
+shows the plan's cards, never what GitHub holds. Nothing else of GitHub reaches a reader: no body, commit, author or
+check name.
+
 ## Agents
 
 The plan agents read and set a Pull Request field as its canonical address (`add_field` and `change_card_types` take
 the kind `pullrequest`; a value that is not a pull request is refused as `value_invalid` with the field's hint). Part
-3 adds each linked pull request's state to a card's listing.
+4 adds each linked pull request's state to a card's listing; the api's `GET /items` already answers the states with
+the cards.
 
 ## Limits
 
@@ -198,6 +246,10 @@ the kind `pullrequest`; a value that is not a pull request is refused as `value_
 | `LINKED_PULL_REQUESTS_MAX`         | 10     | A card face has room for a few; more is a card too big    |
 | `MENTION_TEXT_MAX`                 | 65,536 | GitHub's own cap on a pull request's body                 |
 | `MENTIONS_MAX`                     | 20     | A pull request that names more is a list, not a link      |
+| `PULL_REQUESTS_KEPT`               | 500    | A plan's recent pull requests; older ones show no state   |
+| `CHECK_SUITES_KEPT`                | 2,000  | Several suites for each recent commit                     |
+| `PULL_REQUEST_TITLE_MAX`           | 256    | GitHub's own cap on a pull request's title                |
+| `RULE_MOVES_MAX`                   | 50     | Bounds one delivery's card moves                          |
 | `REPOSITORIES_MAX`                 | 20     | One plan, one team's repositories                         |
 | `PLANS_PER_REPOSITORY_MAX`         | 20     | Bounds one delivery's fan-out                             |
 | `INSTALLATION_REPOSITORIES_LISTED` | 100    | One page of GitHub's repository list                      |
