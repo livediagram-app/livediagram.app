@@ -34,6 +34,13 @@ The same as review-loop (`.claude/skills/review-loop/SKILL.md`): the liveplanner
   `{"op": "set", "item": "#12", "fields": {"f-pull-request": "<PR url>"}}`.
 - Every question, answer, decision and piece of context about a card is in its comment threads. There are no
   Question cards: never make one, and never put a question or answer in a card's fields.
+- **The plan's Automations move some cards themselves** (`list_rules` lists them). A linked PR merging moves its
+  card to Done. A PR opening moves a card to Implemented, and a PR closed unmerged flags the card with a comment,
+  but both skip In Progress, so this loop still moves its own cards to Implemented once verified (step 4), and a
+  Large card stays In Progress while its parts merge. Never redo or undo a rule's move or flag. A PR links its cards
+  by the Pull Request field or by naming them as "Work Tracker 12" in its title or body, so name every card the PR
+  carries that way: the plan's name before each number ("Work Tracker 98, Work Tracker 110"), never a bare "#110" or
+  "Work Item 110", and no `#` (GitHub would link it to its own issue 110).
 
 Only this loop's coordinator (you) writes to the board. Agents never call the liveplanner MCP.
 
@@ -161,7 +168,7 @@ Then, in one `change_items` batch and one `change_threads` batch:
 **Group first.** Cluster the ready cards by the files they would touch (step 2's file lists): cards in the same
 area (the editor chrome in every app, one board view, the Explorer, the card modal) go to **one agent**, so no two
 agents ever edit the same files. **A group is one branch and one PR** (`work/<n1>-<n2>-<short-slug>`, naming every
-card: "Work Tracker #98, #110"), so each pass opens about as many PRs as it has groups, not as cards. Every PR runs
+card: "Work Tracker 98, Work Tracker 110"), so each pass opens about as many PRs as it has groups, not as cards. Every PR runs
 the whole of CI for what it reaches, and CI is the bottleneck: on 2026-11-04 PR jobs waited a median 19 minutes for
 a runner, and a dozen small PRs from one pass queued behind each other all afternoon. So fold every card in a group
 into its PR, and split a card out to its own PR only when it would make the PR hard to review in one sitting or
@@ -336,7 +343,7 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   to that branch's commit as `https://github.com/<repo>/blob/<sha>/<file>?raw=true`. Use this blob form, not
   `raw.githubusercontent.com` links. The description: one calm paragraph of context, then what it solves, then what was done, then
   **Answers** (one line per question: "<thread title>: <the answer, short> → <how it was built>"), Decisions, Performance
-  and the screenshots. It names the card ("Work Tracker #12") and ends with
+  and the screenshots. It names the card ("Work Tracker 12", see "The plan's shape") and ends with
   `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
 - **Owner-only steps live on the PR, never on the board.** Anything only the owner can do (secrets, keys, KV
   namespaces, DNS, dashboard settings, Google Cloud, legal wording, a check on a real device or on staging, a
