@@ -162,7 +162,7 @@ export async function relayPullRequests(
   projectId: string,
   op: PullRequestsRoomOp,
 ): Promise<void> {
-  await broadcastOp(env, projectId, op, 'pull requests', true);
+  await room.broadcastOp(env, projectId, op, 'pull requests', true);
 }
 
 // A sheet write the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"), ordered like items.
