@@ -14,7 +14,7 @@ import {
 import { type CardType, STRIPE, Card } from './plan-parts';
 
 /** The card panel: the back bar to the card before, then the type and number, the ⋯ menu and close;
- *  the title over the type's tabs and description; Linked as Parent; Details on the right. */
+ *  the title over the card's tabs with Linked Cards open on Linked as Parent; Details on the right. */
 export function PlanCardPanelScene() {
   return (
     <Scene w={420} h={260} bg="plain">
@@ -69,38 +69,45 @@ export function PlanCardPanelScene() {
       <Label x={24} y={62} size={14} weight={700} tone="strong">
         New icons
       </Label>
-      <Tabs x={22} y={76} items={['Overview']} tabW={70} h={20} />
-      <TextBar x={24} y={106} w={200} />
-      <TextBar x={24} y={118} w={170} />
-      <TextBar x={24} y={130} w={120} tone="faint" />
-      <Label x={24} y={154} size={10} weight={700} tone="body">
+      <Tabs
+        x={22}
+        y={76}
+        items={['Overview', 'Linked Cards', 'Activity']}
+        active={1}
+        tabW={80}
+        h={20}
+      />
+      <Label x={24} y={118} size={10} weight={700} tone="body">
         Linked as Parent 2
       </Label>
       {[0, 1].map((i) => (
         <g key={i}>
           <rect
             x={22}
-            y={164 + i * 26}
+            y={128 + i * 26}
             width={240}
             height={22}
             rx={5}
             className="fill-slate-50 stroke-slate-200"
             strokeWidth={1}
           />
-          <rect x={26} y={169 + i * 26} width={3} height={12} rx={1} className={STRIPE.task} />
-          <Label x={34} y={175 + i * 26} size={10} tone="muted">
+          <rect x={26} y={133 + i * 26} width={3} height={12} rx={1} className={STRIPE.task} />
+          <Label x={34} y={139 + i * 26} size={10} tone="muted">
             {i ? '#17' : '#16'}
           </Label>
-          <Label x={58} y={175 + i * 26} size={10} tone="strong">
+          <Label x={58} y={139 + i * 26} size={10} tone="strong">
             {i ? 'Export set' : 'Draw glyphs'}
           </Label>
-          <Label x={256} y={175 + i * 26} size={10} anchor="end" tone="muted">
+          <Label x={256} y={139 + i * 26} size={10} anchor="end" tone="muted">
             {i ? 'To Do' : 'In Progress'}
           </Label>
         </g>
       ))}
-      <Label x={24} y={228} size={10} tone="muted">
-        Comments
+      <Label x={28} y={194} size={10} weight={600} tone="accent">
+        + New Task
+      </Label>
+      <Label x={96} y={194} size={10} weight={600} tone="accent">
+        Link Existing
       </Label>
 
       {/* Details. */}
