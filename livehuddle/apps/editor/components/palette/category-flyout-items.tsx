@@ -293,7 +293,8 @@ function Card(item: ItemProps) {
 }
 
 /** A flyout's card: a plate, the name with its key cap, and a line of blurb, pressed while `active`. The category
- *  flyout's cards draw with it, and the avatar palette its statuses, Behaviours and Reactions. */
+ *  flyout's cards draw with it, and the avatar palette its statuses, Behaviours and Reactions. An `inline` plate (a
+ *  status's dot) sits before the name instead of in its own square, so a dense grid gives the words the width. */
 export function CardTile({
   plate,
   name,
@@ -302,9 +303,12 @@ export function CardTile({
   active,
   disabled = false,
   trailing,
+  inline = false,
   ...button
 }: Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'name'> & {
   plate: ReactNode;
+  // The plate before the name, unboxed (a status's dot), rather than in a square on the left.
+  inline?: boolean;
   name: ReactNode;
   shortcut?: string | undefined;
   blurb?: ReactNode;
@@ -325,14 +329,21 @@ export function CardTile({
             : 'ring-transparent hover:bg-slate-50 hover:ring-slate-200 dark:hover:bg-slate-800/70 dark:hover:ring-slate-700'
       }`}
     >
-      <span
-        aria-hidden
-        className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-50 text-slate-700 ring-1 ring-slate-200/80 transition group-hover:bg-white group-hover:shadow-sm dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700 dark:group-hover:bg-slate-900"
-      >
-        {plate}
-      </span>
+      {inline ? null : (
+        <span
+          aria-hidden
+          className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-50 text-slate-700 ring-1 ring-slate-200/80 transition group-hover:bg-white group-hover:shadow-sm dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700 dark:group-hover:bg-slate-900"
+        >
+          {plate}
+        </span>
+      )}
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="flex items-center gap-1.5 text-[13px] font-semibold leading-tight text-slate-800 dark:text-slate-100">
+          {inline ? (
+            <span aria-hidden className="flex shrink-0 items-center">
+              {plate}
+            </span>
+          ) : null}
           <span className="truncate">{name}</span>
           {shortcut && !disabled ? <Kbd small>{shortcut}</Kbd> : null}
         </span>

@@ -334,17 +334,21 @@ describe('the look flyouts', () => {
   });
 
   // Owner, 2026-11-06: "The status menu is long, why not a wider menu like other categories, with subcategories".
-  it('Status: every status in its named group, three to a row (two on a phone), each with its line, Sound last', () => {
+  // Work Item 614: four to a row, the dot before the name rather than in a plate, so the whole flyout fits at 1280x720.
+  it('Status: every status in its named group, four to a row (two on a phone), each with its line, Sound last', () => {
     flyout('status');
     const groups = screen.getAllByRole('region').map((r) => r.getAttribute('aria-label'));
     expect(groups).toEqual(['Availability', 'Activity', 'Mood', 'Sound']);
     for (const g of AVATAR_STATUS_GROUPS) {
       const region = screen.getByRole('region', { name: g.name });
-      expect(region.querySelector('ul')?.className).toContain('sm:grid-cols-3');
+      expect(region.querySelector('ul')?.className.split(' ')).toEqual(
+        expect.arrayContaining(['grid-cols-2', 'sm:grid-cols-4']),
+      );
       for (const s of g.statuses) {
-        expect(
-          within(region).getByRole('button', { name: new RegExp(`^${s.label}`) }).textContent,
-        ).toContain(s.line);
+        const card = within(region).getByRole('button', { name: new RegExp(`^${s.label}`) });
+        expect(card.textContent).toContain(s.line);
+        // No square plate: the card's first child is the words, the dot inside the name's row.
+        expect(card.querySelector(':scope > .h-9')).toBeNull();
       }
     }
     // None leads the first group; every status the product offers is listed once.
