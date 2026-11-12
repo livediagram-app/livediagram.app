@@ -1033,3 +1033,17 @@ overscroll-contain`, and a foot holding **Done** (`useDialogDismiss`, so it slid
   phone and not on a desktop, the step drawer opening on a pick and closing on Done, the header, the foot, Saved, the
   Discard Changes? guard on Escape and Back), `ValueInsert.test.tsx` (the button, the keyboard, insert at the caret, no list
   under the field), `phone-board-tap.test.ts` (the off-column card centres its column and does not open).
+
+## Run telemetry
+
+- `apps/api/src/plan-room/automations/automation-telemetry.ts`: `AutomationTally`, a wake's buffer. `track(category,
+action, type)` (a bound `track`, so the dashboard's emitter scan reads each literal call) pushes an event; `flush(env)`
+  hands at most `TELEMETRY_BATCH_MAX` to `reportServerEvents`, results and trouble ahead of trigger kinds, and empties.
+- `runAutomations` (plan-room-automations.ts) makes one per alarm, passes it to `runTimeTriggers` and
+  `runAutomationWake`, and flushes it through `deps.defer` in a `finally`, so a failed wake still reports.
+- `RunState.tally` (absent for Test on a Card and Run Rule): `runRule`'s `end` tracks the result and the trigger kind,
+  the store's `settle` answering true tracks `AutomationPaused`, the catch tracks `AutomationCrashed`.
+- The Incoming Webhook answer (automation-incoming.ts) sends its one event through `automations.deps()?.defer`, only
+  once the address names a live webhook rule.
+- The dashboard: `liveworkspace/apps/site/app/telemetry/liveplanner/event-explanations.ts` explains every pair, and
+  `computed-emitters.ts` lists `AutomationTrigger.<Kind>` from `AUTOMATION_TRIGGER_KINDS`.

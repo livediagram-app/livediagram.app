@@ -786,6 +786,35 @@ export const EXACT: Readonly<Record<string, string>> = {
     "An automation rule's AI action failed: the model erred or was slow, its reply couldn't be read or didn't fit, or the card refused the write.",
   'Plan|Ran|AutomationAiCapped':
     "An automation rule's AI action was skipped because the plan had used its 100 AI steps that day.",
+  'Plan|Ran|AutomationDone': 'An automation rule ran on its own and did everything it set out to.',
+  'Plan|Ran|AutomationFailed':
+    'An automation rule ran on its own and one of its actions failed; the Audit Trail says why.',
+  'Plan|Ran|AutomationSkipped':
+    "An automation rule's run was skipped: a chain stopped, the rule changed while it waited, or the day's AI steps were spent.",
+  'Plan|Ran|AutomationWaiting':
+    'An automation rule reached a Wait and holds the rest of its run for later.',
+  'Plan|Ran|AutomationNoMatch':
+    "An automation rule heard its trigger, but the card didn't meet its conditions, so it did nothing.",
+  'Plan|Ran|AutomationPaused':
+    'An automation rule was turned off after failing too many times in a row.',
+  'Plan|Ran|AutomationCrashed':
+    'An automation run broke unexpectedly and was logged as Something went wrong.',
+  'Plan|Ran|AutomationQueueFull':
+    "A burst of changes was too big for a plan's automation queue, so some were dropped.",
+  'Plan|Ran|AutomationTimeMissed':
+    "A time rule's moment was found too late to run, so it waits for the next one.",
+  'Plan|Ran|AutomationWakeFailed':
+    "A plan's automations failed to run as a whole and tried again a minute later.",
+  'Plan|Ran|AutomationHookAccepted':
+    "A call to a rule's Incoming Webhook address was accepted and queued its runs.",
+  'Plan|Ran|AutomationHookUnauthorized':
+    "A call to a rule's Incoming Webhook address was refused: the secret or signature was wrong.",
+  'Plan|Ran|AutomationHookRateLimited':
+    "A call to a rule's Incoming Webhook address was refused for too many calls that minute.",
+  'Plan|Ran|AutomationHookBudget':
+    "A call to a rule's Incoming Webhook address was refused because the plan had used its runs for the day.",
+  'Plan|Ran|AutomationHookInvalid':
+    "A call to a rule's Incoming Webhook address was refused because its body couldn't be read.",
   'Plan|Ran|AutomationAiDraft':
     "Describe a Rule asked the AI to draft an automation rule from someone's words; a draft that didn't read is asked once more.",
   'Plan|Ran|AutomationAiOffTopic':

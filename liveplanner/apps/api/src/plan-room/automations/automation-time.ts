@@ -21,6 +21,7 @@ import { readAutomationPlan, type AutomationPlan } from './automation-plan';
 import { settleRun } from './automation-log';
 import type { AutomationSchedule } from './automation-queue';
 import type { RunnerDeps } from './automation-runner';
+import type { AutomationTally } from './automation-telemetry';
 
 // A time rule left waiting for queue room tries again this soon.
 export const AUTOMATION_TIME_RETRY_MS = 1000;
@@ -35,6 +36,7 @@ export async function runTimeTriggers(
   deps: RunnerDeps,
   schedule: AutomationSchedule,
   now: number,
+  tally?: AutomationTally,
 ): Promise<number> {
   const sql = deps.sql();
   const rows = sql
@@ -101,7 +103,10 @@ export async function runTimeTriggers(
           steps: [],
         });
       console.info('[automations] time.queued', { cards: events.length, matched: found.matched });
-    } else console.info('[automations] time.missed', { late: now - Number(row.next_at) });
+    } else {
+      console.info('[automations] time.missed', { late: now - Number(row.next_at) });
+      tally?.track('Plan', 'Ran', 'AutomationTimeMissed');
+    }
     const next = nextMoment(rule.trigger, rule.timeZone, now);
     if (next === null) sql.exec('DELETE FROM automation_schedule WHERE rule_id = ?', rule.id);
     else sql.exec('UPDATE automation_schedule SET next_at = ? WHERE rule_id = ?', next, rule.id);
