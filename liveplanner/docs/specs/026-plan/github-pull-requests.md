@@ -10,7 +10,8 @@ It is built in parts (Work Item 157):
 
 1. **The Pull Request field kind** and how a card names its pull requests (a Pull Request field, a Link field holding
    a pull request's address, or a pull request naming the card), read in pure code, with no call to GitHub. Built.
-2. **The GitHub App's webhook receiver and the repository connection**, off while its secrets are absent.
+2. **The GitHub App's webhook receiver and the repository connection**, off while its secrets are absent. Built
+   (the server side; the dialog that drives it is part 4).
 3. **Pull request state on cards and the board's GitHub rules**, with moves made by GitHub in card history.
 4. **The entry points**: the plan's GitHub dialog, the help article and telemetry.
 
@@ -90,7 +91,7 @@ pull request's repository, never in another plan of the same name.
 liveplanner has its **own GitHub App** (the owner's answer, 2026-11-11: an App owned by liveplanner alone, not one
 shared by the platform). It asks for the narrowest permissions the feature needs, all read-only: **Pull requests:
 Read**, **Checks: Read** and **Metadata: Read** (GitHub's mandatory one). It subscribes to `pull_request`,
-`check_suite` and `installation_repositories` events. It writes nothing to GitHub.
+`check_suite` and `installation_repositories` events (GitHub sends every App its `installation` events too). It writes nothing to GitHub.
 
 The App's settings are the api's secrets and one binding: `GITHUB_APP_ID`, `GITHUB_APP_SLUG`,
 `GITHUB_APP_PRIVATE_KEY`, `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, `GITHUB_WEBHOOK_SECRET` and the
@@ -100,37 +101,59 @@ route answers 404, and nothing logs an error. Pull Request fields still read and
 ### Connecting a repository
 
 - **Who**: a signed-in Editor of the whole plan (the owner, the plan's team, a whole-plan Editor link), as the plan's
-  webhooks are. A plan in Browser Storage has no connection (deliveries reach the server, not a browser).
-- **How**: the plan's GitHub dialog sends them to GitHub to install the App (or pick an installation they already
-  have) and choose its repositories; GitHub returns them with the installation. The api then asks GitHub, as that
-  person, once, which installations they can reach (GitHub's user authorisation of the App), and connects the plan
-  only when the installation is one of them. The person's GitHub token is used for that one check and dropped: **no
-  personal GitHub token is stored**, ever. A repository joins only when the installation can see it.
-- **What is kept**: the installation's id, each chosen repository's id and `owner/name`, who connected it and when,
-  and the plan's GitHub rules. A plan connects up to 20 repositories (`REPOSITORIES_MAX`); a repository connects to
-  up to 20 plans (`PLANS_PER_REPOSITORY_MAX`).
+  webhooks are: never an API token, a workbench session, a guest, a Participant, a Viewer or a link to one tab. A
+  plan in Browser Storage has no connection (deliveries reach the server, not a browser).
+- **How**: the plan's GitHub dialog asks the api to start a connection, and the api answers the App's install page
+  with a one-time **state** naming the plan (kept by the plan, as a hash, for 10 minutes, `CONNECT_STATE_TTL_MS`).
+  On GitHub the person installs the App (or opens an installation they already have) and chooses its repositories;
+  GitHub sends them back to the api's callback with the installation and a code. The state is spent first, once,
+  whatever follows. The api then asks GitHub, as that person, once, which of the installation's repositories they
+  can reach (GitHub's user authorisation of the App), and connects the plan only when the installation is one they
+  can reach. It asks GitHub, as the App, that the installation is the App's own and not suspended. The person's
+  GitHub token is used for those calls and revoked at GitHub straight after: **no personal GitHub token is
+  stored**, ever. The callback sends the person back to the plan (`#github=connected`, `#github=failed`, or
+  `#github=requested` when an organisation's owner must approve the install first).
+- **Which repositories**: the plan keeps the repositories the person could reach in the installation (the first
+  100, `INSTALLATION_REPOSITORIES_LISTED`). When there are at most 20 (`REPOSITORIES_MAX`), every one of them
+  connects; with more, none does until an Editor chooses. An Editor may change the chosen ones later, from that
+  list only, up to 20; each choice is checked against the installation again (as the App, with an installation
+  token made for that one call and never kept), so a repository the installation no longer sees never joins. A
+  repository already connected to 20 plans (`PLANS_PER_REPOSITORY_MAX`) is not chosen.
+- **What is kept**: the installation's id and account name, each repository the person could reach (its id,
+  `owner/name` and whether it is private) and whether it is chosen, who connected it (as a card's history names a
+  person) and when, and the plan's GitHub rules (part 3).
 - **Private repositories**: a pull request's title and state reach everyone who can see the card, public share links
   included. Connecting a private repository to a plan that has a public link says so first ("Anyone with this plan's
   link will see these pull requests' titles and states").
 - **Disconnecting** (any Editor who may connect) drops the connection, its rules and the state it holds; the cards'
-  fields stay as addresses. Removing a repository from the installation on GitHub drops it from every plan.
+  fields stay as addresses. Removing a repository from the installation on GitHub drops it from every plan;
+  uninstalling the App drops every plan's connection to it.
 
 ### Storage
 
 liveplanner has no D1. The **plan's Durable Object** keeps its own connection, rules and the latest state of each
 linked pull request: the source of truth. The **`GITHUB_LINKS` KV namespace** keeps only the reverse index a delivery
-needs, `repo:{repository id}` → the plans connected to it, rewritten from the plans' objects on every connect and
-disconnect. A delivery reads the index, then each plan's object checks the delivery's installation and repository
-against its own connection before it acts: a stale or forged index entry moves nothing.
+needs, one key per pair so two plans connecting at once never overwrite each other: `repo:{repository id}:{plan id}`
+for each chosen repository and `installation:{installation id}:{plan id}` for the installation, written from the
+plan's object on every connect, choice and disconnect. A delivery lists the keys under its repository (or
+installation), then each plan's object checks the delivery's installation and repository against its own connection
+before it acts: a stale or forged index entry moves nothing, and an entry a plan disowns is deleted.
 
 ### Deliveries
 
 - Every delivery's `X-Hub-Signature-256` is checked, an HMAC-SHA256 of the raw body under `GITHUB_WEBHOOK_SECRET`,
   compared in constant time, **before** the body is parsed. A missing or wrong signature is refused (401) and read no
-  further; so is a body over 1 MB.
+  further; so is a body over 1 MB (413, `WEBHOOK_BODY_MAX`), declared or read.
 - A delivery acts only on plans whose connection names both its installation and its repository. A pull request
   moves only cards of the plans it is linked to, by field or by mention.
-- Each delivery id is acted on once (GitHub retries).
+- Each delivery id (`X-GitHub-Delivery`) is acted on once by each plan, which keeps the ids it has seen for 3 days
+  (`DELIVERY_KEEP_MS`): GitHub's redelivery of one changes nothing twice.
+- What each event does: `ping` (sent when the App is made) is answered and nothing more; `pull_request` and
+  `check_suite` reach the plans connected to their repository (part 3 acts on them);
+  `installation_repositories` with repositories removed drops them from every plan; `installation` deleted drops
+  every plan's connection to it (up to 100 plans, `INSTALLATION_PLANS_MAX`). Any other event is accepted and
+  ignored (202). When a plan's object fails, the answer is 502, so GitHub's redelivery reaches it, and the plans that
+  took it ignore it.
 
 ## Pull request state on cards
 
@@ -170,10 +193,15 @@ the kind `pullrequest`; a value that is not a pull request is refused as `value_
 
 ## Limits
 
-| Limit                      | Value  | Why                                                    |
-| -------------------------- | ------ | ------------------------------------------------------ |
-| `LINKED_PULL_REQUESTS_MAX` | 10     | A card face has room for a few; more is a card too big |
-| `MENTION_TEXT_MAX`         | 65,536 | GitHub's own cap on a pull request's body              |
-| `MENTIONS_MAX`             | 20     | A pull request that names more is a list, not a link   |
-| `REPOSITORIES_MAX`         | 20     | One plan, one team's repositories                      |
-| `PLANS_PER_REPOSITORY_MAX` | 20     | Bounds one delivery's fan-out                          |
+| Limit                              | Value  | Why                                                       |
+| ---------------------------------- | ------ | --------------------------------------------------------- |
+| `LINKED_PULL_REQUESTS_MAX`         | 10     | A card face has room for a few; more is a card too big    |
+| `MENTION_TEXT_MAX`                 | 65,536 | GitHub's own cap on a pull request's body                 |
+| `MENTIONS_MAX`                     | 20     | A pull request that names more is a list, not a link      |
+| `REPOSITORIES_MAX`                 | 20     | One plan, one team's repositories                         |
+| `PLANS_PER_REPOSITORY_MAX`         | 20     | Bounds one delivery's fan-out                             |
+| `INSTALLATION_REPOSITORIES_LISTED` | 100    | One page of GitHub's repository list                      |
+| `INSTALLATION_PLANS_MAX`           | 100    | Bounds an uninstall's fan-out                             |
+| `WEBHOOK_BODY_MAX`                 | 1 MB   | GitHub caps a delivery's payload at 25 MB; ours are small |
+| `CONNECT_STATE_TTL_MS`             | 10 min | Long enough to install the App on GitHub                  |
+| `DELIVERY_KEEP_MS`                 | 3 days | GitHub redelivers deliveries up to 3 days old             |
