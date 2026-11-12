@@ -141,3 +141,19 @@ describe('Set Field from another field the plan no longer has', () => {
     expect(select('From Field').selectedOptions[0]!.textContent).toBe('A field no longer here');
   });
 });
+
+describe('Create Card in a column the plan no longer has', () => {
+  it('keeps the gone column shown', () => {
+    render(
+      <Panel
+        body={{
+          ...newRuleBody('R', 'UTC'),
+          steps: [{ kind: 'create_card', type: 'task', title: 'Check', status: 'gone-col' }],
+        }}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    expect(select('Column').value).toBe('gone-col');
+    expect(select('Column').selectedOptions[0]!.textContent).toBe('A column no longer here');
+  });
+});

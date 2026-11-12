@@ -70,6 +70,9 @@ export function CreateCardPanel({
             }
           >
             <option value="">The Same Column</option>
+            {action.status && !outline.columns.some((c) => c.status === action.status) ? (
+              <option value={action.status}>A column no longer here</option>
+            ) : null}
             {outline.columns.map((c) => (
               <option key={c.status} value={c.status}>
                 {c.name}
