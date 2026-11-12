@@ -76,7 +76,6 @@ export function ContentsPanel<R extends ContentsRowBase>({
       <ContentsList
         contents={contents}
         variant="list"
-        touch={mobile}
         badges={badges}
         className="gap-0.5 px-2 pb-2"
         style={{ maxHeight: mobile ? '55vh' : 'min(calc(100vh - 360px), 480px)' }}

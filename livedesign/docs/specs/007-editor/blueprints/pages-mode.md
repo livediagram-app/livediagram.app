@@ -716,17 +716,21 @@ next), ownerId)`; the editor follows the cache (`useEditorPreferences`). Setting
     `MenuGroupSeparator`, then a separator and `Delete` (`lucideTrash2`) when `remove`. Each row
     runs its verb, then closes. Its wrapper stops pointer, key and click events reaching the list
     (the portal still bubbles through React).
-  - `PageRowStack({ name, remove, shown, touch, menu, id, grip })` (the sidebar's): a `flex-col`
+  - `ROW_TOOLS_REVEAL` / `rowToolsReveal(shown)`: the one reveal rule for a row's grip and ⋯
+    (spec "One reveal rule"): `pointer-fine:opacity-0`, shown on the row `group`'s hover or
+    focus-within; nothing under a coarse pointer, so a finger always sees them; nothing when `shown`.
+    It reads the pointer, never the viewport, so `ContentsList` takes no `touch` prop.
+  - `PageRowStack({ name, remove, shown, menu, id, grip })` (the sidebar's): a `flex-col`
     of the grip slot, Delete (`data-page-action="delete"`, Tooltip "Delete", `aria-label`
     "Delete <name>") and `PageRowMenuButton`; `gap-0.5`, `pointer-coarse:gap-5` (44 px apart);
-    opacity 0 until the row's `group` is hovered or holds focus, shown when `shown` (here or
-    `touch`) or its menu is open.
-  - `PageRowMenuButton({ name, id, menu, reveal })`: `EllipsisTriggerButton` `md`
+    `rowToolsReveal(shown || open)`, `shown` being the page here.
+  - `PageRowMenuButton({ name, id, menu })`: `EllipsisTriggerButton` `md`
     (`touch-target`), "Menu for <name>", `aria-expanded` while its menu is open, registered as the
     row's trigger. Its presses stop at it (no glide, no drag).
 - **Layout**: `FilmRow`'s left column (`w-6`) holds the number, then `PageRowStack` (the grip
   inside it); `ListRow`'s left column holds the number and `PageRowMenuButton` under it, its
-  grip at the row's end as before. Without `edit` neither column holds a control.
+  grip at the row's end as before, the ⋯'s wrapper and the grip each wearing
+  `rowToolsReveal(menu open)`, so the two appear together. Without `edit` neither column holds a control.
 - **Add Page**: `ContentsAddPage` is one wide button (`data-contents-add`, **Add Page** with
   `lucidePlus`, its tooltip `addAnotherLabel(lastPage)`) that calls `addLike()`
   (`edit.addPageLike(lastPage.id)`), `lastPage` being `lastPageOfTabKind(pages)`; with no `lastPage` (a
