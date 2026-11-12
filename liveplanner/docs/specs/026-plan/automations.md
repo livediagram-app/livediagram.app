@@ -274,6 +274,9 @@ The Automations screen's way to the plan's GitHub connection, inside the dialog 
   picked, a note says what that shares: "Anyone who can see this plan's cards, share links included, sees these pull
   requests' titles and states." **Change on GitHub** starts a connect again, so GitHub's own page adds or removes the
   installation's repositories.
+- The connection is read each time the view opens (what was read before shows meanwhile), so a change made in
+  another tab or by another Editor shows. A Save Repositories refused because the list changed on GitHub (a
+  repository gone from the installation) says so and reads the list again; a pick no longer listed is dropped.
 - **Disconnect** asks first, in the app (never a browser dialog): **Disconnect GitHub?**, "Cards stop showing pull
   request states, and GitHub rules stop running until you connect again. Your rules and fields stay.",
   **Disconnect** and **Cancel**.

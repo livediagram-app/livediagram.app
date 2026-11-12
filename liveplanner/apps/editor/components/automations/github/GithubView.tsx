@@ -4,9 +4,9 @@
 // is: a breadcrumb back to Automations, then the plan's connection. Not connected: Connect GitHub. Connected: the
 // account and who connected it, the repositories the plan hears, Change on GitHub (a connect again, so GitHub's own
 // page adds or removes repositories) and Disconnect, which asks in the app first. Coming back from GitHub, a line says
-// how it went. The connection is read when the view opens, never on the board.
+// how it went. The connection is read each time the view opens, never on the board.
 
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import {
   Button,
   CompactEmptyState,
@@ -90,15 +90,20 @@ export function GithubView({
   // The dialog's close, at the bar's end.
   trailing?: ReactNode;
 }) {
-  const github = useGithubConnection(scope, true);
+  // Read again each time the view opens: a connection changed elsewhere (another tab, another Editor) shows here.
+  const github = useGithubConnection(scope, true, true);
   const toast = useToast();
   const [confirming, setConfirming] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const leavingRef = useRef(false);
   const [changing, setChanging] = useState(false);
   const [changeError, setChangeError] = useState<string | null>(null);
   const [shown, setShown] = useState<GithubResult | undefined>(result);
 
   const disconnect = async () => {
+    // One press of the confirm disconnects once, however often it is pressed while it goes.
+    if (leavingRef.current) return;
+    leavingRef.current = true;
     setLeaving(true);
     try {
       await disconnectGithub(scope);
@@ -110,6 +115,7 @@ export function GithubView({
       debugLog('[github] disconnect.failed', { error: String(e) });
       toast.error(connectRefusalWords(e));
     } finally {
+      leavingRef.current = false;
       setLeaving(false);
       setConfirming(false);
     }

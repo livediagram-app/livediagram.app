@@ -1,7 +1,7 @@
 'use client';
 
 // The plan's GitHub connection as the Automations screen holds it (docs/specs/026-plan/automations.md "The GitHub
-// view"): read the first time the GitHub view or a GitHub trigger's panel asks (never on the board), kept in a small
+// view"): read the first time a GitHub trigger's panel asks and each time the GitHub view opens (never on the board), kept in a small
 // store outside React per plan so both read one answer, and set from each route's answer, so nothing reads it twice
 // for one change. A 403 (`github_needs_editor`) settles as 'refused'.
 
@@ -62,10 +62,12 @@ export function resetGithubForTests(): void {
   entries.clear();
 }
 
-/** The plan's connection: read when first asked while `enabled` (the deployment has GitHub), else idle. */
+/** The plan's connection: read when first asked while `enabled` (the deployment has GitHub), else idle. `fresh` reads
+ *  it again as the caller mounts (the GitHub view, each time it opens), showing what was read before meanwhile. */
 export function useGithubConnection(
   scope: AutomationsScope,
   enabled: boolean,
+  fresh = false,
 ): GithubState & { reload: () => void } {
   const entry = entryOf(scope);
   const subscribe = useCallback(
@@ -81,8 +83,8 @@ export function useGithubConnection(
     () => IDLE,
   );
   useEffect(() => {
-    if (enabled && entry.state.status === 'idle') void loadGithub(scope);
-  }, [enabled, entry, scope]);
+    if (enabled && (fresh || entry.state.status === 'idle')) void loadGithub(scope);
+  }, [enabled, fresh, entry, scope]);
   const reload = useCallback(() => void loadGithub(scope), [scope]);
   return { ...(enabled ? state : IDLE), reload };
 }
