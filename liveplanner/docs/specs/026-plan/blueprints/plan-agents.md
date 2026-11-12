@@ -97,14 +97,14 @@ change, boardFields(setup, types, false))` on the reshaped set-up; each name thr
   `{ operations: [{ op: 'add', element }], base: { rev, elements: {} } }` with the client header (`mcp` or `cli`).
 
 - Pictures (spec plan-agents.md "Pictures", mcp-server.md §4.5b): `upload_image { projectId, data?, url?, name? }`
-  and the CLI's `image add <project> <file or url>` (`verbs/image.ts`) both call `uploadForPlan`
-  (`images/plan-upload.ts`), which is the shared `addImage` (`packages/agent-verbs/src/images/upload.ts`, its sniff,
+  and the CLI's `image add <project> <file or url>` (`packages/agent-verbs/src/verbs/image.ts`) both call `uploadForPlan`
+  (`packages/agent-verbs/src/images/plan-upload.ts`), which is the shared `addImage` (`packages/agent-verbs/src/images/upload.ts`, its sniff,
   size and SSRF-safe fetch) with the upload's path `/images?p={projectId}` and `X-Image-Source: mcp` or `cli`; a 403
   becomes "You can view this plan but not add pictures to it.", a full gallery names the Image Gallery in the
   Explorer. The api's `routes/images.ts` keeps every server-side rule (a role of at least Participant on the plan, a
   read-only token refused at the dispatch choke point, declared type and length, the service's sniff, dedupe and
   gallery caps), records the plan's grant and passes a token's `X-Image-Source` on. `change_items`' `add` and `set`
-  read an Image field's or Attachments' value with `plan/card-pictures.ts`: `splitPictureFields` takes them out of
+  read an Image field's or Attachments' value with `packages/agent-verbs/src/plan/card-pictures.ts`: `splitPictureFields` takes them out of
   `fields` before `resolveFields`, `pictureEditOf` reads `{ add?, remove? }`, an id, a comma list, ids or `{ id }`
   entries (blank clears). `applyItemChanges` first asks, in one request, `checkPictureGrants` for every id the call
   adds (`POST /api/images/grants?p=`, the room's `grantedImages(planId, ids)` over `planGrantedImages`, one
