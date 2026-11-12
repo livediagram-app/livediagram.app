@@ -60,6 +60,8 @@ export type GithubStandIn = {
   installation: { account: { login: string }; suspended_at: string | null } | null;
   installationToken: string | null;
   installationRepositories: { id: number; full_name: string; private?: boolean }[] | null;
+  // A page of either repository list that answers 500, or null for none.
+  failingPage: number | null;
 };
 
 export type GithubCall = { method: string; url: string; body: string };
@@ -105,6 +107,19 @@ export const sign = (body: string, secret = WEBHOOK_SECRET) =>
 const isGithub = (url: string) =>
   url.startsWith('https://api.github.com/') || url.startsWith('https://github.com/');
 
+// One page of a repository list, as GitHub pages it: `per_page` and `page` read, a `Link` header naming the next.
+function listPage(gh: GithubStandIn, u: URL, all: unknown[]): Response {
+  const perPage = Number(u.searchParams.get('per_page') ?? 30);
+  const page = Number(u.searchParams.get('page') ?? 1);
+  if (page === gh.failingPage) return Response.json({ message: 'Server Error' }, { status: 500 });
+  const repositories = all.slice((page - 1) * perPage, page * perPage);
+  const next = page * perPage < all.length;
+  const link: Record<string, string> = next
+    ? { Link: `<${u.origin}${u.pathname}?page=${page + 1}>; rel="next"` }
+    : {};
+  return Response.json({ total_count: all.length, repositories }, { headers: link });
+}
+
 function standIn(gh: GithubStandIn, url: string, method: string): Response {
   const u = new URL(url);
   const notFound = () => Response.json({ message: 'Not Found' }, { status: 404 });
@@ -113,7 +128,7 @@ function standIn(gh: GithubStandIn, url: string, method: string): Response {
       gh.token ? { access_token: gh.token } : { error: 'bad_verification_code' },
     );
   if (u.pathname.startsWith('/user/installations/'))
-    return gh.userRepositories ? Response.json({ repositories: gh.userRepositories }) : notFound();
+    return gh.userRepositories ? listPage(gh, u, gh.userRepositories) : notFound();
   if (u.pathname.startsWith('/applications/') && method === 'DELETE')
     return new Response(null, { status: 204 });
   if (u.pathname.endsWith('/access_tokens'))
@@ -123,9 +138,7 @@ function standIn(gh: GithubStandIn, url: string, method: string): Response {
   if (u.pathname.startsWith('/app/installations/'))
     return gh.installation ? Response.json(gh.installation) : notFound();
   if (u.pathname === '/installation/repositories')
-    return gh.installationRepositories
-      ? Response.json({ repositories: gh.installationRepositories })
-      : notFound();
+    return gh.installationRepositories ? listPage(gh, u, gh.installationRepositories) : notFound();
   return notFound();
 }
 
@@ -142,6 +155,7 @@ export async function githubWorld(planIds: string[] = ['A']): Promise<GithubWorl
     installation: { account: { login: 'acme' }, suspended_at: null },
     installationToken: 'ghs_installation_token',
     installationRepositories: [repo(11), repo(12, 'acme/secret', true)],
+    failingPage: null,
   };
   const ghCalls: GithubCall[] = [];
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init: RequestInit = {}) => {

@@ -8,6 +8,7 @@ import {
   GITHUB_FETCH_TIMEOUT_MS,
   GITHUB_WEB,
   INSTALLATION_REPOSITORIES_LISTED,
+  REPOSITORY_PAGES_MAX,
   type GithubConfig,
 } from './github-config';
 
@@ -37,7 +38,7 @@ function isFullName(name: unknown): name is string {
   return slash > 0 && slash < name.length - 1 && name.indexOf('/', slash + 1) === -1;
 }
 
-/** The repositories of a list answer, the odd entries skipped, at most one page. */
+/** The repositories of one page of a list answer, the odd entries skipped, at most one page's worth. */
 export function repositoriesOf(body: unknown): GithubRepository[] | null {
   const list = field(body, 'repositories');
   if (!Array.isArray(list)) return null;
@@ -64,6 +65,35 @@ async function call(what: string, url: string, init: RequestInit): Promise<Respo
   }
 }
 
+// Whether GitHub's `Link` header names a next page. Only its presence is read: the next address is built here, so a
+// token is only ever sent to GITHUB_API.
+const hasNextPage = (link: string | null): boolean => link?.includes('rel="next"') ?? false;
+
+/** Every repository of a list GitHub pages (`path` with no query), at most REPOSITORY_PAGES_MAX pages,
+ *  deduplicated by id; null when any page fails, since a half list would drop repositories a choice is checked
+ *  against. */
+async function listRepositories(
+  what: string,
+  path: string,
+  authorization: string,
+): Promise<GithubRepository[] | null> {
+  const byId = new Map<number, GithubRepository>();
+  for (let page = 1; page <= REPOSITORY_PAGES_MAX; page += 1) {
+    const res = await call(
+      what,
+      `${GITHUB_API}${path}?per_page=${INSTALLATION_REPOSITORIES_LISTED}&page=${page}`,
+      { headers: githubHeaders(authorization) },
+    );
+    if (!res?.ok) return null;
+    const repos = repositoriesOf(await jsonOf(res));
+    if (!repos) return null;
+    for (const r of repos) if (!byId.has(r.id)) byId.set(r.id, r);
+    if (!hasNextPage(res.headers.get('Link'))) return [...byId.values()];
+  }
+  console.warn('[github] repositories capped', { what, pages: REPOSITORY_PAGES_MAX });
+  return [...byId.values()];
+}
+
 /** The person's token for the code GitHub sent back, or null. */
 export async function exchangeCode(
   config: Pick<GithubConfig, 'clientId' | 'clientSecret'>,
@@ -87,17 +117,17 @@ export async function exchangeCode(
   return typeof token === 'string' && token !== '' ? token : null;
 }
 
-/** The installation's repositories the person can reach, or null when they can reach none of it (GitHub's 404). */
+/** The installation's repositories the person can reach, every page, or null when they can reach none of it
+ *  (GitHub's 404). */
 export async function userInstallationRepositories(
   token: string,
   installationId: number,
 ): Promise<GithubRepository[] | null> {
-  const res = await call(
+  return listRepositories(
     'user_repositories',
-    `${GITHUB_API}/user/installations/${installationId}/repositories?per_page=${INSTALLATION_REPOSITORIES_LISTED}`,
-    { headers: githubHeaders(`Bearer ${token}`) },
+    `/user/installations/${installationId}/repositories`,
+    `Bearer ${token}`,
   );
-  return res?.ok ? repositoriesOf(await jsonOf(res)) : null;
 }
 
 /** The person's token revoked at GitHub: it was for one check. Best effort; a failure is logged. */
@@ -139,7 +169,8 @@ export async function appInstallation(
   return { account: login, suspended: suspended !== null && suspended !== undefined };
 }
 
-/** The repositories the installation sees now, as the App (an installation token for this one call), or null. */
+/** The repositories the installation sees now, every page, as the App (an installation token for this one call),
+ *  or null. */
 export async function installationRepositories(
   config: Pick<GithubConfig, 'appId' | 'privateKey'>,
   installationId: number,
@@ -147,10 +178,9 @@ export async function installationRepositories(
 ): Promise<GithubRepository[] | null> {
   const token = await installationToken(config, installationId, now);
   if (!token) return null;
-  const res = await call(
+  return listRepositories(
     'installation_repositories',
-    `${GITHUB_API}/installation/repositories?per_page=${INSTALLATION_REPOSITORIES_LISTED}`,
-    { headers: githubHeaders(`Bearer ${token}`) },
+    '/installation/repositories',
+    `Bearer ${token}`,
   );
-  return res?.ok ? repositoriesOf(await jsonOf(res)) : null;
 }

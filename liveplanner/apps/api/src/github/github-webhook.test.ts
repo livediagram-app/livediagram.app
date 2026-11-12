@@ -2,7 +2,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { endRepeatWorld } from '../plan-room/test-repeat-world';
 import { PlanRoom } from '../plan-room/plan-room';
 import { readConnection } from '../plan-room/github/github-store';
-import { githubConfig, WEBHOOK_BODY_MAX } from './github-config';
+import {
+  githubConfig,
+  REFUSED_NETWORK_TURNED_AWAY_MS,
+  REFUSED_NETWORKS_KEPT,
+  WEBHOOK_BODY_MAX,
+} from './github-config';
+import {
+  countRefusal,
+  isGithubHookAddress,
+  isTurnedAway,
+  turnedAwayCount,
+} from './refused-signatures';
+import { webhookSignatureOk } from './webhook-signature';
 import {
   connection,
   githubEnv,
@@ -11,6 +23,7 @@ import {
   prPayload,
   sign,
   suitePayload,
+  WEBHOOK_SECRET,
   type GithubWorld,
 } from './test-github-world';
 
@@ -107,6 +120,13 @@ describe('the signature', () => {
     expect(parse.mock.calls.filter(([text]) => text === body)).toEqual([]);
     // Signed right, the same body is read, and refused as JSON it is not.
     expect((await w.deliver('pull_request', null, { body })).status).toBe(400);
+  });
+
+  it('reads a missing or malformed header as no signature, whoever asks', async () => {
+    const body = new TextEncoder().encode('{}');
+    expect(await webhookSignatureOk(WEBHOOK_SECRET, body, null)).toBe(false);
+    expect(await webhookSignatureOk(WEBHOOK_SECRET, body, 'sha256=12')).toBe(false);
+    expect(await webhookSignatureOk(WEBHOOK_SECRET, body, sign('{}'))).toBe(true);
   });
 
   it('accepts the signature in upper case hex', async () => {
@@ -286,5 +306,128 @@ describe('a delivery', () => {
     expect(text).not.toContain('Private title');
     expect(text).not.toContain(sign(body).slice(7));
     expect(text).not.toContain('whsec');
+  });
+});
+
+describe('refused signatures', () => {
+  // A stand-in write limiter: each key allowed `allowed` calls, every call recorded.
+  let calls: string[];
+  let allowed: number;
+  beforeEach(() => {
+    calls = [];
+    allowed = 3;
+    Object.assign(w.env, {
+      WRITE_RATE_LIMITER: {
+        limit: async ({ key }: { key: string }) => {
+          calls.push(key);
+          return { success: calls.filter((k) => k === key).length <= allowed };
+        },
+      },
+    });
+  });
+
+  // A body that counts the reads it is asked for: zero means it was never read.
+  const countedBody = (text: string) => {
+    const reads = { count: 0 };
+    const stream = new ReadableStream<Uint8Array>(
+      {
+        pull(c) {
+          reads.count += 1;
+          c.enqueue(new TextEncoder().encode(text));
+          c.close();
+        },
+      },
+      { highWaterMark: 0 },
+    );
+    return { stream, reads };
+  };
+
+  const post = (ip: string, signature: string | null, body: BodyInit = '{}') =>
+    w.raw(
+      new Request('https://api.test/api/github/webhook', {
+        method: 'POST',
+        headers: {
+          'CF-Connecting-IP': ip,
+          'X-GitHub-Event': 'ping',
+          'X-GitHub-Delivery': crypto.randomUUID(),
+          ...(signature === null ? {} : { 'X-Hub-Signature-256': signature }),
+        },
+        body,
+        duplex: 'half',
+      } as RequestInit),
+    );
+
+  it('counts only refusals, per network, and turns one over its limit away before its body is read', async () => {
+    const wrong = sign('{}', 'another-secret');
+    for (let i = 0; i < 3; i += 1) expect((await post('203.0.113.7', wrong)).status).toBe(401);
+    const over = await post('203.0.113.8', wrong);
+    expect(over.status).toBe(429);
+    expect(over.headers.get('Retry-After')).toBe('60');
+    expect(await over.json()).toEqual({ error: 'github_rate_limited' });
+    expect(calls).toEqual(Array(4).fill('github-refused:203.0.113.0/24'));
+    // Turned away: even a delivery that signs right, its body never read, the limiter not asked again.
+    const { stream, reads } = countedBody('{}');
+    expect((await post('203.0.113.9', sign('{}'), stream)).status).toBe(429);
+    expect(reads.count).toBe(0);
+    expect(calls).toHaveLength(4);
+    // Another network is not touched, and a delivery that signs right is never counted.
+    expect((await post('198.51.100.1', sign('{}'))).status).toBe(200);
+    expect(calls).toHaveLength(4);
+    // A minute on, the network may come back.
+    const now = Date.now();
+    vi.spyOn(Date, 'now').mockReturnValue(now + REFUSED_NETWORK_TURNED_AWAY_MS + 1);
+    expect((await post('203.0.113.7', sign('{}'))).status).toBe(200);
+  });
+
+  it('refuses a missing or malformed signature before a byte of the body is read', async () => {
+    for (const signature of [null, 'sha1=abc', `sha256=${'z'.repeat(64)}`]) {
+      const { stream, reads } = countedBody('{}');
+      const res = await post('198.51.100.20', signature, stream);
+      expect(res.status, String(signature)).toBe(401);
+      expect(reads.count).toBe(0);
+    }
+    expect(calls).toEqual(Array(3).fill('github-refused:198.51.100.0/24'));
+  });
+
+  it('keys IPv6 on the /56', async () => {
+    await post('2001:db8:1234:5601::1', null);
+    await post('2001:db8:1234:56ff::2', null);
+    expect(calls).toEqual(Array(2).fill('github-refused:2001:0db8:1234:5600::/56'));
+  });
+
+  it('never limits GitHub’s own addresses, or anyone when the limiter is not bound', async () => {
+    allowed = 0;
+    for (const ip of ['140.82.115.1', '192.30.252.200', '2606:50c0:8000::1', '::ffff:143.55.64.9'])
+      for (let i = 0; i < 3; i += 1) expect((await post(ip, null)).status, ip).toBe(401);
+    expect(calls).toEqual([]);
+    Reflect.deleteProperty(w.env, 'WRITE_RATE_LIMITER');
+    for (let i = 0; i < 5; i += 1) expect((await post('198.51.100.40', null)).status).toBe(401);
+  });
+
+  it('knows GitHub’s webhook ranges and nothing else', () => {
+    const inside = ['192.30.252.1', '185.199.111.255', '140.82.127.0', '143.55.79.255'];
+    const v6Inside = ['2a0a:a440::1', '2a0a:a447:ffff::1', '2606:50c0::', '::ffff:192.30.253.4'];
+    for (const ip of [...inside, ...v6Inside]) expect(isGithubHookAddress(ip), ip).toBe(true);
+    const outside = ['192.30.251.255', '185.199.112.0', '140.82.128.1', '143.55.80.0', '8.8.8.8'];
+    const odd = ['2a0a:a448::1', '2606:50c1::1', 'anonymous', '1.2.3', '1.2.3.x', '1.2.3.1234'];
+    for (const ip of [...outside, ...odd, '1.2.3.256', '1..2.3']) {
+      expect(isGithubHookAddress(ip), ip).toBe(false);
+    }
+  });
+
+  it('remembers at most 1,000 networks turned away, the oldest going first', async () => {
+    allowed = 0;
+    const env = w.env;
+    const now = Date.now();
+    for (let i = 0; i <= REFUSED_NETWORKS_KEPT; i += 1)
+      expect(await countRefusal(env, `net-${i}`, now)).toBe(true);
+    expect(turnedAwayCount()).toBe(REFUSED_NETWORKS_KEPT);
+    expect(isTurnedAway('net-0', now)).toBe(false);
+    expect(isTurnedAway(`net-${REFUSED_NETWORKS_KEPT}`, now)).toBe(true);
+    // Turned away again, a network moves to the newest.
+    expect(await countRefusal(env, 'net-1', now)).toBe(true);
+    expect(await countRefusal(env, 'net-new', now)).toBe(true);
+    expect(isTurnedAway('net-1', now)).toBe(true);
+    expect(isTurnedAway('net-2', now)).toBe(false);
   });
 });

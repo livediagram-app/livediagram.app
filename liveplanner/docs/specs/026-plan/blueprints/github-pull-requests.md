@@ -107,7 +107,8 @@ Limits table or GitHub's own limits.
   `GITHUB_WEBHOOK_SECRET` is a non-empty string and `GITHUB_LINKS` is bound. Every GitHub door asks it first and
   answers 404 `not_found` when null, logging nothing. `GET /api/capabilities` says `githubEnabled`.
 - Constants: `WEBHOOK_BODY_MAX` 1,048,576; `REPOSITORIES_MAX` 20; `PLANS_PER_REPOSITORY_MAX` 20;
-  `INSTALLATION_REPOSITORIES_LISTED` 100 (GitHub's `per_page` cap); `INSTALLATION_PLANS_MAX` 100;
+  `INSTALLATION_REPOSITORIES_LISTED` 100 (GitHub's `per_page` cap); `REPOSITORY_PAGES_MAX` 10;
+  `REFUSED_NETWORK_TURNED_AWAY_MS` 60,000; `REFUSED_NETWORKS_KEPT` 1,000; `INSTALLATION_PLANS_MAX` 100;
   `CONNECT_STATE_TTL_MS` 600,000; `CONNECT_STATES_MAX` 20 (live states a plan keeps); `DELIVERY_KEEP_MS`
   259,200,000; `GITHUB_FETCH_TIMEOUT_MS` 10,000; `GITHUB_API` `https://api.github.com`, `GITHUB_WEB`
   `https://github.com`.
@@ -116,7 +117,9 @@ Limits table or GitHub's own limits.
 
 Answered in `index.ts` before identity, as `/api/hooks` is: `segments[1] === 'github'` goes to `handleGithub`.
 
-- `POST /api/github/webhook`: off, 404. Not POST, 405. A declared `Content-Length` over `WEBHOOK_BODY_MAX`, 413
+- `POST /api/github/webhook`: off, 404. Not POST, 405. A network turned away (below), 429 `github_rate_limited`
+  with `Retry-After: 60`, before anything else. A missing or malformed `X-Hub-Signature-256` (`signatureHex` null),
+  401 `github_signature_invalid` before a byte is read. A declared `Content-Length` over `WEBHOOK_BODY_MAX`, 413
   `github_too_large`, before a byte is read; the body read through `readCappedBody` at the same cap, 413. The
   signature (`webhook-signature.ts` `webhookSignatureOk`): `X-Hub-Signature-256` must be `sha256=` and 64 hex
   digits; the HMAC-SHA256 of the raw bytes under the secret (`crypto.subtle`), as lower-case hex, is compared with
@@ -133,6 +136,14 @@ Answered in `index.ts` before identity, as `/api/hooks` is: `segments[1] === 'gi
     `not_connected` to a `pull_request` or `check_suite` has its `repo:` key deleted. Every room answered: 202
     `{ delivered }` (the plans that acted); any threw: 502 `github_delivery_failed`.
   - Logs `[github] delivery` with the event, action, plans and outcome counts; never the body or a signature.
+  - Refused signatures (`github/refused-signatures.ts`): the caller's network is `clientNetwork(clientIp(request))`
+    (IPv4 /24, IPv6 /56), or none for GitHub's own webhook ranges (`GITHUB_HOOK_RANGES`, from GitHub's `/meta`
+    `hooks`: 192.30.252.0/22, 185.199.108.0/22, 140.82.112.0/20, 143.55.64.0/20, 2a0a:a440::/29, 2606:50c0::/32),
+    which are never limited. Each 401 calls `WRITE_RATE_LIMITER.limit({ key: 'github-refused:{network}' })` (absent
+    binding: never limited); a refusal over it answers 429 and puts the network on the worker's turned-away list for
+    `REFUSED_NETWORK_TURNED_AWAY_MS`, a Map bounded at `REFUSED_NETWORKS_KEPT` (the oldest goes). A turned-away
+    network is answered 429 on arrival, its body never read or hashed. A delivery that signs right never calls the
+    limiter.
 - `GET /api/github/callback?state&code&installation_id&setup_action`: off, 404. Not GET, 405. `state` must be
   `{plan id}.{43 base64url characters}` (a plan id is 1 to 200 of `A-Za-z0-9_-`), else 400
   `github_state_invalid`. `setup_action=request` (an organisation owner must approve) redirects to
@@ -153,13 +164,18 @@ Answered in `index.ts` before identity, as `/api/hooks` is: `segments[1] === 'gi
   shape it does not expect is `null`, never a throw:
   - `exchangeCode(config, code)`: `POST {GITHUB_WEB}/login/oauth/access_token`, the person's token or null.
   - `userInstallationRepositories(token, installationId)`: `GET /user/installations/{id}/repositories?per_page=100`
-    with the person's token; 404 (they can't reach the installation) is null.
+    with the person's token, paged; 404 (they can't reach the installation) is null.
   - `revokeUserToken(config, token)`: `DELETE /applications/{client id}/token`, basic auth with the client id and
     secret; best effort, its failure logged.
   - `appInstallation(config, installationId, now)`: `GET /app/installations/{id}` with the App's JWT: the account's
     login and whether it is suspended, or null.
   - `installationRepositories(config, installationId, now)`: an installation token, then
-    `GET /installation/repositories?per_page=100`.
+    `GET /installation/repositories?per_page=100`, paged.
+  - Paging (`listRepositories`): `&page=1`, `2`, ... while GitHub's `Link` header names a `rel="next"` page, at most
+    `REPOSITORY_PAGES_MAX`; the address is always built here, never followed from the header, so a
+    token only ever goes to `api.github.com`. Repositories are deduplicated by id across pages. Any page failing is
+    null for the whole list (a half list would drop repositories a choice is checked against); past the last page
+    allowed, the list so far is kept and `[github] repositories capped` is logged.
   - A repository reads as `{ id, fullName, private }`: `id` a positive safe integer, `full_name` 3 to 140
     characters with one `/`; any other entry is skipped.
 
@@ -207,7 +223,7 @@ else 403 `github_needs_editor`. Bodies are read by `readBody`.
 ### Security and trust (part 2)
 
 - The signature is checked on the raw bytes before any parse, in constant time; the body is capped before it is
-  read. A delivery names plans only through the index, and each plan checks the installation and repository
+  read. A network refused too often is turned away before its body is read; GitHub's webhook ranges never are. A delivery names plans only through the index, and each plan checks the installation and repository
   against its own connection, so a forged or stale index entry acts on nothing.
 - The callback carries no identity: the state is the proof that an Editor of the plan started it within 10 minutes,
   is spent before any call to GitHub (a replayed code finds none), and is kept only as a hash.
@@ -221,7 +237,10 @@ else 403 `github_needs_editor`. Bodies are read by `readBody`.
 
 - A delivery costs one HMAC over at most 1 MB, one KV list (one per removed repository), and at most 20 room
   calls (100 for an uninstall). The rooms answer from SQLite. Off, every door is one config read.
-- Connecting makes at most five GitHub calls, once per connect; choosing makes two. Nothing runs on a render or a
+- A turned-away network costs one Map read per call; a refusal, one limiter call. The turned-away list holds at most
+  1,000 networks.
+- Connecting makes at most five GitHub calls plus one per extra page of repositories (14 at 1,000), once per
+  connect; choosing makes two plus the same extra pages. Nothing runs on a render or a
   save.
 
 ### Testing (part 2)
@@ -230,6 +249,8 @@ else 403 `github_needs_editor`. Bodies are read by `readBody`.
 | ----------------------------------------------------------------------------------------- | --------------------------------------------- |
 | Off with any secret or the KV missing: every door 404, no error logged, capabilities off  | `apps/api/src/github/github-webhook.test.ts`  |
 | A bad or missing signature is refused before parsing; an oversized body, declared or read | `apps/api/src/github/github-webhook.test.ts`  |
+| Refused signatures are limited per network; GitHub's ranges and good deliveries never are | `apps/api/src/github/github-webhook.test.ts`  |
+| An installation's repositories are read every page, bounded, a failed page failing all    | `apps/api/src/github/github-connect.test.ts`  |
 | A delivery reaches only plans whose connection names it; a replay is ignored; removals    | `apps/api/src/github/github-webhook.test.ts`  |
 | The connect round trip: state once, installation checked, token revoked, nothing stored   | `apps/api/src/github/github-connect.test.ts`  |
 | Only a signed-in whole-plan Editor connects, chooses or disconnects                       | `apps/api/src/routes/github-routes.test.ts`   |

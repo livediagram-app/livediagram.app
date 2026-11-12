@@ -9,8 +9,14 @@ export const WEBHOOK_BODY_MAX = 1024 * 1024;
 export const REPOSITORIES_MAX = 20;
 /** The plans one repository connects to: bounds a delivery's fan-out. */
 export const PLANS_PER_REPOSITORY_MAX = 20;
-/** One page of GitHub's repository list (`per_page`'s cap): what a connection lists. */
+/** One page of GitHub's repository list (`per_page`'s cap). */
 export const INSTALLATION_REPOSITORIES_LISTED = 100;
+/** The pages of an installation's repositories read: 1,000 repositories, a connect's calls bounded. */
+export const REPOSITORY_PAGES_MAX = 10;
+/** How long a network over its refused signatures is turned away before its body is read. */
+export const REFUSED_NETWORK_TURNED_AWAY_MS = 60_000;
+/** The turned-away networks a worker remembers at once; the oldest goes past it. */
+export const REFUSED_NETWORKS_KEPT = 1000;
 /** The plans an uninstall reaches. */
 export const INSTALLATION_PLANS_MAX = 100;
 /** How long a connect's state lives: long enough to install the App on GitHub. */
