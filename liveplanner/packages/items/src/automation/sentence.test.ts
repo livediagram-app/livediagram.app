@@ -381,3 +381,36 @@ describe('the triggers after Phase 3', () => {
     });
   });
 });
+
+describe('the actions after Phase 3 and Wait', () => {
+  it('names each as its chip reads', () => {
+    const chip = (s: AutomationRuleBody['steps'][number]) => stepChip(s, OUTLINE);
+    expect(chip({ kind: 'set_type', type: 'bug' })).toBe('Change to Bug');
+    expect(chip({ kind: 'set_colour', colour: '#ff0000' })).toBe('Set Colour');
+    expect(chip({ kind: 'set_colour', colour: null })).toBe('Clear Colour');
+    expect(chip({ kind: 'copy_card' })).toBe('Copy Card');
+    expect(chip({ kind: 'copy_card', status: 'done' })).toBe('Copy to Done');
+    expect(chip({ kind: 'add_checklist', items: ['a'] })).toBe('Add 1 Checklist Item');
+    expect(chip({ kind: 'add_checklist', items: ['a', 'b'] })).toBe('Add 2 Checklist Items');
+    expect(chip({ kind: 'link_card', field: 'f-done', to: { trigger: true } })).toBe(
+      'Link Completed On',
+    );
+    expect(chip({ kind: 'mention', to: { person: 'p-priya' }, text: 'x' })).toBe(
+      'Mention Priya Shah',
+    );
+    expect(chip({ kind: 'mention', to: { trigger: true }, text: 'x' })).toBe('Mention Who Did It');
+    expect(chip({ kind: 'mention', to: { assignee: true }, text: 'x' })).toBe('Mention Assignee');
+    expect(chip({ kind: 'restore' })).toBe('Restore From Archive');
+    expect(chip({ kind: 'resolve_threads' })).toBe('Resolve Threads');
+  });
+
+  it('says a Wait in days and hours', () => {
+    const wait = (hours: number) => stepChip({ kind: 'wait', hours }, OUTLINE);
+    expect(wait(1)).toBe('Wait 1 Hour');
+    expect(wait(3)).toBe('Wait 3 Hours');
+    expect(wait(24)).toBe('Wait 1 Day');
+    expect(wait(28)).toBe('Wait 1 Day 4 Hours');
+    expect(wait(49)).toBe('Wait 2 Days 1 Hour');
+    expect(wait(720)).toBe('Wait 30 Days');
+  });
+});

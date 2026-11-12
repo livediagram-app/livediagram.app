@@ -460,10 +460,10 @@ function readAction(v: unknown, path: string, place: ValuePlace = {}): Automatio
           `${path}.items`,
           `${path}.items must hold 1 to ${AUTOMATION_CHECKLIST_ITEMS_MAX} items`,
         );
+      // text() refuses a blank item, so each one trimmed still holds text.
       const read = (items as unknown[]).map((t, i) =>
         text_(t, `${path}.items.${i}`, ITEM_CHECKLIST_TEXT_MAX).trim(),
       );
-      if (read.some((t) => !t)) refuse(`${path}.items`, `${path}.items can't hold an empty item`);
       return { kind: 'add_checklist', items: read };
     }
     case 'link_card': {
