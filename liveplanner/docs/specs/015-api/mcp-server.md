@@ -353,7 +353,7 @@ ask, 2026-11-11): first the picture, then the card.
 
 - **`upload_image`** (write, `openWorldHint: true` for its `url`): `{ projectId, data?, url?, name? }`, exactly one of
   `data` and `url`, takes the bytes as livediagram's `upload_image` does (livediagram mcp-server.md §4.5c, the shared
-  `@liveworkspace/agent-verbs` `images/upload.ts`): base64 or a `data:` URL, or a public https URL fetched through the
+  `packages/agent-verbs/src/images/upload.ts` (`@liveworkspace/agent-verbs`)): base64 or a `data:` URL, or a public https URL fetched through the
   SSRF-safe fetch; PNG, JPEG, WebP or GIF read from the bytes (`sniffImageType`), never SVG, at most `MAX_IMAGE_BYTES`
   (10 MB), with a size in its header. It uploads through the api's own route, `POST /api/images?p={projectId}`, as the
   caller with their own bearer token, naming the tool (`X-Image-Source: mcp`, so the gallery shows it **Made by AI**).

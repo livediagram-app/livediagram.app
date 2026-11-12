@@ -44,7 +44,6 @@ Resource, then verb. `el` is accepted for `element`. liveplanner makes projects,
 | `board add\|set <project> ...`                                                      | Add a Plan board, or change one's title, columns or card types ([Plan for agents](../026-plan/plan-agents.md#adding-a-board))                                              |
 | `board import <file> [--project] [--from] [--name] [--preview]`                     | Make a board from a Trello, Asana, Jira or Linear export ([Importing from another tool](../026-plan/tracker-import.md#agents))                                             |
 | `type ls\|apply <project> ...`                                                      | Card types, and changes to them from a JSON file ([Plan for agents](../026-plan/plan-agents.md))                                                                           |
-| `image add <project> <file>\|--url <u> [--name <n>]`                                | Upload a picture for a plan's cards, as the MCP's `upload_image` ([MCP](mcp-server.md#45b-upload_image-pictures-for-a-plans-cards)); prints its id; `item set` places it   |
 | `sheet ls\|get\|set\|add\|insert-rows\|insert-cols\|rm-rows\|rm-cols <project> ...` | Sheets: list, read cells by A1, set cells (or `--csv`), put one on a tab, insert or delete rows and columns ([Sheet store](../029-sheets/sheet-store.md#agents))           |
 | `form get\|add\|change\|share <project> ...`                                        | Forms: read one, add one from a starter or `--from` JSON, change it from a JSON file of changes, publish, close or delete its link ([Forms](../030-forms/forms.md#agents)) |
 | `changeset apply <project> [--tab <t>] -f <file>\|-` (`edit`)                       | Many edit operations, or a `replace`, as one changeset                                                                                                                     |
@@ -63,6 +62,10 @@ Resource, then verb. `el` is accepted for `element`. liveplanner makes projects,
 | `skill print\|install --to <dir>`                                                   | The agent skill file                                                                                                                                                       |
 | `api <method> <path> [--body <file>\|-]`                                            | Any api route, authenticated; the escape hatch                                                                                                                             |
 | `auth login\|status\|logout`                                                        | Credentials                                                                                                                                                                |
+
+**Pictures.** `image add <project> <file>` (or `--url <u>`, with `--name <n>`) uploads a picture for the plan's cards,
+as the MCP's `upload_image` does ([MCP](mcp-server.md#45b-upload_image-pictures-for-a-plans-cards)), and prints its
+id; `item set` then places it on an Image field, a Several Images field or Attachments.
 
 **Addressing.** `<project>` is a project name, an id prefix, or a pasted liveplanner URL; an ambiguous one is refused
 with the candidates. A share-link URL acts through that link: each request of the command carries its code. A

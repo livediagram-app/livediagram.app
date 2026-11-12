@@ -92,7 +92,7 @@ change, boardFields(setup, types, false))` on the reshaped set-up; each name thr
   `{ operations: [{ op: 'add', element }], base: { rev, elements: {} } }` with the client header (`mcp` or `cli`).
 
 - Pictures (spec plan-agents.md "Pictures", mcp-server.md §4.5b; built in a later part than the stored shape):
-  `upload_image { projectId, data?, url?, name? }` through `@liveworkspace/agent-verbs` `images/upload.ts`
+  `upload_image { projectId, data?, url?, name? }` through `packages/agent-verbs/src/images/upload.ts` (`@liveworkspace/agent-verbs`)
   (`uploadImageFrom`, its sniff, size and SSRF-safe fetch) with the upload's path `/api/images?p={projectId}` and
   `X-Image-Source: mcp` (the CLI's `image add`: `cli`); the api's `routes/images.ts` keeps every server-side rule (a
   role of at least Participant on the plan, a read-only token refused at the dispatch choke point, declared type and
