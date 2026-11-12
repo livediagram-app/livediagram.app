@@ -1,6 +1,7 @@
 // The plan's content state for its room (plan-room.ts): the schema on first use, the write notes that arm the
 // outbox, the drains to the index and to shared tabs' holders, the daily upkeep, the Community post's checks and
 // the purge. Each takes the room it acts for.
+import { leaveGithub } from './github/github-room';
 import {
   FLUSH_IDLE_MS,
   FLUSH_RETRY_MS,
@@ -247,6 +248,9 @@ export async function purge(room: PlanRoom, planId?: string): Promise<void> {
   // A plan going for good takes its Community post with it: the service hears it is gone.
   if (room.planId !== null && room.storedSchema() && room.roomEnv)
     await leaveCommunity(room.roomEnv, room.planId);
+  // And its GitHub connection's keys leave the reverse index (github/github-room.ts).
+  if (room.planId !== null && room.storedSchema() && room.roomEnv)
+    await leaveGithub(room.roomEnv, room.planId);
   await room.ledger.settled();
   // What the media service last heard the plan's cards hold (image-refs.ts), read before it goes.
   const sentImages = lastSentImages(room);

@@ -102,6 +102,7 @@ import {
 } from './plan-room-sockets';
 import { webSocketMessage } from './plan-room-frames';
 import { answerHookCall, type HookAnswer, type HookCall } from './automations/automation-incoming';
+import { answerGithubCall, type GithubRoomAnswer, type GithubRoomCall } from './github/github-room';
 import { localNamespace, roomHead, roomParticipantWrites, roomInternal } from './plan-room-wiring';
 import { dropSession, roomPeople, broadcastPresence } from './plan-room-presence';
 
@@ -546,6 +547,18 @@ export class PlanRoom extends DurableObject<Env> {
       call,
       Date.now(),
     );
+  }
+
+  // ---------- RPC: GitHub (github/github-room.ts) -------------------------------------------------------------------
+
+  // A connect's callback or a verified delivery. An id nothing has written answers without making a schema.
+  async github(planId: string, call: GithubRoomCall): Promise<GithubRoomAnswer> {
+    const schema = this.storedSchema();
+    if (schema) {
+      this.bindPlan(planId);
+      ensureSchema(this);
+    }
+    return answerGithubCall({ env: this.requireEnv(), planId, schema }, call, Date.now());
   }
 
   requireEnv(): PlanEnv {

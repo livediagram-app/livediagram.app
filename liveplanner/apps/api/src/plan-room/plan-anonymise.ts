@@ -2,7 +2,7 @@
 // account"): the index tells the app which plans name them (POST /api/internal/people/:id/purge), and each plan's
 // Durable Object runs this over what it stores, with @liveworkspace/index-app's anonymiseJsonText: the comments,
 // cards, assignments and reactions in each tab, the cards' own fields, comment threads and history and who made or changed them, the changesets they
-// wrote, the sheets they last edited, and the plan's owner when it was their team plan. Only rows that mention them are read and rewritten, in
+// wrote, the sheets they last edited, who connected the plan to GitHub, and the plan's owner when it was their team plan. Only rows that mention them are read and rewritten, in
 // one batch; running it again changes nothing.
 
 import {
@@ -190,6 +190,12 @@ export async function anonymisePlan(
           WHERE plan_id = ?2 AND updated_by LIKE ?4 AND ${personIdOf('updated_by')} = ?3`,
       )
       .bind(ANONYMISED_AUTHOR, planId, hashed, hashLike),
+    // Who connected the plan to GitHub (docs/specs/026-plan/github-pull-requests.md "Connecting a repository").
+    db
+      .prepare(
+        `UPDATE github_connection SET connected_by = ?1 WHERE plan_id = ?2 AND ${personIdOf('connected_by')} = ?3`,
+      )
+      .bind(ANONYMISED_AUTHOR, planId, hashed),
     db
       .prepare(
         'UPDATE agent_changesets SET author_id = ?, author_name = ? WHERE plan_id = ? AND author_id = ?',

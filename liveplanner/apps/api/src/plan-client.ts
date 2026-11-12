@@ -13,6 +13,7 @@ import type { CommunityShareInfo } from '@liveplanner/api-schema';
 import type { Copier } from '@liveworkspace/index-app';
 import type { RouteIdentity } from './plan-room/plan-route';
 import type { HookAnswer, HookCall } from './plan-room/automations/automation-incoming';
+import type { GithubRoomAnswer, GithubRoomCall } from './plan-room/github/github-room';
 import type { ProjectFileImport } from './plan-room/project-file';
 import type {
   ExportCommentsResult,
@@ -98,6 +99,9 @@ export type PlanRoomClient = {
   // An Incoming Webhook call to one of the plan's rules (plan-room/automations/automation-incoming.ts): the room checks
   // the secret, the limits and the body, and queues the runs. An id nothing has written answers 401 and stays empty.
   incomingHook(ruleId: string, call: HookCall): Promise<HookAnswer>;
+  // A GitHub connect's callback or a verified delivery (plan-room/github/github-room.ts): the plan checks its own
+  // connection before it acts.
+  github(call: GithubRoomCall): Promise<GithubRoomAnswer>;
 };
 
 export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomClient {
@@ -135,6 +139,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     threadWrite: (threadId, op, via) => room.threadWrite(planId, threadId, op, via),
     threadsRelayed: (relay) => room.threadsRelayed(planId, relay),
     incomingHook: (ruleId, call) => room.incomingHook(planId, ruleId, call),
+    github: (call) => room.github(planId, call),
   };
 }
 
@@ -183,5 +188,6 @@ export type PlanRoomRpc = {
   ): Promise<ThreadWriteResult>;
   threadsRelayed(planId: string, relay: ThreadsRelay): Promise<string[]>;
   incomingHook(planId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
+  github(planId: string, call: GithubRoomCall): Promise<GithubRoomAnswer>;
   fetch(request: Request): Promise<Response>;
 };

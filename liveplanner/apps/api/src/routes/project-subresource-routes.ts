@@ -22,6 +22,7 @@ import { handleSheetRoutes } from './sheet-routes';
 import { handleItemTypeRoutes } from './item-type-routes';
 import { handlePlanRoute } from './plan-route';
 import { handleAutomationRoutes } from './automation-routes';
+import { handleGithubRoutes } from './github-routes';
 import {
   COMMUNITY_CONTENT,
   deniedEdit,
@@ -193,6 +194,9 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
   // The plan's Automations (docs/specs/026-plan/automations.md).
   const automations = await handleAutomationRoutes(ctx);
   if (automations) return automations;
+  // The plan's GitHub connection (docs/specs/026-plan/github-pull-requests.md).
+  const github = await handleGithubRoutes(ctx);
+  if (github) return github;
 
   // /api/projects/<id>/tabs/<tabId>/link — share a tab from another of the caller's plans into this one.
   const linked = await handleTabLink(ctx);
