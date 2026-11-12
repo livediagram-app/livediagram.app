@@ -74,7 +74,10 @@ export const NO_WAYFINDING_STORE = createWayfindingStore();
  * itself, so its hover card hides while the panel is open (blueprints/wayfinding.md "Hover card").
  */
 export function useWalkedInPanel(wayfinding: Wayfinding | undefined, elementId: string): boolean {
-  return useWayfindingSelect(wayfinding?.store ?? NO_WAYFINDING_STORE, (s) => s.openPanelId === elementId);
+  return useWayfindingSelect(
+    wayfinding?.store ?? NO_WAYFINDING_STORE,
+    (s) => s.openPanelId === elementId,
+  );
 }
 
 /** Where a Walk There goes: a place's approach and arrival, and the box its own walls stand in (walkThereRoute). */

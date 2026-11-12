@@ -34,7 +34,12 @@ function mount(width: number, zoom = 0.5) {
     </ViewportStoreProvider>
   );
   const view = render(draw(false), { container: main });
-  return { store, sit: () => view.rerender(draw(true)), stand: () => view.rerender(draw(false)), view };
+  return {
+    store,
+    sit: () => view.rerender(draw(true)),
+    stand: () => view.rerender(draw(false)),
+    view,
+  };
 }
 
 beforeEach(() => vi.useFakeTimers());
@@ -53,16 +58,22 @@ describe('useTableGameCamera', () => {
       y: 350 - (table.y + table.height / 2),
     });
     stand();
-    act(() => vi.advanceTimersByTime(GAME_CAMERA_RESTORE_MS));
+    act(() => {
+      vi.advanceTimersByTime(GAME_CAMERA_RESTORE_MS);
+    });
     expect(store.get()).toEqual({ zoom: 0.5, offset: { x: 0, y: 0 } });
   });
 
   it('keeps a zoom you chose while sitting', () => {
     const { store, sit, stand } = mount(390);
     sit();
-    act(() => store.setZoom(3));
+    act(() => {
+      store.setZoom(3);
+    });
     stand();
-    act(() => vi.advanceTimersByTime(GAME_CAMERA_RESTORE_MS));
+    act(() => {
+      vi.advanceTimersByTime(GAME_CAMERA_RESTORE_MS);
+    });
     expect(store.get().zoom).toBe(3);
   });
 
@@ -71,11 +82,15 @@ describe('useTableGameCamera', () => {
     sit();
     stand();
     sit();
-    act(() => vi.advanceTimersByTime(GAME_CAMERA_RESTORE_MS));
+    act(() => {
+      vi.advanceTimersByTime(GAME_CAMERA_RESTORE_MS);
+    });
     // Still close while sitting.
     expect(store.get().zoom).toBeGreaterThan(1);
     stand();
-    act(() => vi.advanceTimersByTime(GAME_CAMERA_RESTORE_MS));
+    act(() => {
+      vi.advanceTimersByTime(GAME_CAMERA_RESTORE_MS);
+    });
     expect(store.get()).toEqual({ zoom: 0.5, offset: { x: 0, y: 0 } });
   });
 
@@ -83,7 +98,9 @@ describe('useTableGameCamera', () => {
     const { store, sit, view } = mount(390);
     sit();
     view.unmount();
-    act(() => vi.advanceTimersByTime(GAME_CAMERA_RESTORE_MS));
+    act(() => {
+      vi.advanceTimersByTime(GAME_CAMERA_RESTORE_MS);
+    });
     expect(store.get().zoom).toBe(0.5);
   });
 
@@ -95,7 +112,9 @@ describe('useTableGameCamera', () => {
     const close = mount(390, 1);
     close.sit();
     close.stand();
-    act(() => vi.advanceTimersByTime(GAME_CAMERA_RESTORE_MS));
+    act(() => {
+      vi.advanceTimersByTime(GAME_CAMERA_RESTORE_MS);
+    });
     expect(close.store.get()).toEqual({ zoom: 1, offset: { x: 0, y: 0 } });
   });
 

@@ -37,7 +37,7 @@ Derived from [Social pieces](../social-pieces.md).
 | `apps/editor/lib/table-games/pong-session.ts`                    | `PongSession`: one table's game on one screen: seats, trust, your moments, the silent rule, the scoreboard       |
 | `apps/editor/components/canvas/collab/usePingPong.ts`            | The session wired to the seats, the inbox, the keys and one rAF loop that draws through refs                     |
 | `apps/editor/components/canvas/collab/PingPongGame.tsx`          | The ball, both paddles, the scoreboard and your paddle's pointer control, over the table's art (a social face)   |
-| `apps/editor/lib/table-games/game-camera.ts`                     | `gameCameraView`, `GAME_CAMERA`: the view that brings a game table close on a small screen, or null (pure)        |
+| `apps/editor/lib/table-games/game-camera.ts`                     | `gameCameraView`, `GAME_CAMERA`: the view that brings a game table close on a small screen, or null (pure)       |
 | `apps/editor/components/canvas/collab/useTableGameCamera.ts`     | Glides in when you sit down to play on a small screen, and back when you stand, unless you zoomed meanwhile      |
 | `packages/avatar/src/key-claims.ts`                              | `claimAvatarKeys`, `avatarKeyClaimed`: keys a piece takes from the walk and the action keys while it holds them  |
 | `packages/document/src/arcade-scores.ts`                         | `ArcadeScore`, `MOON_MAIL_SCORING`, `arcadeScoreCeiling`, `isArcadeScore(s)`, `arcadeTableWith`, `arcadePlaceOf` |
@@ -184,10 +184,10 @@ play or won)` tells `SocialArt`'s `RestingRally` to give way.
   colour.
 
 - **The camera on a small screen** (social-pieces.md "On a small screen", Work Item 620): `gameCameraView(box,
-  canvas, view)` (`lib/table-games/game-camera.ts`, pure) returns the view to glide to, or null: null when the canvas
+canvas, view)` (`lib/table-games/game-camera.ts`, pure) returns the view to glide to, or null: null when the canvas
   is `GAME_CAMERA.narrowPx` (640) wide or more, or the box's longer side times the zoom is `minTablePx` (160) or more,
   or the zoom it would pick is not above the current one. Otherwise the zoom is `min(maxZoom 2, canvas.width *
-  widthShare 0.6 / box.width, canvas.height * heightShare 0.5 / box.height)` and the offset centres the box
+widthShare 0.6 / box.width, canvas.height * heightShare 0.5 / box.height)` and the offset centres the box
   (`canvas / 2 - centre`, the wrapper scaling about its own centre). `useTableGameCamera(element, playing)` runs it
   when `playing` (usePingPong's `mine`) turns true, reading the canvas (the face's `main`, found from its
   `[data-element-id]`) and the box when it runs, and glides there (`glideViewport`); it keeps `{ before, set }`. When

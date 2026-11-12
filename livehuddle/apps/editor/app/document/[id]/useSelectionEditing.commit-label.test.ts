@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, createSticky, createText, type Element, type Tab } from '@livehuddle/document';
+import {
+  createShape,
+  createSticky,
+  createText,
+  type Element,
+  type Tab,
+} from '@livehuddle/document';
 import { useSelectionEditing } from './useSelectionEditing';
 
 // A mind node's lines measure this tall (jsdom lays nothing out).
@@ -137,8 +143,9 @@ describe('the first label names the tab and the space only when it changed', () 
     s.editing.commitLabel('room', 'War Room');
     expect(s.setDocumentName).toHaveBeenCalledWith('War Room');
     expect(s.tickTabs).toHaveBeenCalledTimes(1);
-    const renamed = s.tickTabs.mock.calls[0]![0]([{ id: 't', name: 'Tab 1', elements: [] }]);
-    expect(renamed[0].name).toBe('War Room');
+    const rename = s.tickTabs.mock.calls[0]![0] as (tabs: Tab[]) => Tab[];
+    const tab = { id: 't', name: 'Tab 1', elements: [] } as unknown as Tab;
+    expect(rename([tab])[0]!.name).toBe('War Room');
   });
 
   it('counts a type-to-edit by the label it replaced, so one typed letter still names them', () => {
