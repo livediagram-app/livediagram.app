@@ -884,7 +884,8 @@ above, unchanged.
   width, 44 px tall. A saved rule with nothing changed reads **Saved** with a tick, so the button says why it
   does nothing, instead of a faded Save Rule.
 - **The step drawer.** Picking a step (the When trigger, an If condition, an action, a branch, a Wait, every kind)
-  or adding one opens its fields in a second sheet stacked over the rule drawer, not under the steps: its own grab
+  or adding one (a Duplicate too) opens its fields in a second sheet stacked over the rule drawer, not under the steps
+  (Move Up and Move Down leave it closed, the steps in sight): its own grab
   handle, the step's tile and name as its title, a close and a **Done** at its foot, its fields scrolling inside.
   Swipe it down, tap the dim behind it, press Escape, close or Done to go back to the steps; the step stays
   selected. It sits above the on-screen keyboard rather than jumping under it. A save the api refuses opens the

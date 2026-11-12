@@ -208,6 +208,8 @@ export function RuleBuilder({
     edit: (part, edit) => {
       const next = editPart(body, part, edit);
       change(next.body, next.part);
+      // A move keeps the steps in sight (a phone's drawer stays closed); a duplicate is an added step, and opens.
+      if (edit === 'up' || edit === 'down') setStepOpen(false);
     },
     addCondition: (kind, ifStep) => {
       const next = addCondition(body, defaultCondition(kind, outline), ifStep);

@@ -186,6 +186,26 @@ describe('the rule builder on a phone', () => {
     ).toBeNull();
   });
 
+  it('keeps the steps in sight when a step moves, and opens a duplicate as an added step', async () => {
+    client.listAutomations.mockResolvedValue({
+      rules: [rule({ steps: [{ kind: 'flag' }, { kind: 'archive' }] })],
+      runsToday: 1,
+      runsPerDay: 1000,
+    });
+    render(<Harness initial={{ view: 'rule', ruleId: 'r1' }} />);
+    await screen.findByRole('textbox', { name: 'Rule name' });
+    fireEvent.click(screen.getByRole('button', { name: 'More for Flag' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Move Down' }));
+    expect(document.querySelector('[data-step-drawer]')).toBeNull();
+    // Moved again at once, no drawer to close first.
+    fireEvent.click(screen.getByRole('button', { name: 'More for Flag' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Move Up' }));
+    expect(document.querySelector('[data-step-drawer]')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'More for Flag' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
+    expect(document.querySelector('[data-step-drawer]')).toBeTruthy();
+  });
+
   it('goes back at once when nothing changed', async () => {
     render(<Harness initial={{ view: 'rule', ruleId: 'r1' }} />);
     await screen.findByRole('textbox', { name: 'Rule name' });
