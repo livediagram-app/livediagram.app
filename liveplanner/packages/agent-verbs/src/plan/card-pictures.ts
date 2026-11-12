@@ -70,10 +70,7 @@ export const isPictureKey = (key: string, type: ItemTypeDef): boolean =>
 
 // An id as a value names it: a string, or an object carrying one (a list_items entry, `{ id, link }`).
 function idOf(value: unknown): string | null {
-  const id =
-    typeof value === 'object' && value !== null && 'id' in value
-      ? (value as { id: unknown }).id
-      : value;
+  const id = typeof value === 'object' && value !== null && 'id' in value ? value.id : value;
   if (typeof id !== 'string') return null;
   const trimmed = id.trim();
   return trimmed.length > 0 && trimmed.length <= ITEM_ATTACHMENT_ID_MAX ? trimmed : null;
@@ -245,7 +242,7 @@ export function pictureValue(
     }
     const { list, skipped } = withAttachmentsAdded(kept, added);
     if (skipped > 0) return fullRefusal('Attachments', ITEM_ATTACHMENTS_MAX, kept.length);
-    return { ok: true, value: list.length ? (list as unknown as ItemFieldValue) : undefined };
+    return { ok: true, value: list.length ? list : undefined };
   }
   const { field } = picture;
   const kept = withoutImages(fieldImageIds(field, had[key]), edit.remove);
