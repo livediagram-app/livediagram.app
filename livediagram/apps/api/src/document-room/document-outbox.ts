@@ -246,6 +246,9 @@ export { DRAIN_TABS } from '@liveworkspace/index-app';
 // the media service, the keys whose wait is over. Answers what it pushed. A push that fails keeps its keys, each
 // counting the attempt and waiting longer (settleOutbox); one refused for good, or failed too often, is parked.
 // Without an index configured the index's keys are dropped.
+// A connected tab that has left (`connection_left`, keyed by its connection id and tab id and written with the
+// tab's delete, db/tabs.ts) goes to the index as its removal (`removeConnection`), and a failed one waits and is
+// tried again like any key (liveworkspace/docs/specs/004-index/connected-tabs.md "Removing").
 export async function drainOutbox(
   env: DocumentEnv,
   documentId: string,

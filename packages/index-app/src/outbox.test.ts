@@ -11,11 +11,15 @@ import {
   CARD_MOVED_KIND,
   cardMoveKeyOf,
   cardMoveOf,
+  CONNECTION_LEFT_KIND,
+  connectionLeftKeyOf,
+  connectionLeftOf,
   DRAIN_TABS,
   drainIndexOutbox,
   editedOf,
   editKeyOf,
   dueOutboxRows,
+  failureDelayMs,
   FLUSH_IDLE_MS,
   FLUSH_MIN_GAP_MS,
   FLUSH_RETRY_MS,
@@ -44,6 +48,7 @@ function fakeIndex(fail: (kind: string) => unknown = () => null) {
     collab: [] as string[],
     events: [] as unknown[],
     moves: [] as unknown[][],
+    removed: [] as string[],
   };
   const client = {
     pushSummary: async (_id: string, summary: unknown) => {
@@ -65,6 +70,11 @@ function fakeIndex(fail: (kind: string) => unknown = () => null) {
       const err = fail('moves');
       if (err) throw err;
       calls.moves.push(moves);
+    },
+    removeConnection: async (id: string, connectionId: string, tabId: string) => {
+      const err = fail('removal');
+      if (err) throw err;
+      calls.removed.push(`${id}/${connectionId}/${tabId}`);
     },
   } as unknown as IndexAppClient;
   return { client, calls };
@@ -293,6 +303,48 @@ describe('when a push fails', () => {
     expect(pushFailureOf(new Error('network'))).toBe('retry');
   });
 
+  it("waits a Retry-After longer than its backoff, capped at the hour, and ignores a shorter one or another error's", () => {
+    const limited = (ms: number | null) => new IndexError(429, 'rate_limited', ms);
+    expect(failureDelayMs(1, limited(5 * 60_000))).toBe(5 * 60_000);
+    expect(failureDelayMs(1, limited(10_000))).toBe(retryDelayMs(1));
+    expect(failureDelayMs(3, limited(null))).toBe(retryDelayMs(3));
+    // A huge header (a week, or three centuries) waits the hour at most, so it cannot stall the key.
+    expect(failureDelayMs(1, limited(7 * 86_400_000))).toBe(RETRY_MAX_MS);
+    expect(failureDelayMs(1, limited(1e40))).toBe(RETRY_MAX_MS);
+    expect(failureDelayMs(1, limited(Number.POSITIVE_INFINITY))).toBe(RETRY_MAX_MS);
+    expect(failureDelayMs(2, new Error('down'))).toBe(retryDelayMs(2));
+  });
+
+  it('settles a 429 with Retry-After to wait that long, then sends it once the wait is over', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const box = appOutbox();
+    box.raw.exec(outboxRetrySchema(['outbox']));
+    const summary = box.insert('summary');
+    const wait = 10 * 60_000;
+    let limited = true;
+    const { client, calls } = fakeIndex((kind) =>
+      kind === 'summary' && limited ? new IndexError(429, 'rate_limited', wait) : null,
+    );
+    const now = 1_000_000;
+    const drainAt = async (at: number) => {
+      const rows = dueOutboxRows(await readOutbox(box.db, PLAN_OUTBOX, 'P'), at);
+      const outcome = await drainIndexOutbox('P', rows, client, source);
+      await settleOutbox(box.db, PLAN_OUTBOX, 'P', rows, outcome, at);
+    };
+    await drainAt(now);
+    // Ten minutes, not the first failure's one.
+    expect(box.stored()).toEqual([
+      { id: summary, kind: 'summary', attempts: 1, retry_at: now + wait },
+    ]);
+    expect(outboxDueAt(box.sql)).toBe(now + wait);
+    const early = await readOutbox(box.db, PLAN_OUTBOX, 'P');
+    expect(dueOutboxRows(early, now + retryDelayMs(1))).toEqual([]);
+    limited = false;
+    await drainAt(now + wait);
+    expect(calls.summary).toHaveLength(1);
+    expect(box.stored()).toEqual([]);
+  });
+
   it('reads a key stored before the retry columns as never tried', async () => {
     const box = appOutbox();
     const id = box.insert('summary');
@@ -462,5 +514,45 @@ describe('when a push fails', () => {
       now - 1_000 + FLUSH_MIN_GAP_MS,
     );
     expect(flushAfterWrite(box.sql, null, now, 0)).toBe(now + FLUSH_IDLE_MS);
+  });
+});
+
+describe('a connected tab that left', () => {
+  afterEach(() => vi.restoreAllMocks());
+  const LEFT = { connectionId: 'cn_abcdefghijklmnop', tabId: 't2' };
+
+  it('keys both ids, and reads back only a well-formed key', () => {
+    expect(connectionLeftKeyOf(LEFT)).toBe('{"connectionId":"cn_abcdefghijklmnop","tabId":"t2"}');
+    expect(connectionLeftOf(connectionLeftKeyOf(LEFT))).toEqual(LEFT);
+    const bad = [
+      '',
+      'null',
+      '{',
+      '{"connectionId":"c"}',
+      '{"connectionId":"","tabId":"t"}',
+      '{"connectionId":1,"tabId":"t"}',
+    ];
+    for (const key of bad) expect(connectionLeftOf(key)).toBeNull();
+  });
+
+  it('is sent as the removal, retried after a failure, and an unreadable key or a 404 is done', async () => {
+    let fail: unknown = new Error('down');
+    const { client, calls } = fakeIndex((kind) => (kind === 'removal' ? fail : null));
+    const left = row(1, CONNECTION_LEFT_KIND, connectionLeftKeyOf(LEFT));
+    const first = await drainIndexOutbox(
+      'H',
+      [left, row(2, CONNECTION_LEFT_KIND, 'nope')],
+      client,
+      source,
+    );
+    expect(first.done).toEqual([2]);
+    expect(first.failed.map((f) => f.ids)).toEqual([[1]]);
+    fail = new IndexError(404, 'not_found');
+    expect((await drainIndexOutbox('H', [left], client, source)).done).toEqual([1]);
+    fail = null;
+    expect((await drainIndexOutbox('H', [left], client, source)).done).toEqual([1]);
+    expect(calls.removed).toEqual(['H/cn_abcdefghijklmnop/t2']);
+    // Without an index configured, the key is done.
+    expect((await drainIndexOutbox('H', [left], null, source)).done).toEqual([1]);
   });
 });

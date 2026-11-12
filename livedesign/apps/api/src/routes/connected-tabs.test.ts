@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Level, TabConnection } from '@liveworkspace/index-client';
+import {
+  IndexError,
+  type IndexAppClient,
+  type Level,
+  type TabConnection,
+} from '@liveworkspace/index-client';
+import { connectionLeftKeyOf } from '@liveworkspace/index-app';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { DesignGrant as ItemGrant } from '../index-service';
 import { makeTestRouteContext } from './test-route-context';
@@ -9,6 +15,7 @@ import { exportDesignCopy, importDesignCopy } from '../design-room/design-conten
 import { exportDesignFile, readDesignFile } from '../design-room/design-file';
 import { redactDesignForCommunity, redactDesignForScope } from '../redact-design';
 import { opForScope } from '../room-scope';
+import { drainOutbox } from '../design-room/design-outbox';
 
 // Connected tabs in a design (liveworkspace/docs/specs/004-index/connected-tabs.md, blueprint "Each app"): the
 // column, the editor's save that adds one and the index's confirm, the removal the index hears, the reverse write,
@@ -73,6 +80,31 @@ async function design(): Promise<SqliteD1> {
 const column = (db: SqliteD1, tabId: string) =>
   db.sql.prepare('SELECT connection, data FROM tabs WHERE id = ?').get(tabId) as
     { connection: string | null; data: string } | undefined;
+
+// The removals the item's outbox owes the index (connected-tabs.md "Removing"), as their keys.
+const removals = (db: SqliteD1) =>
+  db.sql
+    .prepare("SELECT key FROM outbox WHERE kind = 'connection_left' ORDER BY id")
+    .all()
+    .map((r) => String(r.key));
+const LEFT_T2 = connectionLeftKeyOf({ connectionId: CONNECTION.id, tabId: 't2' });
+
+// The index as the room's drain reaches it: every push taken, and the removals failing while `down` says so.
+function drainIndex(down: () => boolean) {
+  const removed: string[] = [];
+  const removeConnection = async (hostId: string, connectionId: string, tabId: string) => {
+    if (down()) throw new IndexError(503, 'unavailable');
+    removed.push(`${hostId}/${connectionId}/${tabId}`);
+  };
+  const client = new Proxy(
+    {},
+    {
+      get: (_target, name) =>
+        name === 'removeConnection' ? removeConnection : async () => ({ results: [] }),
+    },
+  ) as IndexAppClient;
+  return { client, removed };
+}
 
 const addConnected = (db: SqliteD1, tabId = 't2', connection = CONNECTION, grant?: ItemGrant) =>
   call(db, 'PUT', `/api/designs/D/tabs/${tabId}`, {
@@ -186,28 +218,56 @@ describe('share roles', () => {
       });
       expect(res.status).toBe(403);
     }
-    expect(told.remove).not.toHaveBeenCalled();
+    expect(removals(db)).toEqual([]);
     const res = await call(db, 'DELETE', '/api/designs/D/tabs/t2', {
       grant: grantAt('edit'),
       owner: other,
     });
     expect(res.status).toBe(204);
-    expect(told.remove).toHaveBeenCalledWith('D', CONNECTION.id, 't2');
+    expect(removals(db)).toEqual([LEFT_T2]);
+    expect(told.remove).not.toHaveBeenCalled();
   });
 });
 
 describe('removing', () => {
-  it('tells the index once a connected tab has left, and nothing for any other tab', async () => {
+  it('keys the removal in the outbox once a connected tab has left, and nothing for any other tab', async () => {
     const db = await design();
     await addConnected(db);
     await call(db, 'PUT', '/api/designs/D/tabs/t3', {
       body: { id: 't3', name: 'Other', elements: [] },
     });
     expect((await call(db, 'DELETE', '/api/designs/D/tabs/t3')).status).toBe(204);
-    expect(told.remove).not.toHaveBeenCalled();
+    expect(removals(db)).toEqual([]);
     expect((await call(db, 'DELETE', '/api/designs/D/tabs/t2')).status).toBe(204);
-    expect(told.remove).toHaveBeenCalledWith('D', CONNECTION.id, 't2');
+    expect(removals(db)).toEqual([LEFT_T2]);
+    expect(told.remove).not.toHaveBeenCalled();
     expect(column(db, 't2')).toBeUndefined();
+  });
+
+  it('retries a removal the index did not take, with backoff, until it is told', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const db = await design();
+    await addConnected(db);
+    expect((await call(db, 'DELETE', '/api/designs/D/tabs/t2')).status).toBe(204);
+    let down = true;
+    const index = drainIndex(() => down);
+    const t0 = Date.now();
+    await drainOutbox(db.env, 'D', index.client);
+    // The first call failed: its key stays, counted, waiting out its backoff.
+    expect(index.removed).toEqual([]);
+    const waiting = db.sql
+      .prepare("SELECT attempts, retry_at FROM outbox WHERE kind = 'connection_left'")
+      .get() as { attempts: number; retry_at: number };
+    expect(waiting.attempts).toBe(1);
+    expect(waiting.retry_at).toBeGreaterThan(t0);
+    // Not before the wait is over.
+    down = false;
+    await drainOutbox(db.env, 'D', index.client);
+    expect(index.removed).toEqual([]);
+    vi.spyOn(Date, 'now').mockReturnValue(waiting.retry_at);
+    await drainOutbox(db.env, 'D', index.client);
+    expect(index.removed).toEqual([`D/${CONNECTION.id}/t2`]);
+    expect(removals(db)).toEqual([]);
   });
 });
 

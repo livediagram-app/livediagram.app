@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { createIndexAppClient, createIndexClient, IndexError, queryString } from './client';
+import {
+  createIndexAppClient,
+  createIndexClient,
+  IndexError,
+  queryString,
+  retryAfterMsOf,
+} from './client';
 import { APP_KINDS, APPS, levelAtLeast } from './constants';
 
 type Seen = { url: string; method: string; headers: Headers; body: unknown };
@@ -271,6 +277,37 @@ describe('createIndexAppClient', () => {
     expect(seen[1]!.headers.get('X-Index-App')).toBe('livedesign');
   });
 
+  it("keeps a refusal's Retry-After on the IndexError, and null without one", async () => {
+    const answers = [
+      Response.json({ error: 'rate_limited' }, { status: 429, headers: { 'Retry-After': '120' } }),
+      Response.json({ error: 'rate_limited' }, { status: 429 }),
+    ];
+    const { doFetch } = fakeFetch(() => answers.shift()!);
+    const app = createIndexAppClient({ app: 'livediagram', key: 'k', fetch: doFetch });
+    await expect(app.pushSummary('i1', {}, 1)).rejects.toMatchObject({
+      status: 429,
+      code: 'rate_limited',
+      retryAfterMs: 120_000,
+    });
+    await expect(app.pushEvents('i1', [])).rejects.toMatchObject({ retryAfterMs: null });
+    expect(new IndexError(500, 'x').retryAfterMs).toBeNull();
+  });
+
+  it("keeps a person's call's Retry-After too, and none from a stand-in response without headers", async () => {
+    const { doFetch } = fakeFetch(() =>
+      Response.json({ error: 'rate_limited' }, { status: 429, headers: { 'Retry-After': '5' } }),
+    );
+    const client = createIndexClient({ getToken: () => 'tok', fetch: doFetch });
+    await expect(client.getItem('i1')).rejects.toMatchObject({ retryAfterMs: 5_000 });
+    const bare = (async () =>
+      ({ ok: false, status: 503, json: async () => ({}) }) as unknown as Response) as typeof fetch;
+    const app = createIndexAppClient({ app: 'livediagram', key: 'k', fetch: bare });
+    await expect(app.pushSummary('i1', {}, 1)).rejects.toMatchObject({
+      status: 503,
+      retryAfterMs: null,
+    });
+  });
+
   it('throws a refused connection door', async () => {
     const { doFetch } = fakeFetch(() => Response.json({ error: 'unauthorized' }, { status: 401 }));
     const app = createIndexAppClient({ app: 'livedesign', key: 'k', fetch: doFetch });
@@ -295,5 +332,34 @@ describe('createIndexAppClient', () => {
     const refused = fakeFetch(() => Response.json({ error: 'unauthorized' }, { status: 401 }));
     const other = createIndexAppClient({ app: 'livediagram', key: 'k', fetch: refused.doFetch });
     await expect(other.communityStates(posts)).rejects.toMatchObject({ status: 401 });
+  });
+});
+
+describe('retryAfterMsOf', () => {
+  const NOW = Date.UTC(2026, 10, 12, 12, 0, 0);
+  it('reads delta-seconds and an HTTP date', () => {
+    expect(retryAfterMsOf('30', NOW)).toBe(30_000);
+    expect(retryAfterMsOf(' 0 ', NOW)).toBe(0);
+    expect(retryAfterMsOf(new Date(NOW + 90_000).toUTCString(), NOW)).toBe(90_000);
+  });
+  it('waits 0 for a date already past', () => {
+    expect(retryAfterMsOf(new Date(NOW - 5_000).toUTCString(), NOW)).toBe(0);
+  });
+  it('is null for no header, an unreadable one, a negative one and a huge one', () => {
+    for (const header of [
+      null,
+      undefined,
+      '',
+      '  ',
+      'soon',
+      '-5',
+      '1.5e3',
+      'Nope GMT',
+      '9'.repeat(41),
+    ])
+      expect(retryAfterMsOf(header, NOW)).toBeNull();
+  });
+  it('reads a long run of digits up to its cap as a number, for the outbox to cap', () => {
+    expect(retryAfterMsOf('9'.repeat(40), NOW)).toBeGreaterThan(1e40);
   });
 });
