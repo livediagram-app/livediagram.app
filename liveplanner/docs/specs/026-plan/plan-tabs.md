@@ -21,8 +21,8 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
 - The kind is chosen on **Start Planning** ([Plan mode](plan-mode.md#starting-a-board)), a rail of
   categories beside a grid of cards: a board type makes a Board tab, a sheet start a Sheet tab, a form starter a Form
   tab, a Visualisation one chart filling the tab, a layout (or one built from the plan's work) a Dashboard tab, and an
-  Inspiration template applies across tabs; its search reaches every one. Recommended ends with **Import**, which
-  places nothing: it opens [the Import dialog](#the-import-dialog). The choice sets the tab's kind and adds its element in one change, one undo step.
+  Inspiration template applies across tabs; its search reaches every one. For an Editor, **Import** sits on the
+  rail directly below Connect File and places nothing: it opens [the Import dialog](#the-import-dialog). The choice sets the tab's kind and adds its element in one change, one undo step.
   A Dashboard started on a tab still on its default name ("Tab 5") is named **Dashboard**; a name someone gave the tab
   stays.
 - Its **kind's glyph** marks it where a tab is listed with an icon (a split view's chip, a Dashboard's links), rather
@@ -61,7 +61,7 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
 ## The Import dialog
 
 **One dialog holds every way in.** The tab menu's **Import…** row (on every tab, from its **⋯** and the canvas
-right-click menu alike), the command palette's **Import…** and Start Planning's **Import** card (an empty tab,
+right-click menu alike), the command palette's **Import…** and Start Planning's **Import** rail entry (an empty tab, below Connect File,
 [Starting a board](plan-mode.md#starting-a-board)) open it; nothing else in the editor offers an
 import of its own beside it. It is headed **Import**, "Choose what to bring in, or drop a file here.", with the
 Import Tabs help link and Close, and opens on its list, focus on the list's first row that can be pressed (Into This
@@ -84,15 +84,21 @@ as every dialog's does, so no row lights up unasked.
   tool's mark, its file type at the right and a line naming the file and where the tool keeps it
   ([Importing from another tool](tracker-import.md#where-it-lives)). Under the section, one quiet line: "A one-off
   copy into a new Board tab or plan, after a preview."
-- **Dropping a file** anywhere on the list reads it as what it is: a liveplanner tab's JSON goes to the liveplanner
+- **Dropping a file** anywhere on the dialog, on any step (the list, the liveplanner Tab step or a tool's preview),
+  reads it as what it is: a liveplanner tab's JSON goes to the liveplanner
   Tab import (when the tab offers it, and not locked), another tool's export to its preview (an Editor's), and any
-  other CSV into a Board or Sheet tab as its CSV row would. A file none of them takes says why under the list, which
-  stays as it was: "That file isn't a liveplanner tab or a Trello, Asana, Jira or Linear export." (a Dashboard or
+  other CSV into a Board or Sheet tab as its CSV row would. A file none of them takes says why on the step it was dropped
+  on, which stays as it was (a preview stays, and so does what was typed in the box): "That file isn't a liveplanner tab or a Trello, Asana, Jira or Linear export." (a Dashboard or
   Form tab), "That file isn't a CSV or a Trello, Asana, Jira or Linear export." (a Board or Sheet tab), "A liveplanner
   tab's JSON imports into a Dashboard or Form tab. This tab takes a CSV.", "This tab takes a CSV, and that file is
   JSON." (no tools offered), the row's own reason when it is dimmed, or the tool reader's refusal (not JSON, no cards,
-  too many cards). A file over 20 MB is refused unread, as a picked one is. While a file is dragged over, the list
-  shows a dashed outline and **Drop to Import**. A file is parsed once, by the import it goes to: a tab's JSON is told
+  too many cards). A file over 20 MB is refused unread, as a picked one is. While a file is dragged over, the step
+  shows a dashed outline and **Drop to Import**; while a file is read or imported, a drop is ignored.
+- **A large tab JSON** (over 1 MB) dropped on the dialog is never put in the box, which grows slow at that size: the
+  liveplanner Tab step shows the file in the box's place (its name and size, and **Remove**, which brings the box
+  back), under the same amber warning, headed "Import the file you dropped, or remove it to paste instead.", and
+  **Import** imports it straight from the file. It is checked as a pasted
+  one is, with the same messages. A smaller one fills the box, to import with a press. A file is parsed once, by the import it goes to: a tab's JSON is told
   by its envelope's first lines, a tool's CSV by its header row.
 - **When the list holds one row and it is liveplanner Tab** (someone who is not an Editor, on a Dashboard or Form
   tab), the dialog opens straight at its step, with no back bar.

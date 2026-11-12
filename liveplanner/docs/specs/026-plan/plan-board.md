@@ -1264,7 +1264,9 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
     in view drop into place: each from a little above (12 px, 4 px more per card down its column), turned 2.5 degrees
     (one way in odd columns, the other in even) and at 96%, fading up over about half a second, column by column
     (70 ms apart) and down each column (45 ms apart), every card started within 650 ms. At most 80 cards animate;
-    cards out of view, cards added later and everyone with reduced motion simply show. It runs once per board as it
+    cards out of view, cards added later and everyone with reduced motion simply show; so does every card on a board
+    holding more than 500 (opened, or filled by an imported tab's whole plan), since finding where its cards land lays
+    the whole board out in one go, longer the more it holds. It runs once per board as it
     mounts, with no render of its own.
   - **Drop gaps open and close**: the dashed gap a held card would land in is tinted in the focus colour and breathes
     softly (8% to 16% and back, with an inner glow, every 1.4 s) while it waits. It opens wherever it appears

@@ -203,15 +203,21 @@ fileName?, source?, projectId?, name?, preview? }`: `readTrackerInput` refuses a
   `tool-marks.tsx`), each `aria-label` "<Tool>: <line>". A row calls `flow.pick(source)`; the row being read says
   "Reading the File…" (`flow.reading`).
 - The dialog (`ariaLabel="Import"`, `initialFocus="container"`, the fallback) is opened from the tab menu, the command
-  palette's `openImport` and Start Planning's Import card (`StartPlanning` `onImport`, given by `EditorStartPanels`
-  only when `trackerImport.canImport`). On a fine pointer `ImportChooseView` focuses its first enabled row as it
+  palette's `openImport` and Start Planning's Import rail entry (`StartPlanning` `onImport`, given by
+  `EditorStartPanels` only when `trackerImport.canImport`; `StartPanel`'s `foot` prop draws it as a
+  `RailFootButton`, `data-rail="import"`, `aria-haspopup="dialog"`, the `lucideFileDown` glyph, never `aria-current`,
+  in the shared `RailFoot` group after `ConnectRailEntry`'s button, its `children`, or alone in a `RailFoot` of its own
+  where Connect File is not offered; `@liveworkspace/workbench/components/start/RailFoot`). `IMPORT_ITEM` stays in
+  `startItems` for the search alone: `RECOMMENDED_IDS` no longer lists it. On a fine pointer `ImportChooseView` focuses its first enabled row as it
   mounts (before the trap's effect, which keeps a focus already inside), never the help link; on a coarse pointer
   the panel keeps it. It is
   headed **Import**, "Choose what to bring in, or drop a file here." (the drop clause `pointer-coarse:hidden`). Each
   section's `OptionRows` roves (one row in the Tab order, ArrowUp / ArrowDown / Home / End), its hint a wrapping
   line; the tool list is `aria-busy` while a file is read. A dimmed Into This Tab row's reason is a full-contrast line
   under it, not the dimmed row's own text. The liveplanner Tab step is the paste panel (`TextImportPanel`, its
-  `initialText` a dropped tab's JSON) under the **All Imports** back bar; with nothing else in the list
+  `initialText` a dropped tab's JSON up to `DROP_INLINE_MAX_BYTES` = 1 MiB, `import-drop.ts`; a larger one is held as
+  `heldFile = { name, bytes, text }` and the panel draws `HeldFileChip` (name, `formatBytes(bytes)`, **Remove**) in the
+  textarea's place, its Import calling `onImportText(heldFile.text)`, the same parse and messages as a paste) under the **All Imports** back bar; with nothing else in the list
   (`!tracker.canImport`, a JSON tab that is not locked) the dialog opens on it with no back bar.
 - `useTrackerFlow(tracker, onDone, tasks = trackerTasks())` (`apps/editor/components/dialogs/tracker-import/useTrackerFlow.ts`): `{ preview, busy, reading, error, pick,
 show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT, { maxBytes })` and reads by the
@@ -228,7 +234,14 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
   and kept, tasks by id; with no `Worker`, a factory that throws, or an `error` event, it runs on the page with its
   own runner from then on, re-running what the worker held; `trackerTasks()` is the page's one set). The context
   crosses without `random`. The page never receives the board, only its summary and the plans.
-- A drop on the list: `await routeImportDrop(text, name, { intoTab, tools }, readTool)` (`apps/editor/components/dialogs/import/import-drop.ts`, `readTool` the worker's `read`) after the 20 MB
+- A drop on any step: `useFileDrop(onFile, enabled)` (`apps/editor/components/dialogs/import/useFileDrop.ts`: the
+  enter/leave depth count, `Files` only, `preventDefault` on over and drop, the first file) wraps the dialog's body,
+  whichever step it shows, and `DropOverlay` draws **Drop to Import** over it; `enabled` is false while `flow.busy`
+  or a tab import runs. A refusal sets `dropError`, shown on the step it was dropped on (the list's `ImportChooseView`
+  `error`, the liveplanner Tab step's `ImportError` over the panel, the preview's `TrackerImportPanel` `error`, drawn under its back bar above the preview so a long preview never hides it): the
+  preview and the box's text stay. A tool's export goes to `step = 'list'` and `flow.show` (its preview replacing the
+  last); a tab's JSON to `step = 'json'`.
+- The route: `await routeImportDrop(text, name, { intoTab, tools }, readTool)` (`apps/editor/components/dialogs/import/import-drop.ts`, `readTool` the worker's `read`) after the 20 MB
   check. A tab's JSON is told by `"kind": "liveplanner.tab"` in its first 512 characters, a tool's CSV by its first
   line (`isTrackerCsvHead`), so a file is parsed once, by the import it goes to.
 - `TrackerImportPanel` (`{ head, flow, preview }`): the preview under the dialog's `BackBar` (**All Imports**, the

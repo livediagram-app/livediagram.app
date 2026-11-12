@@ -1,4 +1,4 @@
-// Where a file dropped on the Import dialog's list goes (docs/specs/026-plan/plan-tabs.md "The Import dialog"): the
+// Where a file dropped on the Import dialog goes, on any step (docs/specs/026-plan/plan-tabs.md "The Import dialog"): the
 // file says what it is. A liveplanner tab's JSON to the liveplanner Tab step, another tool's export to its preview,
 // any other CSV into a Board or Sheet tab; anything none of them takes is said why. Each file is parsed once, by the
 // import it goes to: a tab's JSON is told by the first lines of its envelope, a tool's CSV by its header row.
@@ -13,6 +13,16 @@ export const DROP_TAB_JSON_HERE =
   'A liveplanner tab’s JSON imports into a Dashboard or Form tab. This tab takes a CSV.';
 export const DROP_WANTS_CSV = 'This tab takes a CSV, and that file is JSON.';
 export const DROP_WANTS_JSON = "That file isn't a liveplanner tab’s JSON.";
+
+// The largest tab JSON a drop puts in the paste box (plan-tabs.md "The Import dialog": about 1 MB, the owner's). Past
+// it the box grows slow to draw and type in, so the step holds the file instead and imports it straight from there.
+export const DROP_INLINE_MAX_BYTES = 1024 * 1024;
+
+// A held file's size as its chip says it: "840 KB", "5.2 MB" (the 20 MB cap's units).
+export function fileSizeLabel(bytes: number): string {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export type DropRoute =
   | { to: 'tab-json' }

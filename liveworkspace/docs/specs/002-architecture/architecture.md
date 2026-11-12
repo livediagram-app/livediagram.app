@@ -196,6 +196,12 @@ shape kinds, its fields. Code that reads elements the same way in two or more pr
   `LIVE_ELEMENT_FIELDS`, so the fields an agent's changeset ignores stay the ones that product's undo keeps. A limit
   every product holds the same way lives with the shared code that needs it (the table helpers' sizes), and each
   product's validator reads it from there.
+- A theme some products retire while another still offers it stays in the shared catalogue data, and the products
+  that retired it bind one shared retirement: `element-model/retired-uml` is the catalogue less UML and the read-time
+  move of a tab on UML onto Mono (owner, 2026-11-12, Work Item 696; livehuddle, liveplanner, livedocuments and
+  livedesign bind it, livediagram keeps UML). The rewrite itself, role by role over a retired theme frozen as it
+  shipped, is `element-model/retired-themes`; a product with a theme engine of its own (livehuddle) binds it with its
+  own halves and colour fields, and a product's own retired themes (Autumn, Jewel) join the table beside UML.
 - A shared module over a product's own record (a comment, a table cell's style) is generic over it, naming only the
   fields it reads (`threadWithComment<C extends { id: string }>`, the table helpers over `TableGrid`), so each product
   keeps its own types and gets them back.

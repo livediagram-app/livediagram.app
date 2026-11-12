@@ -47,6 +47,7 @@ const PLAN = {
         { status: 'doing', name: 'Doing' },
         { status: 'done', name: 'Done', done: true },
       ],
+      widgets: ['count', 'filter'],
     },
   ],
   statuses: [
@@ -85,7 +86,7 @@ describe('item ls', () => {
     const { ctx } = api();
     const all = await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: undefined });
     expect(itemLs.text!(all)).toEqual([
-      'Sprint: To Do 1 · Doing 1 · Done ✓ 0',
+      'Sprint: To Do 1 · Doing 1 · Done ✓ 0 | Widgets: Item Count, Filter',
       '#1  bug   Doing  "Fix login"',
       '#2  task  To Do  "Docs"',
     ]);
@@ -244,9 +245,11 @@ describe('item output and refusals', () => {
 });
 
 describe('item edges', () => {
-  it('shows an item with no status as a dash', async () => {
+  it('shows an item with no status as a dash, and a board an older api sent no widgets for without them', async () => {
+    const { widgets: _, ...bare } = PLAN.boards[0]!;
     const { ctx } = api({
       [path]: () => Response.json({ items: [item(5, 'itemddd555', { title: 'Loose' })], rev: 1 }),
+      [`/projects/${DOC_A}/plan`]: { ...PLAN, boards: [bare] },
     });
     const out = await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: undefined });
     expect(out.items[0]!.status).toBeNull();

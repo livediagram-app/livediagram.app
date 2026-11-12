@@ -49,8 +49,8 @@ export type ThemeId =
   | 'rainbow'
   | 'pastel'
   | 'tropical'
-  // Formal: standard notations. UML paints each shape kind its
-  // conventional colour (docs/specs/011-theme/canvas-and-theme-dialog.md).
+  // Formal: standard notations, livediagram's alone. livehuddle retired UML (docs/specs/011-theme/retired-schemes.md
+  // "UML"): the id stays in the shared engine's union, and ./themes-data leaves the theme out of THEMES.
   | 'uml'
   // Seasonal: reached only through the seasonal looks (docs/specs/011-theme/canvas-and-theme-dialog.md
   // "Seasonal looks"), never listed in a theme picker.

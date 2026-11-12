@@ -4,6 +4,7 @@
 import type { PlanBoardSetup } from './board';
 import type { BoardSortLevel } from './board-sort';
 import { normaliseBoardSetup } from './board';
+import { widgetsOf, type BoardWidgetId } from './board-widgets';
 import { isDoneColumn } from './done-columns';
 import type { ItemTypeDef } from './item-types';
 import { typesOf, type ItemTypeCatalogue } from './type-catalogue';
@@ -30,6 +31,9 @@ export interface PlanBoardOutline {
   columns: PlanColumnOutline[];
   // Sort Cards (docs/specs/026-plan/plan-board.md "The board set-up"); absent is rank order.
   sortBy?: BoardSortLevel[];
+  // Its header widgets in order (docs/specs/026-plan/board-widgets.md), the default set when it never arranged them:
+  // kind ids and field widget keys. Absent from an api older than widgets for agents.
+  widgets?: BoardWidgetId[];
 }
 
 export interface PlanStatusName {
@@ -107,6 +111,7 @@ export function planOutline(
           ...(isDoneColumn(setup, c) ? { done: true as const } : {}),
         })),
         ...(setup.sortBy ? { sortBy: setup.sortBy } : {}),
+        widgets: widgetsOf(setup),
       });
     }
   }

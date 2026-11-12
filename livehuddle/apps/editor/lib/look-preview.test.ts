@@ -68,6 +68,16 @@ describe('lookPreviewSvg', () => {
     }
   });
 
+  // UML is retired here (docs/specs/011-theme/retired-schemes.md "UML"): Textbook and Schematic wear Mono.
+  it('still draws Textbook and Schematic, now in Mono', () => {
+    const ink = resolveTheme('mono')!.elementStroke!;
+    for (const id of ['textbook', 'schematic']) {
+      const look = tabLookById(id)!;
+      expect(lookPreviewTab(look).theme, id).toBe('mono');
+      expect(lookPreviewSvg(look).toLowerCase(), id).toContain(ink.toLowerCase());
+    }
+  });
+
   it('draws the Sketch looks sketched, and the Marker looks in marker', () => {
     expect(lookPreviewSvg(tabLookById('notebook')!)).toContain('data-finish="sketch"');
     expect(lookPreviewSvg(tabLookById('whiteboard')!)).toContain('data-finish="marker"');

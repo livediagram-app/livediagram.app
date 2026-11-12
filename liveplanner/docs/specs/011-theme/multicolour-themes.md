@@ -56,7 +56,7 @@ A brand-new element dropped on a multi-colour-themed tab has no place in the arr
 
 Theme cards (the Theme accordion grid and the welcome / template picker grid) render through a shared `ThemeSwatch` component. The swatch is a miniature diagram in the theme's own colours: a titled node flowing into two others over the theme's backdrop. A single-colour theme draws all three nodes in its element colours; a multi-colour theme gives the three nodes its first three palette entries (cycling when the palette is shorter), so the card reads as "many colours" at a glance. The swatch is decorative (`aria-hidden`); the card's own text names the theme.
 
-Six of the Tab Style dialog's one-click looks use these themes (and UML), so a multi-colour tab is one click away
+Eight of the Tab Style dialog's one-click looks use these themes, so a multi-colour tab is one click away
 ([Canvas + Theme dialog](canvas-and-theme-dialog.md) "Looks").
 
 ## Telemetry
@@ -65,4 +65,4 @@ Applying any theme already emits `track('Theme', 'Changed', <label>)` ([Telemetr
 
 ## Counts
 
-The catalogue ships **25 themes** (12 default + 13 extra), the extras including the dark schemes (Pine, Plum, Abyss, Espresso), Teal (a calm teal brought over from liveplanner's board style presets, the light counterpart to Abyss) and three multicolour themes (Rainbow, Pastel, Tropical), plus six seasonal themes (`seasonal: true`) worn only by the seasonal looks and kept out of every picker. An id outside the catalogue draws as Default ([Retired colour schemes](retired-schemes.md)).
+The catalogue ships **24 themes** (12 default + 12 extra), the extras including the dark schemes (Pine, Plum, Abyss, Espresso), Teal (a calm teal brought over from liveplanner's board style presets, the light counterpart to Abyss) and three multicolour themes (Rainbow, Pastel, Tropical), plus six seasonal themes (`seasonal: true`) worn only by the seasonal looks and kept out of every picker. An id outside the catalogue draws as Default ([Retired colour schemes](retired-schemes.md)).

@@ -212,6 +212,7 @@
     "./components/start/AutomationsBand": "./src/components/start/AutomationsBand.tsx",
     "./components/start/StartHeaderBand": "./src/components/start/StartHeaderBand.tsx",
     "./components/start/StartTitleMark": "./src/components/start/StartTitleMark.tsx",
+    "./components/start/RailFoot": "./src/components/start/RailFoot.tsx",
     "./components/start/useStartHeaderTheme": "./src/components/start/useStartHeaderTheme.ts",
     "./components/toast/ToastCard": "./src/components/toast/ToastCard.tsx",
     "./components/toast/ToastStack": "./src/components/toast/ToastStack.tsx",

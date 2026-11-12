@@ -15,7 +15,7 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   - into light: the canvas becomes a pale tint, the pattern a soft shade, fills light, outlines and arrows deep, text
     dark.
 - Every colour a theme paints is covered: canvas, pattern, element fill, outline and text, each branch of a
-  multi-colour palette and its root, and each shape kind's colours in a per-shape theme (UML).
+  multi-colour palette and its root, and each shape kind's colours in a per-shape theme (livediagram's UML).
 - **Contrast.** Both halves meet WCAG 2.2 AA: text on its fill at 4.5:1 or more, outlines and arrows against the canvas
   at 3:1 or more. Where a derived (or a native) colour falls short, its lightness is moved away from what it sits on
   until it passes, keeping its hue; where the range runs out first (white on a mid grey just darker than the turn,
@@ -87,6 +87,12 @@ the header (`colourIsOpaque`).
 
 Nothing offers to switch the editor's mode to suit a tab's theme, and the theme browser has no "Turn on Dark mode"
 switch: no theme needs a particular mode.
+
+## Retired: UML
+
+UML leaves this product's catalogue; livediagram keeps it. A tab saved on it is migrated on load
+([Retired colour schemes](retired-schemes.md#uml)) to **Mono**, the nearest scheme, and every element colour still
+equal to what UML painted becomes Mono's colour for the same role; a colour someone picked is kept.
 
 ## Telemetry
 

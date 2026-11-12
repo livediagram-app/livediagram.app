@@ -85,6 +85,13 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   animations"): an animation over the whole board makes the browser lay out the page's
   compositing again as it starts and as it ends, and a per-element entry re-renders every element
   view once more. Chrome may still fade in; it is small.
+- **A Tab Style change on a busy canvas eases the canvas, not its parts.** On a tab of more than 20 elements the
+  canvas's own colour (its backdrop) still eases into a new theme, look, finish, typeface, size or pattern, and every
+  part inside it snaps ([Canvas and theme dialog](../011-theme/canvas-and-theme-dialog.md) "Eased changes"). Easing
+  the parts sets a colour transition on every node of every element at once, and the browser restyles each of them
+  on every frame of the 250 ms ease, so the long frames grow with the board: on the reference board at 400 elements a theme pick took about 260 ms to paint and held the page in long frames for about 520 ms; snapping the parts paints it in about 145 ms with about 175 ms of long frames, and at 100 elements it removes every long frame of the ease (about 70 ms). A small
+  board (20 elements or fewer) still eases every part. The threshold is the same in every editor that eases
+  (livediagram, livedocuments, livedesign, liveplanner and livehuddle), one shared constant.
 - **The Map redraws its content when a gesture ends**, not on every frame of it. During a drag,
   pan or stroke it keeps its last drawing and moves only its viewport rectangle; a remote edit
   redraws it at most once every 250 ms. Opening a board draws the board first; the Map's picture

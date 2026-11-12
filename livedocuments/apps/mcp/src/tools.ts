@@ -52,6 +52,7 @@ import { elementsIssue, tabElementsIssue } from './element-values';
 import { packFreehandPoints } from './freehand-points';
 import { searchIcons } from '@liveworkspace/icons/search';
 import { imageResult } from './image-result';
+import { addOperationsFor, addToTemplateTab, getTab } from './template-elements';
 import { imageIdIssue, registerImageTools } from './image-tools';
 import {
   baseFor,
@@ -131,6 +132,8 @@ export function registerTools(server: McpServer, env: Env): void {
       return errorResult('Provide "tabs": an array of { name, elements } (or a single "tab").');
     }
     const tabs: Tab[] = [];
+    // Elements given beside a template, added to its first tab once the document exists.
+    const withTemplate: { tab: Tab; operations: unknown[] }[] = [];
     for (const [index, given] of inputTabs.entries()) {
       const tabId = crypto.randomUUID();
       // A template tab's name follows the templates' rule; any other unnamed tab is "Tab n".
@@ -149,14 +152,18 @@ export function registerTools(server: McpServer, env: Env): void {
               `Valid kinds: ${validTemplateKinds()}.`,
           );
         }
-        tabs.push(
-          ...buildTemplateTabs(
-            { id: tabId, name: t.name },
-            kind,
-            () => crypto.randomUUID(),
-            t.theme ?? args.theme,
-          ),
+        const built = buildTemplateTabs(
+          { id: tabId, name: t.name },
+          kind,
+          () => crypto.randomUUID(),
+          t.theme ?? args.theme,
         );
+        if (t.elements?.length && built[0]) {
+          const added = addOperationsFor(t.elements, built[0]);
+          if ('error' in added) return errorResult(`Tab "${t.name}": ${added.error}`);
+          withTemplate.push({ tab: built[0], operations: added.operations });
+        }
+        tabs.push(...built);
         continue;
       }
       const drawn = packFreehandPoints(t.elements ?? []);
@@ -200,6 +207,22 @@ export function registerTools(server: McpServer, env: Env): void {
         ...(args.markUsed !== undefined ? { markUsed: args.markUsed } : {}),
       }),
     });
+    // The elements given beside a template go onto its first tab as update_document's add ops would
+    // (docs/specs/015-api/mcp-server.md §4.3), so a page template holds them rather than dropping them.
+    let shown: Tab = tabs[0]!;
+    for (const { tab, operations } of withTemplate) {
+      const stored = await getTab(env, token, id, tab.id);
+      try {
+        await addToTemplateTab(env, token, id, tab.id, stored, operations);
+      } catch (err) {
+        if (isChangesetRefusal(err))
+          return errorResult(
+            `The document was made (${id}), but its elements for tab "${tab.name}" were refused: ${changesetErrorText(err)}`,
+          );
+        throw err;
+      }
+      if (tab.id === shown.id) shown = await getTab(env, token, id, tab.id);
+    }
     const tabIds = tabs.map((t) => t.id);
     const reports = await lintReportsOf(env, token, id, tabIds);
     const lint = reports.map(lintLineOf);
@@ -214,7 +237,7 @@ export function registerTools(server: McpServer, env: Env): void {
         url: deepLink(env, id),
         lint,
       },
-      tabs[0]!,
+      shown,
       { env, token },
       reports.map(lintTextOf),
     );
@@ -273,6 +296,29 @@ export function registerTools(server: McpServer, env: Env): void {
     } catch (err) {
       if (isChangesetRefusal(err)) return errorResult(changesetErrorText(err));
       throw err;
+    }
+    // Elements given beside a template are added to the tab it built, as update_document's add ops would.
+    if (args.template && args.elements?.length) {
+      const built = await getTab(env, token, args.documentId, tabId);
+      const added = addOperationsFor(args.elements, built);
+      if ('error' in added)
+        return errorResult(`The tab was made, but its elements: ${added.error}`);
+      try {
+        answer = await addToTemplateTab(
+          env,
+          token,
+          args.documentId,
+          tabId,
+          built,
+          added.operations,
+        );
+      } catch (err) {
+        if (isChangesetRefusal(err))
+          return errorResult(
+            `The tab was made, but its elements were refused: ${changesetErrorText(err)}`,
+          );
+        throw err;
+      }
     }
     // The result PNG: the tab as stored, read once more (CS36).
     const { tab } = await apiJson<TabResponse>(

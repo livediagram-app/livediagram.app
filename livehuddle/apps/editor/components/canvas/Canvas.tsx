@@ -1,4 +1,4 @@
-import { canvasIsBusy } from '@/lib/canvas-busy';
+import { canvasIsBusy } from '@liveworkspace/workbench/lib/tab-style-ease';
 import { imageBackingInsetVar } from '@livehuddle/document';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { CanvasFinishProvider } from './CanvasFinishContext';
@@ -368,7 +368,7 @@ function CanvasView(props: CanvasProps) {
         // here so the peel's CSS can respond without knowing about themes.
         data-dark-canvas={isDarkCanvas(tabBackgroundColor) ? '' : undefined}
         // The Tab Style colour ease scopes to the canvas (@liveworkspace/workbench/lib/tab-style-ease.ts); on a busy
-        // Space it eases this surface alone, the parts snapping (lib/canvas-busy.ts).
+        // Space it eases this surface alone, the parts snapping (canvasIsBusy).
         data-canvas-root=""
         data-canvas-busy={canvasIsBusy(elements.length) ? '' : undefined}
         onContextMenuCapture={surface.onContextMenuCapture}

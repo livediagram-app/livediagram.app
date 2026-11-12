@@ -65,25 +65,24 @@ describe('Start Planning', () => {
     expect(card(/^Kanban Board:/)).toBeTruthy();
   });
 
-  it('ends Recommended with Import for an Editor, which opens the Import dialog', () => {
+  // Import is the rail's entry below Connect File, not a Recommended card (plan-mode.md "Starting a board"):
+  // StartPlanning.import.test.tsx has the rail; here, the grid and a search.
+  it('leaves Import out of Recommended, a search still finding it by a tool’s name', () => {
     const onImport = vi.fn();
     show({ onImport });
     const grid = screen.getByRole('region', { name: 'Recommended' });
     const cards = within(grid).getAllByRole('button');
-    expect(cards.at(-1)!.getAttribute('data-start-card')).toBe('import');
-    // Its own name: no kind badge repeating it.
-    expect(within(cards.at(-1)!).queryByText('Import', { selector: '.uppercase' })).toBeNull();
-    fireEvent.click(card(/^Import:/));
-    expect(onImport).toHaveBeenCalledTimes(1);
-    // A search finds it by a tool's name, under its own heading.
+    expect(cards.map((c) => c.getAttribute('data-start-card'))).not.toContain('import');
     fireEvent.change(screen.getByRole('textbox', { name: /^Find a board/ }), {
       target: { value: 'trello' },
     });
-    expect(
-      within(screen.getByRole('region', { name: 'Import' })).getByRole('button', {
-        name: /^Import:/,
-      }),
-    ).toBeTruthy();
+    const found = within(screen.getByRole('region', { name: 'Import' })).getByRole('button', {
+      name: /^Import:/,
+    });
+    // Its own name: no kind badge repeating it.
+    expect(within(found).queryByText('Import', { selector: '.uppercase' })).toBeNull();
+    fireEvent.click(found);
+    expect(onImport).toHaveBeenCalledTimes(1);
   });
 
   it('has no Import card without onImport', () => {

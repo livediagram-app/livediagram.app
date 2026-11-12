@@ -353,11 +353,17 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
   label's underline and strikethrough. Each product's `MAX_TABLE_*` is the shared `TABLE_*_MAX`.
 - Left per product, and why: the flowchart modules, `mind-grow` and `component-factories` (D, P) build with each
   product's own `createShape` and factories; `svg-render-sequence` and `svg-render-temperature` (D, P) draw through
-  each product's renderer and Collaborate kinds; `label-backdrop`, `tab-as-seen`, `retired-themes` and
+  each product's renderer and Collaborate kinds; `label-backdrop`, `tab-as-seen` and
   `collab-index-rows` read livediagram's wrapped or livehuddle's own colours, themes and labels; `savable` and
   `malformed-ids` read each product's validator and catalogue keys; the page modules (`page-lock`, `page-of`,
   `page-paint`, `page-ink-ground`, `chart-ink`) and `indicator-placement` (O, S) read each product's page model and
   hit outlines.
+- Retired themes: `retired-themes` is the role-by-role rewrite (`bindRetiredThemes(retired, deps?)`, deps the
+  product's `half` and `colourFields` when its theme engine is its own, livehuddle's; `UML_AS_RETIRED`, frozen), and
+  `retired-uml` the retirement four products share (`RETIRED_THEME_IDS`, `THEMES` less UML, `RETIRED_THEMES` with UML
+  to Mono, `migrateRetiredTheme`). liveplanner's and livedocuments' `themes-data.ts`, `themes.ts` and
+  `retired-themes.ts`, and livedesign's and livehuddle's `themes-data.ts`, re-export it; livedesign's and livehuddle's
+  `retired-themes.ts` add their Autumn and Jewel to its table. livediagram keeps UML and its own `retired-themes`.
 - `@liveworkspace/workbench/components/canvas/useFaceFinishPass` is the canvas finish pass of livediagram,
   livedocuments, livedesign and livehuddle; liveplanner keeps its own (its Plan boards spend a frame budget).
 

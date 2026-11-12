@@ -53,6 +53,7 @@ Viewer; the index refuses a change to Viewer, never a change away from it.
 | Press Bring Focus                                         | Yes    | No          | No     | [Bring Focus](../../../../livediagram/docs/specs/012-collaboration/bring-focus.md)                        |
 | Start, end, reveal or configure a session tool            | Yes    | No          | No     | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md#what-a-participant-changes) |
 | Take part in a session tool (answer, react)               | Yes    | Yes         | No     | as above                                                                                                  |
+| See a tab's Attendance (who was in, when)                 | Yes    | Yes         | No     | [Tab attendance](../012-collaboration/tab-attendance.md#who-sees-it)                                      |
 | Hold the facilitator baton                                | Yes    | No          | No     | [Facilitator](../../../../livediagram/docs/specs/012-collaboration/facilitator.md)                        |
 | Add, write, arrange or delete stickies and text           | Yes    | No          | No     | [A Participant walks](#a-participant-walks)                                                               |
 | Add an image: Write's Image tile, paste or drop           | Yes    | No          | No     | [Images](../009-elements/images.md#share-roles)                                                           |

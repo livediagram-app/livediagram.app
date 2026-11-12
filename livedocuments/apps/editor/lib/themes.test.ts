@@ -59,8 +59,8 @@ describe('THEMES catalogue', () => {
   // own, never offered in a picker, so the catalogue's counts are of the year-round themes.
   const yearRound = THEMES.filter((t) => !t.seasonal);
 
-  it('lists exactly 25 year-round themes (matches docs/specs/019-marketing/marketing-site.md)', () => {
-    expect(yearRound).toHaveLength(25);
+  it('lists exactly 24 year-round themes (matches docs/specs/019-marketing/marketing-site.md)', () => {
+    expect(yearRound).toHaveLength(24);
   });
 
   it('holds six seasonal themes, all listed after the year-round ones', () => {
@@ -75,11 +75,11 @@ describe('THEMES catalogue', () => {
     expect(THEMES.slice(0, yearRound.length)).toEqual(yearRound);
   });
 
-  it('splits cleanly into 12 default + 13 extra (retained as catalogue metadata)', () => {
+  it('splits cleanly into 12 default + 12 extra (retained as catalogue metadata)', () => {
     const defaults = yearRound.filter((t) => !t.extra);
     const extras = yearRound.filter((t) => t.extra);
     expect(defaults).toHaveLength(12);
-    expect(extras).toHaveLength(13);
+    expect(extras).toHaveLength(12);
   });
 
   it('leads with the brand theme (the un-themed default is the most common pick)', () => {
@@ -88,36 +88,11 @@ describe('THEMES catalogue', () => {
   });
 });
 
-describe('UML theme (per-shape colours, docs/specs/010-palette/technology-icons.md)', () => {
-  const uml = getTheme('uml');
-
-  it('paints a new diamond its decision colour, not the base element colour', () => {
-    const diamond = createShape('diamond', 0, 0);
-    const colours = deriveNewBoxedColours(diamond, { theme: 'uml' });
-    expect(colours.fillColor).toBe(uml.shapeColors!.diamond!.fill);
-    expect(colours.strokeColor).toBe(uml.shapeColors!.diamond!.stroke);
-    expect(colours.textColor).toBe(uml.shapeColors!.diamond!.text);
-  });
-
-  it('paints a cylinder its datastore colour, distinct from the diamond', () => {
-    const cyl = deriveNewBoxedColours(createShape('cylinder', 0, 0), { theme: 'uml' });
-    expect(cyl.strokeColor).toBe(uml.shapeColors!.cylinder!.stroke);
-    expect(cyl.strokeColor).not.toBe(uml.shapeColors!.diamond!.stroke);
-  });
-
-  it('falls back to the base element colour for a kind with no override', () => {
-    // No `speech-bubble` override, so it should take the theme's element stroke.
-    const bubble = deriveNewBoxedColours(createShape('speech-bubble', 0, 0), { theme: 'uml' });
-    expect(bubble.strokeColor).toBe(uml.elementStroke);
-  });
-
-  it('recolours existing shapes per-kind when applied to a scaffold', () => {
-    const out = recolourElementsForTheme(
-      [createShape('diamond', 0, 0), createShape('cylinder', 0, 0)],
-      uml,
-    );
-    expect(out[0]!.strokeColor).toBe(uml.shapeColors!.diamond!.stroke);
-    expect(out[1]!.strokeColor).toBe(uml.shapeColors!.cylinder!.stroke);
+// UML is retired here, though livediagram keeps it (docs/specs/011-theme/retired-schemes.md "UML").
+describe('the retired UML theme', () => {
+  it('is in no picker, and the editor resolves no theme from its id', () => {
+    expect(THEMES.map((t) => t.id)).not.toContain('uml');
+    expect(resolveTheme('uml')).toBeUndefined();
   });
 });
 

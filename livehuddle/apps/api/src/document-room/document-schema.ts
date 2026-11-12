@@ -287,7 +287,31 @@ CREATE INDEX IF NOT EXISTS suggestions_by_box ON suggestions (document_id, tab_i
 // tab already there reads as not connected.
 const V6 = TAB_CONNECTION_SCHEMA;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6];
+// A tab's Attendance (docs/specs/012-collaboration/tab-attendance.md; blueprint "Data and persistence"): one row per
+// visit, a person's stretch in a tab, kept beside the content and never in a tab, a copy, an export or the outbox.
+// Keyed by the session's collab key, never an id. `seen_at` is the last time the room saw the visit open, `closed_at`
+// when the room closed it (the rejoin grace is measured from it); `left_at` is what a reader is shown. A tab's go with
+// the tab (db/tabs.ts deleteTabRow).
+const V7 = `
+CREATE TABLE IF NOT EXISTS tab_attendance (
+  id         INTEGER PRIMARY KEY,
+  tab_id     TEXT    NOT NULL,
+  person_key TEXT    NOT NULL,
+  name       TEXT    NOT NULL,
+  color      TEXT    NOT NULL,
+  picture    TEXT    NULL,
+  guest      INTEGER NOT NULL,
+  joined_at  INTEGER NOT NULL,
+  left_at    INTEGER NULL,
+  seen_at    INTEGER NOT NULL,
+  closed_at  INTEGER NULL
+);
+CREATE INDEX IF NOT EXISTS tab_attendance_by_tab ON tab_attendance (tab_id, joined_at);
+CREATE INDEX IF NOT EXISTS tab_attendance_by_person ON tab_attendance (person_key, tab_id);
+CREATE INDEX IF NOT EXISTS tab_attendance_open ON tab_attendance (left_at) WHERE left_at IS NULL;
+`;
+
+const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6, V7];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 

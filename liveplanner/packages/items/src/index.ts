@@ -39,6 +39,7 @@ export * from './plan-view-statuses';
 export * from './calendar-move';
 export * from './presets';
 export * from './brought-types';
+export * from './locale-currency';
 export * from './type-statuses';
 export * from './card-search';
 export * from './card-display';
