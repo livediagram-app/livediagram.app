@@ -1708,6 +1708,42 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 409, 413, 415, 503],
   },
   {
+    method: 'POST',
+    path: '/images/grants',
+    segment: 'images',
+    tag: 'Images',
+    summary:
+      'Which of the pictures named plan p holds a grant for, with the name, size and type of each, for an agent placing them on cards (body { ids }, at most 100). An Editor or a Participant of the plan.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [{ name: 'p', required: true, description: 'The plan the pictures are for.' }],
+    requestSchema: {
+      type: 'object',
+      properties: { ids: { type: 'array', items: { type: 'string' }, maxItems: 100 } },
+      required: ['ids'],
+    },
+    responseSchema: {
+      type: 'object',
+      properties: {
+        images: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { oneOf: [{ type: 'string' }, { type: 'null' }] },
+              size: { type: 'integer' },
+              type: { type: 'string' },
+            },
+            required: ['id', 'name', 'size', 'type'],
+          },
+        },
+      },
+      required: ['images'],
+    },
+    statuses: [200, 400, 401, 403, 404, 503],
+  },
+  {
     method: 'GET',
     path: '/images/{id}',
     segment: 'images',

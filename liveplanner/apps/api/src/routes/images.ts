@@ -139,9 +139,9 @@ async function grants(ctx: RouteContext, media: MediaClient): Promise<Response> 
   if (owner instanceof Response) return owner;
   const planId = ctx.url.searchParams.get('p') || null;
   const session = projectSession(ctx);
-  if (!planId || planId.length > PLAN_ID_MAX || (session && planId !== session.projectId)) {
-    return notFound();
-  }
+  // The plan is the question's subject: without it there is nothing to ask (400); one it can't be is a plan not found.
+  if (!planId) return badRequest('p must name the plan the pictures are for');
+  if (planId.length > PLAN_ID_MAX || (session && planId !== session.projectId)) return notFound();
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
   const ids = body['ids'];

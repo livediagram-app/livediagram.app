@@ -492,9 +492,9 @@ describe('POST /api/images/grants?p=', () => {
     });
   });
 
-  it('404 without a plan or with an overlong one; 400 for a body that is not a list of ids', async () => {
+  it('400 without a plan, 404 for an overlong one; 400 for a body that is not a list of ids', async () => {
     const who = { grant: grantOf('alice', 'edit') };
-    expect((await check({ ids: [] }, who, '/api/images/grants')).status).toBe(404);
+    expect((await check({ ids: [] }, who, '/api/images/grants')).status).toBe(400);
     expect((await check({ ids: [] }, who, `/api/images/grants?p=${'p'.repeat(201)}`)).status).toBe(
       404,
     );
