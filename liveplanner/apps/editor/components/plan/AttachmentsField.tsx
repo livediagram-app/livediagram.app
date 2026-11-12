@@ -34,6 +34,7 @@ import { track } from '@/lib/telemetry';
 import { usePlan } from './PlanContext';
 import { imageFilesOf, useAttachmentUpload } from './use-attachment-upload';
 import { useImageUrl, useSeen } from './use-image-url';
+import { openImageWhole } from './image-open';
 
 const AddIcon = lucideGlyph(lucideImagePlus, 18);
 const BrokenIcon = lucideGlyph(lucideImage, 16);
@@ -198,21 +199,8 @@ export function AttachmentsField({
   );
 }
 
-// Opening or saving a picture whole. The new tab opens at once, inside the press, so the browser lets it; the
-// picture fills it once read.
-async function openAttachment(scope: ImagesScope, a: ItemAttachment): Promise<void> {
-  const tab = window.open('', '_blank');
-  const blob = await apiImageOriginal(scope, a.id);
-  if (!blob) {
-    tab?.close();
-    return;
-  }
-  const url = URL.createObjectURL(blob);
-  if (tab) tab.location.href = url;
-  else window.open(url, '_blank');
-  // Long enough for the tab to read it.
-  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
-}
+// Opening a picture whole (image-open.ts), or saving it.
+const openAttachment = (scope: ImagesScope, a: ItemAttachment) => openImageWhole(scope, a.id);
 
 async function downloadAttachment(scope: ImagesScope, a: ItemAttachment): Promise<void> {
   const blob = await apiImageOriginal(scope, a.id);

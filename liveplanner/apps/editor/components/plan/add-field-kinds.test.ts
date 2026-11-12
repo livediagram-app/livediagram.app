@@ -71,6 +71,14 @@ describe('the kinds’ categories', () => {
     expect(categoryOfKind('duration').id).toBe('time');
     expect(categoryOfKind('colour').id).toBe('choices');
     expect(categoryOfKind('image').id).toBe('links');
+    expect(KIND_CATEGORIES.find((c) => c.id === 'links')!.kinds).toEqual([
+      'link',
+      'pullrequest',
+      'email',
+      'phone',
+      'image',
+      'images',
+    ]);
   });
 
   it('leaves each category the kinds a search finds, every kind with none', () => {
@@ -117,6 +125,7 @@ describe('variants', () => {
       'time-tracking',
       'datetime-range',
       'cards',
+      'images',
       'blocked-by',
       'formula',
       'rollup',
@@ -138,6 +147,13 @@ describe('variants', () => {
     expect(pickOf({ kind: 'card', multiple: true })).toBe('cards');
     expect(pickOf({ kind: 'calculated', calculation: 'childCount' })).toBe('calculated');
     expect(PICK_KIND_LABELS.people).toBe('Several People');
+    // A Several Images field is an Image holding several (item-types.md "Image fields").
+    expect(presetOf('images')).toEqual({ multiple: true });
+    expect(storedKindOf('images')).toBe('image');
+    expect(pickOf({ kind: 'image', multiple: true })).toBe('images');
+    expect(pickOf({ kind: 'image' })).toBe('image');
+    expect(PICK_KIND_LABELS.images).toBe('Several Images');
+    expect(KIND_DESCRIPTIONS.images).toBe('Up to 20 pictures, like a set of designs');
   });
 });
 
@@ -173,6 +189,9 @@ describe('searching', () => {
     expect(found('assignee')).toEqual(['person']);
     expect(found('priority')).toEqual(['choice']);
     expect(found('photo')).toEqual(['image']);
+    expect(found('designs')).toEqual(['images']);
+    expect(found('gallery')).toEqual(['images']);
+    expect(found('screenshots')).toEqual(['images']);
   });
 });
 

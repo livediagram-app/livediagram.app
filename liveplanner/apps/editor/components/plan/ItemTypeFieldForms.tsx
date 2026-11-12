@@ -78,6 +78,7 @@ export const PICK_KIND_LABELS: Record<PickKind, string> = {
   'time-tracking': 'Time Tracking',
   'datetime-range': 'Date and Time Range',
   cards: 'Several Cards',
+  images: 'Several Images',
   'blocked-by': 'Blocked By',
   formula: 'Formula',
   rollup: 'Rollup',

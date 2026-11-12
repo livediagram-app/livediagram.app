@@ -890,17 +890,22 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
     person) draws a quiet broken-image tile saying "This image can't be shown", with Replace and Remove still there.
   - **The control** of a **Several Images** field: a grid of square thumbnails (cropped to fill, 4 to a row in the
     panel's main column, 3 in a narrow one, each at least 72 px), in the field's order, then a dashed **Add Images**
-    tile (a plus; "PNG, JPEG, WebP or GIF, up to 10 MB" under the grid while it is empty, the tile then the width of
-    its row). Pressing Add Images opens the file picker for several files at once; files dropped on the grid or the
-    tile upload too. Each file is checked before anything is sent (below) and gets its own tile at the end, showing a
-    progress ring while it uploads; files upload one after another, and each joins the list as it lands, in one
+    tile (a plus; while the field is empty the tile is the width of its row, "PNG, JPEG, WebP or GIF, up to 10 MB"
+    under its name). Pressing Add Images opens the file picker for several files at once; files dropped on the grid
+    or the tile upload too. Each file is checked before anything is sent (below) and gets its own tile at the end: a
+    still ring and "Waiting" until its turn, then a turning ring and its name while it uploads (the browser's fetch
+    reports no bytes sent, so the ring turns rather than fills); files upload one after another, and each joins the
+    list as it lands, in one
     write of the list read from the card as it is then (someone else may have added meanwhile). A file refused, or
     past the field's 20, is skipped and said under the grid ("photo.heic: Use a PNG, JPEG, WebP or GIF image.",
     "{Field} holds up to 20."), the rest still land, and what landed is announced ("3 images added").
     Pressing a thumbnail **opens** the picture full size in a new browser tab (its accessible name "{Field}: image 2
     of 5"). Each thumbnail has, on hover or focus (always on a touch screen), a **Remove** button (accessible name
     "Remove image 2 from {Field}"), and is **reordered** by dragging it to another place in the grid, or by Alt+←
-    and Alt+→ while it is focused (announced "Moved to 3 of 5"); each remove and each move is one undo step. A
+    and Alt+→ while it is focused (announced "Moved to 3 of 5"; focus stays on it). A mouse or pen drags the
+    thumbnail itself (a press that travels less than 4 px still opens it); on a touch screen a grip in its other top
+    corner, always shown, drags it, so a finger on the picture still scrolls the panel. Each remove and each move is
+    one undo step. A
     picture that cannot be read draws the broken-image tile at the thumbnail's size, still removable and movable.
     Full at 20, Add Images is disabled with the tooltip "{Field} holds up to 20".
   - **What it refuses**, inline under the control, before anything is sent: a file that is not PNG, JPEG, WebP or

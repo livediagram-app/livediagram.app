@@ -372,6 +372,25 @@ const ART: Partial<Record<PickKind, () => ReactNode>> = {
       ))}
     </span>
   ),
+  // Three thumbnails in a row, the last counting the rest, as a Several Images field's grid reads.
+  images: () => (
+    <span className="flex items-center gap-1">
+      {['#bae6fd', '#fde68a', '#ddd6fe'].map((sky) => (
+        <svg
+          key={sky}
+          width="28"
+          height="28"
+          viewBox="0 0 28 28"
+          className="shrink-0 overflow-hidden rounded-[4px]"
+        >
+          <rect width="28" height="28" fill={sky} />
+          <circle cx="20" cy="8" r="3" fill="#fbbf24" />
+          <path d="M0 28L9 15l7 8 4-4 8 9z" fill="#0f766e" />
+        </svg>
+      ))}
+      <span className={`ml-0.5 text-[12px] font-semibold tabular-nums ${QUIET}`}>+2</span>
+    </span>
+  ),
 };
 
 /** The picture on a kind's tile in Add Field's gallery. */

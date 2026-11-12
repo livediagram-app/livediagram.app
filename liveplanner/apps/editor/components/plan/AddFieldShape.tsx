@@ -70,7 +70,9 @@ export function addedField(field: NewField): NewField {
     ...(field.showAs === 'percent' && canShowAsPercent(field) ? {} : { showAs: undefined }),
     ...(field.required && canBeRequired(field.kind) ? {} : { required: undefined }),
     ...(field.notifies && field.kind === 'person' ? {} : { notifies: undefined }),
-    ...(field.multiple && holdsSeveralKind(field.kind) ? {} : { multiple: undefined }),
+    ...(field.multiple && (holdsSeveralKind(field.kind) || field.kind === 'image')
+      ? {}
+      : { multiple: undefined }),
     ...(field.blocks && field.kind === 'card' ? {} : { blocks: undefined }),
     ...(field.withTime && field.kind === 'daterange' ? {} : { withTime: undefined }),
   };
