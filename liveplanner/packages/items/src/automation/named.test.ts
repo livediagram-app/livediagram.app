@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { namedRuleBody, type RuleNames } from './named';
+import { namedRuleBody, ruleWithTabIds, type RuleNames } from './named';
 import { ALI, BUG, NOTE, OUTLINE, SAM } from './test-fixtures';
 
 // docs/specs/026-plan/automations.md "Agents and the CLI", "Describe a Rule": names as the board shows them become ids.
@@ -131,5 +131,37 @@ describe('namedRuleBody', () => {
   it('answers anything but an object as it came', () => {
     expect(namedRuleBody('x', NAMES)).toBe('x');
     expect(namedRuleBody({ trigger: 'x', steps: 3 }, NAMES)).toEqual({ trigger: 'x', steps: 3 });
+  });
+});
+
+// docs/specs/026-plan/automations.md "Copies, exports and deletes": a copy's tabs take new ids, and its rules follow.
+describe('ruleWithTabIds', () => {
+  const tabs = new Map([
+    ['form1', 'form2'],
+    ['board1', 'board2'],
+  ]);
+  it('re-points a Form tab and every saved filter at the copy’s tabs, and keeps the rest', () => {
+    const filter = (tab: string) => ({ kind: 'saved_filter', tab, filter: 'f1' });
+    const body = {
+      trigger: { kind: 'form_response', formTab: 'form1' },
+      conditions: [filter('board1'), { kind: 'column', statuses: ['todo'] }],
+      steps: [
+        { kind: 'if', conditions: [filter('board1')], then: [], else: [] },
+        { kind: 'for', related: filter('gone'), conditions: [filter('board1')], then: [] },
+        { kind: 'move', status: 'done' },
+      ],
+    };
+    expect(ruleWithTabIds(body, tabs)).toEqual({
+      trigger: { kind: 'form_response', formTab: 'form2' },
+      conditions: [filter('board2'), { kind: 'column', statuses: ['todo'] }],
+      steps: [
+        { kind: 'if', conditions: [filter('board2')], then: [], else: [] },
+        { kind: 'for', related: filter('gone'), conditions: [filter('board2')], then: [] },
+        { kind: 'move', status: 'done' },
+      ],
+    });
+    expect(body.trigger.formTab).toBe('form1');
+    expect(ruleWithTabIds('x', tabs)).toBe('x');
+    expect(ruleWithTabIds({ steps: [] }, tabs)).toEqual({ steps: [] });
   });
 });

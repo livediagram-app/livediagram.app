@@ -171,6 +171,63 @@ describe('card triggers', () => {
   });
 });
 
+describe('derived triggers heard twice before a wake', () => {
+  // Two blockers, two children or two cards into a column, done before the alarm: the wake reads the plan as it is
+  // then for both events, which reach the same moment, so the rule runs once (spec "Triggers").
+  const ranOn = async (id: string) =>
+    (await runs()).filter((r) => r.card?.id === id && r.result !== 'no_match').length;
+
+  it('Card Unblocked runs once when its last two blockers finish together', async () => {
+    await w.rule({ name: 'Free', trigger: { kind: 'card_unblocked' }, steps: [{ kind: 'flag' }] });
+    const a = await w.make('A', { title: 'A' });
+    const b = await w.make('A', { title: 'B' });
+    const c = await w.make('A', { title: 'C', 'f-blocked': [a.id, b.id] });
+    await move(a.id, 'done');
+    await move(b.id, 'done');
+    await room().alarm();
+    expect(await ranOn(c.id)).toBe(1);
+    // Opened and finished again: a new moment, a new run.
+    await move(b.id, 'todo');
+    await move(b.id, 'done');
+    await room().alarm();
+    expect(await ranOn(c.id)).toBe(2);
+  });
+
+  it('Related Cards Done runs once when the last two children finish together', async () => {
+    await w.rule({
+      name: 'Close',
+      trigger: { kind: 'related_done', related: 'children' },
+      steps: [{ kind: 'flag' }],
+    });
+    const parent = await w.make('A', { title: 'Parent' });
+    const one = await w.make('A', { title: 'One', 'f-parent': parent.id });
+    const two = await w.make('A', { title: 'Two', 'f-parent': parent.id });
+    await move(one.id, 'done');
+    await move(two.id, 'done');
+    await room().alarm();
+    expect(await ranOn(parent.id)).toBe(1);
+  });
+
+  it('Column Over Limit runs once when two cards go past it together', async () => {
+    await w.rule({
+      name: 'Too many',
+      trigger: { kind: 'column_limit', status: 'doing', limit: 1 },
+      steps: [{ kind: 'flag' }],
+    });
+    const a = await w.make('A', { title: 'A' });
+    const b = await w.make('A', { title: 'B' });
+    await w.send('POST', '/api/projects/A/items/moves', {
+      items: [
+        { id: a.id, status: 'doing' },
+        { id: b.id, status: 'doing' },
+      ],
+    });
+    await room().alarm();
+    const flagged = [await card(a.id), await card(b.id)].filter((c) => c.fields['flagged']);
+    expect(flagged).toHaveLength(1);
+  });
+});
+
 describe('comment triggers', () => {
   const thread = (itemId: string, text: string, extra: Record<string, unknown> = {}) =>
     w.send('POST', `/api/projects/A/items/${itemId}/threads`, { text, ...extra });

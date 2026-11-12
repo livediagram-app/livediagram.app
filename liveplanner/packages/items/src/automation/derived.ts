@@ -104,3 +104,45 @@ export function derivedTargets(
     }
   }
 }
+
+/** The moment each target's trigger reached, as the plan's cards now stand: the cards it was worked out from (the
+ *  target's blockers, its children or the cards it links to, each at its rev; the column's cards, by id alone, as the
+ *  rule's own write to the card that tipped it moves its rev on). Two events a wake reads against the same cards (a
+ *  group move, two moves before the wake) reach the same moment, so the rule runs once; a related card changed since
+ *  makes a new one. */
+export function derivedMoments(
+  trigger: DerivedTrigger,
+  targets: readonly Item[],
+  items: readonly Item[],
+  types: readonly ItemTypeDef[],
+): string[] {
+  const byId = new Map(items.map((i) => [i.id, i]));
+  const index =
+    trigger.kind === 'related_done' && trigger.related === 'children'
+      ? childIndexOf(items, types)
+      : null;
+  const moment = (cards: readonly Item[], revs = true) =>
+    cards
+      .map((c) => (revs ? `${c.id}@${c.rev}` : c.id))
+      .sort()
+      .join(',');
+  return targets.map((target) => {
+    switch (trigger.kind) {
+      case 'column_limit':
+        return moment(
+          items.filter((i) => live(i) && itemStatus(i) === trigger.status),
+          false,
+        );
+      case 'card_unblocked':
+        return moment(
+          blocksFieldsOf(typeIn(types, target.type))
+            .flatMap((f) => linkedCardIds(target, f))
+            .flatMap((id) => byId.get(id) ?? []),
+        );
+      case 'related_done':
+        return moment(
+          (index ? childrenOf(target, index) : pointsAt(target, types, byId)).filter(live),
+        );
+    }
+  });
+}

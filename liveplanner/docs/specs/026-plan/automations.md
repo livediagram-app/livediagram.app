@@ -140,7 +140,9 @@ work. A rule does it every time, at once, and says that it did.
 - **Card Unblocked, Related Cards Done and Column Over Limit** are worked out when the rule runs, from the plan's cards
   as they are then: a move or archive that sets one off may be another card's (the blocker, the last child), and the
   rule runs on the card it concerns, with Who Did It the person who made that move. Archiving or restoring a card
-  starts only Card Archived and Card Restored.
+  starts only Card Archived and Card Restored. Changes that reach one moment before the rule runs (the last two
+  blockers or children done in a group move, or one after the other; two cards dropped into a column together) run
+  it once: on the card they concern, and on one card for a column.
 
 ### Time triggers
 
@@ -989,10 +991,15 @@ part at fault, the words, and the command to run next).
 - A **duplicated** plan keeps its rules, each as it was (on or off), its Audit Trail and counts empty. A plan made from
   a template has none.
 - An **export** of a plan (its file) carries its rules; an import of that file brings them back off.
+- A copy's tabs, and a file's once imported, take new ids, and the rules follow them: a Form Response narrowed to a
+  Form tab, and a saved filter (a condition or a branch's cards), name that tab's copy.
 - A copy made through a share link, of one tab, or of a Community post takes no rules: the rules are an Editor's of the
   whole plan to see.
 - A rule naming a card type, column, field or person the copy lacks needs attention there (above).
 - **Deleting** a plan deletes its rules, queue and Audit Trail with it.
+- A **closed account** leaves the plan's rules as it leaves its cards: a rule it made or last edited reads **Made by**
+  or **Edited by** Deleted account, an Audit Trail run its change started names Deleted account where it named them,
+  and its triggers still queued or held by a Wait run as Deleted account's.
 
 ## Telemetry
 

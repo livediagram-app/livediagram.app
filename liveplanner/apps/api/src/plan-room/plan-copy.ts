@@ -19,7 +19,7 @@ import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
 import { storedTabConnection, tabConnectionStatement } from '@liveworkspace/index-app';
 import type { TabConnection } from '@liveworkspace/index-client';
 import type { PlanEnv } from '../types';
-import type { AutomationRule } from '@liveplanner/items';
+import { ruleWithTabIds, type AutomationRule } from '@liveplanner/items';
 import { copiedRuleStatements, copiedRules } from './automations/automation-copy';
 import { copiedGrantsStatement, copiedImageGrants } from './image-grants';
 
@@ -209,7 +209,11 @@ export async function exportPlanCopy(
         itemIds === null ? null : new Set(itemIds),
         redactAuthorsFor,
       );
-  const rules = withRules && onlyTabId === null && !community ? await copiedRules(env) : [];
+  // A rule's Form tab and saved filters follow their tabs to the copy's ids.
+  const rules =
+    withRules && onlyTabId === null && !community
+      ? (await copiedRules(env)).map((rule) => ruleWithTabIds(rule, tabIdMap))
+      : [];
   const imageGrants = await copiedImageGrants(env, planId, itemIds);
   const itemRows = items.results ?? [];
   const sheetRows = sheets.results ?? [];

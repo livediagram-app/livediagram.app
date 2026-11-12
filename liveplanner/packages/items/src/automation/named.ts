@@ -150,3 +150,23 @@ export function namedRuleBody<T>(body: T, names: RuleNames): T {
   nameAll(out['steps'], (s) => nameStep(s, n));
   return out as T;
 }
+
+const same: Namer = (ref) => ref;
+
+/** `body` with the tabs it names (a Form Response's Form tab, a saved filter's board tab) put through `tabIds`, as a
+ *  plan's copy or file gives its tabs new ids; a tab the map lacks is kept. A copy, the input untouched. */
+export function ruleWithTabIds<T>(body: T, tabIds: ReadonlyMap<string, string>): T {
+  if (!isObject(body)) return body;
+  const out = structuredClone(body) as Json;
+  const n: Namers = {
+    status: same,
+    type: same,
+    field: same,
+    person: same,
+    tab: (ref) => tabIds.get(ref) ?? ref,
+  };
+  if (isObject(out['trigger'])) nameTrigger(out['trigger'], n);
+  nameAll(out['conditions'], (c) => nameCondition(c, n));
+  nameAll(out['steps'], (s) => nameStep(s, n));
+  return out as T;
+}

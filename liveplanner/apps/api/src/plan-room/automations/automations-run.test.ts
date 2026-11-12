@@ -304,6 +304,31 @@ describe('copies, exports and deletes', () => {
     expect(c.room.automations.kinds.size).toBe(0);
   });
 
+  it("a copy's and a file's rules name the copy's tabs, as its Form tab and saved filters moved to new ids", async () => {
+    const filter = { kind: 'saved_filter' as const, tab: 't1', filter: 'f1' };
+    await w.rule({
+      name: 'Form card',
+      trigger: { kind: 'form_response', formTab: 't1' },
+      conditions: [filter],
+    });
+    const source = await room().exportCopy('A', null, null);
+    const tab = source!.copy.tabs[0]!.id;
+    expect(tab).not.toBe('t1');
+    expect(source!.copy.automations![0]).toMatchObject({
+      trigger: { formTab: tab },
+      conditions: [{ ...filter, tab }],
+    });
+    const file = await exportProjectFile(room().roomEnv!, 'A', null);
+    if (file.status !== 'ok') throw new Error(file.status);
+    const read = readProjectFile(String(file.body));
+    if (!read.ok) throw new Error(read.failure);
+    const fileTab = read.content.copy.tabs[0]!.id;
+    expect(read.content.copy.automations![0]).toMatchObject({
+      trigger: { formTab: fileTab },
+      conditions: [{ ...filter, tab: fileTab }],
+    });
+  });
+
   it('a delete drops them with the rest of the plan', async () => {
     await w.rule({});
     await room().purge('A');

@@ -28,6 +28,7 @@ import {
   statusName,
   timeTriggerWords,
   triggerMatches,
+  derivedMoments,
   derivedTargets,
   isDerivedTrigger,
   type DerivedTrigger,
@@ -83,6 +84,8 @@ export type RunState = {
   ai?: number;
   // The plan's cards as one event's derived triggers read them (runs between events change them).
   cards?: { event: string; items: Item[] };
+  // The columns this wake's Column Over Limit rules ran on, each as its rule and the column's cards.
+  tipped?: Set<string>;
 };
 
 const hex = (bytes: Uint8Array) =>
@@ -363,22 +366,38 @@ export async function runRule(
   }
 }
 
-// A derived trigger's events: one for each card it concerns, under the event's id and that card's.
+// A derived trigger's events: one for each card it concerns. Card Unblocked's and Related Cards Done's go under that
+// card's id and the moment it reached (a hash of its related cards at their revs), so two events that reach the same
+// moment run the rule on it once, in this wake or a later one. Column Over Limit's go under the event's id and the
+// card's, once per wake for one set of cards in the column: the events a wake reads all see the column as it is now.
 async function derivedFor(
   deps: RunnerDeps,
   state: RunState,
+  ruleId: string,
   trigger: DerivedTrigger,
   event: AutomationEvent,
 ): Promise<AutomationEvent[]> {
   state.plan ??= await readAutomationPlan(deps.env, deps.planId);
   if (state.cards?.event !== event.id)
     state.cards = { event: event.id, items: await listItems(deps.env, deps.planId) };
-  return derivedTargets(trigger, event, state.cards.items, state.plan.types, state.plan.isDone).map(
-    (card) => ({
+  const { items } = state.cards;
+  const targets = derivedTargets(trigger, event, items, state.plan.types, state.plan.isDone);
+  const moments = derivedMoments(trigger, targets, items, state.plan.types);
+  if (trigger.kind === 'column_limit') {
+    const tipped = (state.tipped ??= new Set());
+    return targets.flatMap((card, i) => {
+      const key = `${ruleId}:${moments[i]!}`;
+      if (tipped.has(key)) return [];
+      tipped.add(key);
+      return [{ ...event, id: `${event.id}>${card.id}`, cardId: card.id }];
+    });
+  }
+  return Promise.all(
+    targets.map(async (card, i) => ({
       ...event,
-      id: `${event.id}>${card.id}`,
+      id: `d:${card.id}:${hex(await sha256(new TextEncoder().encode(moments[i])))}`,
       cardId: card.id,
-    }),
+    })),
   );
 }
 
@@ -411,7 +430,7 @@ export async function runAutomationWake(
       // Card Unblocked, Related Cards Done, Column Over Limit: the cards it concerns, worked out from the plan now. A
       // held run going on already names its card (the one the trigger found before the Wait).
       if (isDerivedTrigger(rule.trigger) && event!.kind !== 'resume') {
-        for (const target of await derivedFor(deps, state, rule.trigger, event!))
+        for (const target of await derivedFor(deps, state, rule.id, rule.trigger, event!))
           if (await runRule(deps, state, rule, target)) ran += 1;
         continue;
       }
