@@ -142,6 +142,12 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
   the real element layer, which caps each column at z=0. Each column takes the
   element's accent colour (stroke, else fill, else neutral) dimmed toward the
   floor via `filter: brightness()`.
+- A collaborator's live drag moves the columns with their tops ([Drag
+  preview](drag-preview.md) "A very large move rides as one layer"): each column
+  is tagged with its element's id as a ride node (`data-ride-id`) and the layer
+  is a ride plane (`data-ride-plane`), so the drag's offset writer shifts a
+  column with its element, or the layer as one transform on a very large move,
+  and the layer itself never re-renders for a drag frame.
 - Each layer in the column is **clipped to the shape's own silhouette** rather
   than the bounding rectangle, so a circle / diamond / cylinder / hexagon
   extrudes as that outline instead of a square block behind it. The clip is
