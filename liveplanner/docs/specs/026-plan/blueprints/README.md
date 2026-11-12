@@ -12,5 +12,6 @@ Follow the references below only as needed; never upfront.
 - ./plan-agents.md - when implementing the agent Plan tools: the plan route, naming, card type changes, board placement, the MCP and CLI doors
 - ./linked-boards.md - when implementing linked boards: the Actions board, linked cards, the heal, Won't Do and the links between canvas and board
 - ./tracker-import.md - when implementing the import from another tool: the readers, the plan and preview, imported comments, the editor's Import dialog view and the agent doors
+- ./github-pull-requests.md - when implementing GitHub pull requests: the Pull Request field's reading module, card mentions, every consumer of the kind, and the parts still to build (webhook receiver, connection, state, rules)
 - ./DEFAULTS.md - when a Plan blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a Plan blueprint covers
