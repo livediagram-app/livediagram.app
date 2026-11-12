@@ -15,6 +15,7 @@ import {
   AUTOMATION_ROTATE_MAX,
   AUTOMATION_ROTATE_MIN,
   AUTOMATION_TEXT_MAX,
+  isGithubTrigger,
   isPersonless,
   isTimeTrigger,
   AUTOMATION_AI_STEPS_MAX,
@@ -354,8 +355,8 @@ function createsPerRun(steps: readonly AutomationStep[]): number {
   );
 }
 
-// A time trigger or an incoming webhook (`who` says which) has no person behind it: no Who Did It condition, and
-// nobody to assign or email as whoever triggered it, anywhere in the rule.
+// A time trigger, an incoming webhook or a GitHub trigger (`who` says which) has no person behind it: no Who Did It
+// condition, and nobody to assign or email as whoever triggered it, anywhere in the rule.
 function checkPersonless(
   conditions: readonly AutomationCondition[],
   steps: readonly AutomationStep[],
@@ -415,7 +416,11 @@ export function readRuleBody(v: unknown): { body: AutomationRuleBody } | RuleRef
       checkPersonless(
         conditions,
         steps,
-        isTimeTrigger(trigger) ? 'A time trigger' : 'An incoming webhook',
+        isTimeTrigger(trigger)
+          ? 'A time trigger'
+          : isGithubTrigger(trigger)
+            ? 'A GitHub trigger'
+            : 'An incoming webhook',
       );
     return {
       body: {
