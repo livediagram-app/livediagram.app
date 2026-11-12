@@ -84,6 +84,24 @@ describe('one patch for the card', () => {
 });
 
 describe('Set Field', () => {
+  // Two plain text fields on the Bug type.
+  const WITH_TEXT = {
+    ...OUTLINE,
+    types: OUTLINE.types.map((t) =>
+      t.id === 'bug'
+        ? {
+            ...t,
+            fields: [...t.fields, 'f-x', 'f-y'],
+            custom: [
+              ...(t.custom ?? []),
+              { id: 'f-x', label: 'X', kind: 'text' as const },
+              { id: 'f-y', label: 'Y', kind: 'text' as const },
+            ],
+          }
+        : t,
+    ),
+  };
+
   it('fills values and reads them as the field takes them', () => {
     const r = done(
       run(
@@ -101,6 +119,7 @@ describe('Set Field', () => {
           { kind: 'set_field', field: 'f-y', value: { text: 'plain' } },
         ],
         bug({}, { key: 7 }),
+        { outline: WITH_TEXT },
       ),
     );
     expect(r.patch.set).toMatchObject({
@@ -156,6 +175,10 @@ describe('Set Field', () => {
       "Estimate can't hold that value",
     ],
     [{ kind: 'clear_field', field: 'f-severity' }, 'Bug cards need Severity'],
+    // A field gone from the plan, or a source field gone: never written as hidden data.
+    [{ kind: 'set_field', field: 'f-gone', value: { text: 'x' } }, 'Field f-gone is gone'],
+    [{ kind: 'clear_field', field: 'f-gone' }, 'Field f-gone is gone'],
+    [{ kind: 'set_field', field: 'due', value: { from: 'f-gone' } }, 'Field f-gone is gone'],
   ] as [AutomationAction, string][])('fails a value the field refuses: %o', (action, reason) => {
     expect(failed(one(action))).toBe(reason);
   });

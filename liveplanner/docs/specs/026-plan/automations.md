@@ -420,8 +420,8 @@ steps only; the run is **Failed** if any did, naming them.
 
 - An action that would change nothing (a label already there, a card already in the column) is not a change: the
   run says "Already so" for that step and carries on.
-- An action the card refuses (a column its type leaves out, a required field missing, the plan full) fails that
-  step: the run stops there and is **Failed** with the reason; the steps before it stay done.
+- An action the card refuses (a column its type leaves out, a required field missing, a field gone from the plan,
+  the plan full) fails that step: the run stops there and is **Failed** with the reason; the steps before it stay done.
 - Every change a run makes lands as **one write per card** where it can (the step's changes to the triggering card
   are batched into one patch, in step order), so the card's history reads as one entry and the board moves once.
 

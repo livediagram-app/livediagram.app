@@ -33,7 +33,15 @@ import {
   type AutomationStep,
 } from './types';
 import { allHold } from './conditions';
-import { fieldDefOf, fieldName, personOf, statusName, typeHasField, typeName } from './outline';
+import {
+  fieldDefOf,
+  fieldName,
+  personOf,
+  planHasField,
+  statusName,
+  typeHasField,
+  typeName,
+} from './outline';
 import { fieldText, fillValues } from './values';
 import { relatedCards } from './related';
 import { branchWords, notifyChip, waitWords } from './sentence';
@@ -97,6 +105,10 @@ function setField(a: Extract<AutomationAction, { kind: 'set_field' | 'clear_fiel
   const { plan, ctx, type } = w;
   const def = fieldDefOf(ctx.outline, a.field, type);
   const name = fieldName(ctx.outline, a.field, type);
+  // A field gone from the plan (the rule needs attention) is never written as hidden data, nor read from.
+  if (!planHasField(ctx.outline, a.field)) fail(`Field ${a.field} is gone`);
+  if (a.kind === 'set_field' && 'from' in a.value && !planHasField(ctx.outline, a.value.from))
+    fail(`Field ${a.value.from} is gone`);
   if (def?.kind === 'calculated' || def?.calculation) fail(`${name} is worked out, never set`);
   const value =
     a.kind === 'set_field'
