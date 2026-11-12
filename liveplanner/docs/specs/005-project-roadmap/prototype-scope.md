@@ -102,7 +102,9 @@ only small per-browser state, under `liveplanner:*` keys:
 These are the meaningful gaps between launch and "full product":
 
 - **Plan, next steps**: a text `board` view for agents, item history, and connectors that fill items from GitHub
-  Issues, Jira or Linear (deliberately not in the first cut).
+  Issues, Jira or Linear (deliberately not in the first cut). The first connector came forward (the owner's answer,
+  2026-11-11): [GitHub pull requests](../026-plan/github-pull-requests.md), linking cards to the pull requests that
+  build them, in parts (Work Item 157); filling cards from issues stays here.
 - **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): token levels, ownership as
   separate powers and a look-only Viewer.
 - **Finer-grained team permissions**: every member of a team can edit every project in its shared library

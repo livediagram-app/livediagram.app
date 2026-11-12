@@ -430,6 +430,8 @@ index, through?)` filters without a second pass. A Lookup reads the first live l
   - Agents: `plan-schema.ts` adds `percent` to the kind enum and `showAs` to `add`/`editCustom`; `plan-listing.ts`
     lists `showAs` on a field that shows as a Percent; the OpenAPI schema is regenerated (`gen:openapi`) from
     `CUSTOM_FIELD_KINDS` and `CustomFieldDef`.
+- Pull Request fields (kind `pullrequest`, after `link` in `CUSTOM_FIELD_KINDS`): the reading module, every consumer
+  and the tests are in [github-pull-requests.md](github-pull-requests.md#part-1-the-pull-request-field).
 - Date and Time, Date Range and Phone fields (spec "Date and Time", "Date Range", "Phone"; kinds `datetime`,
   `daterange`, `phone` in `CUSTOM_FIELD_KINDS`). Each kind has one reading module in packages/items, shared by every
   surface:

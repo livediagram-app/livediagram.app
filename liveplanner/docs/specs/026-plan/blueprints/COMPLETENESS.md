@@ -130,3 +130,14 @@
 - [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
+
+## github-pull-requests
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Security and trust
+- [x] Performance and limits
+- [x] Testing
+- [x] Constants and configuration
+- [x] Defaults ledger
