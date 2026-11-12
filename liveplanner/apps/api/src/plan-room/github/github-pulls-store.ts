@@ -1,4 +1,4 @@
-// Each pull request's latest state and its commits' check suites, on the plan's own SQLite (github-schema.ts V22;
+// Each pull request's latest state and its commits' check suites, on the plan's own SQLite (github-schema.ts V23;
 // docs/specs/026-plan/github-pull-requests.md "Pull request state on cards"; blueprint "Part 3"). Plain reads and
 // writes: an older delivery than the one kept writes nothing, and both tables are trimmed to their caps.
 import {

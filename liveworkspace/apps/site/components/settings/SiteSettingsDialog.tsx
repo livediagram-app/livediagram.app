@@ -38,6 +38,7 @@ import { pageApp } from '@/lib/explorer/page-app';
 import { setExplorerConsent, setGuestTelemetryChoice } from '@/lib/explorer/telemetry';
 import { reportAppSetting, reportSharedSetting } from '@/lib/settings-telemetry';
 import { APP_SETTINGS_KIT } from './app-settings-kit';
+import { siteSettingsHeroArt } from './SiteSettingsHeroArt';
 import { settingsErrorMessage } from './settings-ui';
 
 // The Account section's API Tokens and Download Your Data (@liveworkspace/settings-ui accountPanels), each
@@ -201,6 +202,8 @@ export default function SiteSettingsDialog({
           isMobile={isMobile}
           onClose={onClose}
           title="Settings"
+          // One account, every app: liveworkspace.app's own band (site.md "Settings").
+          heroArt={siteSettingsHeroArt}
           footer={
             guest ? (
               <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">

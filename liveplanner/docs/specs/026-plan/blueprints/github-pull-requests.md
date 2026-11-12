@@ -281,7 +281,7 @@ else 403 `github_needs_editor`. Bodies are read by `readBody`.
 
 ### The plan's object (`plan-room/github/`)
 
-- `github-schema.ts`, step V22 (`GITHUB_PULLS_SCHEMA`): `github_pull_requests (key PK, repo_id, url, title, state,
+- `github-schema.ts`, step V23 (`GITHUB_PULLS_SCHEMA`): `github_pull_requests (key PK, repo_id, url, title, state,
 head_sha, cards JSON, updated_at, seen_at)` with indexes on `(repo_id, head_sha)` and `seen_at`;
   `github_check_suites (suite_id PK, repo_id, head_sha, checks, updated_at)` with an index on `(repo_id, head_sha)`.
   `github_connection.rules` holds `GithubRules` as JSON (null: both off); a connect again keeps them.

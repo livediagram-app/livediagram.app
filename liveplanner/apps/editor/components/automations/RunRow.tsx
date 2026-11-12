@@ -8,7 +8,7 @@ import { useId, useState } from 'react';
 import type { AutomationRun } from '@liveplanner/items';
 import { ChevronDownIcon } from '@liveplanner/ui';
 import { RunSteps } from './RunSteps';
-import { RESULT_LABELS, RESULT_PILL, runWhen, tookWords } from './run-words';
+import { RESULT_LABELS, RESULT_PILL, nextRunWords, runWhen, tookWords } from './run-words';
 
 export const RUN_GRID =
   'grid grid-cols-[96px_minmax(0,1.2fr)_minmax(0,1.4fr)_112px_72px_40px] items-center gap-4';
@@ -36,7 +36,11 @@ function CardRef({ card }: { card: AutomationRun['card'] }) {
 }
 
 const reasonTone = (run: AutomationRun) =>
-  run.result === 'failed' ? 'text-red-700 dark:text-red-300' : 'text-amber-800 dark:text-amber-300';
+  run.result === 'failed'
+    ? 'text-red-700 dark:text-red-300'
+    : run.result === 'waiting'
+      ? 'text-sky-700 dark:text-sky-300'
+      : 'text-amber-800 dark:text-amber-300';
 
 export function RunRow({
   run,
@@ -54,8 +58,13 @@ export function RunRow({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const stepsId = useId();
+  // A Wait's run says when it goes on; a failed or skipped one, why.
   const reason =
-    run.reason && (run.result === 'failed' || run.result === 'skipped') ? run.reason : null;
+    run.result === 'waiting' && run.waitsUntil !== undefined
+      ? `Goes on ${nextRunWords(run.waitsUntil, now)}`
+      : run.reason && (run.result === 'failed' || run.result === 'skipped')
+        ? run.reason
+        : null;
   const card = run.card;
   const openCard = card && onOpenCard ? () => onOpenCard(card.id) : undefined;
   const chevron = (

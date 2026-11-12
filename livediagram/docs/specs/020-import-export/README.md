@@ -12,3 +12,16 @@ Follow the references below only as needed; never upfront.
 - ./whiteboard-import.md - when working on Microsoft Whiteboard import: board exports (the edit history) replayed into one dated document per board, the format (tree, changes, pen-stroke encoding), colour normalisation, the mapping to a board scene, where it lives (the Explorer) and the import flow
 - ./drawio-import.md - when working on draw.io import: .drawio / .xml (compressed or not), Drive saves without an extension, .drawio.svg / .drawio.png and JSON exports into tabs (one per page), libraries into shape libraries, the Explorer import of files and folders as new documents (names, dates, the 2 MB tab limit), the mapping and degradation tables, the shared import report
 - ./blueprints/README.md - when implementing from a blueprint: the import image pipeline, Excalidraw import and draw.io import
+
+## The dialogs' header
+
+The Export and Import dialogs wear the [dialog hero
+header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), their title (**Export Tab** or **Export
+Selection**, **Import to Tab**) and its one line in the band, then **Help** and the close. Export draws the tab
+leaving as files: a page in the bottom left, a dashed line along the foot to format tiles fanned in the bottom right,
+the file going out in front in the accent; an arrow rising out of a tray is its mark. Import draws files coming in:
+two files in the bottom left, a dashed line along the foot to a dashed frame in the bottom right, a file dropping
+in over its edge; an arrow into a tray is its mark. Both arts are shared
+(`@liveworkspace/ui/dialog-hero-art/export`, `/import`), so every product's pair reads alike. The Explorer's own
+import dialogs, **Import from draw.io**, **Import from Excalidraw** and **Import from Microsoft Whiteboard**, wear the
+Import header too, each with its own one line.

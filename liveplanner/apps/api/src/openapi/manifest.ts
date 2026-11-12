@@ -974,7 +974,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     query: [
       { name: 'rule', required: false, description: 'A rule id.' },
-      { name: 'result', required: false, description: 'done, no_match, skipped or failed.' },
+      {
+        name: 'result',
+        required: false,
+        description: 'done, no_match, skipped, failed or waiting.',
+      },
       {
         name: 'since',
         required: false,

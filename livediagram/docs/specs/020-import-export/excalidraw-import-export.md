@@ -317,7 +317,7 @@ saved in Excalidraw comes in as its own document, with no editor open.
   Excalidraw's logo: the repo ships no vendor marks
   ([Iconography](../004-interface-design/iconography.md)).
 - **Flow**: the button opens the dialog "Import from Excalidraw" (subtitle "Each
-  file becomes its own document, named and dated after the file."): the intro,
+  file becomes its own document.", the header's one line; the intro says how it is named and dated): the intro,
   a drop zone that is also a button ("Drop .excalidraw files here, or choose
   files") and a "Choose files" button; then "Reading files…", "Importing board 3
   of 5…" ("Importing board…" for one) and "Importing images 3 of 12…"; then the

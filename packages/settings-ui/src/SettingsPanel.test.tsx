@@ -77,7 +77,7 @@ describe('SettingsPanel', () => {
     const { calls, request } = fakeRequest();
     renderWithKit(<Host own={fixtureCategories()} request={request} />);
     expect(within(pane()).getByRole('switch', { name: 'Alignment Guides' })).toBeTruthy();
-    const header = document.querySelector<HTMLElement>('[data-settings-header]')!;
+    const header = document.querySelector<HTMLElement>('[data-dialog-hero="settings"]')!;
     const switcher = within(header).getByRole('group', { name: 'Show settings for' });
     expect(
       within(switcher)

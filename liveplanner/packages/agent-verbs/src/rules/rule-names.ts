@@ -85,7 +85,8 @@ function name(o: Json, key: string, by: Namer): void {
 }
 
 function nameTrigger(t: Json, n: Namers): void {
-  for (const key of ['status', 'from', 'to']) name(t, key, n.status);
+  for (const key of ['status', 'from', 'to', 'statuses']) name(t, key, n.status);
+  name(t, 'people', n.person);
   name(t, 'fields', n.field);
   name(t, 'formTab', n.tab);
 }

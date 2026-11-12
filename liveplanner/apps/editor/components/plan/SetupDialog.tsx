@@ -2,11 +2,12 @@
 
 // The Setup Board and Setup Sheet dialog (docs/specs/026-plan/plan-board.md "Setup Board"; docs/specs/029-sheets/sheet.md
 // "Setup Sheet"): the editor's shared Dialog (backdrop, focus trap, Escape, aria-modal, the modal guard), never a
-// screen inside the element. A glyph, the title, a line, Help and Close; the step indicator (SetupStepper); the step,
+// screen inside the element. The dialog hero header (liveworkspace/docs/specs/004-index/dialog-hero-header.md: the
+// art's mark, the title, a line, Help and Close); the step indicator (SetupStepper); the step,
 // which alone scrolls; and a footer that stays put. A fixed height, so moving between steps never jumps it; the whole
 // screen on a phone (the Dialog's edge-to-edge sizes).
 import { useEffect, useLayoutEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
-import { DialogCloseButton } from '@liveplanner/ui';
+import { HeroDialogHeader, type HeroArt } from '@liveworkspace/ui/dialog-hero';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useOpenModalCount } from '@liveworkspace/workbench/lib/modal-guard';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -48,7 +49,7 @@ export function SetupDialog({
   titleId,
   title,
   line,
-  icon,
+  art,
   help,
   palette,
   steps,
@@ -70,7 +71,8 @@ export function SetupDialog({
   titleId: string;
   title: string;
   line: string;
-  icon: ReactNode;
+  // The header's art (SetupHeroArt): the board's lanes or the sheet's cells.
+  art: HeroArt;
   help: HelpArticleKey;
   palette: PlanPalette;
   steps: readonly { label: string }[];
@@ -136,30 +138,15 @@ export function SetupDialog({
         closeOnEscape={dismissible && !coveredByAnother}
         className="h-[min(40rem,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] overflow-hidden"
       >
-        <div className="flex shrink-0 items-start gap-3.5 px-6 pt-6">
-          <span
-            aria-hidden
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
-          >
-            {icon}
-          </span>
-          <div className="min-w-0 flex-1">
-            <h2
-              id={titleId}
-              className="text-[17px] font-semibold text-slate-900 dark:text-slate-100"
-            >
-              {title}
-            </h2>
-            <p className="mt-1 text-[13px] leading-snug text-slate-600 dark:text-slate-400">
-              {line}
-            </p>
-          </div>
-          <div className="-mt-1 flex shrink-0 items-center gap-0.5">
-            <HelpArticleLink article={help} variant="icon" />
-            {dismissible ? <DialogCloseButton onClick={onClose} /> : null}
-          </div>
-        </div>
-        <div className="mt-5 shrink-0 border-b border-slate-100 px-6 pb-4 dark:border-slate-800">
+        <HeroDialogHeader
+          art={art}
+          titleId={titleId}
+          title={title}
+          subtitle={line}
+          actions={<HelpArticleLink article={help} variant="icon" />}
+          onClose={dismissible ? onClose : undefined}
+        />
+        <div className="shrink-0 border-b border-slate-100 px-6 pb-4 pt-4 dark:border-slate-800">
           <SetupStepper
             steps={steps.map((x, i) => ({ id: String(i), label: x.label }))}
             at={at}

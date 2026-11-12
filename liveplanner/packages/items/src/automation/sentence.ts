@@ -54,6 +54,15 @@ export const AUTOMATION_TRIGGER_NAMES: Readonly<Record<AutomationTriggerKind, st
   due_in: 'Due In',
   overdue: 'Overdue',
   incoming_webhook: 'Incoming Webhook',
+  card_archived: 'Card Archived',
+  card_restored: 'Card Restored',
+  checklist_completed: 'Checklist Completed',
+  threads_resolved: 'All Threads Resolved',
+  mentioned: 'Someone Mentioned',
+  card_unblocked: 'Card Unblocked',
+  related_done: 'Related Cards Done',
+  column_limit: 'Column Over Limit',
+  stuck: 'Card Stuck',
 };
 
 export const AUTOMATION_CONDITION_NAMES: Readonly<Record<AutomationCondition['kind'], string>> = {
@@ -65,7 +74,7 @@ export const AUTOMATION_CONDITION_NAMES: Readonly<Record<AutomationCondition['ki
 };
 
 export const AUTOMATION_STEP_NAMES: Readonly<
-  Record<AutomationActionKind | 'if' | 'for' | 'notify', string>
+  Record<AutomationActionKind | 'if' | 'for' | 'notify' | 'wait', string>
 > = {
   move: 'Move to Column',
   set_field: 'Set Field',
@@ -79,6 +88,15 @@ export const AUTOMATION_STEP_NAMES: Readonly<
   archive: 'Archive',
   create_card: 'Create Card',
   email: 'Send Email',
+  set_type: 'Change Card Type',
+  set_colour: 'Set Colour',
+  restore: 'Restore From Archive',
+  copy_card: 'Copy Card',
+  add_checklist: 'Add a Checklist',
+  link_card: 'Link Cards',
+  mention: 'Mention Someone',
+  resolve_threads: 'Resolve Threads',
+  wait: 'Wait',
   if: 'If / Else',
   for: 'For Related Cards',
   notify: 'Send a Message',
@@ -116,6 +134,8 @@ export function timeTriggerWords(trigger: AutomationTimeTrigger): string {
   if (trigger.kind === 'due_in')
     return `Due in ${trigger.days} Day${trigger.days === 1 ? '' : 's'} ${at}`;
   if (trigger.kind === 'overdue') return `Overdue ${at}`;
+  if (trigger.kind === 'stuck')
+    return `Stuck for ${trigger.days} Day${trigger.days === 1 ? '' : 's'} ${at}`;
   switch (trigger.every) {
     case 'day':
       return `Every Day ${at}`;
@@ -286,12 +306,41 @@ export function actionChip(action: AutomationAction, outline: RuleSentenceOutlin
         : 'trigger' in action.to
           ? 'Email Who Did It'
           : 'Email Assignee';
+    case 'set_type':
+      return `Change to ${outlineTypeName(action.type, outline)}`;
+    case 'set_colour':
+      return action.colour ? 'Set Colour' : 'Clear Colour';
+    case 'copy_card':
+      return action.status ? `Copy to ${outlineStatusName(action.status, outline)}` : 'Copy Card';
+    case 'add_checklist':
+      return action.items.length === 1
+        ? 'Add 1 Checklist Item'
+        : `Add ${action.items.length} Checklist Items`;
+    case 'link_card':
+      return `Link ${outlineFieldName(action.field, outline)}`;
+    case 'mention':
+      return 'person' in action.to
+        ? `Mention ${outlinePersonName(action.to.person, outline)}`
+        : 'trigger' in action.to
+          ? 'Mention Who Did It'
+          : 'Mention Assignee';
     case 'comment':
     case 'flag':
     case 'unflag':
     case 'archive':
+    case 'restore':
+    case 'resolve_threads':
       return AUTOMATION_STEP_NAMES[action.kind];
   }
+}
+
+/** A Wait as its chip reads: "Wait 2 Days", "Wait 1 Day 4 Hours", "Wait 3 Hours". */
+export function waitWords(hours: number): string {
+  const days = Math.floor(hours / 24);
+  const rest = hours % 24;
+  const part = (n: number, one: string) => `${n} ${one}${n === 1 ? '' : 's'}`;
+  if (!days) return `Wait ${part(rest, 'Hour')}`;
+  return rest ? `Wait ${part(days, 'Day')} ${part(rest, 'Hour')}` : `Wait ${part(days, 'Day')}`;
 }
 
 /** A step as its chip reads: an action's words, If / Else, a branch's "For each …" or where a message goes. */
@@ -300,6 +349,7 @@ export function stepChip(step: AutomationStep, outline: RuleSentenceOutline): st
   if (step.kind === 'for') return branchWords(step.related, outline);
   if (step.kind === 'notify') return notifyChip(step, outline);
   if (step.kind === 'ai') return aiStepChip(step, (id) => outlineFieldName(id, outline));
+  if (step.kind === 'wait') return waitWords(step.hours);
   return actionChip(step, outline);
 }
 
@@ -314,7 +364,7 @@ export function triggerParts(
   outline: RuleSentenceOutline,
 ): RuleSentencePart[] {
   // A schedule reads as the design draws it, "Every [Weekday at 9:00]"; the other times "When [Overdue at 9:00]".
-  if (trigger.kind === 'scheduled' || trigger.kind === 'due_in' || trigger.kind === 'overdue') {
+  if (isTimeTrigger(trigger)) {
     const words = timeTriggerWords(trigger);
     return words.startsWith('Every ')
       ? [{ word: 'Every' }, { chip: words.slice('Every '.length), trigger: true }]
@@ -352,8 +402,27 @@ export function triggerParts(
         trigger.fields.map((f) => outlineFieldName(f, outline)),
       );
       break;
-    case 'comment_added':
-    case 'manual':
+    case 'mentioned':
+      narrow(
+        'naming',
+        (trigger.people ?? []).map((p) => outlinePersonName(p, outline)),
+      );
+      break;
+    case 'related_done':
+      parts.push(
+        { word: 'for its' },
+        { chip: trigger.related === 'children' ? 'Children' : 'Linked Cards' },
+      );
+      break;
+    case 'column_limit':
+      parts.push(
+        { word: 'in' },
+        { chip: outlineStatusName(trigger.status, outline) },
+        { word: 'past' },
+        { chip: String(trigger.limit) },
+      );
+      break;
+    default:
       break;
   }
   return parts;

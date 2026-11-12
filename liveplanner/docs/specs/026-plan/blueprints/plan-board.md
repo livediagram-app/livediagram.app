@@ -92,6 +92,13 @@ SetupDialog.tsx          the setup dialog Setup Board and Setup Sheet share, on 
                          `useSetupPalette` (the app's light or dark PlanPalette); `returnFocus` a frame after close
                          `dismissible={false}` (a new board, every Setup Sheet): no Close, and Escape, the backdrop
                          and the sheet drag call a no-op instead of onClose
+SetupHeroArt.tsx         `setupBoardHeroArt` (lanes and a card mid-drag) and `setupSheetHeroArt` (cells, one ringed):
+                         the `art` SetupDialog's HeroDialogHeader (@liveworkspace/ui/dialog-hero) wears; Help in its
+                         actions, its close only while `dismissible`
+configure/BoardConfigureHeroArt.tsx
+                         `boardConfigureHeroArt`: Configure Board's header, `ClusterPanel`'s optional `hero` (the
+                         panel draws HeroDialogHeader in place of its plain title row, the band under its sheet
+                         handle on a phone; Tab Style keeps the plain row)
 SetupPlaceholder.tsx     a board's or Sheet's placeholder while not set up: glyph, title, "Not set up yet", the
                          Set up button (or the viewer's line)
 useSetupDialog.ts        one element's dialog life: opens when unset, may edit and placed here; closes with the

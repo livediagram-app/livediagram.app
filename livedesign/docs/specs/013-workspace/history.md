@@ -43,9 +43,13 @@ History is a dialog rather than a page, because "what happened to this?" is aske
 app's Explorer, the liveworkspace.app Explorer and the editors' Explorer panel open the same one. It reads one page
 at a time with `itemHistory(itemId, { limit, cursor })`.
 
-- **Whose history.** The header shows the item itself: its thumbnail (the host's `renderThumbnail`, else the item
-  glyph), its name as the dialog's heading, its app's mark (`AppMark`, never a coloured dot) with its kind word,
-  and its owner ("You", the team, or the owner's name).
+- **Whose history.** The header is the [dialog hero
+  header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md): the item's name as the dialog's
+  heading, and its one line "History", its app's mark (`AppMark`, never a coloured dot) with its kind word, and its
+  owner ("You", the team, or the owner's name). Its art is an item's record over time: the baseline grid fading toward the title, a clock
+  rising in the bottom left with an arrow turning back over it, and in the bottom right a timeline of versions, a
+  dashed arrow arching back from the newest to the one restored, in the accent, its ring spreading twice; a clock
+  turning back is its mark, in place of the item's thumbnail (the row it opened from shows that).
 - **At a glance.** A strip under the header: how many events are loaded ("30+" while older ones remain), how many
   people took part (their avatars, up to three), when it was made and when it last changed.
 - **Filter.** One chip per kind of event present in what is loaded (Edits, Renames, Sharing, Organisation,

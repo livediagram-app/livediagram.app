@@ -103,7 +103,7 @@ describe('the Automations button', () => {
 
   it('reads the list once the plan settles, and shows the amber dot while a rule is paused', async () => {
     listAutomations.mockResolvedValue({
-      rules: [rule({ paused: { reason: 'x', at: 1 } })],
+      rules: [rule({ enabled: false, paused: { reason: 'x', at: 1 } })],
       runsToday: 0,
       runsPerDay: 1000,
     });
@@ -113,6 +113,28 @@ describe('the Automations button', () => {
     expect(listAutomations).toHaveBeenCalledOnce();
     expect(screen.getByRole('button', { name: 'Automations, a rule is paused' })).toBeTruthy();
     expect(document.querySelector('[data-automations-paused]')).toBeTruthy();
+    expect(document.querySelector('[data-automations-count]')).toBeNull();
+  });
+
+  it('counts the rules that are on in a badge, amber while one is paused, and none at 0', async () => {
+    listAutomations.mockResolvedValue({
+      rules: [
+        rule({ id: 'a', enabled: true }),
+        rule({ id: 'b', enabled: true, paused: { reason: 'x', at: 1 } }),
+        rule({ id: 'c', enabled: false }),
+      ],
+      runsToday: 0,
+      runsPerDay: 1000,
+    });
+    render(<Footer {...EDITOR} />);
+    await act(async () => vi.advanceTimersByTime(AUTOMATIONS_FIRST_READ_MS));
+    expect(
+      screen.getByRole('button', { name: 'Automations, 2 on, a rule is paused' }),
+    ).toBeTruthy();
+    const badge = document.querySelector('[data-automations-count]')!;
+    expect(badge.textContent).toBe('2');
+    expect(badge.className).toContain('bg-amber-500');
+    expect(document.querySelector('[data-automations-paused]')).toBeNull();
   });
 
   it('asks to sync a plan in This Browser first, as Share does, then goes on to the screen', async () => {

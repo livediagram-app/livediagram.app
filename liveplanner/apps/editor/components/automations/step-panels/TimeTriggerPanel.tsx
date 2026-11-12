@@ -7,6 +7,7 @@
 
 import {
   AUTOMATION_DUE_DAYS_MAX,
+  AUTOMATION_STUCK_DAYS_MAX,
   clockWords,
   type AutomationClock,
   type AutomationTimeTrigger,
@@ -55,6 +56,7 @@ const ordinal = (n: number) => {
 export function freshTimeTrigger(kind: AutomationTimeTrigger['kind']): AutomationTimeTrigger {
   if (kind === 'scheduled') return { kind, every: 'weekday', at: '09:00' };
   if (kind === 'due_in') return { kind, days: 2, at: '09:00' };
+  if (kind === 'stuck') return { kind, days: 5, at: '09:00' };
   return { kind, at: '09:00' };
 }
 
@@ -87,9 +89,12 @@ export function TimeTriggerPanel({
   onChange,
   timeZone,
   conditions,
+  columns,
 }: {
   trigger: AutomationTimeTrigger;
   onChange: (next: AutomationTimeTrigger) => void;
+  // The plan's columns, which Card Stuck may narrow to.
+  columns: readonly { value: string; label: string }[];
   // The zone the rule is saved in: this browser's.
   timeZone: string;
   // How many conditions the rule has: none, and the panel warns.
@@ -162,12 +167,41 @@ export function TimeTriggerPanel({
           )}
         </PanelField>
       ) : null}
+      {trigger.kind === 'stuck' ? (
+        <>
+          <PanelField label="Unchanged For" hint="Any change to the card starts the count again.">
+            {(id) => (
+              <PanelSelect
+                id={id}
+                value={String(trigger.days)}
+                onChange={(e) => onChange({ ...trigger, days: Number(e.target.value) })}
+              >
+                {Array.from({ length: AUTOMATION_STUCK_DAYS_MAX }, (_, i) => i + 1).map((d) => (
+                  <option key={d} value={d}>
+                    {d === 1 ? '1 Day' : `${d} Days`}
+                  </option>
+                ))}
+              </PanelSelect>
+            )}
+          </PanelField>
+          <ChipToggles
+            label="In Columns"
+            options={columns}
+            value={trigger.statuses ?? []}
+            hint="None picked: any column that is not done."
+            onChange={(statuses) => {
+              const { statuses: _s, ...rest } = trigger;
+              onChange(statuses.length ? { ...rest, statuses } : rest);
+            }}
+          />
+        </>
+      ) : null}
       <AtField at={trigger.at} onChange={at} />
       <p data-time-zone="" className="text-[12px] text-slate-500 dark:text-slate-400">
         Times are {timeZone}
         {trigger.kind === 'overdue' ? ', on the day after the card was due.' : '.'}
       </p>
-      {conditions === 0 ? <EveryCardWarning /> : null}
+      {conditions === 0 && trigger.kind !== 'stuck' ? <EveryCardWarning /> : null}
     </div>
   );
 }

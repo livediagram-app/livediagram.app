@@ -401,12 +401,12 @@ What the editor does, where it differs from or adds to the Editor list above (ea
   the Community section's Sign In to Share), back to the same page plus `?automations=1`, which the host reads on
   mount (as `?share=1`), opens the rules and drops from the address. Telemetry `UI · Opened · AutomationsOffline` or
   `AutomationsSignIn`.
-- **Header band.** `StartHeaderBand` takes an optional `art` (a name, a texture and pieces) in place of the app's
-  own; `packages/workbench/src/components/start/AutomationsBand.tsx` fills it as `AutomationsHeaderBand` (the dot
-  grid fading toward the title, the cog and looping arrow in the bottom corners, the flow from `lg`), and
-  `StartTitleMark` takes `variant="automations"` for a bolt. The art lives in its own module, imported only by the
-  dialog's chunk, so no start panel's bundle carries it and their output is unchanged. The dialog's palette is
-  `planPalette` of the app's appearance, as the setup steps do.
+- **Header band.** `HeroDialogHeader` from `@liveworkspace/ui/dialog-hero` (the platform's [dialog hero
+  header](../../../../../liveworkspace/docs/specs/004-index/blueprints/dialog-hero-header.md)) with
+  `automationsHeroArt` (`apps/editor/components/automations/AutomationsHeroArt.tsx`: the dot grid fading toward the
+  title, the cog and looping arrow in the bottom corners, the flow as its centre piece, the bolt as its glyph). The
+  art is a module constant in the dialog's own chunk, so no other bundle carries it. While the builder replaces the
+  header, a visually hidden `<h2>` keeps the dialog's name.
 - **Labels.** The branch values' chips read Trigger Title, Trigger Number and Trigger Link
   (`AUTOMATION_BRANCH_VALUE_LABELS`).
 
@@ -788,3 +788,119 @@ queued }`, never a secret, a signature, a hash or the body.
 - editor: each component's states (empty, list, paused, needs attention, builder steps, panels, test result, run log
   rows), the footer button's role gating, the card menu.
 - help: an Automations article in apps/help, its figures, the repo-paths and ui-labels tests.
+
+## Add an Action picker and screen motion
+
+The spec's "The rule builder" (Add an Action) and "Motion".
+
+- `AddActionDialog.tsx`: the picker on the shared `Dialog` (size `3xl`, 60rem, with three columns of tiles from `lg`; `phoneSheet`). `action-groups.ts` holds the
+  groups (`ACTION_GROUPS`: id, name, kinds), each kind's line (`ACTION_LINES`) and `pickerGroups(body, holder)`,
+  which returns the groups for where the action goes: Other Tools and AI only at the top level, Create Card left out
+  of a branch, and a group the rule has filled kept with its `full` reason (`canAddOutgoing`, `canAddAi`). The
+  search matches a kind's name and line, case-folded, over 17 kinds at most, so it filters on every keystroke without
+  a cost worth guarding. Arrow keys move a roving focus over the tiles in reading order (`Left`/`Right` by one, `Up`/`Down` by
+  the grid's column count, read from the grid's computed columns); Enter picks.
+- `StepAddButtons`: + Add Action (top level and in a holder) opens the picker; + Add Condition stays a menu (five
+  kinds).
+- Motion reuses the shared theme's utilities (@liveworkspace/tailwind-config theme.css), so it keeps to the motion
+  budget and reduced motion with nothing new: `lvd-cascade` on the Rules list, the Audit Trail, the template grid, the
+  picker's groups and the builder's step list (a list re-keyed on its filter remounts, so it cascades again; a new
+  step mounts and rises alone); `animate-view-forward` on the builder and `animate-view-back` on the list it returns
+  to; `animate-fade-in` on a tab's content (keyed on the tab) and the step panel's body (keyed on the step).
+- `ScreenTabs`: the active underline is one absolutely placed bar moved by `transform` and sized to the picked tab's
+  measured box (a layout effect, re-measured on resize and when the Rules count changes), over `duration-short`.
+- Tests: the picker's groups for the top level, an If / Else list and a branch, the full-group reasons, search and
+  its empty state, keyboard picking, and that picking calls `addAction` and closes.
+
+## Template tiles: the living preview
+
+- `TemplateScene.tsx` draws each template's scene (`SCENES`, keyed by template id, one small component each) from
+  shared parts (`SceneColumn`, `SceneCard`, `SceneAvatar`, `ScenePill`, `SceneBubble`); every template id must have
+  one (a type-level `Record<AutomationTemplateId, …>`, so a new template fails to compile without its scene).
+- The motion is CSS only, in `apps/editor/app/automation-scenes.css` (a content illustration under motion.md, so its
+  durations live there): `.ats-in` parts appear, `.ats-out` parts leave and `.ats-mv` parts move, on
+  `[data-template]:hover` and `:focus-visible`, staggered by `--ats-d`. `(hover: none)` and reduced motion show the
+  end state with no transition.
+- `TemplatesGallery`: each tile is the scene over the body; the grid is `lvd-cascade`, keyed on the chip, so a chip
+  change cascades the tiles in again.
+
+- `ActionScene.tsx` draws each action's picture for the picker's tiles (`ACTION_SCENES`, a `Record<AddKind, …>`, so a
+  new kind fails to compile without one) from the same `scene-parts.tsx` as the template scenes; the group sets the
+  tone (`ACTION_GROUP_TONES`: the card groups blue, Labels, Flags and Timing orange, Checklists, Links and People emerald, Comments, Other Tools and AI violet). The
+  scene CSS plays on `[data-action-tile]` as on `[data-template]`, never on a disabled tile.
+- Ten more templates (the spec's table), and an **AI** category. `templates.ts` fills them by role with two more
+  finders (`reviewStatus`, a column named like Review; the first to-do column), and `picksLeft` now also marks an
+  empty Column condition, an empty Move to Column and an empty Create Card type.
+- `ActionPanel`'s Action field is the action's tile and **Change**, opening `AddActionDialog` in its change mode
+  (`mode: 'change'`, `current`): the groups for an If / Else list or a branch (`pickerGroups(null, …)`, so nothing
+  reads as full), the current tile badged. It replaces the select.
+
+## The actions after Phase 3
+
+Change Card Type, Set Colour, Restore From Archive, Copy Card, Add a Checklist, Link Cards, Mention Someone, Resolve
+Threads and Wait (spec "Actions", "Wait").
+
+- **Shapes** (`packages/items/src/automation/types.ts`): `set_type`, `set_colour` (`#rrggbb` or null), `restore`,
+  `copy_card` (`status?`), `add_checklist` (`items`, 1 to 20), `link_card` (`field`, `to: {card} | {trigger}`),
+  `mention` (`to`, `text`), `resolve_threads`; and the step `AutomationWait` (`hours`, 1 to 720). `validate.ts` reads
+  them: no Wait or Copy Card in a branch, no Wait in an If / Else, at most 3 Waits, `{trigger}` links inside a branch
+  only, Copy Card counting as the run's one new card.
+- **Planning** (`plan-actions.ts`): Change Card Type sets the patch's `type` (`Plan.retype`) after checking the column
+  suits it; Set Colour writes the type's colour field (`colourFieldOf`); Add a Checklist appends the rows the card
+  lacks by text; Link Cards writes the Card field and refuses a Blocked By loop (`blockingCycleOf`, so a rule with one
+  reads the plan's cards); Copy Card plans a `PlannedCard` of the card's type and fields; Mention Someone and Resolve
+  Threads plan `mentions` and `resolve`. A Wait ends the plan with `wait: {hours, from}`; `planActions(…, {from})`
+  goes on from a step and `{through: true}` (Test on a Card) plans past every Wait.
+- **Writes** (`apps/api/…/automation-writes.ts`): the patch carries `type` (a move too); a mention is a thread by
+  Automation whose comment names the person in `mentions` (the Inbox reads it), and an email through
+  `notifyMentions`; Resolve Threads resolves each of the card's threads through `writeThread` as the system.
+- **Wait** (`automation-waits.ts`, the plan schema's step V22 `automation_waiting`): a run that reaches a Wait does
+  its writes, settles as `waiting` with `waitsUntil`, and is held under its run id with a `resume` event (the step to
+  go on from, the rule's `edited.at`, the hours waited, the run's id). `AutomationSchedule.restoreTimes` takes the
+  earliest of the time triggers' and the waiting runs' moments, so the alarm wakes for both; `runWaits` queues each due
+  run's resume event (or settles the run Skipped when its rule went, turned off or changed). The runner runs a resume
+  on its one rule from that step, its trigger line "After waiting 2 days", Skipped when the card is gone, No Match when
+  the conditions no longer hold, and settles the waiting run Done. At most 500 wait.
+- **Editor**: the picker's groups (`action-groups.ts`) are one thing each: Cards, New Cards, Archive, Labels, Flags, Checklists, Links, People, Comments, Timing, Other Tools and AI; each
+  kind has a glyph, a default (`step-defaults.ts`), a scene (`ActionScene.tsx`) and a panel (`CardActionPanels.tsx`,
+  `ChecklistActionPanel.tsx`, `LinkCardPanel.tsx`, `WaitPanel.tsx`, Mention in `TextActionPanel.tsx`). The Audit Trail
+  shows Waiting in sky blue with "Goes on Mon 9:00".
+- **Tests**: validate (each shape and refusal), plan-actions (each action, Already So, a Wait's `from`/`through`), the
+  runner (a Wait held, resumed, rule changed, card gone, conditions no longer hold, the 500 cap), the writes (type
+  patch, mention thread and email, resolve), and the editor's picker groups and panels.
+
+## The Pick a Trigger picker
+
+- `StepPicker.tsx` is the pickers' one shell: `HeroDialogHeader` with the art passed in (`addActionHeroArt` from
+  `AddActionHeroArt.tsx` for Add an Action, `automationsHeroArt` for Pick a Trigger; the centre piece at 4.5rem, as
+  only the close stands beside the title), the search, the rail or
+  chips, the grouped tile grid with its arrow keys, the empty state and the Current badge. Tiles carry
+  `data-picker-tile`, which `automation-scenes.css` plays on hover. `AddActionDialog` and `ChangeTriggerField` map
+  their groups into it.
+- `trigger-groups.ts`: `TRIGGER_GROUPS` (card, time, tools), `TRIGGER_LINES` and `freshTrigger`; `TriggerScene.tsx`
+  draws each trigger's picture (card triggers violet, time blue, tools emerald) from `scene-parts.tsx`.
+- `ChangeTriggerField` replaces the When panel's select: the trigger's tile, name, line and **Change**.
+
+## The triggers after Phase 3
+
+- **Shapes** (`types.ts`): `card_archived`, `card_restored`, `checklist_completed`, `threads_resolved`, `mentioned`
+  (`people?`), `card_unblocked`, `related_done` (`related: 'children' | 'linked'`), `column_limit` (`status`, `limit`
+  1 to 500) and the time trigger `stuck` (`days` 1 to 90, `at`, `statuses?`).
+- **Events** (`matches.ts`): `eventOfWrite` makes `archived` and `restored` events (the Trash stays quiet) and marks a
+  `changed` or `moved` event `checklistDone` when the write ticks the last item. The thread routes queue `resolved`
+  when a resolve leaves the card with no open thread (`SUM(open_comments) = 0` over its links), and a comment event
+  carries `mentioned` (the mentioned people's person ids).
+- **Worked out at run time** (`derived.ts`, `derivedTargets`): Card Unblocked hears a card moving into a done column
+  or archived and answers the cards it blocks that have no open blocker left; Related Cards Done hears a card moving
+  into a done column and answers the cards it belongs to (its parents, or the cards whose Card fields hold it) whose
+  related cards are all done; Column Over Limit hears a card created in or moved into its column and answers that
+  card when the column now holds exactly limit + 1. The runner reads the plan's cards for such an event only when a
+  rule on hears one, and runs the rule on each answered card under `${event.id}>${card.id}`.
+- **Card Stuck** (`time-cards.ts`): daily at its time, the live cards outside done columns (in its columns, when
+  named) whose `updatedAt` is at least `days` before the moment, the run id `k:${rule}:${card}:${updatedAt}`.
+- **Editor**: `trigger-groups.ts` gains Comments and Links; each trigger has a scene (`TriggerScene.tsx`) and its
+  narrowing in the When panel (people for Someone Mentioned, the relation for Related Cards Done, the column and
+  limit for Column Over Limit, days and columns for Card Stuck in `TimeTriggerPanel`).
+
+- **Template scenes** live in `apps/editor/components/automations/template-scenes/` (`first.tsx`, `board.tsx`,
+  `linked.tsx`); `TemplateScene.tsx` maps each template id to its scene.

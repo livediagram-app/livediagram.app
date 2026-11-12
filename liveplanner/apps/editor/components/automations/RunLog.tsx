@@ -26,7 +26,7 @@ export const RUN_WINDOWS = [
 ] as const;
 export type RunWindow = (typeof RUN_WINDOWS)[number]['value'];
 
-const RESULTS: readonly AutomationResult[] = ['done', 'no_match', 'skipped', 'failed'];
+const RESULTS: readonly AutomationResult[] = ['done', 'no_match', 'skipped', 'failed', 'waiting'];
 const FILTER_SELECT = 'h-8 rounded-lg pl-3 pr-7 text-[13px]';
 
 /** The start of a window: today's midnight for Today, else that many days back from now. */

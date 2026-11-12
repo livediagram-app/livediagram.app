@@ -376,7 +376,7 @@ describe('Import CSV', () => {
       await screen.findByRole('button', { name: 'Set up sheet' }, { timeout: LOAD_WAIT }),
     );
     expect(
-      await screen.findByRole('dialog', { name: 'Set up your sheet' }, { timeout: LOAD_WAIT }),
+      await screen.findByRole('dialog', { name: 'Set Up Your Sheet' }, { timeout: LOAD_WAIT }),
     ).toBeTruthy();
     // A sheet with cells (an agent filled it) puts it away and is no longer pending.
     cleanup();
@@ -557,7 +557,7 @@ describe('a template set up in a slot showing another tab’s Sheet', () => {
       </CanvasSurfaceProvider>,
     );
     fireEvent.click(await screen.findByRole('button', { name: 'Set up sheet' }));
-    await screen.findByRole('dialog', { name: 'Set up your sheet' });
+    await screen.findByRole('dialog', { name: 'Set Up Your Sheet' });
     fireEvent.click(screen.getByRole('radio', { name: /^Budget/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Next: Style' }));
     fireEvent.click(screen.getByRole('button', { name: /Create Sheet/ }));

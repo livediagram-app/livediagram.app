@@ -13,6 +13,9 @@ const CANVAS_STYLESHEETS = [
   'app/motion-page.css',
   // The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md).
   'app/auth-motion.css',
+  // The Automations template tiles' living previews, a content illustration (docs/specs/026-plan/automations.md
+  // "The Automations screen", motion.md "Where durations live").
+  'app/automation-scenes.css',
 ];
 
 describe('editor motion budget', () => {

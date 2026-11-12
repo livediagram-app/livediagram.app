@@ -289,6 +289,27 @@ export async function threadCountOfItem(
   return row?.n ?? 0;
 }
 
+/** The open comments on each of these cards of this plan in threads other than `except` (a card with none is
+ *  absent): `except` is left out as its link's count may be relayed after a write elsewhere. */
+export async function openCommentCountsOfItems(
+  env: PlanEnv,
+  plan: string,
+  itemIds: readonly string[],
+  except: string,
+): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  if (!itemIds.length) return out;
+  const res = await env.PLAN_DB.prepare(
+    `SELECT item_id, SUM(open_comments) AS n FROM card_thread_links
+      WHERE plan_id = ? AND thread_id != ? AND item_id IN (${itemIds.map(() => '?').join(', ')})
+      GROUP BY item_id`,
+  )
+    .bind(plan, except, ...itemIds)
+    .all<{ item_id: string; n: number }>();
+  for (const r of res.results ?? []) if (r.n > 0) out.set(r.item_id, r.n);
+  return out;
+}
+
 /** Each card's face count (the comments in its open threads), from the links: no thread is read. */
 export async function openCommentCountsOfPlan(
   env: PlanEnv,

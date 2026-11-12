@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS github_deliveries (
 CREATE INDEX IF NOT EXISTS github_deliveries_at ON github_deliveries (at);
 `;
 
-// Step V22 (part 3; spec "Pull request state on cards"): the latest state of each pull request a connected repository
+// Step V23 (part 3; spec "Pull request state on cards"): the latest state of each pull request a connected repository
 // reported, and the check suites of the commits they stand at.
 //
 //   github_pull_requests  by its key (`owner/repo#n`, lower case): its canonical address, title, state (draft, open,

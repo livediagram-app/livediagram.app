@@ -12,15 +12,9 @@ import {
   type CommunityOwnPost,
   type CommunityPostInput,
 } from '@liveworkspace/community';
-import {
-  Button,
-  TextInput,
-  DialogHeader,
-  DialogCloseButton,
-  DialogFooter,
-  TextArea,
-  SwitchRow,
-} from '@liveworkspace/ui';
+import { Button, TextInput, DialogFooter, TextArea, SwitchRow } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { communityPublishHeroArt } from '@liveworkspace/ui/dialog-hero-art/community-publish';
 import { communityErrorCode, communityErrorMessage } from './community-errors';
 import { DefaultDialog, useCommunityShareHost } from './host';
 import { CategoryPicker } from './CategoryPicker';
@@ -141,20 +135,25 @@ export function CommunityPublishDialog({
         />
       ) : (
         <form
-          className="flex min-h-0 flex-col"
+          // The hero header's top corners follow the panel's, through the form.
+          className="flex min-h-0 flex-col [border-top-left-radius:inherit] [border-top-right-radius:inherit]"
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
             void submit();
           }}
         >
-          <DialogHeader
-            title={<span id={titleId}>{editing ? 'Edit Listing' : 'Share to Community'}</span>}
-            subtitle="Show what you made. Others can find it, learn from it and make their own copy."
-          >
-            {host.helpLink?.({ size: 'md' })}
-            <DialogCloseButton onClick={closeUnlessBusy} />
-          </DialogHeader>
+          {/* The dialog hero header (dialog-hero-header.md): the work going up on the gallery's shelf. On a phone the
+              dialog is a sheet, so the band runs up under its grab handle. */}
+          <HeroDialogHeader
+            art={communityPublishHeroArt}
+            titleId={titleId}
+            title={editing ? 'Edit Listing' : 'Share to Community'}
+            subtitle="Show what you made for others to find and copy."
+            actions={host.helpLink?.({ size: 'md' })}
+            onClose={closeUnlessBusy}
+            underHandle
+          />
 
           <div className="flex flex-col gap-4 overflow-y-auto px-6 py-5">
             {/* Each field: a label naming it alone, then its message and hint, which the control points to with

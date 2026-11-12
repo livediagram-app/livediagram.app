@@ -10,7 +10,7 @@ import { StepPanel } from './StepPanel';
 import { PlanWebhooksProvider, type PlanWebhooks } from './plan-webhooks';
 import { freshTimeTrigger, withEvery } from './step-panels/TimeTriggerPanel';
 import { cardFields } from './step-panels/BranchPanel';
-import { outline } from './test-fixtures';
+import { outline, pickStep } from './test-fixtures';
 
 afterEach(cleanup);
 
@@ -58,7 +58,7 @@ const pick = (name: string, value: string) =>
 describe('a time trigger', () => {
   it('starts Scheduled on weekdays at 9:00, names the time zone, and warns with no conditions', () => {
     render(<Panel body={body()} part={{ part: 'trigger' }} />);
-    pick('Trigger', 'scheduled');
+    pickStep('scheduled');
     expect(latest.trigger).toEqual({ kind: 'scheduled', every: 'weekday', at: '09:00' });
     expect(document.querySelector('[data-time-zone]')!.textContent).toBe(
       'Times are Europe/London.',
@@ -72,7 +72,7 @@ describe('a time trigger', () => {
 
   it('picks Every: a week with its day chips, a month with its day', () => {
     render(<Panel body={body()} part={{ part: 'trigger' }} />);
-    pick('Trigger', 'scheduled');
+    pickStep('scheduled');
     fireEvent.click(every('Week'));
     expect(latest.trigger).toEqual({ kind: 'scheduled', every: 'week', days: [1], at: '09:00' });
     fireEvent.click(screen.getByRole('button', { name: 'Fri' }));
@@ -103,12 +103,12 @@ describe('a time trigger', () => {
         part={{ part: 'trigger' }}
       />,
     );
-    pick('Trigger', 'due_in');
+    pickStep('due_in');
     expect(latest.trigger).toEqual({ kind: 'due_in', days: 2, at: '09:00' });
     pick('Days Before It’s Due', '30');
     expect(latest.trigger).toMatchObject({ days: 30 });
     expect(document.querySelector('[data-every-card]')).toBeNull();
-    pick('Trigger', 'overdue');
+    pickStep('overdue');
     expect(latest.trigger).toEqual({ kind: 'overdue', at: '09:00' });
     expect(document.querySelector('[data-time-zone]')!.textContent).toContain(
       'on the day after the card was due',
@@ -213,11 +213,9 @@ describe('For Related Cards', () => {
     fireEvent.click(within(values).getByRole('button', { name: 'Trigger Title' }));
     expect(latest.steps[0]).toMatchObject({ then: [{ text: '{{trigger.title}}' }] });
     // A branch holds no Create Card.
-    expect(
-      within(screen.getByRole('combobox', { name: 'Action' })).queryByRole('option', {
-        name: 'Create Card',
-      }),
-    ).toBeNull();
+    fireEvent.click(document.querySelector('[data-change-step]')!);
+    expect(document.querySelector('[data-picker-tile="set_field"]')).toBeTruthy();
+    expect(document.querySelector('[data-picker-tile="create_card"]')).toBeNull();
     cleanup();
     render(
       <Panel
@@ -272,7 +270,7 @@ describe('an outgoing action', () => {
       />,
     );
     expect(h.load).toHaveBeenCalled();
-    pick('Action', 'notify_teams');
+    pickStep('notify_teams');
     expect(latest.steps[0]).toMatchObject({
       via: 'teams',
       text: 'Shipped {{card.title}}',

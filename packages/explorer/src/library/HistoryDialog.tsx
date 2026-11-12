@@ -83,7 +83,7 @@ export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => vo
     [events, active, now],
   );
 
-  const { renderThumbnail, teamName } = ctx;
+  const { teamName } = ctx;
   const renderCtx: RenderCtx = useMemo(() => ({ viewerId, teamName }), [viewerId, teamName]);
 
   const title = item.title || 'Untitled';
@@ -191,12 +191,7 @@ export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => vo
       size="xl"
       className="sm:max-h-[min(46rem,calc(100dvh-4rem))]"
     >
-      <HistoryHeader
-        item={item}
-        titleId={titleId}
-        renderThumbnail={renderThumbnail}
-        onClose={onClose}
-      />
+      <HistoryHeader item={item} titleId={titleId} onClose={onClose} />
       {first ? null : (
         <SummaryStrip
           item={item}

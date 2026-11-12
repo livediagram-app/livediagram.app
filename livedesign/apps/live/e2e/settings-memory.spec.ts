@@ -99,8 +99,12 @@ test('Settings reopens on the last category and row, across a resize', async ({
   // starts below 640px, and a 50px change in pane width only rewraps a
   // footnote when the font's metrics happen to fall that way. It did on
   // macOS and not on CI's Linux.) Short too, so the pane still has the scroll
-  // range to put the row back where it was rather than clamping at the end.
-  await page.setViewportSize({ width: 390, height: 560 });
+  // range to put the row back where it was rather than clamping at the end:
+  // the dialog's 100px hero header leaves the desktop pane short, so the row
+  // it ends on sits near Editor's end. At 520px the phone pane clamped 3px
+  // short under CI's Linux fonts (and macOS's Arial, Georgia or Tahoma); 440px
+  // leaves 75px or more of range under every font tried.
+  await page.setViewportSize({ width: 390, height: 440 });
   await openSettings(page);
   await expect(dialog(page).getByRole('switch', { name: 'Middle-Mouse Pan' })).toBeVisible();
   await expect(async () => {
