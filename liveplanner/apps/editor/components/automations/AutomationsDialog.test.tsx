@@ -95,6 +95,27 @@ describe('the Rules list', () => {
     );
   });
 
+  it('reads the list again each time it opens, so the counts are fresh', async () => {
+    list();
+    const week = () => screen.getByText('Done Means Wrapped Up').closest('li')!.textContent;
+    const first = wrap(<Harness />);
+    await screen.findByText('Done Means Wrapped Up');
+    expect(week()).toContain('38 runs');
+    first.unmount();
+    client.listAutomations.mockResolvedValue({
+      rules: [rule({ stats: { lastRunAt: Date.now(), runsThisWeek: 39, failuresInARow: 0 } })],
+      runsToday: 143,
+      runsPerDay: 1000,
+    });
+    wrap(<Harness />);
+    expect(week()).toContain('38 runs');
+    await waitFor(() => expect(week()).toContain('39 runs'));
+    expect(screen.getByRole('meter').getAttribute('aria-valuetext')).toBe(
+      '143 of 1,000 runs today',
+    );
+    expect(client.listAutomations).toHaveBeenCalledTimes(2);
+  });
+
   it('shows the empty state, whose New Rule opens the builder', async () => {
     list([]);
     wrap(<Harness />);

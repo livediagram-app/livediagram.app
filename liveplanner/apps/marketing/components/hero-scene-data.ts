@@ -4,13 +4,13 @@
 // the one that shows its feature (FeatureScene.tsx), so a scene is declared once, here.
 //
 // The data alone, without the boards: a page that shows one scene (FeatureScene) loads only that
-// scene's board, never all five. hero-scenes.tsx pairs each with its board for the hero stage.
+// scene's board, never all six. hero-scenes.tsx pairs each with its board for the hero stage.
 
 import type { TabDef } from './hero-editor-window';
 import type { HeroMode } from './hero-mode-palette';
 import type { PlanTab } from './hero-plan-bars';
 
-export type HeroSceneKey = 'plan' | 'sheet' | 'form' | 'dashboard' | 'together';
+export type HeroSceneKey = 'plan' | 'sheet' | 'form' | 'dashboard' | 'automations' | 'together';
 
 export type HeroSceneData = {
   key: HeroSceneKey;
@@ -110,6 +110,24 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
     ],
     shared: true,
     portraitViewBox: PORTRAIT,
+  },
+  {
+    key: 'automations',
+    word: 'Automate',
+    build: '/new?mode=plan&q=bug',
+    short: 'Automations',
+    title: 'Launch',
+    label:
+      'Automations: a card moves to Done, and a rule stamps the date and posts to Slack on its own',
+    mode: 'plan',
+    planTab: 'board',
+    tabs: [
+      { name: 'Board', color: '#8b5cf6', active: true },
+      { name: 'Roadmap', color: '#10b981' },
+    ],
+    shared: true,
+    // The rule stands under the board on a phone, so the drawing runs taller.
+    portraitViewBox: '0 -40 360 580',
   },
   {
     key: 'together',

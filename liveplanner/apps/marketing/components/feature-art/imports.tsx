@@ -57,3 +57,92 @@ export function BoardImportArt() {
     </Scene>
   );
 }
+
+// The four tools a board comes in from (docs/specs/026-plan/tracker-import.md), each its export file. Each tool's
+// mark is drawn as a plain initial on a neutral tile: the art never borrows another product's logo.
+const TOOLS = [
+  { name: 'Trello', file: 'board.json' },
+  { name: 'Asana', file: 'project.csv' },
+  { name: 'Jira', file: 'issues.csv' },
+  { name: 'Linear', file: 'issues.csv' },
+];
+
+/** A board from another tool: its export dropped on the Import dialog becomes a Board tab, cards and all. */
+export function TrackerImportArt() {
+  return (
+    <Scene>
+      {TOOLS.map((t, i) => {
+        const y = 8 + i * 21;
+        return (
+          <g key={t.name} className="fa-a-in" style={at(i * 0.15)}>
+            <Panel x={18} y={y} w={104} h={17} />
+            <rect
+              className="fill-slate-600 dark:fill-slate-400"
+              x="23"
+              y={y + 3.5}
+              width="10"
+              height="10"
+              rx="2.5"
+            />
+            <text
+              x="28"
+              y={y + 10.6}
+              fontSize="6"
+              fontWeight="800"
+              textAnchor="middle"
+              className="fill-white dark:fill-slate-900"
+            >
+              {t.name[0]}
+            </text>
+            <text className={TEXT} x="38" y={y + 11} fontSize="6.6" fontWeight="600">
+              {t.name}
+            </text>
+            <text className={MUTED} x="116" y={y + 11} fontSize="5.4" textAnchor="end">
+              {t.file}
+            </text>
+          </g>
+        );
+      })}
+      <g className="fa-a-in" style={at(0.7)}>
+        <Connector d="M126 48 H 154" head="M150 45 l4 3 l-4 3" />
+      </g>
+      {/* The new Board tab: its columns, the cards landing in them. */}
+      <g className="fa-a-pop" style={at(0.9)}>
+        <Panel x={160} y={10} w={122} h={76} />
+        <text className={TEXT} x="168" y="22" fontSize="6.6" fontWeight="700">
+          Roadmap
+        </text>
+        {[0, 1, 2].map((c) => (
+          <rect
+            key={c}
+            className="fill-slate-100 dark:fill-slate-900"
+            x={166 + c * 38}
+            y="28"
+            width="34"
+            height="52"
+            rx="3"
+          />
+        ))}
+      </g>
+      {[
+        [0, 0],
+        [0, 1],
+        [1, 0],
+        [1, 1],
+        [2, 0],
+      ].map(([c, s], i) => (
+        <rect
+          key={i}
+          className="fa-a-pop fill-white stroke-slate-200 dark:fill-slate-700 dark:stroke-slate-600"
+          style={at(1.2 + i * 0.1)}
+          x={169 + c! * 38}
+          y={32 + s! * 16}
+          width="28"
+          height="12"
+          rx="2"
+          strokeWidth="0.6"
+        />
+      ))}
+    </Scene>
+  );
+}

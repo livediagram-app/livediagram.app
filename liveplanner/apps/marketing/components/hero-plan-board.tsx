@@ -1,6 +1,6 @@
 import { FONT, at } from '@/components/art-tokens';
-import { CursorMark } from '@/components/hero-cursor';
-import { CARD_H, CardFace, Sliders, type CardDef } from './hero-plan-card';
+import { CARD_H, CardFace } from './hero-plan-card';
+import { AddCardRow, CARRY, Carried, ColumnLane, Count } from './hero-board-parts';
 import { COLUMNS, MOVES, QUICK, QUICK_COLUMN, QUICK_TITLE, QUICK_TYPED } from './hero-plan-data';
 
 // The hero's Plan window (docs/specs/019-marketing/marketing-site.md "Hero"): a launch board in Plan mode
@@ -25,7 +25,6 @@ const T = {
   typed: 7.6,
   chips: 8.8,
 } as const;
-const CARRY = 0.6;
 
 type Layout = {
   x0: number; // first column's left
@@ -47,46 +46,6 @@ const cardX = (l: Layout, c: number) => colX(l, c) + 6;
 const cardW = (l: Layout) => l.colW - 12;
 const slotY = (l: Layout, s: number) => l.head + 32 + s * PITCH;
 
-// A count that ticks over: each value lands at its `from` and gives way at the next one's.
-function Count({
-  x,
-  y,
-  values,
-}: {
-  x: number;
-  y: number;
-  values: { text: string; from: number }[];
-}) {
-  return (
-    <>
-      {values.map((v, i) => {
-        const next = values[i + 1];
-        const label = (
-          <text
-            className="hm-pop fill-slate-500 dark:fill-slate-400"
-            style={at(v.from)}
-            x={x}
-            y={y}
-            textAnchor="end"
-            fontFamily={FONT}
-            fontSize="8.5"
-            fontWeight="600"
-          >
-            {v.text}
-          </text>
-        );
-        return next ? (
-          <g key={v.text + v.from} className="hm-out" style={at(next.from - 0.05)}>
-            {label}
-          </g>
-        ) : (
-          <g key={v.text + v.from}>{label}</g>
-        );
-      })}
-    </>
-  );
-}
-
 // "+ Add card" at a column's foot, sliding down a slot (`dy`) to make room as a card is carried in.
 function AddRow({
   l,
@@ -101,113 +60,8 @@ function AddRow({
   dy?: number;
   d?: number;
 }) {
-  const x = cardX(l, c);
-  const y = slotY(l, slot) + 12;
-  const row = (
-    <g className="fill-slate-400 dark:fill-slate-500">
-      <path
-        d={`M${x + 6} ${y - 3.5}v7M${x + 2.5} ${y}h7`}
-        className="stroke-slate-400 dark:stroke-slate-500"
-        strokeWidth="1.1"
-        strokeLinecap="round"
-      />
-      <text x={x + 15} y={y + 3} fontFamily={FONT} fontSize="8.5" fontWeight="500">
-        Add card
-      </text>
-    </g>
-  );
-  return dy && d !== undefined ? (
-    <g className="hm-move" style={at(d, { '--dy': `${dy * PITCH}px` })}>
-      {row}
-    </g>
-  ) : (
-    row
-  );
-}
-
-// A card someone carries: their pointer arrives on it, then card and pointer travel together to the
-// new column, the card lifted and tilted and ringed in their colour while held, and a dashed slot
-// waits where it will drop.
-function Carried({
-  l,
-  card,
-  from,
-  to,
-  colour,
-  name,
-  arrive,
-  carry,
-  appear,
-}: {
-  l: Layout;
-  card: CardDef;
-  from: { x: number; y: number };
-  to: { x: number; y: number };
-  colour: string;
-  name: string;
-  arrive: number;
-  carry: number;
-  appear: number;
-}) {
-  const w = cardW(l);
-  const grab = { x: from.x + w * 0.55, y: from.y + CARD_H * 0.58 };
   return (
-    <>
-      <g className="hm-out" style={at(carry + CARRY)}>
-        <rect
-          className="hm-fade"
-          style={at(carry - 0.1)}
-          x={to.x}
-          y={to.y}
-          width={w}
-          height={CARD_H}
-          rx="7"
-          fill={colour}
-          fillOpacity="0.06"
-          stroke={colour}
-          strokeOpacity="0.55"
-          strokeWidth="1.2"
-          strokeDasharray="4 3"
-        />
-      </g>
-      <g
-        className="hm-move"
-        style={at(carry, { '--dx': `${to.x - from.x}px`, '--dy': `${to.y - from.y}px` })}
-      >
-        <g className="hp-lift" style={at(carry - 0.2)}>
-          <g className="hm-pop" style={at(appear)}>
-            <CardFace card={card} x={from.x} y={from.y} w={w} narrow={l.narrow} />
-          </g>
-          {/* Held: their colour rings the card from pick-up until it is dropped. */}
-          <g className="hm-out" style={at(carry + CARRY + 0.15)}>
-            <rect
-              className="hm-fade"
-              style={at(arrive + 0.6)}
-              x={from.x - 2}
-              y={from.y - 2}
-              width={w + 4}
-              height={CARD_H + 4}
-              rx="8.5"
-              fill="none"
-              stroke={colour}
-              strokeWidth="2"
-            />
-          </g>
-        </g>
-        <g
-          className="hm-cursor hm-carrier"
-          style={at(arrive, {
-            '--sx': `${grab.x + 90}px`,
-            '--sy': `${grab.y + 80}px`,
-            '--cx': `${grab.x}px`,
-            '--cy': `${grab.y}px`,
-          })}
-          aria-hidden
-        >
-          <CursorMark colour={colour} label={name} badge="name" />
-        </g>
-      </g>
-    </>
+    <AddCardRow x={cardX(l, c)} y={slotY(l, slot) + 12} dy={dy * PITCH} d={dy ? d : undefined} />
   );
 }
 
@@ -254,43 +108,15 @@ export function PlanBoard({ portrait = false }: { portrait?: boolean }) {
 
       {/* Columns: a grey head (name, count, sliders) over a lane that runs on below the window. */}
       {COLUMNS.map((col, c) => (
-        <g key={col.name} className="hm-fade" style={at(T.headers + c * 0.08)}>
-          <rect
-            x={colX(l, c)}
-            y={l.head}
-            width={l.colW}
-            height="22"
-            rx="6"
-            className="fill-slate-100 dark:fill-slate-800"
-          />
-          <rect
-            x={colX(l, c) + 8}
-            y={l.head + 2.5}
-            width={l.colW - 16}
-            height="2"
-            rx="1"
-            className="fill-slate-300 dark:fill-slate-600"
-          />
-          <text
-            x={colX(l, c) + 9}
-            y={l.head + 15.5}
-            fontFamily={FONT}
-            fontSize={portrait ? 9 : 9.5}
-            fontWeight="700"
-            className="fill-(--art-text) dark:fill-slate-100"
-          >
-            {col.name}
-          </text>
-          <Sliders x={colX(l, c) + l.colW - 17} y={l.head + 12.5} />
-          <rect
-            x={colX(l, c)}
-            y={l.head + 26}
-            width={l.colW}
-            height="700"
-            rx="6"
-            className="fill-slate-100/70 dark:fill-slate-800/45"
-          />
-        </g>
+        <ColumnLane
+          key={col.name}
+          x={colX(l, c)}
+          y={l.head}
+          w={l.colW}
+          name={col.name}
+          small={portrait}
+          d={T.headers + c * 0.08}
+        />
       ))}
       {/* The board's Add Column lane, after its last column. */}
       <g className="hm-fade" style={at(T.headers + 0.4)}>
@@ -392,7 +218,8 @@ export function PlanBoard({ portrait = false }: { portrait?: boolean }) {
         return (
           <Carried
             key={m.name}
-            l={l}
+            w={w}
+            narrow={l.narrow}
             card={fromCol.cards.at(-1)!}
             from={{ x: cardX(l, m.from), y: slotY(l, fromCol.cards.length - 1) }}
             to={{ x: cardX(l, m.to), y: slotY(l, COLUMNS[m.to]!.cards.length) }}

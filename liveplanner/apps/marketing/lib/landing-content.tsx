@@ -1,6 +1,9 @@
 import type { HeroSceneKey } from '@/components/hero-scenes';
 import {
+  AiTriageArt,
   ApiArt,
+  AssignTurnArt,
+  AuditTrailArt,
   BoardCsvArt,
   BoardImportArt,
   BoardWidgetsArt,
@@ -22,12 +25,17 @@ import {
   FormSectionsArt,
   FormShareArt,
   HiddenVotesArt,
+  IncomingWebhookArt,
   McpArt,
+  OutgoingArt,
   PlanBoardArt,
   PlanViewsArt,
   PresenceArt,
   RealtimeArt,
   RevokeArt,
+  RuleFlowArt,
+  RuleTemplatesArt,
+  ScheduleArt,
   SelectCardsArt,
   SelectionGlowArt,
   SessionToolsArt,
@@ -40,6 +48,8 @@ import {
   SheetsArt,
   TeamsArt,
   TemplatesArt,
+  TrackerImportArt,
+  TriggersArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
 
@@ -72,7 +82,8 @@ export type LandingSection = {
 
 /**
  * The feature categories, in the order the landing page tells them: the tabs of a project first
- * (Board tabs, Dashboard tabs, Sheet tabs, then Form tabs), then working on them together.
+ * (Board tabs, Dashboard tabs, Sheet tabs, then Form tabs), the rules that work on them, then working on
+ * them together.
  * `page.tsx` renders one beat per entry and alternates its background by index; `/features/<id>`
  * renders each one's cards.
  */
@@ -113,7 +124,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/cards/',
         title: 'Cards that hold the detail',
         description:
-          'Open a card for everything about it: a rich-text description, a checklist that counts down to done, status, assignee, priority, labels and dates, screenshots with a cover image, and the parent card it belongs to. Its Activity tab shows who moved it and what they changed. Make it repeat every week, see what it is blocked by, and follow the trail between a piece of work and its tasks without losing your place.',
+          'Open a card for everything about it: a rich-text description, a checklist that counts down to done, status, assignee, priority, labels and dates, screenshots with a cover image, pictures in an Image field (up to 20 in one), and the parent card it belongs to. Its Linked Cards tab lists every card that links to it, and its Activity tab shows who moved it and what they changed. Make it repeat every week, see what it is blocked by, and follow the trail between a piece of work and its tasks without losing your place.',
       },
       {
         art: <CardCommentsArt />,
@@ -127,7 +138,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/card-types/',
         title: 'Card types and fields of your own',
         description:
-          'Five built-in types (Project, Task, Note, Idea and Action), or make your own with the fields your team tracks: text, number, date, choice, a link to another card, formulas and rollups, a timer that tracks time, and more. Build a Bug and a Story on one base type and change their shared fields in one place.',
+          'Five built-in types (Project, Task, Note, Idea and Action), or make your own with the fields your team tracks: text, number, date, choice, pictures, a link to another card, formulas and rollups, a timer that tracks time, and more. Build a Bug and a Story on one base type and change their shared fields in one place.',
       },
       {
         art: <BoardWidgetsArt />,
@@ -158,6 +169,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Import a CSV or TSV and each row becomes a card, landing in the column its Status names and with the person its Assignee names; only a title is required, and one undo takes it all back. Export any board as CSV, an image, a PDF or a Markdown outline.',
       },
       {
+        art: <TrackerImportArt />,
+        href: '/help/tabs/import-tabs/',
+        title: 'Bring your board from another tool',
+        description:
+          'Drop a Trello board’s JSON export, or an Asana, Jira or Linear CSV export, on the Import dialog and it becomes a Board tab, or a new plan, with its columns, cards, fields and people. It is a one-off import, so nothing stays tied to the old tool.',
+      },
+      {
         art: <HiddenVotesArt />,
         href: '/help/plan/boards/',
         title: 'Retros that keep a secret',
@@ -176,7 +194,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/account-and-data/connect-ai-mcp/',
         title: 'Agents that move the cards',
         description:
-          'Your AI tools can read the plan and add, edit and move cards over MCP, the API or the CLI, naming columns and fields the way the board shows them.',
+          'Your AI tools can read the plan and add, edit and move cards over MCP, the API or the CLI, naming columns and fields the way the board shows them, and attach pictures to a card’s Image fields.',
       },
     ],
   },
@@ -366,7 +384,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/forms/',
         title: 'Every answer lands',
         description:
-          'Each response becomes a row in a sheet, a column per question, or a card on a board with its answers in the card’s fields, ready to move along. The count on the form says how many are new.',
+          'Each response becomes a row in a sheet, a column per question, or a card on a board with its answers in the card’s fields, ready to move along. Pick a card type and the questions come from its fields, landing in a column that type uses. The count on the form says how many are new.',
       },
       {
         art: <FormAlertsArt />,
@@ -381,6 +399,95 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Seven forms to start from',
         description:
           'A Bug Report, Feedback, a Feature Request, an Event RSVP, a Job Application, a Contact form, or a blank one, each sending its answers to the board or sheet that suits it.',
+      },
+    ],
+  },
+  {
+    id: 'automations',
+    label: 'Automations',
+    scene: 'automations',
+    cta: 'Explore automations',
+    title: 'Rules that do the routine steps for you',
+    description:
+      'Tell the plan what to do when a card moves, a form response lands or a due date nears: stamp the date, hand the card to whoever is next, post to Slack. Rules run on their own, even when nobody has the plan open.',
+    metaDescription:
+      'Automation rules for your boards: when a card moves, a form lands or a date nears, liveplanner assigns, labels, stamps dates and posts to Slack for you.',
+    highlights: [
+      'Rules in plain words',
+      'Start from a template',
+      'Rules on a schedule',
+      'AI steps that triage',
+    ],
+    items: [
+      {
+        art: <RuleFlowArt />,
+        href: '/help/plan/automations/',
+        title: 'Rules in plain words',
+        description:
+          'A rule reads like a sentence: When something happens to a card, If the card is the kind you mean, Then do the steps. Move it, set or clear a field, assign it, label it, flag it, comment, add a checklist, link it to another card, copy it, or wait a day first. If / Else and For Related Cards cover the rest.',
+      },
+      {
+        art: <RuleTemplatesArt />,
+        href: '/help/plan/automations/',
+        title: 'Start from a template',
+        description:
+          'Pick a ready-made rule, such as Stamp the Finish Date, Triage New Bugs, Overdue Nudge or Close the Parent, and it opens filled in with your plan’s own columns and fields. Change what you like, then save it and switch it on.',
+      },
+      {
+        art: <TriggersArt />,
+        href: '/help/plan/automations/',
+        title: 'Triggers for every moment',
+        description:
+          'Start a rule when a card is added, moves, changes a field, is archived or restored, gets a comment or a mention, finishes its checklist, has every thread resolved, is unblocked, sees its last child done or tips a column over its limit. Or run one from a card’s menu yourself.',
+      },
+      {
+        art: <ScheduleArt />,
+        href: '/help/plan/automations/',
+        title: 'Rules on a schedule',
+        description:
+          'Run a rule every day, every weekday, on chosen days or once a month, at the time you pick. Or run it days before a card is due, the day after it goes overdue, or once a card has sat unchanged for too long.',
+      },
+      {
+        art: <AssignTurnArt />,
+        href: '/help/plan/automations/',
+        title: 'Share the work out in turn',
+        description:
+          'Assign whoever moved the card, a chosen person, or the people on triage in turn, so new bugs and form requests are handed out evenly without anyone keeping count.',
+      },
+      {
+        art: <OutgoingArt />,
+        href: '/help/plan/automations/',
+        title: 'Tell people where they are',
+        description:
+          'Email the assignee, @mention someone on the card, post to a Slack or Microsoft Teams channel with a link back to the card, or send a signed event to a service of your own.',
+      },
+      {
+        art: <AiTriageArt />,
+        href: '/help/plan/automations/',
+        title: 'AI steps that triage',
+        description:
+          'Add an AI step that summarises a card, suggests its card type, or sets its priority and labels from what it says. Each plan has 100 AI steps a day, and anything AI wrote is marked as such.',
+      },
+      {
+        art: <IncomingWebhookArt />,
+        href: '/help/plan/automations/',
+        title: 'Start a rule from another tool',
+        description:
+          'Give a rule its own address and secret, and another tool can start it with one call: a deploy finishing can move its cards to Done, or a support tool can open a card.',
+      },
+      {
+        art: <AuditTrailArt />,
+        href: '/help/plan/automations/',
+        title: 'Every run on the record',
+        description:
+          'Test a rule on a real card before you save it and see what it would do. Once it is on, the Audit Trail lists every run with its card, its result and each step it took, and what a rule changed reads as Automation on the card.',
+      },
+      {
+        art: <McpArt />,
+        href: '/help/plan/automations/',
+        title: 'Rules your agents can write',
+        description:
+          'AI tools connected over MCP, and the command-line tool, can list, write, test and run rules the way an Editor of the plan can. Rules run on our servers, so they work on plans saved to your account.',
       },
     ],
   },
@@ -487,7 +594,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Agents & your tools',
         title: 'Agents that work beside you',
         description:
-          'Connect Claude, ChatGPT or another AI tool over MCP and it can read your boards, cards, sheets and forms, and change them the way you would: add cards, move them across columns, fill in cells, build a form. Every change it makes lands live, like a teammate’s.',
+          'Connect Claude, ChatGPT or another AI tool over MCP and it can read your boards, cards, sheets and forms, and change them the way you would: add cards, move them across columns, fill in cells, build a form, set up an automation rule. Every change it makes lands live, like a teammate’s.',
       },
       {
         art: <ApiArt />,

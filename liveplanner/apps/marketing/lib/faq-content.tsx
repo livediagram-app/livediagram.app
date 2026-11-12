@@ -125,13 +125,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Everything about a piece of work: a rich-text description, a checklist that counts down
-            to done, a status, an assignee, a priority, labels, start and due dates, and its own
-            comment thread. A task card can belong to a Project card, so you can follow the trail
-            between the two. See <a href="/help/plan/cards/">cards</a>.
+            to done, a status, an assignee, a priority, labels, start and due dates, pictures, and
+            its own comment thread. A task card can belong to a Project card, so you can follow the
+            trail between the two. See <a href="/help/plan/cards/">cards</a>.
           </>
         ),
         aText:
-          'Everything about a piece of work: a rich-text description, a checklist that counts down to done, a status, an assignee, a priority, labels, start and due dates, and its own comment thread. A task card can belong to a Project card, so you can follow the trail between the two. See cards.',
+          'Everything about a piece of work: a rich-text description, a checklist that counts down to done, a status, an assignee, a priority, labels, start and due dates, pictures, and its own comment thread. A task card can belong to a Project card, so you can follow the trail between the two. See cards.',
       },
       {
         q: 'Can I track my own fields?',
@@ -177,6 +177,21 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       {
         q: 'Is it good for retros?',
         a: 'Yes. On the Team Retro template, cards stay face down while the team writes, so nobody anchors on the first idea. Press Reveal, then vote for what matters most, and turn the actions into cards on the board.',
+      },
+      {
+        q: 'Can liveplanner do routine steps for me?',
+        a: (
+          <>
+            Yes, with Automations. A rule watches the plan and acts when something happens: a card
+            moves to Done and it stamps the date, a bug comes in and it goes to the next person on
+            triage, a due date nears and the assignee gets an email or a Slack post. Rules can also
+            run on a schedule or from another tool, and start from a ready-made template. They run
+            on our servers, so they work on plans saved to your account. See{' '}
+            <a href="/help/plan/automations/">automations</a>.
+          </>
+        ),
+        aText:
+          'Yes, with Automations. A rule watches the plan and acts when something happens: a card moves to Done and it stamps the date, a bug comes in and it goes to the next person on triage, a due date nears and the assignee gets an email or a Slack post. Rules can also run on a schedule or from another tool, and start from a ready-made template. They run on our servers, so they work on plans saved to your account. See automations.',
       },
       {
         q: 'What templates are there?',
@@ -428,7 +443,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I move my boards over from another tool?',
-        a: 'Yes, as CSV. Import a CSV or TSV file onto a board and each row becomes a card, landing in the column its Status names and with the person its Assignee names; only a title is required, and one undo takes it all back. A CSV file can also become a sheet.',
+        a: 'Yes. Bring a Trello board’s JSON export, or an Asana, Jira or Linear CSV export, into the Import dialog and it becomes a Board tab, or a new plan, with its columns, cards, fields and people. Any other CSV or TSV works too: each row becomes a card, landing in the column its Status names and with the person its Assignee names, and one undo takes it all back. A CSV file can also become a sheet.',
       },
       {
         q: 'Can I export my work?',
