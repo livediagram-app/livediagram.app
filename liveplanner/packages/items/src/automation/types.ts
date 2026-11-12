@@ -92,7 +92,13 @@ export type AutomationTrigger =
   | { kind: 'related_done'; related: 'children' | 'linked' }
   | { kind: 'column_limit'; status: string; limit: number }
   // A time trigger: cards unchanged for `days`, outside done columns (in `statuses`, when named).
-  | { kind: 'stuck'; days: number; at: AutomationClock; statuses?: string[] };
+  | { kind: 'stuck'; days: number; at: AutomationClock; statuses?: string[] }
+  // A linked GitHub pull request (github-triggers.ts; docs/specs/026-plan/github-pull-requests.md "GitHub triggers").
+  | { kind: 'pull_request_opened' }
+  | { kind: 'pull_request_merged' }
+  | { kind: 'pull_request_closed' }
+  // Its checks changed into Failing, or into Passing.
+  | { kind: 'pull_request_checks'; result: 'failing' | 'passing' };
 
 export type AutomationTriggerKind = AutomationTrigger['kind'];
 export const AUTOMATION_TRIGGER_KINDS: readonly AutomationTriggerKind[] = [
@@ -115,16 +121,32 @@ export const AUTOMATION_TRIGGER_KINDS: readonly AutomationTriggerKind[] = [
   'related_done',
   'column_limit',
   'stuck',
+  'pull_request_opened',
+  'pull_request_merged',
+  'pull_request_closed',
+  'pull_request_checks',
 ];
+export const GITHUB_TRIGGER_KINDS = [
+  'pull_request_opened',
+  'pull_request_merged',
+  'pull_request_closed',
+  'pull_request_checks',
+] as const satisfies readonly AutomationTriggerKind[];
+export type GithubTriggerKind = (typeof GITHUB_TRIGGER_KINDS)[number];
+export const isGithubKind = (kind: AutomationTriggerKind): kind is GithubTriggerKind =>
+  (GITHUB_TRIGGER_KINDS as readonly string[]).includes(kind);
+export const isGithubTrigger = (
+  t: AutomationTrigger,
+): t is Extract<AutomationTrigger, { kind: GithubTriggerKind }> => isGithubKind(t.kind);
 export type AutomationTimeTriggerKind = 'scheduled' | 'due_in' | 'overdue' | 'stuck';
 export const isTimeTrigger = (
   t: AutomationTrigger,
 ): t is Extract<AutomationTrigger, { kind: AutomationTimeTriggerKind }> =>
   t.kind === 'scheduled' || t.kind === 'due_in' || t.kind === 'overdue' || t.kind === 'stuck';
-// A trigger with no person behind it (a time, another tool's call): no Who Did It, nobody to assign or email as
-// whoever triggered it.
+// A trigger with no person behind it (a time, another tool's call, GitHub): no Who Did It, nobody to assign or email
+// as whoever triggered it.
 export const isPersonless = (t: AutomationTrigger): boolean =>
-  isTimeTrigger(t) || t.kind === 'incoming_webhook';
+  isTimeTrigger(t) || t.kind === 'incoming_webhook' || isGithubTrigger(t);
 
 // ---- Conditions --------------------------------------------------------------------------------------------------
 

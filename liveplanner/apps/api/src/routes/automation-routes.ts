@@ -13,6 +13,9 @@ import {
   automationPerson,
   freeRuleName,
   isPersonless,
+  isGithubTrigger,
+  heardOfTrigger,
+  GITHUB_PERSON,
   isTimeTrigger,
   isTrashed,
   readRuleBody,
@@ -280,13 +283,17 @@ async function test(ctx: PlanRouteContext, g: Gated): Promise<Response> {
     edited: stamp,
   };
   // A time trigger's rule runs as at its moment: by Automation, no person behind it; an Incoming Webhook rule's as if
-  // a call had named the card, with an empty payload.
-  const event: AutomationEvent = isPersonless(rule.trigger)
+  // a call had named the card, with an empty payload; a GitHub rule's as if one of the card's pull requests had just
+  // done what its trigger hears, by GitHub.
+  const trigger = rule.trigger;
+  const event: AutomationEvent = isPersonless(trigger)
     ? {
         ...manualEvent(g, card.id, 't'),
-        ...(isTimeTrigger(rule.trigger)
+        ...(isTimeTrigger(trigger)
           ? { kind: 'time' as const, by: automationPerson(rule.name) }
-          : { kind: 'incoming' as const, by: INCOMING_WEBHOOK_PERSON, cards: 1 }),
+          : isGithubTrigger(trigger)
+            ? { kind: 'github' as const, by: GITHUB_PERSON, github: heardOfTrigger(trigger) }
+            : { kind: 'incoming' as const, by: INCOMING_WEBHOOK_PERSON, cards: 1 }),
         role: 'system',
       }
     : manualEvent(g, card.id, 't');

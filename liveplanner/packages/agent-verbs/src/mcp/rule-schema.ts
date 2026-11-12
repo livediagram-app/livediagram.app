@@ -44,10 +44,14 @@ export const RULE_TRIGGER_FORMAT =
   '{"kind":"related_done","related":"children"|"linked"} (the last of its children, or of the cards its Card fields ' +
   'point at, reaches a done column; that card runs it); ' +
   '{"kind":"column_limit","status":column,"limit":1 to 500} (a card goes in and the column holds more than the ' +
-  'limit; once each time it goes over). ' +
+  'limit; once each time it goes over); ' +
+  '{"kind":"pull_request_opened"}; {"kind":"pull_request_merged"}; {"kind":"pull_request_closed"}; ' +
+  '{"kind":"pull_request_checks","result":"failing"|"passing"} (a GitHub pull request the card links, by a Pull ' +
+  'Request or Link field or by naming the card, opened ready for review, merged, closed unmerged, or its checks ' +
+  'turned failing or passing; heard only once the plan is connected to GitHub, which a person does in the app). ' +
   'A time trigger (scheduled, due_in, overdue, stuck) runs once for each card its conditions match (every card with none), ' +
   'up to 100 a moment, at the time in the rule’s timeZone, and has nobody behind it: no who condition, no ' +
-  '"trigger" assignee or recipient. ' +
+  '"trigger" assignee or recipient (nor does a GitHub trigger). ' +
   NAMING;
 
 export const RULE_CONDITIONS_FORMAT =

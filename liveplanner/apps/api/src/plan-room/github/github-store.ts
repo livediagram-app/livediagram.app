@@ -2,7 +2,7 @@
 // docs/specs/026-plan/github-pull-requests.md "Storage"; blueprint "Part 2" "The plan's object"). Plain reads and
 // writes; who may make them is the routes' and the room's.
 import type { ItemPerson } from '@liveplanner/items';
-import type { GithubConnectionView, GithubRules } from '@liveplanner/api-schema';
+import type { GithubConnectionView } from '@liveplanner/api-schema';
 import type { GithubRepository } from '../../github/github-api';
 import {
   CONNECT_STATE_TTL_MS,
@@ -19,32 +19,13 @@ export type GithubConnection = {
   connectedBy: ItemPerson;
   connectedAt: number;
   repositories: StoredRepository[];
-  // Read with the connection; a connect keeps what the plan had (part 3, spec "GitHub rules").
-  rules?: GithubRules;
 };
-
-/** Both GitHub rules off: what a new connection has. */
-export const NO_RULES: GithubRules = { opened: null, merged: null };
-
-const ruleOf = (v: unknown): string | null =>
-  typeof v === 'string' && v.length > 0 && v.length <= 64 ? v : null;
-
-function rulesOf(text: string | null): GithubRules {
-  if (!text) return NO_RULES;
-  try {
-    const r = JSON.parse(text) as Partial<Record<keyof GithubRules, unknown>>;
-    return { opened: ruleOf(r.opened), merged: ruleOf(r.merged) };
-  } catch {
-    return NO_RULES;
-  }
-}
 
 type ConnectionRow = {
   installation_id: number;
   account: string;
   connected_by: string;
   connected_at: number;
-  rules: string | null;
 };
 type RepositoryRow = { repo_id: number; full_name: string; private: number; chosen: number };
 
@@ -69,7 +50,7 @@ export async function readConnection(
   const [conn, repos] = await db.batch([
     db
       .prepare(
-        'SELECT installation_id, account, connected_by, connected_at, rules FROM github_connection WHERE plan_id = ?',
+        'SELECT installation_id, account, connected_by, connected_at FROM github_connection WHERE plan_id = ?',
       )
       .bind(planId),
     db
@@ -85,7 +66,6 @@ export async function readConnection(
     account: row.account,
     connectedBy: personOf(row.connected_by),
     connectedAt: Number(row.connected_at),
-    rules: rulesOf(row.rules),
     repositories: ((repos?.results ?? []) as RepositoryRow[]).map((r) => ({
       id: Number(r.repo_id),
       fullName: r.full_name,
@@ -116,7 +96,6 @@ export const connectionView = (c: GithubConnection): GithubConnectionView => ({
     private: r.private,
     chosen: r.chosen,
   })),
-  rules: c.rules ?? NO_RULES,
 });
 
 const repoInsert = (db: D1Database, planId: string, r: StoredRepository) =>
@@ -144,14 +123,6 @@ export async function saveConnection(
       .bind(planId, c.installationId, c.account, JSON.stringify(c.connectedBy), c.connectedAt),
     ...c.repositories.map((r) => repoInsert(db, planId, r)),
   ]);
-}
-
-/** The plan's GitHub rules replaced. */
-export async function saveRules(db: D1Database, planId: string, rules: GithubRules): Promise<void> {
-  await db
-    .prepare('UPDATE github_connection SET rules = ? WHERE plan_id = ?')
-    .bind(JSON.stringify(rules), planId)
-    .run();
 }
 
 /** The chosen repositories set to `ids`, every other listed one not chosen. */

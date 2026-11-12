@@ -2,16 +2,14 @@
 // "Connecting a repository"; blueprint "Part 2"), the `PlanRoom.github` RPC: a connect's callback, or a verified
 // delivery. The plan's own connection is the truth: a delivery acts only when it names the plan's installation (and,
 // for a pull request or its checks, a chosen repository), and only once per delivery id. A pull request's or a check
-// suite's delivery keeps its state and runs the plan's GitHub rules (part 3, github-pulls.ts); a repository leaving
-// the plan, or the App leaving the account, takes the states it held with it.
-import { withoutLegacyThread } from '@liveplanner/project';
-import type { Item } from '@liveplanner/items';
+// suite's delivery keeps its state and queues the plan's GitHub-triggered rules (github-pulls.ts, github-runs.ts); a
+// repository leaving the plan, or the App leaving the account, takes the states it held with it.
 import type { PullRequestsRoomOp } from '@liveplanner/api-schema';
 import { githubConfig } from '../../github/github-config';
 import type { GithubDelivery } from '../../github/github-delivery';
 import { NO_LINKS, rewriteLinks } from '../../github/github-links';
 import type { PlanEnv } from '../../types';
-import { relayItems, relayPullRequests } from '../../room-client';
+import { relayPullRequests } from '../../room-client';
 import { finishConnect, type ConnectCallback } from './github-connect';
 import {
   dropConnection,
@@ -19,7 +17,6 @@ import {
   firstSight,
   linksOf,
   readConnection,
-  NO_RULES,
   type GithubConnection,
 } from './github-store';
 import { actOnCheckSuite, actOnPullRequest, type PullDeps } from './github-pulls';
@@ -39,20 +36,12 @@ function names(c: GithubConnection | null, d: GithubDelivery): c is GithubConnec
   return c.repositories.some((r) => r.chosen && r.id === d.repositoryIds[0]);
 }
 
-// What a delivery's work hands the room, each awaited before the call answers: landed cards and new states.
+// What a delivery's work hands the room, each awaited before the call answers: new states. (The rules it queues land
+// their cards through the runner, as any rule's do.)
 function roomDeps(env: PlanEnv, planId: string, pending: Promise<void>[]): PullDeps {
   return {
     env,
     planId,
-    relay: (items: Item[], rev: number) =>
-      void pending.push(
-        relayItems(env, planId, {
-          kind: 'items',
-          upserts: items.map(withoutLegacyThread),
-          removed: [],
-          rev,
-        }),
-      ),
     send: (op: PullRequestsRoomOp) => void pending.push(relayPullRequests(env, planId, op)),
   };
 }
@@ -98,9 +87,8 @@ async function deliver(
   } else {
     const pending: Promise<void>[] = [];
     const deps = roomDeps(env, planId, pending);
-    if (d.pullRequest)
-      await actOnPullRequest(deps, before.rules ?? NO_RULES, d.action, d.pullRequest, now);
-    else if (d.checkSuite) await actOnCheckSuite(deps, d.checkSuite);
+    if (d.pullRequest) await actOnPullRequest(deps, d.id, d.action, d.pullRequest, now);
+    else if (d.checkSuite) await actOnCheckSuite(deps, d.id, d.checkSuite, now);
     await Promise.all(pending);
   }
   return 'accepted';

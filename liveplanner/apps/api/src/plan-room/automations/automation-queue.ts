@@ -27,6 +27,8 @@ export type HistorySource = {
   chain?: number;
   // The Form tab whose response made the card.
   form?: string;
+  // A run a GitHub trigger started: its card writes are tagged 'automation_github' (drawn as GitHub's).
+  via?: 'github';
 };
 
 // What a plan's writes ask of its Automations: the kinds its rules hear (the hot-path check), and a wake once
@@ -39,7 +41,7 @@ export interface AutomationsHook {
 // A write's role when its caller named none: from the history tag.
 export function roleOfTag(tag: ItemHistoryTag | undefined): AutomationRole {
   if (tag === 'ai') return 'agent';
-  if (tag === 'automation') return 'automation';
+  if (tag === 'automation' || tag === 'automation_github') return 'automation';
   return tag === 'form' || tag === 'repeat' ? 'system' : 'editor';
 }
 

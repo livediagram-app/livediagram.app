@@ -876,18 +876,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 405, 409, 502],
   },
   {
-    method: 'PUT',
-    path: '/projects/{id}/github/rules',
-    segment: 'projects',
-    tag: 'GitHub',
-    summary:
-      "The board's two GitHub rules: the column a linked pull request's cards move to when it opens (or is reopened, or marked ready for review), and when it merges; null turns one off. Each column is one a board of the plan names. A move keeps the rules a manual move keeps, and its history names GitHub. Needs edit access to the whole plan, signed in.",
-    auth: 'clerk',
-    requestSchema: 'GithubRulesRequest',
-    responseSchema: 'GithubConnectionResponse',
-    statuses: [200, 400, 401, 403, 404, 405, 409],
-  },
-  {
     method: 'POST',
     path: '/github/webhook',
     segment: 'github',

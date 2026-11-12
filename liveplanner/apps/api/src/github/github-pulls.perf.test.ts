@@ -5,8 +5,8 @@ import { endRepeatWorld } from '../plan-room/test-repeat-world';
 import { connection, githubWorld, prPayload, type GithubWorld } from './test-github-world';
 
 // What one delivery costs a plan of 2,000 cards (docs/specs/026-plan/github-pull-requests.md "Limits"; blueprint
-// "Part 3" "Performance and limits"): a pull request's state kept and sent, and its opened rule moving the cards it
-// links. The worst case for the field lookup: every card holds a pull request of the same repository whose number
+// "Part 3" "Performance and limits", "Part 4"): a pull request's state kept and sent, its opened trigger queuing a run
+// on each card it links, and the room's wake running them (moving each card). The worst case for the field lookup: every card holds a pull request of the same repository whose number
 // starts with the delivered one's (#42 and #4200 to #6194), so SQLite's LIKE matches all 2,000 and each is read and
 // confirmed. CPU time, never wall-clock (testing.md).
 vi.mock(
@@ -45,8 +45,11 @@ beforeEach(async () => {
     const res = await w.send('POST', '/api/projects/A/items/bulk', { items });
     if (res.status !== 201) throw new Error(`bulk answered ${res.status}: ${await res.text()}`);
   }
-  const rules = await w.as('owner', 'PUT', '/github/rules', { opened: 'review', merged: 'done' });
-  expect(rules.status).toBe(200);
+  await w.rule({
+    name: 'Review on Open',
+    trigger: { kind: 'pull_request_opened' },
+    steps: [{ kind: 'move', status: 'review' }],
+  });
 }, 120_000);
 afterEach(() => {
   vi.restoreAllMocks();
@@ -64,6 +67,8 @@ describe('a delivery on a 2,000-card plan', () => {
       status = res.status;
     });
     expect(status).toBe(202);
+    // The wake runs the 8 queued runs (each a move at the column's end, read against the plan's 2,000 cards).
+    const ran = await cpuMsOfAsync(() => w.plans.get('A')!.room.alarm());
     const items = await w.items('A');
     const moved = items.filter((i: Item) => itemStatus(i) === 'review');
     expect(moved.length).toBe(8);
@@ -72,8 +77,10 @@ describe('a delivery on a 2,000-card plan', () => {
       await w.deliver('pull_request', prPayload({ action: 'edited', at: '2026-11-12T11:00:00Z' }));
     });
     // Measured on an M-series Mac: opened (a 60 KB body read for mentions, LIKE over 2,000 cards, 2,000 read and
-    // confirmed, 8 moves) 24 to 38 ms; edited (the state alone) 1.3 to 3.1 ms.
+    // confirmed, 8 runs queued) 5 to 9 ms; the wake's 8 runs (each move reads the 2,000 cards for its place, as any
+    // rule's move does) 104 to 145 ms; edited (the state alone) 1.4 to 2.7 ms.
     expect(opened).toBeLessThan(cpuBudgetMs(400));
+    expect(ran).toBeLessThan(cpuBudgetMs(1500));
     expect(edited).toBeLessThan(cpuBudgetMs(50));
   }, 120_000);
 });
