@@ -1,12 +1,8 @@
 // Looks (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): shortcuts that set four of a tab's existing
 // settings at once, its theme, finish, tab font and canvas pattern. Not a stored concept: picking one writes those
 // four ordinary fields, and a look reads as selected only while the tab still matches all four.
-import {
-  resolveFinish,
-  type BackgroundPattern,
-  type Finish,
-  type Tab,
-} from '@livediagram/document';
+import { type BackgroundPattern, type Finish, type Tab } from '@livediagram/document';
+import { createTabLooks } from '@liveworkspace/workbench/lib/tab-looks';
 import { withThemeApplied } from '@/lib/tab-theme-apply';
 import { SEASONAL_LOOKS, type Season } from '@/lib/seasonal-looks';
 
@@ -355,26 +351,7 @@ export const TAB_LOOKS: readonly TabLook[] = [
   },
 ];
 
-/** How many looks one carousel page holds. */
-export const LOOKS_PER_PAGE = 6;
-
-// Every named look, year-round and seasonal: a tab wearing a seasonal look reads as that look too.
-const ALL_LOOKS: readonly TabLook[] = [...TAB_LOOKS, ...SEASONAL_LOOKS];
-
-export function tabLookById(id: string): TabLook | undefined {
-  return ALL_LOOKS.find((l) => l.id === id);
-}
-
-/** The tab with a look applied: the theme exactly as picking it does, then the finish, font and pattern. */
-export function withLookApplied(tab: Tab, look: TabLook): Tab {
-  const themed = withThemeApplied(tab, look.theme);
-  const next: Tab = { ...themed, finish: look.finish, backgroundPattern: look.pattern };
-  // A look that sets a strength sets it; the rest leave the tab's own strength alone.
-  if (look.patternOpacity !== undefined) next.backgroundOpacity = look.patternOpacity;
-  if (look.font) next.font = look.font;
-  else delete next.font;
-  return next;
-}
+export { LOOKS_PER_PAGE } from '@liveworkspace/workbench/lib/tab-looks';
 
 /** The four settings a look sets, as a tab holds them. */
 export type LookSettings = Pick<
@@ -382,21 +359,12 @@ export type LookSettings = Pick<
   'theme' | 'finish' | 'font' | 'backgroundPattern' | 'backgroundOpacity'
 >;
 
-/** Whether the tab's settings are the look's. Unset settings read as what they draw: the Default theme, Flexible,
- *  no font, the grid. A pattern's strength counts only for a look that sets one (a template's softened grid is still
- *  Everyday). */
-export function lookMatches(tab: LookSettings, look: TabLook): boolean {
-  const opacity = tab.backgroundOpacity ?? 1;
-  return (
-    look.theme === (tab.theme ?? 'brand') &&
-    look.finish === resolveFinish(tab.finish, undefined) &&
-    look.font === (tab.font || undefined) &&
-    look.pattern === (tab.backgroundPattern ?? 'grid') &&
-    (look.patternOpacity === undefined || Math.abs(look.patternOpacity - opacity) < 0.001)
-  );
-}
-
-/** The look the tab's settings match, or undefined when it has its own mix. */
-export function activeLookId(tab: LookSettings): TabLookId | undefined {
-  return ALL_LOOKS.find((l) => lookMatches(tab, l))?.id;
-}
+// The lookup, apply and match are the shared ones (@liveworkspace/workbench/lib/tab-looks), over every named look,
+// year-round and seasonal: a tab wearing a seasonal look reads as that look too.
+export const { tabLookById, withLookApplied, lookMatches, activeLookId } = createTabLooks<
+  Tab,
+  TabLook
+>({
+  looks: [...TAB_LOOKS, ...SEASONAL_LOOKS],
+  withThemeApplied,
+});

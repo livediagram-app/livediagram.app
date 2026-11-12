@@ -1,20 +1,7 @@
-import {
-  useEffect,
-  useEffectEvent,
-  useRef,
-  type Dispatch,
-  type MutableRefObject,
-  type SetStateAction,
-} from 'react';
-import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
-import {
-  setRemoteBesideTab,
-  syncRemoteBesideTabs,
-} from '@liveworkspace/workbench/lib/split-presence';
+import { useEffect, useEffectEvent, useRef } from 'react';
 import { noteAccessEnded } from '@/lib/access-notice';
-import type { Tab } from '@livedesign/design';
-import type { AgentPresence, ChangesetRoomOp, ComponentRoomOp } from '@livedesign/api-schema';
-import { nextFreeColor, type Participant } from '@/lib/identity';
+import type { AgentPresence } from '@livedesign/api-schema';
+import { nextFreeColor } from '@/lib/identity';
 import { publishedPicture, useOwnPicture } from '@/lib/own-picture';
 import { isProfilePictureUrl } from '@liveworkspace/sites/picture';
 import {
@@ -24,36 +11,15 @@ import {
   type RoomHandlers,
 } from '@/lib/api-client';
 import { keepDesignGrantFresh, designGrant } from '@/lib/api/design-grants';
-import { parseLaserConfig } from '@/lib/laser-config';
-import {
-  createPresenceCoalescer,
-  type CursorPos,
-  type LaserTrail,
-  type PresenceCoalescer,
-} from './presence-coalescer';
-import type { RemoteSelection } from '@/lib/presence-rows';
-import { applyRoomOpToTabs, remoteRoomOp } from './room-op-apply';
-import { keepUnsavedTabChanges } from './meta-keep-local';
+import { createPresenceCoalescer, type PresenceCoalescer } from './presence-coalescer';
 import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
-import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
-import { isSupersededByOwnWrite, type OwnElementWrites } from './own-element-writes';
-import {
-  forgetDeparted,
-  presenceRows,
-  pruneMapToPresent,
-  seededTabFocus,
-  yieldedColour,
-} from '@liveworkspace/workbench/lib/room-presence';
+import { presenceRows, syncRoomPresence } from '@liveworkspace/workbench/lib/room-presence';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { shareLinkOpEffect } from '@liveworkspace/workbench/lib/share-link-ops';
-import {
-  endPeerDragPreview,
-  prunePeerDragPreviews,
-  receivePeerDragPreview,
-} from '@/hooks/collab/peer-drag-previews';
+import { prunePeerDragPreviews } from '@/hooks/collab/peer-drag-previews';
 import { joinRefusedBecauseTrashed } from './room-refusal';
-import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
+import { receiveRoomOp } from './room-op-receive';
+import type { RoomConnectionOptions } from './useRoomConnection.types';
 
 // Realtime room: one WebSocket per design, opened for every design saved on
 // the server (docs/specs/024-agents/agent-changesets.md "Rooms for personal designs"). Lifted out of editor-page.tsx verbatim — the
@@ -63,98 +29,7 @@ import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 // it drives lives in the page and is passed in; the deps array stays
 // [hydrated, designId, designServerStored] (a name/colour change must not
 // reconnect), so the exhaustive-deps disable rides along.
-export function useRoomConnection(opts: {
-  hydrated: boolean;
-  designId: string | null;
-  // Saved on the server, so it has a room: every such design, personal ones included, since an
-  // agent writing through the api is a second writer even where nobody else can open it.
-  designServerStored: boolean;
-  // False keeps the room closed whatever else holds (an ended workbench session). Defaults to true.
-  enabled?: boolean;
-  // A workbench session (docs/specs/013-workspace/blueprints/workbench-embeds.md): told when the room
-  // ends it (close 4006), or when an access change does (4005, WB31), instead of reloading.
-  onWorkbenchEnded?: () => void;
-  // The room is full (docs/specs/015-api/api.md "Room size"): told once per spell of being turned away, while
-  // the connector keeps trying to join.
-  onRoomFull?: () => void;
-  // The design's team (docs/specs/013-workspace/team-shared-designs.md), null for a personal design. A team
-  // design is a live room for its members even without a share link,
-  // so presence opens for it the same way a shared design does.
-  designTeamId: string | null;
-  selfParticipant: Participant;
-  sessionShareCode: string | null;
-  lastSeenRef: MutableRefObject<Map<string, number>>;
-  // Bumps a peer's last-seen (usePresenceState), publishing when they arrive or return from idle.
-  markSeen: (participantId: string) => void;
-  selfParticipantRef: MutableRefObject<Participant>;
-  // The autosave's baseline (docs/specs/012-collaboration/collab-race-hardening.md): every design op a peer sends is
-  // folded into it as well as into the tabs on screen, so the next local save
-  // neither mistakes it for ours nor ships it back out.
-  saveBaseline: SaveBaselineRefs;
-  // This editor's element writes the room has not sequenced yet: a peer's update of one was ordered first, and
-  // ours replaces it everywhere, so it is not shown here (own-element-writes.ts).
-  ownWrites?: OwnElementWrites;
-  // Counts a peer op applied to `tabs` (useEditorState's opsApplied, read by the autosave).
-  countAppliedOp: () => void;
-  sessionShareCodeRef: MutableRefObject<string | null>;
-  roomRef: MutableRefObject<ReturnType<typeof connectRoom> | null>;
-  // Merge a peer's tab / design-meta change into the present, PRESERVING
-  // the local undo / redo stacks (peers autosave ~600ms, so clearing
-  // history on each would wipe undo continuously during a shared session).
-  // A peer's op into the present and every undo / redo snapshot (historyApplyRemoteOp), so undo
-  // never brings back what the peer changed.
-  applyRemoteOp: (apply: (prev: Tab[]) => Tab[]) => void;
-  // The tabs whose content is here (fetched, or made here), and marking one so: a peer's element op
-  // for a tab still waiting on its first fetch is left to that fetch.
-  loadedTabIdsRef: MutableRefObject<Set<string>>;
-  markTabLoaded: (id: string) => void;
-  setLivePresence: Dispatch<SetStateAction<Participant[]>>;
-  setLiveAgents: Dispatch<SetStateAction<AgentPresence[]>>;
-  setRemoteSelections: Dispatch<SetStateAction<Map<string, RemoteSelection>>>;
-  setRemoteCursors: Dispatch<SetStateAction<Map<string, CursorPos>>>;
-  setRemoteTabFocus: Dispatch<SetStateAction<Map<string, string>>>;
-  setRemoteLaserTrails: Dispatch<SetStateAction<Map<string, LaserTrail>>>;
-  // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): where each peer is looking, latest sample each.
-  // Only read while somebody is being followed; kept for everyone because the
-  // op is unsolicited (see the RoomOp comment).
-  setRemoteViewports: Dispatch<SetStateAction<Map<string, RemoteViewport>>>;
-  setDesignName: Dispatch<SetStateAction<string>>;
-  setSelfParticipant: Dispatch<SetStateAction<Participant>>;
-  // Inbound handlers are stable (useCallback with no changing deps) so they don't reopen the socket — the
-  // effect's dep list stays [hydrated, designId, designServerStored].
-  // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): who follows us, from the room,
-  // and who we follow, said again on every new socket.
-  setFollowerIds: Dispatch<SetStateAction<readonly string[]>>;
-  readFollowing: () => string | null;
-  // Somebody freed an element we were holding (docs/specs/007-editor/live-app.md lock). Only our
-  // socket is sent this, so there is nothing to check it against.
-  receiveSelectionReleased: (msg: { elementId: string; by: string }) => void;
-  // The design went to the Trash (docs/specs/013-workspace/trash.md): the
-  // worker's design-trashed op, or the room closing the socket with 4004.
-  // Stable, like the others, so it can't reopen the socket.
-  receiveDesignTrashed: () => void;
-  // Re-hydrate tab content from D1 when the room can't replay our gap
-  // (docs/specs/012-collaboration/resync-without-reload.md). Stable, like the others, so it can't reopen the
-  // socket — the effect's dep list stays [hydrated, designId, shareable].
-  resyncFromServer: () => Promise<void>;
-  // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"), relayed by the
-  // worker; useChangesetFeed decides what to do with it.
-  receiveChangeset: (op: ChangesetRoomOp) => void;
-  // A main stored in the design's component library (docs/specs/009-elements/components.md "Sharing, collaboration
-  // and storage"), announced by the worker to every session that may see it.
-  receiveComponent?: (op: ComponentRoomOp) => void;
-  // A peer's active layer on a photo page (docs/specs/031-photo/photo-pages.md "Collaboration"). Presence.
-  receivePhotoPresence: (
-    from: string,
-    op: { tabId: string; pageId: string; layerId: string | null },
-  ) => void;
-  // The room has greeted this connection (its first presence list): what was relayed before it
-  // joined is caught up through the api (useChangesetFeed's checkSinceLoad).
-  onRoomJoined: () => void;
-  // A Participant session's ticket (docs/specs/013-workspace/share-roles.md) carries the adder key the room
-  // stamps on what it adds, and the key comes back for `onAdderKey`.
-  onAdderKey?: (key: string | null) => void;
-}) {
+export function useRoomConnection(opts: RoomConnectionOptions) {
   const {
     hydrated,
     designId,
@@ -168,31 +43,20 @@ export function useRoomConnection(opts: {
     lastSeenRef,
     markSeen,
     selfParticipantRef,
-    saveBaseline,
-    ownWrites,
-    countAppliedOp,
     sessionShareCodeRef,
     roomRef,
-    applyRemoteOp,
-    loadedTabIdsRef,
-    markTabLoaded,
     setLivePresence,
     setLiveAgents,
     setRemoteSelections,
     setRemoteCursors,
     setRemoteTabFocus,
     setRemoteLaserTrails,
-    setRemoteViewports,
-    setDesignName,
     setSelfParticipant,
     receiveSelectionReleased,
     setFollowerIds,
     readFollowing,
     receiveDesignTrashed,
     resyncFromServer,
-    receiveChangeset,
-    receiveComponent,
-    receivePhotoPresence,
     onRoomJoined,
     onAdderKey,
   } = opts;
@@ -255,29 +119,20 @@ export function useRoomConnection(opts: {
       // drawn (docs/specs/008-canvas/drag-preview.md).
       roleByPresenceRef.current = new Map(participants.map((p) => [p.id, p.role] as const));
       setLivePresence(presenceRows(participants, lastSeenRef.current, now, isProfilePictureUrl));
-      // Seed lastSeen for any presence-arrival we haven't tracked yet, publishing it so the next
-      // render has their `lastActiveAt`.
-      for (const p of participants) {
-        if (!lastSeenRef.current.has(p.id)) markSeen(p.id);
-      }
-      // Unique-colour reconciliation (yieldedColour): only the later joiner yields. The new colour flushes through
-      // the autosave and the next hello carries it. Read through selfParticipantRef: this handler must not act on a
-      // stale snapshot of the participant.
-      const fresh = yieldedColour(participants, selfParticipantRef.current, nextFreeColor);
-      if (fresh) setSelfParticipant((prev) => ({ ...prev, color: fresh }));
-      // Drop selections AND cursors for any participant who's no
-      // longer connected. Stops stale presence indicators from
-      // sticking after a tab close or network drop.
-      const present = new Set(participants.map((p) => p.id));
-      prunePeerDragPreviews(present);
-      // Each peer's tab, seeded from the list and without those who left (seededTabFocus).
-      const selfId = selfParticipantRef.current.id;
-      setRemoteTabFocus((prev) => seededTabFocus(prev, participants, present, selfId));
-      syncRemoteBesideTabs(participants, selfId);
-      setRemoteSelections((prev) => pruneMapToPresent(prev, present));
-      setRemoteCursors((prev) => pruneMapToPresent(prev, present));
-      // Same for the lastSeen idle tracker (a plain ref, not state).
-      forgetDeparted(lastSeenRef.current, present);
+      // Each arrival seeded, the colour a later joiner yields, and what goes with whoever left
+      // (@liveworkspace/workbench/lib/room-presence).
+      syncRoomPresence(participants, {
+        lastSeen: lastSeenRef.current,
+        markSeen,
+        // Read through selfParticipantRef: this handler must not act on a stale snapshot of the participant.
+        self: () => selfParticipantRef.current,
+        nextFreeColor,
+        takeColour: (color) => setSelfParticipant((prev) => ({ ...prev, color })),
+        prunePeerDragPreviews,
+        setRemoteTabFocus,
+        setRemoteSelections,
+        setRemoteCursors,
+      });
     },
   );
 
@@ -286,128 +141,8 @@ export function useRoomConnection(opts: {
       from: Parameters<NonNullable<RoomHandlers['onOp']>>[0],
       op: Parameters<NonNullable<RoomHandlers['onOp']>>[1],
       presence: PresenceCoalescer,
-    ) => {
-      // Any op from a peer counts as "they're still here". Bumps
-      // the idle timer used by the away/offline status
-      // derivation. Cursor packets are the most frequent so this
-      // doubles as a perfectly fine activity heartbeat.
-      markSeen(from);
-      if (
-        op.kind === 'tab' ||
-        op.kind === 'el' ||
-        op.kind === 'el-delta' ||
-        op.kind === 'tab-meta' ||
-        op.kind === 'photo' ||
-        op.kind === 'design-meta'
-      ) {
-        // A design change from a peer: a whole tab, one element (docs/specs/012-collaboration/realtime-conflict-resolution.md),
-        // one tick / comment (docs/specs/012-collaboration/collab-race-hardening.md),
-        // non-element tab fields, a photo page's layers (docs/specs/031-photo/photo-store.md), or the design's name
-        // and tab list. One pure function applies each (room-op-apply.ts),
-        // to the tabs on screen AND to the autosave's baseline, so the
-        // change is known to be the peer's and is never saved or broadcast
-        // back as if it were ours (docs/specs/012-collaboration/collab-race-hardening.md).
-        if (op.kind === 'design-meta') setDesignName(op.name);
-        // A tab not fetched yet is a placeholder: an element added to it would make it look edited, so
-        // its fetch would be thrown away and the next save would write the placeholder over the real
-        // tab. Its fetch brings the element. A whole tab from a peer is its content: loaded.
-        if (op.kind === 'el' && !loadedTabIdsRef.current.has(op.tabId)) return;
-        if (op.kind === 'tab') markTabLoaded(op.tabId);
-        // A dragger's real change has arrived: their live preview has done its job.
-        endPeerDragPreview(from);
-        // Ordered before our own pending write of the same element, which replaces it on every screen: showing it
-        // here alone would leave this screen on the peer's copy (realtime-conflict-resolution.md "Same-element
-        // edits converge").
-        if (ownWrites && isSupersededByOwnWrite(ownWrites, op)) {
-          debugLog('[room] peer update superseded by our pending write');
-          return;
-        }
-        // A peer's tab list keeps what this editor has not saved yet: a tab added here, one deleted here
-        // (keepUnsavedTabChanges), judged against the baseline as it was before the list arrived.
-        const savedBefore = saveBaseline.tabs.current;
-        // The undo snapshots take the op when one is restored, a run of element ops together (remoteRoomOp).
-        applyRemoteOp(
-          op.kind === 'design-meta'
-            ? (prev) => keepUnsavedTabChanges(prev, applyRoomOpToTabs(prev, op), savedBefore)
-            : remoteRoomOp(op),
-        );
-        foldRemoteOpIntoBaseline(saveBaseline, op);
-        // In the same batch as the tabs update, so the render that shows the op also counts it.
-        countAppliedOp();
-      } else if (op.kind === 'select') {
-        setRemoteSelections((prev) => {
-          const next = new Map(prev);
-          // tabId scopes the badge + docs/specs/007-editor/live-app.md lock to the sender's tab;
-          // absent (older peer) = tab-unknown, shown everywhere.
-          next.set(from, { elementId: op.elementId, tabId: op.tabId });
-          return next;
-        });
-      } else if (op.kind === 'cursor') {
-        // Coalesced: buffered and committed once per animation frame
-        // (see createPresenceCoalescer). Cursor
-        // packets arrive at up to 30 Hz PER PEER, and a setState per
-        // packet re-rendered the whole editor tree per message.
-        presence.cursor(
-          from,
-          op.x !== null && op.y !== null ? { tabId: op.tabId, x: op.x, y: op.y } : null,
-        );
-      } else if (op.kind === 'laser') {
-        // Same coalescing as cursors; points accumulate in the buffer
-        // and land in one Map commit per frame.
-        presence.laser(from, {
-          tabId: op.tabId,
-          point: { x: op.x, y: op.y, t: performance.now() },
-          // The sender's pen (docs/specs/008-canvas/laser-panel.md), parsed field by field so a token
-          // from a newer client costs that field and not the trail.
-          config: op.look ? parseLaserConfig(op.look) : undefined,
-        });
-      } else if (op.kind === 'drag-preview') {
-        // A collaborator mid-drag (docs/specs/008-canvas/drag-preview.md): drawn, never written.
-        receivePeerDragPreview(from, op, (id) => roleByPresenceRef.current.get(id));
-      } else if (op.kind === 'viewport') {
-        // Latest-wins per peer: a camera has one position.
-        // Applied straight through rather than batched with the presence
-        // flush — a follower's view should track the presenter's hand, and a
-        // 10 Hz stream needs no coalescing.
-        setRemoteViewports((prev) => {
-          const next = new Map(prev);
-          next.set(from, { tabId: op.tabId, pan: op.pan, zoom: op.zoom, size: op.size });
-          return next;
-        });
-      } else if (op.kind === 'tab-focus') {
-        setRemoteTabFocus((prev) => {
-          const next = new Map(prev);
-          next.set(from, op.tabId);
-          return next;
-        });
-        // Their other pane, side by side (docs/specs/007-editor/split-view.md "Presence").
-        setRemoteBesideTab(from, op.besideTabId);
-      } else if (op.kind === 'share-revoked' || op.kind === 'share-rescoped') {
-        // The owner revoked or rescoped a share link (share-link-ops.ts).
-        // A session hydrated with that exact code leaves the editor on a
-        // revoke and reloads into the new scope on a rescope; the room
-        // closes its socket either way. Everyone else keeps their session.
-        const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
-        if (effect === 'leave') {
-          // The Explorer says why we arrived (lib/access-notice.ts), rather than landing without a word.
-          // The note rides in the address: the Explorer is on liveworkspace.app, another origin.
-          window.location.assign(explorerHref('', '?ended=revoked'));
-        } else if (effect === 'reload') window.location.reload();
-      } else if (op.kind === 'changeset') {
-        // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
-        // the share ops: the room refuses one from a client socket.
-        if (from === 'system') receiveChangeset(op);
-      } else if (op.kind === 'component') {
-        // System-only, like the changeset: the worker announces a main once it is stored.
-        if (from === 'system') receiveComponent?.(op);
-      } else if (op.kind === 'photo-presence') {
-        receivePhotoPresence(from, op);
-      } else if (op.kind === 'design-trashed') {
-        // The design went to the Trash. System-only, like the share ops:
-        // the room refuses it from a client socket.
-        if (from === 'system') receiveDesignTrashed();
-      }
-    },
+      // What each kind does lives in room-op-receive.ts.
+    ) => receiveRoomOp(from, op, presence, opts, roleByPresenceRef),
   );
 
   const roomSelectionReleased = useEffectEvent(

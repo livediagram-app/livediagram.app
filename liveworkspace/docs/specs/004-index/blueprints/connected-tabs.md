@@ -163,7 +163,8 @@ The shared part is `packages/index-app` `connected-tabs.ts`; each app binds it t
 { tabId }` and adds nothing; past `CONNECTIONS_PER_ITEM`, `409 connection_limit`; an item not started `404`; a
   failure `503`; else `201 { tabId }`. The room then sends its tab outline as an ordered `document-meta` op (each
   app's own outline op), carrying the tab's connection, so open editors place it.
-- **Removing.** The tab delete (`DELETE /api/<items>/:id/tabs/:tabId`) reads the tab's connection with its body in
+- **Removing.** The tab delete (`DELETE /api/<items>/:id/tabs/:tabId`; `deleteTabRow` in
+  `packages/index-app/src/item-tab-writes.ts`, which each app's `db/tabs.ts` binds) reads the tab's connection with its body in
   the delete itself and, in the same batch, after the unlink and before the tab's row goes, writes an outbox key
   (`connectionLeftStatement`): kind `connection_left` (`CONNECTION_LEFT_KIND`), key
   `{"connectionId","tabId"}` (`connectionLeftKeyOf`), only when the tab held a connection and has left the item. The

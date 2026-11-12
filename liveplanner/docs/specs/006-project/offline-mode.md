@@ -422,6 +422,11 @@ The editor has a **single persistence boundary**: `apps/editor/lib/api-client.ts
 Mode is implemented **behind that boundary** so the editor is unaware of the
 target:
 
+- **One store, bound per editor.** The store's operations (the write chain, the one-transaction updates, the
+  reads, the Trash and favourite rules, Sync Canvas's delete-if-unchanged) are one copy every editor shares
+  (`@liveworkspace/workbench/lib/offline/offline-store-core`). `lib/offline/offline-store.ts` binds it with its
+  IndexedDB backend, whose database and store names and versions stay this editor's own, and keeps its own
+  extra writes.
 - **Dispatch per call, not a backend pair.** Each load / save / delete in `lib/api/*` opens with
   `if (await isOfflineId(id))` and hands off to `lib/offline/offline-store.ts`, otherwise it calls the api. There is
   no second class to keep in step with the first, and an endpoint that offline has no answer for never grows the

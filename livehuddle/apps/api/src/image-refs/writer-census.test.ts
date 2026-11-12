@@ -10,6 +10,9 @@ import { describe, expect, it } from 'vitest';
 // (and its test in db/image-refs-writers.test.ts) before the count is raised.
 
 const APPS = fileURLToPath(new URL('../../../', import.meta.url).href);
+// The shared tab store's reads and writes (@liveworkspace/index-app), which db/tabs.ts binds.
+const SHARED = fileURLToPath(new URL('../../../../../packages/', import.meta.url).href);
+const SHARED_TAB_STORE = ['index-app/src/item-tab-reads.ts', 'index-app/src/item-tab-writes.ts'];
 
 const WRITES_TABS =
   /\b(?:INSERT(?:\s+OR\s+\w+)?\s+INTO|UPDATE|DELETE\s+FROM|REPLACE\s+INTO|DROP\s+TABLE)\s+tabs\b/gi;
@@ -17,10 +20,12 @@ const WRITES_TABS =
 // file -> number of statements writing `tabs`, each one proven in
 // db/image-refs-writers.test.ts.
 const KNOWN_WRITERS: Record<string, number> = {
-  // tabWriteStatements (upsertTab, upsertTabAtRev), seedTabs, deleteTabRow, swapTabData; and
-  // renameTab and stampTabElementCount, which write the name or the count, never `data`, so they have no image
-  // reference to keep.
-  'api/src/db/tabs.ts': 6,
+  // The tab store every product binds (db/tabs.ts): tabWriteStatements (upsertTab, upsertTabAtRev), seedTabs,
+  // deleteTabRow (its two forms) and swapTabData, each with the product's reference statements beside it; and
+  // renameTab, which writes the name, never `data`.
+  'index-app/src/item-tab-writes.ts': 6,
+  // stampTabElementCount, which writes the count, never `data`.
+  'index-app/src/item-tab-reads.ts': 1,
   // importDocumentCopy (a copy lands in its new document's own store)
   'api/src/document-room/document-content.ts': 1,
   // anonymiseDocument: a closed account's name off the comments in a body; it changes no image id, so the body's
@@ -58,6 +63,10 @@ describe('writers of tabs', () => {
         const n = readFileSync(file, 'utf8').match(WRITES_TABS)?.length ?? 0;
         if (n > 0) found[relative(APPS, file)] = n;
       }
+    }
+    for (const file of SHARED_TAB_STORE) {
+      const n = readFileSync(join(SHARED, file), 'utf8').match(WRITES_TABS)?.length ?? 0;
+      if (n > 0) found[file] = n;
     }
     expect(found).toEqual(KNOWN_WRITERS);
   });

@@ -24,14 +24,7 @@ import {
   type LabelPadding,
   type LabelTextStyle,
 } from '@/components/canvas/label-style';
-
-function svgPreserve(alignX: TextAlignX, alignY: TextAlignY): string {
-  const ax = alignX === 'left' ? 'xMin' : alignX === 'right' ? 'xMax' : 'xMid';
-  const ay = alignY === 'top' ? 'YMin' : alignY === 'bottom' ? 'YMax' : 'YMid';
-  return `${ax}${ay} meet`;
-}
-
-// --- Auto-scaling single-line label (SVG fit-to-bounds) --------------------
+import { svgPreserve } from '@liveworkspace/workbench/components/canvas/element-label-views';
 
 export function ScalingLabel({
   text,

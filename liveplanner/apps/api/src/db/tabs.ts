@@ -1,14 +1,10 @@
-// tabs — one row per tab in the plan's own SQLite (docs/specs/015-api/api.md "Storage"), placed in the plan by
-// `plan_tabs`. Runs only inside the plan's Durable Object, on `env.PLAN_DB` (plan-room/plan-db.ts).
+// tabs: one row per tab in the plan's own SQLite (docs/specs/015-api/api.md "Storage"), placed in the plan by
+// `plan_tabs`. Runs only inside the plan's Durable Object, on `env.PLAN_DB` (plan-room/plan-db.ts). The writes are
+// @liveworkspace/index-app's (item-tab-writes.ts, item-tab-order.ts), and so are most reads (tab-reads.ts); this
+// binds them to the plan's tables, its tab size cap, its stats and its sheet reference index.
 
-import {
-  shareLeaveStatements,
-  connectionLeftStatement,
-  tabConnectionOf,
-  tabConnectionStatement,
-} from '@liveworkspace/index-app';
+import { itemTabOrder, itemTabWrites } from '@liveworkspace/index-app';
 import { PLAN_OUTBOX } from '../plan-room/plan-outbox';
-import type { TabConnection } from '@liveworkspace/index-client';
 import { capElementActions, drawnCount, type Tab } from '@liveplanner/project';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
 
@@ -22,7 +18,6 @@ function assertTabDataFits(tabId: string, data: string, write: string): void {
   throw new TabTooLargeError(tabId, bytes, write);
 }
 import type { PlanEnv } from '../types';
-import type { TabVersion } from '@liveworkspace/api-kit/tab-swap';
 import { storedTabStatsOf, tabStatsStatement, type StoredTabStats } from './tab-stats';
 import { sheetRefIds, sheetRefReplaceStatements, sheetSettleStatements } from './sheet-refs';
 export {
@@ -39,344 +34,50 @@ export {
   getTabRev,
   planHasTab,
 } from './tab-reads';
+export {
+  isTabRevStale,
+  normalizeReorderEntry,
+  readReorderEntries,
+  revFromBatch,
+  type DeletedTab,
+} from '@liveworkspace/index-app';
 
-// How a tab write moves the revision (docs/specs/024-agents/agent-changesets.md "The tab revision"):
-// `advance` from whatever is stored, or to exactly `expected + 1`, which the trigger
-// `tabs_rev_advances` turns into a compare-and-swap (CS3).
-type TabRevWrite = { advance: true } | { expected: number };
+const db = (env: PlanEnv) => env.PLAN_DB;
+const tables = { item: 'plan', links: 'plan_tabs', key: 'plan_id' };
 
-// The statements of one tab write. Splits the live-app's Tab type into columns + a `data` JSON
-// blob (everything except id + name) so list queries can return summaries without parsing element
-// trees. The body goes to `tabs` (RETURNING its new `rev`, always first), its position to its
-// `plan_tabs` row, the plan's `saved_at`, and the sheet reference index, replaced in the SAME
-// transaction as the blob it mirrors so they can never drift. Exported so a changeset batches its
-// record beside the write: a lost compare-and-swap then aborts the whole batch.
-export function tabWriteStatements(
-  env: PlanEnv,
-  projectId: string,
-  input: Tab,
-  orderIndex: number,
-  revision: TabRevWrite,
-  now = Date.now(),
-): D1PreparedStatement[] {
-  // Action panel lists are bounded here, the one place every tab write
-  // meets (docs/specs/012-collaboration/action-panel.md "The data").
-  const tab = { ...input, elements: capElementActions(input.elements) };
-  // A connected tab's connection is its own column (tabConnectionStatement), set only by the editor's save and the
-  // index's reverse write: never part of the body, and never written by a body write.
-  const { id, name, connection: _connection, ...rest } = tab as Tab & { connection?: unknown };
-  const data = JSON.stringify(rest);
-  assertTabDataFits(id, data, 'upsertTab');
-  const advance = 'advance' in revision;
-  const insertRev = advance ? 1 : revision.expected + 1;
-  return [
-    env.PLAN_DB.prepare(
-      `INSERT INTO tabs (id, name, data, updated_at, element_count, rev)
-       VALUES (?, ?, ?, ?, ?, ?)
-       ON CONFLICT(id) DO UPDATE SET
-         name = excluded.name,
-         data = excluded.data,
-         updated_at = excluded.updated_at,
-         element_count = excluded.element_count,
-         rev = ${advance ? 'tabs.rev + 1' : 'excluded.rev'}
-       RETURNING rev`,
-    ).bind(id, name, data, now, drawnCount(tab), insertRev),
-    env.PLAN_DB.prepare(
-      `INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at)
-       VALUES (?, ?, ?, ?)
-       ON CONFLICT (plan_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
-    ).bind(projectId, id, orderIndex, now),
-    // The Details view's numbers (docs/specs/013-workspace/explorer-details-view.md), from the body
-    // just stored, after the tabs upsert, which the row's FK needs.
-    tabStatsStatement(env, id, storedTabStatsOf(rest, data), now),
-    // The Explorer's "Updated X ago" line. Pure metadata write — no element JSON. The collaboration
-    // index (docs/specs/013-workspace/inbox.md §2.1) and the listing summary follow from the outbox the
-    // triggers fill in this same transaction (plan-room/plan-outbox.ts).
-    env.PLAN_DB.prepare('UPDATE plan SET saved_at = ? WHERE id = ?').bind(now, projectId),
-    // The sheet reference index (docs/specs/029-sheets/sheet-store.md "Deleting a sheet"), after the tabs and
-    // plan_tabs upserts, which the rows' FK and the settling triggers read. A write whose
-    // references are unchanged touches no row, so the triggers cost it nothing.
-    ...sheetRefReplaceStatements(env, id, sheetRefIds(tab.elements)),
-  ];
-}
-
-// The revision the first statement of a tabWriteStatements batch returned.
-export function revFromBatch(results: readonly unknown[]): number {
-  const first = results[0] as { results?: { rev?: unknown }[] } | undefined;
-  const rev = first?.results?.[0]?.rev;
-  if (typeof rev !== 'number') throw new Error('tab write returned no revision');
-  return rev;
-}
-
-// A batch the trigger aborted because the tab moved since it was read.
-export function isTabRevStale(err: unknown): boolean {
-  return err instanceof Error && err.message.includes('tab_rev_stale');
-}
-
-// Full upsert for a single tab, advancing its revision from whatever is stored. One batch: the
-// extra serial D1 hops were once the largest latency item on a save. Answers the new revision.
-export async function upsertTab(
-  env: PlanEnv,
-  projectId: string,
-  input: Tab,
-  orderIndex: number,
-): Promise<number> {
-  const results = await env.PLAN_DB.batch(
-    tabWriteStatements(env, projectId, input, orderIndex, { advance: true }),
-  );
-  return revFromBatch(results);
-}
-
-// A tab write at the revision the caller read: lands as `expectedRev + 1`, or throws
-// `tab_rev_stale` (isTabRevStale) and writes nothing when the tab moved since (CS3, CS4).
-// `connection`: the editor's save of a connected tab (routes/tab-put-route.ts) sets it in the same batch; left out,
-// the stored connection stays as it is.
-export async function upsertTabAtRev(
-  env: PlanEnv,
-  projectId: string,
-  input: Tab,
-  orderIndex: number,
-  expectedRev: number,
-  connection?: TabConnection,
-): Promise<number> {
-  const results = await env.PLAN_DB.batch([
-    ...tabWriteStatements(env, projectId, input, orderIndex, { expected: expectedRev }),
-    ...(connection ? [tabConnectionStatement(env.PLAN_DB, input.id, connection)] : []),
-  ]);
-  return revFromBatch(results);
-}
-
-// A tab rename (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab renames"): the
-// name column only, advancing the revision (CS42). Answers the new revision, or null for no tab.
-export async function renameTab(env: PlanEnv, tabId: string, name: string): Promise<number | null> {
-  const row = await env.PLAN_DB.prepare(
-    'UPDATE tabs SET name = ?, rev = rev + 1, updated_at = ? WHERE id = ? RETURNING rev',
-  )
-    .bind(name, Date.now(), tabId)
-    .first<{ rev: number }>();
-  return row?.rev ?? null;
-}
-
-// Bulk-seed a fresh project's tabs in one batch (create path). The
-// per-tab upsertTab does three sequential writes each (tab body,
-// link row, and a redundant saved_at bump), so seeding K tabs that
-// way costs ~3K serial round trips. Here we collect every insert and
-// submit one batch, then bump saved_at exactly once. Same ON CONFLICT
-// semantics as upsertTab so a retried create stays idempotent.
-// `savedAt`: the project's last-modified date after seeding, its own when a create carried one
-// (docs/specs/015-api/api.md "Project dates"); absent, now.
-export async function seedTabs(
-  env: PlanEnv,
-  projectId: string,
-  tabs: Tab[],
-  savedAt?: number,
-): Promise<void> {
-  if (tabs.length === 0) return;
-  const now = Date.now();
-  const capped = tabs.map((t) => ({ ...t, elements: capElementActions(t.elements) }));
-  // A connected tab a create carries (an Offline Mode sync's, an import's) keeps exactly `{ id, app, itemId }` in its
-  // column, never in its body (connected-tabs.md "Copies carry nothing"): the index opens it only in its own host and
-  // tab, so anywhere else it offers Connect Again. A token's create never gets here with one (routes/projects.ts).
-  const bodies = capped.map(
-    ({ connection: _connection, ...tab }: Tab & { connection?: unknown }) => tab,
-  );
-  // Every tab measured before any is written: a create seeds all or none.
-  for (const { id, name: _name, ...rest } of bodies) {
-    assertTabDataFits(id, JSON.stringify(rest), 'seedTabs');
-  }
-  const stmts = bodies.flatMap((tab, idx) => {
-    const { id, name, ...rest } = tab;
-    const connection = tabConnectionOf(capped[idx]);
-    const data = JSON.stringify(rest);
-    return [
-      env.PLAN_DB.prepare(
-        `INSERT INTO tabs (id, name, data, updated_at, element_count, rev)
-         VALUES (?, ?, ?, ?, ?, 1)
-         ON CONFLICT(id) DO UPDATE SET
-           name = excluded.name,
-           data = excluded.data,
-           updated_at = excluded.updated_at,
-           element_count = excluded.element_count,
-           rev = tabs.rev + 1`,
-      ).bind(id, name, data, now, drawnCount(tab)),
-      env.PLAN_DB.prepare(
-        `INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at)
-         VALUES (?, ?, ?, ?)
-         ON CONFLICT (plan_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
-      ).bind(projectId, id, idx, now),
-      tabStatsStatement(env, id, storedTabStatsOf(rest, data), now),
-      ...(connection ? [tabConnectionStatement(env.PLAN_DB, id, connection)] : []),
-    ];
-  });
-  stmts.push(
-    env.PLAN_DB.prepare('UPDATE plan SET saved_at = ? WHERE id = ?').bind(
-      savedAt ?? now,
-      projectId,
-    ),
-  );
-  // The collaboration index of every seeded tab follows from the outbox (plan-room/plan-outbox.ts): a JSON
-  // import or a copy from a share link can carry actions and threads in on create.
-  for (const tab of capped) {
-    // A seed's sheets come after its tabs (routes/projects.ts), so they find these references on create.
-    stmts.push(...sheetRefReplaceStatements(env, tab.id, sheetRefIds(tab.elements)));
-  }
-  await env.PLAN_DB.batch(stmts);
-}
-
-// Remove the tab from the plan: its `plan_tabs` row, its body (its stats, references and changesets go with it by
-// the foreign keys), and the plan's sheets settle, in one transaction.
-//
-// Answers the tab's stored body as it was removed (null when this plan did not hold it), read
-// by the delete itself so a comment written a moment before cannot slip between a read and the
-// delete: the caller retracts the tab's comment events from this project's feed with it. A connected tab's
-// removal goes to the index through the outbox, keyed in the same batch (connectionLeftStatement,
-// connected-tabs.md "Removing").
-export type DeletedTab = { data: string };
-
-export async function deleteTabRow(
-  env: PlanEnv,
-  projectId: string,
-  tabId: string,
-  opts: { keepLast?: boolean } = {},
-): Promise<DeletedTab | null | 'last'> {
-  const db = env.PLAN_DB;
-  // `keepLast` (a token's delete, which may not take the last tab): the count rides the delete itself, so two
-  // deletes that each read two tabs before either ran can't take both.
-  const unlink = db
-    .prepare(
-      `DELETE FROM plan_tabs WHERE plan_id = ? AND tab_id = ?
-          AND (? = 0 OR (SELECT COUNT(*) FROM plan_tabs WHERE plan_id = ?) > 1)
-        RETURNING (SELECT t.data FROM tabs t WHERE t.id = plan_tabs.tab_id) AS data`,
-    )
-    .bind(projectId, tabId, opts.keepLast ? 1 : 0, projectId);
-  const rest = [
-    // A connected tab that has left: an outbox key, so the room's drain tells the index (removeConnection) and
-    // tries again after a failure (connected-tabs.md "Removing"). After the unlink, before the tab's row goes.
-    connectionLeftStatement(db, PLAN_OUTBOX, 'plan_tabs', projectId, tabId),
-    // A shared tab (plan-room/tab-shares.ts): every other holder hears that this plan left, and nothing else it
-    // owed them about the tab is sent. Before the tab's delete, which takes its `tab_shares` rows.
-    ...shareLeaveStatements(env.PLAN_DB, tabId),
-    env.PLAN_DB.prepare(
-      'DELETE FROM tabs WHERE id = ? AND NOT EXISTS (SELECT 1 FROM plan_tabs WHERE tab_id = ?)',
-    ).bind(tabId, tabId),
+// The writes. Action panel lists are bounded at the one place every tab write meets
+// (docs/specs/012-collaboration/action-panel.md "The data"). The sheet reference index
+// (docs/specs/029-sheets/sheet-store.md "Deleting a sheet") is replaced with every write, after the tabs and
+// plan_tabs upserts, which the rows' FK and the settling triggers read; a write whose references are unchanged
+// touches no row, so the triggers cost it nothing. A seed's sheets come after its tabs (routes/projects.ts), so they
+// find these references on create. A delete takes the tab's stats, references and changesets by the foreign keys,
+// and the plan's sheets settle in the same transaction. A seed's `savedAt`: docs/specs/015-api/api.md "Project
+// dates".
+export const {
+  tabWriteStatements,
+  upsertTab,
+  upsertTabAtRev,
+  renameTab,
+  seedTabs,
+  deleteTabRow,
+  swapTabData,
+} = itemTabWrites<PlanEnv, Tab, StoredTabStats>({
+  db,
+  tables,
+  outbox: () => PLAN_OUTBOX,
+  prepareTab: (tab) => ({ ...tab, elements: capElementActions(tab.elements) }),
+  drawnCount,
+  assertFits: assertTabDataFits,
+  statsOf: storedTabStatsOf,
+  statsStatement: tabStatsStatement,
+  refsOnWrite: (env, tab) => sheetRefReplaceStatements(env, tab.id, sheetRefIds(tab.elements)),
+  onDelete: {
     // The tab's references are gone with it, so the plan's sheets settle here.
-    ...sheetSettleStatements(env, projectId, Date.now()),
-  ];
-  type Row = { data?: string | null };
-  const rowOf = (r: unknown) => (r as { results?: Row[] } | undefined)?.results?.[0];
-  let row: Row | undefined;
-  if (!opts.keepLast) {
-    row = rowOf((await db.batch([unlink, ...rest]))[0]);
-  } else {
-    // A refused unlink must not tell the tab's other holders it left, so the rest runs only after one that
-    // happened. The room's SQLite answers both at once, with no I/O between them to let another request in.
-    row = rowOf((await db.batch([unlink]))[0]);
-    if (!row) {
-      const held = await db
-        .prepare('SELECT 1 AS held FROM plan_tabs WHERE plan_id = ? AND tab_id = ?')
-        .bind(projectId, tabId)
-        .first('held');
-      return held ? 'last' : null;
-    }
-    await db.batch(rest);
-  }
-  if (row?.data == null) return null;
-  return { data: row.data };
-}
+    afterBody: (env, projectId) => sheetSettleStatements(env, projectId, Date.now()),
+  },
+});
 
-// One position in a reorder request: the tab id plus its per-project
-// folder (docs/specs/006-project/tab-folders.md). Folder rides this path — never the per-tab content
-// PUT — so a content save can't clobber membership. `null`/omitted =
-// loose. A plain `string` is accepted for the legacy (pre-folder)
-// payload shape and treated as loose.
-type ReorderEntry = string | { id: string; folder?: string | null };
-
-const isReorderEntry = (e: unknown): e is ReorderEntry => {
-  if (typeof e === 'string') return true;
-  if (!e || typeof e !== 'object') return false;
-  const { id, folder } = e as { id?: unknown; folder?: unknown };
-  return typeof id === 'string' && (folder == null || typeof folder === 'string');
-};
-
-// A request's reorder entries, or null when any is not one (a tab id, or an id with a text or null folder): the
-// caller refuses the request before it writes anything.
-export function readReorderEntries(raw: unknown[]): ReorderEntry[] | null {
-  return raw.every(isReorderEntry) ? raw : null;
-}
-
-// Normalise one reorder entry to its (id, folder) form: legacy string
-// entries are loose, and empty / whitespace folder names collapse to
-// NULL so a blank folder can never persist. Pure + exported for tests.
-export function normalizeReorderEntry(entry: ReorderEntry): { id: string; folder: string | null } {
-  if (typeof entry === 'string') return { id: entry, folder: null };
-  const trimmed = entry.folder?.trim();
-  return { id: entry.id, folder: trimmed ? trimmed : null };
-}
-
-// Update tab order + folder membership. Caller passes the entries in
-// their new positions; we rewrite every order_index (and folder) in
-// one batch. Cheap given the < 20-tab scale we see in practice (see
-// docs/specs/006-project/per-tab-storage.md "Risk"). Empty / whitespace folder names normalise to NULL
-// so a blank folder can never persist.
-export async function reorderTabs(
-  env: PlanEnv,
-  projectId: string,
-  entries: ReorderEntry[],
-): Promise<void> {
-  const now = Date.now();
-  // Only the plan's own tabs, each once at the last place the request names it (what writing every entry in
-  // turn left): ids it lacks would update nothing, and a body of a million of them was a statement each.
-  const { results } = await env.PLAN_DB.prepare('SELECT tab_id FROM plan_tabs WHERE plan_id = ?')
-    .bind(projectId)
-    .all<{ tab_id: string }>();
-  const held = new Set(results.map((r) => r.tab_id));
-  const placed = new Map<string, { idx: number; folder: string | null }>();
-  entries.forEach((entry, idx) => {
-    const { id, folder } = normalizeReorderEntry(entry);
-    if (held.has(id)) placed.set(id, { idx, folder });
-  });
-  // Order and folder live on the link, per project
-  //: moving a tab here
-  // leaves its place in every other project, and its body, untouched.
-  const batch = [...placed].map(([tabId, { idx, folder }]) =>
-    env.PLAN_DB.prepare(
-      'UPDATE plan_tabs SET order_index = ?, folder = ? WHERE plan_id = ? AND tab_id = ?',
-    ).bind(idx, folder, projectId, tabId),
-  );
-  if (batch.length > 0) await env.PLAN_DB.batch(batch);
-  await env.PLAN_DB.prepare('UPDATE plan SET saved_at = ? WHERE id = ?').bind(now, projectId).run();
-}
-
-// Compare-and-swap one tab's `data` blob (docs/specs/013-workspace/share-roles.md "Integrity"; the loop that calls
-// it is @liveworkspace/api-kit tab-swap.ts). Writes `nextData` only while the row is still at `expected`, the version
-// the caller read, and reports whether it did. The `tabs_rev_advances` trigger advances `rev` on every write of
-// `data`, so the same version is the same body: the body is never bound again to be compared. `updated_at` rules
-// out a tab deleted and inserted again under its id at the same revision.
-//
-// Only `data` and `updated_at` move: a participant write never renames, reorders or
-// relinks the tab, and it touches no action or thread, so the collaboration
-// index (docs/specs/013-workspace/inbox.md) has nothing to mirror.
-export async function swapTabData(
-  env: PlanEnv,
-  projectId: string,
-  tabId: string,
-  expected: TabVersion,
-  nextData: string,
-  // The tab `nextData` serialises, as the caller built it: its stats and references are read from it, not parsed
-  // again. Its element count is also the tab's element_count.
-  nextBody: Omit<Tab, 'id' | 'name'>,
-): Promise<boolean> {
-  assertTabDataFits(tabId, nextData, 'swapTabData');
-  const now = Date.now();
-  const nextStats: StoredTabStats = storedTabStatsOf(nextBody, nextData);
-  const [res] = await env.PLAN_DB.batch([
-    env.PLAN_DB.prepare(
-      'UPDATE tabs SET data = ?, updated_at = ?, element_count = ?, rev = rev + 1 WHERE id = ? AND rev = ? AND updated_at = ?',
-    ).bind(nextData, now, nextStats.elementCount, tabId, expected.rev, expected.updatedAt),
-    // Only if the swap above won: then the tab is at the next revision, written now.
-    tabStatsStatement(env, tabId, nextStats, now, expected.rev + 1),
-  ]);
-  if ((res?.meta?.changes ?? 0) === 0) return false;
-  await env.PLAN_DB.prepare('UPDATE plan SET saved_at = ? WHERE id = ?').bind(now, projectId).run();
-  return true;
-}
+// Order and folder (docs/specs/006-project/tab-folders.md), per project: moving a tab here leaves its place in
+// every other project, and its body, untouched. Cheap at the < 20-tab scale seen in practice
+// (docs/specs/006-project/per-tab-storage.md "Risk").
+export const { reorderTabs } = itemTabOrder<PlanEnv>({ db, tables, savedAt: 'after' });

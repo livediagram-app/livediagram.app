@@ -7,7 +7,7 @@ where the work begins instead of in a step before it. The New Design route asks 
 
 ## The panel
 
-`StartPanel` (`apps/live/components/start/StartPanel.tsx`) draws the start; the start says what its groups and cards
+`StartPanel` (`apps/live/components/start/StartPanel.tsx`, this app's binding of the panel every editor shares, `../packages/workbench/src/components/start/StartPanel.tsx`) draws the start; the start says what its groups and cards
 are, the panel draws them.
 
 - **Header:** over the app's own band ([The header band](#the-header-band)), a title mark, then the title ("Start Making Pages"), one line under it, the search box, and in the top right corner the

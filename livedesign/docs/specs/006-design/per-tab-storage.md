@@ -167,11 +167,15 @@ would otherwise wait for an edit that may never come. The retry waits 5 seconds,
 whatever still differs from the last saved state, so nothing is sent twice
 (`apps/live/app/design/[id]/useAutosave.ts`, `saveRetryDelayMs`).
 
+The debounce, the retry, the write-again over a peer's change and the baseline are one copy every editor shares
+(`@liveworkspace/workbench/hooks/persistence/useAutosaveCore`); `app/design/[id]/useAutosave.ts` binds it with
+this editor's calls and lists what it hands in.
+
 A save that never answers counts as failed too. Each tab's saves run one after another, so a request
 left hanging on a stalled connection (a laptop switching networks can hold one open for minutes)
 would hold back every later save of that tab. A tab save and a design meta save give up
-after 20 seconds plus the time to upload their body at 16 KB/s (`saveTimeoutMs` in
-`apps/live/lib/api/core.ts`: just over two and a half minutes for the largest tab), and the retry
+after 20 seconds plus the time to upload their body at 16 KB/s (`saveTimeoutMs`, the editors' shared
+`../packages/workbench/src/lib/api/core.ts`: just over two and a half minutes for the largest tab), and the retry
 above sends the newest content on a fresh connection.
 
 ### An unauthenticated save names the sign-in

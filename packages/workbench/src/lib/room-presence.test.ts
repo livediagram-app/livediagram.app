@@ -4,7 +4,9 @@ import {
   presenceRows,
   pruneMapToPresent,
   seededTabFocus,
+  syncRoomPresence,
   yieldedColour,
+  type RoomPresenceEntry,
 } from './room-presence';
 
 describe('pruneMapToPresent', () => {
@@ -109,5 +111,77 @@ describe('forgetDeparted', () => {
     ]);
     forgetDeparted(seen, new Set(['b']));
     expect([...seen]).toEqual([['b', 2]]);
+  });
+});
+
+describe('syncRoomPresence', () => {
+  // A page's presence state, held as each hook holds it, with every call it makes in order.
+  const page = (self: { id: string; color: string }) => {
+    const calls: string[] = [];
+    let tabFocus = new Map([['gone', 't9']]);
+    let selections = new Map([
+      ['b', 'sel-b'],
+      ['gone', 'sel-gone'],
+    ]);
+    let cursors = new Map([['gone', 'cur-gone']]);
+    const lastSeen = new Map([
+      ['b', 5],
+      ['gone', 1],
+    ]);
+    let colour = self.color;
+    const sync = {
+      lastSeen,
+      markSeen: (id: string) => {
+        calls.push(`seen ${id}`);
+        lastSeen.set(id, 9);
+      },
+      self: () => ({ ...self, color: colour }),
+      nextFreeColor: () => 'teal',
+      takeColour: (c: string) => {
+        calls.push(`colour ${c}`);
+        colour = c;
+      },
+      prunePeerDragPreviews: (present: Set<string>) => calls.push(`drag ${[...present].join(',')}`),
+      setRemoteTabFocus: (u: (prev: Map<string, string>) => Map<string, string>) => {
+        tabFocus = u(tabFocus);
+      },
+      setRemoteSelections: (u: (prev: Map<string, string>) => Map<string, string>) => {
+        selections = u(selections);
+      },
+      setRemoteCursors: (u: (prev: Map<string, string>) => Map<string, string>) => {
+        cursors = u(cursors);
+      },
+    };
+    return {
+      calls,
+      sync,
+      state: () => ({ tabFocus, selections, cursors, lastSeen, colour }),
+    };
+  };
+  const roster: (RoomPresenceEntry & { besideTabId?: string })[] = [
+    { id: 'a', name: 'Me', color: 'red' },
+    { id: 'b', name: 'Bo', color: 'blue', tabId: 't2', besideTabId: 't3' },
+    { id: 'c', name: 'Cy', color: 'red' },
+  ];
+
+  it('seeds arrivals, yields a shared colour and drops whoever left', () => {
+    const { calls, sync, state } = page({ id: 'd', color: 'red' });
+    syncRoomPresence([...roster, { id: 'd', name: 'Di', color: 'red' }], sync);
+    expect(calls).toEqual(['seen a', 'seen c', 'seen d', 'colour teal', 'drag a,b,c,d']);
+    const now = state();
+    expect([...now.tabFocus]).toEqual([['b', 't2']]);
+    expect([...now.selections]).toEqual([['b', 'sel-b']]);
+    expect(now.cursors.size).toBe(0);
+    expect(now.lastSeen.has('gone')).toBe(false);
+  });
+
+  it("runs a product's own steps where they sit, and keeps a colour nobody shares", () => {
+    const { calls, sync } = page({ id: 'a', color: 'red' });
+    syncRoomPresence(roster, {
+      ...sync,
+      onPresent: (people, present) => calls.push(`present ${people.length} ${present.size}`),
+      onPruned: (present) => calls.push(`pruned ${present.size}`),
+    });
+    expect(calls).toEqual(['seen a', 'seen c', 'drag a,b,c', 'present 3 3', 'pruned 3']);
   });
 });

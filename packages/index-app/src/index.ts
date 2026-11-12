@@ -29,3 +29,7 @@ export * from './tab-shares';
 export * from './tab-link';
 export * from './connected-tabs';
 export * from './own-items';
+export * from './item-tab-tables';
+export * from './item-tab-reads';
+export * from './item-tab-writes';
+export * from './item-tab-order';

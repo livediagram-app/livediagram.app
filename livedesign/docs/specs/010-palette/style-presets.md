@@ -137,8 +137,9 @@ multi-selection the preset applies to every selected arrow at once.
   preset-bound shape re-derives instead of being preserved as a manual
   override. The `colorPreset` binding lives on `ShapeElement` in
   `packages/design`.
-- Arrow presets are a static preset table in the presets component
-  (`apps/live/components/palette/StylePresets.tsx`); shape style presets are theme-derived
+- Arrow presets are a static preset table in the presets component, one copy for every editor
+  (`packages/workbench/src/components/palette/StylePresets.tsx`, bound to this editor's tile and shape
+  silhouette in `apps/live/components/palette/StylePresets.tsx`); shape style presets are theme-derived
   (`shapeColorPresets`), each carrying its border treatment.
 - The element transforms each preset performs live in `apps/live/lib/style-presets.ts`
   (`applyColorPresetToEl` / `applyArrowPresetToEl`),
