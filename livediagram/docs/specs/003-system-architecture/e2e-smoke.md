@@ -149,7 +149,7 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
 
 `scripts/e2e-stack.mjs` boots the stack Playwright's `webServer` waits on:
 
-1. **index**: `wrangler dev --local` (liveworkspace/apps/index) on `E2E_INDEX_PORT` (8119), its D1 a fresh
+1. **index**: `wrangler dev --local` (liveworkspace/apps/index) on `E2E_INDEX_PORT` (8119; the index's, media's and api's wrangler inspectors sit 10 above their ports by default, set by `E2E_INDEX_INSPECTOR_PORT`, `E2E_MEDIA_INSPECTOR_PORT` and `E2E_API_INSPECTOR_PORT`, so the stack opens no port outside its own), its D1 a fresh
    `liveworkspace/apps/index/.wrangler/e2e-state` each boot (migrations applied first), kept apart from a
    developer's own, sharing a test-only key with the api (the api's `INDEX_KEY`, the index's
    `INDEX_KEY_LIVEDIAGRAM`). It trusts the same accounts the api does (the stand-in below), takes tokens addressed to the api's `API_RESOURCE`, and calls this api for its internal item routes.
