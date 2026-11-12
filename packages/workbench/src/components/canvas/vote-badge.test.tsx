@@ -1,7 +1,16 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { useVoteBadge, voteStepperCollapses, VOTE_STEPPER_PX } from './vote-badge';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import {
+  useVoteBadge,
+  voteBadgeShrinks,
+  voteStepperCollapses,
+  VOTE_BADGE_FOOTPRINT_PX,
+  VOTE_BADGE_PX,
+  VOTE_DOT_PX,
+  VOTE_STEPPER_PX,
+} from './vote-badge';
 
 // docs/specs/012-collaboration/session-tools.md "On a small note when zoomed out it folds to a badge".
 
@@ -26,6 +35,44 @@ describe('voteStepperCollapses', () => {
       ),
     ).toBe(false);
     expect(voteStepperCollapses({ width: 400, height: 400 }, 0.9)).toBe(false);
+  });
+});
+
+// docs/specs/012-collaboration/session-tools.md "Smaller still it shrinks to a dot".
+describe('voteBadgeShrinks', () => {
+  it('never shrinks at 100% and above, or without a box', () => {
+    expect(voteBadgeShrinks({ width: 10, height: 10 }, 1)).toBe(false);
+    expect(voteBadgeShrinks(undefined, 0.1)).toBe(false);
+  });
+
+  it('shrinks when the element on screen is narrower or shorter than the badge’s footprint', () => {
+    // A phone's full Fit of a large board: a 180 px note at 0.13 zoom is 23 px, under the 24 px badge itself.
+    expect(voteBadgeShrinks({ width: 180, height: 180 }, 0.13)).toBe(true);
+    // Wide but short still shrinks: the badge would cover the note's height.
+    expect(voteBadgeShrinks({ width: 2000, height: 60 }, 0.4)).toBe(true);
+    // A 120 x 80 note at 0.4 is 48 x 32 on screen: room for the badge.
+    expect(voteBadgeShrinks({ width: 120, height: 80 }, 0.4)).toBe(false);
+    expect(VOTE_BADGE_FOOTPRINT_PX).toBe(32);
+    // Right at the threshold the badge stays; just under it, the dot.
+    const z = 0.25;
+    const edge = VOTE_BADGE_FOOTPRINT_PX / z;
+    expect(voteBadgeShrinks({ width: edge, height: edge }, z)).toBe(false);
+    expect(voteBadgeShrinks({ width: edge - 1, height: edge }, z)).toBe(true);
+    // The dot is smaller than any note it marks.
+    expect(VOTE_DOT_PX).toBeLessThan(VOTE_BADGE_PX);
+  });
+
+  it('decides a 2,000-note board over 60 zoom frames within a CPU budget, with no layout read', () => {
+    const boxes = Array.from({ length: 2000 }, (_, i) => ({ width: 120 + (i % 200), height: 180 }));
+    let shrunk = 0;
+    const ms = cpuMsOf(() => {
+      for (let f = 0; f < 60; f++) {
+        const zoom = 0.1 + f * 0.015;
+        for (const box of boxes) if (voteBadgeShrinks(box, zoom)) shrunk++;
+      }
+    });
+    expect(shrunk).toBeGreaterThan(0);
+    expect(ms).toBeLessThan(cpuBudgetMs(30));
   });
 });
 
