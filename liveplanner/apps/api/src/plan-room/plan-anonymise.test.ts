@@ -294,7 +294,7 @@ describe('anonymisePlan', () => {
 
     await anonymisePlan(db.env, 'P', 'user_gone');
 
-    const all = (q: string) => db.sql.prepare(q).all() as Record<string, string>[];
+    const all = (q: string) => db.sql.prepare(q).all() as { body: string; event: string }[];
     const stamps = all('SELECT body FROM automation_rules ORDER BY id').map((r) => {
       const body = JSON.parse(r.body) as {
         made: { by: { name: string } };

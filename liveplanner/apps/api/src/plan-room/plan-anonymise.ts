@@ -102,12 +102,14 @@ export function anonymiseRun(text: string, hashed: string): Anonymised<string> {
   if (!lines.some((l) => l?.by?.id === hashed)) return { value: text, changed: false };
   const steps = lines.map((line) => {
     if (!line || typeof line !== 'object') return line;
-    let said = line.text;
-    if (typeof said === 'string')
-      for (const name of names) said = said.split(name).join(ANONYMISED_NAME);
+    const said = line.text;
+    const renamed =
+      typeof said === 'string'
+        ? [...names].reduce((t, name) => t.split(name).join(ANONYMISED_NAME), said)
+        : null;
     return {
       ...line,
-      ...(typeof said === 'string' ? { text: said } : {}),
+      ...(renamed !== null ? { text: renamed } : {}),
       ...(line.by?.id === hashed ? { by: ANONYMISED_ITEM_PERSON } : {}),
     };
   });

@@ -162,5 +162,6 @@ describe('ruleWithTabIds', () => {
     });
     expect(body.trigger.formTab).toBe('form1');
     expect(ruleWithTabIds('x', tabs)).toBe('x');
+    expect(ruleWithTabIds({ steps: [] }, tabs)).toEqual({ steps: [] });
   });
 });

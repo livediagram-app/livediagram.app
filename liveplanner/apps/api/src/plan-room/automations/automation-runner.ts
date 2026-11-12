@@ -395,7 +395,7 @@ async function derivedFor(
   return Promise.all(
     targets.map(async (card, i) => ({
       ...event,
-      id: `d:${card.id}:${hex(await sha256(new TextEncoder().encode(moments[i]!)))}`,
+      id: `d:${card.id}:${hex(await sha256(new TextEncoder().encode(moments[i])))}`,
       cardId: card.id,
     })),
   );
