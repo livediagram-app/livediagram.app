@@ -393,8 +393,12 @@ export async function runAutomationWake(
       break;
     }
     const event = row.event;
-    for (const rule of event ? rules : []) {
-      if (!triggerMatches(rule.trigger, event!, rule.id)) continue;
+    for (const listed of event ? rules : []) {
+      if (!triggerMatches(listed.trigger, event!, listed.id)) continue;
+      // The rule as it is now: one this wake's own runs paused (ten failures), or a write turned off, deleted or
+      // changed while the wake waited on the plan, runs as it now stands, or not at all.
+      const rule = deps.store.get(listed.id);
+      if (!rule?.enabled || !triggerMatches(rule.trigger, event!, rule.id)) continue;
       // Card Unblocked, Related Cards Done, Column Over Limit: the cards it concerns, worked out from the plan now. A
       // held run going on already names its card (the one the trigger found before the Wait).
       if (isDerivedTrigger(rule.trigger) && event!.kind !== 'resume') {

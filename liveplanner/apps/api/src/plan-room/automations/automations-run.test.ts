@@ -114,6 +114,16 @@ describe('runs, limits and loops', () => {
     expect((await card(c.id)).fields['status']).toBe('doing');
   });
 
+  it('runs a rule no more once it pauses, even on triggers the same wake still holds', async () => {
+    const rule = await w.rule({ steps: [{ kind: 'move', status: 'gone-column' }] });
+    for (let i = 0; i < 12; i += 1) {
+      const c = await w.make('A', { title: `F${i}` });
+      await move(c.id, 'done');
+    }
+    await room().alarm();
+    expect(await runs(`?rule=${rule.id}`)).toHaveLength(10);
+  });
+
   it('pauses a rule after ten failures in a row, and Resume turns it on again', async () => {
     const rule = await w.rule({ steps: [{ kind: 'move', status: 'gone-column' }] });
     for (let i = 0; i < 10; i += 1) {
