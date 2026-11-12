@@ -237,7 +237,13 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   bottom-right corner, hung a third off it: the count (as privacy allows) and a small plus, brand-filled once it holds
   your dots. The badge's touch target is 44 px though it draws smaller. A tap (or Enter) on it opens the full stepper
   for that element, focus on its plus; a press anywhere else, Escape, or the element growing past the threshold
-  closes it again. Only one is open at a time, as a press on another badge is a press elsewhere. At 100% and above
+  closes it again. Only one is open at a time, as a press on another badge is a press elsewhere.
+  **Smaller still it shrinks to a dot.** When the element on screen is narrower or shorter than the badge's footprint
+  (32 px: the 24 px badge and the third of it hung off the corner), as at a phone's full Fit of a large board where a
+  note is about 23 px, the badge would be bigger than its note and cover its neighbours, so the badge (and, once casting closes, the read-only count) shrinks to a **vote
+  dot**: 8 px, tucked inside the element's bottom-right corner, brand-filled while it holds your dots, dark while it
+  holds only other people's (as privacy allows), hollow while empty. The dot takes no press of its own: a tap on the
+  element still casts a dot, and zooming in brings the badge back to open the stepper or take a dot back. At 100% and above
   nothing changes, and pressing the element itself still casts. Plan cards on a board never zoom, so they keep the
   stepper.
   Once casting closes it reverts to a read-only count: a result to read,

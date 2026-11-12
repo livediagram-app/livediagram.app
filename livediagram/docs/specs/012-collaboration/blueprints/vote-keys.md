@@ -45,7 +45,10 @@ refuses a closed vote, as the stepper (which is gone once casting closes) always
 - `voteKeyDelta(e: Pick<KeyboardEvent, 'key' | 'metaKey' | 'ctrlKey' | 'altKey'>): 1 | -1 | null`.
 - `voteByKey(...)`: `string | null`; never throws.
 - `castVote(id): boolean`, `retractVote(id): boolean` (callers that ignore the result are unchanged).
-- `ElementVoteOverlay` stepper buttons: `aria-keyshortcuts="+"` (add) and `"-"` (remove).
+- `ElementVoteOverlay` (shared, `@liveworkspace/workbench/components/canvas/ElementVoteOverlay`) takes the keys as
+  `keyShortcuts={{ add: '+', remove: '-' }}`, which livediagram's door (`components/canvas/ElementVoteOverlay.tsx`)
+  passes: the stepper buttons carry `aria-keyshortcuts="+"` (add) and `"-"` (remove), the folded badge `"+ -"`. A
+  product without vote keys (liveplanner) passes none, and no button announces a key.
 
 ## Errors and edge cases
 
