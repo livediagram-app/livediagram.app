@@ -113,7 +113,7 @@ export async function handleFavourites(ctx: PersonContext): Promise<Response> {
 }
 
 // PUT / DELETE /recent-hidden/:itemId: Hide from Recent and Show in Recent. The person's own view of the item, like a
-// star: it leaves Recent and Jump Back In, and nothing else. Kept on the person's `opens` row; one made by hiding an
+// star: it leaves Recent and Most Used, and nothing else. Kept on the person's `opens` row; one made by hiding an
 // item never opened (last_opened_at 0) goes again when it is shown.
 export async function handleRecentHidden(ctx: PersonContext): Promise<Response> {
   const { request, env, segments, person } = ctx;

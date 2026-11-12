@@ -432,11 +432,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Home|Selected|Hero.NewDocument':
     'Someone started a new document from the New document button in the search field at the top of Home.',
   'Home|Selected|JumpBackIn.MostUsed':
-    "Someone opened a document from Home's Jump Back In that was among the ones they used on the most days.",
+    "Someone opened a document from Home's Most Used and Recent that was among the ones they used on the most days.",
   'Home|Selected|JumpBackIn.Recent':
-    "Someone opened a document from Home's Jump Back In that was among the ones they used most recently.",
+    "Someone opened a document from Home's Most Used and Recent that was among the ones they used most recently.",
   'Home|Selected|JumpBackIn.SeeMore':
-    "Someone followed See More from Home's Jump Back In to the Recent page.",
+    "Someone followed See More from Home's Recent to the Recent page.",
   'Home|Selected|WhatHappened':
     "Someone opened a document from Home's What Happened, which lists what other people did to their documents.",
   'Layer|Added|': 'A new layer was added in the Layers panel.',

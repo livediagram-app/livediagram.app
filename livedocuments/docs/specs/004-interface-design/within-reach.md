@@ -24,9 +24,9 @@ side's set and then the set of both, and loses nothing.
 
 ## Where it is used
 
-| Surface                                                          | Item       | A use                                                                                                                                               | N   | Empty place                     |
-| ---------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --- | ------------------------------- |
-| [Explorer Home: Jump Back In](../013-workspace/explorer-home.md) | A document | A day the person opened, edited or made it, over the last 90 days; a bulk import is no use ([Making a document](../013-workspace/explorer-home.md)) | 4   | Nothing: the place is not drawn |
+| Surface                                                                  | Item       | A use                                                                                                                                               | N   | Empty place                     |
+| ------------------------------------------------------------------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --- | ------------------------------- |
+| [Explorer Home: Most Used and Recent](../013-workspace/explorer-home.md) | A document | A day the person opened, edited or made it, over the last 90 days; a bulk import is no use ([Making a document](../013-workspace/explorer-home.md)) | 4   | Nothing: the place is not drawn |
 
 ## Presentation
 
@@ -40,6 +40,6 @@ side's set and then the set of both, and loses nothing.
 ## Implementation
 
 One shared, pure function decides every within-reach set: `withinReach` in `@liveworkspace/api-schema`
-(`../packages/api-schema/src/within-reach.ts`), which `@livedocuments/api-schema` re-exports. Jump Back In is drawn by
+(`../packages/api-schema/src/within-reach.ts`), which `@livedocuments/api-schema` re-exports. Most Used and Recent is drawn by
 the shared Explorer from liveworkspace's index ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md))
 ([blueprint](blueprints/within-reach.md)).

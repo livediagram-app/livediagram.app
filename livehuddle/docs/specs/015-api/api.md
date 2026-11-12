@@ -203,16 +203,16 @@ it sits in the Explorer where its age puts it.
 ### Marking a document used
 
 A use of a canvas (a use day and the person's latest use, the measures
-[Explorer Home](../013-workspace/explorer-home.md#opens)'s Jump Back In reads) is the index's: an open
+[Explorer Home](../013-workspace/explorer-home.md#opens)'s Most Used and Recent reads) is the index's: an open
 recorded there, or an edit the canvas reports to it. Making a canvas is a use for whoever makes it when the editor
 records it so.
 
 - The editor records an open at the index as it makes a canvas, unless it sends `markUsed: false`: it does so for
-  every document of an import that makes more than one in one go, which then join Jump Back In at their first open
+  every document of an import that makes more than one in one go, which then join Most Used and Recent at their first open
   or edit.
 - This api validates `markUsed` on a create (anything but a boolean is refused whole, 400 "invalid markUsed";
   nothing is created). For an API client's create (one the worker makes the index's item for), absent or `true`,
-  the worker records the open at the index for the caller beside the create, so the canvas joins their Jump Back In
+  the worker records the open at the index for the caller beside the create, so the canvas joins their Most Used and Recent
   at once; `false` leaves it to join at its first open or edit. An editor's create (it sends the index's grant) is
   the editor's to record, and a re-commit of an id the index already holds is no making, so neither is recorded
   here.

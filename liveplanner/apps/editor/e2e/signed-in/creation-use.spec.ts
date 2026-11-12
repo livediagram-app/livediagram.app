@@ -3,7 +3,7 @@ import { expect, expectNoPageErrors, test } from '../fixtures';
 import { freshUserId, installSession, type StubUser } from './session';
 
 // Making a project is a use (docs/specs/015-api/api.md "Marking a project used"), signed in, against the signed-in
-// export: the api records an API client's create as its open, so the project is in Jump Back In unopened; one it
+// export: the api records an API client's create as its open, so the project is in Home’s Most Used or Recent unopened; one it
 // makes with markUsed: false is not.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1280, height: 800 } });
@@ -41,11 +41,11 @@ async function apiCreate(
   expect(res.status(), `create ${name}`).toBe(201);
 }
 
-// Jump Back In's projects: the Most Used and Recent lists on a wide screen, the strip on a phone.
-const jumpBackIn = (page: Page) =>
-  page.getByRole('region', { name: 'Jump Back In' }).getByRole('listitem');
+// Home's opened projects: the Most Used and Recent sections, grids on a wide screen, strips on a phone.
+const homeOpened = (page: Page) =>
+  page.getByRole('region', { name: /^(Most Used|Recent)$/ }).getByRole('listitem');
 
-test('an API client’s project is in Jump Back In unless it says markUsed: false', async ({
+test('an API client’s project is in Home’s Most Used or Recent unless it says markUsed: false', async ({
   page,
   pageErrors,
 }) => {
@@ -54,9 +54,9 @@ test('an API client’s project is in Jump Back In unless it says markUsed: fals
   await apiCreate(page, headers, 'One of a batch', { markUsed: false });
 
   await page.goto('/explorer/home');
-  await expect(jumpBackIn(page).getByRole('link', { name: 'Made by a script' })).toBeVisible({
+  await expect(homeOpened(page).getByRole('link', { name: 'Made by a script' })).toBeVisible({
     timeout: 30_000,
   });
-  await expect(jumpBackIn(page).getByRole('link', { name: 'One of a batch' })).toHaveCount(0);
+  await expect(homeOpened(page).getByRole('link', { name: 'One of a batch' })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });

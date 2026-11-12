@@ -1,7 +1,7 @@
 // Home's reads, folded (README "How it loads"). Home opens with four questions about items, each asked from its own
 // part of the page, and two about what was shared:
 //
-//   - Jump Back In: Recent's first page with Most Used beside it (HomePane);
+//   - Most Used and Recent: Recent's first page with Most Used beside it (HomePane);
 //   - New: the items made most recently in the person's spaces (HomeNew);
 //   - the hero's pill: how many items are in every space the person is in, My Work and each team (HomeHero);
 //   - the first run: whether the person can open anything at all (WelcomeProvider);
@@ -153,7 +153,7 @@ function askHome(
   return homeBatch(c, scopeKey(app, filter), { ...ask, scope: { app, filter } }, signal);
 }
 
-/** Jump Back In's read: Recent's first page with Most Used, folded with Home's other reads asked with it. */
+/** Most Used and Recent's read: Recent's first page with Most Used, folded with Home's other reads asked with it. */
 export async function readRecentForHome(
   c: IndexClient,
   app: App,

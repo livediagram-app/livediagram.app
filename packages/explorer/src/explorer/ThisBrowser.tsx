@@ -3,11 +3,11 @@
 // This Browser in the Explorer: the host app's items kept only in this browser (this-browser.ts), where the host can
 // read them (the Explorer served on the app's own address). They show as liveplanner's own Explorer showed them: a
 // sidebar row with their count, a view of their own (`/explorer/offline`), a This Browser group in the Trash, and
-// among Recent in Home's Jump Back In. The editor's Explorer panel has the same view (panel/PanelThisBrowser.tsx). Each
+// among Recent in Home's Most Used and Recent. The editor's Explorer panel has the same view (panel/PanelThisBrowser.tsx). Each
 // opens in its app's editor, which does the rest (rename, restore): the index never sees them, so the Explorer only
 // lists them. Where the app moves them into the account, each live row also has Sync: in place in the editor's panel
 // (`sync`), or, on the Explorer page, a hand-over to the app's editor (this-browser.ts `thisBrowserConvertHref`).
-// Jump Back In's card of one has This Browser's menu (ThisBrowserItemMenu: Open, Sync, Delete where the host can)
+// Most Used and Recent's card of one has This Browser's menu (ThisBrowserItemMenu: Open, Sync, Delete where the host can)
 // and drags to the Trash or a place (drag.tsx), each through these same verbs.
 
 import {
@@ -188,7 +188,7 @@ export function useThisBrowserItems(): { host: ThisBrowserHost | null; live: Thi
   return { host: thisBrowser, live: items };
 }
 
-/** Jump Back In's merge: the opened ones among `recent`, by the same rule (last opened first), at most `max`. */
+/** Most Used and Recent's merge: the opened ones among `recent`, by the same rule (last opened first), at most `max`. */
 export function mergeOpened<T extends { lastOpenedAt: number | null }>(
   recent: readonly T[],
   local: readonly ThisBrowserItem[],
@@ -533,7 +533,7 @@ export function ThisBrowserTrashGroup() {
   );
 }
 
-/** This Browser's menu for one live item, from its Jump Back In card's ⋯ or a right-click: Open; Sync (signed in: in
+/** This Browser's menu for one live item, from its card's on Home ⋯ or a right-click: Open; Sync (signed in: in
  *  place with `sync`, or the page's hand-over to the editor with `syncHref`), as This Browser's rows offer it; and
  *  Delete, asked first, where the host deletes in place (`remove`). */
 export function ThisBrowserItemMenu({

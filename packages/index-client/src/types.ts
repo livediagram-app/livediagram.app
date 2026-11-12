@@ -59,7 +59,7 @@ export type Item = {
   access: Level;
   favourite: boolean;
   lastOpenedAt: number | null;
-  // Hidden from the person's Recent (and Jump Back In) by Hide from Recent. Always sent by the index.
+  // Hidden from the person's Recent (and Most Used) by Hide from Recent. Always sent by the index.
   hiddenFromRecent?: boolean;
   // The share code, when they reach it only through a link.
   sharedVia: string | null;

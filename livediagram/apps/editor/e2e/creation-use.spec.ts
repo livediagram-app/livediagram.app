@@ -4,7 +4,7 @@ import { syntheticExportZip } from './ms-whiteboard-board';
 
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md
 // "Making a document"), end to end against the real build and api worker, as a guest, in dark
-// mode: a board imported on its own is in Home's Jump Back In without being opened; a two-board
+// mode: a board imported on its own is in Home's Most Used and Recent without being opened; a two-board
 // import puts neither there, though both are in All (Recent lists only what was opened). Home and All are the
 // shared Explorer's (liveworkspace's page at /explorer, from its site build); the import is this site's /import page.
 
@@ -31,9 +31,9 @@ async function importBoards(page: Page, boards: 1 | 2): Promise<void> {
   await expect(page.getByTestId('import-documents')).toContainText(SINGLE_BOARD);
 }
 
-// Jump Back In's documents: the Most Used and Recent lists on a wide screen, the strip on a phone.
-const jumpBackIn = (page: Page) =>
-  page.getByRole('region', { name: 'Jump Back In' }).getByRole('listitem');
+// Home's opened documents: the Most Used and Recent sections, grids on a wide screen, strips on a phone.
+const homeOpened = (page: Page) =>
+  page.getByRole('region', { name: /^(Most Used|Recent)$/ }).getByRole('listitem');
 
 async function freshGuest(page: Page): Promise<void> {
   await adoptGuest(page, await mintGuest(page.request));
@@ -43,7 +43,7 @@ async function freshGuest(page: Page): Promise<void> {
   });
 }
 
-test('a board imported on its own is in Jump Back In without being opened', async ({
+test('a board imported on its own is in Home’s Most Used or Recent without being opened', async ({
   page,
   pageErrors,
 }) => {
@@ -52,9 +52,9 @@ test('a board imported on its own is in Jump Back In without being opened', asyn
   await importBoards(page, 1);
 
   await page.goto('/explorer/home');
-  const tile = jumpBackIn(page).getByRole('link', { name: SINGLE_BOARD });
+  const tile = homeOpened(page).getByRole('link', { name: SINGLE_BOARD });
   await expect(tile).toBeVisible();
-  await expect(jumpBackIn(page).getByRole('link')).toHaveCount(1);
+  await expect(homeOpened(page).getByRole('link')).toHaveCount(1);
   await page.screenshot({ path: test.info().outputPath('single-import-home-desktop.png') });
 
   // A phone: the same board in the strip, before its See More tile.
@@ -64,7 +64,7 @@ test('a board imported on its own is in Jump Back In without being opened', asyn
   expectNoPageErrors(pageErrors);
 });
 
-test('a two-board import marks neither used: Jump Back In stays empty, All has both', async ({
+test('a two-board import marks neither used: Most Used and Recent stay empty, All has both', async ({
   page,
   pageErrors,
 }) => {
@@ -73,9 +73,9 @@ test('a two-board import marks neither used: Jump Back In stays empty, All has b
   await importBoards(page, 2);
 
   await page.goto('/explorer/home');
-  const jump = page.getByRole('region', { name: 'Jump Back In' });
+  const jump = page.getByRole('region', { name: 'Recent' });
   await expect(jump).toContainText(/will gather here\./);
-  await expect(jumpBackIn(page).getByRole('link')).toHaveCount(0);
+  await expect(homeOpened(page).getByRole('link')).toHaveCount(0);
   await page.screenshot({ path: test.info().outputPath('bulk-import-home-desktop.png') });
 
   // Never opened, so not in Recent either: All lists every item the person can open.
@@ -88,7 +88,7 @@ test('a two-board import marks neither used: Jump Back In stays empty, All has b
   await expect(page).toHaveURL(/\/document\//);
   await expect(page.getByText(SINGLE_BOARD).first()).toBeVisible();
   await page.goto('/explorer/home');
-  await expect(jumpBackIn(page).getByRole('link', { name: SINGLE_BOARD })).toBeVisible();
-  await expect(jumpBackIn(page).getByRole('link', { name: UNTITLED_BOARD })).toHaveCount(0);
+  await expect(homeOpened(page).getByRole('link', { name: SINGLE_BOARD })).toBeVisible();
+  await expect(homeOpened(page).getByRole('link', { name: UNTITLED_BOARD })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });

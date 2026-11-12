@@ -87,11 +87,11 @@ browser's opened local designs).
 | Recent newest first, never one of the most used     | same                                                     |
 | Short groups, empty input, `n <= 0`, stable ties    | same                                                     |
 | The merge property over two lists                   | same                                                     |
-| Jump Back In's split, merge and alternation         | apps/live/app/explorer/home/home-model.test.ts (removed) |
+| Most Used and Recent's split and merge              | apps/live/app/explorer/home/home-model.test.ts (removed) |
 
 ## Constants and configuration
 
-None of its own: N, the measure of a use and its window belong to each surface (Jump Back In: 4,
+None of its own: N, the measure of a use and its window belong to each surface (Most Used and Recent: 4,
 over `WITHIN_REACH_USE_WINDOW_DAYS`).
 
 ## Defaults ledger

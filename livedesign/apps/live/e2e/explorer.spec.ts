@@ -14,7 +14,7 @@ async function showView(page: Page, name: string): Promise<void> {
   await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
 }
 
-// Recent and Favourites have no sidebar entry (Home's Jump Back In and the panel link to them): opened by address.
+// Recent and Favourites have no sidebar entry (Home's Most Used and Recent and the panel link to them): opened by address.
 async function openView(page: Page, slug: 'recent' | 'favourites', name: string): Promise<void> {
   await page.goto(`/explorer/${slug}`);
   await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();

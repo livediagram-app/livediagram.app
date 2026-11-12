@@ -557,11 +557,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Home|Selected|Hero.NewDesign':
     'Someone started a new design from the New design button in the search field at the top of Home.',
   'Home|Selected|JumpBackIn.MostUsed':
-    "Someone opened a design from Home's Jump Back In that was among the ones they used on the most days.",
+    "Someone opened a design from Home's Most Used and Recent that was among the ones they used on the most days.",
   'Home|Selected|JumpBackIn.Recent':
-    "Someone opened a design from Home's Jump Back In that was among the ones they used most recently.",
+    "Someone opened a design from Home's Most Used and Recent that was among the ones they used most recently.",
   'Home|Selected|JumpBackIn.SeeMore':
-    "Someone followed See More from Home's Jump Back In to the Recent page.",
+    "Someone followed See More from Home's Recent to the Recent page.",
   'Home|Selected|WhatHappened':
     "Someone opened a design from Home's What Happened, which lists what other people did to their designs.",
   'Layer|Added|': 'A new layer was added in the Layers panel.',

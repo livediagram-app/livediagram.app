@@ -166,7 +166,7 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 |                                |                     | `updatedAt`, or by `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent`             |
 |                                |                     | only, first page) adds `mostUsed`: up to N items opened in the last 14 days, ranked by |
 |                                |                     | how many times (ties: opened last first), each with `useOpens` (and                    |
-|                                |                     | `useDays`), in the same response (Jump Back In). On any first page,                    |
+|                                |                     | `useDays`), in the same response (Most Used on Home). On any first page,               |
 |                                |                     | `mine=N` (1 to 200) adds `mine: {count, more}`, the live items in `app` in             |
 |                                |                     | every space the person is in (their own and each team's; each item once)               |
 |                                |                     | counted up to N (Home's pill), and `any=1` adds `any`, whether                         |

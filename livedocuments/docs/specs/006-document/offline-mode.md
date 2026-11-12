@@ -187,7 +187,7 @@ back into This Browser's list.
   livedocuments keeps a small list of them in this browser (id, title and dates, never their content,
   `@liveworkspace/explorer/this-browser`), which the Explorer on livedocuments' own address reads: a **This Browser**
   sidebar row with their count, a view of its own (`/explorer/offline`), a This Browser group in the Trash and a
-  place in Home's Jump Back In, each opening in the editor, and **Sync Document** on each live row for a signed-in
+  place in Home's Most Used and Recent, each opening in the editor, and **Sync Document** on each live row for a signed-in
   person. The editor's Explorer panel has This Browser on its rail too, with the count, shown while
   this browser holds at least one, opening its pane in place, **Sync Document** run there for a signed-in person
   (`hooks/persistence/useThisBrowserHost.ts`). `/offline`, the old This Browser page, only redirects to
@@ -198,7 +198,7 @@ back into This Browser's list.
 
 Every row and card of an offline document carries a **This Browser** pill,
 wherever the document is listed: the list and card views (folders, Search results,
-This Browser, Recent, Favourites), Home's Jump Back In, the Inbox's rows, the folder previews' tiles excepted (they
+This Browser, Recent, Favourites), Home's Most Used and Recent, the Inbox's rows, the folder previews' tiles excepted (they
 are pictures, not rows), the search panel's results, the editor's Explorer
 rows and its Current Document card, and the Trash.
 

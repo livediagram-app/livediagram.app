@@ -185,7 +185,7 @@ back into This Browser's list.
   `/explorer/offline`, the list of every offline project, titled **This
   browser**; the row shows while this browser holds at least one.
 - **Home.** An offline project's opens are counted in its own local record, never
-  sent anywhere, so Home's Jump Back In places it among the reader's other
+  sent anywhere, so Home's Most Used and Recent places it among the reader's other
   projects by the same rule, with the **This Browser** pill on its thumbnail
   ([Explorer Home](../013-workspace/explorer-home.md)).
 - **Inbox.** The Inbox reads offline projects in the browser and lists their open actions, Plan cards and comment
@@ -196,7 +196,7 @@ back into This Browser's list.
 
 Every row and card of an offline project carries a **This Browser** pill,
 wherever the project is listed: the list and card views (folders, Search results,
-This Browser, Recent, Favourites), Home's Jump Back In, the Inbox's rows, the folder previews' tiles excepted (they
+This Browser, Recent, Favourites), Home's Most Used and Recent, the Inbox's rows, the folder previews' tiles excepted (they
 are pictures, not rows), the search panel's results, the editor's Explorer
 rows, and the Trash.
 

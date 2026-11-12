@@ -1,5 +1,5 @@
 // Home's New (one-explorer.md "New, on Home"): the four items made most recently in the person's own space and their
-// teams', newest first, in this app or every app under All; above Jump Back In; Jump Back In's cards with a "Made …"
+// teams', newest first, in this app or every app under All; above Most Used and Recent; their cards with a "Made …"
 // line and Made by AI on an AI tool's; This Browser's merged in; hidden with none or a failed read; its placeholders
 // while it loads; no request of its own.
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
@@ -43,7 +43,7 @@ const labels = (el: HTMLElement) =>
   [...el.querySelectorAll('li a[aria-label]')].map((a) => a.getAttribute('aria-label'));
 
 describe('New, on Home', () => {
-  it('shows the four newest made, newest first, above Jump Back In, from no request of its own', async () => {
+  it('shows the four newest made, newest first, above Most Used and Recent, from no request of its own', async () => {
     const index = createFakeIndex({
       items: [
         made(1, 50, { lastOpenedAt: Date.now() }),
@@ -62,11 +62,11 @@ describe('New, on Home', () => {
     const heading = await screen.findByRole('heading', { name: 'New' });
     const el = heading.closest('section')!;
     await waitFor(() => expect(labels(el)).toEqual(['Item 2', 'Item 4', 'Item 3', 'Item 5']));
-    // Directly above Jump Back In.
+    // Directly above Recent (nothing here is most used, so Most Used is left out).
     const order = [...document.querySelectorAll('[data-home-section]')].map((s) =>
       s.getAttribute('data-home-section'),
     );
-    expect(order.slice(0, 2)).toEqual(['new', 'jump-back-in']);
+    expect(order.slice(0, 2)).toEqual(['new', 'recent']);
     // Each line says when it was made and where it lives.
     const team = el.querySelector('[data-item-card="item-2"]')!;
     expect(team.textContent).toContain('Made 1 hour ago · Marketing');
@@ -99,7 +99,7 @@ describe('New, on Home', () => {
 
   it('stays away with nothing made, or when its read fails', async () => {
     const { unmount } = renderHome(createFakeIndex({ items: [] }));
-    await screen.findByRole('heading', { name: 'Jump Back In' });
+    await screen.findByRole('heading', { name: 'Recent' });
     await waitFor(() => expect(screen.queryByRole('heading', { name: 'New' })).toBeNull());
     unmount();
     const index = createFakeIndex({ items: [made(1, 1, { lastOpenedAt: Date.now() })] });
@@ -109,7 +109,7 @@ describe('New, on Home', () => {
     expect(screen.queryByRole('heading', { name: 'New' })).toBeNull();
   });
 
-  it('draws Jump Back In’s placeholders while it loads', async () => {
+  it('draws Home’s card placeholders while it loads', async () => {
     const index = createFakeIndex({ items: [made(1, 1)] });
     index.hold.add('listItems');
     renderHome(index);
@@ -130,7 +130,7 @@ describe('New, on Home', () => {
     await waitFor(() => expect(labels(section()!)).toEqual(['Item 2']));
   });
 
-  it('renames in the card whose menu started it, even when Jump Back In shows the item too', async () => {
+  it('renames in the card whose menu started it, even when Recent shows the item too', async () => {
     const index = createFakeIndex({ items: [made(1, 1, { lastOpenedAt: Date.now() })] });
     renderHome(index);
     await waitFor(() => expect(labels(section()!)).toEqual(['Item 1']));

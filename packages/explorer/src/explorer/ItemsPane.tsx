@@ -362,7 +362,7 @@ function heading(
       };
     }
     case 'recent':
-      // Reached from Home (Jump Back In's See All), and leads back to it.
+      // Reached from Home (Recent's See More), and leads back to it.
       return {
         title,
         crumbs: [

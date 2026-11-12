@@ -180,13 +180,13 @@ back into This Browser's list.
   keeps a small list of them in this browser (id, title and dates, never their content,
   `@liveworkspace/explorer/this-browser`), which the Explorer on livedesign's own address reads: a **This Browser**
   sidebar row with their count, a view of its own (`/explorer/offline`), a This Browser group in the Trash and a
-  place in Home's Jump Back In, each with the **This Browser** pill (below), opening in the editor. Each live row has
+  place in Home's Most Used and Recent, each with the **This Browser** pill (below), opening in the editor. Each live row has
   **Sync Design** for a signed-in person. The editor's Explorer panel has This Browser on its rail too, with the count, shown while
   this browser holds at least one, opening its pane in place, **Sync Design** run there for a signed-in person
   (`hooks/persistence/useThisBrowserHost.ts`). `/offline`, the old This Browser page, only redirects to
   `/explorer/offline`, its query kept.
 - **Home.** An offline design's opens are counted in its own local record, never
-  sent anywhere, so Home's Jump Back In places it among the reader's other
+  sent anywhere, so Home's Most Used and Recent places it among the reader's other
   designs by the same rule, with the **This Browser** pill on its thumbnail
   ([Explorer Home](../013-workspace/explorer-home.md#opens)).
 - **Inbox.** The Inbox reads offline designs in the browser and lists their open actions and comment
@@ -197,7 +197,7 @@ back into This Browser's list.
 
 Every row and card of an offline design carries a **This Browser** pill,
 wherever the design is listed: the list and card views (folders, Search results,
-This Browser, Recent, Favourites), Home's Jump Back In, the Inbox's rows, the folder previews' tiles excepted (they
+This Browser, Recent, Favourites), Home's Most Used and Recent, the Inbox's rows, the folder previews' tiles excepted (they
 are pictures, not rows), the search panel's results, the editor's Explorer
 rows and its Current Design card, and the Trash.
 

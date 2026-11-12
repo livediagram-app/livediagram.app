@@ -276,7 +276,7 @@ rather than taken silently as the Default scheme. The MCP:
    as such and is compiled by the api ([API app](api.md)), so the MCP and the
    [CLI](cli.md) build designs alike.
    Making a design is a use of it, so it joins the user's
-   Jump Back In at once ([Explorer Home](../013-workspace/explorer-home.md#making-a-design));
+   Most Used and Recent at once ([Explorer Home](../013-workspace/explorer-home.md#making-a-design));
    `markUsed: false` is passed through to the create
    ([API](api.md#marking-a-design-used)) for a model making many designs in one go,
    so a batch never pushes the user's own work out of reach. Absent, nothing is sent and the

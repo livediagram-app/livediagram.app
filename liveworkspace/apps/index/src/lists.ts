@@ -45,7 +45,7 @@ export type ListSpec = ListFilters & {
   scopes?: string[];
   limit: number;
   cursor?: Cursor;
-  // Recent's first page only: also this many Most Used items, from the same request (Home's Jump Back In).
+  // Recent's first page only: also this many Most Used items, from the same request (Home's Most Used and Recent).
   used?: number;
   // A first page only: also how many live items are in every space the person is in (My Work and each of their
   // teams, in the app asked), counted up to this many (Home's hero pill), and whether they can open anything at all there (Home's first run). Home's
@@ -85,7 +85,7 @@ export function buildMostUsedQuery(
   const from = Math.floor(now / DAY_MS) - USE_WINDOW_DAYS + 1;
   const where = [
     'i.trashed_at IS NULL',
-    // Jump Back In leaves out what the person hid from Recent, as Recent does.
+    // Most Used and Recent leaves out what the person hid from Recent, as Recent does.
     'COALESCE(o.hidden, 0) = 0',
     `((i.owner_id = ? AND i.team_id IS NULL) OR i.scope ${IN_JSON} OR EXISTS (SELECT 1 FROM shared_with sw2 JOIN share_links sl2
       ON sl2.code = sw2.share_code AND sl2.item_id = sw2.item_id

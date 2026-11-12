@@ -188,7 +188,7 @@ export async function apiCreateDocument(
     createdAt?: number;
     savedAt?: number;
     presentation?: string | null;
-    // Whether making it is a use, so it joins Explorer Home's Jump Back In at once
+    // Whether making it is a use, so it joins Explorer Home's Recent at once
     // (docs/specs/015-api/api.md "Marking a document used"). Only `false` travels: absent is the
     // server's own default, a making that counts.
     markUsed?: boolean;
