@@ -238,7 +238,7 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
   enter/leave depth count, `Files` only, `preventDefault` on over and drop, the first file) wraps the dialog's body,
   whichever step it shows, and `DropOverlay` draws **Drop to Import** over it; `enabled` is false while `flow.busy`
   or a tab import runs. A refusal sets `dropError`, shown on the step it was dropped on (the list's `ImportChooseView`
-  `error`, the liveplanner Tab step's `ImportError` over the panel, the preview's `TrackerImportPanel` `error`): the
+  `error`, the liveplanner Tab step's `ImportError` over the panel, the preview's `TrackerImportPanel` `error`, drawn under its back bar above the preview so a long preview never hides it): the
   preview and the box's text stay. A tool's export goes to `step = 'list'` and `flow.show` (its preview replacing the
   last); a tab's JSON to `step = 'json'`.
 - The route: `await routeImportDrop(text, name, { intoTab, tools }, readTool)` (`apps/editor/components/dialogs/import/import-drop.ts`, `readTool` the worker's `read`) after the 20 MB

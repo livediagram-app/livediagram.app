@@ -34,6 +34,8 @@ export function TrackerImportPanel({
     <>
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-6 py-5">
         {head}
+        {/* Above the preview, where it is seen: a file dropped on a long preview was refused out of sight below. */}
+        {error ? <ImportError>{error}</ImportError> : null}
         <TrackerPreviewView
           preview={shown}
           target={preview.target}
@@ -41,7 +43,6 @@ export function TrackerImportPanel({
           onTarget={(t) => void flow.changeTarget(t)}
           disabled={busy}
         />
-        {error ? <ImportError>{error}</ImportError> : null}
         {/* A phone's footer has room for its buttons alone: the line goes at the end of the preview. */}
         <p className={`sm:hidden ${SUMMARY}`}>{summary}</p>
       </div>
