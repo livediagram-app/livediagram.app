@@ -417,6 +417,7 @@ several agents share, and timed out tests the change never touched.
 - A worktree that installed only some packages needs no `--no-verify`: when the root or a changed
   workspace has no `node_modules`, the hook first runs a frozen, filtered install of the groups'
   packages and what they depend on (`pnpm install --frozen-lockfile --ignore-scripts --filter=<name>...`).
+  A root with no `node_modules` gets a root-only install first, because the planner runs turbo.
   `--ignore-scripts` keeps `prepare` from running, so `core.hooksPath` stays as it is.
 - `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs` (tests: `pre-push.test.mjs`, on the
   platform's CI script tests). It takes the merge base with `origin/main` and asks CI's planner

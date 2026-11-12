@@ -1,6 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { installStep, parseNameStatus, prePushSteps, pushedShas, testSteps } from './pre-push.mjs';
+import {
+  installStep,
+  rootInstallStep,
+  parseNameStatus,
+  prePushSteps,
+  pushedShas,
+  testSteps,
+} from './pre-push.mjs';
 import { hooksPathAction } from './install.mjs';
 
 const group = {
@@ -294,4 +301,14 @@ test('install never rewrites a core.hooksPath that is already set, to any value'
   assert.equal(hooksPathAction({ ...base, current: '.husky' }), 'unchanged');
   assert.equal(hooksPathAction({ ci: true, insideWorkTree: true, current: '' }), 'skip-ci');
   assert.equal(hooksPathAction({ ci: false, insideWorkTree: false, current: '' }), 'skip-no-git');
+});
+
+test('a root without node_modules installs itself alone before planning', () => {
+  assert.deepEqual(rootInstallStep(false)?.args, [
+    'install',
+    '--frozen-lockfile',
+    '--ignore-scripts',
+    '--filter=.',
+  ]);
+  assert.equal(rootInstallStep(true), null);
 });

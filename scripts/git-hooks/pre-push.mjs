@@ -90,6 +90,21 @@ export function prePushSteps({ groups }) {
 }
 
 /**
+ * The root install the planner itself needs (it runs turbo): a frozen install of the root workspace alone,
+ * without scripts, when the root has no node_modules. Null otherwise.
+ * @param {boolean} rootHasModules
+ * @returns {Step | null}
+ */
+export function rootInstallStep(rootHasModules) {
+  if (rootHasModules) return null;
+  return {
+    label: 'install the root modules the planner needs',
+    cmd: 'pnpm',
+    args: ['install', '--frozen-lockfile', '--ignore-scripts', '--filter=.'],
+  };
+}
+
+/**
  * The install a fresh worktree needs first: when the root or a workspace the push changes has no
  * node_modules (a worktree that installed only some packages), a frozen install of the groups' packages
  * and what they depend on (`name...`), so lint and typecheck have their modules. `--ignore-scripts` keeps
@@ -448,6 +463,15 @@ function main() {
     return 0;
   }
   const env = withPnpm();
+  const bootstrap = rootInstallStep(existsSync(path.join(ROOT, 'node_modules')));
+  if (bootstrap) {
+    console.log(`[pre-push] ${bootstrap.label}`);
+    const run = spawnSync(bootstrap.cmd, bootstrap.args, { cwd: ROOT, stdio: 'inherit', env });
+    if (run.status !== 0) {
+      console.error('[pre-push] failed: the root install; push with --no-verify to leave it to CI');
+      return 1;
+    }
+  }
   const plan = JSON.parse(
     execFileSync('node', ['.github/scripts/ci-plan.mjs'], {
       cwd: ROOT,
