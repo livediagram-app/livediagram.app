@@ -59,6 +59,7 @@ export const AUTOMATION_WAKE_MS = 60_000;
 export const CHAIN_STOPPED = `Chain stopped after ${AUTOMATION_CHAIN_MAX} rules`;
 export const CHAIN_KEPT = "Started by another rule's change";
 export const QUEUE_FULL = 'Too many changes at once';
+export const BUDGET_SPENT = 'Daily limit reached: rules run again tomorrow';
 const WENT_WRONG = 'Something went wrong';
 
 export interface RunnerDeps extends WriteDeps {
@@ -267,7 +268,8 @@ export async function runRule(
       role: 'automation' as const,
       rule: rule.id,
       chain: (event.chain ?? 0) + 1,
-      ...(event.kind === 'github' ? { via: 'github' as const } : {}),
+      // A GitHub delivery's run, and the rest of one going on after its Wait (the resume keeps what GitHub heard).
+      ...(event.kind === 'github' || (resume && event.github) ? { via: 'github' as const } : {}),
     };
     const ai = (dry: boolean) =>
       runAiSteps(
@@ -392,16 +394,30 @@ export async function runAutomationWake(
       break;
     }
     const event = row.event;
-    for (const rule of event ? rules : []) {
-      if (!triggerMatches(rule.trigger, event!, rule.id)) continue;
-      // Card Unblocked, Related Cards Done, Column Over Limit: the cards it concerns, worked out from the plan now.
-      if (isDerivedTrigger(rule.trigger)) {
+    for (const listed of event ? rules : []) {
+      if (!triggerMatches(listed.trigger, event!, listed.id)) continue;
+      // The rule as it is now: one this wake's own runs paused (ten failures), or a write turned off, deleted or
+      // changed while the wake waited on the plan, runs as it now stands, or not at all.
+      const rule = deps.store.get(listed.id);
+      if (!rule?.enabled || !triggerMatches(rule.trigger, event!, rule.id)) continue;
+      // Card Unblocked, Related Cards Done, Column Over Limit: the cards it concerns, worked out from the plan now. A
+      // held run going on already names its card (the one the trigger found before the Wait).
+      if (isDerivedTrigger(rule.trigger) && event!.kind !== 'resume') {
         for (const target of await derivedFor(deps, state, rule.trigger, event!))
           if (await runRule(deps, state, rule, target)) ran += 1;
         continue;
       }
       if (await runRule(deps, state, rule, event!)) ran += 1;
     }
+    // A held run that went no further (its rule off or gone since it was queued, the day spent) settles here, so it
+    // never shows Waiting past its time; one that ran is settled already, and this changes nothing.
+    if (event?.kind === 'resume' && event.origin)
+      settleWaiting(
+        sql,
+        event.origin,
+        'skipped',
+        state.today >= AUTOMATION_RUNS_PER_DAY ? BUDGET_SPENT : WAIT_RULE_CHANGED,
+      );
     schedule.done(row.id);
   }
   if (schedule.dropped > 0) {

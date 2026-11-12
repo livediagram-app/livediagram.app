@@ -12,6 +12,7 @@ import {
   type AutomationEventKind,
   type AutomationRule,
 } from '@liveplanner/items';
+import { stopWaits } from './automation-waits';
 
 export type Sql = Pick<SqlStorage, 'exec'>;
 
@@ -144,6 +145,7 @@ export class AutomationStore {
 
   // A rule as written now. `failures`: set it too (Resume and a matched run clear it).
   update(rule: AutomationRule, failures?: number): void {
+    const before = this.get(rule.id);
     this.sql().exec(
       `UPDATE automation_rules SET body = ?, enabled = ?, failures = COALESCE(?, failures) WHERE id = ?`,
       JSON.stringify(rule),
@@ -151,6 +153,8 @@ export class AutomationStore {
       failures ?? null,
       rule.id,
     );
+    // A Wait's held runs go on only for the rule as it was when they waited, and only while it stays on.
+    if (!rule.enabled || before?.edited.at !== rule.edited.at) stopWaits(this.sql(), rule.id);
     this.load();
     this.reschedule(rule, rule.id);
   }
@@ -159,6 +163,7 @@ export class AutomationStore {
     const gone =
       this.sql().exec('DELETE FROM automation_rules WHERE id = ? RETURNING id', id).toArray()
         .length > 0;
+    stopWaits(this.sql(), id);
     this.load();
     this.reschedule(null, id);
     return gone;

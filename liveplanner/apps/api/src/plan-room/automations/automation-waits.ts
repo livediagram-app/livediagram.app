@@ -53,6 +53,15 @@ export function holdRun(
   return until;
 }
 
+// A rule turned off, deleted or changed: its waiting runs settle Skipped at once (turning it on again never brings
+// one back). At most 500 rows, scanned on a rule write only.
+export function stopWaits(sql: Sql, ruleId: string): void {
+  const rows = sql
+    .exec('DELETE FROM automation_waiting WHERE rule_id = ? RETURNING id', ruleId)
+    .toArray() as unknown as { id: string }[];
+  for (const row of rows) settleWaiting(sql, row.id, 'skipped', WAIT_RULE_CHANGED);
+}
+
 type Row = { id: string; event: string };
 
 // The due waiting runs, each queued to go on (or settled Skipped); answers how many went in.
