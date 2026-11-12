@@ -69,7 +69,11 @@ import {
   repeatNext,
   repeatRuleWords,
   type BlockingIndex,
+  boardFields,
+  isFieldWidgetKey,
+  type BoardWidgetId,
 } from '@liveplanner/items';
+import { widgetName } from './board-widget-change';
 import type { PlanState } from './plan-state';
 
 export const NO_BOARD_HINT =
@@ -93,6 +97,8 @@ interface ListedBoard {
   takes: string[] | 'every type';
   // Sort Cards, as "Priority (Highest First)": its columns list their cards in that order.
   sortBy?: string[];
+  // Its header widgets in order, by the names change_board takes ("Item Count", "Budget Sum").
+  widgets?: string[];
   columns: ListedColumn[];
 }
 
@@ -459,6 +465,19 @@ export function listedType(
 export const listedTypes = (types: readonly ItemTypeDef[], statuses: readonly PlanStatusName[]) =>
   types.map((t) => listedType(t, statuses, types));
 
+// A board's header widgets by name, as change_board answers them. Its fields are read only when it shows a field
+// widget, so a board of built-in widgets costs a lookup a widget.
+function listedWidgets(
+  widgets: readonly BoardWidgetId[],
+  takes: readonly string[] | null,
+  types: readonly ItemTypeDef[],
+): string[] {
+  const fields = widgets.some(isFieldWidgetKey)
+    ? boardFields({ addTypes: takes ?? undefined }, types, false)
+    : [];
+  return widgets.map((w) => widgetName(w, fields));
+}
+
 // The plan, narrowed by a filter resolveListingFilter resolved.
 export function planListing(state: PlanState, filter: ResolvedListingFilter = {}): PlanListing {
   const { plan } = state;
@@ -481,6 +500,7 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
         ? b.types.map((id) => plan.types.find((t) => t.id === id)?.label ?? id)
         : 'every type',
       ...(b.sortBy ? { sortBy: boardSortText(b.sortBy, plan.types) } : {}),
+      ...(b.widgets ? { widgets: listedWidgets(b.widgets, b.types, plan.types) } : {}),
       columns: b.columns.map((c) => {
         const cards = filed
           ? sortCards(
