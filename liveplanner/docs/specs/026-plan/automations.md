@@ -619,7 +619,15 @@ it. A guest sees the sign-in gate the Automations screen already shows.
 ## Values
 
 Text a rule writes (a comment, a title, a field value, an email) can hold values, picked from **Insert a Value** in
-the builder and shown there as chips:
+the builder and shown there as chips. **Insert a Value** is a button inside the field itself, at its top right (a
+`{ }` mark with the hover card "Insert a Value", a pointer, a 44 px target on a touch screen), never a list dumped
+under it. It opens a popover beside the field (on a phone, a sheet over the step's drawer, titled **Insert a
+Value**) holding a search ("Find a value") and the values in groups: **This Card** (the fixed values), **The
+Triggering Card** (inside a For Related Cards branch), **Card Fields** (each field of the card by name, the old Any
+Field…) and, in an Incoming Webhook rule, **Webhook Field…**, which turns the popover to a line for the path with
+Insert and Back. Up and Down walk the values from the search, Enter inserts the one marked, Escape closes; typing
+narrows every group, and nothing matching says so. Choosing one puts the value at the caret (over a selection) and
+hands focus back to the field, the caret after the value:
 
 | Value                          | Is                                                     |
 | ------------------------------ | ------------------------------------------------------ |
@@ -695,15 +703,19 @@ screen readers and the pointer, a faint dot grid fading out toward the title, a 
 looping arrow from the bottom right (both at every size), and, once the header is 56rem wide only, between the line
 (which stops short of it) and the header's buttons, a rule as a flow: a trigger's bolt, a condition's diamond and an
 action's check joined by a line, a dashed arrow looping back over them. The bolt's ring spreads twice, motion
-allowing. On a phone the header stays compact: the mark and title, the line left to screen readers.
+allowing. On a phone the header keeps its desktop look (100px, the mark, the title and its line).
 
-- Three tabs: **Rules · n**, **Audit Trail** and **Templates**.
+- Three tabs: **Rules · n**, **Audit Trail** and **Templates**. On a phone the bar is 48 px tall, each tab a 44 px
+  target with its label centred in it, the active tab's underline along the bar's foot.
 - A **Runs today** meter at the right of the tabs: "142 of 1,000" (No Match runs are not counted).
 - **Rules**: a search box ("Find a rule"), **All Triggers** and **On and Off** filters, then one row per rule:
   its switch, its name, its sentence (When `Card Moved` to `Done` then `Set Completed On` `Remove Label blocked`),
   **Last Run** ("4 min ago", "Never") and **This Week** ("38 runs"), and a ⋯ menu (Edit, Duplicate, Audit Trail,
   Delete). A paused rule's row is amber, with **Paused**, the reason, and **Resume**. A rule needing attention
   says what is missing. Clicking a row opens the builder.
+  On a phone the filters are laid out for a thumb: the search across the full width (40 px tall, 14 px text), then
+  one row of the **All Triggers** select (taking the room) and an **All / On / Off** segmented control, both 40 px
+  tall, the same radius, border and brand focus ring as the search, 8 px apart.
 - **Empty**: the bolt glyph, **No Rules Yet**, "A rule watches this plan and does the routine steps for you:
   moving, assigning, labelling and telling people about cards. Start from one below or build your own.", **New
   Rule** and **How Rules Work** (the help article), then **Start From a Template** with the gallery below.
@@ -831,7 +843,7 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
   An outgoing step's **Change** opens the picker on **Other Tools** alone (Webhook, Slack, Teams), keeping its
   message.
 - Picking a card selects it (a violet ring) and opens it on the right in the **step panel**: its own fields (columns,
-  fields, people and types picked from the plan's), and for text, **Insert a Value** chips that drop a value at the
+  fields, people and types picked from the plan's), and for text, the **Insert a Value** button in the field that drops a value at the
   caret, shown as violet chips. An action's panel shows a **Preview** on a real card of the plan, filled in. A pick
   the plan no longer has (a deleted column, Form tab, field, card type or person) stays shown, as "A column no longer
   here" (or "Someone No Longer Here" for a person), picked, so the panel never hides what the rule holds or shows
@@ -847,6 +859,33 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
 - A rule opened by its link (an Automation comment's) that the plan no longer has opens no builder: the screen says
   **This Rule Was Deleted**, "It's no longer in this plan. Its runs stay in the Audit Trail until they age out.", with
   **Back to Rules**.
+
+#### The rule builder on a phone
+
+Below 640 px (a phone, and a window that narrow) the builder is drawers, not a swapped screen; from 640 px it is as
+above, unchanged.
+
+- **The rule drawer.** New Rule, a template, Describe a Rule's draft and opening a rule raise the builder as a sheet
+  over the Automations screen (which stays behind it, dimmed), as tall as a sheet goes, with the grab handle, the
+  safe area at its foot, its middle scrolling between a fixed top and foot. Swiping it down, tapping the dim behind
+  it or Escape goes back to the rules; with unsaved changes each asks **Discard Changes?** first, and the drawer
+  springs back while it asks, so no edit is lost silently.
+- **Its header.** A top row of a back chevron ("Automations", a 44 px target, back to the rules) and the rule's
+  state at the right: the On / Off switch with its word beside it ("On", "Off"), or an **Off** pill ("Not Saved")
+  for a rule not saved yet. Under it the rule's name as an editable title on its own line, 18 px semibold, wrapping
+  to as many lines as it needs (Enter does not break it), then "Edited by … · when" in small type.
+- **Its foot**, pinned to the bottom over the safe area: **Rule Details** as a closed bar (its accordion, opening
+  upward over the steps, its body scrolling when tall), then **Test on a Card** and **Save Rule** side by side, equal
+  width, 44 px tall. A saved rule with nothing changed reads **Saved** with a tick, so the button says why it
+  does nothing, instead of a faded Save Rule.
+- **The step drawer.** Picking a step (the When trigger, an If condition, an action, a branch, a Wait, every kind)
+  or adding one opens its fields in a second sheet stacked over the rule drawer, not under the steps: its own grab
+  handle, the step's tile and name as its title, a close and a **Done** at its foot, its fields scrolling inside.
+  Swipe it down, tap the dim behind it, press Escape, close or Done to go back to the steps; the step stays
+  selected. It sits above the on-screen keyboard rather than jumping under it. A save the api refuses opens the
+  step at fault in it.
+- Every drawer slides out to the bottom as it closes ([editor-app.md](../007-editor/editor-app.md) "Menus are
+  bottom sheets on a phone").
 
 ### On cards
 

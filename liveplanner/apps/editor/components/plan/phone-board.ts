@@ -134,7 +134,34 @@ export function centreTappedColumn(
   columnAttr: string,
 ): boolean {
   const id = tappedColumn(target, columnAttr);
-  if (id === null) return false;
+  return id === null ? false : centreColumn(id, body, columnAttr);
+}
+
+// Whether a card sits in a neighbouring column, peeking in at the side, rather than the one in focus: its middle more
+// than half its width from the middle of the board's view.
+export function offColumnCard(
+  card: { left: number; width: number },
+  view: { left: number; width: number },
+): boolean {
+  const off = Math.abs(card.left + card.width / 2 - (view.left + view.width / 2));
+  return off > card.width / 2;
+}
+
+// A tap on a card in a neighbouring column (plan-board.md "On a phone") brings that column to the centre instead of
+// opening the card: true when it did, so the caller leaves the card shut. Reads two rects, on the tap alone.
+export function centreCardColumn(itemId: string, body: HTMLElement, columnAttr: string): boolean {
+  const card = body.querySelector(`[data-plan-card="${CSS.escape(itemId)}"]`);
+  const id = card?.closest(`[${columnAttr}]`)?.getAttribute(columnAttr);
+  if (!card || id == null) return false;
+  const c = card.getBoundingClientRect();
+  const b = body.getBoundingClientRect();
+  if (!offColumnCard(c, { left: b.left + body.clientLeft, width: body.clientWidth })) return false;
+  centreColumn(id, body, columnAttr);
+  return true;
+}
+
+// Glides a column, by its id, to the centre of the body's view.
+function centreColumn(id: string, body: HTMLElement, columnAttr: string): boolean {
   const head = body.querySelector(`[${columnAttr}="${CSS.escape(id)}"]`);
   if (!head) return false;
   const b = body.getBoundingClientRect();

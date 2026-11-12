@@ -45,7 +45,7 @@ export function ClusterPanel({
   // Its width on a screen wider than a phone (a Tailwind width class).
   width?: string;
   // The dialog hero header's art (liveworkspace/docs/specs/004-index/dialog-hero-header.md), drawn in place of the
-  // plain title row: Configure Board wears it, Tab Style keeps the row.
+  // plain title row: Configure Board and Tab Style wear it.
   hero?: HeroArt;
   onClose: () => void;
   children: ReactNode;

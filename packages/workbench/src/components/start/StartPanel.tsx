@@ -71,11 +71,11 @@ const CloseGlyph = lucideGlyph(lucideX, 16);
 const CHOSEN_TINT = 14;
 const CHOSEN_HOVER_TINT = 18;
 
-// A panel that cannot close: a drag down on its phone sheet settles back.
-const STAYS_OPEN = () => {};
+// A panel that cannot close: a drag down on its phone sheet is refused before it slides out, so it settles back.
+const STAYS_OPEN = () => false;
 
 // A panel that is never a sheet calls no sheet hook.
-function useNoSheet(_onDismiss: () => void): null {
+function useNoSheet(_onDismiss: () => void, _open?: boolean, _before?: () => boolean): null {
   return null;
 }
 
@@ -149,7 +149,7 @@ export function createStartPanel<
     }, []);
     // On a phone the panel is a sheet risen from the bottom edge; one that can close drags down to close (Dialog's
     // phoneSheet, BottomSheet), one that cannot settles back.
-    const sheet = useSheet(onClose ?? STAYS_OPEN);
+    const sheet = useSheet(onClose ?? STAYS_OPEN, true, onClose ? undefined : STAYS_OPEN);
     // Where the tab bar stands, for the phone and short-window sheet to stand on (useChromeFloor, as toasts do).
     const tabBarFloor = useChromeFloor(true, 0, TAB_BAR_SELECTOR);
     const searching = query.trim().length > 0;

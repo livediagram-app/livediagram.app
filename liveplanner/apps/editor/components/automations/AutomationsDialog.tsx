@@ -41,6 +41,7 @@ import type { AutomationOutline } from './automation-outline';
 import { NewRuleMenu } from './NewRuleMenu';
 import { newRuleBody, nextRuleName } from './rule-draft';
 import { RuleBuilder } from './RuleBuilder';
+import { RuleDrawer } from './RuleDrawer';
 import { RulesEmpty } from './RulesEmpty';
 import { RulesList } from './RulesList';
 import { RunLog } from './RunLog';
@@ -131,6 +132,13 @@ export function AutomationsDialog({
     [target.view, dirty],
   );
   const close = guard(onClose);
+  // The phone's rule drawer asks before any way out while the rule has unsaved changes, and stays open meanwhile.
+  const backToRules = useCallback(() => onTarget({ view: 'rules' }), [onTarget]);
+  const drawerMayClose = () => {
+    if (!dirty) return true;
+    setLeaving(() => backToRules);
+    return false;
+  };
   const openGithub = useMemo(() => guard(() => onTarget({ view: 'github' })), [guard, onTarget]);
   const github = useMemo<GithubAutomations>(
     () => ({
@@ -327,6 +335,86 @@ export function AutomationsDialog({
     );
   })();
 
+  const builder = editing ? (
+    <RuleBuilder
+      key={
+        editing.ruleId ??
+        (editing.kept
+          ? 'github'
+          : fromDraft
+            ? `draft:${fromDraft.n}`
+            : editing.template
+              ? `template:${editing.template}`
+              : 'new')
+      }
+      rule={editingRule}
+      initial={initial}
+      picks={fromDraft?.picks ?? fromTemplate?.picks}
+      notice={fromDraft ? <DraftedNote /> : undefined}
+      timeZone={zone}
+      scope={scope}
+      signedIn={signedIn}
+      onOpenWebhooks={openWebhooks}
+      outline={outline}
+      api={api}
+      person={plan?.self?.name ?? 'You'}
+      now={now}
+      phone={phone}
+      onDirty={setDirty}
+      onBack={guard(() => onTarget({ view: 'rules' }))}
+      onSaved={(rule) => onTarget({ view: 'rule', ruleId: rule.id })}
+      trailing={<DialogCloseButton onClick={close} />}
+    />
+  ) : null;
+  const listScreen = (
+    <>
+      {/* The dialog hero header, drawn for rules (automations.md "The Automations screen"). */}
+      <HeroDialogHeader
+        art={automationsHeroArt}
+        titleId={titleId}
+        title="Automations"
+        subtitle="Rules that act on this plan’s cards for you when something happens."
+        actions={
+          <>
+            {githubEnabled ? <GithubButton phone={phone} onOpen={openGithub} /> : null}
+            <NewRuleMenu
+              disabled={!api.data || full}
+              onBlank={newRule}
+              onTemplates={() => onTarget({ view: 'templates' })}
+              onDescribe={describe}
+            />
+          </>
+        }
+        onClose={close}
+        // The art's centre clears the wider actions when GitHub's button stands beside New Rule.
+        className={githubEnabled ? '[--hero-centre-end:18rem]' : undefined}
+      />
+      <ScreenTabs
+        current={target.view === 'rule' || target.view === 'github' ? 'rules' : target.view}
+        rules={api.data ? rules.length : null}
+        phone={phone}
+        meter={meter}
+        onTab={(tab) => onTarget({ view: tab })}
+      />
+      <div role="tabpanel" className="flex min-h-0 flex-1 flex-col">
+        {/* The plan spent its runs for the day (spec "Runs, limits and loops"): the meter is full and says why. */}
+        {api.data && api.data.runsToday >= api.data.runsPerDay ? (
+          <p
+            role="status"
+            data-runs-full=""
+            className={`mt-3 rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-800 dark:bg-amber-500/10 dark:text-amber-300 ${phone ? 'mx-4' : 'mx-6'}`}
+          >
+            Daily limit reached: rules run again tomorrow
+          </p>
+        ) : null}
+        {body}
+      </div>
+      {phone && meter ? (
+        <div className="border-t border-slate-100 px-4 py-3 dark:border-slate-800">{meter}</div>
+      ) : null}
+    </>
+  );
+
   return (
     <GithubAutomationsContext value={github}>
       <Dialog
@@ -350,92 +438,27 @@ export function AutomationsDialog({
               trailing={<DialogCloseButton onClick={close} />}
             />
           </>
-        ) : editing && api.data && !ruleGone ? (
+        ) : editing && api.data && !ruleGone && !phone ? (
           <>
             {/* The builder's breadcrumb stands where the header was; the dialog keeps its name for screen readers. */}
             <h2 id={titleId} className="sr-only">
               Automations
             </h2>
-            <RuleBuilder
-              key={
-                editing.ruleId ??
-                (editing.kept
-                  ? 'github'
-                  : fromDraft
-                    ? `draft:${fromDraft.n}`
-                    : editing.template
-                      ? `template:${editing.template}`
-                      : 'new')
-              }
-              rule={editingRule}
-              initial={initial}
-              picks={fromDraft?.picks ?? fromTemplate?.picks}
-              notice={fromDraft ? <DraftedNote /> : undefined}
-              timeZone={zone}
-              scope={scope}
-              signedIn={signedIn}
-              onOpenWebhooks={openWebhooks}
-              outline={outline}
-              api={api}
-              person={plan?.self?.name ?? 'You'}
-              now={now}
-              phone={phone}
-              onDirty={setDirty}
-              onBack={guard(() => onTarget({ view: 'rules' }))}
-              onSaved={(rule) => onTarget({ view: 'rule', ruleId: rule.id })}
-              trailing={<DialogCloseButton onClick={close} />}
-            />
+            {builder}
           </>
         ) : (
-          <>
-            {/* The dialog hero header, drawn for rules (automations.md "The Automations screen"). */}
-            <HeroDialogHeader
-              art={automationsHeroArt}
-              titleId={titleId}
-              title="Automations"
-              subtitle="Rules that act on this plan’s cards for you when something happens."
-              actions={
-                <>
-                  {githubEnabled ? <GithubButton phone={phone} onOpen={openGithub} /> : null}
-                  <NewRuleMenu
-                    disabled={!api.data || full}
-                    onBlank={newRule}
-                    onTemplates={() => onTarget({ view: 'templates' })}
-                    onDescribe={describe}
-                  />
-                </>
-              }
-              onClose={close}
-              // The art's centre clears the wider actions when GitHub's button stands beside New Rule.
-              className={githubEnabled ? '[--hero-centre-end:18rem]' : undefined}
-            />
-            <ScreenTabs
-              current={target.view === 'rule' ? 'rules' : target.view}
-              rules={api.data ? rules.length : null}
-              phone={phone}
-              meter={meter}
-              onTab={(tab) => onTarget({ view: tab })}
-            />
-            <div role="tabpanel" className="flex min-h-0 flex-1 flex-col">
-              {/* The plan spent its runs for the day (spec "Runs, limits and loops"): the meter is full and says why. */}
-              {api.data && api.data.runsToday >= api.data.runsPerDay ? (
-                <p
-                  role="status"
-                  data-runs-full=""
-                  className={`mt-3 rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-800 dark:bg-amber-500/10 dark:text-amber-300 ${phone ? 'mx-4' : 'mx-6'}`}
-                >
-                  Daily limit reached: rules run again tomorrow
-                </p>
-              ) : null}
-              {body}
-            </div>
-            {phone && meter ? (
-              <div className="border-t border-slate-100 px-4 py-3 dark:border-slate-800">
-                {meter}
-              </div>
-            ) : null}
-          </>
+          listScreen
         )}
+        {/* On a phone the builder is a drawer over the rules, which stay behind it ("The rule builder on a phone"). */}
+        {editing && api.data && !ruleGone && phone ? (
+          <RuleDrawer
+            title={editing.ruleId ? 'Edit Rule' : 'New Rule'}
+            onClose={backToRules}
+            beforeClose={drawerMayClose}
+          >
+            {builder}
+          </RuleDrawer>
+        ) : null}
         <ItemWebhooksDialog
           open={webhooksOpen}
           onClose={() => {

@@ -1213,6 +1213,11 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 - **A tap on a column's empty space** (its background, between and below its cards, or its header outside the cog) on
   that board glides the column to the centre, as a tap on a page does in Pages; across only, never up or down.
   Cards, buttons, fields and links keep their own taps. Under reduced motion it jumps there instead of gliding.
+- **A tap on a card in a neighbouring column** (one peeking in at the side, not the column in focus) brings that
+  column to the centre, gliding as a tap on its empty space does, and does not open the card: the first tap says
+  where you want to be, a second tap, now on the column in focus, opens it. A card counts as in a neighbour when its
+  middle lies more than half its width from the middle of the board's view, read once, on the tap, never as the
+  cards draw. Holding a card to carry it, and the long press that opens its menu, work on any column as before.
 - A finger on a board's empty space (between and below cards, column backgrounds) pans the canvas, as it does
   anywhere else, whatever the tool: it never selects or moves the board, and holding it opens no menu. Only the
   board's header moves the board, as with a mouse. A finger on a card picks the card up, and buttons and fields

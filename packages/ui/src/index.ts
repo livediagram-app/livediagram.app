@@ -91,6 +91,10 @@ export {
   SHEET_DISMISS_PX,
   SHEET_SNAP_PX,
   SHEET_FULL_HEIGHT,
+  SHEET_EXIT_MIN_MS,
+  SHEET_EXIT_MAX_MS,
+  SHEET_EXIT_FADE_MS,
+  sheetExitMs,
   type SheetDrag,
 } from './useSheetDrag';
 export { useVisualViewportBand } from './useVisualViewportBand';
@@ -108,6 +112,7 @@ export { breadcrumbJsonLd, type BreadcrumbCrumb } from './breadcrumb-json-ld';
 export * from './icons/chrome';
 export { Select, type SelectProps, type SelectVariant, type SelectSize } from './Select';
 export { DialogCloseButton } from './dialog/DialogCloseButton';
+export { useDialogDismiss, type DialogDismiss } from './dialog/dialog-dismiss';
 export { CompactEmptyState, NoMatches, noMatchHint, noMatchTitle } from './CompactEmptyState';
 export { PageNotFound } from './PageNotFound';
 export { SnapCarousel } from './SnapCarousel';

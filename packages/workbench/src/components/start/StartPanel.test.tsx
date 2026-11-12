@@ -385,5 +385,7 @@ describe('the start panel', () => {
     fireEvent.pointerMove(handle, { clientY: 400, pointerId: 1 });
     fireEvent.pointerUp(handle, { clientY: 400, pointerId: 1 });
     expect(screen.getByRole('region', { name: 'Start' })).toBeTruthy();
+    // It never starts the slide out (docs/specs/007-editor/editor-app.md "Menus are bottom sheets on a phone").
+    expect(handle.parentElement!.style.transform).not.toContain('calc');
   });
 });

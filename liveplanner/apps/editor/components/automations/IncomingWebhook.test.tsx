@@ -196,14 +196,20 @@ describe('Webhook Field…', () => {
     return render(<>{node}</>);
   };
 
+  const openInsert = () =>
+    fireEvent.click(screen.getByRole('button', { name: 'Insert a Value into Comment' }));
+  const webhookOption = () => screen.queryByRole('option', { name: 'Webhook Field…' });
+
   it('is offered only in an incoming rule', () => {
     wrap(<Field />);
-    expect(screen.queryByRole('button', { name: 'Webhook Field…' })).toBeNull();
+    openInsert();
+    expect(webhookOption()).toBeNull();
   });
 
   it('inserts {{webhook.<path>}} for a good path and explains a bad one', () => {
     wrap(<Field rule={incoming()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Webhook Field…' }));
+    openInsert();
+    fireEvent.click(webhookOption()!);
     const input = screen.getByRole('textbox', { name: 'Webhook Field' });
     fireEvent.change(input, { target: { value: 'a.b.c.d.e.f' } });
     fireEvent.click(screen.getByRole('button', { name: 'Insert' }));
@@ -215,12 +221,14 @@ describe('Webhook Field…', () => {
     });
     expect(latestText).toContain('{{webhook.build.status}}');
     expect(screen.queryByRole('textbox', { name: 'Webhook Field' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Webhook Field…' }));
+    // Escape in the path line, or Back, returns to the values.
+    openInsert();
+    fireEvent.click(webhookOption()!);
     fireEvent.keyDown(screen.getByRole('textbox', { name: 'Webhook Field' }), { key: 'Escape' });
     expect(screen.queryByRole('textbox', { name: 'Webhook Field' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Webhook Field…' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(screen.getByRole('button', { name: 'Webhook Field…' })).toBeTruthy();
+    fireEvent.click(webhookOption()!);
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(webhookOption()).toBeTruthy();
   });
 
   it('keeps whoever triggered it out of an incoming rule’s recipients', () => {

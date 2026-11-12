@@ -228,7 +228,8 @@ describe('StepPanel', () => {
     );
     const area = screen.getByRole('textbox', { name: 'Comment' }) as HTMLTextAreaElement;
     area.setSelectionRange(11, 11);
-    fireEvent.click(screen.getByRole('button', { name: 'Who Did It' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Insert a Value into Comment' }));
+    fireEvent.click(screen.getByRole('option', { name: /^Who Did It/ }));
     expect(latest.steps[0]).toEqual({ kind: 'comment', text: 'Shipped by {{person}}' });
     expect(document.querySelector('[data-step-preview]')!.textContent).toContain(
       'Shipped by Ana Costa',

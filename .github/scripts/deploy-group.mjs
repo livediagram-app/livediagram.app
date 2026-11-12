@@ -12,13 +12,20 @@
 // when any Worker failed. Each Worker's output is a log group of its own, and the job summary lists
 // every Worker's result.
 //
+// The `wrangler deploy` step alone retries, up to twice more after 30s and then 120s, and only when
+// its output shows a transient Cloudflare API failure (a 5xx answer, or wrangler's own retries giving
+// up with code -1). Wrangler retries within seconds, inside the same blip; a production deploy failed
+// that way twice on 2026-11-12. Any other failure fails at once, and D1 migrations never retry.
+//
 //   WORKERS=<the tier's plan entries as JSON> GROUP=<group> ENVIRONMENT=staging|production REF=<sha> \
 //     node .github/scripts/deploy-group.mjs
 //
 // It never prints a var's value: hosted build vars and `--var` flags are passed, never logged.
 
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, existsSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 /** Each tier's job name, before its group's. */
@@ -31,8 +38,12 @@ export function groupOf(worker) {
 
 // A group job's limit, sized from the per-Worker step times measured on 2026-11-04 (docs/ci.md):
 // a site's build and deploy took up to 3.6 minutes (a marketing site), any other Worker's steps up
-// to half a minute, and a job's checkout and install about one.
-export const MINUTES = { job: 10, build: 6, other: 2, command: 15 };
+// to half a minute, and a job's checkout and install about one. `retry` is each Worker's room for its
+// deploy's retries: 2.5 minutes of waits plus two more attempts, at worst every Worker in the group.
+export const MINUTES = { job: 10, build: 6, other: 2, retry: 4, command: 15 };
+
+/** The waits, in seconds, before a deploy's second and third attempts. */
+export const RETRY_WAITS = [30, 120];
 
 /** The tier's groups, in plan order, for deploy.yml's matrix: one job each. */
 export function deployGroups(deploys, tier) {
@@ -48,7 +59,7 @@ export function deployGroups(deploys, tier) {
     };
     entry.workers.push(worker.name);
     entry.history ||= Boolean(worker.history);
-    entry.timeout += worker.build ? MINUTES.build : MINUTES.other;
+    entry.timeout += (worker.build ? MINUTES.build : MINUTES.other) + MINUTES.retry;
     groups.set(group, entry);
   }
   return [...groups.values()].map(({ workers, ...rest }) => ({
@@ -111,6 +122,7 @@ export function workerSteps(worker, { environment, ref, exists = existsSync }) {
     cwd: worker.dir,
     cmd: 'pnpm',
     args: ['exec', 'wrangler', 'deploy', ...env],
+    retry: true,
     ...(worker.hosted && {
       argsFrom: {
         cwd: worker.dir,
@@ -143,21 +155,81 @@ export function parseEnvLines(text) {
   return env;
 }
 
-/** The real runner: output streams to the log, except a capture, which is returned. */
-export function spawnExec(cmd, args, { cwd, env, capture }) {
+// wrangler colours its errors, splitting `[ERROR]` with escape codes.
+const ANSI = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g');
+const API_5XX = /-> 5\d\d\b/;
+const NOT_TRANSIENT = /\[code: 10000\]|Authentication error|-> 40[13]\b/;
+
+/**
+ * True when a failed `wrangler deploy` printed a transient Cloudflare API failure, worth retrying:
+ * a malformed answer with a 5xx status, a request to the API that failed with code -1 (wrangler's own
+ * retries gave up) or a 5xx, or a gateway error (502, 503, 504, 524) on an API request. Never an auth
+ * error, and never anything else (validation, build, config).
+ */
+export function isTransientCloudflareError(output) {
+  const text = output.replace(ANSI, '');
+  if (NOT_TRANSIENT.test(text)) return false;
+  if (/Received a malformed response from the API/.test(text) && API_5XX.test(text)) return true;
+  if (/A request to the Cloudflare API \(.*\) failed/.test(text)) {
+    if (/\[code: -1\]/.test(text) || API_5XX.test(text)) return true;
+  }
+  return /\/accounts\/\S+ -> (?:502|503|504|524)\b/.test(text);
+}
+
+/** Blocks for `seconds`: the script runs its steps one after another, so nothing else waits. */
+export function sleepSync(seconds) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, seconds * 1000);
+}
+
+/** coreutils `timeout`'s exits when the limit ran out: 124, or 137 once it had to kill. */
+export const TIMED_OUT = [124, 137];
+
+// The tee's script. The command and its arguments go in as positional parameters, never into the
+// script text, and the limit runs on the command itself under `timeout`, so it stops wrangler and
+// not just the shell in front of it.
+const TEE_SCRIPT =
+  'timeout --kill-after=15s "$DEPLOY_GROUP_LIMIT" "$@" 2>&1 | tee "$DEPLOY_GROUP_LOG"';
+
+/**
+ * The real runner: output streams to the log, except a capture, which is returned. A `tee` streams
+ * it too (stdout and stderr together, through `tee`) and also returns it, to classify a failure.
+ * Every command has `seconds` (MINUTES.command) to finish.
+ */
+export function spawnExec(cmd, args, { cwd, env, capture, tee, seconds = MINUTES.command * 60 }) {
+  if (tee) {
+    const dir = mkdtempSync(join(tmpdir(), 'deploy-group-'));
+    const file = join(dir, 'output.log');
+    try {
+      // No spawnSync timeout here: `timeout` inside the script holds the one limit.
+      const run = spawnSync('bash', ['-o', 'pipefail', '-c', TEE_SCRIPT, 'bash', cmd, ...args], {
+        cwd,
+        env: { ...env, DEPLOY_GROUP_LOG: file, DEPLOY_GROUP_LIMIT: String(seconds) },
+        stdio: 'inherit',
+      });
+      if (run.error) console.error(`[deploy-group] ${cmd}: ${run.error.message}`);
+      const status = run.error ? 1 : (run.status ?? 1);
+      return { status, stdout: existsSync(file) ? readFileSync(file, 'utf8') : '' };
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
   const result = spawnSync(cmd, args, {
     cwd,
     env,
     encoding: 'utf8',
     stdio: capture ? ['ignore', 'pipe', 'inherit'] : 'inherit',
-    timeout: MINUTES.command * 60_000,
+    timeout: seconds * 1000,
   });
   if (result.error) console.error(`[deploy-group] ${cmd}: ${result.error.message}`);
   return { status: result.error ? 1 : (result.status ?? 1), stdout: result.stdout ?? '' };
 }
 
-/** Runs one step; true when it succeeded. Logs the command, never a captured var or flag. */
-export function runStep(step, { exec, baseEnv, log }) {
+/**
+ * Runs one step: `ok` when it succeeded, and how many times it retried. Logs the command, never a
+ * captured var or flag. A `retry` step runs again after each of RETRY_WAITS while its output shows a
+ * transient Cloudflare API failure.
+ */
+export function runStep(step, { exec, baseEnv, log, sleep = sleepSync }) {
   let env = { ...baseEnv, ...step.env };
   let args = step.args;
   if (step.envFrom) {
@@ -166,7 +238,7 @@ export function runStep(step, { exec, baseEnv, log }) {
       env,
       capture: true,
     });
-    if (got.status !== 0) return false;
+    if (got.status !== 0) return { ok: false, retries: 0 };
     env = { ...env, ...parseEnvLines(got.stdout) };
   }
   if (step.argsFrom) {
@@ -175,12 +247,31 @@ export function runStep(step, { exec, baseEnv, log }) {
       env,
       capture: true,
     });
-    if (got.status !== 0) return false;
+    if (got.status !== 0) return { ok: false, retries: 0 };
     args = [...args, ...lines(got.stdout), ...step.argsFrom.append];
   }
   const extra = step.argsFrom ? ' (plus its hosted vars)' : '';
   log(`[deploy-group] ${step.name}: ${step.cmd} ${step.args.join(' ')}${extra} in ${step.cwd}`);
-  return exec(step.cmd, args, { cwd: step.cwd, env, capture: false }).status === 0;
+  const attempts = step.retry ? RETRY_WAITS.length + 1 : 1;
+  for (let attempt = 1; ; attempt++) {
+    const run = exec(step.cmd, args, {
+      cwd: step.cwd,
+      env,
+      capture: false,
+      tee: Boolean(step.retry),
+    });
+    if (run.status === 0) return { ok: true, retries: attempt - 1 };
+    // A command that ran out of time is a plain failure, whatever it printed before.
+    const timedOut = TIMED_OUT.includes(run.status);
+    if (attempt === attempts || timedOut || !isTransientCloudflareError(run.stdout)) {
+      return { ok: false, retries: attempt - 1 };
+    }
+    const wait = RETRY_WAITS[attempt - 1];
+    log(
+      `::warning title=${step.name} retrying::Cloudflare API error, retrying in ${wait}s (attempt ${attempt + 1} of ${attempts})`,
+    );
+    sleep(wait);
+  }
 }
 
 /**
@@ -189,16 +280,19 @@ export function runStep(step, { exec, baseEnv, log }) {
  */
 export function deployGroup(
   workers,
-  { environment, ref, exec, log, baseEnv = {}, now = Date.now, exists },
+  { environment, ref, exec, log, baseEnv = {}, now = Date.now, exists, sleep },
 ) {
   const results = [];
   for (const worker of workers) {
     const started = now();
     log(`::group::${worker.name}`);
     let failed = '';
+    let retries = 0;
     const steps = workerSteps(worker, { environment, ref, exists });
     for (const step of steps) {
-      if (!runStep(step, { exec, baseEnv, log })) {
+      const run = runStep(step, { exec, baseEnv, log, sleep });
+      retries += run.retries;
+      if (!run.ok) {
         failed = step.name;
         break;
       }
@@ -209,6 +303,7 @@ export function deployGroup(
     results.push({
       name: worker.name,
       failed,
+      retries,
       steps: steps.map((s) => s.name),
       seconds: Math.round((now() - started) / 1000),
     });
@@ -216,11 +311,16 @@ export function deployGroup(
   return results;
 }
 
-/** The job summary: every Worker with its result, the step it failed at, and its time. */
+const retried = (n) => (n ? ` after ${n} ${n === 1 ? 'retry' : 'retries'}` : '');
+
+/**
+ * The job summary: every Worker with its result, the step it failed at, any retries after a
+ * Cloudflare API error, and its time.
+ */
 export function renderSummary(label, environment, results) {
   const failed = results.filter((r) => r.failed).length;
   const rows = results.map((r) => {
-    const result = r.failed ? `Failed at ${r.failed}` : 'Deployed';
+    const result = (r.failed ? `Failed at ${r.failed}` : 'Deployed') + retried(r.retries);
     return `| \`${r.name}\` | ${result} | ${r.steps.join(', ')} | ${r.seconds}s |`;
   });
   return [
