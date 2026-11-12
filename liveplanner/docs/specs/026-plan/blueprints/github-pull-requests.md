@@ -135,7 +135,9 @@ Answered in `index.ts` before identity, as `/api/hooks` is: `segments[1] === 'gi
   - Each plan's room is asked `github(planId, { kind: 'delivery', delivery })`, all at once. A plan answering
     `not_connected` to a `pull_request` or `check_suite` has its `repo:` key deleted. Every room answered: 202
     `{ delivered }` (the plans that acted); any threw: 502 `github_delivery_failed`.
-  - Logs `[github] delivery` with the event, action, plans and outcome counts; never the body or a signature.
+  - Logs `[github] delivery` with the event, action, plans and outcome counts; never the body or a signature. A room
+    that threw is logged too, `[github] delivery.threw` (`console.error`) with the event, action and the error's name
+    and message (cut to 500 characters), so a failure says why.
   - Refused signatures (`github/refused-signatures.ts`): the caller's network is `clientNetwork(clientIp(request))`
     (IPv4 /24, IPv6 /56), or none for GitHub's own webhook ranges (`GITHUB_HOOK_RANGES`, from GitHub's `/meta`
     `hooks`: 192.30.252.0/22, 185.199.108.0/22, 140.82.112.0/20, 143.55.64.0/20, 2a0a:a440::/29, 2606:50c0::/32),
@@ -188,7 +190,9 @@ plan_id, repo_id)`, `github_connect_states (hash PK, person, at)`, `github_deliv
 - `github-store.ts` (on `PLAN_DB`): `readConnection`, `saveConnection` (the connection and its repositories
   replaced in one batch), `chooseRepositories`, `dropRepositories`, `dropConnection`, `addConnectState` (expired
   states dropped, then the oldest past `CONNECT_STATES_MAX`), `claimConnectState` (`DELETE … RETURNING`, live only),
-  `firstSight(id, now)` (deliveries past `DELIVERY_KEEP_MS` dropped; `INSERT OR IGNORE`; true when it inserted).
+  `firstSight(id, now)` (deliveries past `DELIVERY_KEEP_MS` dropped; `INSERT OR IGNORE`; true when it inserted),
+  `forgetSight(id)` (the id deleted: `deliver` calls it when acting on a delivery threw, then throws again, so the
+  retry is not answered `replayed`).
 - `github-room.ts` `answerGithubCall`, the `PlanRoom.github(planId, call)` RPC (`plan-client.ts` `github`). An
   object with no plan schema answers `not_connected` (a callback, `failed`) and makes none.
   - `delivery`: no connection, another installation, or (for `pull_request` and `check_suite`) a repository not

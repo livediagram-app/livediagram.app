@@ -205,3 +205,8 @@ export async function firstSight(db: D1Database, id: string, now: number): Promi
   ]);
   return Number(inserted?.meta.changes ?? 0) === 1;
 }
+
+/** Delivery `id` no longer seen: acting on it failed, so GitHub's retry (or a Redeliver) acts on it then. */
+export async function forgetSight(db: D1Database, id: string): Promise<void> {
+  await db.prepare('DELETE FROM github_deliveries WHERE id = ?').bind(id).run();
+}

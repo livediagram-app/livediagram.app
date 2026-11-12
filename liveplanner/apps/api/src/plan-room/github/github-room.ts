@@ -15,6 +15,7 @@ import {
   dropConnection,
   dropRepositories,
   firstSight,
+  forgetSight,
   linksOf,
   readConnection,
   type GithubConnection,
@@ -74,6 +75,24 @@ async function deliver(
   const before = await readConnection(db, planId);
   if (!names(before, d)) return 'not_connected';
   if (!(await firstSight(db, d.id, now))) return 'replayed';
+  try {
+    await actOn(env, planId, d, before, now);
+  } catch (error) {
+    // Not seen after all: the retry GitHub makes, or a Redeliver, must act on it rather than answer `replayed`.
+    await forgetSight(db, d.id);
+    throw error;
+  }
+  return 'accepted';
+}
+
+async function actOn(
+  env: PlanEnv,
+  planId: string,
+  d: GithubDelivery,
+  before: Awaited<ReturnType<typeof readConnection>>,
+  now: number,
+): Promise<void> {
+  const db = env.PLAN_DB;
   const links = githubConfig(env)?.links;
   if (d.event === 'installation') {
     await dropConnection(db, planId);
@@ -91,7 +110,6 @@ async function deliver(
     else if (d.checkSuite) await actOnCheckSuite(deps, d.id, d.checkSuite, now);
     await Promise.all(pending);
   }
-  return 'accepted';
 }
 
 /** One GitHub call to the plan. `schema`: whether the plan has one; an id nothing has written answers without
