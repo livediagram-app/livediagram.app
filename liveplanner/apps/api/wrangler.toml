@@ -125,12 +125,11 @@ namespace_id = "1011"
 simple = { limit = 60, period = 60 }
 
 # liveplanner's GitHub App (docs/specs/026-plan/github-pull-requests.md "The App", "Storage"): GITHUB_LINKS is the
-# reverse index from repositories and installations to plans. Commented out until the owner makes the namespace
-# (`wrangler kv namespace create GITHUB_LINKS`) and sets the App's six secrets; until then the feature is off and
-# every GitHub door answers 404. Staging restates it below with its own namespace.
-# [[kv_namespaces]]
-# binding = "GITHUB_LINKS"
-# id = "<the GITHUB_LINKS namespace id>"
+# reverse index from repositories and installations to plans. Without it, or without any of the App's six secrets,
+# the feature is off and every GitHub door answers 404. Staging restates it below with its own namespace.
+[[kv_namespaces]]
+binding = "GITHUB_LINKS"
+id = "d76fa4c898634695af40d7cd2c481234"
 
 # Transactional email (docs/specs/014-identity/transactional-email.md) goes out through Cloudflare Email
 # Service's `send_email` binding (liveworkspace/docs/specs/003-accounts/email.md); the onboarding series is liveworkspace's. No API
