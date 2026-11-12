@@ -268,7 +268,7 @@ export function SheetSetup({
       dismissible={false}
       returnFocus={returnFocus}
       titleId={`setup-sheet-${sheetId}`}
-      title="Set up your sheet"
+      title="Set Up Your Sheet"
       line="Start from a layout, your cards or a blank grid."
       art={setupSheetHeroArt}
       help="planSheets"

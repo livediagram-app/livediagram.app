@@ -104,7 +104,7 @@ export function PlanSetupBoard({
       dismissible={!!initial}
       returnFocus={returnFocus}
       titleId={`setup-board-${boardId}`}
-      title="Set up your board"
+      title="Set Up Your Board"
       line="Pick its cards, columns and layout. Change them any time."
       art={setupBoardHeroArt}
       help="planBoards"

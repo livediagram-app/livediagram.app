@@ -13,10 +13,11 @@ import {
 } from '@liveworkspace/ui/dialog-hero';
 import { BOARD_COLUMNS_GLYPH } from './configure/BoardConfigureHeroArt';
 
-// The lanes are the band's texture, so they show at every size (a phone's compact band too), as on the Start screen.
+// The lanes are the band's texture from `sm`, as on the Start screen. A phone's compact row leaves them no room clear of
+// the mark, the title and the buttons (the lane edges cut through the words), so there the band is plain paper.
 // Every lane is soft (words never sit on the wash); alternate ones carry a hairline, so the four still read apart.
 const LANES = (
-  <div className="absolute inset-1.5 flex gap-1.5">
+  <div className="absolute inset-1.5 flex gap-1.5 max-sm:hidden">
     {[0, 1, 2, 3].map((i) => (
       <span
         key={i}

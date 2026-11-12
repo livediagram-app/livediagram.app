@@ -48,7 +48,7 @@ describe('Setup Board as a dialog', () => {
   it('opens at once for whoever placed the board, with focus inside', async () => {
     markPlacedHere('board1');
     render(draw(UNSET));
-    const dialog = await screen.findByRole('dialog', { name: 'Set up your board' });
+    const dialog = await screen.findByRole('dialog', { name: 'Set Up Your Board' });
     expect(dialog.getAttribute('aria-modal')).toBe('true');
     await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
     // The placeholder stays under it, on the canvas.
@@ -70,7 +70,7 @@ describe('Setup Board as a dialog', () => {
     expect(screen.queryByRole('button', { name: 'Close' })).toBeNull();
     fireEvent.keyDown(dialog, { key: 'Escape' });
     await new Promise((r) => setTimeout(r, 50));
-    expect(screen.getByRole('dialog', { name: 'Set up your board' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Set Up Your Board' })).toBeTruthy();
     expect(plan.updateBoard).not.toHaveBeenCalled();
   });
 
@@ -124,7 +124,7 @@ describe('Setup Board as a dialog', () => {
         <Over open={false} onClose={onClose} />
       </>,
     );
-    await screen.findByRole('dialog', { name: 'Set up your board' });
+    await screen.findByRole('dialog', { name: 'Set Up Your Board' });
     rerender(
       <>
         {draw(UNSET)}
@@ -133,6 +133,6 @@ describe('Setup Board as a dialog', () => {
     );
     fireEvent.keyDown(screen.getByRole('dialog', { name: 'Over' }), { key: 'Escape' });
     expect(onClose).toHaveBeenCalled();
-    expect(screen.getByRole('dialog', { name: 'Set up your board' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Set Up Your Board' })).toBeTruthy();
   });
 });

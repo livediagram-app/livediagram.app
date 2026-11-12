@@ -256,9 +256,9 @@ Where each is set, so a setting lives with what it changes, never in one central
     never drawn inside the board and never zoomed
     with the canvas. It is in the app's colours (light or dark, as the editor), 40 rem wide and a fixed height (up to
     40 rem, never past the window), so moving between steps never jumps it; on a phone it fills the screen. Its
-    header is the [dialog hero header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), drawn as the Start screen's lanes: four soft lanes the band's full height,
+    header is the [dialog hero header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), drawn as the Start screen's lanes: four soft lanes the band's full height (from `sm`; a phone's compact band is plain),
     and in the bottom right a card mid-drag over the dashed slot it will drop into, bobbing twice, motion allowing; a
-    board's columns as the title mark, the title **Set up your board**, the line "Pick its cards, columns and layout.
+    board's columns as the title mark, the title **Set Up Your Board**, the line "Pick its cards, columns and layout.
     Change them any time." and Help. Under it, the steps as a **step indicator**: a numbered circle per
     step joined by a connecting line, the step's name beside its circle (under it on a narrow dialog), and "Step 2 of
     3" read out (a polite live region) as the step changes. The current step's circle is filled in the brand colour

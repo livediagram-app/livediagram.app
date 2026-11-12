@@ -40,7 +40,7 @@ const toColumns = () => {
 describe('Setup Board', () => {
   it('asks for card types first, none on, and needs one to go on', () => {
     draw();
-    expect(screen.getByRole('dialog', { name: 'Set up your board' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Set Up Your Board' })).toBeTruthy();
     expect(screen.queryAllByRole('checkbox', { checked: true })).toHaveLength(0);
     expect(screen.getByText('Pick at least one card type.')).toBeTruthy();
     const next = screen.getByRole('button', { name: 'Next: Columns' }) as HTMLButtonElement;
