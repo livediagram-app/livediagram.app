@@ -29,6 +29,7 @@ import {
   OUTBOX_MAX_ATTEMPTS,
   outboxDueAt,
   outboxRetrySchema,
+  PARKED_RETRY_MS,
   pushFailureOf,
   readOutbox,
   recordItemEditor,
@@ -388,7 +389,8 @@ describe('when a push fails', () => {
     });
     expect(box.stored()).toEqual([
       { id: tab, kind: 'tab', attempts: 1, retry_at: now + 60_000 },
-      { id: edit, kind: 'edit', attempts: OUTBOX_MAX_ATTEMPTS, retry_at: 0 },
+      // Parked: a healthy drain may let it back in a day on (outbox-parked.ts).
+      { id: edit, kind: 'edit', attempts: OUTBOX_MAX_ATTEMPTS, retry_at: now + PARKED_RETRY_MS },
     ]);
     expect(box.stored().some((r) => r.id === summary || r.id === moved)).toBe(false);
     expect(warn).toHaveBeenCalledWith('[outbox] push failed', {

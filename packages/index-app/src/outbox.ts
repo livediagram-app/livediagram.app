@@ -8,8 +8,9 @@
 // The room's alarm drains it on idle, at most once a minute (`nextFlushAt`), and deletes the keys it pushed. A key
 // written again meanwhile has a new id and stays for the next drain. A key whose push fails stays, counts the attempt
 // and waits longer each time (a minute, doubling, at most an hour); one the index refuses for good, or one that
-// failed OUTBOX_MAX_ATTEMPTS times, is parked: kept and never sent again, until a write to the same thing replaces it
-// (one-explorer-contracts.md "When a push fails").
+// failed OUTBOX_MAX_ATTEMPTS times, is parked: kept out of every drain until a write to the same thing replaces it,
+// or a healthy drain lets it back in for one more try, at most once every PARKED_RETRY_MS (outbox-parked.ts, which
+// also bounds the parked rows; one-explorer-contracts.md "When a push fails").
 //
 // Kinds: `summary` (key ''), `tab` (key: the tab id), `edit` (key: `<person>@<time>`, one per person), `card_moved`
 // (key: a plan card's move as JSON, for webhooks: liveworkspace/docs/specs/004-index/webhooks.md "What it sends"),
@@ -61,6 +62,9 @@ export type OutboxRow = {
 export const OUTBOX_MAX_ATTEMPTS = 12;
 // The longest wait between two tries of a key.
 export const RETRY_MAX_MS = 60 * 60_000;
+// How long a parked key waits before a healthy drain may let it back in for one more try (its `retry_at` while
+// parked): a day, so a key the index keeps refusing is sent once a day at most, never in a loop.
+export const PARKED_RETRY_MS = 24 * 60 * 60_000;
 // Answers that say the push itself is wrong (malformed, not this app's to write, too large, unprocessable): sending
 // it again changes nothing, so its keys are parked at once. A 404 is done (the item is gone); anything else (401,
 // 408, 429, 5xx, a network failure) is tried again later.
@@ -101,7 +105,8 @@ ALTER TABLE ${table} ADD COLUMN retry_at INTEGER NOT NULL DEFAULT 0;`,
 }
 
 // When the earliest key the table owes may go (ms; 0 for a key never tried), or null when it owes nothing but
-// parked keys. One read over the table, which holds a key per changed thing.
+// parked keys. Runs after every write: with the `(attempts, retry_at)` index (outbox-parked.ts outboxParkingStep) it
+// reads only the keys not parked, so parked rows beside them cost nothing.
 export function outboxDueAt(sql: SqlExec, table = 'outbox'): number | null {
   const row = sql
     .exec(`SELECT MIN(retry_at) AS due FROM ${table} WHERE attempts < ?`, OUTBOX_MAX_ATTEMPTS)
@@ -407,8 +412,9 @@ export const dueOutboxRows = (rows: readonly OutboxRow[], now: number): OutboxRo
   rows.filter((r) => (r.attempts ?? 0) < OUTBOX_MAX_ATTEMPTS && (r.retry_at ?? 0) <= now);
 
 // After a drain at `now`, in one batch: deletes the keys done and counts each failed key's attempt. A key then
-// waits failureDelayMs (retryDelayMs, or a longer Retry-After up to RETRY_MAX_MS); one refused for good (FINAL_STATUSES), or failed OUTBOX_MAX_ATTEMPTS times, is parked, with a
-// log line. `rows` are the rows the drain sent, for their attempts so far.
+// waits failureDelayMs (retryDelayMs, or a longer Retry-After up to RETRY_MAX_MS); one refused for good
+// (FINAL_STATUSES), or failed OUTBOX_MAX_ATTEMPTS times, is parked, with a log line, and may go back in a
+// PARKED_RETRY_MS on (outbox-parked.ts tendParkedOutbox). `rows` are the rows the drain sent, for their attempts so far.
 export async function settleOutbox(
   db: OutboxDb,
   outbox: OutboxTable,
@@ -435,7 +441,7 @@ export async function settleOutbox(
     for (const id of failure.ids) {
       const attempts = kind === 'final' ? OUTBOX_MAX_ATTEMPTS : (byId.get(id)?.attempts ?? 0) + 1;
       const park = attempts >= OUTBOX_MAX_ATTEMPTS;
-      const retryAt = park ? 0 : now + failureDelayMs(attempts, failure.error);
+      const retryAt = now + (park ? PARKED_RETRY_MS : failureDelayMs(attempts, failure.error));
       const slot = `${attempts}:${retryAt}`;
       const update = updates.get(slot) ?? { attempts, retryAt, ids: [] };
       update.ids.push(id);

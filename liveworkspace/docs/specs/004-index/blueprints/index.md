@@ -239,6 +239,8 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `warn`  | `[internal] person merge failed`                    | `internal.ts`          |
 | `warn`  | `[notify-email] skipped … ${String(emails`          | `notifier.ts`          |
 | `warn`  | `[outbox] parked`                                   | `outbox.ts`            |
+| `warn`  | `[outbox] parked rows dropped`                      | `outbox-parked.ts`     |
+| `info`  | `[outbox] unparked`                                 | `outbox-parked.ts`     |
 | `warn`  | `[outbox] push failed`                              | `outbox.ts`            |
 | `warn`  | `[notify-email] the sender allowance could not be`  | `notify-claims.ts`     |
 | `warn`  | `[room-purge] did not reach the room`               | `purge.ts`             |
@@ -335,6 +337,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `packages/index-app/src/notifier.ts`                | The notification emails every app sends about its items, written once (docs/specs/014-identity/ profile-and-email-notifications.md in each app): the two milestones (the t…                     |
 | `packages/index-app/src/notify-claims.ts`           | The once-only rules of an item's notification emails (@liveworkspace/auth-client notify.ts holds the numbers), for every app: - Once per key: someone joined (one email p…                      |
 | `packages/index-app/src/outbox.ts`                  | What an item's Durable Object owes the index (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item pushes"): its summary (`PUT /app/items/:id/summary`), each change…     |
+| `packages/index-app/src/outbox-parked.ts`           | The outbox's parked keys (one-explorer-contracts.md "When a push fails"): `outboxParkingStep` (the schema step), `tendParkedOutbox` (bounds, and the retry after a healthy drain)               |
 | `packages/index-app/src/purge.ts`                   | Dropping items' content for good (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Purging"): the index has already removed the rows (a permanent delete, the Trash's sweep, …     |
 | `packages/index-app/src/request.ts`                 | The index's grant on the item a request is about (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"), as an app's worker settles it before the request goes to the ite…     |
 | `packages/index-app/src/room-ticket.ts`             | A socket's ticket into an item's room (`…/ws?t=`) and its renewals: the index's grant, encrypted for a workbench (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants")        |
@@ -565,6 +568,9 @@ Migrations, in order:
 | `PUSH_CONCURRENCY`              | `6`                                                                                    | `outbox.ts`                           |
 | `OUTBOX_MAX_ATTEMPTS`           | `12`                                                                                   | `outbox.ts`                           |
 | `RETRY_MAX_MS`                  | `60 * 60_000`                                                                          | `outbox.ts`                           |
+| `PARKED_RETRY_MS`               | `24 * 60 * 60_000`                                                                     | `outbox.ts`                           |
+| `PARKED_KEEP_MS`                | `30 * 24 * 60 * 60_000`                                                                | `outbox-parked.ts`                    |
+| `PARKED_KEEP_MAX`               | `500`                                                                                  | `outbox-parked.ts`                    |
 | `FINAL_STATUSES`                | `new Set([400, 403, 413, 422])`                                                        | `outbox.ts`                           |
 | `ROOM_PURGE_TIMEOUT_MS`         | `3_000`                                                                                | `purge.ts`                            |
 | `ROOM_PURGE_CONCURRENCY`        | `10`                                                                                   | `purge.ts`                            |

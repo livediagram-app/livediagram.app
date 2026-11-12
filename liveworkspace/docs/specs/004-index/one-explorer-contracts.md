@@ -581,12 +581,34 @@ never tried.
   `IndexError` as `retryAfterMs`) waits the longer of the two, and never more than an hour (`RETRY_MAX_MS`), so a
   huge header cannot stall a key; one that does not parse is ignored (`failureDelayMs`).
 - **Parked.** A key that failed 12 times (`OUTBOX_MAX_ATTEMPTS`, about six hours of trying) is parked too. A parked
-  key stays stored and is never sent again, with a log line (`[outbox] parked`, its reason, kinds and count). The
-  next write to the same thing (a save for the summary, an edit for its tab, a person's next write, an image placed)
-  deletes it and writes a fresh key, which starts again at 0; nothing else retries it.
+  key stays stored and is left out of every drain, with a log line (`[outbox] parked`, its reason, kinds and count).
+  The next write to the same thing (a save for the summary, an edit for its tab, a person's next write, an image
+  placed, a Community post listed, hidden or taken down) deletes it and writes a fresh key, which starts again at 0.
+  Every trigger that keys a change does so by delete-then-insert, never `INSERT OR IGNORE`, so a parked key never
+  swallows a change.
+- **Retried after a healthy drain.** A drain in which every push succeeded (none failed, at least one key done) says
+  the index is healthy again, so the parked keys whose wait is over go back in: each gets one more try (its
+  `attempts` set to one short of the limit, its wait cleared) in the next drain, at the usual pace. One that succeeds
+  is done; one that fails is parked again at once. A key may go back in at most once every 24 hours
+  (`PARKED_RETRY_MS`: parking sets its `retry_at` that far ahead), so a key the index keeps refusing never loops.
+  Keys an outage parked (card moves for webhooks, a summary, a tab's Inbox rows) are delivered once the index answers
+  again, with no route to call and no write needed. There is no internal route for it.
+- **Parked rows are bounded.** A parked row older than 30 days (`PARKED_KEEP_MS`, counted from when it was first
+  parked, `parked_at`) is dropped, and an item keeps at most its newest 500 parked rows (`PARKED_KEEP_MAX`), so a
+  lasting refusal (a card moving every few minutes under a 4xx) cannot grow the table without end. Both run with the
+  drain's settle, in the same batch as the healthy drain's retry.
+- **The next-due read** (`outboxDueAt`, run after every write) reads the earliest wait of the keys not parked through
+  an index on `(attempts, retry_at)`, so its cost follows the keys owed, never the parked rows beside them.
+- **The schema step** (`outboxParkingStep`, each app's room schema): adds `parked_at` (and `attempts` and `retry_at`
+  where a room lacks them, as a room whose version ran ahead of its columns can), the `(attempts, retry_at)` index,
+  and stamps the rows parked already with the time it runs, so they are dropped 30 days on. It asks SQLite which
+  columns exist before each ALTER, so it is safe on a room made before the retry columns, and runs once by the
+  room's version row. An app opts its drain in to the retry and the bounds (`tendParkedOutbox`) in the same change as
+  the step.
 - **The room's alarm** drains on idle and at most once a minute, and never before the earliest key's wait is over;
   a drain sends only the keys whose wait is over, so a key in backoff never holds back a fresh one. With nothing
-  owed but parked keys, the alarm is not set for the outbox at all.
+  owed but parked keys, the alarm is not set for the outbox at all; the next write's drain, if healthy, is what lets
+  them back in.
 - **The room's one alarm** is the earliest of everything the room has due (the outbox, its shared tabs, grants to ask
   for or lapse, the Community check, upkeep), and never sooner than a second from now, whatever is due
   ([architecture.md](../002-architecture/architecture.md#a-durable-objects-alarm)).

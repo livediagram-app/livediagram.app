@@ -10,7 +10,8 @@
 // as the write, so no write path can forget one and a save makes no network call. The room's alarm drains it on
 // idle, at most once a minute (document-room.ts), then deletes the keys it pushed. A key written again meanwhile has
 // a new id and stays for the next drain. A key whose push fails stays and waits a minute, doubling to an hour; one
-// refused for good, or failed 12 times, is parked (@liveworkspace/index-app outbox.ts).
+// refused for good, or failed 12 times, is parked (@liveworkspace/index-app outbox.ts), and a drain the index answers
+// in full lets it back in for one more try, at most once a day (outbox-parked.ts).
 
 import {
   collabIndexRowsFromElements,
@@ -26,6 +27,7 @@ import {
   type OutboxFailure,
   readOutbox,
   settleOutbox,
+  tendParkedOutbox,
 } from '@liveworkspace/index-app';
 import type { CollabPush, IndexAppClient, ItemSummary } from '@liveworkspace/index-client';
 import { MEDIA_REFS_PER_DOCUMENT_MAX } from '@liveworkspace/media';
@@ -305,7 +307,22 @@ export async function drainOutbox(
   ]);
   done.push(...outcome.done);
   failed.push(...outcome.failed);
-  await settleOutbox(env.DOCUMENT_DB, DOCUMENT_OUTBOX, documentId, rows, { done, failed }, now);
+  const { parked } = await settleOutbox(
+    env.DOCUMENT_DB,
+    DOCUMENT_OUTBOX,
+    documentId,
+    rows,
+    { done, failed },
+    now,
+  );
+  // Parked keys bounded, and let back in for one more try after a drain the index answered in full.
+  await tendParkedOutbox(
+    env.DOCUMENT_DB,
+    DOCUMENT_OUTBOX,
+    documentId,
+    { done, failed, parked },
+    now,
+  );
   return {
     keys: done.length,
     pushes: outcome.pushes + (imagesPushed ? 1 : 0),
