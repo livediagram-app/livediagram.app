@@ -70,9 +70,9 @@ export type TabLook = {
 };
 
 /** The looks, in the order the dialog shows them after the Mashup card: with it, four carousel pages of six.
- *  Everyday stays first; the rest are in a fixed, interleaved order (never shuffled at runtime) that puts two
- *  multi-colour looks (Rainbow, Pastel, Tropical, UML) on every page and never sets two neighbours on a page in the
- *  same theme or finish. */
+ *  Everyday stays first; the rest are in a fixed, interleaved order (never shuffled at runtime) that puts one or two
+ *  of the eight multi-colour looks (Rainbow, Pastel, Tropical) on every page and never sets two neighbours on a
+ *  page in the same theme or finish. Textbook and Schematic wear Mono: UML is retired here. */
 export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'everyday',
@@ -86,11 +86,20 @@ export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'textbook',
     label: 'Textbook',
-    description: 'UML, Professional, Oswald, tiles',
-    theme: 'uml',
+    description: 'Mono, Professional, Oswald, tiles',
+    theme: 'mono',
     finish: 'professional',
     font: 'oswald',
     pattern: 'tiles',
+  },
+  {
+    id: 'spectrum',
+    label: 'Spectrum',
+    description: 'Rainbow, Flexible, Inter, terrazzo',
+    theme: 'rainbow',
+    finish: 'flexible',
+    font: 'inter',
+    pattern: 'terrazzo',
   },
   {
     id: 'whiteboard',
@@ -101,15 +110,6 @@ export const TAB_LOOKS: readonly TabLook[] = [
     finish: 'marker',
     font: undefined,
     pattern: 'blank',
-  },
-  {
-    id: 'spectrum',
-    label: 'Spectrum',
-    description: 'Rainbow, Flexible, Inter, terrazzo',
-    theme: 'rainbow',
-    finish: 'flexible',
-    font: 'inter',
-    pattern: 'terrazzo',
   },
   {
     id: 'boardroom',
@@ -279,8 +279,8 @@ export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'schematic',
     label: 'Schematic',
-    description: 'UML, Professional, Roboto Mono, carpet tiles',
-    theme: 'uml',
+    description: 'Mono, Professional, Roboto Mono, carpet tiles',
+    theme: 'mono',
     finish: 'professional',
     font: 'roboto-mono',
     pattern: 'carpet-tiles',

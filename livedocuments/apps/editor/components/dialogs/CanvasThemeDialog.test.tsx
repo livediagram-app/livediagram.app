@@ -144,8 +144,8 @@ describe('CanvasThemeDialog home', () => {
   const lookNames = [
     'Everyday',
     'Textbook',
-    'Whiteboard',
     'Spectrum',
+    'Whiteboard',
     'Boardroom',
     'Notebook',
     'Seaside',

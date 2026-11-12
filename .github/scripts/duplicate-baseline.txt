@@ -240,7 +240,6 @@ livediagram/packages/document/src/flowchart-spread.ts	liveplanner/packages/proje
 livediagram/packages/document/src/flowchart.ts	liveplanner/packages/project/src/flowchart.ts
 livediagram/packages/document/src/malformed-ids.ts	liveplanner/packages/project/src/malformed-ids.ts
 livediagram/packages/document/src/mind-grow.ts	liveplanner/packages/project/src/mind-grow.ts
-livediagram/packages/document/src/retired-themes.ts	livehuddle/packages/document/src/retired-themes.ts
 livediagram/packages/document/src/savable.ts	livehuddle/packages/document/src/savable.ts
 livediagram/packages/document/src/svg-render-sequence.ts	liveplanner/packages/project/src/svg-render-sequence.ts
 livediagram/packages/document/src/svg-render-temperature.ts	liveplanner/packages/project/src/svg-render-temperature.ts

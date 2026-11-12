@@ -8,7 +8,8 @@ import type { ThemeId } from './themes';
 // the picker's theme cards (docs/specs/007-editor/new-document-route.md). A `Record<ThemeId, string>` so the
 // compiler forces every theme to carry one: add a ThemeId without a line
 // here and the build fails, which is how this can't drift from THEMES.
-const THEME_DESCRIPTIONS: Record<ThemeId, string> = {
+// UML is a shared ThemeId livehuddle retired (docs/specs/011-theme/retired-schemes.md "UML"), so it has no blurb.
+const THEME_DESCRIPTIONS: Record<Exclude<ThemeId, 'uml'>, string> = {
   // The one scheme whose blurb describes a BEHAVIOUR rather than a palette:
   // Default is the same entry in both halves, and which you see is your own
   // appearance (docs/specs/007-editor/editor-app.md).
@@ -36,7 +37,6 @@ const THEME_DESCRIPTIONS: Record<ThemeId, string> = {
   rainbow: 'A different hue per element.',
   pastel: 'Soft multi-colour, a hue per element.',
   tropical: 'Bright, summery hues per element.',
-  uml: 'Slate ink on a clean white canvas.',
   sparkle: 'Gold on a midnight navy.',
   spring: 'Painted-egg pastels, a hue per element.',
   pumpkin: 'Orange, purple and green on a moonless night.',

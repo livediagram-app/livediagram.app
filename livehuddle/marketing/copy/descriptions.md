@@ -122,7 +122,7 @@ detailed GitHub / Product Hunt write-up.
 > Nineteen templates start you off: a blank Space, a Virtual Office, a Team Pod
 > for the stand-up, an All-Hands Hall with a stage for the company meeting, and
 > whole campuses, from a Company Campus to a Conference Venue, with buildings,
-> doors and floors. Every piece can be moved, and the pieces build more rooms. Twenty-five themes recolour a whole Space in
+> doors and floors. Every piece can be moved, and the pieces build more rooms. Twenty-four themes recolour a whole Space in
 > one click.
 >
 > #### Light tools for a meeting

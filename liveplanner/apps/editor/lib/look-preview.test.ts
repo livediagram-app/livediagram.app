@@ -6,6 +6,7 @@ import {
   lookPreviewSvg,
   lookPreviewTab,
 } from './look-preview';
+import { resolveTheme } from './themes';
 import { TAB_LOOKS, activeLookId, tabLookById } from './tab-looks';
 
 // A look's card preview (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks").
@@ -34,6 +35,16 @@ describe('lookPreviewSvg', () => {
       const fills = els.filter((el) => el.type === 'shape').map((el) => el.fillColor);
       expect(fills.every(Boolean), id).toBe(true);
       expect(new Set(fills).size, id).toBeGreaterThan(1);
+    }
+  });
+
+  // UML is retired here (docs/specs/011-theme/retired-schemes.md "UML"): Textbook and Schematic wear Mono.
+  it('still draws Textbook and Schematic, now in Mono', () => {
+    const ink = resolveTheme('mono')!.elementStroke!;
+    for (const id of ['textbook', 'schematic']) {
+      const look = tabLookById(id)!;
+      expect(lookPreviewTab(look).theme, id).toBe('mono');
+      expect(lookPreviewSvg(look).toLowerCase(), id).toContain(ink.toLowerCase());
     }
   });
 

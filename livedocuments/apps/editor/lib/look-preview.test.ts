@@ -22,7 +22,7 @@ describe('lookPreviewSvg', () => {
   });
 
   it('shows two palette colours on a multi-colour look, the arrow still on its pins', () => {
-    for (const id of ['spectrum', 'doodle', 'daydream', 'lagoon', 'poster', 'textbook']) {
+    for (const id of ['spectrum', 'doodle', 'daydream', 'lagoon', 'poster']) {
       const els = lookPreviewTab(tabLookById(id)!).elements as Array<
         Element & { fillColor?: string }
       >;
@@ -42,6 +42,16 @@ describe('lookPreviewSvg', () => {
     const palette = (id: string) => resolveTheme(id)!.palette!.map((p) => p.fill);
     expect(fills('spectrum')).toEqual([palette('rainbow')[0], palette('rainbow')[3]]);
     expect(fills('lagoon')).toEqual([palette('tropical')[0], palette('tropical')[3]]);
+  });
+
+  // UML is retired here (docs/specs/011-theme/retired-schemes.md "UML"): Textbook and Schematic wear Mono.
+  it('still draws Textbook and Schematic, now in Mono', () => {
+    const ink = resolveTheme('mono')!.elementStroke!;
+    for (const id of ['textbook', 'schematic']) {
+      const look = tabLookById(id)!;
+      expect(lookPreviewTab(look).theme, id).toBe('mono');
+      expect(lookPreviewSvg(look).toLowerCase(), id).toContain(ink.toLowerCase());
+    }
   });
 
   it('draws the Sketch looks sketched, and the Marker looks in marker', () => {
