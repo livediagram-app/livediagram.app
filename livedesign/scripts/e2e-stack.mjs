@@ -54,6 +54,7 @@ import {
 // Every page enforces Trusted Types in production (docs/specs/016-platform/trusted-types.md), so the suite runs
 // against the same header: a violation throws in the page, and the pageErrors fixture fails the spec on it.
 import { TRUSTED_TYPES_CSP } from '../packages/ui/src/trusted-types-csp.ts';
+import { inspectorPortOf } from '../../scripts/e2e-stack/inspector-ports.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // E2E_LIVE_OUT serves another export of the live app, e.g. the signed-in `.next/out-signed-in`
@@ -95,10 +96,10 @@ function assetsOutOfCacheFor(req) {
 
 const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3402);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8989);
-const API_INSPECTOR_PORT = Number(process.env.E2E_API_INSPECTOR_PORT ?? API_PORT + 10);
+const API_INSPECTOR_PORT = inspectorPortOf(process.env.E2E_API_INSPECTOR_PORT, API_PORT);
 const INDEX_PORT = Number(process.env.E2E_INDEX_PORT ?? 8419);
 // The index Worker's wrangler inspector stays beside it, inside this stack's own ports (never another product's block).
-const INDEX_INSPECTOR_PORT = Number(process.env.E2E_INDEX_INSPECTOR_PORT ?? INDEX_PORT + 10);
+const INDEX_INSPECTOR_PORT = inspectorPortOf(process.env.E2E_INDEX_INSPECTOR_PORT, INDEX_PORT);
 // The key the api and the index share (the api's INDEX_KEY, the index's INDEX_KEY_LIVEDESIGN). Test-only.
 const INDEX_KEY = 'e2e-index-key';
 const INDEX_DIR = path.resolve(ROOT, '..', 'liveworkspace', 'apps', 'index');
