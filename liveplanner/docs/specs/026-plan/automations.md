@@ -595,7 +595,7 @@ it. A guest sees the sign-in gate the Automations screen already shows.
   model to do anything but describe a rule). Nothing else is read.
 - **A rule** is then held to everything a person's rule is: `readRuleBody`'s checks and limits, names put back to the
   plan's ids, **chain off**, the saver's time zone, the name made unique. Its text (a comment, an email, a mention, a
-  message, a checklist item, a card title, the rule's name) is cut to its limits, control characters removed, and
+  message, a checklist item, a card title, a label, the rule's name) is cut to its limits, control characters removed, and
   any link the request didn't hold removed, so a draft can never carry a link the person didn't write.
 - A reply that does not read gets **one** second ask, with the refusal's words; a second reply that does not read is
   "Couldn't draft a rule from that". Each ask is one AI call.
