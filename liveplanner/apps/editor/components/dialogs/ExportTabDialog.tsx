@@ -3,8 +3,9 @@ import { itemsWithCounts } from '@/hooks/plan/thread-store';
 import { donePhase } from '@liveplanner/items';
 import { usePlan } from '@/components/plan/PlanContext';
 import { tabCsvText } from '@/lib/export-plan/tab-csv';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { DialogCloseButton, DialogHeader } from '@liveplanner/ui';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { exportHeroArt } from '@liveworkspace/ui/dialog-hero-art/export';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCard';
 import { FormatIcon } from './export-format-icons';
@@ -169,6 +170,7 @@ export function ExportTabDialog({
   offerHiddenLayers = true,
   projectTabs,
 }: ExportTabDialogProps) {
+  const titleId = useId();
   // A Board, Sheet or Dashboard tab offers only its formats and exports as laid out; a plan view anywhere draws as its
   // chart (docs/specs/026-plan/plan-tabs.md "Export").
   const planImage = usePlanImageExport(tab, projectTabs, scope);
@@ -320,10 +322,15 @@ export function ExportTabDialog({
       size="xl"
       className="max-h-[90vh]"
     >
-      <DialogHeader title={isSelection ? 'Export Selection' : 'Export Tab'} subtitle={subtitle}>
-        <HelpArticleLink article="exportingDiagrams" size="md" />
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+      {/* The dialog hero header (dialog-hero-header.md): the tab leaving as files. */}
+      <HeroDialogHeader
+        art={exportHeroArt}
+        titleId={titleId}
+        title={isSelection ? 'Export Selection' : 'Export Tab'}
+        subtitle={subtitle}
+        actions={<HelpArticleLink article="exportingDiagrams" size="md" />}
+        onClose={onClose}
+      />
       <div className="flex-1 overflow-y-auto px-6 py-5">
         {active && isTextFormat(active) ? (
           <TextExportPanel

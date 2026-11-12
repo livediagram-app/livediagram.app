@@ -1,5 +1,7 @@
+import { useId } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { importHeroArt } from '@liveworkspace/ui/dialog-hero-art/import';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ExcalidrawImportPanel } from './ExcalidrawImportPanel';
 import type { ImportScenes } from '@/hooks/persistence/useMsWhiteboardImport';
@@ -15,15 +17,18 @@ export function ExcalidrawImportDialog({
   importScenes: ImportScenes;
   onClose: () => void;
 }) {
+  const titleId = useId();
   return (
     <Dialog open onClose={onClose} ariaLabel={EXCALIDRAW_IMPORT_TITLE} size="lg">
-      <DialogHeader
+      {/* The dialog hero header (dialog-hero-header.md): Import's art, files coming in. */}
+      <HeroDialogHeader
+        art={importHeroArt}
+        titleId={titleId}
         title={EXCALIDRAW_IMPORT_TITLE}
-        subtitle="Each file becomes its own canvas, named and dated after the file."
-      >
-        <HelpArticleLink article="importTabs" size="md" />
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        subtitle="Each file becomes its own canvas."
+        actions={<HelpArticleLink article="importTabs" size="md" />}
+        onClose={onClose}
+      />
       <div className="flex-1 overflow-y-auto px-6 py-5">
         <ExcalidrawImportPanel importScenes={importScenes} onClose={onClose} />
       </div>

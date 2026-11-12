@@ -13,9 +13,7 @@ describe('MsWhiteboardImportDialog', () => {
     const onClose = vi.fn();
     render(<MsWhiteboardImportDialog importScenes={vi.fn()} onClose={onClose} />);
     expect(screen.getByRole('dialog', { name: MS_WHITEBOARD_IMPORT_TITLE })).toBeTruthy();
-    expect(
-      screen.getByText('Each board becomes its own canvas, named and dated as the board.'),
-    ).toBeTruthy();
+    expect(screen.getByText('Each board becomes its own canvas.')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Choose a .zip' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: /close/i }));

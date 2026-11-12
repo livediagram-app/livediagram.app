@@ -3,17 +3,21 @@
 Derived from [dialog-hero-header.md](../dialog-hero-header.md). The spec decides; this file only adds engineering
 precision, read from the code. Paths are relative to the repository root.
 
-| File                                                                                       | Role                                                                                                                 |
-| ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `packages/ui/src/dialog/hero/HeroDialogHeader.tsx`                                         | `HeroDialogHeader` (the frame), `HeroBand` and `HeroTitleMark` (memoised parts)                                      |
-| `packages/ui/src/dialog/hero/hero-tokens.ts`                                               | `HERO_TOKENS` (the recipes), `HERO_TOKEN_STYLE`, `heroVar`, `resolveHeroTokens`, `HERO_INK_CONTRAST`, `HERO_GROUNDS` |
-| `packages/ui/src/dialog/hero/hero-art.ts`                                                  | `HeroArt`, `heroTexture`, `HERO_PLACE`, `HERO_MOTION`, `HERO_SVG`, the textures' measures                            |
-| `packages/ui/src/dialog/hero/index.ts`                                                     | the `@liveworkspace/ui/dialog-hero` subpath                                                                          |
-| `packages/ui/src/dialog/hero/art/<dialog>.tsx`                                             | shared art, `@liveworkspace/ui/dialog-hero-art/<dialog>` (a wildcard export: no package.json edit)                   |
-| `packages/ui/src/dialog/hero/art/share.tsx`                                                | `shareHeroArt`                                                                                                       |
-| `liveplanner/apps/editor/components/automations/AutomationsHeroArt.tsx`                    | `automationsHeroArt` (product art: `<Dialog>HeroArt.tsx` beside its dialog)                                          |
-| `livedocuments/apps/editor/app/globals.css`, `liveworkspace/apps/site/app/app-colours.css` | the heading face's custom properties                                                                                 |
-| `packages/oxlint-config/raw-svg.ts`                                                        | `**/dialog/hero/**` and `**/*HeroArt.tsx` on the icon-art allowlist                                                  |
+| File                                                                                       | Role                                                                                                                                          |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/ui/src/dialog/hero/HeroDialogHeader.tsx`                                         | `HeroDialogHeader` (the frame), `HeroBand` and `HeroTitleMark` (memoised parts)                                                               |
+| `packages/ui/src/dialog/hero/hero-tokens.ts`                                               | `HERO_TOKENS` (the recipes), `HERO_TOKEN_STYLE`, `heroVar`, `resolveHeroTokens`, `HERO_INK_CONTRAST`, `HERO_GROUNDS`                          |
+| `packages/ui/src/dialog/hero/hero-art.ts`                                                  | `HeroArt`, `heroTexture`, `HERO_PLACE`, `HERO_MOTION`, `HERO_SVG`, the textures' measures                                                     |
+| `packages/ui/src/dialog/hero/index.ts`                                                     | the `@liveworkspace/ui/dialog-hero` subpath                                                                                                   |
+| `packages/ui/src/dialog/hero/art/<dialog>.tsx`                                             | shared art, `@liveworkspace/ui/dialog-hero-art/<dialog>` (a wildcard export: no package.json edit)                                            |
+| `packages/ui/src/dialog/hero/art/share.tsx`                                                | `shareHeroArt`                                                                                                                                |
+| `packages/ui/src/dialog/hero/art/export.tsx`                                               | `exportHeroArt` (every product's `ExportTabDialog`)                                                                                           |
+| `packages/ui/src/dialog/hero/art/import.tsx`                                               | `importHeroArt` (every product's `ImportTabDialog`; livediagram's `DrawioImportDialog`, `ExcalidrawImportDialog`, `MsWhiteboardImportDialog`) |
+| `packages/ui/src/dialog/hero/art/history.tsx`                                              | `historyHeroArt` (`packages/explorer/src/library/HistoryDialog.tsx`)                                                                          |
+| `packages/ui/src/dialog/hero/art/community-publish.tsx`                                    | `communityPublishHeroArt` (`packages/community-ui/src/share/CommunityPublishDialog.tsx`)                                                      |
+| `liveplanner/apps/editor/components/automations/AutomationsHeroArt.tsx`                    | `automationsHeroArt` (product art: `<Dialog>HeroArt.tsx` beside its dialog)                                                                   |
+| `livedocuments/apps/editor/app/globals.css`, `liveworkspace/apps/site/app/app-colours.css` | the heading face's custom properties                                                                                                          |
+| `packages/oxlint-config/raw-svg.ts`                                                        | `**/dialog/hero/**` and `**/*HeroArt.tsx` on the icon-art allowlist                                                                           |
 
 ## The frame's API
 
@@ -97,11 +101,14 @@ switch as every `dark:` class (a `.light` island included). `--hero-lift` is the
 | Centre piece     | from `@4xl` (56rem header); title and line `@4xl:max-w-[26rem]`    |
 | Gaps             | 12px between mark, words and actions; 8px between actions          |
 
-Measured in a browser: 100px at 1280, 1024 and 768 wide for Automations and Share (liveplanner, livedocuments), 56px
-on a 390px phone.
+Measured in a browser: 100px at 1280, 1024 and 768 wide for Automations and Share (liveplanner, livedocuments), and
+for Export, Import, History and Share to Community (livediagram, livedocuments, light and dark), 56px on a 390px
+phone; livediagram's Import from Microsoft Whiteboard is 69px there, its title taking the second line the phone
+allows.
 
 ## Size
 
 Measured minified (esbuild, React external): the frame, tokens and helpers are 5.6 KB, 2.4 KB gzipped, beyond the
 `DialogCloseButton` and `SheetHandle` every dialog already loads; Share's art 2.1 KB (1.0 KB gzipped), Automations'
-2.3 KB (1.0 KB gzipped). Art loads only with its dialog's chunk; the band paints once.
+2.3 KB (1.0 KB gzipped), Export's 2.9 KB (1.0 KB), Import's 2.1 KB (1.0 KB), History's 2.4 KB (0.9 KB), Share to
+Community's 1.8 KB (0.9 KB). Art loads only with its dialog's chunk; the band paints once.

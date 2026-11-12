@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { BackBar, Glyph, DialogCloseButton, DialogHeader } from '@liveplanner/ui';
+import { BackBar, Glyph } from '@liveplanner/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { importHeroArt } from '@liveworkspace/ui/dialog-hero-art/import';
 import {
   TRACKER_FILE_MAX_BYTES,
   TRACKER_SOURCE_NAMES,
@@ -61,6 +63,7 @@ export function ImportTabDialog({
   tracker,
   onClose,
 }: ImportTabDialogProps) {
+  const titleId = useId();
   const tools = tracker.canImport;
   // With nothing to choose between (the liveplanner Tab alone), the dialog opens straight at it.
   const jsonAlone = !tools && intoTab.kind === 'json' && !intoTab.blocked;
@@ -178,10 +181,15 @@ export function ImportTabDialog({
       // Nobody starts at the help link: focus the panel, the rows a Tab away.
       initialFocus="container"
     >
-      <DialogHeader title={title} subtitle={subtitle}>
-        <HelpArticleLink article="importTabs" size="md" />
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+      {/* The dialog hero header (dialog-hero-header.md): files coming in. */}
+      <HeroDialogHeader
+        art={importHeroArt}
+        titleId={titleId}
+        title={title}
+        subtitle={subtitle}
+        actions={<HelpArticleLink article="importTabs" size="md" />}
+        onClose={onClose}
+      />
       {/* Every step takes a dropped file (useFileDrop), outlined while one is over it. */}
       <div
         data-testid="import-drop"

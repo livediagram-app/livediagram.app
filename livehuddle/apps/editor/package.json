@@ -24,6 +24,7 @@
   "dependencies": {
     "@jsquash/webp": "1.5.0",
     "@livehuddle/api-schema": "workspace:*",
+    "@livehuddle/avatar": "workspace:*",
     "@livehuddle/document": "workspace:*",
     "@livehuddle/document-views": "workspace:*",
     "@livehuddle/help-registry": "workspace:*",
@@ -33,7 +34,6 @@
     "@livehuddle/ui": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
-    "@livehuddle/avatar": "workspace:*",
     "@liveworkspace/community-ui": "workspace:*",
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
@@ -47,6 +47,7 @@
     "@liveworkspace/style-guards": "workspace:*",
     "@liveworkspace/telemetry-client": "workspace:*",
     "@liveworkspace/trusted-types": "workspace:*",
+    "@liveworkspace/ui": "workspace:^",
     "@liveworkspace/workbench": "workspace:*",
     "next": "^16.4.5",
     "react": "^19.3.1",
