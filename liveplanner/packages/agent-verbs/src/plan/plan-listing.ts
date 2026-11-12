@@ -36,8 +36,10 @@ import {
   showsAsPercent,
   typeIn,
   fieldCardIds,
+  fieldImageIds,
   fieldPeople,
   holdsSeveral,
+  holdsSeveralImages,
   isBlocksField,
   blockingIndexOf,
   hasBlocksFields,
@@ -369,6 +371,12 @@ function listedValue(
     const linked = byId.get(id);
     return linked ? `#${linked.key} ${itemTitle(linked)}` : id;
   };
+  // An Image field its picture's id, a Several Images field its list of ids, whichever way the value was stored
+  // (docs/specs/026-plan/item-types.md "Image fields").
+  if (field?.kind === 'image') {
+    const ids = fieldImageIds(field, value);
+    return holdsSeveralImages(field) ? ids : (ids[0] ?? null);
+  }
   if (holdsSeveral(field) && field!.kind === 'card')
     return fieldCardIds(field, value).map(linkText).join(', ');
   if (holdsSeveral(field))
@@ -426,7 +434,7 @@ export function listedType(
       ...(f.onCard ? { onCard: true } : {}),
       ...(f.required ? { required: true } : {}),
       ...(f.notifies ? { notifies: true } : {}),
-      ...(holdsSeveral(f) ? { multiple: true } : {}),
+      ...(holdsSeveral(f) || holdsSeveralImages(f) ? { multiple: true } : {}),
       ...(isBlocksField(f) ? { blocks: true } : {}),
     })),
     ...(t.assigneeNotifies === false ? { assigneeNotifies: false as const } : {}),

@@ -22,7 +22,6 @@ export {
   RenamingTab,
   TabFolderStates,
   AddToFolderMenu,
-  CrossTabLink,
 } from '@liveworkspace/help-site/art/illustrations/tabs-scenes';
 export { ImportMenu, ExportMenu, ImportWarning } from './tabs-import-export';
 

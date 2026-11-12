@@ -83,13 +83,13 @@ export function Rail({
   // How many items this browser keeps only for itself: This Browser's count.
   offlineCount: number;
 }) {
-  const { onCreate, kind, inbox, viewerId, teamName } = useExplorer();
+  const { onCreate, kind, inbox, hasInbox, viewerId, teamName } = useExplorer();
   const canRunTeams = useTeams().canRun;
   const navRef = useRef<HTMLElement>(null);
   const selectedKey = sectionKey(selected);
   const name = (id: string) => teamName(id);
   const badges: Record<string, number | undefined> = {
-    inbox: inboxCount(inbox.data, viewerId) || undefined,
+    inbox: (hasInbox && inboxCount(inbox.data, viewerId)) || undefined,
     offline: offlineCount || undefined,
   };
   // On a phone the picked chip may sit past the row's edge: bring it into view.

@@ -19,8 +19,6 @@ import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
 import { takeAccessEnded } from '@/lib/access-notice';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
-import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
-import { CommentReactionsProvider } from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
 import { documentIdFromPath, isEditorPath } from '@/lib/legacy-editor-path';
 import { documentGrantRefusal } from '@/lib/api/document-grants';
 import { archivedByIndex, archivedChangeFolderHref } from '@liveworkspace/workbench/lib/archived';
@@ -219,13 +217,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
 
   return (
     <EditorContext.Provider value={state}>
-      {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
-      <MentionContext.Provider value={state.commentMentions}>
-        {/* Who reacts to comments, and how (docs/specs/012-collaboration/comment-reactions.md). */}
-        <CommentReactionsProvider value={state.commentReactions}>
-          <EditorView />
-        </CommentReactionsProvider>
-      </MentionContext.Provider>
+      <EditorView />
       {/* This browser's own store: an old livehuddle.app guest's claim and moving documents in
           This Browser after signing in (docs/specs/014-identity/auth-and-guest-access.md); never inside someone
           else's page. */}

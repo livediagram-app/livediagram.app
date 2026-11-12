@@ -1,6 +1,6 @@
 # The Comment Panel
 
-> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/comment-pin.md) is the one to read and change. livehuddle's code for it is deleted. A Space that already holds one keeps it untouched and shows a plain labelled placeholder an Editor can delete ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#a-space-that-already-holds-a-leaving-element)). The rest of this page records what livehuddle had.
+> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/comment-pin.md) is the one to read and change. livehuddle's code for it is deleted. A Space that already holds one keeps it untouched and shows a plain labelled placeholder an Editor can delete ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#a-space-that-already-holds-a-leaving-element)). Since Work Tracker #714 (owner, 2026-11-11) comments and actions themselves are gone from livehuddle too ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)). The rest of this page records what livehuddle had.
 
 A **Collaborate** element: a card on the canvas carrying a whole comment thread:
 its count, the comments, a composer, and resolve / reopen: read where it sits
@@ -72,7 +72,7 @@ and right-click opens the ordinary element menu.
 - **Read-only** surfaces show the thread with no composer and no resolve.
 - **A Participant** writes, resolves and reopens on a panel as on the popover ([Share roles](../013-workspace/share-roles.md)).
   It has no autosave, so its changes go through the comment endpoints, the same way the popover sends them
-  (`commentPersisters` in `apps/editor/lib/comment-persistence.ts`, shared by both surfaces); an Editor's ride the room
+  (`commentPersisters` in apps/editor/lib/comment-persistence.ts (deleted, Work Item 714), shared by both surfaces); an Editor's ride the room
   and the tab save. Before the two shared it, a Participant's panel comment stayed on its own screen, unsaved.
   A change the server refuses goes back on screen (`useEditorComments`): a refused resolve or reopen puts the
   thread back, a refused comment is taken off again with `[comments] comment not saved`, and a refused delete puts

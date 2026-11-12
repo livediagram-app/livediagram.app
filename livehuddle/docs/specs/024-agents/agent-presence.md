@@ -4,11 +4,12 @@
 > the REST API is the only front door. Where this file names the MCP or the CLI, it records livediagram's front
 > doors over the same engine, where this design came from; their wire values (`mcp`, `cli`) still parse.
 
-**Status: built.** The comment endpoints and their listing, comment token ids, agent presence in the api, the room
-and the editor.
+**Status: built.** The comment listing, comment token ids, agent presence in the api, the room and the editor. The
+comment writes are gone: livehuddle has no comments ([Comments, actions, links and notes](../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)), so every comment write answers
+410 `comments_gone` and the reads stay.
 
-An agent acts as the person whose token it holds. People see its work and its comments as that person's, and its
-presence as that person's agent, and comments are how people and agents talk on the canvas when nobody is chatting.
+An agent acts as the person whose token it holds. People see its work as that person's, and its presence as that
+person's agent.
 
 ## Attribution
 
@@ -51,24 +52,24 @@ presence as that person's agent, and comments are how people and agents talk on 
 
 ## Comments
 
-- An agent comments through the comment endpoints; the comment's author is the token's owner.
-- The comment endpoints gain **reply**, **resolve** and **reopen** (today only add and delete exist), each relayed to
-  the room as an `el-delta` like add. Agents and people use the same endpoints.
-- A thread holds at most 500 comments. An add or a reply to a full thread answers 409 `thread_full` and writes,
-  relays and emails nothing, so no caller is told a comment was posted that nobody stored.
-- An editor that may comment but not edit resolves and reopens through these endpoints, as it adds; an editor that
-  may edit keeps the room and its save.
-- `GET /api/documents/:id/comments?status=open|resolved|all` lists threads across tabs with their element's ref and
-  label, so an agent can read the conversation without reading the tab. It is not capped: it reads one tab at a
-  time.
-- Agents cannot be mentioned. An agent that answers comments reads new ones on its next read of the threads.
+livehuddle has no comments ([Comments, actions, links and notes](../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)).
+
+- **Writes answer 410 `comments_gone`.** Adding a comment, deleting one's own, replying, resolving and reopening
+  (`POST /api/documents/:id/tabs/:tabId/comments`, `DELETE …/comments/:commentId`, `POST …/comments/:commentId/reply`,
+  `/resolve`, `/reopen`) answer `410 { error: 'comments_gone' }` for every caller, a token's or a person's, write
+  nothing, relay nothing and email nothing. A GET on a thread verb answers 405. The refusal is logged once with its
+  code (`[comments] refused`).
+- **Reads stay.** `GET /api/documents/:id/comments?status=open|resolved|all` lists the threads a canvas already
+  holds, across tabs, with their element's ref and label, so an agent can still read a conversation stored before.
+  It is not capped: it reads one tab at a time.
+- The room drops a comment delta from any client at its op gate, so no stored thread changes from there either.
 
 ## Token levels
 
 What an agent may do follows its token's [level](../013-workspace/share-roles.md), through the same gates
-as a share link: reading needs read access; comments, session answers and presence need the participation gate
-(`gateParticipate`); changesets need the edit gate. A participate token comments, takes part and sets presence and
-submits no changesets; a view token reads and writes nothing, comments and presence included.
+as a share link: reading needs read access; session answers and presence need the participation gate
+(`gateParticipate`); changesets need the edit gate. A participate token takes part and sets presence and submits no
+changesets; a view token reads and writes nothing, presence included.
 
 `gateParticipate` is the Participant check of [share roles](../013-workspace/share-roles.md): a token whose grant is
 a Viewer's sets and clears no presence (403), however its own level reads, since a status line and focus rings are

@@ -82,7 +82,7 @@ export function useCornerDocking({ zenMode }: { zenMode: boolean }) {
       onReset: () => void;
       // True when the panel actually sits away from its default corner
       // (free, or docked elsewhere) — drives the "Reset position"
-      // enablement, which docs/specs/008-canvas/minimap.md wants greyed when already home.
+      // enablement, greyed when already home.
       resettable: boolean;
       dock?: MovablePanelDockProps;
     } => {

@@ -328,6 +328,31 @@ const LOCKING_ACTIONS = new Set(['Locked', 'Unlocked']);
 const RETIRED_PARTS_OFFER_TYPE = 'RetiredPartsOffer';
 
 // What livehuddle inherited from livediagram and never had as its own, per the above.
+// Comments, assigned actions, links and notes, and the Explorer's Inbox (Work Tracker #714, livehuddle/docs/specs/
+// 002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes"): every Comment, Note, Action and Inbox
+// (Activity) event, the Settings rows of the Collaborate Panel, the element indicators and the three emails about
+// them, and the Assign Action dialog's sign-in nudge. Nothing in livehuddle sends any of them now.
+const COLLAB_CATEGORIES = new Set(['Comment', 'Note', 'Action', 'Activity']);
+const COLLAB_UI = new Set([
+  'Toggled|CollaboratePanelOn',
+  'Toggled|CollaboratePanelOff',
+  'Toggled|NotifyCommentsOn',
+  'Toggled|NotifyCommentsOff',
+  'Toggled|NotifyActionAssignedOn',
+  'Toggled|NotifyActionAssignedOff',
+  'Toggled|NotifyMentionsOn',
+  'Toggled|NotifyMentionsOff',
+  'Opened|ActionSignInNudge',
+]);
+const COLLAB_UI_PREFIX = /^Changed\|ElementIndicators/;
+
+function isCollabEvent(category: string, action: string, type: string | null): boolean {
+  if (COLLAB_CATEGORIES.has(category)) return true;
+  if (category !== 'UI') return false;
+  const key = `${action}|${type ?? ''}`;
+  return COLLAB_UI.has(key) || COLLAB_UI_PREFIX.test(key);
+}
+
 export function isInheritedEvent(category: string, action: string, type: string | null): boolean {
   const t = type ?? '';
   if (isLeftLivehuddleEvent(category, action, type)) return true;
@@ -343,6 +368,7 @@ export function isInheritedEvent(category: string, action: string, type: string 
 
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (isRetiredExplorerEvent(category, action, type)) return true;
+  if (isCollabEvent(category, action, type)) return true;
   if (AGENT_DOOR_CATEGORIES.has(category)) return true;
   if (isInheritedEvent(category, action, type)) return true;
   if (isEraserEvent(category, action, type)) return true;

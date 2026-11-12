@@ -32,7 +32,6 @@ function renderToolbars(multi: boolean, over: Partial<CanvasProps> = {}) {
     canvasTool: 'select',
     onDuplicateSelected: vi.fn(),
     onDeleteSelected: vi.fn(),
-    onOpenComments: vi.fn(),
     onBeginEdit: vi.fn(),
     ...over,
   } as unknown as CanvasProps;

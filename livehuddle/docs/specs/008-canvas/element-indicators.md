@@ -1,5 +1,11 @@
 # Element indicators
 
+> **Gone from livehuddle** (owner, 2026-11-11, Work Tracker #714): the on-element link, note, action and comment marks left livehuddle with comments, actions,
+> links and notes ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)).
+> livediagram, liveplanner, livedocuments and livedesign keep it; their own specs are the ones to read and change.
+> livehuddle's code for it is deleted, and what a Space already stores is left untouched. The rest of this
+> page records what livehuddle had.
+
 The marks on an element that say it carries something you cannot otherwise see: a **link**, a
 **note**, an open assigned **action** ([Assigned actions](../012-collaboration/assigned-actions.md))
 or unresolved **comments**.

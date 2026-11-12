@@ -52,6 +52,7 @@ const ROOMY: readonly string[] = [
   'city-townhouse',
   'country-cottage',
   'music-hall',
+  'festival-field',
 ];
 // Seats this close side by side are one row.
 const ROW_GAP = 16;

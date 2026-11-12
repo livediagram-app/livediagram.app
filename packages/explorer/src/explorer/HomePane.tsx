@@ -17,6 +17,7 @@ import { useItemList } from '../data/useItemList';
 import {
   isMostUsed,
   JUMP_BACK_IN_PER_GROUP,
+  homeEmptyLine,
   jumpBackInLoader,
   sharedRecentlyLoader,
 } from '../data/viewLists';
@@ -225,7 +226,7 @@ function HomeEmpty() {
       compact
       icon={<ClockIcon />}
       title={`No ${words.lowerMany} yet`}
-      description={`The ${words.lowerMany} you open will gather here.`}
+      description={homeEmptyLine(words.lowerMany)}
     />
   );
 }

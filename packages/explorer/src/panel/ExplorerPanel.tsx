@@ -11,6 +11,7 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { type App, type IndexClient, type Item } from '@liveworkspace/index-client';
 import { ExplorerProvider } from '../explorer/context';
+import { appHasInbox } from '../inbox-apps';
 import { ExplorerDialogs } from '../explorer/Dialogs';
 import { HostExtrasProvider, type ExplorerHostExtras } from '../explorer/host';
 import { PeopleProvider } from '../explorer/extras';
@@ -229,8 +230,13 @@ function PanelInner({
   const localCurrent =
     !current && currentId ? (thisBrowserLive.find((i) => i.id === currentId) ?? null) : null;
   const groups = useMemo(
-    () => panelSectionGroups(teams, { library, thisBrowser: offlineCount > 0 || localFolders > 0 }),
-    [teams, library, offlineCount, localFolders],
+    () =>
+      panelSectionGroups(teams, {
+        library,
+        thisBrowser: offlineCount > 0 || localFolders > 0,
+        inbox: appHasInbox(app),
+      }),
+    [teams, library, offlineCount, localFolders, app],
   );
   // The Library's tab, held here so a menu's Shape Libraries opens on it.
   const [libraryTab, setLibraryTab] = useState<LibraryTab>('gallery');

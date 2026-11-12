@@ -1,6 +1,5 @@
 import { useState, type Ref } from 'react';
 import { computeDockAnchor, type DockAnchor } from '@/lib/canvas-chrome';
-import { track } from '@/lib/telemetry';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 
 // The panels that open as popovers off a button: the Toolbar layout's
@@ -22,16 +21,11 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   explorer: 960,
 };
 
-export type DockPanel = 'explorer' | 'collaborate';
+// The Explorer alone: the Collaborate Panel, the other one, left livehuddle
+// (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes").
+export type DockPanel = 'explorer';
 
 export type { DockAnchor };
-
-// The panel-open counts (docs/specs/017-telemetry/telemetry.md) for panels that open as a popover over
-// their cluster button. Only on the open transition: re-opening the panel already showing is not a
-// new open.
-function trackDockPanelOpened(id: DockPanel): void {
-  if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
-}
 
 export function useDockPopovers(mainRef: Ref<HTMLElement>) {
   const [activeDockPanel, setActiveDockPanel] = useState<DockPanel | null>(null);
@@ -48,7 +42,6 @@ export function useDockPopovers(mainRef: Ref<HTMLElement>) {
       setActiveDockAnchor(null);
       return;
     }
-    trackDockPanelOpened(id);
     setActiveDockPanel(id);
     const canvas = mainRef && 'current' in mainRef ? mainRef.current : null;
     if (canvas) {

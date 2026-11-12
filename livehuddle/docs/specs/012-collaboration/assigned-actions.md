@@ -1,5 +1,11 @@
 # Assigned actions
 
+> **Gone from livehuddle** (owner, 2026-11-11, Work Tracker #714): assigning an action to an element left livehuddle with comments, actions,
+> links and notes ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)).
+> livediagram, liveplanner, livedocuments and livedesign keep it; their own specs are the ones to read and change.
+> livehuddle's code for it is deleted, and what a Space already stores is left untouched. The rest of this
+> page records what livehuddle had.
+
 **Status: implemented.** Assign a piece of work to a teammate directly from an
 element on the canvas: a new **Assign Action** tile attaches a named, described,
 assigned action to the element, optionally emailing the assignee. It sits on the element menu's

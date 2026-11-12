@@ -100,7 +100,6 @@ export function EditorCanvasHost() {
     can,
     participating,
     lockedByOther,
-    mapPosition,
     narrowMultiSelection,
     newProject,
     openActionPopover,
@@ -129,7 +128,6 @@ export function EditorCanvasHost() {
     setSankeyFlowsOpenForId,
     setSequenceOpenForId,
     setLinkPickerOpenForId,
-    setMapPosition,
     setMultiSelectedIds,
     setSelectedId,
     setPageHeading,
@@ -341,13 +339,6 @@ export function EditorCanvasHost() {
             settings={userPreferences}
             onUndo={undo}
             onRedo={redo}
-            mapPosition={mapPosition}
-            onMoveMap={(x, y) =>
-              // Equality-guarded so a drag tick that resolves to the same spot
-              // doesn't spin the render loop (max update depth).
-              setMapPosition((p) => (p && p.x === x && p.y === y ? p : { x, y }))
-            }
-            onResetMap={() => setMapPosition((p) => (p === null ? p : null))}
             sessionTools={sessionTools}
             // Bottom-dock Theme & canvas button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
             // CanvasThemeDialog on its home, the Looks and the Fine-tune rows.

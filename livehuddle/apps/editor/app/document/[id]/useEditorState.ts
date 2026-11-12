@@ -9,7 +9,7 @@ import { useEditorTools } from './editor-state/useEditorTools';
 import { useEditorCollaboration } from './editor-state/useEditorCollaboration';
 import { useEditorPersistence } from './editor-state/useEditorPersistence';
 import { useEditorRoom } from './editor-state/useEditorRoom';
-import { useEditorComments } from './editor-state/useEditorComments';
+import { useEditorActiveTab } from './editor-state/useEditorActiveTab';
 import { useEditorModes } from './editor-state/useEditorModes';
 import { useEditorViewport } from './editor-state/useEditorViewport';
 import { useEditorFollowing } from './editor-state/useEditorFollowing';
@@ -53,11 +53,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromCollaboration,
     fromPersistence,
   });
-  const fromComments = useEditorComments({
+  const fromActiveTab = useEditorActiveTab({
     fromDocument,
     fromHistory,
     fromSelection,
-    fromCollaboration,
   });
   const fromModes = useEditorModes({
     fromDocument,
@@ -65,7 +64,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromSelection,
     fromTools,
     fromCollaboration,
-    fromComments,
+    fromActiveTab,
   });
   const fromViewport = useEditorViewport({
     fromDocument,
@@ -73,7 +72,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromSelection,
     fromTools,
     fromCollaboration,
-    fromComments,
+    fromActiveTab,
   });
   const fromFollowing = useEditorFollowing({
     fromDocument,
@@ -82,7 +81,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromCollaboration,
     fromPersistence,
     fromRoom,
-    fromComments,
+    fromActiveTab,
     fromViewport,
   });
   const fromPresence = useEditorPresence({
@@ -98,7 +97,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromTools,
     fromCollaboration,
     fromPersistence,
-    fromComments,
+    fromActiveTab,
     fromViewport,
     fromFollowing,
   });
@@ -109,7 +108,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromCollaboration,
     fromPersistence,
     fromRoom,
-    fromComments,
+    fromActiveTab,
     fromModes,
     fromViewport,
     fromFollowing,
@@ -122,7 +121,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromTools,
     fromCollaboration,
     fromPersistence,
-    fromComments,
+    fromActiveTab,
     fromPresence,
     fromEditing,
     fromTabs,
@@ -134,7 +133,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromDialogs,
     fromCollaboration,
     fromPersistence,
-    fromComments,
+    fromActiveTab,
     fromEditing,
     fromTabs,
     fromCreation,
@@ -147,7 +146,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromTools,
     fromCollaboration,
     fromPersistence,
-    fromComments,
+    fromActiveTab,
     fromViewport,
     fromFollowing,
     fromPresence,
@@ -161,7 +160,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromTools,
     fromCollaboration,
     fromRoom,
-    fromComments,
+    fromActiveTab,
     fromViewport,
     fromEditing,
     fromCreation,
@@ -177,7 +176,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ...fromCollaboration.view,
     ...fromPersistence.view,
     ...fromRoom.view,
-    ...fromComments.view,
+    ...fromActiveTab.view,
     ...fromModes.view,
     ...fromViewport.view,
     ...fromFollowing.view,

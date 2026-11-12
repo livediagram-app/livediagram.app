@@ -1,6 +1,5 @@
 // What a document pushes from its Durable Object (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item
-// pushes"; docs/specs/015-api/api.md "Storage"): its summary to the index (`PUT /app/items/:id/summary`), each
-// changed tab's comment threads and actions for the Inbox (`PUT /app/items/:id/collab/:tabId`) and who edited it for
+// pushes"; docs/specs/015-api/api.md "Storage"): its summary to the index (`PUT /app/items/:id/summary`) and who edited it for
 // History and their Most Used (`PUT /app/items/:id/events`), all with this app's key through
 // @liveworkspace/index-app's drainIndexOutbox; the images it places to liveworkspace's media service
 // (liveworkspace/docs/specs/006-media/media.md "References"); and the owner's newest save to the liveworkspace accounts Worker for
@@ -13,21 +12,13 @@
 // refused for good, or failed 12 times, is parked (@liveworkspace/index-app outbox.ts).
 
 import {
-  collabIndexRowsFromElements,
-  type CollabActionRow,
-  type CollabThreadRow,
-  type Element,
-} from '@livehuddle/document';
-import {
-  capCollabPush,
   drainIndexOutbox,
   dueOutboxRows,
-  editedOf,
   type OutboxFailure,
   readOutbox,
   settleOutbox,
 } from '@liveworkspace/index-app';
-import type { CollabPush, IndexAppClient, ItemSummary } from '@liveworkspace/index-client';
+import type { IndexAppClient, ItemSummary } from '@liveworkspace/index-client';
 import { MEDIA_REFS_PER_DOCUMENT_MAX } from '@liveworkspace/media';
 import { grantPlacedImages } from '../db/image-grants';
 import { documentImageIds } from '../db/image-refs';
@@ -37,67 +28,6 @@ import { indexAppClient } from '../index-service';
 import { mediaClient } from '../media';
 import { reportOwnerActivity } from '../liveworkspace/activity';
 import type { DocumentEnv } from '../types';
-
-type TabRow = {
-  id: string;
-  name: string;
-  data: string;
-};
-
-// ---------- The collab push -----------------------------------------------------------------------------------
-
-// A tab's comment threads and actions as the index takes them. Capped as the index caps one push: a tab past it
-// keeps its newest. `by` is whoever alone saved the canvas since the last push, when there was one person: the index
-// names them on a thread it sees turn resolved and an action it sees turn done (History); with several, nobody is
-// named rather than the wrong person.
-export function collabPushOf(
-  threads: readonly CollabThreadRow[],
-  actions: readonly CollabActionRow[],
-  by: string | null = null,
-): CollabPush {
-  return capCollabPush({
-    threads: threads.map((t) => ({
-      elementId: t.elementId,
-      elementLabel: t.elementLabel,
-      resolved: t.resolved,
-      commentCount: t.commentCount,
-      participantIds: t.participantIds,
-      mentionedIds: t.mentionedIds,
-      latestText: t.latestText,
-      latestAuthorName: t.latestAuthorName ?? '',
-      latestAuthorColor: t.latestAuthorColor ?? '',
-      latestAuthorId: t.latestAuthorId,
-      resolvedById: t.resolved ? by : null,
-      firstAt: t.firstAt,
-      latestAt: t.latestAt,
-    })),
-    actions: actions.map((a) => ({
-      elementId: a.elementId,
-      actionId: a.actionId,
-      elementLabel: a.elementLabel,
-      name: a.name,
-      description: a.description,
-      status: a.status,
-      assigneeId: a.assigneeUserId ?? a.assigneeMemberId ?? null,
-      assigneeName: a.assigneeName,
-      assignerId: a.assignerId,
-      assignerName: a.assignerName,
-      teamId: a.teamId,
-      doneById: a.status === 'done' ? by : null,
-      createdAt: a.createdAt,
-      updatedAt: a.updatedAt,
-    })),
-  });
-}
-
-function parseElements(data: string): Element[] {
-  try {
-    const body = JSON.parse(data) as { elements?: unknown };
-    return Array.isArray(body.elements) ? (body.elements as Element[]) : [];
-  } catch {
-    return [];
-  }
-}
 
 // ---------- Summary ------------------------------------------------------------------------------------------
 
@@ -255,29 +185,18 @@ export async function drainOutbox(
   const live = await readOutbox(env.DOCUMENT_DB, DOCUMENT_OUTBOX, documentId);
   const rows = dueOutboxRows(live, now);
   const imageRows = rows.filter((r) => r.kind === 'images').map((r) => r.id);
-  // Who saved since the last drain: one person is who resolved or closed what this push shows turned so.
-  const editors = new Set(
-    rows.filter((r) => r.kind === 'edit').map((r) => editedOf(r.key)?.actorId ?? null),
-  );
-  const soleEditor = editors.size === 1 ? ([...editors][0] ?? null) : null;
-  const indexRows = rows.filter((r) => r.kind !== 'images');
+  // A tab's collab key (its comment threads and actions for the Inbox) is settled unpushed: livehuddle has no Inbox,
+  // comments or actions (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes").
+  const collabRows = rows.filter((r) => r.kind === 'tab').map((r) => r.id);
+  const indexRows = rows.filter((r) => r.kind !== 'images' && r.kind !== 'tab');
   const failed: OutboxFailure[] = [];
-  const done: number[] = [];
+  const done: number[] = [...collabRows];
   let imagesPushed = false;
 
   const [outcome] = await Promise.all([
     drainIndexOutbox(documentId, indexRows, client, {
-      collab: async (tabId) => {
-        // One body at a time: a drain after a 200-tab import holds one tab in memory, never the document.
-        const tab = await env.DOCUMENT_DB.prepare(
-          `SELECT t.id, t.name, t.data FROM tabs t JOIN document_tabs dt ON dt.tab_id = t.id
-            WHERE dt.document_id = ? AND t.id = ?`,
-        )
-          .bind(documentId, tabId)
-          .first<TabRow>();
-        const found = collabIndexRowsFromElements(tab ? parseElements(tab.data) : []);
-        return collabPushOf(found.threads, found.actions, soleEditor);
-      },
+      // Never asked: the tab rows were taken out above. An empty push would retract the index's History of them.
+      collab: () => Promise.resolve({ threads: [], actions: [] }),
       summary: async () => {
         const { summary, savedAt, ownerId } = await readContentSummary(env, documentId);
         return { summary: itemSummaryOf(summary), updatedAt: savedAt, ownerId };

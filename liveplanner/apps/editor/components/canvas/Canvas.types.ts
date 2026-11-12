@@ -70,7 +70,7 @@ export type CanvasProps = {
   elements: Element[];
   // The active tab's raw layers array (docs/specs/006-project/layers.md), undefined until the tab
   // materialises one. Drives the band-aware paint order + hidden-layer
-  // filtering in CanvasElementsLayer and the Minimap.
+  // filtering in CanvasElementsLayer.
   tabLayers?: Layer[];
   // Element ids on a hidden or locked layer (docs/specs/006-project/layers.md) — inert to every
   // selection surface, including the right-click context menu.
@@ -188,10 +188,6 @@ export type CanvasProps = {
   // False while the active tab's content is still on its way (a tab never opened before): its elements arrive with
   // the board once it lands, not as additions. Omitted, the tab is loaded.
   activeTabLoaded?: boolean;
-  // Map panel (docs/specs/008-canvas/minimap.md) position + move/reset, shared with the other panels.
-  mapPosition: { x: number; y: number } | null;
-  onMoveMap: (x: number, y: number) => void;
-  onResetMap: () => void;
   // Layers panel (docs/specs/006-project/layers.md). `layers` is the NORMALISED stack (bottom ->
   // top, never empty) the panel renders; `tabLayers` above stays the raw
   // field for the render-order helpers. A popover over its bottom-right

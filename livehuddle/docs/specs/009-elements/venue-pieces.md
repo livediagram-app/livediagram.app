@@ -174,12 +174,13 @@ The [Stage](office.md#stage) is drawn as a stage at a glance, at any zoom a temp
 - **Hotel and Suites**: four Columns in two pairs across the Lobby either side of the way in from the front door, past
   the reception; on the **Rooftop**, a Swimming Pool in place of the long water garden, with its planters.
 - **Beach Offsite**: a Swimming Pool on the beach by the garden umbrellas.
+- **Festival Field**: Stage Curtains as the backdrop of the open-air Main Stage.
 - **Company Campus**: two Car Parks side by side (one row of six bays) to the right of the gate, and a Bike Rack the
   other side of the main path.
 - **Startup HQ**: a Bike Rack by the gate.
 
 The template previews draw each: the curtains, podium and the stage's wood in the event previews (All-Hands Hall, Expo Hall,
-Conference Venue; the Training Room's podium), the columns in the Hotel's, the pillars in the Expo Hall's, the pool
+Conference Venue, Festival Field; the Training Room's podium), the columns in the Hotel's, the pillars in the Expo Hall's, the pool
 in the Beach Offsite's, and the car park and bike rack in the Company Campus's.
 
 ## Share roles

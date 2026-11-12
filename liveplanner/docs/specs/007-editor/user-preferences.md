@@ -306,7 +306,11 @@ Missing key === undefined === default behaviour. Concretely:
   can't drift between consumers.
 - `telemetryEnabled` undefined → telemetry on (the default).
   Setting it to `false` is the only state that opts out.
-- A stored key the type does not name is ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
+- A stored key the type does not name is ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)). The Map was
+  removed from liveplanner (Work Item 662: its canvas has no free-canvas tab to show it on), so `showMinimap`, `mapSize` and
+  `mapDimOutside` are no longer in the type, read by anything, or shown in Settings. A saved value stays in the stored
+  blob untouched (the keys are shared with the other editors, so liveplanner never drops them) and is never read. The
+  shared `MinimapMap` body stays in `@liveworkspace/workbench` for them.
 - `elementIndicatorStyle` undefined → Top: an element's link, note, action
   and comment glyphs sit inside it along its top, top-right on a box and centred
   on a round or pointed shape (the default). `'footer'` moves them to a labelled
@@ -574,13 +578,12 @@ and the dialog stays as the one complete, browsable index of them.
   for API Tokens. A workbench has neither.
 
   Panels holds Panel Opacity, then a section per panel,
-  Layers, Quick Style, Map, then Collaborate. Each section opens with that panel's **Enable
-  switch** ("Enable Layers Panel", "Enable Map",
+  Layers, Quick Style, then Collaborate. Each section opens with that panel's **Enable
+  switch** ("Enable Layers Panel",
   "Enable Collaborate Panel", "Enable Quick Style Panel"; see the panel
   switches in the data model). The panel's other rows nest beneath the
   switch (`parent`) and are offered only while it is on: a setting for a
-  panel you have turned off has nothing to act on. The Map's switch keeps its stored key
-  (`showMinimap`) and its telemetry tokens, only its label changed. A parent's sub-categories follow it directly in the catalogue. In the
+  panel you have turned off has nothing to act on. A parent's sub-categories follow it directly in the catalogue. In the
   list the parent is an **accordion**: its sub-categories sit indented beneath
   it only while it is expanded, so they do not take up the list all the time.
   It starts collapsed. On desktop, clicking the parent opens its own pane and
@@ -628,7 +631,7 @@ and the dialog stays as the one complete, browsable index of them.
   `SettingsRow`) draws the same cell inside a card of its own.
 
   Row kinds: `toggle`, `choice` (a segmented control, e.g.
-  the theme and the minimap size), `slider` (panel opacity, UI scale, committing on
+  the theme), `slider` (panel opacity, UI scale, committing on
   release so one drag is not one PUT per pixel), `appearance` (the one row
   backed by the device-local store, not `UserPreferences`), and `tokens` (the
   API token manager).
@@ -641,8 +644,8 @@ and the dialog stays as the one complete, browsable index of them.
 
   Settings whose effect is **visual** carry a small **before/after
   illustration** drawn from the real editor, which **rings the state
-  currently in force** so the picture doubles as a readout: the minimap,
-  alignment guides, layer thumbnails, and the minimap's dimming.
+  currently in force** so the picture doubles as a readout: alignment
+  guides and layer thumbnails.
 
   Pick-one settings whose options LOOK different draw **one picture per
   option** instead, side by side with no arrow, the one in force ringed
@@ -664,10 +667,7 @@ and the dialog stays as the one complete, browsable index of them.
   note to show). On a phone-sized viewport the row stays visible, greyed,
   showing its stored value, but its control (and its illustration) takes no
   input, and the note says why; the stored value is untouched, so it still
-  applies on a desktop. The Map's rows (Enable Map, Dim Outside the View,
-  Map Size) are desktop only: a phone never draws the Map
-  ([Minimap](../008-canvas/minimap.md)), so flipping them there did nothing
-  and read as broken. So are the Mouse section's (Quick-Add on Hover, Middle-Mouse
+  applies on a desktop. The Mouse section's rows are too (Quick-Add on Hover, Middle-Mouse
   Pan): a phone has no hover and no middle button.
 
   **Getting Started** is a category of its own: one switch per guided tour, **Plan Tours** (over **Boards Tour**, **Card

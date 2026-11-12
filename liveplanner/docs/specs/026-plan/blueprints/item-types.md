@@ -37,6 +37,9 @@ src/several-values.ts  holdsSeveralKind(kind), holdsSeveral(field), storedPeople
                        fieldPeople(field, value), fieldCardIds(field, value), linkedCardIds(item, field),
                        severalValue(field, values), toggledValues(values, v, keyOf), swappedValues(values, from,
                        to, keyOf), personKey, cardKey (FIELD_VALUES_MAX = 20 in limits.ts)
+src/image-values.ts    holdsSeveralImages(field), storedImageIds(value), fieldImageIds(field, value),
+                       imageFieldValue(field, ids), withImagesAdded(ids, added), withoutImages(ids, removed),
+                       movedImage(ids, from, to) (IMAGE_FIELD_PICTURES_MAX = FIELD_VALUES_MAX)
 src/newer-fields.ts    isNewerField(field), readNewerField(input, id, label), NEWER_FIELD_MAX_BYTES (spec "Fields
                        from a newer version")
 src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3` on a clash; shared with
@@ -114,6 +117,30 @@ item.type), ...)`; `projectBoard` passes its catalogue), the Inbox push (below) 
   None row, staying open); `SeveralValuesPills.tsx` (`PeopleStack`, `LinkedNumbersPill`, `SEVERAL_ON_CARD = 3`,
   `severalNames`) drawn by `customKindPill` and `PlanCardFace`; `usePlanCardDrag` carries the press's
   `data-plan-lane` as `fromLane` to `boardMoveFor(setup, projection, item, itemId, slot, fromLane)`.
+- Several Images (spec "Image fields"; `image-values.ts`): `readCustom` keeps `multiple` only as `true` on a
+  `person`, `card` or `image` field (`holdsSeveralKind` for the first two, `kind === 'image'` for the last), so a
+  stored Several Images field reads back as one; `holdsSeveral` stays the Person and Card reading (lanes, notifying,
+  linked cards and names never meet a picture list). `holdsSeveralImages(field)` is `kind === 'image' && multiple ===
+true`. `storedImageIds(value)`: a non-empty string as `[id]`, a list's non-empty strings each once in order (at
+  most `IMAGE_FIELD_PICTURES_MAX`), anything else `[]`. `fieldImageIds(field, value)`: all of them when
+  `holdsSeveralImages(field)`, else the first. `imageFieldValue(field, ids)`: `undefined` (clear) for none, the list
+  (deduplicated, cut to the cap) for Several Images, else the first id. `withImagesAdded(ids, added)` appends the ids
+  not held, up to the cap, answering `{ ids, skipped }` (how many did not fit); `withoutImages(ids, removed)` and
+  `movedImage(ids, from, to)` (an index move, clamped; the same list when either index is outside it) are the panel's
+  and agents' edits. Storage needs nothing new: `validateFields`' `normaliseUnknown` already takes a list of scalars
+  (at most `ITEM_UNKNOWN_ARRAY_MAX`). Readers taught the list (part 1, no door): the editor's `ImageFieldControl` and
+  `customKindPill`'s Image thumbnail read `fieldImageIds(def, value)[0]`; agents' `listedValue` lists an Image field as
+  its first id and Several Images as its list of ids; the room's `planServesImage` matches an id inside a stored list
+  (`json_each` of an array field's value, read through `CASE WHEN f.type = 'array'` so a scalar is never parsed as
+  JSON) and `PLACED_IMAGES_SQL` reports each granted id inside a list. Left as they were, each tested with a list:
+  `customFieldText` (null), `boardCsvRows` / `customColumns` (the field left out), `boardCsvImport` (skipped),
+  `canBeRequired` (never), the form mappings (never asked), `fieldKindChange` (no change to or from an Image but
+  Image and Several Images). Still to come (later parts): Add Field's Several Images tile (`KIND_VARIANTS`
+  `images: { kind: 'image', preset: { multiple: true } }`, `addedField` keeping `multiple` on an Image), Edit
+  Field's Image and Several Images change (`fieldKindChange`: kept one way, the first the other), the panel's
+  `ImagesFieldControl` grid (`use-image-uploads.ts`, one upload at a time, one `patchItem` of
+  `withImagesAdded(storedImageIds(card now), [id])` per landed file), the card face's `+N` count, and the agents'
+  writes (plan-agents blueprint "Pictures").
 - Blocked By (spec "Blocked By"; `blocked-by.ts`): `CustomFieldDef.blocks` (kept by `readCustomField` only as true on a
   `card` field); `isBlocksField(f)`; `blocksFieldsOf(type)` (the type's offered Blocks fields, in field order);
   `blockerIdsOf(item, type)` (every id its Blocks fields hold, each once, through `linkedCardIds`, never itself);
@@ -1160,6 +1187,7 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Built-in kinds: store, text, CSV, agents                                                                         | `packages/items/src/built-in-field-kinds.test.ts`                                                                                                                                                                                                                                                                |
 | Built-in kinds and Image: panel, card face, required                                                             | `apps/editor/components/plan/ItemFieldEditor.kinds.test.tsx`                                                                                                                                                                                                                                                     |
 | Image fields: upload, read, roles, grants                                                                        | `apps/api/src/routes/images.test.ts`, `apps/api/src/plan-room/image-grants.test.ts`, `apps/editor/lib/api/images.test.ts`                                                                                                                                                                                        |
+| Several Images: the stored list and every reader                                                                 | `packages/items/src/image-values.test.ts`, `apps/api/src/plan-room/image-grants.test.ts`, `apps/api/src/plan-room/image-refs.test.ts`                                                                                                                                                                            |
 | Attachments: value, cap, cover, agents                                                                           | `packages/items/src/attachments.test.ts`, `packages/items/src/card-display.test.ts`                                                                                                                                                                                                                              |
 | Attachments: panel, roles, drop, paste, cover on the card                                                        | `apps/editor/components/plan/AttachmentsField.test.tsx`                                                                                                                                                                                                                                                          |
 | Images in use: triggers, report, purge, serving                                                                  | `apps/api/src/plan-room/image-refs.test.ts`                                                                                                                                                                                                                                                                      |
@@ -1201,6 +1229,7 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | `ADD_FIELD_POPOVER_PX`                                 | 384    | Spec "Fields and Tabs" (24 rem): a kind's name and line, and step 2's controls |
 | `CARD_AGE_WARN_DAYS`                                   | 7      | Spec "Card display": Age turns amber                                           |
 | `CARD_AGE_ALERT_DAYS`                                  | 14     | Spec "Card display": Age turns red, Stale Cards' `STALE_DAYS`                  |
+| `IMAGE_FIELD_PICTURES_MAX`                             | 20     | Spec "Image fields": `FIELD_VALUES_MAX`, as Holds Several and Attachments      |
 
 ## Default and ready-made types
 

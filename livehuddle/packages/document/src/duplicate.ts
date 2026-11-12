@@ -36,6 +36,17 @@ export const ORIGINAL_ONLY_FIELDS = [
   'arcadeScores',
 ] as const;
 
+// An element's link and note are attachments livehuddle no longer offers (docs/specs/002-project-scope/
+// not-in-livehuddle.md "Comments, actions, links and notes"): a stored one stays on its element, but no copy carries
+// it, so a copy, a duplicate or a paste never adds one. A link card's link is the card itself and a retired
+// annotation's note is its marker, so those two keep theirs.
+export function droppedAttachments(el: Element): ('link' | 'note')[] {
+  const out: ('link' | 'note')[] = [];
+  if ('link' in el && el.type !== 'link-card') out.push('link');
+  if ('note' in el && el.type !== 'annotation') out.push('note');
+  return out;
+}
+
 export function freshCopyFields(el: Element): {
   addedBy?: undefined;
   commentThread?: undefined;
@@ -43,12 +54,15 @@ export function freshCopyFields(el: Element): {
   action?: undefined;
   actions?: undefined;
   arcadeScores?: undefined;
+  link?: undefined;
+  note?: undefined;
 } {
-  const fresh: { addedBy?: undefined } & {
+  const fresh: { addedBy?: undefined; link?: undefined; note?: undefined } & {
     [K in (typeof ORIGINAL_ONLY_FIELDS)[number]]?: undefined;
   } = {};
   if ('addedBy' in el) fresh.addedBy = undefined;
   for (const field of ORIGINAL_ONLY_FIELDS) if (field in el) fresh[field] = undefined;
+  for (const field of droppedAttachments(el)) fresh[field] = undefined;
   return fresh;
 }
 

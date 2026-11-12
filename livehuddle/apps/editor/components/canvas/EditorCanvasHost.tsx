@@ -22,7 +22,6 @@ import { useTimerPieceControls } from '@/lib/timer-piece-controls';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { useCanvasFormatProps } from '@/components/canvas/useCanvasFormatProps';
 import { useCanvasMenuProps, type LockedMenuState } from '@/components/canvas/useCanvasMenuProps';
-import { useCanvasThreadProps } from '@/components/canvas/useCanvasThreadProps';
 import { useCanvasWalkProps } from '@/components/canvas/useCanvasWalkProps';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
@@ -107,9 +106,6 @@ export function EditorCanvasHost() {
     mapPosition,
     narrowMultiSelection,
     newDocument,
-    openActionPopover,
-    openComments,
-    openNote,
     pendingDraw,
     redo,
     peerRows,
@@ -219,7 +215,6 @@ export function EditorCanvasHost() {
   // and the Format panel (useCanvas*Props).
   const walkProps = useCanvasWalkProps(gates);
   const menuProps = useCanvasMenuProps(setLockedMenu);
-  const threadProps = useCanvasThreadProps();
   const formatProps = useCanvasFormatProps();
 
   // Object props the canvas boundary compares by identity (docs/specs/008-canvas/canvas-performance.md
@@ -334,7 +329,6 @@ export function EditorCanvasHost() {
               }
         }
         // No Tidy Up button: Auto Layout is not in livehuddle (docs/specs/008-canvas/layout-cleanup.md).
-        {...threadProps}
         currentDocumentId={documentId}
         currentShareCode={sessionShareCode}
         onRenameCurrentDocument={nameDocument}
@@ -382,9 +376,6 @@ export function EditorCanvasHost() {
         onStartFormatPainter={isReadOnly ? undefined : startFormatPainter}
         onSetTextAlign={setTextAlignSelected}
         onFollowLink={followLink}
-        onOpenComments={openComments}
-        onOpenAction={openActionPopover}
-        onOpenNote={openNote}
         onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
         imageContext={imageContext}
         // The visitor name prompt shows for EVERYONE, view-role visitors included: it only writes their own

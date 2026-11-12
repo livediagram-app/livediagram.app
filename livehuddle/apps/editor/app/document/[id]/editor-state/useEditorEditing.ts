@@ -18,7 +18,7 @@ import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorToolsSlice } from './useEditorTools';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
-import type { EditorCommentsSlice } from './useEditorComments';
+import type { EditorActiveTabSlice } from './useEditorActiveTab';
 import type { EditorViewportSlice } from './useEditorViewport';
 import type { EditorFollowingSlice } from './useEditorFollowing';
 
@@ -32,7 +32,7 @@ export function useEditorEditing({
   fromTools,
   fromCollaboration,
   fromPersistence,
-  fromComments,
+  fromActiveTab,
   fromViewport,
   fromFollowing,
 }: {
@@ -42,7 +42,7 @@ export function useEditorEditing({
   fromTools: EditorToolsSlice;
   fromCollaboration: EditorCollaborationSlice;
   fromPersistence: EditorPersistenceSlice;
-  fromComments: EditorCommentsSlice;
+  fromActiveTab: EditorActiveTabSlice;
   fromViewport: EditorViewportSlice;
   fromFollowing: EditorFollowingSlice;
 }) {
@@ -62,7 +62,7 @@ export function useEditorEditing({
   const { formatSettings } = fromTools;
   const { isReadOnly, participant } = fromCollaboration;
   const { tabsRef } = fromPersistence;
-  const { activeTab, openActionPopover, openComments } = fromComments;
+  const { activeTab } = fromActiveTab;
   const { getViewportCenter, scrollIntoView } = fromViewport;
   const { collabDeepLink } = fromFollowing;
   // --- Element-scoped history helpers (active-tab aware) -------------------
@@ -104,9 +104,8 @@ export function useEditorEditing({
   // that write the tab's structure, or write without passing commit's guard, take this instead of editsBlocked.
   const structureBlocked = editsBlocked || isReadOnly;
 
-  // An Inbox row opened this document at one element (docs/specs/013-workspace/inbox.md
-  // §1): once the pinned tab is ready, select it, bring it into view and
-  // open its popover. See useCollabDeepLink.
+  // An element deep link opened this document at one element (docs/specs/013-workspace/inbox.md §1): once the pinned
+  // tab is ready, select it and bring it into view. See useCollabDeepLink.
   useCollabDeepLink({
     link: collabDeepLink,
     hydrated,
@@ -119,8 +118,6 @@ export function useEditorEditing({
       setEditingId(null);
     },
     scrollIntoView,
-    openActionPopover,
-    openComments,
   });
 
   const commit = (mapElements: (els: Element[]) => Element[]) => {

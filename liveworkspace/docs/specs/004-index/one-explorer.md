@@ -639,7 +639,9 @@ nothing is most used yet), its heading carrying **See all** into the Recent view
 section with nothing in it is left out, as on the page; with nothing opened at all, Recent holds the pane's empty state
 ("No plans yet", or "Nothing else yet" when the open item is the only one). Loading draws each heading over a row of
 card placeholders; a failed read draws one "Home could not load." notice with **Try Again**, and no headings. Both
-sections come from one request (`jumpBackInLoader` with four of each, plus spare recent ones for the open item).
+sections come from one request (`jumpBackInLoader` asking five most used and nine recent): the open item leaves
+before Most Used is cut to four, so it still ends on a full row when the open item is among the most used, and a
+spare most used that is not needed joins Recent by its last open.
 The panel's Home lists This Browser's opened items among its Recent by the page's rule (`mergeOpened`: last opened
 first, among the index's), each a card with This Browser's picture (`LocalPreview`), the **This Browser** pill on its
 picture's top-left corner (so the line below has the card's width for when it was opened), when it was opened and This Browser's menu, so it never says "No <kind> yet" while this browser keeps opened ones. The

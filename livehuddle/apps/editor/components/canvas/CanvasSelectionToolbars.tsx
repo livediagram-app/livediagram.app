@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import {
@@ -9,7 +8,6 @@ import {
   isBoxed,
   isRetiredElement,
   turnsWithFacing,
-  type Element,
 } from '@livehuddle/document';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import {
@@ -51,7 +49,6 @@ export function CanvasSelectionToolbars({
   const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(
     useCallback((v: View) => (showing ? v : RESTING_VIEW), [showing]),
   );
-  const commentsShown = useCommentBadges();
   // The pieces of furniture in a multi-selection that turn (docs/specs/009-elements/furniture-facing.md "Several pieces
   // at once"), read only while the multi-selection toolbar shows.
   const turning = showMultiToolbar
@@ -69,7 +66,6 @@ export function CanvasSelectionToolbars({
     readOnly,
     onDuplicateSelected,
     onDeleteSelected,
-    onOpenComments,
     onOpenElementContextMenu,
     onOpenMultiContextMenu,
   } = props;
@@ -88,7 +84,10 @@ export function CanvasSelectionToolbars({
           Canvas elements stay in the original wrapper at z-auto
           and continue to be visually covered by panels where they
           overlap. */}
-      {showPopover && selectionBounds ? (
+      {/* A Participant or a Viewer gets no selection toolbar: every button on it is an Editor's, and its one
+          read-only button, the comments, left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md
+          "Comments, actions, links and notes"). */}
+      {showPopover && selectionBounds && !readOnly ? (
         <div
           className="pointer-events-none absolute inset-0 z-[var(--z-overlay)] origin-center"
           style={{
@@ -107,11 +106,6 @@ export function CanvasSelectionToolbars({
             zoom={viewportZoom}
             suspended={moving}
             title={selected ? `Selected ${elementKindLabel(selected)}` : 'Selected Element'}
-            // In a read-only session we mount the popover with just
-            // `onOpenComments` (below): a Participant reads and posts
-            // comments, a Viewer only reads them. No other edit affordance
-            // applies: every other handler becomes undefined and the
-            // matching button drops out.
             // Edit text: on every text-CAPABLE element, even before it has
             // a label — an empty shape's "Add Text" button teaches that
             // text can be added. Enters inline edit mode (same path as
@@ -147,19 +141,6 @@ export function CanvasSelectionToolbars({
             onBringToFront={readOnly || !selected ? undefined : props.onBringSelectedToFront}
             onSendToBack={readOnly || !selected ? undefined : props.onSendSelectedToBack}
             onDelete={readOnly ? undefined : onDeleteSelected}
-            // The comment button is a read-only session's only (Participant and Viewer). Editors
-            // reach comments via the right-click / ellipsis context menu (gated !isReadOnly), so the
-            // toolbar button was a duplicate for them; a read-only session has no context menu, so
-            // the toolbar is its way into a thread.
-            // Not where the reader has no comments to open (an embed's viewer, a Community visitor).
-            // A Viewer writes no comment (docs/specs/013-workspace/share-roles.md): it reads the thread an
-            // element has, behind Show Comments, and gets no button on one with none.
-            onOpenComments={
-              readOnly && selected && commentsShown && (props.takePart || hasComments(selected))
-                ? () => onOpenComments(selected.id)
-                : undefined
-            }
-            commentsReadOnly={!props.takePart}
             onOpenContextMenu={
               readOnly
                 ? undefined
@@ -226,9 +207,4 @@ export function CanvasSelectionToolbars({
       ) : null}
     </>
   );
-}
-
-// Whether an element carries a comment thread to read (resolved ones included: a reader opens those too).
-function hasComments(el: Element): boolean {
-  return (el.commentThread?.comments.length ?? 0) > 0;
 }

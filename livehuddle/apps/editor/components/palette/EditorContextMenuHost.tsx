@@ -115,9 +115,6 @@ export function EditorContextMenuHost() {
     previewPadding,
     resetAspectRatioSelected,
     setSizeSelected,
-    openNote,
-    openComments,
-    openAssignAction,
   } = useEditorContext();
   // The selection the menu acts on, read from the store while a menu is open: a closed menu never
   // renders for a selection change (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -255,9 +252,6 @@ export function EditorContextMenuHost() {
       onResetAspectRatio={resetAspectRatioSelected}
       onSetSize={setSizeSelected}
       colourPalette={swatches}
-      onOpenNote={openNote}
-      onOpenComments={openComments}
-      onAssignAction={openAssignAction}
       selectionElements={ctxMemberIds
         .map((id) => activeTab.elements.find((e) => e.id === id))
         .filter((e): e is NonNullable<typeof e> => e != null)}

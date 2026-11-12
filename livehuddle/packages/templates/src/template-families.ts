@@ -33,6 +33,7 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamilyOrNone> = {
   'city-townhouse': null,
   'country-cottage': null,
   'music-hall': null,
+  'festival-field': null,
 };
 
 /** The family a document made from this template belongs to; null for no template or no family. */

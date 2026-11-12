@@ -173,31 +173,6 @@ export function rewriteCommentAuthors(
   );
 }
 
-// Remove a single comment by id from whichever element's thread holds
-// it, dropping the thread entirely once its last comment goes (so the
-// element's comment badge clears, mirroring the client's deleteComment).
-// Returns the elements unchanged when the id isn't present.
-export function removeComment(elements: Element[], commentId: string): Element[] {
-  return elements.map((el) => {
-    const thread = threadOf(el);
-    if (!thread?.comments?.some((c) => c.id === commentId)) return el;
-    const remaining = thread.comments.filter((c) => c.id !== commentId);
-    return withThread(el, remaining.length ? { ...thread, comments: remaining } : undefined);
-  });
-}
-
-// The comment and the element whose thread holds it.
-export function findCommentHost(
-  elements: Element[],
-  commentId: string,
-): { comment: Comment; elementId: string } | null {
-  for (const el of elements) {
-    const comment = threadOf(el)?.comments?.find((c) => c.id === commentId);
-    if (comment) return { comment, elementId: el.id };
-  }
-  return null;
-}
-
 // Blank the author id on every comment a given visitor did NOT write,
 // before serving a tab to a non-owner. The author id is the document /
 // guest owner id of whoever posted the comment; exposing other people's

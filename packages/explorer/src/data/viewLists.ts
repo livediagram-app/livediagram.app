@@ -325,6 +325,12 @@ export function sharedRecentlyLoader(
 
 export type { Item };
 
+/** The one line an empty Home says, on the page and in the panel: "The plans you open will gather here." (`other`:
+ *  "The other plans …", in the panel when the open item is the only one). */
+export function homeEmptyLine(lowerMany: string, other = false): string {
+  return `The ${other ? 'other ' : ''}${lowerMany} you open will gather here.`;
+}
+
 /** Why a card is there: "Opened 12 times" for a most used one (its opens in the window; "Used on 5 days" from an
  * index that counts only days); otherwise "Opened 2 hours ago" (or when it last changed, for one never opened). */
 export function jumpBackInLine(

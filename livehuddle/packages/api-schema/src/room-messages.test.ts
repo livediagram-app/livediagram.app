@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   isMutationOpKind,
   isParticipationOp,
+  isRetiredDeltaOp,
+  RETIRED_DELTA_KINDS,
   isPresenceOpKind,
   isRetiredOpKind,
   isRoomOpRef,
@@ -24,14 +26,8 @@ describe('isRoomOpRef', () => {
 
 // The room's participation class (docs/specs/013-workspace/share-roles.md "Integrity").
 describe('isParticipationOp', () => {
-  it('admits a comment reaction, a notice board pin or unpin, a Timer press and an arcade score', () => {
-    for (const kind of [
-      'comment-react',
-      'notice-pin',
-      'notice-unpin',
-      'piece-timer',
-      'arcade-score',
-    ]) {
+  it('admits a notice board pin or unpin, a Timer press and an arcade score', () => {
+    for (const kind of ['notice-pin', 'notice-unpin', 'piece-timer', 'arcade-score']) {
       expect(
         isParticipationOp({ kind: 'el-delta', tabId: 't', elementId: 'e', delta: { kind } }),
       ).toBe(true);
@@ -46,6 +42,8 @@ describe('isParticipationOp', () => {
       'board',
       'comment-add',
       'comment-remove',
+      // A comment reaction left with comments (not-in-livehuddle.md "Comments, actions, links and notes").
+      'comment-react',
       'response',
       'idea',
       'arcade-clear',
@@ -59,6 +57,29 @@ describe('isParticipationOp', () => {
     expect(
       isParticipationOp({ kind: 'vote', tabId: 't', elementId: 'e', voter: 'k', delta: 1 }),
     ).toBe(false);
+  });
+});
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes": an old client's comment
+// delta is retired.
+describe('retired delta ops', () => {
+  it('names every comment delta in an el-delta op, and nothing else', () => {
+    for (const kind of RETIRED_DELTA_KINDS) {
+      expect(
+        isRetiredDeltaOp({ kind: 'el-delta', tabId: 't', elementId: 'e', delta: { kind } }),
+      ).toBe(true);
+    }
+    for (const kind of ['notice-pin', 'piece-timer', 'arcade-score', 'check']) {
+      expect(isRetiredDeltaOp({ kind: 'el-delta', delta: { kind } })).toBe(false);
+    }
+    for (const op of [
+      { kind: 'comment-add' },
+      { kind: 'el-delta' },
+      { kind: 'el-delta', delta: null },
+      null,
+      'x',
+    ])
+      expect(isRetiredDeltaOp(op)).toBe(false);
   });
 });
 

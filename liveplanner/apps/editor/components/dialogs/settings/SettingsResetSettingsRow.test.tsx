@@ -20,7 +20,7 @@ const { SettingsResetSettingsRow } = await import('./SettingsAccountRows');
 
 const account = SETTINGS_CATEGORIES.find((c) => c.id === 'account')!;
 const ROW = account.rows.find((r) => r.kind === 'resetSettings') as SettingsResetSettingsRowSpec;
-const STORED = { telemetryEnabled: false, tourSeen: true, showMinimap: false, uiScale: 1.25 };
+const STORED = { telemetryEnabled: false, tourSeen: true, middleMousePan: false, uiScale: 1.25 };
 
 // A reset that lands is told to the whole page (its row then says Settings Reset for a moment wherever it is drawn),
 // so the one that succeeds signed in runs last.

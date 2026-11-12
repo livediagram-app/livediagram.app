@@ -122,6 +122,17 @@ describe('the pictures a plan reports', () => {
     expect(await placedImageIds(p.env, PLAN)).toEqual(['granted', 'm', 'z']);
   });
 
+  // A Several Images field (docs/specs/026-plan/item-types.md "Image fields"): each granted id in its list, never an
+  // ungranted one, a person's id or a label.
+  it('are each granted id in a Several Images list too', async () => {
+    const p = plan();
+    p.grant('d1');
+    p.grant('d2');
+    p.card('a', { designs: ['d2', 'd1', 'loose'], labels: ['d9'], people: [{ id: 'd1' }] });
+    p.card('b', { cover: 'd1', designs: ['d1'] });
+    expect(await placedImageIds(p.env, PLAN)).toEqual(['d1', 'd2']);
+  });
+
   it('are sent whole, never claiming the app complete, then only when the set changes', async () => {
     const p = plan();
     p.card('a', { attachments: [pic('one')] });
@@ -198,8 +209,10 @@ describe('the pictures a plan reports', () => {
     expect(synced).toEqual([]);
   });
 
-  // A board's whole set, worked out on a full plan (2,000 cards, a quarter holding three pictures each). Measured at
-  // 3.8 ms on a loaded laptop (both scans, the plan holding a grant); the budget fails only on a quadratic turn.
+  // A board's whole set, worked out on a full plan (2,000 cards, a quarter holding three attachments each and another
+  // quarter a Several Images list of three and two labels). Measured at 6.0 ms on a loaded laptop with the lists' scan,
+  // 3.9 ms on the same plan without it (the plan holding a grant; at most once a minute a plan); the budget fails only
+  // on a quadratic turn.
   it('stays cheap on a plan of 2,000 cards', async () => {
     const p = plan();
     const filler = 'x'.repeat(400);
@@ -208,11 +221,14 @@ describe('the pictures a plan reports', () => {
         title: `Card ${i}`,
         description: filler,
         ...(i % 4 === 0 ? { attachments: [pic(`a${i}`), pic(`b${i}`), pic(`c${i}`)] } : {}),
+        ...(i % 4 === 1 ? { designs: [`d${i}`, `e${i}`, `f${i}`], labels: ['one', 'two'] } : {}),
       });
     }
     expect(await placedImageIds(p.env, PLAN)).toHaveLength(1500);
     p.grant('g');
-    // The query placedImageIds runs, timed synchronously: the attachments' scan and the granted values' scan.
+    p.grant('d1');
+    expect(await placedImageIds(p.env, PLAN)).toHaveLength(1501);
+    // The query placedImageIds runs, timed synchronously: the attachments' scan and the granted values' scans.
     const query = p.sql.prepare(PLACED_IMAGES_SQL);
     const runs = 5;
     const cost = cpuMsOf(() => {

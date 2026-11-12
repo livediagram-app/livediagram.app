@@ -71,15 +71,13 @@ describe('SettingsCategoryPane desktop-only rows', () => {
 describe('SettingsCategoryPane telemetry', () => {
   // A choice row names the option picked (docs/specs/017-telemetry/telemetry.md).
   it('tracks which option was picked, not just that it changed', () => {
-    const category = SETTINGS_CATEGORIES.find((c) =>
-      c.rows.some((r) => r.key === 'elementIndicatorStyle'),
-    )!;
+    const category = SETTINGS_CATEGORIES.find((c) => c.rows.some((r) => r.key === 'mapSize'))!;
     show(vi.fn(), category);
-    const footer = screen
-      .getByRole('radiogroup', { name: 'Element Indicators' })
-      .querySelector('[role="radio"]:nth-child(2)') as HTMLButtonElement;
-    fireEvent.click(footer);
-    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'ElementIndicatorsFooter');
+    const tall = screen
+      .getByRole('radiogroup', { name: 'Map Size' })
+      .querySelector('[role="radio"]:nth-child(3)') as HTMLButtonElement;
+    fireEvent.click(tall);
+    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'MapSizeTall');
   });
 });
 

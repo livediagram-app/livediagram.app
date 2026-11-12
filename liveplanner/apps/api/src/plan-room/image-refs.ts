@@ -1,7 +1,7 @@
 // Which pictures a plan's cards hold, told to liveworkspace's media service (docs/specs/026-plan/items.md "Images in
 // use"; liveworkspace/docs/specs/006-media/media.md "References"), so its daily sweep never takes a picture in use and
 // can take one no card holds any more. The set is every picture in a card's Attachments, and every Image field value
-// the plan holds a grant for (image-grants.ts).
+// (one id, or each id of a Several Images field's list) the plan holds a grant for (image-grants.ts).
 //
 // The plan's triggers (IMAGE_REFS_SCHEMA) queue one `images` key in the outbox on a card write that could change the
 // set: a card made, changed or deleted while the plan holds a grant or the card holds attachments. The outbox's drain
@@ -63,10 +63,20 @@ export const PLACED_IMAGES_SQL = `SELECT id FROM (
           AND EXISTS (SELECT 1 FROM card_image_grants WHERE plan_id = ?1)
           AND f.type = 'text'
           AND f.value IN (SELECT image_id FROM card_image_grants WHERE plan_id = ?1)
+       UNION
+       SELECT v.value AS id
+         FROM items, json_each(items.fields) AS f,
+              json_each(CASE WHEN f.type = 'array' THEN f.value ELSE '[]' END) AS v
+        WHERE items.plan_id = ?1
+          AND EXISTS (SELECT 1 FROM card_image_grants WHERE plan_id = ?1)
+          AND f.type = 'array'
+          AND v.type = 'text'
+          AND v.value IN (SELECT image_id FROM card_image_grants WHERE plan_id = ?1)
      ) WHERE typeof(id) = 'text' ORDER BY id`;
 
 // The pictures the plan's cards hold now, sorted: each Attachments entry's id (only cards whose JSON names the field
-// are parsed), and each text field value the plan holds a grant for (read only when it holds any).
+// are parsed), and each text field value, or text inside a list field's value (a Several Images field's ids), the
+// plan holds a grant for (read only when it holds any).
 export async function placedImageIds(env: PlanEnv, planId: string): Promise<string[]> {
   const rows = await env.PLAN_DB.prepare(PLACED_IMAGES_SQL).bind(planId).all<{ id: string }>();
   return rows.results.map((r) => r.id);

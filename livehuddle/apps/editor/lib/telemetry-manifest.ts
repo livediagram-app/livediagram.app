@@ -15,23 +15,10 @@
 // is both invisible and costly, are pinned separately in
 // packages/api-schema's PALETTE_TELEMETRY_TYPES.
 export const EMITTED_EVENT_PAIRS: readonly string[] = [
-  'Action·Changed',
-  'Action·Created',
-  'Action·Deleted',
-  'Action·Moved',
-  'Action·Opened',
-  'Action·Resolved',
-  'Action·Unresolved',
   'Agent·Opened',
   'Canvas·Changed',
   'Canvas·Used',
   'Canvas·Zoomed',
-  'Comment·Added',
-  'Comment·Deleted',
-  'Comment·Mentioned',
-  'Comment·Opened',
-  'Comment·Resolved',
-  'Comment·Unresolved',
   // Community (docs/specs/025-community/community.md "Telemetry"): publish, Edit Listing and Remove
   // From Community in the Share dialog.
   'Community·Changed',
@@ -43,14 +30,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // CTA's source from the closed CTA_SOURCES table.
   'Cta·Created',
   'Cta·Opened',
-  // The Explorer's Inbox (lib/explorer-inbox-host.tsx): 'Opened' once a visit, 'Selected' a row followed (by its
-  // kind), 'Loaded' a failed read retried.
-  'Activity·Added',
-  'Activity·Changed',
-  'Activity·Loaded',
-  'Activity·Opened',
-  'Activity·Resolved',
-  'Activity·Selected',
   'Document·Created',
   'Document·Deleted',
   'Document·Duplicated',
@@ -95,11 +74,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Folder·Deleted',
   'Folder·Moved',
   'Folder·Renamed',
-  'Note·Added',
-  'Note·Changed',
-  'Note·Deleted',
-  'Note·Opened',
-  'Note·Used',
   'Participant·Created',
   'Participant·Moved',
   'Participant·Returned',

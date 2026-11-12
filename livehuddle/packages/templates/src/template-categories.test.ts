@@ -15,7 +15,7 @@ import { templateMatchesQuery } from './template-search';
 import { TEMPLATES } from './templates';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Template categories", docs/specs/007-editor/templates-by-mode.md "The
-// catalogue": the twenty-five Spaces in eight categories by the kind of place they are, the blank in none.
+// catalogue": the twenty-six Spaces in eight categories by the kind of place they are, the blank in none.
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
@@ -62,7 +62,7 @@ describe('template categories', () => {
     }
   });
 
-  it('files two to seven Spaces in each category, three of them cross-listed', () => {
+  it('files two to seven Spaces in each category, four of them cross-listed', () => {
     const inCategory = (id: (typeof ids)[number]) =>
       TEMPLATES.filter((t) => templateCategory(t.kind) === id).map((t) => t.kind);
     expect(inCategory('office')).toEqual([
@@ -82,7 +82,12 @@ describe('template categories', () => {
     ]);
     expect(inCategory('games')).toEqual(['arcade-lounge', 'games-night-den', 'sports-bar']);
     expect(inCategory('homes')).toEqual(['family-house', 'city-townhouse', 'country-cottage']);
-    expect(inCategory('venues')).toEqual(['conference-venue', 'hotel-and-suites', 'music-hall']);
+    expect(inCategory('venues')).toEqual([
+      'conference-venue',
+      'hotel-and-suites',
+      'music-hall',
+      'festival-field',
+    ]);
     for (const id of ids) {
       expect(inCategory(id).length, id).toBeGreaterThanOrEqual(2);
       expect(inCategory(id).length, id).toBeLessThanOrEqual(7);
@@ -91,7 +96,9 @@ describe('template categories', () => {
       'beach-offsite': ['campus'],
       'sports-bar': ['recreation'],
       'expo-hall': ['venues'],
+      'festival-field': ['outdoor'],
     });
+    expect(isInTemplateCategory('festival-field', 'outdoor')).toBe(true);
     expect(isInTemplateCategory('team-pod', 'office')).toBe(true);
     expect(isInTemplateCategory('blank-session', 'office')).toBe(false);
   });
@@ -137,9 +144,19 @@ describe('template search words', () => {
     expect(find('upstairs')).toEqual(
       expect.arrayContaining(['family-house', 'city-townhouse', 'country-cottage']),
     );
-    expect(find('live music')).toEqual(['music-hall']);
+    expect(find('live music')).toEqual(['music-hall', 'festival-field']);
+    expect(find('festival')).toEqual(['festival-field']);
+    expect(find('food stalls')).toEqual(['festival-field']);
+    // Cross-listed in Outdoor, the Festival Field is found by that category's words too.
+    expect(find('outdoors')).toEqual(expect.arrayContaining(['beach-offsite', 'festival-field']));
     expect(find('venue')).toEqual(
-      expect.arrayContaining(['conference-venue', 'hotel-and-suites', 'music-hall', 'expo-hall']),
+      expect.arrayContaining([
+        'conference-venue',
+        'hotel-and-suites',
+        'music-hall',
+        'festival-field',
+        'expo-hall',
+      ]),
     );
     // A category's search words find its templates: every Space by "avatar", and the Blank Space by its own Avatar
     // Pad.

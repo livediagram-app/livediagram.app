@@ -1,4 +1,4 @@
-// Which features carry the work: the photo import, layers, the palette and canvas modes, look and feel, search, dialogs, chrome, notes, actions, organisation (docs/specs/017-telemetry/telemetry.md).
+// Which features carry the work: the photo import, layers, the palette and canvas modes, look and feel, search, dialogs, chrome, organisation (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { isHelpArticleType, isSettingsCategory } from '../../_shared/opened-types';
@@ -24,61 +24,7 @@ export const FOLDERS_RENAMED = chart(
   'A folder renamed, in your Explorer or a team library.',
 );
 
-export const NOTES_DELETED = chart(
-  'Note',
-  'Deleted',
-  'Notes Deleted',
-  'A note cleared from an element.',
-  { rising: 'neutral' },
-);
-
-export const ACTIONS_EDITED = chart(
-  'Action',
-  'Changed',
-  'Actions Edited',
-  'An assigned action edited or reassigned.',
-);
-
-export const ACTIONS_OPENED = chart(
-  'Action',
-  'Opened',
-  'Actions Opened',
-  'An element’s actions opened.',
-);
-
-export const ACTIONS_DELETED = chart(
-  'Action',
-  'Deleted',
-  'Actions Deleted',
-  'An assigned action removed.',
-  { rising: 'neutral' },
-);
-
 // The long tail, found by metric-emitters.test's every-event check.
-export const ACTIONS_MOVED_TO_TEAM = chart(
-  'Action',
-  'Moved',
-  'Actions Moved to a Team',
-  'An action’s document moved into a team so the assignee can reach it.',
-);
-
-export const ACTIONS_REOPENED = chart(
-  'Action',
-  'Unresolved',
-  'Actions Reopened',
-  'A completed action marked not done again.',
-  { rising: 'neutral' },
-);
-
-export const NOTES_EDITED = chart('Note', 'Changed', 'Notes Edited', 'A written note changed.');
-
-export const NOTE_FORMATTING = chart(
-  'Note',
-  'Used',
-  'Note Formatting',
-  'Rich-text formatting used inside a note.',
-);
-
 export const TABS_UNFILED = chart(
   'Tab',
   'Removed',
@@ -99,56 +45,6 @@ export const MODE_OPTIONS = chart(
 // Tools that organise the work rather than draw it. Tab folders (docs/specs/006-document/tab-folders.md) are
 // typed rather than bare because the bare Tab/Folder events belong to
 // different subjects: see the type note in docs/specs/017-telemetry/telemetry.md's Folder entry.
-
-export const NOTES_ADDED: Metric = {
-  category: 'Note',
-  action: 'Added',
-  type: null,
-  title: 'Notes Added',
-  blurb: "An element's note went from empty to written.",
-};
-
-export const NOTES_OPENED: Metric = {
-  category: 'Note',
-  action: 'Opened',
-  type: null,
-  title: 'Notes Opened',
-  blurb: 'The note popover was opened, to read as well as to write.',
-};
-
-export const ACTIONS_ASSIGNED: Metric = {
-  category: 'Action',
-  action: 'Created',
-  allTypes: true,
-  title: 'Actions Assigned',
-  blurb: 'Work on an element assigned to a teammate, with or without the email notification.',
-};
-
-export const ACTIONS_EMAILED: Metric = {
-  category: 'Action',
-  action: 'Created',
-  type: 'EmailOn',
-  title: 'Actions Emailed',
-  blurb:
-    'Actions assigned with the notify-by-email box ticked. Part of Actions Assigned. Counts the box, not a sent email: sends are Action Notifications in the Emails Sent stack on the Dashboard.',
-};
-
-export const ACTIONS_COMPLETED: Metric = {
-  category: 'Action',
-  action: 'Resolved',
-  // Won't Do closes an action without it being done: its own card, below.
-  typeIn: (type) => type !== 'WontDo',
-  title: 'Actions Completed',
-  blurb: 'Read against actions assigned: the follow-through rate on the feature.',
-};
-
-export const ACTIONS_WONT_DO: Metric = {
-  category: 'Action',
-  action: 'Resolved',
-  type: 'WontDo',
-  title: 'Actions Closed as Won’t Do',
-  blurb: 'Actions someone decided against: closed without being done.',
-};
 
 export const FOLDERS_CREATED: Metric = {
   category: 'Folder',
@@ -181,32 +77,6 @@ export const TABS_FILED: Metric = {
   title: 'Tabs Filed',
   blurb:
     'A tab filed into a tab folder, by the ellipsis menu or by a drag (both report identically).',
-};
-
-export const NOTES: MetricStack = {
-  stack: true,
-  title: 'Notes',
-  blurb: 'Notes written on elements, and opened to read or edit.',
-  members: [NOTES_ADDED, NOTES_OPENED, NOTES_DELETED, NOTES_EDITED, NOTE_FORMATTING],
-  headline: NOTES_ADDED,
-};
-
-export const ASSIGNED_ACTIONS: MetricStack = {
-  stack: true,
-  title: 'Assigned Actions',
-  blurb: 'Work on an element assigned to a teammate, emailed about, and completed.',
-  members: [
-    ACTIONS_ASSIGNED,
-    ACTIONS_EMAILED,
-    ACTIONS_COMPLETED,
-    ACTIONS_WONT_DO,
-    ACTIONS_EDITED,
-    ACTIONS_OPENED,
-    ACTIONS_DELETED,
-    ACTIONS_REOPENED,
-    ACTIONS_MOVED_TO_TEAM,
-  ],
-  headline: ACTIONS_ASSIGNED,
 };
 
 // The Explorer's filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"):
@@ -608,12 +478,6 @@ export const EDITOR_REASONS_OPENED = opened(
   (t) => t === 'SignInReasonsEditor',
 );
 
-export const ACTION_SIGN_IN_NUDGE = opened(
-  'Assign Action Nudge',
-  'A guest opened Assign Action and was asked to sign in, since actions need an account.',
-  (t) => t === 'ActionSignInNudge',
-);
-
 // The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser
 // after signing in"); charted with Offline Mode on the Dashboard.
 export const LOCAL_MOVE_OFFERED = opened(
@@ -623,14 +487,6 @@ export const LOCAL_MOVE_OFFERED = opened(
 );
 
 OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);
-
-export const OTHER_OPENED = chart(
-  'UI',
-  'Opened',
-  'Other Panels Opened',
-  'Any other dialog or panel opened.',
-  { typeIn: (t) => !OPENED_HOMES.some((home) => home(t)) },
-);
 
 export const PANELS_OPENED: MetricStack = {
   stack: true,
@@ -643,7 +499,6 @@ export const PANELS_OPENED: MetricStack = {
     PICKERS_OPENED,
     HELP_FROM_EDITOR,
     SHORTCUTS_OPENED,
-    OTHER_OPENED,
   ],
   seeAlso: { section: 'editing', label: 'See Each Dialog in Features › Editing' },
 };

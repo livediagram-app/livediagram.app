@@ -41,10 +41,67 @@ to change.
 - **Light content**: sticky notes, text, images and stickers. The Frame went later ([The Frame](#the-frame)), and so
   did the Icons category ([Icons](#icons)) and adding link cards ([Media](#media-image-and-link-card)). Images went
   with the link cards and came back, under **Write** ([Images are back](#images-are-back)).
-- **Talking without a call**: speech bubbles, comments with mentions, comment reactions, and assigned actions from
-  any element's menu with the Collaborate Panel.
+- **Talking without a call**: speech bubbles. Comments with mentions, comment reactions, assigned actions, links
+  and notes on elements, the Collaborate Panel and the Explorer's Inbox went later
+  ([Comments, actions, links and notes](#comments-actions-links-and-notes)).
 - **Every platform feature** ([v1 scope](v1-scope.md) section 7) but the MCP server, the CLI and workbenches
-  ([The MCP server, the CLI and workbenches](#the-mcp-server-the-cli-and-workbenches)).
+  ([The MCP server, the CLI and workbenches](#the-mcp-server-the-cli-and-workbenches)) and the Inbox.
+
+## Comments, actions, links and notes
+
+The owner (2026-11-11, Work Tracker #714, "Remove Comments, Actions, Links, Notes And The Inbox"): people don't add
+comments or actions in livehuddle. In a Space you say it to the person, in the call or in a speech bubble, and a
+sticky on the wall holds what has to stay; a thread pinned to a piece of furniture, or work assigned on it, belongs to
+a diagram or a plan. Links and notes on elements go with them: they were the element menu's other two attachments,
+and a Space's way to point somewhere is a Portal or a Door. This reverses the line above that kept them. livediagram,
+liveplanner, livedocuments and livedesign keep all four and the Inbox, and livediagram's specs are the ones to read:
+[Assigned actions](../../../../livediagram/docs/specs/012-collaboration/assigned-actions.md),
+[Comment mentions](../../../../livediagram/docs/specs/012-collaboration/comment-mentions.md),
+[Comment reactions](../../../../livediagram/docs/specs/012-collaboration/comment-reactions.md),
+[Rich-text notes](../../../../livediagram/docs/specs/009-elements/rich-text-notes.md) and
+[Element indicators](../../../../livediagram/docs/specs/008-canvas/element-indicators.md). Their copies in this tree
+stay, marked **Gone from livehuddle**, because the stored data they describe stays (below) and the shared code that
+reads it cites them.
+
+- **Gone from every door**, for every role:
+  - the element menu's quick bar offers no **Assign Action**, **Add Comment**, **Add Link** or **Add Note**; it
+    keeps **Clear Styles** alone ([Element menu quick bar](../008-canvas/element-menu-quick-bar.md));
+  - the Participant's and the Viewer's element menu has no comments, **Open Link** or **View Note** row; it keeps
+    **Copy Text**;
+  - the selection toolbar has no **Add Comment** or **Show Comments**, so a Participant and a Viewer, whose only
+    button it was, get no selection toolbar at all;
+  - the command palette has no **Add / Edit Note** or **Add Comment**;
+  - a deep link's `?open=action` or `?open=comments` (an email's or an old Inbox row's) opens the Space and selects
+    the element, opening nothing;
+  - a copy, a duplicate and a paste drop the element's comments, actions, link and note, so no copy adds one (a link
+    card's link is the card itself, and a retired annotation's note is its marker: those two keep theirs).
+- **Gone from the canvas**: the Collaborate Panel and its Settings switch, the comment thread, note and action
+  popovers, the Assign Action dialog, the element link picker, and the indicators on an element (a link, a note, an
+  open action, unresolved comments) with their Settings. A stored link card keeps its own **Link** category.
+  Settings offers no **Someone Comments on My Space**, **Someone Mentions Me in a Comment** or **Someone Assigns Me an
+  Action** email switch; the stored account preference is left as it is, for the apps that still send them.
+- **The Explorer has no Inbox** in livehuddle, its editor panel and its pages alike: no Inbox row, rail section,
+  count badge or Home pill, and no `GET /inbox` read. An Inbox address opens Home, and a browser that remembered the
+  panel's Inbox opens Home. The switch is the Explorer's own (`appHasInbox`, `packages/explorer/src/inbox-apps.ts`,
+  [One Explorer: Inbox](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#inbox)); every other
+  app keeps its Inbox, and a test pins all four.
+- **Nothing is sent about them.** The canvas pushes no comment threads or actions to the index (the outbox drops a
+  tab's collab key unpushed), so livehuddle adds no Inbox rows; rows pushed before stay in the index until their
+  canvas is deleted. No mention or action-assigned email goes: the team notify routes answer `410 gone`.
+- **The API refuses new writes and keeps the reads.** Adding, replying to, deleting, resolving and reopening a comment
+  (`/api/documents/:id/tabs/:tabId/comments…`) answer `410 comments_gone`; listing a canvas's threads
+  (`GET /api/documents/:id/comments`) still answers what is stored. The write routes leave the OpenAPI document. The
+  room drops a comment delta (`comment-add`, `comment-remove`, `comment-rekey`, `comment-resolve`, `comment-react`)
+  from an older client at its op gate, as it drops a retired op kind.
+- **Stored data is untouched.** An element's `commentThread`, `action`, `actions`, `link` and `note` load and save
+  exactly as stored: no migration strips them, nothing shows them, and the threads still answer the API's read. The
+  shared model code that reads them (`@livehuddle/document`'s comments, actions and deltas) stays.
+- **Help and telemetry**: the Comments, Assigned Actions, Links, Linking Tabs, Notes, Element Indicators and Inbox
+  articles go, with their figures; old addresses redirect to the [Collaboration](/help/collaboration/) overview (or
+  the nearest article that stays). The editor's `Comment`, `Action`, `Note` and `Activity` (the Inbox's) events, and
+  the Collaborate Panel's open and switch events, are no longer sent (`lib/telemetry-manifest.ts`).
+- **Share roles**: a Participant no longer comments or reacts to a comment; a Viewer has no comments to show
+  ([Share roles](../013-workspace/share-roles.md)).
 
 ## The presenting tools, Isometric and Zen
 
@@ -730,8 +787,9 @@ livediagram's specs ([MCP server](../../../../livediagram/docs/specs/015-api/mcp
 - **Help**: the Connect an AI Tool, CLI and Workbenches articles go, and the developer articles show `curl` only. Old
   addresses redirect (router `legacy-editor-route.ts`): the AI and MCP articles to [API Tokens](/help/account-and-data/api-tokens/),
   the CLI and Workbench articles to the [API overview](/help/developers/api-overview/).
-- **What stays**: the REST API and API tokens (full or read-only), agent changesets, document views, agent comments
-  and presence, and everything else a script reaches over HTTP. The changeset front door still parses the `door` of a
+- **What stays**: the REST API and API tokens (full or read-only), agent changesets, document views, agent presence
+  (agent comments went with comments, [Comments, actions, links and notes](#comments-actions-links-and-notes): the
+  list still reads, a write answers 410), and everything else a script reaches over HTTP. The changeset front door still parses the `door` of a
   changeset an MCP client or the CLI sent, and telemetry still parses `Mcp`, `Cli` and the `Ai` marketing surface, so
   old events and stored history read as before.
 - **Status page**: livehuddle has no MCP row ([Status](../../../../liveworkspace/docs/specs/009-status/status.md)).
@@ -823,4 +881,11 @@ comments on it; a Viewer sees it).
   a stored square sent back by a `replace` stays as stored (`packages/edit-operations`); a changeset's `lint` is
   `null` and `view=lint` is refused (`apps/api`); the palette and Search offer no shape (`palette-search.test.ts`);
   every Space template still builds and validates (`packages/templates`).
+- Comments, actions, links and notes: the quick bar offers Clear Styles alone (`ElementMenuQuickBar.test.tsx`), the
+  read-only menu offers no comments, link or note row (`ReadOnlyElementMenuHost.test.tsx`), the command palette has
+  no note or comment command (`editor-commands.test.ts`), a copy drops the four (`duplicate.test.ts`,
+  `clipboard-payload.test.ts`), the outbox pushes no collab (`document-outbox.test.ts`), the comment write routes and
+  the notify routes answer 410 while the list still reads (`comment-routes.test.ts`, `team-notify-routes.test.ts`),
+  the op gate drops a comment delta (`room-op-gate.test.ts`), the Explorer shows livehuddle no Inbox while the other
+  four keep it (`packages/explorer` `inbox-apps.test.tsx`), and the router pins the old help addresses.
 - Every part: the help path tests (`repo-paths-in-docs`, `article-links`, the heading anchors) pass.

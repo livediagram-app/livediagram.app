@@ -175,9 +175,12 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
   pictures and the sweep would take them. The zone reads "Save this plan to your account to add images." and
   takes no file; a card that came in with attachments (a plan taken offline) keeps them and shows them to their
   uploader.
-- **Agents and the api read it**: `list_items` lists each card's attachments as stored (name, size, type, id); an agent may clear the field
-  but never set it ("Attachments are added in the card panel"). A form can't ask it, and Import CSV and Export CSV
-  leave it out, as an Image field's.
+- **Agents**: `list_items` lists each card's attachments as stored (name, size, type, id) with a `link` to read each
+  picture; an agent adds pictures it uploaded for the plan with `upload_image` (`change_items`' `{ "add": [ids] }`,
+  at the end, up to 20; the entry's name, size and type come from the upload, never the agent), removes them by id
+  and clears the field ([MCP](../015-api/mcp-server.md#45b-upload_image-pictures-for-a-plans-cards)). Only an id the
+  plan holds a grant for is placed, as for an Image field. A form can't ask it, and Import CSV and Export CSV leave it
+  out, as an Image field's.
 - Telemetry: `Plan · Added · CardAttachment`, `Plan · Removed · CardAttachment`, `Plan · Changed · CardCover`.
 
 ### Images in use

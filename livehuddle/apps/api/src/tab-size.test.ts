@@ -131,7 +131,9 @@ describe('the routes answer the named 413', () => {
     expect(stored(db, 't1')?.n).toBe(MAX_TAB_BYTES);
   });
 
-  it('refuses a comment that would push a tab at the cap over it', async () => {
+  // A comment write answers 410 before any size check: comments left livehuddle (docs/specs/002-project-scope/
+  // not-in-livehuddle.md "Comments, actions, links and notes"). The tab is left as it was either way.
+  it('refuses a comment on a tab at the cap, leaving the tab as stored', async () => {
     const warn = quiet();
     const db = sqliteD1();
     liveDoc(db, 'd1');
@@ -143,7 +145,7 @@ describe('the routes answer the named 413', () => {
         body: { elementId: 'x', text: 'One more thought' },
       }),
     );
-    expect(res?.status).toBe(413);
+    expect(res?.status).toBe(410);
     expect(stored(db, 't1')?.n).toBe(MAX_TAB_BYTES - 10);
     warn.mockRestore();
   });

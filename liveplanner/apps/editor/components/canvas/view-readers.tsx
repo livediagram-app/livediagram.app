@@ -5,7 +5,7 @@
 // view, so a zoom tick renders these and not the layer or the chrome around them. The components they
 // wrap stay pure renderers.
 
-import { useCanvasCovered, useSheetCovering } from '@/hooks/plan/plan-cover-store';
+import { useSheetCovering } from '@/hooks/plan/plan-cover-store';
 import {
   setSheetZoom,
   SHEET_ZOOM_MAX,
@@ -14,14 +14,12 @@ import {
   useSheetZoom,
 } from '@/hooks/sheets/sheet-zoom';
 import { useEffect, type ComponentProps } from 'react';
-import { Minimap } from '@/components/canvas/Minimap';
 import { ZoomControls } from '@/components/chrome/ZoomControls';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 
 const zoomOf = (v: View) => v.zoom;
 const SHEET_ZOOM_RANGE = { min: SHEET_ZOOM_MIN, max: SHEET_ZOOM_MAX };
-const wholeView = (v: View) => v;
 
 // The corner zoom controls. Only a Sheet zooms (docs/specs/029-sheets/sheet.md "Zoom"), its cells, Fit putting it back
 // to 100%; on a Board, Dashboard or Form tab the zoom buttons are hidden, leaving Zen when it applies.
@@ -49,15 +47,4 @@ export function ViewZoomControls(
       />
     );
   return <ZoomControls {...props} zoom={canvasZoom} zoomHidden />;
-}
-
-// The Map, its view box following the view (its picture is memoised and does not redraw for it). Hidden while a Plan
-// board or view covers the canvas (docs/specs/026-plan/plan-board.md "Maximised board"): there is no canvas to map.
-export function ViewMinimap(
-  props: Omit<ComponentProps<typeof Minimap>, 'viewportZoom' | 'viewportOffset'>,
-) {
-  const view = useViewportOf(wholeView);
-  const covered = useCanvasCovered();
-  if (covered) return null;
-  return <Minimap {...props} viewportZoom={view.zoom} viewportOffset={view.offset} />;
 }

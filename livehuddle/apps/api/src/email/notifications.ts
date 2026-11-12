@@ -7,7 +7,6 @@
 // Like every docs/specs/014-identity/transactional-email.md send these never throw — sendEmail swallows failures — so
 // a notification problem can't break the request that triggered it.
 
-import type { TeamPerson } from '@liveworkspace/auth-client';
 import { accountsAllowance, createNotifier } from '@liveworkspace/index-app';
 import { accountCredentials } from '../auth/accounts';
 import { isAccountIdShape } from '@livehuddle/api-schema';
@@ -96,39 +95,3 @@ export const notifyDocumentJoin = (
   document: { id: string; ownerId: string; name: string },
   joinerId: string,
 ): Promise<void> => notifier.notifyJoin(env, document, joinerId);
-
-// A teammate assigned the recipient an action on a canvas element (routes/notify-routes.ts, after it checked both
-// people and the canvas). Opt-out (notifyActionAssigned).
-export function notifyActionAssigned(
-  env: DocumentEnv,
-  input: {
-    assignee: TeamPerson;
-    assignerUserId: string;
-    assignerName: string | null;
-    document: { id: string; name: string };
-    assigneeCanOpen: boolean;
-    actionName: string;
-    description: string | null;
-  },
-): Promise<void> {
-  const { document, ...rest } = input;
-  return notifier.notifyActionAssigned(env, { ...rest, item: document });
-}
-
-// A teammate's comment @-mentioned these people (docs/specs/012-collaboration/comment-mentions.md "The email"): the
-// notify-mention route checked the canvas is the team's, the author one of its joined people and each recipient one
-// of its people other than the author. A canvas comment reaches the canvas's storage only with the next tab save, so
-// the route carries its text. Opt-out (notifyMentions).
-export function notifyMentioned(
-  env: DocumentEnv,
-  input: {
-    recipients: readonly TeamPerson[];
-    authorUserId: string;
-    authorName: string | null;
-    document: { id: string; name: string };
-    commentText: string;
-  },
-): Promise<void> {
-  const { document, ...rest } = input;
-  return notifier.notifyMentioned(env, { ...rest, item: document });
-}

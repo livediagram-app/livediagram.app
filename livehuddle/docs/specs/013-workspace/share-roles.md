@@ -11,14 +11,14 @@ Ownership is not a level. The wire names and the ladder come from `@liveworkspac
 In a meeting app the three read naturally:
 
 - **Editor**: the host. Builds and rearranges the space, runs the session.
-- **Participant**: an attendee. Walks, talks, comments, reacts and uses the pieces (pins a note, swings a door, plays
+- **Participant**: an attendee. Walks, talks, reacts and uses the pieces (pins a note, swings a door, plays
   the Jukebox), never adds to or reshapes the space.
 - **Viewer**: an observer. Walks and watches, takes no part that writes or speaks.
 
 ## What a new share offers
 
 livehuddle offers **Editor** and **Participant** only, and a new share starts as **Participant**: a space is shared
-to bring people into a meeting, where everyone should be able to speak, comment and use the room's pieces. Viewer stays a level
+to bring people into a meeting, where everyone should be able to speak and use the room's pieces. Viewer stays a level
 (the ladder and the gates below are unchanged), but nothing new grants it.
 
 - **The Share dialog** (the shared one, in the editor and in the Explorer) lists Editor then Participant in its
@@ -69,7 +69,6 @@ Viewer; the index refuses a change to Viewer, never a change away from it.
 | See an Arcade Machine's High Scores                       | Yes    | Yes         | Yes    | [Social pieces](../009-elements/social-pieces.md#high-scores)                                             |
 | Clear an Arcade Machine's High Scores                     | Yes    | No          | No     | [Social pieces](../009-elements/social-pieces.md#high-scores)                                             |
 | Open or close a Door                                      | Yes    | Yes         | No     | [Room Builder and Door](../009-elements/room-builder.md#opening-and-closing)                              |
-| Comment, reply, resolve                                   | Yes    | Yes         | No     | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)                            |
 | Pan, zoom, export                                         | Yes    | Yes         | Yes    | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)                            |
 | Change tabs, the theme, anything on the board else        | Yes¹   | No          | No     | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)                            |
 
@@ -99,7 +98,7 @@ Viewer; the index refuses a change to Viewer, never a change away from it.
 ## A Participant walks
 
 The owner (2026-11-05): "dont let participants add notes or text elements, they shouldn't have a palette and always
-be in avatar mode". A Participant is in a meeting place to meet: it walks, talks, reacts and comments, and it uses the
+be in avatar mode". A Participant is in a meeting place to meet: it walks, talks and reacts, and it uses the
 room's pieces the way anyone in a room would. What a Space holds is the host's.
 
 - **No building palette.** A Participant has no building strip: no Participate category (it held Sticky and Text),
@@ -119,7 +118,8 @@ room's pieces the way anyone in a room would. What a Space holds is the host's.
   ([Room Builder and Door](../009-elements/room-builder.md#opening-and-closing)), a Timer or Stopwatch
   ([Timer and Stopwatch](../009-elements/timer-and-stopwatch.md#share-roles)), playing the Arcade Machine and posting its
   own scores ([Social pieces](../009-elements/social-pieces.md#high-scores)), playing the Jukebox, knocking, sitting,
-  drinks, reactions, speech bubbles, comments and session-tool answers, as the table says.
+  drinks, reactions, speech bubbles and session-tool answers, as the table says. It no longer comments or reacts to
+  a comment: livehuddle has no comments ([Comments, actions, links and notes](../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)), and a Viewer has none to show.
 - **Its earlier stickies and text stay as they are.** A Space that holds stickies or text a Participant added before
   this change loads and draws them unchanged, still signed with that Participant's adder key. The Participant can no
   longer write on, move, recolour or remove them (nor anything else on the canvas); an Editor can.
@@ -155,7 +155,7 @@ true for both, false for an Editor alone.
 
 ## The collab key
 
-A person's **collab key** is the public id their [comment reactions](../012-collaboration/comment-reactions.md) are recorded under (livehuddle has no dots or responses: an older client's `vote` is dropped as a retired op). The server derives it; the browser never
+A person's **collab key** is the public id the room pins on their session, the one their [comment reactions](../012-collaboration/comment-reactions.md) were recorded under. livehuddle records nothing under it now: comment reactions left with comments ([Comments, actions, links and notes](../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)), and there are no dots or responses (an older client's `vote` is dropped as a retired op, and a comment delta at the op gate). The server derives it; the browser never
 chooses it.
 
 - **From who you are.** `collabKeyFor(person)` (`@liveworkspace/api-kit/collab-key`) is the first 32 hex characters

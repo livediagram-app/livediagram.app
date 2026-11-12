@@ -9,12 +9,12 @@ import {
   TextBar,
   Cursor,
   Menu,
-  Tabs,
 } from '@liveworkspace/help-site/art/primitives';
 import { type CardType, STRIPE, Card } from './plan-parts';
 
 /** The card panel: the back bar to the card before, then the type and number, the ⋯ menu and close;
- *  the title over the card's tabs with Linked Cards open on Linked as Parent; Details on the right. */
+ *  the title over the card's tabs (Overview, Linked Cards with its count, Activity), Linked Cards open on its
+ *  Linked as Parent section; Details on the right. */
 export function PlanCardPanelScene() {
   return (
     <Scene w={420} h={260} bg="plain">
@@ -69,16 +69,28 @@ export function PlanCardPanelScene() {
       <Label x={24} y={62} size={14} weight={700} tone="strong">
         New icons
       </Label>
-      <Tabs
-        x={22}
-        y={76}
-        items={['Overview', 'Linked Cards', 'Activity']}
-        active={1}
-        tabW={80}
-        h={20}
-      />
+      {/* The panel's tab bar as shipped: underline tabs, Linked Cards picked with its count pill. */}
+      <line x1={22} y1={96} x2={262} y2={96} className="stroke-slate-200" strokeWidth={1} />
+      <Label x={24} y={88} size={10} weight={500} tone="muted">
+        Overview
+      </Label>
+      <Label x={76} y={88} size={10} weight={600} tone="accent">
+        Linked Cards
+      </Label>
+      <rect x={142} y={80} width={14} height={11} rx={5.5} className="fill-brand-50" />
+      <Label x={149} y={88} size={8} weight={600} anchor="middle" tone="accent">
+        2
+      </Label>
+      <rect x={76} y={95} width={80} height={2} rx={1} className="fill-brand-600" />
+      <Label x={172} y={88} size={10} weight={500} tone="muted">
+        Activity
+      </Label>
       <Label x={24} y={118} size={10} weight={700} tone="body">
-        Linked as Parent 2
+        Linked as Parent
+      </Label>
+      <rect x={104} y={110} width={14} height={11} rx={5.5} className="fill-slate-100" />
+      <Label x={111} y={118} size={8} weight={600} anchor="middle" tone="muted">
+        2
       </Label>
       {[0, 1].map((i) => (
         <g key={i}>

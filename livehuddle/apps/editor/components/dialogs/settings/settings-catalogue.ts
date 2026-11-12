@@ -7,23 +7,13 @@ import {
 } from '@liveworkspace/workbench/components/dialogs/HideCursorsSwitch';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
 import type { TelemetryCategory } from '@livehuddle/api-schema';
-import {
-  panelEnabled,
-  type MapSize,
-  type PanelSwitch,
-  type UserPreferences,
-} from '@/lib/user-preferences';
+import { type MapSize, type UserPreferences } from '@/lib/user-preferences';
 import {
   elementTourSeen,
   markElementTourSeen,
   offerElementTourAgain,
   type ElementTourKind,
 } from '@/lib/element-tours';
-import {
-  readElementIndicatorStyle,
-  withElementIndicatorStyle,
-  type ElementIndicatorStyle,
-} from '@liveworkspace/workbench/lib/element-indicator-style';
 import {
   UI_SCALE_MAX,
   UI_SCALE_MIN,
@@ -41,14 +31,7 @@ import type { SettingsIllustrationId } from '@liveworkspace/workbench/components
 
 // One email notification switch (docs/specs/014-identity/profile-and-email-notifications.md): only
 // where the deployment sends email AND the reader is signed in, since a guest has no address.
-type EmailKey =
-  | 'notifyDocumentJoin'
-  | 'notifyInviteResponse'
-  | 'notifyComments'
-  | 'notifyActionAssigned'
-  | 'notifyMentions'
-  | 'notifyTips'
-  | 'notifyMilestones';
+type EmailKey = 'notifyDocumentJoin' | 'notifyInviteResponse' | 'notifyTips' | 'notifyMilestones';
 
 function emailSwitch(
   key: EmailKey,
@@ -310,23 +293,6 @@ const MINIMAP_DESKTOP_ONLY =
 const MOUSE_DESKTOP_ONLY =
   'A mouse setting, so it has no effect on a phone. Your choice still applies on a larger screen.';
 
-// The panel switches (docs/specs/007-editor/user-preferences.md), each on
-// unless stored `false`. One row per Panels sub-category, first in its pane,
-// with that panel's other rows nested beneath it (`parent`), so they are
-// offered only while it is on (see `visibleCategories`).
-function panelSwitch(
-  key: PanelSwitch,
-  row: Pick<SettingsToggleRowSpec, 'label' | 'keywords' | 'description' | 'event' | 'section'>,
-): SettingsToggleRowSpec {
-  return {
-    kind: 'toggle',
-    key,
-    ...row,
-    read: (p) => panelEnabled(p, key),
-    write: (p, v) => ({ ...p, [key]: v }),
-  };
-}
-
 // A tour's switch (docs/specs/007-editor/user-preferences.md "Getting Started"). INVERTED against its stored
 // preference: the switch asks "offer me this tour?", the preference records "already seen". The
 // telemetry tokens still track the PREFERENCE, not the switch, so each dashboard series keeps
@@ -386,26 +352,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.alignmentGuides !== false,
         write: (p, v) => ({ ...p, alignmentGuides: v }),
         event: { category: 'UI', on: 'AlignmentGuidesOn', off: 'AlignmentGuidesOff' },
-      },
-      {
-        // docs/specs/008-canvas/element-indicators.md: how an element shows its link, note,
-        // action and comments.
-        kind: 'choice',
-        key: 'elementIndicatorStyle',
-        keywords:
-          'badges icons note action comment link markers indicators top corner footer metadata chip hide off',
-        section: 'Canvas',
-        label: 'Element Indicators',
-        description:
-          'How an element shows it has comments, an action or other markers: quiet icons at its top, a labelled footer, or nothing.',
-        options: [
-          { id: 'top', label: 'Top' },
-          { id: 'footer', label: 'Footer' },
-          { id: 'off', label: 'Off' },
-        ],
-        read: readElementIndicatorStyle,
-        write: (p, v) => withElementIndicatorStyle(p, v as ElementIndicatorStyle),
-        event: { category: 'UI', changed: 'ElementIndicators' },
       },
       {
         kind: 'toggle',
@@ -589,14 +535,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, mapSize: v as MapSize }),
         event: { category: 'UI', changed: 'MapSize' },
       },
-      panelSwitch('collaboratePanelEnabled', {
-        section: 'Collaborate',
-        label: 'Enable Collaborate Panel',
-        keywords: 'collaborate comments threads actions tasks panel enable hide show turn off',
-        description:
-          "Lists the tab's comments and actions, behind a corner button that shows once there are some. Off, they still work on the elements.",
-        event: { category: 'UI', on: 'CollaboratePanelOn', off: 'CollaboratePanelOff' },
-      }),
       {
         section: 'Collaborate',
         kind: 'hideCursors',
@@ -807,7 +745,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'When someone nudges you while this tab is in the background, your computer shows a notification. Your browser asks first.',
         helpArticle: 'livePresence',
       },
-      // A guest gets the stand-in row instead of six switches that could
+      // A guest gets the stand-in row instead of switches that could
       // never apply: the same shape the API tokens row uses, so "you need
       // an account for this" looks the same wherever it appears.
       {
@@ -819,27 +757,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         note: 'Sign in to choose which emails you get.',
         signIn: true,
         description:
-          'We can email you when someone joins one of your spaces, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
+          'We can email you when someone joins one of your spaces, answers a team invite, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
       },
-      emailSwitch('notifyComments', {
-        event: { category: 'UI', on: 'NotifyCommentsOn', off: 'NotifyCommentsOff' },
-        keywords: 'email comment reply feedback',
-        label: 'Someone Comments on My Space',
-        description: 'Someone leaves a comment on a space you own.',
-      }),
-      emailSwitch('notifyMentions', {
-        event: { category: 'UI', on: 'NotifyMentionsOn', off: 'NotifyMentionsOff' },
-        keywords: 'email mention tag at comment',
-        label: 'Someone Mentions Me in a Comment',
-        description: 'A teammate @mentions you in a comment.',
-      }),
-      emailSwitch('notifyActionAssigned', {
-        event: { category: 'UI', on: 'NotifyActionAssignedOn', off: 'NotifyActionAssignedOff' },
-        keywords: 'email action assigned task todo',
-        label: 'Someone Assigns Me an Action',
-        description: 'A teammate assigns you an action on an element, or a card on a board.',
-      }),
+      // No comment, mention or action email: livehuddle has none of the three (docs/specs/002-project-scope/
+      // not-in-livehuddle.md "Comments, actions, links and notes"). The stored account preferences are left as they are.
       emailSwitch('notifyInviteResponse', {
         event: { category: 'UI', on: 'NotifyInviteResponseOn', off: 'NotifyInviteResponseOff' },
         keywords: 'email invite team accepted declined',

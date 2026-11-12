@@ -36,7 +36,7 @@ const links = SOURCE_DIRS.flatMap((dir) => sourceFiles(join(ROOT, dir))).flatMap
 
 describe('help centre links', () => {
   it('finds the links it checks', () => {
-    expect(links.length).toBeGreaterThan(50);
+    expect(links.length).toBeGreaterThan(40);
   });
 
   it('points every one at a registered article or category', () => {

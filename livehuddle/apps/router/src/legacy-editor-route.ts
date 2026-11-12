@@ -26,8 +26,8 @@ export function legacyEditorRedirect(url: URL): Response | null {
 // articles and Presenting from the Canvas land on Following Someone, and Pages on Write Elements. Workshop mode, the
 // Collaborate elements, polls and the diagram tools (shapes, arrows, drawing, the layout containers but the frame,
 // tables, charts, code, components and embeds) left livehuddle too (Work Tracker #423 part 3): each lands on the
-// nearest article that stays (Session Tools, the Receptionist, Meeting Elements, Comments, Assigned Actions, Where each
-// tool lives, Frames, Write Elements, Images, Notes or Adding Elements), and the older names that led to them follow.
+// nearest article that stays (Session Tools, the Receptionist, Meeting Elements, the Collaboration overview, Where each
+// tool lives, Frames, Write Elements, Images or Adding Elements), and the older names that led to them follow.
 // Auto Layout, which arranges shapes by their arrows, lands on Layout Cleanup (Work Tracker #494). Shape Libraries and
 // the draw.io, Microsoft Whiteboard and Markdown imports left livehuddle (Work Tracker #423 part 4): Shape Libraries
 // lands on the Explorer Page, and the three imports on Importing a Tab, which names the imports that stay.
@@ -125,8 +125,8 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'palette/behaviour/reveal-zones': 'palette/behaviour',
   'palette/behaviour/session-buttons': 'palette/behaviour',
   'palette/collaborate': 'collaboration/session-tools',
-  'palette/collaborate/comment-panels': 'collaboration/comments',
-  'palette/collaborate/action-panels': 'collaboration/assigned-actions',
+  'palette/collaborate/comment-panels': 'collaboration',
+  'palette/collaborate/action-panels': 'collaboration',
   'palette/collaborate/agendas': 'collaboration/session-tools',
   'palette/collaborate/decision-records': 'collaboration/session-tools',
   'palette/collaborate/estimate-cards': 'collaboration/session-tools',
@@ -167,7 +167,7 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'palette/tools/drawing/shape-recognition': 'palette/tools',
   'palette/tools/highlighter': 'palette/tools',
   'palette/tools/tables': 'palette/write',
-  'canvas/annotations': 'canvas/notes',
+  'canvas/annotations': 'collaboration',
   'getting-started/adding-shapes-and-arrows': 'canvas/the-canvas/adding-elements',
   'tools/layout-cleanup/auto-layout': 'tools/layout-cleanup',
   'explorer/shape-libraries': 'explorer/explorer-page',
@@ -190,7 +190,18 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'tabs/locking-tabs': 'tabs/using-tabs',
   // Image and Link card left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "Media: Image and Link card").
   'palette/tools/images': 'palette/tools',
-  'canvas/links/link-cards': 'canvas/links',
+  'canvas/links/link-cards': 'collaboration',
+  // Comments, assigned actions, links and notes left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md
+  // "Comments, actions, links and notes"), and with them the element indicators that showed them and links across
+  // tabs: each lands on the Collaboration overview, and Linking Across Tabs on Using Tabs.
+  'collaboration/comments': 'collaboration',
+  'collaboration/assigned-actions': 'collaboration',
+  'canvas/links': 'collaboration',
+  'canvas/notes': 'collaboration',
+  'canvas/element-indicators': 'collaboration',
+  'tabs/linking-tabs': 'tabs/using-tabs',
+  // livehuddle's Explorer has no Inbox (not-in-livehuddle.md): its article lands on Home.
+  'explorer/activity': 'explorer/home',
   'self-hosting': '',
   'self-hosting/self-hosting-overview': '',
   'self-hosting/deploying-livehuddle': '',

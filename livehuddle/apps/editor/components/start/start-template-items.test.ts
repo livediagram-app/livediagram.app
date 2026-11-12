@@ -92,9 +92,14 @@ describe('Start a Space', () => {
       'focus-library',
     ]);
     expect(group('events')).toEqual(['all-hands-hall', 'training-room', 'expo-hall']);
-    expect(group('outdoor')).toEqual(['garden-retreat', 'city-park', 'beach-offsite']);
+    expect(group('outdoor')).toEqual([
+      'garden-retreat',
+      'city-park',
+      'beach-offsite',
+      'festival-field',
+    ]);
     // A cross-listed Space is in catalogue order among the category's own: the Sports Bar in Recreation, the Beach
-    // Offsite in Campus and the Expo Hall in Venues.
+    // Offsite in Campus, the Expo Hall in Venues and the Festival Field in Outdoor.
     expect(group('recreation')).toEqual(['rooftop-bar', 'cafe', 'sports-bar']);
     expect(group('campus')).toEqual([
       'company-campus',
@@ -110,6 +115,7 @@ describe('Start a Space', () => {
       'hotel-and-suites',
       'expo-hall',
       'music-hall',
+      'festival-field',
     ]);
     expect(group('recommended')[0]).toBe('blank-session');
   });

@@ -77,7 +77,6 @@ const VIEW_HELP: Partial<Record<ExplorerView['kind'], HelpArticleKey>> = {
   recent: 'recent',
   favourites: 'explorerPage',
   shared: 'sharedWithYou',
-  inbox: 'inbox',
   trash: 'trash',
   search: 'explorerFilters',
   gallery: 'imageGallery',

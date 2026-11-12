@@ -152,6 +152,7 @@ in `PALETTE_TELEMETRY_TYPES`.
 - Startup HQ: bike rack `(HQ_GATE - PATH / 2 - 190, 1222)`.
 - Hotel Lobby: columns at x 700, 860, 1276, 1436, y 1010. Rooftop: the pool `(700, 120)` 600 × 200 replaces the pond.
 - Beach Offsite: pool `(1400, 900)` 440 × 200; planters move to `(1300, 1080)` and `(1880, 960)`.
+- Festival Field: curtains `(STAGE.x, STAGE.y - 70)` at `STAGE.w`, the open-air stage's backdrop.
 - Company Campus: car parks `(1430, 1200)` and `(1670, 1200)`; bike rack `(MID - PATH / 2 - 148, 1250)`; the tree by
   the pond moves to `(1010, 1090)`; the bottom-right tree and planter make room for the car parks.
 

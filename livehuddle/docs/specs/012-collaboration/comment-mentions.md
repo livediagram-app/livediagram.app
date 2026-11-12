@@ -1,5 +1,11 @@
 # Comment Mentions
 
+> **Gone from livehuddle** (owner, 2026-11-11, Work Tracker #714): @-mentioning a teammate in a comment left livehuddle with comments, actions,
+> links and notes ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)).
+> livediagram, liveplanner, livedocuments and livedesign keep it; their own specs are the ones to read and change.
+> livehuddle's code for it is deleted, and what a Space already stores is left untouched. No mention email or Inbox row is sent. The rest of this
+> page records what livehuddle had.
+
 Typing `@` in a comment tags a teammate by name (`@thomas-mcclean`). The
 mention shows as a chip in the thread, puts the thread on the teammate's
 [Inbox](../013-workspace/inbox.md), and, if their settings allow, emails them.

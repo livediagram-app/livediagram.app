@@ -26,8 +26,9 @@ export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-rig
 // (docs/specs/012-collaboration/session-tools.md), nor the retired Avatar panel (the avatar palette now,
 // docs/specs/008-canvas/avatar-mode.md), nor the retired AI assistant panel: a stored layout naming them is
 // read like any unknown id.
+// The Collaborate Panel's `collaborate` left with comments and actions (docs/specs/002-project-scope/
+// not-in-livehuddle.md "Comments, actions, links and notes"); a stored layout naming it drops it.
 export type PanelId =
-  | 'collaborate'
   | 'minimap'
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, present only while it is on.
   // (The Eraser Panel's `eraser` left with the Eraser; a stored layout naming it drops it.)
@@ -40,7 +41,7 @@ export const PANEL_CORNERS: readonly PanelCorner[] = [
   'bottom-right',
 ];
 
-export const PANEL_IDS: readonly PanelId[] = ['collaborate', 'minimap', 'format'];
+export const PANEL_IDS: readonly PanelId[] = ['minimap', 'format'];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
 // plain { x, y } object literals to freePanel().
@@ -59,9 +60,6 @@ export type PanelLayout = {
 // Each panel's home corner (docs/specs/007-editor/panel-docking.md "Default layout"), so a user who
 // never rearranges anything sees the same chrome every time.
 export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
-  // Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): a popover over its cluster
-  // button, so its corner is only where a stored layout falls back to.
-  collaborate: 'bottom-right',
   minimap: 'bottom-left',
   // The tool panel: bottom-right, above the bottom cluster. It exists only while its tool does, so it joins and
   // leaves its corner stack.
@@ -82,7 +80,6 @@ export function defaultPanelLayout(): PanelLayout {
   // Order within a corner matters (it's the stack order); list them in
   // the order they stacked historically rather than PANEL_IDS order.
   corners['bottom-left'] = ['minimap'];
-  corners['bottom-right'] = ['collaborate'];
   return { corners, free: {} };
 }
 

@@ -1,5 +1,11 @@
 # Comment Reactions
 
+> **Gone from livehuddle** (owner, 2026-11-11, Work Tracker #714): reacting to a comment left livehuddle with comments, actions,
+> links and notes ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)).
+> livediagram, liveplanner, livedocuments and livedesign keep it; their own specs are the ones to read and change.
+> livehuddle's code for it is deleted, and what a Space already stores is left untouched. The rest of this
+> page records what livehuddle had.
+
 Anyone who may comment can react to a comment with one of six emoji, so agreeing, cheering or saying "I've seen
 this" takes one press instead of a reply. Everyone in the document sees the reactions and who left them, live, and
 they stay with the comment. One behaviour, one look and one component in all four products (livehuddle,

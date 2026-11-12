@@ -162,6 +162,25 @@ export function isRetiredOpKind(kind: unknown): boolean {
   return typeof kind === 'string' && (RETIRED_OP_KINDS as readonly string[]).includes(kind);
 }
 
+// Element deltas of a feature livehuddle no longer has: a comment's add, removal, id swap, resolve and reaction
+// (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes"). An older client may still
+// send one in an `el-delta` op; the room drops it at its op gate, as it drops a retired op kind, so no comment reaches
+// a stored thread or a peer.
+export const RETIRED_DELTA_KINDS = [
+  'comment-add',
+  'comment-remove',
+  'comment-rekey',
+  'comment-resolve',
+  'comment-react',
+] as const;
+
+export function isRetiredDeltaOp(op: unknown): boolean {
+  if (typeof op !== 'object' || op === null) return false;
+  const { kind, delta } = op as { kind?: unknown; delta?: unknown };
+  if (kind !== 'el-delta' || typeof delta !== 'object' || delta === null) return false;
+  return (RETIRED_DELTA_KINDS as readonly unknown[]).includes((delta as { kind?: unknown }).kind);
+}
+
 // Membership test for the room's ordering + role gate. Takes a loose string
 // because it reads `op.kind` off an `unknown` wire payload (see ServerMessage in
 // room-messages.ts on why the op itself stays untyped).
@@ -173,16 +192,14 @@ export function isPresenceOpKind(kind: unknown): kind is PresenceOpKind {
   return typeof kind === 'string' && (PRESENCE_OP_KINDS as readonly string[]).includes(kind);
 }
 
-// A participation act (docs/specs/013-workspace/share-roles.md "Integrity"): a comment reaction
-// (docs/specs/012-collaboration/comment-reactions.md): whoever may comment may react, and the room writes a
-// Participant's reactions as it writes its answers; and a notice board pin or unpin
-// (docs/specs/009-elements/social-pieces.md "Notice Board"), which the room writes the same way, and a Timer's or
+// A participation act (docs/specs/013-workspace/share-roles.md "Integrity"): a notice board pin or unpin
+// (docs/specs/009-elements/social-pieces.md "Notice Board"), which the room writes as it writes a Participant's
+// answers, and a Timer's or
 // Stopwatch's press (docs/specs/009-elements/timer-and-stopwatch.md "Share roles"), and an Arcade Machine score
 // (docs/specs/009-elements/social-pieces.md "High Scores"; its clear is an Editor's). A Participant's
 // socket may send these beside presence; every other mutation from it is dropped, except an `el` op, which the room
 // applies through the participant content rule instead of relaying.
 const PARTICIPATION_DELTA_KINDS = [
-  'comment-react',
   'notice-pin',
   'notice-unpin',
   'piece-timer',

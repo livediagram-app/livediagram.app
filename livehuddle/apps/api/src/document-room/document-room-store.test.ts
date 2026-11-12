@@ -12,7 +12,6 @@ import { mediaOwner } from '../media';
 import { MAX_TAB_HOLDERS } from '@liveworkspace/index-app';
 import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import type { Env } from '../types';
-import { DRAIN_TABS } from './document-outbox';
 import { MAINTENANCE_EVERY_MS, DocumentRoom } from './document-room';
 
 // Each document's content in its own SQLite-backed Durable Object (docs/specs/015-api/api.md "Storage"), end to end:
@@ -365,7 +364,9 @@ describe("a document's content lives in its own Durable Object", () => {
     expect(indexCalls.filter((call) => call.endsWith('/open'))).toEqual([]);
   });
 
-  it('pushes its summary and Inbox rows to the index from its outbox, never on the save itself', async () => {
+  // livehuddle has no Inbox (not-in-livehuddle.md "Comments, actions, links and notes"): the tab's collab key is
+  // settled without a push.
+  it('pushes its summary and who edited to the index from its outbox, never on the save itself, and no Inbox rows', async () => {
     const w = world({ INDEX_KEY: 'index-key' });
     await createDocument(w, 'A', [{ id: 't1', name: 'Board', elements: [] }]);
     const action = {
@@ -400,7 +401,6 @@ describe("a document's content lives in its own Durable Object", () => {
 
     expect(count(document.db, 'outbox')).toBe(0);
     expect(indexCalls.sort()).toEqual([
-      'PUT /api/index/app/items/A/collab/t1',
       'PUT /api/index/app/items/A/events',
       'PUT /api/index/app/items/A/summary',
     ]);
@@ -1011,8 +1011,8 @@ describe('speed', () => {
     expect(status).toBe(200);
     expect(listed).toBe(200);
     expect(w.calls).toEqual(['route']);
-    // The push to the index goes DRAIN_TABS tabs a drain, so each drain's requests are bounded whatever the
-    // document's size.
+    // A tab's collab key is settled unpushed (livehuddle has no Inbox), so one drain empties the outbox with the
+    // summary and who edited, whatever the document's size.
     const document = w.documents.get('A')!;
     const sizes: number[] = [];
     const drainMs = await cpuMsOfAsync(async () => {
@@ -1023,9 +1023,9 @@ describe('speed', () => {
       }
     });
     console.info('[perf] 200-tab document', { readMs, drainMs, requestsPerDrain: sizes });
-    expect(sizes).toHaveLength(Math.ceil(200 / DRAIN_TABS));
-    // DRAIN_TABS tabs, the summary and who edited.
-    expect(Math.max(...sizes)).toBeLessThanOrEqual(DRAIN_TABS + 2);
+    expect(sizes).toHaveLength(1);
+    // The summary and who edited.
+    expect(Math.max(...sizes)).toBeLessThanOrEqual(2);
     expect(readMs).toBeLessThan(cpuBudgetMs(50));
     expect(drainMs).toBeLessThan(cpuBudgetMs(200));
   });

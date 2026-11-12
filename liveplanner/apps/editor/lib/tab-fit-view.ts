@@ -1,15 +1,10 @@
 // The view Fit to Screen lands on (docs/specs/008-canvas/canvas-and-palette.md "Zoom & pan"): every boxed element on
-// the tab in view, clear of the Palette strip over the canvas's top and clear of
-// the Map (docs/specs/008-canvas/minimap.md "Fit leaves the Map clear"). Shared by
+// the tab in view, clear of the Palette strip over the canvas's top. Shared by
 // the Fit button (hooks/canvas/useEditorViewport) and a double-tap's fit back out to the whole tab
 // (hooks/canvas/useDoubleTapZoom), so both land on the same view.
 
 import { isBoxed, unionBoxedBounds, type Element } from '@liveplanner/project';
-import {
-  fitClearOfPanel,
-  MAP_PANEL_SELECTOR,
-  type FitInsets,
-} from '@liveworkspace/workbench/lib/fit-clear-of-panel';
+import type { FitInsets } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
 import {
   besideSideInsets,
   computeFitToScreen,
@@ -53,24 +48,5 @@ export function tabFitView(canvas: HTMLElement | null, elements: Element[]): Vie
       ),
       ins,
     );
-  return fitClearOfPanel(
-    { width: rect.width, height: rect.height },
-    bbox,
-    mapPanelBox(box),
-    { left: 0, right: 0, top: 0, bottom: 0 },
-    padding,
-    fitIn,
-  );
-}
-
-// The Map panel's box relative to the canvas, or null while it is not showing.
-function mapPanelBox(canvas: { left: number; top: number }) {
-  const panel = document.querySelector<HTMLElement>(MAP_PANEL_SELECTOR)?.getBoundingClientRect();
-  if (!panel || panel.width === 0) return null;
-  return {
-    left: panel.left - canvas.left,
-    right: panel.right - canvas.left,
-    top: panel.top - canvas.top,
-    bottom: panel.bottom - canvas.top,
-  };
+  return fitIn({ left: 0, right: 0, top: 0, bottom: 0 });
 }
