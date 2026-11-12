@@ -105,10 +105,8 @@ createdAt, lastSentAt }] }`, newest first. `publicKey` is the deployment's VAPID
 
 `POST /api/account/internal/push` `{ notifications: [{ userId, kind, title, url, tag? }] }`, from an app's server by
 its client credentials (`sendPush` in `@liveworkspace/auth-client`, beside `notificationRecipients`), up to 250 a
-request (`MAX_PUSH_NOTIFICATIONS`: 5 comments a save, each reaching at most 50 people; `sendPush` splits more). An
-accounts Worker from before this limit took 50 and refuses more with `too_many_notifications`; `sendPush` then sends
-the same notifications again 50 a request (`LEGACY_MAX_PUSH_NOTIFICATIONS`), so an app and accounts can deploy in
-either order. The body is checked whole, one bad entry refusing it
+request (`MAX_PUSH_NOTIFICATIONS`: 5 comments a save, each reaching at most 50 people; `sendPush` splits more, and
+throws on any refusal, so a caller logs it). The body is checked whole, one bad entry refusing it
 (`400` with the reason), and a client that is no app is refused (`403`). It answers `202 { accepted }` at once and
 sends after the answer (`waitUntil`, `src/push/deliver.ts`), so neither the app's write nor its call waits on a push
 service:

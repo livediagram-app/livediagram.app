@@ -155,7 +155,7 @@ closed, unreached }`.
 handoff 30 s). A `DELETE` answered `404` counts as done. Unconfigured is `app_not_configured`; else `status_<n>` or
 the error's name. Doors (`@liveworkspace/index-app` `internal.ts`): `DELETE /items/:id`, `POST /items/purge {ids}`,
 `POST /items/:id/revoke {codes, reason?}`, `POST /items/:id/notices`, `POST /items/:id/workbench-close`, `POST
-/items/:from/copy-to/:to`, `POST /people/:id/purge {items}`, `POST /people/:guest/merge {into, legacy?}`, `PUT
+/items/:from/copy-to/:to {tabId?, by?, code?, ip?, title?}`, `POST /people/:id/purge {items}`, `POST /people/:guest/merge {into, legacy?}`, `PUT
 /items/:id/migration`; and for previews and Drive, `GET /items/:id/export` and `POST /items/import`.
 
 ## Errors and edge cases

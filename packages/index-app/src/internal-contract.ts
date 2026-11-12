@@ -89,7 +89,15 @@ export type InternalItemHandlers = {
   // Copy the content (or one tab of it) into a new item. `copier` says who copies (`by`, null from an index that
   // does not say) and the share link they came in by (`code`, null for their own or their team's item), so the
   // app can copy only what that person may read (another's comment authors, a published post's redactions).
-  copy?: (from: string, to: string, tabId: string | null, copier: Copier) => Promise<CopyOutcome>;
+  // `title` is the new item's title at the index, trimmed and at most TITLE_MAX (null from an index that does not
+  // send it): the app keeps it as the copy's name, so the copy's first open shows what the Explorer lists.
+  copy?: (
+    from: string,
+    to: string,
+    tabId: string | null,
+    copier: Copier,
+    title: string | null,
+  ) => Promise<CopyOutcome>;
   // A notice for the app's emails, run off the index's path (waitUntil).
   notice?: (itemId: string, notice: ItemNotice) => Promise<unknown>;
   // A closed account (the index's person purge): what the app keeps for the person beside their items (images,

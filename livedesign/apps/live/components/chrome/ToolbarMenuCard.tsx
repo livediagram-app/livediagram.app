@@ -8,7 +8,6 @@ import {
   MENU_CARD_FRAME_MOTION,
   MENU_CARD_JOINED,
 } from '@liveworkspace/workbench/components/canvas/menu-join';
-import { BAND_BLEND, BAND_FLUSH, BAND_TINT } from './toolbar-surface';
 import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
 
 // The card at the canvas's top left, before the palette strip (docs/specs/007-editor/toolbar-layout.md): the
@@ -63,7 +62,7 @@ export function ToolbarMenuCard({
       className={
         inline
           ? 'flex items-center gap-1'
-          : `pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${BAND_TINT} ${BAND_BLEND} ${BAND_FLUSH} ${PHONE_TOOLBAR_ITEMS} ${MENU_CARD_FRAME_MOTION} ${joined ? MENU_CARD_JOINED : ''}`
+          : `pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} ${MENU_CARD_FRAME_MOTION} ${joined ? MENU_CARD_JOINED : ''}`
       }
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {

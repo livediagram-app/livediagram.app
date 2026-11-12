@@ -696,6 +696,28 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
 
   // A workbench ticket or session on the design stays at liveworkspace (liveworkspace/docs/specs/011-workbench/workbench.md) until it
   // expires or is swept, reaching nothing: the index grants nothing on a design that is gone.
+  // Work Tracker #671: Make a Copy opened the copy as Untitled while the Explorer listed "<name> (copy)".
+  it('starts a copy with the title the index gave it, and as Untitled from an index that names none', async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createDesign(w, 'A');
+    const named = await w.send(
+      'POST',
+      '/api/internal/items/A/copy-to/C',
+      { title: ' A (copy) ' },
+      auth,
+    );
+    expect(named.status).toBe(201);
+    const nameOf = async (id: string) =>
+      (await (await w.send('GET', `/api/designs/${id}`)).json<{ design: { name: string } }>())
+        .design.name;
+    // Its first open starts it with that name, and a second open keeps it.
+    expect(await nameOf('C')).toBe('A (copy)');
+    expect(await nameOf('C')).toBe('A (copy)');
+    // An older index sends no title: the copy starts as it always has.
+    expect((await w.send('POST', '/api/internal/items/A/copy-to/D', {}, auth)).status).toBe(201);
+    expect(await nameOf('D')).toBe('Untitled');
+  });
+
   it('purges a design: every row and every session', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const w = world({ INDEX_KEY: 'index-key' });
