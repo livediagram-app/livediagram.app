@@ -6,7 +6,7 @@ import { act, fireEvent, screen } from '@testing-library/react';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { restorePlanElement } from '@/hooks/plan/maximised-plan';
 import { sheetPresenceFor } from './sheet-presence-store';
-import { cellPoint, gridScrolls, installGridDom, mountGrid } from './sheet-grid-test-utils';
+import { VIEW, cellPoint, gridScrolls, installGridDom, mountGrid } from './sheet-grid-test-utils';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/hooks/plan/maximised-plan', async (orig) => ({
@@ -112,6 +112,38 @@ describe('the grid frame', () => {
     const h = await mountGrid({ rows: 100 });
     select(h, 40, 0);
     expect(gridScrolls).toContainEqual(['to', { top: 40 * 24 + 24 - (400 - 22), left: 0 }]);
+  });
+
+  it('reveals a cell chosen before the grid was measured once it is, never overshooting it', async () => {
+    // An Inbox link to a cell's thread selects the cell as the tab loads (docs/specs/029-sheets/sheet.md "Cell comments").
+    const fire: (() => void)[] = [];
+    const g = globalThis as unknown as { ResizeObserver: unknown };
+    const RO = g.ResizeObserver;
+    g.ResizeObserver = class {
+      constructor(cb: () => void) {
+        fire.push(cb);
+      }
+      observe() {}
+      disconnect() {}
+      unobserve() {}
+    };
+    const saved = { ...VIEW };
+    VIEW.width = 0;
+    VIEW.height = 0;
+    try {
+      const h = await mountGrid({ rows: 100, cols: 20 });
+      gridScrolls.length = 0;
+      select(h, 40, 12);
+      expect(gridScrolls).toEqual([]);
+      Object.assign(VIEW, saved);
+      act(() => fire.forEach((f) => f()));
+      expect(gridScrolls).toEqual([
+        ['to', { top: 40 * 24 + 24 - (400 - 22), left: 13 * 100 - (800 - 46) }],
+      ]);
+    } finally {
+      Object.assign(VIEW, saved);
+      g.ResizeObserver = RO;
+    }
   });
 });
 

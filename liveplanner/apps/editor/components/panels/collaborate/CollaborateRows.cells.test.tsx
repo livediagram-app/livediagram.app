@@ -62,6 +62,24 @@ describe('cell threads in the Comments panel', () => {
     ).toBe('Budget');
   });
 
+  it('names a drawn Sheet’s rows by its stored title, its own and its cells’, as the Inbox does', () => {
+    // A template's Sheet leaves its element's label empty ("Untitled"): the store's title names it.
+    const off = registerCellNamer('sh', () => 'B5', '  Budget  ');
+    const cell = renderHook(() =>
+      useCommentRowLabel({ elementId: 'sh', cell: 'row1:colb', label: 'Untitled' }),
+    );
+    expect(cell.result.current).toBe('Budget!B5');
+    const own = renderHook(() => useCommentRowLabel({ elementId: 'sh', label: 'Untitled' }));
+    expect(own.result.current).toBe('Budget');
+    off();
+    // A blank title leaves the element's label.
+    const offBlank = registerCellNamer('sh', () => 'B5', ' ');
+    expect(
+      renderHook(() => useCommentRowLabel({ elementId: 'sh', label: 'Untitled' })).result.current,
+    ).toBe('Untitled');
+    offBlank();
+  });
+
   it('draws the cell’s name on the row', () => {
     const off = registerCellNamer('sh', () => 'C7');
     const [row] = commentRowsFromElements([sheet]);

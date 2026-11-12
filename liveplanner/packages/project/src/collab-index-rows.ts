@@ -3,7 +3,8 @@
 //
 // A pure projection of the tab's elements into the rows `collab_actions`
 // and `collab_threads` hold: one per element carrying an action, one per
-// element carrying a thread with at least one comment. The api's db layer
+// element carrying a thread with at least one comment, and one per Sheet cell
+// carrying one (docs/specs/029-sheets/sheet.md "Cell comments" "Inbox"). The api's db layer
 // turns these into statements (every tab write path goes through it); the
 // editor's offline Inbox read filters them directly.
 //
@@ -12,6 +13,13 @@
 // on this tab now" for the index, and a full snapshot is what lets a
 // save be a replace rather than a diff.
 
+import { INDEX_ID_MAX } from '@liveworkspace/index-client/constants';
+import {
+  CELL_INBOX_ROWS_MAX,
+  cellThreadKey,
+  cellThreadsOf,
+  takesCellThreads,
+} from './cell-comments';
 import type { Comment } from './comments';
 import { ACTION_CARD_MAX, elementActions, isClosedAction } from './element-action';
 import { elementDisplayLabel } from './element-display-label';
@@ -63,17 +71,132 @@ export type CollabIndexRows = {
   threads: CollabThreadRow[];
 };
 
-function threadOf(el: Element): { comments?: Comment[]; resolved?: boolean } | undefined {
-  return (el as { commentThread?: { comments?: Comment[]; resolved?: boolean } }).commentThread;
+// A plan's stored sheets as an Inbox label names them (docs/specs/029-sheets/sheet.md "Cell comments" "Inbox"), by
+// store id: a Sheet's title, and a cell key's A1 (null when its row or column is gone, undefined when the sheet is not
+// at hand). The shape of @liveplanner/sheets `sheetNamesFrom`, which this package never imports.
+export type SheetNamesOf = {
+  title: (sheetId: string) => string | undefined;
+  cellRef: (sheetId: string, cell: string) => string | null | undefined;
+};
+
+const NO_SHEETS: SheetNamesOf = { title: () => undefined, cellRef: () => undefined };
+
+// The store id of a Sheet element's sheet, or undefined.
+function sheetIdOf(el: Element): string | undefined {
+  return el.type === 'shape' ? el.planSheet?.sheetId : undefined;
 }
 
-export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRows {
+type ThreadLike = { comments?: Comment[]; resolved?: boolean };
+
+function threadOf(el: Element): ThreadLike | undefined {
+  return (el as { commentThread?: ThreadLike }).commentThread;
+}
+
+// A thread's row, from its comments (at least one).
+function threadRow(
+  elementId: string,
+  elementLabel: string,
+  comments: Comment[],
+  resolved: boolean | undefined,
+): CollabThreadRow {
+  // Newest by timestamp rather than array position: the array is
+  // append-ordered in practice, but the timestamp is what the row
+  // sorts and displays by, so it should also pick the preview.
+  let latest = comments[0]!;
+  let first = comments[0]!;
+  const participants: string[] = [];
+  const agents: string[] = [];
+  const mentioned: string[] = [];
+  for (const c of comments) {
+    for (const m of c.mentions ?? []) {
+      for (const id of [m.userId, m.memberId]) {
+        if (id && !mentioned.includes(id)) mentioned.push(id);
+      }
+    }
+    if (c.createdAt > latest.createdAt) latest = c;
+    if (c.createdAt < first.createdAt) first = c;
+    const by = c.ai ? agents : participants;
+    if (c.authorId && !by.includes(c.authorId)) by.push(c.authorId);
+  }
+  return {
+    elementId,
+    elementLabel,
+    resolved: resolved === true,
+    commentCount: comments.length,
+    participantIds: participants,
+    agentIds: agents.filter((id) => !participants.includes(id)),
+    mentionedIds: mentioned,
+    latestText: latest.text,
+    latestAuthorName: latest.authorName,
+    latestAuthorId: latest.authorId ?? null,
+    latestAuthorColor: latest.authorColor,
+    firstAt: first.createdAt,
+    latestAt: latest.createdAt,
+  };
+}
+
+// The newest comment's time in a thread: what picks a big Sheet's cell rows.
+function latestAtOf(comments: Comment[]): number {
+  let at = -Infinity;
+  for (const c of comments) if (c.createdAt > at) at = c.createdAt;
+  return at;
+}
+
+// A Sheet's cell threads as rows (sheet.md "Cell comments" "Inbox"), keyed by cell and labelled `Sheet!A1`, in cell
+// key order: at most CELL_INBOX_ROWS_MAX, those with the newest comments, picked before any row is built.
+function cellThreadRows(
+  el: Element,
+  labelOf: () => string,
+  sheets: SheetNamesOf,
+): CollabThreadRow[] {
+  const cells = cellThreadsOf(el);
+  if (!cells || !takesCellThreads(el)) return [];
+  let picked: [string, Comment[], boolean | undefined][] = [];
+  for (const cell of Object.keys(cells)) {
+    const thread = cells[cell]!;
+    const comments = thread.comments;
+    if (!comments?.length) continue;
+    // A key past the index's id limit would make it refuse the tab's whole push: that cell sends no row.
+    if (cellThreadKey(el.id, cell).length > INDEX_ID_MAX) continue;
+    picked.push([cell, comments, thread.resolved]);
+  }
+  if (picked.length > CELL_INBOX_ROWS_MAX) {
+    const at = new Map(picked.map(([cell, comments]) => [cell, latestAtOf(comments)]));
+    picked = picked.sort((a, b) => at.get(b[0])! - at.get(a[0])!).slice(0, CELL_INBOX_ROWS_MAX);
+  }
+  picked.sort((a, b) => (a[0] < b[0] ? -1 : 1));
+  const rows: CollabThreadRow[] = [];
+  const label = picked.length > 0 ? labelOf() : '';
+  const sheetId = sheetIdOf(el);
+  for (const [cell, comments, resolved] of picked) {
+    const ref = sheetId === undefined ? undefined : sheets.cellRef(sheetId, cell);
+    const cellLabel =
+      ref === undefined ? label : ref === null ? `${label} (Deleted Cell)` : `${label}!${ref}`;
+    rows.push(threadRow(cellThreadKey(el.id, cell), cellLabel, comments, resolved));
+  }
+  return rows;
+}
+
+export function collabIndexRowsFromElements(
+  elements: Element[],
+  sheets: SheetNamesOf = NO_SHEETS,
+): CollabIndexRows {
   const actions: CollabActionRow[] = [];
   const threads: CollabThreadRow[] = [];
   for (const el of elements) {
     // Actions and threads only ever hang off boxed elements (docs/specs/012-collaboration/assigned-actions.md
     // §1, docs/specs/008-canvas/canvas-and-palette.md), which is also what gives them a display label.
     if (!isBoxed(el)) continue;
+    // Worked out only for an element with something to list.
+    let label: string | undefined;
+    // A Sheet goes by its stored sheet's title, as its toolbar shows it; anything else by its own label.
+    const labelOf = () => {
+      if (label !== undefined) return label;
+      const sheetId = sheetIdOf(el);
+      label =
+        (sheetId !== undefined ? sheets.title(sheetId) : undefined) ?? elementDisplayLabel(el);
+      return label;
+    };
     // One row per action: an Action panel holds a list (docs/specs/012-collaboration/action-panel.md).
     // Capped like the stored list, so the index stays bounded even for a tab
     // written before the cap existed.
@@ -81,7 +204,7 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
       actions.push({
         elementId: el.id,
         actionId: action.id,
-        elementLabel: elementDisplayLabel(el),
+        elementLabel: labelOf(),
         name: action.name,
         description: action.description ?? '',
         // Won't Do is closed too (docs/specs/026-plan/linked-boards.md "On the canvas"): never listed as open.
@@ -96,44 +219,11 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
         updatedAt: action.updatedAt,
       });
     }
-    const thread = threadOf(el);
-    const comments = thread?.comments ?? [];
-    if (thread && comments.length > 0) {
-      // Newest by timestamp rather than array position: the array is
-      // append-ordered in practice, but the timestamp is what the row
-      // sorts and displays by, so it should also pick the preview.
-      let latest = comments[0]!;
-      let first = comments[0]!;
-      const participants: string[] = [];
-      const agents: string[] = [];
-      const mentioned: string[] = [];
-      for (const c of comments) {
-        for (const m of c.mentions ?? []) {
-          for (const id of [m.userId, m.memberId]) {
-            if (id && !mentioned.includes(id)) mentioned.push(id);
-          }
-        }
-        if (c.createdAt > latest.createdAt) latest = c;
-        if (c.createdAt < first.createdAt) first = c;
-        const by = c.ai ? agents : participants;
-        if (c.authorId && !by.includes(c.authorId)) by.push(c.authorId);
-      }
-      threads.push({
-        elementId: el.id,
-        elementLabel: elementDisplayLabel(el),
-        resolved: thread.resolved === true,
-        commentCount: comments.length,
-        participantIds: participants,
-        agentIds: agents.filter((id) => !participants.includes(id)),
-        mentionedIds: mentioned,
-        latestText: latest.text,
-        latestAuthorName: latest.authorName,
-        latestAuthorId: latest.authorId ?? null,
-        latestAuthorColor: latest.authorColor,
-        firstAt: first.createdAt,
-        latestAt: latest.createdAt,
-      });
-    }
+    const own = threadOf(el);
+    if (own?.comments?.length)
+      threads.push(threadRow(el.id, labelOf(), own.comments, own.resolved));
+    // A Sheet's cells' threads follow its own.
+    for (const row of cellThreadRows(el, labelOf, sheets)) threads.push(row);
   }
   return { actions, threads };
 }

@@ -146,6 +146,19 @@ describe('a comment in a tab save', () => {
     expect(fake.pushes).toHaveLength(1);
   });
 
+  it('opens a Sheet cell’s comment on that cell (docs/specs/029-sheets/sheet.md "Cell comments" "Inbox")', async () => {
+    const sheet = {
+      ...box([]),
+      id: 'sh',
+      shape: 'plan-sheet',
+      cellComments: { 'row002:colb01': { comments: [comment('c1', BOB)], resolved: false } },
+    } as unknown as Element;
+    expect((await save([sheet], BOB)).status).toBe(200);
+    expect(fake.pushes.map((p) => [p.url, p.tag])).toEqual([
+      [`${BASE}/project/d1#t=t1&el=sh%3Arow002%3Acolb01&open=comments`, 'd1:sh:row002:colb01'],
+    ]);
+  });
+
   it('tells who wrote earlier in the thread of a reply, and a mentioned teammate of the mention, once each', async () => {
     await save([box([comment('c1', BOB)])], BOB);
     fake.pushes.length = 0;

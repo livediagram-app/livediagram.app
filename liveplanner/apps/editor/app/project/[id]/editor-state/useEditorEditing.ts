@@ -7,6 +7,7 @@ import { deriveTabLoadState, patchTab } from '../editor-page-helpers';
 import { usePruneInertSelection } from '@liveworkspace/workbench/hooks/canvas/usePruneInertSelection';
 import { useLayersState } from '../useLayersState';
 import { useCollabDeepLink } from '../useCollabDeepLink';
+import { focusSheetCell } from '@/hooks/sheets/sheet-cell-refs';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { activeElementsCommit } from '../active-elements-commit';
 import type { EditorSelectionSlice } from './useEditorSelection';
@@ -42,7 +43,7 @@ export function useEditorEditing(
     selectionSlice;
   const { commitTabs, hydrated, loadedTabIds, markCheckpoint, projectId, tabLoadErrors, tickTabs } =
     projectSlice;
-  const { isReadOnly, openComments, participant, toast } = collaborationSlice;
+  const { isReadOnly, showComments, participant, toast } = collaborationSlice;
   const { tabsRef } = persistenceSlice;
   const { activeTab, cardThreads } = planDataSlice;
   const { arrivingCardRef, collabDeepLink, scrollIntoView } = viewportSlice;
@@ -116,7 +117,9 @@ export function useEditorEditing(
     },
     scrollIntoView,
     openActionPopover,
-    openComments,
+    // Never a toggle: a link opens its thread and leaves it open.
+    openComments: showComments,
+    focusCell: focusSheetCell,
     // Read when the link lands, after this render has made the Plan slice below.
     openItem: (itemId, threadId) => {
       arrivingCardRef.current = itemId;

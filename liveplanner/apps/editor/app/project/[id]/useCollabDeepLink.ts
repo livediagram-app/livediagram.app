@@ -8,7 +8,7 @@ import {
   type MutableRefObject,
   useEffectEvent,
 } from 'react';
-import type { Element } from '@liveplanner/project';
+import { splitCellThreadKey, type Element } from '@liveplanner/project';
 import { parseCollabDeepLink, type CollabDeepLink } from '@/lib/collab-deep-link';
 import type { TabLoadState } from './editor-page-helpers';
 
@@ -18,7 +18,9 @@ import type { TabLoadState } from './editor-page-helpers';
 // view, and open the named popover — exactly what a Collaborate Panel
 // row click does in-editor. A Plan card's row names its board and the card
 // (`&item=<id>`), or the card alone when no board shows it: the card opens
-// in the item panel, as a click on it does.
+// in the item panel, as a click on it does. A Sheet cell's thread row names the cell after the Sheet
+// (`el=<sheetId>:<rowId>:<colId>`, docs/specs/029-sheets/sheet.md "Cell comments" "Inbox"): the cell is selected
+// and its thread popover opens, as its Comments panel row does.
 //
 // Two hooks because of WHEN the fragment can be read. useTabEntryEffects
 // rewrites the hash to the plain `#t=` pin on the hydration commit, so
@@ -60,6 +62,7 @@ export function useCollabDeepLink({
   scrollIntoView,
   openActionPopover,
   openComments,
+  focusCell,
   openItem,
 }: {
   link: MutableRefObject<CollabDeepLink | null>;
@@ -70,7 +73,9 @@ export function useCollabDeepLink({
   select: (elementId: string) => void;
   scrollIntoView: (x: number, y: number, w: number, h: number, opts?: { center?: boolean }) => void;
   openActionPopover: (elementId: string) => void;
-  openComments: (elementId: string) => void;
+  openComments: (elementId: string, cell?: string) => void;
+  // Selects a Sheet's cell, scrolled into view (held until the Sheet is drawn).
+  focusCell: (elementId: string, cell: string) => void;
   // `threadId`: one of the card's comment threads to open on it.
   openItem: (itemId: string, threadId?: string) => void;
 }): (target: CollabDeepLink) => void {
@@ -90,9 +95,15 @@ export function useCollabDeepLink({
     (
       el: { id: string; x: number; y: number; width: number; height: number; shape?: string },
       open: string | null | undefined,
+      cell: string | undefined,
     ) => {
       select(el.id);
       scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
+      if (cell !== undefined) {
+        focusCell(el.id, cell);
+        if (open === 'comments') openComments(el.id, cell);
+        return;
+      }
       // A Comment or Action panel shows its thread / actions on its own face
       // (docs/specs/012-collaboration/comment-pin.md, action-panel.md): arriving at it is the whole answer,
       // and a popover beside it would repeat the card.
@@ -121,11 +132,14 @@ export function useCollabDeepLink({
     if (target.itemId) openCard(target.itemId, target.threadId ?? undefined);
     if (!target.at) return;
     const { elementId } = target.at;
-    const el = elements.find((e) => e.id === elementId);
+    let el = elements.find((e) => e.id === elementId);
+    // No element by that id: a Sheet cell's thread key, the Sheet then the cell.
+    const part = el ? null : splitCellThreadKey(elementId);
+    if (part) el = elements.find((e) => e.id === part.elementId);
     // Deleted since the Inbox loaded: the tab is open, which is
     // as close as the link can get (docs/specs/013-workspace/inbox.md §1).
     if (!el || el.type === 'arrow') return;
-    arriveAt(el, target.open);
+    arriveAt(el, target.open, part?.cell);
   }, [link, hydrated, activeId, activeTabLoadState, elements, asked]);
   return arrive;
 }

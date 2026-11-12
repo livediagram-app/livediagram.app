@@ -1,7 +1,7 @@
 // The Inbox's verbs over an app's api: offered only where the page can carry them out, sent to the right routes,
 // one listing shared by the pane's thread and Resolve, and nothing for rows only this browser holds.
 import { describe, expect, it, vi } from 'vitest';
-import { createInboxActions, type InboxApi } from './inbox-actions';
+import { createInboxActions, listedThreadKey, type InboxApi } from './inbox-actions';
 import type { InboxTarget } from './types';
 
 const target = (patch: Partial<InboxTarget> = {}): InboxTarget => ({
@@ -139,5 +139,70 @@ describe('createInboxActions', () => {
     const actions = createInboxActions({ api: () => api });
     await expect(actions.reply!(target(), 'x')).rejects.toThrow('403');
     await expect(actions.resolve!(target({ kind: 'CardThread' }))).rejects.toThrow('403');
+  });
+
+  // A part's thread (a liveplanner Sheet cell, one-explorer-contracts.md "What an item pushes"): the row is
+  // `<elementId>:<cell>`, the listing gives the Sheet's id and the cell apart.
+  const CELL = 'rowb4b4:colb4b4';
+  const cellListing = {
+    threads: [
+      {
+        tabId: 't1',
+        elementId: 's1',
+        resolved: false,
+        comments: [listing.threads[0]!.comments[1]],
+      },
+      {
+        tabId: 't1',
+        elementId: 's1',
+        cell: CELL,
+        resolved: false,
+        comments: [
+          { id: 'k1', text: 'On B4', createdAt: 3, authorName: 'Ada', authorColor: '#222' },
+        ],
+      },
+    ],
+  };
+
+  it('keys a listed thread by its element, then its cell', () => {
+    expect(listedThreadKey({ elementId: 's1' })).toBe('s1');
+    expect(listedThreadKey({ elementId: 's1', cell: CELL })).toBe(`s1:${CELL}`);
+  });
+
+  it('reads, replies to and resolves a Sheet cell’s thread by its cell', async () => {
+    const calls: { method: string; path: string; body?: unknown }[] = [];
+    const api: InboxApi = vi.fn(async (path, init) => {
+      calls.push({ path, method: init.method, body: init.body });
+      if (init.method === 'GET') return new Response(JSON.stringify(cellListing), { status: 200 });
+      return new Response(null, { status: 204 });
+    });
+    const actions = createInboxActions({ api: () => api });
+    const cell = target({ app: 'liveplanner', itemId: 'p1', elementId: `s1:${CELL}` });
+    expect((await actions.loadThread!(cell, SIGNAL))?.map((c) => c.id)).toEqual(['k1']);
+    await actions.reply!(cell, 'Done');
+    expect(calls.at(-1)).toEqual({
+      path: '/projects/p1/tabs/t1/comments',
+      method: 'POST',
+      body: { elementId: 's1', cell: CELL, text: 'Done' },
+    });
+    await actions.resolve!(cell);
+    expect(calls.at(-1)?.path).toBe('/projects/p1/tabs/t1/comments/k1/resolve');
+  });
+
+  it('posts a colon id as it is when the listing names no cell or cannot be read', async () => {
+    const { api, calls } = fakeApi();
+    const actions = createInboxActions({ api: () => api });
+    await actions.reply!(target({ elementId: 'odd:id' }), 'Hi');
+    expect(calls.at(-1)?.body).toEqual({ elementId: 'odd:id', text: 'Hi' });
+    const sent: unknown[] = [];
+    const watched: InboxApi = async (_path, init) => {
+      if (init.method === 'POST') sent.push(init.body);
+      return new Response(null, { status: init.method === 'GET' ? 500 : 204 });
+    };
+    await createInboxActions({ api: () => watched }).reply!(
+      target({ elementId: `s1:${CELL}` }),
+      'Hi',
+    );
+    expect(sent).toEqual([{ elementId: `s1:${CELL}`, text: 'Hi' }]);
   });
 });

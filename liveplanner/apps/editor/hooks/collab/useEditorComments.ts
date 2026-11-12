@@ -68,6 +68,8 @@ type EditorCommentsApi = {
   // Toggle open / closed: clicking the same id (and cell) again closes the
   // popover (matches the existing behaviour). `cell` opens a Sheet cell's thread.
   openComments: (elementId: string, cell?: string) => void;
+  // Open, never close: a deep link lands on a thread however many times it is asked (useCollabDeepLink).
+  showComments: (elementId: string, cell?: string) => void;
   closeComments: () => void;
   // Returns the minted comment id. With `persist` (view-role visitors, who
   // don't autosave the tab), the hook runs it, adopts the server-minted id
@@ -109,6 +111,13 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
       cur?.id === elementId && cur.cell === at ? null : { id: elementId, cell: at },
     );
     if (!wasOpen) track('Comment', 'Opened');
+  };
+  const showComments = (elementId: string, cell?: string) => {
+    if (deps.commentsOff) return;
+    const at = cell ?? null;
+    if (open?.id === elementId && open.cell === at) return;
+    setOpen({ id: elementId, cell: at });
+    track('Comment', 'Opened');
   };
   const closeComments = () => setOpen(null);
 
@@ -197,6 +206,7 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
     commentThreadOpenId,
     commentThreadOpenCell,
     openComments,
+    showComments,
     closeComments,
     addComment,
     replaceCommentId,

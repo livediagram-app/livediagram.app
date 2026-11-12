@@ -5485,6 +5485,9 @@ importers:
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../../../packages/icons
+      '@liveworkspace/index-client':
+        specifier: workspace:^
+        version: link:../../../packages/index-client
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../../../packages/model-core

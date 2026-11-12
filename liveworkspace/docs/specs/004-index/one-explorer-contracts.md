@@ -531,6 +531,11 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null, column?: {na
   name several people to tell (liveplanner's notifying Person fields): one action a person, under the card's id as
   `actionId` for its Assignee and `{card id}~{field id}` for another field (a person two fields name is told once,
   by the first), so a card that names one person reads as before.
+- A part of an element with a thread of its own (a liveplanner Sheet cell, docs/specs/029-sheets/sheet.md "Cell
+  comments") is pushed as a thread whose `elementId` is `<elementId>:<part>`, at most 128 characters as any id
+  (`INDEX_ID_MAX`, `@liveworkspace/index-client/constants`). The
+  row's link carries that key as `el`, for the app to open the part; the reading pane matches it to the listed
+  thread whose `elementId` and `cell` make it, and replies with that `cell`.
 - `PUT /app/items/:id/forms/:tabId`: `{form: {heading, boardTabId, responses, latestAt, code?} | null}`: a form's
   heading, the tab its responses land on, how many it has taken and when the last came; `null` takes it off the
   Inbox (deleted, or the tab gone). Pushed by the app's server when a response lands, the form is published,

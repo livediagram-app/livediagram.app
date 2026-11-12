@@ -93,6 +93,10 @@ export const GRANT_ALG = 'ES256';
 export const GRANT_ISSUER = INDEX_API_URL;
 export const GRANT_JWKS_URL = `${INDEX_API_URL}/jwks`;
 
+// The longest id the index takes from a caller (a folder, a tab, an element, an action): an app keeps the ids it
+// makes up for its pushes (a Sheet cell's `<elementId>:<cell>`) within it, or the index refuses the push.
+export const INDEX_ID_MAX = 128;
+
 // Lists are paged.
 export const LIST_LIMIT_DEFAULT = 50;
 export const LIST_LIMIT_MAX = 200;

@@ -158,6 +158,78 @@ describe('the outbox', () => {
     });
   });
 
+  it('pushes a row per Sheet cell thread, keyed by cell and named by its A1 from the stored sheet', async () => {
+    const db = plan();
+    db.sql
+      .exec(`INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
+      VALUES ('P', 'sheet01', 't1', 'Budget', '{"rows":["row001","row002"],"cols":["cola01","colb01"]}', 0, 1, 1, '{}')`);
+    const thread = (id: string) => ({
+      comments: [
+        { id, text: id, createdAt: T0, authorName: 'O', authorColor: '#000', authorId: 'owner' },
+      ],
+      resolved: false,
+    });
+    const sheet = box('sh', {
+      shape: 'plan-sheet',
+      // A template's Sheet leaves its own label empty: the stored title names it.
+      label: '',
+      planSheet: { sheetId: 'sheet01' },
+      cellComments: { 'row002:colb01': thread('b2'), 'row999:colb01': thread('gone') },
+    });
+    // A Sheet whose store is not on the tab is named by its label alone.
+    const unstored = box('sh2', {
+      shape: 'plan-sheet',
+      label: 'Ledger',
+      planSheet: { sheetId: 'elsewhere' },
+      cellComments: { 'row001:cola01': thread('l1') },
+    });
+    await upsertTab(db.env, 'P', { id: 't1', name: 'Sheet', elements: [sheet, unstored] }, 0);
+    const index = fakeIndex();
+    await drainOutbox(db.env, 'P', index.client);
+    expect(index.collab[0]!.push.threads.map((t) => [t.elementId, t.elementLabel])).toEqual([
+      ['sh:row002:colb01', 'Budget!B2'],
+      ['sh:row999:colb01', 'Budget (Deleted Cell)'],
+      ['sh2:row001:cola01', 'Ledger'],
+    ]);
+  });
+
+  it('pushes the tab again when a line moves its cell threads, and only for a tab carrying them', async () => {
+    const db = plan();
+    db.sql
+      .exec(`INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
+      VALUES ('P', 'sheet01', 't1', 'Budget', '{"rows":["row001","row002"],"cols":["cola01"]}', 0, 1, 1, '{}'),
+             ('P', 'sheet02', 't2', 'Plain', '{"rows":["row001"],"cols":["cola01"]}', 0, 1, 1, '{}')`);
+    const cells = {
+      'row002:cola01': {
+        comments: [{ id: 'c', text: 'c', createdAt: T0, authorName: 'O', authorColor: '#000' }],
+        resolved: false,
+      },
+    };
+    const sheet = (id: string, sheetId: string, extra: Record<string, unknown> = {}) =>
+      box(id, { shape: 'plan-sheet', label: 'Budget', planSheet: { sheetId }, ...extra });
+    await upsertTab(
+      db.env,
+      'P',
+      { id: 't1', name: 'S', elements: [sheet('sh', 'sheet01', { cellComments: cells })] },
+      0,
+    );
+    await upsertTab(db.env, 'P', { id: 't2', name: 'S2', elements: [sheet('sp', 'sheet02')] }, 0);
+    const index = fakeIndex();
+    await drainOutbox(db.env, 'P', index.client);
+    expect(keys(db)).toEqual([]);
+    // A row inserted above: B2 is now B3. The same layout written again, and the plain Sheet's change, queue nothing.
+    db.sql.exec(
+      `UPDATE sheets SET layout = '{"rows":["row000","row001","row002"],"cols":["cola01"]}' WHERE id = 'sheet01'`,
+    );
+    db.sql.exec(`UPDATE sheets SET layout = layout WHERE id = 'sheet01'`);
+    db.sql.exec(
+      `UPDATE sheets SET layout = '{"rows":["row000","row001"],"cols":["cola01"]}' WHERE id = 'sheet02'`,
+    );
+    expect(keys(db)).toEqual(['tab:t1']);
+    await drainOutbox(db.env, 'P', index.client);
+    expect(index.collab.at(-1)!.push.threads.map((t) => t.elementLabel)).toEqual(['Budget!A3']);
+  });
+
   // liveworkspace's onboarding emails read when someone last saved (liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding
   // emails"): the plan's owner, reported with its summary, never a guest.
   it("reports the owner's newest save to the accounts Worker with the summary", async () => {
