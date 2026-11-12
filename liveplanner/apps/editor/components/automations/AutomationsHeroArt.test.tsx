@@ -6,7 +6,7 @@ import { automationsHeroArt } from './AutomationsHeroArt';
 
 // docs/specs/026-plan/automations.md "The Automations screen": the dialog hero header, drawn for rules.
 describe('the Automations hero art', () => {
-  it('draws the dots fading toward the title, the corners at every size and the flow only on a wide header', () => {
+  it('draws the dots fading toward the title, the corners from `sm` and the flow only on a wide header', () => {
     const { container } = render(<HeroBand art={automationsHeroArt} />);
     const band = container.querySelector('[data-dialog-hero-art]') as HTMLElement;
     expect(band.getAttribute('data-dialog-hero-art')).toBe('automations');
@@ -18,7 +18,12 @@ describe('the Automations hero art', () => {
     expect(automationsHeroArt.centre).toBe(true);
     const corners = [...band.children].filter((el) => el !== flow);
     expect(corners).toHaveLength(2);
-    for (const el of corners) expect(String(el.getAttribute('class'))).not.toMatch(/\bhidden\b/);
+    // The corners stand from `sm`: the phone's compact row leaves no corner clear of its words and buttons.
+    for (const el of corners) {
+      const cls = String(el.getAttribute('class'));
+      expect(cls).toContain('max-sm:hidden');
+      expect(cls).not.toMatch(/(^|\s)hidden\b/);
+    }
   });
 
   it('moves once, the bolt’s ring, twice and only where motion is welcome', () => {
