@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { PROJECT_FORMAT } from '@liveplanner/api-schema';
 import type { Env } from '../types';
 import { handleCapabilities } from './capabilities';
 import { makeTestRouteContext } from './test-route-context';
@@ -35,7 +36,7 @@ describe('the CLI fields (docs/specs/015-api/blueprints/cli.md "Capabilities")',
     expect(caps).toMatchObject({
       apiBase: expect.stringMatching(/\/api$/),
       authEnabled: false,
-      projectFormat: 4,
+      projectFormat: PROJECT_FORMAT,
     });
     expect(caps).not.toHaveProperty('oauthIssuer');
     expect(caps).not.toHaveProperty('cli');
