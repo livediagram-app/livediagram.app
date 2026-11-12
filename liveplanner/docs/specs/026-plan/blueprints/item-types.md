@@ -135,11 +135,26 @@ true`. `storedImageIds(value)`: a non-empty string as `[id]`, a list's non-empty
   JSON) and `PLACED_IMAGES_SQL` reports each granted id inside a list. Left as they were, each tested with a list:
   `customFieldText` (null), `boardCsvRows` / `customColumns` (the field left out), `boardCsvImport` (skipped),
   `canBeRequired` (never), the form mappings (never asked), `fieldKindChange` (no change to or from an Image but
-  Image and Several Images). Still to come (later parts): Add Field's Several Images tile (`KIND_VARIANTS`
-  `images: { kind: 'image', preset: { multiple: true } }`, `addedField` keeping `multiple` on an Image), Edit
-  Field's Image and Several Images change (`fieldKindChange`: kept one way, the first the other), the panel's
-  `ImagesFieldControl` grid (`use-image-uploads.ts`, one upload at a time, one `patchItem` of
-  `withImagesAdded(storedImageIds(card now), [id])` per landed file), the card face's `+N` count, and the agents'
+  Image and Several Images). The editor (part 2): Add Field's Several Images tile (`KIND_VARIANTS`
+  `images: { kind: 'image', preset: { multiple: true } }`, `pickOf` answering `images` for an Image with `multiple`,
+  in Links and Images after Image, its line, words, `PICK_KIND_LABELS` "Several Images", `PICK_KIND_ICONS`
+  `lucideImages`, `AddFieldTileArt` three thumbnails and "+2", `SampleValue` three picture tiles and "+2");
+  `addedField` keeps `multiple` on an Image; Edit Field's Image and Several Images change (`kindChangeRefusal` lets
+  one kind change to itself; `fieldKindChange`: kept one way, the first the other). The panel's
+  `ImageGalleryField.tsx` (routed by `ItemFieldEditor` on `holdsSeveralImages`): a `@container` grid,
+  `grid-cols-3 @xs:grid-cols-4`, each `Thumbnail` a square `<li data-reorder-id>` lazy through `useSeen` and
+  `useImageUrl(scope, id, IMAGE_THUMB_EDGE)` (the card face's size, so the first picture's copy is shared), its
+  button named "{Field}: image i of n" opening `openImageWhole` (`image-open.ts`, shared with Attachments' Open),
+  Alt+←/→ `movedImage` (focus kept on the moved tile, "Moved to i of n" announced), a Remove cross and a grip
+  (touch, `HANDLE_TOUCH`) in its corners; dragging through `apps/editor/components/primitives/useGridReorder.ts`
+  (`gridSlot`: the nearest middle; `slotAfterMove`; `GRID_DRAG_THRESHOLD_PX` 4 before a press becomes a drag, the
+  click after a drag swallowed). Uploads through `use-image-field-upload.ts` (`useImageFieldUpload`): each file
+  `checkImageFile`d first (refused ones said "{name}: {why}"), the room (`IMAGE_FIELD_PICTURES_MAX` less held and
+  pending) said once as "{Field} holds up to 20."; one queue, one upload at a time, each `PendingImage` a tile
+  (`waiting`, then `uploading`), and one `patchItem` of `imageFieldValue(def, withImagesAdded(storedImageIds(card
+now), [id]).ids)` per landed file; "N images added" announced at the end. The card face: `customKindPill` hands
+  `ImageThumb` `more` (held less one), drawing "+N" after the first picture and naming it "{Field}: N images". Every
+  remove and move tracks `Plan · Removed · CardImage` and `Plan · Moved · CardImage`. Still to come: the agents'
   writes (plan-agents blueprint "Pictures").
 - Blocked By (spec "Blocked By"; `blocked-by.ts`): `CustomFieldDef.blocks` (kept by `readCustomField` only as true on a
   `card` field); `isBlocksField(f)`; `blocksFieldsOf(type)` (the type's offered Blocks fields, in field order);
@@ -1188,6 +1203,7 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Built-in kinds and Image: panel, card face, required                                                             | `apps/editor/components/plan/ItemFieldEditor.kinds.test.tsx`                                                                                                                                                                                                                                                     |
 | Image fields: upload, read, roles, grants                                                                        | `apps/api/src/routes/images.test.ts`, `apps/api/src/plan-room/image-grants.test.ts`, `apps/editor/lib/api/images.test.ts`                                                                                                                                                                                        |
 | Several Images: the stored list and every reader                                                                 | `packages/items/src/image-values.test.ts`, `apps/api/src/plan-room/image-grants.test.ts`, `apps/api/src/plan-room/image-refs.test.ts`                                                                                                                                                                            |
+| Several Images: the panel's grid, uploads, reorder and roles, the card face count, Add Field and Edit Field      | `apps/editor/components/plan/ImageGalleryField.test.tsx`, `apps/editor/components/primitives/useGridReorder.test.tsx`, `apps/editor/components/plan/add-field-kinds.test.ts`                                                                                                                                     |
 | Attachments: value, cap, cover, agents                                                                           | `packages/items/src/attachments.test.ts`, `packages/items/src/card-display.test.ts`                                                                                                                                                                                                                              |
 | Attachments: panel, roles, drop, paste, cover on the card                                                        | `apps/editor/components/plan/AttachmentsField.test.tsx`                                                                                                                                                                                                                                                          |
 | Images in use: triggers, report, purge, serving                                                                  | `apps/api/src/plan-room/image-refs.test.ts`                                                                                                                                                                                                                                                                      |
