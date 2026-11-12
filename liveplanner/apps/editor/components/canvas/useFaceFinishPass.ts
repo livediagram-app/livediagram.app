@@ -40,6 +40,7 @@ import {
   TAKING_ATTR,
 } from './face-finish-marks';
 import { readGridRules, type Write } from './marker-grid-rules';
+import { watchFaceArrivals } from './face-arrivals';
 
 // A face's own parts in its finish on the canvas. Under Marker (docs/specs/008-canvas/finish.md "Marker", "Faces: frames and shapes"):
 // once the face has settled, its frames (outlined HTML boxes) and its SVG shapes are read from the live DOM and
@@ -75,6 +76,8 @@ export function useFaceFinishPass(
     const pen: Pen = finish === 'marker' ? 'marker' : 'pencil';
     let cancel = () => {};
     let watch: SettleWatch | undefined;
+    // A busy board's cards a take skipped, watched until they scroll into view, then taken (face-arrivals.ts).
+    const arrivals = watchFaceArrivals(() => take('frame'));
     const settle = () =>
       watchUntilSettled(root, () => take('frame'), { resize: true, ignore: ownChange });
     // Marker and Sketch take with the board's other faces: a face that mounts before it is first painted, one that
@@ -84,7 +87,14 @@ export function useFaceFinishPass(
         markFacePills(root);
         return;
       }
-      const { prepare, read } = markerFaceTake(root, elementId, pen, page);
+      const { prepare, read } = markerFaceTake(
+        root,
+        elementId,
+        pen,
+        page,
+        undefined,
+        arrivals.watch,
+      );
       cancel = scheduleFaceTake(
         root,
         {
@@ -113,6 +123,7 @@ export function useFaceFinishPass(
       live = false;
       cancel();
       watch?.();
+      arrivals.stop();
       clearMarkerFace(root);
       for (const pill of root.querySelectorAll(`[${PILL_ATTR}]`)) pill.removeAttribute(PILL_ATTR);
     };
@@ -191,6 +202,8 @@ export function markerFaceTake(
   pen: Pen = 'marker',
   page = false,
   onDrawn?: (drawn: number) => void,
+  // The busy board's cards it skipped, out of view (offScreenCard), once it has read the face.
+  onSkipped?: (cards: readonly Element[]) => void,
 ): FaceTake {
   // Sketch hides a live face's fills and lines (its ink copy shows them through the wobble, app/sketch-face.css):
   // they are shown again for the moment they are read.
@@ -213,15 +226,19 @@ export function markerFaceTake(
       let drawn = 0;
       try {
         const face = { width: root.offsetWidth, height: root.offsetHeight };
+        const skipped: Element[] = [];
         const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
-          acceptNode: (n) =>
-            (n as Element).matches(SKIP) || offScreenCard(n as Element)
-              ? NodeFilter.FILTER_REJECT
-              : NodeFilter.FILTER_ACCEPT,
+          acceptNode: (n) => {
+            if ((n as Element).matches(SKIP)) return NodeFilter.FILTER_REJECT;
+            if (!offScreenCard(n as Element)) return NodeFilter.FILTER_ACCEPT;
+            skipped.push(n as Element);
+            return NodeFilter.FILTER_REJECT;
+          },
         });
         const parts: Element[] = [root];
         for (let n = walker.nextNode(); n; n = walker.nextNode()) parts.push(n as Element);
         drawn = readParts(root, parts, face, markerFaceSeed(elementId), pen, page, writes);
+        onSkipped?.(skipped);
       } catch (error) {
         unmeasure();
         root.removeAttribute(TAKING_ATTR);
