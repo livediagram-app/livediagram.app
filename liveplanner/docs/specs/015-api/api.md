@@ -335,9 +335,12 @@ binding more, as production does, so a query that passes its tests cannot fail t
   read without a grant. For a tab-scoped reader it takes the tab too (`servesImage(imageId, tabScope)`): the tab's
   body is read once, and a tab with a Plan board or plan view admits any holding card, otherwise the match is
   confined to the cards its Plan cards point at (`items.id IN (...)`, about 0.3 ms with 500 of them on a full plan);
-  a tab the plan doesn't hold serves nothing. A copy, a Drive file and the migration door carry no grants: a copy shows a picture to its
-  uploader, and to the copy's visitors once someone who may edit it uploads it there again. A purge drops them
-  with everything else.
+  a tab the plan doesn't hold serves nothing. A copy carries the source's grant for each picture its copied cards
+  hold (`copiedImageGrants`: the copied cards' pictures, as the media report reads them, that the source holds a
+  grant for, in one query; never a grant for a picture the source could not serve), and `importPlanCopy` writes
+  them in one statement before the cards, so the copy serves them and its first media report names them. A Drive
+  file and the migration door carry no grants: what they bring shows to its uploader, and to the plan's visitors
+  once someone who may edit it uploads it there again. A purge drops them with everything else.
 - In the object's key-value storage, as before: the order state (`epoch`, `seq`), the collaboration ledger,
   selections and agent presence.
 
