@@ -98,7 +98,7 @@ SetupHeroArt.tsx         `setupBoardHeroArt` (lanes and a card mid-drag) and `se
 configure/BoardConfigureHeroArt.tsx
                          `boardConfigureHeroArt`: Configure Board's header, `ClusterPanel`'s optional `hero` (the
                          panel draws HeroDialogHeader in place of its plain title row, the band under its sheet
-                         handle on a phone; Tab Style keeps the plain row)
+                         handle on a phone; Tab Style wears canvasThemeHeroArt the same way)
 SetupPlaceholder.tsx     a board's or Sheet's placeholder while not set up: glyph, title, "Not set up yet", the
                          Set up button (or the viewer's line)
 useSetupDialog.ts        one element's dialog life: opens when unset, may edit and placed here; closes with the

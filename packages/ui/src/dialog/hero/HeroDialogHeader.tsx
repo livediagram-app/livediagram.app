@@ -1,7 +1,8 @@
 // The dialog hero header (liveworkspace/docs/specs/004-index/dialog-hero-header.md): the start screens' header band
 // brought to a dialog. A band in the host's brand ramp behind a 36px title mark, the title (a real <h2>, in the app's
-// heading face) and one muted line, then the dialog's actions and its close. Exactly 100px tall from `sm`; compact on
-// a phone (a 32px mark, an 18px title wrapping to two lines at most, the line left to screen readers). The band is
+// heading face) and one muted line, then the dialog's actions and its close. Exactly 100px tall at every width, a phone
+// keeping the desktop look (the 36px mark, the 20px title, its line shown) with 16px sides; there a long title may wrap
+// to two lines inside the 100px, and the line still truncates. The band is
 // the art's (HeroArt): a texture, corner pieces, and from a 56rem header a centre piece. It is static: memoised on
 // the art, which is a module constant, so it paints once however often the dialog re-renders.
 import { memo, type CSSProperties, type ReactNode } from 'react';
@@ -49,13 +50,13 @@ export const HeroBand = memo(function HeroBand({
   );
 });
 
-/** The title mark: a 36px tile (32px on a phone) in the wash, holding the art's 20 x 20 glyph in the accent. */
+/** The title mark: a 36px tile in the wash, holding the art's 20 x 20 glyph in the accent. */
 export const HeroTitleMark = memo(function HeroTitleMark({ art }: { art: HeroArt }) {
   return (
     <span
       aria-hidden
       data-dialog-hero-mark={art.name}
-      className="flex size-9 shrink-0 items-center justify-center rounded-[11px] bg-[var(--hero-wash)] shadow-[inset_0_0_0_1px_var(--hero-line)] max-sm:size-8"
+      className="flex size-9 shrink-0 items-center justify-center rounded-[11px] bg-[var(--hero-wash)] shadow-[inset_0_0_0_1px_var(--hero-line)]"
     >
       <svg width="20" height="20" viewBox="0 0 20 20" focusable="false">
         {art.glyph}
@@ -69,7 +70,7 @@ export type HeroDialogHeaderProps = {
   /** The <h2>'s id, for the dialog's `titleId` (aria-labelledby). */
   titleId: string;
   title: ReactNode;
-  /** One line under the title, truncated, never wrapping the band taller; on a phone, for screen readers only. */
+  /** One line under the title, truncated, never wrapping the band taller, at every width. */
   subtitle?: ReactNode;
   /** The dialog's own controls, before the close. */
   actions?: ReactNode;
@@ -100,7 +101,7 @@ export function HeroDialogHeader({
       data-dialog-hero={art.name}
       // `color-scheme` from the app's `.dark` class (and a `.light` island), so the tokens' light-dark() pairs follow
       // the same switch every `dark:` class does.
-      className={`@container relative isolate flex shrink-0 items-center gap-3 [color-scheme:light] dark:[color-scheme:dark] sm:h-[100px] sm:px-6 max-sm:px-4 max-sm:py-3 ${TOP_RADIUS} ${className}`}
+      className={`@container relative isolate flex shrink-0 items-center gap-3 [color-scheme:light] dark:[color-scheme:dark] h-[100px] px-4 sm:px-6 ${TOP_RADIUS} ${className}`}
       style={HEADER_STYLE}
     >
       <HeroBand art={art} underHandle={underHandle} />
@@ -108,14 +109,14 @@ export function HeroDialogHeader({
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <h2
           id={titleId}
-          className={`text-[20px] leading-tight sm:truncate max-sm:line-clamp-2 text-[var(--hero-ink)] max-sm:text-[18px] ${TITLE_FACE} ${cap}`}
+          className={`text-[20px] leading-tight sm:truncate max-sm:line-clamp-2 text-[var(--hero-ink)] ${TITLE_FACE} ${cap}`}
         >
           {title}
         </h2>
         {subtitle ? (
           <p
             data-dialog-hero-subtitle=""
-            className={`truncate text-[13px] leading-[18px] text-[var(--hero-muted)] max-sm:sr-only ${cap}`}
+            className={`truncate text-[13px] leading-[18px] text-[var(--hero-muted)] ${cap}`}
           >
             {subtitle}
           </p>

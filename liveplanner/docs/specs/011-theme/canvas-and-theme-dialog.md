@@ -17,7 +17,15 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
   the dialog on its home. Its icon is a painter's palette with filled paint wells, in the button's own colour like every other chrome icon, so it reads as "how this tab
   looks" at a glance. It shows on **every viewport, mobile included**, and stays hidden in zen mode and in
   read-only / embed views.
-- The header is a title row with the **help icon beside the close button** on the right.
+- The header is the [dialog hero header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), the
+  same art every app's Tab Style wears: rings spreading like a colour wheel's from the bottom right, where a fan of
+  swatch chips rises from the edge, the front one in the accent lifting out of it twice, and a brush sweeping a stroke
+  of paint along the foot in the bottom left. The title mark is a palette. The title is **Tab Style**, and its line
+  says what the view that is up sets: the home "Pick a look for the whole tab, then fine-tune any part of it.", and
+  each Fine-tune panel its own few words (Colours "The colours everything on the tab draws in.", Finish "How
+  everything on the tab is drawn.", Text "The tab's font, and the size new text starts at.", Canvas "The pattern and
+  colours behind everything."). The **help icon** and the close sit at the right. On a phone the band runs up under
+  the sheet's grab handle.
 - Every control applies **live** to the active tab, so the canvas updates behind the dialog. There is no
   Apply/Cancel: the dialog is an editor, not a wizard. Closing (the X, Escape, or a backdrop click) just dismisses
   it; nothing is rolled back.
@@ -320,7 +328,7 @@ from them are portaled to the body, so they follow the tab like the rest of the 
 
 ## Show Me
 
-The dialog is a [Show Me](../007-editor/show-me.md) surface: its title row carries **Show Me** left of Help. The tour
+The dialog is a [Show Me](../007-editor/show-me.md) surface: its header carries **Show Me** left of Help. The tour
 starts on the home (a panel that is open goes back to it first), points at live controls and ends on a closing card
 linking Tab Style Help as **Learn More**:
 

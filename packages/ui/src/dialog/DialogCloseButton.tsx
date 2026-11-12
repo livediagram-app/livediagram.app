@@ -1,4 +1,7 @@
+'use client';
+
 import { CloseIcon } from '../icons/actions';
+import { useDialogDismiss } from './dialog-dismiss';
 
 // The dialog header's standard close (×) button. Two blessed shapes:
 // the default h-7 square that tucks into a title row's top-right corner
@@ -15,7 +18,8 @@ import { CloseIcon } from '../icons/actions';
 // Dialogs with a deliberately different close treatment (the welcome
 // picker's h-8, the sign-in modal's on-gradient white) keep their own.
 // Both shapes reach a 44px tap area on a touch screen (`touch-target`,
-// touch-targets.md); the drawn size stays.
+// touch-targets.md); the drawn size stays. In a phone sheet it closes through the dialog (useDialogDismiss), so the
+// sheet slides out before `onClick` runs.
 export function DialogCloseButton({
   onClick,
   compact = false,
@@ -23,10 +27,11 @@ export function DialogCloseButton({
   onClick: () => void;
   compact?: boolean;
 }) {
+  const dismiss = useDialogDismiss();
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={() => dismiss(onClick)}
       aria-label="Close"
       className={
         compact

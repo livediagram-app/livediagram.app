@@ -335,6 +335,12 @@ home indicator, rising in (`animate-sheet-up`). A grab handle across its top mov
 following the finger: dragged up past 48px (or flicked up) it fills the screen below the top bar, its handle
 still across its top; dragged down from there past 48px it returns to its own height; dragged down from its
 own height past 80px (or flicked down) it closes; anything less springs back (`useSheetDrag`).
+A closing sheet finishes its slide: from where the finger let go it carries on down until it is fully off
+the screen, then goes, eased out over 180 to 250 ms (the motion ceiling) (quicker after a faster flick, `sheetExitMs`), moving by
+`transform` alone; under reduced motion it fades out in 120 ms instead. A dialog sheet closed by its backdrop,
+Escape, its close or a Done slides out the same way, and only then tells its host it closed (`onClose` fires once,
+after the exit, which ends on `transitionend` or a timeout should that never come). A sheet that asks before
+closing (unsaved changes) asks first and springs back, so nothing slides away under the question.
 Outside taps and Escape close it as before. A section's flyout opens in place inside it.
 
 **A dialog closes from the backdrop only on a press that starts there.** Clicking the dim

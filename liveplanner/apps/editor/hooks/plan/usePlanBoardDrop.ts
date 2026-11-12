@@ -53,6 +53,8 @@ export function usePlanBoardDrop(opts: {
   // Moving and dropping cards (docs/specs/013-workspace/share-roles.md): an Editor's and a Participant's.
   // Absent: as canEdit.
   canEditCards?: boolean;
+  // A tap on a card (a press that never became a drag); absent, it opens the card.
+  onOpen?: (id: string) => void;
 }) {
   const { element, boardRef, plan, setup, projection, items, interactive, canEdit } = opts;
   const canEditCards = opts.canEditCards ?? canEdit;
@@ -128,7 +130,7 @@ export function usePlanBoardDrop(opts: {
     boardRef,
     boardId: element.id,
     enabled: interactive && canEditCards,
-    onClick: (id) => plan?.openItem(id),
+    onClick: (id) => (opts.onOpen ? opts.onOpen(id) : plan?.openItem(id)),
     onDrop: drop,
     onDropOutside: (id, clientX, clientY) => {
       const rect = boardRef.current?.getBoundingClientRect();

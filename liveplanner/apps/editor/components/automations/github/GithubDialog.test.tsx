@@ -153,6 +153,8 @@ describe('the Automations screen and GitHub', () => {
       runsPerDay: 1000,
     });
     render(<Harness initial={{ view: 'rule', ruleId: 'r1' }} />);
+    // On a phone the When step opens in its drawer.
+    fireEvent.click(await screen.findByRole('button', { name: 'When' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Manage' }));
     expect(shown).toEqual({ view: 'github' });
   });

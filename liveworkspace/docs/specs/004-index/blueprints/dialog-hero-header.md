@@ -42,7 +42,7 @@ const titleId = useId();
     art={shareHeroArt} // HeroArt, a module constant
     titleId={titleId} // the <h2>'s id
     title="Share This Plan"
-    subtitle={<ShareStatus />} // optional: one line; sr-only on a phone
+    subtitle={<ShareStatus />} // optional: one line, truncated, at every width
     actions={<>…</>} // optional: before the close
     onClose={close} // optional: renders DialogCloseButton last
     underHandle // optional: a phoneSheet dialog
@@ -104,20 +104,19 @@ switch as every `dark:` class (a `.light` island included). `--hero-lift` is the
 
 ## Measures
 
-| What             | Value                                                              |
-| ---------------- | ------------------------------------------------------------------ |
-| Height from `sm` | `sm:h-[100px]`, `sm:px-6`                                          |
-| Phone            | `max-sm:px-4 max-sm:py-3` (56px with one title line)               |
-| Mark             | `size-9` / `max-sm:size-8`, `rounded-[11px]`, glyph 20px           |
-| Title            | 20px / 18px, `leading-tight`, `sm:truncate`, `max-sm:line-clamp-2` |
-| Line             | 13px / 18px, `truncate`, `max-sm:sr-only`                          |
-| Centre piece     | from `@4xl` (56rem header); title and line `@4xl:max-w-[26rem]`    |
-| Gaps             | 12px between mark, words and actions; 8px between actions          |
+| What         | Value                                                           |
+| ------------ | --------------------------------------------------------------- |
+| Height       | `h-[100px]` at every width; `sm:px-6`, `px-4` on a phone        |
+| Mark         | `size-9`, `rounded-[11px]`, glyph 20px                          |
+| Title        | 20px, `leading-tight`, `sm:truncate`, `max-sm:line-clamp-2`     |
+| Line         | 13px / 18px, `truncate` (shown on a phone too)                  |
+| Centre piece | from `@4xl` (56rem header); title and line `@4xl:max-w-[26rem]` |
+| Gaps         | 12px between mark, words and actions; 8px between actions       |
 
 Measured in a browser: 100px at 1280, 1024 and 768 wide for Automations and Share (liveplanner, livedocuments), and
-for Export, Import, History and Share to Community (livediagram, livedocuments, light and dark), 56px on a 390px
-phone; livediagram's Import from Microsoft Whiteboard is 69px there, its title taking the second line the phone
-allows. The same for Settings (signed in with the switch, and a guest without it),
+for Export, Import, History and Share to Community (livediagram, livedocuments, light and dark), and 100px on a
+390px phone too (it was 56px there until the phone took the desktop look); a title that takes the second line the
+phone allows, as livediagram's Import from Microsoft Whiteboard does, stays inside the 100px with its line under it. The same for Settings (signed in with the switch, and a guest without it),
 Collaborators and Tab Style (livedocuments, livediagram) and liveworkspace.app's Settings, light and dark.
 
 `SettingsView` (`@liveworkspace/settings-ui`) draws the header for every Settings: `settingsHeroArt` unless the host

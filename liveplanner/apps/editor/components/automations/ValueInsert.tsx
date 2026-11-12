@@ -2,28 +2,16 @@
 
 // Text a rule writes, with its values (docs/specs/026-plan/automations.md "Values"): a real textarea whose values
 // (`{{person}}`) show as violet chips, drawn by a backdrop under the transparent text so the caret, selection, undo
-// and screen readers stay the textarea's own; and Insert a Value, the chips that drop a value at the caret, with Any
-// Field… for a field of the card by its name, and in an Incoming Webhook rule Webhook Field… for a value of the call's
-// JSON (WebhookFieldInsert). ValueChipsText draws the same text read-only (a step card's preview).
+// and screen readers stay the textarea's own; and Insert a Value, a button inside the field (ValueInsertMenu) whose
+// popover (a sheet on a phone) drops a value at the caret: the card's values, its fields by name, and in an Incoming
+// Webhook rule Webhook Field… for a value of the call's JSON. ValueChipsText draws the same text read-only (a step
+// card's preview).
 
-import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import {
-  AUTOMATION_BRANCH_VALUE_LABELS,
-  AUTOMATION_BRANCH_VALUE_NAMES,
-  AUTOMATION_VALUE_LABELS,
-  AUTOMATION_VALUE_NAMES,
-} from '@liveplanner/items';
-import { FIELD_INVALID } from '@liveplanner/ui';
-import {
-  MenuActionRow,
-  PortalMenu,
-} from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { lucideGlyph } from '@liveplanner/ui';
-import { lucideTextCursorInput } from '@liveworkspace/icons/lucide';
+import { useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { FIELD_INVALID, useMediaQuery } from '@liveplanner/ui';
 import { useIncomingRule } from './incoming-rule';
-import { VALUE_CHIP_BUTTON, WebhookFieldInsert } from './WebhookFieldInsert';
-
-const FieldIcon = lucideGlyph(lucideTextCursorInput, 16);
+import { valueInsertGroups } from './value-insert-options';
+import { ValueInsertButton, ValueInsertMenu } from './ValueInsertMenu';
 
 // A value in the text, braces and all.
 const VALUE = /(\{\{[^{}]*\}\})/g;
@@ -56,20 +44,9 @@ export function ValueChipsText({ text, className = '' }: { text: string; classNa
   );
 }
 
-// Insert a Value's chips: the fixed values, and inside a branch the triggering card's after them.
-const VALUE_CHIPS = AUTOMATION_VALUE_NAMES.map((name) => ({
-  name,
-  label: AUTOMATION_VALUE_LABELS[name],
-}));
-const BRANCH_VALUE_CHIPS = [
-  ...VALUE_CHIPS,
-  ...AUTOMATION_BRANCH_VALUE_NAMES.map((name) => ({
-    name,
-    label: AUTOMATION_BRANCH_VALUE_LABELS[name],
-  })),
-];
-
-const TEXT = 'whitespace-pre-wrap break-words px-2.5 py-2 text-[13px] leading-6';
+// The text's box, the same for the textarea and its backdrop; the right padding keeps the words clear of the Insert
+// button at the field's top right.
+const TEXT = 'whitespace-pre-wrap break-words py-2 pl-2.5 pr-10 text-[13px] leading-6';
 
 /** Puts `{{name}}` at the caret (over a selection), answering the text and where the caret goes after it. */
 export function insertValue(text: string, start: number, end: number, name: string) {
@@ -108,8 +85,15 @@ export function ValueTextField({
   const area = useRef<HTMLTextAreaElement>(null);
   const backdrop = useRef<HTMLDivElement>(null);
   const caret = useRef<number | null>(null);
-  const [anyField, setAnyField] = useState<HTMLButtonElement | null>(null);
+  // Whether the field has had focus, so its selection is where the person left the caret.
+  const placed = useRef(false);
+  const [menu, setMenu] = useState<HTMLButtonElement | null>(null);
   const { incoming } = useIncomingRule();
+  const phone = !useMediaQuery('(min-width: 640px)');
+  const groups = useMemo(
+    () => valueInsertGroups(branch, fields, incoming),
+    [branch, fields, incoming],
+  );
 
   // Grows with its text (no inner scroll, so the backdrop never drifts), and puts the caret after an inserted value.
   useLayoutEffect(() => {
@@ -126,11 +110,20 @@ export function ValueTextField({
 
   const insert = (name: string) => {
     const el = area.current;
-    const start = el?.selectionStart ?? value.length;
-    const end = el?.selectionEnd ?? value.length;
+    // A field never typed in has no caret of its own yet: the value goes at the end.
+    const start = (placed.current ? el?.selectionStart : null) ?? value.length;
+    const end = (placed.current ? el?.selectionEnd : null) ?? value.length;
     const next = insertValue(value, start, end, name);
     caret.current = next.caret;
     onChange(maxLength ? next.text.slice(0, maxLength) : next.text);
+    // The popover's (or sheet's) own focus return lands on the button as it goes: the field takes focus back after it.
+    requestAnimationFrame(() => {
+      const field = area.current;
+      if (!field || document.activeElement === field) return;
+      field.focus();
+      const at = Math.min(next.caret, field.value.length);
+      field.setSelectionRange(at, at);
+    });
   };
 
   return (
@@ -161,6 +154,9 @@ export function ValueTextField({
           placeholder={placeholder}
           aria-invalid={invalid || undefined}
           spellCheck
+          onFocus={() => {
+            placed.current = true;
+          }}
           onChange={(e) =>
             onChange(multiline ? e.target.value : e.target.value.replace(/\n/g, ' '))
           }
@@ -169,56 +165,21 @@ export function ValueTextField({
           }}
           className={`relative block w-full resize-none overflow-hidden bg-transparent text-transparent caret-slate-900 outline-none placeholder:text-slate-400 selection:bg-brand-200/70 selection:text-transparent dark:caret-white dark:selection:bg-brand-500/40 ${TEXT} ${multiline ? 'min-h-[92px]' : ''}`}
         />
+        <ValueInsertButton
+          label={label}
+          open={menu !== null}
+          onOpen={(anchor) => setMenu(menu ? null : anchor)}
+        />
       </div>
       {hint ? <p className="text-[12px] text-slate-500 dark:text-slate-400">{hint}</p> : null}
-      <div
-        role="group"
-        aria-label={`Insert a Value into ${label}`}
-        className="flex flex-col gap-2 rounded-xl border border-slate-200 p-2.5 dark:border-slate-700"
-      >
-        <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-200">
-          Insert a Value
-        </span>
-        <div className="flex flex-wrap gap-1.5">
-          {(branch ? BRANCH_VALUE_CHIPS : VALUE_CHIPS).map(({ name, label: chip }) => (
-            <button
-              key={name}
-              type="button"
-              onClick={() => insert(name)}
-              className={VALUE_CHIP_BUTTON}
-            >
-              {chip}
-            </button>
-          ))}
-          {fields.length > 0 ? (
-            <button
-              type="button"
-              aria-haspopup="menu"
-              aria-expanded={anyField !== null}
-              onClick={(e) => setAnyField(anyField ? null : e.currentTarget)}
-              className={VALUE_CHIP_BUTTON}
-            >
-              Any Field…
-            </button>
-          ) : null}
-          {incoming ? <WebhookFieldInsert onInsert={insert} /> : null}
-        </div>
-      </div>
-      {anyField ? (
-        <PortalMenu anchor={anyField} placement="below" onClose={() => setAnyField(null)}>
-          {fields.map((f) => (
-            <MenuActionRow
-              key={f.id}
-              plain
-              label={f.name}
-              icon={<FieldIcon />}
-              onClick={() => {
-                setAnyField(null);
-                insert(`card.field.${f.name}`);
-              }}
-            />
-          ))}
-        </PortalMenu>
+      {menu ? (
+        <ValueInsertMenu
+          anchor={menu}
+          groups={groups}
+          phone={phone}
+          onInsert={insert}
+          onClose={() => setMenu(null)}
+        />
       ) : null}
     </div>
   );
