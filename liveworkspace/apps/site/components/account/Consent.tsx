@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@liveworkspace/ui';
+import { Button, usePageRestore } from '@liveworkspace/ui';
 import { afterSignIn, call, nextUrl, signedOAuthQuery } from '@/lib/accounts';
 import { useLocationSearch } from '@/lib/location-search';
 import {
@@ -18,6 +18,8 @@ export function Consent() {
   const client = new URLSearchParams(useLocationSearch()).get('client_id') || 'An app';
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  // Busy until the browser has left (busy-buttons.md); Back into the kept page makes both pressable again.
+  usePageRestore(() => setBusy(false));
 
   async function answer(accept: boolean) {
     setError('');

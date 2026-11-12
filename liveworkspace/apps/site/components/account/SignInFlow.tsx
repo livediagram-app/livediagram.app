@@ -1,7 +1,13 @@
 'use client';
 
 import { type FormEvent, useEffect, useRef, useState } from 'react';
-import { CODE_DIGITS, CodeDigits, type CodeDigitsHandle, EMPTY_CODE } from '@liveworkspace/ui';
+import {
+  CODE_DIGITS,
+  CodeDigits,
+  type CodeDigitsHandle,
+  EMPTY_CODE,
+  usePageRestore,
+} from '@liveworkspace/ui';
 import {
   afterSignIn,
   call,
@@ -187,8 +193,10 @@ export function SignInFlow({ flow }: { flow: Flow }) {
       ...(chosen ? { ...chosen, name: `${chosen.givenName} ${chosen.familyName}` } : {}),
     });
     verifying.current = false;
-    setBusy(null);
+    // Busy on through the session check, the continue and the navigation (busy-buttons.md): only a failure or a
+    // step that stays on this page lets go.
     if (!result.ok) {
+      setBusy(null);
       setDigits(EMPTY_CODE);
       // After the render that enables the boxes again: a disabled box takes no focus.
       requestAnimationFrame(() => digitBoxes.current?.focus());
@@ -208,6 +216,7 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     if (user && !user.givenName) {
       // Registered with names, but the address already had a nameless account: give it these.
       if (chosen && (await saveNames(chosen))) return finish();
+      setBusy(null);
       setTitle("What's your name?");
       setStep('name');
       return;
@@ -229,12 +238,14 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     const chosen = namesFrom(event.currentTarget);
     if (!chosen) return;
     setBusy('Saving…');
-    const saved = await saveNames(chosen);
-    setBusy(null);
-    if (!saved) return setError('We could not save your name. Please try again.');
+    if (!(await saveNames(chosen))) {
+      setBusy(null);
+      return setError('We could not save your name. Please try again.');
+    }
     await finish();
   }
 
+  // The last step: leaves the page (busy stays on until the browser has gone), or lets go of busy where it stays.
   async function finish() {
     const query = window.location.search;
     if (isRegistering(query)) {
@@ -243,6 +254,7 @@ export function SignInFlow({ flow }: { flow: Flow }) {
       );
       // Under an app's address, by way of liveworkspace.app, so the session is there too.
       if (next) return window.location.assign(await afterSignIn(next, query));
+      setBusy(null);
       return setError('That sign-in has expired. Go back to the app and try again.');
     }
     if (continueTo.current) {
@@ -251,6 +263,7 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     // Signed in from the site's header: back to the page it was on.
     const back = returnPath(query);
     if (back) return window.location.assign(back);
+    setBusy(null);
     setTitle("You're signed in");
     setStep('done');
   }
@@ -291,6 +304,12 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     setBusy(null);
     setError('We could not reach Google. Try again, or use your email.');
   }
+
+  // Back into this page from the browser's cache: kept as it was when it left, busy. Pressable again.
+  usePageRestore(() => {
+    verifying.current = false;
+    setBusy(null);
+  });
 
   // Once, on arrival: the deployment's options, and the end of a trip to Google.
   useEffect(() => {
