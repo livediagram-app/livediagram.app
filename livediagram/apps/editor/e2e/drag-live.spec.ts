@@ -259,6 +259,10 @@ const topAndSides = (page: Page, id: string) =>
     };
   }, id);
 
+// The box the owner presses and the collaborator watches: the middle of the first row. Selecting everything opens
+// the Quick Style panel on the left, which covers the first boxes of a board this wide.
+const HELD = 'm20';
+
 for (const n of [62, 1200]) {
   test(`a collaborator in Isometric sees side faces move with their tops in a ${n}-element drag`, async ({
     page,
@@ -267,37 +271,37 @@ for (const n of [62, 1200]) {
   }) => {
     test.slow();
     const { ownerPage, peerPage, savedX } = await sharedBoard(page, browser, baseURL!, gridOf(n));
-    await expect(box(peerPage, 'm0')).toBeAttached();
+    await expect(box(peerPage, HELD)).toBeAttached();
     await peerPage.locator(CANVAS).click({ position: { x: 5, y: 5 } });
     await peerPage.keyboard.press('i');
     await expect(peerPage.locator(`${CANVAS} [data-iso-column]`).first()).toBeAttached();
-    const start = await topAndSides(peerPage, 'm0');
+    const start = await topAndSides(peerPage, HELD);
     expect(start.sides).toBe(start.top);
 
     await ownerPage.keyboard.press('v');
     await ownerPage.locator(CANVAS).click({ position: { x: 5, y: 5 } });
     await ownerPage.keyboard.press('ControlOrMeta+a');
-    const r = (await box(ownerPage, 'm0').boundingBox())!;
+    const r = (await box(ownerPage, HELD).boundingBox())!;
     await ownerPage.mouse.move(r.x + r.width / 2, r.y + r.height / 2);
     await ownerPage.mouse.down();
     for (let i = 1; i <= 15; i++)
       await ownerPage.mouse.move(r.x + r.width / 2 + i * 10, r.y + r.height / 2);
 
     await expect
-      .poll(async () => (await topAndSides(peerPage, 'm0')).top, { timeout: 5_000 })
+      .poll(async () => (await topAndSides(peerPage, HELD)).top, { timeout: 5_000 })
       .toBeGreaterThan(start.top + 20);
-    const mid = await topAndSides(peerPage, 'm0');
+    const mid = await topAndSides(peerPage, HELD);
     expect(mid.sides).toBeCloseTo(mid.top, 2);
     if (SHOTS) await peerPage.screenshot({ path: `${SHOTS}/drag-live-peer-isometric-${n}.png` });
 
     await ownerPage.mouse.up();
     // Together once it lands too, the preview handing over to the saved board.
-    await expect.poll(() => savedX('m0'), { timeout: 10_000 }).toBeGreaterThan(200);
-    const saved = (await savedX('m0'))!;
+    await expect.poll(() => savedX(HELD), { timeout: 10_000 }).toBeGreaterThan(start.top);
+    const saved = (await savedX(HELD))!;
     await expect
-      .poll(async () => (await topAndSides(peerPage, 'm0')).top, { timeout: 5_000 })
+      .poll(async () => (await topAndSides(peerPage, HELD)).top, { timeout: 5_000 })
       .toBeCloseTo(saved, 2);
-    const landed = await topAndSides(peerPage, 'm0');
+    const landed = await topAndSides(peerPage, HELD);
     expect(landed.sides).toBeCloseTo(landed.top, 2);
   });
 }
