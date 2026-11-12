@@ -54,7 +54,9 @@ export function RunLog({
   initialRule?: string | undefined;
   onOpenCard: (cardId: string) => void;
 }) {
-  const [rule, setRule] = useState(initialRule ?? '');
+  const [picked, setRule] = useState(initialRule ?? '');
+  // A rule gone (deleted, or never in the list) filters nothing, as the Rule select then reads All Rules.
+  const rule = rules.some((r) => r.id === picked) ? picked : '';
   const [result, setResult] = useState<AutomationResult | ''>('');
   const [days, setDays] = useState<RunWindow>(7);
   const [attempt, setAttempt] = useState(0);
