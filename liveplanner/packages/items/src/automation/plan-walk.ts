@@ -10,6 +10,8 @@ import { typeIn } from '../type-catalogue';
 import { AUTOMATION_PERSON_ID, type AutomationOutgoing, type AutomationStepLine } from './types';
 import type { ConditionContext } from './conditions';
 import type { ValueContext } from './values';
+import type { PlannedAi } from './ai-steps';
+import type { WebhookValues } from './webhook-paths';
 
 export interface PlanActionsContext extends ConditionContext {
   rule: { name: string };
@@ -21,6 +23,9 @@ export interface PlanActionsContext extends ConditionContext {
   urlOf?: (cardId: string) => string;
   // The rule's place in Assign in Turn's list (the api's automation_rules.turn).
   turn?: number;
+  // An Incoming Webhook run: the values its call gave; and whether it runs with no card (incoming.ts).
+  webhook?: WebhookValues;
+  cardless?: boolean;
 }
 
 // The card a Create Card makes: its type, its column (absent: the type's Default State) and fields.
@@ -58,7 +63,8 @@ export interface PlannedRelated {
 }
 
 // What a run writes: the triggering card's one patch, the threads it starts, the card it makes, its emails, its
-// related cards' writes, its outgoing messages, and how many turns Assign in Turn took.
+// related cards' writes, its outgoing messages, and how many turns Assign in Turn took. `ai`: its AI steps, asked
+// after the card writes (present only when it has one).
 export interface PlannedWrites {
   patch: ItemPatch;
   comments: string[];
@@ -67,6 +73,7 @@ export interface PlannedWrites {
   related: PlannedRelated[];
   sends: PlannedSend[];
   turns: number;
+  ai?: PlannedAi[];
 }
 
 // A failed run keeps `done`, the steps before the one that failed (spec "Actions": the steps before it stay done).
@@ -83,6 +90,7 @@ export class Run {
   readonly lines: AutomationStepLine[] = [];
   readonly sends: PlannedSend[] = [];
   readonly related: PlannedRelated[] = [];
+  readonly ai: PlannedAi[] = [];
   actions = 0;
   turns = 0;
 }
@@ -161,6 +169,8 @@ export const walkOf = (card: Item, run: Run, ctx: PlanActionsContext, prefix = '
     rule: ctx.rule.name,
     now: ctx.now,
     timeZone: ctx.timeZone,
+    ...(ctx.webhook ? { webhook: ctx.webhook } : {}),
+    ...(ctx.cardless ? { cardless: true } : {}),
   };
   return { plan, ctx, type, values };
 };

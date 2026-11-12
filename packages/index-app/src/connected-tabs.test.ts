@@ -9,13 +9,14 @@ import {
   TAB_CONNECTION_SCHEMA,
   appendConnectedTab,
   confirmTabConnection,
+  connectionLeftStatement,
   connectionToKeep,
   sameConnection,
   storedTabConnection,
   tabConnectionOf,
   tabConnectionStatement,
-  tellConnectionLeft,
 } from './connected-tabs';
+import { CONNECTION_LEFT_KIND, connectionLeftKeyOf } from './outbox';
 import { handleInternalItems, type InternalItemHandlers } from './internal';
 import { ItemDb } from './item-db';
 import { nodeItemSql, nodeTransaction } from './test-sqlite';
@@ -168,39 +169,125 @@ describe('telling the index', () => {
     const confirmConnection = vi.fn(async () => {
       if (fail) throw new Error('down');
     });
-    const removeConnection = vi.fn(async () => {
-      if (fail) throw new Error('down');
-    });
     return {
       confirmConnection,
-      removeConnection,
-      client: { confirmConnection, removeConnection } as unknown as IndexAppClient,
+      client: { confirmConnection } as unknown as IndexAppClient,
     };
   };
 
-  it('confirms a connected tab and tells its removal', async () => {
+  it('confirms a connected tab', async () => {
     const c = client();
     await confirmTabConnection(c.client, 'H', 't1', CONNECTION);
     expect(c.confirmConnection).toHaveBeenCalledWith('H', CONNECTION.id, 't1');
-    await tellConnectionLeft(c.client, 'H', 't1', CONNECTION);
-    expect(c.removeConnection).toHaveBeenCalledWith('H', CONNECTION.id, 't1');
   });
 
-  it('tells nothing for a tab with no connection, or with no index', async () => {
+  it('confirms nothing with no index', async () => {
     const c = client();
-    await tellConnectionLeft(c.client, 'H', 't1', null);
-    await tellConnectionLeft(null, 'H', 't1', CONNECTION);
     await confirmTabConnection(null, 'H', 't1', CONNECTION);
-    expect(c.removeConnection).not.toHaveBeenCalled();
+    expect(c.confirmConnection).not.toHaveBeenCalled();
   });
 
   it('logs an index out of reach rather than failing the write', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const c = client(true);
     await confirmTabConnection(c.client, 'H', 't1', CONNECTION);
-    await tellConnectionLeft(c.client, 'H', 't1', CONNECTION);
     expect(warn).toHaveBeenCalledWith('[connections] confirm failed', expect.any(Object));
-    expect(warn).toHaveBeenCalledWith('[connections] removal not told', expect.any(Object));
+  });
+});
+
+describe('the removal, in the outbox', () => {
+  const OUTBOX = { table: 'outbox', itemColumn: 'item_id' } as const;
+  function host() {
+    const raw = new DatabaseSync(':memory:');
+    raw.exec(`
+      CREATE TABLE tabs (id TEXT PRIMARY KEY, name TEXT NOT NULL, data TEXT NOT NULL);
+      CREATE TABLE item_tabs (item_id TEXT NOT NULL, tab_id TEXT NOT NULL, order_index INTEGER NOT NULL);
+      CREATE TABLE outbox (id INTEGER PRIMARY KEY, item_id TEXT NOT NULL, kind TEXT NOT NULL, key TEXT NOT NULL,
+        UNIQUE (item_id, kind, key));
+      ${TAB_CONNECTION_SCHEMA}
+    `);
+    const db = new ItemDb(nodeItemSql(raw), {
+      transaction: nodeTransaction(raw),
+      ensureSchema: () => {},
+      onWrite: () => {},
+    }).asD1();
+    const add = (tabId: string, connection: string | null) => {
+      raw
+        .prepare("INSERT INTO tabs (id, name, data, connection) VALUES (?, 'T', '{}', ?)")
+        .run(tabId, connection);
+      raw.prepare("INSERT INTO item_tabs VALUES ('H', ?, 0)").run(tabId);
+    };
+    // The app's delete: the unlink, the key, then the tab's row.
+    const remove = (tabId: string, unlink = true) =>
+      db.batch([
+        db
+          .prepare('DELETE FROM item_tabs WHERE item_id = ? AND tab_id = ? AND ? = 1')
+          .bind('H', tabId, unlink ? 1 : 0),
+        connectionLeftStatement(db, OUTBOX, 'item_tabs', 'H', tabId),
+        db
+          .prepare(
+            'DELETE FROM tabs WHERE id = ? AND NOT EXISTS (SELECT 1 FROM item_tabs WHERE tab_id = ?)',
+          )
+          .bind(tabId, tabId),
+      ]);
+    const keys = () =>
+      raw.prepare('SELECT item_id, kind, key FROM outbox ORDER BY id').all() as {
+        item_id: string;
+        kind: string;
+        key: string;
+      }[];
+    return { add, remove, keys };
+  }
+
+  it('keys a connected tab that left with its connection id and tab id, as the drain reads it', async () => {
+    const h = host();
+    h.add('t2', JSON.stringify(CONNECTION));
+    await h.remove('t2');
+    expect(h.keys()).toEqual([
+      {
+        item_id: 'H',
+        kind: CONNECTION_LEFT_KIND,
+        key: connectionLeftKeyOf({ connectionId: CONNECTION.id, tabId: 't2' }),
+      },
+    ]);
+  });
+
+  it('keys nothing for a tab with no connection, a malformed one, or one still in the item', async () => {
+    const h = host();
+    h.add('t1', null);
+    h.add('t3', 'not json');
+    h.add('t4', JSON.stringify({ app: 'livedesign' }));
+    h.add('t5', JSON.stringify(CONNECTION));
+    await h.remove('t1');
+    await h.remove('t3');
+    await h.remove('t4');
+    await h.remove('t5', false);
+    expect(h.keys()).toEqual([]);
+  });
+
+  it('keys a connection made again in the same tab apart from the first', async () => {
+    const h = host();
+    h.add('t2', JSON.stringify(CONNECTION));
+    await h.remove('t2');
+    h.add('t2', JSON.stringify(other(7)));
+    await h.remove('t2');
+    expect(h.keys().map((k) => JSON.parse(k.key).connectionId)).toEqual([
+      CONNECTION.id,
+      other(7).id,
+    ]);
+  });
+
+  it('refuses a table name that is not one word', () => {
+    const h = item();
+    expect(() =>
+      connectionLeftStatement(
+        h.db,
+        { table: 'outbox; --', itemColumn: 'item_id' },
+        'item_tabs',
+        'H',
+        't',
+      ),
+    ).toThrow('bad table name');
   });
 });
 

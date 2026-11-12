@@ -6,8 +6,10 @@
 
 import {
   AUTOMATION_CONDITION_NAMES,
+  AUTOMATION_AI_NAMES,
   AUTOMATION_NOTIFY_NAMES,
   AUTOMATION_STEP_NAMES,
+  isPersonless,
   isTimeTrigger,
   type AutomationRuleBody,
 } from '@liveplanner/items';
@@ -26,6 +28,7 @@ import {
 } from './rule-draft';
 import { StepPreview } from './StepPreview';
 import { ActionPanel } from './step-panels/ActionPanel';
+import { AiStepPanel } from './step-panels/AiStepPanel';
 import { BranchPanel } from './step-panels/BranchPanel';
 import { ConditionPanel } from './step-panels/ConditionPanel';
 import { OutgoingPanel } from './step-panels/OutgoingPanel';
@@ -61,7 +64,8 @@ export function StepPanel({
   timeZone: string;
 }) {
   const hooks = usePlanWebhooks();
-  const timeRule = isTimeTrigger(body.trigger);
+  // A time rule or an incoming webhook's has nobody behind it: no "whoever triggered it".
+  const timeRule = isPersonless(body.trigger);
   const shell = (title: string, tile: React.ReactNode, children: React.ReactNode) => (
     <section aria-label={`${title} step`} data-step-panel="" className="flex flex-col gap-4">
       <h3 className="flex items-center gap-2.5 text-[15px] font-semibold text-slate-900 dark:text-slate-50">
@@ -75,7 +79,7 @@ export function StepPanel({
   if (part.part === 'trigger')
     return shell(
       'When',
-      <StepTile tone="trigger" time={timeRule} size={24} />,
+      <StepTile tone="trigger" time={isTimeTrigger(body.trigger)} size={24} />,
       <TriggerPanel
         trigger={body.trigger}
         outline={outline}
@@ -141,7 +145,17 @@ export function StepPanel({
       </>,
     );
   }
-  if (step.kind === 'for' || step.kind === 'notify') return null;
+  if (step.kind === 'ai' && part.part === 'step')
+    return shell(
+      AUTOMATION_AI_NAMES[step.task],
+      <StepTile tone="action" kind="ai" size={24} />,
+      <AiStepPanel
+        step={step}
+        outline={outline}
+        onChange={(next) => onChange(setStep(body, part.index, next))}
+      />,
+    );
+  if (step.kind === 'for' || step.kind === 'notify' || step.kind === 'ai') return null;
   const branch = holderOf(body, part)?.kind === 'for';
   const text = step.kind === 'comment' ? step.text : step.kind === 'email' ? step.body : null;
   return shell(

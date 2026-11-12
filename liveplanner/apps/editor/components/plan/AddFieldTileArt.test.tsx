@@ -28,6 +28,10 @@ describe('Add Field tile pictures', () => {
     expect(render(<KindTileArt kind="calculated" />).container.textContent).toBe('2/3');
     expect(render(<KindTileArt kind="formula" />).container.textContent).toContain('Estimate');
     expect(render(<KindTileArt kind="rollup" />).container.textContent).toContain('Sum 10');
+    // Several Images: three thumbnails in a row, the rest counted.
+    const images = render(<KindTileArt kind="images" />).container;
+    expect(images.querySelectorAll('svg')).toHaveLength(3);
+    expect(images.textContent).toBe('+2');
   });
 
   it('keeps the sample value for a kind that explains itself', () => {

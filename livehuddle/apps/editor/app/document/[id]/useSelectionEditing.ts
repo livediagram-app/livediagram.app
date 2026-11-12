@@ -153,6 +153,13 @@ export function useSelectionEditing(opts: {
     // same step, and removes it when left empty.
     const measure = measureDrawnText(activeTab.font, activeTab.finish);
     const target = activeTab.elements.find((el) => el.id === elementId);
+    // The label before this edit began: what the seed replaced, for a type-to-edit. An edit that leaves it as it was
+    // (a dropped room preset's own name, opened and left) is no first label edit, so it names nothing (Work Item 627).
+    const before =
+      seed && seed.wrote.id === elementId
+        ? (seed.label ?? '')
+        : ((target as { label?: string } | undefined)?.label ?? '');
+    const edited = label !== before;
     const removesEmpty = !!target && hugsText(target) && label.trim() === '';
     commit((els) =>
       els.flatMap((el): Element[] => {
@@ -198,8 +205,10 @@ export function useSelectionEditing(opts: {
     // Capped + whitespace-collapsed (docs/specs/006-document/name-length.md). This is the path the cap
     // exists for: paste a paragraph into the welcome rectangle and the whole
     // paragraph used to become the document's name, newlines and all.
-    const trimmed = truncateName(label);
-    if (isUntitledName(documentName)) {
+    // Only a label someone changed names anything: a piece's own starting label (a room preset's "Boardroom", a
+    // welcome card's words) opened and left as it was never does.
+    const trimmed = edited ? truncateName(label) : '';
+    if (trimmed && isUntitledName(documentName)) {
       const firstTab = tabs[0];
       const firstEl = firstTab?.elements[0];
       if (firstEl && firstEl.id === elementId) {

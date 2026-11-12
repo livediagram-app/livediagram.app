@@ -29,4 +29,11 @@ describe('fieldsSetByAutomation', () => {
     ]);
     expect([...fields]).toEqual(['due']);
   });
+
+  it('marks a field an AI action set', () => {
+    const fields = fieldsSetByAutomation([
+      { at: 1, by, tag: 'automation_ai', changes: [{ kind: 'set', field: 'priority' }] },
+    ]);
+    expect([...fields]).toEqual(['priority']);
+  });
 });

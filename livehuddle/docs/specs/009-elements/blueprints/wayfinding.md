@@ -75,6 +75,10 @@ Scope, by file:
   travel never publishes `avatar: null` on the way out.
 - **Walk-in.** An effect on `avatar.standingOnId`: arriving on an `elevator` or `stairs` that is not the ignored one
   sets `openPanelId`; stepping off clears the ignore and closes a walk-opened panel.
+- **Hover card.** A face's `HoverCard` takes `disabled` while its panel is open: the Stairs' and the Elevator's
+  `pressed || walkedIn`, where `walkedIn` is `useWalkedInPanel(wayfinding, id)` (`openPanelId === id`, false without
+  wayfinding, read in the face so the card and the panel host share it); the Directory's `open` with wayfinding. A
+  preview or export has no panel, so its card always shows. Pinned by `wayfinding-hover-card.test.tsx`.
 - **Doors.** A ride's arrival sets `arrivalId` with a fresh `arrivalSeq`; that Elevator's face keys its door
   animation on the seq.
 - **Flights.** `stairsFlights(tabs, activeTabId, from)`: the active tab's index `i` in tab order; `up` is tab `i + 1`,

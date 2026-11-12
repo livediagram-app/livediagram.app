@@ -4,6 +4,7 @@ export * from './schema';
 export * from './output-schema';
 export * from './plan-schema';
 export * from './thread-schema';
+export * from './rule-schema';
 export * from './sheet-schema';
 export * from './form-schema';
 export * from './tracker-schema';

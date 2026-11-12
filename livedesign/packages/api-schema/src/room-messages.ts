@@ -7,6 +7,7 @@ import type { ChangesetRoomOp } from './changesets';
 import type { PhotoOp } from '@livedesign/photo-engine';
 import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
 import type { CollabKeyMessage } from '@liveworkspace/api-schema/collab-key';
+import type { IdListStep } from '@liveworkspace/model-core/id-list-steps';
 
 // ---------------------------------------------------------------------
 // Realtime room messages
@@ -269,7 +270,10 @@ export type RoomOp =
   // changes and older peers; the granular `el` op (docs/specs/012-collaboration/realtime-conflict-resolution.md) supersedes it
   // for the common single-element edit so concurrent different-element
   // edits stop clobbering.
-  | { kind: 'tab'; tabId: string; tab: Tab }
+  // `pageSteps` (on this and on `tab-meta`): how the sender's change moved its pages, by id
+  // (docs/specs/012-collaboration/collab-race-hardening.md "Pages"). A receiver applies them over its own pages, so
+  // two Editors adding a page at once both keep it; absent (an older sender), the sent pages stand whole.
+  | { kind: 'tab'; tabId: string; tab: Tab; pageSteps?: IdListStep[] }
   // A single element on a tab changed (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0): add / update /
   // remove / reorder, applied by id so a peer editing a DIFFERENT element
   // on the same tab merges instead of overwriting the whole tab. `op`
@@ -287,6 +291,7 @@ export type RoomOp =
       tabId: string;
       patch: Partial<Omit<Tab, 'elements'>>;
       clear?: string[];
+      pageSteps?: IdListStep[];
     }
   // ONE change to a field many people write at once: a checklist tick, a comment
   // (docs/specs/012-collaboration/collab-race-hardening.md). It carries the CHANGE rather than the state: a

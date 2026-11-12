@@ -66,6 +66,20 @@ export function useWayfindingSelect<T>(
   );
 }
 
+// A store nothing fills, for a face drawn without wayfinding (a preview): its selectors read the empty state.
+export const NO_WAYFINDING_STORE = createWayfindingStore();
+
+/**
+ * Whether a walk-in opened this Elevator's or Stairs' panel (`openPanelId`); false without wayfinding. Read by the face
+ * itself, so its hover card hides while the panel is open (blueprints/wayfinding.md "Hover card").
+ */
+export function useWalkedInPanel(wayfinding: Wayfinding | undefined, elementId: string): boolean {
+  return useWayfindingSelect(
+    wayfinding?.store ?? NO_WAYFINDING_STORE,
+    (s) => s.openPanelId === elementId,
+  );
+}
+
 /** Where a Walk There goes: a place's approach and arrival, and the box its own walls stand in (walkThereRoute). */
 export type WalkTarget = {
   approach: WayPoint | null;

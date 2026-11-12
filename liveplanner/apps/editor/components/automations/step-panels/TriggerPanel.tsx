@@ -3,7 +3,7 @@
 // The When panel (docs/specs/026-plan/automations.md "Triggers"): which trigger starts the rule, a card's or a
 // time's, then what narrows it: Card Created's column, Form Response's Form tab, Card Moved's From and To columns,
 // Field Changed's fields (at least one), nothing for Comment Added and Run from a Card, and a time trigger's
-// schedule (TimeTriggerPanel).
+// schedule (TimeTriggerPanel), and an Incoming Webhook's address and secret (IncomingWebhookPanel).
 
 import {
   AUTOMATION_TRIGGER_KINDS,
@@ -14,10 +14,14 @@ import {
 } from '@liveplanner/items';
 import { outlineFields, type AutomationOutline } from '../automation-outline';
 import { ChipToggles, PanelField, PanelNote, PanelSelect } from './panel-parts';
+import { IncomingWebhookPanel } from './IncomingWebhookPanel';
 import { TimeTriggerPanel, freshTimeTrigger } from './TimeTriggerPanel';
 
 const TIME_KINDS: readonly AutomationTriggerKind[] = ['scheduled', 'due_in', 'overdue'];
-const CARD_KINDS = AUTOMATION_TRIGGER_KINDS.filter((k) => !TIME_KINDS.includes(k));
+const TOOL_KINDS: readonly AutomationTriggerKind[] = ['incoming_webhook'];
+const CARD_KINDS = AUTOMATION_TRIGGER_KINDS.filter(
+  (k) => !TIME_KINDS.includes(k) && !TOOL_KINDS.includes(k),
+);
 
 const DESCRIPTIONS: Readonly<Record<AutomationTriggerKind, string>> = {
   card_created: 'A card is added: by a person, Duplicate, an import, a Repeat or an agent.',
@@ -30,6 +34,8 @@ const DESCRIPTIONS: Readonly<Record<AutomationTriggerKind, string>> = {
   due_in: 'A card’s due date is the chosen number of days away. Once for each due date it has.',
   overdue:
     'A card’s due date has passed and it is not in a done column. Once for each due date it has.',
+  incoming_webhook:
+    'Another tool, such as CI or a form, sends this rule’s address JSON, proved with its secret.',
 };
 
 function fresh(kind: AutomationTriggerKind, fields: readonly string[]): AutomationTrigger {
@@ -41,6 +47,7 @@ function fresh(kind: AutomationTriggerKind, fields: readonly string[]): Automati
     case 'card_moved':
     case 'comment_added':
     case 'manual':
+    case 'incoming_webhook':
       return { kind };
     case 'scheduled':
     case 'due_in':
@@ -91,6 +98,13 @@ export function TriggerPanel({
             </optgroup>
             <optgroup label="A Time Comes Round">
               {TIME_KINDS.map((k) => (
+                <option key={k} value={k}>
+                  {AUTOMATION_TRIGGER_NAMES[k]}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Another Tool Sends It">
+              {TOOL_KINDS.map((k) => (
                 <option key={k} value={k}>
                   {AUTOMATION_TRIGGER_NAMES[k]}
                 </option>
@@ -185,6 +199,7 @@ export function TriggerPanel({
           conditions={conditions}
         />
       ) : null}
+      {trigger.kind === 'incoming_webhook' ? <IncomingWebhookPanel /> : null}
       {trigger.kind === 'manual' ? (
         <PanelNote>
           While the rule is on, it is listed under Run Rule in every card’s ⋯ menu.

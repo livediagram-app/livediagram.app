@@ -1,0 +1,153 @@
+'use client';
+
+// Adding pictures to a Several Images field (docs/specs/026-plan/item-types.md "Image fields"): from the card panel's
+// picker or a drop. Every file is checked before anything is sent (PNG, JPEG, WebP or GIF, up to 10 MB, not empty)
+// and gets its own place in the queue, shown as its own tile; files upload one after another, and each joins the end
+// of the field's list as it lands, in one write of the list read from the card as it is then, so a picture someone
+// else added meanwhile is kept. A file refused, or past the field's 20, is skipped and said; the rest still land.
+import { useCallback, useRef, useState } from 'react';
+import {
+  IMAGE_FIELD_PICTURES_MAX,
+  imageFieldValue,
+  storedImageIds,
+  withImagesAdded,
+  type CustomFieldDef,
+} from '@liveplanner/items';
+import { ImageUploadError, apiUploadImage, checkImageFile } from '@/lib/api/images';
+import { track } from '@/lib/telemetry';
+import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
+import { isOfflineId } from '@/lib/offline/offline-store';
+import { usePlanCard, usePlanLatest } from './PlanCardContext';
+import { ATTACHMENTS_OFFLINE } from './use-attachment-upload';
+
+const IMAGE_UNAVAILABLE = "Image uploads aren't available here.";
+const IMAGE_NOT_SAVED = "The image couldn't be added to the card. Try again.";
+
+/** What a full field says: "Designs holds up to 20." */
+export const imagesFullMessage = (label: string) =>
+  `${label} holds up to ${IMAGE_FIELD_PICTURES_MAX}.`;
+
+/** A file on its way: waiting its turn, or uploading. */
+export type PendingImage = { key: number; name: string; state: 'waiting' | 'uploading' };
+
+export type ImageFieldUpload = {
+  // Whether this person may add pictures here (a writer, a plan the server holds, a media service).
+  canAdd: boolean;
+  // Why not, when it is the plan or the server (null otherwise: a reader simply sees no Add tile).
+  blocked: string | null;
+  // The files still to land, in order, each drawn as its own tile.
+  pending: readonly PendingImage[];
+  // What was skipped or failed, a line each, from the last files added.
+  problems: readonly string[];
+  add: (files: readonly File[]) => Promise<void>;
+};
+
+/** Uploads into card `itemId`'s Several Images field `field`. `canEdit`: whether this person may change its fields. */
+export function useImageFieldUpload(
+  itemId: string,
+  field: CustomFieldDef,
+  canEdit: boolean,
+): ImageFieldUpload {
+  const scope = usePlanCard()?.itemsScope ?? null;
+  const offline = useIsOfflineProject(scope?.projectId ?? null);
+  const planRef = usePlanLatest();
+  const [pending, setPending] = useState<PendingImage[]>([]);
+  const [problems, setProblems] = useState<string[]>([]);
+  const [unavailable, setUnavailable] = useState(false);
+  // One queue: files added while others upload wait behind them, so the order is the order they were given.
+  const queue = useRef<Promise<void>>(Promise.resolve());
+  const nextKey = useRef(0);
+  const blocked = offline ? ATTACHMENTS_OFFLINE : unavailable ? IMAGE_UNAVAILABLE : null;
+  const canAdd = canEdit && !!scope && !blocked;
+  const { id: fieldId, label } = field;
+  const pendingCount = useRef(0);
+
+  const add = useCallback(
+    async (files: readonly File[]) => {
+      const now = planRef.current;
+      const item = now?.items.get(itemId);
+      if (!canAdd || !scope || !now || !item || files.length === 0) return;
+      // A This Browser plan takes none (its pictures would never be reported, and the sweep would take them).
+      if (await isOfflineId(scope.projectId)) {
+        setProblems([ATTACHMENTS_OFFLINE]);
+        return;
+      }
+      const said: string[] = [];
+      let room =
+        IMAGE_FIELD_PICTURES_MAX -
+        storedImageIds(item.fields[fieldId]).length -
+        pendingCount.current;
+      const taken: PendingImage[] = [];
+      const fileOf = new Map<number, File>();
+      for (const file of files) {
+        try {
+          checkImageFile(file);
+        } catch (err) {
+          const refused =
+            err instanceof ImageUploadError ? err : new ImageUploadError('upload_failed');
+          said.push(`${file.name || 'That file'}: ${refused.message}`);
+          continue;
+        }
+        if (room <= 0) {
+          if (!said.includes(imagesFullMessage(label))) said.push(imagesFullMessage(label));
+          continue;
+        }
+        room -= 1;
+        const key = nextKey.current++;
+        taken.push({ key, name: file.name || 'image', state: 'waiting' });
+        fileOf.set(key, file);
+      }
+      setProblems(said);
+      if (taken.length === 0) return;
+      pendingCount.current += taken.length;
+      setPending((p) => [...p, ...taken]);
+
+      const run = async () => {
+        let landed = 0;
+        for (const job of taken) {
+          setPending((p) => p.map((j) => (j.key === job.key ? { ...j, state: 'uploading' } : j)));
+          try {
+            const { image } = await apiUploadImage(scope, fileOf.get(job.key)!);
+            const latest = planRef.current;
+            const card = latest?.items.get(itemId);
+            const def = latest?.types
+              .find((t) => t.id === card?.type)
+              ?.custom?.find((c) => c.id === fieldId);
+            if (latest && card) {
+              const had = storedImageIds(card.fields[fieldId]);
+              const { ids, skipped } = withImagesAdded(had, [image.id]);
+              if (skipped > 0) said.push(imagesFullMessage(label));
+              else if (ids.length > had.length) {
+                // Never empty here: it holds the picture that just landed.
+                const saved = await latest.patchItem(itemId, {
+                  set: { [fieldId]: imageFieldValue(def ?? field, ids)! },
+                });
+                if (saved) landed += 1;
+                else said.push(`${job.name}: ${IMAGE_NOT_SAVED}`);
+              }
+            }
+          } catch (err) {
+            const refused =
+              err instanceof ImageUploadError ? err : new ImageUploadError('upload_failed');
+            if (refused.code === 'images_unavailable') setUnavailable(true);
+            said.push(`${job.name}: ${refused.message}`);
+          } finally {
+            pendingCount.current -= 1;
+            setPending((p) => p.filter((j) => j.key !== job.key));
+          }
+        }
+        setProblems([...said]);
+        if (landed > 0) {
+          track('Plan', 'Added', 'CardImage');
+          planRef.current?.announce(landed === 1 ? 'Image added' : `${landed} images added`);
+        }
+      };
+      const turn = queue.current.then(run);
+      queue.current = turn.catch(() => {});
+      await turn;
+    },
+    [canAdd, scope, itemId, fieldId, label, field, planRef],
+  );
+
+  return { canAdd, blocked, pending, problems, add };
+}

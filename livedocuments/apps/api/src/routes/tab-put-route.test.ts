@@ -1,6 +1,17 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CHANGESET_MERGE_WINDOW_MS } from '@livedocuments/api-schema';
-import { elementFingerprint, type Element, type ElementOp } from '@livedocuments/document';
+import {
+  CHANGESET_MERGE_WINDOW_MS,
+  TAB_SAVE_CHANGES_HEADER,
+  tabSaveChangesHeader,
+} from '@livedocuments/api-schema';
+import {
+  elementFingerprint,
+  type ArticleBlock,
+  type Element,
+  type ElementOp,
+  type Page,
+  type Tab,
+} from '@livedocuments/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import type { ChangesetRecord } from '../db/changesets';
@@ -342,5 +353,87 @@ describe('a tab id', () => {
       body: { id: 't1', name: 'Board', elements: [box('a', 'Edited')] },
     });
     expect(again.status).toBeLessThan(300);
+  });
+});
+
+// Two Editors' saves from one baseline (docs/specs/012-collaboration/collab-race-hardening.md "A save is merged with
+// the stored tab"): each says what it changed, and the second never erases the first (Work Tracker #669, #670).
+describe('a save merged over the stored tab by id', () => {
+  const slide = (id: string): Page => ({ id, orientation: 'landscape', kind: 'slide' });
+  const para = (id: string, text: string): ArticleBlock => ({
+    id,
+    type: 'paragraph',
+    runs: [{ text }],
+  });
+  const page: Page = { id: 'p1', orientation: 'portrait', kind: 'article', flow: 'f1' };
+  const tabWith = (extra: Partial<Tab>): Tab => ({
+    id: 't1',
+    name: 'Board',
+    elements: [box('a')],
+    ...extra,
+  });
+  const storedTab = (db: SqliteD1) =>
+    JSON.parse(
+      db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string,
+    ) as Tab;
+  const saveOver = (db: SqliteD1, before: Tab, after: Tab) =>
+    save(
+      db,
+      after.elements,
+      { [TAB_SAVE_CHANGES_HEADER]: tabSaveChangesHeader(before, after)! },
+      after,
+    );
+
+  it('keeps both pages two Editors added at once (#669)', async () => {
+    const db = await documentWith([box('a')]);
+    const base = tabWith({ pages: [slide('s1')] });
+    await save(db, base.elements, {}, base);
+    expect((await saveOver(db, base, tabWith({ pages: [slide('s1'), slide('sA')] }))).status).toBe(
+      200,
+    );
+    expect((await saveOver(db, base, tabWith({ pages: [slide('s1'), slide('sB')] }))).status).toBe(
+      200,
+    );
+    expect(storedTab(db).pages!.map((p) => p.id)).toEqual(['s1', 'sA', 'sB']);
+  });
+
+  it("keeps both people's words in different paragraphs of one article (#670)", async () => {
+    const db = await documentWith([box('a')]);
+    const base = tabWith({
+      pages: [page],
+      articles: { f1: { blocks: [para('b1', 'Intro'), para('b2', 'Body')] } },
+    });
+    await save(db, base.elements, {}, base);
+    const gwen = tabWith({
+      pages: [page],
+      articles: { f1: { blocks: [para('b1', 'AAA from Gwen'), para('b2', 'Body')] } },
+    });
+    const hugo = tabWith({
+      pages: [page],
+      articles: {
+        f1: { blocks: [para('b1', 'Intro'), para('b2', 'Body'), para('b3', 'New line A')] },
+      },
+    });
+    await saveOver(db, base, gwen);
+    await saveOver(db, base, hugo);
+    const blocks = storedTab(db).articles!.f1!.blocks;
+    expect(blocks.map((b) => (b.type === 'paragraph' ? b.runs[0]!.text : b.id))).toEqual([
+      'AAA from Gwen',
+      'Body',
+      'New line A',
+    ]);
+  });
+
+  it('stores an unreadable header as sent, and says so', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const db = await documentWith([box('a')]);
+    await save(db, [box('a')], {}, { pages: [slide('s1')] });
+    await save(db, [box('a')], { [TAB_SAVE_CHANGES_HEADER]: 'nonsense' }, { pages: [slide('s2')] });
+    expect(storedTab(db).pages!.map((p) => p.id)).toEqual(['s2']);
+    expect(warn).toHaveBeenCalledWith('[tab-save] changes-invalid', {
+      documentId: 'D',
+      tabId: 't1',
+      length: 8,
+    });
   });
 });

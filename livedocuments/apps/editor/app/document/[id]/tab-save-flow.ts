@@ -1,5 +1,10 @@
 import { diffToElementOps, ledgerKey, type ElementOp, type Tab } from '@livedocuments/document';
-import { tabArticleOps, type RoomOp, type RoomOutgoing } from '@livedocuments/api-schema';
+import {
+  tabArticleOps,
+  tabSaveChangesHeader,
+  type RoomOp,
+  type RoomOutgoing,
+} from '@livedocuments/api-schema';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 import { holdOwnRoomWrites, type OwnElementWrites } from './own-element-writes';
 
@@ -24,16 +29,28 @@ export type SaveRoom = {
 // The save's ops, derived at the snapshot, and (with `writes`) the elements they write held from that moment
 // until the room sequences them (own-element-writes.ts), so a peer's update of one of them that the room ordered
 // first is not shown over ours. Taken when the snapshot is, not when a queued save gets to run.
-export type PreparedTabSave = { ops: RoomOp[]; release: (() => void) | null };
+//
+// `changes` is what the save changed by id, for the PUT's `X-Save-Changes` header (tabSaveChangesHeader), so the api
+// merges this save's pages (and writing) over the stored tab rather than storing the whole tab over a peer's
+// (docs/specs/012-collaboration/collab-race-hardening.md "A save is merged with the stored tab"). `previous` is the
+// tab as this editor's last save of it took it, which may still be in flight: what it held and this one lacks is
+// removed too, so a page added and deleted across two quick saves does not come back.
+export type PreparedTabSave = {
+  ops: RoomOp[];
+  release: (() => void) | null;
+  changes: string | null;
+};
 
 export function prepareTabSave(
   before: Tab | undefined,
   tab: Tab,
   writes?: OwnElementWrites,
+  previous?: Tab,
 ): PreparedTabSave {
-  const ops = tabBroadcastOps(before, tab);
-  if (!writes) return { ops, release: null };
-  return { ops, release: holdOwnRoomWrites(writes, ops) };
+  const ops = tabBroadcastOps(before, tab, previous);
+  const changes = tabSaveChangesHeader(before, tab, previous);
+  if (!writes) return { ops, release: null, changes };
+  return { ops, release: holdOwnRoomWrites(writes, ops), changes };
 }
 
 export async function saveTabAndRelay<R>(

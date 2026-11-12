@@ -6,8 +6,7 @@
 import { redactCommentAuthorIds } from '../comments';
 import { redactTabForCommunity } from '../community-redact';
 import { deleteTabRow, getDocument, getDocumentForSave, getTab } from '../db';
-import { tellConnectionLeft } from '@liveworkspace/index-app';
-import { indexAppClient, indexFor } from '../index-service';
+import { indexFor } from '../index-service';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
 import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livehuddle/api-schema';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
@@ -159,10 +158,6 @@ export async function handleDocumentSubresources(
       // once can't take the last two tabs.
       const removed = await deleteTabRow(env, id, tabId, { keepLast: !!ctx.token });
       if (removed === 'last') return conflict('last_tab');
-      // A connected tab has left its host: the index deletes its connection and its pass (connected-tabs.md
-      // "Removing"), off the response path.
-      if (removed?.connection)
-        ctx.waitUntil?.(tellConnectionLeft(indexAppClient(env), id, tabId, removed.connection));
       // The links scoped to it go with it (docs/specs/013-workspace/tab-scoped-share-links.md): the index revokes
       // them and their holders leave the editor as on a revoke. Asked as the caller, off the response path; a link
       // the index keeps opens nothing here meanwhile, since the tab reads as missing.

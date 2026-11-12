@@ -19,6 +19,7 @@ import {
   withTableCell,
   type ArticleTableCellOp,
 } from './article-table';
+import { longestIncreasing } from '@liveworkspace/model-core/id-list-steps';
 
 export type ArticleOp =
   // A block added or moved: it goes after `after` (null: first), or failing that before `before`
@@ -32,26 +33,6 @@ export type ArticleOp =
   // One table cell's text replaced (docs/specs/007-editor/article-pages.md "Collaboration": a table
   // syncs cell by cell), by its table's, row's and column's ids.
   | ArticleTableCellOp;
-
-/** Indexes (into `seq`) of one longest strictly increasing subsequence: O(n log n). */
-function longestIncreasing(seq: readonly number[]): Set<number> {
-  const tails: number[] = [];
-  const prevOf = new Array<number>(seq.length).fill(-1);
-  seq.forEach((v, i) => {
-    let lo = 0;
-    let hi = tails.length;
-    while (lo < hi) {
-      const mid = (lo + hi) >> 1;
-      if (seq[tails[mid]!]! < v) lo = mid + 1;
-      else hi = mid;
-    }
-    if (lo > 0) prevOf[i] = tails[lo - 1]!;
-    tails[lo] = i;
-  });
-  const out = new Set<number>();
-  for (let i = tails.length ? tails[tails.length - 1]! : -1; i >= 0; i = prevOf[i]!) out.add(i);
-  return out;
-}
 
 /** The ops that turn `before` into `after` (`before` absent: an article arriving whole). Removals
  *  first, then a put for each block that is new, changed, or moved (not among the most blocks

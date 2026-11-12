@@ -122,6 +122,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Note·Used',
   'Plan·Added',
   'Plan·Changed',
+  // An Incoming Webhook rule's secret copied from the once-shown field (type AutomationSecret).
+  'Plan·Copied',
   'Plan·Created',
   'Plan·Deleted',
   'Plan·Duplicated',

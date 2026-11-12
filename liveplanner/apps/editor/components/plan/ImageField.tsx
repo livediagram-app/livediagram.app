@@ -226,16 +226,26 @@ export function ImageFieldControl({
   );
 }
 
-/** A card face's Image field: a small thumbnail, fetched once the card scrolls into view. */
-export function ImageThumb({ imageId, label }: { imageId: string; label: string }) {
+/** A card face's Image field: a small thumbnail, fetched once the card scrolls into view; a Several Images field's
+ *  first, with how many more it holds after it ("+4"). Only the first picture is ever fetched for a card face. */
+export function ImageThumb({
+  imageId,
+  label,
+  more = 0,
+}: {
+  imageId: string;
+  label: string;
+  more?: number;
+}) {
   const scope = usePlan()?.itemsScope;
   const [ref, seen] = useSeen<HTMLSpanElement>();
   const shown = useImageUrl(scope, imageId, IMAGE_THUMB_EDGE, seen);
-  return (
+  const thumb = (
     <span
-      ref={ref}
-      role="img"
-      aria-label={label}
+      ref={more > 0 ? undefined : ref}
+      role={more > 0 ? undefined : 'img'}
+      aria-label={more > 0 ? undefined : label}
+      aria-hidden={more > 0 ? true : undefined}
       className="inline-flex h-5 w-7 shrink-0 items-center justify-center overflow-hidden rounded bg-slate-200/80 text-slate-500 dark:bg-slate-700/70 dark:text-slate-400"
     >
       {shown.state === 'shown' ? (
@@ -245,6 +255,20 @@ export function ImageThumb({ imageId, label }: { imageId: string; label: string 
           <BrokenIcon />
         </span>
       ) : null}
+    </span>
+  );
+  if (more <= 0) return thumb;
+  return (
+    <span
+      ref={ref}
+      role="img"
+      aria-label={label}
+      className="inline-flex shrink-0 items-center gap-1"
+    >
+      {thumb}
+      <span aria-hidden className="text-[11px] font-medium tabular-nums opacity-80">
+        +{more}
+      </span>
     </span>
   );
 }

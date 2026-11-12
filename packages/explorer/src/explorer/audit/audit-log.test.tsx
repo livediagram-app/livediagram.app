@@ -2,7 +2,7 @@
 // view"): the team's admins alone see it; closed until opened; every filter sent as the read takes it; Show More and
 // its failure; empty, nothing matching, refused and failed; Export CSV across files, the cap and a failure.
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   IndexError,
   type TeamAuditEvent,
@@ -12,7 +12,7 @@ import type { TeamDetails, TeamsHost } from '../../data/teams';
 import { createFakeIndex } from '../../test/fakeClient';
 import { Explorer } from '../Explorer';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
-import { AUDIT_EXPORT_FILES_MAX, exportAuditCsv } from './useAuditLog';
+import { AUDIT_EXPORT_FILES_MAX, exportAuditCsv, streamAuditCsv } from './useAuditLog';
 
 const saved = vi.hoisted(() => ({ files: [] as { blob: Blob; name: string }[] }));
 vi.mock('@liveworkspace/ui/download-blob', () => ({
@@ -22,6 +22,36 @@ vi.mock('@liveworkspace/ui/download-blob', () => ({
 beforeEach(() => {
   saved.files = [];
 });
+
+afterEach(() => {
+  delete (window as { showSaveFilePicker?: unknown }).showSaveFilePicker;
+});
+
+// A browser with the File System Access API: the picker hands back a file that records each chunk written.
+function stubPicker(pick?: () => Promise<never>) {
+  const file = { chunks: [] as string[], closed: false, aborted: false, failOnWrite: false };
+  const picker = vi.fn<(options: { suggestedName: string }) => Promise<unknown>>(
+    pick ??
+      (async () => ({
+        createWritable: async () => ({
+          write: async (chunk: string) => {
+            if (file.failOnWrite && file.chunks.length > 0) throw new Error('disk full');
+            file.chunks.push(chunk);
+          },
+          close: async () => {
+            file.closed = true;
+          },
+          abort: async () => {
+            file.aborted = true;
+            // A stream that has already failed refuses to abort; the export still reports its own failure.
+            if (file.failOnWrite) throw new Error('already errored');
+          },
+        }),
+      })),
+  );
+  (window as { showSaveFilePicker?: unknown }).showSaveFilePicker = picker;
+  return { file, picker };
+}
 
 const details = (myRole: 'admin' | 'member' = 'admin'): TeamDetails => ({
   team: { id: 't1', name: 'Design Ops', organisation: null, myRole, myMemberId: 'm1' },
@@ -251,6 +281,24 @@ describe('the Audit Log', () => {
     await open(createFakeIndex());
     expect(await screen.findByText('No Audit Events Yet')).toBeTruthy();
     expect(screen.getByText('No events')).toBeTruthy();
+    expect((screen.getByRole('button', { name: 'Export CSV' }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+  });
+
+  it('disables Export CSV when a filter matches nothing, and enables it again once it does', async () => {
+    const index = createFakeIndex({ audit: [row(1, 'shared')] });
+    await open(index);
+    await waitFor(() => expect(rows().length).toBe(1));
+    const exportButton = () =>
+      screen.getByRole('button', { name: 'Export CSV' }) as HTMLButtonElement;
+    expect(exportButton().disabled).toBe(false);
+    fireEvent.change(screen.getByLabelText('Event'), { target: { value: 'deleted' } });
+    expect(await screen.findByText('No Events Match')).toBeTruthy();
+    expect(exportButton().disabled).toBe(true);
+    expect(exportButton().title).toBe('Nothing to export');
+    fireEvent.click(screen.getAllByRole('button', { name: 'Clear Filters' })[0]!);
+    await waitFor(() => expect(exportButton().disabled).toBe(false));
   });
 
   it('pages with Show More, and keeps the rows when the next page fails', async () => {
@@ -327,6 +375,69 @@ describe('the Audit Log', () => {
     expect(screen.getByRole('button', { name: 'Export CSV' })).toBeTruthy();
   });
 
+  it('streams the export to the file the reader picked, a file at a time, with one byte-order mark', async () => {
+    const { file, picker } = stubPicker();
+    const index = createFakeIndex({
+      audit: [row(1, 'shared')],
+      auditFiles: ['\uFEFFTime,Event\r\na,1\r\n', 'Time,Event\r\nc,3\r\n'],
+    });
+    await open(index);
+    await waitFor(() => expect(rows().length).toBe(1));
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+    // The picker opened inside the click, before any CSV was read.
+    expect(picker).toHaveBeenCalledTimes(1);
+    expect(index.count('teamAuditCsv')).toBe(0);
+    expect(picker.mock.calls[0]![0]).toMatchObject({
+      suggestedName: expect.stringMatching(/^design-ops-audit-log-\d{4}-\d{2}-\d{2}\.csv$/),
+    });
+    await waitFor(() => expect(file.closed).toBe(true));
+    expect(file.chunks).toEqual(['\uFEFF', 'Time,Event\r\na,1\r\n', 'c,3\r\n']);
+    // Nothing went through the Blob download.
+    expect(saved.files).toEqual([]);
+    expect(file.aborted).toBe(false);
+  });
+
+  it('saves nothing when the reader closes the picker', async () => {
+    const { file } = stubPicker(() => Promise.reject(new DOMException('closed', 'AbortError')));
+    const index = createFakeIndex({ audit: [row(1, 'shared')], auditFiles: ['Time\r\n'] });
+    await open(index);
+    await waitFor(() => expect(rows().length).toBe(1));
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+    await waitFor(() =>
+      expect(
+        (screen.getByRole('button', { name: 'Export CSV' }) as HTMLButtonElement).disabled,
+      ).toBe(false),
+    );
+    expect(index.count('teamAuditCsv')).toBe(0);
+    expect(file.chunks).toEqual([]);
+    expect(saved.files).toEqual([]);
+    expect(screen.queryByText('Couldn’t export the audit log. Try again.')).toBeNull();
+  });
+
+  it('falls back to a download when the picker may not open', async () => {
+    stubPicker(() => Promise.reject(new DOMException('no', 'SecurityError')));
+    const index = createFakeIndex({ audit: [row(1, 'shared')], auditFiles: ['Time\r\na\r\n'] });
+    await open(index);
+    await waitFor(() => expect(rows().length).toBe(1));
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+    await waitFor(() => expect(saved.files.length).toBe(1));
+  });
+
+  it('drops the half-written file and says so when a streamed export fails', async () => {
+    const { file } = stubPicker();
+    file.failOnWrite = true;
+    const index = createFakeIndex({
+      audit: [row(1, 'shared')],
+      auditFiles: ['Time\r\na\r\n', 'Time\r\nb\r\n'],
+    });
+    await open(index);
+    await waitFor(() => expect(rows().length).toBe(1));
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+    expect(await screen.findByText('Couldn’t export the audit log. Try again.')).toBeTruthy();
+    expect(file.aborted).toBe(true);
+    expect(file.closed).toBe(false);
+  });
+
   it('says so when an export fails, and saves nothing', async () => {
     const index = createFakeIndex({ audit: [row(1, 'shared')], auditFiles: ['Time\r\n'] });
     index.fail.set('teamAuditCsv', new IndexError(503, 'team_audit_unavailable'));
@@ -347,6 +458,21 @@ describe('the Audit Log', () => {
       await screen.findByText(/Saved the newest 20 events\. Narrow the dates to export the rest\./),
     ).toBeTruthy();
     expect(index.count('teamAuditCsv')).toBe(AUDIT_EXPORT_FILES_MAX);
+  });
+});
+
+describe('streamAuditCsv', () => {
+  it('hands over one file at a time, so no more than a file’s text is held', async () => {
+    const line = '2026-11-01T12:00:00.000Z,Share Link Made,shared,liveplanner\r\n';
+    const file = `H\r\n${line.repeat(10_000)}`;
+    const index = createFakeIndex({ auditFiles: Array.from({ length: 20 }, () => file) });
+    const sizes: number[] = [];
+    const done = await streamAuditCsv(index.client, { team: 't1' }, (chunk) => {
+      sizes.push(chunk.length);
+    });
+    expect(done).toEqual({ rows: 200_000, capped: false });
+    expect(sizes.length).toBe(20);
+    expect(Math.max(...sizes)).toBeLessThan(file.length + 1);
   });
 });
 

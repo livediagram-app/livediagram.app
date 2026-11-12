@@ -130,6 +130,9 @@ export const ROOT_TYPES = [
   'AutomationRunNowRequest',
   'AutomationRunResponse',
   'AutomationRunsResponse',
+  'AutomationSecretResponse',
+  'AutomationHookRequest',
+  'AutomationHookAccepted',
 ];
 
 // Code names that differ from the published component name (none today: the project's type is `Project`).

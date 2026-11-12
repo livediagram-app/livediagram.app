@@ -8,15 +8,21 @@
 // one at once, a test changing nothing. Phase 2: a time trigger's event runs its one rule (the scan matched it; the
 // conditions are checked again); a branch's related cards are written one patch each, a card failing alone; Assign in
 // Turn's place moves on only after a done run; the run's messages go after its card writes (automation-sends.ts).
+// Phase 3: an Incoming Webhook call's event runs its one rule on its card, or with no card when it named none and
+// the rule's steps need none (a blank card, `card.…` values reading nothing, no card on the run or its messages).
 import {
   AUTOMATION_CHAIN_MAX,
   AUTOMATION_RUNS_PER_DAY,
+  NO_CARDS_NAMED,
   allHold,
+  cardlessCard,
   fieldName,
+  incomingTriggerWords,
   isTimeTrigger,
   isTrashed,
   itemTitle,
   planActions,
+  runsWithoutCard,
   sha256,
   statusName,
   timeTriggerWords,
@@ -28,16 +34,20 @@ import {
   type AutomationStepLine,
 } from '@liveplanner/items';
 import { listItems, readItem } from '../../db/items';
+import { appBaseUrl } from '../../email/client';
 import { cardUrl, readAutomationPlan, type AutomationPlan } from './automation-plan';
 import { claimRun, dropRun, runsToday, settleRun, trimRuns } from './automation-log';
 import type { AutomationSchedule } from './automation-queue';
 import type { AutomationStore, Sql } from './automation-store';
 import { applyPlannedRun, type WriteDeps } from './automation-writes';
 import { sendMessages, sendsClient } from './automation-sends';
+import { aiClient, runAiSteps } from './automation-ai';
 
 // Triggers one wake runs; the rest wait AUTOMATION_MORE_MS for the next.
 export const AUTOMATION_EVENTS_PER_WAKE = 25;
 export const AUTOMATION_MORE_MS = 1000;
+// The most a wake spends before leaving the rest to the next (AI steps make a run slow: up to 15 s each).
+export const AUTOMATION_WAKE_MS = 60_000;
 
 export const CHAIN_STOPPED = `Chain stopped after ${AUTOMATION_CHAIN_MAX} rules`;
 export const CHAIN_KEPT = "Started by another rule's change";
@@ -49,8 +59,9 @@ export interface RunnerDeps extends WriteDeps {
   store: AutomationStore;
 }
 
-// What one wake (or one request) reads once: the plan, and the runs started today.
-export type RunState = { plan: AutomationPlan | null; today: number };
+// What one wake (or one request) reads once: the plan, the runs started today, and (once an AI step asks) the AI
+// calls made today.
+export type RunState = { plan: AutomationPlan | null; today: number; ai?: number };
 
 const hex = (bytes: Uint8Array) =>
   Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
@@ -66,6 +77,9 @@ function triggerLine(
 ): AutomationStepLine {
   if (event.kind === 'time' && isTimeTrigger(rule.trigger))
     return { kind: 'trigger', text: `Automation · ${timeTriggerWords(rule.trigger)}` };
+  // An Incoming Webhook call's: no person behind it.
+  if (event.kind === 'incoming')
+    return { kind: 'trigger', text: incomingTriggerWords(event.cards ?? 0) };
   const who = event.by.name;
   const column = (s: string | undefined) =>
     s && plan ? statusName(plan.outline, s) : (s ?? 'no column');
@@ -135,10 +149,14 @@ export async function runRule(
     settleRun(sql, run);
     // The day's budget counts what ran: a No Match is logged but costs nothing.
     if (result !== 'no_match') state.today += 1;
-    if (result === 'done') deps.store.advanceTurn(rule.id, turns);
+    if (result === 'done' || result === 'skipped') deps.store.advanceTurn(rule.id, turns);
     if (result === 'done' || result === 'failed')
       deps.store.settle(rule.id, result, reason ?? '', at, webhook);
-    console.info('[automations] run', { result, tookMs: run.tookMs });
+    console.info('[automations] run', {
+      result,
+      trigger: rule.trigger.kind,
+      tookMs: run.tookMs,
+    });
     return run;
   };
   try {
@@ -146,12 +164,18 @@ export async function runRule(
     const plan = state.plan;
     lines.push(triggerLine(event, plan, rule));
     const stop = chainStop(event, deps.store);
-    const item = await readItem(deps.env, deps.planId, event.cardId);
+    // An Incoming Webhook call that named no card: the rule runs once with none, when its steps need none.
+    const cardless = event.kind === 'incoming' && !event.cardId;
+    if (cardless && !runsWithoutCard(rule)) return end('skipped', NO_CARDS_NAMED);
+    const item = cardless ? cardlessCard() : await readItem(deps.env, deps.planId, event.cardId);
     if (!item || isTrashed(item)) {
       if (stop) return (dropRun(sql, id), null);
       return end('no_match', 'The card is gone');
     }
-    card = { id: item.id, key: item.key, title: itemTitle(item) };
+    if (!cardless) card = { id: item.id, key: item.key, title: itemTitle(item) };
+    const url = cardless
+      ? `${appBaseUrl(deps.env)}/project/${encodeURIComponent(deps.planId)}`
+      : cardUrl(deps.env, deps.planId, item.id);
     const ctx = {
       card: item,
       outline: plan.outline,
@@ -160,8 +184,10 @@ export async function runRule(
       now: at,
       timeZone: rule.timeZone,
       rule: { name: rule.name },
-      url: cardUrl(deps.env, deps.planId, item.id),
+      url,
       urlOf: (id: string) => cardUrl(deps.env, deps.planId, id),
+      ...(event.webhook ? { webhook: event.webhook } : {}),
+      ...(cardless ? { cardless: true } : {}),
       turn: opts.turn ?? (opts.dry ? 0 : deps.store.turn(rule.id)),
       // A branch's related cards come from the plan as it is now.
       ...(rule.steps.some((s) => s.kind === 'for')
@@ -188,15 +214,34 @@ export async function runRule(
       planId: deps.planId,
       runId: id,
       rule: rule.name,
-      card: { key: item.key, title: itemTitle(item), url: ctx.url },
+      card: cardless ? null : { key: item.key, title: itemTitle(item), url: ctx.url },
       at,
       dry: opts.dry === true,
     };
+    const source = { role: 'automation' as const, rule: rule.id, chain: (event.chain ?? 0) + 1 };
+    const ai = (dry: boolean) =>
+      runAiSteps(
+        deps,
+        {
+          client: aiClient(deps.env),
+          sql,
+          state,
+          plan,
+          rule,
+          card: item,
+          source,
+          dry,
+          ...(deps.env.AI_GATEWAY ? { gateway: deps.env.AI_GATEWAY } : {}),
+        },
+        writes.ai ?? [],
+        lines,
+        offset,
+      );
     if (opts.dry) {
+      await ai(true);
       await sendMessages(messages, writes.sends, lines, offset);
       return end(failed === null ? 'done' : 'failed', failed ?? undefined);
     }
-    const source = { role: 'automation' as const, rule: rule.id, chain: (event.chain ?? 0) + 1 };
     const out = await applyPlannedRun(deps, plan, rule, item, writes, source, ctx.url);
     if (!out.ok) {
       lines.push({ kind: 'action', ok: false, text: out.reason });
@@ -213,6 +258,9 @@ export async function runRule(
       refused.push(`#${r.card.key}`);
       failed ??= `Failed on ${refused[0]}: ${wrote.reason}`;
     }
+    // The AI steps, after the card writes: each one call, counted against the plan's day.
+    const asked = await ai(false);
+    failed ??= asked.failed ?? null;
     const sent = await sendMessages(messages, writes.sends, lines, offset);
     if (failed === null && sent.failed !== undefined) {
       failed = sent.failed;
@@ -220,6 +268,8 @@ export async function runRule(
     }
     if (failed !== null) return end('failed', failed);
     turns = writes.turns;
+    // A step the day's AI cap skipped makes the run Skipped, not Failed: nothing is wrong with the rule.
+    if (asked.skipped) return end('skipped', asked.skipped);
     return end('done');
   } catch (error) {
     console.warn('[automations] run.threw', { error: String(error) });
@@ -244,7 +294,13 @@ export async function runAutomationWake(
   const rules = deps.store.enabled();
   const state: RunState = { plan: null, today: runsToday(sql, now) };
   let ran = 0;
+  let left = false;
+  const started = Date.now();
   for (const row of rows.slice(0, AUTOMATION_EVENTS_PER_WAKE)) {
+    if (Date.now() - started > AUTOMATION_WAKE_MS) {
+      left = true;
+      break;
+    }
     const event = row.event;
     for (const rule of event ? rules : []) {
       if (!triggerMatches(rule.trigger, event!, rule.id)) continue;
@@ -268,7 +324,7 @@ export async function runAutomationWake(
   }
   trimRuns(sql, now);
   // A full batch leaves the rest a moment; a trigger the wake's own runs queued goes on the next wake.
-  const more = rows.length > AUTOMATION_EVENTS_PER_WAKE;
+  const more = left || rows.length > AUTOMATION_EVENTS_PER_WAKE;
   schedule.at = schedule.waiting() ? (more ? now + AUTOMATION_MORE_MS : now) : null;
   return ran;
 }

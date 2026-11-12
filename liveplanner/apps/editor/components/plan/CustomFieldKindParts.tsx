@@ -23,6 +23,7 @@ import {
   lucideClipboardCheck,
   lucideHash,
   lucideImage,
+  lucideImages,
   lucideLayers,
   lucideList,
   lucideListChecks,
@@ -73,6 +74,7 @@ const UsersIcon = lucideGlyph(lucideUsers, 16);
 const TimerIcon = lucideGlyph(lucideTimer, 16);
 const DateTimeRangeIcon = lucideGlyph(lucideCalendarCheck, 16);
 const CardsIcon = lucideGlyph(lucideLayers, 16);
+const ImagesIcon = lucideGlyph(lucideImages, 16);
 const BlockedByIcon = lucideGlyph(lucideLock, 16);
 const FormulaIcon = lucideGlyph(lucideBraces, 16);
 const RollupIcon = lucideGlyph(lucideMerge, 16);
@@ -127,6 +129,7 @@ export const PICK_KIND_ICONS: Record<PickKind, React.ReactNode> = {
   'time-tracking': <TimerIcon />,
   'datetime-range': <DateTimeRangeIcon />,
   cards: <CardsIcon />,
+  images: <ImagesIcon />,
   'blocked-by': <BlockedByIcon />,
   formula: <FormulaIcon />,
   rollup: <RollupIcon />,
@@ -335,8 +338,23 @@ function SampleValue({
           2/5
         </span>
       );
+    // A Several Images field: three picture tiles and the rest counted, as its grid and card face read.
     case 'image':
-      return (
+      return multiple ? (
+        <span className="inline-flex items-center gap-1 text-[13px] text-slate-700 dark:text-slate-200">
+          {[0, 1, 2].map((n) => (
+            <span
+              key={n}
+              className="flex h-8 w-8 items-center justify-center rounded bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+            >
+              <ImageIcon />
+            </span>
+          ))}
+          <span className="ml-0.5 text-[12px] font-medium tabular-nums text-slate-500 dark:text-slate-400">
+            +2
+          </span>
+        </span>
+      ) : (
         <span className="inline-flex items-center gap-1.5 text-[13px] text-slate-700 dark:text-slate-200">
           <span className="flex h-7 w-10 items-center justify-center rounded bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
             <ImageIcon />

@@ -6,9 +6,18 @@
 import type { Item, ItemPerson } from '../item';
 import type { ItemHistoryChange } from '../item-history';
 import type { AutomationTrigger, AutomationTriggerKind } from './types';
+import type { WebhookValues } from './webhook-paths';
 import type { AutomationRole } from './conditions';
 
-export type AutomationEventKind = 'created' | 'moved' | 'changed' | 'comment' | 'manual' | 'time';
+export type AutomationEventKind =
+  | 'created'
+  | 'moved'
+  | 'changed'
+  | 'comment'
+  | 'manual'
+  | 'time'
+  // An Incoming Webhook call's, queued only by the hook route, for its one rule.
+  | 'incoming';
 
 export interface AutomationEvent {
   // `${cardId}:${rev}` for a card write; `c:${commentId}`; `m:${nonce}`; a time trigger's from time-cards.ts: with
@@ -30,6 +39,10 @@ export interface AutomationEvent {
   chain?: number;
   // A manual run or a time trigger's: the one rule to run.
   ruleId?: string;
+  // An Incoming Webhook call's: the values its body gave that the rule names, and how many cards it named (its
+  // card is `cardId`, '' when it named none).
+  webhook?: WebhookValues;
+  cards?: number;
   at: number;
 }
 
@@ -47,6 +60,8 @@ export const TRIGGER_EVENT_KINDS: Readonly<
   scheduled: ['time'],
   due_in: ['time'],
   overdue: ['time'],
+  // Queued by the hook route for its one rule, never by a write.
+  incoming_webhook: ['incoming'],
 };
 
 // Who and why a write was made, as the event carries it.
@@ -134,5 +149,7 @@ export function triggerMatches(
     case 'due_in':
     case 'overdue':
       return event.kind === 'time' && event.ruleId === ruleId;
+    case 'incoming_webhook':
+      return event.kind === 'incoming' && event.ruleId === ruleId;
   }
 }

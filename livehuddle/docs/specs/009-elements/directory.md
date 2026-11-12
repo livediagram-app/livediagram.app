@@ -38,7 +38,8 @@ closes the popover only, never Avatar mode with it). A click elsewhere does **no
 the canvas with the list open: the popover is not modal (no backdrop), so the canvas behind it still takes every
 walking click, and it follows the stand on screen, kept inside the viewport, beside the stand on the side with room.
 In Avatar mode a press on the stand never walks you to it ([Avatar mode](../008-canvas/avatar-mode.md) "Clicking a
-piece"). Go, and Walk There, close it as they act (below).
+piece"). Go, and Walk There, close it as they act (below). While it is open the stand's hover card stays hidden, so
+the pointer resting on the stand shows only the popover.
 
 ## The list
 

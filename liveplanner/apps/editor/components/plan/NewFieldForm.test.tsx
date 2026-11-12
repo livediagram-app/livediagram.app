@@ -90,6 +90,7 @@ const ALL_KINDS = [
   'Email',
   'Phone',
   'Image',
+  'Several Images',
   'Link to Card',
   'Several Cards',
   'Blocked By',

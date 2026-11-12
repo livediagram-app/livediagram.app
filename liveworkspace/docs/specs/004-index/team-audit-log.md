@@ -121,7 +121,12 @@ the reader is an admin, and the read would refuse them anyway.
   CSV a file at a time (10,000 rows), follows `X-Next-Cursor` to the next, and joins them under one header, with a
   byte-order mark. At most 20 files (200,000 rows) are joined; past that, the file holds the newest 200,000 and a
   toast asks for a narrower date range. While it runs the button reads "Exporting…" and can't be pressed again; a
-  failure is a toast, and nothing is saved.
+  failure is a toast, and nothing is saved. **The button is off when the list is empty** (nothing yet, or a filter
+  that matches nothing: its tooltip says "Nothing to export"), so it never saves a header-only file.
+  **Where the browser has the File System Access API** (`showSaveFilePicker`), the save picker opens straight from
+  the click, before any read, and the file is written a CSV file (10,000 rows) at a time, so the largest export never
+  holds its 200,000 rows (about 40 MB of text) in memory; closing the picker cancels quietly, and a failure drops
+  the half-written file. Elsewhere the files are joined and saved as one download, as before.
 - **States**: three placeholder rows while the first page loads; empty, "No Audit Events Yet" ("Who joins or leaves,
   shares, moves or deletes the team's documents, and the team's webhooks show here for a year."); nothing matching,
   "No Events Match" with Clear Filters; refused (`403 not_team_admin`, an admin who has just stepped down), "Only the

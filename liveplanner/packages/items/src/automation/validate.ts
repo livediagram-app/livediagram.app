@@ -17,8 +17,11 @@ import {
   AUTOMATION_ROTATE_MIN,
   AUTOMATION_TEXT_MAX,
   AUTOMATION_TRIGGER_KINDS,
+  isPersonless,
   isTimeTrigger,
+  AUTOMATION_AI_STEPS_MAX,
   type AutomationAction,
+  type AutomationAi,
   type AutomationBranch,
   type AutomationCondition,
   type AutomationOutgoing,
@@ -33,6 +36,7 @@ import {
 } from './types';
 import { unknownValueIn, type ValuePlace } from './values';
 import { clockMinutes } from './schedule';
+import { readAiStep } from './ai-steps';
 
 export type RuleRefusal = {
   error:
@@ -71,8 +75,8 @@ const COPIES = new Set(['assignee', 'labels', 'due']);
 const EVERY = new Set(['day', 'weekday', 'week', 'month']);
 const VIA = new Set(['webhook', 'slack', 'teams']);
 // The steps a branch may not hold, and an If / Else's actions neither.
-const NOT_IN_BRANCH = new Set(['if', 'for', 'create_card', 'notify']);
-const NOT_IN_IF = new Set(['if', 'for', 'notify']);
+const NOT_IN_BRANCH = new Set(['if', 'for', 'create_card', 'notify', 'ai']);
+const NOT_IN_IF = new Set(['if', 'for', 'notify', 'ai']);
 
 // A refusal thrown inside the walk and caught at its top, so each check is one line.
 class Refused extends Error {
@@ -215,6 +219,8 @@ function readTrigger(v: unknown): AutomationTrigger {
       };
     case 'overdue':
       return { kind: 'overdue', at: clock(t['at'], 'trigger.at') };
+    case 'incoming_webhook':
+      return { kind: 'incoming_webhook' };
   }
 }
 
@@ -362,7 +368,7 @@ function readAction(v: unknown, path: string, place: ValuePlace = {}): Automatio
       return {
         kind: 'create_card',
         type: id(a['type'], `${path}.type`),
-        title: text(a['title'], `${path}.title`, ITEM_TITLE_MAX),
+        title: text_(a['title'], `${path}.title`, ITEM_TITLE_MAX),
         ...(a['status'] !== undefined ? { status: id(a['status'], `${path}.status`) } : {}),
         ...(copy?.length ? { copy: copy as ('assignee' | 'labels' | 'due')[] } : {}),
         ...(a['linkField'] !== undefined
@@ -412,7 +418,7 @@ function readActions(
   });
 }
 
-function readNotify(s: Obj, path: string): AutomationOutgoing {
+function readNotify(s: Obj, path: string, place: ValuePlace): AutomationOutgoing {
   const via = s['via'];
   if (typeof via !== 'string' || !VIA.has(via))
     refuse(`${path}.via`, `${path}.via must be webhook, slack or teams`);
@@ -421,7 +427,7 @@ function readNotify(s: Obj, path: string): AutomationOutgoing {
     via: via as AutomationOutgoing['via'],
     webhook: id(s['webhook'], `${path}.webhook`),
     ...(s['name'] !== undefined ? { name: text(s['name'], `${path}.name`, ID_MAX).trim() } : {}),
-    text: text(s['text'], `${path}.text`, AUTOMATION_TEXT_MAX),
+    text: text(s['text'], `${path}.text`, AUTOMATION_TEXT_MAX, place),
   };
 }
 
@@ -447,8 +453,9 @@ function readRelated(v: unknown, path: string): AutomationRelated {
   }
 }
 
-function readBranch(s: Obj, path: string): AutomationBranch {
+function readBranch(s: Obj, path: string, place: ValuePlace): AutomationBranch {
   const then = readActions(s['then'], `${path}.then`, NOT_IN_BRANCH, 'a branch', {
+    ...place,
     branch: true,
   });
   if (then.length === 0 || then.length > AUTOMATION_BRANCH_ACTIONS_MAX)
@@ -461,18 +468,23 @@ function readBranch(s: Obj, path: string): AutomationBranch {
   };
 }
 
-function readStep(v: unknown, path: string): AutomationStep {
+// `place`: an Incoming Webhook rule's text may name the call's values.
+function readStep(v: unknown, path: string, place: ValuePlace): AutomationStep {
   const s = obj(v, path);
-  if (s['kind'] === 'notify') return readNotify(s, path);
-  if (s['kind'] === 'for') return readBranch(s, path);
-  if (s['kind'] !== 'if') return readAction(s, path);
+  if (s['kind'] === 'notify') return readNotify(s, path, place);
+  if (s['kind'] === 'for') return readBranch(s, path, place);
+  if (s['kind'] === 'ai') {
+    const read = readAiStep(s);
+    return 'step' in read ? read.step : refuse(`${path}${read.path}`, read.message);
+  }
+  if (s['kind'] !== 'if') return readAction(s, path, place);
   const conditions = readConditions(s['conditions'], `${path}.conditions`);
   if (conditions.length === 0) refuse(`${path}.conditions`, 'an If needs a condition');
   return {
     kind: 'if',
     conditions,
-    then: readActions(s['then'], `${path}.then`, NOT_IN_IF, 'an If'),
-    else: readActions(s['else'], `${path}.else`, NOT_IN_IF, 'an If'),
+    then: readActions(s['then'], `${path}.then`, NOT_IN_IF, 'an If', place),
+    else: readActions(s['else'], `${path}.else`, NOT_IN_IF, 'an If', place),
   };
 }
 
@@ -480,7 +492,9 @@ const creates = (actions: readonly AutomationAction[]) =>
   actions.filter((a) => a.kind === 'create_card').length;
 
 // The actions a step holds: an If / Else's both lists, a branch's, else the step itself.
-export function stepActions(s: AutomationStep): readonly (AutomationAction | AutomationOutgoing)[] {
+export function stepActions(
+  s: AutomationStep,
+): readonly (AutomationAction | AutomationOutgoing | AutomationAi)[] {
   if (s.kind === 'if') return [...s.then, ...s.else];
   return s.kind === 'for' ? s.then : [s];
 }
@@ -505,14 +519,15 @@ function createsPerRun(steps: readonly AutomationStep[]): number {
   );
 }
 
-// A time trigger has no person behind it: no Who Did It condition, and nobody to assign or email as whoever
-// triggered it, anywhere in the rule.
-function checkTimeRule(
+// A time trigger or an incoming webhook (`who` says which) has no person behind it: no Who Did It condition, and
+// nobody to assign or email as whoever triggered it, anywhere in the rule.
+function checkPersonless(
   conditions: readonly AutomationCondition[],
   steps: readonly AutomationStep[],
+  who: string,
 ) {
   const no = (path: string, what: string) =>
-    unsupported('automation_condition_unsupported', path, `A time trigger has no ${what}`);
+    unsupported('automation_condition_unsupported', path, `${who} has no ${what}`);
   const checkConditions = (list: readonly AutomationCondition[], path: string) =>
     list.forEach((c, i) => {
       if (c.kind === 'who') no(`${path}.${i}`, 'person behind it to check');
@@ -542,14 +557,22 @@ export function readRuleBody(v: unknown): { body: AutomationRuleBody } | RuleRef
     const trigger = readTrigger(r['trigger']);
     const conditions = readConditions(r['conditions'] ?? [], 'conditions');
     if (!Array.isArray(r['steps'])) refuse('steps', 'steps must be a list');
-    const steps = (r['steps'] as unknown[]).map((s, i) => readStep(s, `steps.${i}`));
+    const place: ValuePlace = trigger.kind === 'incoming_webhook' ? { webhook: true } : {};
+    const steps = (r['steps'] as unknown[]).map((s, i) => readStep(s, `steps.${i}`, place));
     if (countActions(steps) > AUTOMATION_ACTIONS_MAX)
       refuse('steps', `a rule holds up to ${AUTOMATION_ACTIONS_MAX} actions`);
     if (createsPerRun(steps) > AUTOMATION_CREATED_PER_RUN)
       refuse('steps', `a run makes up to ${AUTOMATION_CREATED_PER_RUN} card`);
     if (steps.filter((s) => s.kind === 'notify').length > AUTOMATION_OUTGOING_MAX)
       refuse('steps', `a rule holds up to ${AUTOMATION_OUTGOING_MAX} outgoing actions`);
-    if (isTimeTrigger(trigger)) checkTimeRule(conditions, steps);
+    if (steps.filter((s) => s.kind === 'ai').length > AUTOMATION_AI_STEPS_MAX)
+      refuse('steps', `a rule holds up to ${AUTOMATION_AI_STEPS_MAX} AI actions`);
+    if (isPersonless(trigger))
+      checkPersonless(
+        conditions,
+        steps,
+        isTimeTrigger(trigger) ? 'A time trigger' : 'An incoming webhook',
+      );
     return {
       body: {
         name,

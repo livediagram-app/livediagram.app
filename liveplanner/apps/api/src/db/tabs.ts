@@ -3,10 +3,11 @@
 
 import {
   shareLeaveStatements,
-  storedTabConnection,
+  connectionLeftStatement,
   tabConnectionOf,
   tabConnectionStatement,
 } from '@liveworkspace/index-app';
+import { PLAN_OUTBOX } from '../plan-room/plan-outbox';
 import type { TabConnection } from '@liveworkspace/index-client';
 import { capElementActions, drawnCount, type Tab } from '@liveplanner/project';
 import { rowToTab, type TabRow } from '../tab-row';
@@ -388,10 +389,10 @@ export async function seedTabs(
 //
 // Answers the tab's stored body as it was removed (null when this plan did not hold it), read
 // by the delete itself so a comment written a moment before cannot slip between a read and the
-// delete: the caller retracts the tab's comment events from this project's feed with it. And its
-// connection, when it was a connected tab: the caller tells the index it has left
-// (connected-tabs.md "Removing").
-export type DeletedTab = { data: string; connection: TabConnection | null };
+// delete: the caller retracts the tab's comment events from this project's feed with it. A connected tab's
+// removal goes to the index through the outbox, keyed in the same batch (connectionLeftStatement,
+// connected-tabs.md "Removing").
+export type DeletedTab = { data: string };
 
 export async function deleteTabRow(
   env: PlanEnv,
@@ -406,11 +407,13 @@ export async function deleteTabRow(
     .prepare(
       `DELETE FROM plan_tabs WHERE plan_id = ? AND tab_id = ?
           AND (? = 0 OR (SELECT COUNT(*) FROM plan_tabs WHERE plan_id = ?) > 1)
-        RETURNING (SELECT t.data FROM tabs t WHERE t.id = plan_tabs.tab_id) AS data,
-                  (SELECT t.connection FROM tabs t WHERE t.id = plan_tabs.tab_id) AS connection`,
+        RETURNING (SELECT t.data FROM tabs t WHERE t.id = plan_tabs.tab_id) AS data`,
     )
     .bind(projectId, tabId, opts.keepLast ? 1 : 0, projectId);
   const rest = [
+    // A connected tab that has left: an outbox key, so the room's drain tells the index (removeConnection) and
+    // tries again after a failure (connected-tabs.md "Removing"). After the unlink, before the tab's row goes.
+    connectionLeftStatement(db, PLAN_OUTBOX, 'plan_tabs', projectId, tabId),
     // A shared tab (plan-room/tab-shares.ts): every other holder hears that this plan left, and nothing else it
     // owed them about the tab is sent. Before the tab's delete, which takes its `tab_shares` rows.
     ...shareLeaveStatements(env.PLAN_DB, tabId),
@@ -420,7 +423,7 @@ export async function deleteTabRow(
     // The tab's references are gone with it, so the plan's sheets settle here.
     ...sheetSettleStatements(env, projectId, Date.now()),
   ];
-  type Row = { data?: string | null; connection?: string | null };
+  type Row = { data?: string | null };
   const rowOf = (r: unknown) => (r as { results?: Row[] } | undefined)?.results?.[0];
   let row: Row | undefined;
   if (!opts.keepLast) {
@@ -439,7 +442,7 @@ export async function deleteTabRow(
     await db.batch(rest);
   }
   if (row?.data == null) return null;
-  return { data: row.data, connection: storedTabConnection(row.connection) };
+  return { data: row.data };
 }
 
 // One position in a reorder request: the tab id plus its per-project

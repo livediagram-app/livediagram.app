@@ -14,6 +14,7 @@ import {
   mergeIncomingElement,
   type ElementDelta,
   type ElementOp,
+  withPeerPageSteps,
   type Tab,
 } from '@livedocuments/document';
 import type { RoomOp } from '@livedocuments/api-schema';
@@ -39,7 +40,10 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
       // The tab keeps the id the op names: a payload naming another would renumber it here, and the next save
       // would write it over that other tab (the room drops such an op too, room-op-gate.ts).
       if (!tabs.some((t) => t.id === op.tabId)) return [...tabs, { ...op.tab, id: op.tabId }];
-      return updateTab(tabs, op.tabId, (tab) => ({ ...mergeRemoteTab(tab, op.tab), id: tab.id }));
+      return updateTab(tabs, op.tabId, (tab) => ({
+        ...mergeRemoteTab(tab, op.tab, op.pageSteps),
+        id: tab.id,
+      }));
     }
     case 'el':
       // ONE element, applied by id (docs/specs/012-collaboration/realtime-conflict-resolution.md). An op for a tab we don't have is
@@ -78,6 +82,10 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
           Object.entries(op.patch ?? {}).filter(([key]) => !META_SKIP.has(key)),
         );
         const merged: Tab = { ...tab, ...patch, id: tab.id, folder: tab.folder };
+        // A page list is applied by its steps over our own pages (docs/specs/012-collaboration/
+        // collab-race-hardening.md "Pages"), so a page added here meanwhile stays; from an older sender, it stands whole.
+        const pages = 'pages' in patch ? withPeerPageSteps(tab, op.pageSteps, patch.pages) : null;
+        if (pages) merged.pages = pages;
         // Fields the sender removed (docs/specs/012-collaboration/collab-race-hardening.md); never one a patch can't touch.
         for (const key of Array.isArray(op.clear) ? op.clear : []) {
           if (!META_SKIP.has(key)) delete (merged as Record<string, unknown>)[key];

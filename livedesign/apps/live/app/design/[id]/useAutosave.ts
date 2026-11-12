@@ -244,6 +244,8 @@ export function useAutosave(opts: {
   // Each tab's writes in order (tab-save-queue.ts).
   const saveQueueRef = useRef<TabSaveQueue | null>(null);
   saveQueueRef.current ??= createTabSaveQueue();
+  // Each tab as its last save took it, by id: the next save's changes remove what it held and this one lacks.
+  const preparedTabsRef = useRef(new Map<string, Tab>());
 
   useEffect(() => {
     if (!hydrated || !designId) return;
@@ -323,8 +325,10 @@ export function useAutosave(opts: {
           writes.push(relayParticipantChanges(before, t, () => roomRef.current, ownWrites, claim));
           continue;
         }
-        // Derived and held now, at the snapshot, though the queue may run the save later.
-        const prepared = prepareTabSave(before, t, ownWrites);
+        // Derived and held now, at the snapshot, though the queue may run the save later. Against this tab's last
+        // save as well, which may still be in flight (tab-save-flow.ts PreparedTabSave).
+        const prepared = prepareTabSave(before, t, ownWrites, preparedTabsRef.current.get(t.id));
+        preparedTabsRef.current.set(t.id, t);
         const write = saveQueueRef
           .current!.run(t.id, () =>
             saveTabAndRelay(
@@ -342,6 +346,7 @@ export function useAutosave(opts: {
                   // the set, so it can't authorise its own wipe (docs/specs/006-design/per-tab-storage.md).
                   allowEmpty: loadedTabIdsRef.current.has(t.id),
                   roomCursor,
+                  saveChanges: prepared.changes,
                   // From the same render as `t`, never ahead of it (useChangesetSeen).
                   ...(changesetSeen.has(t.id) ? { changesetSeen: changesetSeen.get(t.id) } : {}),
                 });

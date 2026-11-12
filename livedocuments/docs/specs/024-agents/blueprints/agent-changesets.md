@@ -358,11 +358,12 @@ codes), `cap` (413), `message` (405, CS45). `now` elements pass `redactCommentAu
 
 ### Headers
 
-| Header                   | Direction              | Value                                          | Absent / invalid                                          |
-| ------------------------ | ---------------------- | ---------------------------------------------- | --------------------------------------------------------- |
-| `X-Changeset-Seen`       | editor → tab PUT       | decimal integer 0 to `Number.MAX_SAFE_INTEGER` | window rule; invalid also logs `[changeset] seen-invalid` |
-| `X-Livedocuments-Client` | MCP, CLI, editor → api | `mcp`, `cli` or `editor`                       | front door `Api` (CS25)                                   |
-| `ETag`                   | api → tab GET          | `W/"<rev>"`                                    | never absent                                              |
+| Header                   | Direction              | Value                                                                                                                                                                                                        | Absent / invalid                                                                        |
+| ------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `X-Changeset-Seen`       | editor → tab PUT       | decimal integer 0 to `Number.MAX_SAFE_INTEGER`                                                                                                                                                               | window rule; invalid also logs `[changeset] seen-invalid`                               |
+| `X-Save-Changes`         | editor → tab PUT       | URI-encoded JSON of the save's pages and writing changed by id, at most 8,000 characters ([collab-race-hardening.md](../../012-collaboration/collab-race-hardening.md#a-save-is-merged-with-the-stored-tab)) | absent or unreadable: stored as sent; unreadable also logs `[tab-save] changes-invalid` |
+| `X-Livedocuments-Client` | MCP, CLI, editor → api | `mcp`, `cli` or `editor`                                                                                                                                                                                     | front door `Api` (CS25)                                                                 |
+| `ETag`                   | api → tab GET          | `W/"<rev>"`                                                                                                                                                                                                  | never absent                                                                            |
 
 ### Room
 

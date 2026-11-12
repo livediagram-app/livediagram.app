@@ -162,6 +162,8 @@ function okResponse(request: Request): Response {
   if (/^\/projects\/[^/]+$/.test(path)) return json({ project: LIVE_DOC });
   if (path.endsWith('/items') && request.method === 'GET') return json({ items: [], rev: 0 });
   if (path.endsWith('/threads') && request.method === 'GET') return json({ threads: [] });
+  if (path.endsWith('/automations') && request.method === 'GET')
+    return json({ rules: [], runsToday: 0, runsPerDay: 1000, people: [] });
   if (path.endsWith('/plan')) return json(PLAN);
   return json({});
 }
@@ -237,7 +239,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the thirty documented tools, each with a description', () => {
+  it('registers the thirty-two documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered;
     expect(current.map((r) => r.name).sort()).toEqual([
@@ -250,6 +252,7 @@ describe('registerTools', () => {
       'change_card_types',
       'change_form',
       'change_items',
+      'change_rules',
       'change_sheet',
       'change_threads',
       'create_project',
@@ -257,6 +260,7 @@ describe('registerTools', () => {
       'find_projects',
       'import_board',
       'list_items',
+      'list_rules',
       'list_sheets',
       'list_templates',
       'list_threads',
@@ -383,6 +387,9 @@ describe('tool annotations', () => {
     // docs/specs/026-plan/plan-agents.md "Comment threads": change_threads deletes the agent's own comments.
     list_threads: 'read',
     change_threads: 'destructive',
+    // docs/specs/026-plan/automations.md "Agents and the CLI": change_rules deletes rules.
+    list_rules: 'read',
+    change_rules: 'destructive',
     // docs/specs/026-plan/plan-agents.md: a board is added; deleting a card type trashes its cards.
     add_board: 'write',
     // docs/specs/026-plan/tracker-import.md "Agents": an import makes a tab, a card type and cards.
@@ -440,6 +447,7 @@ describe('tool annotations', () => {
     expect(readOnly).toEqual([
       'find_projects',
       'list_items',
+      'list_rules',
       'list_sheets',
       'list_templates',
       'list_threads',
@@ -468,6 +476,7 @@ describe('tool annotations', () => {
       'change_card_types',
       'change_form',
       'change_items',
+      'change_rules',
       'change_sheet',
       'change_threads',
       'delete_project',

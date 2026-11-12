@@ -58,6 +58,8 @@ them ([Share roles](../013-workspace/share-roles.md)).
 - A space with **one tab** says "This space has one floor. Add a tab with Stairs on it to make another."
 - Escape, a click outside or pressing the Stairs again closes it; walking off the Stairs closes a panel the walk-in
   opened.
+- **No hover card while it is open.** The panel already says where the Stairs lead, so the piece's hover card stays
+  hidden while the panel is open, however it opened, and shows again once it closes.
 
 ## Taking them
 

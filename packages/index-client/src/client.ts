@@ -74,20 +74,49 @@ import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 export class IndexError extends Error {
   readonly status: number;
   readonly code: IndexErrorCode | string;
-  constructor(status: number, code: string) {
+  // How long the answer's `Retry-After` asked the caller to wait (ms), or null when it sent none that parses. Raw:
+  // the outbox caps it (@liveworkspace/index-app outbox.ts `failureDelayMs`).
+  readonly retryAfterMs: number | null;
+  constructor(status: number, code: string, retryAfterMs: number | null = null) {
     super(`index: ${status} ${code}`);
     this.name = 'IndexError';
     this.status = status;
     this.code = code;
+    this.retryAfterMs = retryAfterMs;
   }
+}
+
+// The longest `Retry-After` text read: ten digits of seconds is three centuries, and an HTTP date is 29 characters.
+const RETRY_AFTER_TEXT_MAX = 40;
+
+// A `Retry-After` header as a wait in ms from `now`: delta-seconds (digits only) or an HTTP date, which ends in
+// `GMT` (one in the past waits 0). Null when absent, too long, or neither. Read character by character, never with a
+// repeating regex.
+export function retryAfterMsOf(header: string | null | undefined, now = Date.now()): number | null {
+  const text = header?.trim() ?? '';
+  if (text === '' || text.length > RETRY_AFTER_TEXT_MAX) return null;
+  let digits = true;
+  for (let i = 0; i < text.length && digits; i++) {
+    const c = text.charCodeAt(i);
+    digits = c >= 48 && c <= 57;
+  }
+  if (digits) return Number(text) * 1000;
+  if (!text.endsWith('GMT')) return null;
+  const at = Date.parse(text);
+  return Number.isFinite(at) ? Math.max(0, at - now) : null;
 }
 
 type Query = Record<string, string | number | boolean | null | undefined>;
 
-// A refusal's `{ error }` as an IndexError; `unknown` when the body names none.
-function refusal(status: number, parsed: unknown): IndexError {
+// A refusal's `{ error }` as an IndexError; `unknown` when the body names none. `res` gives its Retry-After.
+function refusal(res: Response, parsed: unknown): IndexError {
   const error = (parsed as { error?: unknown } | null)?.error;
-  return new IndexError(status, typeof error === 'string' ? error : 'unknown');
+  return new IndexError(
+    res.status,
+    typeof error === 'string' ? error : 'unknown',
+    // A stand-in response without headers (a test's, a polyfill's) has no Retry-After.
+    retryAfterMsOf(res.headers?.get('Retry-After')),
+  );
 }
 
 // `?a=1&b=2` from the set values, or '' when none is set.
@@ -150,7 +179,7 @@ export function createIndexClient({
     const res = await send(path, options);
     if (res.status === 204) return undefined as T;
     const parsed = (await res.json().catch(() => null)) as { error?: unknown } | null;
-    if (!res.ok) throw refusal(res.status, parsed);
+    if (!res.ok) throw refusal(res, parsed);
     return parsed as T;
   }
 
@@ -160,7 +189,7 @@ export function createIndexClient({
     options: CallOptions = {},
   ): Promise<{ text: string; res: Response }> {
     const res = await send(path, options);
-    if (!res.ok) throw refusal(res.status, await res.json().catch(() => null));
+    if (!res.ok) throw refusal(res, await res.json().catch(() => null));
     return { text: await res.text(), res };
   }
 
@@ -422,10 +451,8 @@ export type IndexAppClientOptions = {
 // What an app's server (its api Worker or an item's Durable Object) pushes about an item.
 export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: IndexAppClientOptions) {
   const base = withoutTrailingSlashes(baseUrl || `https://www.liveworkspace.app${INDEX_API_PATH}`);
-  const failed = async (res: Response): Promise<IndexError> => {
-    const parsed = (await res.json().catch(() => null)) as { error?: unknown } | null;
-    return new IndexError(res.status, typeof parsed?.error === 'string' ? parsed.error : 'unknown');
-  };
+  const failed = async (res: Response): Promise<IndexError> =>
+    refusal(res, await res.json().catch(() => null));
   async function put(path: string, body: unknown): Promise<void> {
     const res = await (doFetch ?? fetch)(`${base}/app${path}`, {
       method: 'PUT',
