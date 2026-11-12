@@ -67,9 +67,11 @@ export function applyAlpha(rawColor: string, alpha: number): string {
 // user's pattern-size slider). Only background-size is scaled, never
 // background-position, so the tiles grow / shrink while the pattern still
 // tracks the pan offset at its original phase. Multi-layer specs (comma
-// separated, e.g. graph / engineering) scale every layer.
+// separated, e.g. graph / engineering) scale every layer. A match starts only where a run of digits
+// starts (the lookbehind), so a long run of digits with no `px` is read once, not once per digit: the
+// scan stays linear (CodeQL js/polynomial-redos), and it finds the same lengths as before.
 export function scaleBackgroundSize(spec: string, k: number): string {
-  return spec.replace(/(\d+(?:\.\d+)?)px/g, (_, n: string) => `${Number(n) * k}px`);
+  return spec.replace(/(?<!\d)(\d+(?:\.\d+)?)px/g, (_, n: string) => `${Number(n) * k}px`);
 }
 
 // Where the static pattern's origin lands on screen, so the pattern lives in
