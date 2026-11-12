@@ -24,8 +24,8 @@ import makes a second board. liveplanner still has no connectors to other tracke
   the tool keeps it. There is no separate menu row, palette command or switch for them: the tab menu's **Import…** and
   the command palette's **Import…** open the dialog, as for every other import.
 - A row opens the file picker. **The file says which tool it came from**, so the row is a starting point, not a
-  promise: a Jira CSV picked from the Trello row is read as Jira's. A file **dropped** on the dialog's list is read the
-  same way.
+  promise: a Jira CSV picked from the Trello row is read as Jira's. A file **dropped** on the dialog, on any of its steps, is
+  read the same way.
 - A locked tab does not dim the section: the import makes a new tab and leaves the locked one as it is.
 - **Agents**: the MCP's `import_board` tool and the CLI's `liveplanner board import` read the same files the same way
   ([Agents](#agents)).
