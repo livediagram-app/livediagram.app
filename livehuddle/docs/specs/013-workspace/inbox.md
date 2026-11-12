@@ -1,5 +1,13 @@
 # Inbox
 
+> **Gone from livehuddle** (owner, 2026-11-11, Work Tracker #714): livehuddle has no Inbox. The shared Explorer shows
+> no Inbox row, pane, hero pill or rail count on livehuddle's address or in its editor panel
+> (`appHasInbox('livehuddle')` is false, `packages/explorer/src/inbox-apps.ts`), and a remembered or linked Inbox opens
+> Home. livehuddle's room pushes no threads or actions to the index any more and sends no Inbox row, mention or action
+> email ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)). Rows it pushed
+> before stay in the index, unread here. The deep link's `open=` is still parsed, and only selects the element. The
+> rest of this page records what livehuddle had.
+
 The Inbox is liveworkspace's: one view in the shared Explorer (`/explorer/inbox`), listing open actions assigned to
 you or by you and unresolved comment threads you are in, across every liveworkspace app, each row opening its item in
 its own app at the tab and element.

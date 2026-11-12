@@ -1,5 +1,11 @@
 # Rich-text notes
 
+> **Gone from livehuddle** (owner, 2026-11-11, Work Tracker #714): the per-element note left livehuddle with comments, actions,
+> links and notes ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)).
+> livediagram, liveplanner, livedocuments and livedesign keep it; their own specs are the ones to read and change.
+> livehuddle's code for it is deleted, and what a Space already stores is left untouched. A link card keeps its link and an annotation marker its note. The rest of this
+> page records what livehuddle had.
+
 The per-element **note** (`note?` on every boxed element, opened from the
 element menu's Resources band, the on-element note badge, or an annotation
 marker; see [Annotations](annotations.md), [Assigned actions](../012-collaboration/assigned-actions.md))

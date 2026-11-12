@@ -279,7 +279,9 @@ each product folder (livehuddle's [Build plan](../livehuddle/docs/specs/005-proj
 - **The light meeting tools**: Bring Focus, the facilitator baton and follow-me (`bring-focus.md`, `facilitator.md`).
   livehuddle's Timer is a placed piece of its own (`docs/specs/009-elements/timer-and-stopwatch.md`); the Session
   strip's Timer is livediagram's alone (`docs/specs/012-collaboration/session-tools.md`).
-- **Comments and actions**: comments with mentions, reactions, assigned actions and the Collaborate Panel.
+- **Comments and actions** are livediagram's alone now: livehuddle removed comments, assigned actions, element links,
+  notes, the Collaborate Panel and the Inbox (owner, 2026-11-11, Work Tracker #714,
+  `docs/specs/002-project-scope/not-in-livehuddle.md` "Comments, actions, links and notes").
 - **Share roles on a board**: what a Participant may do (`docs/specs/013-workspace/share-roles.md`).
 
 **Left livediagram for livehuddle** (Work Tracker #650): Avatar mode (the walk, the Avatar panel and tour,
