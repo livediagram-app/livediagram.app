@@ -45,13 +45,7 @@ export type ItemHistoryChange =
 // `automation_ai`: a rule's AI action (docs/specs/026-plan/automations.md "AI actions"), by Automation, marked as AI.
 // `github`: a GitHub rule's move (docs/specs/026-plan/github-pull-requests.md "GitHub rules"), by GitHub.
 export type ItemHistoryTag =
-  | 'ai'
-  | 'undo'
-  | 'form'
-  | 'repeat'
-  | 'automation'
-  | 'automation_ai'
-  | 'github';
+  'ai' | 'undo' | 'form' | 'repeat' | 'automation' | 'automation_ai' | 'github';
 
 // An entry as the plan stores it: its author as the card names them (a hashed id, a name, a colour).
 export type StoredHistoryEntry = {

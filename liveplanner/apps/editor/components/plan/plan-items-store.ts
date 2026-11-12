@@ -6,64 +6,18 @@
 // 2,000 cards of a board on every drop and edit, each holding a Parent field that reads it (plan-board.md "A drag
 // stays smooth").
 import type { Item } from '@liveplanner/items';
-import {
-  createContext,
-  use,
-  useInsertionEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from 'react';
+import { createContext, use, useRef, useSyncExternalStore } from 'react';
 import { usePlan } from './PlanContext';
+import { noSubscribe, useValueStore, type ValueStore } from './value-store';
 
 export type PlanItems = ReadonlyMap<string, Item>;
 
-export type PlanItemsStore = {
-  get: () => PlanItems | undefined;
-  subscribe: (listener: () => void) => () => void;
-};
+export type PlanItemsStore = ValueStore<PlanItems | undefined>;
 
 export const PlanItemsStoreContext = createContext<PlanItemsStore | null>(null);
 
-// One store for the provider's life, made with the first items. A new map reaches it in an insertion effect (before
-// any layout effect of the commit) and its readers are told in a layout effect, so before the frame is painted; a card
-// drawn in the same pass that read the old map is drawn again then (useSyncExternalStore checks after the commit).
-export function usePlanItemsStore(items: PlanItems | undefined): PlanItemsStore {
-  const [box] = useState(() => storeBox(items));
-  useInsertionEffect(() => box.set(items), [box, items]);
-  useLayoutEffect(() => box.tell(), [box, items]);
-  return box.store;
-}
-
-type StoreBox = {
-  store: PlanItemsStore;
-  set: (items: PlanItems | undefined) => void;
-  tell: () => void;
-};
-
-function storeBox(first: PlanItems | undefined): StoreBox {
-  const listeners = new Set<() => void>();
-  let items = first;
-  let told = first;
-  return {
-    store: {
-      get: () => items,
-      subscribe: (listener) => {
-        listeners.add(listener);
-        return () => listeners.delete(listener);
-      },
-    },
-    set: (next) => {
-      items = next;
-    },
-    tell: () => {
-      if (told === items) return;
-      told = items;
-      for (const listener of [...listeners]) listener();
-    },
-  };
-}
+export const usePlanItemsStore = (items: PlanItems | undefined): PlanItemsStore =>
+  useValueStore(items);
 
 const NO_ITEMS: PlanItems = new Map();
 
@@ -93,8 +47,6 @@ export function usePlanItemsSelect<T>(
   const snapshot = () => pick((store ? store.get() : own) ?? NO_ITEMS);
   return useSyncExternalStore(store?.subscribe ?? noSubscribe, snapshot, snapshot);
 }
-
-const noSubscribe = () => () => {};
 
 // Two picks of the same length holding the same entries.
 export function sameEntries<T>(a: readonly T[], b: readonly T[]): boolean {

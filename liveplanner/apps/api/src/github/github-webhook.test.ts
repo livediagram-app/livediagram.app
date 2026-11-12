@@ -184,7 +184,9 @@ describe('a delivery', () => {
     // B disowned its key.
     expect(w.kv.keys()).toEqual(['installation:7:A', 'installation:8:B', 'repo:11:A']);
     // A repository nobody connects reaches nobody.
-    expect(await (await w.deliver('check_suite', suitePayload({ repoId: 99 }))).json()).toEqual({ delivered: 0 });
+    expect(await (await w.deliver('check_suite', suitePayload({ repoId: 99 }))).json()).toEqual({
+      delivered: 0,
+    });
   });
 
   it('a repository listed but not chosen reaches nothing', async () => {

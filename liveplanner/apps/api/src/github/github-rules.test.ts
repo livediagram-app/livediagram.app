@@ -10,7 +10,13 @@ import {
 import type { GithubConnectionResponse } from '@liveplanner/api-schema';
 import { endRepeatWorld } from '../plan-room/test-repeat-world';
 import { ruleFor } from '../plan-room/github/github-pulls';
-import { connection, githubWorld, prPayload, type GithubWorld, type PrPayload } from './test-github-world';
+import {
+  connection,
+  githubWorld,
+  prPayload,
+  type GithubWorld,
+  type PrPayload,
+} from './test-github-world';
 
 // The board's GitHub rules (docs/specs/026-plan/github-pull-requests.md "GitHub rules"; blueprint "Part 3"): set by an
 // Editor on the plan's connection, off until then; a linked pull request opening or merging moves its cards to the
@@ -29,10 +35,16 @@ beforeEach(async () => {
     types: { id: string; custom?: unknown[]; excludedStatuses?: string[] }[];
   };
   const task = catalogue.types.find((t) => t.id === 'task')!;
-  task.custom = [...(task.custom ?? []), { id: 'f-pr', label: 'Pull Request', kind: 'pullrequest' }];
+  task.custom = [
+    ...(task.custom ?? []),
+    { id: 'f-pr', label: 'Pull Request', kind: 'pullrequest' },
+  ];
   // Notes never sit in Review.
   const note = catalogue.types.find((t) => t.id === 'note')!;
-  note.custom = [...(note.custom ?? []), { id: 'f-pr', label: 'Pull Request', kind: 'pullrequest' }];
+  note.custom = [
+    ...(note.custom ?? []),
+    { id: 'f-pr', label: 'Pull Request', kind: 'pullrequest' },
+  ];
   note.excludedStatuses = ['review'];
   const put = await w.send('PUT', '/api/projects/A/item-types', { itemTypes: catalogue });
   if (put.status !== 200) throw new Error(`item types answered ${put.status}`);
@@ -48,16 +60,20 @@ const pr = (o: PrPayload = {}) => w.deliver('pull_request', prPayload(o));
 const card = async (id: string): Promise<Item> => (await w.items('A')).find((i) => i.id === id)!;
 const history = async (id: string) =>
   (
-    await (await w.send('GET', `/api/projects/A/items/${id}/history`)).json<{
+    await (
+      await w.send('GET', `/api/projects/A/items/${id}/history`)
+    ).json<{
       entries: ItemHistoryEntry[];
     }>()
   ).entries;
 const linked = (status = 'todo', type = 'task') =>
-  w.send('POST', '/api/projects/A/items', {
-    type,
-    fields: { title: 'Card', 'f-pr': URL42 },
-    place: { status },
-  }).then(async (r) => (await r.json<{ item: Item }>()).item);
+  w
+    .send('POST', '/api/projects/A/items', {
+      type,
+      fields: { title: 'Card', 'f-pr': URL42 },
+      place: { status },
+    })
+    .then(async (r) => (await r.json<{ item: Item }>()).item);
 
 describe('setting the rules', () => {
   it('starts off, takes a column of the plan’s boards (or null), and answers them on the connection', async () => {

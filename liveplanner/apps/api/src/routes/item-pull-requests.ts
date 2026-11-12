@@ -35,7 +35,8 @@ export async function pullRequestsFor(
   const keys = new Set<string>();
   for (const item of items) {
     ids.add(item.id);
-    for (const ref of cardPullRequests(item, typeIn(types, item.type))) keys.add(pullRequestKey(ref));
+    for (const ref of cardPullRequests(item, typeIn(types, item.type)))
+      keys.add(pullRequestKey(ref));
   }
   const out: PullRequestStatus[] = [];
   for (const s of kept) {

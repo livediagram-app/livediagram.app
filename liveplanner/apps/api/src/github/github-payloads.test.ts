@@ -68,7 +68,14 @@ describe('readCheckSuite', () => {
     );
     for (const conclusion of ['success', 'neutral', 'skipped'])
       expect(readCheckSuite(suitePayload({ conclusion }))!.checks, conclusion).toBe('passing');
-    for (const conclusion of ['failure', 'cancelled', 'timed_out', 'action_required', 'stale', null])
+    for (const conclusion of [
+      'failure',
+      'cancelled',
+      'timed_out',
+      'action_required',
+      'stale',
+      null,
+    ])
       expect(readCheckSuite(suitePayload({ conclusion }))!.checks, String(conclusion)).toBe(
         'failing',
       );
@@ -90,6 +97,7 @@ describe('readCheckSuite', () => {
 
   it('githubId takes positive safe integers only', () => {
     expect(githubId(5)).toBe(5);
-    for (const v of [0, -1, 1.5, '5', Number.MAX_SAFE_INTEGER + 1]) expect(githubId(v)).toBeUndefined();
+    for (const v of [0, -1, 1.5, '5', Number.MAX_SAFE_INTEGER + 1])
+      expect(githubId(v)).toBeUndefined();
   });
 });

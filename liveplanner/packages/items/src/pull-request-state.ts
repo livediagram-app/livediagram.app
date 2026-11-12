@@ -42,13 +42,7 @@ export const GITHUB_PERSON_ID = 'github';
 export const GITHUB_PERSON: ItemPerson = { id: GITHUB_PERSON_ID, name: 'GitHub', color: '#1f2328' };
 
 export type PullRequestStatusLabel =
-  | 'Draft'
-  | 'Open'
-  | 'Checks Running'
-  | 'Checks Passing'
-  | 'Checks Failing'
-  | 'Merged'
-  | 'Closed';
+  'Draft' | 'Open' | 'Checks Running' | 'Checks Passing' | 'Checks Failing' | 'Merged' | 'Closed';
 
 const CHECKS_LABEL: Record<PullRequestChecks, PullRequestStatusLabel> = {
   running: 'Checks Running',
@@ -106,34 +100,52 @@ export function pullRequestStatuses(list: readonly PullRequestStatus[]): PullReq
 /** One of a card's linked pull requests: what it is, its state when the plan has one, and the field holding it. */
 export type CardPullRequest = { ref: PullRequestRef; status?: PullRequestStatus; field?: string };
 
+/** A pull request a card's field holds, with its key. */
+export type CardFieldPullRequest = { ref: PullRequestRef; key: string; field: string };
+
 /**
- * A card's linked pull requests (spec "How a card names its pull requests"): its Pull Request fields', then its Link
- * fields' pull requests, then the ones naming it, each once, at most `LINKED_PULL_REQUESTS_MAX`.
+ * The pull requests a card's fields hold, its Pull Request fields' then its Link fields': the part of
+ * `cardLinkedPullRequests` that reads the card alone (parsing each address), so a screen keeps it while the card is
+ * unchanged and only looks the states up again when they change.
  */
-export function cardLinkedPullRequests(
-  item: Pick<Item, 'id' | 'fields'>,
+export function cardFieldPullRequests(
+  item: Pick<Item, 'fields'>,
   type: Pick<ItemTypeDef, 'custom'> | undefined,
-  statuses: PullRequestStatuses,
-): CardPullRequest[] {
-  const out: CardPullRequest[] = [];
-  const seen = new Set<string>();
-  const add = (ref: PullRequestRef, field?: string) => {
-    const key = pullRequestKey(ref);
-    if (seen.has(key) || out.length >= LINKED_PULL_REQUESTS_MAX) return;
-    seen.add(key);
-    const status = statuses.byKey.get(key);
-    out.push({ ref, ...(status ? { status } : {}), ...(field ? { field } : {}) });
-  };
+): CardFieldPullRequest[] {
+  const out: CardFieldPullRequest[] = [];
   const custom = type?.custom ?? [];
   for (const kind of ['pullrequest', 'link'] as const)
     for (const f of custom) {
       if (f.kind !== kind) continue;
       const ref = parsePullRequestUrl(item.fields[f.id]);
-      if (ref) add(ref, f.id);
+      if (ref) out.push({ ref, key: pullRequestKey(ref), field: f.id });
     }
+  return out;
+}
+
+/**
+ * A card's linked pull requests (spec "How a card names its pull requests"): its Pull Request fields', then its Link
+ * fields' pull requests, then the ones naming it, each once, at most `LINKED_PULL_REQUESTS_MAX`. `fields` is the card's
+ * `cardFieldPullRequests`, when the caller has kept it.
+ */
+export function cardLinkedPullRequests(
+  item: Pick<Item, 'id' | 'fields'>,
+  type: Pick<ItemTypeDef, 'custom'> | undefined,
+  statuses: PullRequestStatuses,
+  fields: readonly CardFieldPullRequest[] = cardFieldPullRequests(item, type),
+): CardPullRequest[] {
+  const out: CardPullRequest[] = [];
+  const seen = new Set<string>();
+  const add = (ref: PullRequestRef, key: string, field?: string) => {
+    if (seen.has(key) || out.length >= LINKED_PULL_REQUESTS_MAX) return;
+    seen.add(key);
+    const status = statuses.byKey.get(key);
+    out.push({ ref, ...(status ? { status } : {}), ...(field ? { field } : {}) });
+  };
+  for (const f of fields) add(f.ref, f.key, f.field);
   for (const s of statuses.byCard.get(item.id) ?? []) {
     const ref = parsePullRequestUrl(s.url);
-    if (ref) add(ref);
+    if (ref) add(ref, s.key);
   }
   return out;
 }

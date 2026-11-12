@@ -24,7 +24,10 @@ beforeEach(async () => {
     types: { id: string; custom?: unknown[] }[];
   };
   const task = catalogue.types.find((t) => t.id === 'task')!;
-  task.custom = [...(task.custom ?? []), { id: 'f-pr', label: 'Pull Request', kind: 'pullrequest' }];
+  task.custom = [
+    ...(task.custom ?? []),
+    { id: 'f-pr', label: 'Pull Request', kind: 'pullrequest' },
+  ];
   await w.send('PUT', '/api/projects/A/item-types', { itemTypes: catalogue });
   for (let from = 0; from < CARDS; from += ITEM_BULK_MAX) {
     const items = Array.from({ length: ITEM_BULK_MAX }, (_, j) => {

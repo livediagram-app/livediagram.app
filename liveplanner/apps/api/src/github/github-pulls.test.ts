@@ -91,7 +91,11 @@ describe('a pull request’s state', () => {
     expect(state?.checks).toBeUndefined();
     expect(state?.cards).toBeUndefined();
     // Every screen heard it.
-    expect(sent().at(-1)!.upserts.map((s) => s.key)).toEqual(['acme/repo-11#42']);
+    expect(
+      sent()
+        .at(-1)!
+        .upserts.map((s) => s.key),
+    ).toEqual(['acme/repo-11#42']);
     expect(card.id).toBeTruthy();
   });
 
@@ -229,9 +233,9 @@ describe('who reads the states', () => {
     ]);
     // A tab's caller: only its cards, and only they are named.
     const one = items.filter((i: Item) => i.id === mentioned.id);
-    expect((await pullRequestsFor(ctx(), caller({ scope: new Set([mentioned.id]) }), one))!).toEqual(
-      [expect.objectContaining({ key: 'acme/repo-11#42', cards: [mentioned.id] })],
-    );
+    expect(
+      (await pullRequestsFor(ctx(), caller({ scope: new Set([mentioned.id]) }), one))!,
+    ).toEqual([expect.objectContaining({ key: 'acme/repo-11#42', cards: [mentioned.id] })]);
   });
 
   it('a Community visitor, none; nor anyone while the feature is off', async () => {
@@ -239,7 +243,9 @@ describe('who reads the states', () => {
     await pr();
     const items = await w.items('A');
     expect(await pullRequestsFor(ctx(), caller({ community: true }), items)).toBeUndefined();
-    const off = { env: { ...w.planEnv('A'), GITHUB_WEBHOOK_SECRET: '' } } as unknown as PlanRouteContext;
+    const off = {
+      env: { ...w.planEnv('A'), GITHUB_WEBHOOK_SECRET: '' },
+    } as unknown as PlanRouteContext;
     expect(await pullRequestsFor(off, caller(), items)).toBeUndefined();
   });
 });

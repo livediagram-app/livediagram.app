@@ -84,7 +84,10 @@ describe('a card’s linked pull requests', () => {
 
   it('holds a field’s pull request with no state yet, skips the rest, and stops at the cap', () => {
     const none = cardLinkedPullRequests(
-      { id: 'c', fields: { pr: 'https://github.com/acme/web/pull/9', link: 'https://example.com' } },
+      {
+        id: 'c',
+        fields: { pr: 'https://github.com/acme/web/pull/9', link: 'https://example.com' },
+      },
       type,
       NO_PULL_REQUEST_STATUSES,
     );
