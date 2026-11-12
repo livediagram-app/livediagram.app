@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Item } from '../item';
 import type { ItemTypeDef } from '../item-types';
 import { item, SAM } from '../test-items';
-import { derivedTargets, isDerivedTrigger } from './derived';
+import { derivedMoments, derivedTargets, isDerivedTrigger } from './derived';
 import type { AutomationEvent } from './matches';
 
 // docs/specs/026-plan/automations.md "Triggers": Card Unblocked, Related Cards Done and Column Over Limit, worked out
@@ -169,5 +169,31 @@ describe('derived triggers', () => {
     // The card is no longer in the column.
     const left = { ...cards[2]!, fields: { ...cards[2]!.fields, status: 'todo' } } as Item;
     expect(derivedTargets(trigger, e, [cards[0]!, cards[1]!, left], TYPES, isDone)).toEqual([]);
+  });
+
+  it('names the moment each target reached by its related cards, so a second event at the same one runs nothing', () => {
+    const a = task('A', { status: 'done' });
+    const b = { ...task('B', { status: 'done' }), rev: 4 };
+    const gone = task('Gone', { status: 'done', archived: true });
+    const blocked = task('Blocked', { 'f-blocked': [b.id, a.id, 'missing'] });
+    const parent = task('Parent');
+    const kid = task('Kid', { status: 'done', 'f-parent': parent.id });
+    const holder = task('Holder', { 'f-links': [a.id, gone.id] });
+    const items = [a, b, gone, blocked, parent, kid, holder];
+    const at = (c: Item) => `${c.id}@${c.rev}`;
+    const sorted = (...ids: string[]) => ids.sort().join(',');
+    expect(derivedMoments({ kind: 'card_unblocked' }, [blocked], items, TYPES)).toEqual([
+      sorted(at(a), at(b)),
+    ]);
+    expect(
+      derivedMoments({ kind: 'related_done', related: 'children' }, [parent], items, TYPES),
+    ).toEqual([at(kid)]);
+    expect(
+      derivedMoments({ kind: 'related_done', related: 'linked' }, [holder], items, TYPES),
+    ).toEqual([at(a)]);
+    // A column by its cards alone: the rule's own write to the card that tipped it changes no moment.
+    expect(
+      derivedMoments({ kind: 'column_limit', status: 'done', limit: 1 }, [a], items, TYPES),
+    ).toEqual([sorted(a.id, b.id, kid.id)]);
   });
 });

@@ -911,7 +911,11 @@ Threads and Wait (spec "Actions", "Wait").
   into a done column and answers the cards it belongs to (its parents, or the cards whose Card fields hold it) whose
   related cards are all done; Column Over Limit hears a card created in or moved into its column and answers that
   card when the column now holds exactly limit + 1. The runner reads the plan's cards for such an event only when a
-  rule on hears one, and runs the rule on each answered card under `${event.id}>${card.id}`.
+  rule on hears one. Card Unblocked and Related Cards Done run the rule on each answered card under
+  `d:${card.id}:${sha256(moment)}`, the moment (`derivedMoments`) being the card's blockers, children or linked cards
+  as sorted `id@rev`, so two events read against the same cards make one run id. Column Over Limit runs under
+  `${event.id}>${card.id}`, once per wake per rule and set of card ids in the column (`RunState.tipped`): every event a
+  wake reads sees the column as it is then, and the rule's own write to the tipping card moves its rev on.
 - **Card Stuck** (`time-cards.ts`): daily at its time, the live cards outside done columns (in its columns, when
   named) whose `updatedAt` is at least `days` before the moment, the run id `k:${rule}:${card}:${updatedAt}`.
 - **Editor**: `trigger-groups.ts` gains Comments and Links; each trigger has a scene (`TriggerScene.tsx`) and its
