@@ -2,6 +2,7 @@
 // §4.9b): list_items, change_items, add_board and change_card_types. Everything is named as people name it (a
 // column name, a card type's name, a custom field's name, a person's name, "#12"); the server resolves the ids.
 import { z } from 'zod';
+import { uploadImageOutput, uploadImageShape } from '@liveworkspace/agent-verbs/mcp/image-schema';
 import {
   CALCULATIONS,
   CALCULATION_LABELS,
@@ -54,8 +55,10 @@ const fieldsArg = z
       '), checklist [{text,done}], parent ("#12", a Project), and the card type’s custom fields by name ' +
       '("Severity": "S2"; a Card field takes "#12"; a field marked multiple takes a list or a comma list, "Sam, Ana" or ' +
       '"#3, #5", and [] or null clears it; a longtext field takes Markdown, as description does). A field the card type lacks is refused: add it with ' +
-      'change_card_types. A new card must give every custom field list_items marks required. Attachments ' +
-      '(pictures) are added in the card panel only: they can be cleared, never set.',
+      'change_card_types. A new card must give every custom field list_items marks required. An image field ' +
+      '(one picture, or several with multiple) and attachments take picture ids from upload_image: ' +
+      '{"add": ["<id>"]} (added at the end, up to 20; an image field holding one is set to it), {"remove": ["<id>"]}, ' +
+      'both, or [] to clear; a bare id or a list of ids reads as add. Only a picture uploaded for this plan is placed.',
   );
 
 export const listItemsShape = {
@@ -107,6 +110,19 @@ const itemChange = z.discriminatedUnion('op', [
   }),
   z.strictObject({ op: z.literal('delete'), item: itemRef }),
 ]);
+
+// upload_image (docs/specs/015-api/mcp-server.md §4.5b): the gallery upload's input and answer, for a plan.
+export const uploadPlanImageShape = {
+  projectId: projectId.describe('The plan whose cards the picture is for (from find_projects).'),
+  ...uploadImageShape,
+};
+
+export const uploadPlanImageOutput = {
+  ...uploadImageOutput,
+  id: z
+    .string()
+    .describe('What change_items places on an Image field or attachments ({"add": ["<id>"]}).'),
+};
 
 export const changeItemsShape = {
   projectId,
@@ -331,8 +347,8 @@ const notifiesArg = z
 const multipleArg = z
   .boolean()
   .describe(
-    'A person or card field only: true holds several people or cards (written as a comma list or a list), false ' +
-      'holds one again (cards keep what they hold).',
+    'A person, card or image field only: true holds several people, cards or pictures (written as a comma list or a ' +
+      'list; an image field up to 20 pictures), false holds one again (cards keep what they hold).',
   );
 // Blocked By (docs/specs/026-plan/item-types.md "Blocked By"): a card field whose cards block the card.
 const blocksArg = z
@@ -366,8 +382,8 @@ const customField = z.object({
         'calculated (worked out from the cards linking to the card through a card field, by its calculation; ' +
         'read-only, never given a value), person (someone, by name, as the assignee takes one, or several with ' +
         'multiple), labels (a list, ' +
-        'as labels takes one), colour (#rrggbb), checklist (rows of { text, done }), image (a picture added ' +
-        'in the card panel; an agent may clear it, never set one), comments (its own comment threads: start ' +
+        'as labels takes one), colour (#rrggbb), checklist (rows of { text, done }), image (a picture, or up to 20 ' +
+        'with multiple: upload with upload_image, then place its id with change_items), comments (its own comment threads: start ' +
         'one in it with change_threads) or votes (its own votes, from a session vote that counts in it; never ' +
         'set).',
     ),

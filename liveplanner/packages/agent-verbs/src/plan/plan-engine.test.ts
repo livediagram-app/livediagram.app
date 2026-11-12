@@ -419,11 +419,14 @@ describe('planListing', () => {
       return planListing(await readPlanState(a, D));
     };
 
-    it('lists one id, or the list of ids, and the switch on its type', async () => {
+    // Each picture as its id and a link (the api's byte read; list_items and item ls give it the plan's host).
+    const pic = (id: string) => ({ id, link: `/api/images/${id}` });
+
+    it('lists one picture, or the list of them, and the switch on its type', async () => {
       const listing = await listed({ 'f-cover': 'img-a', 'f-designs': ['img-b', 'img-c'] });
       expect(listing.items[0]!.fields).toMatchObject({
-        Cover: 'img-a',
-        Designs: ['img-b', 'img-c'],
+        Cover: pic('img-a'),
+        Designs: [pic('img-b'), pic('img-c')],
       });
       expect(listing.types.find((t) => t.id === 'shots')!.custom).toEqual([
         { id: 'f-cover', name: 'Cover', kind: 'image' },
@@ -433,7 +436,10 @@ describe('planListing', () => {
 
     it('reads a list on an Image field as its first picture, and one id on Several Images as a list', async () => {
       const listing = await listed({ 'f-cover': ['img-a', 'img-b'], 'f-designs': 'img-c' });
-      expect(listing.items[0]!.fields).toMatchObject({ Cover: 'img-a', Designs: ['img-c'] });
+      expect(listing.items[0]!.fields).toMatchObject({
+        Cover: pic('img-a'),
+        Designs: [pic('img-c')],
+      });
       expect((await listed({ 'f-cover': [] })).items[0]!.fields).toMatchObject({ Cover: null });
     });
   });

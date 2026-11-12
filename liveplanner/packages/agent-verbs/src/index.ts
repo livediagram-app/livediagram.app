@@ -82,6 +82,7 @@ export {
   NO_BOARD_HINT,
   planListing,
   planPath,
+  pictureLinkFor,
   resolveListingFilter,
   readPlanState,
   type ItemChange,

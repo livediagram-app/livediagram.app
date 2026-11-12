@@ -4,6 +4,7 @@ export * from './api-refusal';
 export * from './plan-state';
 export * from './plan-listing';
 export * from './item-changes';
+export * from './card-pictures';
 export * from './card-types';
 export * from './add-board';
 export * from './tracker-import';
