@@ -50,6 +50,8 @@ export const CATEGORY_ICONS: Record<string, Icon> = {
       <path d="M1.5 6h13M1.5 9.75h13M6 2.5v11M10.25 2.5v11" />
     </>,
   ),
+  // Automations: a lightning bolt, the editor's own mark for rules.
+  automations: glyph(<path d="M9 1.5 3.5 9h4L7 14.5 12.5 7h-4L9 1.5Z" />),
   // Forms: a clipboard with a ticked line and a box.
   forms: glyph(
     <>

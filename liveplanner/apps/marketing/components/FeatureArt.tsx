@@ -27,3 +27,6 @@ export * from './feature-art/imports';
 // Forms (docs/specs/030-forms/forms.md): built in place, shared by link, responses landing.
 export * from './feature-art/forms';
 export * from './feature-art/forms-more';
+// Automations (docs/specs/026-plan/automations.md): rules, their triggers and steps, and the Audit Trail.
+export * from './feature-art/automations';
+export * from './feature-art/automations-more';
