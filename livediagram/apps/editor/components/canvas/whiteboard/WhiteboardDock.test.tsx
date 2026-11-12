@@ -6,7 +6,7 @@ import { dockModel as model, renderDock } from './dock-test-utils';
 import { PenWidthIcon } from './PenWidthIcon';
 import { WhiteboardDock } from './WhiteboardDock';
 import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
-import { flyoutZoom, offDock } from './WhiteboardFlyout';
+import { flyoutCardStyle, flyoutZoom, offDock } from './WhiteboardFlyout';
 
 const itemsOf = (group: string) =>
   [
@@ -648,7 +648,9 @@ describe('WhiteboardDock flyouts at the toolbar UI scale', () => {
       // 600 - 12 - 300: its right edge 12px in from the window's.
       expect(root.style.left).toBe('288px');
       expect(root.className).toContain('max-w-[calc(100vw-1.5rem)]');
-      expect(card('Settings').className).toContain('max-w-[min(20rem,100%)]');
+      // No wider than the window less its margins once zoomed: the zoomed card's own units divide the zoom out.
+      expect(flyoutCardStyle(1.5)?.maxWidth).toBe('min(20rem, calc((100vw - 1.5rem) / 1.5))');
+      expect(card('Settings').style.maxWidth).toMatch(/^min\(20rem, .*100vw - 1\.5rem/);
       // The opener's centre is 558px, 270px into the card: 180 card px at 1.5.
       const tip = root.querySelector<HTMLElement>('[data-flyout-tip]')!;
       expect(tip.style.left).toBe(`${180 - 5}px`);

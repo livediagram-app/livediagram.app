@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Tooltip, Portal } from '@livediagram/ui';
-import { cssZoomOf, toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
+import { cssZoomOf, toSurfacePx } from '@liveworkspace/workbench/lib/ui-scale';
 
 const VIEWPORT_MARGIN_PX = 12;
 // How close the tip may come to a corner of the card (its rounding is 12px).
@@ -68,6 +68,8 @@ type FlyoutPlacement = 'below' | 'above';
 type Place = {
   left: number;
   top: number;
+  // The card's zoom: its opener's.
+  zoom: number;
   tip: { edge: 'top' | 'bottom'; offset: number };
 };
 
@@ -75,6 +77,15 @@ type Place = {
 // read from the browser, or `fallback` (the dock's own scale) where the browser cannot say.
 export function flyoutZoom(opener: Element, fallback: number): number {
   return cssZoomOf(opener) ?? fallback;
+}
+
+// The card at a zoom: zoomed, and no wider than the window less its margins once zoomed. Inside a zoomed box `vw`
+// and `rem` are zoomed too, so the window's width is divided back out; a percentage would not do, since the root
+// sizes to the card's content and ignores it. Nothing at 1 (the class's own max-width applies).
+export function flyoutCardStyle(zoom: number): { zoom: string; maxWidth: string } | undefined {
+  return zoom === 1
+    ? undefined
+    : { zoom: String(zoom), maxWidth: `min(20rem, calc((100vw - 1.5rem) / ${zoom}))` };
 }
 
 // A Draw tool's settings (a pen, the eraser, Shapes, a slot's menu, Settings). Always portalled
@@ -132,19 +143,17 @@ export function WhiteboardFlyout({
   // one frame rather than flashing at the corner). Layout sizes, not the bounding rect: the pop-in
   // starts at scale(0).
   const [place, setPlace] = useState<Place | null>(null);
-  // The card's zoom: read off the opener before the card is measured, since the card's size depends on it.
-  const [zoom, setZoom] = useState(scale);
-  useLayoutEffect(() => {
-    const opener = document
-      .querySelector<HTMLElement>(scope)
-      ?.querySelector<HTMLElement>(`[data-dock-item="${anchor}"]`);
-    setZoom(opener ? flyoutZoom(opener, scale) : scale);
-  }, [anchor, scope, scale]);
+  const cardRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const node = ref.current;
+    const card = cardRef.current;
     const wrapEl = document.querySelector<HTMLElement>(scope);
     const opener = wrapEl?.querySelector<HTMLElement>(`[data-dock-item="${anchor}"]`);
-    if (!node || !wrapEl || !opener) return;
+    if (!node || !card || !wrapEl || !opener) return;
+    // The card takes its opener's zoom before it is measured, since its size depends on it; the render this
+    // placing causes writes the same value.
+    const zoom = flyoutZoom(opener, scale);
+    Object.assign(card.style, flyoutCardStyle(zoom) ?? { zoom: '', maxWidth: '' });
     const wrap = wrapEl.getBoundingClientRect();
     const btn = opener.getBoundingClientRect();
     const below = placement === 'below';
@@ -153,9 +162,10 @@ export function WhiteboardFlyout({
     setPlace({
       left: at.left,
       top: at.top,
+      zoom,
       tip: { edge: below ? 'top' : 'bottom', offset: toSurfacePx(at.tipLeft, zoom) },
     });
-  }, [anchor, placement, revision, scope, zoom]);
+  }, [anchor, placement, revision, scope, scale]);
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -228,9 +238,10 @@ export function WhiteboardFlyout({
         className="pointer-events-auto fixed z-[var(--z-popover)] w-max max-w-[calc(100vw-1.5rem)]"
       >
         <div
+          ref={cardRef}
           data-flyout-card=""
-          style={uiScaleStyle(zoom)}
-          className="relative max-w-[min(20rem,100%)] animate-pop-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+          style={flyoutCardStyle(place?.zoom ?? scale)}
+          className="relative max-w-[min(20rem,calc(100vw-1.5rem))] animate-pop-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
         >
           {/* The tip points at the button that opened it, wherever the card sits. */}
           {place ? <FlyoutTip edge={place.tip.edge} offset={place.tip.offset} /> : null}

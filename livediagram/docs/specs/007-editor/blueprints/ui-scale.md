@@ -117,10 +117,15 @@ toolbar scale).
   screen px from the opener's `getBoundingClientRect` (`offDock`, from the
   root's `offsetWidth` / `offsetHeight`, which are screen px because only its
   child is zoomed), with `max-width: calc(100vw - 1.5rem)`. Its one child, the
-  card, spreads `uiScaleStyle(zoom)`, where `zoom` is `flyoutZoom(opener,
-fallback)`: the opener's `currentCSSZoom`, or the dock's `scale` prop where
-  a browser lacks it (1 for a marker tile). The card's `max-width` is
-  `min(20rem, 100%)`, so it never outgrows the root, and the tip's `left`
+  card, draws at `zoom = flyoutZoom(opener, scale)`: the opener's
+  `currentCSSZoom`, or the dock's `scale` prop where a browser lacks it (1 for
+  a marker tile). The placing layout effect writes `zoom` to the card's
+  `style.zoom` before measuring and keeps it in `Place`, whose render spreads
+  `flyoutCardStyle(place.zoom)` (the same value). Away from 1 that style is
+  `zoom` plus `max-width: min(20rem, calc((100vw - 1.5rem) / zoom))`: inside
+  a zoomed box `vw` and `rem` are zoomed too, so the window's width is divided
+  back out (a percentage would not do: the root sizes to the card's content
+  and ignores a percentage max-width, measured in Chromium). So the card never outgrows the root, and the tip's `left`
   (inside the zoomed card) is `toSurfacePx(tipLeft, zoom)`. The `panel`
   variant takes no zoom: it sits inside the Palette's `MovablePanel`
   (`panels`); its flyouts are portalled the same way and read its zoom.
