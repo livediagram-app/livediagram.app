@@ -36,7 +36,7 @@ describe('imagesPlacedIn', () => {
 describe('imageIdIssue', () => {
   it('refuses an input that places a picture, naming the element', () => {
     expect(imageIdIssue({ elements: [{ id: 'a', type: 'image', imageId: 'x' }] })).toMatch(
-      /^imageId "x" on element "a" names an uploaded picture.*Leave imageId out/,
+      /^imageId "x" on element "a" names an uploaded picture.*leave imageId out\. A picture goes on a card/,
     );
   });
 

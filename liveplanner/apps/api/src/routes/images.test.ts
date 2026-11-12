@@ -4,6 +4,7 @@ import { MAX_IMAGE_BYTES, ORIGINAL_NAME_MAX, mediaGuestOwner } from '@liveworksp
 import { MAX_BODY_BYTES } from '../limits';
 import { clearMediaOwnersForTests, MEDIA_APP } from '../media';
 import { setGrantVerifierForTests } from '../index-service';
+import { IMAGE_GRANT_CHECK_MAX } from '@liveplanner/api-schema';
 import { IMAGE_ID_MAX } from '../plan-room/image-grants';
 import type { Env } from '../types';
 import type { WorkbenchContext } from './context';
@@ -52,6 +53,9 @@ let post: { code: string; open: boolean } | null;
 const room = {
   grantImage: vi.fn(async (_plan: string, id: string) => void granted.push(id)),
   servesImage: vi.fn(async () => serves),
+  grantedImages: vi.fn(async (_plan: string, ids: readonly string[]) =>
+    ids.filter((id) => granted.includes(id)),
+  ),
   community: vi.fn(async () => post),
 };
 
@@ -68,6 +72,7 @@ beforeEach(() => {
   post = null;
   room.grantImage.mockClear();
   room.servesImage.mockClear();
+  room.grantedImages.mockClear();
   clearMediaOwnersForTests();
   setGrantVerifierForTests(async (token: string) =>
     token.startsWith('G.') ? (JSON.parse(atob(token.slice(2))) as GrantClaims) : null,
@@ -369,6 +374,37 @@ describe('POST /api/images?p=', () => {
     expect(serviceCalls[0]!.headers.get('X-Image-Sha256')).toBeNull();
   });
 
+  it("names an API token's tool to the service (Made by AI), never the editor's", async () => {
+    await upload({ grant: grantOf('alice', 'edit'), headers: { 'X-Image-Source': 'mcp' } });
+    expect(serviceCalls[0]!.headers.get('X-Image-Source')).toBeNull();
+    serviceCalls = [];
+    for (const [sent, named] of [
+      ['mcp', 'mcp'],
+      ['cli', 'cli'],
+      ['robot', null],
+    ] as const) {
+      const ctx = makeTestRouteContext('POST', `/api/images?p=${PLAN}`, {
+        owner: 'user_ada',
+        env,
+        token: { id: 'tok' },
+      });
+      await handleImages({
+        ...ctx,
+        request: new Request(ctx.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'image/png',
+            'Content-Length': String(PNG.byteLength),
+            'X-Image-Source': sent,
+            'X-Index-Grant': grantOf('user_ada', 'edit'),
+          },
+          body: PNG,
+        }),
+      });
+      expect(serviceCalls.at(-1)!.headers.get('X-Image-Source')).toBe(named);
+    }
+  });
+
   it("passes on the service's refusal (a full gallery), and its own failure as 503", async () => {
     refuseUpload = { status: 409, body: { error: 'gallery_full', limit: 1000 } };
     const full = await upload({ grant: grantOf('alice', 'edit') });
@@ -389,6 +425,91 @@ describe('POST /api/images?p=', () => {
     expect((await other('DELETE', '/api/images/img-1')).status).toBe(404);
     expect((await other('GET', '/api/images/')).status).toBe(404);
     expect((await other('GET', '/api/images/a/b')).status).toBe(404);
+  });
+});
+
+describe('POST /api/images/grants?p=', () => {
+  const check = (body: unknown, who: Who = {}, path = `/api/images/grants?p=${PLAN}`) =>
+    worker.fetch(
+      new Request(`https://api.test${path}`, {
+        method: 'POST',
+        headers: { ...identity(who), 'Content-Type': 'application/json', ...who.headers },
+        body: typeof body === 'string' ? body : JSON.stringify(body),
+      }),
+      env,
+    );
+
+  it('answers the ids uploaded for the plan, each with its name, size and type; the rest left out', async () => {
+    const id = await uploaded();
+    vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    const res = await check({ ids: [id, 'img-elsewhere'] }, { grant: grantOf('alice', 'edit') });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      images: [{ id, name: null, size: PNG.byteLength, type: 'image/png' }],
+    });
+  });
+
+  it('leaves out a granted id the service no longer has', async () => {
+    granted.push('img-gone');
+    vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    const res = await check({ ids: ['img-gone'] }, { grant: grantOf('alice', 'edit') });
+    expect(await res.json()).toEqual({ images: [] });
+  });
+
+  describe('who may check (docs/specs/013-workspace/share-roles.md)', () => {
+    it('an Editor and a Participant, a Participant on one tab too', async () => {
+      for (const grant of [
+        grantOf('bob', 'edit'),
+        grantOf('bob', 'participate'),
+        grantOf('bob', 'participate', PLAN, 'tab-1'),
+      ]) {
+        expect((await check({ ids: [] }, { person: 'bob', grant })).status).toBe(200);
+      }
+    });
+
+    it('not a Viewer (403), nor someone without access (404), nor nobody (400)', async () => {
+      expect(
+        (await check({ ids: [] }, { person: 'vic', grant: grantOf('vic', 'view') })).status,
+      ).toBe(403);
+      expect((await check({ ids: [] }, { person: 'eve' })).status).toBe(404);
+      expect(
+        (await check({ ids: [] }, { person: null, grant: grantOf('alice', 'edit') })).status,
+      ).toBe(400);
+      expect(room.grantedImages).not.toHaveBeenCalled();
+    });
+
+    it('a project-scope workbench session for its own plan only', async () => {
+      const ctx = makeTestRouteContext('POST', `/api/images/grants?p=${PLAN}`, {
+        owner: 'alice',
+        env,
+        workbench: { scope: 'project', projectId: 'other' } as WorkbenchContext,
+      });
+      const res = await handleImages({
+        ...ctx,
+        request: new Request(ctx.url, { method: 'POST', body: JSON.stringify({ ids: [] }) }),
+      });
+      expect(res.status).toBe(404);
+    });
+  });
+
+  it('400 without a plan, 404 for an overlong one; 400 for a body that is not a list of ids', async () => {
+    const who = { grant: grantOf('alice', 'edit') };
+    expect((await check({ ids: [] }, who, '/api/images/grants')).status).toBe(400);
+    expect((await check({ ids: [] }, who, `/api/images/grants?p=${'p'.repeat(201)}`)).status).toBe(
+      404,
+    );
+    for (const body of [
+      'not json',
+      [],
+      {},
+      { ids: 'img-1' },
+      { ids: [1] },
+      { ids: [''] },
+      { ids: ['x'.repeat(IMAGE_ID_MAX + 1)] },
+      { ids: Array.from({ length: IMAGE_GRANT_CHECK_MAX + 1 }, (_, i) => `img-${i}`) },
+    ]) {
+      expect((await check(body, who)).status, JSON.stringify(body)).toBe(400);
+    }
   });
 });
 

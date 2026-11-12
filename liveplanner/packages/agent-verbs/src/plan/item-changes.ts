@@ -31,9 +31,18 @@ import {
   type Item,
   type ItemFields,
   type ItemTypeDef,
-  type Named,
 } from '@liveplanner/items';
 import { apiRefusalOf } from './api-refusal';
+import {
+  addedPictureIds,
+  checkPictureGrants,
+  isPictureKey,
+  pictureValue,
+  picturesText,
+  splitPictureFields,
+  type GrantedPictures,
+  type PictureEdit,
+} from './card-pictures';
 import { itemsPath } from '../verbs/shared';
 import type { PlanState } from './plan-state';
 
@@ -91,7 +100,9 @@ function loopStop(
   if (loop) throw new Stop('blocks_cycle', blockingLoopMessage(loop.chain));
 }
 
-function must<T extends object>(named: Named<T>): T {
+function must<T extends object>(
+  named: ({ ok: true } & T) | { ok: false; code: string; message: string },
+): T {
   if (!named.ok) throw new Stop(named.code, named.message);
   return named;
 }
@@ -202,7 +213,10 @@ function setNote(
     ...(Object.keys(set).length
       ? [
           `set ${Object.entries(set)
-            .map(([k, v]) => `${name(k)} = ${storedText(v, items)}`)
+            .map(
+              ([k, v]) =>
+                `${name(k)} = ${isPictureKey(k, type) ? picturesText(v) : storedText(v, items)}`,
+            )
             .join(', ')}`,
         ]
       : []),
@@ -232,10 +246,8 @@ export async function applyItemChanges(
   // A Calculated field is worked out, never given (docs/specs/026-plan/item-types.md "Calculated fields"): refused
   // before the write, by name. A field that holds several given [], null or "" comes back in `clear`
   // (docs/specs/026-plan/plan-agents.md "Clearing a field").
-  const fieldsFor = (input: Readonly<Record<string, unknown>> | undefined, type: ItemTypeDef) => {
-    const { fields, clear = [] } = input
-      ? must(resolveFields(input, type, naming()))
-      : { fields: {} };
+  const fieldsFor = (input: Readonly<Record<string, unknown>>, type: ItemTypeDef) => {
+    const { fields, clear = [] } = must(resolveFields(input, type, naming()));
     const calculated = calculatedWritten([type], { type: type.id, fields: fields as ItemFields });
     if (calculated) {
       // calculatedWritten names only a field the type has.
@@ -252,12 +264,58 @@ export async function applyItemChanges(
     }
     return { fields, clear };
   };
+  // Pictures (docs/specs/015-api/mcp-server.md §4.5b): the ids each change adds, checked against the plan's grants,
+  // then the field's new value from the card as read. `granted` keeps every answer for the call.
+  const granted: GrantedPictures = new Map();
+  const placePictures = async (
+    pictures: ReadonlyMap<string, PictureEdit>,
+    type: ItemTypeDef,
+    had: Readonly<Record<string, unknown>>,
+  ) => {
+    const set: Record<string, unknown> = {};
+    const clear: string[] = [];
+    if (pictures.size === 0) return { set, clear };
+    must(await checkPictureGrants(api, projectId, addedPictureIds(pictures), granted));
+    for (const [key, edit] of pictures) {
+      const { value } = must(pictureValue(key, type, edit, had, granted));
+      if (value === undefined) clear.push(key);
+      else set[key] = value;
+    }
+    return { set, clear };
+  };
+  // The card type a change writes, when it can be read before any change is made.
+  const typeBefore = (c: Extract<ItemChange, { op: 'add' | 'set' }>): ItemTypeDef | null => {
+    if (c.op === 'add') {
+      const t = resolveType(c.type ?? 'task', types);
+      return t.ok ? t.type : null;
+    }
+    if (c.type) {
+      const t = resolveType(c.type, types);
+      return t.ok ? t.type : null;
+    }
+    const target = resolveItem(c.item, items);
+    return target.ok ? typeIn(types, target.item.type) : null;
+  };
   try {
+    // Every picture the call adds is checked in one request before any card is written; a change whose card is made
+    // earlier in the call is checked when it comes.
+    const early: string[] = [];
+    for (const c of changes) {
+      if (c.op !== 'add' && c.op !== 'set') continue;
+      const type = c.fields ? typeBefore(c) : null;
+      const split = type ? splitPictureFields(c.fields, type) : null;
+      if (split?.ok) early.push(...addedPictureIds(split.pictures));
+    }
+    if (early.length) must(await checkPictureGrants(api, projectId, early, granted));
     for (const c of changes) {
       if (c.op === 'add') {
         const type = must(resolveType(c.type ?? 'task', types)).type;
+        const pictures = must(splitPictureFields(c.fields, type));
         // A new card has nothing to clear: an empty value leaves the field unset.
-        const fields = withRichText(fieldsFor(c.fields, type).fields, type).set;
+        const fields = {
+          ...withRichText(fieldsFor(pictures.rest, type).fields, type).set,
+          ...(await placePictures(pictures.pictures, type, {})).set,
+        };
         const status = c.status
           ? must(resolveStatus(c.status, state.plan.statuses)).status
           : undefined;
@@ -277,8 +335,11 @@ export async function applyItemChanges(
       } else if (c.op === 'set') {
         const target = must(resolveItem(c.item, items)).item;
         const type = c.type ? must(resolveType(c.type, types)).type : typeIn(types, target.type);
-        const given = fieldsFor(c.fields, type);
-        const described = withRichText(given.fields, type, target.fields);
+        const pictures = must(splitPictureFields(c.fields, type));
+        const placed = await placePictures(pictures.pictures, type, target.fields);
+        const given = fieldsFor(pictures.rest, type);
+        given.clear = [...given.clear, ...placed.clear];
+        const described = withRichText({ ...given.fields, ...placed.set }, type, target.fields);
         const set = described.set;
         // A value a removed field left on the card is cleared by its key, though the type no longer has it.
         const named = [

@@ -1,6 +1,7 @@
-// Image ids a write would place (docs/specs/015-api/mcp-server.md §4.5b). liveplanner keeps no uploaded pictures, so
-// an image element is only ever an empty placeholder: an input naming a picture is refused with a sentence that says
-// so, rather than saved as a frame that can never draw. Pure: the input is what the model sent, walked once.
+// Image ids a write would place (docs/specs/015-api/mcp-server.md §4.5b). liveplanner's pictures belong to cards (an
+// Image field or Attachments), so an image element on a canvas is only ever an empty placeholder: an input naming a
+// picture is refused with a sentence that says so, rather than saved as a frame that can never draw. Pure: the input
+// is what the model sent, walked once.
 
 interface PlacedImage {
   // The element that places it, when the input names one.
@@ -39,7 +40,7 @@ export function imageIdIssue(input: unknown): string | null {
   if (!placed) return null;
   const where = placed.elementId ? ` on element "${placed.elementId}"` : '';
   return (
-    `imageId ${JSON.stringify(placed.imageId)}${where} names an uploaded picture, and liveplanner keeps none. ` +
-    'Leave imageId out: an image element is an empty placeholder.'
+    `imageId ${JSON.stringify(placed.imageId)}${where} names an uploaded picture, and an image element here is an ` +
+    'empty placeholder: leave imageId out. A picture goes on a card: upload_image, then change_items.'
   );
 }

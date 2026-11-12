@@ -13,7 +13,7 @@ import { itemIdsShownOnTab, tabShowsEveryCard } from '@liveplanner/items';
 import { drawPlan } from '../thumbnail';
 import { planShares, type ShareAnswer, type ShareMessage } from './tab-shares';
 import { hasPlanSchema } from './plan-schema';
-import { planServesImage } from './image-grants';
+import { planGrantedImages, planServesImage } from './image-grants';
 import { exportPlanCopy, readPlanMeta, readPlanOutline } from './plan-content';
 import {
   communityCheckDueAt,
@@ -232,6 +232,20 @@ export async function servesImage(
     if (!tabShowsEveryCard(tab.elements)) onlyCards = [...itemIdsShownOnTab(tab.elements, [])];
   }
   return planServesImage(sql, planId, imageId, onlyCards);
+}
+
+// Which of `imageIds` the plan holds a grant for (an agent's pictures, checked before a card is written). A plan never
+// started holds none, and asking does not start it.
+export function grantedImages(
+  room: PlanRoom,
+  planId: string,
+  imageIds: readonly string[],
+): string[] {
+  const sql = room.state.storage.sql;
+  if (room.planId === null && !hasPlanSchema((q) => sql.exec(q))) return [];
+  room.bindPlan(planId);
+  ensureSchema(room);
+  return planGrantedImages(sql, planId, imageIds);
 }
 
 // The source side of a copy (plan-content.ts exportPlanCopy); a copy through the plan's open Community post's link
