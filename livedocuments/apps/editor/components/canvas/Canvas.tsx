@@ -9,15 +9,14 @@ import {
 } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
-import { useEffect, useMemo, useRef, ViewTransition } from 'react';
-import { imageBackingInsetVar, isAnimatedPattern } from '@livedocuments/document';
-import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
+import { useEffect, useRef, ViewTransition } from 'react';
+import { isAnimatedPattern } from '@livedocuments/document';
+import { canvasMainStyle, canvasWorldStyle } from './canvas-main-style';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { useNoCanvasTextSelection } from '@liveworkspace/workbench/hooks/canvas/useNoCanvasTextSelection';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
-import { drawIntentCursor } from '@/lib/draw-mode';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useQuickRing } from '@liveworkspace/workbench/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@liveworkspace/workbench/hooks/canvas/useZoomControls';
@@ -31,14 +30,12 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
-import { flashcardStage } from '@/lib/flashcard-stack';
 import { PageImageAccessProvider } from '@/components/canvas/page-image-access';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { canvasGestureNow } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useCanvasLongTaskLog';
 import { useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { useKeyboardElementMenu } from '@/hooks/canvas/useKeyboardElementMenu';
-import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { ElementIndicatorStyleProvider } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 import { readElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';
@@ -46,8 +43,8 @@ import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canva
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
 import { SpotlightOverlay } from '@liveworkspace/workbench/components/canvas/SpotlightOverlay';
 import { useCanvasPointer } from './useCanvasPointer';
-import { articlePlusBlocked } from '@/lib/article-plus-blocked';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
+import { useCanvasSelectionInput } from './useCanvasSelectionInput';
 
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { TabLoadOverlay } from '@liveworkspace/workbench/components/canvas/TabLoadOverlay';
@@ -55,8 +52,6 @@ import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@liveworkspace/workbench/hooks/canvas/useCanvasSelectHandlers';
-import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
-import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import { loadArticleFlows, loadCanvasPages } from '@/lib/editor-deferred-code';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
@@ -184,62 +179,19 @@ function CanvasView(props: CanvasProps) {
     setZoomTo: handleSetZoom,
   } = useZoomControls(setViewportZoom);
 
-  // "Are there any arrows" decides whether to mount the ArrowDefs and lay out
-  // labels. `some` short-circuits on the first arrow, so the typical render
-  // pays O(1).
-  const hasArrows = elements.some((el) => el.type === 'arrow');
-  // Every arrow label laid out once per element change, avoiding each other
-  // (docs/specs/008-canvas/arrow-labels.md). Laid out here, not in the element
-  // layer, because the selection toolbars clear a label as part of its arrow.
-  const fontEpoch = useFontEpoch();
-  const arrowLabels = useArrowLabelLayouts(
+  // Every arrow label, laid out once per element change, the flashcard stack's staging and what the
+  // selection chrome derives from (useCanvasSelectionInput).
+  const { hasArrows, arrowLabels, staged, selectionInput } = useCanvasSelectionInput({
     elements,
-    hasArrows,
-    props.tabFont,
-    fontEpoch,
-    undefined,
-    props.tabFinish,
-  );
-
-  // Selection-display derivation (primary element, bounds, and every
-  // "show this chrome?" predicate) lives in lib/canvas-selection.ts so
-  // it's unit-tested. Memoised because it walks the elements. The chrome that derives it lays a drag in
-  // progress over these elements itself (useCanvasSelectionView), so a preview frame renders the
-  // chrome and not this canvas (docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved").
-  // An object in an article's writing (a chart, an image, a table) connects to nothing: no
-  // quick-connect pluses on it (docs/specs/007-editor/article-pages.md "Zones"). A predicate the
-  // selection derivation applies, so the canvas itself still doesn't read the selection.
-  const articlePages = props.pagesMode?.pages;
-  // A stack of flashcards draws its card in front alone (docs/specs/007-editor/flashcards.md
-  // "The stack"); the chrome, the snap and the Contents keep the whole row.
-  const pagesMode = props.pagesMode;
-  const staged = useMemo(() => (pagesMode ? flashcardStage(pagesMode) : undefined), [pagesMode]);
-  const plusBlocked = useMemo(
-    () => articlePlusBlocked(articlePages, elements),
-    [articlePages, elements],
-  );
-  const selectionInput = useMemo<CanvasSelectionInput>(
-    () => ({
-      elements,
-      editingId,
-      isPaintMode,
-      tabLocked,
-      readOnly,
-      elementMenuOpen: props.elementMenuOpen === true,
-      labelRectOf: arrowLabels.labelRectOf,
-      plusBlocked,
-    }),
-    [
-      elements,
-      editingId,
-      isPaintMode,
-      tabLocked,
-      readOnly,
-      props.elementMenuOpen,
-      arrowLabels,
-      plusBlocked,
-    ],
-  );
+    editingId,
+    isPaintMode,
+    tabLocked,
+    readOnly,
+    pagesMode: props.pagesMode,
+    tabFont: props.tabFont,
+    tabFinish: props.tabFinish,
+    elementMenuOpen: props.elementMenuOpen,
+  });
   const { spotlightLook, spotlight, handlePointerMoveCanvas, handlePointerLeaveCanvas } =
     useCanvasPointer({ canvasTool, mainRef, onCanvasPointerMove, wrapperRef, viewportZoom });
 
@@ -386,32 +338,18 @@ function CanvasView(props: CanvasProps) {
             className={`relative flex-1 touch-none select-none overflow-clip outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-400/70 [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
               pendingDraw ? '' : cursorClass
             }`}
-            style={{
-              // The paper hollow arrowheads fill with (arrow-defs.tsx).
-              ['--lvd-canvas-paper' as string]: tabBackgroundColor,
-              // The sticky notes' paper peel, as a picture (sticky-peel-image.ts).
-              ...stickyPeel,
-              // In world space: the pattern pans and zooms with the elements, so
-              // they stay on the same dots at any zoom (worldPatternOrigin).
-              ...tabBackgroundStyle(
-                tabBackgroundPattern,
-                worldPatternOrigin(viewportOffset, viewportZoom, {
-                  w: mainSize.width,
-                  h: mainSize.height,
-                }),
-                tabBackgroundColor,
-                tabPatternColor,
-                tabBackgroundOpacity,
-                tabBackgroundPatternScale * viewportZoom,
-              ),
-              // Mirror the inner-wrapper cursor on <main>. The inner div is
-              // `absolute inset-0` but its CSS transform scales it (zoom),
-              // so when zoom is below 1 the hit area shrinks and the
-              // surrounding "letterbox" gap falls through to <main>. Without
-              // setting cursor here too, the user would see the OS default
-              // arrow in that gap while a draw-to-size intent is pending.
-              ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
-            }}
+            style={canvasMainStyle({
+              tabBackgroundPattern,
+              tabBackgroundColor,
+              tabPatternColor,
+              tabBackgroundOpacity,
+              tabBackgroundPatternScale,
+              stickyPeel,
+              viewportOffset,
+              viewportZoom,
+              mainSize,
+              pendingDraw,
+            })}
           >
             {/* SR-only polite live region (docs/specs/004-interface-design/canvas-accessibility.md): selection / delete / undo
           announcements land here. */}
@@ -454,21 +392,7 @@ function CanvasView(props: CanvasProps) {
               } ${pendingDraw ? '' : cursorClass}`}
               // The same mode, said to the element plane's children, which take presses of their own (globals.css).
               data-elements-inert={canvasTool === 'spotlight' ? '' : undefined}
-              style={{
-                // Translate is in canvas-coords (applied first); scale is centred
-                // on the wrapper so zooming keeps the viewport centre stable.
-                transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
-                // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The white
-                // under a picture"): a CSS variable, so no picture re-renders on zoom; it changes only below 50%.
-                ...imageBackingInsetVar(viewportZoom),
-                // Draw-mode cursor: every intent gets a custom inline-SVG
-                // cursor (crosshair at the pointer tip plus a small glyph
-                // hinting at what's about to land). Without this, tool
-                // intents inherited the default arrow cursor because the
-                // wrapper drops its Tailwind cursor- class above when
-                // pendingDraw is set, leaving no cursor specified at all.
-                ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
-              }}
+              style={canvasWorldStyle(viewportZoom, viewportOffset, pendingDraw)}
             >
               {/* Pages mode's A4 pages, under every element (CanvasPages). */}
               {staged ? (

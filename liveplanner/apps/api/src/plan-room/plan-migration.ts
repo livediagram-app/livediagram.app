@@ -11,7 +11,7 @@
 //   - Items by their rev (`item`). One whose key the new side already gave another card is skipped and logged.
 //   - Sheets by their rev (`sheet`), inserted before any `sheet_refs` row (the reference triggers settle a sheet as
 //     its rows come and go, and must find it), then their cells upserted (never removed), then each written sheet's
-//     counts recounted as a sheet write keeps them (db/sheets.ts recountStatement).
+//     counts recounted as a sheet write keeps them (db/sheet-writes.ts recountStatement).
 //   - `sheet_refs` for every Sheet element on a tab written (db/sheet-refs.ts sheetRefIds), added, never removed.
 //   - Form links inserted under their code, never updated: their counters and suspension are the new side's.
 // The payload's image owners and grants (an old plan's canvas pictures) have nowhere to go: a plan keeps only

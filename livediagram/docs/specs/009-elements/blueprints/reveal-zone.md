@@ -12,11 +12,11 @@ Scope, by file:
 | `packages/document/src/shape-factory.ts`                                    | 320x220, label "Hidden", `textAlignY: 'top'`, no stored colour  |
 | `packages/document/src/colors.ts`                                           | `behaviourSkin` (accent and ink per paper), `REVEAL_COVER_BASE` |
 | `packages/document/src/validate.ts`                                         | `revealed` must be a boolean                                    |
-| `packages/document/src/svg-render-faces.ts`                                 | `revealCover`, omitted when `revealed === true`                 |
+| `packages/document/src/svg-render-behaviour-parts.ts`                       | `revealCover`, omitted when `revealed === true`                 |
 | `apps/editor/components/canvas/RevealFace.tsx`                              | Cover, double press, Hide pill                                  |
 | `apps/editor/components/canvas/behaviour-faces.tsx`                         | Resolves the accent: `ownColours(element).stroke` or default    |
 | `apps/editor/app/qa-board.css`                                              | `.reveal-sweep`, `.reveal-cover` hover                          |
-| `apps/editor/hooks/ui/usePressWithoutDrag.ts`                               | `requireDouble` and `isDoublePress`                             |
+| `../packages/workbench/src/hooks/ui/usePressWithoutDrag.ts`                 | `requireDouble` and `isDoublePress`                             |
 | `../packages/workbench/src/lib/double-press.ts`                             | `DOUBLE_PRESS_MS`                                               |
 | `apps/editor/hooks/canvas/useBehaviourElements.ts`                          | `revealedIds`, `toggleRevealForMe`, the facilitator gate        |
 | `apps/editor/components/canvas/editor-canvas-host/useSessionCanvasProps.ts` | `onToggleReveal: runBlocked ? undefined : toggleRevealForMe`    |

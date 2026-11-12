@@ -22,13 +22,9 @@ import { documentLoadOrigin, noteDocumentLoadEnded, startEditorTiming } from '@/
 import { errorNameToken, errorTypeToken } from '@livedocuments/api-schema';
 import type { WorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { loadWorkbenchDocument } from './workbench-bootstrap';
-import {
-  guardRun,
-  openOwnDocument,
-  openSharedDocument,
-  type ArrivalContext,
-  type BootstrapSet,
-} from './document-arrival';
+import { guardRun } from '@liveworkspace/workbench/lib/guard-run';
+import { openOwnAddress, openShareLink } from '@liveworkspace/workbench/lib/editor-arrival';
+import { arrivalSetters, DOCUMENT_ARRIVAL, type BootstrapSet } from './document-arrival';
 
 // One-shot identity + document hydration (auth gate -> guest id ->
 // participant -> document/share/password resolution -> tab seeding),
@@ -304,19 +300,13 @@ export function useIdentityBootstrap(opts: {
       // `?s=<code>` is a share URL another participant follows. Visitor
       // arrivals get full document data via the share-code endpoint and
       // are flagged `!isOwner` so the Share button hides.
-      const arrival: ArrivalContext = {
-        id,
-        self,
-        early,
-        embed,
-        accountUserId,
-        set: guarded,
-        seedFetchedDocument,
-      };
+      const arrival = { self, seed: seedFetchedDocument, set: arrivalSetters(guarded) };
       if (shareCodeParam) {
-        if (await openSharedDocument(shareCodeParam, arrival)) return;
+        if (!(await openShareLink(DOCUMENT_ARRIVAL, arrival, { shareCodeParam, id, embed })))
+          return;
       } else if (id) {
-        if (await openOwnDocument(id, arrival)) return;
+        if (!(await openOwnAddress(DOCUMENT_ARRIVAL, arrival, { id, early, accountUserId })))
+          return;
       }
       setNameConfirmed(hasConfirmedName());
       setHydrated(true);

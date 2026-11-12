@@ -1,4 +1,5 @@
-/* ── Content, structure and motion card art (components/feature-art/content.tsx, structure.tsx, motion.tsx) ──
+/* ── Content, structure and motion card art (components/feature-art/content.tsx, structure.tsx, motion.tsx,
+   motion-background.tsx, motion-icons.tsx) ──
    Each scene reads finished at rest; these move only an accent (a caret, a cursor, a packet, a
    backdrop) so any frame of the loop is a good picture. Reduced motion settles them below. */
 

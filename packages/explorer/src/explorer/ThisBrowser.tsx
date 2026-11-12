@@ -10,38 +10,19 @@
 // Most Used and Recent's card of one has This Browser's menu (ThisBrowserItemMenu: Open, Sync, Delete where the host can)
 // and drags to the Trash or a place (drag.tsx), each through these same verbs.
 
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useSyncExternalStore,
-  type ReactNode,
-} from 'react';
-import type { App } from '@liveworkspace/index-client';
-import {
-  parseThisBrowserStore,
   readThisBrowserConversion,
-  setThisBrowserArchived,
-  subscribeThisBrowser,
-  thisBrowserKey,
   BROWSER_STORAGE_COPY,
   THIS_BROWSER_COPY,
-  THIS_BROWSER_FOCUS,
-  THIS_BROWSER_HOVER,
-  THIS_BROWSER_TONE,
   type ThisBrowserConversion,
-  type ThisBrowserFolder,
   type ThisBrowserItem,
 } from '../this-browser';
-import { DAY_MONTH, MEDIUM_DATE_TIME } from '@liveworkspace/ui/date-format';
-import { relativeSince, useNow } from '../time';
+import { DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { LIST_CARD, MUTED } from '../ui/classes';
-import { ArchiveIcon, FolderOutlineIcon, OpenIcon, SyncIcon, TrashIcon } from '../ui/icons';
-import { quoted } from '../quoted';
-import { MenuActionRow, MenuGroupSeparator, MenuHeader, PortalMenu } from '../ui/Menu';
+import { ArchiveIcon, FolderOutlineIcon, TrashIcon } from '../ui/icons';
 import { useExplorer } from './context';
-import { BrowserIcon, useHostExtras } from './host';
+import { useHostExtras } from './host';
 import { PaneIconButton } from '../panel/pane-parts';
 import { LocalPreview } from './LocalPreview';
 import { PaneHeader, type Crumb } from './PaneHeader';
@@ -62,6 +43,17 @@ import {
   thisBrowserSubjects,
 } from './this-browser-lens';
 import { daysLeftLabel } from './TrashPane';
+import { useArchiveLocal, ThisBrowserPill, ChangedAgo } from './ThisBrowserItemMenu';
+import { NO_ITEMS, useThisBrowserFolders } from './this-browser-store';
+export { useThisBrowserList, useThisBrowserFolders } from './this-browser-store';
+export {
+  thenReload,
+  useArchiveLocal,
+  openThisBrowserItem,
+  ThisBrowserPill,
+  ChangedAgo,
+  ThisBrowserItemMenu,
+} from './ThisBrowserItemMenu';
 
 /** What a host hands the Explorer for This Browser. */
 export type ThisBrowserHost = {
@@ -90,96 +82,11 @@ export { BROWSER_STORAGE_COPY, THIS_BROWSER_COPY };
 export const THIS_BROWSER_EMPTY = 'Nothing is kept in Browser Storage.';
 export { LocalPreview };
 
-// A host's verb that moved an item (Sync, Take Offline) without a page load: the lists load again once it settles,
-// whether it moved or not, so they show where the item is now.
-export function thenReload(result: Promise<unknown> | void, reloadLists: () => void): void {
-  if (result) void result.then(reloadLists, reloadLists);
-}
-
 // Live: out of the app's Trash and out of Archived (one-explorer.md "Archived"), which only Archived lists.
 const live = (i: ThisBrowserItem) => i.trashedAt === null && !i.archivedAt;
 const localTrashed = (i: ThisBrowserItem) => i.trashedAt !== null && !i.archivedAt;
 /** Archived in this browser, newest first. */
 export const localArchived = (i: ThisBrowserItem) => i.trashedAt === null && Boolean(i.archivedAt);
-
-/** Move to Archived for an item kept only in this browser: marked in this browser alone, nothing uploaded
- *  (one-explorer.md "Archived"). */
-export function useArchiveLocal(): (item: ThisBrowserItem) => void {
-  const { app, toast } = useExplorer();
-  return useCallback(
-    (item: ThisBrowserItem) => {
-      setThisBrowserArchived(app, item.id, Date.now());
-      toast.show(`Moved ${quoted(item.title || 'Untitled')} to Archived.`, { tone: 'success' });
-    },
-    [app, toast],
-  );
-}
-
-/** Opens one in its app: the host's `open` (the editor's panel, no page load), else a page load of its address. */
-export function openThisBrowserItem(host: ThisBrowserHost, item: ThisBrowserItem): void {
-  if (host.open) host.open(item);
-  else window.location.assign(host.itemHref(item));
-}
-
-// The list as the app last wrote it, per app, parsed again only when its stored text changes: one stable array per
-// change, so a reader re-renders only when the list does.
-const NO_ITEMS: readonly ThisBrowserItem[] = [];
-const NO_FOLDERS: readonly ThisBrowserFolder[] = [];
-type Snapshot = {
-  raw: string | null;
-  items: readonly ThisBrowserItem[];
-  folders: readonly ThisBrowserFolder[];
-};
-const EMPTY_SNAPSHOT: Snapshot = { raw: null, items: NO_ITEMS, folders: NO_FOLDERS };
-const reads = new Map<App, Snapshot>();
-function snapshotOf(app: App): Snapshot {
-  let raw: string | null;
-  try {
-    raw = window.localStorage.getItem(thisBrowserKey(app));
-  } catch {
-    return EMPTY_SNAPSHOT;
-  }
-  const kept = reads.get(app);
-  if (kept?.raw === raw) return kept;
-  const parsed = raw ? parseThisBrowserStore(raw) : null;
-  const next: Snapshot = {
-    raw,
-    items: parsed?.items.length ? parsed.items : NO_ITEMS,
-    folders: parsed?.folders.length ? parsed.folders : NO_FOLDERS,
-  };
-  reads.set(app, next);
-  return next;
-}
-const snapshot = (app: App) => snapshotOf(app).items;
-const folderSnapshot = (app: App) => snapshotOf(app).folders;
-
-/** The app's This Browser list on its own origin (every item, live and trashed, newest change first), heard as it
- *  changes in this tab or another. Empty for no app, and while prerendered. */
-export function useThisBrowserList(app: App | null): readonly ThisBrowserItem[] {
-  const subscribe = useCallback(
-    (onChange: () => void) => (app ? subscribeThisBrowser(app, onChange) : () => {}),
-    [app],
-  );
-  return useSyncExternalStore(
-    subscribe,
-    () => (app ? snapshot(app) : NO_ITEMS),
-    () => NO_ITEMS,
-  );
-}
-
-/** This Browser's folders on the app's own origin, heard as they change: one parse per change of the stored list,
- *  shared with useThisBrowserList. Empty for no app, and while prerendered. */
-export function useThisBrowserFolders(app: App | null): readonly ThisBrowserFolder[] {
-  const subscribe = useCallback(
-    (onChange: () => void) => (app ? subscribeThisBrowser(app, onChange) : () => {}),
-    [app],
-  );
-  return useSyncExternalStore(
-    subscribe,
-    () => (app ? folderSnapshot(app) : NO_FOLDERS),
-    () => NO_FOLDERS,
-  );
-}
 
 /** The live items, newest change first. */
 export function useThisBrowserItems(): { host: ThisBrowserHost | null; live: ThisBrowserItem[] } {
@@ -201,65 +108,8 @@ export function mergeOpened<T extends { lastOpenedAt: number | null }>(
     .slice(0, Math.max(max, recent.length));
 }
 
-let pillSeq = 0;
-
-/** The teal pill every local row and card carries: not colour alone (an icon and the words), its sentence as its
- *  description, and a link to the app's help where the row is not itself a link. Its tone (THIS_BROWSER_TONE) is the
- *  editors' pill's too (@liveworkspace/workbench ThisBrowserPill). */
-export function ThisBrowserPill({ inLink = false }: { inLink?: boolean }) {
-  const { thisBrowser } = useHostExtras();
-  const [id] = useState(() => `this-browser-pill-${++pillSeq}`);
-  const body = (
-    <>
-      <BrowserIcon size={11} />
-      <span>{BROWSER_STORAGE_COPY.label}</span>
-      <span id={id} className="sr-only">
-        {BROWSER_STORAGE_COPY.sentence}
-      </span>
-    </>
-  );
-  const className = `inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${THIS_BROWSER_TONE}`;
-  if (inLink || !thisBrowser?.helpHref)
-    return (
-      <span
-        data-this-browser=""
-        aria-describedby={id}
-        title={BROWSER_STORAGE_COPY.sentence}
-        className={className}
-      >
-        {body}
-      </span>
-    );
-  return (
-    <a
-      data-this-browser=""
-      href={thisBrowser.helpHref}
-      target="_blank"
-      rel="noreferrer"
-      aria-describedby={id}
-      title={BROWSER_STORAGE_COPY.sentence}
-      className={`${className} hover:underline ${THIS_BROWSER_HOVER} ${THIS_BROWSER_FOCUS}`}
-    >
-      {body}
-    </a>
-  );
-}
-
 const SYNC_LINK =
   'mr-3 shrink-0 rounded-md px-2 py-1 text-xs font-medium text-brand-700 hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-brand-300 dark:hover:bg-slate-800';
-
-/** "Changed 3 hours ago", its full date and time in the reader's locale on hover: This Browser's rows, on the page
- *  and in the panel alike. */
-export function ChangedAgo({ at }: { at: number }) {
-  const now = useNow();
-  // A stored date past what a Date holds has no full date to give.
-  if (Number.isNaN(new Date(at).getTime())) return <span>Changed</span>;
-  return (
-    <time dateTime={new Date(at).toISOString()} title={MEDIUM_DATE_TIME.format(at)}>
-      Changed {relativeSince(at, now || Date.now())}
-    </time>
-  );
-}
 
 function LocalRow({
   item,
@@ -530,63 +380,5 @@ export function ThisBrowserTrashGroup() {
         ))}
       </ul>
     </section>
-  );
-}
-
-/** This Browser's menu for one live item, from its card's on Home ⋯ or a right-click: Open; Sync (signed in: in
- *  place with `sync`, or the page's hand-over to the editor with `syncHref`), as This Browser's rows offer it; and
- *  Delete, asked first, where the host deletes in place (`remove`). */
-export function ThisBrowserItemMenu({
-  item,
-  anchor,
-  onClose,
-}: {
-  item: ThisBrowserItem;
-  anchor: HTMLElement | null;
-  onClose: () => void;
-}) {
-  const { thisBrowser: host } = useHostExtras();
-  const { kind, openDialog } = useExplorer();
-  const archive = useArchiveLocal();
-  const syncLocal = useSyncLocal();
-  const title = item.title || 'Untitled';
-  const run = (fn: () => void) => () => {
-    onClose();
-    fn();
-  };
-  if (!host) return null;
-  const sync = syncLocal ? () => syncLocal(item) : null;
-  return (
-    <PortalMenu anchor={anchor} onClose={onClose} label={`Actions for ${title}`}>
-      <MenuHeader title={title} aside={<ThisBrowserPill inLink />} />
-      <MenuActionRow
-        label="Open"
-        icon={<OpenIcon />}
-        onClick={run(() => openThisBrowserItem(host, item))}
-      />
-      {sync ? (
-        <MenuActionRow label={`Sync ${kind.one}`} icon={<SyncIcon />} onClick={run(sync)} />
-      ) : null}
-      <MenuActionRow
-        label="Move to Folder"
-        icon={<FolderOutlineIcon />}
-        onClick={run(() => openDialog({ kind: 'move-local-item', item }))}
-      />
-      <MenuActionRow
-        label="Move to Archived"
-        icon={<ArchiveIcon />}
-        onClick={run(() => archive(item))}
-      />
-      {host.remove ? (
-        <>
-          <MenuGroupSeparator />
-          <MenuActionRow
-            label={`Delete ${kind.one}`}
-            icon={<TrashIcon />}
-            onClick={run(() => openDialog({ kind: 'delete-local', item }))}
-          />
-        </>
-      ) : null}
-    </PortalMenu>
   );
 }

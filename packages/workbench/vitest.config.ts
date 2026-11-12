@@ -9,7 +9,11 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // gates keep the package's own tests covering every branch. A new file joins the list on the commit that adds it.
 const HELD_AT_100 = [
   'src/components/canvas/PageContentsSidebar.tsx',
+  'src/lib/editor-arrival.ts',
+  'src/lib/guard-run.ts',
+  'src/lib/room-presence.ts',
   'src/hooks/ui/usePageContents.ts',
+  'src/components/canvas/arrow-view-parts.tsx',
 ];
 
 export default defineProject({

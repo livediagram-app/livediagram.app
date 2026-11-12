@@ -104,7 +104,7 @@ ColourPicker({
   light hex; Ink leaves a nameless element unchanged.
 - Laser config (`apps/live/lib/laser-config.ts`): colour is `presence`, a standard name, or `#rrggbb`; legacy `cyan`
   reads as `teal`, `white` as `ink`, anything else as `presence`. The room message carries it as a string.
-- `Tab.customColours?: string[]` (`packages/design/src/index.ts`), read with `customColoursOf(tab)` (lower-case
+- `Tab.customColours?: string[]` (`packages/design/src/tab-type.ts`), read with `customColoursOf(tab)` (lower-case
   `#rrggbb`, deduped, anything else dropped, at most `CUSTOM_COLOURS_MAX` = 12) and written with
   `withCustomColour(tab, hex)` (moves `hex` to the front, caps; returns the tab itself when nothing changes), both in
   `packages/design/src/custom-colours.ts`. Synced as a `tab-meta` field like any other.

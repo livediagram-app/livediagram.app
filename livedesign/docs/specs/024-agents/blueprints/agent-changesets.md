@@ -53,10 +53,10 @@ Scope, by file:
 | `apps/api/src/responses.ts`                                                      | CORS allows `X-Changeset-Seen`, `X-Livedesign-Client`; exposes `ETag`                                                        |
 | `apps/api/src/openapi/{manifest,design}.ts`, `scripts/gen-openapi-schemas`       | The five routes, `Tab.rev`, the header, the error bodies, the PUT's 405                                                      |
 | `apps/mcp/src/changeset-client.ts`                                               | `submitChangeset`, `mcpOpsToEditOperations`, `changesetErrorText`                                                            |
-| `apps/mcp/src/tools.ts`, `schema.ts`, `output-schema.ts`, `api.ts`               | `add_tab`, `update_design` on changesets; `rename_design` on the name route; `rev`; the client header                        |
+| `apps/mcp/src/tools.ts`, `tab-tools.ts`, `schema.ts`, `output-schema.ts`, `api.ts`               | `add_tab`, `update_design` (`tab-tools.ts`) on changesets; `rename_design` on the name route; `rev`; the client header                        |
 | `apps/live/lib/api/tabs.ts`                                                      | `apiLoadTabRevisioned`; `apiSaveTab` and the unload beacon send `X-Changeset-Seen`                                           |
 | `apps/live/lib/api/changesets.ts`                                                | `apiRevertChangeset`, `apiListChangesets` (the join check)                                                                   |
-| `apps/live/app/design/[id]/editor-realtime.ts`, `useIdentityBootstrap.ts`        | `designServerStored`, the room gate                                                                                          |
+| `apps/live/app/design/[id]/editor-realtime.ts`, `design-arrival.ts`              | `designServerStored`, the room gate                                                                                          |
 | `apps/live/app/design/[id]/useRoomConnection.ts`                                 | Room for every server-stored design; the `changeset` branch                                                                  |
 | `apps/live/app/design/[id]/usePresenceBroadcast.ts`                              | `select` (with `elementIds`) and `tab-focus` for every open room                                                             |
 | `apps/live/app/design/[id]/room-op-apply.ts`                                     | `applyRoomOpToTabs` case `changeset`                                                                                         |
@@ -228,8 +228,9 @@ rename sends (tabs in order, with their folders), through `/mutation`; a failure
   callers (`fetchRoomLedger`, `relayElementDelta`, `broadcastDesignTrashed`, `relayChangeset`,
   `readRoomSelections`) take the design id; `relayTabRename` is a rename's.
 - The editor opens its room when `hydrated && designId && designServerStored`, where
-  `designServerStored = fetched.ownerId !== OFFLINE_OWNER_ID` (set in `useIdentityBootstrap`, false for a
-  never-saved draft). `useRoomConnection` and `usePresenceBroadcast` use it. The presence streams
+  `designServerStored = fetched.ownerId !== OFFLINE_OWNER_ID` (set by `useIdentityBootstrap`'s own-address arrival,
+  `openOwnAddress` in `@liveworkspace/workbench/lib/editor-arrival`, with `DESIGN_ARRIVAL` in `design-arrival.ts`
+  naming the sentinel; false for a never-saved draft). `useRoomConnection` and `usePresenceBroadcast` use it. The presence streams
   (`useEditorBroadcast`, `useDragPreviewBroadcast`), and the presence rows keep the audience gate
   `designShareable || designTeamId`.
 

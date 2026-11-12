@@ -8,7 +8,8 @@ design decision.
 | Term                      | Identifier                                                                             |
 | ------------------------- | -------------------------------------------------------------------------------------- |
 | The load                  | `useIdentityBootstrap`'s `load` (`apps/editor/app/project/[id]/`)                      |
-| Its two ways in           | `openShareLink`, `openOwnAddress` (`bootstrap-arrivals.ts`, beside it)                 |
+| Its two ways in           | `openShareLink`, `openOwnAddress` (`@liveworkspace/workbench/lib/editor-arrival`)      |
+| The plan's side of them   | `PLAN_ARRIVAL`, `arrivalSetters` (`bootstrap-arrivals.ts`, beside the hook)            |
 | A load step               | `LoadStep` (`apps/editor/lib/load-progress.ts`)                                        |
 | The watchdog              | `armLoadWatchdog(onTimedOut, deps)` → `{ finish }`                                     |
 | Self-healing reload       | the watchdog's `claimAutoReload` + `healing: true` in `LoadProgress`                   |

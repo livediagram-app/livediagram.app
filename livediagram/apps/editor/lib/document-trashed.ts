@@ -5,7 +5,6 @@
 
 import { DOCUMENT_TRASHED_ERROR } from '@livediagram/api-schema';
 import { ApiError } from './api/core';
-import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 
 export class DocumentTrashedError extends Error {
   readonly documentId: string;
@@ -23,11 +22,5 @@ export function isDocumentTrashedError(err: unknown): boolean {
   );
 }
 
-/** Whether the index has this canvas in its Trash, for the person; false when it cannot say. */
-export async function isTrashedInIndex(id: string): Promise<boolean> {
-  try {
-    return (await indexClient.getItem(id)).item.trashedAt !== null;
-  } catch {
-    return false;
-  }
-}
+// Whether the index has this canvas in its Trash, for the person: the editors' one answer, beside their arrival.
+export { isTrashedInIndex } from '@liveworkspace/workbench/lib/editor-arrival';

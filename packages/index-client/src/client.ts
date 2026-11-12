@@ -15,15 +15,8 @@ import {
   SHARE_PASSWORD_HEADER,
   TEAM_AUDIT_NEXT_CURSOR_HEADER,
   type App,
-  type CommunityStateAnswer,
-  type CommunityStateAsk,
-  type IndexErrorCode,
 } from './constants';
 import type {
-  CollabFormInput,
-  CollabFormPlace,
-  CollabFormSeen,
-  CollabPush,
   CreateFolderInput,
   CreateItemInput,
   CreateShareLinkInput,
@@ -36,7 +29,6 @@ import type {
   ItemListQuery,
   MineCount,
   SharedListQuery,
-  ItemSummary,
   Page,
   PlacementDefault,
   ShareAccess,
@@ -49,88 +41,21 @@ import type {
   TeamAuditQuery,
   HistoryPage,
   HistoryQuery,
-  AppEvent,
   UpdateFolderInput,
   UpdateItemInput,
   UpdateShareLinkInput,
 } from './types';
-import type {
-  AutomationSend,
-  AutomationSendResult,
-  CardMove,
-  CreateWebhookInput,
-  UpdateWebhookInput,
-  Webhook,
-  WebhookDelivery,
-} from './webhooks';
-import {
-  appConnectionPath,
-  type ConnectionInput,
-  type ConnectionMade,
-  type ConnectionOpen,
-} from './connections';
+import type { CreateWebhookInput, UpdateWebhookInput, Webhook, WebhookDelivery } from './webhooks';
+import { type ConnectionInput, type ConnectionMade, type ConnectionOpen } from './connections';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
+import { enc, queryString, refusal, type Query } from './index-error';
 
-export class IndexError extends Error {
-  readonly status: number;
-  readonly code: IndexErrorCode | string;
-  // How long the answer's `Retry-After` asked the caller to wait (ms), or null when it sent none that parses. Raw:
-  // the outbox caps it (@liveworkspace/index-app outbox.ts `failureDelayMs`).
-  readonly retryAfterMs: number | null;
-  constructor(status: number, code: string, retryAfterMs: number | null = null) {
-    super(`index: ${status} ${code}`);
-    this.name = 'IndexError';
-    this.status = status;
-    this.code = code;
-    this.retryAfterMs = retryAfterMs;
-  }
-}
-
-// The longest `Retry-After` text read: ten digits of seconds is three centuries, and an HTTP date is 29 characters.
-const RETRY_AFTER_TEXT_MAX = 40;
-
-// A `Retry-After` header as a wait in ms from `now`: delta-seconds (digits only) or an HTTP date, which ends in
-// `GMT` (one in the past waits 0). Null when absent, too long, or neither. Read character by character, never with a
-// repeating regex.
-export function retryAfterMsOf(header: string | null | undefined, now = Date.now()): number | null {
-  const text = header?.trim() ?? '';
-  if (text === '' || text.length > RETRY_AFTER_TEXT_MAX) return null;
-  let digits = true;
-  for (let i = 0; i < text.length && digits; i++) {
-    const c = text.charCodeAt(i);
-    digits = c >= 48 && c <= 57;
-  }
-  if (digits) return Number(text) * 1000;
-  if (!text.endsWith('GMT')) return null;
-  const at = Date.parse(text);
-  return Number.isFinite(at) ? Math.max(0, at - now) : null;
-}
-
-type Query = Record<string, string | number | boolean | null | undefined>;
-
-// A refusal's `{ error }` as an IndexError; `unknown` when the body names none. `res` gives its Retry-After.
-function refusal(res: Response, parsed: unknown): IndexError {
-  const error = (parsed as { error?: unknown } | null)?.error;
-  return new IndexError(
-    res.status,
-    typeof error === 'string' ? error : 'unknown',
-    // A stand-in response without headers (a test's, a polyfill's) has no Retry-After.
-    retryAfterMsOf(res.headers?.get('Retry-After')),
-  );
-}
-
-// `?a=1&b=2` from the set values, or '' when none is set.
-export function queryString(query: Query = {}): string {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(query)) {
-    if (value === undefined || value === null || value === '') continue;
-    params.set(key, String(value));
-  }
-  const text = params.toString();
-  return text ? `?${text}` : '';
-}
-
-const enc = encodeURIComponent;
+export { IndexError, queryString, retryAfterMsOf } from './index-error';
+export {
+  createIndexAppClient,
+  type IndexAppClient,
+  type IndexAppClientOptions,
+} from './app-client';
 
 // A list's query on the wire: a filter's values as one comma list, `deep` as 1.
 function listQuery(query: ItemListQuery | SharedListQuery): Query {
@@ -438,110 +363,3 @@ export function createIndexDelegateClient({
     ...(doFetch ? { fetch: doFetch } : {}),
   });
 }
-
-export type IndexAppClientOptions = {
-  app: App;
-  // The app's INDEX_KEY.
-  key: string;
-  // The index API, when not production's (staging's, or a local one).
-  baseUrl?: string | null;
-  fetch?: typeof fetch;
-};
-
-// What an app's server (its api Worker or an item's Durable Object) pushes about an item.
-export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: IndexAppClientOptions) {
-  const base = withoutTrailingSlashes(baseUrl || `https://www.liveworkspace.app${INDEX_API_PATH}`);
-  const failed = async (res: Response): Promise<IndexError> =>
-    refusal(res, await res.json().catch(() => null));
-  async function put(path: string, body: unknown): Promise<void> {
-    const res = await (doFetch ?? fetch)(`${base}/app${path}`, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${key}`,
-        [INDEX_APP_HEADER]: app,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) throw await failed(res);
-  }
-  // A body-less call to one of the index's own `/app/...` paths (`appConnectionPath`).
-  async function send(method: 'PUT' | 'DELETE', path: string): Promise<void> {
-    const res = await (doFetch ?? fetch)(`${base}${path}`, {
-      method,
-      headers: { Authorization: `Bearer ${key}`, [INDEX_APP_HEADER]: app },
-    });
-    if (!res.ok) throw await failed(res);
-  }
-  // A POST of one of the index's own `/app/...` paths, answering its JSON.
-  async function post<T>(path: string, body: unknown): Promise<T> {
-    const res = await (doFetch ?? fetch)(`${base}/app${path}`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${key}`,
-        [INDEX_APP_HEADER]: app,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) throw await failed(res);
-    return (await res.json()) as T;
-  }
-  // A read; null when the index answers 404.
-  async function get<T>(path: string): Promise<T | null> {
-    const res = await (doFetch ?? fetch)(`${base}/app${path}`, {
-      headers: { Authorization: `Bearer ${key}`, [INDEX_APP_HEADER]: app },
-    });
-    if (res.status === 404) return null;
-    if (!res.ok) throw await failed(res);
-    return (await res.json()) as T;
-  }
-  return {
-    pushSummary: (itemId: string, summary: ItemSummary, updatedAt: number) =>
-      put(`/items/${enc(itemId)}/summary`, { summary, updatedAt }),
-    pushCollab: (itemId: string, tabId: string, push: CollabPush) =>
-      put(`/items/${enc(itemId)}/collab/${enc(tabId)}`, push),
-    // A form's response count for the Inbox's Form Responses, or null to take it off.
-    pushForm: (itemId: string, tabId: string, form: CollabFormInput | null) =>
-      put(`/items/${enc(itemId)}/forms/${enc(tabId)}`, { form }),
-    // A person has seen a form's first `seen` responses.
-    pushFormSeen: (itemId: string, tabId: string, seen: CollabFormSeen) =>
-      put(`/items/${enc(itemId)}/forms/${enc(tabId)}/seen`, seen),
-    // The item and tab a live form's public code names (one this app pushed), or null.
-    formByCode: (code: string) => get<CollabFormPlace>(`/forms/${enc(code)}`),
-    // How many of a form's responses a person has seen (0 when they have not opened it).
-    formSeen: async (itemId: string, tabId: string, personId: string) =>
-      (
-        await get<{ seen: number }>(
-          `/items/${enc(itemId)}/forms/${enc(tabId)}/seen/${enc(personId)}`,
-        )
-      )?.seen ?? 0,
-    // Up to APP_EVENTS_MAX events about one item, for its History, webhooks and Most Used. Safe to send again: an
-    // `edited` is one event per person and day whatever the count.
-    pushEvents: (itemId: string, events: readonly AppEvent[]) =>
-      put(`/items/${enc(itemId)}/events`, { events }),
-    // Up to CARD_MOVES_MAX cards that changed status (liveplanner), for the item's scope's webhooks. Safe to send
-    // again: each is one delivery per webhook.
-    pushCardMoves: (itemId: string, moves: readonly CardMove[]) =>
-      put(`/items/${enc(itemId)}/card-moves`, { moves }),
-    // Up to AUTOMATION_SENDS_MAX messages a plan's automation rules post through its own webhooks (liveplanner), each
-    // answered queued or refused, in the order sent. Safe to send again: a key already queued answers queued.
-    pushAutomationSends: (
-      itemId: string,
-      sends: readonly AutomationSend[],
-    ): Promise<{ results: AutomationSendResult[] }> =>
-      post(`/items/${enc(itemId)}/automation-sends`, { sends }),
-    // Connected tabs (connected-tabs.md): the tab holding a connection is in the host now (confirm), or has left it
-    // (remove, which deletes the connection's pass). Each answers 204 whether or not it matched.
-    confirmConnection: (hostId: string, connectionId: string, tabId: string) =>
-      send('PUT', appConnectionPath(hostId, connectionId, tabId)),
-    removeConnection: (hostId: string, connectionId: string, tabId: string) =>
-      send('DELETE', appConnectionPath(hostId, connectionId, tabId)),
-    // Where up to COMMUNITY_STATES_MAX Community posts' items stand (the Community's sweep), one answer per post, in
-    // order. Read only.
-    communityStates: async (posts: readonly CommunityStateAsk[]): Promise<CommunityStateAnswer[]> =>
-      (await post<{ states: CommunityStateAnswer[] }>('/community/states', { posts })).states,
-  };
-}
-
-export type IndexAppClient = ReturnType<typeof createIndexAppClient>;

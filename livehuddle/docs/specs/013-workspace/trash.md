@@ -54,7 +54,7 @@ still serves, for the Trash's own rows. Its room admits nobody: trashing closes 
 upgrade with a trashed grant is refused 410, and a session renewing with one is closed as the trashing closes it.
 
 When the api answers a canvas as not found, the editor asks the index whether it is in the Trash
-(`isTrashedInIndex`, `apps/editor/lib/document-trashed.ts`): the index's item outlives the trashing, so it can tell a
+(`isTrashedInIndex`, `@liveworkspace/workbench/lib/editor-arrival`, which `apps/editor/lib/document-trashed.ts` re-exports): the index's item outlives the trashing, so it can tell a
 trashed canvas from one that does not exist. A trashed one shows the deleted card in place of the canvas: Restore for
 someone the index lets restore it (its owner, or a member of the team that owns it), and only that it was deleted for
 a share-link visitor. The same question settles a room that closes.

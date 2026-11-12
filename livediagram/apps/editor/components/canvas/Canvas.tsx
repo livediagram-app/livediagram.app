@@ -8,21 +8,20 @@ import {
 } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
-import { useCallback, useEffect, useMemo, useRef, ViewTransition } from 'react';
+import { useEffect, useRef, ViewTransition } from 'react';
 import { isAnimatedPattern } from '@livediagram/document';
-import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
+import { canvasMainStyle } from './canvas-main-style';
+import { canvasToolOverlays } from './canvas-tool-overlays';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { useNoCanvasTextSelection } from '@liveworkspace/workbench/hooks/canvas/useNoCanvasTextSelection';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
-import { drawIntentCursor } from '@/lib/draw-mode';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useQuickRing } from '@liveworkspace/workbench/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@liveworkspace/workbench/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
-import { isEventStormingTab } from '@livediagram/document';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
 // Reused as the excludeIds argument to snapResizeBounds during draw-
 // to-size: the new element doesn't exist yet, so there's nothing to
@@ -33,25 +32,17 @@ import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasWorldLayer } from './CanvasWorldLayer';
 import { canvasGestureNow } from '@/lib/canvas-gesture';
 import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useCanvasLongTaskLog';
-import {
-  useSelectionOf,
-  useSelectionStore,
-} from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
-import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
-import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
+import { useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
 import { useIsometricView } from '@/hooks/canvas/useIsometricView';
-import { SpotlightOverlay } from '@liveworkspace/workbench/components/canvas/SpotlightOverlay';
-import { EraserBrushRing } from '@liveworkspace/workbench/components/canvas/EraserBrushRing';
-import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
-import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
 import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
 import { usePortalTravel } from '@/components/canvas/portal-travel';
 
 import { useCanvasPointer } from './useCanvasPointer';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
+import { useCanvasSelectionInput } from './useCanvasSelectionInput';
 
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { TabLoadOverlay } from '@liveworkspace/workbench/components/canvas/TabLoadOverlay';
@@ -60,8 +51,6 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@liveworkspace/workbench/hooks/canvas/useCanvasSelectHandlers';
-import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
-import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
 
@@ -194,63 +183,20 @@ function CanvasView(props: CanvasProps) {
     setZoomTo: handleSetZoom,
   } = useZoomControls(setViewportZoom);
 
-  // "Are there any arrows" decides whether to mount the ArrowDefs and lay out
-  // labels. `some` short-circuits on the first arrow, so the typical render
-  // pays O(1).
-  const hasArrows = elements.some((el) => el.type === 'arrow');
-  // Every arrow label laid out once per element change, avoiding each other
-  // (docs/specs/008-canvas/arrow-labels.md). Laid out here, not in the element
-  // layer, because the selection toolbars clear a label as part of its arrow.
-  const fontEpoch = useFontEpoch();
-  const arrowLabels = useArrowLabelLayouts(
+  // Every arrow label, laid out once per element change, and what the selection chrome derives from
+  // (useCanvasSelectionInput).
+  const { hasArrows, arrowLabels, selectionInput, soleSelectedPathId } = useCanvasSelectionInput({
     elements,
-    hasArrows,
-    props.tabFont,
-    fontEpoch,
-    undefined,
-    props.tabFinish,
-  );
-
-  // Selection-display derivation (primary element, bounds, and every
-  // "show this chrome?" predicate) lives in lib/canvas-selection.ts so
-  // it's unit-tested. Memoised because it walks the elements. The chrome that derives it lays a drag in
-  // progress over these elements itself (useCanvasSelectionView), so a preview frame renders the
-  // chrome and not this canvas (docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved").
-  const selectionInput = useMemo<CanvasSelectionInput>(
-    () => ({
-      elements,
-      editingId,
-      isPaintMode,
-      tabLocked,
-      readOnly,
-      esBoard: isEventStormingTab({ kind: tabKind, layers: tabLayers }),
-      elementMenuOpen: props.elementMenuOpen === true,
-      labelRectOf: arrowLabels.labelRectOf,
-    }),
-    [
-      elements,
-      editingId,
-      isPaintMode,
-      tabLocked,
-      readOnly,
-      tabLayers,
-      tabKind,
-      props.elementMenuOpen,
-      arrowLabels,
-    ],
-  );
-  // The one selected element when it is a path: the path tool's edit gesture arms on it.
-  const soleSelectedPathId = useSelectionOf(
-    useCallback(
-      (s: Selection) =>
-        s.multiSelectedIds.size === 0 &&
-        s.selectedId !== null &&
-        elements.some((el) => el.id === s.selectedId && el.type === 'path')
-          ? s.selectedId
-          : null,
-      [elements],
-    ),
-  );
+    editingId,
+    isPaintMode,
+    tabLocked,
+    readOnly,
+    tabKind,
+    tabLayers,
+    tabFont: props.tabFont,
+    tabFinish: props.tabFinish,
+    elementMenuOpen: props.elementMenuOpen,
+  });
 
   const { spotlightLook, spotlight, eraserPos, handlePointerMoveCanvas, handlePointerLeaveCanvas } =
     useCanvasPointer({ canvasTool, mainRef, onCanvasPointerMove, wrapperRef, viewportZoom });
@@ -431,33 +377,20 @@ function CanvasView(props: CanvasProps) {
           className={`relative flex-1 touch-none select-none overflow-clip outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-400/70 [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
             pendingDraw ? '' : cursorClass
           }`}
-          style={{
-            // The paper hollow arrowheads fill with (arrow-defs.tsx).
-            ['--lvd-canvas-paper' as string]: tabBackgroundColor,
-            // The sticky notes' paper peel, as a picture (sticky-peel-image.ts).
-            ...stickyPeel,
-            // In world space: the pattern pans and zooms with the elements, so
-            // they stay on the same dots at any zoom (worldPatternOrigin).
-            ...tabBackgroundStyle(
-              tabBackgroundPattern,
-              worldPatternOrigin(viewportOffset, viewportZoom, {
-                w: mainSize.width,
-                h: mainSize.height,
-              }),
-              tabBackgroundColor,
-              tabPatternColor,
-              tabBackgroundOpacity,
-              tabBackgroundPatternScale * viewportZoom,
-            ),
-            // Mirror the inner-wrapper cursor on <main>. The inner div is
-            // `absolute inset-0` but its CSS transform scales it (zoom),
-            // so when zoom is below 1 the hit area shrinks and the
-            // surrounding "letterbox" gap falls through to <main>. Without
-            // setting cursor here too, the user would see the OS default
-            // arrow in that gap while a draw-to-size intent is pending.
-            ...(pendingDraw ? { cursor: penCursorValue ?? drawIntentCursor(pendingDraw) } : null),
-            ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
-          }}
+          style={canvasMainStyle({
+            tabBackgroundPattern,
+            tabBackgroundColor,
+            tabPatternColor,
+            tabBackgroundOpacity,
+            tabBackgroundPatternScale,
+            stickyPeel,
+            viewportOffset,
+            viewportZoom,
+            mainSize,
+            pendingDraw,
+            penCursorValue,
+            pathCursor: pathTool.cursor,
+          })}
         >
           {/* SR-only polite live region (docs/specs/004-interface-design/canvas-accessibility.md): selection / delete / undo
           announcements land here. */}
@@ -500,36 +433,14 @@ function CanvasView(props: CanvasProps) {
             drawDrag={drawDrag}
           />
 
-          {/* Spotlight presenter shroud (docs/specs/008-canvas/canvas-and-palette.md). Screen-space sibling of the
-          transformed wrapper so the light stays fixed on screen while the
-          canvas pans / zooms underneath. Rendered before CanvasChrome so the
-          palette + chrome paint ON TOP and stay reachable to switch tools
-          back; pointer-events-none lets clicks fall through to <main>. */}
-          {/* The eraser's brush ring (docs/specs/008-canvas/eraser-panel.md): the same screen-space layer as
-          the shroud, for the same reason — it must not pan or zoom with the
-          canvas, and it must never take a pointer event. */}
-          {canvasTool === 'eraser' ? (
-            <EraserBrushRing
-              pos={eraserPos}
-              // A whiteboard's brush is fixed per mode (docs/specs/023-draw-mode/draw-mode.md "Eraser").
-              radius={
-                props.whiteboardDock
-                  ? WHITEBOARD_ERASER_RADIUS_PX[props.whiteboardDock.prefs.eraserMode]
-                  : eraserRadius(props.eraserConfig ?? DEFAULT_ERASER_CONFIG)
-              }
-              filtered={
-                !props.whiteboardDock &&
-                (props.eraserConfig ?? DEFAULT_ERASER_CONFIG).target !== 'anything'
-              }
-            />
-          ) : null}
-          {canvasTool === 'spotlight' ? (
-            <SpotlightOverlay
-              pos={spotlight.pos}
-              radius={spotlight.radius}
-              config={spotlightLook.config}
-            />
-          ) : null}
+          {canvasToolOverlays({
+            canvasTool,
+            eraserPos,
+            spotlight,
+            spotlightLook,
+            whiteboardDock: props.whiteboardDock,
+            eraserConfig: props.eraserConfig,
+          })}
 
           <CanvasSelectionToolbars
             props={props}

@@ -18,7 +18,7 @@ Scope, by file:
 | `../livediagram/apps/editor/components/canvas/RevealFace.tsx`     | Cover, double press, Hide pill                                  |
 | `apps/editor/components/canvas/ElementFaceRouter.tsx`             | Resolves the accent: `ownColours(element).stroke` or default    |
 | `../livediagram/apps/editor/app/qa-board.css`                     | `.reveal-sweep`, `.reveal-cover` hover                          |
-| `apps/editor/hooks/ui/usePressWithoutDrag.ts`                     | `requireDouble` and `isDoublePress`                             |
+| `../packages/workbench/src/hooks/ui/usePressWithoutDrag.ts`       | `requireDouble` and `isDoublePress`                             |
 | `../packages/workbench/src/lib/double-press.ts`                   | `DOUBLE_PRESS_MS`                                               |
 | `../livediagram/apps/editor/hooks/canvas/useBehaviourElements.ts` | `revealedIds`, `toggleRevealForMe`, the facilitator gate        |
 | `apps/editor/components/canvas/EditorCanvasHost.tsx`              | `onToggleReveal={runBlocked ? undefined : toggleRevealForMe}`   |

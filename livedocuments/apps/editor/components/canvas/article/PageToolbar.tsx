@@ -9,10 +9,8 @@
 // the less used formats are menus (page-toolbar-panels.tsx). Where it sits is
 // page-toolbar-placement.ts; which article it is for, page-toolbar-presence.ts. While the palette's
 // kind is Article it docks in the Toolbar strip instead (lib/article/article-dock.ts).
-import { keyLabel } from '@liveworkspace/workbench/lib/key-label';
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useArticleDock } from '@/lib/article/article-dock';
 import {
   lucideBaseline,
   lucideBold,
@@ -27,24 +25,15 @@ import {
   lucideType,
   lucideUnderline,
 } from '@liveworkspace/icons/lucide';
-import { ChevronDownIcon, lucideGlyph, Tooltip, Portal } from '@livedocuments/ui';
+import { ChevronDownIcon, lucideGlyph, Portal } from '@livedocuments/ui';
 import { TOOLBAR_TRIGGER_TONE } from '@/components/palette/PaletteDropdown';
-import {
-  TOOLBAR_CARD,
-  TOOLBAR_CONTROL_PRESSED,
-  TOOLBAR_CONTROL_REST,
-  TOOLBAR_DIVIDER,
-} from '@/components/chrome/toolbar-surface';
+import { TOOLBAR_CARD, TOOLBAR_CONTROL_PRESSED } from '@/components/chrome/toolbar-surface';
 import { useCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import {
-  articleHandleOf,
   requestStylePanel,
-  useArticleHandle,
-  useActiveArticle,
   useArticleLinkRequest,
   useArticleCommentRequest,
-  type ActiveArticle,
 } from '@/lib/article/article-editor-store';
 import {
   clearFormatting,
@@ -73,10 +62,10 @@ import {
   tableCommandBlock,
   type TableCommandName,
 } from '@/lib/article/article-table-commands';
-import { LinkField, ToolbarPopover } from './page-toolbar-menus';
+import { Button, Divider, LinkField, ToolbarPopover } from './page-toolbar-menus';
 import { TablePanel } from './page-toolbar-table';
 import { usePageToolbarPlacement } from './page-toolbar-placement';
-import { useHoveredArticlePage, useOffPagePressClears } from './page-toolbar-presence';
+import { useShownArticle } from './page-toolbar-presence';
 import {
   AlignGlyph,
   AlignPanel,
@@ -137,50 +126,8 @@ export function PageToolbar({
   // An insert the writing alone cannot make (an object or a drawing): handled by the host.
   onInsert?: (flow: string, what: ObjectInsert) => void;
 }) {
-  const worked = useActiveArticle();
-  const selected =
-    worked && articlePages.some((p) => p.flow === worked.handle.flow) ? worked : null;
-  const hovered = useHoveredArticlePage(articlePages);
-  // Shown for the article being worked on, else for the article page under the pointer.
-  const hoverHandle = !selected && hovered ? articleHandleOf(hovered.flow) : undefined;
-  const active: ActiveArticle | null =
-    selected ??
-    (hovered && hoverHandle
-      ? {
-          handle: hoverHandle,
-          pageId: hovered.pageId,
-          selection: hoverHandle.selection(),
-          focused: false,
-        }
-      : null);
-  // Docked in the Toolbar strip (the palette's kind is Article): always shown, for the article last
-  // worked on or hovered, else the first, so the strip never loses its controls as the pointer
-  // leaves a page for it.
-  const dock = useArticleDock();
-  const [last, setLast] = useState<{ flow: string; pageId: string | null } | null>(null);
-  if (active && (active.handle.flow !== last?.flow || active.pageId !== last?.pageId))
-    setLast({ flow: active.handle.flow, pageId: active.pageId });
-  const lastFlow = last?.flow;
-  // Followed as editors register: on load the strip shows before the first one mounts.
-  const lastHandle = useArticleHandle(lastFlow);
-  const firstArticleHandle = useArticleHandle(articlePages[0]?.flow);
-  const keptHandle =
-    dock && !active && lastFlow && articlePages.some((p) => p.flow === lastFlow)
-      ? lastHandle
-      : undefined;
-  const firstHandle = dock && !active && !keptHandle ? firstArticleHandle : undefined;
-  const fallbackHandle = keptHandle ?? firstHandle;
-  const shown: ActiveArticle | null =
-    active ??
-    (fallbackHandle
-      ? {
-          handle: fallbackHandle,
-          pageId: keptHandle ? (last?.pageId ?? null) : (articlePages[0]?.id ?? null),
-          selection: fallbackHandle.selection(),
-          focused: false,
-        }
-      : null);
-  useOffPagePressClears(worked, articlePages);
+  // Which article it is for, worked on, hovered or kept docked (page-toolbar-presence.ts).
+  const { active, dock, shown } = useShownArticle(articlePages);
   const [open, setOpen] = useState<Open>(null);
   const linkRequest = useArticleLinkRequest();
   // ⌘K in the writing opens the link field.
@@ -530,61 +477,5 @@ export function PageToolbar({
   );
 }
 
-function Divider() {
-  return <span aria-hidden className={TOOLBAR_DIVIDER} />;
-}
-
 // A margin note sits beside a line of the writing, never in a table's cell.
 const NO_NOTE_IN_TABLE = 'Not available in a table';
-
-function Button({
-  label,
-  keys,
-  pressed,
-  menu,
-  expanded,
-  disabled,
-  popup = 'menu',
-  onPress,
-  anchor,
-  why,
-  children,
-}: {
-  label: string;
-  disabled?: boolean;
-  // Why it is unavailable, added to its tooltip while disabled.
-  why?: string;
-  // What its menu opens: a menu, or a small dialog (the colours).
-  popup?: 'menu' | 'dialog';
-  keys?: string;
-  pressed?: boolean;
-  // Opens a menu (a small chevron says so), open while `expanded`.
-  menu?: boolean;
-  expanded?: boolean;
-  onPress: () => void;
-  // The name a popover finds this button by, to hang under it.
-  anchor?: string;
-  children: ReactNode;
-}) {
-  const name = keys ? `${label} (${keyLabel(keys)})` : label;
-  return (
-    <Tooltip label={disabled && why ? `${name}: ${why}` : name}>
-      <button
-        data-anchor={anchor}
-        type="button"
-        aria-label={name}
-        aria-pressed={menu ? undefined : pressed}
-        aria-haspopup={menu ? popup : undefined}
-        aria-expanded={menu ? (expanded ?? false) : undefined}
-        disabled={disabled}
-        onClick={onPress}
-        className={`flex h-9 shrink-0 items-center justify-center gap-1 rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-35 ${
-          menu ? 'px-2' : 'w-9'
-        } ${pressed || expanded ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_CONTROL_REST}`}
-      >
-        {children}
-        {menu ? <ChevronDownIcon className="shrink-0" /> : null}
-      </button>
-    </Tooltip>
-  );
-}

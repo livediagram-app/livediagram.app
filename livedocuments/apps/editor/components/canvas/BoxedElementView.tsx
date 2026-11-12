@@ -3,14 +3,10 @@ import { useIsImageCropping } from '@/lib/image-crop-store';
 import { memo, useRef } from 'react';
 import { useZoneClip, zoneClipPolygon } from '@/lib/article/zone-clip-store';
 import {
-  BORDER_DASH_ARRAY,
   DEFAULT_BOX_RADIUS_PX,
   cornerRadiusPx,
-  finishBorderStroke,
   finishCornerFallbackPx,
   finishOwnCorner,
-  BORDER_STROKE_PX,
-  DEFAULT_BORDER_STYLE,
   PADDING_PX,
   defaultPadding,
   defaultFillColor,
@@ -21,7 +17,6 @@ import {
   labelBodyInset,
   type ShapeMarker,
   type TextSize,
-  withTagAccent,
   rotationOf,
   finishSplitsFace,
   faceFinishOf,
@@ -30,11 +25,7 @@ import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { elementAriaLabel, elementRole } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
-import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
-import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
-import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
-import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant } from '@/components/canvas/element-variant';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
@@ -42,24 +33,19 @@ import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay
 import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
-import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
-import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
 import { useTagColours } from '@/components/canvas/TagColoursContext';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
-import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
-import { ElementIndicators } from '@/components/canvas/ElementIndicators';
-import { indicatorBacking } from '@liveworkspace/workbench/components/canvas/indicator-items';
 import { useElementIndicators } from '@/components/canvas/useElementIndicators';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
 import { useLabelTextAnimation } from '@/components/canvas/useTextAnimation';
-import { AnimationLayer } from '@liveworkspace/workbench/components/canvas/AnimationLayer';
-import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
-import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
+import { useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 import { clearingInset } from '@liveworkspace/workbench/components/canvas/InsetContent';
-import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';
+import { useBoxedFaceParts } from './boxed-element-face-parts';
+import { useBoxedElementChrome } from './boxed-element-chrome';
+import { boxedElementStyle } from './boxed-element-style';
 import { isPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 
 // Wrapped in React.memo at the export below: with id-bearing
@@ -72,49 +58,45 @@ import { isPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through'
 // shallow check sees the underlying undefined vs concrete value
 // rather than the defaulted boolean.
 
-function BoxedElementViewImpl({
-  element,
-  isSelected,
-  isMultiSelected = false,
-  onPlainClick,
-  onPressArmedAction,
-  isEditing,
-  editCursorAtEnd = false,
-  isPaintMode,
-  showHandles,
-  showAnchors,
-  onBeginDrag,
-  onShiftSelect,
-  layerOpacity,
-  onBeginEdit,
-  onCommitLabel,
-  onSetTextAlign,
-  onCommitTable,
-  onToggleChecklistItem,
-  onSetPageHeading,
-  onSetWebRows,
-  onSetPointerTip,
-  onSetHeroCaptionLine,
-  stackGlide,
-  chartPalette,
-  onCancelEdit,
-  onFollowLink,
-  onOpenComments,
-  onOpenAction,
-  onEditLink,
-  onOpenEditDialog,
-  onDropIcon,
-  onLinkCell,
-  imageContext,
-  onContextSelect,
-  remoteSelectors,
-  tabLocked,
-  tabSummaries,
-  readOnly,
-  movable = true,
-  writable,
-  fontFamily,
-}: BoxedElementViewProps) {
+function BoxedElementViewImpl(props: BoxedElementViewProps) {
+  const {
+    element,
+    isSelected,
+    isMultiSelected = false,
+    onPlainClick,
+    onPressArmedAction,
+    isEditing,
+    editCursorAtEnd = false,
+    isPaintMode,
+    onBeginDrag,
+    onShiftSelect,
+    layerOpacity,
+    onBeginEdit,
+    onCommitLabel,
+    onSetTextAlign,
+    onCommitTable,
+    onSetPageHeading,
+    onSetWebRows,
+    onSetHeroCaptionLine,
+    stackGlide,
+    onCancelEdit,
+    onFollowLink,
+    onOpenComments,
+    onOpenAction,
+    onEditLink,
+    onOpenEditDialog,
+    onDropIcon,
+    onLinkCell,
+    imageContext,
+    onContextSelect,
+    remoteSelectors,
+    tabLocked,
+    tabSummaries,
+    readOnly,
+    movable = true,
+    writable,
+    fontFamily,
+  } = props;
   // Which paper this element sits on, for every colour it doesn't carry
   // itself (docs/specs/007-editor/editor-app.md): a Default tab stores no element colours at all, so on
   // a dark canvas this is where the greys come from.
@@ -327,6 +309,36 @@ function BoxedElementViewImpl({
   const { acceptsIconDrop, dropSide, handleIconDragOver, handleIconDragLeave, handleIconDrop } =
     useIconDropTarget(element, onDropIcon);
 
+  // What it draws over its body and under its label, and over its face: built in their own modules
+  // (boxed-element-face-parts.tsx, boxed-element-chrome.tsx), from the same values.
+  const faceParts = useBoxedFaceParts(props, {
+    tagColours,
+    own,
+    surface,
+    isLocked,
+    artAnimClass,
+    svgAnim,
+    accent,
+    textColor,
+    remoteBorderColor,
+    sketch,
+    finish,
+    cornerPx,
+  });
+  const chrome = useBoxedElementChrome(props, {
+    layer,
+    layerAnim,
+    shapeKind,
+    cornerPx,
+    dropSide,
+    indicators,
+    own,
+    surface,
+    rotation,
+    cropping,
+    longPress,
+  });
+
   return (
     <div
       ref={wrapperRef}
@@ -377,43 +389,20 @@ function BoxedElementViewImpl({
         // class (both drive the `animation` property, so they can't co-exist).
         wrapperAnimClass
       } ${variant.className} ${cursor}`}
-      style={{
-        left: element.x,
-        top: element.y,
+      style={boxedElementStyle({
+        element,
         width: textHug.box?.width ?? element.width,
         height: textHug.box?.height ?? element.height,
-        color: textColor,
-        // Every word on the element in its face, so a face that writes its own (a progress value, a panel's
-        // rows, a button) wears the tab's font and finish like its label does (docs/specs/008-canvas/finish.md).
-        // Unset when nothing picks one, so the editor default still applies.
-        ...(fontFamily ? { fontFamily } : {}),
-        opacity: (element.opacity ?? 1) * (layerOpacity ?? 1),
-        ...variant.style,
-        ...animStyle,
-        // Spin about the centre (the wrapper already has origin-center).
-        // The handles' frame in the grips layer turns by the same angle.
-        //
-        // The angle is ALSO published as --lvd-enter-rot, which the pop-in
-        // entry keyframe multiplies into its scale. A keyframe that touches
-        // `transform` replaces this inline value while it runs, so without
-        // that variable a tilted element (any rotated shape, and every
-        // sticker) popped in flat and then snapped to its angle at the end.
-        ...(isRotated
-          ? ({
-              transform: `rotate(${rotation}deg)`,
-              '--lvd-enter-rot': `${rotation}deg`,
-            } as React.CSSProperties)
-          : {}),
-        // Deliberately do NOT raise z-index on plain selection. Keeping
-        // the element at its natural paint order means selecting a
-        // container doesn't jump it above the content layered on top of
-        // it — users resize containers against their visible content.
-        // While EDITING the label, though, raise it so the text the user
-        // is typing isn't hidden behind elements painted above it. (The
-        // selection handles live in the grips layer, SelectionChromeLayer.)
-        ...(isEditing ? { zIndex: 10 } : {}),
-        ...(clipPath ? { clipPath } : {}),
-      }}
+        textColor,
+        fontFamily,
+        layerOpacity,
+        variant,
+        animStyle,
+        isRotated,
+        rotation,
+        isEditing,
+        clipPath,
+      })}
     >
       {/* The hand-drawn body under the content (docs/specs/008-canvas/finish.md "Sketch"); an image's edge goes over
           its picture, below. */}
@@ -424,65 +413,7 @@ function BoxedElementViewImpl({
       <SketchFace
         active={finish === 'sketch' && finishSplitsFace(element) && !liveFiltersRedrawOnRepaint()}
       >
-        <AccentEdgeOverlay
-          element={withTagAccent(element, tagColours)}
-          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-        />
-        {element.type === 'shape' && element.shape === 'pointer-note' ? (
-          <PointerNoteOverlay
-            element={element}
-            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-            editable={isSelected && !readOnly && !isLocked}
-            onSetTip={onSetPointerTip}
-          />
-        ) : null}
-        <ShapeContentRouter
-          element={element}
-          isEditing={isEditing}
-          artAnimClass={artAnimClass}
-          accent={accent}
-          textColor={textColor}
-          remoteBorderColor={remoteBorderColor}
-          isLocked={isLocked}
-          isSelected={isSelected}
-          readOnly={readOnly}
-          onToggleChecklistItem={onToggleChecklistItem}
-          chartPalette={chartPalette}
-          fontFamily={fontFamily}
-          svgAnim={svgAnim}
-        />
-        {/* CSS-rendered shapes (square / circle / stadium / browser) paint
-          their border via the wrapper's CSS `border`, which can't draw the
-          composite dash patterns. When one of those is picked, stroke the
-          outline here instead (element-variant drops the CSS border to
-          match). Solid / dashed / dotted stay on the cheaper CSS path. */}
-        {element.type === 'shape' &&
-        !sketch &&
-        !isSvgRenderedShape(element.shape) &&
-        !remoteBorderColor &&
-        !isCssNativeBorderStyle(element.strokeStyle ?? DEFAULT_BORDER_STYLE) ? (
-          <BoxBorderOverlay
-            shape={element.shape}
-            width={element.width}
-            height={element.height}
-            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-            strokeWidth={BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]}
-            dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
-            radiusPx={cornerPx}
-          />
-        ) : null}
-        {/* Browser-only HTML chrome overlay. SVG handles only the
-          outer frame + divider so the user's border style applies;
-          the dots / nav / URL bar render here so their geometry is
-          fixed-pixel and doesn't deform with the box's aspect
-          ratio. */}
-        {element.type === 'shape' && element.shape === 'browser' ? (
-          <BrowserChrome
-            stroke={
-              remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
-            }
-          />
-        ) : null}
+        {faceParts}
 
         {/* Whatever this element shows in place of a plain label: a pressable
           face, a drawn body, or the label itself. See ElementFaceRouter. */}
@@ -519,56 +450,7 @@ function BoxedElementViewImpl({
       {/* A masked picture has no rectangle for a hand-drawn edge to follow (picture-crop-and-mask.md). */}
       {element.type === 'image' && !isImageMask(element.mask) ? sketchOverlay() : null}
 
-      {/* The Shape set's ring / halo / trace / gradient layer (AnimationLayer): over the face. */}
-      {layer && layerAnim ? (
-        <AnimationLayer
-          animation={layerAnim}
-          width={element.width}
-          height={element.height}
-          radius={
-            shapeKind === 'circle' || shapeKind === 'stadium'
-              ? Math.min(element.width, element.height) / 2
-              : cornerPx
-          }
-        />
-      ) : null}
-
-      {/* Live drop preview while dragging a palette icon over this shape:
-          a brand ring + a translucent band on the side the icon will
-          land. Cleared on drop / drag-leave. */}
-      {dropSide ? <IconDropPreview side={dropSide} /> : null}
-
-      {/* The element's own lock only: a locked tab or layer shows its padlock once, on the tab or the layer
-          (canvas-and-palette.md "Locking"). */}
-      {element.locked === true ? <LockBadge /> : null}
-
-      {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
-
-      {/* A margin note shows its count on its own face (ArticleNoteFace). */}
-      {indicators.layout ? (
-        <ElementIndicators
-          element={element}
-          cornerPx={indicators.cornerPx}
-          fill={indicatorBacking(own.fill ?? defaultFillColor(element, surface))}
-          selected={isSelected}
-          items={indicators.items}
-          placed={indicators.layout}
-        />
-      ) : null}
-
-      {/* Selection chrome (resize / edge-grip handles), portalled into the
-          grips layer above every element — see SelectionChromeLayer for the
-          stacking rationale. */}
-      <SelectionChromeLayer
-        elementId={element.id}
-        box={element}
-        rotation={rotation}
-        // The crop overlay's handles take the box's place while it is cropped (picture-crop-and-mask.md).
-        showHandles={showHandles && !cropping}
-        showAnchors={showAnchors}
-        onBeginDrag={onBeginDrag}
-        onHandlePress={longPress.onPointerDown}
-      />
+      {chrome}
     </div>
   );
 }
