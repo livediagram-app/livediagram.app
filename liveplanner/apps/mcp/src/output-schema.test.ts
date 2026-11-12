@@ -271,6 +271,19 @@ async function api(request: Request): Promise<Response> {
     const applied = applySheetWrite(sheetFromJson(SHEET), write, { now: 0, by: NOBODY }).applied;
     return json({ applied, rev: 2, cells: [] });
   }
+  // upload_image (docs/specs/015-api/mcp-server.md §4.5b): the plan's own upload route.
+  if (path === '/images' && request.method === 'POST') {
+    const image = {
+      id: 'img-1',
+      contentType: 'image/png',
+      byteSize: 29,
+      width: 4,
+      height: 3,
+      originalName: 'mock.png',
+      createdAt: 1,
+    };
+    return json({ image, deduped: false });
+  }
   if (path === '/images') {
     return json({
       images: [
@@ -419,6 +432,11 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
         { op: 'delete', item: 'item123' },
       ],
     },
+  },
+  {
+    tool: 'upload_image',
+    output: 'uploadPlanImageOutput',
+    args: { projectId: 'd1', data: 'iVBORw0KGgoAAAANSUhEUgAAAAQAAAADCAYAAAA=', name: 'mock.png' },
   },
   { tool: 'list_rules', output: 'listRulesOutput', args: { projectId: 'd1' } },
   {

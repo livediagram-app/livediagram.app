@@ -2,6 +2,7 @@
 // with its columns and the numbers of the cards in them, the items with their column's name, and the card types
 // with their fields, so one read gives everything a write names.
 import {
+  ATTACHMENTS_FIELD,
   boardShowsType,
   compareRank,
   isArchived,
@@ -74,6 +75,7 @@ import {
   type BoardWidgetId,
 } from '@liveplanner/items';
 import { widgetName } from './board-widget-change';
+import type { PictureLink } from './card-pictures';
 import type { PlanState } from './plan-state';
 
 export const NO_BOARD_HINT =
@@ -344,6 +346,7 @@ function namedFields(
   item: Item,
   types: readonly ItemTypeDef[],
   byId: ReadonlyMap<string, Item>,
+  link: PictureLink,
   calculated?: Record<string, CalculatedValue>,
 ): Record<string, unknown> {
   const custom = types.find((t) => t.id === item.type)?.custom ?? [];
@@ -360,10 +363,14 @@ function namedFields(
       field,
       value,
       byId,
+      link,
     );
   }
   return out;
 }
+
+const isObject = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
 
 // A field's value as list_items reads it: a card link as "#12 Fix login", and a field that holds several as a comma
 // list of its cards or people's names (docs/specs/026-plan/item-types.md "Holds Several"); the rest as stored.
@@ -372,17 +379,23 @@ function listedValue(
   field: CustomFieldDef | undefined,
   value: unknown,
   byId: ReadonlyMap<string, Item>,
+  link: PictureLink,
 ): unknown {
   const linkText = (id: string) => {
     const linked = byId.get(id);
     return linked ? `#${linked.key} ${itemTitle(linked)}` : id;
   };
-  // An Image field its picture's id, a Several Images field its list of ids, whichever way the value was stored
-  // (docs/specs/026-plan/item-types.md "Image fields").
+  // An Image field its picture, a Several Images field its list of them, whichever way the value was stored, each as
+  // its id and a link the agent can read (docs/specs/026-plan/item-types.md "Image fields"); Attachments each entry
+  // as stored, with its link (items.md "Attachments").
   if (field?.kind === 'image') {
-    const ids = fieldImageIds(field, value);
-    return holdsSeveralImages(field) ? ids : (ids[0] ?? null);
+    const pictures = fieldImageIds(field, value).map((id) => ({ id, link: link(id) }));
+    return holdsSeveralImages(field) ? pictures : (pictures[0] ?? null);
   }
+  if (key === ATTACHMENTS_FIELD && Array.isArray(value))
+    return value.map((a: unknown) =>
+      isObject(a) && typeof a['id'] === 'string' ? { ...a, link: link(a['id']) } : a,
+    );
   if (holdsSeveral(field) && field!.kind === 'card')
     return fieldCardIds(field, value).map(linkText).join(', ');
   if (holdsSeveral(field))
@@ -478,8 +491,16 @@ function listedWidgets(
   return widgets.map((w) => widgetName(w, fields));
 }
 
-// The plan, narrowed by a filter resolveListingFilter resolved.
-export function planListing(state: PlanState, filter: ResolvedListingFilter = {}): PlanListing {
+// A picture's link when the caller names none: the api's byte read by its path alone (the uploader reads it).
+const pathOnlyLink: PictureLink = (id) => `/api/images/${encodeURIComponent(id)}`;
+
+// The plan, narrowed by a filter resolveListingFilter resolved. `pictureLink` makes each picture's link
+// (pictureLinkFor the plan on its host), worked out as the fields are read, so listing pictures asks nothing more.
+export function planListing(
+  state: PlanState,
+  filter: ResolvedListingFilter = {},
+  pictureLink: PictureLink = pathOnlyLink,
+): PlanListing {
   const { plan } = state;
   const now = Date.now();
   const live = state.items
@@ -550,6 +571,7 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
         i,
         plan.types,
         byId,
+        pictureLink,
         calc
           ? calculatedValuesOf(
               i,

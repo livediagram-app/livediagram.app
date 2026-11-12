@@ -53,6 +53,7 @@ import { sheetVerbs } from './verbs/sheet';
 import { formVerbs } from './verbs/form';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
 import { folderCreate, folderLs } from './verbs/folder';
+import { imageAdd } from './verbs/image';
 
 export const VERBS: readonly Verb[] = [
   projectLs,
@@ -73,6 +74,7 @@ export const VERBS: readonly Verb[] = [
   tabRm,
   ...elementVerbs,
   ...itemVerbs,
+  imageAdd,
   ...threadVerbs,
   ...ruleVerbs,
   ...boardVerbs,
@@ -123,6 +125,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'tab', summary: 'Tabs: their views and what changed' },
   { name: 'element', alias: 'el', summary: 'Elements: one edit operation a call' },
   { name: 'item', summary: 'Items: the work Plan boards show' },
+  { name: 'image', summary: 'Pictures for a plan’s cards: upload one' },
   { name: 'thread', summary: 'Comment threads on cards' },
   { name: 'rule', summary: 'Automations rules: list, change, test and run them' },
   { name: 'board', summary: 'Plan boards: add, change or import one' },

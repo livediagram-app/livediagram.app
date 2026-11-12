@@ -362,16 +362,23 @@ ask, 2026-11-11): first the picture, then the card.
   403), the type and size are checked again before a byte leaves the Worker, and the media service checks the type
   against the bytes, dedupes, strips a JPEG's metadata and holds the per-person gallery caps. The plan records a grant
   for the picture, so it serves it to the plan's readers once a card holds it. It answers `{ id, name, width, height,
-size, type, deduped }`; `id` is what `change_items` places. Its refusals are livediagram's words (too large, not a
+size, uploadedAt, deduped }` (livediagram's answer, `uploadImageOutput`); `id` is what `change_items` places. Its refusals are livediagram's words (too large, not a
   picture it takes, not valid base64, a URL it will not fetch, a full gallery with how full it is), and a plan the
   caller can't edit says so ("You can view this plan but not add pictures to it.").
-- **Placing it**: `change_items`' `set` takes, per Image field or Attachments, `{ "add": ["<id>", ...] }` (an Image
-  field set to it, a Several Images field and Attachments added at the end, up to 20, an id held already left where
-  it is), `{ "remove": ["<id>", ...] }`, or the field in `clear`. A bare id (or a list of ids for Several Images) in
-  `fields` reads as `add` onto an empty field. An id the plan holds no grant for is refused before anything is written
-  ("That picture was not uploaded for this plan: upload it with upload_image first."), so an agent can't place a
-  picture uploaded for another plan, or someone else's. An Attachments entry is made from the upload's own name, size
-  and type, read from the grant's record at the service, never from the agent.
+- **Placing it**: `change_items`' `add` and `set` take, per Image field or Attachments (by name or id), `{ "add":
+["<id>", ...] }` (an Image field set to it, a Several Images field and Attachments added at the end, up to 20, an id
+  held already left where it is), `{ "remove": ["<id>", ...] }`, both at once, or `[]`, `null` or `""` (or the field
+  in `clear`) to empty it. A bare id, a comma list or a list of ids reads as `add`, and so do the `{ id, link }`
+  entries `list_items` gives, so a listing can be written back. An id the plan holds no grant for is refused before
+  any card in the call is written ("That picture was not uploaded for this plan: upload it with upload_image first.",
+  naming the id), so an agent can't place a picture uploaded for another plan, or someone else's. The check is one
+  request for the whole call, `POST /api/images/grants?p={projectId}` ([api.md](api.md) "Images"), plus one for a
+  change whose card an earlier change in the call makes. An Attachments entry is made from the upload's own name, size
+  and type, read from the grant's record at the service, never from the agent, and only a PNG, JPEG, WebP or GIF up
+  to 10 MB is one. Refused, with nothing written: a field that would pass 20 pictures (saying how many more fit), more
+  than one picture for an Image field that holds one (it says to make it hold several with `change_card_types`'
+  `multiple: true`), Attachments on a card type that does not offer them, more than 100 new pictures in one call, and
+  a Viewer's call ("You can view this plan but not add pictures to it.").
 - **Reading it**: `list_items` lists each picture of an Image field, a Several Images field and Attachments as its id
   and a `link`, the api's `GET /api/images/{id}?p={projectId}`, which answers the bytes to the agent's token as to
   the person (so a client that reads URLs can look at it).

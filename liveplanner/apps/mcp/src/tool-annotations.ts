@@ -17,7 +17,12 @@ import type { ZodRawShape } from 'zod';
 import type { McpToolVerb } from '@liveplanner/agent-verbs/mcp';
 import { pascalToken } from '@liveplanner/api-schema';
 import { apiRefusalOf } from '@liveplanner/agent-verbs';
-import { answerFixable, isErrorResult, TOOL_ANNOTATIONS } from '@liveworkspace/mcp-kit/tool-result';
+import {
+  answerFixable,
+  isErrorResult,
+  TOOL_ANNOTATIONS,
+  toolAnnotations,
+} from '@liveworkspace/mcp-kit/tool-result';
 import { postTelemetry } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { runInTool } from './tool-scope';
@@ -49,7 +54,6 @@ export function registerTool<
 ): void {
   // The tool as its verb declares it (packages/agent-verbs mcp-tools.ts): name, words, behaviour and schemas.
   const name = verb.mcp.tool;
-  const behaviour = verb.behaviour;
   const config = {
     title: verb.mcp.title,
     description: verb.description,
@@ -68,7 +72,8 @@ export function registerTool<
       if (!isErrorResult(result)) postTelemetry(env, 'Mcp', 'Used', pascalToken(name));
       return result;
     })) as unknown as ToolCallback<InputArgs>;
-  server.registerTool(name, { ...config, annotations: TOOL_ANNOTATIONS[behaviour] }, scoped);
+  // Its behaviour's hints, with its own on top (upload_image's url reaches the open web: openWorldHint).
+  server.registerTool(name, { ...config, annotations: toolAnnotations(verb) }, scoped);
 }
 
 // A fixable mistake answers as a tool error in words; anything else throws (`@liveworkspace/mcp-kit/tool-result`).

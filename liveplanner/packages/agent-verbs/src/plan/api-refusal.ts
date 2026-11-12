@@ -4,6 +4,7 @@
 import { ApiError } from '@liveworkspace/api-client';
 import { archiveRefusalWords, createDeleteRefusal } from '@liveworkspace/agent-verbs/api-refusal';
 import { AGENT_PRODUCT } from '../agent-product';
+import { VerbRefusal } from '../define';
 import { SHEET_REFUSAL_WORDS } from '../sheets/sheet-refusals';
 
 export const FIELD_HINT =
@@ -67,6 +68,8 @@ interface ApiRefusal {
 }
 
 export function apiRefusalOf(err: unknown): ApiRefusal | null {
+  // A refusal a shared verb words itself (a picture too large, a full gallery), said as it is.
+  if (err instanceof VerbRefusal) return { code: err.code, message: err.message };
   if (!(err instanceof ApiError) || err.status >= 500) return null;
   const code = err.code ?? `http_${err.status}`;
   const known = (err.code && BY_CODE[err.code]) || BY_STATUS[err.status];

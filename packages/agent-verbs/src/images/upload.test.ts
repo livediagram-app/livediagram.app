@@ -288,6 +288,21 @@ describe('uploadToGallery', () => {
       uploadToGallery(refusing(403, { error: 'gallery_full' }), prepared, 'mcp', WORDS),
     );
     expect(bare.message).toMatch(/^The image gallery is full: it holds as much as it may\./);
+    // The service's own 409, as some apis pass it on, reads the same.
+    const conflict = await refusalOf(() =>
+      uploadToGallery(refusing(409, { error: 'gallery_full' }), prepared, 'mcp', WORDS),
+    );
+    expect(conflict).toMatchObject({ status: 409, code: 'gallery_full' });
+    // One place that lists and removes is named once.
+    const oneDoor = await refusalOf(() =>
+      uploadToGallery(refusing(403, { error: 'gallery_full' }), prepared, 'mcp', {
+        list: 'the Image Gallery',
+        remove: 'the Image Gallery',
+      }),
+    );
+    expect(oneDoor.message).toBe(
+      'The image gallery is full: it holds as much as it may. Remove pictures it no longer needs with the Image Gallery, then upload again.',
+    );
   });
 
   it('words a file too large and images switched off, and lets anything else through', async () => {
@@ -337,6 +352,28 @@ describe('addImage', () => {
       { source: 'cli', words: WORDS },
     );
     expect(got.name).toBe('from-disk.png');
+  });
+
+  it('uploads through another route when given one, whatever the picture comes as', async () => {
+    const paths: string[] = [];
+    const api = fakeApi({
+      '/images?p=plan-1': (request: Request) => {
+        paths.push(new URL(request.url).search);
+        return Response.json({ image: stored(), deduped: false });
+      },
+    });
+    const options = { source: 'mcp' as const, words: WORDS, path: '/images?p=plan-1' };
+    await addImage(api, { data: base64(png()) }, options);
+    await addImage(api, { bytes: png(), name: 'a.png' }, options);
+    await addImage(
+      api,
+      { url: 'https://a.example.com/b.png' },
+      {
+        ...options,
+        fetch: { resolve: async () => ['93.184.216.34'], fetch: async () => new Response(png()) },
+      },
+    );
+    expect(paths).toEqual(['?p=plan-1', '?p=plan-1', '?p=plan-1']);
   });
 
   it('fetches a URL, named by its file, as itself', async () => {

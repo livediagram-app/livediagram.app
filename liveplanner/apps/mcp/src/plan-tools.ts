@@ -1,5 +1,5 @@
 // The Plan tools (docs/specs/026-plan/plan-agents.md, docs/specs/015-api/mcp-server.md §4.9b): list_items,
-// change_items, list_threads, change_threads, add_board, import_board, change_board and change_card_types, over the Plan engine
+// change_items, upload_image (§4.5b, a picture for the cards), list_threads, change_threads, add_board, import_board, change_board and change_card_types, over the Plan engine
 // the CLI shares (@liveplanner/agent-verbs).
 // Everything is named as people name it; a refusal is a tool error that says what is there.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -12,10 +12,12 @@ import {
   changeBoard,
   changeCardTypes,
   importTrackerBoard,
+  pictureLinkFor,
   planListing,
   readPlanState,
   resolveListingFilter,
   trackerImportAnswer,
+  uploadForPlan,
 } from '@liveplanner/agent-verbs';
 import {
   mcpAddBoard,
@@ -26,11 +28,12 @@ import {
   mcpImportBoard,
   mcpListItems,
   mcpListThreads,
+  mcpUploadImage,
 } from '@liveplanner/agent-verbs/mcp';
 import { clientFor } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { registerTool } from './tool-annotations';
-import { deepLink, errorResult, requireToken, stopped, textResult } from './tool-helpers';
+import { appBase, deepLink, errorResult, requireToken, stopped, textResult } from './tool-helpers';
 
 export function registerPlanTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpListItems, async (args, extra) => {
@@ -39,7 +42,9 @@ export function registerPlanTools(server: McpServer, env: Env): void {
     // A column or card type named as change_items names them; an unknown one is refused with the names there are.
     const filter = resolveListingFilter(state, args);
     if (!filter.ok) return errorResult(filter.message);
-    return textResult({ ...planListing(state, filter), url: deepLink(env, args.projectId) });
+    // Each picture listed with a link the agent's own token reads (docs/specs/015-api/mcp-server.md §4.5b).
+    const listing = planListing(state, filter, pictureLinkFor(appBase(env), args.projectId));
+    return textResult({ ...listing, url: deepLink(env, args.projectId) });
   });
 
   registerTool(server, env, mcpChangeItems, async (args, extra) => {
@@ -48,6 +53,14 @@ export function registerPlanTools(server: McpServer, env: Env): void {
     const result = await applyItemChanges(api, args.projectId, args.changes, state);
     if (result.refusal) return stopped(result.refusal.message, result.applied);
     return textResult({ applied: result.applied, url: deepLink(env, args.projectId) });
+  });
+
+  // A picture for the plan's cards (docs/specs/015-api/mcp-server.md §4.5b), as the caller through their own api:
+  // the upload route keeps every rule and records the plan's grant. A refusal is a tool error in words.
+  registerTool(server, env, mcpUploadImage, async (args, extra) => {
+    const api = clientFor(env, requireToken(extra));
+    const { projectId, ...from } = args;
+    return textResult(await uploadForPlan(api, projectId, from, 'mcp'));
   });
 
   // A card's comment threads (docs/specs/026-plan/plan-agents.md "Comment threads"): read with the cards, so a

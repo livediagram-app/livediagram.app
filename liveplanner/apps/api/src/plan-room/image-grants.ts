@@ -39,6 +39,25 @@ export function recordImageGrant(sql: Sql, planId: string, imageId: string, now:
   );
 }
 
+// Which of `imageIds` the plan holds a grant for, in the order asked, each once: what an agent may place on a card
+// (docs/specs/026-plan/item-types.md "Image fields", "Agents"). One query, the ids as one JSON parameter.
+export function planGrantedImages(sql: Sql, planId: string, imageIds: readonly string[]): string[] {
+  const asked = [...new Set(imageIds)].filter((id) => id && id.length <= IMAGE_ID_MAX);
+  if (asked.length === 0) return [];
+  const held = new Set(
+    sql
+      .exec(
+        `SELECT image_id FROM card_image_grants
+          WHERE plan_id = ? AND image_id IN (SELECT value FROM json_each(?))`,
+        planId,
+        JSON.stringify(asked),
+      )
+      .toArray()
+      .map((r) => r.image_id as string),
+  );
+  return asked.filter((id) => held.has(id));
+}
+
 // LIKE's own characters in an id, escaped, so the prefilter matches the id's text and nothing wider.
 const likeEscaped = (text: string) => text.replace(/[\\%_]/g, (c) => `\\${c}`);
 
