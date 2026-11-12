@@ -7,7 +7,7 @@ import type { ShapeElement } from '@livehuddle/document';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { stairsFlights, type StairsFlight, type StairsLanding } from '@/lib/wayfinding';
 import { useFloorsOnOpen } from './useFloorsOnOpen';
-import { useWayfindingSelect, type Wayfinding } from './wayfinding-store';
+import { useWalkedInPanel, useWayfindingSelect, type Wayfinding } from './wayfinding-store';
 import {
   LazyWayfindingPopover,
   WayfindingHeader,
@@ -31,11 +31,14 @@ export function StairsFace({
 }) {
   const [pressed, setPressed] = useState(false);
   const press = usePressWithoutDrag(wayfinding ? () => setPressed((v) => !v) : undefined);
+  const walkedIn = useWalkedInPanel(wayfinding, element.id);
   return (
     <>
+      {/* Hidden while its panel is open, which already says where the Stairs lead (stairs.md "The panel"). */}
       <HoverCard
         block
         className="h-full w-full"
+        disabled={pressed || walkedIn}
         title={NAME}
         description="Click it, or walk your character on, and climb to the floor above or below (each tab is a floor)."
       >
@@ -55,6 +58,7 @@ export function StairsFace({
           element={element}
           wayfinding={wayfinding}
           pressed={pressed}
+          walkedIn={walkedIn}
           onClosePressed={() => setPressed(false)}
         />
       ) : null}
@@ -66,14 +70,15 @@ function StairsPanelHost({
   element,
   wayfinding,
   pressed,
+  walkedIn,
   onClosePressed,
 }: {
   element: ShapeElement;
   wayfinding: Wayfinding;
   pressed: boolean;
+  walkedIn: boolean;
   onClosePressed: () => void;
 }) {
-  const walkedIn = useWayfindingSelect(wayfinding.store, (s) => s.openPanelId === element.id);
   if (!pressed && !walkedIn) return null;
   const close = () => {
     onClosePressed();

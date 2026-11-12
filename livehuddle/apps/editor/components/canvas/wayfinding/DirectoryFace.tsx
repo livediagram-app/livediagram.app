@@ -35,9 +35,11 @@ export function DirectoryFace({
   const press = usePressWithoutDrag(wayfinding ? () => setOpen((v) => !v) : undefined);
   return (
     <>
+      {/* Hidden while its popover is open, which stays open as you walk (directory.md "Pressing it"). */}
       <HoverCard
         block
         className="h-full w-full"
+        disabled={open && Boolean(wayfinding)}
         title="Directory"
         description="Click to see every room in this space and who is in it, then Walk There or Go."
       >

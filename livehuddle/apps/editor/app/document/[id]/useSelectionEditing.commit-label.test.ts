@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createSticky, createText, type Element, type Tab } from '@livehuddle/document';
+import {
+  createShape,
+  createSticky,
+  createText,
+  type Element,
+  type Tab,
+} from '@livehuddle/document';
 import { useSelectionEditing } from './useSelectionEditing';
 
 // A mind node's lines measure this tall (jsdom lays nothing out).
@@ -19,7 +25,15 @@ function setup(el: Element, editingId: string | null = null, documentName = 'My 
   let elements: Element[] = [el];
   const setEditingId = vi.fn();
   const setSelectedId = vi.fn();
-  const tab = { id: 't', name: 'Tab 1', elements } as Tab;
+  const tickTabs = vi.fn();
+  // The tab reads the elements as they are now, as the next render would, so a type-to-edit's seed shows in it.
+  const tab = {
+    id: 't',
+    name: 'Tab 1',
+    get elements() {
+      return elements;
+    },
+  } as Tab;
   const { result } = renderHook(() =>
     useSelectionEditing({
       readSelection: () => ({ selectedId: null, multiSelectedIds: new Set() }) as never,
@@ -34,7 +48,7 @@ function setup(el: Element, editingId: string | null = null, documentName = 'My 
         elements = fn(elements);
       },
       discardLastStep: vi.fn(),
-      tickTabs: vi.fn(),
+      tickTabs,
       applyFormatFromSource: vi.fn(),
       lockedByOther: () => false,
       set: {
@@ -50,6 +64,8 @@ function setup(el: Element, editingId: string | null = null, documentName = 'My 
   );
   return {
     setDocumentName,
+    tickTabs,
+    result,
     setEditingId,
     setSelectedId,
     editing: result.current,
@@ -105,6 +121,46 @@ describe('commitLabel', () => {
     expect(s.saved().label).toBe('Yes');
     s.editing.commitLabel('a', '\n ');
     expect('label' in s.saved()).toBe(false);
+  });
+});
+
+// Work Item 627: a dropped room preset lands first on the tab (the floor goes in behind everything), so opening its
+// own name and leaving it unchanged used to name the tab and the space after the room. Only a changed label names them.
+describe('the first label names the tab and the space only when it changed', () => {
+  const boardroom = { ...createShape('room', 0, 0), id: 'room', label: 'Boardroom' } as Element;
+
+  it('leaves both names alone when a room preset\u2019s own name is committed unchanged', () => {
+    const s = setup(boardroom, 'room', 'Untitled Space');
+    s.editing.commitLabel('room', 'Boardroom');
+    // Whitespace the save trims away is no change either.
+    s.editing.commitLabel('room', ' Boardroom\n');
+    expect(s.setDocumentName).not.toHaveBeenCalled();
+    expect(s.tickTabs).not.toHaveBeenCalled();
+  });
+
+  it('still names both after a label someone typed on that room', () => {
+    const s = setup(boardroom, 'room', 'Untitled Space');
+    s.editing.commitLabel('room', 'War Room');
+    expect(s.setDocumentName).toHaveBeenCalledWith('War Room');
+    expect(s.tickTabs).toHaveBeenCalledTimes(1);
+    const rename = s.tickTabs.mock.calls[0]![0] as (tabs: Tab[]) => Tab[];
+    const tab = { id: 't', name: 'Tab 1', elements: [] } as unknown as Tab;
+    expect(rename([tab])[0]!.name).toBe('War Room');
+  });
+
+  it('counts a type-to-edit by the label it replaced, so one typed letter still names them', () => {
+    const s = setup(boardroom, null, 'Untitled Space');
+    expect(s.editing.typeIntoSelected('room', 'B')).toBe(true);
+    s.result.current.commitLabel('room', 'B');
+    expect(s.setDocumentName).toHaveBeenCalledWith('B');
+  });
+
+  it('a type-to-edit that ends where the label began names nothing', () => {
+    const s = setup(boardroom, null, 'Untitled Space');
+    s.editing.typeIntoSelected('room', 'B');
+    s.result.current.commitLabel('room', 'Boardroom');
+    expect(s.setDocumentName).not.toHaveBeenCalled();
+    expect(s.tickTabs).not.toHaveBeenCalled();
   });
 });
 

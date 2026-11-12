@@ -225,6 +225,23 @@ Only while you sit at the table, and only for your own paddle:
   behind plays as one facing down: **W** and **S**, **Arrow Up** and **Arrow Down**, and the pointer's height.
 - Your paddle moves on your screen at once, never waiting for the room.
 
+### On a small screen
+
+A phone or a narrow window (a canvas under 640 px wide) often opens zoomed out to fit, where the table is about 92 px
+wide and its score pills tiny: playable, but cramped (Work Item 620). So **sitting down to play brings the table
+close**, and standing up puts the view back:
+
+- **When you take a seat to play** (an Editor or a Participant, so not a Viewer, who only sits), on a canvas under
+  640 px wide, while the table shows narrower than 160 px on screen, the view glides in to centre the table at the
+  zoom that makes it 60% of the canvas's width (at most half its height, and at most 200%). The score pills, drawn on
+  the table, grow with it. A table already shown 160 px wide or more, a wide canvas, or a zoom already closer, is left
+  as it is: this never zooms out and never fights a view you chose.
+- **Standing up** (or the game piece going) glides back to the view you had before you sat, **unless you zoomed
+  while sitting**: then your zoom holds ([The camera](../008-canvas/avatar-mode.md#the-camera) "Zoom holds").
+- Reduced motion lands at once rather than gliding. Nothing is stored or sent: it is your screen's camera only.
+- Chose this over **larger score pills at low zoom**: bigger pills alone would leave the table, the ball and the
+  paddle you drag still 92 px wide.
+
 ### Reduced motion
 
 Under reduced motion (the system setting) a screen draws no ball and no moving paddles: it shows the scoreboard

@@ -279,7 +279,8 @@ function HairBody({ a }: { a: AvatarPaletteActions }) {
 }
 
 // The status choices (docs/specs/008-canvas/avatar-mode.md "Status"): the product's named groups, None leading the
-// first, as cards three to a row (two on a phone), each its dot, its name and its short line.
+// first, as cards four to a row (two on a phone), each its dot before its name, and its short line under them. The dot
+// sits inline rather than in a plate, so four fit the flyout's width and the whole of it fits at 1280x720.
 type StatusChoice = AvatarStatusEntry | { id: 'none'; label: string; colour: null; line: string };
 const NONE_CHOICE: StatusChoice = {
   id: 'none',
@@ -310,11 +311,12 @@ function StatusCard({ s, a }: { s: StatusChoice; a: AvatarPaletteActions }) {
         name={s.label}
         blurb={s.line}
         onClick={() => a.onSetStatus?.(s.id === 'none' ? null : s.id)}
+        inline
         plate={
           s.colour ? (
-            <span className="h-3 w-3 rounded-full" style={{ background: s.colour }} />
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.colour }} />
           ) : (
-            <span className="h-3 w-3 rounded-full border border-dashed border-slate-400" />
+            <span className="h-2.5 w-2.5 rounded-full border border-dashed border-slate-400" />
           )
         }
       />
@@ -330,7 +332,7 @@ function StatusBody({ a }: { a: AvatarPaletteActions }) {
         ? STATUS_CHOICE_GROUPS.map((g) => (
             <section key={g.name} aria-label={g.name}>
               <FlyoutGroupTitle>{g.name}</FlyoutGroupTitle>
-              <ul className="grid grid-cols-2 gap-1 sm:grid-cols-3">
+              <ul className="grid grid-cols-2 gap-1 sm:grid-cols-4">
                 {g.choices.map((s) => (
                   <StatusCard key={s.id} s={s} a={a} />
                 ))}
@@ -456,8 +458,8 @@ export function AvatarPaletteFlyout({
         key={category.id}
         ref={bodyRef}
         onKeyDown={(e) => onFlyoutArrowKey(e, bodyRef.current)}
-        // Status runs to six rows of cards and Sound, so its cap is taller: the whole of it fits without scrolling on a
-        // desktop (docs/specs/008-canvas/avatar-mode.md "Set from the palette").
+        // Status runs to four rows of cards and Sound, so its cap is taller: the whole of it fits without scrolling on a
+        // desktop down to 1280x720 (docs/specs/008-canvas/avatar-mode.md "Set from the palette").
         className={`flex ${category.id === 'status' ? 'max-h-[min(70vh,38rem)]' : 'max-h-[min(70vh,32rem)]'} flex-col gap-3 overflow-y-auto p-3 animate-fade-in`}
       >
         {category.id === 'character' ? (

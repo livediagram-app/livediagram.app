@@ -130,8 +130,8 @@ button in the bottom-right cluster; that button and panel are gone.
     **Hair Colour** group, as Status's Sound: one wrapping row of round swatches, one per [hair colour](#hair-colour),
     each a button named by its colour (its `aria-label` and its tooltip), pressed while it is yours, with the pointer
     cursor. A press applies at once like a tile; pointing at one or focusing it tries it on in the preview card.
-  - **Status**: cards three to a row (two on a phone), **None** then the statuses in three named groups, **Availability**,
-    **Activity** and **Mood**, each card its dot, its name and its short line ([Status](#status)). Under
+  - **Status**: cards four to a row (two on a phone), **None** then the statuses in three named groups, **Availability**,
+    **Activity** and **Mood**, each card its dot before its name, and its short line under them ([Status](#status)). Under
     them, **Sound** holds the **Jukebox Music** switch (your own switch for every jukebox,
     [Social pieces](../009-elements/social-pieces.md)), the panel's last row, which has no other home.
 - **Picking applies at once.** A tile is a choice, not an action: it shows pressed while it is what you wear, the
@@ -635,11 +635,12 @@ of that for other statuses"). They come in three groups, **Availability** (can p
   character; a status with no loop draws still and costs nothing. Under reduced motion (the system's or the
   in-app preference) every loop holds its resting frame: the puffs, the sparkle, the "?", the confetti, the three
   dots and the sandwich stay where they are drawn.
-- **Set from the palette**: the **Status** flyout is a wide one (36rem), its statuses as cards three to a row in the
+- **Set from the palette**: the **Status** flyout is a wide one (36rem), its statuses as cards four to a row in the
   three named groups (**Availability**, **Activity**, **Mood**; owner, 2026-11-06: "The status
   menu is long, why not a wider menu like other categories, with subcategories"), **None** leading the first, each
-  card its dot, its name and its short line, the current one pressed; **Sound** stays the last group. The whole of it
-  fits without scrolling on a desktop, with the preview card beside it. On a phone the flyout spans the screen and
+  card its dot before its name (unboxed, so four cards fit the width) and its short line under them, the current one
+  pressed; **Sound** stays the last group. The whole of it fits without scrolling on a desktop down to 1280x720 (four
+  rows of cards, about 444px of body under a 504px cap there), with the preview card beside it. On a phone the flyout spans the screen and
   its cards go two to a row. Every role may set it: it is presence, like the character.
 - **Set by where you sit**: a Nap Pod shows Focusing, a Treadmill or a Weight Bench On a Break, a Phone Booth Busy,
   while you sit there, laid over your own status and never written over it; a status picked while sitting wins
