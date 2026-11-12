@@ -10,6 +10,7 @@ import type { SessionAttachment } from '../room-session';
 import type { ClientMessage, ParticipantPresence, ServerMessage } from '../types';
 import { storedTabName } from './room-content-state';
 import { noteCallSession, relayNudge } from './room-call-sessions';
+import { noteAttendance } from './room-attendance';
 import { relaySessionOf, scopeOf } from './room-sockets';
 import type { DocumentRoom } from './document-room';
 
@@ -80,6 +81,8 @@ export function roomMessage(
     const hello = { ...session, presence, batches, leanAvatars } satisfies SessionAttachment;
     ws.serializeAttachment(hello);
     room.presenceRelay.noteSession(ws, relaySessionOf(hello));
+    // Who is in which tab, for its Attendance (docs/specs/012-collaboration/tab-attendance.md).
+    noteAttendance(room, ws, session, hello);
     // The session's own collab key, to its socket alone (docs/specs/013-workspace/share-roles.md "The collab
     // key"): its editor records its answers and reactions under it from now on.
     if (presence.key) room.sendTo(ws, { kind: 'collab-key', key: presence.key });
@@ -170,6 +173,8 @@ export function roomMessage(
     if (opKind === 'tab-focus') {
       const { tabId, besideTabId } = msg.op as { tabId?: unknown; besideTabId?: unknown };
       if (typeof tabId === 'string') {
+        // The tabs it showed before the move (`sender` is changed in place below), for its Attendance.
+        const before = { ...session, presence: { ...sender } } satisfies SessionAttachment;
         sender.tabId = tabId.slice(0, MAX_TAB_ID_LEN);
         // The other pane of a side by side split (docs/specs/007-editor/split-view.md "Presence"),
         // clamped like tabId; anything but a string clears it. A tab-scoped session has one tab
@@ -181,6 +186,7 @@ export function roomMessage(
         ws.serializeAttachment(moved);
         room.presenceRelay.noteSession(ws, relaySessionOf(moved));
         room.presenceRelay.catchUp(ws, sender.id);
+        noteAttendance(room, ws, before, moved);
       }
     }
     // A follow is the room's to keep, never relayed: it tells the people followed, on their own sockets.

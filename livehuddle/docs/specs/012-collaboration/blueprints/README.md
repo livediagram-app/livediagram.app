@@ -12,5 +12,6 @@ Follow the references below only as needed; never upfront.
 - ./join-and-leave-sounds.md - when implementing or changing the join and leave chimes: the one AudioContext and its unlock, the roster watcher (people, seeding, flap debounce, burst), Do Not Disturb, the setting
 - ./nudge.md - when implementing or changing Nudge: the two ops, the room's ledger and addressing, the client cooldown and button, the recipient's chime, toast and desktop notification, the Desktop Notifications row and offer
 - ./video-and-screen-bubbles.md - when building or changing video and screen share bubbles: the bubble picker, per-track subscriptions and simulcast layers, the camera and share, the bubble, the maximised panel and the sharing bar
+- ./tab-attendance.md - when implementing or changing a tab's Attendance: the `tab_attendance` table, the room's join and leave on hello, tab-focus and close, the rejoin grace, the boot sweep, the route and the dialog
 - ./DEFAULTS.md - when a blueprint here applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a blueprint here covers

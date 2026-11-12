@@ -9,6 +9,7 @@ import {
 } from '@liveworkspace/index-app';
 import { CHANGESET_RETENTION_MS } from '@livehuddle/api-schema';
 import { deleteOldChangesets } from '../db/changesets';
+import { deleteOldVisits } from '../db/tab-attendance';
 import { documentRoom } from '../document-client';
 import { COMMUNITY_CHECK_MS as COMMUNITY_CHECK_EVERY_MS } from './community-post';
 import { drainOutbox } from './document-outbox';
@@ -104,17 +105,22 @@ export function ensureSchema(room: DocumentRoom): void {
   }
 }
 
+// The daily upkeep, armed by the first write it has to look after: a content write, or a tab's Attendance
+// (room-attendance.ts), so a Space visited and never edited still sweeps its old visits.
+export function armUpkeep(room: DocumentRoom): void {
+  if (room.maintenanceAt !== null) return;
+  room.maintenanceAt = Date.now() + MAINTENANCE_EVERY_MS;
+  void room.state.storage.put(MAINTENANCE_KEY, room.maintenanceAt);
+  room.armAlarm();
+}
+
 // A content write happened: push to the index and the media service on idle, at most once a minute
 // (document-outbox.ts), and send a shared tab's holders their copy on idle. Writes the drain itself makes (its
 // outbox delete) schedule nothing.
 export function noteWrite(room: DocumentRoom): void {
   if (room.draining) return;
   room.writes++;
-  if (room.maintenanceAt === null) {
-    room.maintenanceAt = Date.now() + MAINTENANCE_EVERY_MS;
-    void room.state.storage.put(MAINTENANCE_KEY, room.maintenanceAt);
-    room.armAlarm();
-  }
+  armUpkeep(room);
   const now = Date.now();
   if (room.shares.noteWrite()) room.armAlarm();
   // A drain set far off, for a key in backoff, gives way to the key just written.
@@ -185,6 +191,8 @@ export async function maintain(room: DocumentRoom, now: number): Promise<void> {
   try {
     const gone = await deleteOldChangesets(env, now - CHANGESET_RETENTION_MS);
     if (gone > 0) console.info('[changeset] retention', { documentId, deleted: gone });
+    const visits = await deleteOldVisits(env.DOCUMENT_DB, now);
+    if (visits > 0) console.info('[attendance] swept', { documentId, deleted: visits });
   } catch (error) {
     console.warn('[document-room] upkeep failed', { documentId, error: String(error) });
   }

@@ -15,6 +15,7 @@ import { handleTabRename } from './tab-name-route';
 import { handleChangesetRoutes, refreshAfterRead } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
 import { handleSuggestionRoutes } from './suggestion-routes';
+import { handleAttendanceRoutes } from './attendance-routes';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
 import {
@@ -189,6 +190,9 @@ export async function handleDocumentSubresources(
   // A Suggestion Box's notes (docs/specs/009-elements/team-pieces.md "Suggestion Box").
   const suggestions = await handleSuggestionRoutes(ctx);
   if (suggestions) return suggestions;
+  // A tab's Attendance (docs/specs/012-collaboration/tab-attendance.md).
+  const attendance = await handleAttendanceRoutes(ctx);
+  if (attendance) return attendance;
   // Agent presence (docs/specs/024-agents/agent-presence.md "Presence").
   const presence = await handleAgentPresenceRoute(ctx);
   if (presence) return presence;

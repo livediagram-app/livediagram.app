@@ -89,6 +89,7 @@ import {
   turnAwayIfFull,
 } from './room-sockets';
 import { alarm, armAlarm, purge } from './room-lifecycle';
+import { sweepStaleAttendance } from './room-attendance';
 import { roomMessage } from './room-message';
 import { callSessions, storedTabRev } from './room-call-sessions';
 import {
@@ -400,6 +401,8 @@ export class DocumentRoom extends DurableObject<Env> {
       await this.baton.restore();
       for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
       restoreContentState(this, await state.storage.get<number>(MAINTENANCE_KEY));
+      // Visits a restart left open (room-attendance.ts): only when the room starts with nobody connected.
+      sweepStaleAttendance(this);
       this.armAlarm();
     });
   }

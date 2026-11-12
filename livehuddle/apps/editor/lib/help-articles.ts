@@ -44,6 +44,8 @@ export const HELP_ARTICLES = {
   // Tours and presence
   avatarTour: 'selection-modes/avatar-mode/avatar-tour',
   livePresence: 'collaboration/live-presence',
+  // A tab's Attendance (docs/specs/012-collaboration/tab-attendance.md), its dialog's help link.
+  tabAttendance: 'collaboration/live-presence/tab-attendance',
   // Explorer / data
   // Standing panels.
   explorerPanel: 'explorer/explorer-panel',
@@ -223,6 +225,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   livePresence: {
     title: 'Learn about live presence',
     description: 'Who is in the canvas, where they are, and following them.',
+  },
+  tabAttendance: {
+    title: 'Learn about attendance',
+    description: 'Who was in a tab and when, and how long it is kept.',
   },
   keyboardShortcuts: {
     title: 'Learn about keyboard shortcuts',

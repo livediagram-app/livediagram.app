@@ -88,6 +88,18 @@ describe('swingDoor', () => {
   });
 });
 
+// docs/specs/012-collaboration/tab-attendance.md "Who sees it": an Editor and a Participant open a tab's Attendance,
+// a Viewer never.
+describe('seeAttendance', () => {
+  it('is an Editor’s and a Participant’s, never a Viewer’s', () => {
+    expect(resolveEditorCapabilities({ level: 'edit', adderKey: null }).seeAttendance).toBe(true);
+    expect(resolveEditorCapabilities({ level: 'participate', adderKey: ME }).seeAttendance).toBe(
+      true,
+    );
+    expect(resolveEditorCapabilities({ level: 'view', adderKey: ME }).seeAttendance).toBe(false);
+  });
+});
+
 describe('contentAddBlocked', () => {
   const base = {
     participating: false,
