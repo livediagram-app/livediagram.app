@@ -116,7 +116,9 @@ two apps share has one label and one type; `CommunityCategory` is the union of e
 1. JSON body ≤ `MAX_BODY_BYTES` (64 KiB), else `400 invalid_body`.
 2. `validateCommunityPostInput(body.input)`: title trimmed and whitespace-collapsed, 3 to 80; description trimmed,
    `\r\n` to `\n`, three or more newlines to two, 20 to 500; one of the app's own categories (`validateCommunityPostInput(input, app)`); tags each normalised
-   (`normaliseCommunityTag`: lowercase, whitespace and `_` to `-`, only `a-z0-9-`, hyphen runs collapsed, 2 to 24) and
+   (`normaliseCommunityTag`: locale-free lowercase then NFC, whitespace and `_` to `-`, only `\p{L}`, `\p{N}`, `-` and
+   the `\p{M}` marks that follow a letter or digit, hyphen runs collapsed, 2 to 24 code points; one left-to-right pass,
+   no regex over the whole input) and
    de-duplicated, at most 5, any tag failing normalisation fails the field; `anonymous` true unless exactly `false`.
    The first failing field's code: `400 invalid_title` / `invalid_description` / `invalid_category` / `invalid_tags`.
 3. `owner` and `shareCode` ids (1 to 200 characters), `documentState` one of three, and an author (`parseAuthor`:
@@ -179,7 +181,8 @@ state = 'hidden', hidden_at = now WHERE state = 'listed'` and at least 3 distinc
 
 - **List** `listPosts(env, scope, query, owner)`: `PUBLIC_POST` for one app, `PUBLIC_POST_ANY_APP` for `all`
   (`publicWhere(scope)`), or `OWN_POST` for My Shares (one app only); `category`; every tag (`tag` param and each
-  `#tag` in `q`, at most 5) as `EXISTS (post_tags …)`; every plain term (lowercased, at most 5, each cut to 40) as
+  `#tag` in `q`, at most 5) as `EXISTS (post_tags …)`; every plain term (lowercased and NFC-normalised, at most 5, each cut to 40)
+  as
   `search_text LIKE '%term%' ESCAPE '\'` with `\ % _` escaped; ordered `new` = `published_at DESC, id`, `loved` =
   `like_count DESC, published_at DESC, id`, `copied` likewise by `copy_count`; `LIMIT 25 OFFSET offset`. `nextOffset`
   is `offset + 24` when a 25th row came back and that does not pass `COMMUNITY_MAX_OFFSET` (2400), else null.

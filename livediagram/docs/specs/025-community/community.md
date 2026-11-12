@@ -138,10 +138,15 @@ templates ([Start Diagramming "From the Community"](../007-editor/start-diagramm
 
 ## Tags
 
-A tag is normalised before it is stored or matched: trimmed, lowercased, inner whitespace and underscores become a single
-hyphen, any character other than `a-z`, `0-9` and `-` is dropped, repeated and edge hyphens collapse. After normalisation
-it is 2 to 24 characters, or it is rejected. Duplicates on one post collapse. The same function runs in the editor (as you
-type) and on the worker (authoritative).
+A tag is normalised before it is stored or matched: lowercased with the locale-free rule (the same in every browser
+and on the worker, so `I` is always `i`), NFC-normalised (an accent typed as a separate mark joins its letter, so `café`
+is one tag however it was typed), inner whitespace and underscores become a single hyphen, and only letters and digits
+of any script (Unicode letters and numbers, with the combining marks that follow them, so `हिन्दी` keeps its vowel signs)
+and `-` are kept: punctuation, symbols and emoji are dropped. Repeated and edge hyphens collapse. After normalisation it
+is 2 to 24 characters, counted in code points, or it is rejected. Duplicates on one post collapse. The same function
+runs in the editor (as you type) and on the worker (authoritative). Tags stored before this rule (plain `a-z`, `0-9`
+and `-`) are already in this form, so they stay as stored and still match; a tag that once lost its accent (`caf`)
+keeps that spelling until its author edits the listing.
 
 ## The Community page
 

@@ -41,16 +41,78 @@ describe('normaliseCommunityTag', () => {
     ['C++ & Rust!', 'c-rust'],
     ['--edge--', 'edge'],
     ['a  -  b', 'a-b'],
-    ['naïve', 'nave'],
+    ['a-_- b', 'a-b'],
+    ['-', null],
+    // Letters and digits of any script stay (spec "Tags").
+    ['naïve', 'naïve'],
+    ['Café Crème', 'café-crème'],
+    ['ÉCOLE', 'école'],
+    ['Straße', 'straße'],
+    ['Ελληνικά', 'ελληνικά'],
+    ['Москва 2026', 'москва-2026'],
+    ['日本語', '日本語'],
+    ['東京_タワー', '東京-タワー'],
+    ['한국어!', '한국어'],
+    ['עברית', 'עברית'],
+    ['العربية', 'العربية'],
+    ['٣٤ dígitos', '٣٤-dígitos'],
+    // Combining marks stay with their letter: Devanagari's vowel signs, Thai's tone marks.
+    ['हिन्दी', 'हिन्दी'],
+    ['น้ำ ภาษาไทย', 'น้ำ-ภาษาไทย'],
+    // Punctuation, symbols and emoji go, whatever the script.
+    ['¿Qué? «sí»', 'qué-sí'],
+    ['日本、語。', '日本語'],
+    ['rocket 🚀 launch', 'rocket-launch'],
+    ['€uro™', 'uro'],
   ])('%s -> %s', (raw, want) => {
     expect(normaliseCommunityTag(raw)).toBe(want);
   });
 
-  it('rejects tags outside 2..24 characters after normalisation', () => {
+  it('NFC-normalises, so a decomposed accent is the same tag as a composed one', () => {
+    const decomposed = 'café';
+    expect(decomposed).not.toBe('café');
+    expect(normaliseCommunityTag(decomposed)).toBe('café');
+    expect(normaliseCommunityTag('CAFÉ')).toBe('café');
+    expect(normaliseCommunityTag('été')).toBe(normaliseCommunityTag('été'));
+  });
+
+  it('lowercases with the locale-free rule', () => {
+    // Turkish dotted I lowercases to i plus a combining dot in every locale, never to a bare i.
+    expect(normaliseCommunityTag('İstanbul')).toBe('i̇stanbul');
+    expect(normaliseCommunityTag('ISTANBUL')).toBe('istanbul');
+    // The Kelvin sign is a capital K.
+    expect(normaliseCommunityTag('Kelvin')).toBe('kelvin');
+  });
+
+  it('drops a mark with no letter before it', () => {
+    expect(normaliseCommunityTag('́ab')).toBe('ab');
+    expect(normaliseCommunityTag('ab-́cd')).toBe('ab-cd');
+    expect(normaliseCommunityTag('́́')).toBeNull();
+  });
+
+  it('keeps every tag stored under the old a-z 0-9 rule as it is', () => {
+    for (const old of ['aws', 'event-driven', 'c4', '3d-models', 'a-b-c', 'x'.repeat(24), 'ux']) {
+      expect(normaliseCommunityTag(old)).toBe(old);
+    }
+  });
+
+  it('rejects tags outside 2..24 code points after normalisation', () => {
     expect(normaliseCommunityTag('a')).toBeNull();
     expect(normaliseCommunityTag('!!!')).toBeNull();
     expect(normaliseCommunityTag('x'.repeat(24))).toBe('x'.repeat(24));
     expect(normaliseCommunityTag('x'.repeat(25))).toBeNull();
+    expect(normaliseCommunityTag('日')).toBeNull();
+    expect(normaliseCommunityTag('日本')).toBe('日本');
+    // Counted in code points, not UTF-16 units: 24 letters outside the BMP are 48 units.
+    expect('𠀋'.repeat(24)).toHaveLength(48);
+    expect(normaliseCommunityTag('𠀋'.repeat(24))).toBe('𠀋'.repeat(24));
+    expect(normaliseCommunityTag('𠀋'.repeat(25))).toBeNull();
+    // A composed accent is one code point: 24 é's fit, however they were typed.
+    expect(normaliseCommunityTag('é'.repeat(24))).toBe('é'.repeat(24));
+    // The hyphen counts, and edge hyphens never do.
+    expect(normaliseCommunityTag(`${'x'.repeat(12)} ${'y'.repeat(11)}`)).toHaveLength(24);
+    expect(normaliseCommunityTag(`${'x'.repeat(12)} ${'y'.repeat(12)}`)).toBeNull();
+    expect(normaliseCommunityTag(`  ${'x'.repeat(24)}  `)).toBe('x'.repeat(24));
   });
 });
 
@@ -228,6 +290,29 @@ describe('search tags', () => {
     expect(toggleCommunitySearchTag('retro', 'agile')).toBe('retro #agile');
     expect(toggleCommunitySearchTag('retro #Agile board', 'agile')).toBe('retro board');
     expect(toggleCommunitySearchTag('', 'ux')).toBe('#ux');
+  });
+
+  it('reads accented and non-Latin #tags as publishing stores them', () => {
+    expect(communitySearchTags('#Café #café #日本語 #हिन्दी retro')).toEqual([
+      'café',
+      '日本語',
+      'हिन्दी',
+    ]);
+    expect(toggleCommunitySearchTag('retro', 'café')).toBe('retro #café');
+    expect(toggleCommunitySearchTag('retro #CAFÉ', 'café')).toBe('retro');
+    expect(toggleCommunitySearchTag('#日本語 board', '日本語')).toBe('board');
+  });
+
+  it('cuts a term at 40 code points, never splitting a character outside the BMP', () => {
+    const cut = communitySearchTerms(`${'x'.repeat(39)}🚀🚀`)[0]!;
+    expect(cut).toBe(`${'x'.repeat(39)}🚀`);
+    // No lone surrogate left at the end.
+    expect(encodeURIComponent(cut)).toContain(encodeURIComponent('🚀'));
+    expect(communitySearchTerms('𠀋'.repeat(50))).toEqual(['𠀋'.repeat(40)]);
+  });
+
+  it('NFC-normalises plain terms, as the stored search text is', () => {
+    expect(communitySearchTerms('Café ÉTÉ 日本語')).toEqual(['café', 'été', '日本語']);
   });
 });
 
