@@ -411,7 +411,13 @@ several agents share, and timed out tests the change never touched.
 
 - `pnpm install` installs it: the root `prepare` script runs `scripts/git-hooks/install.mjs`, which
   points `core.hooksPath` at the tracked `.githooks/` (for every worktree of the repository). It skips,
-  saying so, when `CI` is set or outside a git work tree.
+  saying so, when `CI` is set or outside a git work tree, and it never rewrites a `core.hooksPath` that is
+  already set, to any value (the setting is shared by every worktree, so an install in one must not
+  change it for the rest).
+- A worktree that installed only some packages needs no `--no-verify`: when the root or a changed
+  workspace has no `node_modules`, the hook first runs a frozen, filtered install of the groups'
+  packages and what they depend on (`pnpm install --frozen-lockfile --ignore-scripts --filter=<name>...`).
+  `--ignore-scripts` keeps `prepare` from running, so `core.hooksPath` stays as it is.
 - `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs` (tests: `pre-push.test.mjs`, on the
   platform's CI script tests). It takes the merge base with `origin/main` and asks CI's planner
   (`ci-plan.mjs`) which groups the change reaches. It runs, stopping at the first failing step:
@@ -425,7 +431,7 @@ several agents share, and timed out tests the change never touched.
   - when the push deletes or renames a file: every help app's `repo-paths-in-docs` test.
 - When half the cores are already busy, each test run is capped at two workers, so a starved CPU
   doesn't fail timing tests.
-- It checks only a push of the checked-out `HEAD`; a push of any other commit, a tag or a deletion
+- It checks only a push of the checked-out `HEAD` (`git push origin HEAD:<branch>` included); a push of any other commit, a tag or a deletion
   passes and is left to CI. Nothing changed since the merge base also passes.
 - One run at a time on the machine: a push made while another's checks are running waits its turn,
   for up to 15 minutes, then skips and says so.

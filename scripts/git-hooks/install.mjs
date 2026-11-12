@@ -13,7 +13,9 @@ export const HOOKS_PATH = '.githooks';
 export function hooksPathAction({ ci, insideWorkTree, current }) {
   if (ci) return 'skip-ci';
   if (!insideWorkTree) return 'skip-no-git';
-  return current === HOOKS_PATH ? 'unchanged' : 'set';
+  // Any value stays: the setting is shared by every worktree, and an agent's install must never rewrite
+  // the owner's absolute path to the relative one (which a worktree sandbox then cannot set back).
+  return current ? 'unchanged' : 'set';
 }
 
 /** @param {string[]} args */
@@ -42,12 +44,11 @@ function main() {
   const action = hooksPathAction({ ci: Boolean(process.env.CI), insideWorkTree, current });
   if (action === 'skip-ci') console.log('[git-hooks] skipped: CI');
   else if (action === 'skip-no-git') console.log('[git-hooks] skipped: not a git work tree');
-  else if (action === 'unchanged') console.log(`[git-hooks] core.hooksPath is ${HOOKS_PATH}`);
+  else if (action === 'unchanged')
+    console.log(`[git-hooks] core.hooksPath already set (${current}), left alone`);
   else {
     git('config', 'core.hooksPath', HOOKS_PATH);
-    console.log(
-      `[git-hooks] core.hooksPath set to ${HOOKS_PATH}${current ? ` (was ${current})` : ''}`,
-    );
+    console.log(`[git-hooks] core.hooksPath set to ${HOOKS_PATH}`);
   }
 }
 

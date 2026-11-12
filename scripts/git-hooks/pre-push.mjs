@@ -89,6 +89,37 @@ export function prePushSteps({ groups }) {
   return steps;
 }
 
+/**
+ * The install a fresh worktree needs first: when the root or a workspace the push changes has no
+ * node_modules (a worktree that installed only some packages), a frozen install of the groups' packages
+ * and what they depend on (`name...`), so lint and typecheck have their modules. `--ignore-scripts` keeps
+ * the root `prepare` from running, so the shared core.hooksPath is never touched. Null when nothing is
+ * missing.
+ * @param {{ groups: Group[] }} plan
+ * @param {Change[]} changes
+ * @param {{ workspaceOf: (file: string) => Workspace | null, hasModules: (dir: string) => boolean }} ctx
+ * @returns {Step | null}
+ */
+export function installStep({ groups }, changes, { workspaceOf, hasModules }) {
+  if (groups.length === 0) return null;
+  const dirs = new Set(['.']);
+  for (const change of changes) {
+    if (change.status.startsWith('D')) continue;
+    const ws = workspaceOf(change.path);
+    if (ws) dirs.add(ws.dir);
+  }
+  const missing = [...dirs].filter((dir) => !hasModules(dir));
+  if (missing.length === 0) return null;
+  const filters = groups
+    .flatMap((g) => split(g.filters))
+    .map((f) => (f.endsWith('...') ? f : `${f}...`));
+  return {
+    label: `install missing modules (${missing.length} without node_modules)`,
+    cmd: 'pnpm',
+    args: ['install', '--frozen-lockfile', '--ignore-scripts', ...[...new Set(filters)]],
+  };
+}
+
 /** A source or test file vitest can trace imports from. */
 const CODE = /\.[cm]?[jt]sx?$/;
 
@@ -212,7 +243,8 @@ export function parseNameStatus(text) {
 
 /**
  * The local shas of the branches a push sends: git writes one line per ref,
- * `<local ref> <local sha> <remote ref> <remote sha>`. Deletions and tags carry nothing to check.
+ * `<local ref> <local sha> <remote ref> <remote sha>`. `git push origin HEAD:<branch>` names its local
+ * ref `HEAD`, which is a branch push too. Deletions and tags carry nothing to check.
  * @param {string} stdin
  * @returns {string[]}
  */
@@ -222,7 +254,9 @@ export function pushedShas(stdin) {
     .map((line) => line.trim().split(/\s+/))
     .filter(
       ([localRef, localSha]) =>
-        localRef?.startsWith('refs/heads/') && localSha && !ZERO_SHA.test(localSha),
+        (localRef?.startsWith('refs/heads/') || localRef === 'HEAD') &&
+        localSha &&
+        !ZERO_SHA.test(localSha),
     )
     .map(([, localSha]) => /** @type {string} */ (localSha));
 }
@@ -425,7 +459,12 @@ function main() {
   const changes = parseNameStatus(git('diff', '--name-status', '-M', base, 'HEAD'));
   // Half the cores busy already: cap each test run, so a starved CPU doesn't fail timing tests.
   const busy = loadavg()[0] >= availableParallelism() / 2;
+  const install = installStep(plan, changes, {
+    workspaceOf,
+    hasModules: (dir) => existsSync(path.join(ROOT, dir, 'node_modules')),
+  });
   const steps = [
+    ...(install ? [install] : []),
     ...prePushSteps(plan),
     ...testSteps(changes, {
       workspaceOf,
