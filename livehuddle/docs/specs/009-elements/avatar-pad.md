@@ -49,7 +49,7 @@ Walking is the default way to be in a Space (a Participant and a Viewer always w
 button), so every board starts with an entrance (owner, 2026-11-06: "Make sure all templates and blank tabs gain an
 Avatar Pad - probably replace the old selection mode button").
 
-- **Every Spaces template** (all twenty-five, in every category) places **one** pad, which replaced its **Walk In**
+- **Every Spaces template** (all twenty-six, in every category) places **one** pad, which replaced its **Walk In**
   [Selection Mode button](mode-button.md), **in the middle of the action** ([Where a Space's pad
   stands](#where-a-spaces-pad-stands)), with the how-to line centred under it (`arrival` in
   `packages/templates/src/template-arrival.ts`). A pad is a floor, so it comes first in the template's elements with
@@ -116,6 +116,7 @@ away when joining, for example in the middle of a key room, or the centre of a c
 | Co-working Tower | The lobby, between the Hot Desks' door and the Lifts                                    | 360        |
 | Expo Hall        | The aisle between the stage's two rows of chairs, the booths either side                | 360        |
 | Beach Offsite    | The sand between the huts' walk and the campfire                                        | 360        |
+| Festival Field   | The crowd field in front of the Main Stage, the stage ahead and the stalls to the left  | 360        |
 
 A campus lands you in its main hall, where the all-company moments happen; its Directory stays just inside the gate.
 

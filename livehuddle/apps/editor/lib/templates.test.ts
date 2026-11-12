@@ -18,7 +18,7 @@ import { getTheme } from './themes';
 // theme have to land in the editor as a fully styled tab, or the person opens an "Untitled" document that doesn't
 // match the option they picked.
 
-// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the twenty-five Spaces. The
+// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the twenty-six Spaces. The
 // retrospectives, workshops, planning and strategy boards and the quizzes and games left with Work Tracker #423.
 describe('TEMPLATES catalogue', () => {
   const ALL_KINDS: TemplateKind[] = [
@@ -48,12 +48,13 @@ describe('TEMPLATES catalogue', () => {
     'city-townhouse',
     'country-cottage',
     'music-hall',
+    'festival-field',
   ];
 
   // Hidden templates are buildable but never listed; nothing ships hidden today.
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists Blank Space and the twenty-five Spaces, in that order', () => {
+  it('lists Blank Space and the twenty-six Spaces, in that order', () => {
     expect(listed.map((t) => t.kind)).toEqual(ALL_KINDS);
     expect(listed.map((t) => t.title)).toEqual([
       'Blank Space',
@@ -82,6 +83,7 @@ describe('TEMPLATES catalogue', () => {
       'City Townhouse',
       'Country Cottage',
       'Music Hall',
+      'Festival Field',
     ]);
   });
 
