@@ -1,10 +1,13 @@
 // A person's initials on their colour (an assignee, a swimlane, a presence tag), painted through the
 // identity fill so dark mode deepens the colour under the white text (docs/specs/004-interface-design/
 // color-scheme.md "Dark palette rules"), and optically centred.
-import { GlyphDisc, IDENTITY_FILL, identityVars } from '@liveplanner/ui';
+import { GlyphDisc, IDENTITY_FILL, identityVars, lucideGlyph } from '@liveplanner/ui';
+import { lucideGitPullRequest } from '@liveworkspace/icons/lucide';
 import { initialsOf } from '@liveplanner/project';
-import { AUTOMATION_PERSON_ID, type ItemPerson } from '@liveplanner/items';
+import { AUTOMATION_PERSON_ID, GITHUB_PERSON_ID, type ItemPerson } from '@liveplanner/items';
 import { BoltIcon } from '@/components/automations/automation-glyphs';
+
+const PullRequestGlyph = lucideGlyph(lucideGitPullRequest, 11);
 
 export function PersonDisc({ person, label }: { person: ItemPerson; label?: string }) {
   // A rule's change is by Automation: its bolt on the brand tint, never the rule name's initials
@@ -19,6 +22,20 @@ export function PersonDisc({ person, label }: { person: ItemPerson; label?: stri
         aria-hidden={label ? undefined : true}
       >
         <BoltIcon size={11} aria-hidden />
+      </GlyphDisc>
+    );
+  // GitHub's moves (docs/specs/026-plan/github-pull-requests.md "GitHub rules"): its mark on its dark disc, as the
+  // card's Activity draws it, never "GI".
+  if (person.id === GITHUB_PERSON_ID)
+    return (
+      <GlyphDisc
+        size={20}
+        data-github-disc=""
+        className="bg-[#1f2328] text-white dark:bg-slate-100 dark:text-[#1f2328]"
+        aria-label={label}
+        aria-hidden={label ? undefined : true}
+      >
+        <PullRequestGlyph size={11} weight={2} />
       </GlyphDisc>
     );
   return (

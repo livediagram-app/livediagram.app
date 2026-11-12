@@ -151,14 +151,19 @@ function ActivityRun({
   return (
     <li data-activity-run="" className={`relative flex gap-3 ${last ? '' : 'pb-5'}`}>
       {last ? null : <span aria-hidden className={railClass(24)} />}
-      <TimelineDisc name={run.by.name} color={run.by.color} automation={run.automation} />
+      <TimelineDisc
+        name={run.by.name}
+        color={run.by.color}
+        automation={run.automation}
+        github={run.github}
+      />
       <div className="min-w-0 flex-1">
         <div className="flex min-h-6 items-center gap-2">
           {run.automation ? (
             <AutomationAuthorName rule={run.by.name} className="text-[13px]" />
           ) : (
             <span className="min-w-0 truncate text-[13px] font-semibold text-slate-900 dark:text-slate-50">
-              {run.mine ? 'You' : run.by.name}
+              {run.github ? 'GitHub' : run.mine ? 'You' : run.by.name}
             </span>
           )}
           {aiWords ? (

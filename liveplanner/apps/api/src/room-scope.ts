@@ -44,6 +44,9 @@ export function opForScope(op: unknown, tabScope: string | null): unknown {
   if (o.kind === 'items') return { ...o, upserts: [], removed: [] };
   // A card thread's write may be on cards another tab shows, the same way: the session reads its threads again.
   if (o.kind === 'threads') return { ...o, upserts: [], removed: [] };
+  // A pull request's state may be another tab's cards' (docs/specs/026-plan/github-pull-requests.md "What a share link
+  // sees"): the session reads its tab's cards, and their states, again.
+  if (o.kind === 'pull-requests') return { kind: o.kind, upserts: [], removed: [] };
   const mine = onScope(o, tabScope);
   if (mine !== undefined) return mine ? op : null;
   return typeof o.kind === 'string' && TAB_LESS_DELIVERED.has(o.kind) ? op : null;

@@ -59,6 +59,7 @@ import { appendItemHistory } from '../db/item-history';
 import { planTabs } from './plan-route';
 import { tally } from './item-tally-route';
 import { importItems } from './item-import-route';
+import { pullRequestsFor } from './item-pull-requests';
 import { trackTime } from './item-time-route';
 import { COMMUNITY_CONTENT, readBody, type PlanRouteContext } from './context';
 import {
@@ -90,6 +91,8 @@ async function list(ctx: PlanRouteContext, projectId: string): Promise<Response>
   const shown = caller.scope ? items.filter((i) => caller.scope!.has(i.id)) : items;
   const answered = forCaller(caller, shown);
   const body: ItemsResponse = { items: answered, rev };
+  const pullRequests = await pullRequestsFor(ctx, caller, shown);
+  if (pullRequests) body.pullRequests = pullRequests;
   if (ctx.url.searchParams.get('include') === 'calculated') {
     // Worked out from the cards as the caller sees them, so a Community visitor's values name nobody either.
     const calculated = await calculatedFor(ctx, caller, caller.community ? answered : shown);

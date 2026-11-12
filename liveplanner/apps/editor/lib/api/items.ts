@@ -11,6 +11,7 @@ import {
   type ItemCreate,
   type ItemPerson,
   type ItemStoreState,
+  type PullRequestStatus,
   type ItemWrite,
 } from '@liveplanner/items';
 import { isOfflineId } from '../offline/offline-store';
@@ -48,20 +49,29 @@ function itemsUrl(scope: ItemsScope, rest = ''): string {
   return `${API_BASE}/projects/${encodeURIComponent(scope.projectId)}/items${rest}${q}`;
 }
 
-export async function fetchItems(scope: ItemsScope): Promise<ItemStoreState> {
+// A read's cards, and the states of the pull requests they link for a plan connected to GitHub
+// (docs/specs/026-plan/github-pull-requests.md "Pull request state on cards"); absent for none.
+export type FetchedItems = ItemStoreState & { pullRequests?: PullRequestStatus[] };
+
+export async function fetchItems(scope: ItemsScope): Promise<FetchedItems> {
   if (await isOfflineId(scope.projectId)) return offlineFetchItems(scope.projectId);
   return fetchCloudItems(scope);
 }
 
 // The server's item store, even while the id is still registered offline: Sync Project checks
 // the cloud copy holds every card before it removes the local one (docs/specs/006-project/offline-mode.md).
-export async function fetchCloudItems(scope: ItemsScope): Promise<ItemStoreState> {
+export async function fetchCloudItems(scope: ItemsScope): Promise<FetchedItems> {
   const res = await apiFetch(itemsUrl(scope), {
     headers: await apiHeaders(scope.ownerId, { share: scope.shareCode }),
   });
   const body = await expectOk<ItemsResponse>(res, 'items');
   const maxKey = Math.max(0, ...body.items.map((i) => i.key));
-  return { items: body.items, rev: body.rev, nextKey: maxKey + 1 };
+  return {
+    items: body.items,
+    rev: body.rev,
+    nextKey: maxKey + 1,
+    ...(body.pullRequests ? { pullRequests: body.pullRequests } : {}),
+  };
 }
 
 // A write the store answered `item_busy` (a burst of writes racing for its keys or revs, the api's own retries

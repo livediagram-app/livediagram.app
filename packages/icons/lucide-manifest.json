@@ -144,6 +144,8 @@
     "git-fork",
     "git-merge",
     "git-pull-request",
+    "git-pull-request-closed",
+    "git-pull-request-draft",
     "globe",
     "goal",
     "graduation-cap",

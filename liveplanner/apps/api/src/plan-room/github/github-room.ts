@@ -1,11 +1,17 @@
 // What the worker asks of a plan about GitHub (docs/specs/026-plan/github-pull-requests.md "Deliveries",
 // "Connecting a repository"; blueprint "Part 2"), the `PlanRoom.github` RPC: a connect's callback, or a verified
 // delivery. The plan's own connection is the truth: a delivery acts only when it names the plan's installation (and,
-// for a pull request or its checks, a chosen repository), and only once per delivery id.
+// for a pull request or its checks, a chosen repository), and only once per delivery id. A pull request's or a check
+// suite's delivery keeps its state and runs the plan's GitHub rules (part 3, github-pulls.ts); a repository leaving
+// the plan, or the App leaving the account, takes the states it held with it.
+import { withoutLegacyThread } from '@liveplanner/project';
+import type { Item } from '@liveplanner/items';
+import type { PullRequestsRoomOp } from '@liveplanner/api-schema';
 import { githubConfig } from '../../github/github-config';
 import type { GithubDelivery } from '../../github/github-delivery';
 import { NO_LINKS, rewriteLinks } from '../../github/github-links';
 import type { PlanEnv } from '../../types';
+import { relayItems, relayPullRequests } from '../../room-client';
 import { finishConnect, type ConnectCallback } from './github-connect';
 import {
   dropConnection,
@@ -13,8 +19,11 @@ import {
   firstSight,
   linksOf,
   readConnection,
+  NO_RULES,
   type GithubConnection,
 } from './github-store';
+import { actOnCheckSuite, actOnPullRequest, type PullDeps } from './github-pulls';
+import { dropPulls } from './github-pulls-store';
 
 export type GithubRoomCall =
   ({ kind: 'callback' } & ConnectCallback) | { kind: 'delivery'; delivery: GithubDelivery };
@@ -30,6 +39,42 @@ function names(c: GithubConnection | null, d: GithubDelivery): c is GithubConnec
   return c.repositories.some((r) => r.chosen && r.id === d.repositoryIds[0]);
 }
 
+// What a delivery's work hands the room, each awaited before the call answers: landed cards and new states.
+function roomDeps(env: PlanEnv, planId: string, pending: Promise<void>[]): PullDeps {
+  return {
+    env,
+    planId,
+    relay: (items: Item[], rev: number) =>
+      void pending.push(
+        relayItems(env, planId, {
+          kind: 'items',
+          upserts: items.map(withoutLegacyThread),
+          removed: [],
+          rev,
+        }),
+      ),
+    send: (op: PullRequestsRoomOp) => void pending.push(relayPullRequests(env, planId, op)),
+  };
+}
+
+/** The states the plan held for `repoIds` (null: every one) gone, and every screen told. */
+export async function dropStates(
+  env: PlanEnv,
+  planId: string,
+  repoIds: readonly number[] | null,
+): Promise<void> {
+  const removed = await dropPulls(env.PLAN_DB, repoIds);
+  if (repoIds === null)
+    await relayPullRequests(env, planId, {
+      kind: 'pull-requests',
+      upserts: [],
+      removed: [],
+      reset: true,
+    });
+  else if (removed.length)
+    await relayPullRequests(env, planId, { kind: 'pull-requests', upserts: [], removed });
+}
+
 async function deliver(
   env: PlanEnv,
   planId: string,
@@ -43,13 +88,21 @@ async function deliver(
   const links = githubConfig(env)?.links;
   if (d.event === 'installation') {
     await dropConnection(db, planId);
+    await dropStates(env, planId, null);
     if (links) await rewriteLinks(links, planId, linksOf(before), NO_LINKS);
   } else if (d.event === 'installation_repositories') {
     await dropRepositories(db, planId, d.repositoryIds);
+    await dropStates(env, planId, d.repositoryIds);
     if (links)
       await rewriteLinks(links, planId, linksOf(before), linksOf(await readConnection(db, planId)));
+  } else {
+    const pending: Promise<void>[] = [];
+    const deps = roomDeps(env, planId, pending);
+    if (d.pullRequest)
+      await actOnPullRequest(deps, before.rules ?? NO_RULES, d.action, d.pullRequest, now);
+    else if (d.checkSuite) await actOnCheckSuite(deps, d.checkSuite);
+    await Promise.all(pending);
   }
-  // pull_request and check_suite: part 3 reads them here (the pull request's state, the board's GitHub rules).
   return 'accepted';
 }
 

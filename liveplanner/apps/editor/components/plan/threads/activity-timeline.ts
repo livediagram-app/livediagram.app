@@ -21,6 +21,8 @@ export type TimelineRun = {
   ai: boolean;
   // A rule's changes (docs/specs/026-plan/automations.md "On cards"): the bolt and Automation; `by.name` is the rule.
   automation: boolean;
+  // GitHub's moves (docs/specs/026-plan/github-pull-requests.md "GitHub rules"): its mark and name.
+  github: boolean;
   entries: TimelineEntry[];
 };
 
@@ -68,12 +70,14 @@ export function dayHeading(at: number, now: number): string {
 // An AI step's write (tag 'automation_ai') is Automation's, marked AI too.
 const byAi = (e: ItemHistoryEntry) => e.tag === 'ai' || e.tag === 'automation_ai';
 const byAutomation = (e: ItemHistoryEntry) => e.tag === 'automation' || e.tag === 'automation_ai';
+const byGithub = (e: ItemHistoryEntry) => e.tag === 'github';
 const sameAuthor = (a: ItemHistoryEntry, b: ItemHistoryEntry) =>
   a.by.name === b.by.name &&
   a.by.color === b.by.color &&
   !!a.mine === !!b.mine &&
   byAi(a) === byAi(b) &&
-  byAutomation(a) === byAutomation(b);
+  byAutomation(a) === byAutomation(b) &&
+  byGithub(a) === byGithub(b);
 
 // The first `limit` entries as days of runs; earlier values read from every entry, shown or not.
 export function activityTimeline(
@@ -103,6 +107,7 @@ export function activityTimeline(
       mine: !!entry.mine,
       ai: byAi(entry),
       automation: byAutomation(entry),
+      github: byGithub(entry),
       entries: [item],
     });
   });

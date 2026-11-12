@@ -36,3 +36,36 @@ CREATE TABLE IF NOT EXISTS github_deliveries (
 ) WITHOUT ROWID;
 CREATE INDEX IF NOT EXISTS github_deliveries_at ON github_deliveries (at);
 `;
+
+// Step V23 (part 3; spec "Pull request state on cards"): the latest state of each pull request a connected repository
+// reported, and the check suites of the commits they stand at.
+//
+//   github_pull_requests  by its key (`owner/repo#n`, lower case): its canonical address, title, state (draft, open,
+//                         merged, closed), newest commit, the cards its title or body names (JSON ids), GitHub's
+//                         updated_at (what an older delivery is checked against) and when the plan heard it
+//   github_check_suites   one suite's result (running, passing, failing) for its repository's commit, and its
+//                         updated_at
+export const GITHUB_PULLS_SCHEMA = `
+CREATE TABLE IF NOT EXISTS github_pull_requests (
+  key        TEXT    PRIMARY KEY,
+  repo_id    INTEGER NOT NULL,
+  url        TEXT    NOT NULL,
+  title      TEXT    NOT NULL,
+  state      TEXT    NOT NULL,
+  head_sha   TEXT    NOT NULL,
+  cards      TEXT    NOT NULL DEFAULT '[]',
+  updated_at INTEGER NOT NULL,
+  seen_at    INTEGER NOT NULL
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS github_pull_requests_head ON github_pull_requests (repo_id, head_sha);
+CREATE INDEX IF NOT EXISTS github_pull_requests_seen ON github_pull_requests (seen_at);
+CREATE TABLE IF NOT EXISTS github_check_suites (
+  suite_id   INTEGER PRIMARY KEY,
+  repo_id    INTEGER NOT NULL,
+  head_sha   TEXT    NOT NULL,
+  checks     TEXT    NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS github_check_suites_head ON github_check_suites (repo_id, head_sha);
+CREATE INDEX IF NOT EXISTS github_check_suites_updated ON github_check_suites (updated_at);
+`;

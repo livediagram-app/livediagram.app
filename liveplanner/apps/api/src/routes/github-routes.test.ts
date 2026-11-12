@@ -28,6 +28,7 @@ const ROUTES: [string, string, unknown?][] = [
   ['GET', '/github'],
   ['POST', '/github/connect'],
   ['PUT', '/github/repositories', { ids: [12] }],
+  ['PUT', '/github/rules', { opened: 'review', merged: 'done' }],
   ['DELETE', '/github'],
 ];
 
@@ -46,11 +47,11 @@ const REFUSED: Caller[] = [
 ];
 
 describe('an Editor of the whole plan, signed in', () => {
-  it.each(ALLOWED)('%s may read, start, choose and disconnect', async (who) => {
+  it.each(ALLOWED)('%s may read, start, choose, set the rules and disconnect', async (who) => {
     const answers = [];
     for (const [method, path, body] of ROUTES)
       answers.push((await w.as(who, method, path, body)).status);
-    expect(answers).toEqual([200, 201, 200, 204]);
+    expect(answers).toEqual([200, 201, 200, 200, 204]);
     expect(await readConnection(w.planEnv('A').PLAN_DB, 'A')).toBeNull();
   });
 });
@@ -68,6 +69,7 @@ describe('anyone else', () => {
       [11, true],
       [12, false],
     ]);
+    expect(c!.rules).toEqual({ opened: null, merged: null });
     expect(w.kv.keys()).toEqual(['installation:7:A', 'repo:11:A']);
     expect(w.ghCalls).toEqual([]);
   });

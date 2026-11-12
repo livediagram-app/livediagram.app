@@ -1,18 +1,22 @@
 # GitHub pull requests: blueprint
 
 Derived from [../github-pull-requests.md](../github-pull-requests.md). Parts 1 (the Pull Request field kind, card
-mentions) and 2 (the webhook receiver and the repository connection) are built; the parts after them are laid out under [Later parts](#later-parts) and filled in as each is built.
+mentions), 2 (the webhook receiver and the repository connection) and 3 (pull request state and the GitHub rules) are
+built; part 4 is laid out under [Later parts](#later-parts) and filled in when it is built.
 
 ## Domain and naming
 
-| Spec term            | Identifier                                                       |
-| -------------------- | ---------------------------------------------------------------- |
-| Pull Request field   | custom field kind `pullrequest` in `CUSTOM_FIELD_KINDS`          |
-| pull request         | `PullRequestRef` `{ owner, repo, number }`                       |
-| short name           | `pullRequestText(ref)`: `owner/repo#42`                          |
-| canonical address    | `pullRequestUrl(ref)`: `https://github.com/owner/repo/pull/42`   |
-| linked pull requests | `cardPullRequests(item, type)` (fields; mentions join in part 3) |
-| card mention         | `cardMentions(text, planName)`                                   |
+| Spec term            | Identifier                                                        |
+| -------------------- | ----------------------------------------------------------------- |
+| Pull Request field   | custom field kind `pullrequest` in `CUSTOM_FIELD_KINDS`           |
+| pull request         | `PullRequestRef` `{ owner, repo, number }`                        |
+| short name           | `pullRequestText(ref)`: `owner/repo#42`                           |
+| canonical address    | `pullRequestUrl(ref)`: `https://github.com/owner/repo/pull/42`    |
+| linked pull requests | `cardPullRequests(item, type)` (fields; mentions join in part 3)  |
+| card mention         | `cardMentions(text, planName)`                                    |
+| pull request state   | `PullRequestStatus` `{ key, url, title, state, checks?, cards? }` |
+| GitHub rule          | `GithubRules` `{ opened, merged }` (a status each, or null)       |
+| GitHub (an author)   | `GITHUB_PERSON`, history tag `'github'`                           |
 
 The kind's name in the type editor is **Pull Request** (`CUSTOM_KIND_LABELS`); it is never "PR" in copy.
 
@@ -232,10 +236,141 @@ else 403 `github_needs_editor`. Bodies are read by `readBody`.
 | The App's JWT signs with a PKCS#1 or PKCS#8 key; installation tokens are not kept         | `apps/api/src/github/app-auth.test.ts`        |
 | `readDelivery` reads each event's ids and refuses odd shapes                              | `apps/api/src/github/github-delivery.test.ts` |
 
+## Part 3: state on cards and the GitHub rules
+
+### packages/items (`pull-request-state.ts`, pure)
+
+- `PullRequestState` `'draft' | 'open' | 'merged' | 'closed'`; `PullRequestChecks` `'running' | 'passing' |
+'failing'`; `PullRequestStatus` `{ key, url, title, state, checks?, cards?, updatedAt }`: `key` is
+  `pullRequestKey`, `url` the canonical address, `cards` the ids of the cards its title or body names (absent for
+  none), `updatedAt` GitHub's `updated_at` in ms.
+- Constants: `PULL_REQUEST_TITLE_MAX` 256, `PULL_REQUESTS_KEPT` 500, `CHECK_SUITES_KEPT` 2,000, `RULE_MOVES_MAX` 50.
+- `pullRequestStatusLabel(status)`: Draft, Open, Checks Running, Checks Passing, Checks Failing, Merged, Closed (the
+  checks words only for an open pull request or a draft).
+- `checksOf(results)`: the suites together, `failing` over `running` over `passing`; undefined for none.
+- `PullRequestStatuses` `{ byKey, byCard }` and `pullRequestStatuses(list)`: the lookups a card reads, built once per
+  change of the list.
+- `cardFieldPullRequests(item, type)`: the pull requests the card's fields hold (Pull Request fields, then Link fields),
+  each `{ ref, key, field }`; the part that parses addresses, kept by a screen while the card is unchanged.
+- `cardLinkedPullRequests(item, type, statuses, fields?)`: those fields' pull requests, then each status whose `cards`
+  holds the card, deduplicated by key, capped at `LINKED_PULL_REQUESTS_MAX`; each `{ ref, status?, field? }`, `field`
+  the id of the field holding it.
+- `GITHUB_PERSON` `{ id: 'github', name: 'GitHub', color: '#1f2328' }`; `ItemHistoryTag` gains `'github'` (read back
+  by `readStoredHistory` as the other tags are).
+
+### Wire (`packages/api-schema`)
+
+- `ItemsResponse.pullRequests?: PullRequestStatus[]`: present only for a connected plan (empty when none link), so the
+  editor knows a later paste may need a read. `GithubConnectionView.rules: GithubRules`; `GithubRulesRequest`
+  `{ opened: string | null; merged: string | null }`.
+- `PullRequestsRoomOp` `{ kind: 'pull-requests'; upserts: PullRequestStatus[]; removed: string[]; reset?: true }`
+  (`reset`: every state the screen holds goes first), a system op kind. A tab-scoped session hears it emptied
+  (`room-scope.ts`), and reads its tab's cards again.
+
+### Reading a delivery (`apps/api/src/github/github-payloads.ts`, pure)
+
+- `readPullRequest(payload)`: `{ repoId, ref, title, body, state, headSha, updatedAt }` or null: the number a
+  positive safe integer; the repository's `full_name` read as `owner/repo` through `parsePullRequestUrl` of its
+  address; `title` cut to `PULL_REQUEST_TITLE_MAX`, `body` to `MENTION_TEXT_MAX` (non-strings read as empty);
+  `state` `merged` when `merged` (or `merged_at` is set), else `closed` when GitHub's state is closed, else `draft`
+  when `draft`, else `open`; `headSha` 7 to 64 hex digits; `updatedAt` `Date.parse` of `updated_at`.
+- `readCheckSuite(payload)`: `{ repoId, suiteId, headSha, checks, updatedAt }`: `checks` `running` unless `status` is
+  `completed`, then `passing` for `success`, `neutral` or `skipped`, else `failing`.
+- `readDelivery` carries them as `GithubDelivery.pullRequest` and `.checkSuite`; a `pull_request` or `check_suite`
+  whose part does not read is ignored (202, as an event this part ignores).
+
+### The plan's object (`plan-room/github/`)
+
+- `github-schema.ts`, step V23 (`GITHUB_PULLS_SCHEMA`): `github_pull_requests (key PK, repo_id, url, title, state,
+head_sha, cards JSON, updated_at, seen_at)` with indexes on `(repo_id, head_sha)` and `seen_at`;
+  `github_check_suites (suite_id PK, repo_id, head_sha, checks, updated_at)` with an index on `(repo_id, head_sha)`.
+  `github_connection.rules` holds `GithubRules` as JSON (null: both off); a connect again keeps them.
+- `github-pulls-store.ts`: `upsertPull` (`INSERT … ON CONFLICT DO UPDATE … WHERE excluded.updated_at >= updated_at`,
+  answering whether it wrote), `upsertSuite` (the same guard), `statusesOf(db, keys | null)` (each row with its head
+  commit's suites folded by `checksOf`), `keysAtHead(db, repoId, sha)`, `dropPulls(db, repoIds | null)`, and the trims
+  to `PULL_REQUESTS_KEPT` (by `seen_at`) and `CHECK_SUITES_KEPT` (by `updated_at`).
+- `github-cards.ts`: `mentionedCardIds(env, planId, numbers)` by `item_key`, out of the Trash; `fieldCardIds(env,
+planId, types, ref)`: the cards whose fields hold the pull request (`fields LIKE '%github.com/{owner}/{repo}/pull/{n}%'`,
+  `LIKE`'s wildcards escaped, case aside, each hit confirmed by `cardPullRequests`).
+- `github-pulls.ts`: `actOnPullRequest(deps, delivery, now)` and `actOnCheckSuite`. A pull request: the plan's name
+  read (`readPlanOutline`), its mentions read (`cardMentions` of title, a line break, body), the row upserted; a stale
+  one (older `updated_at`) stops there. The changed status is sent (`send`). Then the rule: `opened` for `opened`,
+  `reopened` or `ready_for_review` of a pull request not a draft; `merged` for `closed` when merged; the cards its
+  fields and mentions link, at most `RULE_MOVES_MAX`. A check suite: upserted (stale: nothing), then every pull request
+  at that commit sent.
+- `github-moves.ts` `moveForRule(deps, target, cardIds, now)`: the plan's statuses read (`planOutline`); a target no
+  board names logs `[github] rule.unplaced` and moves nothing; else each card read and left alone when gone, trashed,
+  archived, already there or its type leaves the status out (`statusExcluded`); else `applyMove` to the column's end
+  by `GITHUB_PERSON`, written at its rev (`ITEM_WRITE_RETRIES`), relayed as an `items` op and appended to history
+  with tag `'github'` and source role `system`. Logs `[github] moved` with the counts.
+- `github-room.ts`: `answerGithubCall` takes `relay` (items) and `send` (pull requests) from the room; a disconnect
+  or an uninstall drops the states and sends `reset`, a removed repository its keys' removal.
+
+### The routes
+
+- `PUT /api/projects/:id/github/rules` `{ opened, merged }`, the part 2 gate (Editor in person, whole plan): no
+  connection 409 `github_not_connected`; each a status of 1 to 64 characters naming a column of the plan's boards, or
+  null, else 400 `github_invalid`; saved and the view answered. `GET /github` answers `rules`.
+- `GET /items` (`item-routes.ts` `list`): for a connected plan, `pullRequests` holds the statuses linked to the cards
+  answered (their fields' keys and the statuses naming one of them); none for a Community visitor.
+
+### The editor
+
+- `hooks/plan/usePullRequestStatuses.ts`: the statuses from every items read (`usePlanItems`'s `onRead`), the room's
+  `pull-requests` op, and one more items read (once per key) when a card names a pull request the screen has no state
+  for while the plan is connected.
+- `components/plan/pull-request-store.ts`: the statuses as an external store in `PlanProvider` (`value-store.ts`, the
+  store the plan's cards use too, apart from `PlanContext`); `useCardPullRequests(item, type)` picks a card's
+  `cardLinkedPullRequests`, keeping its `cardFieldPullRequests` while the card is unchanged and the same array while
+  the pick is, so a delivery redraws only the cards it touches; `usePullRequestStatus(ref)` reads one, for a field.
+- `components/plan/PullRequestPill.tsx`: `PullRequestMark` (the state's Lucide mark: `git-pull-request` open,
+  `git-pull-request-draft` draft, `git-merge` merged, `git-pull-request-closed` closed, in `PULL_REQUEST_TONES`),
+  `ChecksMark` (`check`, `x`, a dot), `PullRequestPill` (a `MetaPill`: mark, short name, checks) and
+  `PullRequestMarks` (the face's flags, up to 3). `PlanCardFace` draws a `pullrequest` field, or a `link` field
+  holding a pull request, as a pill, and the rest as marks.
+- `PullRequestField.tsx` draws the state chip and the title under the box; `CardPullRequests.tsx` lists the panel's
+  **Pull Requests** for the ones no field holds, in Details after the fields.
+- Activity: a `'github'` entry's run shows GitHub's mark disc and the name GitHub.
+
+### Security and trust (part 3)
+
+- What a delivery writes is GitHub's verified payload, read as untrusted shapes: lengths capped, ids checked, the
+  address rebuilt from parsed parts, so a stored `url` is always `https://github.com/…`. The title is text, drawn as
+  text.
+- A pull request reaches only plans whose connection names its installation and repository (part 2); its mentions
+  match only that plan's cards. A Community visitor is answered no states; a tab-scoped link only its tab's.
+- GitHub's moves pass the same checks as any move (statuses a type leaves out, the Trash, the archive) and never act
+  as a person: the author is GitHub.
+
+### Performance and limits (part 3)
+
+- Per delivery, per plan: one row upsert, one mention lookup by `item_key` (indexed, at most 20 numbers), and, only
+  when a rule fires, one `LIKE` scan of the plan's `items.fields` in SQLite plus a read of the plan's tabs. The
+  measured cost on a 2,000-card plan is in `github-pulls.perf.test.ts` (`cpuMsOf`).
+- `GET /items` adds one read of the plan's kept statuses (at most 500) and `cardPullRequests` over the cards answered.
+- The editor redraws only the cards whose linked statuses change. A delivery on a 2,000-card board makes the lookups
+  again and re-picks each card from its kept fields; the first draw parses each field's address once
+  (`packages/items/src/pull-request-state.perf.test.ts`). The unknown-key check looks only at cards that changed
+  since its last pass.
+
+### Testing (part 3)
+
+| Rule                                                                                        | Test                                                        |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Labels, checks folding, a card's linked pull requests (fields, then mentions, deduplicated) | `packages/items/src/pull-request-state.test.ts`             |
+| Payloads read as untrusted shapes: state, draft, merged, lengths, commits                   | `apps/api/src/github/github-payloads.test.ts`               |
+| States kept, out of order ignored, checks per commit, a new commit's checks, trims          | `apps/api/src/github/github-pulls.test.ts`                  |
+| Rules: opened, ready, merged, closed unmerged, type statuses, Trash, archive, by GitHub     | `apps/api/src/github/github-rules.test.ts`                  |
+| `GET /items` answers states to the cards' readers, a tab's alone, a Community visitor none  | `apps/api/src/github/github-pulls.test.ts`                  |
+| Only a signed-in whole-plan Editor sets the rules                                           | `apps/api/src/routes/github-routes.test.ts`                 |
+| A delivery's work on a 2,000-card plan                                                      | `apps/api/src/github/github-pulls.perf.test.ts`             |
+| The face's pill and marks, the panel's chip and list                                        | `apps/editor/components/plan/PullRequestPill.test.tsx`      |
+| The screen's states: reads, ops, a reset, a tab's empty op, one more read per unknown key   | `apps/editor/hooks/plan/usePullRequestStatuses.test.ts`     |
+| A 2,000-card board's picks, first draw and a delivery                                       | `packages/items/src/pull-request-state.perf.test.ts`        |
+| GitHub's moves in Activity: its disc and name, a run of their own                           | `apps/editor/components/plan/threads/CardActivity.test.tsx` |
+
 ## Later parts
 
-- **Part 3, state and rules**: the room's `github_pull_requests` table (key, state, checks, title, updated at);
-  deliveries of `pull_request` and `check_suite` update it and run the two GitHub rules through the board's move
-  checks, writing history entries by `github`; the card face's state chip; `list_items` lists states.
 - **Part 4, entry points**: the plan's GitHub dialog (Connect GitHub, repositories, the two rules, Disconnect), the
-  help article, telemetry (`Plan` · `Connected` · `GitHub` and the rest), and the roadmap's fold-back.
+  help article, telemetry (`Plan` · `Connected` · `GitHub` and the rest), `list_items` listing each card's states,
+  and the roadmap's fold-back.

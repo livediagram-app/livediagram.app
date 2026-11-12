@@ -854,7 +854,7 @@ Threads and Wait (spec "Actions", "Wait").
 - **Writes** (`apps/api/…/automation-writes.ts`): the patch carries `type` (a move too); a mention is a thread by
   Automation whose comment names the person in `mentions` (the Inbox reads it), and an email through
   `notifyMentions`; Resolve Threads resolves each of the card's threads through `writeThread` as the system.
-- **Wait** (`automation-waits.ts`, the plan schema's step V21 `automation_waiting`): a run that reaches a Wait does
+- **Wait** (`automation-waits.ts`, the plan schema's step V22 `automation_waiting`): a run that reaches a Wait does
   its writes, settles as `waiting` with `waitsUntil`, and is held under its run id with a `resume` event (the step to
   go on from, the rule's `edited.at`, the hours waited, the run's id). `AutomationSchedule.restoreTimes` takes the
   earliest of the time triggers' and the waiting runs' moments, so the alarm wakes for both; `runWaits` queues each due

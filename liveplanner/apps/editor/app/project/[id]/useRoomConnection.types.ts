@@ -3,6 +3,7 @@ import type { Tab } from '@liveplanner/project';
 import type {
   AgentPresence,
   CardThreadsRoomOp,
+  PullRequestsRoomOp,
   ChangesetRoomOp,
   ItemsRoomOp,
   ItemTypesRoomOp,
@@ -84,6 +85,9 @@ export type RoomConnectionOptions = {
   receiveItems: (op: ItemsRoomOp) => void;
   // A card comment thread's write (docs/specs/026-plan/items.md "Comments"), from any plan the thread is on.
   receiveThreads: (op: CardThreadsRoomOp) => void;
+  // The plan's pull request states (docs/specs/026-plan/github-pull-requests.md "Pull request state on cards").
+  // System-only. Absent: the screen keeps none.
+  receivePullRequests?: (op: PullRequestsRoomOp) => void;
   // A stored type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"). System-only.
   receiveItemTypes: (op: ItemTypesRoomOp) => void;
   // A peer's hands on a Plan card (docs/specs/026-plan/plan-board.md). Presence.

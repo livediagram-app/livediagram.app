@@ -136,6 +136,7 @@ export const ROOT_TYPES = [
   'GithubConnectionResponse',
   'GithubConnectStartResponse',
   'GithubRepositoriesRequest',
+  'GithubRulesRequest',
 ];
 
 // Code names that differ from the published component name (none today: the project's type is `Project`).

@@ -7059,6 +7059,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/GithubRepositoryView"
         },
         "type": "array"
+      },
+      "rules": {
+        "$ref": "#/components/schemas/GithubRules"
       }
     },
     "required": [
@@ -7066,7 +7069,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "account",
       "connectedBy",
       "connectedAt",
-      "repositories"
+      "repositories",
+      "rules"
     ],
     "type": "object"
   },
@@ -7110,6 +7114,33 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "chosen"
     ],
     "type": "object"
+  },
+  "GithubRules": {
+    "additionalProperties": false,
+    "description": "A connected plan's two GitHub rules (docs/specs/026-plan/github-pull-requests.md \"GitHub rules\"): the column (a status) a linked pull request's card moves to when it opens, and when it merges; null for a rule that is off.",
+    "properties": {
+      "merged": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "opened": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "opened",
+      "merged"
+    ],
+    "type": "object"
+  },
+  "GithubRulesRequest": {
+    "$ref": "#/components/schemas/GithubRules",
+    "description": "PUT /api/projects/:id/github/rules: both rules, each a status a board of the plan names, or null for off."
   },
   "HeroCaption": {
     "additionalProperties": false,
@@ -8086,7 +8117,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "form",
       "repeat",
       "automation",
-      "automation_ai"
+      "automation_ai",
+      "github"
     ],
     "type": "string"
   },
@@ -8900,6 +8932,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "items": {
         "items": {
           "$ref": "#/components/schemas/Item"
+        },
+        "type": "array"
+      },
+      "pullRequests": {
+        "description": "For a plan connected to GitHub (docs/specs/026-plan/github-pull-requests.md \"Pull request state on cards\"): the state of each pull request the answered cards link, by a field or by naming them. Absent for a plan with no connection, and for a Community visitor.",
+        "items": {
+          "$ref": "#/components/schemas/PullRequestStatus"
         },
         "type": "array"
       },
@@ -11320,6 +11359,63 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id",
       "questions",
       "title"
+    ],
+    "type": "object"
+  },
+  "PullRequestChecks": {
+    "description": "Its newest commit's check suites together.",
+    "enum": [
+      "running",
+      "passing",
+      "failing"
+    ],
+    "type": "string"
+  },
+  "PullRequestState": {
+    "description": "Where a pull request stands: a draft, open (ready for review), merged, or closed without merging.",
+    "enum": [
+      "draft",
+      "open",
+      "merged",
+      "closed"
+    ],
+    "type": "string"
+  },
+  "PullRequestStatus": {
+    "additionalProperties": false,
+    "description": "One pull request's state as a plan holds it.",
+    "properties": {
+      "cards": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "checks": {
+        "$ref": "#/components/schemas/PullRequestChecks"
+      },
+      "key": {
+        "type": "string"
+      },
+      "state": {
+        "$ref": "#/components/schemas/PullRequestState"
+      },
+      "title": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      },
+      "url": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "key",
+      "url",
+      "title",
+      "state",
+      "updatedAt"
     ],
     "type": "object"
   },
