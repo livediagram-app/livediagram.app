@@ -114,8 +114,9 @@ route answers 404, and nothing logs an error. Pull Request fields still read and
   GitHub token is used for those calls and revoked at GitHub straight after: **no personal GitHub token is
   stored**, ever. The callback sends the person back to the plan (`#github=connected`, `#github=failed`, or
   `#github=requested` when an organisation's owner must approve the install first).
-- **Which repositories**: the plan keeps the repositories the person could reach in the installation (the first
-  100, `INSTALLATION_REPOSITORIES_LISTED`). When there are at most 20 (`REPOSITORIES_MAX`), every one of them
+- **Which repositories**: the plan keeps the repositories the person could reach in the installation, every one of
+  them, read from GitHub 100 a page (`INSTALLATION_REPOSITORIES_LISTED`) up to 10 pages
+  (`REPOSITORY_PAGES_MAX`, 1,000 repositories). When there are at most 20 (`REPOSITORIES_MAX`), every one of them
   connects; with more, none does until an Editor chooses. An Editor may change the chosen ones later, from that
   list only, up to 20; each choice is checked against the installation again (as the App, with an installation
   token made for that one call and never kept), so a repository the installation no longer sees never joins. A
@@ -144,7 +145,13 @@ before it acts: a stale or forged index entry moves nothing, and an entry a plan
 
 - Every delivery's `X-Hub-Signature-256` is checked, an HMAC-SHA256 of the raw body under `GITHUB_WEBHOOK_SECRET`,
   compared in constant time, **before** the body is parsed. A missing or wrong signature is refused (401) and read no
-  further; so is a body over 1 MB (413, `WEBHOOK_BODY_MAX`), declared or read.
+  further; so is a body over 1 MB (413, `WEBHOOK_BODY_MAX`), declared or read. A missing or malformed signature is
+  refused before a byte of the body is read.
+- Refused signatures are limited per network (an IPv4 /24 or IPv6 /56): each refusal counts against the network's
+  share of the api's write limit, and a network over it is turned away (429 `github_rate_limited`) for a minute
+  (`REFUSED_NETWORK_TURNED_AWAY_MS`) before its body is read or hashed. Only refusals count, never a delivery that
+  signs right, and GitHub's own webhook addresses are never turned away, so someone else's misconfigured hook
+  pointed at the api cannot stop the App's deliveries.
 - A delivery acts only on plans whose connection names both its installation and its repository. A pull request
   moves only cards of the plans it is linked to, by field or by mention.
 - Each delivery id (`X-GitHub-Delivery`) is acted on once by each plan, which keeps the ids it has seen for 3 days
@@ -254,6 +261,9 @@ the cards.
 | `PLANS_PER_REPOSITORY_MAX`         | 20     | Bounds one delivery's fan-out                             |
 | `INSTALLATION_REPOSITORIES_LISTED` | 100    | One page of GitHub's repository list                      |
 | `INSTALLATION_PLANS_MAX`           | 100    | Bounds an uninstall's fan-out                             |
+| `REPOSITORY_PAGES_MAX`             | 10     | Pages of repositories read: 1,000, a connect bounded      |
+| `REFUSED_NETWORK_TURNED_AWAY_MS`   | 1 min  | A network over its refused signatures is turned away      |
+| `REFUSED_NETWORKS_KEPT`            | 1,000  | The turned-away networks a worker remembers at once       |
 | `WEBHOOK_BODY_MAX`                 | 1 MB   | GitHub caps a delivery's payload at 25 MB; ours are small |
 | `CONNECT_STATE_TTL_MS`             | 10 min | Long enough to install the App on GitHub                  |
 | `DELIVERY_KEEP_MS`                 | 3 days | GitHub redelivers deliveries up to 3 days old             |
