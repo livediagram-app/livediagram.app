@@ -64,6 +64,10 @@ describe('namedRuleBody', () => {
         { kind: 'assign', to: { rotate: ['Sam Lee', 'Ali'] } },
         { kind: 'assign', to: 'nobody' },
         { kind: 'email', to: { person: 'Ali' } },
+        { kind: 'mention', to: { person: 'Sam Lee' } },
+        { kind: 'set_type', type: 'Note' },
+        { kind: 'link_card', field: 'Parent Bug', to: { trigger: true } },
+        { kind: 'ai', task: 'summarise', field: 'Severity' },
         {
           kind: 'if',
           conditions: [{ kind: 'column', statuses: ['To Do'] }],
@@ -100,6 +104,10 @@ describe('namedRuleBody', () => {
         { kind: 'assign', to: { rotate: ['p-sam', 'p-ali'] } },
         { kind: 'assign', to: 'nobody' },
         { kind: 'email', to: { person: 'p-ali' } },
+        { kind: 'mention', to: { person: 'p-sam' } },
+        { kind: 'set_type', type: 'note' },
+        { kind: 'link_card', field: 'f-parent', to: { trigger: true } },
+        { kind: 'ai', task: 'summarise', field: 'f-severity' },
         {
           kind: 'if',
           conditions: [{ kind: 'column', statuses: ['todo'] }],

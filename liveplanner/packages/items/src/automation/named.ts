@@ -118,9 +118,13 @@ function nameStep(s: Json, n: Namers): void {
     name(s, 'type', n.type);
     name(s, 'linkField', n.field);
   }
-  if (s['kind'] === 'set_field' || s['kind'] === 'clear_field') name(s, 'field', n.field);
+  if (s['kind'] === 'set_type') name(s, 'type', n.type);
+  // A Card field to link through, a field to set or clear, or an AI summary's text field.
+  if (['set_field', 'clear_field', 'link_card', 'ai'].includes(s['kind'] as string))
+    name(s, 'field', n.field);
   if (s['kind'] === 'set_field' && isObject(s['value'])) name(s['value'], 'from', n.field);
-  if (s['kind'] === 'assign' || s['kind'] === 'email') namePeople(s['to'], n);
+  if (s['kind'] === 'assign' || s['kind'] === 'email' || s['kind'] === 'mention')
+    namePeople(s['to'], n);
   if (s['kind'] === 'if' || s['kind'] === 'for') {
     nameAll(s['conditions'], (c) => nameCondition(c, n));
     nameAll(s['then'], (a) => nameStep(a, n));
