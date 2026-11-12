@@ -524,7 +524,9 @@ per Worker for its deploy's retries (below), with 15 minutes for any one command
   retries. Wrangler's own retries run within seconds, inside the same blip: on
   2026-11-12 two production deploys failed that way (a 524 on livediagram's MCP Worker's version
   upload, and asset uploads for liveplanner's editor and livedesign's help), each costing a rerun and
-  another approval of the gate. The step's output still streams to the log (through `tee`), and the
+  another approval of the gate. A deploy that runs out of its 15 minutes is a plain failure too, and
+  the limit runs on wrangler itself (under coreutils `timeout`), so it never outlives its step. The
+  step's output still streams to the log (through `tee`), and the
   log and the job summary say when a Worker retried. A healthy deploy pays nothing for it; during a
   Cloudflare incident each affected Worker takes at most about 2.5 minutes longer, which the job's
   limit allows for.

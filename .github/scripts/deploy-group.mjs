@@ -181,22 +181,34 @@ export function sleepSync(seconds) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, seconds * 1000);
 }
 
+/** coreutils `timeout`'s exits when the limit ran out: 124, or 137 once it had to kill. */
+export const TIMED_OUT = [124, 137];
+
+// The tee's script. The command and its arguments go in as positional parameters, never into the
+// script text, and the limit runs on the command itself under `timeout`, so it stops wrangler and
+// not just the shell in front of it.
+const TEE_SCRIPT =
+  'timeout --kill-after=15s "$DEPLOY_GROUP_LIMIT" "$@" 2>&1 | tee "$DEPLOY_GROUP_LOG"';
+
 /**
  * The real runner: output streams to the log, except a capture, which is returned. A `tee` streams
  * it too (stdout and stderr together, through `tee`) and also returns it, to classify a failure.
+ * Every command has `seconds` (MINUTES.command) to finish.
  */
-export function spawnExec(cmd, args, { cwd, env, capture, tee }) {
+export function spawnExec(cmd, args, { cwd, env, capture, tee, seconds = MINUTES.command * 60 }) {
   if (tee) {
     const dir = mkdtempSync(join(tmpdir(), 'deploy-group-'));
     const file = join(dir, 'output.log');
     try {
-      // The command and its arguments go in as positional parameters, never into the script text.
-      const run = spawnExec(
-        'bash',
-        ['-o', 'pipefail', '-c', '"$@" 2>&1 | tee "$DEPLOY_GROUP_LOG"', 'bash', cmd, ...args],
-        { cwd, env: { ...env, DEPLOY_GROUP_LOG: file }, capture: false },
-      );
-      return { status: run.status, stdout: existsSync(file) ? readFileSync(file, 'utf8') : '' };
+      // No spawnSync timeout here: `timeout` inside the script holds the one limit.
+      const run = spawnSync('bash', ['-o', 'pipefail', '-c', TEE_SCRIPT, 'bash', cmd, ...args], {
+        cwd,
+        env: { ...env, DEPLOY_GROUP_LOG: file, DEPLOY_GROUP_LIMIT: String(seconds) },
+        stdio: 'inherit',
+      });
+      if (run.error) console.error(`[deploy-group] ${cmd}: ${run.error.message}`);
+      const status = run.error ? 1 : (run.status ?? 1);
+      return { status, stdout: existsSync(file) ? readFileSync(file, 'utf8') : '' };
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -206,7 +218,7 @@ export function spawnExec(cmd, args, { cwd, env, capture, tee }) {
     env,
     encoding: 'utf8',
     stdio: capture ? ['ignore', 'pipe', 'inherit'] : 'inherit',
-    timeout: MINUTES.command * 60_000,
+    timeout: seconds * 1000,
   });
   if (result.error) console.error(`[deploy-group] ${cmd}: ${result.error.message}`);
   return { status: result.error ? 1 : (result.status ?? 1), stdout: result.stdout ?? '' };
@@ -249,7 +261,9 @@ export function runStep(step, { exec, baseEnv, log, sleep = sleepSync }) {
       tee: Boolean(step.retry),
     });
     if (run.status === 0) return { ok: true, retries: attempt - 1 };
-    if (attempt === attempts || !isTransientCloudflareError(run.stdout)) {
+    // A command that ran out of time is a plain failure, whatever it printed before.
+    const timedOut = TIMED_OUT.includes(run.status);
+    if (attempt === attempts || timedOut || !isTransientCloudflareError(run.stdout)) {
       return { ok: false, retries: attempt - 1 };
     }
     const wait = RETRY_WAITS[attempt - 1];

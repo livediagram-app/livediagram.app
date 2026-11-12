@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import {
   MINUTES,
   RETRY_WAITS,
+  TIMED_OUT,
   deployGroup,
   deployGroups,
   groupOf,
@@ -589,4 +590,27 @@ test('the real wait blocks for the time it is given', () => {
   const started = Date.now();
   sleepSync(0.05);
   assert.ok(Date.now() - started >= 45);
+});
+
+test('a deploy that ran out of time fails at once, even after a Cloudflare API error', () => {
+  for (const status of TIMED_OUT) {
+    const { result, runs, waits } = deployOne(MCP, [[status, MALFORMED_524]]);
+    assert.equal(result.failed, 'Deploy');
+    assert.equal(result.retries, 0);
+    assert.equal(runs.length, 1);
+    assert.deepEqual(waits, []);
+  }
+  assert.deepEqual(TIMED_OUT, [124, 137]);
+});
+
+test("a tee's limit stops the command itself, with timeout's exit", () => {
+  const started = Date.now();
+  const run = spawnExec(
+    process.execPath,
+    ['-e', 'console.log("started"); setTimeout(() => {}, 60_000)'],
+    { cwd: '.', env: process.env, tee: true, seconds: 1 },
+  );
+  assert.ok(TIMED_OUT.includes(run.status), String(run.status));
+  assert.equal(run.stdout, 'started\n');
+  assert.ok(Date.now() - started < 10_000);
 });
