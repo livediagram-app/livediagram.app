@@ -671,7 +671,8 @@ hands focus back to the field, the caret after the value:
   trigger and conditions it would have met logs a **Skipped** run ("Started by another rule's change").
 - **Per run**: at most **20 actions** and **1 created card**.
 - **Per plan per day** (UTC): at most **1,000 runs**. Only runs that did something, failed or were skipped count; a
-  **No Match** is logged and costs nothing. Past it, triggers are dropped until the next day, the Automations screen's meter reads full, a line says "Daily limit reached: rules run again
+  **No Match** is logged and costs nothing, and so do the Audit Trail's own lines, which are no rule's run (a burst's
+  "Too many changes at once", a time trigger's "Ran on 100 of 340 matching cards"). Past it, triggers are dropped until the next day, the Automations screen's meter reads full, a line says "Daily limit reached: rules run again
   tomorrow", and Run Rule answers that it cannot run now.
 - **Waiting**: at most **500 triggers** wait at once; a burst past that drops the newest and logs one Skipped line
   ("Too many changes at once").
@@ -710,7 +711,8 @@ allowing. On a phone the header keeps its desktop look (100px, the mark, the tit
 - A **Runs today** meter at the right of the tabs: "142 of 1,000" (No Match runs are not counted).
 - **Rules**: a search box ("Find a rule"), **All Triggers** and **On and Off** filters, then one row per rule:
   its switch, its name, its sentence (When `Card Moved` to `Done` then `Set Completed On` `Remove Label blocked`),
-  **Last Run** ("4 min ago", "Never") and **This Week** ("38 runs"), and a ⋯ menu (Edit, Duplicate, Audit Trail,
+  **Last Run** ("4 min ago", "Never") and **This Week** ("38 runs"), counting the runs the meter counts (a No Match
+  aside), and a ⋯ menu (Edit, Duplicate, Audit Trail,
   Delete). A paused rule's row is amber, with **Paused**, the reason, and **Resume**. A rule needing attention
   says what is missing. Clicking a row opens the builder.
   On a phone the filters are laid out for a thumb: the search across the full width (40 px tall, 14 px text), then

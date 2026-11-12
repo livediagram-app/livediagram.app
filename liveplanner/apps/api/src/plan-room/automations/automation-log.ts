@@ -20,12 +20,18 @@ const PENDING = 'pending';
 
 const utcMidnight = (now: number) => Math.floor(now / DAY_MS) * DAY_MS;
 
+// The Audit Trail's own lines, which are no rule's run: a burst's "Too many changes at once" and a time trigger's
+// "Ran on 100 of 340". A run's id is a hash, so these prefixes never meet one.
+export const burstLineId = (now: number): string => `burst:${now}`;
+export const timeLineId = (ruleId: string, moment: number): string => `time:${ruleId}:${moment}`;
+const NO_LINE = "id NOT LIKE 'burst:%' AND id NOT LIKE 'time:%'";
+
 // Runs today (UTC) that did something, failed or were skipped, pending ones too: what the daily budget counts. A No
-// Match is logged and never counted.
+// Match is logged and never counted, nor is one of the Audit Trail's own lines.
 export function runsToday(sql: Sql, now: number): number {
   const row = sql
     .exec(
-      "SELECT COUNT(*) AS n FROM automation_runs WHERE at >= ? AND result != 'no_match'",
+      `SELECT COUNT(*) AS n FROM automation_runs WHERE at >= ? AND result != 'no_match' AND ${NO_LINE}`,
       utcMidnight(now),
     )
     .toArray()[0];
@@ -109,7 +115,8 @@ export function trimRuns(sql: Sql, now: number): void {
   );
 }
 
-// Each rule's last run and its runs this week, by rule id; a rule never run is absent.
+// Each rule's last run and its runs this week, by rule id, counted as the day's meter counts them (No Match and the
+// Audit Trail's own lines aside); a rule never run is absent.
 export function ruleStats(
   sql: Sql,
   now: number,
@@ -117,7 +124,8 @@ export function ruleStats(
   const rows = sql
     .exec(
       `SELECT rule_id, MAX(at) AS last, SUM(CASE WHEN at >= ? THEN 1 ELSE 0 END) AS week
-         FROM automation_runs WHERE result != '${PENDING}' GROUP BY rule_id`,
+         FROM automation_runs WHERE result NOT IN ('${PENDING}', 'no_match') AND ${NO_LINE}
+         GROUP BY rule_id`,
       now - WEEK_MS,
     )
     .toArray() as unknown as { rule_id: string; last: number; week: number }[];

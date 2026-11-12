@@ -106,7 +106,9 @@ CREATE INDEX automation_runs_result ON automation_runs (result, at);   -- the tw
 ```
 
 The day's count is `SELECT COUNT(*) FROM automation_runs WHERE at >= <UTC midnight> AND result != 'no_match'`, indexed, so the budget needs no
-table of its own. A plan never given a rule has empty tables and `onKinds` empty.
+table of its own. It leaves out the Audit Trail's own lines, whose ids are `burst:<now>` (`burstLineId`) and
+`time:<rule>:<moment>` (`timeLineId`) where a run's is a hash. A rule's Last Run and This Week (`ruleStats`) count the
+same rows, settled ones only. A plan never given a rule has empty tables and `onKinds` empty.
 
 ## The event
 

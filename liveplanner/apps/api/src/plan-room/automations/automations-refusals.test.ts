@@ -130,6 +130,9 @@ describe('the day and the log against No Match runs', () => {
     });
     expect(ms).toBeLessThan(cpuBudgetMs(3000));
     expect((await list()).runsToday).toBe(0);
+    // The Rules list counts as the meter does: a rule that only failed to match has not run.
+    const broad = (await list()).rules.find((r) => r.name === 'Broad 0')!;
+    expect(broad.stats).toMatchObject({ lastRunAt: null, runsThisWeek: 0 });
     await move(c.id, 'done');
     await room().alarm();
     expect((await card(c.id)).fields['labels']).toEqual(['shipped']);

@@ -42,7 +42,15 @@ import { listItems, readItem } from '../../db/items';
 import type { Item } from '@liveplanner/items';
 import { appBaseUrl } from '../../email/client';
 import { cardUrl, readAutomationPlan, type AutomationPlan } from './automation-plan';
-import { claimRun, dropRun, runsToday, settleRun, settleWaiting, trimRuns } from './automation-log';
+import {
+  burstLineId,
+  claimRun,
+  dropRun,
+  runsToday,
+  settleRun,
+  settleWaiting,
+  trimRuns,
+} from './automation-log';
 import { WAIT_CONDITIONS, WAIT_FULL, WAIT_RULE_CHANGED, holdRun } from './automation-waits';
 import type { AutomationSchedule } from './automation-queue';
 import type { AutomationStore, Sql } from './automation-store';
@@ -422,7 +430,7 @@ export async function runAutomationWake(
   }
   if (schedule.dropped > 0) {
     settleRun(sql, {
-      id: `burst:${now}`,
+      id: burstLineId(now),
       ruleId: '',
       ruleName: '',
       card: null,
