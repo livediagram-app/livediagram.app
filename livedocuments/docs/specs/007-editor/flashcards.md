@@ -126,7 +126,10 @@ side by side shows its cards in a row, as slides stand, with no fan, footer nav 
   writing at a time (and the card being written, while it is). The other cards are read from their text where they
   are shown away from the canvas: Contents' thumbnails and the Map draw their lines from it, an export sets their
   words as an export of a document that is not open does, and Find reaches their text and turns to their card. A
-  stack of 100 cards opens, types and flips on a mid-range phone as one of a few cards does.
+  stack of 100 cards opens, types and flips on a mid-range phone as one of a few cards does. What settles after
+  each typed change (the zones an article fits to its pictures and drawings) looks only at writing that has zones,
+  which a card never has, so typing on a card does no work for the rest of the stack: no pause over 50 ms while
+  typing on a throttled phone.
 - **The + to add a card** sits beside the card in front ("Add Card"), adding a card right after the card in front
   (pages-mode.md "Where a new page goes"), as Contents' Add Card does, and the view flips to it.
 
