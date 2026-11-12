@@ -37,7 +37,7 @@ page) never suspends whole: its URL reads use an external store whose server sna
 | `arrow-handles.tsx` (`COARSE_POINTER`)                                                   | `(pointer: coarse)`                 | `useMediaQuery('(pointer: coarse)')` in each handle                               |
 | `EditorContextMenu` (`anchorBottom`)                                                     | `innerHeight`                       | `useViewportHeight()`                                                             |
 | `useViewportWidth`, `useViewportHeight`                                                  | `innerWidth`, `innerHeight`         | `useSyncExternalStore` on `resize`, 0 in the prerender                            |
-| `EditorCanvasHost` (`openUp`, in the context-menu handler)                               | `innerHeight`                       | the guard goes: a handler runs in the browser                                     |
+| `EditorCanvasHost` (`openUp`, in `useCanvasHostMenus`'s context-menu handler)            | `innerHeight`                       | the guard goes: a handler runs in the browser                                     |
 | `packages/ui/src/SiteFooter.tsx`                                                         | the clock (`new Date()`)            | `NEXT_PUBLIC_BUILD_YEAR`                                                          |
 
 What stays, with where it runs, is the allow-list in `apps/editor/render-browser-globals.test.ts`.

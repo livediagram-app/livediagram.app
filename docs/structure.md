@@ -28,7 +28,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ diagram-lint             the numbers, line formats and ring test livediagram's and livedocuments' diagram lint judge by
 │  ├─ document-views           the agent views of a document that read no element union (budgets, elision, fields), for livediagram and livedocuments
 │  ├─ drive                    the Drive mirror's contract: cadence, formats, the plan, wire shapes, backoff
-│  ├─ e2e-kit                  the editors' Playwright measuring sticks: the contrast audit, the optical snap, the canvas probe's calibration, interactive reading and trace tasks
+│  ├─ e2e-kit                  the editors' Playwright measuring sticks: the contrast audit, the optical audit and its snap, the canvas probe's calibration, interactive reading, trace tasks, budget and nightly report
 │  ├─ edit-operations          the edit engine's parts that read no element union: element text, equality, result lines
 │  ├─ element-model            the element code products share over any product's union (structural types, generic where it hands elements back): grid, guides, layer order, anchors, auto-layout, finishes, strokes, web components, element defaults, themes, tables, charts, Sankey, entity and sequence rules, wordmarks, arrows and icons in the export, comment threads, fingerprints, stored-data repairs, the white under a picture
 │  ├─ email                    the one caller of Cloudflare Email Service's `send_email` binding, for accounts and every app
@@ -36,7 +36,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ model-core               what every product's model shares and needs nothing of its element union (the Reaction Pad's five bursts among it); each re-exports it
 │  ├─ licences                 the /licences generator, its contract and the one pool of licence texts; each product binds its tables
 │  ├─ marketing-site           the marketing pages every product shares (hero, Build with AI, FAQ, licences)
-│  ├─ mcp-kit                  an MCP Worker's app: the Streamable-HTTP transport and CORS, the OAuth 2.1 server with the device grant, request and tool scopes, preview fonts, tool results and fixable errors; each product hands in its server and OAuth config
+│  ├─ mcp-kit                  an MCP Worker's app: the Streamable-HTTP transport and CORS, the OAuth 2.1 server with the device grant, request and tool scopes, preview fonts, tool results and fixable errors; each product hands in its server and OAuth config; and the MCP benchmark's client and report
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
 │  ├─ migration                the move from the historical livediagram.app: the payload contract and the splitter
 │  ├─ next-config              the Next.js settings every Next app spreads (liveworkspaceNextConfig), and the dev entry every app's dev script runs (scripts/next-dev.mjs, which refuses a busy port)
@@ -531,6 +531,19 @@ Each step is its own PR, and both products build and pass their tests after ever
      name each product's tabs, gestures, issue title or port; the groups only livediagram and livehuddle share
      (Work Tracker #650); and copies over a module that differs per product (the settings catalogue, `TopCenter`,
      `ModePanel`, `ColourPicker`, `AreaErrorBoundary`, `useSplitView`'s `SplitView`, the laser config, the looks).
+   - Seventh slice: what the sixth left because it named a product, now handed that name. To
+     `@liveworkspace/e2e-kit`: the optical audit (`optical`, its runner, and `optical-discover`, its in-page half;
+     every editor takes the copy that skips text with no client rects), and the canvas probe's budget
+     (`perf/budget`, generic over the tabs each editor's probe names), its issue report (`perf/budget-report`, the
+     title from `budgetIssueTitle(product)`) and the nightly run's I/O (`perf/nightly.mjs`, which
+     `canvas-perf.yml` runs from each editor's folder with the product's name). To `@liveworkspace/mcp-kit`: the
+     MCP benchmark's client (`eval/mcp-client`), with each product's port at its callers. About 2,350 of the
+     21,400 redundant non-test lines. Left, and why: the product scripts each folder brought from its own repo
+     (`scripts/git-hooks`, `ci-test-filters.mjs`, `ts-source-hooks.mjs`), which the root's hooks have replaced and
+     which want removing rather than sharing; and copies over modules typed on the product (the flowchart and
+     mind-map layout in livediagram's and liveplanner's model, page motion and the page model's ink in
+     livedesign's and livedocuments', the image search and import, `ModePanel`, `MovablePanel`, the palette's
+     icons and tiles).
 5. **`api-core`** out of the two `apps/api` Workers.
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
      now with the product's own names handed in:

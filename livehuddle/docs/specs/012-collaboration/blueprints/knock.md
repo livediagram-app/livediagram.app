@@ -11,7 +11,7 @@ Derived from [Knock](../knock.md).
 | `apps/api/src/room-op-gate.ts`                                                              | Parses both from any level; drops malformed ones                                                                  |
 | `apps/api/src/document-room/document-room.ts`, `apps/api/src/document-room/room-message.ts` | Throttles knocks per sender (`knocks`), addresses answers (`sendToPresence`)                                      |
 | `apps/editor/lib/calls/call-config.ts`                                                      | `CallSignal` carries both, sent through the call's room channel                                                   |
-| `apps/editor/app/document/[id]/useRoomConnection.ts`                                        | Hands received ops to `receiveKnockOp`                                                                            |
+| `apps/editor/app/document/[id]/room-op-receive.ts`                                          | Hands received ops to `receiveKnockOp`                                                                            |
 | `apps/editor/lib/office/knock-inbox.ts`                                                     | Parses and fans out received knocks and answers                                                                   |
 | `apps/editor/lib/office/useMeetingPieces.ts`                                                | Sends knocks (`setKnocker`), shows the knock and answer toasts, the closed pod door toast, Let In standing you up |
 | `packages/avatar/src/pod.ts`                                                                | `podDoorFront`: the strip in front of a pod's doorway                                                             |

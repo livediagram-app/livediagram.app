@@ -569,7 +569,7 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
   `non-scaling-stroke`.
 - `svgFreehandShape` (the export twin) writes the same outline from `freehandPenStroke(el, { x, y })`
   with numbers rounded by `r2`: `<path d="…" fill="colour" stroke="none"/>`.
-- `LiveInk` draws the in-flight pen stroke inside the canvas's transformed wrapper (`Canvas.tsx`,
+- `LiveInk` draws the in-flight pen stroke inside the canvas's transformed wrapper (`CanvasWorldLayer.tsx`,
   after the element layer, via `WhiteboardPenPreview`) as exactly the committed `FreehandSvg`: each
   update takes `freehandGeometry(points)` (what `createFreehand` gives), writes a `div.absolute` at
   its box and sets the svg's viewBox and path from

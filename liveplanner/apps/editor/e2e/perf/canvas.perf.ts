@@ -22,8 +22,8 @@ import {
   evaluateBudget,
   medianOfRuns,
   type Gesture,
-  type Measurement,
-} from './budget';
+  type Measurement as BudgetMeasurement,
+} from '@liveworkspace/e2e-kit/perf/budget';
 import { interactiveMs, OPEN_QUIET_MS } from '@liveworkspace/e2e-kit/perf/interactive';
 import { buildReferenceBoard } from './reference-board';
 import { mainThreadTasks, type TraceEvent } from '@liveworkspace/e2e-kit/perf/trace-tasks';
@@ -42,7 +42,8 @@ const SHAPE_IDS = buildReferenceBoard()
   .filter((el) => el.type === 'shape')
   .map((el) => el.id);
 
-type Tab = Measurement['tab'];
+type Tab = 'plan';
+type Measurement = BudgetMeasurement<Tab>;
 type Point = { x: number; y: number };
 
 async function seed(page: Page, baseURL: string, owner: string, tab: Tab): Promise<string> {

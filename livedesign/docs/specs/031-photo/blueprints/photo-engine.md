@@ -78,7 +78,7 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
       refine, content-aware fill) and `photo-worker-client.ts`.
       A worker gets copies of a task's buffers until it has answered once, and has them moved after; a
       worker that never loads (offline, a chunk gone after a deploy) leaves the page the buffers to run the task.
-    - Drawing: `apps/live/lib/photo-editor/gl/gl-compositor.ts` and `apps/live/lib/photo-editor/gl/shaders.ts` (WebGL 2), `cpu-view.ts` (the fallback),
+    - Drawing: `apps/live/lib/photo-editor/gl/gl-compositor.ts` (with its `gl-programs.ts` and `gl-textures.ts`) and `apps/live/lib/photo-editor/gl/shaders.ts` (WebGL 2), `cpu-view.ts` (the fallback),
       `surface-painter.ts` (which one draws, and when), `sliced-composite.ts` (a main-thread composite in
       bands, for merges), `view-options.ts` (the pixel grid).
     - Edits: `layer-ops.ts`, `image-ops.ts`, `apply-ops.ts`, `edit-ops.ts`, `mask-ops.ts`, `selection-ops.ts`,

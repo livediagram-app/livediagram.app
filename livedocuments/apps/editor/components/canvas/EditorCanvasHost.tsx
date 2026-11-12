@@ -5,10 +5,8 @@ import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { SuppressElementIndicators } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 import { PresentingProvider } from '@/components/canvas/PresentingContext';
-import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
 import { dropThenDisarm } from '@liveworkspace/workbench/lib/palette-drop';
-import { describeOne } from '@/lib/element-names';
 import { canvasSurface } from '@livedocuments/document';
 import { createStockColourProjector, plainPaper } from '@/lib/stock-colour-projector';
 import { usePageView } from '@/hooks/canvas/usePageView';
@@ -19,10 +17,7 @@ import { registerTabStyleOpen } from '@/lib/tab-style-opener';
 import { setBandDocumentName } from '@/lib/article/article-band-layout';
 import { presentedPages } from '@/lib/presented-pages';
 import { shownRemoteSelections } from '@/lib/presence-rows';
-import {
-  LockedElementMenu,
-  type LockHolder,
-} from '@liveworkspace/workbench/components/canvas/LockedElementMenu';
+import { LockedElementMenu } from '@liveworkspace/workbench/components/canvas/LockedElementMenu';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
@@ -37,12 +32,9 @@ import { useTemplateStartOpen } from '@/components/start/useTemplateStartShown';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { canEditMap } from '@/lib/map-edit';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
-import {
-  brushPageId,
-  pageBrushPreview,
-  pagePaintPress,
-} from '@liveworkspace/workbench/lib/format-page-brush';
-import { useDeadPageBrush } from '@liveworkspace/workbench/hooks/editor/useDeadPageBrush';
+import { useCanvasHostBrush } from '@/components/canvas/useCanvasHostBrush';
+import { useCanvasHostExplorer } from '@/components/canvas/useCanvasHostExplorer';
+import { useCanvasHostMenus } from '@/components/canvas/useCanvasHostMenus';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
@@ -111,7 +103,6 @@ export function EditorCanvasHost() {
     broadcastCursor,
     broadcastLaser,
     canvasPointerRef,
-    cancelConnect,
     cancelDrawShape,
     cancelEdit,
     canRedo,
@@ -134,8 +125,6 @@ export function EditorCanvasHost() {
     deleteMultiSelected,
     documentId,
     documentName,
-    sessionTabScope,
-    participating,
     nameDocument,
     sessionShareCode,
     dropIconOnElement,
@@ -155,18 +144,12 @@ export function EditorCanvasHost() {
     identityOnlyScreenOpen,
     imageContext,
     isOwner,
-    canShareDocument,
-    setSearchOpen,
-    setShareDialogOpen,
-    setSettingsOpen,
-    loadAllTabs,
     releaseSelectionLock,
     isPinchingRef,
     isReadOnly,
     can,
     laserTrailRows,
     livePresence,
-    lockedByOther,
     mapPosition,
     narrowMultiSelection,
     newDocument,
@@ -191,16 +174,13 @@ export function EditorCanvasHost() {
     setCanvasThemeTab,
     setCommentsPanelPosition,
     setContextMenu,
-    setEditingId,
     setExportOpen,
     setExportScope,
     setCodeEditOpenForId,
     setSankeyFlowsOpenForId,
     setMapDialogOpenForId,
-    setFormatSourceId,
     setLinkPickerOpenForId,
     setMapPosition,
-    setMultiSelectedIds,
     setSelectedId,
     toggleChecklistItem,
     setPageHeading,
@@ -244,16 +224,18 @@ export function EditorCanvasHost() {
       ? drag.arrowId
       : null;
 
-  // The menu on an element somebody else is holding (docs/specs/007-editor/editor-app.md).
-  // Null when closed. Holders are captured at open time rather than re-read on
-  // render: if the holder lets go while the menu is up it closes on the next
-  // outside click anyway, and a list that emptied underneath would leave a
-  // menu with nothing in it.
-  const [lockedMenu, setLockedMenu] = useState<{
-    elementId: string;
-    at: { x: number; y: number };
-    holders: LockHolder[];
-  } | null>(null);
+  // The menu and deselect gestures, the Explorer's document actions and the format brush (beside this file).
+  const {
+    lockedMenu,
+    setLockedMenu,
+    onDeselect,
+    onElementContextMenu,
+    onMultiContextMenu,
+    onOpenMultiContextMenu,
+    onCanvasContextMenu,
+  } = useCanvasHostMenus();
+  const { explorerMenuActions, webhooksOpen, setWebhooksOpen } = useCanvasHostExplorer();
+  const { onFormatPagePress, formatBrushSource } = useCanvasHostBrush();
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
   // the tab stores: a tab on the Default theme follows this browser's
   // appearance (docs/specs/007-editor/editor-app.md). Subscribing to the appearance here is what makes the
@@ -280,11 +262,6 @@ export function EditorCanvasHost() {
   // (docs/specs/008-canvas/canvas-and-palette.md "Colours"). Display only: the projector
   // caches per element, so an unchanged element keeps its identity and the memoised views stay quiet.
   const [projectStockColours] = useState(createStockColourProjector);
-  // The document's own Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): offered to a signed-in account that
-  // edits the whole document (not a Viewer, a Participant or a one-tab link); the index checks again on every call.
-  const [webhooksOpen, setWebhooksOpen] = useState(false);
-  const canManageWebhooks =
-    hydrated && Boolean(accountUserId) && !isReadOnly && !participating && sessionTabScope === null;
   const surface = canvasSurface(backdrop.backgroundColor);
   // Theme colours in this viewer's half (docs/specs/011-theme/light-and-dark.md); the map is cached per theme and
   // appearance, so its identity holds and the projector's cache with it.
@@ -334,20 +311,6 @@ export function EditorCanvasHost() {
     isReadOnly,
     setContextMenu,
   });
-
-  // The element the format brush is loaded from (docs/specs/010-palette/stickers.md), for the panel's
-  // preview. Resolved here rather than in the panel so the panel stays a
-  // renderer and never reaches into the tab.
-  // A page's background in the brush (docs/specs/007-editor/pages-mode.md "Copying a background").
-  const brushedPage = pagesMode?.pages.find((pg) => pg.id === brushPageId(formatSourceId));
-  useDeadPageBrush(
-    formatSourceId,
-    pagesMode?.pages.map((pg) => pg.id),
-    setFormatSourceId,
-  );
-  const formatSource = formatSourceId
-    ? (activeTab.elements.find((el) => el.id === formatSourceId) ?? null)
-    : null;
 
   // Object props the canvas boundary compares by identity (docs/specs/008-canvas/canvas-performance.md
   // "The canvas re-renders only for what it shows"): new only when their data changes.
@@ -449,29 +412,7 @@ export function EditorCanvasHost() {
               editingId={editingId}
               editCursorAtEnd={editCursorAtEnd}
               formatSourceId={formatSourceId}
-              onFormatPagePress={
-                canvasTool === 'format' && pagesMode?.edit
-                  ? (pageId) => {
-                      // A page's background as the brush, painted page to page (docs/specs/007-editor/
-                      // pages-mode.md "Copying a background").
-                      // A brush whose page has gone is emptied as the page goes (useDeadPageBrush), so this
-                      // press arms the pressed page at once.
-                      const press = pagePaintPress(
-                        formatSourceId,
-                        pageId,
-                        formatConfig.mode === 'keep',
-                      );
-                      // A refused paint (a locked page) keeps the brush:
-                      // only a paint empties a Paint once brush.
-                      if (
-                        press.paint &&
-                        !pagesMode.edit?.copyBackground(press.paint.from, press.paint.to)
-                      )
-                        return;
-                      if (press.next !== formatSourceId) setFormatSourceId(press.next);
-                    }
-                  : undefined
-              }
+              onFormatPagePress={onFormatPagePress}
               canUndo={canUndo && !activeTabLocked}
               canRedo={canRedo && !activeTabLocked}
               onAddShape={addShape}
@@ -519,21 +460,7 @@ export function EditorCanvasHost() {
               formatConfig={formatConfig}
               onToggleFormatGroup={onToggleFormatGroup}
               onSetFormatMode={onSetFormatMode}
-              // What the brush holds, described for the panel's preview (docs/specs/010-palette/stickers.md):
-              // the loaded element's name and the three colours the swatch draws.
-              formatBrushSource={
-                brushedPage
-                  ? pageBrushPreview(brushedPage)
-                  : formatSource
-                    ? {
-                        name: describeOne(formatSource),
-                        fill: 'fillColor' in formatSource ? formatSource.fillColor : undefined,
-                        stroke:
-                          'strokeColor' in formatSource ? formatSource.strokeColor : undefined,
-                        textColor: 'textColor' in formatSource ? formatSource.textColor : undefined,
-                      }
-                    : null
-              }
+              formatBrushSource={formatBrushSource}
               formatPanelPosition={formatPanelPosition}
               onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}
               onResetFormatPanel={() => setFormatPanelPosition(null)}
@@ -576,114 +503,13 @@ export function EditorCanvasHost() {
               currentShareCode={sessionShareCode}
               onRenameCurrentDocument={nameDocument}
               onNewDocument={newDocument}
-              explorerMenuActions={{
-                // The header's Share gate: the owner, or a joined member of the document's team
-                // (docs/specs/013-workspace/folders.md, docs/specs/013-workspace/team-shared-documents.md).
-                onShare:
-                  canShareDocument && hydrated
-                    ? () => {
-                        setShareDialogOpen(true);
-                        track('UI', 'Opened', 'Share');
-                      }
-                    : undefined,
-                onExport: () => {
-                  setExportScope('tab');
-                  setExportOpen(true);
-                },
-                onWebhooks: canManageWebhooks ? () => setWebhooksOpen(true) : undefined,
-                onSearch: () => openSearchWithPrefetch(setSearchOpen, loadAllTabs),
-                onOpenSettings: () => {
-                  setSettingsOpen(true);
-                  track('UI', 'Opened', 'Settings');
-                },
-              }}
-              onDeselect={() => {
-                // Clicking empty canvas also cancels an armed arrow-connect, and
-                // wraps up the Format tool — restoring the pre-Format tool — so a
-                // background click is the quick way out of paint mode (docs/specs/008-canvas/canvas-and-palette.md).
-                if (canvasTool === 'format') exitFormatTool();
-                cancelConnect();
-                setSelectedId(null);
-                setMultiSelectedIds(new Set());
-                setEditingId(null);
-                setFormatSourceId(null);
-                setContextMenu(null);
-              }}
+              explorerMenuActions={explorerMenuActions}
+              onDeselect={onDeselect}
               onSelect={selectElement}
-              onElementContextMenu={(id, sx, sy) => {
-                // Concurrent-selection lock (docs/specs/007-editor/editor-app.md): a peer holds this
-                // element, so it can't be selected, dragged, or edited — don't
-                // pop a dead context menu on it either. Same gate as
-                // selectElement.
-                //
-                // An Editor's one action on a locked element is freeing it, and that gets
-                // its own small menu rather than the element's real one, whose every
-                // other row would be dead. See LockedElementMenu. A Participant or a Viewer
-                // still opens its own menu there (comments, a link), less Edit Text
-                // (docs/specs/008-canvas/element-menu-quick-bar.md).
-                if (!isReadOnly && lockedByOther(id)) {
-                  const holders = remoteSelectionsByElement.get(id);
-                  if (holders?.length) {
-                    setLockedMenu({ elementId: id, at: { x: sx, y: sy }, holders });
-                  }
-                  return;
-                }
-                // Right-clicking the element that already owns the menu AT THE
-                // SAME ANCHOR is a no-op: return the SAME state object so React
-                // re-renders nothing. Re-opening would restart the entrance
-                // animation and flash the selection popover in the gap, for a
-                // gesture that asked for the menu already on screen.
-                //
-                // The anchor has to be part of that comparison: selectElement
-                // runs first and retargets an open menu's elementId in place
-                // (keeping the old x / y), so an id-only check would see 'same
-                // element' for a right-click on a DIFFERENT one and strand the
-                // menu at the previous element's position.
-                setContextMenu((cur) =>
-                  cur &&
-                  cur.mode === 'element' &&
-                  cur.elementId === id &&
-                  cur.x === sx &&
-                  cur.y === sy
-                    ? cur
-                    : { mode: 'element', elementId: id, x: sx, y: sy },
-                );
-              }}
-              onMultiContextMenu={
-                isReadOnly
-                  ? undefined
-                  : // Right-click on a group / multi-selection always OPENS at the
-                    // cursor (a direct set, like onElementContextMenu). A toggle here
-                    // meant a lingering multi menu — which clicking elsewhere doesn't
-                    // dismiss, since element pointerdown stops propagation — got
-                    // closed by the next right-click instead of reopening, so the
-                    // group menu "wouldn't open".
-                    (sx, sy) => setContextMenu({ mode: 'multi', x: sx, y: sy })
-              }
-              onOpenMultiContextMenu={
-                isReadOnly
-                  ? undefined
-                  : (sx, sy) =>
-                      // Toggle: the selection toolbar's ⋯ button closes an
-                      // already-open multi menu instead of reopening it.
-                      setContextMenu((cur) =>
-                        cur && cur.mode === 'multi' ? null : { mode: 'multi', x: sx, y: sy },
-                      )
-              }
-              onCanvasContextMenu={
-                isReadOnly
-                  ? undefined
-                  : (sx, sy) =>
-                      setContextMenu({
-                        mode: 'canvas',
-                        x: sx,
-                        y: sy,
-                        // Open upward when the click is in the bottom fifth of the
-                        // viewport so the canvas menu's categories don't run
-                        // off-screen (matching the tab menu).
-                        openUp: sy > window.innerHeight * 0.8,
-                      })
-              }
+              onElementContextMenu={onElementContextMenu}
+              onMultiContextMenu={onMultiContextMenu}
+              onOpenMultiContextMenu={onOpenMultiContextMenu}
+              onCanvasContextMenu={onCanvasContextMenu}
               onBeginDrag={beginDrag}
               onPressArmedAction={pressArmedAction}
               onBeginEdit={beginEdit}

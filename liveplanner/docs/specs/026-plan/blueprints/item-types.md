@@ -491,7 +491,7 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
     while a readout is mounted), `components/plan/time/TimerReadouts.tsx` (`Elapsed`, the only subscriber; `RunningDot`;
     `RunningTimerPill` on `PlanCardFace` at every size), `components/plan/time/DurationInput.tsx` (the panel's box),
     `components/plan/time/TimeSpentField.tsx` (total, Start Timer, Stop, Discard, others' timers, entries newest first, Show All,
-    Add Time), routed from `ItemFieldEditor`; `usePlanSlice.trackTime` posts the write and sends the telemetry.
+    Add Time), routed from `ItemFieldEditor`; `usePlanItemWrites.trackTime` (through `usePlanSlice`) posts the write and sends the telemetry.
     Add Field's Time Tracking tile presets `timeSpent` (no switch in any form).
   - Exports: `svg-render-plan-card.ts` draws the total and a green running pill (`TIMER_RUNNING_GREEN`).
   - Agents: `plan-schema.ts` adds `duration` and `timeSpent`; `plan-listing.ts` lists a card's `time` (total,
@@ -738,7 +738,7 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
     Long Text's `<id>Rich` cleared) and `retypedValuePatches(before, after, types, items, ctx)` (every changed field,
     one patch per card).
   - Saving: `PlanSheetsHost`'s `onSave` works out `retypedValuePatches(editing, next, …)`; with any, it calls
-    `ctx.reshapeValues(patches)` (`usePlanSlice`: one `patches` write marked `undo: true`, past the Required rule,
+    `ctx.reshapeValues(patches)` (`usePlanItemWrites`: one `patches` write marked `undo: true`, past the Required rule,
     `usePlanItems.write(input, { onUndo })` handing its undo step back instead of pushing it) and passes that promise
     to `itemTypes.saveType(next, along)`, whose `change` pushes `combinedStep([typeStep, itemsStep])`
     (`item-undo-journal.ts`) once the write settles (the type's step alone when it made none).
@@ -755,7 +755,7 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
     `apps/editor/components/plan/field-retype-tabs.ts` walks `Tab[]` (boards `shape: 'plan-board'`, views
     `shape: 'plan-view'`): `countFieldFilters(tabs, target)` and `tabsWithoutFieldFilters(tabs, target)` (a tab
     and an element replaced only when one changed; the array returned as is when none did).
-  - **Gap: all or none** (spec "Saving the type"). `usePlanSlice.reshapeValues(patches)` resolves
+  - **Gap: all or none** (spec "Saving the type"). `usePlanItemWrites.reshapeValues(patches)` resolves
     `{ ok, step }` (`ValuesWrite`, `item-undo-journal.ts`): `ok` is the write's own answer, `step` the undo of
     whatever landed (`usePlanItems.write`'s `onUndo`, called for a partial write too). `useItemTypes.saveType(type,
 along?)` takes `along: SaveAlong = { values?: Promise<ValuesWrite>, settle?: () => boolean, name }`;
@@ -919,7 +919,7 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
   refuses `field_required` for a patch, patches or move whose item `requiredCleared` unless `undo`. The api's single
   create and bulk create run `createRefusal` per create (after the Default State), `writeItem` and the patches route
   run `requiredCleared` beside `excludedStatus`; the refusal is 400 `{ error: 'field_required', field: <id> }`. The
-  offline store runs the same checks. The editor's `usePlanSlice.addItem` goes through `useRequiredFieldsGate`:
+  offline store runs the same checks. The editor's `usePlanItemWrites.addItem` goes through `useRequiredFieldsGate`:
   a create missing a required field opens `RequiredFieldsDialog` (PlanSheetsHost draws it first) and is written,
   filled, only on Create; Cancel answers false. `refusalMessage('field_required')` reads "That field is required on
   this card type". `boardCsvImport` counts a row missing one in `missingRequired` (also in `skipped`).

@@ -188,7 +188,7 @@ arrowLinks, stackedIds)` (on a board without arrows, which has no `elementIndex`
   see the result on release.
 - A boxed patch carries `x`, `y`, `width`, `height`, `rotation`; an arrow patch `from`, `to`,
   `curveOffset`, `elbowOffset`, `curvePoints`, `labelOffset` (each field the element has).
-- Receiving (`peer-drag-previews.ts`, called from `useRoomConnection`): on a `drag-preview` from a
+- Receiving (`peer-drag-previews.ts`, called from `useRoomConnection` through `room-op-receive.ts`): on a `drag-preview` from a
   presence id whose role (kept from the latest presence list) is `edit`, parses the patches
   (`parseDragPreviewPatches`), or the ride (`parseDragPreviewRide`) when the op has one, and sets
   that peer's preview (`setPeerPreview(presenceId, tabId, patches, ride?)`: a ride without `ids`

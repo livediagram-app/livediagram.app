@@ -283,7 +283,7 @@ tests where it's cheap.
 - `apps/editor/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
   shared flows (`createDocument`, `startBlankDocument`, `seedTab`, `dismissQuickTour`). `startBlankDocument` opens
   `/new?blank=1`.
-- `apps/editor/e2e/`: `audit-screens.ts`, `contrast.ts`, `optical.ts` and `optical-discover.ts`: the screens and measurements the
+- `apps/editor/e2e/`: `audit-screens.ts` and `contrast.ts`: the screens and measurements the
   dark-mode audits share. `apps/editor/e2e/fixtures/` holds `fake-workbench.html`, the page the workbench specs frame the app in.
 - `apps/editor/e2e/perf/`: the canvas performance probe (`canvas.perf.ts`) and its pure helpers, run by
   `perf:canvas`, never by the suite ([Canvas performance](../008-canvas/canvas-performance.md)).

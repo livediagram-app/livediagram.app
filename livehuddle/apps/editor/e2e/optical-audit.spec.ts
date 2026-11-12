@@ -15,7 +15,7 @@ import {
   test,
   mintGuest,
 } from './fixtures';
-import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
+import { auditOptical, OPTICAL_TOLERANCE_PX } from '@liveworkspace/e2e-kit/optical';
 
 // Optical alignment audit (docs/specs/004-interface-design/optical-alignment.md): on each screen, every glyph
 // in a small painted shape sits within OPTICAL_TOLERANCE_PX of the shape's centre, and stack rows share one

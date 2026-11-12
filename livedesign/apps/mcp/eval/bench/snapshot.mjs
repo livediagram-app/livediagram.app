@@ -1,6 +1,6 @@
 // Reads back every design a run touched, through the same MCP tools an assistant has, so a task's checks judge
 // what was made rather than what the agent said it made. Read-only: it never writes.
-import { resultJson, resultText } from './mcp-client.mjs';
+import { resultJson, resultText } from '@liveworkspace/mcp-kit/eval/mcp-client';
 
 // The outline's first line names the tab's pages: `tab 3be5 "Flow" · 53 elements: 53 boxes · 6 pages: 6 wireframe
 // (view pages) · rev 5`.
@@ -22,9 +22,7 @@ async function readTab(client, designId, tab) {
     ...parseTabHeader(outline?.split('\n')[0] ?? ''),
     elements: json?.tab?.elements ?? [],
     outline,
-    pages: resultText(
-      await client.call('read_design', { designId, tabId: tab.id, view: 'pages' }),
-    ),
+    pages: resultText(await client.call('read_design', { designId, tabId: tab.id, view: 'pages' })),
   };
 }
 

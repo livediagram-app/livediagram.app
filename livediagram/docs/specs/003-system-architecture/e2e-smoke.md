@@ -335,8 +335,8 @@ tests where it's cheap.
   shared flows (`startBlankDocument`, `startTemplateDocument`, `startEventStormingRow`, `seedTab`,
   `dismissQuickTour`, `openJustDraw`). `startTemplateDocument` exists because the blank helper skips the
   wizard's category step and so never exercises template creation.
-- `apps/editor/e2e/fixtures/`: drawn wall photos for the photo import; `audit-screens.ts`, `contrast.ts`,
-  `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
+- `apps/editor/e2e/fixtures/`: drawn wall photos for the photo import; `audit-screens.ts` and `contrast.ts`:
+  the screens and measurements the dark-mode audits share.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, community, marketing).
 - The root's `scripts/e2e-stack/` (shared with the other product stacks): `accounts-stand-in.mjs`, `processes.mjs`,
   `proxies.mjs` (the router's forwards and the WebSocket upgrade) and `static-serving.mjs` (caching, the Trusted Types

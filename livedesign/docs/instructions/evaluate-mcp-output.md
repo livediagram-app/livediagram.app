@@ -108,7 +108,7 @@ The kit lives in `apps/mcp/eval/`:
 - `--bare` would strip that context too, but it needs an API key and never reads the CLI's sign-in: use the flags in
   step 8 instead.
 - A tool result can carry its JSON and then a lint as separate text parts; read the first part that parses, not the
-  joined text (`resultJson` in `apps/mcp/eval/bench/mcp-client.mjs`).
+  joined text (`resultJson` in `packages/mcp-kit/eval/mcp-client.mjs`, shared).
 - `read_design` with `format: "json"` puts the elements under `tab.elements`, not at the top.
 - A token from an earlier round is refused once the local accounts Worker's state is reset ("the token is not
   accepted"); `run.mjs` mints fresh throwaway accounts and tokens from the accounts Worker at the start of every

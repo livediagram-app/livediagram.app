@@ -35,8 +35,8 @@ editor views.
 - Predicates: `isSelfDrawingShape` (both), `SELF_PAINTING_SHAPES` (both: board paints its own surfaces; card its
   type colour), `isSvgRenderedShape` exclusion (both), `SHAPE_LABELS` ("Plan board", "Plan card"), not markers,
   not containers.
-- `svg-render.ts`: `svgBoxed` branches to `svg-render-plan.ts`: `svgPlanBoard(el, items, surface, itemTypes)`,
-  `svgPlanCard(el, items, surface, itemTypes)`. `renderElementsToSvg`'s options carry `items?: ReadonlyMap<string, Item>`
+- `svg-render-boxed.ts`: `svgBoxed` branches to `svg-render-plan.ts`: `svgPlanBoard(el, items, surface, itemTypes)`,
+  `svgPlanCard(el, items, surface, itemTypes)`. `renderElementsToSvg`'s options (`svg-render.ts`) carry `items?: ReadonlyMap<string, Item>`
   and `itemTypes?`. Without items, columns draw
   with names and empty bodies; a card draws "Item".
 - Card faces: `svg-render-plan-card.ts` `planCardFace(item, x, y, w, ctx, measureOnly)` draws from `typeCardLayout` at
@@ -393,7 +393,8 @@ plan-tile-art.tsx        a picture per board preset, and the card tile glyph
 ```
 
 Hooks (`apps/editor/hooks/plan/`): `usePlanItems` (store), `usePlanSlice` (composed into `useEditorState`; provides
-the `PlanContext` value, the open item and set-up, and `dropPlanCardOnBoard`), `usePlanBoardDrop` (the board's drag and
+the `PlanContext` value, the open item and set-up, and `dropPlanCardOnBoard`; its card writes in `usePlanItemWrites`,
+its board, chart and card element writes in `usePlanElementWrites`), `usePlanBoardDrop` (the board's drag and
 drop, and the board as a target for cards from other boards, and for a chip's new card, through `plan-board-targets.ts`, a registry of the
 boards on screen by element id), `useCardTypeDrag` (a header chip's press: idle, pressed, carrying, then dropped
 or cancelled; past `PRESS_DRAG_SLOP_PX` a ghost card follows the pointer, moved by style per animation frame, never a
@@ -1081,7 +1082,7 @@ value | null)`, `flagPatches`, `archivePatches`, each skipping cards whose type 
   (`SET_FIELD_KINDS`). An empty result writes nothing. Each is one `plan.patchItems(patches)` (one `patches` write,
   one undo step); Move To is one `plan.moveItems`; Move to Trash is `plan.trashItems(ids)`. `track('Plan',
 'Changed', 'Cards')`.
-- **Context**: `PlanContextValue.moveItems(moves: ItemMoveOf[])` (`usePlanSlice`: one `{ kind: 'moves' }` write, a
+- **Context**: `PlanContextValue.moveItems(moves: ItemMoveOf[])` (`usePlanItemWrites`: one `{ kind: 'moves' }` write, a
   single `move` for one card).
 - **Card**: `PlanBoardCard` takes `selected`: the ring as a 2 px box-shadow in the board's focus colour on the card
   wrapper (so every card size and a cover keep their own layout), `data-selected`, and ", selected" on the

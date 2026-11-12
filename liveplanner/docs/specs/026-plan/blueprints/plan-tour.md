@@ -50,7 +50,7 @@ missions, checked from live state, in a mission strip of their own.
 | `apps/editor/lib/plan-tour.ts`                        | Relaunch event, tracks, `planTrackSeen` / `markPlanTracksSeen`, the old tour's `PlanTourContent` record                                   |
 | `apps/editor/hooks/plan/usePlanTourLeftovers.ts`      | The sweep of an old tour's leftover record; nothing new is placed (see Leftovers)                                                         |
 
-Also touched: `usePlanItems` (`practiceIds`, `practise`, `endPractice`), `usePlanSlice` (passes them on; no `Plan` ·
+Also touched: `usePlanItems` (`practiceIds`, `practise`, `endPractice`), `usePlanSlice` and `usePlanItemWrites` (pass them on; no `Plan` ·
 `Moved` for a practice card), `PlanBoardCells` / `PlanBoardView` (`data-practice`, the deal index, the stamp),
 `PlanCardFace` (no key tag at key 0), `ItemPanel` (a Practice Card: no menu, no comments), `ItemPanelLayout`
 (`data-item-field`), `usePlanTabActions.addTabAfter`, `DashboardSettings`, `globals.css` and `canvas-motion.css`,

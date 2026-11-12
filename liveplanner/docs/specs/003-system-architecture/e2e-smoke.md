@@ -286,7 +286,7 @@ tests where it's cheap.
 - `apps/editor/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
   shared flows (`startBlankProject`, `openStartBlank`, `openTeamRetro`, `serverNewUrl`, `seedTab`, `seedPlan`,
   `mintGuest`, `adoptGuest`, `planHeaders`, `settledBox`).
-- `apps/editor/e2e/`: `audit-screens.ts`, `contrast.ts`, `optical.ts` and `optical-discover.ts`, the screens and
+- `apps/editor/e2e/`: `audit-screens.ts` and `contrast.ts`, the screens and
   measurements the dark-mode audits share; `fixtures/fake-workbench.html` for the workbench specs.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (editor, help, marketing).
 - The root `.github/workflows/e2e.yml` and `e2e-product.yml`: the sharded workflow, run on every pull request;
