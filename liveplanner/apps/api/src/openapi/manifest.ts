@@ -832,6 +832,76 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [202, 400, 401, 404, 405, 413, 415, 429],
   },
   {
+    method: 'GET',
+    path: '/projects/{id}/github',
+    segment: 'projects',
+    tag: 'GitHub',
+    summary:
+      "The plan's GitHub connection: the installation's account, who connected it and when, and the repositories the person who connected it could reach, each saying whether it is connected. Null for none. Needs edit access to the whole plan, signed in; never an API token or a link to one tab. 404 where this deployment has no GitHub App.",
+    auth: 'clerk',
+    responseSchema: 'GithubConnectionResponse',
+    statuses: [200, 401, 403, 404, 405],
+  },
+  {
+    method: 'DELETE',
+    path: '/projects/{id}/github',
+    segment: 'projects',
+    tag: 'GitHub',
+    summary:
+      "Disconnect the plan from GitHub: its connection, repositories and rules go; the cards' Pull Request fields stay as addresses. Needs edit access to the whole plan, signed in.",
+    auth: 'clerk',
+    statuses: [204, 401, 403, 404, 405],
+  },
+  {
+    method: 'POST',
+    path: '/projects/{id}/github/connect',
+    segment: 'projects',
+    tag: 'GitHub',
+    summary:
+      "Start connecting the plan to GitHub: the address of liveplanner's GitHub App install page, carrying a state that names the plan, good once for 10 minutes. GitHub sends the person back to /github/callback. Needs edit access to the whole plan, signed in.",
+    auth: 'clerk',
+    responseSchema: 'GithubConnectStartResponse',
+    statuses: [201, 401, 403, 404, 405],
+  },
+  {
+    method: 'PUT',
+    path: '/projects/{id}/github/repositories',
+    segment: 'projects',
+    tag: 'GitHub',
+    summary:
+      'Choose the repositories the plan connects, up to 20, from the ones its connection lists; each is checked against the installation again. A repository already connected to 20 plans is refused. Needs edit access to the whole plan, signed in.',
+    auth: 'clerk',
+    requestSchema: 'GithubRepositoriesRequest',
+    responseSchema: 'GithubConnectionResponse',
+    statuses: [200, 400, 401, 403, 404, 405, 409, 502],
+  },
+  {
+    method: 'POST',
+    path: '/github/webhook',
+    segment: 'github',
+    tag: 'GitHub',
+    summary:
+      "GitHub's deliveries to liveplanner's GitHub App. Signed with X-Hub-Signature-256 (sha256=<hex HMAC-SHA256 of the raw body under the App's webhook secret>), checked before the body is read as JSON; at most 1 MB. Each X-GitHub-Delivery acts once on each plan. 404 where this deployment has no GitHub App.",
+    auth: 'public',
+    statuses: [202, 200, 400, 401, 404, 405, 413, 502],
+  },
+  {
+    method: 'GET',
+    path: '/github/callback',
+    segment: 'github',
+    tag: 'GitHub',
+    summary:
+      'Where GitHub sends a person back after installing the App: the state (from /projects/{id}/github/connect) names the plan, and the answer redirects to it with #github=connected, failed or requested. 404 where this deployment has no GitHub App.',
+    auth: 'public',
+    query: [
+      { name: 'state', required: true, description: 'The state the connect answered.' },
+      { name: 'code', required: false, description: "GitHub's code for the person's one check." },
+      { name: 'installation_id', required: false, description: "The App's installation." },
+      { name: 'setup_action', required: false, description: 'install, update or request.' },
+    ],
+    statuses: [302, 400, 404, 405],
+  },
+  {
     method: 'POST',
     path: '/projects/{id}/automations/{ruleId}/duplicate',
     segment: 'projects',

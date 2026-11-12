@@ -28,6 +28,7 @@ import {
   AUTOMATIONS_SCHEMA,
   automationsV19,
 } from './automations/automation-schema';
+import { GITHUB_SCHEMA } from './github/github-schema';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -471,8 +472,12 @@ const V19 = automationsV19;
 // Automations Phase 3 (automations/automation-schema.ts): Incoming Webhook rules' hashed secrets.
 const V20 = AUTOMATION_HOOKS_SCHEMA;
 
+// The plan's GitHub connection, its repositories, its connect states and the deliveries it has acted on
+// (github/github-schema.ts; docs/specs/026-plan/github-pull-requests.md "Storage").
+const V21 = GITHUB_SCHEMA;
+
 // Automations' Wait (automations/automation-schema.ts): the runs a Wait holds.
-const V21 = AUTOMATION_WAITING_SCHEMA;
+const V22 = AUTOMATION_WAITING_SCHEMA;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
@@ -496,6 +501,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V19,
   V20,
   V21,
+  V22,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

@@ -3342,6 +3342,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "emailEnabled": {
         "type": "boolean"
       },
+      "githubEnabled": {
+        "type": "boolean"
+      },
       "oauthIssuer": {
         "type": "string"
       },
@@ -6983,6 +6986,128 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "run",
       "refs",
       "closed"
+    ],
+    "type": "object"
+  },
+  "GithubConnectStartResponse": {
+    "additionalProperties": false,
+    "description": "POST /api/projects/:id/github/connect: the App's install page on GitHub, carrying a one-time state.",
+    "properties": {
+      "url": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "url"
+    ],
+    "type": "object"
+  },
+  "GithubConnectedBy": {
+    "additionalProperties": false,
+    "description": "Who connected the plan, as a card's history names a person.",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name"
+    ],
+    "type": "object"
+  },
+  "GithubConnectionResponse": {
+    "additionalProperties": false,
+    "description": "GET /api/projects/:id/github: the plan's connection, or null for none.",
+    "properties": {
+      "connection": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/GithubConnectionView"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "required": [
+      "connection"
+    ],
+    "type": "object"
+  },
+  "GithubConnectionView": {
+    "additionalProperties": false,
+    "properties": {
+      "account": {
+        "type": "string"
+      },
+      "connectedAt": {
+        "type": "number"
+      },
+      "connectedBy": {
+        "$ref": "#/components/schemas/GithubConnectedBy"
+      },
+      "installationId": {
+        "type": "number"
+      },
+      "repositories": {
+        "items": {
+          "$ref": "#/components/schemas/GithubRepositoryView"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "installationId",
+      "account",
+      "connectedBy",
+      "connectedAt",
+      "repositories"
+    ],
+    "type": "object"
+  },
+  "GithubRepositoriesRequest": {
+    "additionalProperties": false,
+    "description": "PUT /api/projects/:id/github/repositories: the repositories to connect, by id, from the ones listed.",
+    "properties": {
+      "ids": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "ids"
+    ],
+    "type": "object"
+  },
+  "GithubRepositoryView": {
+    "additionalProperties": false,
+    "description": "One repository the connection lists. `chosen`: connected to the plan, so its pull requests reach it.",
+    "properties": {
+      "chosen": {
+        "type": "boolean"
+      },
+      "fullName": {
+        "type": "string"
+      },
+      "id": {
+        "type": "number"
+      },
+      "private": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "id",
+      "fullName",
+      "private",
+      "chosen"
     ],
     "type": "object"
   },
