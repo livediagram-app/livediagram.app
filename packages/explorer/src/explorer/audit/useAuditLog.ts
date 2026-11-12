@@ -139,6 +139,31 @@ function rowsIn(csv: string): number {
   return Math.max(0, rows - 1);
 }
 
+/**
+ * Every row the filter matches, file by file, handed to `write` as it is read: one file's text (10,000 rows) is all
+ * that is held at a time, and the files join under the first one's header. No byte-order mark (the saver adds it).
+ */
+export async function streamAuditCsv(
+  client: IndexClient,
+  filter: AuditFilter,
+  write: (chunk: string) => Promise<void> | void,
+  onProgress?: (rows: number) => void,
+): Promise<{ rows: number; capped: boolean }> {
+  let rows = 0;
+  let cursor: string | undefined;
+  for (let file = 0; file < AUDIT_EXPORT_FILES_MAX; file++) {
+    const res = await client.teamAuditCsv(cursor ? { ...filter, cursor } : filter);
+    // A text read keeps a byte-order mark only when the runtime leaves it; one file's is never mid-text.
+    const text = res.csv.charCodeAt(0) === 0xfeff ? res.csv.slice(1) : res.csv;
+    await write(file === 0 ? text : bodyOf(text));
+    rows += rowsIn(text);
+    onProgress?.(rows);
+    if (!res.nextCursor) return { rows, capped: false };
+    cursor = res.nextCursor;
+  }
+  return { rows, capped: true };
+}
+
 /** Every row the filter matches as one CSV text (no byte-order mark; the saver adds it), file by file. */
 export async function exportAuditCsv(
   client: IndexClient,
@@ -146,17 +171,13 @@ export async function exportAuditCsv(
   onProgress?: (rows: number) => void,
 ): Promise<AuditExport> {
   let csv = '';
-  let rows = 0;
-  let cursor: string | undefined;
-  for (let file = 0; file < AUDIT_EXPORT_FILES_MAX; file++) {
-    const res = await client.teamAuditCsv(cursor ? { ...filter, cursor } : filter);
-    // A text read keeps a byte-order mark only when the runtime leaves it; one file's is never mid-text.
-    const text = res.csv.charCodeAt(0) === 0xfeff ? res.csv.slice(1) : res.csv;
-    csv += file === 0 ? text : bodyOf(text);
-    rows += rowsIn(text);
-    onProgress?.(rows);
-    if (!res.nextCursor) return { csv, rows, capped: false };
-    cursor = res.nextCursor;
-  }
-  return { csv, rows, capped: true };
+  const done = await streamAuditCsv(
+    client,
+    filter,
+    (chunk) => {
+      csv += chunk;
+    },
+    onProgress,
+  );
+  return { csv, ...done };
 }

@@ -28,7 +28,8 @@ import { AppMark } from '../badges';
 import { useExplorer } from '../context';
 import { MoreFailed } from '../MoreFailed';
 import { auditDetail, auditGroups, auditSentence, dayRange, fileSlug, personWords } from './rows';
-import { exportAuditCsv, useAuditLog, type AuditFilter } from './useAuditLog';
+import { pickCsvSink } from './csv-sink';
+import { exportAuditCsv, streamAuditCsv, useAuditLog, type AuditFilter } from './useAuditLog';
 
 export const AUDIT_LOG_TITLE = 'Audit Log';
 
@@ -130,13 +131,29 @@ function AuditBody({
   async function exportCsv() {
     if (exporting !== null) return;
     setExporting(0);
+    const day = new Date().toISOString().slice(0, 10);
+    const name = `${fileSlug(teamName)}-audit-log-${day}.csv`;
+    // Where the browser has a save picker it opens here, inside the click, before any read; the file is then
+    // written a chunk at a time instead of held whole.
+    const picking = pickCsvSink(name);
     try {
-      const done = await exportAuditCsv(client, query, setExporting);
-      const day = new Date().toISOString().slice(0, 10);
-      downloadBlob(
-        new Blob([`\uFEFF${done.csv}`], { type: 'text/csv;charset=utf-8' }),
-        `${fileSlug(teamName)}-audit-log-${day}.csv`,
-      );
+      const choice = picking ? await picking : 'unsupported';
+      if (choice === 'cancelled') return;
+      let done: { rows: number; capped: boolean };
+      if (choice === 'unsupported') {
+        const all = await exportAuditCsv(client, query, setExporting);
+        downloadBlob(new Blob(['﻿', all.csv], { type: 'text/csv;charset=utf-8' }), name);
+        done = all;
+      } else {
+        try {
+          await choice.write('﻿');
+          done = await streamAuditCsv(client, query, choice.write, setExporting);
+          await choice.close();
+        } catch (e) {
+          await choice.abort();
+          throw e;
+        }
+      }
       if (done.capped) {
         toast.show(
           `Saved the newest ${done.rows.toLocaleString()} events. Narrow the dates to export the rest.`,
@@ -260,8 +277,12 @@ function AuditBody({
             variant="secondary"
             size="xs"
             busy={exporting !== null}
-            disabled={log.error !== null}
-            title="Save every event these filters match as a CSV file"
+            disabled={log.error !== null || (!log.loading && log.events.length === 0)}
+            title={
+              !log.loading && log.error === null && log.events.length === 0
+                ? 'Nothing to export'
+                : 'Save every event these filters match as a CSV file'
+            }
             onClick={() => void exportCsv()}
           >
             {exporting === null

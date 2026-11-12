@@ -5,24 +5,25 @@ read from the code. Defaults are cited as `IDXn`. Paths are relative to the repo
 
 Scope, by file:
 
-| File                                                                                                                   | Role                                                                                                                                          |
-| ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/migrations/0011_team_audit.sql`                                                              | the `team_audit_events` table and its indexes                                                                                                 |
-| `liveworkspace/apps/index/src/team-audit.ts`                                                                           | `itemAuditStatement`, `accountAuditStatement`, `deletedAuditStatement`, `webhookAuditStatement`, `sweepTeamAudit`, `teamAuditPurgeStatements` |
-| `liveworkspace/apps/index/src/events.ts`                                                                               | `eventStatements` and `bulkEventStatements` add the audit statement to the event's batch                                                      |
-| `liveworkspace/apps/index/src/items/item-routes.ts`, `liveworkspace/apps/index/src/items/list-routes.ts` (Empty Trash) | a move's `auditTeams` and `fromTeamId`; Delete Forever and Empty Trash pass who did it to `purgeRows`                                         |
-| `liveworkspace/apps/index/src/purge.ts`                                                                                | `purgeRows(…, audit?)` logs team items before their rows go; `sweep` runs `sweepTeamAudit`                                                    |
-| `liveworkspace/apps/index/src/sharing.ts`                                                                              | a public link's `shared` carries `public`                                                                                                     |
-| `liveworkspace/apps/index/src/webhooks/routes.ts`                                                                      | a team webhook's add and delete, each one batch with its audit row                                                                            |
-| `liveworkspace/apps/index/src/account-purge.ts`                                                                        | `purgePerson` runs `teamAuditPurgeStatements` after the person's own rows                                                                     |
-| `packages/index-client/src/constants.ts`                                                                               | `TEAM_AUDIT_*_TYPES`, `TEAM_AUDIT_EVENT_TYPES`, `TeamAuditEventType`, `TEAM_AUDIT_RETENTION_MS`, the read's limits, `TEAM_AUDIT_EVENT_LABELS` |
-| `liveworkspace/apps/index/src/team-audit-read.ts`                                                                      | `GET /team-audit`: `handleTeamAudit`, `pageQuery`, `eventOf`, `csvRow`                                                                        |
-| `liveworkspace/apps/index/src/accounts-access.ts`                                                                      | `accountsAdminTeams` (who runs the team now), `accountsPeopleNames` (names now, `POST /api/account/index/people`)                             |
-| `packages/index-client/src/{types,client}.ts`                                                                          | `TeamAuditEvent`, `TeamAuditQuery`, `TeamAuditPage`, `TeamAuditCsv`; `teamAudit`, `teamAuditCsv`                                              |
-| `packages/api-kit/src/csv.ts`                                                                                          | `toCsv`, formula-safe (shared with the data export)                                                                                           |
-| `packages/explorer/src/explorer/audit/AuditLog.tsx`                                                                    | the Audit Log section: the disclosure, the filters, the rows by day, Show More, Export CSV and every state                                    |
-| `packages/explorer/src/explorer/audit/useAuditLog.ts`                                                                  | the paged read (`teamAudit`), keyed on the filters; `exportAuditCsv` follows `X-Next-Cursor` and joins the files                              |
-| `packages/explorer/src/explorer/audit/rows.ts`                                                                         | `auditSentence`, `auditDetail`, `auditGroups`, `dayRange`: what a row says, the Event groups and the range                                    |
+| File                                                                                                                   | Role                                                                                                                                              |
+| ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/migrations/0011_team_audit.sql`                                                              | the `team_audit_events` table and its indexes                                                                                                     |
+| `liveworkspace/apps/index/src/team-audit.ts`                                                                           | `itemAuditStatement`, `accountAuditStatement`, `deletedAuditStatement`, `webhookAuditStatement`, `sweepTeamAudit`, `teamAuditPurgeStatements`     |
+| `liveworkspace/apps/index/src/events.ts`                                                                               | `eventStatements` and `bulkEventStatements` add the audit statement to the event's batch                                                          |
+| `liveworkspace/apps/index/src/items/item-routes.ts`, `liveworkspace/apps/index/src/items/list-routes.ts` (Empty Trash) | a move's `auditTeams` and `fromTeamId`; Delete Forever and Empty Trash pass who did it to `purgeRows`                                             |
+| `liveworkspace/apps/index/src/purge.ts`                                                                                | `purgeRows(…, audit?)` logs team items before their rows go; `sweep` runs `sweepTeamAudit`                                                        |
+| `liveworkspace/apps/index/src/sharing.ts`                                                                              | a public link's `shared` carries `public`                                                                                                         |
+| `liveworkspace/apps/index/src/webhooks/routes.ts`                                                                      | a team webhook's add and delete, each one batch with its audit row                                                                                |
+| `liveworkspace/apps/index/src/account-purge.ts`                                                                        | `purgePerson` runs `teamAuditPurgeStatements` after the person's own rows                                                                         |
+| `packages/index-client/src/constants.ts`                                                                               | `TEAM_AUDIT_*_TYPES`, `TEAM_AUDIT_EVENT_TYPES`, `TeamAuditEventType`, `TEAM_AUDIT_RETENTION_MS`, the read's limits, `TEAM_AUDIT_EVENT_LABELS`     |
+| `liveworkspace/apps/index/src/team-audit-read.ts`                                                                      | `GET /team-audit`: `handleTeamAudit`, `pageQuery`, `eventOf`, `csvRow`                                                                            |
+| `liveworkspace/apps/index/src/accounts-access.ts`                                                                      | `accountsAdminTeams` (who runs the team now), `accountsPeopleNames` (names now, `POST /api/account/index/people`)                                 |
+| `packages/index-client/src/{types,client}.ts`                                                                          | `TeamAuditEvent`, `TeamAuditQuery`, `TeamAuditPage`, `TeamAuditCsv`; `teamAudit`, `teamAuditCsv`                                                  |
+| `packages/api-kit/src/csv.ts`                                                                                          | `toCsv`, formula-safe (shared with the data export)                                                                                               |
+| `packages/explorer/src/explorer/audit/AuditLog.tsx`                                                                    | the Audit Log section: the disclosure, the filters, the rows by day, Show More, Export CSV and every state                                        |
+| `packages/explorer/src/explorer/audit/useAuditLog.ts`                                                                  | the paged read (`teamAudit`), keyed on the filters; `streamAuditCsv` follows `X-Next-Cursor` and hands each file on (`exportAuditCsv` joins them) |
+| `packages/explorer/src/explorer/audit/csv-sink.ts`                                                                     | `pickCsvSink`: the save picker (File System Access API) as a file written a chunk at a time; none elsewhere                                       |
+| `packages/explorer/src/explorer/audit/rows.ts`                                                                         | `auditSentence`, `auditDetail`, `auditGroups`, `dayRange`: what a row says, the Event groups and the range                                        |
 
 ## Domain and naming
 
@@ -118,8 +119,11 @@ CSV with 250 people is five queries and three name calls, under a 1.5 s CPU budg
 The Audit Log reads nothing until opened, then one page (50 rows) per filter change or Show More; rows render in one
 pass (`byDay`), and the Person options in one pass over the loaded rows. Export CSV joins at most 20 files in the
 browser: measured locally, 50,000 rows join and count in about 15 ms of CPU and 200,000 in about 56 ms (a 200 ms
-budget in `audit-log.test.tsx`). The joined text is held
-in memory until saved, so the largest export (200,000 rows, about 40 MB) is a short-lived string of that size.
+budget in `audit-log.test.tsx`). With the File System Access API (`csv-sink.ts`: `pickCsvSink` opens the save picker
+inside the click, before any read) `streamAuditCsv` hands each file to the chosen file as it is read, so only one
+file's text (10,000 rows, about 2 MB) is held at a time and the largest export never builds its 40 MB string. A
+browser without it takes `exportAuditCsv`, which joins the text and saves one Blob: that is where a short-lived
+string of the full size (200,000 rows, about 40 MB) remains. Export CSV is off while the list is empty.
 
 ## Presentation and UX
 
