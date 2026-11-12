@@ -67,7 +67,10 @@ export function derivedTargets(
       return count === trigger.limit + 1 ? [card] : [];
     }
     case 'card_unblocked': {
-      if (!(finished(event, isDone) || event.kind === 'archived')) return [];
+      // Archiving frees what it blocked only when it was still open: a done blocker unblocked them when it finished.
+      const freed =
+        finished(event, isDone) || (event.kind === 'archived' && !isDone(itemStatus(card)));
+      if (!freed) return [];
       // The cards whose Blocks fields name it (an archived blocker is out of the index, so asked directly), now with
       // no open blocker.
       const index = blockingIndexOf(items, types, isDone);

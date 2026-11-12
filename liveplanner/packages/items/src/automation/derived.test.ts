@@ -76,6 +76,17 @@ describe('derived triggers', () => {
         isDone,
       ).map(name),
     ).toEqual(['Free']);
+    // Archiving a blocker already done frees nothing again: it unblocked them when it finished.
+    const archivedDoneA = { ...a, fields: { ...a.fields, archived: true } } as Item;
+    expect(
+      derivedTargets(
+        { kind: 'card_unblocked' },
+        { ...moved(a, 'done', 'done'), kind: 'archived' },
+        [archivedDoneA, b, free, still],
+        TYPES,
+        isDone,
+      ),
+    ).toEqual([]);
     // A card with no one it blocks answers nothing.
     expect(fire(moved(free, 'doing', 'done'))).toEqual([]);
   });

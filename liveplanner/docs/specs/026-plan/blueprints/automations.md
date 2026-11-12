@@ -37,7 +37,8 @@ packages/items/src/automation/
                       (or null); triggerMatches(trigger, event, ruleId) → boolean; TRIGGER_EVENT_KINDS
   plan-actions.ts     planActions(steps, ctx) → { patch, comments, created, emails, lines } | { failed, lines }:
                       the pure run: walks steps and If / Else, folds every change to the triggering card into ONE
-                      patch (set / clear, in order), marks "Already so", never touches storage
+                      patch (set / clear, in order), marks "Already so", never touches storage; a Set or Clear
+                      Field naming a field gone from the plan fails (never hidden data)
   sentence.ts         ruleSentence(rule, outline) → chips[]: the Rules list's "When Card Moved to Done then …"
   index.ts            re-exports; packages/items/src/index.ts exports './automation'
   *.test.ts           one per module; 100% branches (the package's thresholds)
@@ -891,7 +892,7 @@ Threads and Wait (spec "Actions", "Wait").
   when a resolve leaves the card with no open thread (`SUM(open_comments) = 0` over its links), and a comment event
   carries `mentioned` (the mentioned people's person ids).
 - **Worked out at run time** (`derived.ts`, `derivedTargets`): Card Unblocked hears a card moving into a done column
-  or archived and answers the cards it blocks that have no open blocker left; Related Cards Done hears a card moving
+  or archived while still open (a done blocker freed its cards when it finished) and answers the cards it blocks that have no open blocker left; Related Cards Done hears a card moving
   into a done column and answers the cards it belongs to (its parents, or the cards whose Card fields hold it) whose
   related cards are all done; Column Over Limit hears a card created in or moved into its column and answers that
   card when the column now holds exactly limit + 1. The runner reads the plan's cards for such an event only when a
