@@ -1,6 +1,7 @@
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import type { ItemTypeDef } from '../item-types';
+import { ITEM_TITLE_MAX } from '../limits';
 import {
   AI_DRAFT_COLUMNS_MAX,
   AI_DRAFT_LABELS_MAX,
@@ -267,6 +268,7 @@ describe('the reply', () => {
           },
           { kind: 'mention', to: { assignee: true }, text: '[click](https://evil.example)' },
           { kind: 'create_card', type: 'Bug', title: 'Check http://evil.example' },
+          { kind: 'add_label', label: 'see https://evil.example' },
           { kind: 'add_checklist', items: ['Read https://evil.example', 'Test'] },
           { kind: 'set_field', field: 'Points', value: { text: 'High https://evil.example' } },
           {
@@ -283,7 +285,7 @@ describe('the reply', () => {
     expect(sent).not.toContain('evil');
     expect(sent).toContain('https://ok.example/run');
     expect(body.name).toBe('See');
-    const [comment, email, mention, create, checklist, set, branch] = body.steps as never[];
+    const [comment, email, mention, create, label, checklist, set, branch] = body.steps as never[];
     expect(comment).toEqual({
       kind: 'comment',
       text: 'Fixed: see and https://ok.example/run\nThanks',
@@ -292,9 +294,19 @@ describe('the reply', () => {
     expect((email as unknown as { subject: string }).subject).toHaveLength(200);
     expect(mention).toMatchObject({ text: '[click]( )' });
     expect(create).toMatchObject({ type: 'bug', title: 'Check' });
+    expect(label).toMatchObject({ kind: 'add_label', label: 'see' });
     expect(checklist).toMatchObject({ items: ['Read', 'Test'] });
     expect(set).toMatchObject({ field: 'f-points', value: { text: 'High' } });
     expect(branch).toMatchObject({ then: [{ kind: 'comment', text: 'a b' }] });
+  });
+
+  it('cuts a new card’s title to what a card holds, so the rule reads rather than being refused', () => {
+    const { body } = drafted(
+      rule({
+        steps: [{ kind: 'create_card', type: 'Bug', title: 't'.repeat(ITEM_TITLE_MAX + 50) }],
+      }),
+    );
+    expect((body.steps[0] as { title: string }).title).toHaveLength(ITEM_TITLE_MAX);
   });
 
   it('leaves every outgoing step to Pick a webhook', () => {
