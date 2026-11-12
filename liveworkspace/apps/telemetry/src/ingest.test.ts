@@ -127,17 +127,20 @@ describe('ingest', () => {
 
   it('takes livehuddle’s settings events from liveworkspace.app, and only its own', async () => {
     const env = testEnv({ ENVIRONMENT: 'production' });
+    const join = { category: 'UI', action: 'Toggled', type: 'NotifyDocumentJoinOff' };
+    const projectJoin = { category: 'UI', action: 'Toggled', type: 'NotifyProjectJoinOff' };
+    // livehuddle has no Project Joined switch, and no comment email switch since Work Tracker #714.
     const comments = { category: 'UI', action: 'Toggled', type: 'NotifyCommentsOff' };
-    const join = { category: 'UI', action: 'Toggled', type: 'NotifyProjectJoinOff' };
-    // livehuddle has no Project Joined switch.
     await handleIngest(
       post(
-        { app: 'livehuddle.app', events: [comments, join] },
+        { app: 'livehuddle.app', events: [join, projectJoin, comments] },
         fromPage('https://liveworkspace.app'),
       ),
       env,
     );
-    expect(env.rows.map((r) => [r.app, r.type])).toEqual([['livehuddle.app', 'NotifyCommentsOff']]);
+    expect(env.rows.map((r) => [r.app, r.type])).toEqual([
+      ['livehuddle.app', 'NotifyDocumentJoinOff'],
+    ]);
   });
 
   it('never lets an app’s page, or a key, speak for liveworkspace.app', async () => {
