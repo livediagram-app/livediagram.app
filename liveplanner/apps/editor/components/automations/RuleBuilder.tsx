@@ -39,6 +39,7 @@ import {
   editPart,
   partAt,
   sameBody,
+  samePart,
   type RulePart,
 } from './rule-draft';
 import { PhoneRuleFoot, PhoneRuleHeader } from './PhoneRuleChrome';
@@ -207,6 +208,8 @@ export function RuleBuilder({
     edit: (part, edit) => {
       const next = editPart(body, part, edit);
       change(next.body, next.part);
+      // A move keeps the steps in sight (a phone's drawer stays closed); a duplicate is an added step, and opens.
+      if (edit === 'up' || edit === 'down') setStepOpen(false);
     },
     addCondition: (kind, ifStep) => {
       const next = addCondition(body, defaultCondition(kind, outline), ifStep);
@@ -333,7 +336,14 @@ export function RuleBuilder({
       person={person}
       now={now}
       timeZone={timeZone}
-      {...(phone ? { drawer: { onClose: () => setStepOpen(false) } } : {})}
+      {...(phone
+        ? {
+            drawer: {
+              onClose: () => setStepOpen(false),
+              fault: stepFault && fault && samePart(stepFault, selected) ? fault.message : null,
+            },
+          }
+        : {})}
     />
   );
 

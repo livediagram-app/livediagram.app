@@ -315,10 +315,9 @@ describe('the rule builder', () => {
     const name = await screen.findByRole('textbox', { name: 'Rule name' });
     fireEvent.change(name, { target: { value: 'Renamed' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save Rule' }));
-    expect(await screen.findByRole('alert')).toHaveProperty(
-      'textContent',
-      expect.stringContaining('Insert a Value'),
-    );
+    // On the step's card, and (a phone's) in the step drawer it opens.
+    for (const alert of await screen.findAllByRole('alert'))
+      expect(alert.textContent).toContain('Insert a Value');
     expect(document.querySelector('[data-fault]')).toBeTruthy();
     expect(screen.getByRole('textbox', { name: 'Comment' })).toBeTruthy();
   });

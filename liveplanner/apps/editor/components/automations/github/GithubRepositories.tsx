@@ -3,7 +3,7 @@
 // The repositories a connected plan hears (docs/specs/026-plan/automations.md "The GitHub view": Connected): each one
 // the installation lists, a lock on a private one, and a switch for each the plan hears; Save Repositories while the
 // picks differ from what is saved, up to 20. A private one picked says what that shares. The api checks each against
-// the installation again; its refusals are said here in words.
+// the installation again; its refusals are said here in words, and one saying the list is out of date reads it again.
 
 import { useId, useMemo, useState } from 'react';
 import type { GithubConnectionView } from '@liveplanner/api-schema';
@@ -11,7 +11,7 @@ import { Button, LockIcon, Switch } from '@liveplanner/ui';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { AutomationsScope } from '../automations-client';
 import { GithubRefusal, chooseGithubRepositories } from './github-client';
-import { setGithub } from './use-github-connection';
+import { loadGithub, setGithub } from './use-github-connection';
 
 /** The most repositories one plan hears (the api's REPOSITORIES_MAX). */
 export const GITHUB_REPOSITORIES_MAX = 20;
@@ -19,11 +19,20 @@ export const GITHUB_REPOSITORIES_MAX = 20;
 const CHOOSE_WORDS: Readonly<Record<string, string>> = {
   github_repository_full: 'One of these repositories already sends to 20 plans, the most it can.',
   github_repository_gone:
-    'One of these repositories left the installation on GitHub. Close and open this again.',
+    'One of these repositories left the installation on GitHub. The list is read again: check your picks and save.',
+  github_invalid:
+    'The repositories changed on GitHub. The list is read again: check your picks and save.',
   github_unavailable: 'GitHub didn’t answer. Try again in a moment.',
   github_needs_editor: 'Only an Editor signed in can change which repositories this plan hears.',
   github_not_connected: 'This plan was disconnected from GitHub elsewhere.',
 };
+
+// Refusals that mean the listing is out of date.
+const STALE: ReadonlySet<string> = new Set([
+  'github_repository_gone',
+  'github_invalid',
+  'github_not_connected',
+]);
 
 const sameSet = (a: ReadonlySet<number>, b: ReadonlySet<number>) =>
   a.size === b.size && [...a].every((id) => b.has(id));
@@ -42,7 +51,12 @@ export function GithubRepositories({
     () => new Set(connection.repositories.filter((r) => r.chosen).map((r) => r.id)),
     [connection],
   );
-  const [picked, setPicked] = useState<ReadonlySet<number>>(saved);
+  const [held, setPicked] = useState<ReadonlySet<number>>(saved);
+  // Only the repositories listed count: one gone since it was picked (the list read again) has no switch to unpick.
+  const picked = useMemo(
+    () => new Set(connection.repositories.filter((r) => held.has(r.id)).map((r) => r.id)),
+    [connection, held],
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dirty = !sameSet(picked, saved);
@@ -68,6 +82,8 @@ export function GithubRepositories({
         (e instanceof GithubRefusal ? CHOOSE_WORDS[e.code] : undefined) ??
           'The repositories didn’t save. Check your connection and try again.',
       );
+      // The list (or the connection) changed elsewhere: read it again, so the switches are the installation's.
+      if (e instanceof GithubRefusal && STALE.has(e.code)) void loadGithub(scope);
     } finally {
       setSaving(false);
     }

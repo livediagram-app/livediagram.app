@@ -274,6 +274,9 @@ The Automations screen's way to the plan's GitHub connection, inside the dialog 
   picked, a note says what that shares: "Anyone who can see this plan's cards, share links included, sees these pull
   requests' titles and states." **Change on GitHub** starts a connect again, so GitHub's own page adds or removes the
   installation's repositories.
+- The connection is read each time the view opens (what was read before shows meanwhile), so a change made in
+  another tab or by another Editor shows. A Save Repositories refused because the list changed on GitHub (a
+  repository gone from the installation) says so and reads the list again; a pick no longer listed is dropped.
 - **Disconnect** asks first, in the app (never a browser dialog): **Disconnect GitHub?**, "Cards stop showing pull
   request states, and GitHub rules stop running until you connect again. Your rules and fields stay.",
   **Disconnect** and **Cancel**.
@@ -881,11 +884,12 @@ above, unchanged.
   width, 44 px tall. A saved rule with nothing changed reads **Saved** with a tick, so the button says why it
   does nothing, instead of a faded Save Rule.
 - **The step drawer.** Picking a step (the When trigger, an If condition, an action, a branch, a Wait, every kind)
-  or adding one opens its fields in a second sheet stacked over the rule drawer, not under the steps: its own grab
+  or adding one (a Duplicate too) opens its fields in a second sheet stacked over the rule drawer, not under the steps
+  (Move Up and Move Down leave it closed, the steps in sight): its own grab
   handle, the step's tile and name as its title, a close and a **Done** at its foot, its fields scrolling inside.
   Swipe it down, tap the dim behind it, press Escape, close or Done to go back to the steps; the step stays
   selected. It sits above the on-screen keyboard rather than jumping under it. A save the api refuses opens the
-  step at fault in it.
+  step at fault in it, the refusal's words at the top of its fields (the step's card, which says them, is behind it).
 - Every drawer slides out to the bottom as it closes ([editor-app.md](../007-editor/editor-app.md) "Menus are
   bottom sheets on a phone").
 

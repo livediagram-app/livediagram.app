@@ -435,7 +435,8 @@ Part 3's two column rules (`GithubRules`, `PUT /github/rules`, `github-moves.ts`
 - `hooks/persistence/useCapabilities.ts` answers `githubEnabled` too, from the one cached capabilities read.
 - `components/automations/github/`: `github-client.ts` (the four routes), `use-github-connection.ts` (the plan's
   connection, read when the screen asks, shared by the view and the trigger panel through a module cache keyed by
-  plan), `github-hash.ts` (eager and small: the `#github=` result read and dropped from the address, the rule draft
+  plan; the view's `fresh` reads it again each time it opens, and the chooser reads it again on
+  `github_repository_gone`, `github_invalid` or `github_not_connected`, counting only listed picks), `github-hash.ts` (eager and small: the `#github=` result read and dropped from the address, the rule draft
   kept in `sessionStorage` for the round trip, and the return's telemetry), `github-return.ts` (Connect GitHub and
   the return's words), `github-automations.ts` (the dialog's context: `githubEnabled`, the scope, the way to the
   view, the builder's draft), `GithubView.tsx` (the view: Not Connected, Connected, Disconnect's `ConfirmDialog`),
