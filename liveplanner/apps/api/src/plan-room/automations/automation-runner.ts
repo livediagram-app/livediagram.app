@@ -59,6 +59,7 @@ export const AUTOMATION_WAKE_MS = 60_000;
 export const CHAIN_STOPPED = `Chain stopped after ${AUTOMATION_CHAIN_MAX} rules`;
 export const CHAIN_KEPT = "Started by another rule's change";
 export const QUEUE_FULL = 'Too many changes at once';
+export const BUDGET_SPENT = 'Daily limit reached: rules run again tomorrow';
 const WENT_WRONG = 'Something went wrong';
 
 export interface RunnerDeps extends WriteDeps {
@@ -394,14 +395,24 @@ export async function runAutomationWake(
     const event = row.event;
     for (const rule of event ? rules : []) {
       if (!triggerMatches(rule.trigger, event!, rule.id)) continue;
-      // Card Unblocked, Related Cards Done, Column Over Limit: the cards it concerns, worked out from the plan now.
-      if (isDerivedTrigger(rule.trigger)) {
+      // Card Unblocked, Related Cards Done, Column Over Limit: the cards it concerns, worked out from the plan now. A
+      // held run going on already names its card (the one the trigger found before the Wait).
+      if (isDerivedTrigger(rule.trigger) && event!.kind !== 'resume') {
         for (const target of await derivedFor(deps, state, rule.trigger, event!))
           if (await runRule(deps, state, rule, target)) ran += 1;
         continue;
       }
       if (await runRule(deps, state, rule, event!)) ran += 1;
     }
+    // A held run that went no further (its rule off or gone since it was queued, the day spent) settles here, so it
+    // never shows Waiting past its time; one that ran is settled already, and this changes nothing.
+    if (event?.kind === 'resume' && event.origin)
+      settleWaiting(
+        sql,
+        event.origin,
+        'skipped',
+        state.today >= AUTOMATION_RUNS_PER_DAY ? BUDGET_SPENT : WAIT_RULE_CHANGED,
+      );
     schedule.done(row.id);
   }
   if (schedule.dropped > 0) {
