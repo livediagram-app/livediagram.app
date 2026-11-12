@@ -522,8 +522,20 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     pointing here (glyph, number, title, Archived, status, assignee; pressed, each opens), its count, an empty
     note ("No cards link here as Owner yet."), and **New {Type}** for each type whose field links here: it makes
     a card of that type already linked, in its type's Default State (else the first status its type uses), and
-    opens it, then **Link Existing**, which links a card already made. These sit on the type's first tab, before
-    Comments.
+    opens it, then **Link Existing**, which links a card already made.
+  - <a id="linked-cards-tab"></a>**The Linked Cards tab**: the Linked as sections (a Blocked By field's Blocks
+    list among them) sit on a tab of their own in the item panel, **Linked Cards**, after the type's own tabs and
+    before Activity, never on the type's first tab. It shows on every card whose type some Card field can link to
+    (one section per such field, as above), and on no other card. It is generated, never saved into the type: the
+    type editor neither lists nor counts it, and a type keeps its 6 tabs. Its label carries the number of cards
+    linked here, each card once however many fields link it (a quiet pill beside the name, left out at none).
+    With no cards linked at all, the tab opens on an empty state, **No Linked Cards Yet**, "Cards that link to
+    this one show here." ("... Make one already linked, or link one you already have." for someone who may add
+    cards), then, for someone who may add cards, each section's heading and its New {Type} and Link Existing
+    buttons, without the per-section "No cards link here" note. A type that has a tab of its own named Linked Cards
+    (ignoring case) gets no second one: the sections join that tab, before its first Comments field (or last), and
+    its label takes the count. A card opens on the type's first tab as ever; once picked, Linked Cards stays
+    picked while the card's type still has it, and gives way to the first tab when it no longer does.
   - <a id="link-existing"></a>**Link Existing**: one button per section, after its New {Type} buttons (a link glyph,
     accessible name "Link an existing card as {Field}"). It opens a dialog, **Link Existing Card**, saying "Pick a
     card to link to #{n} {Title} as {Field}.", drawn as Add Thread to Card's is (the same card picker,
@@ -631,7 +643,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     read-only: no New {Type} and no Link Existing, since a block is set on the card that waits. With no cards it is
     not drawn.
   - **In the item panel**: a card whose type offers a Blocked By field and holds a blocker lists them in a **Blocked
-    By** section (the field's name) on the type's first tab, before the Linked as sections: each blocker's glyph,
+    By** section (the field's name) on the type's first tab, before its first Comments field (or last), since it
+    says what stops the card (the Linked as sections are on the Linked Cards tab): each blocker's glyph,
     number, title and state (pressed, it opens), done ones with a tick, with "2 open" (or "All done") beside the
     count. The field's own control (its chips, Add and remove buttons) stays where the type places it, the one
     place a link is set.
