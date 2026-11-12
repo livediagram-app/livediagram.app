@@ -199,12 +199,12 @@ describe('a listed type’s statuses', () => {
 // change_board takes and answers.
 describe('a board’s widgets in list_items', () => {
   const budget = {
-    ...ITEM_TYPES[0]!,
+    ...ITEM_TYPES[0],
     id: 'task',
-    fields: [...ITEM_TYPES[0]!.fields, 'f-budget'],
+    fields: [...ITEM_TYPES[0].fields, 'f-budget'],
     custom: [{ id: 'f-budget', label: 'Budget', kind: 'number' as const }],
   };
-  const note = { ...ITEM_TYPES[0]!, id: 'note', label: 'Note' };
+  const note = { ...ITEM_TYPES[0], id: 'note', label: 'Note' };
   const board = (widgets: string[] | undefined, types: string[] | null = null) => ({
     tabId: 't1',
     tabName: 'Board',

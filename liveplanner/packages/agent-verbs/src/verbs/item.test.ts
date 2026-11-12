@@ -245,14 +245,16 @@ describe('item output and refusals', () => {
 });
 
 describe('item edges', () => {
-  it('shows an item with no status as a dash', async () => {
+  it('shows an item with no status as a dash, and a board an older api sent no widgets for without them', async () => {
+    const { widgets: _, ...bare } = PLAN.boards[0]!;
     const { ctx } = api({
       [path]: () => Response.json({ items: [item(5, 'itemddd555', { title: 'Loose' })], rev: 1 }),
+      [`/projects/${DOC_A}/plan`]: { ...PLAN, boards: [bare] },
     });
     const out = await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: undefined });
     expect(out.items[0]!.status).toBeNull();
     expect(itemLs.text!(out)).toEqual([
-      'Sprint: To Do 0 · Doing 0 · Done ✓ 0 | Widgets: Item Count, Filter',
+      'Sprint: To Do 0 · Doing 0 · Done ✓ 0',
       '#5  task  -  "Loose"',
     ]);
   });

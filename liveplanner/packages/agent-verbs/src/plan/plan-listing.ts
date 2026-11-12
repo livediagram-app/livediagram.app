@@ -469,7 +469,7 @@ export const listedTypes = (types: readonly ItemTypeDef[], statuses: readonly Pl
 // widget, so a board of built-in widgets costs a lookup a widget.
 function listedWidgets(
   widgets: readonly BoardWidgetId[],
-  takes: readonly string[] | null,
+  takes: string[] | null,
   types: readonly ItemTypeDef[],
 ): string[] {
   const fields = widgets.some(isFieldWidgetKey)
