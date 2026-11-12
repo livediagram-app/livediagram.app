@@ -581,7 +581,7 @@ it. A guest sees the sign-in gate the Automations screen already shows.
 
 - The fixed instructions (the system message), then one JSON object of data (the user message): the **request** (up
   to **500 characters**), the plan's **column** names, its **card type** names with each type's **custom field** names
-  and kinds, the built-in field names, up to **50 labels** its cards use (the most used first), and the trigger,
+  and kinds, the built-in field names, up to **30 labels** its cards use (the most used first), and the trigger,
   condition and action kinds a rule may hold with their fields and limits.
 - Never a person's name, email or id, a card's title or text, a comment, a webhook, a link, the plan's name or any
   other plan. A person the request names ("assign Ana") is written as said and matched to the plan's people by name
