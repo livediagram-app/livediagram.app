@@ -276,6 +276,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       starts with the four levels as its options, in order. **A Risk typed by hand as a Choice** (the Work Tracker's,
       made 2026-11-11) keeps working exactly as it is, a Choice coloured by place, until its plan's owner changes its
       kind to Risk; nothing changes it for them, and no data is migrated.
+    - **Older editors**: the kind came with [project format](../016-platform/new-version-prompt.md) `5`. An editor
+      built before it reads a Risk field as a [field from a newer version](#fields-from-a-newer-version): kept as
+      stored, its level shown as plain text (`high`), read-only, and the editor is offered Reload.
     - **Agents** add one by kind (`risk`) in `change_card_types`, see its levels in `list_items`, and set a level by
       name or id, in any case, in `change_items`; any other value is refused with the four levels named.
   - <a id="date-and-time-fields"></a>**Date and Time** is a moment: a day and a time of day, for meetings,

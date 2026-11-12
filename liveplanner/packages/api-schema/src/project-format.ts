@@ -10,7 +10,8 @@
 //      - Rollup, Lookup and Formula calculations (31 Oct 2026).
 //      - Date and Time, Date Range and Phone fields (1 Nov 2026).
 //   4: the Pull Request field (12 Nov 2026; docs/specs/026-plan/github-pull-requests.md).
-export const PROJECT_FORMAT = 4;
+//   5: the Risk field (12 Nov 2026; docs/specs/026-plan/item-types.md "Risk"), which editors on 4 keep read-only.
+export const PROJECT_FORMAT = 5;
 
 // Every api response carries the server's number in this header.
 export const PROJECT_FORMAT_HEADER = 'X-Liveplanner-Format';

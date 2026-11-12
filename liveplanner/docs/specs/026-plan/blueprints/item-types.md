@@ -521,7 +521,7 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
     exhaustive kind maps take it (`CUSTOM_KIND_LABELS` "Risk", `CUSTOM_KIND_ICONS` the `risk` glyph, Add Field's
     `KIND_DESCRIPTIONS` and `KIND_ALIASES`, a sample chip "High" in `RISK_COLOURS.high`; `CustomFieldEditor` draws
     nothing for it yet), but no category places its tile. The OpenAPI schema is regenerated (`gen:openapi`), as it
-    lists the stored `CustomFieldKind`; the agents' kind enum is `OFFERED_FIELD_KINDS`, so it does not change.
+    lists the stored `CustomFieldKind`; the agents' kind enum is `OFFERED_FIELD_KINDS`, so it does not change. `PROJECT_FORMAT` (packages/api-schema `project-format.ts`) is bumped to 5 with `risk` in format 5's kinds (`project-format.test.ts`), so an editor on 4 reads a Risk field as a newer field and is offered Reload.
   - Part 2, board behaviours (packages): `board-sort.ts` (by `riskRank`, starting `desc`), filters and saved
     filters, swimlanes (`board-lanes.ts`, `board-lane-fields.ts`, a lane per level then No Risk), card search,
     dashboards, widgets and charts (`field-widgets.ts`, `plan-view-charts.ts`, plan-art), sheet card tables and
