@@ -15,6 +15,12 @@ import {
 
 const OpenIcon = lucideGlyph(lucideExternalLink, 14);
 
+// The link goes out only when it is an https address on github.com, checked on the parsed URL right here (the address is built from a parsed pull request, so it always parses).
+function githubHref(address: string): string | undefined {
+  const url = new URL(address);
+  return url.protocol === 'https:' && url.hostname === 'github.com' ? url.href : undefined;
+}
+
 export function PullRequestField({
   id,
   value,
@@ -27,6 +33,7 @@ export function PullRequestField({
   onSave: (value: string | undefined) => void;
 }) {
   const ref = parsePullRequestUrl(value);
+  const href = ref ? githubHref(pullRequestUrl(ref)) : undefined;
   return (
     <div className="flex items-center gap-1.5">
       <TextInput
@@ -50,10 +57,10 @@ export function PullRequestField({
           else onSave(url);
         }}
       />
-      {ref ? (
+      {ref && href ? (
         <Tooltip label="Open on GitHub">
           <a
-            href={pullRequestUrl(ref)}
+            href={href}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Open ${pullRequestText(ref)} on GitHub (opens in a new tab)`}

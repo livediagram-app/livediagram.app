@@ -75,6 +75,16 @@ describe('a Pull Request in the card panel', () => {
   });
 });
 
+describe('the Open link', () => {
+  it.each(['javascript:alert(1)', 'https://example.com/acme/web/pull/42', 'data:text/html,x'])(
+    'is not offered for %s',
+    (value) => {
+      panel(value);
+      expect(screen.queryByRole('link')).toBeNull();
+    },
+  );
+});
+
 describe.each(ROLES)('for a $role', ({ disabled }) => {
   it(disabled ? 'reads it and still opens it' : 'edits it', () => {
     const { input } = panel(CANONICAL, disabled);
