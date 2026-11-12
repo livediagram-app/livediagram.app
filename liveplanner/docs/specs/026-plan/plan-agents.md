@@ -21,8 +21,9 @@ never told a change worked when it shows on no board.
   project (a tab-scoped grant sees its tab's boards only):
   - **boards**: each Plan board, in tab then canvas order, with its tab (id and name), its title, its kind
     (`board`, `all-cards`, `archive`), the card types it takes (every type when it names none; none, as the editor shows, when its last type was
-    turned off) and its columns (name, status, WIP
-    limit);
+    turned off), its columns (name, status, WIP
+    limit) and its header [widgets](board-widgets.md) in order (kind ids and field widget keys, the default set when
+    it never arranged them);
   - **statuses**: each status the boards name, once, with its column name, the first board's name winning (the
     editor's rule, [Plan templates](plan-templates.md) "Hand-offs");
   - **types**: the project's card types (its catalogue; none while not chosen), each with its id, name and fields,
@@ -64,7 +65,9 @@ never told a change worked when it shows on no board.
   board takes its card type ([Plan board](plan-board.md#the-board-set-up)).
 - **`list_items`** answers the plan with the items: each board with its columns in order, each column with its
   name, status and the numbers of the live cards in it in board order (`#3 #7`; a board that takes only some card
-  types lists only theirs; a sorted board lists them sorted, and names its `sortBy`), then the items, each with its column's name beside its status (`Trash` for a trashed
+  types lists only theirs; a sorted board lists them sorted, and names its `sortBy`; each board names its header widgets in order as
+  `widgets`, by the names `change_board` takes and answers: a built-in's gallery name, "Item Count", a field widget's
+  "Budget Sum", and a field widget whose field the board no longer takes by its key, which `remove` takes), then the items, each with its column's name beside its status (`Trash` for a trashed
   card, none for a status no board names), then the card types. Live cards no board column shows are listed under
   **Not on a board**. This is the text `board` view [Plan mode](plan-mode.md#agents) named as a later step. A filter
   by card type or column names them exactly as `change_items` does (`in-progress` reads In Progress; `Trash` the
@@ -185,7 +188,7 @@ Every write takes what a person would say, and stores the ids:
   board that never arranged its widgets starts from the default set. Removing a widget the board does not show
   changes nothing. An unknown name, a field no widget reads (Text, Link, ...), a view its field does not offer, or a
   13th field widget is refused naming what the board offers. The answer names the board's widgets in order
-  (`widgets`), a gone field widget by its key. The CLI's `board set` takes `--add-widgets "Budget Sum, due"` and
+  (`widgets`), a gone field widget by its key, as `list_items` names them. The CLI's `board set` takes `--add-widgets "Budget Sum, due"` and
   `--remove-widgets people`, and prints the widgets on a second line. Who may: an Editor of the board's tab, as for
   the rest of `change_board`; a Participant or Viewer is refused by the changeset route.
 - It is one changeset on the board element, based on the element as read, so a person's change since is kept

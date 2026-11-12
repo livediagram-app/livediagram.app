@@ -197,7 +197,9 @@ board, so each one can be a widget.
   Remove, even when no view reads its new kind (a Rating made Text is still on the board, so it has changed, not gone).
 - A board holds each field and view at most once, and at most **12** field widgets.
 - **Agents** add and remove widgets, field widgets included, with `change_board`'s `widgets` (the CLI's `board set
---add-widgets`), by kind id or by the widget's name ("Budget Sum") ([Plan agents](plan-agents.md#changing-a-board)).
+--add-widgets`), by kind id or by the widget's name ("Budget Sum") ([Plan agents](plan-agents.md#changing-a-board)),
+  and read each board's widgets by those names in `list_items` (the CLI's `item ls`)
+  ([Plan agents](plan-agents.md#reading-the-plan)).
 
 ## The widget gallery
 
