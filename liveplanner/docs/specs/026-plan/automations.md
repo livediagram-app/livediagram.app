@@ -472,6 +472,84 @@ card at every cap with 50 card types, 50 labels and five filled text fields, and
   text stays out of its logs), no cache or retries, and a fixed one-day spend limit. On the Workers Free plan, calls
   stop on their own past the 10,000 free Neurons.
 
+## Describe a Rule
+
+An Editor can say what a rule should do in their own words ("When a bug moves to Done, comment Fixed and flag it")
+and get the rule drafted for them, open in the builder, unsaved and off, to check, test and save (Work Item 759). It is
+the same model as the AI actions, asked a different question: never a rule that saves or runs itself.
+
+### Where it starts
+
+- **New Rule**'s menu gains a third row, **Describe a Rule**, with the sparkle, after Start From a Template. The
+  Rules list's empty state gains **Describe a Rule** beside New Rule. With the plan at its 50 rules both are disabled,
+  as New Rule is.
+- It opens the **Describe a Rule** dialog (a sheet on a phone): the line "Say when the rule should run and what it
+  should do. You check it before anything is saved.", a text box ("When a card moves to Done, set Completed On to
+  today and remove the blocked label"), its count ("120 / 500"), three example chips that fill the box (**Stamp Done
+  Cards**, **Welcome Form Responses**, **Nudge Overdue Cards**), the line "Uses AI: counts toward this plan's 100 AI
+  steps a day", then **Cancel** and **Draft Rule** (also Ctrl or ⌘ Enter). Draft Rule is disabled while the box is empty.
+- While it drafts, the button reads **Drafting…** with a spinner and the box is read-only; Cancel stops waiting
+  (the call still counts). It takes a few seconds.
+- A draft opens the **builder**, filled in, unsaved and off, as a template does, with a violet note under its header:
+  the sparkle, **Drafted by AI** and "Check each step, then Test on a Card. Nothing is saved or turned on until you
+  save it." What the rule names that the plan lacks is marked as any rule's is, and an outgoing step is left to **Pick
+  a webhook** (the model never sees the plan's webhooks). Leaving it unsaved asks Discard Changes? as any draft does.
+- What can't be drafted is said in the dialog, under the box, the text kept so it can be changed:
+  - a request that is not a rule for this plan (a question, a story, anything off the subject): "That doesn't read as
+    a rule for this plan. Say when it should run and what it should do, like the examples.";
+  - a rule the model could not make readable, even on a second try: "Couldn't draft a rule from that. Try saying it
+    another way, or start from a template.";
+  - the day's AI steps spent: "This plan has used its 100 AI steps today. Try again tomorrow, or build the rule
+    yourself.", or the day's drafts spent: "This plan has drafted 20 rules today. Try again tomorrow, or build the
+    rule yourself.";
+  - no model, or one that errs or is slow: "AI isn't set up here" or "The AI couldn't answer just now. Try again in a moment."
+    The model's own words are never shown: every message is one of these, fixed in code.
+
+### Who may
+
+Only an **Editor of the whole plan, signed in** (in person or through their API token, not a read-only one), as for
+every Automations route; anyone else is answered 403 `automations_need_editor`. Participants and Viewers never see
+it. A guest sees the sign-in gate the Automations screen already shows.
+
+### What the model is sent
+
+- The fixed instructions (the system message), then one JSON object of data (the user message): the **request** (up
+  to **500 characters**), the plan's **column** names, its **card type** names with each type's **custom field** names
+  and kinds, the built-in field names, up to **50 labels** its cards use (the most used first), and the trigger,
+  condition and action kinds a rule may hold with their fields and limits.
+- Never a person's name, email or id, a card's title or text, a comment, a webhook, a link, the plan's name or any
+  other plan. A person the request names ("assign Ana") is written as said and matched to the plan's people by name
+  after the reply, as an agent's rule is ("Agents and the CLI"); one that matches nobody needs attention.
+
+### The request is data, never instructions
+
+- The instructions say what a rule is and that the request is a description of one, to be treated as data: never
+  followed when it asks for anything else, never allowed to change the task, the format or these rules.
+- The reply is JSON to a schema: either **a rule** or **not a rule** (a request off the subject, or one asking the
+  model to do anything but describe a rule). Nothing else is read.
+- **A rule** is then held to everything a person's rule is: `readRuleBody`'s checks and limits, names put back to the
+  plan's ids, **chain off**, the saver's time zone, the name made unique. Its text (a comment, an email, a mention, a
+  message, a checklist item, a card title, the rule's name) is cut to its limits, control characters removed, and
+  any link the request didn't hold removed, so a draft can never carry a link the person didn't write.
+- A reply that does not read gets **one** second ask, with the refusal's words; a second reply that does not read is
+  "Couldn't draft a rule from that". Each ask is one AI call.
+- Whatever the model answers, the most it can do is put an unsaved, off rule in front of the person who asked, made
+  only of parts the builder offers. The route itself writes nothing but its count.
+
+### Limits and cost
+
+- Each ask counts as **one of the plan's 100 AI steps a day** (above), and a plan drafts at most **20 rules a day**
+  (UTC) whatever their asks, so drafting can never spend the day's AI steps on its own.
+- An ask has **15 seconds** and answers at most **1,500 tokens**. The ask's size is measured (`ai-draft.test.ts`,
+  "measures the ask"): about **9,100 characters** (2,300 tokens) for a typical plan, **19,600** (4,900 tokens) for a
+  plan past every cap, so a draft costs about **29 Neurons** typically and **86** at worst (twice that with its second
+  ask). One plan drafting its 20 a day, every one asked twice at the worst, is about **3,400 Neurons** a day, a third
+  of the account's free 10,000; past the free allowance that is about $0.04 a day.
+- Telemetry: `UI · Opened · AutomationDescribe` (the dialog), `Plan · Created · AutomationDraft` (a draft opened in
+  the builder), and from the api `Plan · Ran · AutomationAiDraft` for each ask and `Plan · Ran · AutomationAiOffTopic`
+  for a request that was not a rule. The api logs `[automations] draft` with the answer (drafted, off topic,
+  unreadable, capped, failed), the asks and how long they took, never the request or the reply.
+
 ## Values
 
 Text a rule writes (a comment, a title, a field value, an email) can hold values, picked from **Insert a Value** in
@@ -600,7 +678,8 @@ allowing. On a phone the header stays compact: the mark and title, the line left
   filled in by its role (its done columns, its In Progress column, a column named like Review, a date field named like
   Completed On, a Bug type, its first to-do column); what it lacks or the template leaves to you (a label, the people in turn, a Slack webhook) is left empty,
   its step marked "Pick a field" (or a label, people, a webhook) until picked. Nothing is saved until **Save Rule**.
-  **New Rule** is a menu: **Blank Rule** (the builder, empty) and **Start From a Template** (the Templates tab). With
+  **New Rule** is a menu: **Blank Rule** (the builder, empty), **Start From a Template** (the Templates tab) and
+  **Describe a Rule** ([Describe a Rule](#describe-a-rule)). With
   the plan at its 50 rules the tiles show but don't open.
 
 - **Audit Trail**: filters **All Rules**, **Any Result** and **Last 7 Days**, the line "Kept for 30 days or the last

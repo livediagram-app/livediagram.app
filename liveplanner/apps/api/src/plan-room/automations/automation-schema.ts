@@ -78,3 +78,14 @@ CREATE TABLE IF NOT EXISTS automation_waiting (
 ) WITHOUT ROWID;
 CREATE INDEX IF NOT EXISTS automation_waiting_at ON automation_waiting (at);
 `;
+
+// The plan schema's step V24: Describe a Rule's asks (docs/specs/026-plan/automations.md "Describe a Rule"), one row
+// each (`retry` 1 for a draft's second ask), so drafts share the day's AI steps with the rules' and a plan drafts at
+// most 20 rules a day. Rows past two days are deleted on each insert: at most a couple of days' asks are kept.
+export const AUTOMATION_AI_DRAFTS_SCHEMA = `
+CREATE TABLE IF NOT EXISTS automation_ai_drafts (
+  at    INTEGER NOT NULL,
+  retry INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS automation_ai_drafts_at ON automation_ai_drafts (at);
+`;

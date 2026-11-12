@@ -12,7 +12,8 @@ import type { AutomationsScope } from './automations-client';
 // Log (one rule's runs), or the Templates tab.
 export type AutomationsTarget =
   | { view: 'rules' }
-  | { view: 'rule'; ruleId: string | null; template?: AutomationTemplateId }
+  // `draft`: the rule Describe a Rule drafted, which the screen holds (never in the address).
+  | { view: 'rule'; ruleId: string | null; template?: AutomationTemplateId; draft?: true }
   | { view: 'runs'; ruleId?: string }
   | { view: 'templates' };
 

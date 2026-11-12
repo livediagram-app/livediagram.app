@@ -28,7 +28,7 @@ import { useToast } from '@/hooks/ui/useToast';
 import { usePlan } from '@/components/plan/PlanContext';
 import { useAutomationOutline } from './automation-outline';
 import { BoltIcon } from './automation-glyphs';
-import { AutomationRefusal, type AutomationsScope } from './automations-client';
+import { AutomationRefusal, draftRule, type AutomationsScope } from './automations-client';
 import { automationsHeroArt } from './AutomationsHeroArt';
 import type { AutomationsTarget } from './AutomationsContext';
 import type { AutomationOutline } from './automation-outline';
@@ -42,6 +42,8 @@ import { RunsMeter } from './RunsMeter';
 import { localZone, useMinuteClock } from './screen-clock';
 import { ScreenTabs } from './ScreenTabs';
 import { TemplatesGallery } from './TemplatesGallery';
+import { DescribeRuleDialog } from './DescribeRuleDialog';
+import { DraftedNote } from './DraftedNote';
 import { readAutomations, useAutomations } from './use-automations';
 
 /** A template's rule over this plan, named so no rule here has its name, and what it left to pick. */
@@ -102,6 +104,13 @@ export function AutomationsDialog({
     setWebhooksOpen(true);
   }, []);
   const rules = useMemo(() => api.data?.rules ?? [], [api.data]);
+  // Describe a Rule: its dialog, and the rule it drafted (numbered, so each draft mounts the builder afresh).
+  const [describing, setDescribing] = useState(false);
+  const [drafted, setDrafted] = useState<{
+    body: AutomationRuleBody;
+    picks: AutomationTemplatePickAt[];
+    n: number;
+  } | null>(null);
 
   // Every way out of a dirty builder asks first.
   const guard = useCallback(
@@ -166,7 +175,18 @@ export function AutomationsDialog({
   };
   const full = rules.length >= AUTOMATION_RULES_MAX;
   const zone = localZone();
+  const describe = () => {
+    track('UI', 'Opened', 'AutomationDescribe');
+    setDescribing(true);
+  };
+  const openDraft = (d: { rule: AutomationRuleBody; picks: AutomationTemplatePickAt[] }) => {
+    track('Plan', 'Created', 'AutomationDraft');
+    setDescribing(false);
+    setDrafted((was) => ({ body: d.rule, picks: d.picks, n: (was?.n ?? 0) + 1 }));
+    onTarget({ view: 'rule', ruleId: null, draft: true });
+  };
   const editing = target.view === 'rule' ? target : null;
+  const fromDraft = editing && !editing.ruleId && editing.draft ? drafted : null;
   const editingRule = editing?.ruleId ? (rules.find((r) => r.id === editing.ruleId) ?? null) : null;
   const fromTemplate =
     editing && !editing.ruleId && editing.template
@@ -174,7 +194,10 @@ export function AutomationsDialog({
       : null;
   // Read once, as the builder mounts (its key changes with the rule).
   const initial =
-    editingRule ?? fromTemplate?.body ?? newRuleBody(nextRuleName(rules.map((r) => r.name)), zone);
+    editingRule ??
+    fromDraft?.body ??
+    fromTemplate?.body ??
+    newRuleBody(nextRuleName(rules.map((r) => r.name)), zone);
 
   const meter = api.data ? (
     <RunsMeter used={api.data.runsToday} max={api.data.runsPerDay} stacked={phone} />
@@ -243,7 +266,8 @@ export function AutomationsDialog({
           <TemplatesGallery onPick={pickTemplate} heading="All Templates" disabled={full} />
         </div>
       );
-    if (rules.length === 0) return <RulesEmpty onNew={newRule} onTemplate={pickTemplate} />;
+    if (rules.length === 0)
+      return <RulesEmpty onNew={newRule} onTemplate={pickTemplate} onDescribe={describe} />;
     return (
       <RulesList
         rules={rules}
@@ -271,10 +295,18 @@ export function AutomationsDialog({
             Automations
           </h2>
           <RuleBuilder
-            key={editing.ruleId ?? (editing.template ? `template:${editing.template}` : 'new')}
+            key={
+              editing.ruleId ??
+              (fromDraft
+                ? `draft:${fromDraft.n}`
+                : editing.template
+                  ? `template:${editing.template}`
+                  : 'new')
+            }
             rule={editingRule}
             initial={initial}
-            picks={fromTemplate?.picks}
+            picks={fromDraft?.picks ?? fromTemplate?.picks}
+            notice={fromDraft ? <DraftedNote /> : undefined}
             timeZone={zone}
             scope={scope}
             signedIn={signedIn}
@@ -303,6 +335,7 @@ export function AutomationsDialog({
                 disabled={!api.data || full}
                 onBlank={newRule}
                 onTemplates={() => onTarget({ view: 'templates' })}
+                onDescribe={describe}
               />
             }
             onClose={close}
@@ -334,6 +367,13 @@ export function AutomationsDialog({
         title={planName}
         shareCode={scope.shareCode}
       />
+      {describing ? (
+        <DescribeRuleDialog
+          draft={(prompt) => draftRule(scope, prompt, zone)}
+          onDrafted={openDraft}
+          onClose={() => setDescribing(false)}
+        />
+      ) : null}
       {leaving ? (
         <ConfirmDialog
           open

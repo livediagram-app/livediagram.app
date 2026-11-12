@@ -964,6 +964,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
   {
+    method: 'POST',
+    path: '/projects/{id}/automations/draft',
+    segment: 'projects',
+    tag: 'Automations',
+    summary:
+      'Describe a Rule: draft a rule from words (up to 500 characters) with AI, answered to open in the builder, unsaved and off, with what is left to pick. Nothing is saved or run. Each ask counts toward the plan’s 100 AI steps a day, and a plan drafts up to 20 rules a day. Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.',
+    auth: 'clerk',
+    tokenUsable: true,
+    requestSchema: 'AutomationDraftRequest',
+    responseSchema: 'AutomationDraftResponse',
+    statuses: [200, 400, 401, 403, 404, 405, 410, 422, 429, 503],
+  },
+  {
     method: 'GET',
     path: '/projects/{id}/automations/runs',
     segment: 'projects',

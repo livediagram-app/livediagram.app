@@ -1849,6 +1849,65 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "AutomationDraftPick": {
+    "additionalProperties": false,
+    "properties": {
+      "path": {
+        "type": "string"
+      },
+      "pick": {
+        "enum": [
+          "column",
+          "type",
+          "field",
+          "label",
+          "people",
+          "webhook"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "path",
+      "pick"
+    ],
+    "type": "object"
+  },
+  "AutomationDraftRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "prompt": {
+        "type": "string"
+      },
+      "timeZone": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "prompt",
+      "timeZone"
+    ],
+    "type": "object"
+  },
+  "AutomationDraftResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "picks": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationDraftPick"
+        },
+        "type": "array"
+      },
+      "rule": {
+        "$ref": "#/components/schemas/AutomationRuleBody"
+      }
+    },
+    "required": [
+      "rule",
+      "picks"
+    ],
+    "type": "object"
+  },
   "AutomationFieldOp": {
     "enum": [
       "is",

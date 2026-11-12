@@ -4,8 +4,8 @@
 // Automations, the name editable in place, the On / Off chip, "Edited by … · when", Test on a Card, Save Rule), the
 // steps on the left and the selected step's panel on the right (under the steps on a phone), and Rule Details under
 // the steps. It holds the rule as changed; the dialog asks Discard Changes? before leaving it dirty (onDirty). A
-// refusal's `path` marks the step at fault and selects it. A rule opened from a template marks the steps it left to
-// pick until they are picked. It holds the plan's webhooks for its outgoing actions, read once when one first opens.
+// refusal's `path` marks the step at fault and selects it. A rule opened from a template (or drafted by Describe a
+// Rule, with its `notice` above the steps) marks the steps it left to pick until they are picked. It holds the plan's webhooks for its outgoing actions, read once when one first opens.
 // A save stamps the rule with this browser's time zone, the saver's (spec "Time triggers").
 
 import { useEffect, useMemo, useState } from 'react';
@@ -77,6 +77,7 @@ export function RuleBuilder({
   scope,
   signedIn = false,
   onOpenWebhooks,
+  notice,
 }: {
   // The saved rule, or null for one not saved yet.
   rule: AutomationListedRule | null;
@@ -102,6 +103,8 @@ export function RuleBuilder({
   signedIn?: boolean;
   // Opens the plan's Webhooks dialog, calling back when it closes.
   onOpenWebhooks?: ((onClosed: () => void) => void) | undefined;
+  // A note above the steps: Drafted by AI, for a rule Describe a Rule drafted.
+  notice?: React.ReactNode;
 }) {
   const toast = useToast();
   const webhooks = usePlanWebhooksState({ scope, signedIn, onOpenDialog: onOpenWebhooks });
@@ -276,6 +279,7 @@ export function RuleBuilder({
 
   const steps = (
     <div className="flex flex-col gap-5">
+      {notice}
       <RuleSteps
         body={body}
         outline={outline}
