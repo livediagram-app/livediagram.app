@@ -58,9 +58,9 @@ const REFUSAL_WORDS: Readonly<Record<string, string>> = {
     'This names a value rules don’t know. Pick one from Insert a Value in the field.',
   automation_not_found: 'This rule was deleted elsewhere.',
   automation_condition_unsupported:
-    'A time trigger has nobody behind it: nothing here can name whoever triggered it.',
+    'This trigger has nobody behind it: nothing here can name whoever triggered it.',
   automation_step_unsupported:
-    'This step can’t go here: a branch or an If / Else holds no outgoing action, branch or If.',
+    'This step can’t go here: a branch or an If / Else holds no outgoing action, AI action, Wait, branch or If.',
 };
 
 const refusalMessage = (r: AutomationRefusal) => REFUSAL_WORDS[r.code] ?? r.message;
