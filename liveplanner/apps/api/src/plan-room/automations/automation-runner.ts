@@ -268,7 +268,8 @@ export async function runRule(
       role: 'automation' as const,
       rule: rule.id,
       chain: (event.chain ?? 0) + 1,
-      ...(event.kind === 'github' ? { via: 'github' as const } : {}),
+      // A GitHub delivery's run, and the rest of one going on after its Wait (the resume keeps what GitHub heard).
+      ...(event.kind === 'github' || (resume && event.github) ? { via: 'github' as const } : {}),
     };
     const ai = (dry: boolean) =>
       runAiSteps(
