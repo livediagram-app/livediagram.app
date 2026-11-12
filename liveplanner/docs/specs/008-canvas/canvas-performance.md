@@ -56,7 +56,7 @@ A gesture's cost scales with what it changes and what is on screen, never with t
 - **A pan or zoom renders the canvas, not the editor.** The view (pan offset and zoom) is held in
   one viewport store per editor, not as the editor's render state. A wheel tick, a pinch frame, a
   pan or a glide renders what shows the view (the canvas and its counter-scaled parts, the zoom
-  controls, the Map's view box) and nothing else: the editor root, the panels and the chrome do not
+  controls) and nothing else: the editor root, the panels and the chrome do not
   render for it. Handlers read the view from the store when they run. A touch pinch, whose events can
   outrun the display, changes the view at most once a frame, and measures the canvas once, as it
   starts.
@@ -75,16 +75,6 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   animations"): an animation over the whole board makes the browser lay out the page's
   compositing again as it starts and as it ends, and a per-element entry re-renders every element
   view once more. Chrome may still fade in; it is small.
-- **The Map redraws its content when a gesture ends**, not on every frame of it. During a drag,
-  pan or stroke it keeps its last drawing and moves only its viewport rectangle; a remote edit
-  redraws it at most once every 250 ms. Opening a board draws the board first; the Map's picture
-  follows in a later render.
-- **The Map is one image.** It draws the board as a picture, not as a second copy of the board's
-  elements in the page, which every style pass, layout, hit test and collection would otherwise
-  walk. The lit window and the dimmed surround sit on a layer of their own above the picture, so a
-  pan moves the window without repainting the picture: Safari draws an SVG picture again in full
-  each time anything over it repaints. The Map's body is the one every editor shares
-  (`MinimapMap`, `@liveworkspace/workbench`).
 - **Questions about neighbours ask a spatial index.** Anything that asks, for each element, which
   other elements are near it (arrows passing behind boxes) queries one shared index of element
   bounds, updated for the elements that changed, so its per-frame cost follows the neighbourhood,

@@ -69,7 +69,7 @@ livedesign/apps/live/hooks/canvas/useLaserConfig.ts	livediagram/apps/editor/hook
 livedesign/apps/live/hooks/editor/useModeDefaultTool.ts	livedocuments/apps/editor/hooks/editor/useModeDefaultTool.ts
 livedesign/apps/live/hooks/persistence/useCapabilities.ts	livedocuments/apps/editor/hooks/persistence/useCapabilities.ts	livehuddle/apps/editor/hooks/persistence/useCapabilities.ts	liveplanner/apps/editor/hooks/persistence/useCapabilities.ts
 livedesign/apps/live/hooks/persistence/useSignedGuestId.ts	livedocuments/apps/editor/hooks/persistence/useSignedGuestId.ts	liveplanner/apps/editor/hooks/persistence/useSignedGuestId.ts
-livedesign/apps/live/hooks/ui/useCornerDocking.ts	livediagram/apps/editor/hooks/ui/useCornerDocking.ts	livedocuments/apps/editor/hooks/ui/useCornerDocking.ts	liveplanner/apps/editor/hooks/ui/useCornerDocking.ts
+livedesign/apps/live/hooks/ui/useCornerDocking.ts	livediagram/apps/editor/hooks/ui/useCornerDocking.ts	livedocuments/apps/editor/hooks/ui/useCornerDocking.ts
 livedesign/apps/live/hooks/ui/useEditorAccent.ts	livediagram/apps/editor/hooks/ui/useEditorAccent.ts	livedocuments/apps/editor/hooks/ui/useEditorAccent.ts	livehuddle/apps/editor/hooks/ui/useEditorAccent.ts	liveplanner/apps/editor/hooks/ui/useEditorAccent.ts
 livedesign/apps/live/hooks/ui/useStripCrowdsCorners.ts	livehuddle/apps/editor/hooks/ui/useStripCrowdsCorners.ts
 livedesign/apps/live/lib/contents-placement.ts	livedocuments/apps/editor/lib/contents-placement.ts

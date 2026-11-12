@@ -17,8 +17,7 @@ a drag's cost to what it moves, whatever the size of the board
   not the canvas, and not the layer that holds the elements, only each previewed element itself,
   and not even that for what only moves ("Moves ride an offset").
 - **Everything derived from the board stays as it was** while the preview lasts: the element index,
-  the element grid, the arrow labels of arrows the drag does not touch, the Map (which already holds
-  its drawing through a gesture, [Minimap](minimap.md)), the selection chrome (already hidden while
+  the element grid, the arrow labels of arrows the drag does not touch, the selection chrome (already hidden while
   the selection moves). Alignment guides and snapping read the project, which is the board
   without the dragged elements' movement, as they do today.
 - **On release the preview becomes the project in one change**: one undo step, one autosave,

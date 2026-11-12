@@ -39,7 +39,7 @@ export function useLayerThumbnails(
 ): { thumbMarkup: Map<string, string>; thumbViewBox: string | null } {
   // Re-render once the async icon catalogues land so icon glyphs pop in.
   const iconsLoaded = useIconCatalogs();
-  // The canvas paper (docs/specs/008-canvas/minimap.md "Fidelity"), so a
+  // The canvas paper (docs/specs/008-canvas/canvas-and-palette.md), so a
   // preview on a dark canvas shows the dark cards the canvas shows.
   const surface = useCanvasSurface();
   // The theme's chart colours, so a chart's row preview matches the canvas.

@@ -65,7 +65,7 @@ import { track } from '@/lib/telemetry';
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
 type ChromeExtras = {
-  // The canvas <main>'s measured size (the Map's current-view window reads it; see Minimap.tsx).
+  // The canvas <main>'s measured size.
   mainSize: { width: number; height: number };
   // True when every element has scrolled out of view: show the nudge above
   // the Fit button (useOffscreenContent in Canvas).
@@ -322,14 +322,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         containers (with a free layer + snap guides) by `dockedLayer`; in zen they render inline.
         Each element carries its own visibility gate, so the welcome-flow / read-only / zen
         suppression is unchanged. */}
-      {dockingActive ? (
-        dockedLayer
-      ) : (
-        <>
-          {panelEls.collaborate}
-          {panelEls.minimap}
-        </>
-      )}
+      {dockingActive ? dockedLayer : <>{panelEls.collaborate}</>}
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
         strip, the Session strip (Timer, Vote), the mode's own strip (Contents, Plan), the

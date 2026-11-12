@@ -639,7 +639,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   capture handler bails for a target inside `[data-canvas-cover]`, and `useEditorKeyboardShortcuts`, while `canvasCovered()`,
   sorts each key by `coveredKeyRole` (run: undo/redo/search/zen/mode/Escape; swallow: Cmd+D/A/Shift+L, z-order, zoom,
   prevented; ignore: the rest) instead of returning early (`getMaximisedPlanId() !== null || fillTabId !== null`, read at the key press). `useCanvasSelectionView` passes `canvasCovered` from `useCanvasCovered()` (`useMaximisedPlanId() !== null ||
-fillTabId`; `ViewMinimap` returns null while it is true, hiding the Map; `usePaletteCatalogue`, while `useBoardFillingTab()`, swaps its categories for
+fillTabId`; `usePaletteCatalogue`, while `useBoardFillingTab()`, swaps its categories for
   `coveredPaletteCategories()` (Plan's `plan-cards` alone), and `ToolbarPalette` shows the first offered
   category while the chosen one is not offered, keeping the choice; while `useSheetCovering()` `ToolbarPalette` hides its root
   (`hidden`), or on a phone (a `leading` menu) renders no card beside the menu; `usePaletteCatalogue`'s tile preamble
@@ -937,7 +937,6 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Custom assignee: offered when editable, made, reused, roles    | `apps/editor/components/plan/PersonPicker.test.tsx`, `packages/items/src/plan-people.test.ts`                                                                  |
 | Cards push skips custom assignees                              | `apps/api/src/plan-room/plan-outbox.test.ts`                                                                                                                   |
 | Edge auto-scroll math and drag wiring                          | `apps/editor/hooks/plan/edge-auto-scroll.test.ts`                                                                                                              |
-| Map hidden while covered                                       | `apps/editor/components/canvas/view-readers.minimap.test.tsx`                                                                                                  |
 | Cover store: re-renders only on a change                       | `apps/editor/hooks/plan/plan-cover-store.test.tsx`                                                                                                             |
 | Palette offers only Cards, then restores                       | `apps/editor/hooks/plan/plan-cover-store.test.tsx`                                                                                                             |
 | Palette hidden for a filling Sheet; restore pick               | `apps/editor/hooks/plan/plan-cover-store.test.tsx`                                                                                                             |

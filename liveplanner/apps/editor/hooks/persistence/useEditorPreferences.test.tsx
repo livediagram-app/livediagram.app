@@ -45,11 +45,11 @@ describe('useEditorPreferences', () => {
     act(() => {
       window.localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ reduceMotion: true, showMinimap: false }),
+        JSON.stringify({ reduceMotion: true, middleMousePan: false }),
       );
       window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY }));
     });
-    expect(result.current.userPreferences).toEqual({ reduceMotion: true, showMinimap: false });
+    expect(result.current.userPreferences).toEqual({ reduceMotion: true, middleMousePan: false });
   });
 
   it('merges the server copy once the owner resolves, and settles', async () => {

@@ -44,7 +44,7 @@ the same Webhooks dialog as an item's ⋯ menu in the Explorer, for this plan al
 
 Layers and Collaborate open as **popovers over their bottom-row
 buttons** ([Editor app](editor-app.md)): they are not corner panels. Every
-other panel (AI, the minimap and the tool panels) docks in its corner
+other panel (AI and the tool panels) docks in its corner
 ([Panel docking](panel-docking.md)). Layers and Collaborate render outside
 the corner layer, since a popover positions against the canvas and a corner stack would move it.
 A popover opening up from a bottom-row button (Layers, the Vote) grows no higher than 8 px under a
@@ -87,7 +87,6 @@ their bottom-row buttons. What changes to fit the width:
 - **Held sideways there is no menu button and no Explorer**, for every role, and nothing brings them back while
   the phone is sideways: the screen is too short for the Explorer to be any use. Turning the phone upright brings
   the button back ([A phone held sideways](editor-app.md#a-phone-held-sideways)).
-- The minimap stays off ([Minimap](../008-canvas/minimap.md)).
 
 ## Layout details
 

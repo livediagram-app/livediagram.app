@@ -42,7 +42,7 @@ function fullAccount(): UserPreferences {
     ...({
       // Written by the retired Power user mode (docs/specs/007-editor/power-user-mode.md), until a read drops it.
       powerUserBaseline: {
-        showMinimap: { before: { showMinimap: true }, applied: { showMinimap: false } },
+        middleMousePan: { before: { middleMousePan: true }, applied: { middleMousePan: false } },
         notificationsEnabled: { before: {}, applied: { notificationsEnabled: false } },
       },
     } as UserPreferences),
@@ -154,13 +154,13 @@ describe('savePreferences', () => {
     setServerPreferences('owner-1', {});
     savePreferences('owner-1', { uiScale: 1 });
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS);
-    savePreferences('owner-1', { uiScale: 1, showMinimap: false });
-    savePreferences('owner-1', { uiScale: 1, showMinimap: false, reduceMotion: true });
+    savePreferences('owner-1', { uiScale: 1, middleMousePan: false });
+    savePreferences('owner-1', { uiScale: 1, middleMousePan: false, reduceMotion: true });
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS);
     expect(mockedPut).toHaveBeenCalledTimes(1);
     finish('saved');
     await vi.waitFor(() => expect(mockedPut).toHaveBeenCalledTimes(2));
-    expect(mockedPut.mock.calls[1]![1]).toEqual({ showMinimap: false, reduceMotion: true });
+    expect(mockedPut.mock.calls[1]![1]).toEqual({ middleMousePan: false, reduceMotion: true });
   });
 
   it('sends nothing when nothing differs', async () => {
@@ -213,58 +213,61 @@ describe('preferencesPatch', () => {
 
 describe('fetchUserPreferences', () => {
   it('reads once a page load, the Explorer and the editor sharing it', async () => {
-    mockedGet.mockResolvedValue({ showMinimap: true });
+    mockedGet.mockResolvedValue({ middleMousePan: true });
     const [a, b] = await Promise.all([
       fetchUserPreferences('owner-1'),
       fetchUserPreferences('owner-1'),
     ]);
     expect(mockedGet).toHaveBeenCalledTimes(1);
-    expect(a).toEqual({ showMinimap: true });
-    expect(b).toEqual({ showMinimap: true });
+    expect(a).toEqual({ middleMousePan: true });
+    expect(b).toEqual({ middleMousePan: true });
   });
 
   it('keeps preferences in the browser where the server keeps none', async () => {
     mockedGet.mockResolvedValue('local');
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ showMinimap: false }));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ middleMousePan: false }));
     expect(await fetchUserPreferences('owner-1')).toBeNull();
     expect(preferencesKeptLocally()).toBe(true);
-    writeUserPreferences({ showMinimap: true }, 'owner-1');
+    writeUserPreferences({ middleMousePan: true }, 'owner-1');
     expect(mockedPut).not.toHaveBeenCalled();
   });
 });
 
 describe('fetchUserPreferences after a save that did not land', () => {
   it('keeps the device copy over the server and sends what differs again', async () => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ showMinimap: false, uiScale: 1.2 }));
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ middleMousePan: false, uiScale: 1.2 }),
+    );
     window.localStorage.setItem(PREFERENCES_UNSYNCED_KEY, 'owner-1');
-    mockedGet.mockResolvedValue({ showMinimap: true, uiScale: 1, planTourSeen: true });
+    mockedGet.mockResolvedValue({ middleMousePan: true, uiScale: 1, planTourSeen: true });
     mockedPut.mockResolvedValue('saved');
     const merged = await fetchUserPreferences('owner-1');
-    expect(merged).toEqual({ showMinimap: false, uiScale: 1.2, planTourSeen: true });
+    expect(merged).toEqual({ middleMousePan: false, uiScale: 1.2, planTourSeen: true });
     await vi.waitFor(() =>
-      expect(mockedPut).toHaveBeenCalledWith('owner-1', { showMinimap: false, uiScale: 1.2 }),
+      expect(mockedPut).toHaveBeenCalledWith('owner-1', { middleMousePan: false, uiScale: 1.2 }),
     );
   });
 
   it("lets the server win when the mark is another owner's", async () => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ showMinimap: false }));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ middleMousePan: false }));
     window.localStorage.setItem(PREFERENCES_UNSYNCED_KEY, 'someone-else');
-    mockedGet.mockResolvedValue({ showMinimap: true });
-    expect(await fetchUserPreferences('owner-1')).toEqual({ showMinimap: true });
+    mockedGet.mockResolvedValue({ middleMousePan: true });
+    expect(await fetchUserPreferences('owner-1')).toEqual({ middleMousePan: true });
     expect(mockedPut).not.toHaveBeenCalled();
   });
 });
 
 describe('rebaseUserPreferences', () => {
   it("applies only this render's change, keeping another tab's write since", () => {
-    const snapshot: UserPreferences = { showMinimap: true, uiScale: 1 };
+    const snapshot: UserPreferences = { middleMousePan: true, uiScale: 1 };
     // Another tab turned reduce motion on after this render.
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ showMinimap: true, uiScale: 1, reduceMotion: true }),
+      JSON.stringify({ middleMousePan: true, uiScale: 1, reduceMotion: true }),
     );
-    const next = rebaseUserPreferences(snapshot, { ...snapshot, showMinimap: false });
-    expect(next).toEqual({ showMinimap: false, uiScale: 1, reduceMotion: true });
+    const next = rebaseUserPreferences(snapshot, { ...snapshot, middleMousePan: false });
+    expect(next).toEqual({ middleMousePan: false, uiScale: 1, reduceMotion: true });
   });
 
   it('removes a key the change removed', () => {
