@@ -19,7 +19,7 @@ describe('assertD1LikePatterns', () => {
   });
 
   it('finds the pattern among positional and numbered parameters', () => {
-    const q = 'SELECT 1 WHERE a = ? AND b LIKE ? ESCAPE \'\\\' AND c = ?';
+    const q = "SELECT 1 WHERE a = ? AND b LIKE ? ESCAPE '\\' AND c = ?";
     expect(() => assertD1LikePatterns(q, [of(60), of(10), of(60)])).not.toThrow();
     expect(() => assertD1LikePatterns(q, ['a', of(51), 'c'])).toThrow(TOO_COMPLEX);
     const numbered = 'SELECT 1 WHERE a = ?1 AND (b LIKE ?3 OR c LIKE ?2)';

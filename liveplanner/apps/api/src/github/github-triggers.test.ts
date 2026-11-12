@@ -100,7 +100,10 @@ describe('a rule on a GitHub trigger', () => {
     await moveOn({ kind: 'pull_request_opened' }, 'review');
     const res = await w.send('POST', '/api/projects/A/items', {
       type: 'task',
-      fields: { title: 'Card', 'f-pr': 'https://github.com/livediagram-app/livediagram.app/pull/1668' },
+      fields: {
+        title: 'Card',
+        'f-pr': 'https://github.com/livediagram-app/livediagram.app/pull/1668',
+      },
       place: { status: 'todo' },
     });
     const c = (await res.json<{ item: Item }>()).item;

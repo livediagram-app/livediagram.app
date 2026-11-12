@@ -285,7 +285,8 @@ describe('public reads', () => {
   });
 
   it('finds a long term, past the 50 bytes production takes in a LIKE pattern', async () => {
-    const long = '東京大阪名古屋札幌福岡神戸京都横浜川崎広島仙台千葉北九州堺浜松新潟熊本相模原岡山静岡';
+    const long =
+      '東京大阪名古屋札幌福岡神戸京都横浜川崎広島仙台千葉北九州堺浜松新潟熊本相模原岡山静岡';
     await publish('d1', { title: `Map ${long}` });
     await publish('d2', { title: 'Other board' });
     expect(await list({ q: long })).toEqual([`Map ${long}`]);
