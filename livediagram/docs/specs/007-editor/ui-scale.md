@@ -92,7 +92,7 @@ value as a percentage ("110%"):
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
 | UI Scale             | "Makes the panels, the toolbar and the buttons in the bottom-right corner bigger or smaller. The canvas, dialogs and menus stay as they are. Sets all three; adjust one on its own below." | `UiScale`              |
 | Panel Scale          | "Every panel, docked or opened from a button, and the Quick Style panel."                                                                                                                  | `UiScalePanels`        |
-| Toolbar Scale        | "The toolbar strip and its menu button."                                                                                                                                                   | `UiScaleToolbar`       |
+| Toolbar Scale        | "The toolbar strip and its menu button, and Draw's dock and its flyouts."                                                                                                                  | `UiScaleToolbar`       |
 | Corner Buttons Scale | "The buttons in the bottom-right corner: Undo and Redo, Layers, theme and zoom."                                                                                                           | `UiScaleCornerButtons` |
 
 - A part's slider shows its own value, or the master's while it has none.
