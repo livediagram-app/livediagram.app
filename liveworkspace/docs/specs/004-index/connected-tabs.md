@@ -34,7 +34,7 @@ exports, copies, offline copies, Community copies, agents' reads and every tab l
 From an editor's start screen, **Connect File** (the start screen's sidebar's foot entry, pinned
 to its very bottom under a hairline, apart from the categories; an app may draw its own entries below it in the same
 foot group, in its row's look (liveplanner's Import), and Connect File itself stays as every app draws it; on a phone the last chip of the row; on one line, led by every
-app's logo fanned where a row's icon goes, the host's too) lists the person's most recent items across every app
+app's logo stacked, overlapping, where a row's icon goes, the host's too) lists the person's most recent items across every app
 (the index's Recent, the host itself left out), each with its app's logo. Above the list:
 
 - **Role**: the level the pass grants, Editor first and chosen, then Participant and Viewer. The role is picked
