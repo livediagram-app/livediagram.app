@@ -411,7 +411,9 @@ card at every cap with 50 card types and 50 labels, and a typical card), tokens 
 - **The account-wide ceiling** is the owner's: paid usage is their decision. An optional `AI_GATEWAY` variable sends
   every call through that [AI Gateway](https://developers.cloudflare.com/ai-gateway/features/spend-limits/), whose
   **spend limit** (say $1 a day for the whole gateway) blocks calls past it with a 429, which a step reads as "The AI
-  couldn't answer: try again later". On the Workers Free plan, calls stop on their own past the 10,000 free Neurons.
+  couldn't answer: try again later". The hosted app sets it to `liveplanner`, a gateway with log collection off (card
+  text stays out of its logs), no cache or retries, and a fixed one-day spend limit. On the Workers Free plan, calls
+  stop on their own past the 10,000 free Neurons.
 
 ## Values
 
