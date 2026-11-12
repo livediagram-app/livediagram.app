@@ -12,6 +12,7 @@ import {
   type IndexAppClient,
   type TabConnection,
 } from '@liveworkspace/index-client';
+import { CONNECTION_LEFT_KIND, type OutboxTable } from './outbox';
 
 // The schema step each app appends to its item's SQLite (a plain ALTER, run once by the schema's version row): every
 // tab already there reads as not connected.
@@ -124,23 +125,28 @@ export async function confirmTabConnection(
 }
 
 // The index hears that a connected tab has left its host (`removeConnection`), and deletes the connection and its
-// pass. Nothing for a tab with no connection. Best effort and logged: the index answers 204 whether or not it
-// matched, so a copy's tab or a duplicate takes nothing away.
-export async function tellConnectionLeft(
-  client: IndexAppClient | null,
-  hostId: string,
+// pass: through the item's outbox, so an index out of reach is told later with the outbox's retries (outbox.ts
+// `connection_left`). The statement goes in the tab delete's own batch, after the unlink and before the tab's row is
+// deleted, and writes a key only when the tab held a connection and is no longer in the item (`linkTable`, e.g.
+// `document_tabs`). The index answers 204 whether or not it matched, so a copy's tab or a duplicate takes nothing
+// away.
+export function connectionLeftStatement(
+  db: ConnectionDb,
+  outbox: OutboxTable,
+  linkTable: string,
+  itemId: string,
   tabId: string,
-  connection: TabConnection | null,
-): Promise<void> {
-  if (!client || !connection) return;
-  try {
-    await client.removeConnection(hostId, connection.id, tabId);
-  } catch (err) {
-    console.warn('[connections] removal not told', {
-      hostId,
-      tabId,
-      connectionId: connection.id,
-      error: String(err),
-    });
-  }
+): D1PreparedStatement {
+  const { table, itemColumn } = outbox;
+  if (![table, itemColumn, linkTable].every((name) => /^\w+$/.test(name)))
+    throw new Error('connected-tabs: bad table name');
+  return db
+    .prepare(
+      `INSERT OR IGNORE INTO ${table} (${itemColumn}, kind, key)
+       SELECT ?1, '${CONNECTION_LEFT_KIND}', json_object('connectionId', json_extract(connection, '$.id'), 'tabId', id)
+         FROM tabs
+        WHERE id = ?2 AND json_valid(connection) AND json_type(connection, '$.id') = 'text'
+          AND NOT EXISTS (SELECT 1 FROM ${linkTable} WHERE tab_id = ?2)`,
+    )
+    .bind(itemId, tabId);
 }

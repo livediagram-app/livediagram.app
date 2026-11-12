@@ -12,7 +12,9 @@
 // (one-explorer-contracts.md "When a push fails").
 //
 // Kinds: `summary` (key ''), `tab` (key: the tab id), `edit` (key: `<person>@<time>`, one per person), `card_moved`
-// (key: a plan card's move as JSON, for webhooks: liveworkspace/docs/specs/004-index/webhooks.md "What it sends").
+// (key: a plan card's move as JSON, for webhooks: liveworkspace/docs/specs/004-index/webhooks.md "What it sends"),
+// `connection_left` (key: a connected tab's connection id and tab id as JSON, connected-tabs.ts: the index removes
+// that connection).
 
 import {
   APP_EVENTS_MAX,
@@ -68,8 +70,16 @@ export const FINAL_STATUSES: ReadonlySet<number> = new Set([400, 403, 413, 422])
 export const retryDelayMs = (attempts: number): number =>
   Math.min(FLUSH_RETRY_MS * 2 ** Math.max(0, attempts - 1), RETRY_MAX_MS);
 
-// What a failed push means for its keys: `gone` done, `final` parked, `retry` tried again after a wait. The
-// index's client keeps no Retry-After, so a 429 waits its turn like any other failure.
+// How long a key waits after its `attempts`-th failure with `err`: retryDelayMs, or longer when the index's answer
+// asked for longer (its Retry-After, IndexError `retryAfterMs`), but never past RETRY_MAX_MS, so a huge or
+// unreadable header cannot stall the key (an unreadable one is null in the client and ignored here).
+export function failureDelayMs(attempts: number, err: unknown): number {
+  const asked = err instanceof IndexError ? (err.retryAfterMs ?? 0) : 0;
+  return Math.max(retryDelayMs(attempts), Math.min(asked, RETRY_MAX_MS));
+}
+
+// What a failed push means for its keys: `gone` done, `final` parked, `retry` tried again after a wait
+// (failureDelayMs, which honours a 429's Retry-After).
 export type PushFailureKind = 'gone' | 'final' | 'retry';
 export function pushFailureOf(err: unknown): PushFailureKind {
   if (!(err instanceof IndexError)) return 'retry';
@@ -194,6 +204,31 @@ export function cardMoveOf(key: string): CardMove | null {
   }
 }
 
+// ---------- A connected tab that left -----------------------------------------------------------------------
+
+// connected-tabs.ts `connectionLeftStatement` writes the key with the tab's delete; the drain sends it as
+// `removeConnection`. Both ids are in the key: a connection id is random per connection, and the index matches the
+// id, the host and the tab together, so a key tried again later never removes a connection made since in the same
+// tab (Connect Again), and two connected tabs leaving are two keys.
+export const CONNECTION_LEFT_KIND = 'connection_left';
+export type ConnectionLeft = { connectionId: string; tabId: string };
+
+// The key, as SQLite's json_object writes it (connectionLeftStatement), so the two never differ.
+export const connectionLeftKeyOf = (left: ConnectionLeft): string =>
+  JSON.stringify({ connectionId: left.connectionId, tabId: left.tabId });
+
+// The removal a key holds, or null for one that doesn't parse (the key is done).
+export function connectionLeftOf(key: string): ConnectionLeft | null {
+  try {
+    const m = JSON.parse(key) as Partial<ConnectionLeft> | null;
+    if (!m || typeof m.connectionId !== 'string' || typeof m.tabId !== 'string') return null;
+    if (m.connectionId === '' || m.tabId === '') return null;
+    return { connectionId: m.connectionId, tabId: m.tabId };
+  } catch {
+    return null;
+  }
+}
+
 // ---------- The collab push ----------------------------------------------------------------------------------
 
 // A tab's threads and actions capped as the index caps one push: a tab past it keeps its newest.
@@ -307,6 +342,13 @@ export async function drainIndexOutbox(
       const move = cardMoveOf(row.key);
       if (move) moves.push({ id: row.id, move });
       else done.push(row.id);
+    } else if (row.kind === CONNECTION_LEFT_KIND) {
+      // A connected tab has left the item: the index removes that connection and its pass. A 404 is done, as for any
+      // push; one that fails waits and is tried again.
+      const left = connectionLeftOf(row.key);
+      if (left)
+        push([row.id], () => client!.removeConnection(itemId, left.connectionId, left.tabId));
+      else done.push(row.id);
     } else {
       // A kind no longer pushed.
       done.push(row.id);
@@ -365,7 +407,7 @@ export const dueOutboxRows = (rows: readonly OutboxRow[], now: number): OutboxRo
   rows.filter((r) => (r.attempts ?? 0) < OUTBOX_MAX_ATTEMPTS && (r.retry_at ?? 0) <= now);
 
 // After a drain at `now`, in one batch: deletes the keys done and counts each failed key's attempt. A key then
-// waits retryDelayMs; one refused for good (FINAL_STATUSES), or failed OUTBOX_MAX_ATTEMPTS times, is parked, with a
+// waits failureDelayMs (retryDelayMs, or a longer Retry-After up to RETRY_MAX_MS); one refused for good (FINAL_STATUSES), or failed OUTBOX_MAX_ATTEMPTS times, is parked, with a
 // log line. `rows` are the rows the drain sent, for their attempts so far.
 export async function settleOutbox(
   db: OutboxDb,
@@ -393,7 +435,7 @@ export async function settleOutbox(
     for (const id of failure.ids) {
       const attempts = kind === 'final' ? OUTBOX_MAX_ATTEMPTS : (byId.get(id)?.attempts ?? 0) + 1;
       const park = attempts >= OUTBOX_MAX_ATTEMPTS;
-      const retryAt = park ? 0 : now + retryDelayMs(attempts);
+      const retryAt = park ? 0 : now + failureDelayMs(attempts, failure.error);
       const slot = `${attempts}:${retryAt}`;
       const update = updates.get(slot) ?? { attempts, retryAt, ids: [] };
       update.ids.push(id);
