@@ -43,7 +43,7 @@ export function useEditorEditing(
     selectionSlice;
   const { commitTabs, hydrated, loadedTabIds, markCheckpoint, projectId, tabLoadErrors, tickTabs } =
     projectSlice;
-  const { isReadOnly, openComments, participant, toast } = collaborationSlice;
+  const { isReadOnly, showComments, participant, toast } = collaborationSlice;
   const { tabsRef } = persistenceSlice;
   const { activeTab, cardThreads } = planDataSlice;
   const { arrivingCardRef, collabDeepLink, scrollIntoView } = viewportSlice;
@@ -117,7 +117,8 @@ export function useEditorEditing(
     },
     scrollIntoView,
     openActionPopover,
-    openComments,
+    // Never a toggle: a link opens its thread and leaves it open.
+    openComments: showComments,
     focusCell: focusSheetCell,
     // Read when the link lands, after this render has made the Plan slice below.
     openItem: (itemId, threadId) => {

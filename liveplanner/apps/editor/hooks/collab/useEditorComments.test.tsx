@@ -138,6 +138,19 @@ describe('useEditorComments on a Sheet cell', () => {
     expect(trackMock.mock.calls.filter((c) => c[1] === 'Opened')).toHaveLength(2);
   });
 
+  it('shows a thread without ever closing it, however often a deep link asks', () => {
+    const { result } = setup();
+    act(() => result.current.showComments('sheet', 'r1:c1'));
+    act(() => result.current.showComments('sheet', 'r1:c1'));
+    expect([result.current.commentThreadOpenId, result.current.commentThreadOpenCell]).toEqual([
+      'sheet',
+      'r1:c1',
+    ]);
+    act(() => result.current.showComments('sheet'));
+    expect(result.current.commentThreadOpenCell).toBeNull();
+    expect(trackMock.mock.calls.filter((c) => c[1] === 'Opened')).toHaveLength(2);
+  });
+
   it('names the cell on an add and a resolve, and on the revert of a refused resolve', async () => {
     const { result } = setup();
     act(() => {

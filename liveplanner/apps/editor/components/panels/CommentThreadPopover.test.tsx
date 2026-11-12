@@ -62,6 +62,39 @@ describe('CommentThreadPopover', () => {
     });
     expect(document.activeElement).toBe(screen.getByPlaceholderText('Add a comment…'));
   });
+
+  it('places itself when a Sheet cell’s anchor is drawn after it opened, with no scroll or resize', async () => {
+    // An Inbox link opens a cell's thread as the tab loads; the cell's anchor appears once the Sheet has drawn and
+    // revealed it (docs/specs/029-sheets/sheet.md "Cell comments").
+    const selector = '[data-cell-comment-anchor="sh:r1:c1"]';
+    render(
+      <CommentThreadPopover
+        elementId="sh"
+        anchorSelector={selector}
+        title="Cell Comments"
+        thread={undefined}
+        onAddComment={noop}
+        onDeleteComment={noop}
+        onResolve={noop}
+        onUnresolve={noop}
+        onClose={noop}
+        selfId="me"
+      />,
+    );
+    expect(screen.queryByRole('dialog')).toBeNull();
+    const anchor = document.createElement('div');
+    anchor.setAttribute('data-cell-comment-anchor', 'sh:r1:c1');
+    await act(async () => {
+      document.body.appendChild(anchor);
+      await Promise.resolve();
+    });
+    expect(screen.getByRole('dialog', { name: 'Cell Comments' })).toBeTruthy();
+    // A later re-render or a scroll keeps it open and placed.
+    act(() => {
+      window.dispatchEvent(new Event('scroll'));
+    });
+    expect(screen.getByRole('dialog', { name: 'Cell Comments' })).toBeTruthy();
+  });
 });
 
 // docs/specs/013-workspace/share-roles.md: a Viewer only looks.

@@ -8,6 +8,7 @@ import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { CommentComposer, CommentResolveToggle, CommentThreadList } from './comment-thread-parts';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
+import { useAwaitAnchor } from './useAwaitAnchor';
 
 type CommentThreadPopoverProps = {
   // Element this thread belongs to. The popover anchors itself by querying
@@ -109,6 +110,8 @@ export function CommentThreadPopover({
     setPos({ left, top });
   }, [elementId, anchorSelector]);
   useReposition(reposition);
+  // An anchor drawn after the popover opened (a deep-linked Sheet cell's): placed when it appears.
+  useAwaitAnchor(anchorSelector ?? elementSelector(elementId), pos === null, reposition);
 
   // Don't close on a click that lands on a comment badge: those are
   // the popover's own toggle, and parent state handles flip-flop.

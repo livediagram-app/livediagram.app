@@ -123,6 +123,19 @@ describe('useCollabDeepLink', () => {
     expect(calls.openComments).toHaveBeenCalledWith('s1', 'rowb4b4:colb4b4');
   });
 
+  it('opens a cell’s thread once per link, however often the tab re-renders as the Sheet draws', () => {
+    const { calls, hook, props } = arrive(
+      { at: { tabId: 't1', elementId: 's1:rowb4b4:colb4b4' }, open: 'comments', itemId: null },
+      { elements: [sheet], state: 'loading' },
+    );
+    expect(calls.openComments).not.toHaveBeenCalled();
+    hook.rerender({ ...props, activeTabLoadState: 'ready' });
+    hook.rerender({ ...props, activeTabLoadState: 'ready', elements: [{ ...sheet }] });
+    hook.rerender({ ...props, activeTabLoadState: 'ready', elements: [{ ...sheet }] });
+    expect(calls.openComments).toHaveBeenCalledTimes(1);
+    expect(calls.focusCell).toHaveBeenCalledTimes(1);
+  });
+
   it('selects the cell without a popover when the link opens none', () => {
     const { calls } = arrive(
       { at: { tabId: 't1', elementId: 's1:rowb4b4:colb4b4' }, open: null, itemId: null },

@@ -437,7 +437,9 @@ element.cellComments }`.
   the plan's own sheets with). Schema step V25 (`plan-room/plan-schema.ts`) adds
   `outbox_sheet_layout`: a `sheets.layout` change queues its tab's `tab` key when the tab's data holds `"cellComments"`. The editor's `useCollabDeepLink` takes an `el`
   no element has through `splitCellThreadKey`: the Sheet selected, `focusSheetCell` (held until the Sheet is drawn)
-  and `openComments(id, cell)`. Phone push (`person/push.ts`) places a cell's comment at the same key.
+  and `showComments(id, cell)` (`useEditorComments`: opens, never toggles, once per link). `CommentThreadPopover`
+  places itself when its anchor appears (`useAwaitAnchor`, a MutationObserver while it has no place), so a cell anchor
+  drawn after the link opened the thread is found without a scroll or resize. Phone push (`person/push.ts`) places a cell's comment at the same key.
 - `SheetCellCommentRow` in `SheetCellMenu` after the toolbar: **Insert Comment** (Editor, Participant) or **Show
   Comments** (anyone, where a thread is).
 - `EditorAnchoredPopovers`: with an open cell, `CommentThreadPopover` gets `anchorSelector` and `title` "Cell
