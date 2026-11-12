@@ -131,3 +131,20 @@ describe('the triggers after Phase 3', () => {
     expect(ruleNeeds(ruleBody({ trigger: { kind: 'mentioned' } }), OUTLINE)).toEqual([]);
   });
 });
+
+describe('Link Cards', () => {
+  const rule = ruleBody({
+    steps: [
+      { kind: 'link_card', field: 'f-links', to: { card: 'c-gone' } },
+      { kind: 'link_card', field: 'f-links', to: { card: 'c-here' } },
+    ],
+  });
+  it('needs its chosen card when the plan has lost it', () => {
+    expect(ruleNeeds(rule, { ...OUTLINE, cards: new Set(['c-here']) })).toEqual([
+      'Card c-gone is gone',
+    ]);
+  });
+  it('leaves chosen cards unchecked when the caller read no cards', () => {
+    expect(ruleNeeds(rule, OUTLINE)).toEqual([]);
+  });
+});

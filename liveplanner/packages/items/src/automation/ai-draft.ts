@@ -7,7 +7,7 @@
 // (apps/api/src/routes/automation-draft-route.ts). Pure.
 
 import { BUILT_IN_FIELD_NAMES } from '../built-in-field-labels';
-import { ITEM_CHECKLIST_TEXT_MAX } from '../limits';
+import { ITEM_CHECKLIST_TEXT_MAX, ITEM_LABEL_MAX, ITEM_TITLE_MAX } from '../limits';
 import { dropForeignLinks, type AiRequest } from './ai-steps';
 import { namedRuleBody, type RuleNames } from './named';
 import type { AutomationOutline } from './outline';
@@ -199,7 +199,11 @@ function cleanStep(s: Obj, own: string): void {
       t('body', AUTOMATION_TEXT_MAX, true);
       break;
     case 'create_card':
-      t('title', AUTOMATION_TEXT_MAX);
+      t('title', ITEM_TITLE_MAX);
+      break;
+    case 'add_label':
+    case 'remove_label':
+      t('label', ITEM_LABEL_MAX);
       break;
     case 'add_checklist':
       if (Array.isArray(s['items']))

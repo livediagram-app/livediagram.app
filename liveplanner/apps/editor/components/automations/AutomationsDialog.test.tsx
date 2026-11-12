@@ -265,6 +265,18 @@ describe('the Audit Trail', () => {
     expect(await screen.findByText('No Runs Yet')).toBeTruthy();
   });
 
+  it('opened on a rule that is gone, reads every rule’s runs as its Rule select says', async () => {
+    list();
+    wrap(<Harness initial={{ view: 'runs', ruleId: 'r-gone' }} />);
+    await waitFor(() => expect(client.listRuns).toHaveBeenCalled());
+    expect(client.listRuns).not.toHaveBeenCalledWith(
+      SCOPE,
+      expect.objectContaining({ rule: 'r-gone' }),
+    );
+    expect(screen.getByRole<HTMLSelectElement>('combobox', { name: 'Rule' }).value).toBe('');
+    expect(screen.queryByRole('button', { name: /Clear/ })).toBeNull();
+  });
+
   it('offers Try Again when the log would not load', async () => {
     list();
     client.listRuns.mockRejectedValueOnce(new Error('offline'));

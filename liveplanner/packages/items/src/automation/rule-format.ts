@@ -2,6 +2,7 @@
 // trigger, condition and step kind with its fields and limits. The one description of a rule that an agent's tools
 // (the MCP's change_rules) and Describe a Rule's model are given; readRuleBody checks what comes back. A kind added to
 // types.ts is described here too (rule-format.test.ts fails until it is).
+import { ITEM_TITLE_MAX } from '../limits';
 import { AUTOMATION_ACTIONS_MAX, AUTOMATION_CONDITIONS_MAX } from './types';
 
 export const RULE_TRIGGER_FORMAT =
@@ -35,7 +36,7 @@ export const RULE_TRIGGER_FORMAT =
   'turned failing or passing; heard only once the plan is connected to GitHub, which a person does in the app). ' +
   'A time trigger (scheduled, due_in, overdue, stuck) runs once for each card its conditions match (every card with none), ' +
   'up to 100 a moment, at the time in the rule’s timeZone, and has nobody behind it: no who condition, no ' +
-  '"trigger" assignee or recipient (nor does a GitHub trigger).';
+  '"trigger" assignee or recipient (nor does an incoming_webhook or a GitHub trigger).';
 
 export const RULE_CONDITIONS_FORMAT =
   `Up to ${AUTOMATION_CONDITIONS_MAX}, every one must hold (for a time trigger, they pick its cards): ` +
@@ -81,11 +82,14 @@ export const RULE_STEPS_FORMAT =
   '{"kind":"ai","task":"card_type","set":true (set it)|false (comment the suggestion)} or ' +
   '{"kind":"ai","task":"triage","priority":true|false,"labels":true|false (at least one true)} (the AI actions: ' +
   'top level only, up to 3 a rule, each one of the plan’s 100 AI steps a day); ' +
-  '{"kind":"if","conditions":[conditions],"then":[actions],"else":[actions]} (actions only inside); ' +
+  '{"kind":"if","conditions":[conditions],"then":[actions],"else":[actions]} (actions only inside: no if, for, ' +
+  'notify, ai or wait); ' +
   '{"kind":"for","related":{"kind":"linked","field"?:a Card field}|{"kind":"blocked_by"}|{"kind":"blocking"}|' +
   '{"kind":"children"}|{"kind":"saved_filter","tab":tab,"filter":id},"conditions":[conditions on the related card],' +
-  '"then":[1 to 10 actions, no create_card, copy_card, notify or wait]} (each related card, up to 100). ' +
-  'Text (a comment, a title, a text value, an email body, a message, up to 2,000 characters) may hold values: ' +
+  '"then":[1 to 10 actions, no if, for, create_card, copy_card, notify, ai or wait]} (each related card, up to ' +
+  '100). ' +
+  'Text (a comment, a text value, an email body, a message, up to 2,000 characters; a new card’s title, up to ' +
+  `${ITEM_TITLE_MAX}) may hold values: ` +
   '{{card.title}}, {{card.key}}, {{card.url}}, {{card.assignee}}, {{card.column}}, {{card.due}}, ' +
   '{{card.field.<Field Name>}}, {{person}} (who triggered it), {{rule}}, {{now}}, {{now.date}}, {{now + 3d}} and ' +
   '{{now - 1d}}; inside a for, {{trigger.title}}, {{trigger.key}} and {{trigger.url}} name the card that started ' +

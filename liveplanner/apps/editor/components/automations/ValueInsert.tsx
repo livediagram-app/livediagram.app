@@ -114,8 +114,10 @@ export function ValueTextField({
     const start = (placed.current ? el?.selectionStart : null) ?? value.length;
     const end = (placed.current ? el?.selectionEnd : null) ?? value.length;
     const next = insertValue(value, start, end, name);
+    // A value goes in whole or not at all: past the field's limit it is refused, as the field refuses typing.
+    if (maxLength !== undefined && next.text.length > maxLength) return;
     caret.current = next.caret;
-    onChange(maxLength ? next.text.slice(0, maxLength) : next.text);
+    onChange(next.text);
     // The popover's (or sheet's) own focus return lands on the button as it goes: the field takes focus back after it.
     requestAnimationFrame(() => {
       const field = area.current;

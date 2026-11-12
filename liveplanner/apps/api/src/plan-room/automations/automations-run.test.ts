@@ -214,6 +214,9 @@ describe('runs, limits and loops', () => {
     }
     const skipped = await runs('?result=skipped');
     expect(skipped).toMatchObject([{ reason: 'Too many changes at once' }]);
+    // The line is the Audit Trail's own, no run: it spends none of the day's runs.
+    const list = await (await w.call('GET', '')).json<{ runsToday: number }>();
+    expect(list.runsToday).toBe(0);
   });
 
   it('hears again after the room wakes on the same storage', async () => {
