@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import type { ReactElement } from 'react';
+import { beforeAll, describe, expect, it } from 'vitest';
 import type { VoteRulesVote } from '@liveworkspace/model-core/vote-rules';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { CanvasZoomProvider } from './CanvasZoomContext';
@@ -250,10 +251,18 @@ describe('ElementVoteOverlay at a phone’s full Fit of a large board', () => {
     fireEvent.pointerDown(r.getByTestId('elsewhere'));
     expect(r.container.querySelector('.lvd-vote-badge')).not.toBeNull();
   });
+});
 
-  // The size check runs for every shown stepper on each zoom frame, so a large board's full Fit must stay cheap. As on
-  // the canvas, the overlays are built once and only the zoom changes, so a frame re-renders the zoom's readers alone.
-  it('zooms a 2,000-note board out to the dots and through its full Fit within a CPU budget', () => {
+// The size check runs for every shown stepper on each zoom frame, so a large board's full Fit must stay cheap. As on
+// the canvas, the overlays are built once and only the zoom changes, so a frame re-renders the zoom's readers alone:
+// each shown stepper, as on main (a dot is one span where a badge is a button with two, so a frame costs no more).
+// The board is built and first drawn outside the timed part. The CPU budget is the guard; the long timeouts only keep
+// a loaded runner's wall clock from failing it.
+describe('ElementVoteOverlay on a 2,000-note board', () => {
+  const WALL_TIMEOUT_MS = 30_000;
+  let r: ReturnType<typeof render>;
+  let board: (zoom: number) => ReactElement;
+  beforeAll(() => {
     const keys = Array.from({ length: 2000 }, (_, i) => `n${i}`);
     const big = vote({ votes: Object.fromEntries(keys.map((k, i) => [k, i % 3 ? [] : ['me']])) });
     const cast = () => {};
@@ -270,13 +279,20 @@ describe('ElementVoteOverlay at a phone’s full Fit of a large board', () => {
         onCastVote={cast}
       />
     ));
-    const board = (zoom: number) => <CanvasZoomProvider zoom={zoom}>{notes}</CanvasZoomProvider>;
-    const r = render(board(0.4));
-    const frames = [0.3, 0.2, 0.15, 0.13, 0.12, 0.11];
-    const ms = cpuMsOf(() => {
-      for (const z of frames) r.rerender(board(z));
-    });
-    expect(r.container.querySelectorAll('.lvd-vote-dot')).toHaveLength(2000);
-    expect(ms).toBeLessThan(cpuBudgetMs(1500));
-  });
+    board = (zoom) => <CanvasZoomProvider zoom={zoom}>{notes}</CanvasZoomProvider>;
+    r = render(board(0.4));
+  }, WALL_TIMEOUT_MS);
+
+  it(
+    'zooms out to the dots and through its full Fit within a CPU budget',
+    () => {
+      const frames = [0.3, 0.2, 0.15, 0.13, 0.12, 0.11];
+      const ms = cpuMsOf(() => {
+        for (const z of frames) r.rerender(board(z));
+      });
+      expect(r.container.querySelectorAll('.lvd-vote-dot')).toHaveLength(2000);
+      expect(ms).toBeLessThan(cpuBudgetMs(1500));
+    },
+    WALL_TIMEOUT_MS,
+  );
 });
