@@ -19,7 +19,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ explorer                 the One Explorer UI over the index, rendered at every app's /explorer
 │  ├─ icons                    the line-art, Technology and sticker catalogues, the vendored Lucide glyphs, and their SVG markup
 │  ├─ index-client             the One Explorer index contract: types, a client, the grant check
-│  ├─ index-app                the server side of an app on the index: grants, internal doors, purge, outbox
+│  ├─ index-app                the server side of an app on the index: grants, internal doors, purge, outbox, an item's tab store (the reads and writes each app's `db/tabs.ts` binds)
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
 │  ├─ community-ui             the Community's pieces in every app: the post tile, the Share dialog's Community tab, the landing section
 │  ├─ community-site           the routers' Community step: the app's head on liveworkspace.app's Community page, the sitemap
@@ -28,7 +28,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ diagram-lint             the numbers, line formats and ring test livediagram's and livedocuments' diagram lint judge by
 │  ├─ document-views           the agent views of a document that read no element union (budgets, elision, fields), for livediagram and livedocuments
 │  ├─ drive                    the Drive mirror's contract: cadence, formats, the plan, wire shapes, backoff
-│  ├─ e2e-kit                  the editors' Playwright measuring sticks: the contrast audit, the optical audit and its snap, the canvas probe's calibration, interactive reading, trace tasks, budget and nightly report
+│  ├─ e2e-kit                  the editors' Playwright measuring sticks: the contrast audit, the optical audit and its snap, the canvas probe's runner (`canvas-probe`, its gestures) and calibration, interactive reading, trace tasks, budget and nightly report
 │  ├─ edit-operations          the edit engine's parts that read no element union: element text, equality, result lines
 │  ├─ element-model            the element code products share over any product's union (structural types, generic where it hands elements back): grid, guides, layer order, anchors, auto-layout, finishes, strokes, web components, element defaults, themes, tables, charts, Sankey, entity and sequence rules, wordmarks, arrows and icons in the export, comment threads, fingerprints, stored-data repairs, the white under a picture
 │  ├─ email                    the one caller of Cloudflare Email Service's `send_email` binding, for accounts and every app
@@ -455,7 +455,7 @@ Each step is its own PR, and both products build and pass their tests after ever
      which the product re-exports. That moved 44 more files (27 modules, 17 tests; about 3,200
      lines), about 2,600 lines fewer in each editor.
    - Still in each editor: the settings catalogue and the modules on it (`settings-kit`,
-     `settings-model`, `lib/search.ts` differ per product); `lib/canvas-gesture.ts` (liveplanner has no
+     `settings-model` differ per product; `lib/search.ts` binds the shared search since the eighth slice); `lib/canvas-gesture.ts` (liveplanner has no
      erase gesture) and the drag, long-task and selection code on `DragState`, which is typed on each
      product's element union; and the identical tests of modules that differ. Those are product
      differences or a change to the element model, not a missing binding.
@@ -544,6 +544,28 @@ Each step is its own PR, and both products build and pass their tests after ever
      mind-map layout in livediagram's and liveplanner's model, page motion and the page model's ink in
      livedesign's and livedocuments', the image search and import, `ModePanel`, `MovablePanel`, the palette's
      icons and tiles).
+   - Eighth slice: three near-copies every editor kept, now one copy in `@liveworkspace/workbench` each, with
+     what differed handed in. The search panel's results (`lib/editor-search/build-search-results`, generic over
+     the editor's own kind of file, its element types and what a palette pick adds; each `lib/search.ts` binds its
+     nouns, whether a table is found by its cells, and liveplanner its Boards and Cards groups). The api client's
+     core (`lib/api/core`, `createApiCore`: the request funnel, identity headers, response helpers, the DELETE
+     shape and the token and share-password state; each `lib/api/core.ts` hands in its guest token, error
+     telemetry, grants, release signal, workbench confinement where it has one and cache prefix, and keeps its
+     envelope types and `tabForWire`). The start panel (`components/start/StartPanel`, `createStartPanel`: each
+     editor's `components/start/StartPanel.tsx` hands in its card grid, tint, help link, chosen-row ink, other
+     modes' block and whether it is a phone sheet; the component it returns is the editor's StartPanel itself, so
+     no component level is added). About 2,600 lines in `packages/workbench` (tests included) and about 5,900
+     fewer across the editors.
+   - Ninth slice, the state every editor kept a near-copy of, one copy in `@liveworkspace/workbench` each with each
+     editor's drifts handed in by name. The autosave (`hooks/persistence/useAutosaveCore`: the debounce, retry,
+     resave and baseline; each `app/<item>/[id]/useAutosave.ts` hands in its calls, its meta op and whether it
+     prepares against the last save, waits on a photo, claims a Participant's pictures and notes revisions); livediagram's and livehuddle's own
+     `tab-save-queue.ts` went for the shared `lib/tab-save-queue` the other three already used). The
+     Offline Mode store (`lib/offline/offline-store-core`, `createOfflineStore`: each `lib/offline/offline-store.ts`
+     keeps its IndexedDB backend, names and versions, and its own extra writes). The api client's tab calls
+     (`lib/api/tab-calls`, `createTabCalls`: each `lib/api/tabs.ts` hands in its path, id key, grant, open marker
+     and save headers). Still per editor: the selection editing, the boxed drag and the clipboard, which read the
+     element union on the pointer path.
 5. **`api-core`** out of the two `apps/api` Workers.
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
      now with the product's own names handed in:
@@ -577,6 +599,17 @@ Each step is its own PR, and both products build and pass their tests after ever
      - `api-kit`: the room's access closes, follows, multiplayer count and agent presence (each room hands in its
        trashed op), the image reference extractor, the telemetry relay's localhost check and the OpenAPI document
        types. About 4,600 lines of copies went; tool names, prompt text, CLI output and wire formats are unchanged.
+   - Third slices, the api Workers' copies of the state they share:
+     - `api-kit` (`room-client`, `createRoomClient`): the calls into an item's room (ops, the ledger, relays,
+       selections, agent presence). Each `room-client.ts` names its room binding, id key and meta op, and keeps its
+       own relays (livedesign's components, liveplanner's ordered item and sheet relays).
+     - `auth-client` (`app-auth`, `createAppAuth`): the `/api/auth` routes (sign-in, callback, token, silent, guest,
+       sign-out). Each `routes/auth.ts` names its cookies, its return-path rule and its PKCE cookie codec, and asks
+       for a family name, a token age or an ASCII `Location` where its copy had one; every check, cookie flag and
+       status is unchanged.
+     - `email` (`layout`, `createEmailLayout`): the notification emails' shell and footer. Each `email/templates.ts`
+       binds its brand and keeps its builders; `templates-golden.test.ts` pins every rendered email by hash, so
+       the output is byte-identical.
      - Still per product: the lint and test configs (a few lines each), the CLI's version, png and io bindings,
        `room-scope.ts` (its op kinds are the product's) and `person-tag.ts`.
 

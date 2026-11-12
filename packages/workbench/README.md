@@ -36,6 +36,23 @@ editor that has it (two or more), and the product's part of it is handed in:
 - **as a binding**, for the few product facts that many modules read at run time (its telemetry, its
   storage keys, its api transport). See below.
 
+Three larger modules are made per editor by a `createX(config)` or take the editor's nouns as config, each bound
+once in the editor's file at the old path: the search panel's results (`lib/editor-search/build-search-results`,
+bound in each `lib/search.ts`), the api client's core (`lib/api/core`'s `createApiCore`, bound in each
+`lib/api/core.ts`, which keeps its function exports so an import cycle still finds them) and the start panel
+(`components/start/StartPanel`'s `createStartPanel`, bound in each `components/start/StartPanel.tsx`).
+
+Several chrome and canvas modules are made the same way, once per editor at module scope in its file at the old
+path, so each is one stable component or hook and the editor's component tree is as it was: the style presets
+(`components/palette/StylePresets`'s `createStylePresets`, around the editor's `SizeButton` and `ShapeGlyph`), the
+context menu's tile grids (`components/palette/context-menu-tiles`'s `createContextMenuTiles` and `createFlowTiles`),
+the movable panel (`components/primitives/MovablePanel`'s `createMovablePanel`, around its help-article link and
+popover top clearance; its props in `MovablePanel.types`), the canvas's label renderers
+(`components/canvas/element-label-views`'s `createLabelViews`, around the label typography and Text animation units),
+the lazy per-tab load (`hooks/persistence/usePerTabLoad`'s `createPerTabLoad`, around the tab GET, `track` and
+timing), the canvas backdrop (`lib/canvas-backgrounds`'s `createCanvasBackgrounds`, around the seasonal motifs) and
+the Looks' lookup and match (`lib/tab-looks`'s `createTabLooks`, over the editor's own catalogue).
+
 Never by importing the product: a workbench module that needs `@<product>/…` is not ready to move.
 
 ## Bindings

@@ -34,7 +34,7 @@ design decision.
 | `AUTO_RELOAD_WINDOW_MS`         | `600_000`                       | `lib/load-progress.ts`         | Spec: 10 minutes                                 |
 | `AUTO_RELOAD_KEY`               | `liveplanner:load-auto-reloads` | sessionStorage                 | Default D64                                      |
 | `OFFLINE_STORE_OPEN_TIMEOUT_MS` | `4_000`                         | `lib/offline/offline-store.ts` | Spec: 4 seconds; = `INDEXED_DB_PROBE_TIMEOUT_MS` |
-| `SESSION_TOKEN_TIMEOUT_MS`      | `10_000`                        | `lib/api/core.ts`              | Spec: 10 seconds per attempt                     |
+| `SESSION_TOKEN_TIMEOUT_MS`      | `10_000`                        | workbench `lib/api/core.ts`    | Spec: 10 seconds per attempt                     |
 | `GUEST_ID_PREFIX_LENGTH`        | `8`                             | `packages/ui/.../identity.ts`  | Spec: first 8 characters                         |
 | `COPIED_FOR_MS`                 | `2_000`                         | `BrowserRepairPanel.tsx`       | Default D65                                      |
 | `SLOW_AFTER_MS`                 | `10_000`                        | `ProjectLoading.tsx`           | Unchanged                                        |

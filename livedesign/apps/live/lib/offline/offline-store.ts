@@ -1,12 +1,12 @@
 // Offline Mode (docs/specs/006-design/offline-mode.md): designs saved only in THIS browser, in IndexedDB,
-// never to the API. This module is the local counterpart of `lib/api/*` — it
+// never to the API. This module is the local counterpart of `lib/api/*`, it
 // produces the same wire shapes (LiveDoc / DesignSummary / Tab) so the editor
 // and Explorer render an offline design exactly like a cloud one; the
 // persistence dispatch in `lib/api/*` routes to these when a design id is
 // registered offline (see `isOfflineId`).
 //
 // Storage: one IndexedDB record per design, holding its meta + all tab bodies
-// inline (offline designs load whole — no lazy per-tab fetch). The set of
+// inline (offline designs load whole, no lazy per-tab fetch). The set of
 // offline ids IS the set of record keys, mirrored in an in-memory cache so the
 // dispatch can answer "is this id offline?" cheaply (./offline-ids, which keeps
 // every tab of the browser in step).
@@ -30,6 +30,14 @@ import {
 } from './offline-ids';
 import { offlineDesignStats } from './offline-stats';
 import { noteThisBrowser } from './this-browser';
+import {
+  applyMeta as applyMetaShared,
+  createOfflineStore,
+  removeTab as removeTabShared,
+  tabToSummaryFor,
+  upsertTabWith,
+  type OfflineDeleteOutcome,
+} from '@liveworkspace/workbench/lib/offline/offline-store-core';
 
 // Sentinel owner id stamped on offline designs. They have no server owner;
 // this keeps the wire shape valid and is never sent anywhere.
@@ -72,25 +80,15 @@ export type StoredLocalOpens =
   LocalOpens | { openDays: number; lastOpenDay: string; lastOpenedAt: number; frecencyKey: number };
 
 // ---------------------------------------------------------------------------
-// Pure transforms (unit-tested — no IndexedDB involved)
+// Pure transforms (unit-tested, no IndexedDB involved)
 // ---------------------------------------------------------------------------
 
-export function tabToSummary(
+export const tabToSummary: (
   tab: Tab,
   designId: string,
   orderIndex: number,
   at: number,
-): TabSummary {
-  const summary: TabSummary = {
-    id: tab.id,
-    designId,
-    name: tab.name,
-    orderIndex,
-    updatedAt: at,
-  };
-  if (tab.folder !== undefined) summary.folder = tab.folder;
-  return summary;
-}
+) => TabSummary = tabToSummaryFor('designId');
 
 // No creation intent is recorded in the browser: unknown, never Diagram
 // (docs/specs/013-workspace/default-folders.md "Recorded intent").
@@ -98,7 +96,7 @@ const UNKNOWN_INTENT: RecordedIntent = { opensIn: null, tabKind: null };
 
 // Project a stored record into the full `LiveDoc` the editor hydrates from.
 // The server-only fields take their inert defaults (unshared, no team, no
-// provenance, no owner join) — offline designs are private by construction.
+// provenance, no owner join), offline designs are private by construction.
 export function recordToDesign(rec: OfflineDesignRecord): LiveDoc {
   return {
     id: rec.id,
@@ -148,36 +146,13 @@ export function applyMeta(
   },
   at: number,
 ): OfflineDesignRecord {
-  let tabs = rec.tabs;
-  if (patch.tabs) {
-    const byId = new Map(rec.tabs.map((t) => [t.id, t] as const));
-    tabs = patch.tabs
-      .map((entry) => {
-        const tab = byId.get(entry.id);
-        if (!tab) return null;
-        return entry.folder === (tab.folder ?? undefined) ? tab : { ...tab, folder: entry.folder };
-      })
-      .filter((t): t is Tab => t !== null);
-  }
-  return {
-    ...rec,
-    name: patch.name ?? rec.name,
-    tabs,
-    savedAt: at,
-  };
+  return applyMetaShared(rec, patch, at);
 }
 
 // Upsert one tab body into a record (the autosave path). A new tab id is
 // appended; an existing one is replaced in place, preserving order.
 export function upsertTab(rec: OfflineDesignRecord, tab: Tab, at: number): OfflineDesignRecord {
-  // Stamp the tab kind here for the same reason the cloud path stamps it
-  // in tabForWire: both stores must agree on what a tab IS, or a
-  // Sync Design would hand the cloud a board that has forgotten itself.
-  const stamped = stampTabKind(tab);
-  const i = rec.tabs.findIndex((t) => t.id === stamped.id);
-  const tabs =
-    i === -1 ? [...rec.tabs, stamped] : rec.tabs.map((t) => (t.id === stamped.id ? stamped : t));
-  return { ...rec, tabs, savedAt: at };
+  return upsertTabWith(rec, tab, at, stampTabKind);
 }
 
 export function removeTab(
@@ -185,7 +160,7 @@ export function removeTab(
   tabId: string,
   at: number,
 ): OfflineDesignRecord {
-  return { ...rec, tabs: rec.tabs.filter((t) => t.id !== tabId), savedAt: at };
+  return removeTabShared(rec, tabId, at);
 }
 
 // ---------------------------------------------------------------------------
@@ -217,63 +192,39 @@ export class OfflineDesignMissingError extends Error {
 }
 
 // ---------------------------------------------------------------------------
-// Public operations — the local mirror of the design/tab api surface
+// Public operations, the local mirror of the design/tab api surface
 // ---------------------------------------------------------------------------
 
-// Every mutation below rewrites the WHOLE record after reading it, so two
-// concurrent ops (two tab autosaves, or a tab save racing a rename) could
-// each read the same snapshot
-// and the later put would silently drop the earlier write. One module-level
-// chain serialises all read-modify-write ops in this browser tab; each is one
-// IndexedDB transaction, so queueing adds no perceptible latency. The read and
-// the write share that transaction (offlineUpdateRecord), which is what keeps
-// ANOTHER tab's write from landing between them.
-let writeChain: Promise<unknown> = Promise.resolve();
+// The shared operations (@liveworkspace/workbench/lib/offline/offline-store-core): one write chain serialises every
+// read-modify-write op in this browser tab, each one IndexedDB transaction.
+const store = createOfflineStore<
+  Tab,
+  OfflineDesignRecord,
+  ReturnType<typeof recordToDesign>,
+  ReturnType<typeof recordToSummary>
+>({
+  // Read at call time, as the operations always did (the offline modules import each other).
+  backend: () => offlineBackend(),
+  rememberId: (id) => rememberOfflineId(id),
+  forgetId: (id) => forgetOfflineId(id),
+  isOfflineIdSync: (id) => isOfflineIdSync(id),
+  noteThisBrowser: (id, after) => noteThisBrowser(id, after),
+  toItem: recordToDesign,
+  toSummary: recordToSummary,
+  migrateTab: (tab) => migrateStoredTab(tab),
+  trashedError: (id) => new DesignTrashedError(id),
+  missingError: (id) => new OfflineDesignMissingError(id),
+});
 
-// A record the editor may still write: present, and not in the local Trash
-// (an editor left open on a binned design must not keep changing it).
-function writable(rec: OfflineDesignRecord | undefined): rec is OfflineDesignRecord {
-  return rec !== undefined && rec.trashedAt === undefined;
-}
-export function serializeOfflineWrite<T>(op: () => Promise<T>): Promise<T> {
-  const next = writeChain.then(op, op);
-  writeChain = next.then(
-    () => undefined,
-    () => undefined,
-  );
-  return next;
-}
+export const serializeOfflineWrite = store.serializeOfflineWrite;
 
-// Read-modify-write one record in a single transaction (see OfflineRecordChange). Callers run it
-// inside serializeOfflineWrite.
-export function offlineUpdateRecord(id: string, change: OfflineRecordChange): Promise<void> {
-  // What the change left, for This Browser's list (this-browser.ts).
-  let after: ReturnType<OfflineRecordChange>;
-  return offlineBackend()
-    .update(id, (rec) => (after = change(rec)))
-    .then(() => noteThisBrowser(id, after));
-}
+// Read-modify-write one record in a single transaction. Callers run it inside serializeOfflineWrite.
+export const offlineUpdateRecord: (id: string, change: OfflineRecordChange) => Promise<void> =
+  store.offlineUpdateRecord;
 
-// The editor's writes to a live record: `change` runs on it when it is writable. A missing record
-// is a no-op when this tab has already forgotten the id (a queued autosave landing after this
-// tab's own Sync Design), and an OfflineDesignMissingError when the id is still listed.
-async function writeLive(
-  id: string,
-  change: (rec: OfflineDesignRecord) => OfflineDesignRecord,
-): Promise<void> {
-  await serializeOfflineWrite(async () => {
-    let missing = false;
-    await offlineUpdateRecord(id, (rec) => {
-      missing = rec === undefined;
-      return writable(rec) ? change(rec) : undefined;
-    });
-    if (missing && isOfflineIdSync(id)) {
-      forgetOfflineId(id);
-      console.warn('[offline-store] write-to-missing-record, id forgotten');
-      throw new OfflineDesignMissingError(id);
-    }
-  });
-}
+// The editor's writes to a live record: a no-op once this tab forgot the id, OfflineDesignMissingError while it
+// still lists it.
+const writeLive = store.writeLive;
 
 // The design's component library, archived mains included; [] for a record with none or no record.
 export async function offlineLoadComponents(id: string): Promise<DesignComponent[]> {
@@ -292,25 +243,12 @@ export async function offlineSaveComponent(id: string, component: DesignComponen
 }
 
 // Live records only: a trashed one waits in the local Trash.
-export async function offlineListDesigns(): Promise<DesignSummary[]> {
-  const recs = await offlineBackend().all();
-  return recs.filter((r) => r.trashedAt === undefined).map(recordToSummary);
-}
+export const offlineListDesigns = store.listItems;
 
 // A trashed record reads as the deleted state, the local twin of the api's 410.
-export async function offlineLoadDesign(id: string): Promise<LiveDoc | null> {
-  const rec = await offlineBackend().get(id);
-  if (rec?.trashedAt !== undefined) throw new DesignTrashedError(id);
-  return rec ? recordToDesign(rec) : null;
-}
+export const offlineLoadDesign = store.loadItem;
 
-export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | null> {
-  const rec = await offlineBackend().get(id);
-  const tab = rec?.tabs.find((t) => t.id === tabId) ?? null;
-  // The offline twin of the api's rowToTab: a design kept in this browser can
-  // still be on a retired scheme (docs/specs/011-theme/retired-schemes.md) or carry retired element fields.
-  return tab ? migrateStoredTab(tab) : null;
-}
+export const offlineLoadTab = store.loadTab;
 
 // `extra`: a design's own created and last-modified dates (docs/specs/015-api/api.md "Design
 // dates"), absent now; the personal folder it is filed in. Making a design here is a use of it: its
@@ -334,10 +272,7 @@ export async function offlineCreateDesign(
     tabs: d.tabs ?? [],
     opens: { days: [utcDay(now)], lastOpenedAt: now },
   };
-  await offlineBackend().put(rec);
-  rememberOfflineId(rec.id);
-  noteThisBrowser(rec.id, rec);
-  return recordToDesign(rec);
+  return store.createRecord(rec);
 }
 
 export async function offlineSaveDesignMeta(
@@ -363,16 +298,9 @@ export async function offlineSetDesignFolder(
 // alone on purpose: a star is a per-user bookmark, not an edit to the
 // design, and bumping it would reorder Recent on a click that changed
 // nothing about the content.
-export async function offlineSetFavourite(id: string, favourite: boolean): Promise<void> {
-  await serializeOfflineWrite(() =>
-    offlineUpdateRecord(id, (rec) => (rec ? { ...rec, favourite } : undefined)),
-  );
-}
+export const offlineSetFavourite = store.setFavourite;
 
-export async function offlineListFavouriteIds(): Promise<string[]> {
-  const recs = await offlineBackend().all();
-  return recs.filter((r) => r.favourite && r.trashedAt === undefined).map((r) => r.id);
-}
+export const offlineListFavouriteIds = store.listFavouriteIds;
 
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {
   // No create-on-missing: a save must never resurrect a deleted design.
@@ -384,52 +312,21 @@ export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise
   await writeLive(id, (rec) => upsertTab(rec, tab, now));
 }
 
-export async function offlineDeleteTab(id: string, tabId: string, now: number): Promise<void> {
-  await writeLive(id, (rec) => removeTab(rec, tabId, now));
-}
+export const offlineDeleteTab = store.deleteTab;
 
-export async function offlineDeleteDesign(id: string): Promise<void> {
-  // Serialized with the tab / meta writes so a queued save can't interleave
-  // with (or observe a half-applied) delete.
-  await serializeOfflineWrite(async () => {
-    await offlineBackend().delete(id);
-    forgetOfflineId(id);
-    noteThisBrowser(id, 'delete');
-  });
-}
+export const offlineDeleteDesign = store.deleteItem;
 
 // Sync Design's last step (docs/specs/006-design/offline-mode.md "Save to server"): remove the
 // record only if it still matches what was uploaded, judged and done in one transaction so no write
 // (from this tab or another) can land between the check and the delete. Answers what it found:
 // `deleted` (with the record as it was), `changed` (with the record as it is now) or `missing`.
-type OfflineDeleteOutcome =
-  { outcome: 'deleted' | 'changed'; rec: OfflineDesignRecord } | { outcome: 'missing' };
-
-export async function offlineDeleteIfUnchanged(
+export const offlineDeleteIfUnchanged: (
   id: string,
   unchanged: (rec: OfflineDesignRecord) => boolean,
-): Promise<OfflineDeleteOutcome> {
-  return serializeOfflineWrite(async () => {
-    let found = { outcome: 'missing' } as OfflineDeleteOutcome;
-    await offlineUpdateRecord(id, (rec) => {
-      if (!rec) return undefined;
-      const same = unchanged(rec);
-      found = { outcome: same ? 'deleted' : 'changed', rec };
-      return same ? 'delete' : undefined;
-    });
-    if (found.outcome !== 'changed') forgetOfflineId(id);
-    return found;
-  });
-}
+) => Promise<OfflineDeleteOutcome<OfflineDesignRecord>> = store.offlineDeleteIfUnchanged;
 
-// Read the raw record — used by the Offline → Cloud conversion (docs/specs/006-design/offline-mode.md) to
+// Read the raw record, used by the Offline → Cloud conversion (docs/specs/006-design/offline-mode.md) to
 // upload the whole design, and by "take offline" to seed one.
-export async function offlineGetRecord(id: string): Promise<OfflineDesignRecord | null> {
-  return (await offlineBackend().get(id)) ?? null;
-}
+export const offlineGetRecord = store.offlineGetRecord;
 
-export async function offlinePutRecord(rec: OfflineDesignRecord): Promise<void> {
-  await offlineBackend().put(rec);
-  rememberOfflineId(rec.id);
-  noteThisBrowser(rec.id, rec);
-}
+export const offlinePutRecord = store.offlinePutRecord;

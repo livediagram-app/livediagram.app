@@ -46,9 +46,10 @@ let results: ProbeResult[] = [];
 
 // The sweep is about 35,000 paths in five methods each: some 175,000 dispatches. They take 5 s on a
 // developer's machine and 15 s under coverage, and CI's shared runners, under coverage beside another
-// package, took 19 to 62 s for the same work. A wall-clock timeout, not a CPU budget (testing.md), so a
-// fixed 120 s: three times the 40 s it once allowed a plain run.
-const PROBE_TIMEOUT_MS = 120_000;
+// package, took 19 to 62 s for the same work, and once more than 120 s (PR #1643, 2026-11-12) while
+// the same sweep took about 22 s of CPU locally, as on main. A wall-clock timeout, not a CPU budget
+// (testing.md), so a fixed 300 s: room for a busy runner, still well short of the job's own limit.
+const PROBE_TIMEOUT_MS = 300_000;
 
 beforeAll(async () => {
   // Trapped requests end in index.ts's catch-all, which logs each one.

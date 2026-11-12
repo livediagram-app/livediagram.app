@@ -6,53 +6,23 @@
 //     colour + a matching border weight and pattern (never the radius:
 //     that's the user's own silhouette choice) + a reset.
 // Purely presentational: every apply is a callback prop. Shape presets are
-// theme-derived (passed in). Lives in
-// its own file so EditorContextMenu doesn't accrete more large categories
-// inline (see the no-god-files principle).
+// theme-derived (passed in). The tile label, the swatch outline's weights and dashes and the
+// reset are the shared presets' (@liveworkspace/workbench/components/palette/StylePresets); this
+// editor's swatch is a plain box rather than the selected shape's silhouette.
 
-import { type BorderStyle, type BorderStroke } from '@livehuddle/document';
 import type { ShapeColorPreset } from '@/lib/themes';
 import { SizeButton } from '@/components/palette/palette-controls';
-import { MenuActionButton } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { ShapeGlyph } from '@/components/primitives/shape-icon';
 import {
   onMouseHover,
   useRevertOnUnmount,
 } from '@liveworkspace/workbench/components/primitives/hover-preview';
-
-// ── Preview-style mappings ──────────────────────────────────────────────
-
-// Border weight in 16-unit viewBox units, for the shape-matched swatch outline.
-const BORDER_WIDTH_SVG: Record<BorderStroke, number> = {
-  none: 0,
-  thin: 1,
-  medium: 1.6,
-  thick: 2.4,
-  'extra-thick': 3.2,
-};
-// stroke-dasharray (16-unit units) for the swatch outline, one per border
-// pattern so a Dash-Dot tile previews as dash-dot rather than as dashed.
-const SVG_BORDER_DASH: Record<BorderStyle, string | undefined> = {
-  solid: undefined,
-  dashed: '3 2',
-  dotted: '0.6 2',
-  'long-dash': '5 2',
-  'dash-dot': '3 1.5 0.6 1.5',
-  'dash-dot-dot': '3 1.5 0.6 1.5 0.6 1.5',
-};
-function svgBorderDash(style: BorderStyle): string | undefined {
-  return SVG_BORDER_DASH[style];
-}
-// ── Tiles ───────────────────────────────────────────────────────────────
-
-function PresetLabel({ children, name }: { children: React.ReactNode; name: string }) {
-  return (
-    <span className="flex flex-col items-center gap-0.5">
-      {children}
-      <span className="text-[9px] capitalize leading-none">{name}</span>
-    </span>
-  );
-}
+import {
+  BORDER_WIDTH_SVG,
+  PresetLabel,
+  ResetButton,
+  svgBorderDash,
+} from '@liveworkspace/workbench/components/palette/StylePresets';
 
 // The colour swatch: a box filled with the preset fill + stroked with its
 // border colour, an "A" in the text colour overlaid for the label.
@@ -125,15 +95,6 @@ export function ShapePresets({
         ))}
       </div>
       <ResetButton onReset={onReset} />
-    </div>
-  );
-}
-
-// Shared "Reset to Default" button beneath the preset grids.
-function ResetButton({ onReset }: { onReset: () => void }) {
-  return (
-    <div className="px-0 pb-1 pt-1.5">
-      <MenuActionButton label="Reset to Default" onClick={onReset} />
     </div>
   );
 }

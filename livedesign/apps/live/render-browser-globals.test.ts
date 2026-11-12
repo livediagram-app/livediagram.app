@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 
 const repo = fileURLToPath(new URL('../../', import.meta.url));
 const OUTSIDE_RENDER: Record<string, string> = {
-  'apps/live/components/primitives/MovablePanel.tsx':
+  '../packages/workbench/src/components/primitives/MovablePanel.tsx':
     'clampFree, called from handlers and an effect',
   '../packages/workbench/src/components/primitives/PagedCarousel.tsx':
     'prefersReducedMotion, called from a scroll handler',

@@ -5,39 +5,36 @@
 // plus a team name the inviter already chose.
 
 import { xmlEscape } from '@liveworkspace/icons';
+import {
+  createEmailLayout,
+  mentionQuote,
+  notificationSettingsUrl,
+  subjectText,
+  type EmailSection,
+} from '@liveworkspace/email/layout';
 import type { Env } from '../types';
 import { appBaseUrl } from './client';
 
-const BRAND = '#0ea5e9';
-// The wordmark's "live" accent: brand-600, as in the site header's light mode.
-const WORDMARK_ACCENT = '#0284c7';
-const INK = '#0f172a';
-const MUTED = '#475569';
-// The brand prism's light-to-deep sky run, for the band across the top of the
-// card. Outlook ignores the gradient and paints BRAND underneath instead.
-const BAND_GRADIENT = 'linear-gradient(90deg,#38bdf8 0%,#0ea5e9 45%,#1d4ed8 100%)';
-// The page behind the card: brand-50, so the frame reads livediagram before a
-// word is read.
-const CANVAS = '#f0f9ff';
+export { MENTION_QUOTE_CHARS, mentionQuote } from '@liveworkspace/email/layout';
 
-// The logo mark beside the wordmark. A transparent PNG on the public site, not
-// inline SVG: Gmail and Outlook drop SVG, and most clients block data: images.
-// `pnpm icons:brand` writes it into the marketing app's public/email/, a path kept
-// for email alone because every message ever sent points at it. 64px, 2x the slot.
-const LOGO_PATH = '/email/livediagram-mark-64.png';
-const LOGO_SIZE = 28;
-
-// Default sign-off, used by the onboarding emails (their recipients all have an
-// account). The invite + account-deleted builders pass their own, since those
-// recipients may not have (or no longer have) an account.
-const ACCOUNT_FOOTER =
-  'You’re receiving this because you have a livediagram account. The editor is free and open source.';
+// The shared look (@liveworkspace/email/layout), in livediagram's brand.
+const layout = createEmailLayout({
+  brand: '#0ea5e9',
+  wordmarkAccent: '#0284c7',
+  bandGradient: 'linear-gradient(90deg,#38bdf8 0%,#0ea5e9 45%,#1d4ed8 100%)',
+  canvas: '#f0f9ff',
+  // `pnpm icons:brand` writes it into the marketing app's public/email/. 64px, 2x the slot.
+  logoPath: '/email/livediagram-mark-64.png',
+  wordmarkTail: 'diagram',
+  tagline: 'Diagram, draw and run workshops together, live. Free and open source.',
+  accountFooter:
+    'You’re receiving this because you have a livediagram account. The editor is free and open source.',
+});
 
 // docs/specs/014-identity/transactional-email.md: footer for an opt-out notification email, the reason plus a link to
 // the settings where the recipient can turn the category off in one click.
 function manageNotificationsFooter(env: Env, reason: string): string {
-  const href = profilePath(env);
-  return `${reason} <a href="${href}" style="color:${BRAND};text-decoration:underline">Manage your notifications</a> to turn these off.`;
+  return layout.manageNotificationsFooter(appBaseUrl(env), reason);
 }
 
 // `kind` is the template's telemetry token (docs/specs/017-telemetry/telemetry.md 'Email' category): it rides
@@ -63,92 +60,13 @@ export type RenderedEmail = {
   unsubscribeUrl?: string;
 };
 
-// Where every opt-out category can be turned off: the Settings dialog's
-// Notifications category, deep-linked (docs/specs/007-editor/user-preferences.md). Used by both the footer link
-// and the List-Unsubscribe header (docs/specs/014-identity/transactional-email.md). Module-private: only the
-// templates in this file build URLs with it.
-//
-// The old `/explorer/profile` URL still redirects here, which matters because
-// every email already sent carries it and an unsubscribe link cannot rot.
+// Where every opt-out category can be turned off, for the footer link and the List-Unsubscribe header.
 function profilePath(env: Env): string {
-  return `${appBaseUrl(env)}/explorer?settings=notifications`;
+  return notificationSettingsUrl(appBaseUrl(env));
 }
 
-type Section = {
-  heading: string;
-  intro: string;
-  // The dim inbox preview line shown next to the subject. Kept distinct from the
-  // heading so the two-line inbox listing reads well; falls back to the intro.
-  preheader?: string;
-  points?: string[];
-  outro?: string;
-  ctaText?: string;
-  ctaHref?: string;
-  footer?: string;
-};
-
-// The mark + "live"/"diagram" wordmark, linked home. A table rather than flex so
-// the two sit on one baseline in Outlook too. The image's alt is empty because
-// the wordmark beside it already says the name when images are blocked.
-function lockup(base: string, fontSize: number, centred = false): string {
-  const mark = Math.round((LOGO_SIZE * fontSize) / 18);
-  const margin = centred ? 'margin:0 auto' : 'margin:0';
-  return `<a href="${base}" style="text-decoration:none"><table role="presentation" cellpadding="0" cellspacing="0" style="${margin}"><tr>
-          <td style="padding-right:10px;vertical-align:middle"><img src="${base}${LOGO_PATH}" width="${mark}" height="${mark}" alt="" style="display:block;border:0;outline:none;width:${mark}px;height:${mark}px"></td>
-          <td style="vertical-align:middle;font-size:${fontSize}px;font-weight:600;letter-spacing:-0.3px;color:${INK}"><span style="color:${WORDMARK_ACCENT}">live</span>diagram</td>
-        </tr></table></a>`;
-}
-
-function shell(env: Env, section: Section): string {
-  const base = appBaseUrl(env);
-  const preheader = `<span style="display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;max-height:0;overflow:hidden">${section.preheader ?? section.intro}</span>`;
-  const points = (section.points ?? [])
-    .map(
-      (p) => `<li style="margin:0 0 10px;color:${MUTED};font-size:15px;line-height:1.6">${p}</li>`,
-    )
-    .join('');
-  const list = points ? `<ul style="margin:18px 0 0;padding-left:20px">${points}</ul>` : '';
-  const outro = section.outro
-    ? `<p style="margin:20px 0 0;color:${MUTED};font-size:15px;line-height:1.6">${section.outro}</p>`
-    : '';
-  const cta =
-    section.ctaText && section.ctaHref
-      ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:28px 0 0">
-           <tr><td style="border-radius:8px;background:${BRAND}">
-             <a href="${section.ctaHref}" style="display:inline-block;padding:12px 22px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px">${section.ctaText}</a>
-           </td></tr>
-         </table>`
-      : '';
-  return `<!doctype html>
-<html><body style="margin:0;background:${CANVAS};padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
-  ${preheader}
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden">
-      <tr><td style="height:6px;line-height:6px;font-size:0;background-color:${BRAND};background-image:${BAND_GRADIENT}">&nbsp;</td></tr>
-      <tr><td style="padding:24px 32px 0">
-        ${lockup(base, 18)}
-      </td></tr>
-      <tr><td style="padding:20px 32px 32px">
-        <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:${INK}">${section.heading}</h1>
-        <p style="margin:0;color:${MUTED};font-size:15px;line-height:1.6">${section.intro}</p>
-        ${list}
-        ${outro}
-        ${cta}
-      </td></tr>
-      <tr><td style="padding:0 32px 28px">
-        <p style="margin:24px 0 0;border-top:1px solid #e2e8f0;padding-top:16px;color:#94a3b8;font-size:12px;line-height:1.6">
-          ${section.footer ?? ACCOUNT_FOOTER}
-        </p>
-      </td></tr>
-    </table>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px">
-      <tr><td align="center" style="padding:20px 32px 0">
-        ${lockup(base, 14, true)}
-        <p style="margin:8px 0 0;color:#94a3b8;font-size:12px;line-height:1.6">Diagram, draw and run workshops together, live. Free and open source. <a href="${base}" style="color:${WORDMARK_ACCENT};text-decoration:none">${base.replace(/^https?:\/\//, '')}</a></p>
-      </td></tr>
-    </table>
-  </td></tr></table>
-</body></html>`;
+function shell(env: Env, section: EmailSection): string {
+  return layout.shell(appBaseUrl(env), section);
 }
 
 export function accountDeletedEmail(env: Env): RenderedEmail {
@@ -263,16 +181,6 @@ export function actionAssignedEmail(
 // docs/specs/012-collaboration/comment-mentions.md: a teammate @-mentioned the recipient in a comment. The
 // author and document name come from server state (the notify-mention route);
 // the quote is the author's own words, escaped and cut at a word.
-export const MENTION_QUOTE_CHARS = 280;
-
-export function mentionQuote(text: string): string {
-  const flat = text.trim().replace(/\s+/g, ' ');
-  if (flat.length <= MENTION_QUOTE_CHARS) return flat;
-  const cut = flat.slice(0, MENTION_QUOTE_CHARS);
-  const space = cut.lastIndexOf(' ');
-  return `${(space > MENTION_QUOTE_CHARS / 2 ? cut.slice(0, space) : cut).trimEnd()}…`;
-}
-
 export function mentionedEmail(
   env: Env,
   authorName: string | null,
@@ -311,9 +219,7 @@ export function mentionedEmail(
 // variant for the subject line. A local copy used to skip the apostrophe.
 const escapeHtml = xmlEscape;
 
-function escapeText(s: string): string {
-  return s.replace(/[\r\n]+/g, ' ').slice(0, 80);
-}
+const escapeText = subjectText;
 
 // docs/specs/014-identity/transactional-email.md (#1): someone other than the owner left a comment on a document the
 // recipient owns. Opt-out (notifyComments). Never includes the comment text

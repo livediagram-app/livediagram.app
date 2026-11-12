@@ -1,6 +1,9 @@
 // The room's presence list as each editor's useRoomConnection reads it (its `roomPresence` handler): the rows the
-// avatars draw, the colour a later joiner yields, where each peer is, and what goes with whoever left. Pure, so
-// the hook keeps the order it calls them in and the products keep their own extras around them.
+// avatars draw, the colour a later joiner yields, where each peer is, and what goes with whoever left. Each step is
+// pure, and `syncRoomPresence` runs them in the order every editor does, the products' own extras passed in where
+// they sit in that order.
+
+import { syncRemoteBesideTabs } from './split-presence';
 
 /** One session in the room's presence list, as the wire carries it. */
 export type RoomPresenceEntry<Role extends string = string> = {
@@ -98,4 +101,59 @@ export function forgetDeparted(lastSeen: Map<string, number>, present: Set<strin
   for (const id of [...lastSeen.keys()]) {
     if (!present.has(id)) lastSeen.delete(id);
   }
+}
+
+type MapUpdate<V> = (update: (prev: Map<string, V>) => Map<string, V>) => void;
+
+/** What `syncRoomPresence` reads and drives: the page's presence state, as each editor's hook holds it. */
+export type RoomPresenceSync<P extends RoomPresenceEntry, Selection, Cursor> = {
+  lastSeen: Map<string, number>;
+  // Bumps a peer's last-seen, publishing when they arrive.
+  markSeen: (id: string) => void;
+  // This session as it is now (read through the hook's ref, never a stale snapshot).
+  self: () => { id: string; color: string };
+  nextFreeColor: (taken: Set<string>) => string;
+  // Moves this session to the colour it yields to (the next hello carries it).
+  takeColour: (color: string) => void;
+  prunePeerDragPreviews: (present: Set<string>) => void;
+  setRemoteTabFocus: MapUpdate<string>;
+  setRemoteSelections: MapUpdate<Selection>;
+  setRemoteCursors: MapUpdate<Cursor>;
+  // A product's own, run once the present set is known (livedocuments' article carets).
+  onPresent?: (participants: readonly P[], present: Set<string>) => void;
+  // A product's own state that goes with whoever left, after the cursors.
+  onPruned?: (present: Set<string>) => void;
+};
+
+/**
+ * One presence list into the page, after its avatar rows (presenceRows, which each hook sets itself): a seeded
+ * last-seen for each arrival, the colour a later joiner yields, and every per-peer state without whoever left (drag
+ * previews, tab dots and their other panes, selections, cursors, a product's own, and the idle tracker), in that
+ * order.
+ */
+export function syncRoomPresence<
+  P extends RoomPresenceEntry & { besideTabId?: string },
+  Selection,
+  Cursor,
+>(participants: readonly P[], sync: RoomPresenceSync<P, Selection, Cursor>): void {
+  // Seed lastSeen for any arrival not tracked yet, publishing it so the next render has their `lastActiveAt`.
+  for (const p of participants) {
+    if (!sync.lastSeen.has(p.id)) sync.markSeen(p.id);
+  }
+  // Only the later joiner yields; the new colour flushes through the autosave and the next hello carries it.
+  const fresh = yieldedColour(participants, sync.self(), sync.nextFreeColor);
+  if (fresh) sync.takeColour(fresh);
+  // Drop what each departed peer left behind, so no stale indicator sticks after a tab close or a network drop.
+  const present = new Set(participants.map((p) => p.id));
+  sync.prunePeerDragPreviews(present);
+  sync.onPresent?.(participants, present);
+  // Each peer's tab, seeded from the list and without those who left (seededTabFocus).
+  const selfId = sync.self().id;
+  sync.setRemoteTabFocus((prev) => seededTabFocus(prev, participants, present, selfId));
+  syncRemoteBesideTabs(participants, selfId);
+  sync.setRemoteSelections((prev) => pruneMapToPresent(prev, present));
+  sync.setRemoteCursors((prev) => pruneMapToPresent(prev, present));
+  sync.onPruned?.(present);
+  // Same for the lastSeen idle tracker (a plain ref, not state).
+  forgetDeparted(sync.lastSeen, present);
 }

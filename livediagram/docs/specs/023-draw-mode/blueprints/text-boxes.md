@@ -6,31 +6,31 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                      | Role                                                                                           |
-| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`                  | `TextElement.sizing`, `TextElement.textScale`                                                  |
-| `packages/document/src/validate.ts`                       | `TEXT_SCALE_MIN`, `TEXT_SCALE_MAX`; the two fields' checks                                     |
-| `packages/document/src/svg-render-describe.ts`            | An export draws a text box's label at its scale                                                |
-| `apps/api/src/openapi/schemas.generated.ts`               | Regenerated: the two fields on `TextElement`                                                   |
-| `apps/editor/lib/text-hug.ts`                             | Pure geometry: padding, font px, hug size, placement, commit, resize                           |
-| `apps/editor/components/canvas/text-hug-measure.ts`       | The DOM measurer: `measureTextHug`, `measureDrawnText`, `labelRuns`                            |
-| `apps/editor/components/canvas/useTextHug.ts`             | The element view's live size while typing                                                      |
-| `apps/editor/components/canvas/BoxedElementView.tsx`      | Draws the live size; `boxed-element-label.tsx` beside it hands `TextHugLabel` to `renderLabel` |
-| `apps/editor/components/canvas/element-labels.tsx`        | `renderLabel(..., hug)`: padding, no placeholder, fixed px for `scale`, the scale              |
-| `apps/editor/components/canvas/element-label-views.tsx`   | `FixedSizeLabel` takes `px`; `RichLabel` takes `textScale`; padding may be CSS                 |
-| `apps/editor/components/canvas/label-style.ts`            | `labelBasePx`, `labelRunPx`, `LabelPadding`                                                    |
-| `apps/editor/components/canvas/RichTextEditor*.ts(x)`     | `textScale`, `onLiveText`                                                                      |
-| `apps/editor/components/canvas/useRichTextSession.ts`     | Scaled px; reports the editor node after every change                                          |
-| `apps/editor/components/rich-text/useRichTextDocument.ts` | Re-sets the caret when an Enter at the end opens the empty last line                           |
-| `apps/editor/components/rich-text/rich-text-dom.ts`       | `reconcileTrailingNewline` says whether it added the line; `reassertSelection`                 |
-| `apps/editor/lib/draw-commit.ts`                          | `buildDrawnBoxed` places a Draw mode text box through `placedTextBox`                          |
-| `apps/editor/app/document/[id]/useSelectionEditing.ts`    | `commitLabel` hugs or removes, in the label's one commit                                       |
-| `apps/editor/hooks/canvas/boxed-drag-resolve.ts`          | `resizedElement`, `TextHugResize`                                                              |
-| `apps/editor/hooks/canvas/useEditorDrag.ts`               | A lone hugging text box resizes through `resizedElement`                                       |
-| `apps/editor/hooks/canvas/useTextStyleSetters.ts`         | Size, font, bold, italic, underline, strikethrough re-hug; a picked size drops the scale       |
-| `apps/editor/hooks/canvas/useElementStyle.ts`             | Passes `activeTab` to the text setters                                                         |
-| `apps/editor/hooks/canvas/useEditModeContextMenu.ts`      | No element menu beside a whiteboard text box being typed into (T4)                             |
-| `apps/editor/components/canvas/EditorCanvasHost.tsx`      | Passes `whiteboard` to `useEditModeContextMenu`                                                |
+| File                                                                                                                                               | Role                                                                                           |
+| -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `packages/document/src/element-types.ts`                                                                                                           | `TextElement.sizing`, `TextElement.textScale`                                                  |
+| `packages/document/src/validate.ts`                                                                                                                | `TEXT_SCALE_MIN`, `TEXT_SCALE_MAX`; the two fields' checks                                     |
+| `packages/document/src/svg-render-describe.ts`                                                                                                     | An export draws a text box's label at its scale                                                |
+| `apps/api/src/openapi/schemas.generated.ts`                                                                                                        | Regenerated: the two fields on `TextElement`                                                   |
+| `apps/editor/lib/text-hug.ts`                                                                                                                      | Pure geometry: padding, font px, hug size, placement, commit, resize                           |
+| `apps/editor/components/canvas/text-hug-measure.ts`                                                                                                | The DOM measurer: `measureTextHug`, `measureDrawnText`, `labelRuns`                            |
+| `apps/editor/components/canvas/useTextHug.ts`                                                                                                      | The element view's live size while typing                                                      |
+| `apps/editor/components/canvas/BoxedElementView.tsx`                                                                                               | Draws the live size; `boxed-element-label.tsx` beside it hands `TextHugLabel` to `renderLabel` |
+| `apps/editor/components/canvas/element-labels.tsx`                                                                                                 | `renderLabel(..., hug)`: padding, no placeholder, fixed px for `scale`, the scale              |
+| `apps/editor/components/canvas/element-label-views.tsx` (`FixedSizeLabel` from `packages/workbench/src/components/canvas/element-label-views.tsx`) | `FixedSizeLabel` takes `px`; `RichLabel` takes `textScale`; padding may be CSS                 |
+| `apps/editor/components/canvas/label-style.ts`                                                                                                     | `labelBasePx`, `labelRunPx`, `LabelPadding`                                                    |
+| `apps/editor/components/canvas/RichTextEditor*.ts(x)`                                                                                              | `textScale`, `onLiveText`                                                                      |
+| `apps/editor/components/canvas/useRichTextSession.ts`                                                                                              | Scaled px; reports the editor node after every change                                          |
+| `apps/editor/components/rich-text/useRichTextDocument.ts`                                                                                          | Re-sets the caret when an Enter at the end opens the empty last line                           |
+| `apps/editor/components/rich-text/rich-text-dom.ts`                                                                                                | `reconcileTrailingNewline` says whether it added the line; `reassertSelection`                 |
+| `apps/editor/lib/draw-commit.ts`                                                                                                                   | `buildDrawnBoxed` places a Draw mode text box through `placedTextBox`                          |
+| `apps/editor/app/document/[id]/useSelectionEditing.ts`                                                                                             | `commitLabel` hugs or removes, in the label's one commit                                       |
+| `apps/editor/hooks/canvas/boxed-drag-resolve.ts`                                                                                                   | `resizedElement`, `TextHugResize`                                                              |
+| `apps/editor/hooks/canvas/useEditorDrag.ts`                                                                                                        | A lone hugging text box resizes through `resizedElement`                                       |
+| `apps/editor/hooks/canvas/useTextStyleSetters.ts`                                                                                                  | Size, font, bold, italic, underline, strikethrough re-hug; a picked size drops the scale       |
+| `apps/editor/hooks/canvas/useElementStyle.ts`                                                                                                      | Passes `activeTab` to the text setters                                                         |
+| `apps/editor/hooks/canvas/useEditModeContextMenu.ts`                                                                                               | No element menu beside a whiteboard text box being typed into (T4)                             |
+| `apps/editor/components/canvas/EditorCanvasHost.tsx`                                                                                               | Passes `whiteboard` to `useEditModeContextMenu`                                                |
 
 ## Domain and naming
 

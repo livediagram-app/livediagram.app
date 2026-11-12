@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./silent": "./src/silent.ts",
+    "./app-auth": "./src/app-auth.ts",
     "./account-name": "./src/account-name.ts",
     "./return-path": "./src/return-path.ts",
     "./pkce-cookie": "./src/pkce-cookie.ts",

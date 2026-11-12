@@ -1,5 +1,4 @@
 import { useEffect, useEffectEvent, useRef } from 'react';
-import { syncRemoteBesideTabs } from '@liveworkspace/workbench/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
 import { type AgentPresence } from '@livediagram/api-schema';
 import { nextFreeColor } from '@/lib/identity';
@@ -15,11 +14,9 @@ import { createPresenceCoalescer, type PresenceCoalescer } from './presence-coal
 import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
 import {
-  forgetDeparted,
   presenceRows,
   pruneMapToPresent,
-  seededTabFocus,
-  yieldedColour,
+  syncRoomPresence,
 } from '@liveworkspace/workbench/lib/room-presence';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { prunePeerDragPreviews } from '@/hooks/collab/peer-drag-previews';
@@ -125,33 +122,24 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       roleByPresenceRef.current = new Map(participants.map((p) => [p.id, p.role] as const));
       nameByPresenceRef.current = new Map(participants.map((p) => [p.id, p.name] as const));
       setLivePresence(presenceRows(participants, lastSeenRef.current, now));
-      // Seed lastSeen for any presence-arrival we haven't tracked yet, publishing it so the next
-      // render has their `lastActiveAt`.
-      for (const p of participants) {
-        if (!lastSeenRef.current.has(p.id)) markSeen(p.id);
-      }
-      // Unique-colour reconciliation (yieldedColour): only the later joiner yields. The new colour flushes through
-      // the autosave and the next hello carries it. Read through selfParticipantRef: this handler must not act on a
-      // stale snapshot of the participant.
-      const fresh = yieldedColour(participants, selfParticipantRef.current, nextFreeColor);
-      if (fresh) setSelfParticipant((prev) => ({ ...prev, color: fresh }));
-      // Drop selections AND cursors for any participant who's no
-      // longer connected. Stops stale presence indicators from
-      // sticking after a tab close or network drop.
-      const present = new Set(participants.map((p) => p.id));
-      prunePeerDragPreviews(present);
-      // Each peer's tab, seeded from the list and without those who left (seededTabFocus).
-      const selfId = selfParticipantRef.current.id;
-      setRemoteTabFocus((prev) => seededTabFocus(prev, participants, present, selfId));
-      syncRemoteBesideTabs(participants, selfId);
-      setRemoteSelections((prev) => pruneMapToPresent(prev, present));
-      setRemoteCursors((prev) => pruneMapToPresent(prev, present));
-      // A departed peer's laser trail and camera go with them too: a follower or a "focus here"
-      // must not read the view of someone no longer in the room.
-      setRemoteLaserTrails((prev) => pruneMapToPresent(prev, present));
-      setRemoteViewports((prev) => pruneMapToPresent(prev, present));
-      // Same for the lastSeen idle tracker (a plain ref, not state).
-      forgetDeparted(lastSeenRef.current, present);
+      // Each arrival seeded, the colour a later joiner yields, and what goes with whoever left
+      // (@liveworkspace/workbench/lib/room-presence).
+      syncRoomPresence(participants, {
+        lastSeen: lastSeenRef.current,
+        markSeen,
+        // Read through selfParticipantRef: this handler must not act on a stale snapshot of the participant.
+        self: () => selfParticipantRef.current,
+        nextFreeColor,
+        takeColour: (color) => setSelfParticipant((prev) => ({ ...prev, color })),
+        prunePeerDragPreviews,
+        setRemoteTabFocus,
+        setRemoteSelections,
+        setRemoteCursors,
+        onPruned: (present) => {
+          setRemoteLaserTrails((prev) => pruneMapToPresent(prev, present));
+          setRemoteViewports((prev) => pruneMapToPresent(prev, present));
+        },
+      });
     },
   );
 

@@ -4,6 +4,8 @@
 // poll, a board's notes, the responses, a chart's rows, a code block's code, ...) have no check:
 // nothing in livehuddle reads them, and a stored one stays exactly as it is
 // (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements", "The element engine").
+// The helpers and the checks two or more products hold the same way are
+// @liveworkspace/element-model/shape-field-checks; this list keeps this product's order and its own checks.
 
 import { isRoomDoor, isStageSpeakers } from './office';
 import { isPieceVariant, PIECE_VARIANT_MAX } from './piece-variants';
@@ -25,14 +27,10 @@ import { isChairFacing } from './collab-shapes';
 import {
   type ElementValidationIssue,
   type FieldCheck,
-  firstFieldIssue,
-  isBool,
   isNonEmptyStr,
-  issue,
   oneOfRule,
 } from '@liveworkspace/model-core/validate-primitives';
-
-const flag = (field: string): FieldCheck => ({ field, valid: isBool, rule: 'a boolean' });
+import { flag, shapeIssue } from '@liveworkspace/element-model/shape-field-checks';
 
 // Absent passes every check; a present value must satisfy its rule. Ids that point at nothing
 // (`portalTarget`, `mindParentId`) are legal: the element renders unpaired or as a root.
@@ -93,6 +91,5 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
 
 // A shape's own issue, its box already checked: the kind is required, the rest optional.
 export function shapeValidationIssue(el: Record<string, unknown>): ElementValidationIssue | null {
-  if (!isNonEmptyStr(el.shape)) return issue('shape', 'a shape kind');
-  return firstFieldIssue(el, SHAPE_FIELD_CHECKS);
+  return shapeIssue(el, SHAPE_FIELD_CHECKS);
 }

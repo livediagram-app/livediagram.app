@@ -12,6 +12,7 @@
     "./perf/budget": "./src/perf/budget.ts",
     "./perf/budget-report": "./src/perf/budget-report.ts",
     "./perf/calibrate": "./src/perf/calibrate.ts",
+    "./perf/canvas-probe": "./src/perf/canvas-probe.ts",
     "./perf/interactive": "./src/perf/interactive.ts",
     "./perf/trace-tasks": "./src/perf/trace-tasks.ts"
   },

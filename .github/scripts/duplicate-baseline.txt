@@ -136,7 +136,6 @@ livediagram/apps/editor/app/document/[id]/page.tsx	livedocuments/apps/editor/app
 livediagram/apps/editor/app/document/[id]/resolve-participant.ts	livehuddle/apps/editor/app/document/[id]/resolve-participant.ts
 livediagram/apps/editor/app/document/[id]/room-refusal.ts	livehuddle/apps/editor/app/document/[id]/room-refusal.ts
 livediagram/apps/editor/app/document/[id]/save-failure.ts	livehuddle/apps/editor/app/document/[id]/save-failure.ts
-livediagram/apps/editor/app/document/[id]/tab-save-queue.ts	livehuddle/apps/editor/app/document/[id]/tab-save-queue.ts
 livediagram/apps/editor/app/document/[id]/useEditorDialogs.ts	livehuddle/apps/editor/app/document/[id]/useEditorDialogs.ts
 livediagram/apps/editor/app/document/[id]/useRoleIndicator.ts	livedocuments/apps/editor/app/document/[id]/useRoleIndicator.ts	livehuddle/apps/editor/app/document/[id]/useRoleIndicator.ts
 livediagram/apps/editor/app/document/[id]/useTabEntryEffects.ts	livehuddle/apps/editor/app/document/[id]/useTabEntryEffects.ts
@@ -161,7 +160,6 @@ livediagram/apps/editor/components/palette/theme-picker-cards.tsx	livehuddle/app
 livediagram/apps/editor/components/panels/LaserColourRow.tsx	livedocuments/apps/editor/components/panels/LaserColourRow.tsx
 livediagram/apps/editor/components/panels/LazyExplorer.tsx	livedocuments/apps/editor/components/panels/LazyExplorer.tsx	livehuddle/apps/editor/components/panels/LazyExplorer.tsx
 livediagram/apps/editor/components/panels/search-panel-sources.ts	livedocuments/apps/editor/components/panels/search-panel-sources.ts	livehuddle/apps/editor/components/panels/search-panel-sources.ts
-livediagram/apps/editor/components/primitives/MovablePanel.types.ts	livehuddle/apps/editor/components/primitives/MovablePanel.types.ts
 livediagram/apps/editor/components/start/StartCard.tsx	livehuddle/apps/editor/components/start/StartCard.tsx
 livediagram/apps/editor/components/start/StartViewTransition.tsx	livehuddle/apps/editor/components/start/StartViewTransition.tsx
 livediagram/apps/editor/components/start/start-closed-key.ts	livehuddle/apps/editor/components/start/start-closed-key.ts

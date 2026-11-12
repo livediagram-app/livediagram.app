@@ -7,7 +7,7 @@ a step before it. livediagram's Start Diagramming and Start Drawing went with Di
 
 ## The panel
 
-One shared panel, `StartPanel` (`apps/editor/components/start/StartPanel.tsx`), draws the start; the start says what its groups and cards are, the panel
+One shared panel, `StartPanel` (`apps/editor/components/start/StartPanel.tsx`, this app's binding of the panel every editor shares, `../packages/workbench/src/components/start/StartPanel.tsx`), draws the start; the start says what its groups and cards are, the panel
 draws them.
 
 - **Header:** over the app's own band ([The header band](#the-header-band)), a title mark, then the title ("Start a Space"), one line under it ("Walk into an office, a hall, a bar or a garden.

@@ -6,25 +6,18 @@
 // MultiSelectionToolbar, EditorContextMenu). Composed from the shared
 // primitives so the house style holds.
 
-import type { ReactNode } from 'react';
-import {
-  Scene,
-  Shape,
-  Arrow,
-  SelectionBox,
-  Panel,
-  Label,
-} from '@liveworkspace/help-site/art/primitives';
+import { Scene, Shape, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
 import { MenuCard, Strip } from './toolbar-layout';
-import {
-  GLYPH,
-  DotsGlyph,
-  IconButton,
-  TabCard,
-  TabPill,
-  QuickControlsRow,
-  BottomBar,
-} from '@liveworkspace/help-site/art/illustrations/user-interface-chrome';
+import { GLYPH, BottomBar } from '@liveworkspace/help-site/art/illustrations/user-interface-chrome';
+
+// These scenes are the shared ones (@liveworkspace/help-site/art/illustrations/user-interface-scenes), drawn as
+// they are; the panel layout and the corner cluster, zoom controls and Map below are this app's own.
+export {
+  QuickControls,
+  TabBar,
+  MultiSelectToolbar,
+  ElementContextMenu,
+} from '@liveworkspace/help-site/art/illustrations/user-interface-scenes';
 
 // --- Fixed chrome ------------------------------------------------------------
 
@@ -62,8 +55,6 @@ function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?:
     </g>
   );
 }
-
-// --- Scenes ------------------------------------------------------------------
 
 /** The whole frame at a glance: the menu button card top-left, the palette strip across the
  *  top, a tool panel (Format) docked top-right under it, the Map bottom-left, the corner cluster
@@ -105,96 +96,6 @@ export function PanelLayout() {
       </Panel>
       <CornerCluster x={194} y={182} />
       <BottomBar y={220} w={420} />
-    </Scene>
-  );
-}
-
-/** The quick controls, close up: Search, Settings and the appearance switch
- *  at the right-hand end of the bottom bar, each named beside its icon. */
-export function QuickControls() {
-  return (
-    <Scene w={420} h={130}>
-      <Shape x={60} y={20} w={80} h={40} label="Idea" />
-      <BottomBar y={86} w={420} labelled />
-      <rect
-        x={232}
-        y={90}
-        width={182}
-        height={22}
-        rx={6}
-        fill="none"
-        className="stroke-brand-400"
-        strokeWidth={1.5}
-        strokeDasharray="4 3"
-      />
-    </Scene>
-  );
-}
-
-/** The bottom bar's tabs: the active tab with its menu
- *  button and a presence avatar, another tab, a collapsible folder, the +
- *  button, and the quick controls at the far end. */
-export function TabBar() {
-  const y = 96;
-  return (
-    <Scene w={500} h={140}>
-      <Shape x={195} y={22} w={110} h={46} label="Checkout" />
-      <rect x={0} y={y} width={500} height={36} className="fill-slate-100" />
-      <line x1={0} y1={y} x2={500} y2={y} className="stroke-slate-200" strokeWidth={1.5} />
-      {/* The open tab, a card on the bar's bottom edge, with a presence avatar and its ⋯. */}
-      <TabCard x={40} top={y + 5} bottom={y + 36} w={92} />
-      <Label x={48} y={y + 19} size={9.5} weight={650} tone="accent">
-        Overview
-      </Label>
-      <circle cx={108} cy={y + 18} r={5} className="fill-emerald-400" />
-      <DotsGlyph x={122} y={y + 18} />
-      <TabPill x={140} y={y + 8} w={40} label="Flow" />
-      {/* A shut tab folder, as TabFolderGroup draws it: a shelf tinted in the folder's colour, shaped like a tab,
-          holding its header (a folder glyph, its name and a count badge) in the folder's ink. */}
-      <path
-        d={`M186 ${y + 36} V${y + 12} a7 7 0 0 1 7 -7 H247 a7 7 0 0 1 7 7 V${y + 36} Z`}
-        className="fill-violet-50"
-      />
-      <path
-        d="M-8 -5 h5 l2 2 h8 a1 1 0 0 1 1 1 v7 a1 1 0 0 1 -1 1 h-14 a1 1 0 0 1 -1 -1 v-9 a1 1 0 0 1 1 -1 Z"
-        transform={`translate(196 ${y + 18.5}) scale(0.6)`}
-        fill="none"
-        className="stroke-violet-700 dark:stroke-violet-300"
-        strokeWidth={2.2}
-        strokeLinejoin="round"
-      />
-      <Label
-        x={205}
-        y={y + 19}
-        size={9}
-        weight={650}
-        className="fill-violet-700 dark:fill-violet-300"
-      >
-        Ideas
-      </Label>
-      <rect
-        x={233}
-        y={y + 12}
-        width={13}
-        height={13}
-        rx={4}
-        className="fill-violet-600 dark:fill-violet-300"
-      />
-      <Label
-        x={239.5}
-        y={y + 19}
-        anchor="middle"
-        size={8}
-        weight={700}
-        className="fill-white dark:fill-slate-950"
-      >
-        2
-      </Label>
-      <Label x={262} y={y + 19} size={15} weight={600} tone="muted" anchor="middle">
-        +
-      </Label>
-      {/* On a computer the quick controls carry their words, beside the TABS label. */}
-      <QuickControlsRow x={310} y={y + 18} />
     </Scene>
   );
 }
@@ -243,103 +144,6 @@ export function ZoomControls() {
         </Label>
       </Panel>
       <CornerCluster x={110} y={198} />
-    </Scene>
-  );
-}
-
-/** A mixed marquee selection (two shapes and an arrow) with the multi-select
- *  toolbar: More, Filter Selection, Duplicate, Export, Lock and Delete. */
-export function MultiSelectToolbar() {
-  const tx = 116;
-  const ty = 34;
-  const buttons: ReactNode[] = [
-    <DotsGlyph key="more" x={0} y={0} />,
-    <path key="filter" d="M-6 -5 h12 l-5 5 v5 l-2 -1 v-4 Z" {...GLYPH} />,
-    <g key="dup">
-      <rect x={-5} y={-5} width={8} height={8} rx={1.5} {...GLYPH} />
-      <rect x={-2} y={-2} width={8} height={8} rx={1.5} {...GLYPH} />
-    </g>,
-    <path key="export" d="M0 3 V-6 M-4 -2 L0 -6 L4 -2 M-6 3 v3 h12 v-3" {...GLYPH} />,
-    <g key="lock">
-      <rect x={-5} y={-1} width={10} height={7} rx={1.5} {...GLYPH} />
-      <path d="M-3 -1 v-2 a3 3 0 0 1 6 0 v2" {...GLYPH} />
-    </g>,
-    <path key="delete" d="M-5 -4 h10 M-3 -4 v9 h6 v-9 M-1.5 -6 h3" {...GLYPH} />,
-  ];
-  return (
-    <Scene w={420} h={220}>
-      <Label x={tx + 2} y={ty - 10} size={10} weight={600} tone="muted">
-        Selected Elements (3)
-      </Label>
-      <Panel x={tx} y={ty} w={8 + buttons.length * 30} h={34}>
-        {buttons.map((g, i) => (
-          <IconButton key={i} x={tx + 6 + i * 30} y={ty + 5}>
-            {g}
-          </IconButton>
-        ))}
-      </Panel>
-      <Shape x={94} y={112} w={90} h={46} label="Cart" />
-      <Shape x={250} y={112} w={90} h={46} accent label="Pay" />
-      <Arrow from={[184, 135]} to={[250, 135]} />
-      <SelectionBox x={86} y={102} w={262} h={66} />
-    </Scene>
-  );
-}
-
-/** The element menu for a shape: collapsible sections, Layer first, then
- *  Size, Shape, Rotation, the Style and Text flyouts, Collaborate and
- *  Resources. */
-export function ElementContextMenu() {
-  const sections: { label: string; flyout?: boolean }[] = [
-    { label: 'Layer' },
-    { label: 'Size' },
-    { label: 'Shape' },
-    { label: 'Rotation' },
-    { label: 'Style', flyout: true },
-    { label: 'Animation', flyout: true },
-    { label: 'Text', flyout: true },
-    { label: 'Collaborate' },
-    { label: 'Resources' },
-  ];
-  const mx = 214;
-  const my = 16;
-  return (
-    <Scene w={420} h={256}>
-      <Shape x={56} y={60} w={112} h={56} accent label="Order" />
-      <SelectionBox x={56} y={60} w={112} h={56} />
-      <Panel x={mx} y={my} w={160} h={8 + sections.length * 25}>
-        {sections.map((sec, i) => {
-          const ry = my + 4 + i * 25;
-          const on = sec.label === 'Style';
-          return (
-            <g key={sec.label}>
-              {on && (
-                <rect x={mx + 4} y={ry} width={152} height={23} rx={5} className="fill-brand-50" />
-              )}
-              <Label
-                x={mx + 14}
-                y={ry + 12}
-                size={11}
-                weight={on ? 600 : 500}
-                tone={on ? 'accent' : 'body'}
-              >
-                {sec.label}
-              </Label>
-              <path
-                d={
-                  sec.flyout
-                    ? `M${mx + 142} ${ry + 8} l4 4 l-4 4`
-                    : `M${mx + 140} ${ry + 10} l4 4 l4 -4`
-                }
-                className="stroke-slate-400"
-                strokeWidth={1.4}
-                fill="none"
-                strokeLinecap="round"
-              />
-            </g>
-          );
-        })}
-      </Panel>
     </Scene>
   );
 }

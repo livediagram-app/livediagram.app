@@ -2,3 +2,4 @@
 import { nodeDurableState, nodeItemSql, nodeSql, nodeTransaction } from './test-sqlite';
 
 export { nodeDurableState, nodeItemSql, nodeSql, nodeTransaction };
+export * from './test-item-index';

@@ -14,6 +14,13 @@ const HELD_AT_100 = [
   'src/lib/room-presence.ts',
   'src/hooks/ui/usePageContents.ts',
   'src/components/canvas/arrow-view-parts.tsx',
+  'src/lib/editor-search/build-search-results.ts',
+  'src/lib/api/core.ts',
+  'src/components/start/StartPanel.tsx',
+  'src/lib/canvas-backgrounds.ts',
+  'src/lib/tab-looks.ts',
+  'src/lib/editor-viewport-defaults.ts',
+  'src/components/canvas/label-align.ts',
 ];
 
 export default defineProject({

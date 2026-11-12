@@ -373,6 +373,26 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
   to Mono, `migrateRetiredTheme`). liveplanner's and livedocuments' `themes-data.ts`, `themes.ts` and
   `retired-themes.ts`, and livedesign's and livehuddle's `themes-data.ts`, re-export it; livedesign's and livehuddle's
   `retired-themes.ts` add their Autumn and Jewel to its table. livediagram keeps UML and its own `retired-themes`.
+- The field table and the shape checks (round 9, all five): `element-fields` holds `fieldsOf<E>()`, the build-time
+  check that a list names every field of its type, `elementFieldLookup(table)`, and the runs of fields many types
+  list together (`BOX_FIELDS`, `TEXT_STYLE_FIELDS`, `NOTE_FIELDS`, `ARROW_FIELDS`, ...). Each product's
+  `element-fields.ts` keeps its own lists, spreading the runs in place, so the order an `unknown_field` refusal offers
+  is unchanged. `shape-field-checks` holds the helpers (`isStrUpTo`, `rowsOf`, `dataArray`, `flag`, `finite`,
+  `oneOf`, `MAX_DATA_ARRAY`), the written-out refusal lists, `shapeIssue(el, checks)` and the checks two or more
+  products hold the same way, in runs (`chartRowChecks(isSlice?)`, `CODE_CHECKS`, `CARD_CHECKS`, `STACK_CHECKS`,
+  `SANKEY_CHECKS`, ...). Each product's `validate-shape.ts` keeps its list and its own checks, so which refusal comes
+  first is unchanged; what differs is passed or stays: livediagram passes its own slice test (a slice needs a finite
+  value), livedocuments keeps its stats check (a stat's change), liveplanner lists no `stepSequence`.
+- The state every product kept a near-copy of (round 9, all five). In the api Workers:
+  `@liveworkspace/api-kit/room-client` (`createRoomClient`: the room calls, under each product's room binding, id key
+  and meta op), `@liveworkspace/auth-client/app-auth` (`createAppAuth`: the `/api/auth` routes, under each product's
+  cookies, return-path rule and PKCE codec; options for a family name, a token age and an ASCII `Location`) and
+  `@liveworkspace/email/layout` (`createEmailLayout`: the notification emails' shell and footer, pinned by each
+  product's `templates-golden.test.ts`). In the editors: `@liveworkspace/workbench/hooks/persistence/useAutosaveCore`
+  (each `useAutosave.ts`), `@liveworkspace/workbench/lib/offline/offline-store-core` (each `offline-store.ts`, whose
+  IndexedDB backend, names and versions stay its own) and `@liveworkspace/workbench/lib/api/tab-calls` (each
+  `lib/api/tabs.ts`). Each product's file keeps its old path and names, binds the shared one once, and lists what
+  it hands in.
 - `@liveworkspace/workbench/components/canvas/useFaceFinishPass` is the canvas finish pass of livediagram,
   livedocuments, livedesign and livehuddle; liveplanner keeps its own (its Plan boards spend a frame budget).
 

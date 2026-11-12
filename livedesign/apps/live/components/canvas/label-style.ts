@@ -11,15 +11,7 @@ import {
   labelFontPx,
   MUTED_RUN_OPACITY,
 } from '@livedesign/design';
-import type {
-  BoxedElement,
-  RunSize,
-  TextAlignX,
-  TextAlignY,
-  TextRun,
-  TextSize,
-  RunHeading,
-} from '@livedesign/design';
+import type { BoxedElement, RunSize, TextRun, TextSize, RunHeading } from '@livedesign/design';
 import type { RunDefaults } from '@/components/rich-text/rich-text-format';
 
 // The base a label run's unset deltas inherit: the element's whole-element
@@ -34,17 +26,8 @@ export function elementRunDefaults(el: BoxedElement): RunDefaults {
   };
 }
 
-export const ALIGN_ITEMS: Record<TextAlignY, 'flex-start' | 'center' | 'flex-end'> = {
-  top: 'flex-start',
-  middle: 'center',
-  bottom: 'flex-end',
-};
-
-export const TEXT_ALIGN: Record<TextAlignX, 'left' | 'center' | 'right'> = {
-  left: 'left',
-  center: 'center',
-  right: 'right',
-};
+// How alignment lays out, the block's flex placement and its lines' text-align: one copy for every editor.
+export { ALIGN_ITEMS, TEXT_ALIGN } from '@liveworkspace/workbench/components/canvas/label-align';
 
 // The label px tables live in @livedesign/design, because the EXPORTERS
 // need the same numbers: they kept their own set (12 / 14 / 20 / 18 against

@@ -1,10 +1,21 @@
 import { DatabaseSync } from 'node:sqlite';
 import { ItemDb } from '@liveworkspace/index-app';
 import { migrateDesignSchema } from './design-room/design-schema';
-import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
+import {
+  bindTestRooms,
+  nodeItemSql,
+  nodeTransaction,
+  testIndexGrant,
+  testItemGrant,
+  testListFolders,
+  testOutboxFlush,
+  testRequestGrant as requestTestGrant,
+  testRoomNamespace,
+  type TestGrantCaller,
+} from '@liveworkspace/index-app/testing';
 import type { AccessLevel } from '@livedesign/api-schema';
 import type { GrantCaller, GrantOutcome, DesignGrant } from './index-service';
-import { IndexError, type IndexClient, type ShareAccess } from '@liveworkspace/index-client';
+import type { IndexClient, ShareAccess } from '@liveworkspace/index-client';
 import type { Env, DesignEnv } from './types';
 
 // A real store for tests: an in-memory SQLite database holding the designs' content (docs/specs/015-api/api.md
@@ -56,16 +67,11 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
     tab_id TEXT NULL, created_at INTEGER NOT NULL DEFAULT 0, expires_at INTEGER NULL, expiry TEXT NULL)`);
 
   // Drain what the designs owe the index and the media service now, as each design's alarm would.
-  const flush = async (): Promise<void> => {
-    const { drainOutbox } = await import('./design-room/design-outbox');
-    const designs = sql.prepare('SELECT DISTINCT design_id FROM outbox').all() as {
-      design_id: string;
-    }[];
-    for (const { design_id } of designs) {
-      let more = true;
-      while (more) more = (await drainOutbox(env, design_id)).more;
-    }
-  };
+  const flush = testOutboxFlush(sql, {
+    itemColumn: 'design_id',
+    mode: 'each',
+    drain: async (id) => (await import('./design-room/design-outbox')).drainOutbox(env, id),
+  });
 
   const designDb = new ItemDb(designSql, {
     transaction: nodeTransaction(sql),
@@ -79,14 +85,7 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
   });
   Object.defineProperty(env, TEST_SQL, { value: sql, enumerable: false });
   // A test that sets env.DESIGN_ROOM later (its relay recorder) gets it wrapped the same way.
-  let rooms = testDesignRooms(env, sql, base.DESIGN_ROOM);
-  Object.defineProperty(env, 'DESIGN_ROOM', {
-    enumerable: true,
-    get: () => rooms,
-    set: (next: DurableObjectNamespace | undefined) => {
-      rooms = testDesignRooms(env, sql, next);
-    },
-  });
+  bindTestRooms(env, 'DESIGN_ROOM', base.DESIGN_ROOM, (rooms) => testDesignRooms(env, sql, rooms));
   return { env, sql, flush };
 }
 
@@ -100,47 +99,8 @@ export function testIndexFor(env: unknown, caller: GrantCaller): IndexClient | n
   const person = caller.kind === 'delegate' ? caller.personId : null;
   const teams = caller.kind === 'delegate' ? caller.teams : [];
   const client: Partial<IndexClient> = {
-    grant: async (designId, share) => {
-      const grant = testGrantFor(sql, designId, {
-        person,
-        teams,
-        code: share?.code ?? null,
-        create: false,
-      });
-      if (!grant) throw new IndexError(404, 'not_found');
-      return {
-        grant: grant.token,
-        level: grant.level,
-        tabId: grant.tab,
-        expiresAt: grant.exp * 1000,
-      };
-    },
-    listFolders: async () => {
-      const rows = sql
-        .prepare(
-          `SELECT id, owner_id, team_id, parent_id, name FROM test_folders
-            WHERE (team_id IS NULL AND owner_id = ?) OR team_id IN (SELECT value FROM json_each(?))`,
-        )
-        .all(person ?? '', JSON.stringify(teams)) as {
-        id: string;
-        owner_id: string;
-        team_id: string | null;
-        parent_id: string | null;
-        name: string;
-      }[];
-      return {
-        folders: rows.map((r) => ({
-          id: r.id,
-          ownerId: r.owner_id,
-          teamId: r.team_id,
-          parentId: r.parent_id,
-          name: r.name,
-          createdAt: 0,
-          updatedAt: 0,
-        })),
-        nextCursor: null,
-      };
-    },
+    grant: testIndexGrant((itemId, who) => testGrantFor(sql, itemId, who), person, teams),
+    listFolders: testListFolders(sql, person, teams),
   };
   return client as IndexClient;
 }
@@ -151,14 +111,7 @@ export async function testRequestGrant(
   designId: string,
   share: ShareAccess | null,
 ): Promise<GrantOutcome> {
-  const client = testIndexFor(env, caller);
-  if (!client) return { ok: false, status: 503, error: 'index_unavailable' };
-  try {
-    return { ok: true, grant: await client.grant(designId, share) };
-  } catch (err) {
-    if (err instanceof IndexError) return { ok: false, status: err.status, error: err.code };
-    throw err;
-  }
+  return requestTestGrant(testIndexFor(env, caller), designId, share);
 }
 
 // What the index would grant on a design in a test (test-route-context.ts): the owner and a member of its team
@@ -166,55 +119,14 @@ export async function testRequestGrant(
 // caller's own. Null for anything else.
 export const TEST_GRANT_HOOK = '__testGrant';
 
-export type TestGrantCaller = {
-  person: string | null;
-  teams: readonly string[];
-  code: string | null;
-  create: boolean;
-};
+export type { TestGrantCaller };
 
-function testGrantFor(
-  sql: DatabaseSync,
-  designId: string,
-  who: TestGrantCaller,
-): DesignGrant | null {
-  const design = sql
-    .prepare('SELECT owner_id, team_id, created_at FROM design WHERE id = ?')
-    .get(designId) as { owner_id: string; team_id: string | null; created_at: number } | undefined;
-  const grant = (
-    level: AccessLevel,
-    tab: string | null,
-    sub: string,
-    code: string | null,
-  ): DesignGrant => ({
-    item: designId,
-    level,
-    tab,
-    sub,
-    team: design?.team_id ?? null,
-    exp: Math.floor(Date.now() / 1000) + 600,
-    shareCode: code,
-    token: `test-grant:${designId}:${sub}`,
-  });
-  if (!design || !design.created_at)
-    return who.create && who.person ? grant('edit', null, who.person, null) : null;
-  if (who.person && who.person === design.owner_id) return grant('edit', null, who.person, null);
-  if (who.person && design.team_id && who.teams.includes(design.team_id))
-    return grant('edit', null, who.person, null);
-  if (who.code) {
-    const link = sql
-      .prepare(
-        'SELECT role, level, tab_id, expires_at FROM test_share_links WHERE code = ? AND design_id = ?',
-      )
-      .get(who.code, designId) as
-      | { role: string; level: string | null; tab_id: string | null; expires_at: number | null }
-      | undefined;
-    if (link && (link.expires_at === null || link.expires_at > Date.now())) {
-      const level = (link.level ?? link.role) as AccessLevel;
-      return grant(level, link.tab_id, who.person ?? `link:${who.code}`, who.code);
-    }
-  }
-  return null;
+function testGrantFor(sql: DatabaseSync, itemId: string, who: TestGrantCaller): DesignGrant | null {
+  return testItemGrant(sql, itemId, who, {
+    item: 'design',
+    linkColumn: 'design_id',
+    linkLevel: true,
+  }) as DesignGrant | null;
 }
 
 // The design RPCs (design-client.ts) over the shared tables, and the room's `fetch` handed to the test's own
@@ -224,7 +136,6 @@ function testDesignRooms(
   sql: DatabaseSync,
   rooms: DurableObjectNamespace | undefined,
 ): DurableObjectNamespace {
-  type FakeId = DurableObjectId & { designName: string; roomId: unknown };
   // The design's Community post's link as the room reads it (design-room.ts communityOf).
   const communityOf = async (designId: string) => {
     const cp = await import('./design-room/community-post');
@@ -239,147 +150,121 @@ function testDesignRooms(
     if (!post || post.code !== code || !post.open) return null;
     return (await import('./design-room/community-post')).readCommunityPost(env);
   };
-  const roomOf = (id: FakeId) =>
-    rooms ? (rooms.get(id.roomId as DurableObjectId) as { fetch: typeof fetch }) : null;
-  const ns = {
-    idFromName: (name: string): FakeId => ({
-      designName: name,
-      roomId: rooms ? rooms.idFromName(name) : name,
-      name,
-      toString: () => name,
-      equals: (other: DurableObjectId) => (other as FakeId).designName === name,
-    }),
-    get: (id: FakeId) => ({
-      fetch: (input: RequestInfo | URL, init?: RequestInit) => {
-        const room = roomOf(id);
-        return room
-          ? room.fetch(input, init)
-          : Promise.resolve(new Response(null, { status: 404 }));
-      },
-      outline: async (designId: string) =>
-        (await import('./design-room/design-content')).readDesignOutline(env, designId),
-      route: async (designId: string, request: Request, identity: unknown) =>
-        (await import('./design-room/design-route')).answerDesignRequest(
-          env,
-          request,
-          identity as never,
-          () => {},
-          await communityOf(designId),
-        ),
-      exportImage: async (
-        designId: string,
-        query: { tabId: string | null; code: string | null; ifVersion: number | null },
-      ) => {
-        const { meta, savedAt } = await (
-          await import('./design-room/design-content')
-        ).readDesignHead(env, designId);
-        if (!meta) return { status: 'not_found' };
-        // A Community post's link draws only while the post is open (design-room.ts exportImage).
-        const post = query.code ? await communityOf(designId) : null;
-        const onPost = post !== null && post.code === query.code;
-        if (onPost && !post.open) return { status: 'not_found' };
-        if (query.ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
-        if (
-          query.tabId !== null &&
-          !(await (await import('./db/tabs')).designHasTab(env, designId, query.tabId))
-        ) {
-          return { status: 'not_found' };
-        }
-        const svg = await (
-          await import('./thumbnail')
-        ).drawDesign(env, { id: designId, name: meta.name }, query.tabId, { community: onPost });
-        return svg === null
-          ? { status: 'empty', version: savedAt }
-          : {
-              status: 'ok',
-              body: svg,
-              contentType: 'image/svg+xml; charset=utf-8',
-              version: savedAt,
-            };
-      },
-      heldBlobs: async (_designId: string, tabId: string, ids: string[]) =>
-        (await import('./db/photo-blobs')).heldBlobs(env, tabId, ids),
-      servesImage: async (designId: string, imageId: string, onlyTabId: string | null) =>
-        (await import('./db/image-grants')).designServesImage(env, designId, imageId, onlyTabId),
-      grantOwnImages: async (_designId: string, ids: string[], personId: string) =>
-        (await import('./db/image-grants')).grantOwnImages(env, ids, personId, Date.now()),
-      // The Drive file's two halves (design-room.ts exportFile and importFile).
-      exportFile: async (designId: string, query: { ifVersion: number | null }) =>
-        (await import('./design-room/design-file')).exportDesignFile(
-          env,
-          designId,
-          query.ifVersion,
-        ),
-      // The data export's comment threads (design-room.ts exportComments).
-      exportComments: async (designId: string) =>
-        (await import('./design-room/design-comments')).exportDesignComments(env, designId),
-      importFile: async (designId: string, file: unknown) =>
-        (await import('./design-room/design-file')).importDesignFile(env, designId, file as never),
-      hasTab: async (designId: string, tabId: string) =>
-        (await import('./db/tabs')).designHasTab(env, designId, tabId),
-      exportCopy: async (
-        designId: string,
-        onlyTabId: string | null,
-        copier: { by: string | null; code: string | null } | null,
-      ) => {
-        const post = copier?.code ? await communityOf(designId) : null;
-        const community = post !== null && post.open && post.code === copier?.code;
-        const copy = await (
-          await import('./design-room/design-content')
-        ).exportDesignCopy(env, designId, onlyTabId, copier?.by ?? null, community);
-        return copy ? { copy, community } : null;
-      },
-      community: (designId: string) => communityOf(designId),
-      communityPostTitle: async (designId: string, code: string) =>
-        (await openPost(designId, code))?.title ?? null,
-      communityListing: async (designId: string, code: string) => {
-        const stored = await openPost(designId, code);
-        if (!stored) return null;
-        const cp = await import('./design-room/community-post');
-        return { postId: stored.postId, author: await cp.communityPostAuthor(env, stored) };
-      },
-      joined: async (designId: string, personId: string) => {
-        const meta = await (
-          await import('./design-room/design-content')
-        ).readDesignMeta(env, designId);
-        if (!meta) return;
-        await (
-          await import('./email/notifications')
-        ).notifyDesignJoin(env, { id: designId, ownerId: meta.ownerId, name: meta.name }, personId);
-      },
-      importCopy: async (designId: string, copy: unknown) =>
-        (await import('./design-room/design-content')).importDesignCopy(
-          env,
-          designId,
-          copy as never,
-        ),
-      // Everything the design stored goes, and the room hears it as it did (its `/purge`).
-      purge: async (designId: string) => {
-        sql.exec('SAVEPOINT purge');
-        try {
-          sql
-            .prepare(
-              `DELETE FROM tabs WHERE id IN (SELECT tab_id FROM design_tabs WHERE design_id = ?)`,
-            )
-            .run(designId);
-          sql.prepare('DELETE FROM design WHERE id = ?').run(designId);
-          sql.prepare('DELETE FROM outbox WHERE design_id = ?').run(designId);
-          sql.exec('RELEASE purge');
-        } catch (err) {
-          sql.exec('ROLLBACK TO purge');
-          sql.exec('RELEASE purge');
-          throw err;
-        }
-        const room = roomOf(id);
-        if (room) {
-          const res = await room.fetch('https://room/purge', { method: 'POST' });
-          if (!res.ok) throw new Error(`status ${res.status}`);
-        }
-      },
-      revokeCodes: async () => 0,
-    }),
-  };
-  return ns as unknown as DurableObjectNamespace;
+  return testRoomNamespace(rooms, (id, roomOf) => ({
+    outline: async (designId: string) =>
+      (await import('./design-room/design-content')).readDesignOutline(env, designId),
+    route: async (designId: string, request: Request, identity: unknown) =>
+      (await import('./design-room/design-route')).answerDesignRequest(
+        env,
+        request,
+        identity as never,
+        () => {},
+        await communityOf(designId),
+      ),
+    exportImage: async (
+      designId: string,
+      query: { tabId: string | null; code: string | null; ifVersion: number | null },
+    ) => {
+      const { meta, savedAt } = await (
+        await import('./design-room/design-content')
+      ).readDesignHead(env, designId);
+      if (!meta) return { status: 'not_found' };
+      // A Community post's link draws only while the post is open (design-room.ts exportImage).
+      const post = query.code ? await communityOf(designId) : null;
+      const onPost = post !== null && post.code === query.code;
+      if (onPost && !post.open) return { status: 'not_found' };
+      if (query.ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
+      if (
+        query.tabId !== null &&
+        !(await (await import('./db/tabs')).designHasTab(env, designId, query.tabId))
+      ) {
+        return { status: 'not_found' };
+      }
+      const svg = await (
+        await import('./thumbnail')
+      ).drawDesign(env, { id: designId, name: meta.name }, query.tabId, { community: onPost });
+      return svg === null
+        ? { status: 'empty', version: savedAt }
+        : {
+            status: 'ok',
+            body: svg,
+            contentType: 'image/svg+xml; charset=utf-8',
+            version: savedAt,
+          };
+    },
+    heldBlobs: async (_designId: string, tabId: string, ids: string[]) =>
+      (await import('./db/photo-blobs')).heldBlobs(env, tabId, ids),
+    servesImage: async (designId: string, imageId: string, onlyTabId: string | null) =>
+      (await import('./db/image-grants')).designServesImage(env, designId, imageId, onlyTabId),
+    grantOwnImages: async (_designId: string, ids: string[], personId: string) =>
+      (await import('./db/image-grants')).grantOwnImages(env, ids, personId, Date.now()),
+    // The Drive file's two halves (design-room.ts exportFile and importFile).
+    exportFile: async (designId: string, query: { ifVersion: number | null }) =>
+      (await import('./design-room/design-file')).exportDesignFile(env, designId, query.ifVersion),
+    // The data export's comment threads (design-room.ts exportComments).
+    exportComments: async (designId: string) =>
+      (await import('./design-room/design-comments')).exportDesignComments(env, designId),
+    importFile: async (designId: string, file: unknown) =>
+      (await import('./design-room/design-file')).importDesignFile(env, designId, file as never),
+    hasTab: async (designId: string, tabId: string) =>
+      (await import('./db/tabs')).designHasTab(env, designId, tabId),
+    exportCopy: async (
+      designId: string,
+      onlyTabId: string | null,
+      copier: { by: string | null; code: string | null } | null,
+    ) => {
+      const post = copier?.code ? await communityOf(designId) : null;
+      const community = post !== null && post.open && post.code === copier?.code;
+      const copy = await (
+        await import('./design-room/design-content')
+      ).exportDesignCopy(env, designId, onlyTabId, copier?.by ?? null, community);
+      return copy ? { copy, community } : null;
+    },
+    community: (designId: string) => communityOf(designId),
+    communityPostTitle: async (designId: string, code: string) =>
+      (await openPost(designId, code))?.title ?? null,
+    communityListing: async (designId: string, code: string) => {
+      const stored = await openPost(designId, code);
+      if (!stored) return null;
+      const cp = await import('./design-room/community-post');
+      return { postId: stored.postId, author: await cp.communityPostAuthor(env, stored) };
+    },
+    joined: async (designId: string, personId: string) => {
+      const meta = await (
+        await import('./design-room/design-content')
+      ).readDesignMeta(env, designId);
+      if (!meta) return;
+      await (
+        await import('./email/notifications')
+      ).notifyDesignJoin(env, { id: designId, ownerId: meta.ownerId, name: meta.name }, personId);
+    },
+    importCopy: async (designId: string, copy: unknown) =>
+      (await import('./design-room/design-content')).importDesignCopy(env, designId, copy as never),
+    // Everything the design stored goes, and the room hears it as it did (its `/purge`).
+    purge: async (designId: string) => {
+      sql.exec('SAVEPOINT purge');
+      try {
+        sql
+          .prepare(
+            `DELETE FROM tabs WHERE id IN (SELECT tab_id FROM design_tabs WHERE design_id = ?)`,
+          )
+          .run(designId);
+        sql.prepare('DELETE FROM design WHERE id = ?').run(designId);
+        sql.prepare('DELETE FROM outbox WHERE design_id = ?').run(designId);
+        sql.exec('RELEASE purge');
+      } catch (err) {
+        sql.exec('ROLLBACK TO purge');
+        sql.exec('RELEASE purge');
+        throw err;
+      }
+      const room = roomOf(id);
+      if (room) {
+        const res = await room.fetch('https://room/purge', { method: 'POST' });
+        if (!res.ok) throw new Error(`status ${res.status}`);
+      }
+    },
+    revokeCodes: async () => 0,
+  }));
 }
 
 // A share link the index would grant through, for a test (as the index's createShareLink was called).

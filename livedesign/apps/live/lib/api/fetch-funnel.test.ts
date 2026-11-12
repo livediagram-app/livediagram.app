@@ -2,7 +2,8 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-// Every request the api client makes goes through `apiFetch` in core.ts, which
+// Every request the api client makes goes through `apiFetch` in core.ts (the
+// shared core, @liveworkspace/workbench/lib/api/core.ts, which core.ts binds), which
 // is the one place that sees them all: it reports network failures and reads
 // the release signal; the point is that it is the funnel, so anything it grows
 // later applies everywhere at once.
@@ -23,7 +24,7 @@ const BARE_FETCH = /(?<![\w.])fetch\(/;
 
 const modules = readdirSync(API_DIR)
   .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'))
-  // core.ts is where apiFetch lives, so it is the one place that may call fetch.
+  // core.ts binds the shared core, where apiFetch lives.
   .filter((f) => f !== 'core.ts');
 
 describe('the api client fetch funnel', () => {
@@ -45,12 +46,20 @@ describe('the api client fetch funnel', () => {
     const dir = fileURLToPath(
       new URL('../../../../../packages/workbench/src/lib/api', import.meta.url),
     );
-    const shared = readdirSync(dir).filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'));
+    // The shared core.ts is where apiFetch lives, so it is the one place that may call fetch.
+    const shared = readdirSync(dir).filter(
+      (f) => f.endsWith('.ts') && !f.endsWith('.test.ts') && f !== 'core.ts',
+    );
     expect(shared.length).toBeGreaterThan(0);
     expect(shared.filter((f) => BARE_FETCH.test(readFileSync(`${dir}/${f}`, 'utf8')))).toEqual([]);
   });
 
-  it('confirms core.ts is the one module that calls fetch', () => {
-    expect(readFileSync(`${API_DIR}/core.ts`, 'utf8')).toMatch(BARE_FETCH);
+  it('confirms the shared core.ts is the one module that calls fetch', () => {
+    const shared = fileURLToPath(
+      new URL('../../../../../packages/workbench/src/lib/api/core.ts', import.meta.url),
+    );
+    expect(readFileSync(shared, 'utf8')).toMatch(BARE_FETCH);
+    // This editor's core.ts only binds it.
+    expect(readFileSync(`${API_DIR}/core.ts`, 'utf8')).not.toMatch(BARE_FETCH);
   });
 });

@@ -1,7 +1,17 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
 import { DatabaseSync } from 'node:sqlite';
 import { ItemDb } from '@liveworkspace/index-app';
-import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
+import {
+  bindTestRooms,
+  nodeItemSql,
+  nodeTransaction,
+  testFolderPreviews,
+  testIndexGrant,
+  testItemGrant,
+  testOutboxFlush,
+  testRequestGrant as requestTestGrant,
+  testRoomNamespace,
+  type TestGrantCaller,
+} from '@liveworkspace/index-app/testing';
 import { IndexError, type IndexClient, type ShareAccess } from '@liveworkspace/index-client';
 import type { AccessLevel } from '@livediagram/api-schema';
 import { migrateDocumentSchema } from './document-room/document-schema';
@@ -53,30 +63,13 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
     tab_id TEXT NULL, created_at INTEGER NOT NULL DEFAULT 0, expires_at INTEGER NULL, password TEXT NULL)`);
   sql.exec(`CREATE TEMP TABLE test_trash (document_id TEXT PRIMARY KEY)`);
 
-  // Drain what the canvases owe (their outboxes). A call made while a drain runs waits for it; one made from inside
-  // the drain (by its async context) returns at once.
-  const inPush = new AsyncLocalStorage<true>();
-  let pushing: Promise<void> | null = null;
-  const push = async (): Promise<void> => {
-    if (inPush.getStore()) return;
-    while (pushing) await pushing;
-    if (sql.prepare('SELECT 1 FROM outbox LIMIT 1').all().length === 0) return;
-    pushing = inPush.run(true, async () => {
-      const { drainOutbox } = await import('./document-room/document-outbox');
-      const documents = sql.prepare('SELECT DISTINCT document_id FROM outbox').all() as {
-        document_id: string;
-      }[];
-      for (const { document_id } of documents) {
-        let more = true;
-        while (more) more = (await drainOutbox(env, document_id)).more;
-      }
-    });
-    try {
-      await pushing;
-    } finally {
-      pushing = null;
-    }
-  };
+  // Drain what they owe (their outboxes). A call made while a drain runs waits for it; one made from inside the
+  // drain (by its async context) returns at once.
+  const push = testOutboxFlush(sql, {
+    itemColumn: 'document_id',
+    mode: 'reentrant',
+    drain: async (id) => (await import('./document-room/document-outbox')).drainOutbox(env, id),
+  });
 
   const documentDb = new ItemDb(documentSql, {
     transaction: nodeTransaction(sql),
@@ -94,14 +87,9 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
   });
   Object.defineProperty(env, TEST_SQL, { value: sql, enumerable: false });
   // A test that sets env.DOCUMENT_ROOM later (its relay recorder) gets it wrapped the same way.
-  let rooms = testDocumentRooms(env, sql, base.DOCUMENT_ROOM);
-  Object.defineProperty(env, 'DOCUMENT_ROOM', {
-    enumerable: true,
-    get: () => rooms,
-    set: (next: DurableObjectNamespace | undefined) => {
-      rooms = testDocumentRooms(env, sql, next);
-    },
-  });
+  bindTestRooms(env, 'DOCUMENT_ROOM', base.DOCUMENT_ROOM, (rooms) =>
+    testDocumentRooms(env, sql, rooms),
+  );
   return { env, sql, flush: push };
 }
 
@@ -116,22 +104,7 @@ export function testIndexFor(env: unknown, caller: GrantCaller): IndexClient | n
   const person = caller.kind === 'delegate' ? caller.personId : null;
   const teams = caller.kind === 'delegate' ? caller.teams : [];
   const client: Partial<IndexClient> = {
-    grant: async (documentId, share) => {
-      const grant = testGrantFor(sql, documentId, {
-        person,
-        teams,
-        code: share?.code ?? null,
-        create: false,
-      });
-      if (!grant) throw new IndexError(404, 'not_found');
-      return {
-        grant: grant.token,
-        level: grant.level,
-        tabId: grant.tab,
-        expiresAt: grant.exp * 1000,
-        ...(grant.trashed ? { trashed: true as const } : {}),
-      };
-    },
+    grant: testIndexGrant((itemId, who) => testGrantFor(sql, itemId, who), person, teams),
     // An item the caller reaches (by the same rule as a grant), as the index lists it; 404 otherwise.
     getItem: async (documentId) => {
       const grant = testGrantFor(sql, documentId, { person, teams, code: null, create: false });
@@ -157,16 +130,7 @@ export function testIndexFor(env: unknown, caller: GrantCaller): IndexClient | n
         } as unknown as Awaited<ReturnType<IndexClient['getItem']>>['item'],
       };
     },
-    folderPreviews: async (ids) => {
-      const rows = sql
-        .prepare(
-          `SELECT id FROM test_folders
-            WHERE id IN (SELECT value FROM json_each(?))
-              AND ((team_id IS NULL AND owner_id = ?) OR team_id IN (SELECT value FROM json_each(?)))`,
-        )
-        .all(JSON.stringify(ids), person ?? '', JSON.stringify(teams)) as { id: string }[];
-      return { previews: rows.map((r) => ({ folderId: r.id, itemCount: 0, items: [] })) };
-    },
+    folderPreviews: testFolderPreviews(sql, person, teams),
   };
   return client as IndexClient;
 }
@@ -177,14 +141,7 @@ export async function testRequestGrant(
   documentId: string,
   share: ShareAccess | null,
 ): Promise<GrantOutcome> {
-  const client = testIndexFor(env, caller);
-  if (!client) return { ok: false, status: 503, error: 'index_unavailable' };
-  try {
-    return { ok: true, grant: await client.grant(documentId, share) };
-  } catch (err) {
-    if (err instanceof IndexError) return { ok: false, status: err.status, error: err.code };
-    throw err;
-  }
+  return requestTestGrant(testIndexFor(env, caller), documentId, share);
 }
 
 // What the index would grant on a canvas in a test (test-route-context.ts): the owner and a member of its team
@@ -192,63 +149,16 @@ export async function testRequestGrant(
 // caller's own. Null for anything else.
 export const TEST_GRANT_HOOK = '__testGrant';
 
-export type TestGrantCaller = {
-  person: string | null;
-  teams: readonly string[];
-  code: string | null;
-  create: boolean;
-};
+export type { TestGrantCaller };
 
-function testGrantFor(
-  sql: DatabaseSync,
-  documentId: string,
-  who: TestGrantCaller,
-): ItemGrant | null {
-  const document = sql
-    .prepare('SELECT owner_id, team_id, created_at FROM document WHERE id = ?')
-    .get(documentId) as
-    { owner_id: string; team_id: string | null; created_at: number } | undefined;
-  // In the Trash: its owner and team are granted, saying so; a link reaches nothing.
-  const trashed = sql.prepare('SELECT 1 FROM test_trash WHERE document_id = ?').get(documentId);
-  const grant = (
-    level: AccessLevel,
-    tab: string | null,
-    sub: string,
-    code: string | null,
-  ): ItemGrant => ({
-    item: documentId,
-    level,
-    tab,
-    sub,
-    team: document?.team_id ?? null,
-    owner: document?.owner_id || (who.create ? who.person : null),
-    exp: Math.floor(Date.now() / 1000) + 600,
-    shareCode: code,
-    token: `test-grant:${documentId}:${sub}`,
-    ...(trashed ? { trashed: true } : {}),
-  });
-  if (!document || !document.created_at)
-    return who.create && who.person ? grant('edit', null, who.person, null) : null;
-  if (who.person && who.person === document.owner_id) return grant('edit', null, who.person, null);
-  if (who.person && document.team_id && who.teams.includes(document.team_id))
-    return grant('edit', null, who.person, null);
-  if (who.code && !trashed) {
-    const link = sql
-      .prepare(
-        'SELECT role, tab_id, expires_at FROM test_share_links WHERE code = ? AND document_id = ?',
-      )
-      .get(who.code, documentId) as
-      { role: string; tab_id: string | null; expires_at: number | null } | undefined;
-    if (link && (link.expires_at === null || link.expires_at > Date.now())) {
-      return grant(
-        link.role as AccessLevel,
-        link.tab_id,
-        who.person ?? `link:${who.code}`,
-        who.code,
-      );
-    }
-  }
-  return null;
+// A canvas in the Trash: its owner and team are granted, saying so; a link reaches nothing.
+function testGrantFor(sql: DatabaseSync, itemId: string, who: TestGrantCaller): ItemGrant | null {
+  return testItemGrant(sql, itemId, who, {
+    item: 'document',
+    linkColumn: 'document_id',
+    trashColumn: 'document_id',
+    owner: true,
+  }) as ItemGrant | null;
 }
 
 // A share link the index would grant through, for a test (as the index's createShareLink was called).
@@ -300,7 +210,6 @@ function testDocumentRooms(
   sql: DatabaseSync,
   rooms: DurableObjectNamespace | undefined,
 ): DurableObjectNamespace {
-  type FakeId = DurableObjectId & { documentName: string; roomId: unknown };
   // The canvas's Community post's link as the room reads it (document-room.ts communityOf).
   const communityOf = async (documentId: string) => {
     const cp = await import('./document-room/community-post');
@@ -311,216 +220,198 @@ function testDocumentRooms(
     ).readDocumentMeta(env, documentId);
     return { code: post.shareCode, open: cp.openCommunityCode(env, post, meta) === post.shareCode };
   };
-  const roomOf = (id: FakeId) =>
-    rooms ? (rooms.get(id.roomId as DurableObjectId) as { fetch: typeof fetch }) : null;
-  const ns = {
-    idFromName: (name: string): FakeId => ({
-      documentName: name,
-      roomId: rooms ? rooms.idFromName(name) : name,
-      name,
-      toString: () => name,
-      equals: (other: DurableObjectId) => (other as FakeId).documentName === name,
-    }),
-    get: (id: FakeId) => ({
-      fetch: (input: RequestInfo | URL, init?: RequestInit) => {
-        const room = roomOf(id);
-        return room
-          ? room.fetch(input, init)
-          : Promise.resolve(new Response(null, { status: 404 }));
+  return testRoomNamespace(rooms, (id, roomOf) => ({
+    outline: async (documentId: string) =>
+      (await import('./document-room/document-content')).readDocumentOutline(env, documentId),
+    route: async (_documentId: string, request: Request, identity: unknown) =>
+      (await import('./document-room/document-route')).answerDocumentRequest(
+        env,
+        request,
+        identity as never,
+        () => {},
+      ),
+    exportImage: async (
+      documentId: string,
+      query: {
+        tabId: string | null;
+        code: string | null;
+        appearance: 'light' | 'dark' | null;
+        ifVersion: number | null;
       },
-      outline: async (documentId: string) =>
-        (await import('./document-room/document-content')).readDocumentOutline(env, documentId),
-      route: async (_documentId: string, request: Request, identity: unknown) =>
-        (await import('./document-room/document-route')).answerDocumentRequest(
+    ) => {
+      const content = await import('./document-room/document-content');
+      const { meta, savedAt } = await content.readDocumentHead(env, documentId);
+      if (!meta) return { status: 'not_found' };
+      // A Community post's link draws only while the post is open (document-room.ts exportImage).
+      const community = query.code === null ? null : await communityOf(documentId);
+      const onPost = community !== null && community.code === query.code;
+      if (onPost && !community.open) return { status: 'not_found' };
+      if (query.ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
+      if (
+        query.tabId !== null &&
+        !(await (await import('./db/tabs')).documentHasTab(env, documentId, query.tabId))
+      ) {
+        return { status: 'not_found' };
+      }
+      const svg = await (
+        await import('./thumbnail')
+      ).drawDocument(
+        env,
+        { id: documentId, name: meta.name },
+        query.tabId,
+        { appearance: query.appearance },
+        onPost,
+      );
+      return svg === null
+        ? { status: 'empty', version: savedAt }
+        : {
+            status: 'ok',
+            body: svg,
+            contentType: 'image/svg+xml; charset=utf-8',
+            version: savedAt,
+          };
+    },
+    // The Drive file's two halves (document-room.ts exportFile and importFile).
+    exportFile: async (documentId: string, query: { ifVersion: number | null }) =>
+      (await import('./document-room/document-file')).exportDocumentFile(
+        env,
+        documentId,
+        query.ifVersion,
+      ),
+    // The data export's comment threads (document-room.ts exportComments).
+    exportComments: async (documentId: string) =>
+      (await import('./document-room/document-comments')).exportDocumentComments(env, documentId),
+    importFile: async (documentId: string, file: unknown) =>
+      (await import('./document-room/document-file')).importDocumentFile(
+        env,
+        documentId,
+        file as never,
+      ),
+    hasTab: async (documentId: string, tabId: string) =>
+      (await import('./db/tabs')).documentHasTab(env, documentId, tabId),
+    servesImage: async (documentId: string, imageId: string, onlyTabId: string | null) =>
+      (await (
+        await import('./db/image-refs')
+      ).documentPlacesImage(env, documentId, imageId, onlyTabId)) &&
+      (await import('./db/image-grants')).documentMayServeImage(env, documentId, imageId),
+    grantOwnImages: async (_documentId: string, ids: string[], personId: string) =>
+      (await import('./db/image-grants')).grantOwnImages(env, ids, personId, Date.now()),
+    exportCopy: async (
+      documentId: string,
+      onlyTabId: string | null,
+      copier: { by: string | null; code: string | null } | null,
+    ) => {
+      const content = await import('./document-room/document-content');
+      const meta = await content.readDocumentMeta(env, documentId);
+      if (!meta) return null;
+      const post = copier?.code ? await communityOf(documentId) : null;
+      const community = post !== null && post.open && post.code === copier?.code;
+      const by = copier?.by ?? null;
+      const copy = await content.exportDocumentCopy(
+        env,
+        documentId,
+        onlyTabId,
+        by !== null && by !== meta.ownerId ? by : null,
+        community,
+      );
+      return copy ? { copy, community } : null;
+    },
+    community: (documentId: string) => communityOf(documentId),
+    communityPostTitle: async (documentId: string, code: string) => {
+      const post = await communityOf(documentId);
+      if (!post || post.code !== code || !post.open) return null;
+      return (
+        (await (await import('./document-room/community-post')).readCommunityPost(env))?.title ??
+        null
+      );
+    },
+    communityListing: async (documentId: string, code: string) => {
+      const post = await communityOf(documentId);
+      if (!post || post.code !== code || !post.open) return null;
+      const cp = await import('./document-room/community-post');
+      const stored = await cp.readCommunityPost(env);
+      return stored
+        ? { postId: stored.postId, author: await cp.communityPostAuthor(env, stored) }
+        : null;
+    },
+    joined: async (documentId: string, personId: string) => {
+      const meta = await (
+        await import('./document-room/document-content')
+      ).readDocumentMeta(env, documentId);
+      if (!meta) return;
+      await (
+        await import('./email/notifications')
+      ).notifyDocumentJoin(
+        env,
+        { id: documentId, ownerId: meta.ownerId, name: meta.name },
+        personId,
+      );
+    },
+    notifyAction: async (documentId: string, input: Record<string, unknown>) => {
+      const meta = await (
+        await import('./document-room/document-content')
+      ).readDocumentMeta(env, documentId);
+      if (!meta) return false;
+      const { actionNotices } = await import('./liveworkspace/action-notices');
+      await Promise.all(
+        actionNotices(
           env,
-          request,
-          identity as never,
-          () => {},
+          { id: documentId, name: meta.name, ownerId: meta.ownerId, teamId: meta.teamId },
+          input as unknown as import('./document-client').ActionNotice,
         ),
-      exportImage: async (
-        documentId: string,
-        query: {
-          tabId: string | null;
-          code: string | null;
-          appearance: 'light' | 'dark' | null;
-          ifVersion: number | null;
-        },
-      ) => {
-        const content = await import('./document-room/document-content');
-        const { meta, savedAt } = await content.readDocumentHead(env, documentId);
-        if (!meta) return { status: 'not_found' };
-        // A Community post's link draws only while the post is open (document-room.ts exportImage).
-        const community = query.code === null ? null : await communityOf(documentId);
-        const onPost = community !== null && community.code === query.code;
-        if (onPost && !community.open) return { status: 'not_found' };
-        if (query.ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
-        if (
-          query.tabId !== null &&
-          !(await (await import('./db/tabs')).documentHasTab(env, documentId, query.tabId))
-        ) {
-          return { status: 'not_found' };
-        }
-        const svg = await (
-          await import('./thumbnail')
-        ).drawDocument(
-          env,
-          { id: documentId, name: meta.name },
-          query.tabId,
-          { appearance: query.appearance },
-          onPost,
-        );
-        return svg === null
-          ? { status: 'empty', version: savedAt }
-          : {
-              status: 'ok',
-              body: svg,
-              contentType: 'image/svg+xml; charset=utf-8',
-              version: savedAt,
-            };
-      },
-      // The Drive file's two halves (document-room.ts exportFile and importFile).
-      exportFile: async (documentId: string, query: { ifVersion: number | null }) =>
-        (await import('./document-room/document-file')).exportDocumentFile(
-          env,
-          documentId,
-          query.ifVersion,
-        ),
-      // The data export's comment threads (document-room.ts exportComments).
-      exportComments: async (documentId: string) =>
-        (await import('./document-room/document-comments')).exportDocumentComments(env, documentId),
-      importFile: async (documentId: string, file: unknown) =>
-        (await import('./document-room/document-file')).importDocumentFile(
-          env,
-          documentId,
-          file as never,
-        ),
-      hasTab: async (documentId: string, tabId: string) =>
-        (await import('./db/tabs')).documentHasTab(env, documentId, tabId),
-      servesImage: async (documentId: string, imageId: string, onlyTabId: string | null) =>
-        (await (
-          await import('./db/image-refs')
-        ).documentPlacesImage(env, documentId, imageId, onlyTabId)) &&
-        (await import('./db/image-grants')).documentMayServeImage(env, documentId, imageId),
-      grantOwnImages: async (_documentId: string, ids: string[], personId: string) =>
-        (await import('./db/image-grants')).grantOwnImages(env, ids, personId, Date.now()),
-      exportCopy: async (
-        documentId: string,
-        onlyTabId: string | null,
-        copier: { by: string | null; code: string | null } | null,
-      ) => {
-        const content = await import('./document-room/document-content');
-        const meta = await content.readDocumentMeta(env, documentId);
-        if (!meta) return null;
-        const post = copier?.code ? await communityOf(documentId) : null;
-        const community = post !== null && post.open && post.code === copier?.code;
-        const by = copier?.by ?? null;
-        const copy = await content.exportDocumentCopy(
-          env,
-          documentId,
-          onlyTabId,
-          by !== null && by !== meta.ownerId ? by : null,
-          community,
-        );
-        return copy ? { copy, community } : null;
-      },
-      community: (documentId: string) => communityOf(documentId),
-      communityPostTitle: async (documentId: string, code: string) => {
-        const post = await communityOf(documentId);
-        if (!post || post.code !== code || !post.open) return null;
-        return (
-          (await (await import('./document-room/community-post')).readCommunityPost(env))?.title ??
-          null
-        );
-      },
-      communityListing: async (documentId: string, code: string) => {
-        const post = await communityOf(documentId);
-        if (!post || post.code !== code || !post.open) return null;
-        const cp = await import('./document-room/community-post');
-        const stored = await cp.readCommunityPost(env);
-        return stored
-          ? { postId: stored.postId, author: await cp.communityPostAuthor(env, stored) }
-          : null;
-      },
-      joined: async (documentId: string, personId: string) => {
-        const meta = await (
-          await import('./document-room/document-content')
-        ).readDocumentMeta(env, documentId);
-        if (!meta) return;
-        await (
-          await import('./email/notifications')
-        ).notifyDocumentJoin(
-          env,
-          { id: documentId, ownerId: meta.ownerId, name: meta.name },
-          personId,
-        );
-      },
-      notifyAction: async (documentId: string, input: Record<string, unknown>) => {
-        const meta = await (
-          await import('./document-room/document-content')
-        ).readDocumentMeta(env, documentId);
-        if (!meta) return false;
-        const { actionNotices } = await import('./liveworkspace/action-notices');
-        await Promise.all(
-          actionNotices(
-            env,
-            { id: documentId, name: meta.name, ownerId: meta.ownerId, teamId: meta.teamId },
-            input as unknown as import('./document-client').ActionNotice,
-          ),
-        );
-        return true;
-      },
-      notifyMention: async (documentId: string, input: Record<string, unknown>) => {
-        const meta = await (
-          await import('./document-room/document-content')
-        ).readDocumentMeta(env, documentId);
-        if (!meta) return false;
-        await (
-          await import('./email/notifications')
-        ).notifyMentioned(env, {
-          ...(input as unknown as import('./document-client').MentionNotice),
-          document: { id: documentId, name: meta.name },
-        });
-        return true;
-      },
-      anonymise: async (documentId: string, personId: string) =>
-        (await import('./document-room/document-anonymise')).anonymiseDocument(
-          env,
-          documentId,
-          personId,
-        ),
-      importCopy: async (documentId: string, copy: unknown) =>
-        (await import('./document-room/document-content')).importDocumentCopy(
-          env,
-          documentId,
-          copy as never,
-        ),
-      // Everything the document stored goes, and the room hears it as it did (its `/purge`).
-      purge: async (documentId: string) => {
-        sql.exec('SAVEPOINT purge');
-        try {
-          sql
-            .prepare(
-              `DELETE FROM tabs WHERE id IN (SELECT tab_id FROM document_tabs WHERE document_id = ?)`,
-            )
-            .run(documentId);
-          sql.prepare('DELETE FROM document WHERE id = ?').run(documentId);
-          sql.prepare('DELETE FROM outbox WHERE document_id = ?').run(documentId);
-          sql.exec('RELEASE purge');
-        } catch (err) {
-          sql.exec('ROLLBACK TO purge');
-          sql.exec('RELEASE purge');
-          throw err;
-        }
-        const room = roomOf(id);
-        if (room) {
-          const res = await room.fetch('https://room/purge', { method: 'POST' });
-          if (!res.ok) throw new Error(`status ${res.status}`);
-        }
-      },
-      revokeCodes: async () => 0,
-    }),
-  };
-  return ns as unknown as DurableObjectNamespace;
+      );
+      return true;
+    },
+    notifyMention: async (documentId: string, input: Record<string, unknown>) => {
+      const meta = await (
+        await import('./document-room/document-content')
+      ).readDocumentMeta(env, documentId);
+      if (!meta) return false;
+      await (
+        await import('./email/notifications')
+      ).notifyMentioned(env, {
+        ...(input as unknown as import('./document-client').MentionNotice),
+        document: { id: documentId, name: meta.name },
+      });
+      return true;
+    },
+    anonymise: async (documentId: string, personId: string) =>
+      (await import('./document-room/document-anonymise')).anonymiseDocument(
+        env,
+        documentId,
+        personId,
+      ),
+    importCopy: async (documentId: string, copy: unknown) =>
+      (await import('./document-room/document-content')).importDocumentCopy(
+        env,
+        documentId,
+        copy as never,
+      ),
+    // Everything the document stored goes, and the room hears it as it did (its `/purge`).
+    purge: async (documentId: string) => {
+      sql.exec('SAVEPOINT purge');
+      try {
+        sql
+          .prepare(
+            `DELETE FROM tabs WHERE id IN (SELECT tab_id FROM document_tabs WHERE document_id = ?)`,
+          )
+          .run(documentId);
+        sql.prepare('DELETE FROM document WHERE id = ?').run(documentId);
+        sql.prepare('DELETE FROM outbox WHERE document_id = ?').run(documentId);
+        sql.exec('RELEASE purge');
+      } catch (err) {
+        sql.exec('ROLLBACK TO purge');
+        sql.exec('RELEASE purge');
+        throw err;
+      }
+      const room = roomOf(id);
+      if (room) {
+        const res = await room.fetch('https://room/purge', { method: 'POST' });
+        if (!res.ok) throw new Error(`status ${res.status}`);
+      }
+    },
+    revokeCodes: async () => 0,
+  }));
 }
 
 // What a copy does to the canvases' tables (the copy RPCs plus the new canvas's start), for tests that assert on the
