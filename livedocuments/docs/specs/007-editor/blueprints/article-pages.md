@@ -495,10 +495,24 @@ pagesNeeded)` (adds pages like the last; removes trailing pages with no elements
   with them (the notes' height capped at `FOOTNOTE_MAX_SHARE`); a reference left over goes on with its line. The
   first place past that foot (`firstPast`, a binary search over the writing's positions) is where the page ends:
   `breakAt` makes it a widget `span.article-foot-break` (`display: block; break-before: column`) inside a block's
-  lines, or a node decoration `.article-foot-break-before` on the block, row, or table at its first row. A page's
-  break is found by where the text before it landed (breaks move with the writing); a spare one goes; one whose next
-  line (with that line's references' notes, and the margin a block break cuts, `gapBefore`) fits within
-  `SETTLE_SLACK` goes. Each change is one meta-only dispatch and a synchronous relayout, at most `2 x pages + 4` a
+  lines, or a node decoration `.article-foot-break-before` on the block, row, or table at its first row. A cut in a
+  table, or just after one, goes to `tableCut` (`article-footnote-rows.ts`): the table's first row whose foot
+  (`rowFoot`, its cells' last lines) is past the limit, found by a binary search over the rows (cells side by side
+  are never in line order, so the writing's search alone can land past the row). A row with a line of the writing
+  above it on the page (`lineBefore` the place it would move from) moves whole (`wholeRowAt`): a block break before
+  it, or before the table at its first row or at its second under a header row. A row that starts its page splits
+  (`splitRow`): a `FootBreak` `{ block: false, pos, also }`, one inline break in every cell that runs past the limit,
+  each at the cell's first place past it (a binary search in the cell); `pos` is the first with a line above it in
+  its cell, `also` the rest (widgets keyed `foot-break:<page>:<i>`). A row already on the next page, or cuts already
+  there (the break as drawn), read as nothing to cut (`null`), so the page's later-fits check can take the break
+  back; a cut inside a table none of whose rows is past the limit is nothing to cut too. That check reads a row's
+  foot (`lineAfterBreak`), not its first line, after a block break before a row or table, and counts the notes of
+  the references in it. The stylesheet's `.article-table-repeat + .article-foot-break-before` drops the row's own
+  forced break: the header copy before it already starts the page, never left alone above the notes. A page's
+  break is found by where the text before it landed (`lineEnding`: before a block break, the last line before it,
+  read backwards); a spare one goes; one whose next line (with that line's references' notes, and the margin a
+  block break cuts, `gapBefore`) fits within `SETTLE_SLACK` goes. `mapBreaks` maps `also` with `pos`, a cut in a
+  changed cell dropped. Each change is one meta-only dispatch and a synchronous relayout, at most `2 x pages + 4` a
   pass. `mapBreaks` drops a break inside a block's lines when that block changed (its lines wrap anew). The pages'
   text feet (`limits`) feed `measureRepeats`, so a table's header row repeats above a page's notes.
 - **Notes** (`FootnoteNotes`, `article-footnote-notes.ts`): a host beside the writing carrying its CSS variables;

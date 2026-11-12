@@ -73,7 +73,8 @@ livedocuments file that holds tabs ([Document](../006-document/document.md)). Th
   pages are freed. Nothing is lost: the blocks are kept.
 - **A table splits between its rows**: a row that does not fit at the foot of a page moves to the next
   page whole, and a table with a header row repeats that row at the top of every page it continues
-  on. A row taller than a whole page breaks inside, between its lines. A contents block splits
+  on. A row taller than a whole page breaks inside, between its lines. Above a page's footnotes the
+  notes' top is the foot (see "Footnotes"). A contents block splits
   between its entries.
 - **Page numbers** sit centred in the bottom margin of each page of an article ("2"), in small
   muted type, whenever the style has them (off by default), one page or many, unless the footer
@@ -442,6 +443,13 @@ undoes and copies with the text it sits in.
   page, and with it any reference in it, its note following. A page's notes take at most two thirds of
   its text height; a note past that is cut short on screen with the rest kept (a Word export carries
   it whole).
+- **A table row above the notes**: the notes' top is the page's foot for a table, as the page's own foot is
+  without them. A row that would run under the notes moves to the next page whole, its table's header row
+  repeating above it there (a table's first row under its header row takes the table with it, so a header row
+  is never left alone above the notes). A row that already starts its page (nothing above it but the repeated
+  header row) splits there instead: each of its cells ends above the notes at its own line, and the rest of every
+  cell goes on together at the top of the next page. No row runs under a page's notes, however long. A page with
+  no notes lays out as it always has.
 - **Moving with reflow**: typing, a style, a zone or a page break that carries a reference onto
   another page carries its note with it; the pages are laid out again as the writing settles, as the
   writing's own layout is.
