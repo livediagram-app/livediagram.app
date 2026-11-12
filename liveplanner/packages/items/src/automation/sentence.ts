@@ -29,7 +29,8 @@ import { isTimeTrigger } from './types';
 import { aiStepChip } from './ai-steps';
 
 // What the sentence reads a rule against. `tabs` names Form tabs and the boards' tabs; `filters` names saved filters
-// by id. Either may be absent where nothing reads them.
+// by their tab and id (savedFilterKey), as two boards may hold filters of the same id. Either may be absent where
+// nothing reads them.
 export interface RuleSentenceOutline {
   types: readonly Pick<ItemTypeDef, 'id' | 'label' | 'fields' | 'custom' | 'fieldLabels'>[];
   statuses: ReadonlyMap<string, string>;
@@ -39,6 +40,9 @@ export interface RuleSentenceOutline {
   // The plan's webhooks by id, named (the builder's list from the index); absent, a step's kept name reads.
   webhooks?: ReadonlyMap<string, string>;
 }
+
+/** A saved filter's key in RuleSentenceOutline.filters: its board's tab and its id. */
+export const savedFilterKey = (tab: string, filter: string): string => `${tab}\u0000${filter}`;
 
 // A joining word, or a chip (the trigger's own chip is drawn in the brand tint).
 export type RuleSentencePart = { word: string } | { chip: string; trigger?: true };
@@ -171,7 +175,7 @@ export function branchWords(related: AutomationRelated, outline?: RuleSentenceOu
   if (related.kind === 'linked' && related.field)
     return outline ? `${head} (${outlineFieldName(related.field, outline)})` : head;
   if (related.kind === 'saved_filter')
-    return `For each Card Matching ${outline?.filters?.get(related.filter) ?? 'a Saved Filter'}`;
+    return `For each Card Matching ${outline?.filters?.get(savedFilterKey(related.tab, related.filter)) ?? 'a Saved Filter'}`;
   return head;
 }
 
@@ -258,7 +262,7 @@ export function conditionChip(
     case 'who':
       return `Who Did It ${condition.not ? 'is not' : 'is'} ${sentenceOrList(condition.who.map((w) => whoWords(w, outline)))}`;
     case 'saved_filter':
-      return `Matches ${outline.filters?.get(condition.filter) ?? 'a Saved Filter'}`;
+      return `Matches ${outline.filters?.get(savedFilterKey(condition.tab, condition.filter)) ?? 'a Saved Filter'}`;
     case 'field': {
       const head = `${outlineFieldName(condition.field, outline)} ${AUTOMATION_FIELD_OP_WORDS[condition.op]}`;
       const { value } = condition;

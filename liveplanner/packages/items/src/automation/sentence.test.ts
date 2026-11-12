@@ -8,6 +8,7 @@ import {
   outlinePersonName,
   outlineTabName,
   ruleSentence,
+  savedFilterKey,
   sentenceOrList,
   stepChip,
   triggerParts,
@@ -35,7 +36,10 @@ const OUTLINE: RuleSentenceOutline = {
     { id: 'p-marco', name: 'Marco Ruiz' },
   ],
   tabs: new Map([['t-form', 'Intake Form']]),
-  filters: new Map([['sf-1', 'Blocked Work']]),
+  filters: new Map([
+    [savedFilterKey('t', 'sf-1'), 'Blocked Work'],
+    [savedFilterKey('t2', 'sf-1'), 'Mine'],
+  ]),
 };
 
 const BARE: RuleSentenceOutline = { types: [], statuses: new Map(), people: [] };
@@ -168,6 +172,9 @@ describe('conditionChip', () => {
     ],
     [{ kind: 'saved_filter', tab: 't', filter: 'sf-1' }, 'Matches Blocked Work'],
     [{ kind: 'saved_filter', tab: 't', filter: 'sf-x' }, 'Matches a Saved Filter'],
+    // Two boards may hold filters of one id: each reads its own board's name.
+    [{ kind: 'saved_filter', tab: 't2', filter: 'sf-1' }, 'Matches Mine'],
+    [{ kind: 'saved_filter', tab: 't3', filter: 'sf-1' }, 'Matches a Saved Filter'],
     [{ kind: 'field', field: 'f-done', op: 'empty' }, 'Completed On is empty'],
     [{ kind: 'field', field: 'priority', op: 'is', value: 'urgent' }, 'Priority is Urgent'],
     [{ kind: 'field', field: 'priority', op: 'is_not', value: 'odd' }, 'Priority is not odd'],
@@ -341,6 +348,9 @@ describe('Phase 2 words', () => {
     );
     expect(chip(branch({ kind: 'saved_filter', tab: 't', filter: 'sf-x' }))).toBe(
       'For each Card Matching a Saved Filter',
+    );
+    expect(chip(branch({ kind: 'saved_filter', tab: 't2', filter: 'sf-1' }))).toBe(
+      'For each Card Matching Mine',
     );
     const notify = (extra: object) =>
       ({ kind: 'notify', via: 'slack', webhook: 'wh1', text: 'x', ...extra }) as never;
