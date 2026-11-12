@@ -6,7 +6,7 @@
 // chips, it is one more chip. Drawn like a rail row, in the start panel's own colours, on one line: every app's logo
 // fanned where a row's icon goes, to say where the files come from (the host's too: its other files connect as well),
 // then its name. An app's own foot entries (`children`, liveplanner's Import) follow it in the same group.
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { BrandMark } from '@liveworkspace/brand';
 import type { App } from '@liveworkspace/index-client';
 import { RailFoot, RailFootButton, type RailFootColours } from '../start/RailFoot';
@@ -47,22 +47,21 @@ export function ConnectRailEntry({
         colours={colours}
         name={CONNECT_RAIL_NAME}
         icon={
-          // The logos stand where a row's icon goes, each on a disc of the panel's paper: barely overlapping in the
-          // desktop rail, which has room, and fanned tighter in a phone's chip.
+          // The logos stand where a row's icon goes as one stacked cluster, like a row of avatars: each on a disc of
+          // the panel's paper edged with its hairline, tucked 40% under the one before it, with a paper ring cutting a
+          // clean gap where they meet.
           <span aria-hidden className="flex shrink-0 items-center">
             {FAN.map((app, i) => (
               <span
                 key={app}
-                className={`flex size-[18px] items-center justify-center rounded-full ring-2 ${i === 0 ? '' : '-ml-1.5 sm:-ml-0.5'}`}
-                style={
-                  {
-                    backgroundColor: colours.card,
-                    '--tw-ring-color': colours.card,
-                    zIndex: FAN.length - i,
-                  } as CSSProperties
-                }
+                className={`flex size-5 items-center justify-center rounded-full ${i === 0 ? '' : '-ml-2'}`}
+                style={{
+                  backgroundColor: colours.card,
+                  boxShadow: `0 0 0 2px ${colours.card}, inset 0 0 0 1px ${colours.border}`,
+                  zIndex: FAN.length - i,
+                }}
               >
-                <BrandMark app={app} className="size-3" />
+                <BrandMark app={app} className="size-3.5" />
               </span>
             ))}
           </span>
