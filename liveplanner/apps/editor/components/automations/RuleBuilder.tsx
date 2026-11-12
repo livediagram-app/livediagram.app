@@ -39,6 +39,7 @@ import {
   editPart,
   partAt,
   sameBody,
+  samePart,
   type RulePart,
 } from './rule-draft';
 import { PhoneRuleFoot, PhoneRuleHeader } from './PhoneRuleChrome';
@@ -333,7 +334,14 @@ export function RuleBuilder({
       person={person}
       now={now}
       timeZone={timeZone}
-      {...(phone ? { drawer: { onClose: () => setStepOpen(false) } } : {})}
+      {...(phone
+        ? {
+            drawer: {
+              onClose: () => setStepOpen(false),
+              fault: stepFault && fault && samePart(stepFault, selected) ? fault.message : null,
+            },
+          }
+        : {})}
     />
   );
 

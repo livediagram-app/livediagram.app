@@ -888,7 +888,7 @@ above, unchanged.
   handle, the step's tile and name as its title, a close and a **Done** at its foot, its fields scrolling inside.
   Swipe it down, tap the dim behind it, press Escape, close or Done to go back to the steps; the step stays
   selected. It sits above the on-screen keyboard rather than jumping under it. A save the api refuses opens the
-  step at fault in it.
+  step at fault in it, the refusal's words at the top of its fields (the step's card, which says them, is behind it).
 - Every drawer slides out to the bottom as it closes ([editor-app.md](../007-editor/editor-app.md) "Menus are
   bottom sheets on a phone").
 

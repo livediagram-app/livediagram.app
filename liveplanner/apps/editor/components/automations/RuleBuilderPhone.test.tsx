@@ -162,6 +162,30 @@ describe('the rule builder on a phone', () => {
     expect(shown).toEqual({ view: 'rules' });
   });
 
+  it('opens the step at fault in its drawer with the refusal’s words, which the steps behind it hide', async () => {
+    const { AutomationRefusal } = await import('./automations-client');
+    client.updateRule.mockRejectedValueOnce(
+      new AutomationRefusal(400, { error: 'automation_value_unknown', path: 'steps.0.text' }),
+    );
+    render(<Harness initial={{ view: 'rule', ruleId: 'r1' }} />);
+    const name = await screen.findByRole('textbox', { name: 'Rule name' });
+    fireEvent.change(name, { target: { value: 'Changed' } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save Rule' }));
+    });
+    const step = document.querySelector('[data-step-drawer]');
+    expect(step).toBeTruthy();
+    expect(within(step as HTMLElement).getByRole('alert').textContent).toMatch(
+      /names a value rules don’t know/,
+    );
+    // Another step picked carries no refusal.
+    fireEvent.click(within(step!.closest('[role="dialog"]') as HTMLElement).getByLabelText('Close'));
+    fireEvent.click(screen.getByRole('button', { name: 'When' }));
+    expect(
+      within(document.querySelector('[data-step-drawer]') as HTMLElement).queryByRole('alert'),
+    ).toBeNull();
+  });
+
   it('goes back at once when nothing changed', async () => {
     render(<Harness initial={{ view: 'rule', ruleId: 'r1' }} />);
     await screen.findByRole('textbox', { name: 'Rule name' });

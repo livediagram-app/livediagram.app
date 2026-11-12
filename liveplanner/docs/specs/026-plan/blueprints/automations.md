@@ -1028,6 +1028,8 @@ rounded-lg pl-3 pr-8 text-[14px]`) and `SegmentedRadio` (`size="lg"`, All / On /
   the shell's tile and title as its header beside `DialogCloseButton`, the body `min-h-0 flex-1 overflow-y-auto
 overscroll-contain`, and a foot holding **Done** (`useDialogDismiss`, so it slides out like the close). `RuleBuilder` holds `stepOpen`:
   set by a pick (`actions.select`), an add and a refusal's `partAt`; never by the first render's trigger selection.
+  The drawer takes the refusal's message as `fault` while the selected part is the one at fault (`samePart`), drawn
+  as a `role="alert"` line at the top of its body.
 - `ValueInsert.tsx`: `ValueTextField` draws `ValueInsertButton` inside the field's box (`absolute right-1.5 top-1.5`, the
   text padded `pr-10` on the textarea and its backdrop alike). `ValueInsertMenu.tsx`: `AnchoredPopover` (width 300,
   `pointer`) on a wide screen, the shared `Dialog` `phoneSheet` on a phone, both holding `ValueInsertList`: a
