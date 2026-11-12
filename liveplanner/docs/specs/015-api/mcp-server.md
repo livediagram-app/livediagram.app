@@ -184,11 +184,11 @@ browser. A token minted for the CLI is named "liveplanner CLI".
 
 ## 4. Tools
 
-Twenty-eight tools: eleven for projects, eight for Plan boards and their cards' comment threads ([§4.9b](#49b-the-plan-tools)), four for sheets
+Twenty-nine tools: twelve for projects (`upload_image` among them), eight for Plan boards and their cards' comment threads ([§4.9b](#49b-the-plan-tools)), four for sheets
 ([§4.9c](#49c-the-sheet-tools)) and five
 for forms ([§4.9e](#49e-the-form-tools)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
-list_templates exposes the template catalogue ([§4.5](#45-list_templates)); liveplanner keeps no uploaded pictures, so no tool lists or places one ([§4.5b](#45b-no-uploaded-pictures));
+list_templates exposes the template catalogue ([§4.5](#45-list_templates)); upload_image adds a picture for a plan's cards ([§4.5b](#45b-upload_image-pictures-for-a-plans-cards));
 share, rename, and delete complete the CRUD verbs, with list_trash and
 restore_project as the way back from a delete
 ([§4.8](#48-share_project), [§4.9](#49-rename_project-and-delete_project), [§4.9a](#49a-list_trash-and-restore_project)).
@@ -344,12 +344,42 @@ those whose kind or title has a word starting with a word of it of 3 letters or 
 `CLOSEST_TEMPLATES_MAX` (5)), then every kind: `Unknown template "retro". Closest: retrospective, team-retro, four-ls,
 sailboat. Valid kinds: ...`. The CLI's and api's template bodies refuse with the same hint.
 
-### 4.5b No uploaded pictures
+### 4.5b `upload_image`: pictures for a plan's cards
 
-liveplanner keeps no uploaded pictures: there is no gallery, no listing tool and no upload tool. An `image` element is
-an empty placeholder, so every element-writing tool (create_project, add_tab, update_project) refuses an input
-that carries an `imageId` anywhere (an element, an op's `set`, a page's background), naming the element and saying
-to leave `imageId` out (`imageIdIssue` in `@liveplanner/agent-verbs`), before anything is written.
+liveplanner keeps the pictures of its cards (Image fields, Several Images fields and Attachments;
+[Image fields](../026-plan/item-types.md#image-fields), [Attachments](../026-plan/items.md#attachments)) in
+liveworkspace's media service, in their uploader's gallery, and an agent adds them as the card panel does (the owner's
+ask, 2026-11-11): first the picture, then the card.
+
+- **`upload_image`** (write, `openWorldHint: true` for its `url`): `{ projectId, data?, url?, name? }`, exactly one of
+  `data` and `url`, takes the bytes as livediagram's `upload_image` does (livediagram mcp-server.md §4.5c, the shared
+  `@liveworkspace/agent-verbs` `images/upload.ts`): base64 or a `data:` URL, or a public https URL fetched through the
+  SSRF-safe fetch; PNG, JPEG, WebP or GIF read from the bytes (`sniffImageType`), never SVG, at most `MAX_IMAGE_BYTES`
+  (10 MB), with a size in its header. It uploads through the api's own route, `POST /api/images?p={projectId}`, as the
+  caller with their own bearer token, naming the tool (`X-Image-Source: mcp`, so the gallery shows it **Made by AI**).
+  That route is the one place the rules are held, for the editor and agents alike: the caller must be able to edit
+  the plan's cards (an Editor or a Participant; a Viewer, a link that only reads and a read-only token are refused,
+  403), the type and size are checked again before a byte leaves the Worker, and the media service checks the type
+  against the bytes, dedupes, strips a JPEG's metadata and holds the per-person gallery caps. The plan records a grant
+  for the picture, so it serves it to the plan's readers once a card holds it. It answers `{ id, name, width, height,
+size, type, deduped }`; `id` is what `change_items` places. Its refusals are livediagram's words (too large, not a
+  picture it takes, not valid base64, a URL it will not fetch, a full gallery with how full it is), and a plan the
+  caller can't edit says so ("You can view this plan but not add pictures to it.").
+- **Placing it**: `change_items`' `set` takes, per Image field or Attachments, `{ "add": ["<id>", ...] }` (an Image
+  field set to it, a Several Images field and Attachments added at the end, up to 20, an id held already left where
+  it is), `{ "remove": ["<id>", ...] }`, or the field in `clear`. A bare id (or a list of ids for Several Images) in
+  `fields` reads as `add` onto an empty field. An id the plan holds no grant for is refused before anything is written
+  ("That picture was not uploaded for this plan: upload it with upload_image first."), so an agent can't place a
+  picture uploaded for another plan, or someone else's. An Attachments entry is made from the upload's own name, size
+  and type, read from the grant's record at the service, never from the agent.
+- **Reading it**: `list_items` lists each picture of an Image field, a Several Images field and Attachments as its id
+  and a `link`, the api's `GET /api/images/{id}?p={projectId}`, which answers the bytes to the agent's token as to
+  the person (so a client that reads URLs can look at it).
+- **Canvas elements** stay as they were: an `image` element is an empty placeholder, so every element-writing tool
+  (create_project, add_tab, update_project) refuses an input that carries an `imageId` anywhere (an element, an op's
+  `set`, a page's background), naming the element and saying to leave `imageId` out (`imageIdIssue` in
+  `@liveplanner/agent-verbs`), before anything is written. There is no gallery listing or delete tool here: the
+  Explorer's Image Gallery lists and removes a person's pictures from every app.
 
 ### 4.6 Schema resource (not a tool)
 
@@ -479,7 +509,8 @@ status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status
   `{ item }`. A refusal answers what was applied before it. Each change reaches open boards at once. Its
   description and `clear` argument say how a `set` empties a field (`"clear": ["Blocked By"]`), and that a field
   holding several also clears with `[]` or `null` in `fields`
-  ([Clearing a field](../026-plan/plan-agents.md)).
+  ([Clearing a field](../026-plan/plan-agents.md)). A `set` adds and removes the pictures of an Image field, a Several
+  Images field and Attachments by the ids `upload_image` answered ([§4.5b](#45b-upload_image-pictures-for-a-plans-cards)).
 - **`add_board`** (write): a Plan board on a tab, from a preset or columns by name, as one changeset
   ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).
 - **`change_board`** (write): a board's title, columns (by name), the card types it takes or its header widgets
@@ -643,14 +674,14 @@ while a destructive one always asks. Directory listings (the Claude connectors
 portal among them) also require them, and a missing block is a listing blocker,
 which is how the gap was found.
 
-Three behaviours cover the thirty tools, and each is a preset in
+Three behaviours cover the tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                                                                  |
-| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **read**        | `true`         | (not applicable)  | `find_projects`, `read_project`, `list_templates`, `list_trash`, `list_items`, `list_threads`, `list_sheets`, `read_sheet`, `read_form`                                                                |
-| **write**       | `false`        | `false`           | `create_project`, `add_tab`, `share_project`, `rename_project`, `restore_project`, `unarchive_project`, `add_board`, `change_board`, `import_board`, `add_sheet`, `add_form`, `share_form`, `try_form` |
-| **destructive** | `false`        | `true`            | `update_project`, `delete_project`, `archive_project`, `change_items`, `change_threads`, `change_card_types`, `change_sheet`, `change_form`                                                            |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                                                                                  |
+| --------------- | -------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_projects`, `read_project`, `list_templates`, `list_trash`, `list_items`, `list_threads`, `list_sheets`, `read_sheet`, `read_form`                                                                                |
+| **write**       | `false`        | `false`           | `create_project`, `add_tab`, `share_project`, `rename_project`, `restore_project`, `unarchive_project`, `add_board`, `change_board`, `import_board`, `add_sheet`, `add_form`, `share_form`, `try_form`, `upload_image` |
+| **destructive** | `false`        | `true`            | `update_project`, `delete_project`, `archive_project`, `change_items`, `change_threads`, `change_card_types`, `change_sheet`, `change_form`                                                                            |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a

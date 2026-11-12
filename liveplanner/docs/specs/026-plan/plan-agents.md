@@ -37,7 +37,12 @@ never told a change worked when it shows on no board.
 - A Person or Card field that holds several ([Holds Several](item-types.md#holds-several)) reads as a comma list
   (`"Sam Reed, Ana Diaz"`, `"#3 Website, #5 Launch"`); writes take a comma list or a JSON list of names or numbers
   back, each resolved as one value is, and one value sets a list of one. `change_card_types` sets the switch with
-  `multiple` (a Person or Card field only; any other kind is refused).
+  `multiple` (a Person, Card or Image field only; any other kind is refused).
+- **Pictures** ([Image fields](item-types.md#image-fields), [Attachments](items.md#attachments)): `upload_image`
+  (the CLI's `image add`) uploads a picture for the plan and answers its id; a `set` then places it on an Image
+  field, a Several Images field or Attachments with `{ "add": ["<id>"] }`, takes ids off with `{ "remove": [...] }`,
+  and `clear` empties either. Only ids the plan holds a grant for are placed. `list_items` lists every picture as its
+  id and a `link` the agent can read.
 - **Clearing a field**: a `set` names fields to clear in its `clear` list, by name or id
   (`{"op": "set", "item": "#12", "clear": ["Blocked By", "due"]}`); `change_items`' description and the `clear`
   argument say so. A field that holds several values (a Person or Card field with `multiple` on, Blocked By among
