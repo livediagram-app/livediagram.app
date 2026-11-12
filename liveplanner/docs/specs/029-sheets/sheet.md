@@ -54,8 +54,11 @@ cells are worked out in every browser that shows it.
   Sheet selected the canvas's selection badge names). Someone who may only view sees the empty grid.
 - **The dialog** is Setup Board's ([plan-board.md](../026-plan/plan-board.md) "Setup Board"): a modal over the
   editor in the app's colours, never inside the Sheet nor zoomed with the canvas, a fixed height, full screen on a
-  phone; its header a sheet glyph, **Set up your sheet**, "Start from a layout, your cards or a blank grid.
-  Everything can change later from its cog." and Help; the same step indicator: **Start From**, then
+  phone; its header the same hero header drawn as a grid of cells fading toward the title, a header row and a block
+  of cells rising in the bottom right, one cell ringed in the accent with its fill handle, its ring spreading twice
+  (motion allowing), a row of column heads in the bottom left, and, where the dialog is wide, a sheet as it will look
+  once styled (its header row filled, banded rows, a column of figures and their total in the accent); a sheet glyph as its mark, **Set up your sheet**,
+  "Start from a layout, your cards or a blank grid." and Help; the same step indicator: **Start From**, then
   **Style** (Plan Cards adds **Cards** and **Columns** between); only the step scrolls, over a footer that stays
   put. It is 60 rem wide on a wide screen (1024 px and up), where Start From's template lists and Style's Look
   beside Cell Size and Freeze Header Row sit side by side.

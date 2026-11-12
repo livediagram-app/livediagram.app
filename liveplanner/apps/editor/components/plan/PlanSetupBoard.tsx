@@ -10,11 +10,11 @@ import { useEffect, useState } from 'react';
 import { PLAN_COLUMNS_MAX, type ItemTypeDef } from '@liveplanner/items';
 import { ChevronLeftIcon, Button, CheckIcon } from '@liveplanner/ui';
 import { dropSetupDraft, readSetupDraft, saveSetupDraft } from '@/lib/setup-dialog-store';
-import { PlanBoardTileArt } from './plan-tile-art';
 import type { SetupColumn, SetupLayout } from './setup-board';
 import { SetupColumnsStep, SetupTypesStep } from './setup-board-steps';
 import { SetupLayoutStep } from './SetupLayoutStep';
 import { SetupDialog, useSetupPalette } from './SetupDialog';
+import { setupBoardHeroArt } from './SetupHeroArt';
 
 type Step = 'types' | 'columns' | 'layout';
 const STEPS: { id: Step; label: string }[] = [
@@ -105,8 +105,8 @@ export function PlanSetupBoard({
       returnFocus={returnFocus}
       titleId={`setup-board-${boardId}`}
       title="Set up your board"
-      line="Pick its cards, columns and layout. Change them any time from its cog."
-      icon={<PlanBoardTileArt preset="kanban" size={20} />}
+      line="Pick its cards, columns and layout. Change them any time."
+      art={setupBoardHeroArt}
       help="planBoards"
       palette={palette}
       steps={STEPS}

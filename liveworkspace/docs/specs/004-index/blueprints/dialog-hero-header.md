@@ -11,6 +11,12 @@ precision, read from the code. Paths are relative to the repository root.
 | `packages/ui/src/dialog/hero/index.ts`                                                     | the `@liveworkspace/ui/dialog-hero` subpath                                                                          |
 | `packages/ui/src/dialog/hero/art/<dialog>.tsx`                                             | shared art, `@liveworkspace/ui/dialog-hero-art/<dialog>` (a wildcard export: no package.json edit)                   |
 | `packages/ui/src/dialog/hero/art/share.tsx`                                                | `shareHeroArt`                                                                                                       |
+| `packages/ui/src/dialog/hero/art/webhooks.tsx`                                             | `webhooksHeroArt` (`DocumentWebhooksDialog`)                                                                         |
+| `packages/ui/src/dialog/hero/art/team.tsx`, `team-invite.tsx`                              | `teamHeroArt` (Members, New Team, Edit Team) and `teamInviteHeroArt` (Invite by Link), one drawing                   |
+| `liveplanner/apps/editor/components/plan/configure/BoardConfigureHeroArt.tsx`              | `boardConfigureHeroArt` (Configure Board, through `ClusterPanel`'s `hero`)                                           |
+| `liveplanner/apps/editor/components/plan/SetupHeroArt.tsx`                                 | `setupBoardHeroArt`, `setupSheetHeroArt` (`SetupDialog`'s `art`)                                                     |
+| `liveplanner/apps/editor/components/forms/ShareFormHeroArt.tsx`                            | `shareFormHeroArt` (Share Form)                                                                                      |
+| `livedesign/apps/live/components/canvas/LayoutGalleryHeroArt.tsx`                          | `layoutGalleryHeroArt` (Choose a Layout's dialog)                                                                    |
 | `liveplanner/apps/editor/components/automations/AutomationsHeroArt.tsx`                    | `automationsHeroArt` (product art: `<Dialog>HeroArt.tsx` beside its dialog)                                          |
 | `livedocuments/apps/editor/app/globals.css`, `liveworkspace/apps/site/app/app-colours.css` | the heading face's custom properties                                                                                 |
 | `packages/oxlint-config/raw-svg.ts`                                                        | `**/dialog/hero/**` and `**/*HeroArt.tsx` on the icon-art allowlist                                                  |
@@ -104,4 +110,6 @@ on a 390px phone.
 
 Measured minified (esbuild, React external): the frame, tokens and helpers are 5.6 KB, 2.4 KB gzipped, beyond the
 `DialogCloseButton` and `SheetHandle` every dialog already loads; Share's art 2.1 KB (1.0 KB gzipped), Automations'
-2.3 KB (1.0 KB gzipped). Art loads only with its dialog's chunk; the band paints once.
+2.3 KB (1.0 KB gzipped), Webhooks' 2.7 KB (1.0 KB), Team's 2.2 KB (1.0 KB) and Team Invite's 0.4 KB over it (0.3 KB);
+the product art: Configure Board's 2.0 KB (0.7 KB), Setup's two 4.2 KB (1.4 KB), Share Form's 2.3 KB (1.0 KB) and
+Choose a Layout's 2.9 KB (1.2 KB gzipped). Art loads only with its dialog's chunk; the band paints once.

@@ -11,7 +11,12 @@ It is `HeroDialogHeader` in `@liveworkspace/ui` (`packages/ui/src/dialog/hero/`)
 `@liveworkspace/settings-ui` and every product app can wear it. The plain `DialogHeader` stays for every dialog that
 does not. Which dialogs wear it is each dialog's spec's call; today: liveplanner's Automations
 (liveplanner/docs/specs/026-plan/automations.md "The Automations screen") and Share
-(livediagram/docs/specs/007-editor/editor-app.md "Layout, top to bottom", every app's Share alike).
+(livediagram/docs/specs/007-editor/editor-app.md "Layout, top to bottom", every app's Share alike), Webhooks
+([webhooks.md "Managing them"](./webhooks.md#managing-them)), the team dialogs (Members, New Team, Edit Team and
+Invite by Link, [one-explorer.md "Teams are run in the Explorer"](./one-explorer.md#teams-are-run-in-the-explorer)), liveplanner's Configure Board, Setup Board and Setup
+Sheet (liveplanner/docs/specs/026-plan/plan-board.md "Configure" and "Setup Board") and Share Form
+(liveplanner/docs/specs/030-forms/forms.md "Publishing and the form link"), and livedesign's Choose a Layout
+(livedesign/docs/specs/007-editor/pages-mode.md "An empty page offers its layouts").
 
 ## The frame
 
@@ -94,10 +99,13 @@ Automations: simple geometric SVG in the tokens, a plate or two lifted off the p
 
 What each dialog draws:
 
-| Dialog      | Art                                                                                                                                                                                                                                                                                                                                         |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Automations | A grid of dots fading toward the title; a cog rising from the bottom left, a looping arrow from the bottom right; centre: a rule as a flow, a trigger's bolt, a condition's diamond and an action's check joined by a line, a dashed arrow looping back, the bolt's ring spreading twice. Glyph: a bolt.                                    |
-| Share       | Rings spreading from the bottom right, where a pass rises from the edge, tilted as if just handed over (a link badge whose ring spreads twice, a perforation, two lines), the two people it reaches beside it; in the bottom left the one sharing, ringed in the accent; a dashed line along the foot from them to the pass. Glyph: a link. |
+| Dialog      | Art                                                                                                                                                                                                                                                                                                                                                                                                |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Automations | A grid of dots fading toward the title; a cog rising from the bottom left, a looping arrow from the bottom right; centre: a rule as a flow, a trigger's bolt, a condition's diamond and an action's check joined by a line, a dashed arrow looping back, the bolt's ring spreading twice. Glyph: a bolt.                                                                                           |
+| Share       | Rings spreading from the bottom right, where a pass rises from the edge, tilted as if just handed over (a link badge whose ring spreads twice, a perforation, two lines), the two people it reaches beside it; in the bottom left the one sharing, ringed in the accent; a dashed line along the foot from them to the pass. Glyph: a link.                                                        |
+| Webhooks    | A grid of dots fading toward the title; the Automations flow's cousin along the foot: in the bottom left the item as a card, a line leaving its node and a payload (braces on the accent) riding it; a dashed send line along the foot to the bottom right, where it arrives as an arrow at an endpoint, a port whose ring spreads twice as it is delivered. Glyph: a webhook, three nodes joined. |
+| Team        | Rings spreading from the bottom right, where three people stand gathered and a fourth, ringed in the accent with a plus badge, has just joined them; in the bottom left an open door, a dashed path along the foot from it to them. Glyph: two people, one in front.                                                                                                                               |
+| Team Invite | Team's drawing (Invite by Link), the newcomer's badge a link, the door's path the link's. Glyph: the same.                                                                                                                                                                                                                                                                                         |
 
 ## Where art lives
 

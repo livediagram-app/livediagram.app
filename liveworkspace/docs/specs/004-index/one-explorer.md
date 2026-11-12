@@ -764,6 +764,13 @@ The journeys, one way each:
 5. **Decline from an email.** The email's Decline link (`/join/decline?token=…`) is a thin page that declines
    without an account, and points at the Explorer's Invites to accept instead.
 
+The team dialogs (the panel's Members, New Team, Edit Team and Invite by Link) wear the dialog hero header
+([dialog-hero-header.md](./dialog-hero-header.md)), drawn as people gathered with one being welcomed in, through an
+open door at the left; Invite by Link's newcomer carries a link. Their lines are short enough for one line at the
+dialog's width: Members "Who is in it, their roles and who is invited.", New Team "One home for your work, in every
+app.", Edit Team "Saved for the whole team, in every app.", and Invite by Link "Anyone signed in who opens it joins
+<team>." once on, "One link to join <team>, for 7 days." while off, the full sentence then in the dialog's body.
+
 Old addresses keep working: `liveworkspace.app/account/teams` goes to `/explorer/invites`, and
 `/account/teams/<id>` to that team's view, `/explorer/team?id=<id>` ([site.md](../010-site/site.md#your-account-account)).
 
