@@ -474,6 +474,18 @@ describe('a summary', () => {
     );
   });
 
+  it('keeps a link the card’s fields hold, and one ending a sentence', () => {
+    const own: AiCardInput = {
+      title: 'x',
+      type: 'Bug',
+      description: 'Logs at https://logs.example/7',
+      fields: [{ name: 'Spec', value: 'https://spec.example/a' }],
+    };
+    expect(plainSummary('See https://spec.example/a, then https://logs.example/7.', own)).toBe(
+      'See https://spec.example/a, then https://logs.example/7.',
+    );
+  });
+
   it('is cut at a word to its length, or hard when one word fills it', () => {
     const long = plainSummary('word '.repeat(300), input);
     expect(long.length).toBeLessThanOrEqual(AUTOMATION_AI_SUMMARY_MAX);
