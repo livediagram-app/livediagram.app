@@ -22,7 +22,7 @@ Scope, by file (all under `apps/editor/lib/ms-whiteboard/` unless a path says ot
 | `ink-scene.ts`                                                                   | Ink groups, strokes, presets and arrowheads to scene `ink` items                                                                                                                     |
 | `simplify.ts`                                                                    | `simplifyStroke`: Ramer-Douglas-Peucker over x, y and pressure × width                                                                                                               |
 | `board-export.ts`                                                                | Finding boards in a file set; reading one board's files                                                                                                                              |
-| `import.ts`                                                                      | `listBoards`, `boardSceneOf`: the import's two steps                                                                                                                                 |
+| import.ts                                                                        | `listBoards`, `boardSceneOf`: the import's two steps                                                                                                                                 |
 | `board-identity.ts`                                                              | `boardTitle`, `boardDates`: the board record's title and dates, cleaned (the document name is `boardDocumentName` in `../livediagram/apps/editor/lib/board-scene/board-document.ts`) |
 | `ms-whiteboard-fixtures.ts`                                                      | Test-only encoder: readable board descriptions to export files                                                                                                                       |
 | `../livediagram/apps/editor/lib/zip-reader.ts`                                   | Generic Zip reading (stored and deflated entries, byte budget)                                                                                                                       |
@@ -233,7 +233,7 @@ Rules (`RULES`, user-facing):
 - `readBoardFiles(fileSet, ref)`: parses the three JSON files and `metadata.json` (optional);
   any parse failure or a missing `treeInit` → `board-unreadable`.
 
-### Import (`import.ts`)
+### Import (import.ts)
 
 - `listBoards(fileSet)`: summaries (title, `lastModifiedTime`, element count after replay) newest
   first; `no-boards` when empty.
