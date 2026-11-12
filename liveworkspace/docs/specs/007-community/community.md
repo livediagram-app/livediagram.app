@@ -32,7 +32,13 @@ Each app offers the same Community, in its own words and look, built from the sa
 - **Publishing**: a signed-in owner shares a document of theirs to the Community from the **Community** tab of
   the Share dialog, beside Passes. The tab is the same wherever the Share dialog opens: in the app's editor, in the
   app's Explorer, and in the Explorer on liveworkspace.app, for every app's documents. It is offered for the owner's
-  personal documents; a team library's document says it can't be shared to the Community.
+  personal documents; a team library's document says it can't be shared to the Community. The publish dialog it
+  opens (`CommunityPublishDialog`, **Share to Community** or **Edit Listing**) wears the [dialog hero
+  header](../004-index/dialog-hero-header.md), its one line "Show what you made for others to find and copy.", then
+  the app's Help and the close. Its art is the work going up on the gallery's shelf: rings from the top right, a
+  spotlight; a shelf along the foot in the bottom right, the owner's card (an accent sparkle on its corner) rising onto
+  it between two others; a heart in the bottom left with two sparkles, the likes it will gather; a sparkle is its
+  mark. On a phone, where the dialog is a sheet, the band runs up under the grab handle.
 - **The gallery**: the Community page at `/community` on the app's site (liveworkspace.app's page, served there by
   the app's router): search, categories, tags, sorts and My Shares; a post page with a read-only preview, Make a
   Copy, likes and reports.

@@ -301,8 +301,8 @@ scene` (items per kind, notes), `[ms-whiteboard] import failed` (an unexpected t
   hidden below `sm`. Each button: 24 px icon, `aria-label="Import from <name>"`, the `Tooltip` with
   `<name>`, `focus-visible` ring; it calls the source's open (`openMicrosoftWhiteboardImport`).
   Icon: `MsWhiteboardSourceIcon`, an original glyph (white board with a stroke on a `#2b6fd6` tile).
-- Dialog: title "Import from Microsoft Whiteboard", subtitle "Each board becomes its own document,
-  named and dated as the board." The panel has no back bar there (nothing to go back to).
+- Dialog: title "Import from Microsoft Whiteboard", subtitle "Each board becomes its own document." (the
+  header's one line; the panel's intro says how it is named and dated). The panel has no back bar there (nothing to go back to).
 - Panel: the intro "Pick a Microsoft Whiteboard board export: a board folder, a folder of boards,
   or their .zip.", a drop
   zone that is also a button ("Drop a board folder or .zip here, or choose a folder"), and two

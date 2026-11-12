@@ -10,8 +10,11 @@ It is `HeroDialogHeader` in `@liveworkspace/ui` (`packages/ui/src/dialog/hero/`)
 `@liveworkspace/explorer` (Share, History, the team dialogs), `@liveworkspace/community-ui`,
 `@liveworkspace/settings-ui` and every product app can wear it. The plain `DialogHeader` stays for every dialog that
 does not. Which dialogs wear it is each dialog's spec's call; today: liveplanner's Automations
-(liveplanner/docs/specs/026-plan/automations.md "The Automations screen") and Share
-(livediagram/docs/specs/007-editor/editor-app.md "Layout, top to bottom", every app's Share alike).
+(liveplanner/docs/specs/026-plan/automations.md "The Automations screen"), Share
+(livediagram/docs/specs/007-editor/editor-app.md "Layout, top to bottom", every app's Share alike), Export and Import
+(each product's docs/specs/020-import-export/README.md "The dialogs' header", with livediagram's import dialogs that
+open from the Explorer), History (livediagram/docs/specs/013-workspace/history.md "The dialog", every app's alike)
+and Share to Community (liveworkspace/docs/specs/007-community/community.md "Publishing").
 
 ## The frame
 
@@ -94,10 +97,14 @@ Automations: simple geometric SVG in the tokens, a plate or two lifted off the p
 
 What each dialog draws:
 
-| Dialog      | Art                                                                                                                                                                                                                                                                                                                                         |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Automations | A grid of dots fading toward the title; a cog rising from the bottom left, a looping arrow from the bottom right; centre: a rule as a flow, a trigger's bolt, a condition's diamond and an action's check joined by a line, a dashed arrow looping back, the bolt's ring spreading twice. Glyph: a bolt.                                    |
-| Share       | Rings spreading from the bottom right, where a pass rises from the edge, tilted as if just handed over (a link badge whose ring spreads twice, a perforation, two lines), the two people it reaches beside it; in the bottom left the one sharing, ringed in the accent; a dashed line along the foot from them to the pass. Glyph: a link. |
+| Dialog             | Art                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Automations        | A grid of dots fading toward the title; a cog rising from the bottom left, a looping arrow from the bottom right; centre: a rule as a flow, a trigger's bolt, a condition's diamond and an action's check joined by a line, a dashed arrow looping back, the bolt's ring spreading twice. Glyph: a bolt.                                                                          |
+| Share              | Rings spreading from the bottom right, where a pass rises from the edge, tilted as if just handed over (a link badge whose ring spreads twice, a perforation, two lines), the two people it reaches beside it; in the bottom left the one sharing, ringed in the accent; a dashed line along the foot from them to the pass. Glyph: a link.                                       |
+| Export             | A grid fading toward the title; in the bottom left the tab as a page rising from the edge, its corner folded; a dashed line along the foot to the bottom right, where it arrives fanned out into format tiles: a picture, a vector path, and in front, in the accent, the file going out, bobbing twice. Glyph: an arrow rising out of a tray.                                    |
+| Import             | A grid of dots fading toward the title; in the bottom left two files fanned, rising from the edge; a dashed line along the foot to the bottom right, where a dashed frame waits, an accent badge with an arrow down at its side and a file dropping in over its edge, bobbing twice. Glyph: an arrow into a tray.                                                                 |
+| History            | The baseline grid fading toward the title, a ruled ledger; in the bottom left a clock rising from the edge, a looping arrow turning back over it; in the bottom right a timeline of versions pinned up from the edge, the newest solid at its end, a dashed arrow arching back from it to the one restored, in the accent, its ring spreading twice. Glyph: a clock turning back. |
+| Share to Community | Rings spreading from the top right, a spotlight; in the bottom right a shelf along the foot with two cards on it, the owner's card rising onto it between them (an accent sparkle on its corner), bobbing twice over the dashed place it will stand; in the bottom left a heart rising from the edge, two sparkles over it. Glyph: a sparkle.                                     |
 
 ## Where art lives
 
