@@ -1,6 +1,7 @@
 'use client';
 
 import { lazy, Suspense, type ReactNode } from 'react';
+import type { HeroArt } from '@liveworkspace/ui/dialog-hero';
 import type { CatalogueBinding, StoredValue } from '@liveworkspace/settings/catalogue';
 import type { AccountHost, CatalogueSettingsViewProps } from './CatalogueSettingsView';
 import type { SettingsCategory } from './model';
@@ -84,6 +85,8 @@ export function SettingsPanel({
   isMobile: boolean;
   onClose: () => void;
   title?: string;
+  // The header band's art, where the host draws its own (liveworkspace.app's); else the shared Settings art.
+  heroArt?: HeroArt;
   footer?: ReactNode;
   onCategoryOpened?: (categoryId: string) => void;
 }) {
@@ -101,8 +104,14 @@ export function SettingsPanel({
         allLogo={renderLogo('all')}
       />
     ) : undefined;
+  // The header's line says which settings are shown: this app's, or the account's and every app's.
+  const subtitle =
+    shown === 'app' && app
+      ? `How ${app.name} works for you`
+      : 'Your account and every app, in one place';
   const common = {
     ...view,
+    subtitle,
     switcher,
     focus,
     initialCategoryId,

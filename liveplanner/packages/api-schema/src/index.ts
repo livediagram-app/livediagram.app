@@ -315,6 +315,9 @@ export type CapabilitiesResponse = {
   // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"). Only an explicit
   // false hides it, so an older worker that omits it leaves the Community showing.
   communityEnabled?: boolean;
+  // Whether this deployment has liveplanner's GitHub App set up (docs/specs/026-plan/github-pull-requests.md "The
+  // App"): every secret and the GITHUB_LINKS namespace. False or absent, the plan shows no GitHub entry.
+  githubEnabled?: boolean;
 };
 
 export * from '@liveworkspace/api-schema/access-levels';
@@ -324,6 +327,7 @@ export * from './room-messages';
 export * from './changesets';
 export * from './items';
 export * from './automations';
+export * from './github';
 export * from './sheets';
 export * from './telemetry-schema';
 export * from './timing-telemetry';

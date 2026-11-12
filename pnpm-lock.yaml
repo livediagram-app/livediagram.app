@@ -415,6 +415,9 @@ importers:
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../../../packages/trusted-types
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
@@ -1501,6 +1504,9 @@ importers:
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../../../packages/trusted-types
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
@@ -2668,6 +2674,9 @@ importers:
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../../../packages/trusted-types
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
@@ -3757,6 +3766,9 @@ importers:
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../../../packages/trusted-types
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
@@ -4791,6 +4803,9 @@ importers:
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../../../packages/trusted-types
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench

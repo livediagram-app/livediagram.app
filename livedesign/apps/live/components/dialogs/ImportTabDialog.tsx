@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCard';
@@ -6,7 +6,9 @@ import { TextImportPanel } from './TextImportPanel';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { ImportReport } from '@liveworkspace/workbench/components/dialogs/ImportReport';
 import type { ImportFormat as Format } from '@/hooks/persistence/useTabImport';
-import { Glyph, DialogCloseButton, DialogHeader } from '@livedesign/ui';
+import { Glyph } from '@livedesign/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { importHeroArt } from '@liveworkspace/ui/dialog-hero-art/import';
 
 type ImportTabDialogProps = {
   // The active tab's name — shown in the warning so it's clear which
@@ -61,6 +63,7 @@ export function ImportTabDialog({
   onClose,
   formats,
 }: ImportTabDialogProps) {
+  const titleId = useId();
   const offered = formats ? FORMATS.filter((f) => formats.includes(f.key)) : FORMATS;
   // One format offered: no list to pick from, so its panel is the dialog.
   const only = offered.length === 1 ? offered[0]!.key : null;
@@ -72,7 +75,10 @@ export function ImportTabDialog({
 
   return (
     <Dialog open onClose={onClose} ariaLabel="Import into tab" size="xl" className="max-h-[90vh]">
-      <DialogHeader
+      {/* The dialog hero header (dialog-hero-header.md): files coming in. */}
+      <HeroDialogHeader
+        art={importHeroArt}
+        titleId={titleId}
         title="Import to Tab"
         subtitle={
           report
@@ -81,10 +87,9 @@ export function ImportTabDialog({
               ? `Paste your ${activeFormat.title}, or import a file.`
               : 'Pick a format to import into the current tab.'
         }
-      >
-        <HelpArticleLink article="importTabs" size="md" />
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        actions={<HelpArticleLink article="importTabs" size="md" />}
+        onClose={onClose}
+      />
       <div className="flex-1 overflow-y-auto px-6 py-5">
         {report ? (
           <ImportReport failures={report.failures} onDone={onClose} />

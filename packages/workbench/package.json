@@ -212,7 +212,6 @@
     "./components/start/start-panel-types": "./src/components/start/start-panel-types.ts",
     "./components/start/start-query": "./src/components/start/start-query.ts",
     "./components/start/start-band-colours": "./src/components/start/start-band-colours.ts",
-    "./components/start/AutomationsBand": "./src/components/start/AutomationsBand.tsx",
     "./components/start/StartHeaderBand": "./src/components/start/StartHeaderBand.tsx",
     "./components/start/StartPanel": "./src/components/start/StartPanel.tsx",
     "./components/start/StartTitleMark": "./src/components/start/StartTitleMark.tsx",

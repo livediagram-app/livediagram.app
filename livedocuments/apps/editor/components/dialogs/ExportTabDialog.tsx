@@ -1,6 +1,7 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { ensureMapGeometryFor } from '@/lib/map-geometry-loader';
-import { DialogCloseButton, DialogHeader } from '@livedocuments/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { exportHeroArt } from '@liveworkspace/ui/dialog-hero-art/export';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCard';
 import { FormatIcon } from './export-format-icons';
@@ -128,6 +129,7 @@ export function ExportTabDialog({
   onClearSelection,
   deck,
 }: ExportTabDialogProps) {
+  const titleId = useId();
   // null = the format grid; otherwise the picked format's sub-panel.
   const [active, setActive] = useState<Format | null>(null);
   const [busy, setBusy] = useState(false);
@@ -370,10 +372,15 @@ export function ExportTabDialog({
       size="xl"
       className="max-h-[90vh]"
     >
-      <DialogHeader title={isSelection ? 'Export Selection' : 'Export Tab'} subtitle={subtitle}>
-        <HelpArticleLink article="exportingDiagrams" size="md" />
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+      {/* The dialog hero header (dialog-hero-header.md): the tab leaving as files. */}
+      <HeroDialogHeader
+        art={exportHeroArt}
+        titleId={titleId}
+        title={isSelection ? 'Export Selection' : 'Export Tab'}
+        subtitle={subtitle}
+        actions={<HelpArticleLink article="exportingDiagrams" size="md" />}
+        onClose={onClose}
+      />
       <div className="flex-1 overflow-y-auto px-6 py-5">
         {active && isTextFormat(active) ? (
           <TextExportPanel

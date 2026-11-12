@@ -6,7 +6,9 @@
 import { useId, useState, type FormEvent } from 'react';
 import { teamErrorMessage, type TeamResult } from '../data/teams';
 import { Button } from '@liveworkspace/ui';
-import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { teamHeroArt } from '@liveworkspace/ui/dialog-hero-art/team';
+import { Dialog, DialogFooter } from '../ui/Dialog';
 import { ORGANISATION_MAX, TEAM_NAME_MAX } from './rules';
 
 export const TEAM_FIELD =
@@ -29,6 +31,7 @@ export function TeamFormDialog({
   const [error, setError] = useState<string | null>(null);
   const nameId = useId();
   const orgId = useId();
+  const titleId = useId();
   const title = mode === 'create' ? 'New Team' : 'Edit Team';
   const unchanged =
     mode === 'edit' &&
@@ -51,18 +54,20 @@ export function TeamFormDialog({
   }
 
   return (
-    <Dialog onClose={onClose} ariaLabel={title} size="sm">
+    <Dialog onClose={onClose} ariaLabel={title} titleId={titleId} size="sm">
       <form onSubmit={(e) => void submit(e)} data-team-form={mode}>
-        <DialogHeader
+        {/* The dialog hero header (dialog-hero-header.md): the team drawn as people gathered, one welcomed in. */}
+        <HeroDialogHeader
+          art={teamHeroArt}
+          titleId={titleId}
           title={title}
           subtitle={
             mode === 'create'
-              ? 'A shared home for your work, the same team in every app.'
-              : 'Saved in every app, for everyone in the team.'
+              ? 'One home for your work, in every app.'
+              : 'Saved for the whole team, in every app.'
           }
-        >
-          <DialogCloseButton onClick={onClose} />
-        </DialogHeader>
+          onClose={onClose}
+        />
         <div className="flex flex-col gap-4 px-6 py-4">
           <div>
             <label

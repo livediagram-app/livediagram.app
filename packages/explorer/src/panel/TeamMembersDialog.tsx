@@ -1,9 +1,12 @@
 'use client';
 
+import { useId } from 'react';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { teamHeroArt } from '@liveworkspace/ui/dialog-hero-art/team';
 import { useExplorer } from '../explorer/context';
 import { TeamIcon } from '../ui/icons';
 import { TeamCard, useTeamDetails } from '../teams/TeamCard';
-import { Dialog, DialogCloseButton, DialogHeader } from '../ui/Dialog';
+import { Dialog } from '../ui/Dialog';
 import { PaneEmpty, PaneSkeleton } from './pane-parts';
 
 // ---- A team's Members dialog ---------------------------------------------------------------------------
@@ -33,11 +36,18 @@ export function TeamMembersDialog({
 }) {
   const { viewerId, helpHref, navigate } = useExplorer();
   const [load, reload] = useTeamDetails(teamId);
+  const titleId = useId();
   return (
+    // Named "<team> members" (aria-label, not the title's id), which says more than the title alone.
     <Dialog onClose={onClose} ariaLabel={`${teamName} members`} size="lg">
-      <DialogHeader title={teamName} subtitle="Members">
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+      {/* The dialog hero header (dialog-hero-header.md): the team drawn as people gathered. */}
+      <HeroDialogHeader
+        art={teamHeroArt}
+        titleId={titleId}
+        title={teamName}
+        subtitle="Who is in it, their roles and who is invited."
+        onClose={onClose}
+      />
       <div className="px-5 py-4" data-team-members-dialog={teamId}>
         {load.state === 'found' ? (
           <TeamCard

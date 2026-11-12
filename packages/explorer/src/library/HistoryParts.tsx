@@ -8,11 +8,11 @@ import { PictureDisc } from '@liveworkspace/ui';
 import { DAY_MONTH_YEAR } from '@liveworkspace/ui/date-format';
 import { usePersonPicture } from '../data/usePeople';
 import { useExtras } from '../explorer/extras';
-import type { ExplorerContextValue } from '../explorer/context';
 import { AppMark } from '../explorer/badges';
 import { useOwnerLabel } from '../explorer/rows';
-import { DialogCloseButton } from '../ui/Dialog';
-import { Glyph, ItemIcon } from '../ui/icons';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { historyHeroArt } from '@liveworkspace/ui/dialog-hero-art/history';
+import { Glyph } from '../ui/icons';
 import { avatarFill } from '../ui/avatar-fill';
 import { FOCUS_RING } from '../ui/classes';
 import { initials, personName } from './person-name';
@@ -25,37 +25,29 @@ export const MUTED = 'text-slate-500 dark:text-slate-400';
 const fullDate = (at: number) => DAY_MONTH_YEAR.format(at);
 export const iso = (at: number) => new Date(at).toISOString();
 
+// The dialog hero header (liveworkspace/docs/specs/004-index/dialog-hero-header.md): the item's record over time drawn
+// in the band, the item's name its heading, and its one line naming it History, its app (the mark and kind word) and
+// its owner.
 export function HistoryHeader({
   item,
   titleId,
-  renderThumbnail,
   onClose,
 }: {
   item: Item;
   titleId: string;
-  renderThumbnail: ExplorerContextValue['renderThumbnail'];
   onClose: () => void;
 }) {
   const owner = useOwnerLabel(item, true);
-  const thumb = renderThumbnail?.(item, 'row');
   const title = item.title || 'Untitled';
   return (
-    <div className="flex shrink-0 items-start gap-3 border-b border-slate-100 px-5 pb-4 pt-5 sm:px-6 dark:border-slate-800">
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500 [&>*]:max-h-full [&>*]:max-w-full [&_svg]:h-6 [&_svg]:w-6">
-        {thumb ?? <ItemIcon size={22} />}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
-          History
-        </p>
-        <h2
-          id={titleId}
-          className="truncate text-base font-semibold text-slate-900 dark:text-slate-100"
-          title={title}
-        >
-          {title}
-        </h2>
-        <p className={`mt-0.5 flex min-w-0 items-center gap-1.5 text-xs ${MUTED}`}>
+    <HeroDialogHeader
+      art={historyHeroArt}
+      titleId={titleId}
+      title={<span title={title}>{title}</span>}
+      subtitle={
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span>History</span>
+          <span aria-hidden>·</span>
           <AppMark app={item.app} size={14} />
           <span aria-hidden>{kindWords(item.app).one}</span>
           <span aria-hidden>·</span>
@@ -63,10 +55,10 @@ export function HistoryHeader({
             <span className="sr-only">Owner: </span>
             {owner}
           </span>
-        </p>
-      </div>
-      <DialogCloseButton onClick={onClose} />
-    </div>
+        </span>
+      }
+      onClose={onClose}
+    />
   );
 }
 

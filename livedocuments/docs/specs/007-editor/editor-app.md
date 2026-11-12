@@ -162,6 +162,10 @@ It draws every link as a **pass**, a ticket that admits whoever holds it. Top to
 1. **Header**: the title and a status line saying who can open the document right now: "Private: only you can
    open this document.", "Team: every member of the team can open this document." or "Shared: anyone holding the
    pass can get in" (", with the password" while one is set), with **Show Me** for a guided tour.
+   It is the [dialog hero header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), the title
+   in the Typesetter's serif, sharing drawn as a connection (a pass rising from the bottom right, the one sharing in
+   the bottom left), the status in a few words as its one line, the full sentence
+   for screen readers.
 2. **Issue a pass**: the level picker, **Editor**, **Participant** or **Viewer** ([Share roles](../013-workspace/share-roles.md)),
    **Opens** (All tabs, or one tab, on a multi-tab document, [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)),
    **Valid** (Forever, 1 week, 1 month, 6 months, [Share-link expiry](../013-workspace/share-link-expiry.md)) and

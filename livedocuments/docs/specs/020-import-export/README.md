@@ -10,3 +10,14 @@ Follow the references below only as needed; never upfront.
 - ./print.md - when working on Print: the Export dialog's Print card, Current Page or Whole Document, each page its own sheet at its size, the sandboxed print frame
 - ./animated-gif-export.md - when working on the animated GIF export of a Pages tab's pages: the options (pages, one hold, size, estimate), the timeline (15 fps, the deck's transition, still pages, the 3 minute cap), what a frame shows and the errors
 - ./blueprints/README.md - when implementing from a blueprint: Word and PowerPoint import and export, the import image pipeline, the animated GIF export and Print
+
+## The dialogs' header
+
+The Export and Import dialogs wear the [dialog hero
+header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), their title (**Export Tab** or **Export
+Selection**, **Import to Tab**) and its one line in the band, then **Help** and the close. Export draws the tab
+leaving as files: a page in the bottom left, a dashed line along the foot to format tiles fanned in the bottom right,
+the file going out in front in the accent; an arrow rising out of a tray is its mark. Import draws files coming in:
+two files in the bottom left, a dashed line along the foot to a dashed frame in the bottom right, a file dropping
+in over its edge; an arrow into a tray is its mark. Both arts are shared
+(`@liveworkspace/ui/dialog-hero-art/export`, `/import`), so every product's pair reads alike.

@@ -16,19 +16,20 @@
 
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
-import { use, useRef, useState } from 'react';
+import { use, useId, useRef, useState } from 'react';
 import { browser } from 'react-dom';
 import { resolveFinish, type BackgroundPattern, type Finish } from '@livediagram/document';
 import {
   useEscape,
   useFocusTrap,
   Portal,
-  DialogCloseButton,
   SheetHandle,
   safeInset,
   useSheetDrag,
   BackBar,
 } from '@livediagram/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { canvasThemeHeroArt } from '@liveworkspace/ui/dialog-hero-art/canvas-theme';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { AnimatedHeightBox } from '@liveworkspace/workbench/components/primitives/AnimatedHeightBox';
@@ -57,6 +58,15 @@ const eased =
     easeNextStyleChange();
     fn(a);
   };
+
+// The header's line for each view: what the home and each Fine-tune panel set, in a few words.
+const VIEW_LINES: Record<CanvasThemeTab, string> = {
+  looks: 'Pick a look for the whole tab, then fine-tune any part of it.',
+  theme: 'The colours every element on the tab draws in.',
+  finish: 'How every element on the tab is drawn.',
+  font: 'The tab’s font, and the size new text starts at.',
+  canvas: 'The pattern and colours behind everything.',
+};
 
 const PANEL_TITLES: Record<Exclude<CanvasThemeTab, 'looks'>, string> = {
   theme: 'Colours',
@@ -153,6 +163,7 @@ export function CanvasThemeDialog({
     onTabChange(next);
   };
   const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
   useFocusTrap(dialogRef);
   // A popover flying out of the paintbrush (docs/specs/011-theme/canvas-and-theme-dialog.md): on a screen wider than a
   // phone, the panel's bottom-right corner sits just above the brush and it grows from there. Without the brush (a
@@ -212,27 +223,20 @@ export function CanvasThemeDialog({
               : { ...uiScaleStyle(panelScale), ...sheet.style, paddingBottom: safeInset('bottom') }
           }
         >
-          <SheetHandle handleProps={sheet.handleProps} className="sm:hidden" />
-          {/* The header: the title with help and close on the right; inside a panel, a Back row to the home
+          {/* The grab handle stands over the header's band, which runs up under it on a phone. */}
+          <SheetHandle handleProps={sheet.handleProps} className="relative z-10 sm:hidden" />
+          {/* The dialog hero header (liveworkspace/docs/specs/004-index/dialog-hero-header.md): the swatch fan's band, the
+              title and a line for the view that is up, then Show Me, Help and the close. "Appearance" is the VIEWER's
+              own light / dark chrome (docs/specs/007-editor/editor-app.md), so this dialog, the tab's look shared with
+              everyone, takes the name of the section that opens it. Inside a panel, a Back row leads home
               (docs/specs/011-theme/canvas-and-theme-dialog.md "Fine-tune"). */}
-          <div className="flex flex-col gap-2 border-b border-slate-200 px-4 pb-2.5 pt-3 max-sm:pt-0 dark:border-slate-800">
-            <div className="flex items-center justify-between gap-3">
-              {/* "Appearance" is the VIEWER's own light / dark chrome now
-                  (docs/specs/007-editor/editor-app.md), so this dialog — which is the tab's look, shared
-                  with everyone — takes the name of the section that opens it. */}
-              <div className="flex min-w-0 flex-col">
-                <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                  Tab Style
-                </h2>
-                {tab === 'looks' ? (
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Pick a look for the whole tab, then fine-tune any part of it.
-                  </p>
-                ) : null}
-              </div>
-              {/* Help sits with the close button, where the other editor
-                  dialogs keep their window controls, not beside the title. */}
-              <div className="flex items-center gap-1">
+          <HeroDialogHeader
+            art={canvasThemeHeroArt}
+            titleId={titleId}
+            title="Tab Style"
+            subtitle={VIEW_LINES[tab]}
+            actions={
+              <>
                 <TabStyleShowMeButton tour={tour} />
                 <HelpArticleLink
                   size="md"
@@ -246,10 +250,11 @@ export function CanvasThemeDialog({
                           : 'changingTheme'
                   }
                 />
-                <DialogCloseButton compact onClick={onClose} />
-              </div>
-            </div>
-          </div>
+              </>
+            }
+            onClose={onClose}
+            underHandle
+          />
 
           {/* Fixed min-height so switching between tabs doesn't collapse the
               modal and make it jump around. */}

@@ -117,6 +117,8 @@ function responsesFor(route: RouteSpec): Record<string, unknown> {
       }
     } else if (status === 101) {
       responses[key] = { description: 'Switching Protocols (WebSocket upgrade).' };
+    } else if (status === 302) {
+      responses[key] = { description: 'Found: a redirect, named by the Location header.' };
     } else {
       responses[key] = {
         description: 'Error.',
@@ -191,6 +193,11 @@ const TAGS = [
     name: 'Automations',
     description:
       "A plan's rules: a trigger, conditions and actions that run on its cards, and the Audit Trail of what they did.",
+  },
+  {
+    name: 'GitHub',
+    description:
+      "A plan's GitHub connection: liveplanner's GitHub App, the repositories it connects, and the deliveries GitHub sends.",
   },
   { name: 'Sharing', description: 'Share links, passwords, and the plans shared with you.' },
   { name: 'Folders', description: 'Organise plans into a personal or team folder tree.' },

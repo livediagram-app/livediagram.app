@@ -1,7 +1,9 @@
 'use client';
 
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useId, useMemo, useState, type ReactNode } from 'react';
 import { BackBar } from '@liveworkspace/ui';
+import { HeroDialogHeader, type HeroArt } from '@liveworkspace/ui/dialog-hero';
+import { settingsHeroArt } from '@liveworkspace/ui/dialog-hero-art/settings';
 import { useSettingsUiKit } from './kit';
 import type { SettingsCategory, SettingsGroupHeading } from './model';
 import { SettingsCategoryList, SettingsSubcategoryLinks } from './SettingsCategoryList';
@@ -26,6 +28,8 @@ export function SettingsView({
   isMobile,
   onClose,
   title = 'Settings',
+  subtitle,
+  heroArt = settingsHeroArt,
   footer,
   placeholder,
   focus = null,
@@ -41,6 +45,10 @@ export function SettingsView({
   onClose: () => void;
   // The header's title on the front screen (a pushed pane is titled by its category).
   title?: string;
+  // The header's one line under the title (the panel says which settings are shown).
+  subtitle?: string;
+  // The header band's art: the shared Settings art unless the host draws its own (liveworkspace.app's).
+  heroArt?: HeroArt;
   footer?: ReactNode;
   // Shown in place of the rail and pane (loading, a failed load).
   placeholder?: ReactNode;
@@ -61,6 +69,7 @@ export function SettingsView({
   groups?: readonly SettingsGroupHeading[];
 }) {
   const { SearchInput, CloseButton, NoMatches } = useSettingsUiKit();
+  const titleId = useId();
 
   // The category the reader chose; null is the phone's root list. Desktop reads null as "the first
   // category" (see `selected` below), so one piece of state serves both layouts, across a resize
@@ -135,18 +144,23 @@ export function SettingsView({
 
   return (
     <>
-      {/* Plain divs, not <header>/<footer>: inside a dialog those are the page's banner and contentinfo landmarks
-          again, so the panel would give every page a second of each. */}
-      <div
-        data-settings-header
-        className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800"
-      >
-        <h2 className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
-          {showBack ? selected?.label : title}
-        </h2>
-        {switcher && !isMobile ? <div className="min-w-0 shrink">{switcher}</div> : null}
-        <CloseButton onClick={onClose} />
-      </div>
+      {/* The dialog hero header (liveworkspace/docs/specs/004-index/dialog-hero-header.md): the cog and its band, the
+          title (a pushed pane's category on a phone) and its line, then the This app / All switch on desktop and the
+          close. */}
+      <HeroDialogHeader
+        art={heroArt}
+        titleId={titleId}
+        title={showBack ? selected?.label : title}
+        subtitle={subtitle}
+        // The switch is wider than Share's buttons: the centre piece stands clear of it.
+        className={switcher && !isMobile ? '[--hero-centre-end:17rem]' : ''}
+        actions={
+          <>
+            {switcher && !isMobile ? <div className="min-w-0 shrink">{switcher}</div> : null}
+            <CloseButton onClick={onClose} />
+          </>
+        }
+      />
       {switcher && isMobile && !showBack ? (
         <div className="flex border-b border-slate-200 px-4 py-2 dark:border-slate-800 [&>*]:flex-1 [&>*>button]:flex-1">
           {switcher}
