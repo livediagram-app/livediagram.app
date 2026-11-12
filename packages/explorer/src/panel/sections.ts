@@ -52,15 +52,24 @@ export function sectionFromKey(key: string | null | undefined): PanelSection | n
 }
 
 /** The rail's entries: the sidebar's three groups, each team under Spaces and This Browser after them while this
- *  browser keeps any of the app's items or a local folder, and the Library while the host keeps one. */
+ *  browser keeps any of the app's items or a local folder, the Library while the host keeps one, and the Inbox
+ *  unless the app has none (appHasInbox). A remembered Inbox then opens Home (resolveSection). */
 export function panelSectionGroups(
   teams: readonly TeamRef[],
-  { library = false, thisBrowser = false }: { library?: boolean; thisBrowser?: boolean } = {},
+  {
+    library = false,
+    thisBrowser = false,
+    inbox = true,
+  }: { library?: boolean; thisBrowser?: boolean; inbox?: boolean } = {},
 ): PanelSectionGroup[] {
   return [
     {
       id: 'overview',
-      sections: [{ kind: 'home' }, { kind: 'inbox' }, { kind: 'shared' }],
+      sections: [
+        { kind: 'home' },
+        ...(inbox ? [{ kind: 'inbox' as const }] : []),
+        { kind: 'shared' },
+      ],
     },
     {
       id: 'spaces',
@@ -73,7 +82,7 @@ export function panelSectionGroups(
     },
     {
       id: 'more',
-      // The sidebar's Library, in its order (Recent is Home's Jump Back In here).
+      // The sidebar's Library, in its order (Recent is Home's Recent here).
       sections: [
         { kind: 'favourites' },
         ...(library ? [{ kind: 'library' as const }] : []),

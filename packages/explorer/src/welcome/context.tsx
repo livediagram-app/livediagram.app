@@ -71,7 +71,7 @@ export function WelcomeProvider({
   useEffect(() => {
     if (!enabled) return;
     const controller = new AbortController();
-    // Answered by the index beside Jump Back In's read when Home asks both at once (homeReads.ts).
+    // Answered by the index beside Most Used and Recent's read when Home asks both at once (homeReads.ts).
     readAnyItem(client, app, filter, controller.signal)
       .then((found) => {
         const empty = !found;

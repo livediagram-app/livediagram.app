@@ -14,13 +14,13 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { connect, DEFAULT_MCP_URL } from './mcp-client.mjs';
+import { connect } from '@liveworkspace/mcp-kit/eval/mcp-client';
 import { snapshot } from './snapshot.mjs';
 import { selectTasks, taskById } from './tasks/index.mjs';
 import { parseTranscript } from './transcript.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const MCP_URL = process.env.MCP_URL ?? DEFAULT_MCP_URL;
+const MCP_URL = process.env.MCP_URL ?? 'http://127.0.0.1:8798/mcp';
 // What the assistant is told besides the MCP's own instructions: as little as a chat app says, and a fixed date so
 // date questions ("18 December") read the same in every round.
 export const SYSTEM_PROMPT =

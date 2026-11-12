@@ -9,7 +9,6 @@ import {
   SelectionBox,
   Cursor,
   Panel,
-  Tabs,
   Label,
   Tile,
 } from '@liveworkspace/help-site/art/primitives';
@@ -214,40 +213,6 @@ export function MulticolourTheme() {
         label="D"
         labelTone="strong"
       />
-    </Scene>
-  );
-}
-
-/** An element linked to another tab: a follow-link badge and a jump to a tab. */
-export function ElementLink() {
-  return (
-    <Scene w={420} h={210}>
-      <Tabs x={28} y={24} items={['Overview', 'Detail']} active={0} tabW={72} h={24} />
-      <Shape x={48} y={92} w={120} h={56} kind="rect" label="See detail" labelTone="strong" />
-      {/* Follow-link badge on the shape */}
-      <g transform="translate(160 92)">
-        <circle r={11} className="fill-brand-500 stroke-white" strokeWidth={2.5} />
-        <path
-          d="M-3 1 a4 4 0 0 1 0 -5 l2 -2 a4 4 0 0 1 6 6 l-1 1 M3 -1 a4 4 0 0 1 0 5 l-2 2 a4 4 0 0 1 -6 -6 l1 -1"
-          className="stroke-white"
-          strokeWidth={1.6}
-          fill="none"
-        />
-      </g>
-      <Arrow from={[176, 100]} to={[300, 120]} kind="curved" tone="accent" />
-      {/* Target tab card */}
-      <rect
-        x={300}
-        y={104}
-        width={96}
-        height={64}
-        rx={8}
-        className="fill-white stroke-brand-300"
-        strokeWidth={2}
-      />
-      <Tabs x={310} y={114} items={['Detail']} active={0} tabW={56} h={18} />
-      <Shape x={314} y={140} w={32} h={20} kind="rect" />
-      <Shape x={356} y={140} w={32} h={20} kind="circle" accent />
     </Scene>
   );
 }

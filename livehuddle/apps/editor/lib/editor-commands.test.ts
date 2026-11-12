@@ -13,8 +13,6 @@ function handlers(): CommandHandlers {
     turn: vi.fn(),
     clearAnimation: vi.fn(),
     setMarker: vi.fn(),
-    addComment: vi.fn(),
-    editNote: vi.fn(),
     createTab: vi.fn(),
     renameDocument: vi.fn(),
     deleteDocument: vi.fn(),
@@ -40,7 +38,6 @@ const base: CommandContext = {
   canUndo: false,
   canRedo: false,
   selectionCount: 0,
-  singleIsBoxed: false,
   singleRotates: false,
   singleIsShape: false,
   hasAnimation: false,
@@ -109,50 +106,40 @@ describe('buildEditorCommands — selection commands', () => {
   });
 
   it('ranks selection commands ahead of the document/tab commands', () => {
-    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true });
+    const out = ids({ ...base, selectionCount: 1 });
     expect(out.indexOf('delete')).toBeLessThan(out.indexOf('create-tab'));
   });
 
-  it('offers rotate/note/comment for a single boxed element', () => {
-    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: true });
+  it('offers rotate for a single element that turns, and no note or comment command', () => {
+    const out = ids({ ...base, selectionCount: 1, singleRotates: true });
     expect(out).toEqual(
-      expect.arrayContaining([
-        'rotate-90',
-        'rotate-180',
-        'rotate-270',
-        'rotate-0',
-        'note',
-        'comment',
-      ]),
+      expect.arrayContaining(['rotate-90', 'rotate-180', 'rotate-270', 'rotate-0']),
     );
+    // Notes and comments left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions,
+    // links and notes"): the palette never offers them.
+    expect(out).not.toContain('note');
+    expect(out).not.toContain('comment');
+    const names = buildEditorCommands({ ...base, selectionCount: 1 }, handlers()).map(
+      (c) => c.name,
+    );
+    expect(names.join(' ')).not.toMatch(/Note|Comment/);
   });
 
   // docs/specs/009-elements/blueprints/annotations.md [QD8]: an annotation marker never rotates.
-  it('offers note and comment but no Rotate for an annotation marker', () => {
-    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: false });
-    expect(out).toEqual(expect.arrayContaining(['note', 'comment']));
+  it('offers no Rotate for an annotation marker', () => {
+    const out = ids({ ...base, selectionCount: 1, singleRotates: false });
     expect(out).not.toContain('rotate-90');
     expect(out).not.toContain('rotate-0');
   });
 
-  it('does not offer boxed-only commands for a single arrow (not boxed)', () => {
-    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: false });
-    expect(out).not.toContain('rotate-90');
-    expect(out).not.toContain('note');
-  });
-
   it('offers Clear animation only when the element is animated', () => {
-    expect(ids({ ...base, selectionCount: 1, singleIsBoxed: true })).not.toContain(
-      'clear-animation',
-    );
-    expect(ids({ ...base, selectionCount: 1, singleIsBoxed: true, hasAnimation: true })).toContain(
-      'clear-animation',
-    );
+    expect(ids({ ...base, selectionCount: 1 })).not.toContain('clear-animation');
+    expect(ids({ ...base, selectionCount: 1, hasAnimation: true })).toContain('clear-animation');
   });
 });
 
 describe('buildEditorCommands — markers (shape only)', () => {
-  const shape = { ...base, selectionCount: 1, singleIsBoxed: true, singleIsShape: true };
+  const shape = { ...base, selectionCount: 1, singleIsShape: true };
 
   it('offers the marker catalogue and no Clear marker when none is set', () => {
     const out = ids(shape);
@@ -169,7 +156,7 @@ describe('buildEditorCommands — markers (shape only)', () => {
   });
 
   it('does not offer markers for a non-shape boxed element', () => {
-    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleIsShape: false });
+    const out = ids({ ...base, selectionCount: 1, singleIsShape: false });
     expect(out.some((id) => id.startsWith('marker-'))).toBe(false);
   });
 });
@@ -177,10 +164,7 @@ describe('buildEditorCommands — markers (shape only)', () => {
 describe('buildEditorCommands — dispatch', () => {
   it('runs the matching handler, including the rotation angle', () => {
     const h = handlers();
-    const cmds = buildEditorCommands(
-      { ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: true },
-      h,
-    );
+    const cmds = buildEditorCommands({ ...base, selectionCount: 1, singleRotates: true }, h);
     cmds.find((c) => c.id === 'rotate-180')!.run();
     expect(h.rotate).toHaveBeenCalledWith(180);
 
@@ -190,7 +174,7 @@ describe('buildEditorCommands — dispatch', () => {
 
   it('turns furniture a quarter either way (docs/specs/009-elements/furniture-facing.md)', () => {
     const h = handlers();
-    expect(ids({ ...base, selectionCount: 1, singleIsBoxed: true })).not.toContain('rotate-left');
+    expect(ids({ ...base, selectionCount: 1 })).not.toContain('rotate-left');
     const cmds = buildEditorCommands({ ...base, selectionCount: 2, selectionTurns: true }, h);
     cmds.find((c) => c.id === 'rotate-left')!.run();
     cmds.find((c) => c.id === 'rotate-right')!.run();
@@ -203,7 +187,6 @@ describe('buildEditorCommands — dispatch', () => {
       {
         ...base,
         selectionCount: 1,
-        singleIsBoxed: true,
         singleIsShape: true,
         marker: 'red-circle',
       },
@@ -358,7 +341,7 @@ describe('canvas tool commands', () => {
 // The element edits and layout cleanup an editor's search offers alongside the document and view verbs.
 describe('buildEditorCommands: an editor', () => {
   it('offers the element edits, layout cleanup and the document and view verbs together', () => {
-    const got = ids({ ...base, selectionCount: 1, singleIsBoxed: true });
+    const got = ids({ ...base, selectionCount: 1 });
     expect(got).toEqual(
       expect.arrayContaining([
         'delete',

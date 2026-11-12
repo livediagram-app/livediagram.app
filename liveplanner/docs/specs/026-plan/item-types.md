@@ -162,7 +162,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   **Person** (one person, as the Assignee holds one, or several, [below](#holds-several)), **Labels** (up to 20 short labels, as Labels holds them),
   **Colour** (any `#rrggbb` colour, as Colour holds one), **Checklist** (up to 50 to-do rows, each its text and
   whether it is done, as Checklist holds them), **Comments** (its own threads, [below](#comments-and-votes-fields)),
-  **Votes** (its own votes, below) and **Image** (one picture, [below](#image-fields)). Each reads and
+  **Votes** (its own votes, below) and **Image** (one picture, or several, [below](#image-fields)). Each reads and
   is edited exactly as the built-in field of its kind (the same control in the card panel, the same chip on the
   card): a type may hold the built-in and any number of fields of its kind, each with its own name and value. The
   built-in fields keep their ids (`assignee`, `labels`, `color`, `checklist`, `comments`, `votes`), so every card,
@@ -522,8 +522,20 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     pointing here (glyph, number, title, Archived, status, assignee; pressed, each opens), its count, an empty
     note ("No cards link here as Owner yet."), and **New {Type}** for each type whose field links here: it makes
     a card of that type already linked, in its type's Default State (else the first status its type uses), and
-    opens it, then **Link Existing**, which links a card already made. These sit on the type's first tab, before
-    Comments.
+    opens it, then **Link Existing**, which links a card already made.
+  - <a id="linked-cards-tab"></a>**The Linked Cards tab**: the Linked as sections (a Blocked By field's Blocks
+    list among them) sit on a tab of their own in the item panel, **Linked Cards**, after the type's own tabs and
+    before Activity, never on the type's first tab. It shows on every card whose type some Card field can link to
+    (one section per such field, as above), and on no other card. It is generated, never saved into the type: the
+    type editor neither lists nor counts it, and a type keeps its 6 tabs. Its label carries the number of cards
+    linked here, each card once however many fields link it (a quiet pill beside the name, left out at none).
+    With no cards linked at all, the tab opens on an empty state, **No Linked Cards Yet**, "Cards that link to
+    this one show here." ("... Make one already linked, or link one you already have." for someone who may add
+    cards), then, for someone who may add cards, each section's heading and its New {Type} and Link Existing
+    buttons, without the per-section "No cards link here" note. A type that has a tab of its own named Linked Cards
+    (ignoring case) gets no second one: the sections join that tab, before its first Comments field (or last), and
+    its label takes the count. A card opens on the type's first tab as ever; once picked, Linked Cards stays
+    picked while the card's type still has it, and gives way to the first tab when it no longer does.
   - <a id="link-existing"></a>**Link Existing**: one button per section, after its New {Type} buttons (a link glyph,
     accessible name "Link an existing card as {Field}"). It opens a dialog, **Link Existing Card**, saying "Pick a
     card to link to #{n} {Title} as {Field}.", drawn as Add Thread to Card's is (the same card picker,
@@ -631,7 +643,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     read-only: no New {Type} and no Link Existing, since a block is set on the card that waits. With no cards it is
     not drawn.
   - **In the item panel**: a card whose type offers a Blocked By field and holds a blocker lists them in a **Blocked
-    By** section (the field's name) on the type's first tab, before the Linked as sections: each blocker's glyph,
+    By** section (the field's name) on the type's first tab, before its first Comments field (or last), since it
+    says what stops the card (the Linked as sections are on the Linked Cards tab): each blocker's glyph,
     number, title and state (pressed, it opens), done ones with a tick, with "2 open" (or "All done") beside the
     count. The field's own control (its chips, Add and remove buttons) stays where the type places it, the one
     place a link is set.
@@ -853,40 +866,80 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
   - **Share roles**: as any field. An Editor sets a Rollup or Lookup up (the type editor); everyone who can read the
     plan reads the values.
 
-- <a id="image-fields"></a>**Image fields**: a custom field of kind **Image** holds one picture, uploaded from the
-  card panel into liveworkspace's media service (`liveworkspace/docs/specs/006-media/media.md`), where every app keeps
-  the images people upload. Its value is the image's id there (a string); the bytes never sit in the plan.
-  - **The control** (the card panel): with no picture, a dashed drop zone the width of its row, an image glyph and
-    **Add an Image** ("PNG, JPEG, WebP or GIF, up to 10 MB" under it); pressing it (or Enter or Space) opens the
-    file picker, and a file dropped on it uploads too. While it uploads it reads **Uploading…** with a spinner and
-    takes no other file. With a picture, the picture itself, fitted to the row's width and at most 12 rem (192 px)
-    tall on a soft grey ground, and under it **Replace** and **Remove** (each an icon and its word); its accessible
-    name is "{Field}: image". A picture that cannot be read (deleted at the service, or not shown to this person)
-    draws a quiet broken-image tile saying "This image can't be shown", with Replace and Remove still there.
+- <a id="image-fields"></a>**Image fields**: a custom field of kind **Image** holds one picture, and a **Several
+  Images** field (Add Field's own field type; an Image field stored with `multiple: true`, kept only as true and only
+  on an Image) holds up to **20** (`FIELD_VALUES_MAX`), say a Work Item's designs (the owner's ask, 2026-11-11). Each
+  picture is uploaded into liveworkspace's media service (`liveworkspace/docs/specs/006-media/media.md`), where every
+  app keeps the images people upload. An Image field's value is the image's id there (a string); a Several Images
+  field's is a list of ids (`["<id>", ...]`), each once, in the order people arranged them; the bytes never sit in
+  the plan. An empty list is no value: the field is cleared instead.
+  - **One reading, both ways** (as [Holds Several](#holds-several) reads people and cards; `packages/items`
+    image-values.ts): a Several Images field reads a single stored id (every value written before it became one) as
+    a list of one, and an Image field reads a stored list as its first picture, so changing one into the other never
+    rewrites a card and an Image turned into Several Images keeps its picture. Nothing needs migrating: every field
+    saved before holds one. An older editor reading a list on an Image field shows its first picture, and an older
+    one that knows no lists shows no picture (never a crash).
+  - **The control** (the card panel) of an **Image** field: with no picture, a dashed drop zone the width of its row,
+    an image glyph and **Add an Image** ("PNG, JPEG, WebP or GIF, up to 10 MB" under it); pressing it (or Enter or
+    Space) opens the file picker, and a file dropped on it uploads too. While it uploads it reads **Uploading…** with
+    a spinner and takes no other file. With a picture, the picture itself, fitted to the row's width and at most 12
+    rem (192 px) tall on a soft grey ground, and under it **Replace** and **Remove** (each an icon and its word); its
+    accessible name is "{Field}: image". A picture that cannot be read (deleted at the service, or not shown to this
+    person) draws a quiet broken-image tile saying "This image can't be shown", with Replace and Remove still there.
+  - **The control** of a **Several Images** field: a grid of square thumbnails (cropped to fill, 4 to a row in the
+    panel's main column, 3 in a narrow one, each at least 72 px), in the field's order, then a dashed **Add Images**
+    tile (a plus; "PNG, JPEG, WebP or GIF, up to 10 MB" under the grid while it is empty, the tile then the width of
+    its row). Pressing Add Images opens the file picker for several files at once; files dropped on the grid or the
+    tile upload too. Each file is checked before anything is sent (below) and gets its own tile at the end, showing a
+    progress ring while it uploads; files upload one after another, and each joins the list as it lands, in one
+    write of the list read from the card as it is then (someone else may have added meanwhile). A file refused, or
+    past the field's 20, is skipped and said under the grid ("photo.heic: Use a PNG, JPEG, WebP or GIF image.",
+    "{Field} holds up to 20."), the rest still land, and what landed is announced ("3 images added").
+    Pressing a thumbnail **opens** the picture full size in a new browser tab (its accessible name "{Field}: image 2
+    of 5"). Each thumbnail has, on hover or focus (always on a touch screen), a **Remove** button (accessible name
+    "Remove image 2 from {Field}"), and is **reordered** by dragging it to another place in the grid, or by Alt+←
+    and Alt+→ while it is focused (announced "Moved to 3 of 5"); each remove and each move is one undo step. A
+    picture that cannot be read draws the broken-image tile at the thumbnail's size, still removable and movable.
+    Full at 20, Add Images is disabled with the tooltip "{Field} holds up to 20".
   - **What it refuses**, inline under the control, before anything is sent: a file that is not PNG, JPEG, WebP or
     GIF ("Use a PNG, JPEG, WebP or GIF image."), one over 10 MB ("That image is over 10 MB."), an empty file; and
     from the service, a full gallery ("Your image gallery is full. Delete some images and try again."). A server
     without the media service answers 503: the control then says "Image uploads aren't available here." and
     offers no upload.
-  - **Who may change it**: an Editor and a Participant (who edit cards) add, replace and remove a picture; a Viewer
-    sees the picture alone. Removing clears the field (one undo step, as any field); the image stays in its
+  - **Who may change it**: an Editor and a Participant (who edit cards) add, replace, remove and reorder pictures; a
+    Viewer sees the pictures and opens them, with no Add, Replace, Remove or dragging. Removing a picture (or the
+    last of a Several Images field's, which clears it) is one undo step, as any field; the image stays in its
     uploader's gallery.
   - **On the card face**: where the type's Display places it, a small thumbnail (20 px tall, rounded) before the
-    field's name, named "{Field}: image" for assistive technology; with no value it is not drawn. Thumbnails load
-    as cards scroll into view, each picture fetched once and shared by every card and panel showing it.
+    field's name, named "{Field}: image" for assistive technology; a Several Images field draws its first picture
+    the same way and, when it holds more, a small count after it ("+4"), named "{Field}: 5 images". With no value it
+    is not drawn. Thumbnails load as cards scroll into view, each picture fetched once and shared by every card and
+    panel showing it; a card face never fetches more than its first picture.
   - **Reading the bytes** (the api): `GET /api/images/{id}?p={planId}` answers the picture to its uploader, and to
     anyone who may read plan `{planId}` (its owner, its team, and every share role: Editor, Participant and Viewer)
-    when that plan **serves** it: one of its cards holds the id and the plan holds a **grant** for it. A grant is
-    recorded when the picture is uploaded for that plan (`POST /api/images?p={planId}`, by someone who may edit its
-    cards), so an id pasted into another plan serves nothing there. A tab-scoped link reads it only when a card its
-    tab shows holds it (items.md "Who sees the bytes"). Anything else answers 404.
+    when that plan **serves** it: one of its cards holds the id (as an Image field's value, inside a Several Images
+    field's list, or in its Attachments) and the plan holds a **grant** for it. A grant is recorded when the picture
+    is uploaded for that plan (`POST /api/images?p={planId}`, by someone who may edit its cards, or an agent acting
+    for them), so an id pasted into another plan serves nothing there. A tab-scoped link reads it only when a card
+    its tab shows holds it (items.md "Who sees the bytes"). Anything else answers 404.
   - **This Browser plans** upload too (as the person, their guest or account), and show their pictures to them.
-    **Copies** carry the id; a copy shows the picture to its uploader, and to the copy's share visitors once
-    someone who may edit it uploads it there again.
-  - **Where it is left out**: a form can't ask it, Import CSV skips its column and Export CSV leaves it out, and a
-    board can't sort or lay swimlanes by it. **Agents** read it (`list_items` lists the field with
-    `kind: "image"`, and a card's value as the image id) and may clear it, but never set one: `change_items`
-    refuses a value for it ("Photo is an image: add one in the card panel").
+    **Copies** carry the ids, every picture of a Several Images field among them; a copy shows the pictures to their
+    uploader, and to the copy's share visitors once someone who may edit it uploads them there again.
+  - **Where it is left out**: a form can't ask it, Import CSV skips its column and Export CSV leaves it out, card
+    text (search, the outline, a card's line in an agent's view) says nothing for it, and image exports and tab
+    thumbnails draw no picture bytes (a picture is drawn on the board, never written), whether it holds one or
+    several; a board can't sort or lay swimlanes by it. None of them reads a list as anything but pictures, so a
+    Several Images value never breaks them.
+  - **Agents** (mcp-server.md §4.5b; the CLI as cli.md says): `upload_image` puts a picture into the caller's gallery
+    **for a plan** (its grant recorded, as the card panel's upload), and `change_items` adds those ids to an Image
+    field (setting it; on Several Images, adding at the end, up to 20) or to Attachments, removes ids from either,
+    and clears either. An id the plan holds no grant for is refused ("That picture was not uploaded for this plan:
+    upload it with upload_image first."), so an agent can't place a picture someone else uploaded elsewhere.
+    `list_items` lists an Image field with `kind: "image"` (and `multiple: true` for Several Images) and each
+    picture as its id and a link the agent can read (`GET /api/images/{id}?p={planId}` on the api, which answers it
+    to the agent's own token as to the person). `change_card_types` makes a Several Images field with
+    `kind: "image"` and `multiple: true`. An agent whose token only reads the plan can't upload for it or change a
+    card, as a Viewer can't.
 - **Tabs**: a type has up to **6 tabs**, each with a name of 1 to 24 characters, unique in the type ignoring
   case. A field sits in at most one tab. Title is never in a tab: it heads the panel. With one tab the panel shows
   its fields without a tab bar.
@@ -1192,7 +1245,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
         | Time             | How long something takes, or the time spent on it. | Duration, Time Tracking                                      |
         | Choices          | Pick from a list, tick a box or tag a card.        | Choice, Multiple Choice, Checkbox, Checklist, Labels, Colour |
         | People           | Who has it, and what the team says about it.       | Person, Several People, Comments, Votes                      |
-        | Links and Images | Web pages, contact details and pictures.           | Link, Email, Phone, Image                                    |
+        | Links and Images | Web pages, contact details and pictures.           | Link, Email, Phone, Image, Several Images                    |
         | Cards            | Connect a card to other cards.                     | Link to Card, Several Cards, Blocked By                      |
         | Calculated       | Values worked out for you.                         | Calculated, Formula, Rollup, Lookup                          |
 
@@ -1205,7 +1258,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
         already on; nothing new is stored. Each tile is a field type of its own: no form (Shape, or an existing
         field's in the type editor) shows a switch or menu to turn one into another (the owner's correction,
         2026-11-03: Holds Several, Blocks, Track Time and Include Time are gone from every form, and the Calculation
-        menu offers only Child Count and Children Done, on a Calculated field alone). The variants: **Several People** (Person holding several),
+        menu offers only Child Count and Children Done, on a Calculated field alone). The variants: **Several People** (Person holding several), **Several Images** (Image holding several),
         **Time Tracking** (Duration tracking time), **Date and Time Range** (Date Range with times), **Several
         Cards** (Link to Card holding several), **Blocked By** (Link to Card, blocks, holding several),
         **Formula**, **Rollup** and **Lookup** (Calculated, its calculation each). Kept as settings,
@@ -1225,7 +1278,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
         three; Blocked By a card held behind another, marked Blocked; Date a month grid with the day picked; Date and
         Time the same with a clock; Date Range and Date and Time Range a week with the span filled; Duration a clock
         with "2h 30m"; Checkbox a ticked and an unticked line; Checklist three to-dos, two ticked, "2/3"; Comments
-        two speech bubbles from two people; Votes an up-vote button with voters; Image two thumbnails. Then its
+        two speech bubbles from two people; Votes an up-vote button with voters; Image one picture; Several Images three thumbnails in a row. Then its
         icon, name and a one-line description in plain words: Text "A short line of text", Long Text "Paragraphs of
         notes", Link "A web address", Email "An address that opens your mail app", Phone "A number that calls on a
         phone", Number "Points, counts and sizes", Currency "An amount, like £12,500", Percent "How far along, drawn
@@ -1236,7 +1289,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
         from a list", Checkbox "Yes or no, ticked or not", Labels "Short tags, coloured by name", Person "Someone on
         the plan, like an owner", Several People "A few people at once, like reviewers", Checklist "To-dos ticked off one by one", Comments "Threads to talk
         the card through", Votes "Thumbs up from the team", Colour "A colour to tell cards apart", Image "A picture,
-        like a mock-up or a photo", Link to Card "Another card, like a parent or an epic", Several Cards "Several
+        like a mock-up or a photo", Several Images "Up to 20 pictures, like a set of designs", Link to Card "Another card, like a parent or an epic", Several Cards "Several
         linked cards, like an epic’s stories", Blocked By "Cards that must be done before this one", Calculated
         "Counts of child cards, or how many are done", Formula "Works a value out from the card’s fields", Rollup "A
         sum, average or count over linked cards", Lookup "A field read from a linked card". The whole tile is one button: pressing it opens Shape. Tiles lift a pixel
@@ -1261,7 +1314,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
         **assign** Person; **people**, **reviewers**, **team** Several People; **color**,
         **swatch** Colour; **to-do**, **subtasks** Checklist; **discussion**, **thread** Comments; **like**,
         **upvote** Votes; **picture**, **photo**, **screenshot**, **attachment**, **cover** Image, whose Ready to use
-        offers Attachments). A search looks in every category and starts the list at its top, the first category
+        offers Attachments; **pictures**, **images**, **gallery**, **designs**, **screenshots** Several Images). A search looks in every category and starts the list at its top, the first category
         with a match marked; the rail's counts become each category's matches, a category with none dimmed, and
         pressing one with matches scrolls to them. With nothing matching, the rail steps aside (as Add a Widget's
         does) and it says **No fields match “…”** with "Try a word like money, date or parent." under it. How many
@@ -1312,7 +1365,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
       Card, Calculated, Image, Comments, Votes, and a Duration that tracks time) keep a still **Preview** instead,
       captioned "Preview" with "Shows on a real card" beside it: a sample value of its kind (Link to Card the
       linked types' names, "Project or Epic", Calculated "3" or "40%", the Percent bar when Show as Percent Bar is
-      on, Image a picture glyph and "photo.png", Votes "▲ 3", Time Spent "2h 30m" and a Start button). Both
+      on, Image a picture glyph and "photo.png", Several Images three picture tiles and "+2", Votes "▲ 3", Time Spent "2h 30m" and a Start button). Both
       follow the settings as you type. Last, one full-width primary button **Add {Name}** ("Add {Kind} Field" until named), off until the
       field is ready: a name, at least one option for Choice and Multiple Choice, at least one type for Link to
       Card. While it is off, a quiet line under it says what is missing ("Name the field to add it.", "Add at
@@ -1343,7 +1396,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
       the field's cards hold as its options (each list's items one by one, at most 20), so they all fit.
       Tiles it can't become are dimmed and can't be pressed, the reason in a tooltip (and in the tile's name):
       Comments ("Comments hold threads, not values, so no field changes to or from them."), Votes ("Votes are
-      counted by a session vote, ..."), Image ("An Image holds an uploaded picture, ..."), Checklist ("A Checklist
+      counted by a session vote, ..."), Image and Several Images ("An Image holds an uploaded picture, ...", except to each other), Checklist ("A Checklist
       holds rows to tick, ..."), Time Tracking ("Time Tracking keeps logged time, ..."), all of these both ways;
       Calculated, Formula, Rollup and Lookup from a field that holds values, and every field with values from one
       of them ("Worked out, never typed: a field with values can’t become one, nor one become a field with
@@ -1360,6 +1413,8 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
       | Link to Card                                | Several Cards, Blocked By                   | Kept                                                                                                                                                                                                               |
       | Several Cards, Blocked By                   | Link to Card                                | The first card; the rest are lost                                                                                                                                                                                  |
       | Several Cards                               | Blocked By (and back)                       | Kept                                                                                                                                                                                                               |
+      | Image                                       | Several Images                              | Kept (one picture reads as a list of one)                                                                                                                                                                          |
+      | Several Images                              | Image                                       | The first picture; the rest leave the card (they stay in their uploaders' galleries)                                                                                                                               |
       | Any value                                   | Text, Long Text                             | Written as text: a choice its label, a number plain, a date `YYYY-MM-DD`, a moment or range as the card shows it, Yes or No, people's and cards' names joined by commas; Long Text to Text runs its lines together |
       | Text and the rest                           | Number, Currency, Percent, Rating, Duration | Read as an import reads a cell; what is no number (or out of range) is cleared                                                                                                                                     |
       | Number, Currency, Percent, Rating, Duration | one another                                 | The number kept where it fits (Percent 0 to 100, Rating 1 to its scale, Duration as minutes); else cleared                                                                                                         |

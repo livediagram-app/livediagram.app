@@ -1,7 +1,7 @@
 import { headlineCase, isUntitledName, titleCase } from '@livehuddle/api-schema';
 import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './legacy-untitled';
 
-// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the twenty-five Spaces, every
+// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the twenty-six Spaces, every
 // one opening on a meeting board. livehuddle is for meeting in Spaces; the retrospectives, workshops, planning and
 // strategy boards and the quizzes and games are livediagram's (docs/specs/002-project-scope/not-in-livehuddle.md).
 export type TemplateKind =
@@ -29,15 +29,16 @@ export type TemplateKind =
   // More Spaces (virtual-office-template.md "More Spaces").
   | 'expo-hall'
   | 'beach-offsite'
-  // The Games Rooms, the Homes (houses with floors joined by Stairs) and the Music Hall, a Venue
-  // (virtual-office-template.md "Games Rooms", "Homes", "Venues").
+  // The Games Rooms, the Homes (houses with floors joined by Stairs), and the Music Hall and the Festival Field, the
+  // Venues (virtual-office-template.md "Games Rooms", "Homes", "Venues").
   | 'arcade-lounge'
   | 'games-night-den'
   | 'sports-bar'
   | 'family-house'
   | 'city-townhouse'
   | 'country-cottage'
-  | 'music-hall';
+  | 'music-hall'
+  | 'festival-field';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -241,6 +242,13 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Music Hall',
     description:
       'A venue for a gig in Avatar mode: a main hall with a stage and a standing floor, a foyer bar, a green room and a cloakroom.',
+    extra: true,
+  },
+  {
+    kind: 'festival-field',
+    title: 'Festival Field',
+    description:
+      'An open-air festival in Avatar mode: a main stage and a crowd field, three food stalls, a bar tent and a campfire area.',
     extra: true,
   },
 ];

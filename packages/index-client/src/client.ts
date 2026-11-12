@@ -277,7 +277,7 @@ export function createIndexClient({
     favourite: (itemId: string) => call<void>(`/favourites/${enc(itemId)}`, { method: 'PUT' }),
     unfavourite: (itemId: string) => call<void>(`/favourites/${enc(itemId)}`, { method: 'DELETE' }),
 
-    // Hide from Recent / Show in Recent: the person's own Recent and Jump Back In only.
+    // Hide from Recent / Show in Recent: the person's own Recent and Home's Most Used only.
     hideFromRecent: (itemId: string) =>
       call<void>(`/recent-hidden/${enc(itemId)}`, { method: 'PUT' }),
     showInRecent: (itemId: string) =>

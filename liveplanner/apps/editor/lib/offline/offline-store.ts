@@ -60,7 +60,7 @@ export type OfflineProjectRecord = {
   // A trashed record keeps everything else so a restore is exact.
   trashedAt?: number;
   // This Browser's opens of the project (docs/specs/013-workspace/explorer-home.md "Opens"),
-  // for Home's Jump Back In; see ./offline-opens.ts. Optional: a record never opened has none.
+  // for Home's Recent; see ./offline-opens.ts. Optional: a record never opened has none.
   opens?: StoredLocalOpens;
   // The project's item store (docs/specs/026-plan/items.md "Offline projects"): its items, the
   // store's revision and the next item key. Optional: a record without them has an empty store.

@@ -22,7 +22,7 @@ design decision. Draw mode's own tools are blueprinted in
 | The look's one gate         | `hasBoardLook(mode)`: true in Draw mode (the person's own pattern)                                                                                                                                                                                                                          |
 | The person's effective mode | `useEditorMode(tab, { canEdit })` → `EditorModeState`                                                                                                                                                                                                                                       |
 | The mode resolver           | `resolveEditorMode({ tab, canEdit })`, `apps/editor/lib/editor-mode-store.ts`                                                                                                                                                                                                               |
-| A collaborator's switch     | `peerModeSwitchOf(op)`, `peerModeSwitchMessage(name, mode)` (`apps/editor/lib/peer-mode-switch.ts`); `useRoomConnection` `receivePeerModeSwitch`                                                                                                                                            |
+| A collaborator's switch     | `peerModeSwitchOf(op)`, `peerModeSwitchMessage(name, mode)` (`apps/editor/lib/peer-mode-switch.ts`); `receiveRoomOp` (`room-op-receive.ts`, from `useRoomConnection`) `receivePeerModeSwitch`                                                                                               |
 | May this person edit        | `useViewPreview(...).canEdit`, `apps/editor/app/document/[id]/useViewPreview.ts`                                                                                                                                                                                                            |
 | The mode switch             | `EditorModeSwitch` (beside the menu button, in `ToolbarExplorerButton`'s card) and `StartModeSwitch` (`apps/editor/components/start/`, a start panel's rail): chip `ModeMenuChip` (`compact`, `iconOnly`), menu `ModeMenu` + `ModePreviewArt`, `apps/editor/components/chrome/editor-mode/` |
 | The editor's resolved mode  | `EditorModeProvider` / `useEditorModeState()`, `editor-mode-context.tsx`                                                                                                                                                                                                                    |
@@ -90,7 +90,7 @@ or written (left in place). Nothing is pinned per page.
   re-renders the other, the palette and any `TabModeIcon` (which reads `opensInOf(tab)`) from the one `Tab.opensIn`.
 - **Everyone follows**: a peer's switch arrives as a `tab-meta` op setting `opensIn` (or clearing
   it, back to Diagram) and is applied like any tab change, so every client re-resolves the mode.
-  `useRoomConnection` also reads it with `peerModeSwitchOf(op)` and calls
+  `useRoomConnection` (`receiveRoomOp`, `room-op-receive.ts`) also reads it with `peerModeSwitchOf(op)` and calls
   `receivePeerModeSwitch(name, tabId, mode)` with the sender's presence name
   (`nameByPresenceRef`, null when unknown); the editor toasts `peerModeSwitchMessage` when
   `tabId` is the active tab. An inline text edit stays open across the switch, so nothing typed is

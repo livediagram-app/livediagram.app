@@ -7,6 +7,7 @@
 import type { ReactNode } from 'react';
 import {
   checklistRowsProgress,
+  fieldImageIds,
   fieldPeople,
   holdsSeveral,
   itemColourValue,
@@ -76,10 +77,13 @@ export function customKindPill(
         <ChecklistPill key={def.id} progress={progress} palette={palette} name={def.label} />
       ) : null;
     }
-    case 'image':
-      return typeof value === 'string' && value ? (
-        <ImageThumb key={def.id} imageId={value} label={`${def.label}: image`} />
+    // Its picture, or the first of a list (item-types.md "Image fields"); never more than one fetched per card.
+    case 'image': {
+      const first = fieldImageIds(def, value)[0];
+      return first ? (
+        <ImageThumb key={def.id} imageId={first} label={`${def.label}: image`} />
       ) : null;
+    }
     // A Votes field: the built-in's ▲ count, of its own votes (item-types.md "Comments and Votes fields").
     case 'votes':
       return (

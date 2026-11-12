@@ -165,6 +165,22 @@ does (no zones, no page breaks are new to it); adding or splitting a card is a p
   editors mounted, 9,407 event listeners, opening ran 1,073 ms of long tasks (worst 340 ms) and typing's p95 frame
   was 17.8 ms; after, 2 to 3 editors, 1,354 listeners, opening 521 to 528 ms of long tasks (worst 195 ms) and
   typing's p95 7.6 to 8 ms. Flips and panning held a 16.7 ms frame median both ways.
+- Typing settles nothing for the rest of the stack (#386): a card's writing holds no zone, so the article intake
+  (`useArticleIntake`, [article-pages blueprint](article-pages.md) "Zones", steps 5 and 6) neither fits zones nor
+  ticks after a typing commit (`intakeHasWork`, `lib/article/intake-has-work.ts`). Before, each commit's settle laid
+  all 100 pages out once per card (`withZonesFitted` called `layOutPages(pagesOf(tab))` per flow, 10,000 page parses)
+  inside a `tickTabs` updater, then rendered the editor a second time: one long task per commit.
+- Measured on a production build (#386, a static `next build` export with the same stack, 390x844 touch at 3x, CPU
+  4x, 60 keys 120 ms apart then 3 s of settling, three runs each way): long tasks over 50 ms while typing, before
+  1 in every run (54, 56 and 54 ms; the profile's longest busy stretch 63 to 65 ms, a third of it the intake's
+  updater), after 0 in every run (longest busy stretch 42 ms, the commit's own render). Keys slower than 16 ms: 2 to 5
+  of 60 both ways, worst 24 ms. The 120 ms task #1247 saw was this settle on the dev build, where React's development
+  checks roughly double it. The rest of #1247's readings, production, before and after alike: 2 editors mounted,
+  874 event listeners at rest, opening 377 to 400 ms of long tasks (worst 221 to 231 ms), panning frame median
+  16.7 ms (p95 16.7 to 16.8 ms), a flip by swipe 239 to 248 ms (median frame 16.7 ms, p95 33 ms).
+- `apps/editor/hooks/editor/useArticleIntake.typing.test.ts` keeps it: a 100-card typing commit ticks nothing, and a
+  settle over cards that do hold zones grows with the stack (10 to 100 cards under 30x CPU; the old per-card layout
+  read about 60x).
 - The flip clones two nodes once per flip and animates `transform` and `opacity` only (compositor).
 
 ## Presentation and UX
@@ -203,6 +219,9 @@ SVG in the existing preview groups.
 | Footer, marker, roles                        | `apps/editor/components/canvas/FlashcardStack.test.tsx`     |
 | Palette kind and toolbar cut                 | `apps/editor/lib/palette-kind.test.ts`, `PageToolbar` tests |
 | Templates build                              | `packages/templates` template tests                         |
+| Typing on a stack ticks no settle, linear    | `apps/editor/hooks/editor/useArticleIntake.typing.test.ts`  |
+| When the intake has work                     | `apps/editor/lib/article/intake-has-work.test.ts`           |
+| Zone-less writing fitted at once, one layout | `packages/document/src/article-intake.test.ts`              |
 
 ## Assets and external resources
 

@@ -77,15 +77,17 @@ const SITES: Record<string, { stage: boolean; lawn: boolean }> = {
   'hotel-and-suites': { stage: true, lawn: false },
   'coworking-tower': { stage: false, lawn: false },
   'music-hall': { stage: true, lawn: false },
+  'festival-field': { stage: true, lawn: true },
 };
 
-it('files four Spaces under Campus and three under Venues, and cross-lists the Beach Offsite and the Expo Hall', () => {
+it('files four Spaces under Campus and four under Venues, and cross-lists the Beach Offsite, the Expo Hall and the Festival Field', () => {
   expect(CAMPUS).toEqual(Object.keys(SITES));
   expect(TEMPLATES.filter((t) => templateCategory(t.kind) === 'campus').map((t) => t.kind)).toEqual(
     ['company-campus', 'startup-hq', 'school-quad', 'coworking-tower'],
   );
   expect(templateCategories('beach-offsite')).toEqual(['outdoor', 'campus']);
   expect(templateCategories('expo-hall')).toEqual(['events', 'venues']);
+  expect(templateCategories('festival-field')).toEqual(['venues', 'outdoor']);
 });
 
 // Every tab of every site, Games Room and Home, and of the Beach Offsite: a site's floors are held to the same rules.

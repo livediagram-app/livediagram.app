@@ -138,7 +138,6 @@ export function ContentsSidebar<R extends ContentsRowBase>({
       <ContentsList
         contents={contents}
         variant="film"
-        touch={false}
         badges={badges}
         className="flex-1 gap-0.5 px-1.5 pb-2 pt-2"
       />

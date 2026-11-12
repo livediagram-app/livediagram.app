@@ -259,6 +259,19 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'cloakroom',
     'venue',
   ],
+  'festival-field': [
+    'festival',
+    'field',
+    'open air',
+    'outdoor stage',
+    'live music',
+    'band',
+    'food stalls',
+    'street food',
+    'bar tent',
+    'campfire',
+    'summer',
+  ],
 };
 
 /** The words a template is searched by. */

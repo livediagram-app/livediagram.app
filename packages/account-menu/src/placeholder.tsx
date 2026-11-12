@@ -9,14 +9,15 @@ import {
   GUEST_LABEL,
   GuestAvatar,
 } from './face';
+import { ACCOUNT_PALETTE } from './palette';
 
 // The account menu's footprint while its code or its name is on the way: the avatar's disc, with the room for
 // "Guest" and the chevron kept but unseen, in the trigger's box (ACCOUNT_TRIGGER_BOX), so the Guest button
 // takes its place without moving the bar (a visitor's header, hydrating late, shifted its Explorer link 8.7px).
 export function AccountMenuPlaceholder() {
   return (
-    <span aria-hidden className={`shrink-0 ${ACCOUNT_TRIGGER_BOX}`}>
-      <span className="size-7 shrink-0 rounded-full bg-slate-200 dark:bg-slate-800" />
+    <span aria-hidden className={`shrink-0 ${ACCOUNT_TRIGGER_BOX} ${ACCOUNT_PALETTE}`}>
+      <span className="size-7 shrink-0 rounded-full bg-(--account-pending)" />
       <span className="invisible truncate max-sm:hidden">{GUEST_LABEL}</span>
       <ChevronGlyph className="invisible size-4 shrink-0" />
     </span>
@@ -52,7 +53,7 @@ export function DeferredAccountMenu({
 
   if (menu) return <menu.Menu openOnMount={pressed} focusOnMount={focused} />;
   return (
-    <div className="relative">
+    <div className={`relative ${ACCOUNT_PALETTE}`}>
       <button
         type="button"
         aria-haspopup="menu"

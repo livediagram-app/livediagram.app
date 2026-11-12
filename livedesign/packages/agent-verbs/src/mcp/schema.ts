@@ -487,7 +487,7 @@ export const createDesignShape = {
     .boolean()
     .optional()
     .describe(
-      "Whether this design joins the user's Jump back in (their most used and recent designs) " +
+      "Whether this design joins the user's Most Used and Recent on Home (their most used and recent designs) " +
         'at once. Default true. Pass false when making many designs in one go, so a batch ' +
         "never pushes the user's own work out of reach.",
     ),

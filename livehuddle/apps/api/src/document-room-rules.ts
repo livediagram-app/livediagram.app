@@ -144,9 +144,9 @@ export function admitFrame(
   return { admit: true, rate: { count: rate.count + 1, windowStart: rate.windowStart } };
 }
 
-// A Participant answers only as itself (docs/specs/013-workspace/share-roles.md "Integrity"): a comment reaction
-// names its reactor, and it must be the collab key the server pinned on its session
-// (docs/specs/013-workspace/share-roles.md "The collab key"), so nobody reacts in another's name.
+// A Participant answers only as itself (docs/specs/013-workspace/share-roles.md "Integrity"). Comment reactions,
+// which named the session's collab key, left with comments (docs/specs/002-project-scope/not-in-livehuddle.md
+// "Comments, actions, links and notes"); `_key` stays in the signature for the gate that passes it.
 //
 // A notice board note is signed with the server-verified adder key instead (docs/specs/009-elements/social-pieces.md
 // "Notice Board"): a pin's note and an unpin must both name it. Every screen, and the room's write into the stored
@@ -154,15 +154,13 @@ export function admitFrame(
 // pinned.
 export function answersAsSelf(
   op: unknown,
-  key: string | undefined,
+  _key: string | undefined,
   adderKey: string | null = null,
 ): boolean {
   if (typeof op !== 'object' || op === null) return false;
   const o = op as { kind?: unknown; delta?: unknown };
   if (o.kind !== 'el-delta' || typeof o.delta !== 'object' || o.delta === null) return false;
   const d = o.delta as { kind?: unknown; by?: unknown; note?: unknown };
-  // A reaction names its reactor (docs/specs/012-collaboration/comment-reactions.md).
-  if (d.kind === 'comment-react') return key !== undefined && d.by === key;
   const signer = adderKey !== null && adderKey !== '' ? adderKey : null;
   if (d.kind === 'notice-pin') {
     const note = d.note as { by?: unknown } | null | undefined;

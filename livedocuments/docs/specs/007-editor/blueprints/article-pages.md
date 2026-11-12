@@ -383,10 +383,17 @@ caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, select
 ARTICLE_DRAWING_PAD)` tall), `handle.insertZone(spec, centre)`, `withZoneLanded`,
      `withElementsIntoZone` (centred, scaled about the box corner). `ArticleDrawing` /
      `ArticleObject`.
-  5. `withZonesFitted` per article: an object zone takes its object's size (capped to the text
-     area) and pins it to its corner; an object zone with no object leaves the writing; a drawing
-     zone grows right and down to keep members `ARTICLE_DRAWING_PAD` inside, never past
-     `zoneHeightMax(textHeight)` (one page's text area, at most `ARTICLE_ZONE_MAX`), never shrinks.
+  5. `withZonesFitted` per article that holds a zone block (one without is skipped before its text box is
+     measured, and the function itself answers the same tab for one): an object zone takes its object's size
+     (capped to the text area) and pins it to its corner; an object zone with no object leaves the writing; a
+     drawing zone grows right and down to keep members `ARTICLE_DRAWING_PAD` inside, never past
+     `zoneHeightMax(textHeight)` (one page's text area, at most `ARTICLE_ZONE_MAX`), never shrinks. The intake
+     lays the pages out once per settle and hands them in (`laid`), so fitting N articles is O(N) page work,
+     not N layouts of every page.
+  6. **Nothing to settle, no tick**: when no object was dragged out, no zone left the writing, nothing was
+     taken in, no note marker or note text is gone and no unheld article holds a zone (`intakeHasWork`), the
+     intake calls no `tickTabs` at all, so a typing commit on zone-less writing (every flashcard, most
+     articles) costs no second render of the editor.
 - **`insertObject`** counts `INSERT_EVENT[what]` only after the insert went in (`insertZone`
   returned a zone, or `placeAt` was called at a caret point), never for a refused one.
 - **`insertZone(spec, near)`**: at `boundaryNear(near)` or after the caret's block; an empty

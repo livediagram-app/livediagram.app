@@ -196,11 +196,24 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Draw', 'Toggled', 'BreakShapeChip')).toBe(false);
   });
 
+  // Work Tracker #714 (livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes").
+  it('retires comments, notes, actions, the Inbox and their Settings rows', () => {
+    expect(isRetiredEvent('Comment', 'Added', null)).toBe(true);
+    expect(isRetiredEvent('Note', 'Opened', null)).toBe(true);
+    expect(isRetiredEvent('Action', 'Created', 'EmailOn')).toBe(true);
+    expect(isRetiredEvent('Activity', 'Opened', null)).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'CollaboratePanelOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'NotifyMentionsOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'ElementIndicatorsFooter')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'ActionSignInNudge')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'HideCursorsOn')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'NotifyDocumentJoinOn')).toBe(false);
+  });
+
   it('keeps everything that still exists', () => {
     expect(isRetiredEvent('Document', 'Undone', null)).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);
     expect(isRetiredEvent('UI', 'Opened', 'undo')).toBe(false);
-    expect(isRetiredEvent('Activity', 'Opened', null)).toBe(false);
     expect(isRetiredEvent('UI', 'Opened', 'Settings')).toBe(false);
   });
 

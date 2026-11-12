@@ -139,6 +139,18 @@ describe('readUserPreferences (with localStorage)', () => {
     });
   });
 
+  // The Map was removed (Work Item 662): a blob saved while it existed still reads, its keys untouched and unread.
+  it('reads a blob that still holds the removed Map keys without error', () => {
+    const { storage } = mockBrowser();
+    storage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ showMinimap: false, mapSize: 'tall', mapDimOutside: false, uiScale: 1.25 }),
+    );
+    const prefs = readUserPreferences();
+    expect(prefs.uiScale).toBe(1.25);
+    expect(Object.keys(prefs)).toContain('showMinimap');
+  });
+
   it('uses a single shared storage key (no per-project suffix anymore)', () => {
     const { storage } = mockBrowser();
     writeUserPreferences({ autoRebindArrows: false });
@@ -241,19 +253,19 @@ describe('writeUserPreferences (server sync)', () => {
     const { storage, events } = mockBrowser();
     setWorkbenchConfinement({ scope: 'project', projectId: 'doc-1', ownerId: 'user_1' });
     try {
-      writeUserPreferences({ showMinimap: false }, 'user_1');
+      writeUserPreferences({ middleMousePan: false }, 'user_1');
     } finally {
       setWorkbenchConfinement(null);
     }
     expect(mockedPut).not.toHaveBeenCalled();
-    expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}')).toEqual({ showMinimap: false });
+    expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}')).toEqual({ middleMousePan: false });
     expect(events).toEqual([PREFERENCES_CHANGED_EVENT]);
   });
 
   it('still writes to localStorage when the PUT path runs (cache first, sync second)', () => {
     const { storage } = mockBrowser();
-    writeUserPreferences({ showMinimap: false }, 'owner-1');
-    expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}')).toEqual({ showMinimap: false });
+    writeUserPreferences({ middleMousePan: false }, 'owner-1');
+    expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}')).toEqual({ middleMousePan: false });
   });
 });
 

@@ -5,7 +5,7 @@
 // with Replace and Remove) and the card face's thumbnail (ImageThumb). Both read the picture through the same cached,
 // authenticated fetch (apiImageUrl), so a picture shown on a board and in its panel is fetched once.
 import { useId, useRef, useState, type DragEvent } from 'react';
-import type { ItemFieldValue } from '@liveplanner/items';
+import { storedImageIds, type ItemFieldValue } from '@liveplanner/items';
 import { Button, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideImage,
@@ -23,8 +23,9 @@ const BrokenIcon = lucideGlyph(lucideImage, 18);
 const ReplaceIcon = lucideGlyph(lucideRefreshCw, 13);
 const RemoveIcon = lucideGlyph(lucideTrash2, 13);
 
+// The picture an Image field shows: its id, or the first of a stored list (a value a Several Images field wrote).
 const imageIdOf = (value: ItemFieldValue | undefined): string | null =>
-  typeof value === 'string' && value ? value : null;
+  storedImageIds(value)[0] ?? null;
 
 const QUIET_BUTTON =
   'inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md px-2 text-[12px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/60 disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none pointer-coarse:h-11 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-50';

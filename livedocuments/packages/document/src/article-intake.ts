@@ -216,22 +216,31 @@ export function looseOnArticles(
 
 type ArticlesTab = Pick<Tab, 'elements'> & { pages?: unknown; articles?: unknown };
 
+/** Whether the writing holds a zone (a picture, an object or a drawing set into it): writing without one has
+ *  nothing for the intake to fit. */
+export function hasZoneBlock(doc: Pick<ArticleFlow, 'blocks'>): boolean {
+  return doc.blocks.some((b) => b.type === 'zone');
+}
+
 /**
  * An article's zones fitted to their elements (docs/specs/007-editor/article-pages.md "Zones"):
  * an object zone takes its object's size and keeps it at its corner (a resize from any handle);
  * an object zone whose object is gone leaves the writing; a drawing zone grows down and across (to
  * the text width) to keep its elements inside with ARTICLE_DRAWING_PAD to spare, and never shrinks past
- * them. The same tab back when nothing changes.
+ * them. The same tab back when nothing changes, and at once (no page laid out) for writing without a
+ * zone. `laid` is the tab's pages laid out, when the caller has them: fitting every article of a tab
+ * then lays its pages out once, not once an article.
  */
 export function withZonesFitted<T extends ArticlesTab>(
   tab: T,
   flow: string,
   textWidth: number,
   textHeight: number = ARTICLE_ZONE_MAX,
+  laid?: readonly LaidOutPage[],
 ): T {
   const doc = articlesOf(tab)[flow];
-  if (!doc) return tab;
-  const pages = layOutPages(pagesOf(tab)).filter((p) => p.flow === flow);
+  if (!doc || !hasZoneBlock(doc)) return tab;
+  const pages = (laid ?? layOutPages(pagesOf(tab))).filter((p) => p.flow === flow);
   let elements = tab.elements;
   let changed = false;
   const blocks: ArticleBlock[] = [];

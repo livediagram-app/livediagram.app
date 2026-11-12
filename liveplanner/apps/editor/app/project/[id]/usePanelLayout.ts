@@ -10,7 +10,6 @@ type Pos = { x: number; y: number };
 // Positions are null until the user drags a panel, after which it
 // remembers its spot.
 export function usePanelLayout() {
-  const [mapPosition, setMapPosition] = useState<Pos | null>(null);
   const [commentsPanelPosition, setCommentsPanelPosition] = useState<Pos | null>(null);
   // (Timer and Vote open over the Session strip's buttons, so they keep no position:
   // docs/specs/012-collaboration/session-tools.md.)
@@ -20,8 +19,6 @@ export function usePanelLayout() {
   const [zenMode, setZenMode] = useState(false);
 
   return {
-    mapPosition,
-    setMapPosition,
     commentsPanelPosition,
     setCommentsPanelPosition,
     zenMode,

@@ -305,7 +305,7 @@ tests where it's cheap.
   which `vitest.config.ts` runs and Playwright never loads.
 - `apps/live/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
   shared flows (`openStartBlank`, `startBlankDesign`, `openBlankPage`, `onPage`, `seedTab`, `dismissQuickTour`).
-- `apps/live/e2e/fixtures/`: `audit-screens.ts`, `contrast.ts`, `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
+- `apps/live/e2e/fixtures/`: `audit-screens.ts` and `contrast.ts`: the screens and measurements the dark-mode audits share.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, marketing, liveworkspace's Explorer).
 - The root `.github/workflows/e2e.yml` and `e2e-product.yml`: the sharded workflow, run on every pull request;
   the root `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).

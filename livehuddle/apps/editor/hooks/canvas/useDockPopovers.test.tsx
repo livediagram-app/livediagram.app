@@ -12,29 +12,17 @@ const { useDockPopovers } = await import('./useDockPopovers');
 
 const button = () => document.createElement('button');
 
-// docs/specs/017-telemetry/telemetry.md: the popover layouts open Collaborate here rather
-// than through the desktop un-minimise toggle, so they count here.
-describe('useDockPopovers panel-open telemetry', () => {
+// The Explorer is the one dock popover (the Collaborate Panel left livehuddle, docs/specs/002-project-scope/
+// not-in-livehuddle.md "Comments, actions, links and notes"), and its open counts nothing here.
+describe('useDockPopovers', () => {
   beforeEach(() => trackMock.mockReset());
 
-  it('counts a Collaborate open through the popover path', () => {
-    const { result } = renderHook(() => useDockPopovers({ current: null }));
-    act(() => result.current.handleDockButtonClick('collaborate', button()));
-    expect(trackMock.mock.calls).toEqual([['UI', 'Opened', 'Collaborate']]);
-  });
-
-  it('does not count a close', () => {
-    const { result } = renderHook(() => useDockPopovers({ current: null }));
-    act(() => result.current.handleDockButtonClick('collaborate', button()));
-    act(() => result.current.handleDockButtonClick('collaborate', button()));
-    expect(trackMock).toHaveBeenCalledOnce();
-    expect(result.current.activeDockPanel).toBeNull();
-  });
-
-  it('counts nothing for the Explorer', () => {
+  it('opens and closes the Explorer and counts nothing', () => {
     const { result } = renderHook(() => useDockPopovers({ current: null }));
     act(() => result.current.handleDockButtonClick('explorer', button()));
     expect(trackMock).not.toHaveBeenCalled();
     expect(result.current.activeDockPanel).toBe('explorer');
+    act(() => result.current.handleDockButtonClick('explorer', button()));
+    expect(result.current.activeDockPanel).toBeNull();
   });
 });

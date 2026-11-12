@@ -36,28 +36,21 @@ export const HELP_ARTICLES = {
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
-  linkingTabs: 'tabs/linking-tabs',
   // Canvas / themes
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
   changingTheme: 'canvas/themes/changing-theme',
   choosingAFinish: 'canvas/finish',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
-  // Links / activity / comments
+  // Tours and presence
   avatarTour: 'selection-modes/avatar-mode/avatar-tour',
-  links: 'canvas/links',
-  comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
   // A tab's Attendance (docs/specs/012-collaboration/tab-attendance.md), its dialog's help link.
   tabAttendance: 'collaboration/live-presence/tab-attendance',
-  // The call group's article (CallStripGroup); it links on to Cameras and Screen Sharing.
-  assignedActions: 'collaboration/assigned-actions',
   // Explorer / data
   // Standing panels.
   explorerPanel: 'explorer/explorer-panel',
   minimap: 'user-interface/minimap',
   imageGallery: 'explorer/image-gallery',
-  // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
-  inbox: 'explorer/activity',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
   defaultFolders: 'explorer/folders/default-folders',
@@ -141,10 +134,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about importing tabs',
     description: 'What you can import and how it replaces the tab.',
   },
-  linkingTabs: {
-    title: 'Learn about linking tabs',
-    description: 'How linking to another tab works.',
-  },
   changingTheBackground: {
     title: 'Learn about the canvas',
     description: 'Tips for the background, patterns and the canvas behind what you draw.',
@@ -161,18 +150,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about fonts',
     description: 'Tips for choosing a typeface and text size for a tab.',
   },
-  links: {
-    title: 'Learn about links',
-    description: 'Linking elements to tabs, spaces, and web addresses.',
-  },
-  comments: {
-    title: 'Learn about comments',
-    description: 'Tips and tricks for discussing your work right on the canvas.',
-  },
-  assignedActions: {
-    title: 'Learn about assigned actions',
-    description: 'Assign work on an element to yourself or a teammate and track it until done.',
-  },
   explorerPanel: {
     title: 'Learn about the Explorer',
     description: 'Tips and tricks to help you get the most out of the Explorer.',
@@ -184,10 +161,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   imageGallery: {
     title: 'Learn about the Image Gallery',
     description: 'How uploaded images are stored and reused across spaces.',
-  },
-  inbox: {
-    title: 'Learn about the Inbox',
-    description: 'Open actions assigned to you or by you, and comment threads you are in.',
   },
   sharedWithYou: {
     title: 'Learn about Shared With Me',
@@ -207,7 +180,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   home: {
     title: 'Learn about Home',
-    description: 'Jump Back In and what was shared with you recently.',
+    description: 'Most Used, Recent and what was shared with you recently.',
   },
   myWork: {
     title: 'Learn about My Work',

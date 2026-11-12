@@ -1,6 +1,6 @@
 // Reads back every document a run touched, through the same MCP tools an assistant has, so a task's checks judge
 // what was made rather than what the agent said it made. Read-only: it never writes.
-import { resultJson, resultText } from './mcp-client.mjs';
+import { resultJson, resultText } from '@liveworkspace/mcp-kit/eval/mcp-client';
 
 // The outline's first line: `tab 6cb1 "Name" · 0 elements · kind=event-storming · mode=diagram · rev 1`.
 export function parseTabHeader(line) {

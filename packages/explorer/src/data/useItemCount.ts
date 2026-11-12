@@ -2,7 +2,7 @@
 
 // How many items the person has in every space they are in (My Work and each team, each item once), for Home's hero
 // pill ("12 plans"): counted by the index up to the most
-// a page holds, beside Jump Back In's read (`mine`, data/homeReads.ts), so the hero adds no request of its own.
+// a page holds, beside Most Used and Recent's read (`mine`, data/homeReads.ts), so the hero adds no request of its own.
 // Only while the hero shows, and again after a change reloads the lists (`epoch`). Past the cap it says so
 // (`more`), and the pill reads "200+ plans" rather than counting every item.
 
@@ -26,7 +26,7 @@ export function useItemCount(
   useEffect(() => {
     if (!enabled) return;
     const controller = new AbortController();
-    // Counted by the index beside Jump Back In's read when Home asks both at once (homeReads.ts).
+    // Counted by the index beside Most Used and Recent's read when Home asks both at once (homeReads.ts).
     readMineCount(client, app, filter, LIST_LIMIT_MAX, controller.signal)
       .then((value) => setState({ key, value }))
       .catch((e: unknown) => {

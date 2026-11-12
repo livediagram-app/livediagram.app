@@ -633,21 +633,22 @@ The catalogue is browsed by **what a person is using it for**: the kind of place
 categories, declared in `packages/templates/src/template-categories.ts` and read by every template start, the
 marketing gallery and the agents' template catalogue, each holding two to seven Spaces:
 
-| Category    | Id           | Description                                        | Templates                                                                     |
-| ----------- | ------------ | -------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Campus      | `campus`     | Whole sites: offices, halls and bars in a garden.  | Company Campus, Startup HQ, School Quad, Co-working Tower (and Beach Offsite) |
-| Events      | `events`     | Halls and rooms for talks, demos and training.     | All-Hands Hall, Training Room, Expo Hall                                      |
-| Games Rooms | `games`      | Arcades, dens and bars for playing games together. | Arcade Lounge, Games Night Den, Sports Bar                                    |
-| Homes       | `homes`      | Houses to meet in, with Stairs between the floors. | Family House, City Townhouse, Country Cottage                                 |
-| Office      | `office`     | Desks, pods and meeting rooms for the workday.     | Virtual Office, Coworking Space, Team Pod, Focus Library                      |
-| Outdoor     | `outdoor`    | Gardens and parks to meet in under an open sky.    | Garden Retreat, City Park, Beach Offsite                                      |
-| Recreation  | `recreation` | Bars and cafes to unwind in together after work.   | Rooftop Bar, Cafe (and Sports Bar)                                            |
-| Venues      | `venues`     | Halls, hotels and stages to host a big day at.     | Conference Venue, Hotel and Suites, Music Hall (and Expo Hall)                |
+| Category    | Id           | Description                                        | Templates                                                                      |
+| ----------- | ------------ | -------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Campus      | `campus`     | Whole sites: offices, halls and bars in a garden.  | Company Campus, Startup HQ, School Quad, Co-working Tower (and Beach Offsite)  |
+| Events      | `events`     | Halls and rooms for talks, demos and training.     | All-Hands Hall, Training Room, Expo Hall                                       |
+| Games Rooms | `games`      | Arcades, dens and bars for playing games together. | Arcade Lounge, Games Night Den, Sports Bar                                     |
+| Homes       | `homes`      | Houses to meet in, with Stairs between the floors. | Family House, City Townhouse, Country Cottage                                  |
+| Office      | `office`     | Desks, pods and meeting rooms for the workday.     | Virtual Office, Coworking Space, Team Pod, Focus Library                       |
+| Outdoor     | `outdoor`    | Gardens and parks to meet in under an open sky.    | Garden Retreat, City Park, Beach Offsite (and Festival Field)                  |
+| Recreation  | `recreation` | Bars and cafes to unwind in together after work.   | Rooftop Bar, Cafe (and Sports Bar)                                             |
+| Venues      | `venues`     | Halls, hotels and stages to host a big day at.     | Conference Venue, Hotel and Suites, Music Hall, Festival Field (and Expo Hall) |
 
 - Blank Space is in no category: it is the start's own first card.
-- Three cross-listings (`TEMPLATE_ALSO_IN`): the Beach Offsite, an Outdoor Space, is also shown in Campus, as a whole
-  site for a team's day away; the Sports Bar, a Games Room, in Recreation, as a bar to unwind in; and the Expo Hall, an
-  Event, in Venues, as a hall a show is held at. The Brainstorming, Decisions, Goals & Metrics, Meetings &
+- Four cross-listings (`TEMPLATE_ALSO_IN`): the Beach Offsite, an Outdoor Space, is also shown in Campus, as a whole
+  site for a team's day away; the Sports Bar, a Games Room, in Recreation, as a bar to unwind in; the Expo Hall, an
+  Event, in Venues, as a hall a show is held at; and the Festival Field, a Venue, in Outdoor, as a field under an open
+  sky. The Brainstorming, Decisions, Goals & Metrics, Meetings &
   Workshops, People & Teams, Planning, Product & UX, Quizzes & Games, Retrospectives, Strategy and Teaching &
   Learning categories left with their templates. The one **Virtual Spaces** category (`spaces`) the four first Spaces
   shared split into four when the catalogue grew, **Campus** came with the three whole sites

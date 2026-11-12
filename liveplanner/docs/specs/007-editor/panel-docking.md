@@ -1,6 +1,6 @@
 # Panel corner docking
 
-The editor's corner panels (Minimap) each
+The editor's corner panels each
 ship pinned to a fixed corner (see [Canvas and palette](../008-canvas/canvas-and-palette.md)). This spec lets
 the user **choose which corner each panel sits in**, drag a panel between corners with a
 **snap-to-corner** affordance, **stack** more than one panel in the same corner, and have
@@ -8,8 +8,7 @@ that layout **persist in the browser** so a reload restores their arrangement.
 
 ## Why
 
-Without docking, corners are fixed: the Format panel is always in one corner, the Minimap always
-bottom-left. A left-handed user, or one whose content lives on the right, can drag a panel away but it
+Without docking, corners are fixed: a corner panel is always in one corner. A left-handed user, or one whose content lives on the right, can drag a panel away but it
 snaps back on reload and there is no guidance toward a tidy resting spot. Letting people
 park each panel where it suits them, and remembering it, makes the chrome feel like
 theirs without adding a settings screen.
@@ -25,8 +24,8 @@ theirs without adding a settings screen.
   back to the button; Escape elsewhere (the canvas, deselecting) leaves it open, as a companion to the canvas. Until
   then Escape did nothing in them, so a keyboard user in Find a Card's field could not leave it. **Zen mode** ([Zen mode](zen-mode.md)) still hides
   all chrome; while it is on the docking system is inert.
-- **Participating panels:** Minimap, the one corner panel built on the shared `MovablePanel` (the Format
-  tool's panel went with the tool).
+- **Participating panels:** none today. The corner layer and the stored layout stay for the next corner panel built
+  on the shared `MovablePanel` (the Format tool's panel went with the tool, and the Map was removed, Work Item 662).
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
   the body-height measurement both rely on that pin). They are not dockable, and the
   **bottom-right corner zone is raised to sit above them** (`ZOOM_CLEARANCE_PX`) so a panel
@@ -53,7 +52,7 @@ When the user has never arranged panels, the corners match today's defaults:
 | -------------- | ------------------------------------------------ |
 | `top-left`     | _(empty; the menu button)_                       |
 | `top-right`    | _(empty; the palette strip's end)_               |
-| `bottom-left`  | Minimap                                          |
+| `bottom-left`  | _(empty)_                                        |
 | `bottom-right` | _(empty; the bottom cluster, zoom controls pin)_ |
 
 A panel docked bottom-right stacks upwards from just above the bottom cluster. A panel the user has docked or
@@ -121,8 +120,9 @@ type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // 'collaborate' is the merged Comments + Actions panel, a popover over its
 // cluster button that takes no corner. The Vote panel is not a corner panel either: it
 // opens over the Session strip's button (docs/specs/012-collaboration/session-tools.md), and a stored
-// layout naming it is read like any unknown id, as is the Format Panel's old 'format' (the format painter is gone).
-type PanelId = 'collaborate' | 'minimap';
+// layout naming it is read like any unknown id, as are the Format Panel's old 'format' (the format painter is gone) and
+// the removed Map's 'minimap'.
+type PanelId = 'collaborate';
 
 type PanelLayout = {
   // Ordered stack per corner. Order is top→bottom (top corners) /
@@ -178,8 +178,7 @@ later, or reading a layout written by a newer client, never strands the UI.
   `flex-col-reverse`; bottom-right raised to clear the zoom controls) and distributes each
   visible panel node into the container for its **persisted** corner. A panel mid-drag stays
   in its current container (it just lifts to fixed); only free-placement panels render in a
-  separate free layer. The whole corner-container path is gated behind "not zen". The
-  Minimap is rendered here alongside the others rather than from `Canvas.tsx`.
+  separate free layer. The whole corner-container path is gated behind "not zen".
 
 ## Telemetry
 
@@ -193,6 +192,4 @@ pair fits. Layout reads / reflows are silent.
   cluster popovers, none of which take a corner.
 - [User preferences](user-preferences.md): panel layout is intentionally a **separate,
   device-local** store, not part of the synced preferences blob.
-- [Minimap](../008-canvas/minimap.md): the Minimap's default corner (bottom-left) and its position
-  now flow through this docking system like the other panels.
 - [Zen mode](zen-mode.md): zen mode still hides all panels; docking is inert there.

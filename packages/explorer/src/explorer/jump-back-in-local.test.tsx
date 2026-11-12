@@ -1,5 +1,5 @@
-// An item kept only in this browser among Home's Jump Back In (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser in
-// Jump Back In"): the same card as the index's, with This Browser's menu, and a drag each target reads as This
+// An item kept only in this browser among Home's Recent (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser on
+// Home"): the same card as the index's, with This Browser's menu, and a drag each target reads as This
 // Browser's (the Trash deletes it for good after asking where the host can; a place asks to sync it first).
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -76,9 +76,9 @@ function home(thisBrowser: Partial<ThisBrowserHost>, index = createFakeIndex()) 
   return index;
 }
 
-// Jump Back In's card (New above it shows the same item too, with its own line).
+// Recent's card (New above it shows the same item too, with its own line).
 const card = async (id = 'local-1') => {
-  const selector = `[data-home-section="jump-back-in"] [data-item-card="${id}"]`;
+  const selector = `[data-home-section="recent"] [data-item-card="${id}"]`;
   await waitFor(() => expect(document.querySelector(selector)).toBeTruthy());
   return document.querySelector(selector) as HTMLElement;
 };
@@ -94,15 +94,15 @@ beforeEach(() =>
 );
 afterEach(() => localStorage.clear());
 
-describe('a This Browser card in Jump Back In', () => {
+describe("a This Browser card in Home's Recent", () => {
   it('is the same card as the index’s: its frame, a thumbnail area, its name and a line with the badge', async () => {
     home({}, createFakeIndex({ items: [makeItem(1, { lastOpenedAt: Date.now() - 120_000 })] }));
     const mine = await card();
     const theirs = await card('item-1');
     const link = (el: HTMLElement) => el.querySelector('a[aria-label]') as HTMLElement;
     expect(link(mine).className).toBe(link(theirs).className);
-    expect(mine.parentElement!.closest('[data-jump-back-in-group]')).toBe(
-      theirs.parentElement!.closest('[data-jump-back-in-group]'),
+    expect(mine.parentElement!.closest('[data-card-group]')).toBe(
+      theirs.parentElement!.closest('[data-card-group]'),
     );
     expect(link(mine).getAttribute('href')).toBe('/project/local-1');
     expect(mine.querySelector('[data-this-browser]')).toBeTruthy();

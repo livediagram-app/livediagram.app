@@ -35,8 +35,8 @@ editor views.
 - Predicates: `isSelfDrawingShape` (both), `SELF_PAINTING_SHAPES` (both: board paints its own surfaces; card its
   type colour), `isSvgRenderedShape` exclusion (both), `SHAPE_LABELS` ("Plan board", "Plan card"), not markers,
   not containers.
-- `svg-render.ts`: `svgBoxed` branches to `svg-render-plan.ts`: `svgPlanBoard(el, items, surface, itemTypes)`,
-  `svgPlanCard(el, items, surface, itemTypes)`. `renderElementsToSvg`'s options carry `items?: ReadonlyMap<string, Item>`
+- `svg-render-boxed.ts`: `svgBoxed` branches to `svg-render-plan.ts`: `svgPlanBoard(el, items, surface, itemTypes)`,
+  `svgPlanCard(el, items, surface, itemTypes)`. `renderElementsToSvg`'s options (`svg-render.ts`) carry `items?: ReadonlyMap<string, Item>`
   and `itemTypes?`. Without items, columns draw
   with names and empty bodies; a card draws "Item".
 - Card faces: `svg-render-plan-card.ts` `planCardFace(item, x, y, w, ctx, measureOnly)` draws from `typeCardLayout` at
@@ -325,7 +325,8 @@ copy-card-link.ts        Copy Card Link: copyCardLink(link, notify) writes the c
                          Cards / Archive), each Body given `open` so it can defer work while shut
 ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, Copy Card Link,
                          ItemMaximiseButton (desktop only), close), main column
-                         (title, tabs from tabsOf, the tab's fields), Details aside (w-80: detailFieldsOf rows,
+                         (title, tabs from tabsOf then Linked Cards and Activity (panelTabs), the tab's fields),
+                         Details aside (w-80: detailFieldsOf rows,
                          then made/changed); phone: one column, a Details tab first, sheet 85dvh. Maximised
                          (`maximised` and not mobile): panelSizeClass(true) fills the window less 1rem, the main
                          column's content max-w-[52rem] mx-auto, title 26px, aside w-96 (2xl:w-[28rem]), Details
@@ -343,8 +344,10 @@ ItemPanelLayout.tsx      the panel's shell pieces: ItemTypeBand (h-1, ACCENT_BG 
                          rounded hover), ItemMeta (11px slate-400 created/edited lines); the aside is m-3 rounded-xl
                          bg-slate-50 ring-1; title 22px semibold tracking-tight
 ItemFieldEditor.tsx      one field's editor by kind (FIELD_LABELS, fieldLabel, labelsItsControl)
-LinkedCards.tsx          LinkedCardGroup (a Linked as {Field} section) and FilteredCards rows (glyph, #key, title,
-                         status, Archived chip)
+LinkedCards.tsx          LinkedCardGroup (a Linked as {Field} section; `emptyNote` false drops its empty line) and
+                         FilteredCards rows (glyph, #key, title, status, Archived chip)
+LinkedCardsTab.tsx       the Linked Cards tab: linkedCardCount, the "No Linked Cards Yet" empty state, the groups
+ItemPanelTabs.tsx        ACTIVITY_TAB, DETAILS_TAB, LINKED_TAB, panelTabs, namedLinkedTab, ItemPanelTabBar (count pill)
 ItemTrailCrumbs.tsx      the breadcrumb: the shared BackBar to the card before (its "#key title"), this card's "#key"
                          as the chip, in a row above the header
 item-trail.ts            pure: stepTrail / liveTrail / childrenOf, ItemOpenVia, ITEM_TRAIL_MAX
@@ -393,7 +396,8 @@ plan-tile-art.tsx        a picture per board preset, and the card tile glyph
 ```
 
 Hooks (`apps/editor/hooks/plan/`): `usePlanItems` (store), `usePlanSlice` (composed into `useEditorState`; provides
-the `PlanContext` value, the open item and set-up, and `dropPlanCardOnBoard`), `usePlanBoardDrop` (the board's drag and
+the `PlanContext` value, the open item and set-up, and `dropPlanCardOnBoard`; its card writes in `usePlanItemWrites`,
+its board, chart and card element writes in `usePlanElementWrites`), `usePlanBoardDrop` (the board's drag and
 drop, and the board as a target for cards from other boards, and for a chip's new card, through `plan-board-targets.ts`, a registry of the
 boards on screen by element id), `useCardTypeDrag` (a header chip's press: idle, pressed, carrying, then dropped
 or cancelled; past `PRESS_DRAG_SLOP_PX` a ghost card follows the pointer, moved by style per animation frame, never a
@@ -635,7 +639,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   capture handler bails for a target inside `[data-canvas-cover]`, and `useEditorKeyboardShortcuts`, while `canvasCovered()`,
   sorts each key by `coveredKeyRole` (run: undo/redo/search/zen/mode/Escape; swallow: Cmd+D/A/Shift+L, z-order, zoom,
   prevented; ignore: the rest) instead of returning early (`getMaximisedPlanId() !== null || fillTabId !== null`, read at the key press). `useCanvasSelectionView` passes `canvasCovered` from `useCanvasCovered()` (`useMaximisedPlanId() !== null ||
-fillTabId`; `ViewMinimap` returns null while it is true, hiding the Map; `usePaletteCatalogue`, while `useBoardFillingTab()`, swaps its categories for
+fillTabId`; `usePaletteCatalogue`, while `useBoardFillingTab()`, swaps its categories for
   `coveredPaletteCategories()` (Plan's `plan-cards` alone), and `ToolbarPalette` shows the first offered
   category while the chosen one is not offered, keeping the choice; while `useSheetCovering()` `ToolbarPalette` hides its root
   (`hidden`), or on a phone (a `leading` menu) renders no card beside the menu; `usePaletteCatalogue`'s tile preamble
@@ -733,7 +737,8 @@ PLAN_HANDWRITING_EX`). A heading opts in with `PLAN_HEADING_STYLE` (`font-family
   "Move Left", "Move Right", "+ Add Column After", "Remove Column", "Remove", "Column actions", "Columns",
   "The board’s columns, left to right. Press one to open its settings.", "On This Board", "WIP {n}", "Done",
   "Open {Name} settings", "Add", "A board holds up to 12 columns.", "Move and Remove", "Keep It",
-  "Linked as {Field}", "No cards link here as {Field} yet.", "Archived", "Card trail".
+  "Linked as {Field}", "No cards link here as {Field} yet.", "Linked Cards", "No Linked Cards Yet", "Cards that link
+  to this one show here.", "Make one already linked, or link one you already have.", "Archived", "Card trail".
 - Item panel: a modal through the shared `Dialog` (`size="lg"`, `phoneSheet`: a sheet from the bottom with a grab
   handle below `sm`), max height 44rem, header with type picker + key (`ItemTypePill`: `typeChoices(types,
 statusTypes, item)` from `type-choices.ts`, the catalogue types the boards naming the card's status take, the
@@ -849,7 +854,7 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
 - Suggested statuses: a `group` of buttons named by its heading (`OptionRows` kind=action, roving tabindex,
   ArrowUp/ArrowDown/Home/End); each button is named "Add {Name}" and its hint is visible text in it.
 - Breadcrumb: `nav aria-label="Card trail"` holding the BackBar, a `button` reading "#12 Website relaunch" then
-  its chip "#13". Linked as: a
+  its chip "#13". The Linked Cards tab is a `tab` named "Linked Cards, 3 cards" (its pill `aria-hidden`). Linked as: a
   `section` labelled by its heading, an `ul` of `button` rows named "Open #14 Write tests, In Progress".
 
 ## Web Experience
@@ -932,7 +937,6 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Custom assignee: offered when editable, made, reused, roles    | `apps/editor/components/plan/PersonPicker.test.tsx`, `packages/items/src/plan-people.test.ts`                                                                  |
 | Cards push skips custom assignees                              | `apps/api/src/plan-room/plan-outbox.test.ts`                                                                                                                   |
 | Edge auto-scroll math and drag wiring                          | `apps/editor/hooks/plan/edge-auto-scroll.test.ts`                                                                                                              |
-| Map hidden while covered                                       | `apps/editor/components/canvas/view-readers.minimap.test.tsx`                                                                                                  |
 | Cover store: re-renders only on a change                       | `apps/editor/hooks/plan/plan-cover-store.test.tsx`                                                                                                             |
 | Palette offers only Cards, then restores                       | `apps/editor/hooks/plan/plan-cover-store.test.tsx`                                                                                                             |
 | Palette hidden for a filling Sheet; restore pick               | `apps/editor/hooks/plan/plan-cover-store.test.tsx`                                                                                                             |
@@ -976,6 +980,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Capture stops at hydration; tab pin keeps the mark             | `apps/editor/app/project/[id]/useCollabDeepLink.test.tsx`, `useTabEntryEffects.test.tsx`                                                                       |
 | Copy Card Link: every role, before Help; toasts                | `apps/editor/components/plan/ItemPanelMenu.test.tsx`, `copy-card-link.test.ts`                                                                                 |
 | Drag, Add card, card menu, item panel                          | checked by hand against the dev stack (screenshots in the PR)                                                                                                  |
+| Linked Cards tab: shown, hidden, sections off Overview, count  | `apps/editor/components/plan/ItemPanel.linked.test.tsx`, `ItemPanel.navigation.test.tsx`                                                                       |
 | Maximise Card: desktop only, toggles, sizes, aria-pressed      | `apps/editor/components/plan/ItemPanel.maximise.test.tsx`, `item-panel-size.test.ts`                                                                           |
 | Maximised preference: read, write, tracked first, owner id     | `apps/editor/hooks/plan/useCardPanelMaximised.test.tsx`                                                                                                        |
 | Cards tiles: grid, ⋯ inside, menu rows per role, Trash         | `apps/editor/components/plan/CardFinderPanel.test.tsx`, `CardFinderTile.test.tsx`                                                                              |
@@ -1081,7 +1086,7 @@ value | null)`, `flagPatches`, `archivePatches`, each skipping cards whose type 
   (`SET_FIELD_KINDS`). An empty result writes nothing. Each is one `plan.patchItems(patches)` (one `patches` write,
   one undo step); Move To is one `plan.moveItems`; Move to Trash is `plan.trashItems(ids)`. `track('Plan',
 'Changed', 'Cards')`.
-- **Context**: `PlanContextValue.moveItems(moves: ItemMoveOf[])` (`usePlanSlice`: one `{ kind: 'moves' }` write, a
+- **Context**: `PlanContextValue.moveItems(moves: ItemMoveOf[])` (`usePlanItemWrites`: one `{ kind: 'moves' }` write, a
   single `move` for one card).
 - **Card**: `PlanBoardCard` takes `selected`: the ring as a 2 px box-shadow in the board's focus colour on the card
   wrapper (so every card size and a cover keep their own layout), `data-selected`, and ", selected" on the

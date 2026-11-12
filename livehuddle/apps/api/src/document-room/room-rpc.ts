@@ -9,9 +9,7 @@ import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { documentHasTab } from '../db/tabs';
 import { documentPlacesImage } from '../db/image-refs';
 import { documentMayServeImage } from '../db/image-grants';
-import { notifyDocumentJoin, notifyMentioned } from '../email/notifications';
-import { actionNotices, type NoticeDocument } from '../liveworkspace/action-notices';
-import type { ActionNotice, MentionNotice } from '../document-client';
+import { notifyDocumentJoin } from '../email/notifications';
 import { communityCheckDueAt, openCommunityCode, readCommunityPost } from './community-post';
 import { anonymiseDocument } from './document-anonymise';
 import { drawDocument } from '../thumbnail';
@@ -223,48 +221,6 @@ export async function joined(
   room.state.waitUntil(
     notifyDocumentJoin(env, { id: documentId, ownerId: meta.ownerId, name: meta.name }, personId),
   );
-}
-
-// An action assigned or a comment's mentions (routes/team-notify-routes.ts checked the people and the canvas): the
-// emails go from here, off the caller's path, where their once-only claims are kept. A canvas never started has
-// nothing to name.
-export async function notifyAction(
-  room: DocumentRoom,
-  documentId: string,
-  input: ActionNotice,
-): Promise<boolean> {
-  const document = await noticeDocument(room, documentId);
-  if (!document) return false;
-  for (const work of actionNotices(room.requireEnv(), document, input)) room.state.waitUntil(work);
-  return true;
-}
-
-export async function notifyMention(
-  room: DocumentRoom,
-  documentId: string,
-  input: MentionNotice,
-): Promise<boolean> {
-  const document = await noticeDocument(room, documentId);
-  if (!document) return false;
-  room.state.waitUntil(
-    notifyMentioned(room.requireEnv(), {
-      ...input,
-      document: { id: document.id, name: document.name },
-    }).catch(() => {}),
-  );
-  return true;
-}
-
-async function noticeDocument(
-  room: DocumentRoom,
-  documentId: string,
-): Promise<NoticeDocument | null> {
-  room.bindDocument(documentId);
-  if (!room.hasSchema()) return null;
-  const meta = await readDocumentMeta(room.requireEnv(), documentId);
-  return meta
-    ? { id: documentId, name: meta.name, ownerId: meta.ownerId, teamId: meta.teamId }
-    : null;
 }
 
 // A closed account's name off this canvas (document-anonymise.ts): the index's person purge, through the api.

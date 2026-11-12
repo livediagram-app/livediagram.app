@@ -91,6 +91,20 @@ change, boardFields(setup, types, false))` on the reshaped set-up; each name thr
 - `addBoard`: tab = given, else first tab with a board, else lowest `orderIndex`; one changeset
   `{ operations: [{ op: 'add', element }], base: { rev, elements: {} } }` with the client header (`mcp` or `cli`).
 
+- Pictures (spec plan-agents.md "Pictures", mcp-server.md §4.5b; built in a later part than the stored shape):
+  `upload_image { projectId, data?, url?, name? }` through `packages/agent-verbs/src/images/upload.ts` (`@liveworkspace/agent-verbs`)
+  (`uploadImageFrom`, its sniff, size and SSRF-safe fetch) with the upload's path `/api/images?p={projectId}` and
+  `X-Image-Source: mcp` (the CLI's `image add`: `cli`); the api's `routes/images.ts` keeps every server-side rule (a
+  role of at least Participant on the plan, a read-only token refused at the dispatch choke point, declared type and
+  length, the service's sniff, dedupe and gallery caps) and records the plan's grant. `change_items`' `set` reads an
+  Image field's or Attachments' value as `{ add?: string[], remove?: string[] }` (a bare id or id list as `add`):
+  each id checked against the plan's grants (`servesGrant(planId, ids)` on the room, one `json_each` query) before
+  anything is written (`image_unknown`: "That picture was not uploaded for this plan: upload it with upload_image
+  first."), then `withImagesAdded` / `withoutImages` on `storedImageIds` of the card as read, `imageFieldValue` to
+  store; an Attachments entry's `name`, `size` and `type` from the media service's image record (`imageSummary`),
+  never the agent. `listedValue` lists each picture as `{ id, link }` (`link` the api's `/api/images/{id}?p=`).
+  `change_card_types` takes `multiple: true` on an `image` field (`severalable` widened to it).
+
 ## Interfaces and contracts
 
 - `GET /api/projects/:id/plan` → `PlanResponse { boards, statuses, types }`; read gate as the item list

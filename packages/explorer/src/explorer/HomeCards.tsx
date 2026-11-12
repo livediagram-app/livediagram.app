@@ -1,7 +1,7 @@
 'use client';
 
-// Home's cards (HomePane's Jump Back In and Shared With You Recently, HomeNew's New): the large card and its frame,
-// the This Browser card, a labelled group of them, the phone's strip and the placeholders they load behind. One
+// Home's cards (HomePane's Most Used, Recent and Shared With You Recently, HomeNew's New): the large card and its
+// frame, the This Browser card, a group of them, the phone's strip and the placeholders they load behind. One
 // component for every Home section, so a card looks and behaves the same wherever Home shows it; only its line
 // differs (when it was opened, or when it was made).
 
@@ -35,11 +35,11 @@ import {
   useThisBrowserItems,
 } from './ThisBrowser';
 
-// A card's line: when it was opened (Jump Back In, Shared With You Recently) or when it was made (New).
+// A card's line: when it was opened (Most Used, Recent, Shared With You Recently) or when it was made (New).
 export type CardLine = 'opened' | 'made';
 
-// New and Jump Back In can show the same item, so a rename is drawn in the card whose menu started it: the kind of
-// line it carries says which section that was (Jump Back In's groups and Shared With You Recently never share an
+// New and Most Used or Recent can show the same item, so a rename is drawn in the card whose menu started it: the
+// kind of line it carries says which section that was (Most Used, Recent and Shared With You Recently never share an
 // item). With no menu opened on Home, every card of the item takes it, as before.
 type RenameFrom = { from: CardLine | null; setFrom: (line: CardLine) => void };
 const RenameFromContext = createContext<RenameFrom>({ from: null, setFrom: () => {} });
@@ -51,23 +51,19 @@ export function HomeCardsProvider({ children }: { children: ReactNode }) {
   return <RenameFromContext.Provider value={value}>{children}</RenameFromContext.Provider>;
 }
 
-const GROUP_LABEL =
-  'mb-2.5 h-4 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-slate-500 dark:text-slate-400';
 export const LARGE_GRID = 'grid grid-cols-2 gap-4 lg:grid-cols-4';
 const COMPACT_GRID = 'grid grid-cols-2 gap-2.5 lg:grid-cols-4';
 // Readable over a thumbnail: a frosted chip rather than the row button's bare glyph.
 const MENU_CHIP =
   '!absolute bg-white/90 shadow-sm ring-1 ring-slate-200 pointer-fine:group-focus-within:opacity-100 dark:bg-slate-900/90 dark:ring-slate-700';
 
-/** One labelled group of cards; a group with nothing draws nothing, label included. */
+/** One section's cards; a group with nothing draws nothing. */
 export function CardGroup({
-  label,
   items,
   large,
   showApp,
   line = 'opened',
 }: {
-  label?: string;
   items: readonly (ShownItem | ThisBrowserItem)[];
   large: boolean;
   showApp: boolean;
@@ -75,8 +71,7 @@ export function CardGroup({
 }) {
   if (items.length === 0) return null;
   return (
-    <div data-jump-back-in-group={large ? 'large' : 'compact'}>
-      {label ? <h3 className={GROUP_LABEL}>{label}</h3> : null}
+    <div data-card-group={large ? 'large' : 'compact'}>
       <ul className={large ? LARGE_GRID : COMPACT_GRID}>
         {items.map((item) => (
           <li key={item.id} className="min-w-0">
@@ -150,7 +145,7 @@ const cardClass = (large: boolean) =>
   } ${CARD_SURFACE} ${FOCUS_RING}`;
 const nameSize = (large: boolean) => (large ? 'text-[15px] leading-5' : 'text-sm leading-5');
 
-/** One Jump Back In card's frame, whoever holds the item: the thumbnail area, the name row (the app's mark under All)
+/** One Home card's frame, whoever holds the item: the thumbnail area, the name row (the app's mark under All)
  *  and the line under it, the ⋯ chip, the right-click menu and the drag. The index's cards and This Browser's differ
  *  only in what fills it. */
 function CardFrame({
@@ -307,7 +302,7 @@ const JumpBackInCard = memo(function JumpBackInCard({
   );
 });
 
-/** A Jump Back In card for an item kept only in this browser: the same card, its thumbnail area This Browser's,
+/** A Home card for an item kept only in this browser: the same card, its thumbnail area This Browser's,
  *  its line led by the This Browser badge, This Browser's menu, and a drag that its targets read as This Browser's
  *  (drag.tsx). It opens in the app's editor, by its address. */
 const LocalCard = memo(function LocalCard({
@@ -357,8 +352,8 @@ const LocalCard = memo(function LocalCard({
   );
 });
 
-/** A phone's Jump Back In (or New): one strip of at most `max` small tiles (the index's first, then this browser's),
- *  then, with `seeMore`, its tile into Recent. */
+/** A phone's Home section (Most Used, Recent or New): one strip of at most `max` small tiles (the index's first, then
+ *  this browser's), then, with `seeMore` (Recent's), its tile into the Recent view. */
 export function Strip({
   items: all,
   local: allLocal,
@@ -428,26 +423,13 @@ export function Strip({
   );
 }
 
-/** Labelled groups as they load (Jump Back In's two): each a label over rows of `cards` large cards (a full group
- *  on a desktop); New's one row draws no label, as New has none. */
-export function GridSkeleton({
-  labels = ['w-20', 'w-16'],
-  cards = JUMP_BACK_IN_PER_GROUP,
-}: {
-  labels?: readonly (string | null)[];
-  cards?: number;
-}) {
+/** A section's large cards as they load, under its own heading: `cards` of them (a full group on a desktop: Most
+ *  Used's or Recent's eight, New's four). */
+export function GridSkeleton({ cards = JUMP_BACK_IN_PER_GROUP }: { cards?: number }) {
   return (
-    <div aria-hidden className="flex flex-col gap-4">
-      {labels.map((label, k) => (
-        <div key={label ?? k}>
-          {label ? <div className={`mb-2.5 h-4 ${label} ${SKELETON}`} /> : null}
-          <div className={LARGE_GRID}>
-            {Array.from({ length: cards }, (_, i) => (
-              <div key={i} className={`h-[12.5rem] rounded-[18px] ${SKELETON}`} />
-            ))}
-          </div>
-        </div>
+    <div aria-hidden className={LARGE_GRID}>
+      {Array.from({ length: cards }, (_, i) => (
+        <div key={i} className={`h-[12.5rem] rounded-[18px] ${SKELETON}`} />
       ))}
     </div>
   );

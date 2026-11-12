@@ -1,7 +1,7 @@
 // The forms tasks of the benchmark (docs/instructions/evaluate-mcp-output.md). Each prompt is what a user would type;
 // `checks` judge what the run made from the prompt's own requirements (see checks.mjs); `setup` makes what the
 // prompt takes for granted ("our Bugs board") in the run's empty library, answering the ids of what it made.
-import { resultJson } from '../mcp-client.mjs';
+import { resultJson } from '@liveworkspace/mcp-kit/eval/mcp-client';
 import { formsOf, questionAbout, questionsOf, replied } from '../checks.mjs';
 
 // The run's form: the one with the most questions (a run makes one; a setup project holds none).

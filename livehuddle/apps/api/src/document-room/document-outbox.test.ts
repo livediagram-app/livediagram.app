@@ -131,7 +131,9 @@ describe('the outbox', () => {
     expect(keys(db)).toEqual([]);
   });
 
-  it('keys a tab write in the same transaction, and a drain pushes its Inbox rows and summary and empties it', async () => {
+  // livehuddle has no Inbox (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes"):
+  // a tab's collab key is settled without a push, so a stored action stays in the canvas and reaches no Inbox.
+  it('keys a tab write in the same transaction, and a drain settles its collab key unpushed and pushes the summary', async () => {
     const db = document();
     await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);
     // A new tab also owes the media service the document's images (none here, and no service to tell).
@@ -140,40 +142,14 @@ describe('the outbox', () => {
 
     const pushed = await drainOutbox(db.env, 'P', index.client);
 
-    expect(pushed).toMatchObject({ more: false, pushes: 2 });
+    expect(pushed).toMatchObject({ more: false, pushes: 1 });
     expect(keys(db)).toEqual([]);
-    expect(index.collab).toHaveLength(1);
-    expect(index.collab[0]!.tab).toBe('t1');
-    expect(index.collab[0]!.push.actions.map((a) => a.actionId)).toEqual(['act-a']);
+    expect(index.collab).toEqual([]);
     expect(index.summaries[0]!.summary).toMatchObject({
       elements: 1,
       empty: false,
       hasContent: true,
     });
-  });
-
-  it('names the one person who saved since the last push as who closed an action, and nobody among several', async () => {
-    const db = document();
-    const exec = (q: string, ...b: (string | number)[]) => db.sql.prepare(q).run(...b);
-    const done = box('a', {
-      action: {
-        ...(actionOn('a') as { action: Record<string, unknown> }).action,
-        status: 'done',
-        updatedAt: T0 + 5,
-      },
-    });
-    await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [done] }, 0);
-    recordItemEditor(exec, DOCUMENT_OUTBOX, 'P', 'user_a', T0 + 5);
-    const one = fakeIndex();
-    await drainOutbox(db.env, 'P', one.client);
-    expect(one.collab[0]!.push.actions[0]).toMatchObject({ status: 'done', doneById: 'user_a' });
-
-    await upsertTab(db.env, 'P', { id: 't1', name: 'Board 2', elements: [done] }, 0);
-    recordItemEditor(exec, DOCUMENT_OUTBOX, 'P', 'user_a', T0 + 6);
-    recordItemEditor(exec, DOCUMENT_OUTBOX, 'P', 'user_b', T0 + 7);
-    const two = fakeIndex();
-    await drainOutbox(db.env, 'P', two.client);
-    expect(two.collab[0]!.push.actions[0]).toMatchObject({ doneById: null });
   });
 
   it("reports the owner's newest save to liveworkspace's onboarding emails with the summary", async () => {
@@ -187,14 +163,15 @@ describe('the outbox', () => {
     vi.unstubAllGlobals();
   });
 
-  it('pushes an empty collab for a tab that is gone', async () => {
+  it('pushes nothing for a tab that is gone either', async () => {
     const db = document();
     await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);
     await drainOutbox(db.env, 'P', fakeIndex().client);
     await deleteTabRow(db.env, 'P', 't1');
     const index = fakeIndex();
     await drainOutbox(db.env, 'P', index.client);
-    expect(index.collab).toEqual([{ tab: 't1', push: { threads: [], actions: [] } }]);
+    expect(index.collab).toEqual([]);
+    expect(keys(db)).toEqual([]);
   });
 
   it('keeps the keys of a failed push for the next drain, and drops those the index does not hold', async () => {
@@ -253,7 +230,7 @@ describe('the outbox', () => {
     vi.unstubAllGlobals();
   });
 
-  it(`takes at most ${DRAIN_TABS} tabs a drain, saying there is more`, async () => {
+  it('settles any number of collab keys in one drain', async () => {
     const db = document();
     for (let i = 0; i < DRAIN_TABS + 5; i++) {
       await upsertTab(db.env, 'P', { id: `t${i}`, name: `T${i}`, elements: [] }, i);
@@ -261,10 +238,8 @@ describe('the outbox', () => {
     expect(keys(db).filter((k) => k.startsWith('tab:')).length).toBe(DRAIN_TABS + 5);
     const index = fakeIndex();
     const first = await drainOutbox(db.env, 'P', index.client);
-    expect(first.more).toBe(true);
-    expect(index.collab).toHaveLength(DRAIN_TABS);
-    const second = await drainOutbox(db.env, 'P', index.client);
-    expect(second.more).toBe(false);
+    expect(first.more).toBe(false);
+    expect(index.collab).toEqual([]);
     expect(keys(db)).toEqual([]);
   });
 });

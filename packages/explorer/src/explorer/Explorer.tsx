@@ -15,6 +15,7 @@ import { ToastProvider } from '../ui/Toasts';
 import { LibraryHostProvider } from '../library/context';
 import type { LibraryHostProps } from '../library/types';
 import { explorerPath, type ExplorerView } from '../views';
+import { appHasInbox } from '../inbox-apps';
 import type { AppFilter, HeroWords } from '../words';
 import type {
   ItemHref,
@@ -165,7 +166,7 @@ export type ExplorerProps = {
   sidebarLinks?: readonly SidebarLink[];
   /** The host app's items kept only in this browser, where the host can read them (the Explorer on the app's own
    *  address): This Browser's Space in the sidebar (with its local folders), `/explorer/offline`, Home's tile, a
-   *  Trash group and Jump Back In. */
+   *  Trash group and Most Used and Recent. */
   thisBrowser?: ThisBrowserHost | null;
   /** The filter's every-app choice, "All" by default ("All apps" where the Explorer is no one app's). */
   allLabel?: string;
@@ -282,7 +283,7 @@ export function Explorer({
 function ExplorerInner({
   app,
   client,
-  view,
+  view: askedView,
   onNavigate,
   itemHref,
   onCreate,
@@ -328,6 +329,9 @@ function ExplorerInner({
   prefetchThumbnail,
   onViewToggled,
 }: Omit<ExplorerProps, keyof LibraryHostProps | 'teamsHost'>) {
+  // An app with no Inbox (appHasInbox) opens Home at the Inbox's address, an old link or a bookmark.
+  const view: ExplorerView =
+    askedView.kind === 'inbox' && !appHasInbox(app) ? { kind: 'home' } : askedView;
   const shownTeams = useTeams().teams;
   const [filter, setFilter] = useFilter(app, controlledFilter, onFilterChange);
   const [heroHidden, hideHero] = useHeroHidden(app, controlledHeroHidden, onHideHero);
@@ -528,7 +532,7 @@ function HeroWithCount({
 }) {
   const { client, app, filter, epoch } = useExplorerContext();
   const indexed = useItemCount(client, app, filter, true, epoch);
-  // What this browser keeps is the person's too, and Jump Back In lists it: the pill counts it beside the index's.
+  // What this browser keeps is the person's too, and Most Used and Recent lists it: the pill counts it beside the index's.
   const { live: local } = useThisBrowserItems();
   const items = useMemo(
     () => (indexed && local.length ? { ...indexed, count: indexed.count + local.length } : indexed),

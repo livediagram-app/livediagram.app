@@ -1,6 +1,6 @@
 'use client';
 
-// The pane's cards and rows: Home's Jump Back In cards, a space's folder cards and its item rows, each with its menu,
+// The pane's cards and rows: Home's Most Used and Recent cards, a space's folder cards and its item rows, each with its menu,
 // inline rename and drag.
 
 import { memo } from 'react';

@@ -82,10 +82,23 @@ describe('planServesImage', () => {
   it('matches a field whose value is the id itself, never the id inside other text', () => {
     const { sql, card } = store();
     recordImageGrant(sql, PLAN, IMAGE, 1);
-    card({ description: `see "${IMAGE}" here`, list: [IMAGE] });
+    card({ description: `see "${IMAGE}" here`, list: [`${IMAGE}x`, 3, { id: IMAGE }] });
     expect(planServesImage(sql, PLAN, IMAGE)).toBe(false);
     card({ photo: IMAGE });
     expect(planServesImage(sql, PLAN, IMAGE)).toBe(true);
+  });
+
+  // A Several Images field (docs/specs/026-plan/item-types.md "Image fields") holds a list of ids: any of them serves,
+  // through the whole plan and a tab-scoped reader's cards alike.
+  it('serves a picture inside a Several Images list', () => {
+    const { sql, card } = store();
+    recordImageGrant(sql, PLAN, IMAGE, 1);
+    card({ designs: ['other', IMAGE] }); // card-1
+    card({ title: 'Plain' }); // card-2
+    expect(planServesImage(sql, PLAN, IMAGE)).toBe(true);
+    expect(planServesImage(sql, PLAN, IMAGE, ['card-1'])).toBe(true);
+    expect(planServesImage(sql, PLAN, IMAGE, ['card-2'])).toBe(false);
+    expect(planServesImage(sql, PLAN, 'other')).toBe(false);
   });
 
   it("reads LIKE's own characters in an id as themselves", () => {
@@ -128,15 +141,21 @@ describe('planServesImage', () => {
     expect(planServesImage(sql, PLAN, IMAGE, ['card-2'])).toBe(true);
   });
 
-  // The read every shared card thumbnail asks: a full plan (ITEMS_MAX, 2,000 cards with real-sized fields) whose
-  // only holder is the last card, and the worst case, a granted picture no card holds (every card scanned), each for
+  // The read every shared card thumbnail asks: a full plan (ITEMS_MAX, 2,000 cards with real-sized fields, each with
+  // a Several Images list too) whose only holder is the last card, and the worst case, a granted picture no card holds (every card scanned), each for
   // the whole plan and for a tab-scoped reader whose tab shows 500 cards. Measured at 1.7 ms per check for the whole
   // plan and 0.3 ms for the scoped one (a loaded laptop); the budget is far above that and fails only on a quadratic turn.
   it('stays cheap on a plan of 2,000 cards', () => {
     const { sql, card } = store();
     const filler = 'x'.repeat(400);
     for (let i = 0; i < 1999; i++) {
-      card({ title: `Card ${i}`, description: filler, status: 'todo', photo: `img-${i}` });
+      card({
+        title: `Card ${i}`,
+        description: filler,
+        status: 'todo',
+        photo: `img-${i}`,
+        designs: [`d-${i}-a`, `d-${i}-b`, `d-${i}-c`],
+      });
     }
     card({ title: 'Last', photo: IMAGE });
     recordImageGrant(sql, PLAN, IMAGE, 1);

@@ -234,11 +234,11 @@ export function viewList(
   }
 }
 
-// Home's Jump Back In groups: this many most used, then this many recent not among them, each two rows of four on a
+// Home's Most Used and Recent groups: this many most used, then this many recent not among them, each two rows of four on a
 // desktop (MOST_USED_MAX, the most the index sends).
 export const JUMP_BACK_IN_PER_GROUP = 8;
 
-/** Whether an item came to Jump Back In as one of the most used (only those carry their opens and use days). */
+/** Whether an item came to Most Used and Recent as one of the most used (only those carry their opens and use days). */
 export const isMostUsed = (item: Pick<Item, 'useDays' | 'useOpens'>) =>
   typeof item.useOpens === 'number' || typeof item.useDays === 'number';
 
@@ -246,7 +246,7 @@ export const isMostUsed = (item: Pick<Item, 'useDays' | 'useOpens'>) =>
 const usesOf = (item: Pick<Item, 'useDays' | 'useOpens'>) => item.useOpens ?? item.useDays ?? 0;
 
 /**
- * Jump Back In's set: the `n` most used (opened at least once in the window), then the `n + extra` most recent not
+ * Most Used and Recent's set: the `n` most used (opened at least once in the window), then the `n + extra` most recent not
  * among them. Nothing is padded. Most used first, in their order (opens, then the latest open), then recent.
  */
 export function jumpBackInSet<T extends Pick<Item, 'id' | 'useDays' | 'useOpens'>>(
@@ -261,7 +261,7 @@ export function jumpBackInSet<T extends Pick<Item, 'id' | 'useDays' | 'useOpens'
 }
 
 /**
- * Jump Back In for Home and the panel: one request, Recent's first page carrying the Most Used items beside it
+ * Most Used and Recent for Home and the panel: one request, Recent's first page carrying the Most Used items beside it
  * (the index's `used`). Asks for enough recent ones that `n + extra` remain once the most used are taken out.
  */
 export function jumpBackInLoader(
@@ -324,6 +324,12 @@ export function sharedRecentlyLoader(
 }
 
 export type { Item };
+
+/** The one line an empty Home says, on the page and in the panel: "The plans you open will gather here." (`other`:
+ *  "The other plans …", in the panel when the open item is the only one). */
+export function homeEmptyLine(lowerMany: string, other = false): string {
+  return `The ${other ? 'other ' : ''}${lowerMany} you open will gather here.`;
+}
 
 /** Why a card is there: "Opened 12 times" for a most used one (its opens in the window; "Used on 5 days" from an
  * index that counts only days); otherwise "Opened 2 hours ago" (or when it last changed, for one never opened). */

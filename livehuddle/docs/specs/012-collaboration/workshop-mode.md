@@ -107,7 +107,7 @@ vote had left before it ([Vote](../002-project-scope/not-in-livehuddle.md#the-vo
 
 ## Templates
 
-The catalogue is **Blank Space** and twenty-five Spaces in the Campus, Events, Games Rooms, Homes, Office, Outdoor, Recreation and Venues
+The catalogue is **Blank Space** and twenty-six Spaces in the Campus, Events, Games Rooms, Homes, Office, Outdoor, Recreation and Venues
 categories
 ([Virtual Office template](virtual-office-template.md), [Templates by mode](../007-editor/templates-by-mode.md)).
 Every template opens on a meeting board. The Spaces use only what stays: the office, bar and garden pieces,

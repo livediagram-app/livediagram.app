@@ -9,6 +9,8 @@ import {
   PageRowMenuButton,
   PageRowStack,
   pageRowModel,
+  ROW_TOOLS_REVEAL,
+  rowToolsReveal,
   usePageRowMenu,
   type PageRowModel,
 } from './PageRowMenu';
@@ -70,7 +72,7 @@ function List({
               {...(model.remove ? { remove: model.remove } : {})}
             />
           ) : (
-            <PageRowMenuButton id={id} name={`Page ${id}`} menu={menu} reveal />
+            <PageRowMenuButton id={id} name={`Page ${id}`} menu={menu} />
           )}
         </div>
       ))}
@@ -245,6 +247,20 @@ describe('PageRowMenu', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe('rowToolsReveal', () => {
+  // pages-mode.md "One reveal rule": hidden only under a fine pointer, so a finger always sees the tools, and no
+  // breakpoint, so a narrow window with a mouse reveals them on hover as a wide one does.
+  it('hides a row’s tools under a fine pointer only, until hover or focus, and never while shown', () => {
+    const classes = rowToolsReveal(false).split(' ');
+    expect(classes).toEqual(ROW_TOOLS_REVEAL.split(' '));
+    expect(classes.every((c) => c.startsWith('pointer-fine:'))).toBe(true);
+    expect(classes).toContain('pointer-fine:group-hover:opacity-100');
+    expect(classes).toContain('pointer-fine:group-focus-within:opacity-100');
+    expect(ROW_TOOLS_REVEAL).not.toMatch(/\b(sm|md|lg|max-sm|max-md):/);
+    expect(rowToolsReveal(true)).toBe('');
   });
 });
 

@@ -1,9 +1,9 @@
 'use client';
 
 // The open card's blockers in the item panel (docs/specs/026-plan/item-types.md "Blocked By"): a section per Blocked
-// By field the type offers that holds a live blocker, on the type's first tab before the Linked as sections. Each row
-// is the blocker's glyph, number, title and state, a tick when it is done; pressed, it opens. Read-only: the field's
-// own control is where a link is set.
+// By field the type offers that holds a live blocker, on the type's first tab before its Comments (the Linked as
+// sections are on the Linked Cards tab). Each row is the blocker's glyph, number, title and state, a tick when it is
+// done; pressed, it opens. Read-only: the field's own control is where a link is set.
 import { useId } from 'react';
 import {
   blocksFieldsOf,

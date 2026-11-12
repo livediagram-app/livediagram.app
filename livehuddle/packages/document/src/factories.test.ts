@@ -119,14 +119,28 @@ describe('duplicateElements', () => {
     expect(dupB.portalTarget).toBe(idMap.get('a'));
   });
 
-  it('points an element link at the copy when its target was copied', () => {
+  // A link card's link is the card itself, so it survives a copy and follows a copied target. Any other element's
+  // link is dropped (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes").
+  it("points a link card's element link at the copy when its target was copied", () => {
+    const target = shape('t');
+    const card = {
+      ...createLinkCard(0, 0),
+      id: 'l',
+      link: { kind: 'element', tabId: 'tab-1', elementId: 't' },
+    } as Element;
+    const { newElements, idMap } = duplicateElements([target, card], new Set(['t', 'l']), 0, 0);
+    const dup = newElements.find((el) => el.id === idMap.get('l')) as { link?: unknown };
+    expect(dup.link).toEqual({ kind: 'element', tabId: 'tab-1', elementId: idMap.get('t') });
+  });
+
+  it("drops an ordinary element's link on a copy", () => {
     const target = shape('t');
     const linker = shape('l', {
       link: { kind: 'element', tabId: 'tab-1', elementId: 't' },
     });
     const { newElements, idMap } = duplicateElements([target, linker], new Set(['t', 'l']), 0, 0);
     const dup = newElements.find((el) => el.id === idMap.get('l')) as ShapeElement;
-    expect(dup.link).toEqual({ kind: 'element', tabId: 'tab-1', elementId: idMap.get('t') });
+    expect(dup.link).toBeUndefined();
   });
 
   it('offsets duplicated boxed elements and maps old ids to new', () => {

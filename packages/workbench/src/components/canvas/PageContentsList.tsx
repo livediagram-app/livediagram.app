@@ -10,7 +10,13 @@ import { lucideGlyph } from '@liveworkspace/ui';
 import { htmlProps } from '@liveworkspace/trusted-types';
 import { DropCaret } from '../primitives/DropCaret';
 import { ContentsVeil, veiledPictureClass } from './ContentsVeil';
-import { PageRowMenu, PageRowMenuButton, PageRowStack, usePageRowMenu } from './PageRowMenu';
+import {
+  PageRowMenu,
+  PageRowMenuButton,
+  PageRowStack,
+  rowToolsReveal,
+  usePageRowMenu,
+} from './PageRowMenu';
 import type { ContentsRowBase, ContentsThumb } from '../../lib/page-contents';
 import type { PageContents } from '../../hooks/ui/usePageContents';
 
@@ -48,19 +54,18 @@ export type ContentsBadges<R extends ContentsRowBase> = (row: R) => ReactNode;
 // sidebar (a filmstrip, as a slide editor shows its slides: the number beside a picture as wide as
 // the column, the name under it). An Editor's page actions sit down the row's left: in the
 // filmstrip the grip, Delete and ⋯ stacked under the number, in the popover's compact rows the ⋯
-// under the number (the grip at the row's end). One ⋯ menu serves the whole list.
+// under the number (the grip at the row's end). One ⋯ menu serves the whole list. In both, the grip
+// and ⋯ show and hide together by one rule (rowToolsReveal): on hover or focus under a mouse or pen,
+// always to a finger, whatever the window's width.
 export function ContentsList<R extends ContentsRowBase>({
   contents,
   variant,
-  touch,
   badges,
   className = '',
   style,
 }: {
   contents: ContentsListState<R>;
   variant: 'list' | 'film';
-  // A finger drags a row by its grip, always shown (a phone); else the grip shows on hover.
-  touch: boolean;
   badges?: ContentsBadges<R> | undefined;
   className?: string;
   style?: CSSProperties;
@@ -98,6 +103,9 @@ export function ContentsList<R extends ContentsRowBase>({
           const actions = actionsFor(row);
           const asideId = row.setAside ? `${uid}-aside-${row.id}` : undefined;
           const rowMenu = actions ? menu.rowProps(row.id) : null;
+          // The popover's grip and ⋯ (apart, at the row's two ends) wear the same reveal; in the
+          // filmstrip the grip is the top of the row's stack, which wears it for all three.
+          const listReveal = variant === 'list' ? rowToolsReveal(menu.openId === row.id) : '';
           const grip = reorderable ? (
             <span
               aria-hidden
@@ -105,10 +113,9 @@ export function ContentsList<R extends ContentsRowBase>({
               onPointerDown={(e) => {
                 if (e.pointerType === 'touch') reorder.beginDrag(e, row.id);
               }}
-              // In the filmstrip it is the top of the row's stack, shown with it.
               className={`relative z-10 flex w-5 shrink-0 cursor-grab touch-none items-center justify-center text-slate-400 transition ${
                 variant === 'film' ? 'h-6' : 'h-8'
-              } ${touch || variant === 'film' ? '' : 'opacity-0 group-hover:opacity-100'}`}
+              } ${listReveal}`}
             >
               <GripIcon />
             </span>
@@ -168,13 +175,16 @@ export function ContentsList<R extends ContentsRowBase>({
                           name={row.name}
                           menu={menu}
                           grip={grip}
-                          shown={touch || row.id === current}
+                          shown={row.id === current}
                           {...(actions.remove ? { remove: actions.remove } : {})}
                         />
                       ) : null
                     ) : actions ? (
-                      <span className="relative z-10 flex">
-                        <PageRowMenuButton id={row.id} name={row.name} menu={menu} reveal />
+                      <span
+                        data-contents-row-menu=""
+                        className={`relative z-10 flex transition-opacity duration-micro ${listReveal}`}
+                      >
+                        <PageRowMenuButton id={row.id} name={row.name} menu={menu} />
                       </span>
                     ) : null
                   }

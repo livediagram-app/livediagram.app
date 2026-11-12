@@ -9,12 +9,12 @@ import {
   TextBar,
   Cursor,
   Menu,
-  Tabs,
 } from '@liveworkspace/help-site/art/primitives';
 import { type CardType, STRIPE, Card } from './plan-parts';
 
 /** The card panel: the back bar to the card before, then the type and number, the ⋯ menu and close;
- *  the title over the type's tabs and description; Linked as Parent; Details on the right. */
+ *  the title over the card's tabs (Overview, Linked Cards with its count, Activity), Linked Cards open on its
+ *  Linked as Parent section; Details on the right. */
 export function PlanCardPanelScene() {
   return (
     <Scene w={420} h={260} bg="plain">
@@ -69,38 +69,57 @@ export function PlanCardPanelScene() {
       <Label x={24} y={62} size={14} weight={700} tone="strong">
         New icons
       </Label>
-      <Tabs x={22} y={76} items={['Overview']} tabW={70} h={20} />
-      <TextBar x={24} y={106} w={200} />
-      <TextBar x={24} y={118} w={170} />
-      <TextBar x={24} y={130} w={120} tone="faint" />
-      <Label x={24} y={154} size={10} weight={700} tone="body">
-        Linked as Parent 2
+      {/* The panel's tab bar as shipped: underline tabs, Linked Cards picked with its count pill. */}
+      <line x1={22} y1={96} x2={262} y2={96} className="stroke-slate-200" strokeWidth={1} />
+      <Label x={24} y={88} size={10} weight={500} tone="muted">
+        Overview
+      </Label>
+      <Label x={76} y={88} size={10} weight={600} tone="accent">
+        Linked Cards
+      </Label>
+      <rect x={142} y={80} width={14} height={11} rx={5.5} className="fill-brand-50" />
+      <Label x={149} y={88} size={8} weight={600} anchor="middle" tone="accent">
+        2
+      </Label>
+      <rect x={76} y={95} width={80} height={2} rx={1} className="fill-brand-600" />
+      <Label x={172} y={88} size={10} weight={500} tone="muted">
+        Activity
+      </Label>
+      <Label x={24} y={118} size={10} weight={700} tone="body">
+        Linked as Parent
+      </Label>
+      <rect x={104} y={110} width={14} height={11} rx={5.5} className="fill-slate-100" />
+      <Label x={111} y={118} size={8} weight={600} anchor="middle" tone="muted">
+        2
       </Label>
       {[0, 1].map((i) => (
         <g key={i}>
           <rect
             x={22}
-            y={164 + i * 26}
+            y={128 + i * 26}
             width={240}
             height={22}
             rx={5}
             className="fill-slate-50 stroke-slate-200"
             strokeWidth={1}
           />
-          <rect x={26} y={169 + i * 26} width={3} height={12} rx={1} className={STRIPE.task} />
-          <Label x={34} y={175 + i * 26} size={10} tone="muted">
+          <rect x={26} y={133 + i * 26} width={3} height={12} rx={1} className={STRIPE.task} />
+          <Label x={34} y={139 + i * 26} size={10} tone="muted">
             {i ? '#17' : '#16'}
           </Label>
-          <Label x={58} y={175 + i * 26} size={10} tone="strong">
+          <Label x={58} y={139 + i * 26} size={10} tone="strong">
             {i ? 'Export set' : 'Draw glyphs'}
           </Label>
-          <Label x={256} y={175 + i * 26} size={10} anchor="end" tone="muted">
+          <Label x={256} y={139 + i * 26} size={10} anchor="end" tone="muted">
             {i ? 'To Do' : 'In Progress'}
           </Label>
         </g>
       ))}
-      <Label x={24} y={228} size={10} tone="muted">
-        Comments
+      <Label x={28} y={194} size={10} weight={600} tone="accent">
+        + New Task
+      </Label>
+      <Label x={96} y={194} size={10} weight={600} tone="accent">
+        Link Existing
       </Label>
 
       {/* Details. */}

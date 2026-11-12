@@ -63,6 +63,10 @@ Resource, then verb. `el` is accepted for `element`. liveplanner makes projects,
 | `api <method> <path> [--body <file>\|-]`                                            | Any api route, authenticated; the escape hatch                                                                                                                             |
 | `auth login\|status\|logout`                                                        | Credentials                                                                                                                                                                |
 
+**Pictures.** `image add <project> <file>` (or `--url <u>`, with `--name <n>`) uploads a picture for the plan's cards,
+as the MCP's `upload_image` does ([MCP](mcp-server.md#45b-upload_image-pictures-for-a-plans-cards)), and prints its
+id; `item set` then places it on an Image field, a Several Images field or Attachments.
+
 **Addressing.** `<project>` is a project name, an id prefix, or a pasted liveplanner URL; an ambiguous one is refused
 with the candidates. A share-link URL acts through that link: each request of the command carries its code. A
 pulled file's path reads its views offline. `--tab` takes a tab name or id prefix and defaults to the first tab.

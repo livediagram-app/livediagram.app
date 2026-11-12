@@ -10,7 +10,6 @@ import {
   MAX_ARTICLE_BLOCK_TEXT,
   MAX_ARTICLE_BLOCKS,
   MAX_ARTICLE_TABLE_COLS,
-  cleanFootnoteText,
   isSafeArticleHref,
   nextArticleBlockId,
   normaliseRuns,
@@ -33,7 +32,21 @@ import {
 import { EMU_PER_PX } from './limits';
 import type { OfficePackage, OfficeRel } from './package';
 import { addSkip, type SkipTally } from './tally';
-import { child, find, findAll, intAttr, kids, textOf, type XmlElement } from './xml';
+import { child, find, intAttr, kids, textOf, type XmlElement } from './xml';
+import { readFootnotes } from './docx-footnotes';
+import {
+  ALIGN,
+  fieldHref,
+  isContentsField,
+  readTodo,
+  tableParts,
+  TOC_LEVELS,
+  todoLevelOf,
+  trimRuns,
+  vmlSize,
+} from './docx-parts';
+
+export { readFootnotes } from './docx-footnotes';
 
 /** A picture inside the file an element shows. */
 export type OfficePicture = {
@@ -61,54 +74,6 @@ type Para = {
   indent?: number;
   code: boolean;
 };
-
-// A to-do's box at the start of a paragraph, as Word's check boxes and the Word export write it, and whether it is
-// ticked (docs/specs/020-import-export/office-import.md "Word becomes an article").
-const TODO_BOXES: Record<string, boolean> = { '☐': false, '☒': true, '☑': true };
-// The Word export's to-do indent: 20 px, then 28 px a level, at 15 twips a px (office-export/docx-body.ts).
-const todoLevelOf = (twips: number) =>
-  Math.min(ARTICLE_LIST_MAX_LEVEL, Math.max(0, Math.round((twips / 15 - 20) / 28)));
-
-/** The to-do a paragraph's runs start with, its box cut from them; undefined when they start with no box. */
-function readTodo(runs: ArticleRun[]): { checked: boolean; runs: ArticleRun[] } | undefined {
-  const out = trimRuns(runs);
-  const first = out[0];
-  if (!first) return undefined;
-  const checked = TODO_BOXES[first.text[0] ?? ''];
-  const after = first.text[1];
-  if (checked === undefined || (after !== undefined && after !== ' ' && after !== '\u00a0'))
-    return undefined;
-  // The box may be a run of its own (the export writes "☐ " alone), so the space after it can open the next run.
-  first.text = first.text.slice(1);
-  const rest = trimRuns(out.filter((r) => r.text !== ''));
-  if (rest.length === 0) return undefined;
-  return {
-    checked,
-    runs: checked ? rest.map(({ s: _s, ...r }) => r) : rest,
-  };
-}
-
-const ALIGN: Record<string, ArticleAlign> = {
-  center: 'center',
-  right: 'right',
-  end: 'right',
-  both: 'justify',
-  distribute: 'justify',
-};
-
-const HYPERLINK = /^\s*HYPERLINK\s+"([^"]+)"/i;
-// A table of contents field, and the heading levels its \o switch lists ("1-3"). One with \c or \a lists captions
-// (a table of figures), not headings: its result stays as written.
-const TOC_FIELD = /^\s*TOC\b/i;
-const TOC_CAPTIONS = /\\[ca]\b/i;
-const TOC_LEVELS = /\\o\s+"\s*\d+\s*-\s*(\d+)\s*"/i;
-const isContentsField = (instr: string) => TOC_FIELD.test(instr) && !TOC_CAPTIONS.test(instr);
-
-/** A field's link address, when it is a HYPERLINK to an address an article keeps. */
-function fieldHref(instr: string): string | undefined {
-  const m = HYPERLINK.exec(instr);
-  return m && isSafeArticleHref(m[1]) ? m[1].trim() : undefined;
-}
 
 class DocxWalker {
   readonly blocks: DocxBlock[] = [];
@@ -606,90 +571,6 @@ class DocxWalker {
     }
   }
 }
-
-/** A table's rows or a row's cells (`name`), in order, looking inside content controls and custom XML. */
-function tableParts(
-  el: XmlElement | undefined,
-  name: string,
-  out: XmlElement[] = [],
-): XmlElement[] {
-  for (const c of kids(el)) {
-    if (c.name === name) out.push(c);
-    else if (c.name === 'w:sdt') tableParts(child(c, 'w:sdtContent'), name, out);
-    else if (c.name === 'w:customXml') tableParts(c, name, out);
-  }
-  return out;
-}
-
-/** Runs with the paragraph's leading and trailing whitespace removed, line breaks inside kept. */
-function trimRuns(runs: ArticleRun[]): ArticleRun[] {
-  const out = runs.map((r) => ({ ...r }));
-  while (out.length > 0 && out[0]!.text.trimStart() === '') out.shift();
-  while (out.length > 0 && out[out.length - 1]!.text.trimEnd() === '') out.pop();
-  if (out.length === 0) return out;
-  out[0]!.text = out[0]!.text.trimStart();
-  out[out.length - 1]!.text = out[out.length - 1]!.text.trimEnd();
-  return out;
-}
-
-// The CSS lengths a VML shape's style gives its size in, as px (96 to the inch); no unit is px.
-const VML_PX_PER: Record<string, number> = {
-  '': 1,
-  px: 1,
-  pt: 96 / 72,
-  pc: 16,
-  in: 96,
-  cm: 96 / 2.54,
-  mm: 96 / 25.4,
-};
-
-/** A VML shape's width and height (`width:120pt;height:3cm`), in px; an unknown unit reads as 0. */
-function vmlSize(style: string): { width: number; height: number } {
-  const read = (key: string) => {
-    const m = new RegExp(`(?:^|;)\\s*${key}\\s*:\\s*([\\d.]+)\\s*([a-z]*)`, 'i').exec(style);
-    const per = m ? VML_PX_PER[m[2]!.toLowerCase()] : undefined;
-    const px = per === undefined ? 0 : Number(m![1]) * per;
-    return Number.isFinite(px) ? Math.round(px) : 0;
-  };
-  return { width: read('width'), height: read('height') };
-}
-
-/** A document's footnotes by id, each its paragraphs' text as one plain line (the separators Word keeps there are
- *  left out). */
-export function readFootnotes(
-  root: XmlElement | undefined,
-  styles: DocxStyles = readStyles(undefined),
-): Map<string, string> {
-  const out = new Map<string, string>();
-  for (const note of kids(root)) {
-    const id = note.attrs['w:id'];
-    if (note.name !== 'w:footnote' || !id || note.attrs['w:type']) continue;
-    const paragraphs = findAll(note, 'w:p').map((p) => footnoteText(p, styles));
-    const text = cleanFootnoteText(paragraphs.join(' ').trim());
-    out.set(id, text);
-  }
-  return out;
-}
-
-/** A footnote paragraph's shown text, read as the body's is: tabs and breaks a space, text a tracked change deletes
- *  or moves away and hidden runs left out. A paragraph or table nested inside adds nothing here: `findAll` reads
- *  each paragraph on its own. */
-function footnoteText(el: XmlElement, styles: DocxStyles): string {
-  let text = '';
-  for (const c of kids(el)) {
-    if (c.name === 'w:r') {
-      if (runHidden(child(c, 'w:rPr'), styles)) continue;
-      for (const t of kids(c)) {
-        if (t.name === 'w:t') text += textOf(t);
-        else if (FOOTNOTE_SPACES.has(t.name)) text += ' ';
-        else if (t.name === 'w:noBreakHyphen') text += '-';
-      }
-    } else if (!FOOTNOTE_SKIPPED.has(c.name)) text += footnoteText(c, styles);
-  }
-  return text;
-}
-const FOOTNOTE_SKIPPED = new Set(['w:p', 'w:tbl', 'w:del', 'w:moveFrom', 'w:pPr', 'mc:Fallback']);
-const FOOTNOTE_SPACES = new Set(['w:tab', 'w:ptab', 'w:br', 'w:cr']);
 
 export async function readDocx(pkg: OfficePackage): Promise<DocxRead> {
   const root = await pkg.readXml(pkg.mainPath);

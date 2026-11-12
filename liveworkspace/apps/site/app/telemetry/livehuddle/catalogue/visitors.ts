@@ -4,7 +4,6 @@
 import { pageViewApp, type PageViewApp } from '@livehuddle/api-schema';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import {
-  ACTION_SIGN_IN_NUDGE,
   EDITOR_REASONS_OPENED,
   EXPLORER_REASONS_OPENED,
   RECEPTIONIST_ASKED,
@@ -344,7 +343,6 @@ export const SIGN_IN_PROMPTS: MetricStack = {
     EDITOR_BANNER_SIGN_INS,
     EDITOR_REASONS_OPENED,
     EDITOR_BANNER_DISMISSED,
-    ACTION_SIGN_IN_NUDGE,
   ],
   // Sign-ins started from either banner: the prompts that worked.
   headline: [EXPLORER_BANNER_SIGN_INS, EDITOR_BANNER_SIGN_INS],

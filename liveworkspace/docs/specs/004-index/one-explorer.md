@@ -185,8 +185,8 @@ them.
 
 #### New, on Home
 
-Directly above Jump Back In, Home shows what was **made** lately: the section **New**, the four items created most
-recently, newest first (`HomeNew` in `@liveworkspace/explorer`). Jump Back In ranks what the person opened, so
+Directly above Most Used, Home shows what was **made** lately: the section **New**, the four items created most
+recently, newest first (`HomeNew` in `@liveworkspace/explorer`). Most Used and Recent rank what the person opened, so
 something just made and never opened (a batch an AI tool made over MCP, which leaves Recent and Most Used alone on
 purpose) would otherwise be found again only by searching. The same in every app's Explorer and on
 liveworkspace.app; the editors' panel keeps its own Home without it, and a first run shows its starting points in its
@@ -195,31 +195,61 @@ place, as it does for the rest.
 - **Which.** The live items in the person's own space (My Work) and in each team they are in, by when each was made
   (`createdAt`, then id), at most four. Filtered to one app, that app's: documents in livedocuments, canvases in
   livediagram, plans in liveplanner, designs in livedesign, Spaces in livehuddle. Under All Apps, and on
-  liveworkspace.app in no app, every app's, each card wearing its app's mark as Jump Back In's do: the site's
+  liveworkspace.app in no app, every app's, each card wearing its app's mark as Most Used and Recent's do: the site's
   Explorer lists every app everywhere else, so its Home would be the one place where something just made in any app
   could not be found, and hiding the section there would leave the site's Home without it for no gain. Nothing in
   the Trash or in Archived, and nothing reached only through a link (that lives in someone else's space; Shared
   With You Recently has it). An item the person can no longer open (a team they left, an item moved out of reach) is
   gone from the next read; one they trash or archive here leaves at once.
-- **A card** is Jump Back In's large card (the same component, frame, size, thumbnail, ⋯ menu, right-click and
+- **A card** is Most Used and Recent's large card (the same component, frame, size, thumbnail, ⋯ menu, right-click and
   drag): the item's thumbnail, its name, and a quiet line saying when it was made and where it lives ("Made 2 hours
   ago · Marketing": its folder, its team's name for a team item in no folder, My Work for one of the person's own).
   An item an AI tool made carries the Explorer's **Made by AI** badge on its thumbnail's corner (`MadeByAiBadge`, as
-  rows and Details show it); Jump Back In's cards carry it the same way. Each opens the item.
+  rows and Details show it); Most Used and Recent's cards carry it the same way. Each opens the item.
 - **This Browser.** Where the Explorer reads this browser's store, the items it keeps are merged in by the same rule
-  (made most recently first, four in all), as Jump Back In merges the opened ones: the same This Browser card.
-- **Loading** draws Jump Back In's placeholders, one row of four cards (the strip's on a phone). **Nothing made yet**, or a failed read,
-  leaves the section out (Jump Back In below says when Home could not load), so Home never shows two empty states.
-- **Phones.** Below `md` the four are one scrolling strip of small tiles, Jump Back In's strip (its picture and
+  (made most recently first, four in all), as Recent merges the opened ones: the same This Browser card.
+- **Loading** draws Home's card placeholders, one row of four cards (the strip's on a phone). **Nothing made yet**, or a failed read,
+  leaves the section out (Recent below says when Home could not load), so Home never shows two empty states.
+- **Phones.** Below `md` the four are one scrolling strip of small tiles, Recent's strip (its picture and
   name), with no See More: four is all there is.
 - **The read** rides on Home's one items read (`newest=4` beside `used`, `mine` and `any`, [contracts](one-explorer-contracts.md#items)),
   so the section adds no request. It is one statement: each of the person's scopes walks its own index newest made
   first and stops at four, and the four newest of those are the answer, so it costs four rows a space however much
   each holds.
 
+#### Most Used and Recent, on Home
+
+Directly under New, Home shows what the person **opened** lately as two sections of their own, each headed as New
+and Spaces are (the same heading, size and spacing), with no title over the pair: **Most Used**, then **Recent**
+directly after it (`HomePane` in `@liveworkspace/explorer`).
+
+- **Most Used** is up to eight items the person opened in the last 14 days, the most opened first, each card's line
+  saying how often ("Opened 12 times"; "Used on 5 days" from an index that counts only days).
+- **Recent** is up to eight of the person's most recently opened items not among Most Used, newest first, each line
+  saying when ("Opened 2 hours ago"). This browser's opened items are merged in by last open
+  ("This Browser on Home" below). **See More** sits at the right of Recent's heading, as See All does
+  on Shared With You Recently, and opens the Recent view; Most Used has no link.
+- **A card** is Home's large card, the one New and Shared With You Recently draw: the item's thumbnail, its name and
+  its line, the ⋯ menu, right-click and drag. From `md` each section is a grid, two rows of four from `lg`.
+- **A section with nothing in it is left out**, heading and all, as New is: someone whose opened items are all among
+  Most Used sees no Recent. Only when nothing has been opened at all does Recent stay, holding the Explorer's one
+  empty state ("No plans yet": "The plans you open will gather here."), so Home still says where opened work will
+  gather.
+- **Loading** draws each section's heading over its own placeholders (a grid of large cards from `md`, a strip below
+  it); a section the read finds empty then leaves. **A failed read** draws once: Recent's heading over one
+  "Couldn’t load Home." with **Try again** (which asks again for Home's reads), and no Most Used.
+- **Phones.** Below `md` each section is its own scrolling strip of small tiles (picture and name) under its own
+  heading, at most eight; Recent's strip ends with a **See More** tile into the Recent view, in place of the heading's
+  link.
+- **The read.** Both sections come from one request: Recent's first page carrying the Most Used items beside it
+  (`used=8`, `limit=16`, [contracts](one-explorer-contracts.md#items)), folded with Home's other reads
+  (`jumpBackInLoader`, `data/homeReads.ts`), so two sections cost no more than one. What the person hid from Recent
+  is left out of both.
+- **The editors' panel** keeps the pair too ("The editors' panel's Home" below).
+
 #### Spaces, on Home
 
-Directly under Jump Back In (its Most Used and Recent), Home lists the person's **Spaces**: the places that hold
+Directly under Most Used and Recent, Home lists the person's **Spaces**: the places that hold
 their work, the same ones the sidebar's Spaces group lists, each a tile that goes straight to that space's list
 (`HomeSpaces` in `@liveworkspace/explorer`). The same in every app's Explorer and on liveworkspace.app; the editors'
 panel keeps its own Home without it, and a first run shows its starting points in its place, as it does for the rest.
@@ -244,8 +274,8 @@ panel keeps its own Home without it, and a first run shows its starting points i
   Work alone.
 - **Loading** draws tile-shaped placeholders in the same grid, one per space known (at most eight). **A failed
   read** keeps every tile, since names and links need nothing from it, without its mosaic or line, and says
-  "Couldn’t load what’s in your spaces." with **Try again**, as Jump Back In does.
-- **Phones.** Below `md` the tiles are one horizontal strip that snaps tile by tile, as Jump Back In's does, each
+  "Couldn’t load what’s in your spaces." with **Try again**, as Recent does.
+- **Phones.** Below `md` the tiles are one horizontal strip that snaps tile by tile, as Most Used and Recent's do, each
   15rem wide with the next one peeking; from `md` a grid of two, of four from `lg`.
 - **Screen readers and keys.** The section is labelled by its heading, and its tiles are a list of links, each named
   by its space and described by its line; Tab walks them in order. The disc, the mosaic and the faces are hidden from
@@ -334,7 +364,7 @@ instead, so it isn't hidden in the Library, but only show it when it contains at
 folders in it."). It used to be a row under More, after the Library.
 
 **Its name in the Explorer is Browser Storage** (the owner's rename, 2026-11-10, for clarity): the Space's sidebar row
-and view title, Home's tile, the pill on Explorer rows and cards (Archived, the Trash, Jump Back In, the Inbox, the
+and view title, Home's tile, the pill on Explorer rows and cards (Archived, the Trash, Most Used and Recent, the Inbox, the
 editor's Explorer panel), the Trash's and Archived's groups, menus, toasts and labels for assistive technology
 ("Moved “X” to Browser Storage.", "Nothing is kept in Browser Storage.", "3 in Browser Storage"). The editor keeps
 **This Browser** for its own badge on such an item (the pill at the top of an open item) and its other copy. These
@@ -357,7 +387,7 @@ address never changed.
   it. They nest as deep as My Work's. Names are trimmed, at most 120 characters, and need not be unique (as My
   Work's). At most 200 folders are kept; New Folder past that says so.
 - **Moving items.** A live item has **Move to Folder** (a folder button on its row, beside Move to Archived, and on
-  its Jump Back In card's menu), which picks among This Browser's root and its folders (the placement browser's tree, This Browser's
+  its card's menu on Home), which picks among This Browser's root and its folders (the placement browser's tree, This Browser's
   own); signed in, the account's places are offered too, and choosing one goes through Sync (below). A drag of a
   This Browser item onto a local folder (its sidebar row, its card) or onto This Browser's own row moves it there,
   with "Moved “X” to Y." and an Undo; onto an account folder, My Work or a team it asks to Sync, as before. Folders
@@ -418,7 +448,7 @@ liveworkspace.app.
   through a link. It moves at once, the card leaves where it was, and a toast says "Moved “<title>” to Archived."
   with no Undo: what archiving deleted (its links, everyone's favourites) can't come back, and Change Folder is the way
   out. Change Folder offers the same as a space of its own.
-- **Gone from everywhere else.** Home (Jump Back In, Most Used, the hero's count), Recent, Favourites, Shared With
+- **Gone from everywhere else.** Home (Most Used, Recent, the hero's count), Recent, Favourites, Shared With
   Me, the Inbox, every folder and team, and the panel's lists leave it out. Archiving deletes its
   favourites, Recent, Most Used and Inbox rows for everyone, so moving it out starts fresh: not a favourite, not in
   Recent until it is opened again. Its share links (and password) are deleted for good; a team document leaves the
@@ -437,9 +467,9 @@ liveworkspace.app.
   open again. A drag onto the Trash deletes it as any document.
 - **This Browser.** A document kept only in this browser archives in this browser alone: its record in This
   Browser's list (`liveworkspace:this-browser:<app>`) takes `archivedAt` (`setThisBrowserArchived`) and nothing is
-  uploaded: from its This Browser row (an archive-box button beside Sync and Delete) or its Jump Back In card's
-  menu (**Move to Archived**), on the page and in the panel. Every write of the list keeps the marks it held, since the app republishes its records without them.
-  It leaves This Browser's view, Jump Back In and the Trash's This Browser group, and shows in Archived with the
+  uploaded: from its This Browser row (an archive-box button beside Sync and Delete) or its card's menu on
+  Home (**Move to Archived**), on the page and in the panel. Every write of the list keeps the marks it held, since the app republishes its records without them.
+  It leaves This Browser's view, Home's Recent and the Trash's This Browser group, and shows in Archived with the
   **This Browser** pill and its local picture (`LocalPreview`). The Explorer's open shows the archived dialog, and the
   app's editor reads the mark (`isThisBrowserArchived`) and shows its archived card instead of opening it. Change
   Folder from Archived offers **This Browser** (the mark cleared) and, signed in, the account's places, through Sync
@@ -507,7 +537,7 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   localStorage under `liveworkspace:this-browser:<app>` (`@liveworkspace/explorer/this-browser`), written by its
   offline store as it writes. The Explorer reads it: This Browser's Space in the sidebar with the count and its
   folders ([This Browser, a Space](#this-browser-a-space)), `/explorer/offline`, its tile on Home, a This Browser
-  group in the Trash, and the opened ones in Home's Jump Back In. Each opens in the app's editor.
+  group in the Trash, and the opened ones in Home's Recent. Each opens in the app's editor.
   liveworkspace.app can't read another origin's list, so its This Browser row (and `/explorer/offline` there) goes
   to the app's own `/explorer/offline` (the registry's `offlinePath`). That view is the only This Browser page: the
   apps' old `/offline` pages only redirect to it, their query kept. Each of its rows has **Sync** (signed in) and
@@ -515,7 +545,7 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   panel's This Browser rows. The confirmation says it deletes only this browser's copy, the one there is, and that
   nothing in the account changes (`thisBrowserDeleteCopy`, the editors' handed-over Delete words it the same). Every
   host has `remove`, so Delete is never missing in one app and there in another, and both delete **in place**: the
-  person stays where they pressed it (This Browser's view, Home's Jump Back In, the Trash drop) and the item leaves
+  person stays where they pressed it (This Browser's view, Home's Recent, the Trash drop) and the item leaves
   the list there, with no page opened and none left (owner, 2026-11-04: Delete used to open the item in the editor,
   delete it and come back). The editor's panel uses its offline store's delete; the page, on the app's own address
   and so the same origin, deletes the record itself (`removeThisBrowserRecord`, @liveworkspace/explorer/this-browser,
@@ -552,13 +582,13 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   `?convert=delete` link without the note asks first. A request that
   reaches This Browser's view instead (`/explorer/offline?convert=…`, an older `/offline` link) goes on to the
   editor the same way. A link alone never moves or deletes anything.
-- **This Browser in Jump Back In.** An opened This Browser item is one card among Home's others, the same size and
+- **This Browser on Home.** An opened This Browser item is one card among Recent's others, the same size and
   shape as the rest of its group (a thumbnail area, the title, and a line with the **This Browser** badge and when it
   was opened). It has no snapshot (none leaves the browser), so its thumbnail is a picture of the browser it lives in,
   tinted in the accent of the app that owns it (`LocalPreview`): the same picture on its This Browser rows, on the page
   and in the panel. The **This Browser** badge, in teal (no app's accent and no status colour, with its icon and words), says where it lives; the tint says whose it is. It has the same ⋯ menu and right-click as any card, with This Browser's own verbs: **Open**, **Sync**
   (signed in, as This Browser's rows offer it: in place in the panel, handed over to the editor on the page) and,
-  where the host has `remove`, **Delete**, asked first and in place (the card leaves Jump Back In where it was). It drags as
+  where the host has `remove`, **Delete**, asked first and in place (the card leaves Recent where it was). It drags as
   the others do, and each target means what it can for an item the account doesn't hold. On the **Trash** it is
   deleted for good after a confirmation, since nothing else holds it; a host without `remove` (none today, kept for
   a host that can't reach the app's editor) makes the drop say so and offer Open, as the Trash's This Browser group
@@ -603,7 +633,16 @@ moves one into the account and the panel asks before deleting one for good). Eac
 in full, never cut short, beside quiet glyphs: **New Folder** (New Subfolder inside a folder) in a space, a team's
 **Members**, each named by its label and tooltip, and the app switch (the app's logo and name, All with
 liveworkspace's). There is no Open Page: the full Explorer is the menu button's own link and Home's See all.
-The panel's Home lists This Browser's opened items among Jump Back In by the page's rule (`mergeOpened`: last opened
+**The editors' panel's Home** shows the page's two sections, without New, Spaces or Shared With You Recently, each
+under the pane's small section heading: **Most Used** (up to four), then **Recent** (up to four; up to eight while
+nothing is most used yet), its heading carrying **See all** into the Recent view. The open item is left out of both. A
+section with nothing in it is left out, as on the page; with nothing opened at all, Recent holds the pane's empty state
+("No plans yet", or "Nothing else yet" when the open item is the only one). Loading draws each heading over a row of
+card placeholders; a failed read draws one "Home could not load." notice with **Try Again**, and no headings. Both
+sections come from one request (`jumpBackInLoader` asking five most used and nine recent): the open item leaves
+before Most Used is cut to four, so it still ends on a full row when the open item is among the most used, and a
+spare most used that is not needed joins Recent by its last open.
+The panel's Home lists This Browser's opened items among its Recent by the page's rule (`mergeOpened`: last opened
 first, among the index's), each a card with This Browser's picture (`LocalPreview`), the **This Browser** pill on its
 picture's top-left corner (so the line below has the card's width for when it was opened), when it was opened and This Browser's menu, so it never says "No <kind> yet" while this browser keeps opened ones. The
 open item is left out there, as the index's is.
@@ -612,13 +651,14 @@ open item is left out there, as the index's is.
 inside the window, and up to **45rem** (720 px) tall, kept on the canvas below its button and 24 px short of the
 canvas's bottom edge; the rail and pane fill what the card and footer leave, never shorter than 18rem. The rail is
 **13rem** (208 px) wide, so its names sit with room either side, and the pane keeps a 1rem margin. The pane's preview
-cards (Jump Back In, folders) are compact, so more fit in a row: two across in a narrow pane, three once it is 24rem
+cards (Most Used, Recent, folders) are compact, so more fit in a row: two across in a narrow pane, three once it is 24rem
 wide (a tablet, a wide phone's sheet and the desktop popover, whose pane is about 40rem), four once it is 44rem (the
 full-page Explorer): a card narrower than about 12rem cuts its "This Browser" chip's time short, so the popover keeps
 three. Each card's
-picture 16:9 over a 13 px name and a quiet line; Home's Jump Back In holds up to **eight**, two full rows of four, and
-below four across shows only its first **six** (three rows of two, two rows of three: never a short last row), the
-seventh and eighth hidden with CSS so a card that is not drawn never asks for its preview.
+picture 16:9 over a 13 px name and a quiet line. Home's sections end on a full row: one of four cards shows three at
+three across (two rows of two at two across), and Recent's eight, with nothing most used, shows its first **six**
+below four across (three rows of two, two rows of three), the rest hidden with CSS so a card that is not drawn never
+asks for its preview.
 The Library's pictures stay five across and its shapes six (from 38rem too). On a phone it stays the sheet it was: two cards across
 on a 390 px phone. The canvas stays in sight beside the popover at 1280 px (a third of the width), and the size
 lives once in the package (`EXPLORER_POPOVER_WIDTH`, `EXPLORER_POPOVER_HEIGHT`) for every editor. On every screen size a **scrim** sits behind it: translucent

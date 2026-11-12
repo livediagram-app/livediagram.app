@@ -343,7 +343,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           type: 'boolean',
           description:
             'Whether making the Space counts as a use of it for the caller, so it joins their ' +
-            'Jump back in at once. Default true; send false when making many Spaces in one go ' +
+            'Most Used and Recent at once. Default true; send false when making many Spaces in one go ' +
             '(the editor does for an import of more than one), so they wait until opened. Not a ' +
             'boolean: 400 invalid markUsed.',
         },
@@ -582,40 +582,32 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'Add a comment to an element on a tab; an API token is recorded on it for the audit trail.',
+      'Gone: livehuddle has no comments (not-in-livehuddle.md), so this answers 410 comments_gone; the threads stay readable.',
     auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: { elementId: { type: 'string' }, text: { type: 'string' } },
-      required: ['elementId', 'text'],
-    },
-    statuses: [201, 400, 401, 403, 404, 409, 410, 413],
+    deprecated: true,
+    statuses: [410],
   },
   {
     method: 'DELETE',
     path: '/documents/{id}/tabs/{tabId}/comments/{commentId}',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Delete a comment you wrote.',
+    summary:
+      'Gone: livehuddle has no comments (not-in-livehuddle.md), so this answers 410 comments_gone; the threads stay readable.',
     auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [204, 401, 403, 404, 409, 410, 413],
+    deprecated: true,
+    statuses: [410],
   },
   {
     method: 'POST',
     path: '/documents/{id}/tabs/{tabId}/comments/{commentId}/reply',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Reply on the thread that holds a comment; it reopens a resolved thread.',
+    summary:
+      'Gone: livehuddle has no comments (not-in-livehuddle.md), so this answers 410 comments_gone; the threads stay readable.',
     auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: { text: { type: 'string' } },
-      required: ['text'],
-    },
-    statuses: [201, 400, 401, 403, 404, 409, 410, 413],
+    deprecated: true,
+    statuses: [410],
   },
   {
     method: 'POST',
@@ -623,20 +615,21 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'Resolve the thread that holds a comment; resolving a resolved thread changes nothing.',
+      'Gone: livehuddle has no comments (not-in-livehuddle.md), so this answers 410 comments_gone; the threads stay readable.',
     auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [204, 401, 403, 404, 405, 409, 410, 413],
+    deprecated: true,
+    statuses: [410],
   },
   {
     method: 'POST',
     path: '/documents/{id}/tabs/{tabId}/comments/{commentId}/reopen',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Reopen the thread that holds a comment; reopening an open thread changes nothing.',
+    summary:
+      'Gone: livehuddle has no comments (not-in-livehuddle.md), so this answers 410 comments_gone; the threads stay readable.',
     auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [204, 401, 403, 404, 405, 409, 410, 413],
+    deprecated: true,
+    statuses: [410],
   },
   {
     method: 'POST',
@@ -1348,8 +1341,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/teams/{id}/members',
     segment: 'teams',
     tag: 'Teams',
-    summary:
-      "A team's joined and invited people (joined member), for the assignee picker and @-mentions. Not for API tokens.",
+    summary: "A team's joined and invited people (joined member). Not for API tokens.",
     auth: 'clerk',
     responseSchema: listOf('members', 'TeamMember'),
     statuses: [200, 401, 404],
@@ -1360,14 +1352,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      'Whether a joined teammate can open a Space the caller can access (docs/specs/012-collaboration/assigned-actions.md): owner, team-library member, or prior share-link visitor.',
+      'Gone: livehuddle has no assigned actions or mentions (not-in-livehuddle.md), so this answers 410 gone (404 outside the team).',
     auth: 'clerk',
-    responseSchema: {
-      type: 'object',
-      properties: { canAccess: { type: 'boolean' } },
-      required: ['canAccess'],
-    },
-    statuses: [200, 400, 401, 403, 404],
+    deprecated: true,
+    statuses: [410, 401, 404],
   },
   {
     method: 'POST',
@@ -1375,19 +1363,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      'Email a joined teammate that an action on an element in a Space was assigned to them (docs/specs/012-collaboration/assigned-actions.md). Best-effort; the assignee may have opted out.',
+      'Gone: livehuddle has no assigned actions or mentions (not-in-livehuddle.md), so this answers 410 gone (404 outside the team).',
     auth: 'clerk',
-    requestSchema: {
-      type: 'object',
-      properties: {
-        assigneeUserId: { type: 'string' },
-        documentId: { type: 'string' },
-        actionName: { type: 'string' },
-        description: { type: 'string' },
-      },
-      required: ['assigneeUserId', 'documentId', 'actionName'],
-    },
-    statuses: [202, 400, 401, 403, 404],
+    deprecated: true,
+    statuses: [410, 401, 404],
   },
   {
     method: 'POST',
@@ -1395,24 +1374,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      "Email the teammates a comment just @-mentioned (docs/specs/012-collaboration/comment-mentions.md). The Space must be in this team's library; each mention must be a member of the team. Best-effort; a recipient may have opted out.",
+      'Gone: livehuddle has no assigned actions or mentions (not-in-livehuddle.md), so this answers 410 gone (404 outside the team).',
     auth: 'clerk',
-    requestSchema: {
-      type: 'object',
-      properties: {
-        documentId: { type: 'string' },
-        commentText: { type: 'string' },
-        mentions: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: { userId: { type: 'string' }, memberId: { type: 'string' } },
-          },
-        },
-      },
-      required: ['documentId', 'commentText', 'mentions'],
-    },
-    statuses: [202, 400, 401, 403, 404],
+    deprecated: true,
+    statuses: [410, 401, 404],
   },
   {
     method: 'GET',

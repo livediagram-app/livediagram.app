@@ -125,11 +125,8 @@ const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
 
 /** The wrapper's role (docs/specs/004-interface-design/canvas-accessibility.md "Names on elements"): a picture
  *  (`img`, one concise name) for an element that is only drawn, and a named `group` for one whose face holds
- *  controls, since an img's children are presentational and a screen reader could not reach the controls.
- *  `hasIndicators`: the element shows indicator buttons (its link, note, action or comments, a mind root's
- *  commands, docs/specs/008-canvas/element-indicators.md), which are controls on its face too. */
-export function elementRole(el: Element, hasIndicators = false): 'img' | 'group' {
-  if (hasIndicators) return 'group';
+ *  controls, since an img's children are presentational and a screen reader could not reach the controls. */
+export function elementRole(el: Element): 'img' | 'group' {
   // A retired element's placeholder holds an Editor's Delete button (docs/specs/002-project-scope/not-in-livehuddle.md
   // "Retired elements"), a control on its face.
   if (isRetiredElement(el)) return 'group';

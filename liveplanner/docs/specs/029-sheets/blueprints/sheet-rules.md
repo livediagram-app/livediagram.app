@@ -133,7 +133,7 @@ ranges)` (the Space and press write; `null` when no checkbox cell is selected).
 - `apps/editor/components/sheets/rules/sheet-rule-draw.tsx`: `ruleCellDraw` (a cell's chip, arrow, checkbox box and
   invalid triangle, as nodes for `SheetCells`, which asks `validationRuleAt` per visible cell only when
   `layout.rules` is set), `chipBox`, `checkboxBox`, `ruleTargetAt` and `ruleHitAt` (what a press hits, for
-  `useSheetPointer`).
+  `useSheetPointer`, through `sheet-pointer-hits.ts`).
 - `apps/editor/components/sheets/rules/SheetRuleLayer.tsx`: over the cells, a Plain Text dropdown's arrow on the
   active cell, the open option list, the active cell's anchor for panels opened from a menu, and the panels (lazy).
 - `apps/editor/components/sheets/rules/SheetDropdownList.tsx`: the option list popover (AnchoredPopover,
@@ -181,7 +181,7 @@ rangeValues }` to `validateWrite` (checked unless an undo, `unchecked`, or a qui
   `buildSheetChange`'s `set` runs `writeForRules` and refuses a value a Reject rule does not allow before sending
   (`value_invalid`, naming the cell). `read_sheet` adds `validation` and `conditionalFormats`, and `invalid` (what
   the rule allows) on a cell whose value its rule does not allow. The MCP schema
-  (`packages/agent-verbs/src/mcp/sheet-schema.ts`) describes them.
+  (`packages/agent-verbs/src/mcp/sheet-change-schema.ts`, `sheet-schema.ts` for the tool shapes) describes them.
 
 ## Errors and edge cases
 

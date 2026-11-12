@@ -44,8 +44,9 @@ const likeEscaped = (text: string) => text.replace(/[\\%_]/g, (c) => `\\${c}`);
 
 // Whether the plan serves `imageId`: the grant first (a key lookup), then a card holding it. A text prefilter
 // (LIKE on the id as its JSON string, quoted and escaped as a card's fields store it) skips every card whose fields
-// never mention it before the exact check (a field whose value is the id itself, or an Attachments entry's id, read
-// from the JSON), and the first
+// never mention it before the exact check (a field whose value is the id itself, a list holding it, as a Several
+// Images field's, or an Attachments entry's id, read from the JSON; `json_each` reads only an array's value, through
+// the CASE, so a text value is never parsed as JSON), and the first
 // match ends the scan. `onlyCards` confines the match to those cards (a tab-scoped reader's: the cards its tab
 // shows, docs/specs/026-plan/items.md "Who sees the bytes"); null leaves every card of the plan in. The ids go in as
 // one JSON parameter, so a tab of many Plan cards never meets a bound-parameter cap.
@@ -74,12 +75,16 @@ export function planServesImage(
         `SELECT 1 FROM items, json_each(items.fields) AS f
           WHERE items.plan_id = ? ${scoped} AND items.fields LIKE ? ESCAPE '\\'
             AND ((f.type = 'text' AND f.value = ?)
-              OR (f.key = 'attachments' AND f.type = 'array' AND EXISTS (
-                    SELECT 1 FROM json_each(f.value) AS a WHERE json_extract(a.value, '$.id') = ?)))
+              OR (f.type = 'array' AND EXISTS (
+                    SELECT 1 FROM json_each(CASE WHEN f.type = 'array' THEN f.value ELSE '[]' END) AS a
+                     WHERE (a.type = 'text' AND a.value = ?)
+                        OR (f.key = 'attachments'
+                            AND CASE WHEN a.type = 'object' THEN json_extract(a.value, '$.id') END = ?))))
           LIMIT 1`,
         planId,
         ...bindings,
         like,
+        imageId,
         imageId,
         imageId,
       )

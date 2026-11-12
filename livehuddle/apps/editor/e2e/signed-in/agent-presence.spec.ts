@@ -6,8 +6,8 @@ import { freshUserId, installSession } from './session';
 // Agent presence end to end (docs/specs/024-agents/agent-presence.md): Webber has his own unshared document open
 // while his agent works on it with an API token. The agent shows itself with a status line and a focus, as an
 // avatar of its own, "Webber Takken's Agent", beside his; a ring marks what it is looking at, a short ttl takes it
-// away, its reads show it on the last tab it read, and the comments it writes through the REST thread verbs land
-// live.
+// away, and its reads show it on the last tab it read. Comments left livehuddle (docs/specs/002-project-scope/
+// not-in-livehuddle.md "Comments, actions, links and notes"): a comment the agent writes answers 410 and nothing lands.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1440, height: 860 } });
 
@@ -27,7 +27,7 @@ function comments(page: Page, s: Setup, path: string, data?: unknown) {
   });
 }
 
-test('an agent shows itself beside its owner, expires on its ttl, follows its reads, and comments live', async ({
+test('an agent shows itself beside its owner, expires on its ttl, follows its reads, and writes no comment', async ({
   page,
   baseURL,
   pageErrors,
@@ -106,19 +106,12 @@ test('an agent shows itself beside its owner, expires on its ttl, follows its re
   await page.screenshot({ path: test.info().outputPath('agent-presence-read-board.png') });
   await page.mouse.move(700, 600);
 
-  // Comments through the REST verbs land live: the add, a reply, then the resolve takes the badge away.
+  // A comment through the REST verbs is refused (410), and no comment badge appears.
   const added = await comments(page, s, '', {
     elementId: 'api',
     text: 'Should this be idempotent?',
   });
-  expect(added.status()).toBe(201);
-  const { comment } = (await added.json()) as { comment: { id: string } };
-  await expect(page.getByRole('button', { name: 'Open 1 comment' })).toBeVisible();
-  expect(
-    (await comments(page, s, `/${comment.id}/reply`, { text: 'Yes, keyed by order id.' })).status(),
-  ).toBe(201);
-  await expect(page.getByRole('button', { name: 'Open 2 comments' })).toBeVisible();
-  expect((await comments(page, s, `/${comment.id}/resolve`)).status()).toBe(204);
+  expect(added.status()).toBe(410);
   await expect(page.getByRole('button', { name: /^Open \d+ comments?$/ })).toHaveCount(0);
   expect(pageErrors).toEqual([]);
 });

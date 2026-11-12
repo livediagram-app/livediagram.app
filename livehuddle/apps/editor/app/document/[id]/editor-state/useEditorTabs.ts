@@ -27,7 +27,7 @@ import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
 import type { EditorRoomSlice } from './useEditorRoom';
-import type { EditorCommentsSlice } from './useEditorComments';
+import type { EditorActiveTabSlice } from './useEditorActiveTab';
 import type { EditorModesSlice } from './useEditorModes';
 import type { EditorViewportSlice } from './useEditorViewport';
 import type { EditorFollowingSlice } from './useEditorFollowing';
@@ -43,7 +43,7 @@ export function useEditorTabs({
   fromCollaboration,
   fromPersistence,
   fromRoom,
-  fromComments,
+  fromActiveTab,
   fromModes,
   fromViewport,
   fromFollowing,
@@ -55,7 +55,7 @@ export function useEditorTabs({
   fromCollaboration: EditorCollaborationSlice;
   fromPersistence: EditorPersistenceSlice;
   fromRoom: EditorRoomSlice;
-  fromComments: EditorCommentsSlice;
+  fromActiveTab: EditorActiveTabSlice;
   fromModes: EditorModesSlice;
   fromViewport: EditorViewportSlice;
   fromFollowing: EditorFollowingSlice;
@@ -85,7 +85,7 @@ export function useEditorTabs({
   const { documentList, documentName, refreshDocumentList, setDocumentName, setImportError } =
     fromPersistence;
   const { loadAllTabs } = fromRoom;
-  const { activeTab } = fromComments;
+  const { activeTab } = fromActiveTab;
   const { openWalking } = fromModes;
   const { getViewportCenter } = fromViewport;
   const { requestFit } = fromFollowing;

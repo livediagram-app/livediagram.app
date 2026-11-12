@@ -1,6 +1,6 @@
 # Explorer Home
 
-`/explorer` and `/explorer/home` render the shared Explorer's Home view: the hero, New (the four documents made most recently in this app, newest first, mine and my teams', made by AI ones included, wearing Made by AI; hidden while there are none: [One Explorer "New, on Home"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#new-on-home)), Jump Back In (Most Used: up to eight items you opened in the last 14 days, the most opened first, then Recent: up to eight of your most recently opened, from every app, four across in two rows on a desktop and one strip of up to eight on a phone, each with a line such as "Opened 12 times" or "Opened 2 hours ago") and Shared With You Recently, read from the index.
+`/explorer` and `/explorer/home` render the shared Explorer's Home view: the hero, New (the four documents made most recently in this app, newest first, mine and my teams', made by AI ones included, wearing Made by AI; hidden while there are none: [One Explorer "New, on Home"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#new-on-home)), Most Used and Recent (Most Used: up to eight items you opened in the last 14 days, the most opened first, then Recent: up to eight of your most recently opened, from every app, four across in two rows on a desktop and one strip of up to eight on a phone, each with a line such as "Opened 12 times" or "Opened 2 hours ago") and Shared With You Recently, read from the index.
 
 ## The hero
 
@@ -63,6 +63,6 @@ is its History.
 Telemetry, through the Explorer's `onHome` prop: `Home·Loaded·Retry` (a failed read of Home tried again). The What
 Happened events (`Home·Selected·WhatHappened`, `Home·Selected·SeeTimeline`, `Home·Opened·Group`) are no longer sent.
 
-livedocuments says when a document is opened: the editor records the open with the index (`POST /items/:id/open`, debounced there to one write a minute) when it loads the document. The index keeps the time for Recent and counts the open on that day for Most Used (opens over the last 14 days), and Jump Back In reads both in one request.
+livedocuments says when a document is opened: the editor records the open with the index (`POST /items/:id/open`, debounced there to one write a minute) when it loads the document. The index keeps the time for Recent and counts the open on that day for Most Used (opens over the last 14 days), and Most Used and Recent reads both in one request.
 
 The document is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Items". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

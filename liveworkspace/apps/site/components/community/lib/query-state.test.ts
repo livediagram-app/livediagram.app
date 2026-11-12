@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { tagHref } from './links';
 import {
   carrySearch,
   EMPTY_FILTERS,
@@ -32,6 +33,13 @@ describe('readQueryState', () => {
     expect(read('?tag=Event_Storming').q).toBe('#event-storming');
     // Already in the search: not added twice.
     expect(read('?q=%23aws&tag=aws').q).toBe('#aws');
+  });
+
+  it('keeps an accented or non-Latin tag from a link', () => {
+    expect(read(`?tag=${encodeURIComponent('Café')}`).q).toBe('#café');
+    expect(read(`?q=${encodeURIComponent('#日本語')}`).q).toBe('#日本語');
+    // A tag's link (`tagHref`) reads back as that tag.
+    expect(read(tagHref('हिन्दी').split('?')[1]!).q).toBe('#हिन्दी');
   });
 
   it('drops an unknown category but keeps the rest', () => {

@@ -24,6 +24,7 @@ export * from './board-card-types';
 export * from './board-status-picks';
 export * from './card-links';
 export * from './several-values';
+export * from './image-values';
 export * from './legacy-parent';
 export * from './board-widgets';
 export * from './board-widget-names';

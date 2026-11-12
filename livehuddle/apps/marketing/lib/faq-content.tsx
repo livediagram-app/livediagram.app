@@ -21,7 +21,7 @@ import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 const ICON = 18;
 // Written out rather than read from @livehuddle/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 26;
+export const TEMPLATE_COUNT = 27;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 8;
 
@@ -197,10 +197,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: 'Every change shows up for everyone live. Edits to different elements merge cleanly. If two people change the same element at the same moment, the most recent change is the one that sticks.',
       },
       {
-        q: 'Can I leave comments and assign follow-ups?',
-        a: 'Yes. Comment on any element and reply in threads, then resolve them when they are done. You can also attach an action to an element and assign it to a teammate, so the follow-ups a meeting produces stay with the space instead of getting lost.',
-      },
-      {
         q: 'Can I set up a team with shared spaces?',
         a: 'Yes, once you sign in. Create a team from the Explorer, invite people by email, and everyone gets a shared library of spaces. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work.',
       },
@@ -234,14 +230,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'How do I keep up with what changed?',
         a: (
           <>
-            Your Inbox gathers the actions and comment threads waiting on you across every space,
-            and Home shows what other people did while you were away. Once you sign in, emails can
-            tell you too, and you choose which in Settings. See{' '}
-            <a href="/help/explorer/activity/">the Inbox</a>.
+            Home shows the spaces you use most and what was shared with you while you were away.
+            Once you sign in, emails can tell you too, and you choose which in Settings. See{' '}
+            <a href="/help/explorer/home/">Home</a>.
           </>
         ),
         aText:
-          'Your Inbox gathers the actions and comment threads waiting on you across every space, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
+          'Home shows the spaces you use most and what was shared with you while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See Home.',
       },
       {
         q: 'Is it good for stand-ups, all-hands and a virtual office?',
@@ -271,7 +266,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'How do share links work?',
-        a: 'From a space you own, create a participant link (talk, add stickies, write and comment, without reshaping the board; the default) or an editor link (full edit access). Anyone with the link can join. Give a link an expiry of a week, a month or six months so it stops working on its own, or revoke it at any time and it stops working immediately.',
+        a: 'From a space you own, create a participant link (walk, talk and react, without reshaping the board; the default) or an editor link (full edit access). Anyone with the link can join. Give a link an expiry of a week, a month or six months so it stops working on its own, or revoke it at any time and it stops working immediately.',
       },
       {
         q: 'Can I password-protect a space?',

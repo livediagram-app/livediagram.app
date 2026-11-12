@@ -36,7 +36,6 @@ import { documentHasTab } from '../db/tabs';
 import { callsMode } from '../calls/calls-mode';
 import { CallsModeWatch } from '../calls/calls-mode-watch';
 import { RoomCalls, type HearingAnswer, type HearingAsk } from '../calls/room-calls';
-import type { ActionNotice, MentionNotice } from '../document-client';
 import {
   ItemDb,
   type ExportCommentsResult,
@@ -543,14 +542,6 @@ export class DocumentRoom extends DurableObject<Env> {
 
   joined(documentId: string, personId: string): Promise<void> {
     return rpc.joined(this, documentId, personId);
-  }
-
-  notifyAction(documentId: string, input: ActionNotice): Promise<boolean> {
-    return rpc.notifyAction(this, documentId, input);
-  }
-
-  notifyMention(documentId: string, input: MentionNotice): Promise<boolean> {
-    return rpc.notifyMention(this, documentId, input);
   }
 
   anonymise(documentId: string, personId: string): Promise<number> {

@@ -209,7 +209,7 @@ export const createDocumentShape = {
     .boolean()
     .optional()
     .describe(
-      "Whether this document joins the user's Jump back in (their most used and recent documents) " +
+      "Whether this document joins the user's Most Used and Recent on Home (their most used and recent documents) " +
         'at once. Default true. Pass false when making many documents in one go, so a batch ' +
         "never pushes the user's own work out of reach.",
     ),

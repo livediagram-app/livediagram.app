@@ -240,9 +240,24 @@ describe('the Settings tab', () => {
 // emitter with no chart fails here; give it one (usually a member of an
 // existing stack) or, if it is genuinely not worth a chart, list it below with
 // the reason.
-// (Empty today: the tours' declines, once read by the scan as UI·Ended·TourDeclined, now name their
-// tokens outright.)
-const NO_CHART: Record<string, string> = {};
+// The shared Explorer's Inbox events: the scan finds them in packages/explorer, but livehuddle's Explorer has no
+// Inbox (appHasInbox, livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and
+// notes"), so none is ever sent in livehuddle's name, and retired-events.ts drops a stored one.
+const INBOX_EVENTS = [
+  'Activity·Opened·null',
+  'Activity·Loaded·Retry',
+  'Activity·Added·Reply',
+  ...['All', 'MyActions', 'AssignedByMe', 'Comments', 'FormResponses'].map(
+    (t) => `Activity·Changed·${t}`,
+  ),
+  ...['Action', 'Card', 'Thread', 'CardThread', 'FormResponses'].map(
+    (t) => `Activity·Selected·${t}`,
+  ),
+  ...['Action', 'Card', 'Thread'].map((t) => `Activity·Resolved·${t}`),
+];
+const NO_CHART: Record<string, string> = Object.fromEntries(
+  INBOX_EVENTS.map((key) => [key, 'the Inbox, which livehuddle does not have']),
+);
 
 describe('every event has a chart', () => {
   const charts = ALL.flatMap(groupMetrics);

@@ -1,5 +1,13 @@
 # Inbox
 
+> **Gone from livehuddle** (owner, 2026-11-11, Work Tracker #714): livehuddle has no Inbox. The shared Explorer shows
+> no Inbox row, pane, hero pill or rail count on livehuddle's address or in its editor panel
+> (`appHasInbox('livehuddle')` is false, `packages/explorer/src/inbox-apps.ts`), and a remembered or linked Inbox opens
+> Home. livehuddle's room pushes no threads or actions to the index any more and sends no Inbox row, mention or action
+> email ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)). Rows it pushed
+> before stay in the index, unread here. The deep link's `open=` is still parsed, and only selects the element. The
+> rest of this page records what livehuddle had.
+
 The Inbox is liveworkspace's: one view in the shared Explorer (`/explorer/inbox`), listing open actions assigned to
 you or by you and unresolved comment threads you are in, across every liveworkspace app, each row opening its item in
 its own app at the tab and element.
@@ -11,8 +19,8 @@ canvas. The editor's deep link (`#t=<tab>&el=<element>&open=action|comments`) is
 the element and opens its popover.
 
 Canvases kept only in this browser never reach the index; the editor reads their actions and threads from the
-offline store (`apps/editor/lib/offline/offline-activity.ts`) and hands them to the Explorer's `inbox` prop
-(`apps/editor/lib/explorer-inbox-host.tsx`), which lists them among the index's rows with the This Browser pill. The Explorer page on livehuddle's own address (liveworkspace's build) can't read the offline store, so the editor also keeps a snapshot of these rows in localStorage under `liveworkspace:this-browser-inbox:livehuddle` (`apps/editor/lib/offline/inbox-snapshot.ts`, over `@liveworkspace/explorer/this-browser`'s `inboxSnapshotKeeper`): whose rows they are (the account id, and this browser's guest id), at most 100 actions and 100 threads, newest first, long text cut short. It is worked out again about 1.5 s after the offline store last writes (a card assigned, an action added), once a page load, and as the panel's Inbox reads; it is dropped when this browser holds no canvases. The page lists it only to the person it names, so another account in the same browser never sees it, and hears it change. liveworkspace.app, on its own origin, can't read it, as it can't read the This Browser list.
+offline store (apps/editor/lib/offline/offline-activity.ts (deleted, Work Item 714)) and hands them to the Explorer's `inbox` prop
+(apps/editor/lib/explorer-inbox-host.tsx (deleted, Work Item 714)), which lists them among the index's rows with the This Browser pill. The Explorer page on livehuddle's own address (liveworkspace's build) can't read the offline store, so the editor also keeps a snapshot of these rows in localStorage under `liveworkspace:this-browser-inbox:livehuddle` (apps/editor/lib/offline/inbox-snapshot.ts (deleted, Work Item 714), over `@liveworkspace/explorer/this-browser`'s `inboxSnapshotKeeper`): whose rows they are (the account id, and this browser's guest id), at most 100 actions and 100 threads, newest first, long text cut short. It is worked out again about 1.5 s after the offline store last writes (a card assigned, an action added), once a page load, and as the panel's Inbox reads; it is dropped when this browser holds no canvases. The page lists it only to the person it names, so another account in the same browser never sees it, and hears it change. liveworkspace.app, on its own origin, can't read it, as it can't read the This Browser list.
 
 The document is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md); the calls and types are in
 [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Inbox" and "What an item

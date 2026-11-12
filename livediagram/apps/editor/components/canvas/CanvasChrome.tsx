@@ -1,9 +1,5 @@
 import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
-import type { MarqueeState } from '@liveworkspace/workbench/components/canvas/MarqueeRect';
-import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
-import { ViewZoomControls } from '@/components/canvas/view-readers';
-import { ES_LANES, votesSpentBy } from '@livediagram/document';
-import { participantKey } from '@/lib/identity';
+import { ES_LANES } from '@livediagram/document';
 import { useVoteReviewOpener } from '@/hooks/canvas/useVoteReviewOpener';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
@@ -19,177 +15,41 @@ const IdentityPrompt = dynamic(
   { ssr: false },
 );
 
-import { OffscreenContentHint } from '@liveworkspace/workbench/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
-import {
-  SessionClusterStrip,
-  sessionStripTools,
-  stripCanStart,
-} from '@/components/canvas/SessionClusterStrip';
-import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
-import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
-import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
-import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
-import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import {
-  Fragment,
-  useCallback,
-  useState,
-  type Dispatch,
-  type RefObject,
-  type SetStateAction,
-} from 'react';
-import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
+import { sessionStripTools } from '@/components/canvas/SessionClusterStrip';
+import type { CanvasChromeProps } from './CanvasChrome.types';
+import { CanvasCornerCluster } from './CanvasCornerCluster';
+import { CanvasDockedLayer } from './CanvasDockedLayer';
+import { useCallback, useState } from 'react';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
-import { PanelSnapSlot } from '@liveworkspace/workbench/components/canvas/PanelSnapSlot';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
-import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
-import type { StampGhost } from '@/components/canvas/useStampGhost';
-import { atLeastInset } from '@livediagram/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
-import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
-import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
 import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
 import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
-import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
-import { kindCounts } from '@liveworkspace/workbench/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
 import { loadWhiteboardDock } from '@/lib/editor-deferred-code';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 
 // Draw mode's dock shows only on a Draw tab, so its code loads on demand (lib/editor-deferred-code.ts
 // fetches it as the editor mounts).
 const WhiteboardDock = dynamic(loadWhiteboardDock, { ssr: false });
 
-// Values the Canvas computes (selection projection + layout/dock/zoom
-// state) and threads into the chrome alongside its own props.
-type ChromeExtras = {
-  // The canvas <main>'s measured size (the Map's current-view window reads it; see Minimap.tsx).
-  mainSize: { width: number; height: number };
-  // True when every element has scrolled out of view: show the nudge above
-  // the Fit button (useOffscreenContent in Canvas).
-  offscreenContent: boolean;
-  // The sweep's rect, read only by the marquee rectangle (docs/specs/008-canvas/canvas-performance.md).
-  marquee: ReadableStore<MarqueeState | null>;
-  drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
-  // Snapped pointer position while a draw is armed but not yet started
-  // (pre-press start-snap preview); null when not armed / not snapped.
-  drawHover: { x: number; y: number } | null;
-  // The armed fixed-size note's ghost (docs/specs/021-event-storming/event-storming.md Phase 4).
-  stamp: StampGhost | null;
-  penPoints: { x: number; y: number }[] | null;
-  // Polygon tool in-flight state (docs/specs/008-canvas/polygon-tool.md): the placed vertices and
-  // the live rubber-band cursor position, both canvas coords.
-  polygonVertices: { x: number; y: number }[];
-  polygonCursor: { x: number; y: number } | null;
-  wrapperRef: RefObject<HTMLDivElement | null>;
-  activeDockPanel: DockPanel | null;
-  setActiveDockPanel: Dispatch<SetStateAction<DockPanel | null>>;
-  activeDockAnchor: DockAnchor | null;
-  setActiveDockAnchor: Dispatch<SetStateAction<DockAnchor | null>>;
-  handleDockButtonClick: (id: DockPanel, button: HTMLElement, above?: boolean) => void;
-  handleZoomIn: () => void;
-  handleZoomOut: () => void;
-  handleSetZoom: (zoom: number) => void;
-  // Begin an isometric orbit drag from the given screen coordinates
-  // (wired to `isoCamera.startOrbit`). Drives the dock orbit button,
-  // which only renders while the isometric tool is active.
-  onIsoOrbit: (clientX: number, clientY: number) => void;
-  // Reset the isometric camera to its default angle (wired to
-  // `isoCamera.reset`) — fired when the dock orbit button is clicked.
-  onIsoReset: () => void;
-  // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen, owned by useLaserConfig in Canvas (it
-  // persists per browser) and edited down here.
-  laserConfig?: import('@/lib/laser-config').LaserConfig;
-  onChangeLaserField?: <K extends keyof import('@/lib/laser-config').LaserConfig>(
-    field: K,
-    value: import('@/lib/laser-config').LaserConfig[K],
-  ) => void;
-  laserPanelPosition?: { x: number; y: number } | null;
-  onMoveLaserPanel?: (x: number, y: number) => void;
-  onResetLaserPanel?: () => void;
-  // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the light's look, owned by useSpotlightConfig
-  // in Canvas, plus the live radius the canvas clicks also change.
-  spotlightConfig?: import('@liveworkspace/workbench/lib/spotlight-config').SpotlightConfig;
-  onChangeSpotlightField?: <
-    K extends keyof import('@liveworkspace/workbench/lib/spotlight-config').SpotlightConfig,
-  >(
-    field: K,
-    value: import('@liveworkspace/workbench/lib/spotlight-config').SpotlightConfig[K],
-  ) => void;
-  spotlightRadius?: number;
-  onSetSpotlightRadius?: (radius: number) => void;
-  spotlightPanelPosition?: { x: number; y: number } | null;
-  onMoveSpotlightPanel?: (x: number, y: number) => void;
-  onResetSpotlightPanel?: () => void;
-  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, owned by useEraserConfig in
-  // Canvas (the erase gesture reads it too).
-  eraserConfig?: import('@/lib/eraser-config').EraserConfig;
-  onChangeEraserField?: <K extends keyof import('@/lib/eraser-config').EraserConfig>(
-    field: K,
-    value: import('@/lib/eraser-config').EraserConfig[K],
-  ) => void;
-  eraserPanelPosition?: { x: number; y: number } | null;
-  onMoveEraserPanel?: (x: number, y: number) => void;
-  onResetEraserPanel?: () => void;
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the sixth tool panel.
-  slideDeckPanelPosition?: { x: number; y: number } | null;
-  onMoveSlideDeckPanel?: (x: number, y: number) => void;
-  onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/document/[id]/useSlideDeck').SlideDeckState;
-  // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
-  // (the paint lives there), plus a description of the loaded element.
-  formatConfig?: import('@liveworkspace/workbench/lib/format-config').FormatConfig;
-  onToggleFormatGroup?: (
-    group: import('@liveworkspace/workbench/lib/format-config').FormatGroup,
-  ) => void;
-  onSetFormatMode?: (mode: import('@liveworkspace/workbench/lib/format-config').FormatMode) => void;
-  formatBrushSource?: import('@/components/panels/FormatPanel').FormatBrushSource | null;
-  formatPanelPosition?: { x: number; y: number } | null;
-  onMoveFormatPanel?: (x: number, y: number) => void;
-  onResetFormatPanel?: () => void;
-};
-
-export type CanvasChromeProps = CanvasProps & ChromeExtras;
-
-// Per-corner stack container classes (docs/specs/007-editor/panel-docking.md). Each is an absolute,
-// pointer-inert flex column pinned to one corner of the dock layer
-// (inset 16px = the `*-4` resting inset). Top corners stack downward,
-// bottom corners upward (flex-col-reverse) so the first panel always
-// sits flush to the corner and the rest flow away from it.
-// When the Toolbar strip reaches the top corners (always on a phone, docs/specs/007-editor/toolbar-layout.md
-// "On a phone"; on a desktop window too narrow for a centred strip to clear a
-// docked panel, stripCrowdsTopCorners) the TOP corner stacks start below it
-// rather than at the 16px inset, or a panel docked there (the Collaborate
-// banner) renders underneath the strip where it can't be reached
-// (toolbarTopClearancePx, lib/canvas-chrome.ts).
-
-const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
-  'top-left': 'left-4 top-4 flex-col items-start',
-  'top-right': 'right-4 top-4 flex-col items-end',
-  'bottom-left': 'left-4 bottom-4 flex-col-reverse items-start',
-  // bottom-right omits `bottom-4`; its bottom is set inline to clear the
-  // fixed zoom controls (cornerBottomInset), so panels docked there sit
-  // above the zoom bar instead of overlapping it.
-  'bottom-right': 'right-4 flex-col-reverse items-end',
-};
+export type { CanvasChromeProps } from './CanvasChrome.types';
 
 // The chrome layer of the canvas: empty-state prompt, template picker,
 // multi-select toolbar, mode banners, the menu button and Explorer, the
-// corner panels, the palette strip, and the zoom / undo cluster. Extracted from Canvas.tsx verbatim; consumes
-// Canvas's props plus the computed ChromeExtras.
+// corner panels (CanvasDockedLayer), the palette strip, and the zoom / undo
+// cluster (CanvasCornerCluster). Extracted from Canvas.tsx verbatim; consumes
+// Canvas's props plus the computed ChromeExtras (CanvasChrome.types.ts).
 
 export function CanvasChrome(props: CanvasChromeProps) {
   const {
     activeDockPanel,
-    canRedo,
-    canUndo,
     canvasTool,
     documentName,
     drawDrag,
@@ -197,22 +57,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
     stamp,
     elements,
     handleDockButtonClick,
-    handleSetZoom,
-    handleZoomIn,
-    handleZoomOut,
     marquee,
-    commentRows,
-    actionRows,
-    onOpenCanvasTheme,
-    canvasThemeOpen,
     onConfirmIdentity,
-    offscreenContent,
-    onFitToScreen,
-    onRedo,
-    onIsoOrbit,
-    onIsoReset,
     onCancelIdentity,
-    onUndo,
     pendingDraw,
     penPoints,
     polygonVertices,
@@ -379,53 +226,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
   );
   const stripSpansTop = stripShown && (isMobile || topBarCrowds);
   const dockSpansTop = dockOnTop && topBarCrowds;
-  // Bucketing keys off the persisted placement ONLY (not which panel is
-  // mid-drag): a dragged panel must stay in the same DOM parent for the
-  // whole gesture — reparenting it would remount the component and drop
-  // the in-flight drag. While lifted it just renders `position: absolute`
-  // in place (MovablePanel), and its corner siblings reflow into the gap.
-  // The persisted corner/free placement only changes on pointer-up.
-  const freePanelIds = PANEL_IDS.filter(
-    (id) => panelEls[id] != null && dock.placementOf(id).mode === 'free',
-  );
-  const snapCorner = dock.drag?.candidate ?? null;
-  const snapHeight = dock.drag?.height ?? 0;
-  const dockedLayer = dockingActive ? (
-    <div ref={dockLayerRef} className="pointer-events-none absolute inset-0 z-[var(--z-panel)]">
-      {PANEL_CORNERS.map((corner) => {
-        const children = dock.cornerStacks[corner].filter((id) => panelEls[id] != null);
-        // Show the live landing slot at the end of the candidate corner's
-        // stack (flexbox places it where the panel will actually land).
-        const showSlot = snapCorner === corner;
-        if (children.length === 0 && !showSlot) return null;
-        return (
-          <div
-            key={corner}
-            ref={(el) => {
-              cornerRefs.current[corner] = el;
-            }}
-            style={{
-              ...(corner === 'bottom-right'
-                ? { bottom: cornerBottomInset(corner, cornerScale) }
-                : // The Draw dock is the strip's twin (its height, its scale), so the same clearance.
-                  (stripSpansTop || dockSpansTop) && corner.startsWith('top')
-                  ? { top: toolbarTopClearancePx(toolbarScale) }
-                  : undefined),
-            }}
-            className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
-          >
-            {children.map((id) => (
-              <Fragment key={id}>{panelEls[id]}</Fragment>
-            ))}
-            {showSlot ? <PanelSnapSlot height={snapHeight} /> : null}
-          </div>
-        );
-      })}
-      {freePanelIds.map((id) => (
-        <Fragment key={id}>{panelEls[id]}</Fragment>
-      ))}
-    </div>
-  ) : null;
 
   return (
     <>
@@ -536,11 +336,19 @@ export function CanvasChrome(props: CanvasChromeProps) {
       ) : null}
 
       {/* Corner panels (docs/specs/007-editor/panel-docking.md). Distributed into per-corner stack
-          containers (with a free layer + snap guides) by `dockedLayer`; in zen they render inline.
+          containers (with a free layer + snap guides) by `CanvasDockedLayer`; in zen they render inline.
           Each element carries its own visibility gate, so the welcome-flow / read-only / zen
           suppression is unchanged. */}
       {dockingActive ? (
-        dockedLayer
+        <CanvasDockedLayer
+          dock={dock}
+          dockLayerRef={dockLayerRef}
+          cornerRefs={cornerRefs}
+          panelEls={panelEls}
+          topCleared={stripSpansTop || dockSpansTop}
+          toolbarScale={toolbarScale}
+          cornerScale={cornerScale}
+        />
       ) : (
         <>
           {panelEls.collaborate}
@@ -553,142 +361,15 @@ export function CanvasChrome(props: CanvasChromeProps) {
         </>
       )}
 
-      {/* Bottom-right cluster. Order, left to right: the Undo / Redo
-          strip, the Session strip (Timer, Vote, Poll), the
-          Collaborate button (only while the tab has a thread or an action), the Layers and
-          Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
-          above them (docs/specs/007-editor/editor-app.md). */}
-      <div
-        // Presenting hides this cluster (docs/specs/012-collaboration/presentation-mode.md): zen keeps the zoom controls
-        // as its one way back out, and a deck has its own way out plus no
-        // zoom to offer.
-        data-zoom-cluster=""
-        data-region="controls"
-        // Drawn at the UI scale, still 16px from the corner, or clear of a landscape notch.
-        style={
-          cornerScale === 1
-            ? { right: atLeastInset('16px', 'right') }
-            : {
-                ...uiScaleStyle(cornerScale),
-                right: atLeastInset(`${toSurfacePx(16, cornerScale)}px`, 'right'),
-                bottom: toSurfacePx(16, cornerScale),
-              }
-        }
-        // On a phone the cluster stays one row (docs/specs/012-collaboration/session-tools.md "The Session
-        // strip"): its buttons share the width there is, PHONE_CLUSTER_BUTTON_WIDTH, from 36px up to their
-        // usual 44px (always 44px tall to tap), so Undo, the Session strip, Layers and Theme and Fit fill the
-        // row on a 360px screen and up. It may still wrap, from the right, on a narrower one, so Undo is never
-        // pushed off the screen.
-        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end phone:gap-1.5 ${PHONE_CLUSTER_BUTTON_WIDTH} ${PHONE_TOOLBAR_ITEMS}`}
-      >
-        {welcomeOpen ? null : (
-          <>
-            {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-            {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own changes too
-                (docs/specs/013-workspace/share-roles.md). */}
-            {!zenMode && (!readOnly || !!props.participantPalette) ? (
-              <UndoRedoClusterStrip
-                onUndo={onUndo}
-                onRedo={onRedo}
-                canUndo={canUndo}
-                canRedo={canRedo}
-              />
-            ) : null}
-            {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
-                Layers. Kept in Zen: a running session is the one piece of chrome a facilitator still
-                needs there. Workshop (and an event-storming board) has all three; Diagram and Draw keep
-                their bottom bar to their own tools. */}
-            {props.sessionTools && stripTools ? (
-              <div className="contents">
-                <SessionClusterStrip
-                  timer={props.sessionTools.timer}
-                  voteRunning={!!props.tabVote}
-                  voteDotsLeft={
-                    // A Participant votes too (docs/specs/013-workspace/share-roles.md), so it sees its dots left.
-                    props.tabVote?.active && (!readOnly || props.takePart)
-                      ? Math.max(
-                          0,
-                          props.tabVote.votesPerPerson -
-                            votesSpentBy(props.tabVote, participantKey(selfParticipant)),
-                        )
-                      : null
-                  }
-                  voteReviewing={!!props.voteReview}
-                  voteButtonRef={voteButtonRef}
-                  pollRunning={!!props.pollPanel}
-                  canStart={stripCanStart(!!readOnly)}
-                  offersTimer={stripTools.timer}
-                  offersPoll={stripTools.poll}
-                  open={
-                    activeDockPanel === 'session-timer' ||
-                    activeDockPanel === 'session-vote' ||
-                    activeDockPanel === 'session-poll'
-                      ? activeDockPanel
-                      : null
-                  }
-                  onToggle={(segment, button) => handleDockButtonClick(segment, button, true)}
-                />
-              </div>
-            ) : null}
-            {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before Layers, only while
-                the tab has a comment thread or an action. A view-role visitor
-                gets it too: they read threads and answer them. */}
-            {!zenMode &&
-            panelsOn.collaborate &&
-            (commentRows.length > 0 || actionRows.length > 0) ? (
-              <CollaborateClusterButton
-                openCount={kindCounts('open', commentRows, actionRows).all}
-                popoverOpen={activeDockPanel === 'collaborate'}
-                onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
-              />
-            ) : null}
-            {/* Layers (docs/specs/006-document/layers.md) and the Theme & Canvas brush
-                (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point; read-only sessions
-                pass no handler), one strip in every mode: see LayersThemeStrip. */}
-            {!zenMode ? (
-              <LayersThemeStrip
-                // Tidy Up, first in the strip (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
-                tidyUp={
-                  tidyUpOffered({
-                    actions: props.tidyUp,
-                    editorMode: props.editorMode,
-                    zenMode: !!zenMode,
-                  })
-                    ? {
-                        open: activeDockPanel === 'tidy-up',
-                        onToggle: (button) => handleDockButtonClick('tidy-up', button, true),
-                      }
-                    : undefined
-                }
-                layers={
-                  !readOnly && panelsOn.layers
-                    ? {
-                        open: activeDockPanel === 'layers',
-                        onToggle: (button) => handleDockButtonClick('layers', button, true),
-                      }
-                    : undefined
-                }
-                onOpenTheme={onOpenCanvasTheme && !whiteboard ? onOpenCanvasTheme : undefined}
-                themeOpen={!!canvasThemeOpen}
-              />
-            ) : null}
-            <ViewZoomControls
-              onZoomIn={handleZoomIn}
-              onZoomOut={handleZoomOut}
-              onSetZoom={handleSetZoom}
-              onFitToScreen={onFitToScreen}
-              onIsoOrbit={canvasTool === 'isometric' ? onIsoOrbit : undefined}
-              onIsoReset={canvasTool === 'isometric' ? onIsoReset : undefined}
-              onToggleZen={onToggleZen}
-              zenActive={zenMode}
-              // View-only visitors have no palette (so no canvas-tool
-              // dropdown); the dock keeps the enter button for them.
-              zenEnterHere={readOnly}
-              pinchOnly={isMobile}
-            />
-          </>
-        )}
-      </div>
+      <CanvasCornerCluster
+        props={props}
+        stripTools={stripTools}
+        voteButtonRef={voteButtonRef}
+        panelsOn={panelsOn}
+        whiteboard={whiteboard}
+        isMobile={isMobile}
+        cornerScale={cornerScale}
+      />
     </>
   );
 }

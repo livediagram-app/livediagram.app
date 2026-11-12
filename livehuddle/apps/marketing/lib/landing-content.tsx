@@ -16,8 +16,6 @@ import {
   FollowArt,
   FourSpacesArt,
   FurnitureArt,
-  NoteActionArt,
-  NoteCommentArt,
   NoteUndoArt,
   PortalArt,
   PresenceArt,
@@ -231,14 +229,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Together in one place, live',
     description:
-      'Share a link and your team is in the Space with you: who is where at a glance, notes and comments on the walls, actions handed to teammates, and links for whoever runs it, whoever takes part and whoever watches.',
+      'Share a link and your team is in the Space with you: who is where at a glance, sticky notes on the walls, and links for whoever runs it, whoever takes part and whoever watches.',
     metaDescription:
-      'Share a link and your team is in the Space with you: live cursors, comments, assigned actions, and share links for editors and participants.',
+      'Share a link and your team is in the Space with you: live presence, a call, sticky notes on the walls, and share links for editors and participants.',
     highlights: [
       'Live presence',
-      'Comments on any element',
+      'Follow someone’s view',
       'Editor and participant links',
-      'Assign actions to teammates',
+      'Teams with a shared library',
     ],
     items: [
       {
@@ -264,22 +262,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'See what others are working on',
         description:
           'Click an element and your collaborators see your colour glow on its border, plus your initials in the corner, in real time.',
-      },
-      {
-        art: <NoteCommentArt />,
-        href: '/help/collaboration/comments/',
-        group: 'Work together live',
-        title: 'Comments on any element',
-        description:
-          "Right-click an element, leave a thread, and mention a teammate to let them know. Replies, emoji reactions, resolve, delete. Comments carry the author's name and colour so it's clear who said what.",
-      },
-      {
-        art: <NoteActionArt />,
-        href: '/help/collaboration/assigned-actions/',
-        group: 'Work together live',
-        title: 'Assign actions to teammates',
-        description:
-          'Turn any element into a piece of work: name the action, describe it, and hand it to a teammate from any of your teams, with an optional email nudge. An Actions panel tracks everything still open, with your own assignments on top.',
       },
       {
         art: <FollowArt />,

@@ -29,14 +29,12 @@ import {
   OLD_SITE_GUESTS,
   API_TOKEN_ACTIVITY,
   ARTICLE_VIEWS,
-  ASSIGNED_ACTIONS,
   RECEPTIONIST,
   CALLS_TO_ACTION,
   CANVAS_MODES,
   CLIENT_EXCEPTIONS,
   COMMUNITY_ENGAGEMENT,
   CALLS,
-  DISCUSSION,
   DOCUMENTS_CREATED,
   DOCUMENT_ACTIONS,
   DRY_HELP_SEARCHES,
@@ -63,7 +61,6 @@ import {
   MULTIPLAYER_SESSIONS,
   NEW_VERSION_PROMPT,
   NEW_VISITORS,
-  NOTES,
   OFFLINE_MODE,
   ONBOARDING_TOURS,
   ORGANISATION,
@@ -260,7 +257,7 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
     groups: [
       {
         title: 'Editing tools',
-        metrics: [NOTES, ASSIGNED_ACTIONS, ORGANISATION],
+        metrics: [ORGANISATION],
       },
       {
         title: 'More editing',
@@ -349,11 +346,11 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
   teamwork: {
     key: 'facilitation',
     title: 'Facilitation',
-    intro: 'Comments, teams, knocking and timers, beside the calls and presenting on the Dashboard',
+    intro: 'Teams, knocking and timers, beside the calls and presenting on the Dashboard',
     groups: [
       {
         title: 'Facilitation tools',
-        metrics: [DISCUSSION, TEAM_ACTIVITY, KNOCKING, TIMERS, STOPWATCHES],
+        metrics: [TEAM_ACTIVITY, KNOCKING, TIMERS, STOPWATCHES],
       },
     ],
   },

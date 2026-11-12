@@ -28,8 +28,8 @@ const MARBLE = 'rgb(236 232 226)';
 const WOOD_FLOOR = 'rgb(234 218 192)';
 const CONCRETE = 'rgb(214 211 209)';
 const STEEL = 'rgb(148 163 184)';
-const FIRE = 'rgb(249 115 22)';
-const UMBRELLA = 'rgb(248 113 113)';
+export const FIRE = 'rgb(249 115 22)';
+export const UMBRELLA = 'rgb(248 113 113)';
 
 // A building's floor: its colour, inside an outline open at the entrance in the bottom wall.
 function Floor({ s, fill, door }: { s: Site; fill: string; door?: number }) {
@@ -52,7 +52,7 @@ function Floor({ s, fill, door }: { s: Site; fill: string; door?: number }) {
 }
 
 // A round plaza or junction, centred on (x, y).
-const Round = ({ s, x, y, d }: { s: Site; x: number; y: number; d: number }) => (
+export const Round = ({ s, x, y, d }: { s: Site; x: number; y: number; d: number }) => (
   <circle cx={s.X(x)} cy={s.Y(y)} r={s.L(d / 2)} fill={PATH} />
 );
 

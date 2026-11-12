@@ -28,7 +28,11 @@ packages/plan-art/src/board-widget-info.ts            BOARD_WIDGET_INFO (label, 
 apps/editor/components/plan/plan-tile-art.tsx           BoardWidgetArt (one Glyph per kind)
 packages/plan-art/src/widget-stats.ts                 boardItems, boardPeople, boardTypeCounts, overWipColumns,
                                                       dueCounts (pure)
-apps/editor/components/plan/widgets/BoardWidgetView.tsx one pill per kind (WIDGET_PILL, 28 px)
+apps/editor/components/plan/widgets/BoardWidgetView.tsx one pill per kind (WIDGET_PILL, 28 px), picking the kind
+apps/editor/components/plan/widgets/board-widget-parts.tsx   WIDGET_PILL, WidgetContext, Lead, Figure, toggle
+apps/editor/components/plan/widgets/board-widget-filters.tsx Only Mine, People, Not on Board, Types
+apps/editor/components/plan/widgets/board-widget-measures.tsx WIP, Due, Points, Time, Priorities, Unassigned,
+                                                              Top Voted, Stale
 apps/editor/components/plan/widgets/BoardWidgetZone.tsx the zone: order, reorder drag, keys, ×, the + and its picker
 apps/editor/components/plan/PlanBoardHeader.tsx         title, zone, Reveal / Retry, the unplaced list
 apps/editor/hooks/plan/widget-slot.ts                   widgetSlotAt (the reorder's landmark)
@@ -193,8 +197,8 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
 | Constant               | Value | Where                    | Safe range |
 | ---------------------- | ----- | ------------------------ | ---------- |
 | `REORDER_THRESHOLD_PX` | 4     | BoardWidgetZone.tsx      | 2..10      |
-| `PEOPLE_SHOWN`         | 5     | BoardWidgetView.tsx      | 3..8       |
-| `TYPES_SHOWN`          | 3     | BoardWidgetView.tsx      | 3..8       |
+| `PEOPLE_SHOWN`         | 5     | board-widget-parts.tsx   | 3..8       |
+| `TYPES_SHOWN`          | 3     | board-widget-parts.tsx   | 3..8       |
 | `DUE_SOON_DAYS`        | 7     | widget-stats.ts          | 1..30      |
 | `FIELD_WIDGETS_MAX`    | 12    | field-widgets.ts         | 6..20      |
 | `SPREAD_BINS`          | 8     | field-widget-stats.ts    | 5..12      |

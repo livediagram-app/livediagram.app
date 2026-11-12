@@ -41,11 +41,8 @@ import { CallDock } from '@/components/calls/CallDock';
 import { clusterRowLayout } from '@/components/calls/call-dock-row';
 import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
 import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
-import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
 import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { EditWalkStrip, EditWalkToggle } from '@/components/palette/EditWalkToggle';
-import { kindCounts } from '@liveworkspace/workbench/components/panels/collaborate/collaborate-model';
-import { panelEnabled } from '@/lib/user-preferences';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
@@ -155,8 +152,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     handleZoomIn,
     handleZoomOut,
     marquee,
-    commentRows,
-    actionRows,
     onOpenCanvasTheme,
     onConfirmIdentity,
     offscreenContent,
@@ -169,7 +164,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     polygonCursor,
     readOnly,
     selfParticipant,
-    settings,
     snapGuideStore,
     showIdentityPrompt,
     tabThemeId,
@@ -186,12 +180,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // folds it in next to the welcome-flow gate that already suppresses
   // the same panels, so each panel stays hidden in either state.
   const chromeHidden = welcomeOpen || chromeAway === true;
-  // Panels turned off in Settings (docs/specs/007-editor/user-preferences.md) take their cluster
-  // buttons with them (Undo / Redo stay). Read once here and handed to
-  // useCanvasChromePanels, so a button and its panel share one value.
-  const panelsOn = {
-    collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
-  };
 
   // --- Corner docking (docs/specs/007-editor/panel-docking.md) — see useCornerDocking. ---
   const { isMobile, dock, dockLayerRef, cornerRefs, dockingActive, panelWiringFor } =
@@ -259,12 +247,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
   );
 
   // Panel elements + their wiring live in useCanvasChromePanels.
-  const { panelEls, explorerEl, collaborateEl, paletteTint } = useCanvasChromePanels({
+  const { panelEls, explorerEl, paletteTint } = useCanvasChromePanels({
     props,
     chromeHidden,
     isMobile,
     panelWiringFor,
-    panelsOn,
   });
 
   // Measured against the real top-corner stacks (useStripCrowdsCorners). A
@@ -398,9 +385,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* The menu button (docs/specs/007-editor/toolbar-layout.md) opens the Explorer as a popover
           (an embed hides it, the welcome flow doesn't). */}
       {!chromeAway ? explorerEl : null}
-      {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5): it positions
-          against the canvas, so it renders outside the corner layer, as Layers does. */}
-      {chromeAway ? null : collaborateEl}
       {/* While walking, the avatar palette (docs/specs/008-canvas/avatar-mode.md "The avatar palette"): ahead of the
           hidden building strip, so whatever measures the strip finds this one. */}
       {strip === 'avatar' && props.avatarConfig ? (
@@ -449,7 +433,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         dockedLayer
       ) : (
         <>
-          {panelEls.collaborate}
           {panelEls.minimap}
           {panelEls.format}
         </>
@@ -460,9 +443,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {callDockInRow ? null : callDock}
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
-          strip, the
-          Collaborate button (only while the tab has a thread or an action), the Layers and
-          Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
+          strip, the Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
           above them (docs/specs/007-editor/editor-app.md). */}
       <div
         data-zoom-cluster=""
@@ -500,18 +481,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   onRedo={onRedo}
                   canUndo={canUndo}
                   canRedo={canRedo}
-                />
-              ) : null}
-              {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before Layers, only while
-                the tab has a comment thread or an action. A view-role visitor
-                gets it too: they read threads and answer them. */}
-              {!chromeAway &&
-              panelsOn.collaborate &&
-              (commentRows.length > 0 || actionRows.length > 0) ? (
-                <CollaborateClusterButton
-                  openCount={kindCounts('open', commentRows, actionRows).all}
-                  popoverOpen={activeDockPanel === 'collaborate'}
-                  onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
                 />
               ) : null}
               {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;

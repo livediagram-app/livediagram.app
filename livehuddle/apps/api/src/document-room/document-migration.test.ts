@@ -208,13 +208,9 @@ describe('importMigrated (the migration door into a canvas)', () => {
     const r = open('D');
     await r.room.importMigrated('D', payload());
     await r.room.drain();
-    expect(calls).toEqual(
-      expect.arrayContaining([
-        'PUT /api/index/app/items/D/summary',
-        'PUT /api/index/app/items/D/collab/t1',
-        'PUT /api/index/app/items/D/collab/t2',
-      ]),
-    );
+    expect(calls).toEqual(expect.arrayContaining(['PUT /api/index/app/items/D/summary']));
+    // No Inbox rows (not-in-livehuddle.md "Comments, actions, links and notes").
+    expect(calls.filter((c) => c.includes('/collab/'))).toEqual([]);
     // The index already holds the item (made by the migrate tool): its change time is the old side's, never now.
     expect(summary).toMatchObject({ updatedAt: 3_000 });
   });

@@ -452,34 +452,6 @@ function testDocumentRooms(
           personId,
         );
       },
-      notifyAction: async (documentId: string, input: Record<string, unknown>) => {
-        const meta = await (
-          await import('./document-room/document-content')
-        ).readDocumentMeta(env, documentId);
-        if (!meta) return false;
-        const { actionNotices } = await import('./liveworkspace/action-notices');
-        await Promise.all(
-          actionNotices(
-            env,
-            { id: documentId, name: meta.name, ownerId: meta.ownerId, teamId: meta.teamId },
-            input as unknown as import('./document-client').ActionNotice,
-          ),
-        );
-        return true;
-      },
-      notifyMention: async (documentId: string, input: Record<string, unknown>) => {
-        const meta = await (
-          await import('./document-room/document-content')
-        ).readDocumentMeta(env, documentId);
-        if (!meta) return false;
-        await (
-          await import('./email/notifications')
-        ).notifyMentioned(env, {
-          ...(input as unknown as import('./document-client').MentionNotice),
-          document: { id: documentId, name: meta.name },
-        });
-        return true;
-      },
       anonymise: async (documentId: string, personId: string) =>
         (await import('./document-room/document-anonymise')).anonymiseDocument(
           env,

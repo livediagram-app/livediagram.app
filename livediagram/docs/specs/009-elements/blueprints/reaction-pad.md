@@ -21,7 +21,7 @@ Scope, by file:
 | `apps/editor/hooks/canvas/useReactionBursts.ts`                   | Bursts keyed by element id; play, receive, clear                  |
 | `apps/editor/app/document/[id]/editor-state/useEditorViewport.ts` | `fireReaction`: play, broadcast, track                            |
 | `apps/editor/hooks/collab/useEditorBroadcast.ts`                  | `broadcastReaction` and its gate                                  |
-| `apps/editor/app/document/[id]/useRoomConnection.ts`              | Receives the op                                                   |
+| `apps/editor/app/document/[id]/room-op-receive.ts`                | Receives the op (from `useRoomConnection.ts`)                     |
 | `apps/editor/components/canvas/boxed-element-chrome.tsx`          | Mounts `ReactionBurst` beside the label stack                     |
 | `apps/editor/components/palette/tile-defs/behaviour-tiles.tsx`    | `tools:reaction-<reaction>`, `tileGroup: 'reaction'`              |
 | `apps/editor/components/palette/BehaviourMenuSections.tsx`        | `ReactionMenuSection`                                             |
@@ -70,7 +70,7 @@ Banned synonyms: "emoji burst", "celebration", "effect", "button" for the pad (i
 
 ### Receiving
 
-`useRoomConnection` hands `op.elementId` and `op.reaction` to `reactions.receive`, which starts
+`useRoomConnection` (its op chain, `receiveRoomOp` in `room-op-receive.ts`) hands `op.elementId` and `op.reaction` to `reactions.receive`, which starts
 `isReaction(reaction) ? reaction : REACTION_DEFAULT`. No tab check (D132, gap GF9).
 
 ### Playing (`ReactionBurst`)

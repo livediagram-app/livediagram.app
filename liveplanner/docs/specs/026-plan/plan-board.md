@@ -592,7 +592,9 @@ In Plan mode:
     in the middle of the panel: a card type does not place them in its tabs or Details (they are card-face fields
     only), so the footer is the panel's one place for them. On a phone the layout is one column, the footer ending
     the Details tab.
-  - **Tabs**: the type's own tabs, then **Activity**, on every card type ([History](items.md#history) "Where it shows").
+  - **Tabs**: the type's own tabs, then **Linked Cards** on a card whose type a Card field can link to
+    ([Item types](item-types.md#linked-cards-tab)), then **Activity**, on every card type
+    ([History](items.md#history) "Where it shows").
     On a phone, the panel's side column becomes a tab too, **Details** (the type's Details name), and it is the
     **last** tab, at the far right after Activity. A card always opens on the type's **first** tab (Overview), on a
     phone as on a desktop. The tab bar scrolls sideways when its tabs do not fit; arrow keys move between the tabs.

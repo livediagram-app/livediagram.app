@@ -1,4 +1,4 @@
-// docs/specs/013-workspace/explorer-home.md "Jump Back In": a card's menu opens beside the card, out of its way.
+// docs/specs/013-workspace/explorer-home.md "Most Used and Recent": a card's menu opens beside the card, out of its way.
 
 import { describe, expect, it } from 'vitest';
 import { BESIDE_GAP, besideSpot } from './beside-placement';

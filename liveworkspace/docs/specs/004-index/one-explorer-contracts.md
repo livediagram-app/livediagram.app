@@ -166,7 +166,7 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 |                                |                     | `updatedAt`, or by `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent`             |
 |                                |                     | only, first page) adds `mostUsed`: up to N items opened in the last 14 days, ranked by |
 |                                |                     | how many times (ties: opened last first), each with `useOpens` (and                    |
-|                                |                     | `useDays`), in the same response (Jump Back In). On any first page,                    |
+|                                |                     | `useDays`), in the same response (Most Used on Home). On any first page,               |
 |                                |                     | `mine=N` (1 to 200) adds `mine: {count, more}`, the live items in `app` in             |
 |                                |                     | every space the person is in (their own and each team's; each item once)               |
 |                                |                     | counted up to N (Home's pill), and `any=1` adds `any`, whether                         |
@@ -735,6 +735,13 @@ each with a form, a thread and an action (measured when a fourth, the old Timeli
 
 The Explorer shows it as a list and a reading pane (`packages/explorer/src/explorer/InboxPane.tsx`), the same
 component on the page and in every editor's panel:
+
+- **Apps without an Inbox.** An app can have none: `APPS_WITHOUT_INBOX` (`packages/explorer/src/inbox-apps.ts`, read
+  through `appHasInbox(app)`, like `APPS_WITHOUT_MCP`) holds livehuddle, which removed comments and actions (Work
+  Tracker #714). Its Explorer, on its own address and in its editor's panel, shows no Inbox row in the sidebar, no
+  section or count on the rail, no Inbox pill on Home, and never fetches `/inbox` (`useInbox` with `enabled` false). A
+  remembered Inbox section, or an `/explorer/inbox` address, opens Home instead. The other apps keep the Inbox as
+  below.
 
 - **The list.** Every row newest first, under **Today**, **Earlier This Week** (the six days before) and **Older**.
   A card thread read through two items (shared between plans) is one row: its newest copy.

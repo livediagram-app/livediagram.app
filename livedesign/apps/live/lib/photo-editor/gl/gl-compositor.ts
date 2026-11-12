@@ -5,7 +5,6 @@
 // where it is missing or lost, the CPU view draws instead (cpu-view.ts).
 import {
   adjustmentForm,
-  bake3dLut,
   hexToBytes,
   layerTree,
   dissolveSeed,
@@ -17,17 +16,9 @@ import {
   type PhotoLayer,
   type PixelsLookup,
 } from '@livedesign/photo-engine';
-import {
-  ADJUST_FS,
-  BLEND_FS,
-  FULL_VS,
-  LERP_FS,
-  MASK_FS,
-  modeIndex,
-  PRESENT_FS,
-  QUAD_VS,
-  TILE_FS,
-} from './shaders';
+import { modeIndex } from './shaders';
+import { compilePrograms, type Program, type ProgramName } from './gl-programs';
+import { bakeTable, createTarget, uploadTile, type Target } from './gl-textures';
 import { coarsePointer } from '../coarse-pointer';
 
 type Node = { layer: PhotoLayer; children: Node[] };
@@ -35,9 +26,6 @@ export type ViewRect = { x: number; y: number; width: number; height: number };
 
 /** Pictures the CPU draws for the GPU: a fill, a text layer, a layer with effects. */
 export type ContentSource = (layer: PhotoLayer) => TiledRaster | null;
-
-type Program = { p: WebGLProgram; u: Map<string, WebGLUniformLocation | null> };
-type Target = { fb: WebGLFramebuffer; tex: WebGLTexture; w: number; h: number };
 
 // The GPU memory the tile textures may take before the least recently drawn go.
 export const GPU_TILE_BYTES_DESKTOP = 768 * 1024 * 1024;
@@ -53,10 +41,7 @@ export const HARD_EDGES_FROM = 4;
 const ADJUST_UNITS = { table: 1, cube: 2, mask: 3 } as const;
 export class GlCompositor {
   readonly gl: WebGL2RenderingContext;
-  private readonly progs: Record<
-    'tile' | 'blend' | 'adjust' | 'mask' | 'lerp' | 'present',
-    Program
-  >;
+  private readonly progs: Record<ProgramName, Program>;
   private readonly quad: WebGLBuffer;
   private readonly vao: WebGLVertexArrayObject;
   private pool: Target[] = [];
@@ -98,61 +83,7 @@ export class GlCompositor {
       this.lost = true;
       if (!this.disposed) console.warn('[photo] gl-lost');
     });
-    const make = (vs: string, fs: string, names: string[]): Program => {
-      const p = gl.createProgram();
-      for (const [type, src] of [
-        [gl.VERTEX_SHADER, vs],
-        [gl.FRAGMENT_SHADER, fs],
-      ] as const) {
-        const s = gl.createShader(type)!;
-        gl.shaderSource(s, src);
-        gl.compileShader(s);
-        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
-          throw new Error(`shader: ${gl.getShaderInfoLog(s)}`);
-        gl.attachShader(p, s);
-      }
-      gl.bindAttribLocation(p, 0, 'a_pos');
-      gl.linkProgram(p);
-      if (!gl.getProgramParameter(p, gl.LINK_STATUS))
-        throw new Error(`program: ${gl.getProgramInfoLog(p)}`);
-      return { p, u: new Map(names.map((n) => [n, gl.getUniformLocation(p, n)])) };
-    };
-    this.progs = {
-      tile: make(QUAD_VS, TILE_FS, ['u_rect', 'u_view', 'u_tex', 'u_kind', 'u_colour']),
-      blend: make(FULL_VS, BLEND_FS, [
-        'u_dst',
-        'u_src',
-        'u_mode',
-        'u_opacity',
-        'u_dissolve',
-        'u_seed',
-        'u_view',
-        'u_size',
-        'u_keepAlpha',
-      ]),
-      adjust: make(FULL_VS, ADJUST_FS, [
-        'u_dst',
-        'u_form',
-        'u_table',
-        'u_cube',
-        'u_cubeSize',
-        'u_mask',
-        'u_hasMask',
-        'u_opacity',
-        'u_mode',
-      ]),
-      mask: make(FULL_VS, MASK_FS, ['u_src', 'u_mask']),
-      lerp: make(FULL_VS, LERP_FS, ['u_a', 'u_b', 'u_mask', 'u_hasMask', 'u_k']),
-      present: make(FULL_VS, PRESENT_FS, [
-        'u_src',
-        'u_size',
-        'u_checker',
-        'u_light',
-        'u_dark',
-        'u_view',
-        'u_grid',
-      ]),
-    };
+    this.progs = compilePrograms(gl);
     this.blank2d = gl.createTexture()!;
     gl.bindTexture(gl.TEXTURE_2D, this.blank2d);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
@@ -177,41 +108,7 @@ export class GlCompositor {
       return t;
     }
     if (t) this.free(t);
-    const gl = this.gl;
-    const tex = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    if (this.float)
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA16F,
-        this.size.w,
-        this.size.h,
-        0,
-        gl.RGBA,
-        gl.HALF_FLOAT,
-        null,
-      );
-    else
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA8,
-        this.size.w,
-        this.size.h,
-        0,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        null,
-      );
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    const fb = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-    const out = { fb, tex, w: this.size.w, h: this.size.h };
+    const out = createTarget(this.gl, this.size.w, this.size.h, this.float);
     this.clear(out);
     return out;
   }
@@ -253,38 +150,7 @@ export class GlCompositor {
       return had.tex;
     }
     const tex = had?.tex ?? gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, channels === 4);
-    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-    if (channels === 4)
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA8,
-        PHOTO_TILE,
-        PHOTO_TILE,
-        0,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        data,
-      );
-    else
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.R8,
-        PHOTO_TILE,
-        PHOTO_TILE,
-        0,
-        gl.RED,
-        gl.UNSIGNED_BYTE,
-        data,
-      );
-    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-    gl.generateMipmap(gl.TEXTURE_2D);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    uploadTile(gl, tex, data, channels);
     if (!had) this.tileBytes += PHOTO_TILE * PHOTO_TILE * channels * 1.34;
     map.set(tileKey, { tex, from: data, used: this.frame });
     return tex;
@@ -485,48 +351,7 @@ export class GlCompositor {
     if (had && had.key === key) return had;
     const gl = this.gl;
     if (had) gl.deleteTexture(had.tex);
-    const tex = gl.createTexture();
-    let cube = false;
-    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-    if (form.kind === 'channel-lut' || form.kind === 'luma-map') {
-      const data = new Uint8Array(256 * 4);
-      for (let i = 0; i < 256; i++) {
-        if (form.kind === 'channel-lut') {
-          data[i * 4] = form.lut[i]!;
-          data[i * 4 + 1] = form.lut[256 + i]!;
-          data[i * 4 + 2] = form.lut[512 + i]!;
-        } else {
-          data[i * 4] = form.map[i * 3]!;
-          data[i * 4 + 1] = form.map[i * 3 + 1]!;
-          data[i * 4 + 2] = form.map[i * 3 + 2]!;
-        }
-        data[i * 4 + 3] = 255;
-      }
-      gl.bindTexture(gl.TEXTURE_2D, tex);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    } else {
-      cube = true;
-      const data = bake3dLut(form.fn, LUT3D_SIZE);
-      gl.bindTexture(gl.TEXTURE_3D, tex);
-      gl.texImage3D(
-        gl.TEXTURE_3D,
-        0,
-        gl.RGBA8,
-        LUT3D_SIZE,
-        LUT3D_SIZE,
-        LUT3D_SIZE,
-        0,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        data,
-      );
-      gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      for (const w of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T, gl.TEXTURE_WRAP_R])
-        gl.texParameteri(gl.TEXTURE_3D, w, gl.CLAMP_TO_EDGE);
-    }
+    const { tex, cube } = bakeTable(gl, form);
     const out = { tex, cube, key };
     this.tables.set(l.id, out);
     return out;

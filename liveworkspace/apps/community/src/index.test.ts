@@ -379,6 +379,50 @@ describe('the public routes', () => {
     expect(one.post.title).toBe('Payments platform');
   });
 
+  it('round-trip accented and non-Latin tags through publish, search, a tag link and the popular tags', async () => {
+    // An older post, its tags stored under the old a-z 0-9 rule, beside one with tags in other scripts.
+    const { post: old } = await publish('d1', {
+      input: { ...publishing().input, title: 'Old post', tags: ['aws'] },
+    });
+    const { post } = await publish('d2', {
+      shareCode: 'CODE2',
+      input: {
+        ...publishing().input,
+        title: 'Café board',
+        // The accent typed as a separate mark, as some keyboards send it.
+        tags: ['Café Crème', '日本語', 'हिन्दी', 'Ελληνικά', 'aws'],
+      },
+    });
+    expect(post!.tags).toEqual(['café-crème', '日本語', 'हिन्दी', 'ελληνικά', 'aws']);
+    const titles = async (query: string) =>
+      (
+        (await (await call(`/posts?app=livediagram.app&${query}`)).json()) as CommunityListResponse
+      ).posts
+        .map((p) => p.title)
+        .sort();
+    const q = (text: string) => `q=${encodeURIComponent(text)}`;
+    expect(await titles(q('#café-crème'))).toEqual(['Café board']);
+    expect(await titles(q('#CAFÉ-CRÈME'))).toEqual(['Café board']);
+    expect(await titles(q('#日本語 #हिन्दी'))).toEqual(['Café board']);
+    expect(await titles(`tag=${encodeURIComponent('ΕΛΛΗΝΙΚΆ')}`)).toEqual(['Café board']);
+    expect(await titles(q('ελληνικά'))).toEqual(['Café board']);
+    expect(await titles(q('café'))).toEqual(['Café board']);
+    // The old tag still finds both posts, and the old post is untouched.
+    expect(await titles(q('#aws'))).toEqual(['Café board', 'Old post']);
+    expect(old!.tags).toEqual(['aws']);
+    const counts = (await (
+      await call('/facets?app=livediagram.app')
+    ).json()) as CommunityFacetsResponse;
+    expect(counts.tags).toEqual(
+      expect.arrayContaining([
+        { tag: 'aws', count: 2 },
+        { tag: '日本語', count: 1 },
+        { tag: 'हिन्दी', count: 1 },
+        { tag: 'café-crème', count: 1 },
+      ]),
+    );
+  });
+
   it("list and count every app's posts for All Apps, each naming its app, and nothing else", async () => {
     const { post: diagram } = await publish();
     const res = await asApp(

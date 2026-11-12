@@ -43,9 +43,6 @@ import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
-import { ElementIndicators, indicatorClusterRect } from '@/components/canvas/ElementIndicators';
-import { indicatorBacking } from '@/components/canvas/indicator-items';
-import { useElementIndicators } from '@/components/canvas/useElementIndicators';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
 import { useLabelTextAnimation } from '@/components/canvas/useTextAnimation';
@@ -94,9 +91,6 @@ function BoxedElementViewImpl({
   onEnterPortal,
   onPressAvatarPad,
   activeMode,
-  onOpenComments,
-  onOpenAction,
-  onOpenNote,
   onEditLink,
   imageContext,
   onContextSelect,
@@ -217,7 +211,7 @@ function BoxedElementViewImpl({
     finish,
   );
 
-  // The element's drawn corner, which its border overlay and its indicators both follow.
+  // The element's drawn corner, which its border overlay and its animation layer follow.
   const cornerPx = cornerRadiusPx(
     element.type === 'shape' ? finishOwnCorner(element, finish) : undefined,
     element.width,
@@ -254,13 +248,6 @@ function BoxedElementViewImpl({
   const textHug = useTextHug(element, isEditing, fontFamily);
 
   const labelPadding = PADDING_PX[element.padding ?? defaultPadding(element)];
-  // The element's indicators, placed before the label so the content can move out of their way.
-  const indicators = useElementIndicators(
-    element,
-    { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries },
-    { text: label, textSize, padding: labelPadding, alignX, alignY, inlineIcon: !!inlineIcon },
-    cornerPx,
-  );
 
   // The Text animation on the label's words (docs/specs/028-animation/element-animations.md).
   const textAnim = useLabelTextAnimation(element, label, textColor, isEditing);
@@ -302,8 +289,8 @@ function BoxedElementViewImpl({
       data-ride-id={element.id}
       // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,
       // so 'Square "Login"' reads consistently across both surfaces. A face with controls of its own is a named group,
-      // so its buttons stay reachable, as is one showing indicator buttons (its link, note, action or comments).
-      role={elementRole(element, indicators.items.length > 0)}
+      // so its buttons stay reachable.
+      role={elementRole(element)}
       aria-label={elementAriaLabel(element)}
       // What the face's own parts are drawn in (docs/specs/008-canvas/finish.md "Faces"; app/face-finish.css).
       data-face-finish={faceFinish}
@@ -431,20 +418,9 @@ function BoxedElementViewImpl({
             onPressFocusButton={onPressFocusButton}
             onOpenElementSettings={onOpenElementSettings}
             onDeleteRetired={onDeleteRetired}
-            indicatorRect={
-              onDeleteRetired && indicators.layout && retired
-                ? indicatorClusterRect(
-                    element,
-                    indicators.items,
-                    indicators.layout,
-                    indicators.cornerPx,
-                  )
-                : null
-            }
             label={label}
             labelNode={labelNode}
-            // Clear of the indicators.
-            contentInset={clearingInset(indicators.layout?.inset)}
+            contentInset={clearingInset()}
             textColor={textColor}
             textSize={textSize}
             alignX={alignX}
@@ -473,17 +449,6 @@ function BoxedElementViewImpl({
           land. Cleared on drop / drag-leave. */}
 
       {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
-
-      {indicators.layout ? (
-        <ElementIndicators
-          element={element}
-          cornerPx={indicators.cornerPx}
-          fill={indicatorBacking(own.fill ?? defaultFillColor(element, surface))}
-          selected={isSelected}
-          items={indicators.items}
-          placed={indicators.layout}
-        />
-      ) : null}
 
       {/* Selection chrome (resize / edge-grip handles), portalled into the
           grips layer above every element — see SelectionChromeLayer for the

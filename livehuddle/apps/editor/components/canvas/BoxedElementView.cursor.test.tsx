@@ -27,9 +27,6 @@ function wrapperFor(props: {
       onCommitLabel={vi.fn()}
       onCancelEdit={vi.fn()}
       onFollowLink={vi.fn()}
-      onOpenComments={vi.fn()}
-      onOpenAction={vi.fn()}
-      onOpenNote={vi.fn()}
       onContextSelect={vi.fn()}
       tabSummaries={[]}
       readOnly={props.readOnly}

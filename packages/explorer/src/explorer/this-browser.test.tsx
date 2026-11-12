@@ -1,6 +1,6 @@
 // This Browser on the app's own address: the host app's items kept only in this browser, read from the list the app
 // keeps (this-browser.ts), shown as liveplanner's own Explorer showed them: the sidebar row and its count, the view,
-// the Trash's group and Jump Back In. Without a host (liveworkspace.app) none of it shows.
+// the Trash's group and Home's Recent. Without a host (liveworkspace.app) none of it shows.
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
@@ -319,7 +319,7 @@ describe('This Browser in the Explorer', () => {
     expect(onFirstRun).not.toHaveBeenCalled();
   });
 
-  it('merges the opened ones into Jump Back In by last open', async () => {
+  it("merges the opened ones into Home's Recent by last open", async () => {
     const index = createFakeIndex({ items: [makeItem(1, { lastOpenedAt: 500 })] });
     page(
       { kind: 'home' },
@@ -329,9 +329,9 @@ describe('This Browser in the Explorer', () => {
     await waitFor(() =>
       expect(document.querySelectorAll('[data-this-browser-card]').length).toBeGreaterThan(0),
     );
-    // Recent, the group after Most Used, its cards the same size.
-    const recent = [...document.querySelectorAll('[data-jump-back-in-group]')].at(-1)!;
-    expect(recent.getAttribute('data-jump-back-in-group')).toBe('large');
+    // Recent, its own section after Most Used, its cards the same size.
+    const recent = document.querySelector('[data-home-section="recent"] [data-card-group]')!;
+    expect(recent.getAttribute('data-card-group')).toBe('large');
     const cards = [...recent.querySelectorAll('[data-item-card]')];
     expect(cards.map((c) => c.getAttribute('data-item-card'))).toEqual([
       'local-1',

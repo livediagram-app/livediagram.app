@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useItemList } from '../data/useItemList';
-import { isMostUsed, jumpBackInLoader } from '../data/viewLists';
+import { homeEmptyLine, isMostUsed, jumpBackInLoader } from '../data/viewLists';
 import type { ShownItem } from '../data/overlay';
 import { useExplorer } from '../explorer/context';
 import { mergeOpened, useThisBrowserItems } from '../explorer/ThisBrowser';
@@ -14,25 +14,30 @@ import {
   PANE_LINK,
   PaneEmpty,
   PaneFailed,
+  PaneCardSkeleton,
   PaneGrid,
   PaneSection,
-  PaneSkeleton,
 } from './pane-parts';
 import { JumpBackInCard } from './pane-items';
 
-// ---- Home -----------------------------------------------------------------------------------------------
+// ---- Home ----------------------------------------------------------------------------------------------
 
-// How many items Home's Jump Back In lists in the pane (two full rows of four in a desktop popover; the pane's grid
-// hides all but the first six below four across, so two and three across end on a full row), from this many of each
-// group (fewer than Home's page).
-const JUMP_BACK_IN_ROWS = 8;
+// The panel's Home (liveworkspace/docs/specs/004-index/one-explorer.md "The editors' panel's Home"): Most Used, then
+// Recent with See all, each under its own heading, from one request. Each holds one row of four (PANEL_PER_GROUP);
+// Recent takes two (PANEL_RECENT_ALONE) while nothing is most used yet, so a newcomer still sees two full rows.
 const PANEL_PER_GROUP = 4;
-// The recent ones asked past PANEL_PER_GROUP: JUMP_BACK_IN_ROWS of them and one for the open item.
-const PANEL_RECENT_EXTRA = JUMP_BACK_IN_ROWS + 1 - PANEL_PER_GROUP;
+const PANEL_RECENT_ALONE = 8;
+// One more most used than the section shows, so leaving out the open item (usually among them) still fills its row.
+const PANEL_USED_ASKED = PANEL_PER_GROUP + 1;
+// The recent ones asked past PANEL_USED_ASKED: enough for Recent alone, and one for the open item.
+const PANEL_RECENT_EXTRA = PANEL_RECENT_ALONE + 1 - PANEL_USED_ASKED;
 const live = (i: ShownItem) => i.trashedAt === null;
 const notHidden = (i: ShownItem) => live(i) && !i.hiddenFromRecent;
 // The index's item, or one kept only in this browser (which has no app: it is the host's).
 const isIndexed = (i: ShownItem | ThisBrowserItem): i is ShownItem => 'app' in i;
+
+const MOST_USED = 'Most Used';
+const RECENT = 'Recent';
 
 export function HomeSection({
   currentId,
@@ -42,10 +47,10 @@ export function HomeSection({
   onOpenExplorer?: (view: ExplorerView) => void;
 }) {
   const { client, app, filter, overlay, epoch, words } = useExplorer();
-  // Most used then recent (one request): enough recent ones to fill the pane alone, plus one, so a person with no most
+  // Most used then recent (one request): enough recent ones to fill Recent alone, plus one, so a person with no most
   // used yet, or leaving out the open item, still sees two full rows.
   const load = useMemo(
-    () => jumpBackInLoader(client, app, filter, PANEL_PER_GROUP, PANEL_RECENT_EXTRA),
+    () => jumpBackInLoader(client, app, filter, PANEL_USED_ASKED, PANEL_RECENT_EXTRA),
     [client, app, filter],
   );
   const list = useItemList({
@@ -55,9 +60,10 @@ export function HomeSection({
     belongs: notHidden,
     epoch,
   });
-  // What this browser keeps of the app's, opened here: Jump Back In's by the page's rule.
+  // What this browser keeps of the app's, opened here: Recent's by the page's rule.
   const { live: local } = useThisBrowserItems();
   const localOpened = useMemo(() => local.filter((i) => i.lastOpenedAt !== null), [local]);
+  // A failed read draws once, with no headings.
   if (list.error)
     return (
       <PaneFailed
@@ -65,65 +71,90 @@ export function HomeSection({
         onRetry={list.retry}
       />
     );
-  if (list.loading) return <PaneSkeleton rows={6} />;
-  // The index's most used first, then its recent with this browser's opened ones merged in by last open, as the
-  // page's Home does (mergeOpened); the open item left out of both.
+  const seeAll = (
+    <a
+      href={explorerPath({ kind: 'recent' })}
+      onClick={
+        onOpenExplorer
+          ? (e) => {
+              e.preventDefault();
+              onOpenExplorer({ kind: 'recent' });
+            }
+          : undefined
+      }
+      className={PANE_LINK}
+    >
+      See all
+    </a>
+  );
+  if (list.loading)
+    return (
+      <div className="flex flex-col gap-6">
+        <PaneSection title={MOST_USED}>
+          <PaneCardSkeleton cards={PANEL_PER_GROUP} />
+        </PaneSection>
+        <PaneSection title={RECENT} action={seeAll}>
+          <PaneCardSkeleton cards={PANEL_PER_GROUP} />
+        </PaneSection>
+      </div>
+    );
+  // The index's most used, then its recent with this browser's opened ones merged in by last open, as the page's
+  // Home does (mergeOpened); the open item left out of both.
+  // The open item leaves before the cut to four; a most used one past the four joins Recent by its last open.
   const others = list.items.filter((i) => i.id !== currentId);
-  const recent = [
-    ...others.filter(isMostUsed),
-    ...mergeOpened(
-      others.filter((i) => !isMostUsed(i)),
-      localOpened.filter((i) => i.id !== currentId),
-      JUMP_BACK_IN_ROWS,
-    ),
-  ].slice(0, JUMP_BACK_IN_ROWS);
+  const used = others.filter(isMostUsed);
+  const mostUsed = used.slice(0, PANEL_PER_GROUP);
+  const recentMax = mostUsed.length ? PANEL_PER_GROUP : PANEL_RECENT_ALONE;
+  const spare = used.slice(PANEL_PER_GROUP);
+  const indexRecent = others.filter((i) => !isMostUsed(i));
+  const recentPool = spare.length
+    ? [...indexRecent, ...spare].sort((a, b) => (b.lastOpenedAt ?? 0) - (a.lastOpenedAt ?? 0))
+    : indexRecent;
+  const recent = mergeOpened(
+    recentPool,
+    localOpened.filter((i) => i.id !== currentId),
+    recentMax,
+  ).slice(0, recentMax);
+  const empty = mostUsed.length === 0 && recent.length === 0;
   // Empty only because the open item is left out: there is one, just no other.
   const onlyOpen =
-    recent.length === 0 &&
+    empty &&
     (list.items.some((i) => i.id === currentId) || localOpened.some((i) => i.id === currentId));
   return (
     <div className="flex flex-col gap-6">
-      <PaneSection
-        title="Jump Back In"
-        action={
-          <a
-            href={explorerPath({ kind: 'recent' })}
-            onClick={
-              onOpenExplorer
-                ? (e) => {
-                    e.preventDefault();
-                    onOpenExplorer({ kind: 'recent' });
-                  }
-                : undefined
-            }
-            className={PANE_LINK}
-          >
-            See all
-          </a>
-        }
-      >
-        {recent.length ? (
-          <PaneGrid label="Jump Back In" fullRowsBelowFour>
-            {recent.map((item) =>
-              isIndexed(item) ? (
-                <JumpBackInCard key={item.id} item={item} />
-              ) : (
-                <PanelLocalCard key={item.id} item={item} />
-              ),
-            )}
+      {mostUsed.length ? (
+        <PaneSection title={MOST_USED}>
+          <PaneGrid label={MOST_USED} fullRows={PANEL_PER_GROUP}>
+            {mostUsed.map((item) => (
+              <JumpBackInCard key={item.id} item={item} />
+            ))}
           </PaneGrid>
-        ) : (
-          <PaneEmpty
-            icon={<ClockIcon />}
-            title={onlyOpen ? 'Nothing else yet' : `No ${words.lowerMany} yet`}
-            description={
-              onlyOpen
-                ? `The other ${words.lowerMany} you use most and last will gather here.`
-                : `The ${words.lowerMany} you use most and last will gather here.`
-            }
-          />
-        )}
-      </PaneSection>
+        </PaneSection>
+      ) : null}
+      {recent.length || empty ? (
+        <PaneSection title={RECENT} action={seeAll}>
+          {recent.length ? (
+            <PaneGrid
+              label={RECENT}
+              fullRows={recent.length > PANEL_PER_GROUP ? PANEL_RECENT_ALONE : PANEL_PER_GROUP}
+            >
+              {recent.map((item) =>
+                isIndexed(item) ? (
+                  <JumpBackInCard key={item.id} item={item} />
+                ) : (
+                  <PanelLocalCard key={item.id} item={item} />
+                ),
+              )}
+            </PaneGrid>
+          ) : (
+            <PaneEmpty
+              icon={<ClockIcon />}
+              title={onlyOpen ? 'Nothing else yet' : `No ${words.lowerMany} yet`}
+              description={homeEmptyLine(words.lowerMany, onlyOpen)}
+            />
+          )}
+        </PaneSection>
+      ) : null}
     </div>
   );
 }
