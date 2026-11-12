@@ -49,6 +49,16 @@ counted by its own connection. Each router names its environment's platform with
   Community's sweep with the app's `COMMUNITY_KEY` to ask where its posts' items stand
   ([community.md](../007-community/community.md#the-sweep)).
 
+## Who is calling
+
+Each app's api reads the caller's credential in one order: a person's own access or guest token, then an API token,
+then a workbench session. The last two are read by one shared rule, `@liveworkspace/api-kit/bearer-credentials`,
+which each api binds once to its own lookups: a bearer shaped like a token or a session that does not resolve is
+refused (`401 invalid_token` or `invalid_session`), never read as a guest, and when liveworkspace can't say whether
+it is good the answer is the api's `503 accounts_unavailable`, so a client retries rather than drops it. The room's
+own wire pieces every product shares (the op `ref` echo, the format and grant frames, its close codes and keepalive)
+are one copy too, `@liveworkspace/api-schema/room-wire`, re-exported by each product's `room-messages.ts`.
+
 ## When a request fails
 
 Every Worker that owns storage (each service above but the site, and each app's api) answers a request that throws

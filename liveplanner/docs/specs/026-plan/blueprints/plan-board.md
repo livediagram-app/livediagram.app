@@ -646,7 +646,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   touched. The layer is a `CanvasCover` (`data-canvas-cover`, `absolute inset-0` at `CANVAS_LAYER_Z`, `background: inherit`
   from the canvas `main` so it paints the canvas's colour and pattern, stopping
   pointerdown, double-click, context-menu and wheel) holding the element at its insets; `useCanvasSurfaceGestures`'
-  capture handler bails for a target inside `[data-canvas-cover]`, and `useEditorKeyboardShortcuts`, while `canvasCovered()`,
+  capture handler bails for a target inside `[data-canvas-cover]` (the workbench hook's `ignoreCoverPresses`, which this editor's binding sets), and `useEditorKeyboardShortcuts`, while `canvasCovered()`,
   sorts each key by `coveredKeyRole` (run: undo/redo/search/zen/mode/Escape; swallow: Cmd+D/A/Shift+L, z-order, zoom,
   prevented; ignore: the rest) instead of returning early (`getMaximisedPlanId() !== null || fillTabId !== null`, read at the key press). `useCanvasSelectionView` passes `canvasCovered` from `useCanvasCovered()` (`useMaximisedPlanId() !== null ||
 fillTabId`; `usePaletteCatalogue`, while `useBoardFillingTab()`, swaps its categories for

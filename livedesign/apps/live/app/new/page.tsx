@@ -35,9 +35,9 @@ import {
   newDesignStartsBlank,
   placementParamsFromSearch,
 } from '@/lib/new-design-params';
-import { backOutTarget } from '@liveworkspace/workbench/lib/back-out';
+import { useBackOutOnRestore } from '@liveworkspace/workbench/hooks/ui/useBackOutOnRestore';
 import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
-import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { useResolveSelf } from '@liveworkspace/workbench/hooks/persistence/useResolveSelf';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { handStartQuery } from '@liveworkspace/workbench/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
@@ -127,21 +127,7 @@ export default function NewDesignPage() {
   // Back/forward-cache restore: /new creates as it mounts, so a restore would either strand the person on a frozen
   // "Creating…" screen or (re-firing the create) trap Back behind a page that always navigates forward again. It
   // backs out to the page that opened /new instead.
-  useEffect(() => {
-    const onPageShow = (e: PageTransitionEvent) => {
-      if (!e.persisted || handedOff.current) return;
-      const target = backOutTarget({
-        referrer: document.referrer,
-        origin: window.location.origin,
-        historyLength: window.history.length,
-      });
-      debugLog(`[new] restored, back out ${target}`);
-      if (target === 'back') window.history.back();
-      else window.location.replace('/');
-    };
-    window.addEventListener('pageshow', onPageShow);
-    return () => window.removeEventListener('pageshow', onPageShow);
-  }, []);
+  useBackOutOnRestore(handedOff);
 
   useLayoutEffect(() => {
     // Wait for auth to settle so guest vs signed-in is known.
@@ -182,18 +168,7 @@ export default function NewDesignPage() {
   // (fetching with the real id) 404s. So the commit resolves identity
   // itself: wait out the bootstrap (bounded — authLoaded flips by the
   // 5 s auth timeout at the latest), then fall back to the guest id.
-  const selfRef = useLatest(self);
-  const resolveSelf = async (): Promise<Participant> => {
-    const deadline = Date.now() + 8000;
-    while (selfRef.current.id === 'pending' && Date.now() < deadline) {
-      await new Promise((r) => setTimeout(r, 100));
-    }
-    if (selfRef.current.id !== 'pending') return selfRef.current;
-    // Still pending (auth never settled): resolve the guest's signed id here.
-    const fallback = { ...selfRef.current, id: (await ensureGuestIdentity()).id };
-    setSelf(fallback);
-    return fallback;
-  };
+  const { resolveSelf } = useResolveSelf(self, setSelf, ensureGuestIdentity);
 
   // Single commit point, shared by the create on mount and Retry. Every new design starts on the Default theme; we
   // persist the design so the editor route lands on a real row.

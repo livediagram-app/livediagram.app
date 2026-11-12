@@ -6,6 +6,7 @@ import { exportTabAsPng, exportTabAsSvg, type ImageExportOpts } from './export-t
 import { exportPagesAsPdf } from './export-tab-pdf';
 import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
 import { writeZip } from '@liveworkspace/workbench/lib/zip-writer';
+import { tabExportBaseName as sharedTabExportBaseName } from '@liveworkspace/workbench/lib/tab-export-name';
 
 export type PageScope = 'all' | 'one';
 export type PageExportFormat = 'pdf' | 'png' | 'svg';
@@ -18,15 +19,13 @@ export const DEFAULT_PAGE_SCOPE: Record<PageExportFormat, PageScope> = {
 };
 
 /** A tab export's file name before its extension (docs/specs/020-import-export/export-fidelity.md "File names"):
- *  `<design> - <tab>`, ` - selection` added for a selection, through the shared `sanitizeFilename`, so it is safe
- *  on every platform, keeps letters in any script, and a name of nothing safe downloads as "design". */
+ *  the shared rule, "design" when nothing safe is left. */
 export function tabExportBaseName(
   designName: string,
   tabName: string,
   isSelection: boolean,
 ): string {
-  const suffix = isSelection ? ' - selection' : '';
-  return sanitizeFilename(`${designName || 'design'} - ${tabName || 'tab'}${suffix}`, 'design');
+  return sharedTabExportBaseName(designName, tabName, isSelection, 'design');
 }
 
 /** A page's label as the export names it (its name, or "Page n", then its size). */

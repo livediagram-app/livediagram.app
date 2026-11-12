@@ -59,15 +59,11 @@ import {
 } from './editor-view-hooks';
 import { useSelectTab } from './useSelectTab';
 import { useRoleIndicator } from './useRoleIndicator';
-import {
-  UiScaleProvider,
-  useUiScalePreview,
-} from '@liveworkspace/workbench/components/providers/ui-scale';
+import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import { CursorsDrawnContext } from '@liveworkspace/workbench/hooks/collab/useHideCursors';
 import { planHidesCursors } from '@/lib/plan-cursors';
-import { resolveUiScales } from '@liveworkspace/workbench/lib/ui-scale';
-import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { useEditorUiScales } from '@liveworkspace/workbench/hooks/ui/useEditorUiScales';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { EditorStartPanels } from '@/components/start/EditorStartPanels';
@@ -142,15 +138,8 @@ export function EditorView() {
   } = ctx;
   // The header's Community state, and a Community link's `?copy=1` (editor-view-hooks).
   const headerCommunity = useHeaderCommunity(ctx);
-  // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, so a phone resolves to 1.
-  // While a Settings slider is dragged its patch wins, so the chrome resizes
-  // as you go; the preference is written once, on release.
-  const uiScalePreview = useUiScalePreview();
-  const isMobileViewport = useIsMobileViewport();
-  const uiScales = resolveUiScales(
-    uiScalePreview === null ? userPreferences : { ...userPreferences, ...uiScalePreview },
-    { mobile: isMobileViewport },
-  );
+  // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
+  const { uiScales } = useEditorUiScales(userPreferences);
   const role = useRoleIndicator();
 
   const selectTab = useSelectTab();

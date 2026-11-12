@@ -47,6 +47,7 @@ import {
 import { backOutTarget } from '@liveworkspace/workbench/lib/back-out';
 import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { useResolveSelf } from '@liveworkspace/workbench/hooks/persistence/useResolveSelf';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { handStartQuery } from '@liveworkspace/workbench/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
@@ -199,18 +200,7 @@ export default function NewDocumentPage() {
   // (fetching with the real id) 404s. So the commit resolves identity
   // itself: wait out the bootstrap (bounded — authLoaded flips by the
   // 5 s auth timeout at the latest), then fall back to the guest id.
-  const selfRef = useLatest(self);
-  const resolveSelf = async (): Promise<Participant> => {
-    const deadline = Date.now() + 8000;
-    while (selfRef.current.id === 'pending' && Date.now() < deadline) {
-      await new Promise((r) => setTimeout(r, 100));
-    }
-    if (selfRef.current.id !== 'pending') return selfRef.current;
-    // Still pending (auth never settled): resolve the guest's id here.
-    const fallback = { ...selfRef.current, id: (await ensureGuestIdentity()).id };
-    setSelf(fallback);
-    return fallback;
-  };
+  const { resolveSelf } = useResolveSelf(self, setSelf, ensureGuestIdentity);
 
   // Single commit point, for the create on mount and its Retry. Every new document starts on the
   // Default theme; either way we persist the document so the editor route lands on a real row.

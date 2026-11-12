@@ -43,22 +43,17 @@ import { EditorTours } from '@/components/tour/EditorTours';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
-import { useDismissibleBanner } from '@liveworkspace/workbench/hooks/ui/useDismissibleBanner';
+import { useSignInNudge } from '@liveworkspace/workbench/hooks/ui/useSignInNudge';
 import { useIsOfflineDesign } from '@/hooks/persistence/useIsOfflineDesign';
-import { useDelayedReveal } from '@liveworkspace/workbench/hooks/ui/useDelayedReveal';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 import { editorViewFooter, editorViewHeader } from './editor-view-bars';
 import { useSelectTab } from './useSelectTab';
 import { useRoleIndicator } from './useRoleIndicator';
-import {
-  UiScaleProvider,
-  useUiScalePreview,
-} from '@liveworkspace/workbench/components/providers/ui-scale';
+import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
-import { resolveUiScales } from '@liveworkspace/workbench/lib/ui-scale';
-import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { useEditorUiScales } from '@liveworkspace/workbench/hooks/ui/useEditorUiScales';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
@@ -73,11 +68,6 @@ const CommunityBar = dynamic(
   () => import('@/components/chrome/CommunityBar').then((m) => m.CommunityBar),
   { ssr: false },
 );
-
-// How long a guest edits before the sign-in nudge appears (docs/specs/014-identity/sign-in-encouragement.md).
-// Long enough that it never greets someone the instant they open a
-// design; short enough to catch an invested session.
-const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
 
 // The editor's full view (header + canvas + tab bar + all dialogs),
 // lifted out of editor-page.tsx. Every value/handler it needs is read
@@ -149,15 +139,8 @@ export function EditorView() {
     ownPostState: communityState,
     communitySession: sessionCommunity !== null,
   });
-  // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, so a phone resolves to 1.
-  // While a Settings slider is dragged its patch wins, so the chrome resizes
-  // as you go; the preference is written once, on release.
-  const uiScalePreview = useUiScalePreview();
-  const isMobileViewport = useIsMobileViewport();
-  const uiScales = resolveUiScales(
-    uiScalePreview === null ? userPreferences : { ...userPreferences, ...uiScalePreview },
-    { mobile: isMobileViewport },
-  );
+  // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
+  const { uiScales } = useEditorUiScales(userPreferences);
   const role = useRoleIndicator();
 
   const selectTab = useSelectTab();
@@ -170,17 +153,13 @@ export function EditorView() {
   // The viewer's own light / dark chrome (docs/specs/007-editor/live-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
   const { appearance } = useAppearance();
-  // Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md): the same banner the Explorer shows,
-  // but on the editor it waits ~5 minutes into the session before
-  // appearing so it never interrupts someone the moment they open a
-  // design. Hidden in embed (read-only iframe) and zen mode. zenMode
-  // is deliberately kept OUT of the timer's `enabled` so toggling zen
-  // doesn't restart the countdown; it only hides the card at render.
-  const { dismissed: signInDismissed, dismiss: dismissSignIn } =
-    useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
-  const signInTimerEnabled = !accountUserId && appChrome && !signInDismissed;
-  const signInDelayElapsed = useDelayedReveal(SIGNIN_BANNER_DELAY_MS, signInTimerEnabled);
-  const showSignInBanner = signInTimerEnabled && !zenMode && signInDelayElapsed;
+  // Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed into the session.
+  const { showSignInBanner, dismissSignIn } = useSignInNudge({
+    dismissKey: SIGNIN_BANNER_DISMISS_KEY,
+    accountUserId,
+    appChrome,
+    hidden: zenMode,
+  });
   const backdrop = resolveViewBackdrop(activeTab, appearance);
   // One value while the style holds, so the covers reading it stay quiet as the editor re-renders.
   const patternScale = activeTab.backgroundPatternScale ?? 1;

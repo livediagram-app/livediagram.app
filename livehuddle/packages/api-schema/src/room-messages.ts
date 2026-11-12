@@ -4,6 +4,11 @@ import type { CollabKeyMessage } from '@liveworkspace/api-schema/collab-key';
 import type { ParticipantPresence } from './index';
 import type { PresenceBatchMessage } from '@liveworkspace/api-schema/presence-fanout';
 import type { RoomOp } from './room-op';
+import type {
+  CursorMessage,
+  GrantMessage,
+  GrantRenewMessage,
+} from '@liveworkspace/api-schema/room-wire';
 
 // ---------------------------------------------------------------------
 // Realtime room messages
@@ -128,14 +133,19 @@ export type ServerMessage =
   | CollabKeyMessage
   | OpRefusedMessage;
 
-// `ref`: the `ref` the sender put on the op this frame answers, echoed so the sender knows that op is
-// sequenced (docs/specs/012-collaboration/collab-race-hardening.md phase 6). Absent on hello.
-export type CursorMessage = { kind: 'cursor'; epoch: string; seq: number; ref?: number };
-
-// A `ref` the room echoes: a positive safe integer, nothing else.
-export function isRoomOpRef(ref: unknown): ref is number {
-  return typeof ref === 'number' && Number.isSafeInteger(ref) && ref > 0;
-}
+// The room's wire pieces every product's room shares (@liveworkspace/api-schema/room-wire): the op `ref` echo,
+// grant renewal, the close codes and the keepalive.
+export {
+  ACCESS_CHANGED_CLOSE,
+  GRANT_LAPSED_CLOSE,
+  ROOM_GRANT_ASK_BEFORE_MS,
+  ROOM_PING,
+  ROOM_PONG,
+  isRoomOpRef,
+  type CursorMessage,
+  type GrantMessage,
+  type GrantRenewMessage,
+} from '@liveworkspace/api-schema/room-wire';
 
 // The server's document format number (docs/specs/016-platform/new-version-prompt.md), sent to
 // each socket on `hello`: a deploy restarts the room, so every open editor hears it on reconnect.
@@ -177,19 +187,6 @@ export type ClientMessage =
   // `epoch` is null on a client that hasn't seen an ordered op yet.
   | { kind: 'sync'; epoch: string | null; lastSeq: number }
   | GrantMessage;
-
-// The session's grant is about to lapse (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"): the room asks
-// for a fresh one ROOM_GRANT_ASK_BEFORE_MS before it does, and drops the socket (GRANT_LAPSED_CLOSE) when none
-// came by then. `expiresAt`: when the session's grant runs out, epoch ms.
-export type GrantRenewMessage = { kind: 'grant-renew'; expiresAt: number };
-
-// A fresh grant for this session, the index's ES256 JWT (or the api's room ticket, for a client that has no
-// grant of its own). The room checks it as it checked the first, and keeps the session to what it now allows.
-export type GrantMessage = { kind: 'grant'; grant: string };
-
-// How long before a session's grant lapses the room asks for a new one. The editor renews on its own a minute
-// before expiry, so the ask is the fallback; 30 s leaves a slow renewal room to land.
-export const ROOM_GRANT_ASK_BEFORE_MS = 30_000;
 
 // Client-side narrowings of `ClientMessage` / `ServerMessage` that
 // pin `op` to `RoomOp` for type-safe send/receive in the editor.
@@ -238,20 +235,6 @@ export type RoomIncoming =
   // fan-out"): each the op frame it would have sent alone, in order.
   | PresenceBatchMessage<{ kind: 'op'; from: string; op: RoomOp }>;
 
-// The WebSocket close code the realtime room ends a session with when an access
-// change narrows who may be in it without revoking a link (docs/specs/015-api/api.md
-// "Access changes end the sessions they affect"): a share password set, or a
-// member leaving their team. Beside 4003 (a share link changed) and 4004 (the
-// document was trashed). The editor reloads into the ordinary access path.
-export const ACCESS_CHANGED_CLOSE = 4005;
-
-// The room's keepalive (docs/specs/012-collaboration/realtime-conflict-resolution.md "Keepalive"): the client sends
-// the bare text ROOM_PING on an idle socket and the room answers ROOM_PONG without waking from hibernation
-// (setWebSocketAutoResponse). Plain text, never JSON, so neither side's message handler ever sees them as ops.
-// The close code for a session whose grant lapsed without a fresh one (GrantRenewMessage): the editor fetches a
-// new grant and reconnects.
-export const GRANT_LAPSED_CLOSE = 4007;
-
 // A room's capacity and the close an over-capacity join gets (docs/specs/015-api/api.md "A room holds at most
 // 100 connections"), one number for every product's room.
 export {
@@ -270,6 +253,3 @@ export {
   presenceBatches,
   presenceStepMs,
 } from '@liveworkspace/api-schema/presence-fanout';
-
-export const ROOM_PING = 'ping';
-export const ROOM_PONG = 'pong';

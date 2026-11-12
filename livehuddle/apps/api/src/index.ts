@@ -16,6 +16,7 @@ import { handleInternalItems } from './routes/internal-items';
 import { handleLegacyGuestClaim } from './routes/legacy-guest';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { reportServerEvent } from './server-telemetry';
+import { createTokenBearer } from '@liveworkspace/api-kit/bearer-credentials';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import {
   guardRequest,
@@ -98,37 +99,19 @@ async function routeApiRequest(
   // Email used for team-invite matching (docs/specs/013-workspace/teams.md). ONLY the verified
   // `email` claim from the checked access token is trusted, never a client-supplied header.
   const accountEmail = account?.email ?? null;
-  // API token (docs/specs/015-api/public-api-and-tokens.md): a `Bearer lwt_…` resolves to its owner — always a
-  // account — via the hashed-token lookup. Only consulted when no account
-  // access token verified (a token and a JWT can't both be the bearer). The resolved
-  // owner is the token's account id, so a token request flows through the
-  // exact same ownership / gate checks as a signed-in one.
+  // An API token (docs/specs/015-api/public-api-and-tokens.md), consulted only when no account access token
+  // verified: its owner is the token's account id, so a token request flows through the same ownership and gate
+  // checks as a signed-in one. @liveworkspace/api-kit/bearer-credentials.ts reads it, and a bearer
+  // shaped like one that does not resolve is refused there, never read as a guest.
   let tokenAuth: ResolvedApiToken | null = null;
   if (!person) {
-    const bearer = bearerTokenOf(request.headers.get('Authorization'));
-    // A bearer that carries the token prefix claims to be a token even when it is cut short or mistyped (a
-    // copy-paste slip): it is refused as one below, never read as a guest or handed to the account path. A token
-    // carried over from the old livehuddle.app (`lvd_`, @liveworkspace/api-kit api-token.ts) takes the same path.
-    if (bearer && hasApiTokenPrefix(bearer)) {
-      // The token is the liveworkspace account's, checked with liveworkspace (db/api-tokens.ts). When
-      // liveworkspace can't answer, the token is neither good nor bad: 503, so a client retries rather
-      // than drops its credential.
-      try {
-        tokenAuth = isApiTokenFormat(bearer) ? await resolveApiToken(env, bearer) : null;
-      } catch (err) {
-        if (!(err instanceof AccountsUnavailable)) throw err;
-        return accountsUnavailable();
-      }
-      // A token-shaped bearer claims to be a token: unknown, revoked or expired, it is refused here, never
-      // read as a guest or as nobody (docs/specs/015-api/public-api-and-tokens.md §3.3).
-      if (!tokenAuth) {
-        console.warn('[tokens] invalid bearer refused', { path: url.pathname });
-        return json(
-          { error: 'invalid_token' },
-          { status: 401, headers: { 'WWW-Authenticate': 'Bearer error="invalid_token"' } },
-        );
-      }
-    }
+    const read = await readTokenBearer(
+      env,
+      bearerTokenOf(request.headers.get('Authorization')),
+      url.pathname,
+    );
+    if (!read.ok) return read.response;
+    tokenAuth = read.value;
   }
   const guestId = person?.kind === 'guest' ? person.guestId : null;
   // The caller's id: an account (signed in, or behind an API token), else a guest.
@@ -314,6 +297,20 @@ const accountsUnavailable = (): Response =>
     { error: 'accounts_unavailable' },
     { status: 503, headers: { 'Retry-After': String(UNAVAILABLE_RETRY_AFTER_SECONDS) } },
   );
+
+// The API token reader (@liveworkspace/api-kit/bearer-credentials.ts), bound once to this
+// api's lookups and responses.
+const bearerResponses = {
+  json,
+  unavailable: accountsUnavailable,
+  isUnavailable: (err: unknown) => err instanceof AccountsUnavailable,
+};
+const readTokenBearer = createTokenBearer({
+  ...bearerResponses,
+  hasTokenPrefix: hasApiTokenPrefix,
+  isTokenFormat: isApiTokenFormat,
+  resolve: resolveApiToken,
+});
 
 const worker = {
   // Every response carries the server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).

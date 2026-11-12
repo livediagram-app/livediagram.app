@@ -62,7 +62,8 @@ Writes go through a patch so the live preview can reuse it:
   set to `undefined`, so a cleared part is absent, not stored as null.
 
 `UiScaleProvider` is mounted in `EditorView` beside `DockNamesProvider`,
-fed `resolveUiScales({ ...userPreferences, ...preview }, { mobile })`, where
+fed `resolveUiScales({ ...userPreferences, ...preview }, { mobile })` (through
+`../packages/workbench/src/hooks/ui/useEditorUiScales.ts`), where
 `preview` is the dragged slider's patch (see Interfaces). `useUiScale(part)`
 returns `1` outside a provider, so the Explorer page and `/new` are
 untouched. No pre-paint script: the editor reads the cached preferences

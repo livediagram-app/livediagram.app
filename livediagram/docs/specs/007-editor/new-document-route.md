@@ -326,7 +326,8 @@ answered. It does not ask where the document goes or what it is called:
 
 The wizard renders **immediately** with no identity spinner: the step is static
 mode data, so there's nothing to wait for. Identity resolves in the
-background, and the create waits for it (`resolveSelf`) only when it has to.
+background, and the create waits for it (`resolveSelf`, from the shared
+`../packages/workbench/src/hooks/persistence/useResolveSelf.ts`) only when it has to.
 
 There is **no template picker over the editor**. An empty tab's templates are on its mode's own start
 ([Template starts](start-diagramming.md)); the visitor name prompt (`IdentityPrompt`) is the only card the editor

@@ -6,6 +6,7 @@
 
 export * from './apps';
 export * from './audience';
+export * from './event-check';
 export * from './explorer-events';
 export * from './server';
 export * from './summary';
