@@ -5,6 +5,7 @@
  *   .ats-t    moves from --ats-r (rest) to --ats-p (played)
  *   .ats-in   appears as it plays; .ats-out leaves
  *   .ats-pop  overshoots into place; .ats-drag eases like a hand moving a card
+ *   .ats-turn and .ats-fill take longer to move, for the Wait scene's hourglass and bar
  *   --ats-d   the part's delay as it plays (none as it plays back, so it rewinds at once)
  * With no hover (touch), reduced motion or the editor's Reduce motion, the scene shows the played moment, still. */
 
@@ -30,6 +31,13 @@
 .ats-drag {
   --ats-ease: cubic-bezier(0.65, 0, 0.25, 1);
   transition-duration: 260ms, 640ms, 260ms, 260ms;
+}
+/* The Wait scene's hourglass turning over, and its bar filling. */
+.ats-turn {
+  transition-duration: 260ms, 700ms, 260ms, 260ms;
+}
+.ats-fill {
+  transition-duration: 260ms, 900ms, 260ms, 260ms;
 }
 
 :is([data-template], [data-picker-tile]):not(:disabled):is(:hover, :focus-visible) .ats-t {

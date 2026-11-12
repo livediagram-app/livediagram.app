@@ -210,14 +210,16 @@ export function FormResponses({ tone }: { tone: ToneClasses }) {
           </Card>
         </div>
         <div className="mt-auto flex items-center gap-1 px-0.5">
-          <span className="text-[7px] font-semibold text-slate-400">In turn</span>
+          <span className="text-[7px] font-semibold text-slate-500 dark:text-slate-400">
+            In turn
+          </span>
           <span className="relative ml-auto flex gap-[3px]">
             {(['KP', 'JR', 'MS'] as const).map((w) => (
               <span
                 key={w}
                 className={`grid size-3 place-items-center rounded-full text-[5px] font-bold text-white ${AVATARS[w]}`}
               >
-                {w}
+                <span className="text-optical-centre">{w}</span>
               </span>
             ))}
             <span
@@ -245,7 +247,7 @@ export function ShippedToSlack({ tone }: { tone: ToneClasses }) {
       </Column>
       <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-lg bg-white shadow-[0_6px_16px_-8px_rgba(15,23,42,0.35),0_0_0_1px_rgba(15,23,42,0.06)] dark:bg-slate-800 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
         <div className="flex items-center gap-1 border-b border-slate-100 px-1.5 py-1 dark:border-slate-700">
-          <span className="text-[9px] font-bold text-slate-400">#</span>
+          <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400">#</span>
           <span className="text-[8.5px] font-bold text-slate-800 dark:text-slate-100">launch</span>
           <span className="ml-auto flex gap-0.5">
             <span className="size-1 rounded-full bg-slate-300 dark:bg-slate-600" />
@@ -321,7 +323,7 @@ export function TriageBugs({ tone }: { tone: ToneClasses }) {
               key={w}
               className={`grid size-4 place-items-center rounded-full text-[6px] font-bold text-white ${AVATARS[w]}`}
             >
-              {w}
+              <span className="text-optical-centre">{w}</span>
             </span>
           ))}
           <span
@@ -395,10 +397,7 @@ export function UnblockNext({ tone }: { tone: ToneClasses }) {
       </svg>
       <div className="relative w-[40%] shrink-0">
         <Card className="h-[34px]" wide="w-3/4">
-          <span
-            className="ats-out absolute right-1.5 top-1.5 text-slate-400 dark:text-slate-500"
-            style={after(560)}
-          >
+          <span className="ats-out absolute right-1.5 top-1.5 text-slate-400" style={after(560)}>
             <svg width="11" height="12" viewBox="0 0 11 12" aria-hidden>
               <g
                 className="ats-t"
@@ -442,7 +441,7 @@ export function DueSoon({ tone }: { tone: ToneClasses }) {
           key={d}
           className="relative flex h-[52px] min-w-0 flex-1 flex-col items-center gap-0.5 rounded-md bg-white pt-1 shadow-[0_0_0_1px_rgba(15,23,42,0.06)] dark:bg-slate-800 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
         >
-          <span className="text-[7px] font-semibold uppercase tracking-wide text-slate-400">
+          <span className="text-[7px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             {d}
           </span>
           <span className="text-[10px] font-bold leading-none tabular-nums text-slate-800 dark:text-slate-100">

@@ -255,7 +255,7 @@ const SCENES: Readonly<Record<AutomationTriggerKind, (p: { tone: ToneClasses }) 
         <SmallClock aria-hidden />5 days
       </Pill>
       <span
-        className="ats-t absolute -left-2 top-1 text-[9px] font-bold leading-none text-slate-400"
+        className="ats-t absolute -left-2 top-1 text-[9px] font-bold leading-none text-slate-500 dark:text-slate-400"
         style={at('translateY(-3px)', 'none', 80)}
       >
         z

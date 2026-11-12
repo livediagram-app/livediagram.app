@@ -105,7 +105,7 @@ export function TemplatesGallery({
               data-template={t.id}
               disabled={disabled}
               onClick={() => onPick(t.id)}
-              className="flex w-full cursor-pointer flex-col overflow-hidden rounded-xl border border-slate-200 bg-white text-left outline-none transition duration-short hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-[0_12px_28px_-12px_rgba(76,29,149,0.28),0_2px_6px_rgba(15,23,42,0.06)] focus-visible:ring-2 focus-visible:ring-brand-400/60 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 motion-reduce:transition-none dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-500/60"
+              className="flex w-full cursor-pointer flex-col overflow-hidden rounded-xl border border-slate-200 bg-white text-left outline-none transition duration-micro hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-[0_12px_28px_-12px_rgba(76,29,149,0.28),0_2px_6px_rgba(15,23,42,0.06)] focus-visible:ring-2 focus-visible:ring-brand-400/60 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 motion-reduce:transition-none dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-500/60"
             >
               <TemplateScene id={t.id} tone={TONE[t.id]} />
               <span className="flex flex-1 flex-col gap-1.5 px-4 pb-4 pt-3.5">

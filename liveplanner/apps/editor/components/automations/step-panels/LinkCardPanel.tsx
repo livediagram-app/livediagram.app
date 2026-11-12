@@ -108,7 +108,7 @@ export function LinkCardPanel({
                     {itemTitle(chosen)}
                   </>
                 ) : (
-                  <span className="text-slate-500 dark:text-slate-400">No card picked yet</span>
+                  <span className="text-slate-500 dark:text-slate-400">No card picked</span>
                 )}
               </span>
               <Button

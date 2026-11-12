@@ -613,7 +613,9 @@ appears.
 
 - **Tabs**: the active tab's underline slides to the one picked (`short`), and the new tab's content fades in.
 - **Rules list, Audit Trail and Templates**: rows and tiles cascade in (the shared row cascade) when the tab opens or
-  a filter or chip changes; a template tile lifts on hover.
+  a filter or chip changes; a template tile lifts on hover (`micro`, the hover ceiling). The picture on a template
+  tile or a picker's tile (Add an Action, Pick a Trigger) is a content illustration, not chrome: its durations live
+  in `automation-scenes.css`, at its own pace ([motion.md](../004-interface-design/motion.md) "Where durations live").
 - **List to builder and back**: the builder slides in from the right, and the list comes back from the left, as a
   drill-in view does.
 - **In the builder**: a new step rises into place where it lands; the step panel slides in when a step is picked,

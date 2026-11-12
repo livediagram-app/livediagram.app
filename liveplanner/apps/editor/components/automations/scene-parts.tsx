@@ -80,7 +80,7 @@ export const TONES: Readonly<Record<SceneTone, ToneClasses>> = {
     ring: 'ring-brand-900/[0.07] dark:ring-brand-300/15',
     label: 'text-brand-700 dark:text-brand-300',
     dot: 'bg-brand-500',
-    solid: 'bg-brand-600 text-white dark:bg-brand-500',
+    solid: 'bg-brand-700 text-white dark:bg-brand-600',
     soft: 'bg-brand-100 text-brand-800 dark:bg-brand-500/25 dark:text-brand-100',
     line: 'stroke-brand-500',
   },
@@ -197,7 +197,7 @@ export function Avatar({
       className={`absolute grid size-3.5 place-items-center rounded-full text-[6px] font-bold text-white ring-[1.5px] ring-white dark:ring-slate-800 ${AVATARS[who]} ${className}`}
       style={style}
     >
-      {who}
+      <span className="text-optical-centre">{who}</span>
     </span>
   );
 }

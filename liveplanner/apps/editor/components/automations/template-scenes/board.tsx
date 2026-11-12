@@ -198,14 +198,14 @@ export function ReopenOnComment({ tone }: { tone: ToneClasses }) {
 function Rotation({ tone, d }: { tone: ToneClasses; d: number }) {
   return (
     <div className="mt-auto flex items-center gap-1 px-0.5">
-      <span className="text-[7px] font-semibold text-slate-400">In turn</span>
+      <span className="text-[7px] font-semibold text-slate-500 dark:text-slate-400">In turn</span>
       <span className="relative ml-auto flex gap-[3px]">
         {(['KP', 'JR', 'MS'] as const).map((w) => (
           <span
             key={w}
             className={`grid size-3 place-items-center rounded-full text-[5px] font-bold text-white ${AVATARS[w]}`}
           >
-            {w}
+            <span className="text-optical-centre">{w}</span>
           </span>
         ))}
         <span

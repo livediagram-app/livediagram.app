@@ -278,7 +278,7 @@ const ACTION_SCENES: Readonly<Record<AddKind, (p: { tone: ToneClasses }) => Reac
         className="ats-t ats-in ats-pop absolute -top-4 left-1 z-10 flex items-center gap-0.5 rounded-md rounded-bl-none bg-white px-1 py-0.5 shadow-[0_3px_8px_-2px_rgba(15,23,42,0.35)] dark:bg-slate-700"
         style={{ ...at('none', 'translateY(6px) scale(0.4)', 60), transformOrigin: 'bottom left' }}
       >
-        <span className="grid size-2.5 place-items-center rounded-sm bg-brand-600 text-white">
+        <span className="grid size-2.5 place-items-center rounded-sm bg-brand-700 text-white dark:bg-brand-600">
           <ZapGlyph aria-hidden />
         </span>
         <span className="h-[3px] w-8 rounded-full bg-slate-300 dark:bg-slate-500" />
@@ -602,22 +602,13 @@ const ACTION_SCENES: Readonly<Record<AddKind, (p: { tone: ToneClasses }) => Reac
       <div
         className={`relative flex w-[30%] shrink-0 flex-col items-center gap-1 px-1.5 py-1.5 ${PANEL}`}
       >
-        <span
-          className={`ats-t ${tone.label}`}
-          style={{
-            ...at('rotate(180deg)', 'none', 0),
-            transitionDuration: '260ms, 700ms, 260ms, 260ms',
-          }}
-        >
+        <span className={`ats-t ats-turn ${tone.label}`} style={at('rotate(180deg)', 'none', 0)}>
           <HourglassGlyph aria-hidden />
         </span>
         <span className="h-[3px] w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
           <span
-            className={`ats-t block h-full origin-left rounded-full ${tone.dot}`}
-            style={{
-              ...at('none', 'scaleX(0)', 200),
-              transitionDuration: '260ms, 900ms, 260ms, 260ms',
-            }}
+            className={`ats-t ats-fill block h-full origin-left rounded-full ${tone.dot}`}
+            style={at('none', 'scaleX(0)', 200)}
           />
         </span>
         <Chip className={`absolute -right-2 -top-1.5 ${tone.soft}`}>2d</Chip>
