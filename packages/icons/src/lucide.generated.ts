@@ -213,6 +213,7 @@ export { lucideHouse } from './lucide/house';
 export { lucideIceCreamCone } from './lucide/ice-cream-cone';
 export { lucideImage } from './lucide/image';
 export { lucideImagePlus } from './lucide/image-plus';
+export { lucideImages } from './lucide/images';
 export { lucideIndentDecrease } from './lucide/indent-decrease';
 export { lucideIndentIncrease } from './lucide/indent-increase';
 export { lucideInfo } from './lucide/info';
