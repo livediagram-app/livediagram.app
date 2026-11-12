@@ -313,7 +313,7 @@ Each condition is one line in the builder, a chip sentence:
 
 A condition on a field the card's type lacks does not hold (it never errors). A condition naming a type, column,
 field, person or saved filter that is gone since does not hold, and the Rules list marks the rule **Needs Attention**
-with what is missing.
+with what is missing. So does a **Link Cards** step whose chosen card has since been deleted.
 
 ## Actions
 

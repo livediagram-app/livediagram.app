@@ -135,6 +135,7 @@ export async function readAutomationPlan(env: PlanEnv, planId: string): Promise<
       people: [...people.values()],
       savedFilters: savedFiltersOf(tabs),
       formTabs: outlines.filter((t) => t.kind === 'form').map((t) => t.id),
+      cards: new Set(items.map((i) => i.id)),
     },
     types,
     isDone: doneStatusesOf(board.boards),

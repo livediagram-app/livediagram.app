@@ -1,6 +1,6 @@
 // Automations: what a rule names that the plan lacks (docs/specs/026-plan/automations.md "Conditions", "Copies,
-// exports and deletes"; blueprint automations.md "Files"). A card type, column, field, person, saved filter or Form tab
-// gone since the rule was written (or never in a copy): the Rules list marks the rule Needs Attention with these
+// exports and deletes"; blueprint automations.md "Files"). A card type, column, field, person, saved filter, Form tab
+// or Link Cards' chosen card gone since the rule was written (or never in a copy): the Rules list marks the rule Needs Attention with these
 // lines. Each thing is said once, in the order the rule names it. The plan's webhooks live in the index, not the plan:
 // a caller that has them (the builder) passes their ids, and one an outgoing action names that is gone needs
 // attention too. Pure.
@@ -17,7 +17,7 @@ import { stepActions } from './validate';
 import { personOf, planHasField, type AutomationOutline } from './outline';
 
 type Need = {
-  kind: 'column' | 'type' | 'field' | 'person' | 'filter' | 'form' | 'webhook';
+  kind: 'column' | 'type' | 'field' | 'person' | 'filter' | 'form' | 'webhook' | 'card';
   id: string;
 };
 
@@ -29,6 +29,7 @@ const WORDS: Readonly<Record<Need['kind'], string>> = {
   filter: 'Saved filter',
   form: 'Form tab',
   webhook: 'Webhook',
+  card: 'Card',
 };
 
 function conditionNames(c: AutomationCondition): Need[] {
@@ -80,7 +81,10 @@ function actionNames(a: AutomationAction | AutomationOutgoing | AutomationAi): N
     case 'copy_card':
       return a.status ? [{ kind: 'column', id: a.status }] : [];
     case 'link_card':
-      return [{ kind: 'field', id: a.field }];
+      return [
+        { kind: 'field', id: a.field },
+        ...('card' in a.to ? [{ kind: 'card' as const, id: a.to.card }] : []),
+      ];
     default:
       return [];
   }
@@ -128,6 +132,8 @@ function present(need: Need, o: AutomationOutline, webhooks?: ReadonlySet<string
       return o.savedFilters.some((s) => `${s.tab}/${s.filter.id}` === need.id);
     case 'form':
       return o.formTabs.includes(need.id);
+    case 'card':
+      return !o.cards || o.cards.has(need.id);
   }
 }
 

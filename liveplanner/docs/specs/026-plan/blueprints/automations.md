@@ -350,7 +350,9 @@ build):
 - **`{{person}}`** reads "Automation" whenever the trigger is by Automation (a time trigger or another rule's change).
 - **Needs Attention** names people in turn, a branch's saved filter and Card field, and its conditions' and
   actions' names; webhooks only when the caller passes the plan's webhook ids (`ruleNeeds(rule, outline, webhooks)`,
-  the builder): the api's list does not, since the webhooks live in the index.
+  the builder): the api's list does not, since the webhooks live in the index. A Link Cards step's chosen card is
+  checked against `outline.cards`, the ids of the cards `readAutomationPlan` already read (no extra query); an outline
+  without them leaves chosen cards unchecked.
 - **Test on a Card** of a time rule runs on the chosen card as at its moment, without checking its due date.
 - **Measured** (`automations.perf.test.ts`): 2,000 cards and 50 overdue rules due at once (5 hearing every card, 45
   checking a condition that never holds): the wake's CPU time is 165 to 191 ms on an M-series Mac, against the
