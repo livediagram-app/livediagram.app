@@ -24,9 +24,12 @@ export const AUTOMATION_SURFACE =
 
 export function AutomationAuthorName({
   rule,
+  author = 'Automation',
   className = '',
 }: {
   rule: string;
+  // Who the rule ran for: "GitHub" for a GitHub trigger's run ("GitHub · Move on Merge").
+  author?: string;
   className?: string;
 }) {
   const access = useAutomationsAccess();
@@ -37,7 +40,7 @@ export function AutomationAuthorName({
       data-automation-author=""
       className={`inline-flex min-w-0 items-baseline gap-1 ${className}`}
     >
-      <span className="shrink-0 font-semibold text-slate-900 dark:text-slate-50">Automation</span>
+      <span className="shrink-0 font-semibold text-slate-900 dark:text-slate-50">{author}</span>
       {rule ? (
         <>
           <span aria-hidden className="text-slate-400">

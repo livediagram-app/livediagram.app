@@ -35,8 +35,9 @@ describe('shared chrome icons', () => {
   // Non-scaling children: the stroke-width attribute IS the on-screen weight.
   const onScreenPx = (svg: SVGSVGElement) => Number(svg.getAttribute('stroke-width'));
 
-  // The filled glyphs have no stroke.
-  it.each(ICONS.filter(([n]) => n !== 'SparkleIcon' && n !== 'AgentIcon'))(
+  // The filled glyphs have no stroke: the sparkle, the agent, and other companies' marks.
+  const FILLED = new Set(['SparkleIcon', 'AgentIcon', 'GithubMarkIcon']);
+  it.each(ICONS.filter(([n]) => !FILLED.has(n)))(
     '%s draws the house weight in on-screen px',
     (_name, Icon) => {
       const at16 = render(<Icon size={16} />).container.querySelector('svg')!;

@@ -67,3 +67,4 @@ export {
   SettingsIcon,
 } from './editor-chrome';
 export { HeartIcon } from './community';
+export { GithubMarkIcon } from './brand-marks';

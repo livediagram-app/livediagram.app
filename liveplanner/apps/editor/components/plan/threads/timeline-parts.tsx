@@ -56,17 +56,18 @@ export function TimelineDisc({
   size?: 24 | 28;
   // Automation's bolt disc in place of initials (docs/specs/026-plan/automations.md "On cards").
   automation?: boolean;
-  // GitHub's mark disc, for its moves (docs/specs/026-plan/github-pull-requests.md "GitHub rules").
+  // GitHub's mark disc, for what GitHub did, a GitHub-triggered rule's writes included (github-pull-requests.md
+  // "GitHub triggers"); it stands before Automation's bolt.
   github?: boolean;
   // A small mark on its corner (a resolved thread's check).
   badge?: ReactNode;
 }) {
   return (
     <span aria-hidden className="relative z-[1] inline-flex shrink-0">
-      {automation ? (
-        <AutomationDisc size={size} ringed />
-      ) : github ? (
+      {github ? (
         <GithubDisc size={size} />
+      ) : automation ? (
+        <AutomationDisc size={size} ringed />
       ) : (
         <GlyphDisc
           size={size}

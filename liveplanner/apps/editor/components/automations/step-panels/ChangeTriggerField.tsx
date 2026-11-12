@@ -9,9 +9,15 @@ import { Button } from '@liveplanner/ui';
 import { automationsHeroArt } from '../AutomationsHeroArt';
 import { StepTile } from '../automation-glyphs';
 import { StepPicker } from '../StepPicker';
-import { TRIGGER_GROUPS, TRIGGER_LINES, isTimeKind } from '../trigger-groups';
+import { useGithubAutomations } from '../github/github-automations';
+import { useGithubConnection } from '../github/use-github-connection';
+import { TRIGGER_LINES, isTimeKind, offeredGroups } from '../trigger-groups';
+import type { AutomationsScope } from '../automations-client';
 import { TriggerScene } from '../TriggerScene';
 import { PanelField } from './panel-parts';
+
+// No plan: the connection is never read outside the Automations dialog.
+const NO_SCOPE: AutomationsScope = { ownerId: '', projectId: '', shareCode: null };
 
 export function ChangeTriggerField({
   kind,
@@ -21,11 +27,15 @@ export function ChangeTriggerField({
   onChange: (kind: AutomationTriggerKind) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const gh = useGithubAutomations();
+  const github = useGithubConnection(gh?.scope ?? NO_SCOPE, open && !!gh?.enabled);
+  const unconnected = github.status === 'ready' && !github.connection;
   const sections = useMemo(
     () =>
-      TRIGGER_GROUPS.map((g) => ({
+      offeredGroups(!!gh?.enabled, kind).map((g) => ({
         id: g.id,
         name: g.name,
+        ...(g.id === 'github' && unconnected ? { note: 'Not Connected' } : {}),
         tiles: g.kinds.map((k) => ({
           key: k,
           name: AUTOMATION_TRIGGER_NAMES[k],
@@ -34,7 +44,7 @@ export function ChangeTriggerField({
           scene: <TriggerScene kind={k} group={g.id} />,
         })),
       })),
-    [],
+    [gh?.enabled, kind, unconnected],
   );
   return (
     <PanelField label="Trigger" hint={TRIGGER_LINES[kind]}>

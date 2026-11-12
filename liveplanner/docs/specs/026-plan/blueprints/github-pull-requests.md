@@ -6,17 +6,17 @@ built.
 
 ## Domain and naming
 
-| Spec term            | Identifier                                                        |
-| -------------------- | ----------------------------------------------------------------- |
-| Pull Request field   | custom field kind `pullrequest` in `CUSTOM_FIELD_KINDS`           |
-| pull request         | `PullRequestRef` `{ owner, repo, number }`                        |
-| short name           | `pullRequestText(ref)`: `owner/repo#42`                           |
-| canonical address    | `pullRequestUrl(ref)`: `https://github.com/owner/repo/pull/42`    |
-| linked pull requests | `cardPullRequests(item, type)` (fields; mentions join in part 3)  |
-| card mention         | `cardMentions(text, planName)`                                    |
-| pull request state   | `PullRequestStatus` `{ key, url, title, state, checks?, cards? }` |
-| GitHub trigger       | `pull_request_opened` and its kin (`automation/types.ts`)         |
-| GitHub (an author)   | `GITHUB_PERSON`, history tag `'github'`                           |
+| Spec term            | Identifier                                                                   |
+| -------------------- | ---------------------------------------------------------------------------- |
+| Pull Request field   | custom field kind `pullrequest` in `CUSTOM_FIELD_KINDS`                      |
+| pull request         | `PullRequestRef` `{ owner, repo, number }`                                   |
+| short name           | `pullRequestText(ref)`: `owner/repo#42`                                      |
+| canonical address    | `pullRequestUrl(ref)`: `https://github.com/owner/repo/pull/42`               |
+| linked pull requests | `cardPullRequests(item, type)` (fields; mentions join in part 3)             |
+| card mention         | `cardMentions(text, planName)`                                               |
+| pull request state   | `PullRequestStatus` `{ key, url, title, state, checks?, cards? }`            |
+| GitHub trigger       | `pull_request_opened` and its kin (`packages/items/src/automation/types.ts`) |
+| GitHub (an author)   | `GITHUB_PERSON`, history tag `'github'`                                      |
 
 The kind's name in the type editor is **Pull Request** (`CUSTOM_KIND_LABELS`); it is never "PR" in copy.
 
@@ -360,7 +360,7 @@ planId, types, ref)`: the cards whose fields hold the pull request (`fields LIKE
 | Labels, checks folding, a card's linked pull requests (fields, then mentions, deduplicated) | `packages/items/src/pull-request-state.test.ts`             |
 | Payloads read as untrusted shapes: state, draft, merged, lengths, commits                   | `apps/api/src/github/github-payloads.test.ts`               |
 | States kept, out of order ignored, checks per commit, a new commit's checks, trims          | `apps/api/src/github/github-pulls.test.ts`                  |
-| Rules: opened, ready, merged, closed unmerged, type statuses, Trash, archive, by GitHub     | `apps/api/src/github/github-rules.test.ts`                  |
+| Rules (part 4 replaced them with GitHub triggers, tested there)                             | `apps/api/src/github/github-triggers.test.ts`               |
 | `GET /items` answers states to the cards' readers, a tab's alone, a Community visitor none  | `apps/api/src/github/github-pulls.test.ts`                  |
 | Only a signed-in whole-plan Editor sets the rules                                           | `apps/api/src/routes/github-routes.test.ts`                 |
 | A delivery's work on a 2,000-card plan                                                      | `apps/api/src/github/github-pulls.perf.test.ts`             |
@@ -376,15 +376,15 @@ Part 3's two column rules (`GithubRules`, `PUT /github/rules`, `github-moves.ts`
 
 ### packages/items
 
-- `automation/types.ts`: the triggers `pull_request_opened`, `pull_request_merged`, `pull_request_closed` and
+- `packages/items/src/automation/types.ts`: the triggers `pull_request_opened`, `pull_request_merged`, `pull_request_closed` and
   `pull_request_checks { result: 'failing' | 'passing' }`; `GITHUB_TRIGGER_KINDS`, `isGithubTrigger`;
   `isPersonless` holds them.
-- `automation/github-triggers.ts` (pure): `GithubHeard` (`opened`, `merged`, `closed`, `checks_failing`,
+- `packages/items/src/automation/github-triggers.ts` (pure): `GithubHeard` (`opened`, `merged`, `closed`, `checks_failing`,
   `checks_passing`); `heardOfPull(action, state)` (opened, reopened or ready_for_review while open; closed while
   merged or closed); `heardOfChecks(before, after)` (a change into failing or passing, open or a draft);
-  `githubHears(trigger, heard)`; `githubTriggerWords(heard, pr)` for the Audit Trail ("GitHub: acme/web#42 merged");
-  `GITHUB_RUN_PERSON` (GitHub, for `{{person}}`).
-- `automation/matches.ts`: the event kind `github` (`github: GithubHeard`, `pr`: the short name), heard by the four
+  `githubHears(trigger, heard)`; `heardOfTrigger(trigger)` (Test on a Card); `githubTriggerWords(heard, pr)` for the
+  Audit Trail ("GitHub: acme/web#42 merged"). The run is by `GITHUB_PERSON` (`pull-request-state.ts`).
+- `packages/items/src/automation/matches.ts`: the event kind `github` (`github: GithubHeard`, `pr`: the short name), heard by the four
   kinds alone. `sentence.ts` names them; `validate-conditions.ts` reads them; `pull_request_checks` needs `result`.
 - `item-history.ts`: the tag `automation_github` (a GitHub-triggered rule's write: by Automation with the rule's name,
   drawn as GitHub's).
@@ -410,15 +410,22 @@ Part 3's two column rules (`GithubRules`, `PUT /github/rules`, `github-moves.ts`
 - `hooks/persistence/useCapabilities.ts` answers `githubEnabled` too, from the one cached capabilities read.
 - `components/automations/github/`: `github-client.ts` (the four routes), `use-github-connection.ts` (the plan's
   connection, read when the screen asks, shared by the view and the trigger panel through a module cache keyed by
-  plan), `github-return.ts` (the `#github=` result read and cleared once, and the rule draft kept in
-  `sessionStorage` for the round trip), `GithubView.tsx` (the view: Not Connected, Connected with Repositories,
-  Disconnect's `ConfirmDialog`), `GithubConnectCard.tsx` (the Not Connected card, in the view and the trigger panel),
-  `GithubTriggerFields.tsx` (a GitHub trigger's panel: Checks Finished's Failing or Passing, the connection's line or
-  the card), `GithubButton.tsx` (the header's entry), `github-glyphs.tsx` (GitHub's mark).
-- `trigger-groups.ts`: the `github` group, offered only when `githubEnabled`; `TriggerScene.tsx` draws its four
-  scenes (a pull request pill whose mark turns, a card moving under it).
-- `AutomationsContext.tsx`: the target `{ view: 'github'; back?: 'rule' }`; `AutomationsHost.tsx` reads the return hash
-  once the scope is known and opens the screen there (or on the kept draft's builder).
+  plan), `github-hash.ts` (eager and small: the `#github=` result read and dropped from the address, the rule draft
+  kept in `sessionStorage` for the round trip, and the return's telemetry), `github-return.ts` (Connect GitHub and
+  the return's words), `github-automations.ts` (the dialog's context: `githubEnabled`, the scope, the way to the
+  view, the builder's draft), `GithubView.tsx` (the view: Not Connected, Connected, Disconnect's `ConfirmDialog`),
+  `GithubRepositories.tsx` (the chooser), `GithubConnectCard.tsx` (the Not Connected card, whole in the view and
+  compact in the trigger panel), `GithubTriggerFields.tsx` (a GitHub trigger's panel: Checks Finished's Failing or
+  Passing, which cards it runs on, the connection's line or the card), `GithubButton.tsx` (the header's entry).
+- GitHub's mark is the shared `GithubMarkIcon` (`packages/ui/src/icons/brand-marks.tsx`), which livediagram's
+  repository link now uses too.
+- `trigger-groups.ts`: the `github` group, offered only when `githubEnabled` (`offeredGroups`, which keeps it for a
+  rule already on one), noted **Not Connected** in Pick a Trigger while the plan is not; `TriggerScene.tsx` draws its
+  four scenes (a card's pull request pill turning from one state to the next).
+- `AutomationsContext.tsx`: the targets `{ view: 'github'; result? }` and a new rule's `draft` with its `github`
+  result; `AutomationsHost.tsx` reads the return hash as it first draws, drops it from the address, and once the
+  scope is known opens the screen at the view (or at the kept draft's builder, with a toast saying how it went).
+- `RuleBuilder.tsx` keeps a new rule's body in the context's draft, and its save sends `AutomationRuleGithub` too.
 - Activity: an `automation_github` run shows GitHub's disc and "GitHub · {rule}"; Set by Automation counts it.
 
 ### Telemetry
@@ -429,11 +436,12 @@ action from the existing vocabulary, every type a fixed token.
 
 ### Testing (part 4)
 
-| Rule                                                                                     | Test                                                              |
-| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| What each action and check change is heard as; words; reading and naming the triggers    | `packages/items/src/automation/github-triggers.test.ts`           |
-| A delivery queues one run per linked card; replays and stale deliveries queue nothing    | `apps/api/src/github/github-triggers.test.ts`                     |
-| A GitHub-triggered rule moves the card, by GitHub in history, and nothing without a rule | `apps/api/src/github/github-triggers.test.ts`                     |
-| The rules route is gone; the view has no rules                                           | `apps/api/src/routes/github-routes.test.ts`                       |
-| The view's states, the chooser, Disconnect's confirm, the return hash, roles             | `apps/editor/components/automations/github/GithubView.test.tsx`   |
+| Rule                                                                                     | Test                                                               |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| What each action and check change is heard as; words; reading and naming the triggers    | `packages/items/src/automation/github-triggers.test.ts`            |
+| A delivery queues one run per linked card; replays and stale deliveries queue nothing    | `apps/api/src/github/github-triggers.test.ts`                      |
+| A GitHub-triggered rule moves the card, by GitHub in history, and nothing without a rule | `apps/api/src/github/github-triggers.test.ts`                      |
+| The rules route is gone; the view has no rules                                           | `apps/api/src/routes/github-routes.test.ts`                        |
+| The view's states, the chooser, Disconnect's confirm, the return hash, roles             | `apps/editor/components/automations/github/GithubView.test.tsx`    |
 | The GitHub group only when enabled; a trigger's panel                                    | `apps/editor/components/automations/github/GithubTrigger.test.tsx` |
+| The return hash, the draft round trip and its telemetry                                  | `apps/editor/components/automations/github/github-hash.test.tsx`   |

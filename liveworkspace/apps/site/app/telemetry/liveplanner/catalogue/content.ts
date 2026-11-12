@@ -913,6 +913,48 @@ export const PLAN_AUTOMATION_SECRETS_COPIED = chart(
   { types: ['AutomationSecret'] },
 );
 
+// GitHub in Automations (docs/specs/026-plan/github-pull-requests.md "Telemetry", in the liveplanner folder): connects
+// started, finished and not, disconnects, and rules made with a GitHub trigger. Never a repository or a title.
+export const PLAN_GITHUB_CONNECTS = chart(
+  'Plan',
+  'Started',
+  'GitHub Connects Started',
+  'Connect GitHub pressed in Automations, on its way to GitHub to install the App.',
+  { types: ['GithubConnect'] },
+);
+
+export const PLAN_GITHUB_CONNECTED = chart(
+  'Plan',
+  'Linked',
+  'Plans Connected to GitHub',
+  'Someone came back from GitHub with the plan connected.',
+  { types: ['Github'] },
+);
+
+export const PLAN_GITHUB_NOT_CONNECTED = chart(
+  'Plan',
+  'Ended',
+  'GitHub Connects Not Finished',
+  "Someone came back from GitHub without a connection: it failed, or an organisation's owner must approve the install.",
+  { types: ['GithubConnectFailed', 'GithubConnectRequested'], rising: 'bad' },
+);
+
+export const PLAN_GITHUB_DISCONNECTED = chart(
+  'Plan',
+  'Unlinked',
+  'Plans Disconnected from GitHub',
+  'Disconnect pressed, and confirmed, in the GitHub view of Automations.',
+  { types: ['Github'], rising: 'neutral' },
+);
+
+export const PLAN_GITHUB_RULES = chart(
+  'Plan',
+  'Created',
+  'GitHub Automation Rules Made',
+  'A rule with a GitHub trigger (a pull request opened, merged or closed, or its checks finished) saved for the first time.',
+  { types: ['AutomationRuleGithub'] },
+);
+
 export const PLAN_COLUMNS_COLLAPSED = chart(
   'Plan',
   'Toggled',
@@ -1272,6 +1314,11 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_AUTOMATION_SECRETS_MADE,
   PLAN_AUTOMATION_SECRETS_REGENERATED,
   PLAN_AUTOMATION_SECRETS_COPIED,
+  PLAN_GITHUB_CONNECTS,
+  PLAN_GITHUB_CONNECTED,
+  PLAN_GITHUB_NOT_CONNECTED,
+  PLAN_GITHUB_DISCONNECTED,
+  PLAN_GITHUB_RULES,
   PLAN_COLUMNS_COLLAPSED,
   PLAN_SETUP_CHANGED,
   PLAN_CALENDAR_MOVES,

@@ -102,7 +102,7 @@ export const categories: Category[] = [
     title: 'Plan',
     description:
       'Run the work: boards of cards, sheets with real formulas, forms that fill a board, and dashboards drawn from it all.',
-    articleCount: 14,
+    articleCount: 15,
     kind: 'feature',
     groups: ['Getting Going', 'Boards and Cards', 'Sheets', 'Forms and Dashboards'],
   },
@@ -715,6 +715,17 @@ export const articles: Article[] = [
       'Rules that act on your cards for you: when something happens to a card, check it and move, assign, label, comment or email.',
     keywords:
       'automation automations rules rule trigger triggers conditions actions workflow workflows jira automation auto assign auto move when then if else run rule run log audit trail history smart values placeholders email on done stamp date triage form response',
+    category: 'Plan',
+    categorySlug: 'plan',
+    group: 'Boards and Cards',
+  },
+  {
+    slug: 'connect-github',
+    title: 'Connect GitHub',
+    description:
+      'Pull request states on cards, and rules that move a card when its pull request opens, merges, closes or its checks finish.',
+    keywords:
+      'github git pull request pull requests pr prs merge merged checks ci build failing passing repository repositories repo install app connect disconnect integration code review in review done on merge mention',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Boards and Cards',

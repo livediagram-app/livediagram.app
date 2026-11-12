@@ -5,7 +5,8 @@
 // rule's builder in its place. Full screen on a phone, its meter at the foot. Leaving a builder with unsaved changes
 // asks Discard Changes? first, whether by the breadcrumb, a tab or the close. A template picked opens the builder
 // filled from the plan, unsaved and off, named uniquely. The plan's Webhooks dialog opens over it, for Fix Webhook
-// and an outgoing action's Add a Webhook….
+// and an outgoing action's Add a Webhook…. Where the deployment has liveplanner's GitHub App, a GitHub button in the
+// header opens the GitHub view in the tab's place (automations.md "The GitHub view"), as a GitHub trigger's panel does.
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { AutomationListedRule } from '@liveplanner/api-schema';
@@ -26,11 +27,16 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import { usePlan } from '@/components/plan/PlanContext';
+import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useAutomationOutline } from './automation-outline';
 import { BoltIcon } from './automation-glyphs';
 import { AutomationRefusal, type AutomationsScope } from './automations-client';
 import { automationsHeroArt } from './AutomationsHeroArt';
 import type { AutomationsTarget } from './AutomationsContext';
+import { GithubAutomationsContext, type GithubAutomations } from './github/github-automations';
+import { GithubButton } from './github/GithubButton';
+import { GITHUB_RULE_WORDS } from './github/github-return';
+import { GithubView } from './github/GithubView';
 import type { AutomationOutline } from './automation-outline';
 import { NewRuleMenu } from './NewRuleMenu';
 import { newRuleBody, nextRuleName } from './rule-draft';
@@ -102,6 +108,10 @@ export function AutomationsDialog({
     setWebhooksOpen(true);
   }, []);
   const rules = useMemo(() => api.data?.rules ?? [], [api.data]);
+  // GitHub, from the one capabilities read the editor shares; the connection itself is read by the GitHub view and a
+  // GitHub trigger's panel, as they open.
+  const { githubEnabled } = useCapabilities();
+  const githubDraft = useRef<AutomationRuleBody | null>(null);
 
   // Every way out of a dirty builder asks first.
   const guard = useCallback(
@@ -112,6 +122,26 @@ export function AutomationsDialog({
     [target.view, dirty],
   );
   const close = guard(onClose);
+  const openGithub = useMemo(() => guard(() => onTarget({ view: 'github' })), [guard, onTarget]);
+  const github = useMemo<GithubAutomations>(
+    () => ({
+      enabled: githubEnabled,
+      scope,
+      openView: openGithub,
+      draft: () => githubDraft.current,
+      keepDraft: (body) => {
+        githubDraft.current = body;
+      },
+    }),
+    [githubEnabled, scope, openGithub],
+  );
+  // Back at the rule kept for the round trip to GitHub: say how it went, once.
+  const backFromGithub = target.view === 'rule' ? target.github : undefined;
+  useEffect(() => {
+    if (!backFromGithub) return;
+    if (backFromGithub === 'connected') toast.success(GITHUB_RULE_WORDS.connected);
+    else toast.error(GITHUB_RULE_WORDS[backFromGithub]);
+  }, [backFromGithub, toast]);
 
   const withBusy = async (id: string, work: () => Promise<unknown>) => {
     setBusy((s) => new Set(s).add(id));
@@ -174,7 +204,10 @@ export function AutomationsDialog({
       : null;
   // Read once, as the builder mounts (its key changes with the rule).
   const initial =
-    editingRule ?? fromTemplate?.body ?? newRuleBody(nextRuleName(rules.map((r) => r.name)), zone);
+    editingRule ??
+    editing?.draft ??
+    fromTemplate?.body ??
+    newRuleBody(nextRuleName(rules.map((r) => r.name)), zone);
 
   const meter = api.data ? (
     <RunsMeter used={api.data.runsToday} max={api.data.runsPerDay} stacked={phone} />
@@ -257,99 +290,129 @@ export function AutomationsDialog({
   })();
 
   return (
-    <Dialog
-      open
-      onClose={close}
-      titleId={titleId}
-      size="3xl"
-      className="flex flex-col overflow-hidden sm:h-[min(52rem,calc(100dvh-2rem))] sm:w-[min(67.5rem,calc(100vw-2rem))] sm:max-w-none max-h-[calc(100dvh-2rem)] max-sm:h-dvh max-sm:max-h-dvh"
-    >
-      {editing && api.data ? (
-        <>
-          {/* The builder's breadcrumb stands where the header was; the dialog keeps its name for screen readers. */}
-          <h2 id={titleId} className="sr-only">
-            Automations
-          </h2>
-          <RuleBuilder
-            key={editing.ruleId ?? (editing.template ? `template:${editing.template}` : 'new')}
-            rule={editingRule}
-            initial={initial}
-            picks={fromTemplate?.picks}
-            timeZone={zone}
-            scope={scope}
-            signedIn={signedIn}
-            onOpenWebhooks={openWebhooks}
-            outline={outline}
-            api={api}
-            person={plan?.self?.name ?? 'You'}
-            now={now}
-            phone={phone}
-            onDirty={setDirty}
-            onBack={guard(() => onTarget({ view: 'rules' }))}
-            onSaved={(rule) => onTarget({ view: 'rule', ruleId: rule.id })}
-            trailing={<DialogCloseButton onClick={close} />}
-          />
-        </>
-      ) : (
-        <>
-          {/* The dialog hero header, drawn for rules (automations.md "The Automations screen"). */}
-          <HeroDialogHeader
-            art={automationsHeroArt}
-            titleId={titleId}
-            title="Automations"
-            subtitle="Rules that act on this plan’s cards for you when something happens."
-            actions={
-              <NewRuleMenu
-                disabled={!api.data || full}
-                onBlank={newRule}
-                onTemplates={() => onTarget({ view: 'templates' })}
-              />
-            }
-            onClose={close}
-          />
-          <ScreenTabs
-            current={target.view === 'rule' ? 'rules' : target.view}
-            rules={api.data ? rules.length : null}
-            phone={phone}
-            meter={meter}
-            onTab={(tab) => onTarget({ view: tab })}
-          />
-          <div role="tabpanel" className="flex min-h-0 flex-1 flex-col">
-            {body}
-          </div>
-          {phone && meter ? (
-            <div className="border-t border-slate-100 px-4 py-3 dark:border-slate-800">{meter}</div>
-          ) : null}
-        </>
-      )}
-      <ItemWebhooksDialog
-        open={webhooksOpen}
-        onClose={() => {
-          setWebhooksOpen(false);
-          webhooksClosed.current?.();
-          webhooksClosed.current = null;
-        }}
-        itemId={scope.projectId}
-        app="liveplanner"
-        title={planName}
-        shareCode={scope.shareCode}
-      />
-      {leaving ? (
-        <ConfirmDialog
-          open
-          title="Discard Changes?"
-          message="This rule has changes that aren’t saved. Leaving drops them."
-          confirmLabel="Discard Changes"
-          cancelLabel="Keep Editing"
-          onCancel={() => setLeaving(null)}
-          onConfirm={() => {
-            const go = leaving;
-            setLeaving(null);
-            setDirty(false);
-            go();
+    <GithubAutomationsContext value={github}>
+      <Dialog
+        open
+        onClose={close}
+        titleId={titleId}
+        size="3xl"
+        className="flex flex-col overflow-hidden sm:h-[min(52rem,calc(100dvh-2rem))] sm:w-[min(67.5rem,calc(100vw-2rem))] sm:max-w-none max-h-[calc(100dvh-2rem)] max-sm:h-dvh max-sm:max-h-dvh"
+      >
+        {target.view === 'github' ? (
+          <>
+            <h2 id={titleId} className="sr-only">
+              Automations
+            </h2>
+            <GithubView
+              scope={scope}
+              result={target.result}
+              now={now}
+              phone={phone}
+              onBack={() => onTarget({ view: 'rules' })}
+              trailing={<DialogCloseButton onClick={close} />}
+            />
+          </>
+        ) : editing && api.data ? (
+          <>
+            {/* The builder's breadcrumb stands where the header was; the dialog keeps its name for screen readers. */}
+            <h2 id={titleId} className="sr-only">
+              Automations
+            </h2>
+            <RuleBuilder
+              key={
+                editing.ruleId ??
+                (editing.draft
+                  ? 'github'
+                  : editing.template
+                    ? `template:${editing.template}`
+                    : 'new')
+              }
+              rule={editingRule}
+              initial={initial}
+              picks={fromTemplate?.picks}
+              timeZone={zone}
+              scope={scope}
+              signedIn={signedIn}
+              onOpenWebhooks={openWebhooks}
+              outline={outline}
+              api={api}
+              person={plan?.self?.name ?? 'You'}
+              now={now}
+              phone={phone}
+              onDirty={setDirty}
+              onBack={guard(() => onTarget({ view: 'rules' }))}
+              onSaved={(rule) => onTarget({ view: 'rule', ruleId: rule.id })}
+              trailing={<DialogCloseButton onClick={close} />}
+            />
+          </>
+        ) : (
+          <>
+            {/* The dialog hero header, drawn for rules (automations.md "The Automations screen"). */}
+            <HeroDialogHeader
+              art={automationsHeroArt}
+              titleId={titleId}
+              title="Automations"
+              subtitle="Rules that act on this plan’s cards for you when something happens."
+              actions={
+                <>
+                  {githubEnabled ? <GithubButton phone={phone} onOpen={openGithub} /> : null}
+                  <NewRuleMenu
+                    disabled={!api.data || full}
+                    onBlank={newRule}
+                    onTemplates={() => onTarget({ view: 'templates' })}
+                  />
+                </>
+              }
+              onClose={close}
+              // The art's centre clears the wider actions when GitHub's button stands beside New Rule.
+              className={githubEnabled ? '[--hero-centre-end:18rem]' : undefined}
+            />
+            <ScreenTabs
+              current={target.view === 'rule' ? 'rules' : target.view}
+              rules={api.data ? rules.length : null}
+              phone={phone}
+              meter={meter}
+              onTab={(tab) => onTarget({ view: tab })}
+            />
+            <div role="tabpanel" className="flex min-h-0 flex-1 flex-col">
+              {body}
+            </div>
+            {phone && meter ? (
+              <div className="border-t border-slate-100 px-4 py-3 dark:border-slate-800">
+                {meter}
+              </div>
+            ) : null}
+          </>
+        )}
+        <ItemWebhooksDialog
+          open={webhooksOpen}
+          onClose={() => {
+            setWebhooksOpen(false);
+            webhooksClosed.current?.();
+            webhooksClosed.current = null;
           }}
+          itemId={scope.projectId}
+          app="liveplanner"
+          title={planName}
+          shareCode={scope.shareCode}
         />
-      ) : null}
-    </Dialog>
+        {leaving ? (
+          <ConfirmDialog
+            open
+            title="Discard Changes?"
+            message="This rule has changes that aren’t saved. Leaving drops them."
+            confirmLabel="Discard Changes"
+            cancelLabel="Keep Editing"
+            onCancel={() => setLeaving(null)}
+            onConfirm={() => {
+              const go = leaving;
+              setLeaving(null);
+              setDirty(false);
+              go();
+            }}
+          />
+        ) : null}
+      </Dialog>
+    </GithubAutomationsContext>
   );
 }

@@ -130,6 +130,17 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M16.5 9.5l-4 6h3.5l-1 5 4.5-6.5h-3.5z" />
     </Glyph>
   ),
+  // A pull request's branch, two commits joined into a third, over a card's corner: code linked to a card.
+  'connect-github': (
+    <Glyph>
+      <path d="M10 20H4.5A1.5 1.5 0 013 18.5v-14A1.5 1.5 0 014.5 3h9A1.5 1.5 0 0115 4.5V7" />
+      <path d="M6 7h5M6 10.5h3" />
+      <circle cx="14" cy="11" r="1.8" />
+      <circle cx="14" cy="19.5" r="1.8" />
+      <circle cx="20" cy="19.5" r="1.8" />
+      <path d="M14 12.8v4.9M20 17.7v-3.2a2.5 2.5 0 00-2.5-2.5H17" />
+    </Glyph>
+  ),
   // A pen over a squiggle with a dashed spotlight ring round it: a guided look at Draw.
   'plan-tour': (
     <Glyph>
