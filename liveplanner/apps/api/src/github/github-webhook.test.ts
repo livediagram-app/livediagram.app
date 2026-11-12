@@ -289,6 +289,32 @@ describe('a delivery', () => {
     const res = await w.deliver('pull_request', pr(11));
     expect(res.status).toBe(502);
     expect(await res.json()).toEqual({ error: 'github_delivery_failed' });
+    // It says why, never the payload.
+    const threw = logged.filter(
+      (l) => l.startsWith('error') && l.includes('[github] delivery.threw'),
+    );
+    expect(threw).toHaveLength(1);
+    expect(threw[0]).toContain('Error: room down');
+    expect(threw[0]).not.toContain('repo-11');
+  });
+
+  it('forgets a delivery it failed to act on, so the retry acts on it', async () => {
+    await w.seed('A', connection(7, [{ id: 11 }]));
+    const id = '72d3162e-cc78-11e3-81ab-4c9367dc0959';
+    const db = w.planEnv('A').PLAN_DB;
+    // The pull requests' table out of the way: acting on the delivery throws inside the room.
+    await db.prepare('ALTER TABLE github_pull_requests RENAME TO hidden_pull_requests').run();
+    const failed = await w.deliver('pull_request', pr(11), { id });
+    expect(failed.status).toBe(502);
+    expect(logged.some((l) => l.startsWith('error') && l.includes('no such table'))).toBe(true);
+    await db.prepare('ALTER TABLE hidden_pull_requests RENAME TO github_pull_requests').run();
+    expect(await (await w.deliver('pull_request', pr(11), { id })).json()).toEqual({
+      delivered: 1,
+    });
+    // Acted on once it succeeded: a third delivery of the id is the replay.
+    expect(await (await w.deliver('pull_request', pr(11), { id })).json()).toEqual({
+      delivered: 0,
+    });
   });
 
   it('a plan nothing has written answers not connected and stays empty', async () => {

@@ -161,7 +161,8 @@ before it acts: a stale or forged index entry moves nothing, and an entry a plan
 - A delivery acts only on plans whose connection names both its installation and its repository. A pull request
   moves only cards of the plans it is linked to, by field or by mention.
 - Each delivery id (`X-GitHub-Delivery`) is acted on once by each plan, which keeps the ids it has seen for 3 days
-  (`DELIVERY_KEEP_MS`): GitHub's redelivery of one changes nothing twice.
+  (`DELIVERY_KEEP_MS`): GitHub's redelivery of one changes nothing twice. A delivery a plan failed to act on is
+  not kept as seen, so GitHub's retry, or a Redeliver from the App's Recent Deliveries, acts on it then.
 - What each event does: `ping` (sent when the App is made) is answered and nothing more; `pull_request` and
   `check_suite` reach the plans connected to their repository (part 3 acts on them);
   `installation_repositories` with repositories removed drops them from every plan; `installation` deleted drops
