@@ -1,6 +1,6 @@
 ---
 name: review-loop
-description: One pass over the Work Tracker plan in liveplanner. Reviews each Work Item in Under Review, in Priority order, against the latest main code, then either moves it to Reviewed or asks its questions in comment threads on the card. Run with `/loop 30m /review-loop`.
+description: One pass over the Work Tracker plan in liveplanner. Reviews each Work Item in Under Review, in Priority order, against the latest main code, then either moves it to Reviewed or asks its questions in comment threads on the card. Also keeps the backlog clean, moving cards in Under Review, Reviewed and Selected for Development that main already delivers to Done with the PR that built them. Run with `/loop 30m /review-loop`.
 ---
 
 # Review loop: one pass
@@ -8,7 +8,9 @@ description: One pass over the Work Tracker plan in liveplanner. Reviews each Wo
 Reviews the work queued in the **Work Tracker** plan (liveworkspace team library) before anyone starts it.
 Every Work Item in **Under Review** is checked against the code on `origin/main`. If it's clear and feasible, it
 moves to **Reviewed**. If not, each important question becomes a **comment thread** on that Work Item, which
-the owner answers by replying in the thread.
+the owner answers by replying in the thread. Every pass also looks for cards in **Under Review**, **Reviewed**
+and **Selected for Development** that main already delivers, and moves them to **Done** with the PR that built
+them (see "Already done on main").
 
 This loop runs unattended. Act on these rules and never stop to ask (AskUserQuestion). Anything you can't
 decide becomes a question thread on the card.
@@ -24,8 +26,9 @@ decide becomes a question thread on the card.
 
 ## The plan's shape
 
-- **Backlog** tab (it was Work Items; tab names may change, so go by column names): Work Item cards. This loop only uses two of its columns, **Under Review** and
-  **Reviewed**. The fields are Description, App, **Priority** (Low, Medium, High, Critical) and **Type**
+- **Backlog** tab (it was Work Items; tab names may change, so go by column names): Work Item cards. This loop reviews **Under Review** and moves cards to
+  **Reviewed**; it also checks **Reviewed** and **Selected for Development** for work already on main, and moves
+  delivered cards from any of the three to **Done**. The fields are Description, App, **Priority** (Low, Medium, High, Critical) and **Type**
   (Feature or Bug).
 - **Comment threads** on each Work Item hold the questions and their answers. `list_threads` reads them and
   `change_threads` starts, replies to and resolves them. Each thread has an id, a title, a state (open or
@@ -74,7 +77,8 @@ holds through the whole pass, not just this list:
   pass. Say which were left in the report.
 - The report lists cards in the same order.
 
-Never touch cards in other columns.
+Then run "Already done on main" over Under Review (every state, Waiting included), Reviewed and Selected for
+Development. Never touch cards in other columns.
 
 ## 2. Get the latest main
 
@@ -232,6 +236,42 @@ the Inbox, and the flag is for the few that need real thought.
   matches the list above and lacks the flag gets it, so older questions are flagged too.
 - Never add or remove the flag on a card that has no question thread from this loop.
 
+### Already done on main
+
+The owner asked (2026-11-11) for the backlog to stay clean: a card whose work is already on main shouldn't sit in
+Under Review, Reviewed or Selected for Development. Each pass checks those three columns:
+
+1. **Cheap hits, every card, every pass.** A card is a candidate when either:
+   - its **Pull Request** field links a PR that `gh pr view <n> --json state,mergedAt` says is merged; or
+   - a commit on main says it builds this card ("Work Tracker #<n>", or the card's own PR numbers).
+
+   Read the history **once** per pass, not once per card: `git log origin/main --since=90.days
+--format='%H%x09%s%x09%b%x1e' > <scratchpad>/log.txt` (measured 0.11 s, 1.4 MB), then match every card number
+   against that file in one script. A `git log --grep` per card measured 0.55 s each, a minute for 120 cards.
+   Keep `git log -S <symbol>` for the deep check of a single card.
+
+2. **Deep check, a rotating slice.** Also check, by reading the code, every New and Answered Under Review card
+   (step 3 already does this) and the Reviewed and Selected for Development cards whose number mod 8 equals
+   `(UTC hour / 3) mod 8`, so each card is read about once a day without the pass tracking state.
+3. **Judge each candidate against its Acceptance Criteria** (or its description when it has none). Read the
+   code at `origin/main`. Don't trust a commit message alone.
+   - **Fully delivered:** every item is met on main. Move the card to **Done**, set its **Pull Request**
+     field (`f-pull-request`, the PR's full GitHub URL) to the merged PR that delivered it when the field is
+     empty (if no single PR did it, the one that finished it), and tick
+     the Acceptance Criteria items. Start one resolved thread: `Done on main: <PR url> (<one line on what
+shows it, with a file:line link>).` Resolve the loop's open question threads on it as moot ("Built in
+     <PR url>"), and remove `needs-owner`.
+   - **Partly delivered:** tick the items main meets and leave the card where it is. Start one resolved thread:
+     `Partly on main: <what is done, PR url>. Left: <what is not>.` Never post the same note twice: check the
+     card's threads first.
+   - **An open PR, not merged:** leave it. Implemented belongs to the dev loop and PR loop.
+   - **Not delivered:** nothing to do.
+4. **Selected for Development is the dev loop's queue.** Just before moving one of its cards, re-read the card's
+   column with `list_items` (status `Selected for Development`) and skip it if the dev loop has moved it on.
+   Never touch In Progress or later.
+5. Batch the moves and field changes into one `change_items` call and the notes into one `change_threads`
+   call, as everywhere else. List every card moved to Done in the report, with its PR.
+
 ### What counts as important
 
 Raise a question only when the answer changes what gets built, or whether it should be built:
@@ -240,7 +280,8 @@ Raise a question only when the answer changes what gets built, or whether it sho
   happens on phones, which apps).
 - It reverses a recent deliberate decision (a commit or spec change in the last month that removed or ruled
   out exactly this), or it duplicates or conflicts with another Work Item.
-- It's already implemented on main (ask whether to move it to Implemented, or what's still missing).
+- It's partly implemented on main in a way that changes what is left to build (a fully delivered card isn't a
+  question: it moves to Done, see "Already done on main").
 - It's a bug the code doesn't support: the described behaviour isn't what main does, so you need repro steps.
 - It has a feasibility blocker, or the cost is much bigger than the card suggests (say what it touches).
 - It carries security, privacy, data, sharing-role or billing implications the card doesn't address.
@@ -306,15 +347,14 @@ threads (open and resolved), so you never ask the same question twice.
   Review Work Items, reply in them and resolve them once their answer is acted on (or, on a card in any column,
   once moot, as above); correct a Work Item's
   **Type** when it's wrong or missing; add its missing **labels**; and fill its empty **Acceptance Criteria**, **Risks** and
-  **Risk** (and an empty description); and merge related Under Review, Reviewed and Selected for Development cards as "Merging related
-  cards" says (the only time it edits filled fields, retitles a card, sets Priority or moves a card to
-  Cancelled). Otherwise never edit a card's title or change a field someone already filled. Never move
-
-  **Type** when it's wrong or missing; add its missing **labels**; and add or remove the **`needs-owner`**
-  label as "Flag for the owner" says. Never edit a card's title, description or other fields. Never move
-  cards anywhere else. Never reply to, resolve, edit or delete a thread a person started, or anyone's comment
-  but the loop's own. Never touch cards in any other column or on any other board.
-
+  **Risk** (and an empty description); add or remove the **`needs-owner`** label as "Flag for the owner" says;
+  and merge related Under Review, Reviewed and Selected for Development cards as "Merging related cards" says
+  (the only time it edits filled fields, retitles a card, sets Priority or moves a card to Cancelled); and, as
+  "Already done on main" says, move a delivered Under Review, Reviewed or Selected for Development card to
+  **Done**, fill its empty **Pull Request** field and tick the Acceptance Criteria items main meets.
+  Otherwise never edit a card's title or change a field someone already filled. Never move cards anywhere
+  else. Never reply to, resolve, edit or delete a thread a person started, or anyone's comment but the loop's
+  own. Never touch cards in any other column or on any other board.
 - Never write code, branches or PRs from this loop. It only reviews.
 - Never use em dashes in anything you write. Use commas, colons or parentheses.
 - If the MCP refuses a change, report it and carry on with the other cards.
@@ -330,6 +370,7 @@ End each pass with a short table, plus one line on anything that went wrong:
 | #16 "Add to Folder" label            | Low      | Skipped, waiting on 1 thread              |
 | #5 Simplified dashboard board        | (unset)  | Type Bug → Feature; +liveplanner; 1 asked |
 | #9 Board header widgets              | Medium   | Merged in #11 and #14 (Cancelled)         |
+| #21 Sheet freeze panes (Reviewed)    | Low      | Done on main, PR #1402 linked             |
 
 Mark flagged cards in the Outcome column (`needs-owner`, or `needs-owner removed`). After the table, list every
 card carrying `needs-owner` first, flagged this pass or earlier, one line each saying why (a reversed decision, a bug
