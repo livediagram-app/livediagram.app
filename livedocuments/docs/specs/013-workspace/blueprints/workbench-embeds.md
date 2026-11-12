@@ -159,17 +159,17 @@ nothing (WB11).
 
 The surface, where `workbenchMode` changes the editor:
 
-| Gate                                                    | File                                  | In a workbench                                            |
-| ------------------------------------------------------- | ------------------------------------- | --------------------------------------------------------- |
-| App header, account menu, Share, Make a copy, role pill | `EditorView.tsx` (`appChrome`)        | Not rendered                                              |
-| Tab bar, palette, toolbars, Quick style, panels, search | `EditorView.tsx`                      | As the app; Open in livedocuments at the tab bar's right  |
-| The Explorer menu button                                | `EditorCanvasHost.tsx`                | Hidden (`explorerHidden`); a workspace frame's Back there |
-| Settings: documents, account and tokens rows; All apps  | `SettingsDialog.tsx`                  | Hidden; this app's settings only                          |
-| Share, delete, move, copy commands                      | `useEditorCommands.ts`                | Absent                                                    |
-| The document list                                       | `useEditorState.ts`                   | Never read                                                |
-| Teams and mentions                                      | `useEditorState.ts` (`useTokenTeams`) | No team read, no notify                                   |
-| Image picker gallery                                    | `EditorElementDialogs.tsx`            | Upload only (`uploadOnly`, `galleryHidden`)               |
-| Start's save switch                                     | `StartSaveSwitch.tsx`                 | As an embed's                                             |
+| Gate                                                    | File                                     | In a workbench                                            |
+| ------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------- |
+| App header, account menu, Share, Make a copy, role pill | `editor-view-bars.tsx` (`appChrome`)     | Not rendered                                              |
+| Tab bar, palette, toolbars, Quick style, panels, search | `EditorView.tsx`, `editor-view-bars.tsx` | As the app; Open in livedocuments at the tab bar's right  |
+| The Explorer menu button                                | `EditorCanvasHost.tsx`                   | Hidden (`explorerHidden`); a workspace frame's Back there |
+| Settings: documents, account and tokens rows; All apps  | `SettingsDialog.tsx`                     | Hidden; this app's settings only                          |
+| Share, delete, move, copy commands                      | `useEditorCommands.ts`                   | Absent                                                    |
+| The document list                                       | `useEditorState.ts`                      | Never read                                                |
+| Teams and mentions                                      | `useEditorState.ts` (`useTokenTeams`)    | No team read, no notify                                   |
+| Image picker gallery                                    | `EditorElementDialogs.tsx`               | Upload only (`uploadOnly`, `galleryHidden`)               |
+| Start's save switch                                     | `StartSaveSwitch.tsx`                    | As an embed's                                             |
 
 Appearance: `livedocuments:theme` calls `setAppearanceOverride(colourScheme)`; a workspace frame sets the override to
 `system` until the first one (WB15).

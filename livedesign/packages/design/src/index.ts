@@ -3,45 +3,11 @@
 // handles design data. See docs/specs/006-design/design-structure.md and
 // docs/specs/008-canvas/canvas-and-palette.md.
 
-// Value import from the data-shapes LEAF module (it imports only types from
-// here, so no cycle at runtime) — elementSupportsText excludes the
-// self-drawing data shapes the same way the inline editor does.
-import type { TagColour } from './tag-colours';
-import { isSelfDrawingShape } from './data-shapes';
-import type { TabKind } from './tab-kind';
-import type { EditorMode } from './editor-mode';
-import type { Page, PageOrientation } from './page';
-import type { Photo } from '@livedesign/photo-engine';
-
-// Layer type used by the `Tab.layers` field below (docs/specs/006-design/layers.md). Type-only
-// import (erased at build) so the index <-> layers circular reference is fine; the runtime layer
-// helpers are re-exported lower down via `export * from './layers'`.
-import type { Layer } from './layers';
-
-// Per-range label formatting runs (docs/specs/008-canvas/canvas-and-palette.md). Type-only import so the
-// index <-> rich-text relationship stays erasable; the runtime helpers +
-// this type are re-exported lower down via `export * from '@liveworkspace/model-core/rich-text'`.
-// Only the BoxedElement union members are imported for local use; the full set
-// (incl. TableCellStyle / LinkCardMeta sub-types) is re-exported just below.
-import type { ArrowElement } from './arrow-types';
-import type { Finish } from './finish';
 export type { Anchor, ArrowEnds, ArrowElement, Endpoint } from './arrow-types';
 export type { ShapeKind } from './shape-kind';
 export { SHAPE_GEOMETRY_KINDS } from './shape-kind';
 export { ALL_ANCHORS } from './arrow-types';
 
-import type {
-  ShapeElement,
-  TextElement,
-  TableElement,
-  StickyElement,
-  ImageElement,
-  FreehandElement,
-  PathElement,
-  AnnotationElement,
-  LinkCardElement,
-  VideoElement,
-} from './element-types';
 export {
   IMAGE_CREDIT_TEXT_MAX,
   IMAGE_CREDIT_URL_MAX,
@@ -84,13 +50,9 @@ export type {
 // comments.ts; type-only import (erasable), and the whole module is re-exported
 // lower down via `export * from './comments'`.
 
-// Plain `string` aliases for the ids the package's own helpers thread
-// around; callers outside it use plain `string`.
 // The model's plain vocabulary (ids, text size, padding, alignment, icon position, arrow flows,
 // background patterns) is shared by every product: @liveworkspace/model-core/basics.
-import type { TabId, ElementId, TextSize } from '@liveworkspace/model-core/basics';
 // This product's patterns: the shared ones but those it retired (./retired-patterns), which a stored tab moves off.
-import type { BackgroundPattern } from './retired-patterns';
 export {
   RETIRED_PATTERNS,
   isBackgroundPattern,
@@ -124,126 +86,11 @@ export {
   DEFAULT_PATTERN_COLOR,
 } from '@liveworkspace/model-core/canvas-colors';
 
-// Cross-tab link on any element. `tab` jumps to another tab on the same
-// design; `design` navigates to a different design entirely (with
-// the design's name cached on the element so the picker / badge can
-// show it without a round-trip). Element-specific linking
-// (jump-and-focus a specific element) is in the spec but not in the
-// UI yet.
-export type ElementLink =
-  | { kind: 'tab'; tabId: TabId }
-  | { kind: 'element'; tabId: TabId; elementId: ElementId }
-  | { kind: 'design'; designId: string; name: string }
-  // An external web address. Followed by opening in a new tab; stored
-  // verbatim (the UI normalises a bare host to https:// on entry). Used
-  // by both element links and per-cell table links (docs/specs/008-canvas/canvas-and-palette.md).
-  | { kind: 'url'; url: string };
-
-// --- Element union ---------------------------------------------------------
-
-export type BoxedElement =
-  | ShapeElement
-  | TextElement
-  | StickyElement
-  | ImageElement
-  | FreehandElement
-  | PathElement
-  | TableElement
-  | AnnotationElement
-  | LinkCardElement
-  | VideoElement;
-export type Element = BoxedElement | ArrowElement;
-
-// What KIND a tab is (./tab-kind): livedesign has only the general tab.
-//
-// 'diagram' is an ordinary tab and is written explicitly onto tabs the
-// editor commits; tabs stored before the field carry nothing, which reads
-// as 'diagram' via `tabKindOf` (see ./tab-kind).
-
-export type Tab = {
-  id: TabId;
-  name: string;
-  kind?: TabKind;
-  // The tab's editor mode, the same for everyone on it and the mode it opens in
-  // (docs/specs/007-editor/pages-mode.md "One mode"). livedesign has one, Pages: any stored mode,
-  // or none, reads as Pages (via `opensInOf`).
-  opensIn?: EditorMode;
-  // Pages mode's pages (docs/specs/007-editor/pages-mode.md "The pages"): the A4 sheets,
-  // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
-  // (read via `pagesOf`).
-  pages?: Page[];
-  // The pictures of the tab's photo pages, by page id (docs/specs/031-photo/photo-store.md): each
-  // photo's size and layer stack, its pixels named by blob id. Read via `photosOf`; synced layer by
-  // layer (the `photo` room op), never in a `tab-meta` patch.
-  photos?: Record<string, Photo>;
-  // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
-  // is absent; dropped the first time the pages change (`withPages`).
-  pageOrientation?: PageOrientation;
-  // The colours someone picked with + in a colour picker on this tab, newest first, lower-case
-  // `#rrggbb` (docs/specs/004-interface-design/colour-picker.md "Custom colours"). Read via
-  // `customColoursOf`; every picker in the design offers them as Custom Colours.
-  customColours?: string[];
-  // Tag colours (docs/specs/009-elements/tag-colours.md): a card tag mapped to a colour, read with `tagColoursOf`.
-  tagColours?: TagColour[];
-  elements: Element[];
-  backgroundPattern?: BackgroundPattern;
-  backgroundColor?: string;
-  // 0..1, defaults to 1. Applied to backgroundColor as the alpha
-  // channel so the canvas can sit over a transparent / lower-opacity
-  // backdrop (useful when embedded or layered on a theme).
-  backgroundOpacity?: number;
-  patternColor?: string;
-  // Pattern tile scale, defaults to 1. Multiplies the rendered pattern's
-  // tile size so the user can make the grid / dots / texture larger or
-  // smaller (the canvas pattern-size slider). Does not affect the pan
-  // phase, so the pattern still tracks panning at any scale.
-  backgroundPatternScale?: number;
-  // Motion speed for an ANIMATED background pattern (docs/specs/008-canvas/canvas-and-palette.md), defaults to
-  // 1. A rate multiplier (2 = twice as fast) fed to the animated backdrop's
-  // keyframes; ignored by the static patterns. The canvas Speed slider
-  // (shown only while an animated pattern is active) writes it.
-  backgroundAnimationSpeed?: number;
-  // Selected preset theme name (see apps/live/lib/themes.ts). Setting
-  // a theme via the palette repaints every existing element on the tab
-  // to match (sticky notes keep their amber palette). Newly added
-  // elements inherit the same theme colours by default. Unset = brand
-  // defaults.
-  theme?: string;
-  // Default font-family id for this tab (see ../packages/model-core/src/fonts.ts).
-  // Every text-bearing element without its own `font` renders in this
-  // one; unset = the editor default. Lets a whole tab adopt a font in
-  // one move while individual elements can still override.
-  font?: string;
-  // Drawing style for every element without its own (docs/specs/008-canvas/finish.md); unset = Flexible.
-  finish?: Finish;
-  // Default text size for NEW elements added from the palette on this
-  // tab. Unlike `font`, this is a create-time seed — copied onto each
-  // new element's own `textSize`, not resolved at render — so changing
-  // it later doesn't retroactively resize existing elements. Unset = the
-  // per-type factory default ('md').
-  defaultTextSize?: TextSize;
-  // Set to true once the user has explicitly chosen a starting template
-  // (including "Blank"), so the template picker doesn't reappear on this tab.
-  templateChosen?: boolean;
-  // True when the tab is locked: every element becomes read-only,
-  // adds via the palette are blocked, theme / background mutations
-  // are blocked for as long as this tab is active. Toggled from the
-  // tab ellipsis menu.
-  locked?: boolean;
-  // Per-design folder name (docs/specs/006-design/tab-folders.md). Tabs sharing a name render
-  // as a contiguous run under one collapsible chip in the tab bar.
-  // This is link metadata, not body content: it's stripped from the
-  // persisted tab body and carried on the design_tabs row alongside
-  // order_index, so a shared tab can be foldered in one design and
-  // loose in another. Unset / empty = loose. See tab-folders.ts for
-  // the normalize + grouping helpers.
-  folder?: string;
-  // Photoshop-style layers (docs/specs/006-design/layers.md), ordered BOTTOM -> TOP (index 0
-  // paints lowest). Absent = the tab behaves as one implicit default
-  // layer; the array is materialised lazily on the first layer
-  // operation (see layers.ts). Elements point in via `layerId`.
-  layers?: Layer[];
-};
+// The element union, the cross-tab link and the element guards (./element-union), and the Tab type
+// (./tab-type). Every module here imports them from this root as before.
+export * from './element-union';
+export type { Tab } from './tab-type';
+import type { Element } from './element-union';
 
 // --- Type guards -----------------------------------------------------------
 
@@ -308,53 +155,6 @@ export * from './component-fields';
 export * from './component-validate';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
-
-export function isBoxed(element: Element): element is BoxedElement {
-  return (
-    element.type === 'shape' ||
-    element.type === 'text' ||
-    element.type === 'sticky' ||
-    element.type === 'image' ||
-    element.type === 'freehand' ||
-    element.type === 'path' ||
-    element.type === 'table' ||
-    element.type === 'annotation' ||
-    element.type === 'link-card' ||
-    element.type === 'video'
-  );
-}
-
-// True when the element carries a non-empty text label — the plain-text
-// `label` every labelable kind mirrors (shape / text / sticky / freehand /
-// link-card and arrows). Drives the selection toolbar's "Edit Text" button,
-// which only appears once an element actually has text to edit. Tables
-// (per-cell `cells`), images (`alt`), and annotations (`note`) carry no
-// single `label`, so this reads false for them — matching the inline label
-// editor, which targets `label`-bearing elements only.
-export function elementHasText(element: Element): boolean {
-  const label = (element as { label?: string }).label;
-  return typeof label === 'string' && label.trim().length > 0;
-}
-
-// True when the element KIND can carry the plain-text `label` — whether or
-// not one is set yet. Shapes qualify except the self-drawing data shapes
-// (progress / rail / rating / charts), which the inline editor refuses;
-// text / sticky / freehand / arrows all edit `label` too. A link-card is
-// deliberately OUT: its view renders link metadata, never `label`, and its
-// double-click opens the link picker (docs/specs/009-elements/link-cards.md) — an Add-text button there
-// entered an edit state with no editor on screen.
-// Drives the selection toolbar's "Edit Text" / "Add Text" button, which
-// shows on every text-capable element (an empty one included, so the
-// affordance teaches that text can be added).
-export function elementSupportsText(element: Element): boolean {
-  if (element.type === 'shape') return !isSelfDrawingShape(element.shape);
-  return (
-    element.type === 'text' ||
-    element.type === 'sticky' ||
-    element.type === 'freehand' ||
-    element.type === 'arrow'
-  );
-}
 
 // --- Re-exported resource modules -----------------------------------------
 export * from './animation';

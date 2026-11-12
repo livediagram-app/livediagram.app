@@ -248,7 +248,7 @@ Pure, tested, reusable (import UI today; the MCP or public API could adopt it):
 
 - **`parseMermaid(text)`** → `{ ok: true, graph: DiagramGraph, direction }` or
   `{ ok: false, error }`. Detects the diagram type from the header and
-  dispatches: flowcharts parse in `mermaid.ts`, state diagrams in
+  dispatches: flowcharts parse in `mermaid.ts` (node and edge tokens in `mermaid-flowchart-tokens.ts`), state diagrams in
   `mermaid-state.ts`, ER diagrams in `mermaid-er.ts` (shared line/label
   helpers in `mermaid-shared.ts`; every dialect returns the same
   `DiagramGraph`, so the import path doesn't care which it was).

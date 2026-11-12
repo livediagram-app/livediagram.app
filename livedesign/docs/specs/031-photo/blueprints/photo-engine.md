@@ -81,7 +81,7 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
     - Drawing: `apps/live/lib/photo-editor/gl/gl-compositor.ts` (with its `gl-programs.ts` and `gl-textures.ts`) and `apps/live/lib/photo-editor/gl/shaders.ts` (WebGL 2), `cpu-view.ts` (the fallback),
       `surface-painter.ts` (which one draws, and when), `sliced-composite.ts` (a main-thread composite in
       bands, for merges), `view-options.ts` (the pixel grid).
-    - Edits: `layer-ops.ts`, `image-ops.ts`, `apply-ops.ts`, `edit-ops.ts`, `mask-ops.ts`, `selection-ops.ts`,
+    - Edits: `layer-ops.ts` (with `layer-merges.ts` for the merges and `layer-pixels.ts` for what they share), `image-ops.ts`, `apply-ops.ts`, `edit-ops.ts`, `mask-ops.ts`, `selection-ops.ts`,
       `selection-mask.ts`, `select-and-mask.ts`, `clipboard.ts`, `rasterize-element.ts`, `start-photo.ts`.
     - Make Sizes: `make-sizes.ts` (`PHOTO_SIZE_FORMATS`, `coverPlan`, `makeSizes`, the remembered ticks); the
       resample-and-crop itself is `coverSize` in `image-ops.ts`, a `rework` like Image Size and Canvas Size.
@@ -104,8 +104,8 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
     `SelectAndMaskDialog.tsx`, `PlacePictureDialog.tsx`, `FilterPreview.tsx`, `MakeSizesDialog.tsx`), `PhotoExportPanel.tsx`,
     `StartPhotoCard.tsx`, `RasterThumb.tsx`, and the hooks `usePhotoShortcuts.ts`, `usePhotoHistogram.ts`,
     `usePhotoDropPaste.ts`, `usePhotoPreviewUrl.ts`, `useApplyPreview.ts`.
-  - `hooks/editor/`: `usePhotoEditor.ts` (the photo page in focus, its session's lifecycle, the
-    `PhotoEditorView`), `usePhotoFraming.ts` (framed beside its chrome once the tools show, `rail-shown.ts`),
+  - `hooks/editor/`: `usePhotoEditor.ts` (the photo page in focus, its session's lifecycle; the
+    `PhotoEditorView` and `OverlayStore` in `photo-editor-view.ts`), `usePhotoFraming.ts` (framed beside its chrome once the tools show, `rail-shown.ts`),
     `usePhotoPresence.ts` (over the shared `hooks/collab/usePresenceHolds.ts`).
   - `apps/live/components/canvas/usePhotoStripTools.tsx`: the photo tools handed to `ToolbarPalette` (`photoTools`) in place
     of its categories, or at a Participant's strip end; a selection mode picked puts the photo tool down.

@@ -13,7 +13,7 @@ export const PlayIcon = lucideGlyph(lucidePlay, 12);
 export const StopIcon = lucideGlyph(lucideSquare, 11);
 export const DiscardIcon = lucideGlyph(lucideX, 12);
 
-// The green of a running timer, as the exports draw it (svg-render-plan-card.ts TIMER_RUNNING_GREEN).
+// The green of a running timer, as the exports draw it (svg-render-plan-card-bits.ts TIMER_RUNNING_GREEN).
 export const TIMER_GREEN = '#16a34a';
 
 // A timer's elapsed time since `start`, ticking ("12:05").

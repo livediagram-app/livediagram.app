@@ -290,7 +290,7 @@ upright phone whose layout shrinks for its keyboard (an older Android) from fold
 
 Implementation: `useLandscapeBars` (the shown flag, the rename and tour reveals, the telemetry),
 `LandscapeBarFold` (the wrapper round each bar) and `LandscapeBarsHandle`
-(`components/chrome/LandscapeBars.tsx`), wired in `EditorView`.
+(`components/chrome/LandscapeBars.tsx`), wired in `EditorView` and `editor-view-bars.tsx`.
 
 These don't change desktop layout. The strip and the popovers are what resolve the old "panels overlap when all four open" case on a phone: the Palette is one strip and the Explorer and the bottom-row panels are one-at-a-time popovers. The mobile picker ([Dedicated route for new-document creation](new-document-route.md) responsive section) covers the template / identity surface the same way.
 

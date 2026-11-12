@@ -84,7 +84,7 @@ already the stored name without waiting on a round trip:
 
 - `useSelectionEditing`: the auto-name path.
 - `useTabActions.renameTab`, and `useTabActions.duplicateTab`'s `<name> copy`, which can itself run past the cap.
-- `EditorView`'s header rename.
+- The header rename in `editor-view-bars.tsx`.
 - Every inline name field (`NameEditor`) takes `maxLength={NAME_MAX_LENGTH}`.
 
 An Offline Mode document never reaches the server until it syncs, so for it

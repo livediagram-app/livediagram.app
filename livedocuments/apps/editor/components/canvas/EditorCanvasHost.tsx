@@ -6,7 +6,6 @@ import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { SuppressElementIndicators } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 import { PresentingProvider } from '@/components/canvas/PresentingContext';
 import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
-import { dropThenDisarm } from '@liveworkspace/workbench/lib/palette-drop';
 import { canvasSurface } from '@livedocuments/document';
 import { createStockColourProjector, plainPaper } from '@/lib/stock-colour-projector';
 import { usePageView } from '@/hooks/canvas/usePageView';
@@ -36,6 +35,9 @@ import { useCanvasHostBrush } from '@/components/canvas/useCanvasHostBrush';
 import { useCanvasHostExplorer } from '@/components/canvas/useCanvasHostExplorer';
 import { useCanvasHostMenus } from '@/components/canvas/useCanvasHostMenus';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
+import { useInsertCanvasProps } from './editor-canvas-host/useInsertCanvasProps';
+import { usePanelCanvasProps } from './editor-canvas-host/usePanelCanvasProps';
+import { useEditCanvasProps } from './editor-canvas-host/useEditCanvasProps';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -53,58 +55,12 @@ export function EditorCanvasHost() {
     presentingPageId,
     layers,
     layerInertIds,
-    laserPanelPosition,
-    spotlightPanelPosition,
-    setSpotlightPanelPosition,
-    formatConfig,
-    onToggleFormatGroup,
-    onSetFormatMode,
-    formatPanelPosition,
-    setFormatPanelPosition,
     laserConfig,
-    onChangeLaserField,
-    setLaserPanelPosition,
-    addArrow,
-    addAvatar,
-    addLogoStrip,
-    addBanner,
-    addCallout,
-    beginArrowBend,
-    beginArrowScale,
-    addHeader,
-    addHero,
-    addIcon,
-    addSticker,
-    addImage,
-    addLinkCard,
-    addVideo,
-    addProcess,
-    addShape,
-    addStatRow,
-    addSticky,
-    dropBoardFile,
-    addTable,
-    addTechIcon,
-    addText,
     anyWelcomeOpen,
-    appendTableColumnSelected,
-    appendTableRowSelected,
     beginAnchorDrag,
-    beginArrowCurveDrag,
-    beginArrowCurvePointDrag,
-    beginArrowElbowDrag,
-    beginArrowLabelDrag,
-    beginArrowTranslate,
-    beginDrag,
-    pressArmedAction,
-    beginEdit,
-    beginEndpointDrag,
-    beginPolygon,
     broadcastCursor,
     broadcastLaser,
     canvasPointerRef,
-    cancelDrawShape,
-    cancelEdit,
     canRedo,
     canUndo,
     canvasMainRef,
@@ -113,22 +69,12 @@ export function EditorCanvasHost() {
     cancelIdentity,
     accountDisplayName,
     accountUserId,
-    actionRows,
-    commentRows,
-    commentsPanelPosition,
-    commitDraw,
-    commitPolygon,
     styleNewElement,
-    commitLabel,
-    commitTable,
-    deleteCurvePoint,
     deleteMultiSelected,
     documentId,
     documentName,
     nameDocument,
     sessionShareCode,
-    dropIconOnElement,
-    dropPaletteItem,
     duplicateMultiSelected,
     contextMenu,
     editCursorAtEnd,
@@ -150,17 +96,12 @@ export function EditorCanvasHost() {
     can,
     laserTrailRows,
     livePresence,
-    mapPosition,
     narrowMultiSelection,
     newDocument,
     openActionPopover,
     openAssignAction,
     scrollIntoView,
-    completeAction,
-    reopenAction,
-    openCellLinkPicker,
     openComments,
-    pendingDraw,
     redo,
     remoteCursorRows,
     remoteSelectionsByElement,
@@ -172,7 +113,6 @@ export function EditorCanvasHost() {
     followMe,
     setCanvasTool,
     setCanvasThemeTab,
-    setCommentsPanelPosition,
     setContextMenu,
     setExportOpen,
     setExportScope,
@@ -180,19 +120,12 @@ export function EditorCanvasHost() {
     setSankeyFlowsOpenForId,
     setMapDialogOpenForId,
     setLinkPickerOpenForId,
-    setMapPosition,
     setSelectedId,
-    toggleChecklistItem,
-    setPageHeading,
-    setWebRows,
-    appendWebRowTo,
-    setHeroCaptionLine,
     setTextAlignSelected,
     setViewportOffset,
     setViewportZoom,
     shiftDupGhostIds,
     snapGuideStore,
-    spawnConnectSelected,
     tabSummaries,
     toggleAspectLockSelected,
     toggleInMultiSelect,
@@ -315,6 +248,10 @@ export function EditorCanvasHost() {
   // Object props the canvas boundary compares by identity (docs/specs/008-canvas/canvas-performance.md
   // "The canvas re-renders only for what it shows"): new only when their data changes.
   const activeTheme = getTheme(activeTab.theme);
+  // The Canvas props by concern (beside this file, in editor-canvas-host/).
+  const insertProps = useInsertCanvasProps({ handleStartArrow });
+  const panelProps = usePanelCanvasProps({ styleOnPages, goToRowElement });
+  const editProps = useEditCanvasProps({ setPointerTip });
   return (
     // The tab's theme for faces that dress in it unstored (the image placeholder).
     <CanvasThemeProvider theme={activeTheme}>
@@ -326,6 +263,9 @@ export function EditorCanvasHost() {
           {/* A presented slide's stat rows count up (docs/specs/009-elements/stat-row.md). */}
           <PresentingProvider when={presentingElements != null}>
             <Canvas
+              {...insertProps}
+              {...panelProps}
+              {...editProps}
               tabName={activeTab.name}
               tabSummaries={tabSummaries}
               activeTabId={activeTab.id}
@@ -415,90 +355,13 @@ export function EditorCanvasHost() {
               onFormatPagePress={onFormatPagePress}
               canUndo={canUndo && !activeTabLocked}
               canRedo={canRedo && !activeTabLocked}
-              onAddShape={addShape}
-              onAddIcon={addIcon}
-              onAddSticker={addSticker}
-              onAddTechIcon={addTechIcon}
-              onDropIcon={isReadOnly ? undefined : dropIconOnElement}
-              onLinkCell={isReadOnly ? undefined : openCellLinkPicker}
-              onAddTable={addTable}
-              onAddLinkCard={addLinkCard}
-              onAddVideo={addVideo}
-              onAddBanner={addBanner}
-              onAddHero={addHero}
-              onAddHeader={addHeader}
-              onAddCallout={addCallout}
-              onAddStatRow={addStatRow}
-              onAddProcess={addProcess}
-              onAddAvatar={addAvatar}
-              onAddLogoStrip={addLogoStrip}
-              onAddText={addText}
-              onAddSticky={addSticky}
-              onDropFile={isReadOnly ? undefined : dropBoardFile}
-              onAddImage={addImage}
-              onAddArrow={addArrow}
               reshapingArrowId={reshapingArrowId}
-              onBeginPolygon={beginPolygon}
-              pendingDraw={pendingDraw}
-              onCommitDraw={commitDraw}
-              onCommitPolygon={commitPolygon}
               settings={userPreferences}
-              onCancelDraw={cancelDrawShape}
               onUndo={undo}
               onRedo={redo}
-              mapPosition={mapPosition}
-              onMoveMap={(x, y) =>
-                // Equality-guarded so a drag tick that resolves to the same spot
-                // doesn't spin the render loop (max update depth).
-                setMapPosition((p) => (p && p.x === x && p.y === y ? p : { x, y }))
-              }
-              onResetMap={() => setMapPosition((p) => (p === null ? p : null))}
               layers={layers}
               userPreferences={userPreferences}
-              laserPanelPosition={laserPanelPosition}
-              spotlightPanelPosition={spotlightPanelPosition}
-              formatConfig={formatConfig}
-              onToggleFormatGroup={onToggleFormatGroup}
-              onSetFormatMode={onSetFormatMode}
               formatBrushSource={formatBrushSource}
-              formatPanelPosition={formatPanelPosition}
-              onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}
-              onResetFormatPanel={() => setFormatPanelPosition(null)}
-              onMoveSpotlightPanel={(x, y) => setSpotlightPanelPosition({ x, y })}
-              onResetSpotlightPanel={() => setSpotlightPanelPosition(null)}
-              laserConfig={laserConfig}
-              onChangeLaserField={onChangeLaserField}
-              onMoveLaserPanel={(x, y) => setLaserPanelPosition({ x, y })}
-              onResetLaserPanel={() => setLaserPanelPosition(null)}
-              // Bottom-dock Theme & canvas button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
-              // CanvasThemeDialog on its home, the Looks and the Fine-tune rows. Only while the tab has no pages:
-              // then each page's title bar holds Style.
-              onOpenCanvasTheme={
-                isReadOnly || embedMode || styleOnPages
-                  ? undefined
-                  : () => {
-                      setCanvasThemeTab('looks');
-                      track('UI', 'Opened', 'ThemePicker');
-                    }
-              }
-              commentRows={commentRows}
-              commentsPanelPosition={commentsPanelPosition}
-              onMoveCommentsPanel={(x, y) => setCommentsPanelPosition({ x, y })}
-              onResetCommentsPanel={() => setCommentsPanelPosition(null)}
-              onOpenCommentsForElement={(id) => {
-                goToRowElement(id);
-                openComments(id);
-              }}
-              actionRows={actionRows}
-              onOpenActionForElement={(id) => {
-                goToRowElement(id);
-                openActionPopover(id);
-              }}
-              onToggleActionDone={
-                isReadOnly
-                  ? undefined
-                  : (id, done) => (done ? completeAction(id) : reopenAction(id))
-              }
               currentDocumentId={documentId}
               currentShareCode={sessionShareCode}
               onRenameCurrentDocument={nameDocument}
@@ -510,30 +373,7 @@ export function EditorCanvasHost() {
               onMultiContextMenu={onMultiContextMenu}
               onOpenMultiContextMenu={onOpenMultiContextMenu}
               onCanvasContextMenu={onCanvasContextMenu}
-              onBeginDrag={beginDrag}
-              onPressArmedAction={pressArmedAction}
-              onBeginEdit={beginEdit}
-              onCommitLabel={commitLabel}
-              onCommitTable={commitTable}
-              onAddTableRow={appendTableRowSelected}
-              onAddTableColumn={appendTableColumnSelected}
-              onToggleChecklistItem={isReadOnly ? undefined : toggleChecklistItem}
-              onSetPageHeading={setPageHeading}
-              onSetWebRows={isReadOnly ? undefined : setWebRows}
-              onSetPointerTip={isReadOnly ? undefined : setPointerTip}
-              onAppendWebRow={isReadOnly ? undefined : appendWebRowTo}
-              onSetHeroCaptionLine={isReadOnly ? undefined : setHeroCaptionLine}
               chartPalette={themeChartPalette(activeTheme)}
-              onCancelEdit={cancelEdit}
-              onBeginEndpointDrag={beginEndpointDrag}
-              onBeginArrowTranslate={beginArrowTranslate}
-              onBeginArrowCurveDrag={beginArrowCurveDrag}
-              onBeginArrowCurvePointDrag={beginArrowCurvePointDrag}
-              onBeginArrowBend={beginArrowBend}
-              onBeginArrowScale={beginArrowScale}
-              onDeleteCurvePoint={deleteCurvePoint}
-              onBeginArrowLabelDrag={beginArrowLabelDrag}
-              onBeginArrowElbowDrag={beginArrowElbowDrag}
               onShiftSelect={toggleInMultiSelect}
               onExitFormatTool={exitFormatTool}
               onSetTextAlign={setTextAlignSelected}
@@ -560,9 +400,6 @@ export function EditorCanvasHost() {
               onCancelIdentity={cancelIdentity}
               tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
               onToggleAspectLock={toggleAspectLockSelected}
-              onDropPalette={dropThenDisarm(dropPaletteItem, cancelDrawShape)}
-              onSpawnConnect={spawnConnectSelected}
-              onStartArrow={handleStartArrow}
               // One gesture, one answer: while the element menu is open the
               // quick-connect pluses stand down (see deriveCanvasSelection).
               elementMenuOpen={contextMenu?.mode === 'element'}

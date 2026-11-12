@@ -11,8 +11,11 @@ Spec: [one-explorer.md "This Browser, a Space"](../one-explorer.md#this-browser-
   `renameThisBrowserFolder`, `deleteThisBrowserFolder` moving its folders and items up, `moveThisBrowserFolder`
   refusing a cycle, `moveThisBrowserItem`), the folder tree helpers (`localChildren`, `localPath`, `isLocalWithin`)
   and the sync-place notes (`noteSyncPlace`, `readSyncPlaces`, `dropSyncPlace`).
-- `packages/explorer/src/explorer/ThisBrowser.tsx`: the hooks (`useThisBrowserList`, `useThisBrowserFolders`, one
-  parse per stored text change, `useThisBrowserSpace` for visibility) and the view.
+- `packages/explorer/src/explorer/ThisBrowser.tsx`: the view, and `useThisBrowserSpace` for visibility.
+- `packages/explorer/src/explorer/this-browser-store.ts`: the hooks (`useThisBrowserList`, `useThisBrowserFolders`),
+  one parse per stored text change.
+- `packages/explorer/src/explorer/ThisBrowserItemMenu.tsx`: one item's verbs (open, archive, reload after a move), the
+  pill and Changed line, and `ThisBrowserItemMenu`.
 - `packages/explorer/src/explorer/this-browser-space/`: the sidebar row and its folder subtree, the folder card and
   its menu, the folder dialogs (Home's tile is `ThisBrowserTile` in `HomeSpaces.tsx`).
 - `packages/explorer/src/explorer/this-browser-space/useSyncPlaces.ts`: applies the page's sync-place notes once the item is in the

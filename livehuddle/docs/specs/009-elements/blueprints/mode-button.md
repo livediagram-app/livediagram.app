@@ -17,7 +17,7 @@ Scope, by file:
 | `apps/editor/components/canvas/ModeButtonFace.tsx`             | The face: chip, derived text, press; `MODE_LABEL`                                                 |
 | `apps/editor/components/canvas/ElementFaceRouter.tsx`          | Renders the face while not editing                                                                |
 | `apps/editor/components/canvas/BoxedElementView.tsx`           | Resolves `textColor` through `ownColours` and `defaultTextColor`                                  |
-| `apps/editor/hooks/ui/usePressWithoutDrag.ts`                  | Click presses, drag stays silent                                                                  |
+| `../packages/workbench/src/hooks/ui/usePressWithoutDrag.ts`    | Click presses, drag stays silent                                                                  |
 | `../packages/workbench/src/lib/press-gestures.ts`              | `isDragTravel`, `PRESS_DRAG_SLOP_PX`                                                              |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`            | `pressModeButton`: records the Avatar spawn point                                                 |
 | `apps/editor/app/document/[id]/editor-state/useEditorTools.ts` | `pressModeButton`: Leave, else `pickCanvasTool`                                                   |

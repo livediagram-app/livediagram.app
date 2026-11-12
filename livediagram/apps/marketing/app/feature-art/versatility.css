@@ -1,5 +1,5 @@
-/* The versatility cards (components/feature-art/versatility.tsx). Prefixed fa-c- so they
-   never collide with another card set. Six-second loops unless a card sets its own duration.
+/* The versatility cards (components/feature-art/versatility.tsx, versatility-drawing.tsx). Prefixed
+   fa-c- so they never collide with another card set. Six-second loops unless a card sets its own duration.
    Reduced motion settles each to its finished frame: the clean shape, the tidy layout, the first
    option of a cycle, the text typed. */
 

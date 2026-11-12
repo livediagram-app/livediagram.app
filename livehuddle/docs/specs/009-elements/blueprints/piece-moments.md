@@ -4,20 +4,21 @@ Derived from [Piece moments](../piece-moments.md).
 
 ## Files
 
-| File                                                        | Role                                                                                                                              |
-| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/editor/lib/piece-moments.ts`                          | `MOMENT_KINDS`, `hasMoment`, the reach (`inMomentReach`), the durations, the trigger (`createMomentTrigger`, pure), the store     |
-| `apps/editor/lib/piece-moment-motions.ts`                   | Pure data: which of a piece's own front parts move in its moment (`PART_MOTIONS`), and the whole-drawing motion (`wholeMotionOf`) |
-| `apps/editor/components/canvas/collab/usePieceMoments.ts`   | Picks the moment pieces out of the board, feeds each step of your feet to the trigger, plays every piece it answers               |
-| `apps/editor/components/canvas/collab/PieceMoments.tsx`     | `MomentDrawing` (the keyed wrapper that moves the drawing and its parts), `PieceMoment` (the drawn-over parts), `PondMoment`      |
-| `apps/editor/components/canvas/collab/moment-kit.tsx`       | The shared drawn-over parts: falling, thrown and splashing bits, the sparkle, and `useFreshMoment`                                |
-| `apps/editor/components/canvas/collab/OfficeMoments.tsx`    | The drawn-over parts of the static office, amenity, venue and team pieces, and `PoolMoment`                                       |
-| `apps/editor/app/piece-moments.css`                         | The garden and fire keyframes; reduced motion for every moment                                                                    |
-| `apps/editor/app/piece-moments-office.css`                  | The office, amenity, venue and team keyframes                                                                                     |
-| `apps/editor/components/canvas/collab/FurnitureView.tsx`    | Wraps the drawing in `MomentDrawing`, wraps each moving part, and draws `PieceMoment` over it, for a moment kind only             |
-| `apps/editor/components/canvas/collab/PondView.tsx`         | Draws `PondMoment` over the water                                                                                                 |
-| `apps/editor/components/canvas/collab/SwimmingPoolView.tsx` | Draws `PoolMoment` over the water                                                                                                 |
-| `apps/editor/components/canvas/useCanvasAvatar.tsx`         | Calls `usePieceMoments` beside `useSocialPieces`                                                                                  |
+| File                                                              | Role                                                                                                                              |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/editor/lib/piece-moments.ts`                                | `MOMENT_KINDS`, `hasMoment`, the reach (`inMomentReach`), the durations, the trigger (`createMomentTrigger`, pure), the store     |
+| `apps/editor/lib/piece-moment-motions.ts`                         | Pure data: which of a piece's own front parts move in its moment (`PART_MOTIONS`), and the whole-drawing motion (`wholeMotionOf`) |
+| `apps/editor/components/canvas/collab/usePieceMoments.ts`         | Picks the moment pieces out of the board, feeds each step of your feet to the trigger, plays every piece it answers               |
+| `apps/editor/components/canvas/collab/PieceMoments.tsx`           | `MomentDrawing` (the keyed wrapper that moves the drawing and its parts), `PieceMoment` (the drawn-over parts), `PondMoment`      |
+| `apps/editor/components/canvas/collab/moment-kit.tsx`             | The shared drawn-over parts: falling, thrown and splashing bits, the sparkle, and `useFreshMoment`                                |
+| `apps/editor/components/canvas/collab/OfficeMoments.tsx`          | The drawn-over parts of the static office, amenity, venue and team pieces, and `PoolMoment`                                       |
+| `apps/editor/components/canvas/collab/office-moment-drawings.tsx` | The small drawings those moments are made of: a ring, drips, a breeze, a dart, steam, a sparrow and the rest                      |
+| `apps/editor/app/piece-moments.css`                               | The garden and fire keyframes; reduced motion for every moment                                                                    |
+| `apps/editor/app/piece-moments-office.css`                        | The office, amenity, venue and team keyframes                                                                                     |
+| `apps/editor/components/canvas/collab/FurnitureView.tsx`          | Wraps the drawing in `MomentDrawing`, wraps each moving part, and draws `PieceMoment` over it, for a moment kind only             |
+| `apps/editor/components/canvas/collab/PondView.tsx`               | Draws `PondMoment` over the water                                                                                                 |
+| `apps/editor/components/canvas/collab/SwimmingPoolView.tsx`       | Draws `PoolMoment` over the water                                                                                                 |
+| `apps/editor/components/canvas/useCanvasAvatar.tsx`               | Calls `usePieceMoments` beside `useSocialPieces`                                                                                  |
 
 ## Domain and naming
 

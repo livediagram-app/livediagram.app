@@ -61,7 +61,7 @@ toggle.
 - The chrome is hidden by the same gates that already hide it during the
   welcome flow: each `welcomeOpen ? null` / `welcomeOpen || readOnly`
   guard in `CanvasChrome` also checks `zenMode`. The header + tab bar are
-  hidden in `EditorView`.
+  hidden in `editor-view-bars.tsx`.
 - Not a `CanvasTool` (Select / Hand / Laser are mutually-exclusive cursor
   modes); zen mode is an orthogonal visibility flag, so it sits beside
   the tool row rather than inside the tool group.

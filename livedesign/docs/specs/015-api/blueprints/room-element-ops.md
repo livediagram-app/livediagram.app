@@ -12,7 +12,7 @@ The implementation of [Realtime conflict resolution](../../012-collaboration/rea
 | `apps/api/src/room-element-rules.ts`          | `ROOM_ELEMENT_RULES`: this product's validator and migrations, bound for the judge        |
 | `apps/api/src/design-room/design-room.ts`     | The room's `elementGate`, called after the role gate and before an op is sequenced        |
 | `packages/api-schema/src/room-messages.ts`    | `OpRefusedMessage` in `ServerMessage` and `RoomIncoming`                                  |
-| `apps/live/lib/api/room.ts`                   | The connector's `op-refused` branch: the waiting `ref` settles false, `[room] op refused` |
+| `packages/workbench/src/lib/room-client.ts`   | The connector's `op-refused` branch: the waiting `ref` settles false, `[room] op refused` |
 
 ## Domain and naming
 

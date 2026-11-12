@@ -14,7 +14,7 @@ Scope, by file:
 | `packages/explorer/src/inbox-apps.ts`         | `APPS_WITHOUT_INBOX` (livehuddle), `appHasInbox`: the per-app switch that hides the Inbox and skips its fetch                                                   |
 | `packages/index-app/src/outbox.ts`            | The item's outbox in its Durable Object: what it owes the index, drained on idle                                                                                |
 | `packages/index-app/src/cards.ts`, `forms.ts` | Cards and their threads under `~cards`; a form's code lookup, cached                                                                                            |
-| `packages/index-client/src/client.ts`         | `createAppIndexClient`: `pushSummary`, `pushCollab`, `pushForm`, `pushFormSeen`, `formByCode`, `formSeen`, `pushEvents`, `pushPersonEvents`                     |
+| `packages/index-client/src/app-client.ts`     | `createIndexAppClient`: `pushSummary`, `pushCollab`, `pushForm`, `pushFormSeen`, `formByCode`, `formSeen`, `pushEvents`, `pushPersonEvents`                     |
 
 ## Domain and naming
 
