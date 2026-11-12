@@ -259,3 +259,22 @@ describe('CanvasThemeDialog Apply to All Tabs', () => {
     expect(row()).toBeNull();
   });
 });
+
+// docs/specs/011-theme/canvas-and-theme-dialog.md: the dialog hero header every app's Tab Style wears, its line
+// naming what the view that is up sets, with Help and the close at the right.
+describe('CanvasThemeDialog header', () => {
+  it.each([
+    ['looks', 'Pick a look for the whole tab, then fine-tune any part of it.'],
+    ['theme', 'The colours everything on the tab draws in.'],
+    ['finish', 'How everything on the tab is drawn.'],
+    ['font', 'The tab’s font, and the size new text starts at.'],
+    ['canvas', 'The pattern and colours behind everything.'],
+  ] as const)('wears the hero band on %s, its line for that view', (tab, line) => {
+    render(<CanvasThemeDialog {...props} tab={tab} />);
+    const panel = screen.getByRole('dialog', { name: 'Tab style' });
+    expect(panel.querySelector('[data-dialog-hero="canvas-theme"]')).not.toBeNull();
+    expect(screen.getByRole('heading', { level: 2, name: 'Tab Style' })).toBeTruthy();
+    expect(screen.getByText(line)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Close' })).toBeTruthy();
+  });
+});

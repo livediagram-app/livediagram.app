@@ -24,7 +24,7 @@ livedesign's Choose a Layout (livedesign/docs/specs/007-editor/pages-mode.md "An
 Settings and liveworkspace.app's (livediagram/docs/specs/007-editor/user-preferences.md "The header",
 liveworkspace/docs/specs/010-site/site.md "Settings"), Collaborators
 (livediagram/docs/specs/012-collaboration/collaborator-enhancements.md) and Tab Style
-(livediagram/docs/specs/011-theme/canvas-and-theme-dialog.md).
+(livediagram/docs/specs/011-theme/canvas-and-theme-dialog.md, every app's alike).
 
 ## The frame
 

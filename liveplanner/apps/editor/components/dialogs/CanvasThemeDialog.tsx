@@ -17,6 +17,7 @@
 import { useState } from 'react';
 import { resolveFinish, type BackgroundPattern, type Finish } from '@liveplanner/project';
 import { BackBar } from '@liveplanner/ui';
+import { canvasThemeHeroArt } from '@liveworkspace/ui/dialog-hero-art/canvas-theme';
 import { ClusterPanel } from '@/components/canvas/ClusterPanel';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -40,6 +41,15 @@ const eased =
     easeNextStyleChange();
     fn(a);
   };
+
+// The header's line for each view: what the home and each Fine-tune panel set, in a few words.
+const VIEW_LINES: Record<CanvasThemeTab, string> = {
+  looks: 'Pick a look for the whole tab, then fine-tune any part of it.',
+  theme: 'The colours everything on the tab draws in.',
+  finish: 'How everything on the tab is drawn.',
+  font: 'The tab’s font, and the size new text starts at.',
+  canvas: 'The pattern and colours behind everything.',
+};
 
 const PANEL_TITLES: Record<Exclude<CanvasThemeTab, 'looks'>, string> = {
   theme: 'Colours',
@@ -133,17 +143,16 @@ export function CanvasThemeDialog({
     onTabChange(next);
   };
   return (
-    // A popover flying out of the paintbrush, a centred dialog without it, a bottom sheet on a phone (ClusterPanel).
+    // A popover flying out of the paintbrush, a centred dialog without it, a bottom sheet on a phone (ClusterPanel),
+    // under the dialog hero header every app's Tab Style wears (liveworkspace/docs/specs/004-index/dialog-hero-header.md):
+    // the swatch fan's band, the title and a line for the view that is up, then Help and the close.
     // "Appearance" is the VIEWER's own light / dark chrome (docs/specs/007-editor/editor-app.md), so this dialog,
     // the tab's look shared with everyone, takes the name of the section that opens it.
     <ClusterPanel
       label="Tab style"
       title="Tab Style"
-      subtitle={
-        tab === 'looks'
-          ? 'Pick a look for the whole tab, then fine-tune any part of it.'
-          : undefined
-      }
+      subtitle={VIEW_LINES[tab]}
+      hero={canvasThemeHeroArt}
       anchorSelector='[data-tour-id="canvas-theme"]'
       onClose={onClose}
       headerEnd={
