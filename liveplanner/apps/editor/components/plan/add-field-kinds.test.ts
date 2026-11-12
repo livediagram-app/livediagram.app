@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BUILT_IN_FIELD_IDS, CUSTOM_FIELD_KINDS } from '@liveplanner/items';
+import { BUILT_IN_FIELD_IDS, KINDS_IN_PROGRESS, OFFERED_FIELD_KINDS } from '@liveplanner/items';
 import {
   BUILT_INS_OF_KIND,
   BUILT_IN_ROLES,
@@ -20,9 +20,10 @@ import {
 } from './add-field-kinds';
 import { BUILT_IN_FIELD_LABELS, PICK_KIND_LABELS } from './ItemTypeFieldForms';
 
-// docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field's categories, lines, words and readiness.
+// docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field's categories, lines, words and readiness. A kind still
+// being built (KINDS_IN_PROGRESS) is offered by no category until every surface draws it.
 const PICK_KINDS: readonly PickKind[] = [
-  ...CUSTOM_FIELD_KINDS,
+  ...OFFERED_FIELD_KINDS,
   ...(Object.keys(KIND_VARIANTS) as PickKind[]),
 ];
 const found = (query: string): PickKind[] =>
@@ -55,6 +56,7 @@ describe('the kinds’ categories', () => {
     const placed = KIND_CATEGORIES.flatMap((c) => c.kinds);
     expect([...placed].sort()).toEqual([...PICK_KINDS].sort());
     expect(new Set(placed).size).toBe(placed.length);
+    for (const k of KINDS_IN_PROGRESS) expect(placed).not.toContain(k);
     for (const c of KIND_CATEGORIES) expect(c.line).toMatch(/^[A-Z].+\.$/);
     expect(KIND_CATEGORIES.find((c) => c.id === 'cards')!.kinds).toEqual([
       'card',

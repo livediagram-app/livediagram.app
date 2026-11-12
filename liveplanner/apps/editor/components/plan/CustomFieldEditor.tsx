@@ -289,6 +289,10 @@ export function CustomFieldEditor({
     case 'comments':
     case 'votes':
       return null;
+    // A Risk's control in the card panel comes with the editor's part (docs/specs/026-plan/blueprints/item-types.md
+    // "Risk fields"); until then neither Add Field nor an agent offers the kind, so no card holds one.
+    case 'risk':
+      return null;
   }
 }
 

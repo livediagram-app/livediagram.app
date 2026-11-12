@@ -10,6 +10,7 @@ import {
 
 export {
   PRIORITY_COLOURS,
+  RISK_COLOURS,
   accentOn,
   chipInkOn,
   planPalette,

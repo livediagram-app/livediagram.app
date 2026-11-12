@@ -53,6 +53,7 @@ import { planColourName } from './ColourSwatches';
 import { PercentReading } from './PercentBar';
 import { OptionChip } from './OptionChip';
 import { choiceColour } from './choice-options';
+import { RISK_COLOURS } from './plan-palette';
 
 const TypeIcon = lucideGlyph(lucideType, 16);
 const PullRequestIcon = lucideGlyph(lucideGitPullRequest, 16);
@@ -98,6 +99,7 @@ export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
   phone: <PhoneIcon />,
   choice: <ListIcon />,
   multichoice: <ListChecksIcon />,
+  risk: <PlanTypeGlyph glyph="risk" size={16} />,
   rating: <PlanTypeGlyph glyph="star" size={16} />,
   card: <PlanTypeGlyph glyph="ticket" size={16} />,
   calculated: <CalculatorIcon />,
@@ -282,6 +284,9 @@ function SampleValue({
         </span>
       );
     }
+    // A level in its fixed colour (docs/specs/026-plan/item-types.md "Risk").
+    case 'risk':
+      return <OptionChip option="High" colour={RISK_COLOURS.high} />;
     case 'rating':
       return (
         <span className="text-[14px] tracking-wider text-amber-500" aria-hidden>

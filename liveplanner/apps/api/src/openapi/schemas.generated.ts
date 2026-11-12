@@ -5150,6 +5150,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "phone",
       "choice",
       "multichoice",
+      "risk",
       "rating",
       "card",
       "calculated",
