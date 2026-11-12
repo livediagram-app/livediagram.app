@@ -3,6 +3,7 @@
 // dropped from the address, its telemetry, the rule kept for the round trip (taken once, never a broken one), and the
 // Automations host opening at the GitHub view or the kept rule, only for an Editor's scope.
 import { act, cleanup, render, screen } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AutomationRuleBody } from '@liveplanner/items';
 import type { AutomationsScope } from '../automations-client';
@@ -129,6 +130,19 @@ describe('AutomationsHost: back from GitHub', () => {
       github: 'requested',
     });
     expect(takeGithubDraft('p1')).toBeNull();
+  });
+
+  it('opens the rule kept even when the effect runs twice (Strict Mode)', async () => {
+    keepGithubDraft('p1', DRAFT);
+    window.history.replaceState(null, '', '/project/p1#github=connected');
+    render(<StrictMode>{host(SCOPE)}</StrictMode>);
+    await act(async () => {});
+    expect(JSON.parse(screen.getByTestId('target').textContent)).toEqual({
+      view: 'rule',
+      ruleId: null,
+      draft: DRAFT,
+      github: 'connected',
+    });
   });
 
   it('opens nothing for someone with no Editor scope, and clears the address', async () => {

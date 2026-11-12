@@ -9,7 +9,8 @@
 // `#github=…` (where Connect GitHub comes back) opens it at the GitHub view, or at the rule kept for the round trip.
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import type { AutomationRuleBody } from '@liveplanner/items';
 import { track } from '@/lib/telemetry';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
 import type { AutomationsScope } from './automations-client';
@@ -92,13 +93,17 @@ export function AutomationsHost({
     () => (ownerId && projectId ? { ownerId, projectId, shareCode: shareCode ?? null } : null),
     [ownerId, projectId, shareCode],
   );
+  const githubDraft = useRef<AutomationRuleBody | null | undefined>(undefined);
   // The screen at the GitHub view (or the rule kept), once the plan's Editor scope is known.
   useEffect(() => {
     if (!github || !stable) return;
     // oxlint-disable-next-line react/set-state-in-effect -- a one-shot return from GitHub, taken once the Editor scope arrives
     setGithub(null);
     trackGithubResult(github);
-    const draft = takeGithubDraft(stable.projectId);
+    // Taken once per mount: an effect run again (React's Strict Mode in development) must find the same rule, not
+    // the empty slot the first run left.
+    if (githubDraft.current === undefined) githubDraft.current = takeGithubDraft(stable.projectId);
+    const draft = githubDraft.current;
     setTarget(
       draft ? { view: 'rule', ruleId: null, draft, github } : { view: 'github', result: github },
     );

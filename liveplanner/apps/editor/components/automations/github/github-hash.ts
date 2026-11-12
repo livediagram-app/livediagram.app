@@ -23,7 +23,7 @@ export function githubResultOf(hash: string): GithubResult | null {
 export function dropGithubHash(): void {
   if (githubResultOf(window.location.hash) === null) return;
   const url = new URL(window.location.href);
-  window.history.replaceState(window.history.state, '', url.pathname + url.search);
+  window.history.replaceState(null, '', url.pathname + url.search);
 }
 
 /** The rule kept for the round trip, taken once. */
