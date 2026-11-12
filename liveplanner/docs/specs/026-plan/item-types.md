@@ -173,7 +173,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - **Currency** is an amount in the one currency its field names (`currency`, an ISO 4217 code such as GBP, USD or
     EUR, chosen when the field is made and changeable later; GBP when none is given). Its value is a number with up to
     two decimals; it reads, on the card and in the panel, as the person's locale formats that currency ("£12,500",
-    "$1,200.50"). Changing the field's currency changes how every value reads, never the numbers.
+    "$1,200.50"). Changing the field's currency changes how every value reads, never the numbers. A Deal brought into a project from the editor starts with the currency of the browser's region (`localeCurrency`, the common codes only); GBP otherwise, and a field or value already stored never changes.
   - On a card a value reads short: a Number grouped as the reader's locale groups digits ("82,000"), a Link as its
     site and its last path step ("sentry.io/…/4521", the site alone for a bare address), a Long Text its first line.
   - **Long Text** is rich text, edited as the Description is ([Working on a board](plan-board.md#working-on-a-board)):
