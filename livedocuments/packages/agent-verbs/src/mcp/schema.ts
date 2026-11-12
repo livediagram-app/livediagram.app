@@ -45,7 +45,7 @@ const templateField = z
       'kind from list_templates (e.g. "blank-slide-deck", "slide-deck", "article", "event-poster"). The server ' +
       'builds its pages ("layout" is ignored for a template tab) and paints ' +
       'them with the chosen theme. Replace the sample text afterwards with ' +
-      'update_document mode "ops". Provide template OR elements, not both.',
+      'update_document mode "ops". Elements given with a template are added to its first page, in canvas coordinates as update_document would add them (read the page rectangles with change_pages or read_document view "pages").',
   );
 
 const themeField = z
