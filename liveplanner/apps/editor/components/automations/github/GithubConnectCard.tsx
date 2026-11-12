@@ -37,9 +37,12 @@ export function GithubDiscMark({ size = 40 }: { size?: 32 | 40 | 48 }) {
   );
 }
 
-export function connectRefusalWords(error: unknown): string {
+export function connectRefusalWords(
+  error: unknown,
+  act: 'connect' | 'disconnect' = 'connect',
+): string {
   if (error instanceof GithubRefusal && error.code === 'github_needs_editor')
-    return 'Only an Editor signed in can connect GitHub.';
+    return `Only an Editor signed in can ${act} GitHub.`;
   return 'GitHub didn’t answer. Check your connection and try again.';
 }
 

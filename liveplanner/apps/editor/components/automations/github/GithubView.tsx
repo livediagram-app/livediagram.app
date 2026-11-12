@@ -113,7 +113,7 @@ export function GithubView({
       toast.info('Disconnected GitHub');
     } catch (e) {
       debugLog('[github] disconnect.failed', { error: String(e) });
-      toast.error(connectRefusalWords(e));
+      toast.error(connectRefusalWords(e, 'disconnect'));
     } finally {
       leavingRef.current = false;
       setLeaving(false);

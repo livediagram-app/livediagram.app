@@ -223,7 +223,7 @@ describe('GithubView: connected', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Disconnect' }));
     fireEvent.click(screen.getAllByRole('button', { name: 'Disconnect' }).at(-1)!);
     await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith('Only an Editor signed in can connect GitHub.'),
+      expect(toast.error).toHaveBeenCalledWith('Only an Editor signed in can disconnect GitHub.'),
     );
     expect(screen.getByText('acme')).toBeTruthy();
   });
