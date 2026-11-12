@@ -159,7 +159,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   [GitHub pull requests](github-pull-requests.md#the-pull-request-field)), Email, Phone (a phone number that calls
   on a phone, [below](#phone-fields)),
   Choice (one of up to 20 named options), Multiple Choice (several of up to 20 named
-  options), Rating (a whole number from 1 to its scale, 3 to 10), Card (a link to one card of another type, or
+  options), Risk (one of four fixed levels, Critical to Low, coloured and ordered as Priority's are,
+  [below](#risk-fields)), Rating (a whole number from 1 to its scale, 3 to 10), Card (a link to one card of another type, or
   to several, below), Calculated (a value worked out from the plan, below), and the kinds the built-in fields are:
   **Person** (one person, as the Assignee holds one, or several, [below](#holds-several)), **Labels** (up to 20 short labels, as Labels holds them),
   **Colour** (any `#rrggbb` colour, as Colour holds one), **Checklist** (up to 50 to-do rows, each its text and
@@ -236,6 +237,47 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     whole by Export CSV, agents and images. Export CSV writes it as text, as typed, so "+44 20 7946 0958" opens as
     that number and never as a formula or with a stray apostrophe ([Plan board](plan-board.md#csv)). A form asks it
     with a [Phone question](../030-forms/forms.md#question-types). It may be [required](#required-fields).
+  - <a id="risk-fields"></a>**Risk** is how likely, or how bad, it is that something goes wrong: one of four fixed
+    levels, most pressing first, **Critical**, **High**, **Medium** and **Low**. It is built in, as Priority is: the
+    levels, their order and their colours are the same in every plan and are never renamed, reordered or recoloured,
+    so boards, filters, dashboards, exports and agents read risk the same way everywhere (a Choice typed by hand
+    spells its levels however its plan likes, and colours them by place). The owner's choice, 2026-11-12, over a
+    Choice preset or per-option colours (Work Item 700).
+    - **Stored** as its level's id, `critical`, `high`, `medium` or `low` (`RISKS`), one or none; anything else
+      reads as no level. Names are Title Case wherever they show (`RISK_LABELS`).
+    - **Colours**, fixed, in light and dark alike: Critical red `#dc2626`, High orange `#ea580c`, Medium amber
+      `#ca8a04`, Low green `#16a34a` (`RISK_COLOURS`). Critical, High and Medium are Priority's Urgent, High and
+      Medium; Low is green, since a low risk reads as safe where a low priority reads as quiet. A level is drawn as
+      a Choice's option chip is (a 12% tint, a dot of the colour, the name inked toward the page's ink) and on a
+      card face as Priority's pill is (its dot and its name).
+    - **Adding one** is one step: Add Field's **Risk** tile (Choices, after Multiple Choice) opens Shape with the
+      name Risk and nothing else to set; there are no options to type. A type may hold several (Delivery Risk,
+      Security Risk), each its own value, and a Risk field may be [required](#required-fields).
+    - **In the card panel** it reads and is edited as a Choice is ([above](#choice-fields)): one chip or **None**,
+      and a list of None then the four levels in order. Share roles as a Choice's: an Editor and a Participant pick,
+      a Viewer sees the chip alone.
+    - **Sorts** by level, Critical highest; picked, it starts Highest First, the most pressing first, as Priority
+      does. A card with no level sorts last either way.
+    - **Filters and searches** (quick filters and saved filters) offer the four levels and **No Risk**,
+      in order, as a Choice offers its options. Card search finds a card by its level's name.
+    - **Swimlanes**: a Risk field lays a lane per level, in order, then **No Risk**; dragging a card between lanes
+      sets its level, as a Choice's lanes do.
+    - **Dashboards and board widgets** count cards per level in the levels' order and colours (a chart's bars, a
+      widget's split), as Priority's counts are.
+    - **CSV**: Export CSV writes the level's name ("High"); Import CSV reads a name or an id, in any case, and skips
+      any other text, as it skips a Choice that is not an option.
+    - **Sheets** read a Risk as its level's name (card tables, card functions, sheet sync) and a sheet writes one
+      back by name, in any case.
+    - **Forms** ask a Risk field as a Choice question of the four levels, in order.
+    - **Formulas** read a Risk as its level's name, as text.
+    - **Changing kind** (Edit Field): a Choice, Multiple Choice, Text or Long Text becomes a Risk keeping each card's
+      value that names a level (in any case, the first such pick of a Multiple Choice), the rest cleared and counted
+      as every kind change counts them; a Risk becomes any of them as its level's name, and a Choice made from one
+      starts with the four levels as its options, in order. **A Risk typed by hand as a Choice** (the Work Tracker's,
+      made 2026-11-11) keeps working exactly as it is, a Choice coloured by place, until its plan's owner changes its
+      kind to Risk; nothing changes it for them, and no data is migrated.
+    - **Agents** add one by kind (`risk`) in `change_card_types`, see its levels in `list_items`, and set a level by
+      name or id, in any case, in `change_items`; any other value is refused with the four levels named.
   - <a id="date-and-time-fields"></a>**Date and Time** is a moment: a day and a time of day, for meetings,
     interviews, launches and "5pm Friday" deadlines. A Date field stays a day, exactly as before; a Date field never
     turns into a Date and Time field (or back), since its stored days carry no time.
@@ -1251,17 +1293,17 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
       - **The categories**, in order, each with its line and kinds (every kind and variant in exactly one, a variant
         right after its kind):
 
-        | Category         | Line                                               | Kinds                                                        |
-        | ---------------- | -------------------------------------------------- | ------------------------------------------------------------ |
-        | Text             | Words, from a title to pages of notes.             | Text, Long Text                                              |
-        | Numbers          | Counts, amounts, shares and scores.                | Number, Currency, Percent, Rating                            |
-        | Dates            | Days, moments and spans on the calendar.           | Date, Date and Time, Date Range, Date and Time Range         |
-        | Time             | How long something takes, or the time spent on it. | Duration, Time Tracking                                      |
-        | Choices          | Pick from a list, tick a box or tag a card.        | Choice, Multiple Choice, Checkbox, Checklist, Labels, Colour |
-        | People           | Who has it, and what the team says about it.       | Person, Several People, Comments, Votes                      |
-        | Links and Images | Web pages, contact details and pictures.           | Link, Pull Request, Email, Phone, Image, Several Images      |
-        | Cards            | Connect a card to other cards.                     | Link to Card, Several Cards, Blocked By                      |
-        | Calculated       | Values worked out for you.                         | Calculated, Formula, Rollup, Lookup                          |
+        | Category         | Line                                               | Kinds                                                              |
+        | ---------------- | -------------------------------------------------- | ------------------------------------------------------------------ |
+        | Text             | Words, from a title to pages of notes.             | Text, Long Text                                                    |
+        | Numbers          | Counts, amounts, shares and scores.                | Number, Currency, Percent, Rating                                  |
+        | Dates            | Days, moments and spans on the calendar.           | Date, Date and Time, Date Range, Date and Time Range               |
+        | Time             | How long something takes, or the time spent on it. | Duration, Time Tracking                                            |
+        | Choices          | Pick from a list, tick a box or tag a card.        | Choice, Multiple Choice, Risk, Checkbox, Checklist, Labels, Colour |
+        | People           | Who has it, and what the team says about it.       | Person, Several People, Comments, Votes                            |
+        | Links and Images | Web pages, contact details and pictures.           | Link, Pull Request, Email, Phone, Image, Several Images            |
+        | Cards            | Connect a card to other cards.                     | Link to Card, Several Cards, Blocked By                            |
+        | Calculated       | Values worked out for you.                         | Calculated, Formula, Rollup, Lookup                                |
 
         (Renamed plainer at the owner's ask, 2026-11-03: Numbers and Money became Numbers; Dates and Time split into
         Dates and Time; Choices and Tags became Choices, taking Checklist; People and Teamwork became People; Links
@@ -1284,7 +1326,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 
       - **Each kind is a tile**, two to a row (one in a gallery under 460 px), as a widget's tile is: a strip on top
         drawing what the kind does. Where a value explains itself (Text, Number, Currency, Percent, Rating, Choice,
-        Labels, Person, Colour, Link, Pull Request, Email, Phone) the strip is a sample value as the card's panel draws it (the
+        Risk, Labels, Person, Colour, Link, Pull Request, Email, Phone) the strip is a sample value as the card's panel draws it (the
         samples of Preview, below). Where a bare value would say nothing, the strip is a small picture of the idea
         instead: Calculated a card with three child cards, two ticked, giving "2/3"; Formula two field chips worked
         into a result ("Estimate × Rate = £1,200"); Rollup three linked cards' numbers summed ("Sum 10"); Lookup a
@@ -1300,7 +1342,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
         timer", Rating "Stars out of 3 to 10", Date
         "A day on the calendar", Date and Time "A day and a time, in each person's time zone", Date Range "From one
         day to another", Date and Time Range "From one moment to another, like a meeting", Choice "One option from a list", Multiple Choice "Several options
-        from a list", Checkbox "Yes or no, ticked or not", Labels "Short tags, coloured by name", Person "Someone on
+        from a list", Risk "Critical, High, Medium or Low, in set colours", Checkbox "Yes or no, ticked or not", Labels "Short tags, coloured by name", Person "Someone on
         the plan, like an owner", Several People "A few people at once, like reviewers", Checklist "To-dos ticked off one by one", Comments "Threads to talk
         the card through", Votes "Thumbs up from the team", Colour "A colour to tell cards apart", Image "A picture,
         like a mock-up or a photo", Several Images "Up to 20 pictures, like a set of designs", Link to Card "Another card, like a parent or an epic", Several Cards "Several
