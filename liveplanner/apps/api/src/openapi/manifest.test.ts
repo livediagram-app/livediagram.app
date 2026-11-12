@@ -28,6 +28,8 @@ function dispatchedSegments(): Set<string> {
   // An Incoming Webhook call, answered ahead of identity (docs/specs/026-plan/automations.md "Incoming Webhook").
   if (/segments\[1\] === 'hooks'\) return handleAutomationHook\(/.test(source))
     segments.add('hooks');
+  // liveplanner's GitHub App doors, answered ahead of identity (docs/specs/026-plan/github-pull-requests.md).
+  if (/segments\[1\] === 'github'\) return handleGithub\(/.test(source)) segments.add('github');
   return segments;
 }
 

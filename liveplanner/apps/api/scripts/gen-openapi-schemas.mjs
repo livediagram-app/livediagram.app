@@ -133,6 +133,9 @@ export const ROOT_TYPES = [
   'AutomationSecretResponse',
   'AutomationHookRequest',
   'AutomationHookAccepted',
+  'GithubConnectionResponse',
+  'GithubConnectStartResponse',
+  'GithubRepositoriesRequest',
 ];
 
 // Code names that differ from the published component name (none today: the project's type is `Project`).

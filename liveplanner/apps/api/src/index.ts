@@ -40,6 +40,7 @@ import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
 import { handleTrash } from './routes/trash';
 import { handleAutomationHook } from './routes/automation-hook-routes';
+import { handleGithub } from './github/webhook-route';
 import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
 import { withServerRelease } from './server-release-header';
@@ -86,6 +87,11 @@ async function routeApiRequest(
   // An Incoming Webhook call (docs/specs/026-plan/automations.md "Incoming Webhook"): its rule's secret, never a
   // person, so answered before identity, with its own body, type and network checks (routes/automation-hook-routes.ts).
   if (segments[1] === 'hooks') return handleAutomationHook(request, env);
+
+  // liveplanner's GitHub App (docs/specs/026-plan/github-pull-requests.md "Deliveries"): a delivery proves itself by
+  // its signature and a connect's callback by its state, never by a person, so both are answered before identity
+  // (github/webhook-route.ts). 404 while the App's settings are missing.
+  if (segments[1] === 'github') return handleGithub(request, env);
 
   // Workbench pairing, tickets and sessions are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the router sends
   // /api/workbench/* there itself; a caller that reaches this api directly (the CLI against `wrangler dev`) is

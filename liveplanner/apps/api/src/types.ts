@@ -143,6 +143,18 @@ export type Env = {
   AI?: AutomationsAi;
   // An AI Gateway id the AI calls go through (optional), where the account's spend limit applies.
   AI_GATEWAY?: string;
+  // liveplanner's GitHub App (docs/specs/026-plan/github-pull-requests.md "The App"; github/github-config.ts): its
+  // id and URL name, its private key (PEM, as GitHub gives it), its OAuth client for the person's one check, and the
+  // webhook secret every delivery is signed with. All secrets (wrangler secret put). GITHUB_LINKS is the KV namespace
+  // of the reverse index, repository and installation to plans. Missing any one, the feature is off: every GitHub
+  // door answers 404 and nothing logs an error.
+  GITHUB_APP_ID?: string;
+  GITHUB_APP_SLUG?: string;
+  GITHUB_APP_PRIVATE_KEY?: string;
+  GITHUB_APP_CLIENT_ID?: string;
+  GITHUB_APP_CLIENT_SECRET?: string;
+  GITHUB_WEBHOOK_SECRET?: string;
+  GITHUB_LINKS?: KVNamespace;
 };
 
 // The part of the Workers AI binding Automations calls (plan-room/automations/automation-ai.ts).

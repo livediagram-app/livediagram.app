@@ -188,6 +188,14 @@ export async function probeDispatch(
     // never reached.
     MEDIA_URL: 'http://media.invalid/api/media',
     MEDIA_KEY: 'probe-key',
+    // The GitHub App set up, so its doors route (docs/specs/026-plan/github-pull-requests.md); its KV is a trap.
+    GITHUB_APP_ID: '1',
+    GITHUB_APP_SLUG: 'probe',
+    GITHUB_APP_PRIVATE_KEY: 'probe-key',
+    GITHUB_APP_CLIENT_ID: 'probe',
+    GITHUB_APP_CLIENT_SECRET: 'probe-key',
+    GITHUB_WEBHOOK_SECRET: 'probe-key',
+    GITHUB_LINKS: trap('GITHUB_LINKS'),
   } as unknown as Env;
   const now = Math.floor(Date.now() / 1000);
   setGrantVerifierForTests(async () => ({

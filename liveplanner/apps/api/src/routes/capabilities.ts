@@ -1,6 +1,7 @@
 import { PROJECT_FORMAT } from '@liveplanner/api-schema';
 import { communityOn } from '../community-service';
 import { emailEnabled } from '../email/client';
+import { githubConfig } from '../github/github-config';
 import { json, methodNotAllowed, notFound } from '../responses';
 import type { RouteContext } from './context';
 
@@ -46,6 +47,9 @@ export function handleCapabilities(ctx: RouteContext): Response {
     // docs/specs/025-community/community.md "Turning the Community off": false hides the Community from every page. A
     // deploy without the liveworkspace Community service's key (COMMUNITY_KEY) has none to show.
     communityEnabled: communityOn(env),
+    // docs/specs/026-plan/github-pull-requests.md "The App": every GitHub App secret and the GITHUB_LINKS namespace.
+    // Off, the plan shows no GitHub entry.
+    githubEnabled: githubConfig(env) !== null,
     ...cliCapabilities(ctx),
   });
 }
