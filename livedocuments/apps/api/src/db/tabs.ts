@@ -5,7 +5,6 @@
 import {
   shareLeaveStatements,
   connectionLeftStatement,
-  storedTabConnection,
   tabConnectionOf,
   tabConnectionStatement,
 } from '@liveworkspace/index-app';
@@ -315,10 +314,10 @@ export async function seedTabs(
 //
 // Answers the tab's stored body as it was removed (null when this document did not hold it), read
 // by the delete itself so a comment written a moment before cannot slip between a read and the
-// delete: the caller retracts the tab's comment events from this document's feed with it. And its
-// connection, when it was a connected tab: the caller tells the index it has left
-// (connected-tabs.md "Removing").
-export type DeletedTab = { data: string; connection: TabConnection | null };
+// delete: the caller retracts the tab's comment events from this document's feed with it. A connected tab's
+// removal goes to the index through the outbox, keyed in the same batch (connectionLeftStatement,
+// connected-tabs.md "Removing").
+export type DeletedTab = { data: string };
 
 export async function deleteTabRow(
   env: DocumentEnv,
@@ -333,8 +332,7 @@ export async function deleteTabRow(
     .prepare(
       `DELETE FROM document_tabs WHERE document_id = ? AND tab_id = ?
           AND (? = 0 OR (SELECT COUNT(*) FROM document_tabs WHERE document_id = ?) > 1)
-        RETURNING (SELECT t.data FROM tabs t WHERE t.id = document_tabs.tab_id) AS data,
-                  (SELECT t.connection FROM tabs t WHERE t.id = document_tabs.tab_id) AS connection`,
+        RETURNING (SELECT t.data FROM tabs t WHERE t.id = document_tabs.tab_id) AS data`,
     )
     .bind(documentId, tabId, opts.keepLast ? 1 : 0, documentId);
   const rest = [
@@ -348,7 +346,7 @@ export async function deleteTabRow(
       'DELETE FROM tabs WHERE id = ? AND NOT EXISTS (SELECT 1 FROM document_tabs WHERE tab_id = ?)',
     ).bind(tabId, tabId),
   ];
-  type Row = { data?: string | null; connection?: string | null };
+  type Row = { data?: string | null };
   const rowOf = (r: unknown) => (r as { results?: Row[] } | undefined)?.results?.[0];
   let row: Row | undefined;
   if (!opts.keepLast) {
@@ -367,7 +365,7 @@ export async function deleteTabRow(
     await db.batch(rest);
   }
   if (row?.data == null) return null;
-  return { data: row.data, connection: storedTabConnection(row.connection) };
+  return { data: row.data };
 }
 
 // One position in a reorder request: the tab id plus its per-document
