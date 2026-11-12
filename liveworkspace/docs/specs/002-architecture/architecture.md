@@ -121,6 +121,14 @@ is each product's own pure module; how the entries are stored, read and kept is 
   reopened after more than 30 days away and saved before its catch-up arrived) no longer has the cut entries
   re-applied, the same as a save past the changesets' retention. The room logs it (`[ledger] stale cursor`).
 
+A save can also say what it changed by id, for the lists several people grow at once whose ops never pass through the
+ledger (a tab's pages, an article's blocks): the `X-Save-Changes` request header
+(`@liveworkspace/api-schema/tab-save-changes`, URI-encoded JSON under 8,000 characters), which the product's api
+applies over the tab it has stored instead of storing the whole tab as sent. A header, not a body field, so an api
+from before it ignores it. Its steps are `@liveworkspace/model-core/id-list-steps` (`diffIdList`, `applyIdListSteps`),
+the same steps an op carries to a receiver, so the store and every screen end with the same list. What a product sends
+in it is its own (each product's `collab-race-hardening.md` "A save is merged with the stored tab").
+
 ## Environments and the account
 
 Two environments, production and staging, each a `wrangler.toml` environment with its own Worker name (`-staging`),

@@ -9,6 +9,7 @@ import {
   mergeIncomingElement,
   type ElementDelta,
   type ElementOp,
+  withPeerPageSteps,
   type Tab,
 } from '@livedesign/design';
 import { applyPhotoOps, isPhotoPageId, parsePhotoOps, type Photo } from '@livedesign/photo-engine';
@@ -34,7 +35,10 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
       // appended; otherwise merged, keeping our folder.
       // The op's tabId names the tab: an id inside `tab` that disagrees never turns this tab into another.
       if (!tabs.some((t) => t.id === op.tabId)) return [...tabs, { ...op.tab, id: op.tabId }];
-      return updateTab(tabs, op.tabId, (tab) => ({ ...mergeRemoteTab(tab, op.tab), id: tab.id }));
+      return updateTab(tabs, op.tabId, (tab) => ({
+        ...mergeRemoteTab(tab, op.tab, op.pageSteps),
+        id: tab.id,
+      }));
     }
     case 'el':
       // ONE element, applied by id (docs/specs/012-collaboration/realtime-conflict-resolution.md). An op for a tab we don't have is
@@ -74,6 +78,10 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
           Object.entries(op.patch).filter(([key]) => !META_SKIP.has(key)),
         ) as Partial<Tab>;
         const merged: Tab = { ...tab, ...patch, folder: tab.folder };
+        // A page list is applied by its steps over our own pages (docs/specs/012-collaboration/
+        // collab-race-hardening.md "Pages"), so a page added here meanwhile stays; from an older sender, it stands whole.
+        const pages = 'pages' in patch ? withPeerPageSteps(tab, op.pageSteps, patch.pages) : null;
+        if (pages) merged.pages = pages;
         // Fields the sender removed (docs/specs/012-collaboration/collab-race-hardening.md); never one a patch can't touch.
         for (const key of Array.isArray(op.clear) ? op.clear : []) {
           if (!META_SKIP.has(key)) delete (merged as Record<string, unknown>)[key];

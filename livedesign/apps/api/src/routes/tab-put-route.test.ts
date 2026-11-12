@@ -1,6 +1,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CHANGESET_MERGE_WINDOW_MS } from '@livedesign/api-schema';
-import { elementFingerprint, type Element, type ElementOp } from '@livedesign/design';
+import {
+  CHANGESET_MERGE_WINDOW_MS,
+  TAB_SAVE_CHANGES_HEADER,
+  tabSaveChangesHeader,
+} from '@livedesign/api-schema';
+import {
+  elementFingerprint,
+  type Element,
+  type ElementOp,
+  type Page,
+  type Tab,
+} from '@livedesign/design';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import type { ChangesetRecord } from '../db/changesets';
@@ -385,5 +395,50 @@ describe('a tab id', () => {
       body: { id: 't1', name: 'Board', elements: [box('a', 'Edited')] },
     });
     expect(again.status).toBeLessThan(300);
+  });
+});
+
+// Two Editors' saves from one baseline (docs/specs/012-collaboration/collab-race-hardening.md "A save is merged with
+// the stored tab"): each says how it changed the pages, and the second never erases the first (Work Tracker #669).
+describe('a save merged over the stored tab by id', () => {
+  const logo = (id: string) => ({ id, orientation: 'landscape' }) as Page;
+  const tabWith = (pages: Page[]): Tab => ({
+    id: 't1',
+    name: 'Board',
+    elements: [box('a')],
+    pages,
+  });
+  const storedTab = (db: SqliteD1) =>
+    JSON.parse(
+      db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string,
+    ) as Tab;
+  const saveOver = (db: SqliteD1, before: Tab, after: Tab) =>
+    save(
+      db,
+      after.elements,
+      { [TAB_SAVE_CHANGES_HEADER]: tabSaveChangesHeader(before, after)! },
+      after,
+    );
+
+  it('keeps both pages two Editors added at once (#669)', async () => {
+    const db = await designWith([box('a')]);
+    const base = tabWith([logo('p1')]);
+    await save(db, base.elements, {}, base);
+    expect((await saveOver(db, base, tabWith([logo('p1'), logo('pA')]))).status).toBe(200);
+    expect((await saveOver(db, base, tabWith([logo('p1'), logo('pB')]))).status).toBe(200);
+    expect(storedTab(db).pages!.map((p) => p.id)).toEqual(['p1', 'pA', 'pB']);
+  });
+
+  it('stores an unreadable header as sent, and says so', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const db = await designWith([box('a')]);
+    await save(db, [box('a')], {}, { pages: [logo('p1')] });
+    await save(db, [box('a')], { [TAB_SAVE_CHANGES_HEADER]: 'nonsense' }, { pages: [logo('p2')] });
+    expect(storedTab(db).pages!.map((p) => p.id)).toEqual(['p2']);
+    expect(warn).toHaveBeenCalledWith('[tab-save] changes-invalid', {
+      designId: 'D',
+      tabId: 't1',
+      length: 8,
+    });
   });
 });

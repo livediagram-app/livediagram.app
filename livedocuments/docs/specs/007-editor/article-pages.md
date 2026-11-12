@@ -658,6 +658,10 @@ ink").
   commit wins for that cell. A change to the table's shape (a row or column added or removed, the
   header row, a width) is sent as the whole table: cell edits by others that reach the room before it
   are replaced by it, and those after it land in their cells while those cells still exist.
+- **The store keeps everyone's writing.** A save sends which blocks (and cells) it changed, and the
+  api applies only those over the stored writing, so after a reload two people's words in different
+  paragraphs or cells are both there, as they were on screen
+  ([A save is merged with the stored tab](../012-collaboration/collab-race-hardening.md#a-save-is-merged-with-the-stored-tab)).
 - **Where others are writing**: a collaborator's caret shows in their colour, with their name for
   a moment after it moves and on hover, and a thin bar in the margin beside the block they are
   in. A caret travels as presence (`article-caret`: the block's id and how many characters into

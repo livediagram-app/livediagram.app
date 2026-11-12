@@ -211,7 +211,14 @@ describe('the room ops', () => {
     };
     const after = { id: 't', name: 'T', elements: [], pages: [] };
     expect(pagesRoomOps(before, after)).toEqual([
-      { kind: 'tab-meta', tabId: 't', patch: { pages: [] }, clear: ['pageOrientation'] },
+      {
+        kind: 'tab-meta',
+        tabId: 't',
+        patch: { pages: [] },
+        clear: ['pageOrientation'],
+        // The pages' steps, so an open editor keeps a page it added meanwhile (collab-race-hardening.md "Pages").
+        pageSteps: [{ kind: 'remove', id: 'page-1' }],
+      },
     ]);
     expect(pagesRoomOps(after, after)).toEqual([]);
   });

@@ -11,7 +11,7 @@ import {
   type PagesRequest,
   type RoomOp,
 } from '@livedesign/api-schema';
-import { diffToElementOps, type Tab } from '@livedesign/design';
+import { diffToElementOps, pageStepsOf, type Tab } from '@livedesign/design';
 import { applyPageChanges, pageSummaries } from '@livedesign/edit-operations';
 import { isTabRevStale, lastChangesetRev, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
@@ -56,12 +56,16 @@ export function pagesRoomOps(before: Tab, after: Tab): RoomOp[] {
     if (after[key] === undefined) clear.push(key);
     else patch[key] = after[key];
   }
+  // The pages' steps too, so an editor applies the change over its own pages by id and keeps a page it added
+  // meanwhile (docs/specs/012-collaboration/collab-race-hardening.md "Pages").
+  const pageSteps = 'pages' in patch ? pageStepsOf(before, after) : [];
   if (Object.keys(patch).length || clear.length)
     ops.push({
       kind: 'tab-meta',
       tabId: after.id,
       patch: patch,
       ...(clear.length ? { clear: clear } : {}),
+      ...(pageSteps.length ? { pageSteps } : {}),
     });
   ops.push(...tabPhotoOps(before, after));
   return ops;

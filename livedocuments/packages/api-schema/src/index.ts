@@ -367,6 +367,7 @@ export * from './community-paths';
 export * from './workbench-messages';
 export * from './pages';
 export * from './article-frames';
+export * from './tab-save-header';
 export * from './pages-summary';
 export * from './mcp-origin';
 
