@@ -30,6 +30,24 @@ async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
       headers: { ...response.headers(), [PROJECT_FORMAT_HEADER]: String(PROJECT_FORMAT + 1) },
     });
   });
+  // And the editor a reload would load is a newer build than this one (the e2e build's id is fixed), so
+  // the prompt offers it (docs/specs/016-platform/new-version-prompt.md "When the prompt shows"): the
+  // editor's own check of its page answers so, while the reload itself loads the real page.
+  await page.route(
+    (url) => url.pathname.startsWith('/project/'),
+    async (route) => {
+      // Only that check: never a page load, nor the router's own payload requests (an `RSC` header).
+      const request = route.request();
+      if (request.resourceType() !== 'fetch' || request.headers()['rsc'] !== undefined) {
+        await route.fallback();
+        return;
+      }
+      await route.fulfill({
+        contentType: 'text/html',
+        body: '<head><meta name="liveplanner-build" content="e2e-newer"/></head>',
+      });
+    },
+  );
 }
 
 async function openBoard(page: Page) {
