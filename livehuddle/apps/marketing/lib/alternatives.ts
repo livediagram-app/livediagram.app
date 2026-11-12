@@ -9,7 +9,27 @@ import { SITE_URL } from '@livehuddle/ui';
 // are on at livehuddle.app (docs/specs/012-collaboration/proximity-audio.md "Turning calls on"), so no
 // page says it has no voice or video. The retired Miro and FigJam pages redirect to the hub
 // (public/_redirects).
-const UPDATED = new Date('2026-11-10');
+//
+// Every competitor claim below was checked against the competitor's own public pages on 2026-11-12 and
+// is dated by UPDATED. A claim no current page confirms is softened or left out, never kept from memory.
+// Sources (re-check each when bumping UPDATED):
+//   Gather: https://www.gather.town/pricing (Essential $12 per member a month after a 30-day trial, no
+//     free tier; guests not charged; Google Calendar on Essential; Smart Objects with webhooks),
+//     https://www.gather.town/ (walk up and talk, office customisation),
+//     https://support.help.gather.town/articles/1982412443-getting-started-guide (desktop app),
+//     https://support.help.gather.town/articles/4056265393 (Google Calendar and Chrome extension).
+//   Teamflow: https://www.teamflowhq.com/pricing (Free for up to 5 employees, $15 or $25 per employee a
+//     month on Seed and Business, 200 people per floor, apps open per person, Download and web login),
+//     https://www.teamflowhq.com/ (meet, co-work and share documents and apps). teamflow.com now shows a
+//     different workflow product, and a rival's blog says the virtual office closed in 2023
+//     (https://development.kumospace.com/blog/teamflow-shutdown, unconfirmed by Teamflow), so the page
+//     stays on what teamflowhq.com itself says.
+//   Kumospace: https://www.kumospace.com/pricing (Free up to 5 members, Business $16 per member a month,
+//     roles on all plans, webinar platform, recording on Business, Windows and macOS desktop apps,
+//     furniture customisation), https://www.kumospace.com/ (spatial audio, events, Google Calendar and
+//     Outlook integrations, apps for Mac, Windows, Linux, iOS and Android),
+//     https://www.kumospace.com/help/invite (guests join without an account when the host allows it).
+const UPDATED = new Date('2026-11-12');
 
 const LIST: Alternative[] = [
   {
@@ -22,12 +42,16 @@ const LIST: Alternative[] = [
     h1: 'The free, open-source Gather alternative',
     lede: 'Gather made the pixel-art virtual office popular: walk up to a teammate and the call starts. livehuddle is a virtual office in the same spirit, free and open source, that anyone opens from a link without an account: walk up to someone and you hear each other, turn on a camera or share a screen, and step into a room for a private word.',
     rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Free for small teams, then paid plans' },
-      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
+      {
+        label: 'Price',
+        us: 'Free, every feature',
+        them: 'Paid per member after a 30-day free trial',
+      },
+      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, a hosted product' },
       {
         label: 'Start without an account',
         us: 'Yes, create and share a Space as a guest',
-        them: 'An account to create an office',
+        them: 'Members sign up and pay per seat; guests are not charged',
       },
       {
         label: 'Voice and video',
@@ -42,7 +66,7 @@ const LIST: Alternative[] = [
       {
         label: 'On the floor',
         us: 'Stickies, stickers, and a Timer and a Stopwatch for any room',
-        them: 'Interactive objects, private areas and meeting rooms',
+        them: 'A customisable office with smart objects',
       },
       {
         label: 'Programmatic access',
@@ -52,8 +76,8 @@ const LIST: Alternative[] = [
     ],
     themBest: [
       'Years of polish on its calls, from the video grid to the meeting tools around them, for teams that live in the office all day.',
-      'Desktop apps that keep the office open all day, with notifications when someone comes over.',
-      'A deep map maker and object library for building an office that looks exactly like yours.',
+      'A desktop app that keeps the office open all day, with in-app reminders for your calendar.',
+      'Deep office customisation, with smart objects that connect to your other tools.',
       'Calendar integration, so a scheduled meeting opens in the right room.',
     ],
     usBest: [
@@ -122,19 +146,23 @@ const LIST: Alternative[] = [
     description:
       'A free, open-source Teamflow alternative: a virtual office in the browser where your team walks between rooms as characters, with notes on the walls.',
     h1: 'The free, open-source Teamflow alternative',
-    lede: 'Teamflow is a virtual office built round video: the team’s faces float in rooms you move between, with shared apps beside the call. livehuddle is a virtual office too, where everyone walks between rooms as a character, talks to whoever is near, and the walls hold the meeting. It is free, open source and needs no install.',
+    lede: 'Teamflow is a virtual office where a team meets, co-works and shares documents and apps in rooms you move between. livehuddle is a virtual office too, where everyone walks between rooms as a character, talks to whoever is near, and the walls hold the meeting. It is free, open source and needs no install.',
     rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Paid plans per user' },
-      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
+      {
+        label: 'Price',
+        us: 'Free, every feature',
+        them: 'Per-employee plans, free for up to 5 people',
+      },
+      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, a hosted product' },
       {
         label: 'Start without an account',
         us: 'Yes, create and share a Space as a guest',
-        them: 'An account to create an office',
+        them: 'Employees sign up; guests join by invite',
       },
       {
         label: 'Voice and video',
         us: 'Built in: proximity voice, camera and screen bubbles over your character',
-        them: 'Built in, video bubbles that move with you',
+        them: 'Built in: meet and co-work in a shared office',
       },
       {
         label: 'Getting in',
@@ -144,19 +172,19 @@ const LIST: Alternative[] = [
       {
         label: 'In a room',
         us: 'Stickies, stickers, and a Timer and a Stopwatch for any room',
-        them: 'Screen shares and shared apps beside the call',
+        them: 'Shared documents and apps beside the call',
       },
       {
         label: 'Programmatic access',
         us: 'A free REST API with personal tokens',
-        them: 'Integrations such as calendars',
+        them: 'None listed on its pricing page',
       },
     ],
     themBest: [
-      'Video first: everyone’s face is on the floor, rather than a character with a camera bubble above it.',
-      'Several screen shares at once in a room, so a group can compare work side by side.',
+      'A virtual office built round meeting face to face, rather than a character with a camera bubble above it.',
+      'Floors for up to 200 people, with no limit on invited teammates or guests.',
       'Apps that sit beside the call in a room, so notes and shared documents live where the conversation is.',
-      'A desktop app that keeps the office running in the background all day.',
+      'A desktop app as well as the web, so the office is a click away all day.',
     ],
     usBest: [
       'Free for everyone and MIT-licensed, with no per-seat pricing and nothing to upgrade to.',
@@ -172,8 +200,8 @@ const LIST: Alternative[] = [
       {
         heading: 'Two kinds of virtual office',
         paragraphs: [
-          'Teamflow puts the team’s video on a shared floor: you drag yourself next to someone and the conversation starts, with screen shares and apps beside you. livehuddle puts the team’s characters on a floor plan: you walk into a room, sit at the meeting table or a desk, and everyone can see where everyone is and what they are up to from their status.',
-          'Both put the call in the office. In livehuddle you hear the people near you, a camera or a shared screen shows as a bubble above your character to whoever is in earshot, and a meeting room is a call of its own that nobody outside hears. If you want everyone’s face on the floor all day, or several screens shared side by side, Teamflow’s video-first floor is the better fit.',
+          'Teamflow puts the team on a shared floor to meet and co-work, with documents and apps beside the conversation. livehuddle puts the team’s characters on a floor plan: you walk into a room, sit at the meeting table or a desk, and everyone can see where everyone is and what they are up to from their status.',
+          'Both put the call in the office. In livehuddle you hear the people near you, a camera or a shared screen shows as a bubble above your character to whoever is in earshot, and a meeting room is a call of its own that nobody outside hears. If you want a floor built round meeting face to face, with documents and apps open beside the call, Teamflow is the better fit.',
         ],
       },
       {
@@ -219,12 +247,16 @@ const LIST: Alternative[] = [
     h1: 'The free, open-source Kumospace alternative',
     lede: 'Kumospace is a polished virtual office with spatial audio and video, built for a team’s everyday office and for bigger gatherings. livehuddle gives a team the same sense of place, rooms to walk into, people to find and voices that grow louder as you walk closer, as free, open-source software anyone opens from a link.',
     rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Free plan with limits, then paid plans' },
-      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
+      {
+        label: 'Price',
+        us: 'Free, every feature',
+        them: 'Free for up to 5 members, then $16 per member a month',
+      },
+      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, a hosted product' },
       {
         label: 'Start without an account',
         us: 'Yes, create and share a Space as a guest',
-        them: 'An account to create a space',
+        them: 'An account to create a space; guests join by link if the host allows it',
       },
       {
         label: 'Voice and video',
@@ -249,8 +281,8 @@ const LIST: Alternative[] = [
     ],
     themBest: [
       'Large events: broadcasting to a big audience, and spaces built for parties and conferences.',
-      'Music in the room.',
-      'A desktop app, and a rich furniture and decor library for an office that looks its best.',
+      'A webinar platform, and recording on its paid plan.',
+      'Desktop and mobile apps, and furniture and decor you can customise for an office that looks its best.',
     ],
     usBest: [
       'Free for everyone and MIT-licensed: no plan limits on people or rooms, and nothing to upgrade to.',
