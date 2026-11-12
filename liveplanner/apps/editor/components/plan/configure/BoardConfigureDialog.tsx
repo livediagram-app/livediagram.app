@@ -24,6 +24,7 @@ import {
   type PlanBoardSectionId,
 } from '@/components/palette/PlanBoardMenuSection';
 import { boardPresets, type BoardPreset } from './board-presets';
+import { boardConfigureHeroArt } from './BoardConfigureHeroArt';
 import { PresetArt } from './PresetArt';
 
 const FormIcon = lucideGlyph(lucideClipboardList, 16);
@@ -103,6 +104,8 @@ export function BoardConfigureDialog({
       subtitle="Start from a layout that suits your cards, then fine-tune any part of it."
       anchorSelector='[data-tour-id="configure-board"]'
       width="w-[54rem]"
+      // The dialog hero header (dialog-hero-header.md): the board's columns and swimlanes, one column mid-drag.
+      hero={boardConfigureHeroArt}
       onClose={onClose}
       headerEnd={
         offersForm ? (
@@ -112,7 +115,7 @@ export function BoardConfigureDialog({
               variant="secondary"
               size="sm"
               // No room beside the title on a phone (docs/specs/026-plan/plan-board.md "Configure").
-              className="mr-1 max-sm:hidden"
+              className="max-sm:hidden"
               onClick={() => {
                 onClose();
                 plan.newFormFor?.(element.id);

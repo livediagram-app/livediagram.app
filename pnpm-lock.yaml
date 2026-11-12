@@ -413,7 +413,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/trusted-types
       '@liveworkspace/ui':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../../packages/ui
       '@liveworkspace/workbench':
         specifier: workspace:*

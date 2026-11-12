@@ -28,7 +28,6 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { dropSetupDraft, readSetupDraft, saveSetupDraft } from '@/lib/setup-dialog-store';
 import { track } from '@/lib/telemetry';
 import { useSheetController } from './sheet-controller';
-import { SheetArt } from './sheet-art';
 import {
   CARD_COLUMNS_REQUIRED,
   SheetSetupCards,
@@ -38,6 +37,7 @@ import {
   type SetupStart,
 } from './SheetSetupStart';
 import { SheetSetupStyle } from './SheetSetupStyle';
+import { setupSheetHeroArt } from '@/components/plan/SetupHeroArt';
 
 // The wizard's steps: a start from Plan Cards adds Cards (which cards) and Columns (their fields) before Style.
 type StepId = 'start' | 'cards' | 'columns' | 'style';
@@ -269,8 +269,8 @@ export function SheetSetup({
       returnFocus={returnFocus}
       titleId={`setup-sheet-${sheetId}`}
       title="Set up your sheet"
-      line="Start from a layout, your cards or a blank grid. Everything can change later from its cog."
-      icon={<SheetArt size={20} />}
+      line="Start from a layout, your cards or a blank grid."
+      art={setupSheetHeroArt}
       help="planSheets"
       palette={palette}
       wide

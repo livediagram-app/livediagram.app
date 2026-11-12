@@ -7,7 +7,9 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { teamErrorMessage, type InviteLink, type TeamResult } from '../data/teams';
 import { Button } from '@liveworkspace/ui';
 import { DAY_MONTH_YEAR } from '@liveworkspace/ui/date-format';
-import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { teamInviteHeroArt } from '@liveworkspace/ui/dialog-hero-art/team-invite';
+import { Dialog, DialogFooter } from '../ui/Dialog';
 import { TEAM_FIELD } from './TeamFormDialog';
 
 const formatDate = (at: number) => DAY_MONTH_YEAR.format(at);
@@ -29,6 +31,7 @@ export function InviteLinkDialog({
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const fieldId = useId();
+  const titleId = useId();
   // Turning the link on or off swaps the buttons: the one pressed goes. The keyboard follows to what took its
   // place (Copy once it's on, Turn On Link once it's off) rather than dropping to the dialog's top.
   const copyRef = useRef<HTMLButtonElement>(null);
@@ -70,17 +73,20 @@ export function InviteLinkDialog({
   }
 
   return (
-    <Dialog onClose={onClose} ariaLabel="Invite by Link" size="md">
-      <DialogHeader
+    <Dialog onClose={onClose} ariaLabel="Invite by Link" titleId={titleId} size="md">
+      {/* The dialog hero header (dialog-hero-header.md): the team's drawing, the newcomer come in by a link. Its line
+          is short, the team's name the part that may run long; off, the body says the whole of it. */}
+      <HeroDialogHeader
+        art={teamInviteHeroArt}
+        titleId={titleId}
         title="Invite by Link"
         subtitle={
           link
-            ? `Anyone signed in who opens it joins ${teamName} as a member.`
-            : `Turn on a link anyone signed in can use to join ${teamName} as a member. It works for 7 days.`
+            ? `Anyone signed in who opens it joins ${teamName}.`
+            : `One link to join ${teamName}, for 7 days.`
         }
-      >
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        onClose={onClose}
+      />
       <div className="flex flex-col gap-3 px-6 py-4" data-invite-link={link ? 'on' : 'off'}>
         {link ? (
           <>
@@ -109,9 +115,20 @@ export function InviteLinkDialog({
             ) : null}
           </>
         ) : (
-          <Button ref={turnOnRef} size="sm" busy={busy} onClick={() => void change(onReset, true)}>
-            Turn On Link
-          </Button>
+          <>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Turn on a link anyone signed in can use to join {teamName} as a member. It works for 7
+              days.
+            </p>
+            <Button
+              ref={turnOnRef}
+              size="sm"
+              busy={busy}
+              onClick={() => void change(onReset, true)}
+            >
+              Turn On Link
+            </Button>
+          </>
         )}
         {error ? (
           <p role="alert" className="text-xs text-rose-600 dark:text-rose-400">
