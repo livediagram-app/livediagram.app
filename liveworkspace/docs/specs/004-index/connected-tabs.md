@@ -170,7 +170,10 @@ so with Try Again.
 Removing a connected tab (its tab menu's Remove, the same as any tab) removes the tab and nothing of the target. The
 host app tells the index once the tab has left the host, however it left (the editor, an agent, an offline copy
 syncing, an undo that never came back), and the index deletes the connection and its pass: everyone it let in is
-sent away from the target as with any deleted link. Undoing the removal brings the tab back without its pass; it
+sent away from the target as with any deleted link. The telling goes through the host's outbox, written with the
+delete itself, so an index out of reach then is told later, with the outbox's retries (Work Tracker #618). It names
+the connection's own id and the tab, so a later connection made in the same tab (Connect Again) is never the one
+removed. Undoing the removal brings the tab back without its pass; it
 offers Connect Again.
 
 Moving the host to the Trash keeps its connections; purging it deletes them and their passes. Moving the target to

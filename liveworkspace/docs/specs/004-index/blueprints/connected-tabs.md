@@ -164,8 +164,13 @@ The shared part is `packages/index-app` `connected-tabs.ts`; each app binds it t
   failure `503`; else `201 { tabId }`. The room then sends its tab outline as an ordered `document-meta` op (each
   app's own outline op), carrying the tab's connection, so open editors place it.
 - **Removing.** The tab delete (`DELETE /api/<items>/:id/tabs/:tabId`) reads the tab's connection with its body in
-  the delete itself and, once the tab has left, tells the index (`tellConnectionLeft`, `removeConnection`), off the
-  response path. One item per Durable Object, so a tab leaving its item has left its last one.
+  the delete itself and, in the same batch, after the unlink and before the tab's row goes, writes an outbox key
+  (`connectionLeftStatement`): kind `connection_left` (`CONNECTION_LEFT_KIND`), key
+  `{"connectionId","tabId"}` (`connectionLeftKeyOf`), only when the tab held a connection and has left the item. The
+  room's drain (`drainIndexOutbox`) sends it as `removeConnection(host, connectionId, tabId)`; a failure keeps the key
+  and retries it with the outbox's backoff, a 404 is done, and an unreadable key is dropped. The connection id is
+  random per connection and the index matches id, host and tab together, so a retry never removes a connection made
+  later in the same tab. One item per Durable Object, so a tab leaving its item has left its last one.
 - **Redaction.** A tab outside a tab-scoped visitor's scope drops `connection` with its name (the document read and
   the room's outline op are rebuilt from id and position alone). A Community visitor's document and tab reads drop
   it, and a copy through a Community link keeps none.
@@ -352,9 +357,9 @@ Migration `0010_connections.sql`, local only (`wrangler d1 migrations apply --lo
 | `liveworkspace/apps/index/src/connections.test.ts`      | making (each refusal; roles: a link Editor or Viewer of the host, and a link Editor of the target, may not), both ways (made, unreached, the caps), Connect Again, opening (item, link, gone, removed, copies, scoped and public grants, agents, the limit), taking back |
 | `liveworkspace/apps/index/src/connection-doors.test.ts` | the confirm and removal doors (wrong app, host, tab; twice), the pair kept, the sweep, purges of host and target, the Share dialog's mark                                                                                                                                |
 
-| `packages/index-app/src/connected-tabs.test.ts` | the reverse write (appended once, the cap, a fresh id), the column, what a save keeps, confirm and removal calls, the door's answers |
+| `packages/index-app/src/connected-tabs.test.ts` | the reverse write (appended once, the cap, a fresh id), the column, what a save keeps, the confirm call, the removal's outbox key (written only for a connected tab that left) and its drain (sent, retried, unreadable dropped), the door's answers |
 | `packages/index-app/src/tab-shares.test.ts` | a connected tab is never shared into another item |
-| `<app>/apps/api/src/routes/connected-tabs.test.ts` | each app: the save keeps and confirms, autosave and Connect Again, a tab of content refused, removal told, a token's create, the reverse write and its room op, scope and Community redaction, copies and the Drive file, the roles (Editor adds and removes; all read) |
+| `<app>/apps/api/src/routes/connected-tabs.test.ts` | each app: the save keeps and confirms, autosave and Connect Again, a tab of content refused, removal keyed in the outbox and retried after a failed first call, a token's create, the reverse write and its room op, scope and Community redaction, copies and the Drive file, the roles (Editor adds and removes; all read) |
 
 Parts 4 and 5 add theirs: the UI's states and roles (Editor, Participant, Viewer each see and open a connected tab;
 only an Editor removes or connects).

@@ -560,6 +560,10 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null, column?: {na
   ([webhooks.md "Automation sends"](webhooks.md#automation-sends)). 200
   `{results: [{key, queued: true} | {key, queued: false, reason, code}]}` in the order sent, `code` one of
   `webhook_not_found`, `webhook_paused`, `webhook_full`; 400 `invalid_sends`; 403 `wrong_app`.
+- `DELETE /app/items/:id/connections/:connectionId?tab=<tabId>`: a connected tab has left its host
+  ([connected-tabs.md "Removing"](connected-tabs.md#removing)). The host's tab delete writes an outbox key for it
+  (`connection_left`, keyed by the connection id and the tab id together) in the delete's own transaction, so a
+  removal the index does not take is tried again as any push is. 204 whether or not it matched.
 
 ### When a push fails
 
@@ -573,7 +577,9 @@ never tried.
   unprocessable): sending it again changes nothing, so its keys are parked at once.
 - **Tried again.** Anything else (401, 408, 429, 5xx, a network failure, and a media push that fails) keeps its keys
   and counts the attempt. A key waits a minute after its first failure, doubling each time, at most an hour
-  (`retryDelayMs`). The index's client keeps no `Retry-After`, so a 429 waits its turn like any other failure.
+  (`retryDelayMs`). An answer with `Retry-After` (seconds, or an HTTP date; the index's client keeps it on the
+  `IndexError` as `retryAfterMs`) waits the longer of the two, and never more than an hour (`RETRY_MAX_MS`), so a
+  huge header cannot stall a key; one that does not parse is ignored (`failureDelayMs`).
 - **Parked.** A key that failed 12 times (`OUTBOX_MAX_ATTEMPTS`, about six hours of trying) is parked too. A parked
   key stays stored and is never sent again, with a log line (`[outbox] parked`, its reason, kinds and count). The
   next write to the same thing (a save for the summary, an edit for its tab, a person's next write, an image placed)
