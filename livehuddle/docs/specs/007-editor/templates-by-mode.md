@@ -31,7 +31,7 @@ untitled.
 
 ## The catalogue
 
-- Twenty-five Spaces in eight categories ([Template categories](../008-canvas/canvas-and-palette.md#template-categories),
+- Twenty-six Spaces in eight categories ([Template categories](../008-canvas/canvas-and-palette.md#template-categories),
   [Virtual Office template](../012-collaboration/virtual-office-template.md), its "The catalogue plan" lists the
   element types each one uses):
   - **Office**: **Virtual Office** (`virtual-office`), **Coworking Space** (`coworking-space`), **Team Pod**
@@ -40,7 +40,7 @@ untitled.
     (`expo-hall`, also in Venues).
   - **Recreation**: **Rooftop Bar** (`rooftop-bar`) and **Cafe** (`cafe`), and the Sports Bar cross-listed.
   - **Outdoor**: **Garden Retreat** (`garden-retreat`), **City Park** (`city-park`) and **Beach Offsite**
-    (`beach-offsite`, also in Campus).
+    (`beach-offsite`, also in Campus), and the Festival Field cross-listed.
   - **Campus**: **Company Campus** (`company-campus`), **Startup HQ** (`startup-hq`), **School Quad** (`school-quad`)
     and **Co-working Tower** (`coworking-tower`, three floors): the company and education sites, rooms joined by a
     garden or a building's floors ([Campus Spaces](../012-collaboration/virtual-office-template.md#campus-spaces)).
@@ -50,7 +50,8 @@ untitled.
     **Country Cottage** (`country-cottage`, two floors), Downstairs and Upstairs joined by Stairs
     ([Homes](../012-collaboration/virtual-office-template.md#homes)).
   - **Venues**: **Conference Venue** (`conference-venue`), **Hotel and Suites** (`hotel-and-suites`, three floors) and
-    **Music Hall** (`music-hall`), and the Expo Hall cross-listed
+    **Music Hall** (`music-hall`) and **Festival Field** (`festival-field`, the open-air venue, also in Outdoor), and
+    the Expo Hall cross-listed
     ([Venues](../012-collaboration/virtual-office-template.md#venues)).
 - Start a Space shows Recommended first, then each category as a group: Campus, Events, Games Rooms, Homes, Office,
   Outdoor, Recreation and Venues
@@ -70,7 +71,7 @@ untitled.
 - Every template opens on a meeting board (`templates.test.ts`).
 - Popular starts with Blank Space (`popular.test.ts`).
 - Every category holds a template (`template-categories.test.ts`).
-- The catalogue is the twenty-five Spaces and the blank, twenty-six templates (`templates.test.ts`'s kind list, the `TemplateKind`
+- The catalogue is the twenty-six Spaces and the blank, twenty-seven templates (`templates.test.ts`'s kind list, the `TemplateKind`
   union and `TEMPLATES` move together).
 - Every Space is walkable (`template-builders-spaces-more.test.ts` and `template-builders-office.test.ts`): its floors
   lie first, every tab (a building's every floor) has exactly one [Avatar Pad](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one)
