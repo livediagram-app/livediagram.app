@@ -18,6 +18,7 @@ import { inheritingTypesOf } from './type-inheritance';
 import { ITEM_LABELS_MAX, ITEM_LABEL_MAX, ITEM_UNKNOWN_STRING_MAX } from './limits';
 import { richFieldOf } from './rich-text-field';
 import { holdsSeveral, storedCardIds, storedPeople } from './several-values';
+import { holdsSeveralImages, storedImageIds } from './image-values';
 import type { ItemPatchOf } from './store';
 import { CUSTOM_CHOICE_OPTIONS_MAX, CUSTOM_CHOICE_OPTION_MAX } from './type-catalogue';
 
@@ -201,6 +202,11 @@ export function changedValue(
     // One person or card from several: the first, the rest lost. Several from one reads one as a list: kept.
     if ((to.kind === 'person' || to.kind === 'card') && holdsSeveral(from) && !holdsSeveral(to)) {
       const all = to.kind === 'person' ? storedPeople(value) : storedCardIds(value);
+      return all.length > 1 ? rewritten(all[0], true) : KEPT;
+    }
+    // One picture from Several Images: the first, the rest leave the card (item-types.md "Image fields").
+    if (to.kind === 'image' && holdsSeveralImages(from) && !holdsSeveralImages(to)) {
+      const all = storedImageIds(value);
       return all.length > 1 ? rewritten(all[0], true) : KEPT;
     }
     if (to.kind === 'daterange' && (from.withTime === true) !== (to.withTime === true))
@@ -387,6 +393,7 @@ export function changesValues(from: KindShape, to: KindShape): boolean {
   if (from.kind !== to.kind) return true;
   if (from.kind === 'person' || from.kind === 'card')
     return holdsSeveral(from) && !holdsSeveral(to);
+  if (from.kind === 'image') return holdsSeveralImages(from) && !holdsSeveralImages(to);
   return from.kind === 'daterange' && (from.withTime === true) !== (to.withTime === true);
 }
 
