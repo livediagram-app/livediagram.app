@@ -32,7 +32,7 @@ const PIECES = (
       {person(20, 'var(--hero-line)', 'var(--hero-accent)')}
     </svg>
     {/* What joins them: a dashed line along the foot, from the one sharing to the pass, fading out at each end. */}
-    <span className="absolute bottom-[9px] left-[3.5rem] right-[7rem] h-[1.5px] bg-[linear-gradient(90deg,var(--hero-mark)_0_3px,transparent_3px_7px)] bg-[length:7px_1.5px] [mask-image:linear-gradient(90deg,transparent,black_18%,black_82%,transparent)] opacity-70" />
+    <span className="absolute bottom-[9px] left-[3.5rem] max-sm:hidden right-[7rem] h-[1.5px] bg-[linear-gradient(90deg,var(--hero-mark)_0_3px,transparent_3px_7px)] bg-[length:7px_1.5px] [mask-image:linear-gradient(90deg,transparent,black_18%,black_82%,transparent)] opacity-70" />
     {/* The pass, tilted as if just handed over (its link badge, a perforation, two lines of what it holds), and the
         two it reaches. */}
     <svg

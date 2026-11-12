@@ -80,8 +80,9 @@ Automations: simple geometric SVG in the tokens, a plate or two lifted off the p
 - **A texture** over the paper: dots, a grid, a baseline grid or rings spreading from a corner, at the hero's
   measures (22, 24, 8 and 14px). Dots and grids may fade in from the title's side, so the words sit on plain paper;
   rings fade into the paper as they spread.
-- **Corner pieces**, rising from the band's bottom edge, shown at every size: at most 96 x 30, three quarters of
-  that on a phone. They sit behind the controls, never over the title mark.
+- **Corner pieces**, rising from the band's bottom edge, shown from `sm`: at most 96 x 30. They sit behind the
+  controls, never over the title mark. On a phone the compact row's mark, title and buttons leave no corner clear,
+  so the band shows its texture alone.
 - **A centre piece**, optional, shown only once the header is 56rem wide (a container query, as dialogs differ in
   width), right-anchored 12.5rem from the edge (the dialog may move it for wider actions); its width plus that
   offset stay within 24rem. Where it shows, the title and its line stop at 26rem, so the two never meet.

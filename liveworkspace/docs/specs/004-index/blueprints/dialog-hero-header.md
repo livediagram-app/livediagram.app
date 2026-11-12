@@ -55,8 +55,8 @@ type HeroArt = {
 
 - Colours only as `var(--hero-<token>)` (`fill`, `stroke`, or a Tailwind arbitrary value); never a literal colour.
 - Motion only through `HERO_MOTION.ring` or `HERO_MOTION.float`, on one element.
-- `HERO_PLACE.centre` is `hidden @4xl:block`, right-anchored at `var(--hero-centre-end, 12.5rem)`; corners scale to
-  75% below `sm` (`origin-bottom-*`).
+- `HERO_PLACE.centre` is `hidden @4xl:block`, right-anchored at `var(--hero-centre-end, 12.5rem)`; corners are
+  `max-sm:hidden` (the phone band is texture alone); any other piece an art adds outside `HERO_PLACE` hides there too.
 - `art/art-rules.test.tsx` imports every file in the shared folder and checks: a `HeroArt` export named after the
   file, no literal colour, image, `url(`, `href` or filter, at most one motion (`motion-safe:`, two or three
   iterations), hidden pieces, and a centre piece exactly when `centre`. Product art carries its own test
