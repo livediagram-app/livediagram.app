@@ -507,14 +507,27 @@ groups and failed until main's CI caught up. Before
 waiting for a runner behind pull requests' CI (a median 8.4 minutes, up to 25, measured that day), and
 half of each job was the same checkout and install. Now a full deploy's Workers queue for a runner 8
 times (1 job, then 6 side by side, then 1) instead of about 40, and each group's job has a limit sized from the
-measured step times: 10 minutes, plus 6 per Worker that builds a site and 2 per other Worker, with 15
-minutes for any one command.
+measured step times: 10 minutes, plus 6 per Worker that builds a site and 2 per other Worker, plus 4
+per Worker for its deploy's retries (below), with 15 minutes for any one command.
 
 - **Each Worker is visible.** Its output is a log group of its own, named for it, and the job's summary
   lists every Worker with its result, the step it failed at, and its time.
 - **One failure doesn't hide the rest.** A Worker whose step fails stops there (a failing migration
   never deploys the code after it), and the group goes on with its other Workers. The job fails at the
   end when any Worker failed, which stops the tiers after it, as before, and leaves the record where it was.
+- **A Cloudflare API blip retries.** A `wrangler deploy` step runs up to twice more, after about 30
+  seconds and then 120, but only when its output shows a transient Cloudflare API failure
+  (`isTransientCloudflareError` in `deploy-group.mjs`): `Received a malformed response from the API`
+  with a 5xx status, `A request to the Cloudflare API (...) failed` with `[code: -1]` (wrangler's own
+  retries gave up) or a 5xx, or a 502, 503, 504 or 524 on a request to the account's API. Any other
+  failure (auth, validation, build, config) fails at once, as before, and a D1 migration step never
+  retries. Wrangler's own retries run within seconds, inside the same blip: on
+  2026-11-12 two production deploys failed that way (a 524 on livediagram's MCP Worker's version
+  upload, and asset uploads for liveplanner's editor and livedesign's help), each costing a rerun and
+  another approval of the gate. The step's output still streams to the log (through `tee`), and the
+  log and the job summary say when a Worker retried. A healthy deploy pays nothing for it; during a
+  Cloudflare incident each affected Worker takes at most about 2.5 minutes longer, which the job's
+  limit allows for.
 - **A retry is safe.** Re-running a failed job deploys its whole group again, the Workers that
   succeeded included. That is harmless: `wrangler deploy` of the same commit puts up the same code and
   vars again, and `wrangler d1 migrations apply` skips the migrations already applied.

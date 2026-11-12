@@ -5,13 +5,16 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   MINUTES,
+  RETRY_WAITS,
   deployGroup,
   deployGroups,
   groupOf,
+  isTransientCloudflareError,
   main,
   parseEnvLines,
   renderSummary,
   runStep,
+  sleepSync,
   spawnExec,
   workerSteps,
 } from './deploy-group.mjs';
@@ -70,7 +73,7 @@ test('sites group by product; services and apis, and routers, are one job each',
       label: 'Services and apis',
       count: 12,
       history: false,
-      timeout: 10 + 12 * 2,
+      timeout: 10 + 12 * (2 + 4),
       workers: undefined,
     },
   );
@@ -79,8 +82,8 @@ test('sites group by product; services and apis, and routers, are one job each',
   assert.deepEqual(
     sites.map((g) => [g.label, g.count, g.history, g.timeout]),
     [
-      ...PRODUCTS.map((p) => [`Sites (${p})`, 4, true, 10 + 3 * 6 + 2]),
-      ['Sites (liveworkspace)', 2, false, 10 + 6 + 2],
+      ...PRODUCTS.map((p) => [`Sites (${p})`, 4, true, 10 + 3 * 6 + 2 + 4 * 4]),
+      ['Sites (liveworkspace)', 2, false, 10 + 6 + 2 + 2 * 4],
     ],
   );
   assert.equal(
@@ -91,7 +94,7 @@ test('sites group by product; services and apis, and routers, are one job each',
   const routers = deployGroups(EVERY, 2);
   assert.deepEqual(
     routers.map((g) => [g.label, g.count, g.timeout]),
-    [['Routers', 6, 10 + 6 * 2]],
+    [['Routers', 6, 10 + 6 * (2 + 4)]],
   );
 
   // About 40 jobs become 8, and every Worker is in exactly one.
@@ -154,6 +157,7 @@ test("a site's steps: its build with the build id and hosted build vars, then de
     cwd: 'livediagram/apps/editor',
     cmd: 'pnpm',
     args: ['exec', 'wrangler', 'deploy', '--env', 'staging'],
+    retry: true,
   });
 
   // Production: the top-level config, and no staging MCP origin.
@@ -238,7 +242,7 @@ test('a step takes its captured env and args, and never logs their values', () =
   const log = (line) => logged.push(line);
   const site = EVERY.find((w) => w.name === '@livediagram/editor');
   const [build] = workerSteps(site, { environment: 'staging', ref: REF, exists: () => true });
-  assert.equal(runStep(build, { exec, baseEnv: { KEEP: '1' }, log }), true);
+  assert.deepEqual(runStep(build, { exec, baseEnv: { KEEP: '1' }, log }), { ok: true, retries: 0 });
   const run = calls.at(-1);
   assert.equal(run.line, 'pnpm turbo run build --filter=@livediagram/editor');
   assert.equal(run.env.NEXT_PUBLIC_TELEMETRY_URL, 'https://secret.example');
@@ -248,7 +252,7 @@ test('a step takes its captured env and args, and never logs their values', () =
 
   const api = EVERY.find((w) => w.name === '@livediagram/api');
   const [deploy] = workerSteps(api, { environment: 'staging', ref: REF });
-  assert.equal(runStep(deploy, { exec, baseEnv: {}, log }), true);
+  assert.deepEqual(runStep(deploy, { exec, baseEnv: {}, log }), { ok: true, retries: 0 });
   assert.equal(
     calls.at(-1).line,
     `pnpm exec wrangler deploy --env staging --var TELEMETRY_URL:https://secret.example --var BUILD_ID:${REF}`,
@@ -264,13 +268,13 @@ test('a step whose capture fails runs nothing more', () => {
   const site = EVERY.find((w) => w.name === '@livediagram/editor');
   const [build] = workerSteps(site, { environment: 'staging', ref: REF, exists: () => true });
   const one = fakeExec({ failing: ['build-env'] });
-  assert.equal(runStep(build, { exec: one.exec, baseEnv: {}, log: () => {} }), false);
+  assert.equal(runStep(build, { exec: one.exec, baseEnv: {}, log: () => {} }).ok, false);
   assert.equal(one.calls.length, 1);
 
   const api = EVERY.find((w) => w.name === '@livediagram/api');
   const [deploy] = workerSteps(api, { environment: 'staging', ref: REF });
   const two = fakeExec({ failing: ['flags'] });
-  assert.equal(runStep(deploy, { exec: two.exec, baseEnv: {}, log: () => {} }), false);
+  assert.equal(runStep(deploy, { exec: two.exec, baseEnv: {}, log: () => {} }).ok, false);
   assert.equal(two.calls.length, 1);
 });
 
@@ -317,18 +321,24 @@ test('one failing Worker stops at its step, and the group deploys every other Wo
 
 test('the summary lists every Worker with its result, steps and time', () => {
   const ok = renderSummary('Routers', 'staging', [
-    { name: '@a/router', failed: '', steps: ['Deploy'], seconds: 9 },
+    { name: '@a/router', failed: '', retries: 0, steps: ['Deploy'], seconds: 9 },
+    { name: '@b/router', failed: '', retries: 1, steps: ['Deploy'], seconds: 40 },
   ]);
-  assert.match(ok, /^### Routers: staging\n\nAll 1 Workers deployed\./);
+  assert.match(ok, /^### Routers: staging\n\nAll 2 Workers deployed\./);
   assert.match(ok, /\| `@a\/router` \| Deployed \| Deploy \| 9s \|/);
+  assert.match(ok, /\| `@b\/router` \| Deployed after 1 retry \| Deploy \| 40s \|/);
 
   const bad = renderSummary('Sites (livediagram)', 'production', [
     { name: '@a/editor', failed: 'Build', steps: ['Build', 'Deploy'], seconds: 40 },
-    { name: '@a/help', failed: '', steps: ['Build', 'Deploy'], seconds: 50 },
+    { name: '@a/help', failed: 'Deploy', retries: 2, steps: ['Build', 'Deploy'], seconds: 200 },
   ]);
   assert.match(
     bad,
-    /1 of 2 Workers failed; the others deployed\. Re-running this job redeploys all of them, which is safe\./,
+    /\| `@a\/help` \| Failed at Deploy after 2 retries \| Build, Deploy \| 200s \|/,
+  );
+  assert.match(
+    bad,
+    /2 of 2 Workers failed; the others deployed\. Re-running this job redeploys all of them, which is safe\./,
   );
   assert.match(bad, /\| `@a\/editor` \| Failed at Build \| Build, Deploy \| 40s \|/);
 });
@@ -407,9 +417,176 @@ test('the real runner streams or captures, and reports a failure or a missing co
   assert.equal(MINUTES.command, 15);
 });
 
+test('a tee streams the output and returns it, stderr included, with the exit status', () => {
+  const env = process.env;
+  const run = spawnExec(
+    process.execPath,
+    ['-e', 'console.log("out $HOME"); console.error("err"); process.exit(4)'],
+    { cwd: '.', env, tee: true },
+  );
+  assert.equal(run.status, 4);
+  // The arguments reach the command as they are, never expanded by the shell.
+  assert.equal(run.stdout, 'out $HOME\nerr\n');
+  assert.deepEqual(spawnExec(process.execPath, ['-e', ''], { cwd: '.', env, tee: true }), {
+    status: 0,
+    stdout: '',
+  });
+});
+
 test('run as a script, it exits with the code main returns', () => {
   const script = new URL('./deploy-group.mjs', import.meta.url).pathname;
   const env = { ...process.env, WORKERS: '', GROUP: '' };
   const run = spawnExec(process.execPath, [script], { cwd: '.', env, capture: true });
   assert.equal(run.status, 2);
+});
+
+// Trimmed from the production deploys of 2026-11-12, colour codes and all.
+const ESC = String.fromCharCode(27);
+const MALFORMED_524 = [
+  '⛅️ wrangler 4.45.0',
+  `${ESC}[31m✘ ${ESC}[41;31m[${ESC}[41;97mERROR${ESC}[41;31m]${ESC}[0m ${ESC}[1mReceived a malformed response from the API${ESC}[0m`,
+  '  <!DOCTYPE html>',
+  '  <title>api.cloudflare.com | 524: A timeout occurred</title>',
+  '  POST /accounts/851be7d244b76a6557bcbe6c4ded80f5/workers/scripts/livediagram-mcp/versions -> 524 <none>',
+].join('\n');
+const ASSETS_CODE_MINUS_1 = [
+  'Asset upload failed. Retrying... 4 of 5 attempts.',
+  'Asset upload failed. Retrying... 5 of 5 attempts.',
+  `${ESC}[31m✘ ${ESC}[41;31m[${ESC}[41;97mERROR${ESC}[41;31m]${ESC}[0m ${ESC}[1mA request to the Cloudflare API (/accounts/851be7d244b76a6557bcbe6c4ded80f5/workers/assets/upload?base64=true) failed.${ESC}[0m`,
+  `  An unknown error has occurred. Please contact support: ${ESC}[4mhttps://cfl.re/3WgEyrH${ESC}[0m [code: -1]`,
+].join('\n');
+
+test("today's two Cloudflare API failures are transient", () => {
+  assert.equal(isTransientCloudflareError(MALFORMED_524), true);
+  assert.equal(isTransientCloudflareError(ASSETS_CODE_MINUS_1), true);
+  assert.equal(
+    isTransientCloudflareError(
+      '✘ [ERROR] A request to the Cloudflare API (/accounts/a/workers/scripts/b) failed.\n  PUT /accounts/a/workers/scripts/b -> 503 Service Unavailable',
+    ),
+    true,
+  );
+  for (const status of [502, 503, 504, 524]) {
+    assert.equal(
+      isTransientCloudflareError(`GET /accounts/a/workers/services/b -> ${status} <none>`),
+      true,
+      String(status),
+    );
+  }
+});
+
+test('auth, validation, build and config errors are not transient', () => {
+  const notTransient = [
+    // Auth: a bad or under-scoped token.
+    '✘ [ERROR] A request to the Cloudflare API (/accounts/a/workers/scripts/b) failed.\n  Authentication error [code: 10000]',
+    '✘ [ERROR] Received a malformed response from the API\n  POST /accounts/a/workers/scripts/b/versions -> 403 Forbidden',
+    'GET /accounts/a/workers/services/b -> 401 Unauthorized',
+    // An auth failure that also met a gateway error is still an auth failure.
+    'GET /accounts/a/x -> 502 <none>\n[code: 10000]',
+    // Validation: the API answered, and said no.
+    '✘ [ERROR] A request to the Cloudflare API (/accounts/a/workers/scripts/b/versions) failed.\n  Uncaught SyntaxError: Unexpected token [code: 10021]',
+    // Build and config.
+    '✘ [ERROR] Build failed with 1 error:\n  src/index.ts:3:7: ERROR: Expected ";" but found "x"',
+    '✘ [ERROR] Missing entry-point to Worker script or to assets directory',
+    '✘ [ERROR] Processing wrangler.toml configuration:\n  - "d1_databases[0]" bindings must have a "database_id" field',
+    // A 5xx that is not a Cloudflare API request, and wrangler's own retries without its give-up.
+    'Error: fetch https://example.com -> 503',
+    'Asset upload failed. Retrying... 1 of 5 attempts.',
+    '',
+  ];
+  for (const output of notTransient)
+    assert.equal(isTransientCloudflareError(output), false, output);
+});
+
+// A runner whose deploy answers each attempt in turn, a status and its output.
+function deployExec(attempts) {
+  const calls = [];
+  const exec = (cmd, args, opts) => {
+    const line = `${cmd} ${args.join(' ')}`;
+    calls.push({ line, ...opts });
+    if (!line.includes('wrangler deploy') && !line.includes('migrations apply')) {
+      return { status: 0, stdout: '' };
+    }
+    const [status, stdout] = attempts.shift() ?? [0, ''];
+    return { status, stdout };
+  };
+  return { exec, calls };
+}
+
+const API = EVERY.find((w) => w.name === '@livediagram/api');
+const MCP = EVERY.find((w) => w.name === '@livediagram/mcp');
+const TELEMETRY = EVERY.find((w) => w.name === '@liveworkspace/telemetry-service');
+
+function deployOne(target, attempts) {
+  const { exec, calls } = deployExec(attempts);
+  const waits = [];
+  const logged = [];
+  const [result] = deployGroup([target], {
+    environment: 'production',
+    ref: REF,
+    exec,
+    log: (line) => logged.push(line),
+    sleep: (seconds) => waits.push(seconds),
+  });
+  const runs = calls.filter((c) => /wrangler (deploy|d1)/.test(c.line));
+  return { result, runs, waits, logged };
+}
+
+test('a deploy that meets a Cloudflare API error succeeds on its second attempt', () => {
+  const { result, runs, waits, logged } = deployOne(MCP, [[1, MALFORMED_524]]);
+  assert.equal(result.failed, '');
+  assert.equal(result.retries, 1);
+  assert.equal(runs.length, 2);
+  assert.ok(runs.every((r) => r.tee === true));
+  assert.deepEqual(waits, [30]);
+  assert.ok(
+    logged.includes(
+      '::warning title=Deploy retrying::Cloudflare API error, retrying in 30s (attempt 2 of 3)',
+    ),
+    logged.join('\n'),
+  );
+});
+
+test('a deploy gives up after three attempts, having waited 30s then 120s', () => {
+  const { result, runs, waits, logged } = deployOne(API, [
+    [1, MALFORMED_524],
+    [1, ASSETS_CODE_MINUS_1],
+    [1, MALFORMED_524],
+  ]);
+  assert.equal(result.failed, 'Deploy');
+  assert.equal(result.retries, 2);
+  assert.equal(runs.length, 3);
+  assert.deepEqual(waits, RETRY_WAITS);
+  assert.deepEqual(RETRY_WAITS, [30, 120]);
+  // Each attempt keeps its hosted vars.
+  assert.ok(runs.every((r) => r.line.includes(`--var BUILD_ID:${REF}`)));
+  assert.ok(logged.some((l) => l.includes('retrying in 120s (attempt 3 of 3)')));
+  // The verify step after it never ran.
+  assert.ok(!logged.some((l) => l.includes('Verify hosted vars')));
+});
+
+test('a deploy that fails for any other reason runs exactly once', () => {
+  const { result, runs, waits } = deployOne(MCP, [
+    [1, '✘ [ERROR] A request to the Cloudflare API failed.\n  Authentication error [code: 10000]'],
+  ]);
+  assert.equal(result.failed, 'Deploy');
+  assert.equal(result.retries, 0);
+  assert.equal(runs.length, 1);
+  assert.deepEqual(waits, []);
+});
+
+test('a D1 migration is never retried, even on a Cloudflare API error', () => {
+  const { result, runs, waits } = deployOne(TELEMETRY, [[1, MALFORMED_524]]);
+  assert.equal(result.failed, 'Apply D1 migrations');
+  assert.equal(result.retries, 0);
+  assert.deepEqual(
+    runs.map((r) => [r.line.includes('migrations apply'), r.tee]),
+    [[true, false]],
+  );
+  assert.deepEqual(waits, []);
+});
+
+test('the real wait blocks for the time it is given', () => {
+  const started = Date.now();
+  sleepSync(0.05);
+  assert.ok(Date.now() - started >= 45);
 });
