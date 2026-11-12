@@ -90,10 +90,9 @@ describe('eventOfWrite', () => {
     expect(unchained?.chain).toBe(0);
   });
 
-  it('makes nothing for the Trash, the Archive, a type change alone or nothing changed', () => {
+  it('makes nothing for the Trash, a type change alone or nothing changed', () => {
     const card = bug();
     expect(eventOf(card, after(card, { status: 'trash', trashedFrom: 'todo' }))).toBeNull();
-    expect(eventOf(card, after(card, { archived: true }))).toBeNull();
     expect(
       eventOfWrite(card, after(card, {}), [{ kind: 'type', from: 'bug', to: 'note' }], {
         role: 'editor',
@@ -202,5 +201,82 @@ describe('time triggers', () => {
       expect(triggerMatches(trigger, event(), 'r2')).toBe(false);
       expect(triggerMatches(trigger, event({ kind: 'manual' }), 'r1')).toBe(false);
     }
+  });
+});
+
+describe('the triggers after Phase 3', () => {
+  const base = { id: 'e', cardId: 'c', by: SAM, role: 'editor' as const, at: 1 };
+  const hears = (trigger: Parameters<typeof triggerMatches>[0], event: Partial<AutomationEvent>) =>
+    triggerMatches(trigger, { ...base, kind: 'changed', ...event }, 'r1');
+
+  it('makes archived and restored events, and none for an archived card made new', () => {
+    const card = bug();
+    expect(eventOf(card, after(card, { archived: true }))).toMatchObject({ kind: 'archived' });
+    const archived = after(card, { archived: true });
+    expect(eventOf(archived, after(archived, { archived: undefined }))).toMatchObject({
+      kind: 'restored',
+    });
+    expect(eventOfWrite(null, card, [{ kind: 'archived' }], { role: 'editor' })).toBeNull();
+  });
+
+  it('marks the write that ticks a checklist’s last item, moved or changed', () => {
+    const card = bug({
+      checklist: [
+        { text: 'a', done: true },
+        { text: 'b', done: false },
+      ],
+    });
+    const ticked = {
+      checklist: [
+        { text: 'a', done: true },
+        { text: 'b', done: true },
+      ],
+    };
+    expect(eventOf(card, after(card, ticked))).toMatchObject({
+      kind: 'changed',
+      checklistDone: true,
+    });
+    expect(eventOf(card, after(card, { ...ticked, status: 'done' }))).toMatchObject({
+      kind: 'moved',
+      checklistDone: true,
+    });
+    // Already complete, or emptied: nothing to mark.
+    const done = after(card, ticked);
+    expect(eventOf(done, after(done, { priority: 'high' }))).not.toHaveProperty('checklistDone');
+    expect(eventOf(card, after(card, { checklist: [] }))).not.toHaveProperty('checklistDone');
+  });
+
+  it('hears each new trigger’s event', () => {
+    expect(hears({ kind: 'card_archived' }, { kind: 'archived' })).toBe(true);
+    expect(hears({ kind: 'card_restored' }, { kind: 'restored' })).toBe(true);
+    expect(hears({ kind: 'card_restored' }, { kind: 'archived' })).toBe(false);
+    expect(hears({ kind: 'checklist_completed' }, { checklistDone: true })).toBe(true);
+    expect(hears({ kind: 'checklist_completed' }, { kind: 'moved', checklistDone: true })).toBe(
+      true,
+    );
+    expect(hears({ kind: 'checklist_completed' }, {})).toBe(false);
+    expect(hears({ kind: 'threads_resolved' }, { kind: 'resolved' })).toBe(true);
+    expect(hears({ kind: 'mentioned' }, { kind: 'comment', mentioned: ['p-ali'] })).toBe(true);
+    expect(hears({ kind: 'mentioned' }, { kind: 'comment' })).toBe(false);
+    expect(
+      hears({ kind: 'mentioned', people: ['p-sam'] }, { kind: 'comment', mentioned: ['p-ali'] }),
+    ).toBe(false);
+    expect(
+      hears({ kind: 'mentioned', people: ['p-ali'] }, { kind: 'comment', mentioned: ['p-ali'] }),
+    ).toBe(true);
+    expect(hears({ kind: 'card_unblocked' }, { kind: 'archived' })).toBe(true);
+    expect(hears({ kind: 'card_unblocked' }, { kind: 'moved' })).toBe(true);
+    expect(hears({ kind: 'card_unblocked' }, {})).toBe(false);
+    expect(hears({ kind: 'related_done', related: 'children' }, { kind: 'moved' })).toBe(true);
+    expect(
+      hears({ kind: 'column_limit', status: 'doing', limit: 2 }, { kind: 'created', to: 'doing' }),
+    ).toBe(true);
+    expect(
+      hears({ kind: 'column_limit', status: 'doing', limit: 2 }, { kind: 'moved', to: 'done' }),
+    ).toBe(false);
+    expect(hears({ kind: 'stuck', days: 5, at: '09:00' }, { kind: 'time', ruleId: 'r1' })).toBe(
+      true,
+    );
+    expect(TRIGGER_EVENT_KINDS.threads_resolved).toEqual(['resolved']);
   });
 });

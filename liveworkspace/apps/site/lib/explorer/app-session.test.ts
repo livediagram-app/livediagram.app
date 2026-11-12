@@ -18,20 +18,24 @@ function sharedNames(byProduct: Record<string, string>): Record<string, string[]
   return Object.fromEntries([...owners].filter(([, products]) => products.length > 1));
 }
 
-/** The cookie name a product's api declares as `const <constant> = '<name>'` in its auth routes. */
-function apiCookie(product: string, constant: 'PKCE_COOKIE' | 'REFRESH_COOKIE'): string {
+/**
+ * The cookie name a product's api hands the shared sign-in routes (`createAppAuth` in
+ * @liveworkspace/auth-client/app-auth) as `<field>: '<name>'` in its auth routes. Read from the source, not
+ * imported: the routes module is a Worker's, with Worker-only imports the site's tests do not load.
+ */
+function apiCookie(product: string, field: 'pkceCookie' | 'refreshCookie'): string {
   const source = readFileSync(resolve(ROOT, product, 'apps/api/src/routes/auth.ts'), 'utf8');
-  const found = source.split('\n').find((line) => line.startsWith(`const ${constant} = '`));
-  if (!found) throw new Error(`${product}: no ${constant} in apps/api/src/routes/auth.ts`);
+  const found = source.split('\n').find((line) => line.trimStart().startsWith(`${field}: '`));
+  if (!found) throw new Error(`${product}: no ${field} in apps/api/src/routes/auth.ts`);
   return found.slice(found.indexOf("'") + 1, found.lastIndexOf("'"));
 }
 
 const hints = Object.fromEntries(Object.entries(SIGNED_IN_HINTS).map(([app, name]) => [app, name]));
 const pkce = Object.fromEntries(
-  Object.keys(hints).map((app) => [app, apiCookie(app, 'PKCE_COOKIE')]),
+  Object.keys(hints).map((app) => [app, apiCookie(app, 'pkceCookie')]),
 );
 const refresh = Object.fromEntries(
-  Object.keys(hints).map((app) => [app, apiCookie(app, 'REFRESH_COOKIE')]),
+  Object.keys(hints).map((app) => [app, apiCookie(app, 'refreshCookie')]),
 );
 
 describe('every product has its own auth cookies', () => {

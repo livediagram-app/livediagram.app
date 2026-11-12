@@ -5,24 +5,28 @@ import { repositoriesOf } from './github-api';
 import { readState } from './webhook-route';
 import { webhookSignatureOk, hmacHex } from './webhook-signature';
 import { INSTALLATION_REPOSITORIES_LISTED } from './github-config';
+import { prPayload, suitePayload } from './test-github-payloads';
 
 // What a plan reads of a verified delivery (blueprint "Part 2" "The worker's doors"), and the pure checks beside it.
 
 describe('readDelivery', () => {
   const inst = { installation: { id: 7 } };
 
-  it('reads a pull request’s and a check suite’s repository', () => {
-    for (const event of ['pull_request', 'check_suite']) {
-      expect(
-        readDelivery(event, 'd1', { ...inst, action: 'opened', repository: { id: 11 } }),
-      ).toEqual({
-        id: 'd1',
-        event,
-        action: 'opened',
-        installationId: 7,
-        repositoryIds: [11],
-      });
-    }
+  it('reads a pull request’s and a check suite’s repository, and the part a plan keeps', () => {
+    expect(readDelivery('pull_request', 'd1', prPayload())).toMatchObject({
+      id: 'd1',
+      event: 'pull_request',
+      action: 'opened',
+      installationId: 7,
+      repositoryIds: [11],
+      pullRequest: { repoId: 11, ref: { owner: 'acme', repo: 'repo-11', number: 42 } },
+    });
+    expect(readDelivery('check_suite', 'd2', suitePayload())).toMatchObject({
+      event: 'check_suite',
+      action: 'completed',
+      repositoryIds: [11],
+      checkSuite: { suiteId: 1, headSha: 'abc1234', checks: 'passing' },
+    });
   });
 
   it('reads the repositories removed, deduplicated, odd entries skipped, capped', () => {
@@ -70,12 +74,14 @@ describe('readDelivery', () => {
       ],
       ['pull_request', null],
       ['pull_request', 'text'],
+      // A pull request or a suite whose part a plan keeps does not read.
+      ['pull_request', { ...prPayload(), pull_request: { number: 1 } }],
+      ['check_suite', { ...suitePayload(), check_suite: { id: 1 } }],
     ];
     for (const [event, payload] of cases)
       expect(readDelivery(event, 'd', payload), JSON.stringify([event, payload])).toBeNull();
     expect(
-      readDelivery('pull_request', 'd', { ...inst, action: 'x'.repeat(65), repository: { id: 1 } })!
-        .action,
+      readDelivery('pull_request', 'd', { ...prPayload(), action: 'x'.repeat(65) })!.action,
     ).toBe('');
   });
 });

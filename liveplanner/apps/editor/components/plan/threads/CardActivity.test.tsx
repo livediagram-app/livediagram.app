@@ -114,6 +114,19 @@ describe('the Activity tab', () => {
     expect(runs()[2]!.textContent).toMatch(/Archived this card \(Undo\)/);
   });
 
+  it('shows GitHub’s moves by GitHub, with its mark, in a run of their own', async () => {
+    fetchItemHistory.mockResolvedValue([
+      entry(5, { by: { name: 'GitHub', color: '#1f2328' }, tag: 'github' }),
+      entry(6),
+    ]);
+    show();
+    await flush();
+    expect(runs()).toHaveLength(2);
+    expect(runs()[0]!.querySelector('[data-github-disc]')).toBeTruthy();
+    expect(runs()[0]!.textContent).toMatch(/^GitHub/);
+    expect(runs()[1]!.querySelector('[data-github-disc]')).toBeNull();
+  });
+
   it('heads older days with their date and their rows with the time of day', async () => {
     fetchItemHistory.mockResolvedValue([entry(5), entry(60 * 24 * 3)]);
     show();

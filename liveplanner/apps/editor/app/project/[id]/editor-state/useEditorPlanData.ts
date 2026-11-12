@@ -1,6 +1,10 @@
 import { planHidesCursors } from '@/lib/plan-cursors';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
+import {
+  type PullRequestStatusesSlice,
+  usePullRequestStatuses,
+} from '@/hooks/plan/usePullRequestStatuses';
 import { type CardThreads, useCardThreads } from '@/hooks/plan/useCardThreads';
 import { usePlanTabSweep } from '@/hooks/plan/usePlanTabSweep';
 import { useItemTypes } from '@/hooks/plan/useItemTypes';
@@ -115,12 +119,16 @@ export function useEditorPlanData(
     onError: (message) => toast.error(message),
     // An undo of a card's delete puts it back on its threads (docs/specs/026-plan/items.md "Cards coming and going").
     threadsOf: (itemId) => cardThreadsRef.current?.threadsOf(itemId) ?? [],
+    onRead: (list) => pullRequestsRef.current?.read(list),
     onOwnWrite: (write, before) => {
       linkedActionsRef.current?.noteOwnWrite(write, before);
       // A card deleted, or put back, changes the threads it was on: read them again once it has landed.
       if (write.kind === 'delete' || write.kind === 'create') cardThreadsRef.current?.refetch();
     },
   });
+  // The states of the pull requests the cards link (docs/specs/026-plan/github-pull-requests.md "Pull request state on
+  // cards"), from each items read and the room.
+  const pullRequestsRef = useRef<PullRequestStatusesSlice | null>(null);
   // The plan's card comment threads (docs/specs/026-plan/items.md "Comments"), read once its cards are.
   const cardThreadsRef = useRef<CardThreads | null>(null);
   const cardThreads = useCardThreads({
@@ -149,6 +157,12 @@ export function useEditorPlanData(
     pushUndo: itemUndo.push,
     onError: (message) => toast.error(message),
   });
+  const pullRequests = usePullRequestStatuses({
+    items: planItems.items,
+    types: itemTypes.types,
+    refetch: planItems.refetch,
+  });
+  useAssignRef(pullRequestsRef, pullRequests);
 
   // Whose hands are on which Plan card (docs/specs/026-plan/plan-board.md): sent and heard through the room.
   const planPresence = usePlanPresence({
@@ -234,6 +248,7 @@ export function useEditorPlanData(
     receiveChangeset: changesetFeed.receiveChangeset,
     receiveItems: planItems.receive,
     receiveThreads: cardThreads.receive,
+    receivePullRequests: pullRequests.receive,
     receiveItemTypes: itemTypes.receive,
     receivePlanPresence: planPresence.receive,
     receiveSheets: sheets.receiveSheets,
@@ -378,6 +393,7 @@ export function useEditorPlanData(
     loadAllTabs,
     planItems,
     planPresence,
+    pullRequests: pullRequests.statuses,
     setTagColour,
     sheets,
     sheetsCommitRef,

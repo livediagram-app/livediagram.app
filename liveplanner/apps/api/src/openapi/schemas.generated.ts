@@ -1350,6 +1350,173 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "body"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "set_type",
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "type"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "colour": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "const": "set_colour",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "colour"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "restore",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "copy_card",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kind": {
+            "const": "add_checklist",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "link_card",
+            "type": "string"
+          },
+          "to": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "card": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "card"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "trigger": {
+                    "const": true,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "trigger"
+                ],
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "field",
+          "to"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "mention",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "to": {
+            "$ref": "#/components/schemas/AutomationRecipient"
+          }
+        },
+        "required": [
+          "kind",
+          "to",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "resolve_threads",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
       }
     ]
   },
@@ -2065,7 +2232,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "done",
       "no_match",
       "skipped",
-      "failed"
+      "failed",
+      "waiting"
     ],
     "type": "string"
   },
@@ -2151,6 +2319,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AutomationRun": {
     "additionalProperties": false,
     "properties": {
+      "afterWait": {
+        "type": "number"
+      },
       "at": {
         "type": "number"
       },
@@ -2203,6 +2374,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "array"
       },
       "tookMs": {
+        "type": "number"
+      },
+      "waitsUntil": {
         "type": "number"
       }
     },
@@ -2376,6 +2550,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "$ref": "#/components/schemas/AutomationAi"
+      },
+      {
+        "$ref": "#/components/schemas/AutomationWait"
       }
     ]
   },
@@ -2700,8 +2877,178 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "kind"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "card_archived",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "card_restored",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "checklist_completed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "threads_resolved",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "mentioned",
+            "type": "string"
+          },
+          "people": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "card_unblocked",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "related_done",
+            "type": "string"
+          },
+          "related": {
+            "enum": [
+              "children",
+              "linked"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "related"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "column_limit",
+            "type": "string"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "status",
+          "limit"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "$ref": "#/components/schemas/AutomationClock"
+          },
+          "days": {
+            "type": "number"
+          },
+          "kind": {
+            "const": "stuck",
+            "type": "string"
+          },
+          "statuses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind",
+          "days",
+          "at"
+        ],
+        "type": "object"
       }
     ]
+  },
+  "AutomationWait": {
+    "additionalProperties": false,
+    "properties": {
+      "hours": {
+        "type": "number"
+      },
+      "kind": {
+        "const": "wait",
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "hours"
+    ],
+    "type": "object"
   },
   "AutomationWho": {
     "anyOf": [
@@ -6712,6 +7059,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/GithubRepositoryView"
         },
         "type": "array"
+      },
+      "rules": {
+        "$ref": "#/components/schemas/GithubRules"
       }
     },
     "required": [
@@ -6719,7 +7069,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "account",
       "connectedBy",
       "connectedAt",
-      "repositories"
+      "repositories",
+      "rules"
     ],
     "type": "object"
   },
@@ -6763,6 +7114,33 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "chosen"
     ],
     "type": "object"
+  },
+  "GithubRules": {
+    "additionalProperties": false,
+    "description": "A connected plan's two GitHub rules (docs/specs/026-plan/github-pull-requests.md \"GitHub rules\"): the column (a status) a linked pull request's card moves to when it opens, and when it merges; null for a rule that is off.",
+    "properties": {
+      "merged": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "opened": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "opened",
+      "merged"
+    ],
+    "type": "object"
+  },
+  "GithubRulesRequest": {
+    "$ref": "#/components/schemas/GithubRules",
+    "description": "PUT /api/projects/:id/github/rules: both rules, each a status a board of the plan names, or null for off."
   },
   "HeroCaption": {
     "additionalProperties": false,
@@ -7739,7 +8117,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "form",
       "repeat",
       "automation",
-      "automation_ai"
+      "automation_ai",
+      "github"
     ],
     "type": "string"
   },
@@ -8553,6 +8932,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "items": {
         "items": {
           "$ref": "#/components/schemas/Item"
+        },
+        "type": "array"
+      },
+      "pullRequests": {
+        "description": "For a plan connected to GitHub (docs/specs/026-plan/github-pull-requests.md \"Pull request state on cards\"): the state of each pull request the answered cards link, by a field or by naming them. Absent for a plan with no connection, and for a Community visitor.",
+        "items": {
+          "$ref": "#/components/schemas/PullRequestStatus"
         },
         "type": "array"
       },
@@ -10973,6 +11359,63 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id",
       "questions",
       "title"
+    ],
+    "type": "object"
+  },
+  "PullRequestChecks": {
+    "description": "Its newest commit's check suites together.",
+    "enum": [
+      "running",
+      "passing",
+      "failing"
+    ],
+    "type": "string"
+  },
+  "PullRequestState": {
+    "description": "Where a pull request stands: a draft, open (ready for review), merged, or closed without merging.",
+    "enum": [
+      "draft",
+      "open",
+      "merged",
+      "closed"
+    ],
+    "type": "string"
+  },
+  "PullRequestStatus": {
+    "additionalProperties": false,
+    "description": "One pull request's state as a plan holds it.",
+    "properties": {
+      "cards": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "checks": {
+        "$ref": "#/components/schemas/PullRequestChecks"
+      },
+      "key": {
+        "type": "string"
+      },
+      "state": {
+        "$ref": "#/components/schemas/PullRequestState"
+      },
+      "title": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      },
+      "url": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "key",
+      "url",
+      "title",
+      "state",
+      "updatedAt"
     ],
     "type": "object"
   },

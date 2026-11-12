@@ -1,22 +1,23 @@
 'use client';
 
-// An action's panel (docs/specs/026-plan/automations.md "Actions"): its kind (changing it starts that kind afresh),
-// then the kind's own fields. Flag, Unflag and Archive have nothing to set. Inside a branch the kinds leave out
+// An action's panel (docs/specs/026-plan/automations.md "Actions"): its kind, changed in the Add an Action picker
+// (ChangeActionField; changing it starts that kind afresh),
+// then the kind's own fields. Flag, Unflag, Archive, Restore From Archive and Resolve Threads have nothing to set. Inside a branch the kinds leave out
 // Create Card and the text offers the triggering card's values; on a time rule nothing names whoever triggered it.
 
-import {
-  AUTOMATION_STEP_NAMES,
-  type AutomationAction,
-  type AutomationActionKind,
-} from '@liveplanner/items';
+import type { AutomationAction, AutomationActionKind } from '@liveplanner/items';
 import type { AutomationOutline } from '../automation-outline';
-import { ACTION_KINDS, BRANCH_ACTION_KINDS, defaultAction } from '../step-defaults';
+import { defaultAction } from '../step-defaults';
+import { ChangeActionField } from './ChangeActionField';
 import { AssignPanel } from './AssignPanel';
+import { CopyCardPanel, SetColourPanel, SetTypePanel } from './CardActionPanels';
+import { ChecklistActionPanel } from './ChecklistActionPanel';
+import { LinkCardPanel } from './LinkCardPanel';
 import { CreateCardPanel } from './CreateCardPanel';
 import { FieldActionPanel } from './FieldActionPanel';
 import { LabelActionPanel } from './LabelActionPanel';
 import { MoveActionPanel } from './MoveActionPanel';
-import { PanelField, PanelNote, PanelSelect } from './panel-parts';
+import { PanelNote } from './panel-parts';
 import { TextActionPanel } from './TextActionPanel';
 
 const NOTHING_TO_SET: Partial<Record<AutomationActionKind, string>> = {
@@ -24,6 +25,9 @@ const NOTHING_TO_SET: Partial<Record<AutomationActionKind, string>> = {
   unflag: 'Takes the card’s flag off. Nothing else to set.',
   archive:
     'Archives the card. It stays in the Archive, where anyone who can edit can bring it back.',
+  restore: 'Brings an archived card back to its board. A card that isn’t archived stays as it is.',
+  resolve_threads:
+    'Resolves every open comment thread on the card, by Automation. Anyone can reopen one.',
 };
 
 export function ActionPanel({
@@ -76,6 +80,7 @@ export function ActionPanel({
         );
       case 'comment':
       case 'email':
+      case 'mention':
         return (
           <TextActionPanel
             action={action}
@@ -95,31 +100,41 @@ export function ActionPanel({
             invalid={invalid}
           />
         );
+      case 'set_type':
+        return <SetTypePanel action={action} onChange={onChange} outline={outline} />;
+      case 'set_colour':
+        return <SetColourPanel action={action} onChange={onChange} />;
+      case 'copy_card':
+        return <CopyCardPanel action={action} onChange={onChange} outline={outline} />;
+      case 'add_checklist':
+        return <ChecklistActionPanel action={action} onChange={onChange} invalid={invalid} />;
+      case 'link_card':
+        return (
+          <LinkCardPanel
+            action={action}
+            onChange={onChange}
+            outline={outline}
+            branch={branch}
+            invalid={invalid}
+          />
+        );
       case 'flag':
       case 'unflag':
       case 'archive':
+      case 'restore':
+      case 'resolve_threads':
         return <PanelNote>{NOTHING_TO_SET[action.kind]}</PanelNote>;
     }
   })();
   return (
     <div className="flex flex-col gap-4">
-      <PanelField label="Action">
-        {(id) => (
-          <PanelSelect
-            id={id}
-            value={action.kind}
-            onChange={(e) =>
-              onChange(defaultAction(e.target.value as AutomationActionKind, outline))
-            }
-          >
-            {(branch ? BRANCH_ACTION_KINDS : ACTION_KINDS).map((k) => (
-              <option key={k} value={k}>
-                {AUTOMATION_STEP_NAMES[k]}
-              </option>
-            ))}
-          </PanelSelect>
-        )}
-      </PanelField>
+      <ChangeActionField
+        kind={action.kind}
+        branch={branch}
+        onChange={(kind) => {
+          if (kind !== action.kind) onChange(defaultAction(kind, outline));
+        }}
+      />
       {body}
     </div>
   );

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuGrowthRatio, cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import { BACKGROUND_PATTERNS } from '@liveworkspace/model-core/basics';
 import {
   applyAlpha,
@@ -74,6 +75,24 @@ describe('the shared helpers', () => {
 
   it('scales every px length of a background size', () => {
     expect(scaleBackgroundSize('24px 24px, 120px 120px', 2)).toBe('48px 48px, 240px 240px');
+    expect(scaleBackgroundSize('1.5px 0.25px', 2)).toBe('3px 0.5px');
+    expect(scaleBackgroundSize('12.3.4px', 2)).toBe('12.6.8px');
+    expect(scaleBackgroundSize('x5px', 3)).toBe('x15px');
+  });
+
+  // A long run of digits with no px used to be rescanned from every digit (quadratic). Four times the
+  // input must cost about four times the CPU, never sixteen; a quadratic scan reads 16 here.
+  it('reads a long run of digits with no px in linear time', () => {
+    const spec = (n: number) => '0'.repeat(n) + 'x';
+    const small = spec(20_000);
+    const large = spec(80_000);
+    const time = (s: string) => () =>
+      cpuMsOf(() => {
+        for (let i = 0; i < 4; i++) scaleBackgroundSize(s, 2);
+      });
+    expect(cpuGrowthRatio(time(small), time(large), { ceiling: cpuRatioCeiling(8) })).toBeLessThan(
+      cpuRatioCeiling(8),
+    );
   });
 
   it('memoises a tile url per tile object', () => {

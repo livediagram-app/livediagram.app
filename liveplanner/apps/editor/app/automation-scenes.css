@@ -1,0 +1,123 @@
+/* The Automations template tiles' living previews (docs/specs/026-plan/automations.md "The Automations screen":
+ * Templates). A content illustration (docs/specs/004-interface-design/motion.md "Where durations live"), so its
+ * durations live here. Each scene rests on the moment before its rule acts; hovering or focusing its tile
+ * ([data-template], [data-picker-tile]) plays it forward, leaving plays it back. Parts:
+ *   .ats-t    moves from --ats-r (rest) to --ats-p (played)
+ *   .ats-in   appears as it plays; .ats-out leaves
+ *   .ats-pop  overshoots into place; .ats-drag eases like a hand moving a card
+ *   .ats-turn and .ats-fill take longer to move, for the Wait scene's hourglass and bar
+ *   --ats-d   the part's delay as it plays (none as it plays back, so it rewinds at once)
+ * With no hover (touch), reduced motion or the editor's Reduce motion, the scene shows the played moment, still. */
+
+.ats-t,
+.ats-in,
+.ats-out {
+  transition:
+    opacity 260ms ease,
+    transform 520ms var(--ats-ease, cubic-bezier(0.2, 0.8, 0.2, 1)),
+    color 260ms ease,
+    background-color 260ms ease;
+  transition-delay: 0ms;
+}
+.ats-t {
+  transform: var(--ats-r, none);
+}
+.ats-in {
+  opacity: 0;
+}
+.ats-pop {
+  --ats-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.ats-drag {
+  --ats-ease: cubic-bezier(0.65, 0, 0.25, 1);
+  transition-duration: 260ms, 640ms, 260ms, 260ms;
+}
+/* The Wait scene's hourglass turning over, and its bar filling. */
+.ats-turn {
+  transition-duration: 260ms, 700ms, 260ms, 260ms;
+}
+.ats-fill {
+  transition-duration: 260ms, 900ms, 260ms, 260ms;
+}
+
+:is([data-template], [data-picker-tile]):not(:disabled):is(:hover, :focus-visible) .ats-t {
+  transform: var(--ats-p, none);
+}
+:is([data-template], [data-picker-tile]):not(:disabled):is(:hover, :focus-visible)
+  :is(.ats-t, .ats-in, .ats-out) {
+  transition-delay: var(--ats-d, 0ms);
+}
+:is([data-template], [data-picker-tile]):not(:disabled):is(:hover, :focus-visible) .ats-in {
+  opacity: 1;
+}
+:is([data-template], [data-picker-tile]):not(:disabled):is(:hover, :focus-visible) .ats-out {
+  opacity: 0;
+}
+
+/* The dependency line's dashes run once it is done. */
+.ats-flow {
+  stroke-dasharray: 3 3;
+}
+:is([data-template], [data-picker-tile]):not(:disabled):is(:hover, :focus-visible) .ats-flow {
+  animation: ats-flow 700ms linear infinite;
+}
+@keyframes ats-flow {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+
+/* A button pressed once (the form's Submit). */
+:is([data-template], [data-picker-tile]):not(:disabled):is(:hover, :focus-visible) .ats-press {
+  animation: ats-press 260ms ease-out 80ms both;
+}
+@keyframes ats-press {
+  50% {
+    transform: scale(0.86);
+  }
+}
+
+/* The played moment, still. */
+@media (hover: none) {
+  .ats-t {
+    transform: var(--ats-p, none);
+  }
+  .ats-in {
+    opacity: 1;
+  }
+  .ats-out {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ats-t,
+  .ats-in,
+  .ats-out {
+    transition: none;
+  }
+  .ats-t {
+    transform: var(--ats-p, none);
+  }
+  .ats-in {
+    opacity: 1;
+  }
+  .ats-out {
+    opacity: 0;
+  }
+  .ats-flow,
+  .ats-press {
+    animation: none !important;
+  }
+}
+:root.reduce-motion .ats-t {
+  transform: var(--ats-p, none);
+}
+:root.reduce-motion .ats-in {
+  opacity: 1;
+}
+:root.reduce-motion .ats-out {
+  opacity: 0;
+}
+:root.reduce-motion :is(.ats-flow, .ats-press) {
+  animation: none !important;
+}

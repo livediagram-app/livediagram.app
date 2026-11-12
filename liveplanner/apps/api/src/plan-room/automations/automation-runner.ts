@@ -27,6 +27,10 @@ import {
   statusName,
   timeTriggerWords,
   triggerMatches,
+  derivedTargets,
+  isDerivedTrigger,
+  type DerivedTrigger,
+  waitWords,
   type AutomationEvent,
   type AutomationResult,
   type AutomationRule,
@@ -34,9 +38,11 @@ import {
   type AutomationStepLine,
 } from '@liveplanner/items';
 import { listItems, readItem } from '../../db/items';
+import type { Item } from '@liveplanner/items';
 import { appBaseUrl } from '../../email/client';
 import { cardUrl, readAutomationPlan, type AutomationPlan } from './automation-plan';
-import { claimRun, dropRun, runsToday, settleRun, trimRuns } from './automation-log';
+import { claimRun, dropRun, runsToday, settleRun, settleWaiting, trimRuns } from './automation-log';
+import { WAIT_CONDITIONS, WAIT_FULL, WAIT_RULE_CHANGED, holdRun } from './automation-waits';
 import type { AutomationSchedule } from './automation-queue';
 import type { AutomationStore, Sql } from './automation-store';
 import { applyPlannedRun, type WriteDeps } from './automation-writes';
@@ -61,7 +67,13 @@ export interface RunnerDeps extends WriteDeps {
 
 // What one wake (or one request) reads once: the plan, the runs started today, and (once an AI step asks) the AI
 // calls made today.
-export type RunState = { plan: AutomationPlan | null; today: number; ai?: number };
+export type RunState = {
+  plan: AutomationPlan | null;
+  today: number;
+  ai?: number;
+  // The plan's cards as one event's derived triggers read them (runs between events change them).
+  cards?: { event: string; items: Item[] };
+};
 
 const hex = (bytes: Uint8Array) =>
   Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
@@ -77,6 +89,14 @@ function triggerLine(
 ): AutomationStepLine {
   if (event.kind === 'time' && isTimeTrigger(rule.trigger))
     return { kind: 'trigger', text: `Automation · ${timeTriggerWords(rule.trigger)}` };
+  // A run a Wait held, going on: "After waiting 2 days".
+  if (event.kind === 'resume')
+    return {
+      kind: 'trigger',
+      text: `After ${waitWords(event.waited ?? 1)
+        .replace('Wait ', 'waiting ')
+        .toLowerCase()}`,
+    };
   // An Incoming Webhook call's: no person behind it.
   if (event.kind === 'incoming')
     return { kind: 'trigger', text: incomingTriggerWords(event.cards ?? 0) };
@@ -112,6 +132,16 @@ const relatedFailure = (related: readonly { card: { key: number }; failed?: stri
 
 export type RunOptions = { dry?: boolean; turn?: number };
 
+// Whether a rule's steps read the plan's cards: a branch's related cards, or a Link Cards (the card it links, and a
+// Blocked By loop).
+const readsCards = (rule: AutomationRule): boolean =>
+  rule.steps.some(
+    (s) =>
+      s.kind === 'for' ||
+      s.kind === 'link_card' ||
+      (s.kind === 'if' && [...s.then, ...s.else].some((a) => a.kind === 'link_card')),
+  );
+
 // One rule answering one trigger: the run, or null when it never started (its own change, the budget spent, ran
 // already, or a chain stop whose conditions did not hold).
 export async function runRule(
@@ -133,6 +163,8 @@ export async function runRule(
   let card: AutomationRun['card'] = null;
   let turns = 0;
   let webhook: string | undefined;
+  const resume = event.kind === 'resume';
+  let waitsUntil: number | undefined;
   const end = (result: AutomationResult, reason?: string): AutomationRun => {
     const run: AutomationRun = {
       id,
@@ -144,14 +176,19 @@ export async function runRule(
       ...(reason ? { reason } : {}),
       tookMs: Date.now() - at,
       steps: lines,
+      ...(waitsUntil !== undefined ? { waitsUntil } : {}),
+      ...(resume && event.waited ? { afterWait: event.waited } : {}),
     };
     if (opts.dry) return run;
     settleRun(sql, run);
+    // The run a Wait held went on: its own row is done (what it did before the Wait stays).
+    if (resume && event.origin) settleWaiting(sql, event.origin, 'done');
     // The day's budget counts what ran: a No Match is logged but costs nothing.
     if (result !== 'no_match') state.today += 1;
-    if (result === 'done' || result === 'skipped') deps.store.advanceTurn(rule.id, turns);
-    if (result === 'done' || result === 'failed')
-      deps.store.settle(rule.id, result, reason ?? '', at, webhook);
+    if (result === 'done' || result === 'skipped' || result === 'waiting')
+      deps.store.advanceTurn(rule.id, turns);
+    if (result === 'done' || result === 'failed' || result === 'waiting')
+      deps.store.settle(rule.id, result === 'waiting' ? 'done' : result, reason ?? '', at, webhook);
     console.info('[automations] run', {
       result,
       trigger: rule.trigger.kind,
@@ -163,6 +200,7 @@ export async function runRule(
     state.plan ??= await readAutomationPlan(deps.env, deps.planId);
     const plan = state.plan;
     lines.push(triggerLine(event, plan, rule));
+    if (resume && rule.edited.at !== event.edited) return end('skipped', WAIT_RULE_CHANGED);
     const stop = chainStop(event, deps.store);
     // An Incoming Webhook call that named no card: the rule runs once with none, when its steps need none.
     const cardless = event.kind === 'incoming' && !event.cardId;
@@ -170,7 +208,7 @@ export async function runRule(
     const item = cardless ? cardlessCard() : await readItem(deps.env, deps.planId, event.cardId);
     if (!item || isTrashed(item)) {
       if (stop) return (dropRun(sql, id), null);
-      return end('no_match', 'The card is gone');
+      return resume ? end('skipped', 'The card is gone') : end('no_match', 'The card is gone');
     }
     if (!cardless) card = { id: item.id, key: item.key, title: itemTitle(item) };
     const url = cardless
@@ -190,9 +228,7 @@ export async function runRule(
       ...(cardless ? { cardless: true } : {}),
       turn: opts.turn ?? (opts.dry ? 0 : deps.store.turn(rule.id)),
       // A branch's related cards come from the plan as it is now.
-      ...(rule.steps.some((s) => s.kind === 'for')
-        ? { items: await listItems(deps.env, deps.planId) }
-        : {}),
+      ...(readsCards(rule) ? { items: await listItems(deps.env, deps.planId) } : {}),
     };
     const held = allHold(rule.conditions, ctx);
     for (const l of held.lines) lines.push({ kind: 'condition', ...l });
@@ -200,8 +236,13 @@ export async function runRule(
       if (!held.ok) return (dropRun(sql, id), null);
       return end('skipped', stop);
     }
-    if (!held.ok) return end('no_match');
-    const planned = planActions(rule.steps, ctx);
+    if (!held.ok) return resume ? end('no_match', WAIT_CONDITIONS) : end('no_match');
+    // A test plans past every Wait; a held run goes on from the step after its Wait.
+    const planned = planActions(
+      rule.steps,
+      ctx,
+      opts.dry ? { through: true } : resume ? { from: event.step ?? 0 } : {},
+    );
     const offset = lines.length;
     lines.push(...planned.lines);
     // A failed step stops the run; the steps before it stay done (spec "Actions").
@@ -249,9 +290,18 @@ export async function runRule(
     }
     const refused: string[] = [];
     for (const r of writes.related) {
-      if (!r.patch.set && !r.patch.clear && !r.comments.length && !r.emails.length) continue;
+      const writes_ = r.patch.set || r.patch.clear || r.patch.type;
+      if (!writes_ && !r.comments.length && !r.emails.length && !r.mentions.length && !r.resolve)
+        continue;
       const url = cardUrl(deps.env, deps.planId, r.card.id);
-      const one = { patch: r.patch, comments: r.comments, created: [], emails: r.emails };
+      const one = {
+        patch: r.patch,
+        comments: r.comments,
+        created: [],
+        emails: r.emails,
+        mentions: r.mentions,
+        resolve: r.resolve,
+      };
       const wrote = await applyPlannedRun(deps, plan, rule, r.card, one, source, url);
       if (wrote.ok) continue;
       lines.push({ kind: 'action', ok: false, text: `#${r.card.key} ${wrote.reason}` });
@@ -270,6 +320,18 @@ export async function runRule(
     turns = writes.turns;
     // A step the day's AI cap skipped makes the run Skipped, not Failed: nothing is wrong with the rule.
     if (asked.skipped) return end('skipped', asked.skipped);
+    // A Wait reached: the rest goes on later, as a run of its own.
+    if ('wait' in writes && writes.wait) {
+      const until = holdRun(sql, id, rule.id, event, rule.edited.at, writes.wait, Date.now());
+      if (until === null) {
+        lines.push({ kind: 'action', ok: false, text: WAIT_FULL });
+        return end('failed', WAIT_FULL);
+      }
+      waitsUntil = until;
+      // The room's alarm asks again: this run may be the earliest to go on.
+      deps.store.onSchedule();
+      return end('waiting');
+    }
     return end('done');
   } catch (error) {
     console.warn('[automations] run.threw', { error: String(error) });
@@ -280,6 +342,25 @@ export async function runRule(
       return null;
     }
   }
+}
+
+// A derived trigger's events: one for each card it concerns, under the event's id and that card's.
+async function derivedFor(
+  deps: RunnerDeps,
+  state: RunState,
+  trigger: DerivedTrigger,
+  event: AutomationEvent,
+): Promise<AutomationEvent[]> {
+  state.plan ??= await readAutomationPlan(deps.env, deps.planId);
+  if (state.cards?.event !== event.id)
+    state.cards = { event: event.id, items: await listItems(deps.env, deps.planId) };
+  return derivedTargets(trigger, event, state.cards.items, state.plan.types, state.plan.isDone).map(
+    (card) => ({
+      ...event,
+      id: `${event.id}>${card.id}`,
+      cardId: card.id,
+    }),
+  );
 }
 
 // One wake: the oldest waiting triggers, each against every rule that is on and hears it, in the list's order; a
@@ -304,6 +385,12 @@ export async function runAutomationWake(
     const event = row.event;
     for (const rule of event ? rules : []) {
       if (!triggerMatches(rule.trigger, event!, rule.id)) continue;
+      // Card Unblocked, Related Cards Done, Column Over Limit: the cards it concerns, worked out from the plan now.
+      if (isDerivedTrigger(rule.trigger)) {
+        for (const target of await derivedFor(deps, state, rule.trigger, event!))
+          if (await runRule(deps, state, rule, target)) ran += 1;
+        continue;
+      }
       if (await runRule(deps, state, rule, event!)) ran += 1;
     }
     schedule.done(row.id);

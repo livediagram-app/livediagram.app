@@ -43,7 +43,9 @@ export type ItemHistoryChange =
 
 // How an entry was made: by an agent (an API token), as an undo or redo, or from a form's response.
 // `automation_ai`: a rule's AI action (docs/specs/026-plan/automations.md "AI actions"), by Automation, marked as AI.
-export type ItemHistoryTag = 'ai' | 'undo' | 'form' | 'repeat' | 'automation' | 'automation_ai';
+// `github`: a GitHub rule's move (docs/specs/026-plan/github-pull-requests.md "GitHub rules"), by GitHub.
+export type ItemHistoryTag =
+  'ai' | 'undo' | 'form' | 'repeat' | 'automation' | 'automation_ai' | 'github';
 
 // An entry as the plan stores it: its author as the card names them (a hashed id, a name, a colour).
 export type StoredHistoryEntry = {
@@ -261,7 +263,15 @@ export function historyForReader(
   }));
 }
 
-const TAGS: readonly string[] = ['ai', 'undo', 'form', 'repeat', 'automation', 'automation_ai'];
+const TAGS: readonly string[] = [
+  'ai',
+  'undo',
+  'form',
+  'repeat',
+  'automation',
+  'automation_ai',
+  'github',
+];
 const CHANGE_KINDS = new Set([
   'created',
   'moved',

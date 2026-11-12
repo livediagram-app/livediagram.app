@@ -73,7 +73,14 @@ function actionNames(a: AutomationAction | AutomationOutgoing | AutomationAi): N
         ...(a.linkField ? [{ kind: 'field' as const, id: a.linkField }] : []),
       ];
     case 'email':
+    case 'mention':
       return 'person' in a.to ? [{ kind: 'person', id: a.to.person }] : [];
+    case 'set_type':
+      return [{ kind: 'type', id: a.type }];
+    case 'copy_card':
+      return a.status ? [{ kind: 'column', id: a.status }] : [];
+    case 'link_card':
+      return [{ kind: 'field', id: a.field }];
     default:
       return [];
   }
@@ -92,6 +99,9 @@ function namesOf(rule: AutomationRuleBody): Need[] {
   if (t.kind === 'card_moved')
     for (const id of [...(t.from ?? []), ...(t.to ?? [])]) out.push({ kind: 'column', id });
   if (t.kind === 'field_changed') for (const id of t.fields) out.push({ kind: 'field', id });
+  if (t.kind === 'column_limit') out.push({ kind: 'column', id: t.status });
+  if (t.kind === 'stuck') for (const id of t.statuses ?? []) out.push({ kind: 'column', id });
+  if (t.kind === 'mentioned') for (const id of t.people ?? []) out.push({ kind: 'person', id });
   for (const c of rule.conditions) out.push(...conditionNames(c));
   for (const s of rule.steps) {
     if (s.kind === 'for') out.push(...relatedNames(s.related));

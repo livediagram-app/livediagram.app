@@ -31,6 +31,7 @@ export const AUTOMATION_TEMPLATE_CATEGORIES = [
   'due_dates',
   'forms',
   'telling_people',
+  'ai',
 ] as const;
 export type AutomationTemplateCategory = (typeof AUTOMATION_TEMPLATE_CATEGORIES)[number];
 export const AUTOMATION_TEMPLATE_CATEGORY_NAMES: Readonly<
@@ -41,6 +42,7 @@ export const AUTOMATION_TEMPLATE_CATEGORY_NAMES: Readonly<
   due_dates: 'Due Dates',
   forms: 'Forms',
   telling_people: 'Telling People',
+  ai: 'AI',
 };
 
 // What a person picks before the rule can be saved, and how its step says so.
@@ -74,6 +76,20 @@ export const AUTOMATION_TEMPLATE_IDS = [
   'triage-bugs',
   'unblock-next',
   'due-soon',
+  'clean-up-done',
+  'escalate-urgent',
+  'reopen-on-comment',
+  'route-reviews',
+  'due-on-start',
+  'flag-blocked',
+  'verify-fix',
+  'back-to-backlog',
+  'close-parent',
+  'tell-unblocked',
+  'nudge-stuck',
+  'done-when-resolved',
+  'sort-incoming',
+  'summarise-requests',
 ] as const;
 export type AutomationTemplateId = (typeof AUTOMATION_TEMPLATE_IDS)[number];
 
@@ -106,6 +122,15 @@ function finishDateField(plan: AutomationTemplatePlan): string | undefined {
   return undefined;
 }
 
+// The plan's Review column: one named like Review (Review, In Review, Code Review), wherever the boards put it.
+const reviewStatus = (plan: AutomationTemplatePlan) =>
+  plan.statuses.find((s) => /review/i.test(s.name))?.status;
+
+const todoStatuses = (plan: AutomationTemplatePlan) =>
+  plan.statuses.filter((s) => plan.phases.get(s.status) === 'todo').map((s) => s.status);
+const doingStatuses = (plan: AutomationTemplatePlan) =>
+  plan.statuses.filter((s) => plan.phases.get(s.status) === 'doing').map((s) => s.status);
+
 const bugType = (plan: AutomationTemplatePlan) =>
   plan.types.find((t) => /^bugs?$/i.test(t.label.trim()))?.id;
 
@@ -132,8 +157,9 @@ function movedToDone(plan: AutomationTemplatePlan): {
 }
 
 const NINE = '09:00';
+const MONDAY = 1;
 
-// ---- The eight ----------------------------------------------------------------------------------------------------
+// ---- The templates ----------------------------------------------------------------------------------------------------
 
 export const AUTOMATION_TEMPLATES: readonly AutomationTemplate[] = [
   {
@@ -341,6 +367,344 @@ export const AUTOMATION_TEMPLATES: readonly AutomationTemplate[] = [
       };
     },
   },
+  {
+    id: 'clean-up-done',
+    name: 'Clean Up Done',
+    description: 'Every Monday at 9:00, archive cards that have been done for more than 14 days.',
+    category: 'status',
+    build(plan) {
+      const done = doneStatuses(plan);
+      const field = finishDateField(plan);
+      return {
+        body: rule(
+          plan,
+          this.name,
+          { kind: 'scheduled', every: 'week', days: [MONDAY], at: NINE },
+          [
+            { kind: 'column', statuses: done },
+            { kind: 'field', field: field ?? '', op: 'before', value: { today: -14 } },
+          ],
+          [{ kind: 'archive' }],
+        ),
+        picks: [
+          ...(done.length ? [] : [{ path: 'conditions.0', pick: 'column' as const }]),
+          ...(field ? [] : [{ path: 'conditions.1', pick: 'field' as const }]),
+        ],
+      };
+    },
+  },
+  {
+    id: 'escalate-urgent',
+    name: 'Escalate Urgent Work',
+    description:
+      "When a card's priority becomes Urgent, flag it, email its assignee and post to Slack.",
+    category: 'telling_people',
+    build(plan) {
+      return {
+        body: rule(
+          plan,
+          this.name,
+          { kind: 'field_changed', fields: ['priority'] },
+          [{ kind: 'field', field: 'priority', op: 'is', value: 'urgent' }],
+          [
+            { kind: 'flag' },
+            {
+              kind: 'email',
+              to: { assignee: true },
+              subject: '{{card.title}} is now urgent',
+              body: '{{person}} made {{card.title}} urgent. Open it: {{card.url}}',
+            },
+            {
+              kind: 'notify',
+              via: 'slack',
+              webhook: '',
+              text: 'Urgent: {{card.title}} ({{card.assignee}}) {{card.url}}',
+            },
+          ],
+        ),
+        picks: [{ path: 'steps.2', pick: 'webhook' }],
+      };
+    },
+  },
+  {
+    id: 'reopen-on-comment',
+    name: 'Reopen on New Comment',
+    description: 'When someone comments on a done card, move it back to In Progress and flag it.',
+    category: 'status',
+    build(plan) {
+      const done = doneStatuses(plan);
+      const doing = inProgressStatus(plan);
+      return {
+        body: rule(
+          plan,
+          this.name,
+          { kind: 'comment_added' },
+          [{ kind: 'column', statuses: done }],
+          [{ kind: 'move', status: doing ?? '' }, { kind: 'flag' }],
+        ),
+        picks: [
+          ...(done.length ? [] : [{ path: 'conditions.0', pick: 'column' as const }]),
+          ...(doing ? [] : [{ path: 'steps.0', pick: 'column' as const }]),
+        ],
+      };
+    },
+  },
+  {
+    id: 'route-reviews',
+    name: 'Route Reviews',
+    description:
+      'When a card moves to Review, assign reviewers in turn and say it is ready for them.',
+    category: 'assigning',
+    build(plan) {
+      const review = reviewStatus(plan);
+      return {
+        body: rule(
+          plan,
+          this.name,
+          { kind: 'card_moved', to: review ? [review] : [] },
+          [],
+          [
+            { kind: 'assign', to: { rotate: [] } },
+            { kind: 'comment', text: '{{card.assignee}}, this is ready for your review.' },
+          ],
+        ),
+        picks: [
+          ...(review ? [] : [{ path: 'trigger', pick: 'column' as const }]),
+          { path: 'steps.0', pick: 'people' },
+        ],
+      };
+    },
+  },
+  {
+    id: 'due-on-start',
+    name: 'Give It a Due Date',
+    description: 'When a card moves to In Progress with no due date, set it due a week from today.',
+    category: 'due_dates',
+    build(plan) {
+      const doing = inProgressStatus(plan);
+      return {
+        body: rule(
+          plan,
+          this.name,
+          { kind: 'card_moved', to: doing ? [doing] : [] },
+          [{ kind: 'field', field: 'due', op: 'empty' }],
+          [{ kind: 'set_field', field: 'due', value: { date: { today: 7 } } }],
+        ),
+        picks: doing ? [] : [{ path: 'trigger', pick: 'column' }],
+      };
+    },
+  },
+  {
+    id: 'flag-blocked',
+    name: 'Flag Blocked Cards',
+    description:
+      'When a card gets the blocked label, flag it and ask in a comment what it waits on.',
+    category: 'status',
+    build(plan) {
+      return {
+        body: rule(
+          plan,
+          this.name,
+          { kind: 'field_changed', fields: ['labels'] },
+          [{ kind: 'field', field: 'labels', op: 'contains', value: 'blocked' }],
+          [
+            { kind: 'flag' },
+            {
+              kind: 'comment',
+              text: '{{card.assignee}}, this card is blocked. What is it waiting on?',
+            },
+          ],
+        ),
+        picks: [],
+      };
+    },
+  },
+  {
+    id: 'verify-fix',
+    name: 'Verify the Fix',
+    description: 'When a Bug card is done, add a Verify Fix card to its first column to check it.',
+    category: 'status',
+    build(plan) {
+      const { trigger, picks } = movedToDone(plan);
+      const bug = bugType(plan);
+      const first = todoStatuses(plan)[0];
+      const create: AutomationAction = {
+        kind: 'create_card',
+        type: bug ?? '',
+        title: 'Verify fix: {{card.title}}',
+        copy: ['assignee', 'labels'],
+      };
+      if (first) create.status = first;
+      return {
+        body: rule(plan, this.name, trigger, [{ kind: 'type', types: bug ? [bug] : [] }], [create]),
+        picks: [
+          ...picks,
+          ...(bug
+            ? []
+            : [
+                { path: 'conditions.0', pick: 'type' as const },
+                { path: 'steps.0', pick: 'type' as const },
+              ]),
+        ],
+      };
+    },
+  },
+  {
+    id: 'back-to-backlog',
+    name: 'Back to the Backlog',
+    description: 'When a card moves back to a to-do column, unassign it and clear its due date.',
+    category: 'assigning',
+    build(plan) {
+      const from = doingStatuses(plan);
+      const to = todoStatuses(plan);
+      return {
+        body: rule(
+          plan,
+          this.name,
+          { kind: 'card_moved', from, to },
+          [],
+          [
+            { kind: 'assign', to: { nobody: true } },
+            { kind: 'clear_field', field: 'due' },
+          ],
+        ),
+        picks: to.length ? [] : [{ path: 'trigger', pick: 'column' }],
+      };
+    },
+  },
+  {
+    id: 'close-parent',
+    name: 'Close the Parent',
+    description: 'When the last of a card’s children is done, move the card to Done too.',
+    category: 'status',
+    build(plan) {
+      const done = doneStatuses(plan)[0];
+      return {
+        body: rule(
+          plan,
+          this.name,
+          { kind: 'related_done', related: 'children' },
+          [],
+          [{ kind: 'move', status: done ?? '' }],
+        ),
+        picks: done ? [] : [{ path: 'steps.0', pick: 'column' }],
+      };
+    },
+  },
+  {
+    id: 'tell-unblocked',
+    name: 'Tell Them It’s Unblocked',
+    description:
+      'When the last card blocking a card is done, mention its assignee so they can start.',
+    category: 'telling_people',
+    build(plan) {
+      return {
+        body: rule(
+          plan,
+          this.name,
+          { kind: 'card_unblocked' },
+          [],
+          [
+            {
+              kind: 'mention',
+              to: { assignee: true },
+              text: 'Nothing is blocking this any more, so it is ready to start.',
+            },
+          ],
+        ),
+        picks: [],
+      };
+    },
+  },
+  {
+    id: 'nudge-stuck',
+    name: 'Nudge Stuck Cards',
+    description: 'Each morning, flag cards that have not changed for 5 days and ask for an update.',
+    category: 'telling_people',
+    build(plan) {
+      return {
+        body: rule(
+          plan,
+          this.name,
+          { kind: 'stuck', days: 5, at: '09:00' },
+          [],
+          [
+            { kind: 'flag' },
+            {
+              kind: 'mention',
+              to: { assignee: true },
+              text: 'No change for 5 days. How is it going?',
+            },
+          ],
+        ),
+        picks: [],
+      };
+    },
+  },
+  {
+    id: 'done-when-resolved',
+    name: 'Done When Feedback Is Resolved',
+    description: 'When the last comment thread on a card in Review is resolved, move it to Done.',
+    category: 'status',
+    build(plan) {
+      const review = reviewStatus(plan);
+      const done = doneStatuses(plan)[0];
+      return {
+        body: rule(
+          plan,
+          this.name,
+          { kind: 'threads_resolved' },
+          review ? [{ kind: 'column', statuses: [review] }] : [],
+          [{ kind: 'move', status: done ?? '' }],
+        ),
+        picks: done ? [] : [{ path: 'steps.0', pick: 'column' }],
+      };
+    },
+  },
+  {
+    id: 'sort-incoming',
+    name: 'Sort Incoming Cards',
+    description:
+      'When a card is added, AI suggests its card type and sets its priority and labels.',
+    category: 'ai',
+    build(plan) {
+      return {
+        body: rule(
+          plan,
+          this.name,
+          { kind: 'card_created' },
+          [],
+          [
+            { kind: 'ai', task: 'card_type', set: true },
+            { kind: 'ai', task: 'triage', priority: true, labels: true },
+          ],
+        ),
+        picks: [],
+      };
+    },
+  },
+  {
+    id: 'summarise-requests',
+    name: 'Summarise Form Requests',
+    description:
+      'When a form response lands, AI summarises it in a comment and sets its priority and labels.',
+    category: 'ai',
+    build(plan) {
+      return {
+        body: rule(
+          plan,
+          this.name,
+          { kind: 'form_response' },
+          [],
+          [
+            { kind: 'ai', task: 'summarise' },
+            { kind: 'ai', task: 'triage', priority: true, labels: true },
+          ],
+        ),
+        picks: [],
+      };
+    },
+  },
 ];
 
 export const automationTemplate = (id: string): AutomationTemplate | undefined =>
@@ -364,9 +728,15 @@ function stillEmpty(part: unknown, pick: AutomationPick): boolean {
   const p = part as AutomationTrigger | AutomationCondition | AutomationAction | AutomationOutgoing;
   switch (pick) {
     case 'column':
-      return p.kind === 'card_moved' && !p.to?.length;
+      return (
+        (p.kind === 'card_moved' && !p.to?.length) ||
+        (p.kind === 'column' && p.statuses.length === 0) ||
+        (p.kind === 'move' && p.status === '')
+      );
     case 'type':
-      return p.kind === 'type' && p.types.length === 0;
+      return (
+        (p.kind === 'type' && p.types.length === 0) || (p.kind === 'create_card' && p.type === '')
+      );
     case 'field':
       return (p.kind === 'set_field' || p.kind === 'field') && p.field === '';
     case 'label':

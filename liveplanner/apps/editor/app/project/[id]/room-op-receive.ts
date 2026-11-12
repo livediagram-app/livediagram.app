@@ -41,6 +41,7 @@ export function receiveRoomOp(
     receiveChangeset,
     receiveItems,
     receiveThreads,
+    receivePullRequests,
     receiveItemTypes,
     receivePlanPresence,
     receiveSheets,
@@ -164,6 +165,9 @@ export function receiveRoomOp(
     // Card comment threads (docs/specs/026-plan/items.md "Comments"). System-only: threads change only
     // through the api.
     if (from === 'system') receiveThreads(op);
+  } else if (op.kind === 'pull-requests') {
+    // A GitHub delivery's pull request states. System-only: only a verified delivery changes them.
+    if (from === 'system') receivePullRequests?.(op);
   } else if (op.kind === 'item-types') {
     // The type catalogue (docs/specs/026-plan/item-types.md). System-only: it changes only through
     // the api.

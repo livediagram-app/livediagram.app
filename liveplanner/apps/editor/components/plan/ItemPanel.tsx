@@ -6,6 +6,7 @@
 // with Linked Cards (when a Card field can link to the type) and Activity (the card's history); on a phone it is one column and Details becomes the last tab. It opens on the
 // type's first tab. Every field saves as it changes. It follows the item wherever someone moves it, and closes if
 // someone deletes it.
+import { CardPullRequests } from './CardPullRequests';
 import { useEffect, useState, type ReactNode } from 'react';
 import { markResponseOpened } from '@/components/forms/fresh-responses';
 import {
@@ -439,6 +440,7 @@ function ItemPanelContent({
       ) : current.id === DETAILS_TAB ? (
         <div className="flex flex-col">
           {details.map(detailRow)}
+          <CardPullRequests item={item} type={type} />
           {repeat.line}
           {meta}
         </div>
@@ -505,6 +507,7 @@ function ItemPanelContent({
               {detailsLabelOf(type)}
             </h3>
             {details.map(detailRow)}
+            <CardPullRequests item={item} type={type} />
             {repeat.line}
             {meta}
           </aside>

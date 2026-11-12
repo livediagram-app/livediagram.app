@@ -7,6 +7,8 @@
 @import './collab-cards.css';
 @import './forms.css';
 @import './canvas-motion.css';
+/* The Automations template tiles' living previews (docs/specs/026-plan/automations.md). */
+@import './automation-scenes.css';
 @import './motion-page.css';
 /* The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md). */
 @import './auth-motion.css';

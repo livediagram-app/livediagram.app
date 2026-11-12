@@ -19,6 +19,7 @@ import {
   type Item,
   type ItemPerson,
   type ItemStoreState,
+  type PullRequestStatus,
   type ItemWrite,
 } from '@liveplanner/items';
 import { fetchItems, writeItem, type ItemWriteAnswer, type ItemsScope } from '@/lib/api/items';
@@ -164,6 +165,9 @@ export function usePlanItems(opts: {
   // This session's share role: which of its writes may wait for the connection (docs/specs/007-editor/
   // offline-changes.md "Roles"). Absent: none wait.
   level?: AccessLevel;
+  // Each read's pull request states (docs/specs/026-plan/github-pull-requests.md "Pull request state on cards"):
+  // undefined for a plan with no GitHub connection.
+  onRead?: (pullRequests: readonly PullRequestStatus[] | undefined) => void;
 }): PlanItems {
   const { projectId, ready, ownerId, name, color, shareCode, tabScope } = opts;
   // Handed over fresh each render: read at call time, so `send` and `write` keep their identity.
@@ -172,6 +176,7 @@ export function usePlanItems(opts: {
     onError: opts.onError,
     threadsOf: opts.threadsOf,
     onOwnWrite: opts.onOwnWrite,
+    onRead: opts.onRead,
   });
   const [store, setStore] = useState<ItemStoreState>(EMPTY_ITEM_STORE);
   const [status, setStatus] = useState<PlanItemsStatus>('loading');
@@ -261,11 +266,12 @@ export function usePlanItems(opts: {
         ),
       );
       setStatus('ready');
+      callbacks.current.onRead?.(fetched.pullRequests);
     } catch (err) {
       console.warn('[plan] plan.items.load-failed', { error: String(err) });
       setStatus((prev) => (prev === 'ready' ? prev : 'error'));
     }
-  }, [scopeRef, queueOf, layBy]);
+  }, [scopeRef, queueOf, layBy, callbacks]);
   useAssignRef(loadRef, load);
 
   useEffect(() => {

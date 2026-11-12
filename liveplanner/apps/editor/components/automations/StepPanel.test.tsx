@@ -7,7 +7,7 @@ import { useState } from 'react';
 import type { AutomationRuleBody } from '@liveplanner/items';
 import { newRuleBody, type RulePart } from './rule-draft';
 import { StepPanel, faultWithin } from './StepPanel';
-import { outline } from './test-fixtures';
+import { outline, pickStep } from './test-fixtures';
 
 afterEach(cleanup);
 
@@ -59,20 +59,20 @@ describe('StepPanel', () => {
     expect(latest.trigger).toEqual({ kind: 'card_created', status: 'done' });
     pick('In Column', '');
     expect(latest.trigger).toEqual({ kind: 'card_created' });
-    pick('Trigger', 'form_response');
+    pickStep('form_response');
     pick('Form', 't-form');
     expect(latest.trigger).toEqual({ kind: 'form_response', formTab: 't-form' });
     pick('Form', '');
-    pick('Trigger', 'card_moved');
+    pickStep('card_moved');
     fireEvent.click(screen.getAllByRole('button', { name: 'Done' })[1]!);
     fireEvent.click(screen.getAllByRole('button', { name: 'To Do' })[0]!);
     expect(latest.trigger).toEqual({ kind: 'card_moved', to: ['done'], from: ['todo'] });
-    pick('Trigger', 'field_changed');
+    pickStep('field_changed');
     expect(latest.trigger.kind).toBe('field_changed');
     fireEvent.click(screen.getByRole('button', { name: 'Due Date' }));
-    pick('Trigger', 'comment_added');
+    pickStep('comment_added');
     expect(screen.getByText(/Automation’s own comments start nothing/)).toBeTruthy();
-    pick('Trigger', 'manual');
+    pickStep('manual');
     expect(screen.getByText(/listed under Run Rule/)).toBeTruthy();
   });
 
@@ -168,7 +168,7 @@ describe('StepPanel', () => {
     expect(screen.getByRole('option', { name: 'A column no longer here' })).toBeTruthy();
     pick('Column', 'done');
     expect(latest.steps[0]).toEqual({ kind: 'move', status: 'done' });
-    pick('Action', 'set_field');
+    pickStep('set_field');
     pick('Set To', 'number');
     fireEvent.change(screen.getByRole('spinbutton', { name: 'Number' }), {
       target: { value: '5' },
@@ -186,22 +186,22 @@ describe('StepPanel', () => {
     fireEvent.change(screen.getByRole('textbox', { name: 'Text' }), { target: { value: 'Hi' } });
     pick('Field', 'title');
     expect(latest.steps[0]).toEqual({ kind: 'set_field', field: 'title', value: { text: 'Hi' } });
-    pick('Action', 'clear_field');
+    pickStep('clear_field');
     pick('Field', 'labels');
     expect(latest.steps[0]).toEqual({ kind: 'clear_field', field: 'labels' });
-    pick('Action', 'assign');
+    pickStep('assign');
     pick('Assign To', 'person:u-ana');
     expect(latest.steps[0]).toEqual({ kind: 'assign', to: { person: 'u-ana' } });
     pick('Assign To', 'nobody');
     expect(latest.steps[0]).toEqual({ kind: 'assign', to: { nobody: true } });
-    pick('Action', 'add_label');
+    pickStep('add_label');
     fireEvent.change(screen.getByRole('combobox', { name: 'Label' }), {
       target: { value: 'urgent' },
     });
     expect(latest.steps[0]).toEqual({ kind: 'add_label', label: 'urgent' });
-    pick('Action', 'archive');
+    pickStep('archive');
     expect(screen.getByText(/Archives the card/)).toBeTruthy();
-    pick('Action', 'create_card');
+    pickStep('create_card');
     fireEvent.change(screen.getByRole('textbox', { name: 'Title' }), {
       target: { value: 'Follow up' },
     });
@@ -267,7 +267,7 @@ describe('StepPanel', () => {
     expect(screen.getByText(/Its conditions decide/)).toBeTruthy();
     cleanup();
     render(<Panel body={ifBody} part={{ part: 'branch', step: 0, side: 'then', index: 0 }} />);
-    pick('Action', 'unflag');
+    pickStep('unflag');
     expect(latest.steps[0]).toMatchObject({ then: [{ kind: 'unflag' }] });
   });
 

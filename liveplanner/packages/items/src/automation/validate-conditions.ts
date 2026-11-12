@@ -3,8 +3,10 @@
 // to answer. Pure.
 
 import {
+  AUTOMATION_COLUMN_LIMIT_MAX,
   AUTOMATION_CONDITIONS_MAX,
   AUTOMATION_DUE_DAYS_MAX,
+  AUTOMATION_STUCK_DAYS_MAX,
   AUTOMATION_TEXT_MAX,
   AUTOMATION_TRIGGER_KINDS,
   type AutomationCondition,
@@ -106,7 +108,35 @@ export function readTrigger(v: unknown): AutomationTrigger {
     case 'overdue':
       return { kind: 'overdue', at: clock(t['at'], 'trigger.at') };
     case 'incoming_webhook':
-      return { kind: 'incoming_webhook' };
+    case 'card_archived':
+    case 'card_restored':
+    case 'checklist_completed':
+    case 'threads_resolved':
+    case 'card_unblocked':
+      return { kind: kind as 'card_archived' };
+    case 'mentioned': {
+      const people = optionalIds(t['people'], 'trigger.people');
+      return { kind: 'mentioned', ...(people?.length ? { people } : {}) };
+    }
+    case 'related_done':
+      if (t['related'] !== 'children' && t['related'] !== 'linked')
+        refuse('trigger.related', 'trigger.related must be children or linked');
+      return { kind: 'related_done', related: t['related'] as 'children' | 'linked' };
+    case 'column_limit':
+      return {
+        kind: 'column_limit',
+        status: id(t['status'], 'trigger.status'),
+        limit: whole(t['limit'], 'trigger.limit', 1, AUTOMATION_COLUMN_LIMIT_MAX),
+      };
+    case 'stuck': {
+      const statuses = optionalIds(t['statuses'], 'trigger.statuses');
+      return {
+        kind: 'stuck',
+        days: whole(t['days'], 'trigger.days', 1, AUTOMATION_STUCK_DAYS_MAX),
+        at: clock(t['at'], 'trigger.at'),
+        ...(statuses?.length ? { statuses } : {}),
+      };
+    }
   }
 }
 

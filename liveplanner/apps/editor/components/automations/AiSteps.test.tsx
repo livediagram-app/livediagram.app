@@ -11,7 +11,7 @@ import { RunSteps } from './RunSteps';
 import { StepPanel } from './StepPanel';
 import { ADD_NAMES, defaultStep, isAiKind } from './step-defaults';
 import { summaryFields } from './step-panels/AiStepPanel';
-import { outline } from './test-fixtures';
+import { outline, pickable, pickerTile } from './test-fixtures';
 
 afterEach(cleanup);
 
@@ -54,7 +54,7 @@ describe('Add Action', () => {
     );
     fireEvent.click(screen.getAllByRole('button', { name: 'Add Action' }).at(-1)!);
     expect(screen.getByText('100 a day per plan')).toBeTruthy();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Triage' }));
+    fireEvent.click(pickerTile('ai_triage')!);
     expect(a.addAction).toHaveBeenCalledWith('ai_triage');
     cleanup();
     render(
@@ -67,7 +67,7 @@ describe('Add Action', () => {
       />,
     );
     fireEvent.click(screen.getAllByRole('button', { name: 'Add Action' }).at(-1)!);
-    expect(screen.queryByRole('menuitem', { name: 'Summarise Card' })).toBeNull();
+    expect(pickable()).not.toContain('ai_summarise');
   });
 
   it('starts each AI action in its first form, at the top level only', () => {

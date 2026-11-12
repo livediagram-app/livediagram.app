@@ -67,7 +67,7 @@ A progress ring that fills over a timer's window measures that timer. It is an a
   `canvas-motion.css` and `qa-board.css`. In marketing it's `hero-animations.css`,
   `feature-art/*.css` and `page-motion.css`. On the account and connect pages it's
   `auth-motion.css`. In telemetry
-  it's `dataviz-motion.css`. In the template previews it's `preview-motion.css`. Any other
+  it's `dataviz-motion.css`. In the template previews it's `preview-motion.css`, and in liveplanner's Automations template tiles it's `automation-scenes.css`. Any other
   stylesheet is chrome.
 - No component class or inline style carries a duration above the ceiling.
 

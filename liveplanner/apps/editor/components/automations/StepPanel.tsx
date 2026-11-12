@@ -29,6 +29,7 @@ import {
 import { StepPreview } from './StepPreview';
 import { ActionPanel } from './step-panels/ActionPanel';
 import { AiStepPanel } from './step-panels/AiStepPanel';
+import { WaitPanel } from './step-panels/WaitPanel';
 import { BranchPanel } from './step-panels/BranchPanel';
 import { ConditionPanel } from './step-panels/ConditionPanel';
 import { OutgoingPanel } from './step-panels/OutgoingPanel';
@@ -155,7 +156,14 @@ export function StepPanel({
         onChange={(next) => onChange(setStep(body, part.index, next))}
       />,
     );
-  if (step.kind === 'for' || step.kind === 'notify' || step.kind === 'ai') return null;
+  if (step.kind === 'wait' && part.part === 'step')
+    return shell(
+      AUTOMATION_STEP_NAMES.wait,
+      <StepTile tone="action" kind="wait" size={24} />,
+      <WaitPanel step={step} onChange={(next) => onChange(setStep(body, part.index, next))} />,
+    );
+  if (step.kind === 'for' || step.kind === 'notify' || step.kind === 'ai' || step.kind === 'wait')
+    return null;
   const branch = holderOf(body, part)?.kind === 'for';
   const text = step.kind === 'comment' ? step.text : step.kind === 'email' ? step.body : null;
   return shell(

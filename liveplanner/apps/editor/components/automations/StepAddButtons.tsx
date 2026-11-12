@@ -1,7 +1,7 @@
 'use client';
 
-// The dashed add buttons under the steps (docs/specs/026-plan/automations.md "The rule builder"): + Add Action (a
-// menu of kinds), + Add Condition (a menu of kinds), + If / Else and + For Related Cards at the rule's top level. The
+// The dashed add buttons under the steps (docs/specs/026-plan/automations.md "The rule builder"): + Add Action (the
+// Add an Action picker, AddActionDialog), + Add Condition (a menu of kinds), + If / Else and + For Related Cards at the rule's top level. The
 // outgoing actions are offered at the top level only, while the rule holds fewer than 5; an If / Else's lists add
 // actions alone; a branch adds its own conditions and actions, Create Card left out. Each menu row wears the step's
 // own icon.
@@ -18,21 +18,10 @@ import {
   MenuGroupSeparator,
   PortalMenu,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { AUTOMATION_AI_PER_DAY } from '@liveplanner/items';
-import { ConditionIcon, StepTile } from './automation-glyphs';
-import { canAddAction, canAddAi, canAddCondition, canAddOutgoing, type Side } from './rule-draft';
-import {
-  ACTION_KINDS,
-  ADD_NAMES,
-  AI_KINDS,
-  BRANCH_ACTION_KINDS,
-  CONDITION_KINDS,
-  OUTGOING_KINDS,
-  isAiKind,
-  isOutgoingKind,
-  viaOf,
-  type AddKind,
-} from './step-defaults';
+import { AddActionButton } from './AddActionDialog';
+import { ConditionIcon } from './automation-glyphs';
+import { canAddAction, canAddCondition, type Side } from './rule-draft';
+import { CONDITION_KINDS, type AddKind } from './step-defaults';
 
 export type AddActions = {
   addCondition: (kind: AutomationCondition['kind'], holder?: number) => void;
@@ -109,17 +98,7 @@ export function AddMenu<K extends string>({
   );
 }
 
-const addIcon = (k: AddKind) =>
-  isAiKind(k) ? (
-    <StepTile tone="action" kind="ai" size={24} />
-  ) : isOutgoingKind(k) ? (
-    <StepTile tone="action" kind="notify" via={viaOf(k)} size={24} />
-  ) : (
-    <StepTile tone="action" kind={k} size={24} />
-  );
 const conditionIcon = () => <ConditionIcon />;
-// The AI actions, at the rule's top level only, under their own heading with what they count toward.
-const AI_GROUP = { title: 'AI', note: `${AUTOMATION_AI_PER_DAY} a day per plan`, kinds: AI_KINDS };
 
 /** The rule's own add buttons: actions (outgoing ones too), conditions, If / Else and For Related Cards. */
 export function TopAddButtons({
@@ -130,17 +109,11 @@ export function TopAddButtons({
   actions: AddActions;
 }) {
   const full = !canAddAction(body);
-  const kinds: readonly AddKind[] = canAddOutgoing(body)
-    ? [...ACTION_KINDS, ...OUTGOING_KINDS]
-    : ACTION_KINDS;
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <AddMenu
-        label="Add Action"
-        kinds={kinds}
-        group={canAddAi(body) ? AI_GROUP : undefined}
-        names={ADD_NAMES}
-        icon={addIcon}
+      <AddActionButton
+        body={body}
+        where="top"
         disabled={full}
         onPick={(k) => actions.addAction(k)}
       />
@@ -207,11 +180,9 @@ export function HolderAddButtons({
   if (conditionsOnly) return <div>{addCondition}</div>;
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <AddMenu
-        label="Add Action"
-        kinds={branch ? BRANCH_ACTION_KINDS : ACTION_KINDS}
-        names={ADD_NAMES}
-        icon={addIcon}
+      <AddActionButton
+        body={body}
+        where={branch ? 'branch' : 'list'}
         disabled={!canAddAction(body, step)}
         onPick={(k) => actions.addAction(k, { step, side })}
       />

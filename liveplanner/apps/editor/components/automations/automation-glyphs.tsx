@@ -7,6 +7,15 @@
 import type { AutomationActionKind, AutomationStep, AutomationVia } from '@liveplanner/items';
 import { SparkleIcon, lucideGlyph } from '@liveplanner/ui';
 import {
+  lucideAtSign,
+  lucideCircleCheck,
+  lucideCopyPlus,
+  lucideHourglass,
+  lucideLink,
+  lucideListChecks,
+  lucidePalette,
+  lucideShapes,
+  lucideUndo2,
   lucideClock,
   lucideFunnel,
   lucideHash,
@@ -34,7 +43,7 @@ export const ClockIcon = lucideGlyph(lucideClock, 16);
 
 type Glyph = ReturnType<typeof lucideGlyph>;
 
-const ACTION_GLYPHS: Record<AutomationActionKind | 'if' | 'for', Glyph> = {
+const ACTION_GLYPHS: Record<AutomationActionKind | 'if' | 'for' | 'wait', Glyph> = {
   move: lucideGlyph(lucideMoveRight, 16),
   set_field: lucideGlyph(lucidePencil, 16),
   clear_field: lucideGlyph(lucideEraser, 16),
@@ -47,6 +56,15 @@ const ACTION_GLYPHS: Record<AutomationActionKind | 'if' | 'for', Glyph> = {
   archive: lucideGlyph(lucidePackage, 16),
   create_card: lucideGlyph(lucideSquarePlus, 16),
   email: lucideGlyph(lucideMail, 16),
+  set_type: lucideGlyph(lucideShapes, 16),
+  set_colour: lucideGlyph(lucidePalette, 16),
+  restore: lucideGlyph(lucideUndo2, 16),
+  copy_card: lucideGlyph(lucideCopyPlus, 16),
+  add_checklist: lucideGlyph(lucideListChecks, 16),
+  link_card: lucideGlyph(lucideLink, 16),
+  mention: lucideGlyph(lucideAtSign, 16),
+  resolve_threads: lucideGlyph(lucideCircleCheck, 16),
+  wait: lucideGlyph(lucideHourglass, 16),
   if: lucideGlyph(lucideGitFork, 16),
   for: lucideGlyph(lucideListTree, 16),
 };

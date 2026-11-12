@@ -10,7 +10,7 @@ import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanConte
 import { AutomationsDialog, templateStart } from './AutomationsDialog';
 import type { AutomationsTarget } from './AutomationsContext';
 import { forgetAutomations } from './use-automations';
-import { ANA, NOW, outline, rule, run } from './test-fixtures';
+import { ANA, NOW, outline, pickerTile, rule, run } from './test-fixtures';
 
 const client = vi.hoisted(() => ({
   listAutomations: vi.fn(),
@@ -115,13 +115,13 @@ describe('the Templates gallery', () => {
       'moving, assigning, labelling and telling people about cards',
     );
     const tiles = () => document.querySelectorAll('[data-template]');
-    expect(tiles()).toHaveLength(8);
+    expect(tiles()).toHaveLength(22);
     const chips = screen.getByRole('group', { name: 'Template categories' });
     expect(
       within(chips)
         .getAllByRole('button')
         .map((b) => b.textContent),
-    ).toEqual(['All', 'Status', 'Assigning', 'Due Dates', 'Forms', 'Telling People']);
+    ).toEqual(['All', 'Status', 'Assigning', 'Due Dates', 'Forms', 'Telling People', 'AI']);
     fireEvent.click(within(chips).getByRole('button', { name: 'Due Dates' }));
     expect(
       within(chips).getByRole('button', { name: 'Due Dates' }).getAttribute('aria-pressed'),
@@ -129,9 +129,10 @@ describe('the Templates gallery', () => {
     expect([...tiles()].map((t) => t.getAttribute('data-template'))).toEqual([
       'overdue-nudge',
       'due-soon',
+      'due-on-start',
     ]);
     fireEvent.click(within(chips).getByRole('button', { name: 'All' }));
-    expect(tiles()).toHaveLength(8);
+    expect(tiles()).toHaveLength(22);
   });
 
   it('opens a template in the builder, unsaved and off, named uniquely, tracking its id', async () => {
@@ -217,7 +218,7 @@ describe('building a time rule', () => {
     fireEvent.click(screen.getByRole('button', { name: /Due Soon Reminder/ }));
     await screen.findByRole('textbox', { name: 'Rule name' });
     fireEvent.click(screen.getAllByRole('button', { name: 'Add Action' }).at(-1)!);
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Assign' }));
+    fireEvent.click(pickerTile('assign')!);
     expect(screen.getByRole('combobox', { name: 'Assign To' })).toHaveProperty(
       'value',
       'person:u-ana',
