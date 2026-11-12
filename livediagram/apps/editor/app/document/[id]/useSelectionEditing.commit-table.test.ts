@@ -2,6 +2,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { createTable, type Element, type Tab, type TableElement } from '@livediagram/document';
+import { historyCommit, historyUndo, type History } from '@/hooks/canvas/useDocumentHistory';
 import { useSelectionEditing } from './useSelectionEditing';
 
 // docs/specs/009-elements/table-rows-fit-text.md: a cell commit grows its row to fit the words, in the same commit.
@@ -91,5 +92,96 @@ describe('commitTable', () => {
       cellStyles: [[], [{ textSize: 40 }], []],
     });
     expect(s.table().height).toBeGreaterThan(150);
+  });
+});
+
+// docs/specs/009-elements/table-rows-fit-text.md "One step per edit": the commits a cell edit makes go through the
+// real history, and a commit that writes what the table holds is no step.
+describe('commitTable undo steps', () => {
+  const base = createTable(40, 60);
+  const withCell = (text: string) =>
+    base.cells.map((row, r) => (r === 1 ? [text, ...row.slice(1)] : row));
+
+  function historySetup() {
+    const tab: Tab = { id: 't', name: 'Tab 1', elements: [base] };
+    let h: History = { past: [], present: [tab], future: [] };
+    const { result } = renderHook(() =>
+      useSelectionEditing({
+        readSelection: () => ({ selectedId: null, multiSelectedIds: new Set() }) as never,
+        isReadOnly: false,
+        tabLocked: false,
+        layerInertIds: new Set(),
+        adoptLayerName: vi.fn(),
+        formatSourceId: null,
+        formatToolActive: false,
+        documentName: 'Doc',
+        tabs: [tab],
+        activeTab: tab,
+        drawMode: false,
+        editingId: null,
+        commit: (fn) => {
+          h = historyCommit(h, (tabs) => tabs.map((t) => ({ ...t, elements: fn(t.elements) })));
+        },
+        discardLastStep: vi.fn(),
+        tickTabs: vi.fn(),
+        applyFormatFromSource: vi.fn(),
+        lockedByOther: () => false,
+        set: {
+          setFormatSourceId: vi.fn(),
+          setSelectedId: vi.fn(),
+          setEditingId: vi.fn(),
+          setEditCursorAtEnd: vi.fn(),
+          setMultiSelectedIds: vi.fn(),
+          setDocumentName: vi.fn(),
+          setContextMenu: vi.fn(),
+        },
+      }),
+    );
+    const table = () => h.present[0]!.elements[0] as TableElement;
+    return {
+      editing: result.current,
+      history: () => h,
+      undo: () => {
+        h = historyUndo(h);
+      },
+      table,
+      cell: () => table().cells[1]![0],
+    };
+  }
+
+  it('takes one undo per cell edit when Escape commits and the blur commits the same text again', () => {
+    const s = historySetup();
+    const long = Array.from({ length: 12 }, (_, i) => `line ${i}`).join('\n');
+    s.editing.commitTable(base.id, { cells: withCell(long) }); // Escape
+    s.editing.commitTable(base.id, { cells: withCell(long) }); // the blur that follows
+    s.editing.commitTable(base.id, { cells: withCell('Second') }); // the next edit
+    s.editing.commitTable(base.id, { cells: withCell('Second') });
+    expect(s.history().past).toHaveLength(2);
+    s.undo();
+    expect(s.cell()).toBe(long);
+    expect(s.table().height).toBeGreaterThan(150);
+    s.undo();
+    expect(s.cell()).toBe(base.cells[1]![0]);
+    expect(s.table().height).toBe(base.height);
+    expect(s.history().past).toHaveLength(0);
+  });
+
+  it('pushes no step for a cell opened and left untouched, and keeps the redo side', () => {
+    const s = historySetup();
+    s.editing.commitTable(base.id, { cells: withCell('Typed') });
+    s.undo();
+    expect(s.history().future).toHaveLength(1);
+    s.editing.commitTable(base.id, { cells: base.cells.map((row) => [...row]) });
+    expect(s.history().past).toHaveLength(0);
+    expect(s.history().future).toHaveLength(1);
+  });
+
+  it('still steps when only a parallel array changes', () => {
+    const s = historySetup();
+    s.editing.commitTable(base.id, {
+      cells: base.cells.map((row) => [...row]),
+      colWidths: [90, null, null],
+    });
+    expect(s.history().past).toHaveLength(1);
   });
 });
