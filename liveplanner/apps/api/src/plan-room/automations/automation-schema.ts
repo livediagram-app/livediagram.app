@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS automation_hooks (
 ) WITHOUT ROWID;
 `;
 
-// The plan schema's step V21: the runs a Wait holds (docs/specs/026-plan/automations.md "Wait"), each under its run's
+// The plan schema's step V22: the runs a Wait holds (docs/specs/026-plan/automations.md "Wait"), each under its run's
 // id, with the rule, when it goes on, and the resume event the wake queues then; indexed so the alarm asks MIN(at).
 export const AUTOMATION_WAITING_SCHEMA = `
 CREATE TABLE IF NOT EXISTS automation_waiting (

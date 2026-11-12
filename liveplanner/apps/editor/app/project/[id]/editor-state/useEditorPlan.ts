@@ -68,8 +68,16 @@ export function useEditorPlan(
     toast,
   } = collaborationSlice;
   const { tabsRef } = persistenceSlice;
-  const { activeTab, itemTypes, loadAllTabs, planItems, planPresence, sheets, teams } =
-    planDataSlice;
+  const {
+    activeTab,
+    itemTypes,
+    loadAllTabs,
+    planItems,
+    planPresence,
+    pullRequests,
+    sheets,
+    teams,
+  } = planDataSlice;
   const { arrivingCardRef } = viewportSlice;
   const { arriveAtLink, commit } = editingSlice;
   // Plan boards and cards (docs/specs/026-plan/): the item panel, board set-up and every action a board
@@ -194,6 +202,7 @@ export function useEditorPlan(
   });
   const plan = usePlanSlice({
     planItems,
+    pullRequests,
     itemTypes,
     canEdit: !isReadOnly,
     canEditCards: participant.can.planCards,

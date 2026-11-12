@@ -8,6 +8,7 @@ import type {
   ItemPerson,
   BoardStatusTypes,
   StatusPhase,
+  PullRequestStatuses,
 } from '@liveplanner/items';
 
 const NO_PHASES: ReadonlyMap<string, StatusPhase> = new Map();
@@ -40,6 +41,8 @@ const NO_TABS: readonly Tab[] = [];
 
 export function usePlanSlice(opts: {
   planItems: PlanItems;
+  // The states of the pull requests the cards link (docs/specs/026-plan/github-pull-requests.md). Absent: none.
+  pullRequests?: PullRequestStatuses;
   // The project's item types (docs/specs/026-plan/item-types.md).
   itemTypes: ItemTypesSlice;
   canEdit: boolean;
@@ -273,6 +276,7 @@ export function usePlanSlice(opts: {
     () => ({
       items: planItems.items,
       practiceIds: planItems.practiceIds,
+      ...(opts.pullRequests ? { pullRequests: opts.pullRequests } : {}),
       types: itemTypes.types,
       itemTypes,
       editType,
@@ -326,6 +330,7 @@ export function usePlanSlice(opts: {
     [
       planItems.items,
       planItems.practiceIds,
+      opts.pullRequests,
       itemTypes,
       editType,
       createTypeForBoard,

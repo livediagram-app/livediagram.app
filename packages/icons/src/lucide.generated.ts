@@ -189,6 +189,8 @@ export { lucideGitCommitHorizontal } from './lucide/git-commit-horizontal';
 export { lucideGitFork } from './lucide/git-fork';
 export { lucideGitMerge } from './lucide/git-merge';
 export { lucideGitPullRequest } from './lucide/git-pull-request';
+export { lucideGitPullRequestClosed } from './lucide/git-pull-request-closed';
+export { lucideGitPullRequestDraft } from './lucide/git-pull-request-draft';
 export { lucideGlobe } from './lucide/globe';
 export { lucideGoal } from './lucide/goal';
 export { lucideGraduationCap } from './lucide/graduation-cap';

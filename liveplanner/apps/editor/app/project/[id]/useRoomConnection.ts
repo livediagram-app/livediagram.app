@@ -16,6 +16,7 @@ import type { Tab } from '@liveplanner/project';
 import {
   type AgentPresence,
   type CardThreadsRoomOp,
+  type PullRequestsRoomOp,
   type ChangesetRoomOp,
   type ItemsRoomOp,
   type ItemTypesRoomOp,
@@ -137,6 +138,9 @@ export function useRoomConnection(opts: {
   receiveItems: (op: ItemsRoomOp) => void;
   // A card comment thread's write (docs/specs/026-plan/items.md "Comments"), from any plan the thread is on.
   receiveThreads: (op: CardThreadsRoomOp) => void;
+  // The plan's pull request states (docs/specs/026-plan/github-pull-requests.md "Pull request state on cards").
+  // System-only. Absent: the screen keeps none.
+  receivePullRequests?: (op: PullRequestsRoomOp) => void;
   // A stored type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"). System-only.
   receiveItemTypes: (op: ItemTypesRoomOp) => void;
   // A peer's hands on a Plan card (docs/specs/026-plan/plan-board.md). Presence.
@@ -188,6 +192,7 @@ export function useRoomConnection(opts: {
     receiveChangeset,
     receiveItems,
     receiveThreads,
+    receivePullRequests,
     receiveItemTypes,
     receivePlanPresence,
     receiveSheets,
@@ -400,6 +405,9 @@ export function useRoomConnection(opts: {
         // Card comment threads (docs/specs/026-plan/items.md "Comments"). System-only: threads change only
         // through the api.
         if (from === 'system') receiveThreads(op);
+      } else if (op.kind === 'pull-requests') {
+        // A GitHub delivery's pull request states. System-only: only a verified delivery changes them.
+        if (from === 'system') receivePullRequests?.(op);
       } else if (op.kind === 'item-types') {
         // The type catalogue (docs/specs/026-plan/item-types.md). System-only: it changes only through
         // the api.

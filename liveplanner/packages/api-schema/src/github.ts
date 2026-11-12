@@ -1,6 +1,7 @@
 // A plan's GitHub connection as the api answers it to an Editor (docs/specs/026-plan/github-pull-requests.md "The
 // GitHub connection"; blueprint "Part 2"). Never a token: the installation's id and account, the repositories the
-// person who connected it could reach, and which of them are connected.
+// person who connected it could reach, which of them are connected, and its GitHub rules (part 3).
+import type { PullRequestStatus } from '@liveplanner/items';
 
 /** One repository the connection lists. `chosen`: connected to the plan, so its pull requests reach it. */
 export type GithubRepositoryView = {
@@ -21,6 +22,23 @@ export type GithubConnectionView = {
   connectedBy: GithubConnectedBy;
   connectedAt: number;
   repositories: GithubRepositoryView[];
+  rules: GithubRules;
+};
+
+/** A connected plan's two GitHub rules (docs/specs/026-plan/github-pull-requests.md "GitHub rules"): the column (a
+ *  status) a linked pull request's card moves to when it opens, and when it merges; null for a rule that is off. */
+export type GithubRules = { opened: string | null; merged: string | null };
+
+/** PUT /api/projects/:id/github/rules: both rules, each a status a board of the plan names, or null for off. */
+export type GithubRulesRequest = GithubRules;
+
+/** The room op a delivery's new states send (system kind): `reset` drops every state the screen holds first (a
+ *  disconnect). A session scoped to one tab hears it emptied, and reads its tab's cards again. */
+export type PullRequestsRoomOp = {
+  kind: 'pull-requests';
+  upserts: PullRequestStatus[];
+  removed: string[];
+  reset?: true;
 };
 
 /** GET /api/projects/:id/github: the plan's connection, or null for none. */

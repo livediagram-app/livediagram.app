@@ -17,6 +17,7 @@ import type {
   CardThreadsRoomOp,
   ItemsRoomOp,
   ItemTypesRoomOp,
+  PullRequestsRoomOp,
   SheetsRoomOp,
 } from '@liveplanner/api-schema';
 import type { Env } from './types';
@@ -489,6 +490,16 @@ export async function relayThreads(
   op: CardThreadsRoomOp,
 ): Promise<void> {
   await broadcastOp(env, projectId, op, 'threads', true);
+}
+
+// Pull request states a GitHub delivery brought (docs/specs/026-plan/github-pull-requests.md "Pull request state on
+// cards"), ordered like items. A session that missed one reads them again with the cards on its reconnect.
+export async function relayPullRequests(
+  env: Env,
+  projectId: string,
+  op: PullRequestsRoomOp,
+): Promise<void> {
+  await broadcastOp(env, projectId, op, 'pull requests', true);
 }
 
 // A sheet write the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"), ordered like items.

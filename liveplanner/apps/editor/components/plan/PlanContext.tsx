@@ -10,7 +10,10 @@ import { createContext, use, useMemo, type ReactNode } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { PlanCardContext, PlanLatestContext, type PlanCardData } from './PlanCardContext';
 import { PlanItemsStoreContext, usePlanItemsStore } from './plan-items-store';
+import { useValueStore } from './value-store';
+import { PullRequestStoreContext } from './pull-request-store';
 import type { PlanCardRef, PlanViewRef, Tab } from '@liveplanner/project';
+import { NO_PULL_REQUEST_STATUSES } from '@liveplanner/items';
 import type {
   BoardStatusTypes,
   FieldRetypeTarget,
@@ -23,6 +26,7 @@ import type {
   ItemPerson,
   ItemTypeDef,
   PlanBoardSetup,
+  PullRequestStatuses,
   StatusPhase,
   TimeOp,
 } from '@liveplanner/items';
@@ -43,6 +47,9 @@ export type PlanContextValue = {
   // The Boards tour's practice cards, on this screen alone (docs/specs/026-plan/plan-tour.md "Practice cards"): drawn
   // as practice, their comments and links not offered. Absent: none.
   practiceIds?: ReadonlySet<string>;
+  // The states of the pull requests the cards link (docs/specs/026-plan/github-pull-requests.md "Pull request state on
+  // cards"), read by each card through PullRequestStoreContext (pull-request-store.ts). Absent: none.
+  pullRequests?: PullRequestStatuses;
   // The project's item types, in order (docs/specs/026-plan/item-types.md).
   types: readonly ItemTypeDef[];
   // Their changes (the Card Types panel and the type editor).
@@ -171,6 +178,7 @@ export function PlanProvider({
 }) {
   const latest = useLatest(value);
   const itemsStore = usePlanItemsStore(value?.items);
+  const pullRequestStore = useValueStore(value?.pullRequests ?? NO_PULL_REQUEST_STATUSES);
   const { types, statusNames, statusPhases, canEditCards, itemsScope, practiceIds } = value ?? {};
   const card = useMemo<PlanCardData | undefined>(
     () =>
@@ -191,7 +199,9 @@ export function PlanProvider({
       <PlanLatestContext.Provider value={latest}>
         <PlanCardContext.Provider value={card}>
           <PlanItemsStoreContext.Provider value={itemsStore}>
-            {children}
+            <PullRequestStoreContext.Provider value={pullRequestStore}>
+              {children}
+            </PullRequestStoreContext.Provider>
           </PlanItemsStoreContext.Provider>
         </PlanCardContext.Provider>
       </PlanLatestContext.Provider>

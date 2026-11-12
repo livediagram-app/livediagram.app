@@ -32,6 +32,7 @@ import {
   typeCardLayout,
   type CardSlot,
   isCustomCardField,
+  isNewerField,
   attachmentCover,
   itemAttachments,
   itemHasStamp,
@@ -39,7 +40,11 @@ import {
   typeFieldLabel,
   hasBlocksFields,
   type FormulaOutcome,
+  parsePullRequestUrl,
+  pullRequestKey,
 } from '@liveplanner/items';
+import { useCardPullRequests } from './pull-request-store';
+import { PullRequestMarks, PullRequestPill } from './PullRequestPill';
 import { RunningTimerPill } from './time/TimerReadouts';
 import { PLAN_HEADING_STYLE, planTextPx } from '@/lib/plan-font';
 import type { PlanCardPresence } from './PlanContext';
@@ -183,6 +188,8 @@ export function PlanCardFace({
     Object.is,
     [item.id, reads, plan?.types, plan?.statusPhases],
   );
+  // Its linked pull requests' states (pull-request-store.ts), picked so a delivery redraws only the cards it touches.
+  const prs = useCardPullRequests(item, type);
   const ring = presence ? `0 0 0 2px ${presence.color}` : undefined;
   // A response's card is New until opened (docs/specs/030-forms/forms.md "Hearing about responses").
   const fresh = useFreshResponse(item);
@@ -229,6 +236,12 @@ export function PlanCardFace({
   const progress = checklistProgress(item);
   const votes = itemVoteTotal(item);
   const title = itemTitle(item) || 'Untitled';
+  // A slot's fields, in its order (docs/specs/026-plan/item-types.md "Card display").
+  const layout = typeCardLayout(type, size);
+  // The linked pull requests no pill shows (one naming the card, or in a field the Display leaves off) show as marks
+  // beside the flags (docs/specs/026-plan/github-pull-requests.md "Pull request state on cards").
+  const placed = new Set<string>(Object.values(layout).flatMap((fs) => (fs ?? []).filter(show)));
+  const prMarks = edit ? [] : prs.filter((p) => !p.field || !placed.has(p.field));
   // Its open blockers (docs/specs/026-plan/item-types.md "Blocked By"), from the plan's one lookup; never on the
   // Display's example card.
   const flag = (
@@ -237,6 +250,7 @@ export function PlanCardFace({
       {blocked > 0 ? <BlockedMark count={blocked} card={palette.card} /> : null}
       {isFlagged(item) ? <FlagMark /> : null}
       {hasRepeat(item) ? <RepeatMark color={palette.muted} /> : null}
+      {prMarks.length ? <PullRequestMarks prs={prMarks} palette={palette} /> : null}
     </>
   );
   // Flat under Professional and Marker (docs/specs/008-canvas/finish.md "Faces"): app/face-finish.css empties both
@@ -355,7 +369,19 @@ export function PlanCardFace({
             {description}
           </p>
         ) : null;
-      default:
+      default: {
+        // A Pull Request field, or a Link field holding a pull request's address, draws as its state's pill
+        // (docs/specs/026-plan/github-pull-requests.md "Pull request state on cards").
+        const def = isCustomCardField(f) ? (type.custom ?? []).find((c) => c.id === f) : undefined;
+        const prRef =
+          def && !isNewerField(def) && (def.kind === 'pullrequest' || def.kind === 'link')
+            ? parsePullRequestUrl(item.fields[def.id])
+            : undefined;
+        if (def && prRef) {
+          const key = pullRequestKey(prRef);
+          const pr = prs.find((p) => pullRequestKey(p.ref) === key) ?? { ref: prRef };
+          return <PullRequestPill key={f} pr={pr} palette={palette} name={def.label} />;
+        }
         return customFieldBit(f, {
           item,
           type,
@@ -366,11 +392,10 @@ export function PlanCardFace({
           outcomes,
           items,
         });
+      }
     }
   };
-  // A slot's bits, in its order, of the fields this card shows there (docs/specs/026-plan/item-types.md "Card
-  // display").
-  const layout = typeCardLayout(type, size);
+  // A slot's bits, in its order, of the fields this card shows there.
   const slotBits = (slot: CardSlot, big = false): ReactNode[] =>
     (layout[slot] ?? [])
       .filter(show)
