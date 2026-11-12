@@ -359,6 +359,11 @@ Title`, and a card in another plan as `#4 in Sprint 12`), the Comments field it 
   share or delete threads.
 - Mentions are not taken from agents (a comment's text may name people; it notifies nobody).
 
+## Automations
+
+Agents read and work a plan's rules with `list_rules` and `change_rules` (MCP) and the CLI's `rule` verbs, as an
+Editor of the whole plan: the whole contract is in [Automations](automations.md#agents-and-the-cli).
+
 ## Errors that teach
 
 - A refusal says what was wrong, what is there, and the next call to make. It never answers with a raw api

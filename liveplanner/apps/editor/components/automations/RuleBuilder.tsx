@@ -13,8 +13,9 @@ import type { AutomationListedRule } from '@liveplanner/api-schema';
 import {
   AUTOMATION_NAME_MAX,
   AUTOMATION_PICK_WORDS,
-  isTimeTrigger,
+  isPersonless,
   picksLeft,
+  runsWithoutCard,
   type AutomationRuleBody,
   type AutomationTemplatePickAt,
 } from '@liveplanner/items';
@@ -24,6 +25,7 @@ import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import type { AutomationOutline } from './automation-outline';
 import { AutomationRefusal, type AutomationsScope } from './automations-client';
+import { IncomingRuleProvider, type IncomingRule } from './incoming-rule';
 import { PlanWebhooksProvider, usePlanWebhooksState } from './plan-webhooks';
 import {
   addAction,
@@ -180,8 +182,8 @@ export function RuleBuilder({
     },
     addAction: (kind, branch) => {
       let step = defaultStep(kind, outline);
-      // A time trigger has nobody behind it: Assign starts on the plan's first person instead.
-      if (step.kind === 'assign' && isTimeTrigger(body.trigger)) {
+      // A time trigger or an incoming webhook has nobody behind it: Assign starts on the plan's first person.
+      if (step.kind === 'assign' && isPersonless(body.trigger)) {
         const first = outline.people[0]?.id;
         step = { kind: 'assign', to: first ? { person: first } : { nobody: true } };
       }
@@ -245,7 +247,8 @@ export function RuleBuilder({
       </nav>
       {rule && !phone ? (
         <span className="text-[12px] text-slate-500 dark:text-slate-400">
-          Edited by {rule.edited.by.name} ·{' '}
+          Edited by {rule.edited.by.name}
+          {rule.edited.ai ? ' (Agent)' : ''} ·{' '}
           {formatRelativeTimeShort(Math.max(0, now - rule.edited.at))}
         </span>
       ) : null}
@@ -297,37 +300,53 @@ export function RuleBuilder({
     />
   );
 
+  // An Incoming Webhook rule's parts read this: its address and secret are the saved rule's, as listed.
+  const isIncoming = body.trigger.kind === 'incoming_webhook';
+  const cardless = isIncoming && runsWithoutCard(body);
+  const incoming = useMemo<IncomingRule>(
+    () => ({
+      incoming: isIncoming,
+      ruleId: rule?.id ?? null,
+      hook: rule?.trigger.kind === 'incoming_webhook' ? rule.hook : undefined,
+      cardless,
+      now,
+    }),
+    [isIncoming, rule, cardless, now],
+  );
+
   return (
-    <PlanWebhooksProvider value={webhooks}>
-      <div data-rule-builder="" className="flex min-h-0 flex-1 flex-col">
-        {bar}
-        {phone ? (
-          <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 py-4">
-            {steps}
-            <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
-              {panel}
-            </div>
-          </div>
-        ) : (
-          <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_380px]">
-            <div className="min-h-0 overflow-y-auto bg-slate-50/60 px-6 py-5 dark:bg-slate-950/40">
+    <IncomingRuleProvider value={incoming}>
+      <PlanWebhooksProvider value={webhooks}>
+        <div data-rule-builder="" className="flex min-h-0 flex-1 flex-col">
+          {bar}
+          {phone ? (
+            <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 py-4">
               {steps}
+              <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                {panel}
+              </div>
             </div>
-            <div className="min-h-0 overflow-y-auto border-l border-slate-100 px-5 py-5 dark:border-slate-800">
-              {panel}
+          ) : (
+            <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_380px]">
+              <div className="min-h-0 overflow-y-auto bg-slate-50/60 px-6 py-5 dark:bg-slate-950/40">
+                {steps}
+              </div>
+              <div className="min-h-0 overflow-y-auto border-l border-slate-100 px-5 py-5 dark:border-slate-800">
+                {panel}
+              </div>
             </div>
-          </div>
-        )}
-        {testing ? (
-          <TestOnCard
-            body={body}
-            outline={outline}
-            test={api.test}
-            onRefused={refused}
-            onClose={() => setTesting(false)}
-          />
-        ) : null}
-      </div>
-    </PlanWebhooksProvider>
+          )}
+          {testing ? (
+            <TestOnCard
+              body={body}
+              outline={outline}
+              test={api.test}
+              onRefused={refused}
+              onClose={() => setTesting(false)}
+            />
+          ) : null}
+        </div>
+      </PlanWebhooksProvider>
+    </IncomingRuleProvider>
   );
 }

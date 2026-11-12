@@ -12,6 +12,7 @@ import type { PlanCopy, PlanOutline } from './plan-room/plan-content';
 import type { CommunityShareInfo } from '@liveplanner/api-schema';
 import type { Copier } from '@liveworkspace/index-app';
 import type { RouteIdentity } from './plan-room/plan-route';
+import type { HookAnswer, HookCall } from './plan-room/automations/automation-incoming';
 import type { ProjectFileImport } from './plan-room/project-file';
 import type {
   ExportCommentsResult,
@@ -94,6 +95,9 @@ export type PlanRoomClient = {
   threadsFor(ids: string[], via: string): Promise<CardThread[]>;
   threadWrite(threadId: string, op: ThreadOp, via: string): Promise<ThreadWriteResult>;
   threadsRelayed(relay: ThreadsRelay): Promise<string[]>;
+  // An Incoming Webhook call to one of the plan's rules (plan-room/automations/automation-incoming.ts): the room checks
+  // the secret, the limits and the body, and queues the runs. An id nothing has written answers 401 and stays empty.
+  incomingHook(ruleId: string, call: HookCall): Promise<HookAnswer>;
 };
 
 export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomClient {
@@ -130,6 +134,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     threadsFor: (ids, via) => room.threadsFor(planId, ids, via),
     threadWrite: (threadId, op, via) => room.threadWrite(planId, threadId, op, via),
     threadsRelayed: (relay) => room.threadsRelayed(planId, relay),
+    incomingHook: (ruleId, call) => room.incomingHook(planId, ruleId, call),
   };
 }
 
@@ -177,5 +182,6 @@ export type PlanRoomRpc = {
     via: string,
   ): Promise<ThreadWriteResult>;
   threadsRelayed(planId: string, relay: ThreadsRelay): Promise<string[]>;
+  incomingHook(planId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
   fetch(request: Request): Promise<Response>;
 };

@@ -32,8 +32,17 @@ const body = async <T>(res: Response | Promise<Response>) => (await (await res).
 const listOf = async () => body<AutomationsListResponse>(w.call('GET', ''));
 
 describe('who may use them', () => {
-  const allowed: Caller[] = ['owner', 'team', 'editor_link'];
-  const refused: Caller[] = ['tab_editor_link', 'participant', 'viewer', 'token', 'guest'];
+  // docs/specs/026-plan/automations.md "Who may do what": an API token is its account, an Editor of the whole plan.
+  const allowed: Caller[] = ['owner', 'team', 'editor_link', 'token'];
+  const refused: Caller[] = [
+    'tab_editor_link',
+    'participant',
+    'viewer',
+    'guest',
+    'token_participant',
+    'token_tab',
+    'workbench',
+  ];
 
   it.each(allowed)('a %s lists, makes and runs rules', async (who) => {
     expect((await w.call('GET', '', undefined, who)).status).toBe(200);
@@ -44,26 +53,123 @@ describe('who may use them', () => {
     expect((await w.call('POST', `/${rule.id}/duplicate`, undefined, who)).status).toBe(201);
   });
 
+  const doorsOf = (id: string): [string, string, unknown?][] => [
+    ['GET', ''],
+    ['POST', '', ruleBody({ name: 'Other' })],
+    ['PUT', `/${id}`, ruleBody()],
+    ['DELETE', `/${id}`],
+    ['POST', `/${id}/toggle`, { enabled: false }],
+    ['POST', `/${id}/duplicate`],
+    ['POST', `/${id}/run`, { item: 'x' }],
+    ['POST', '/order', { ids: [id] }],
+    ['POST', '/test', { rule: ruleBody(), item: 'x' }],
+    ['GET', '/runs'],
+  ];
+
   it.each(refused)('a %s is refused every route', async (who) => {
     const held = await w.rule({});
-    const doors: [string, string, unknown?][] = [
-      ['GET', ''],
-      ['POST', '', ruleBody({ name: 'Other' })],
-      ['PUT', `/${held.id}`, ruleBody()],
-      ['DELETE', `/${held.id}`],
-      ['POST', `/${held.id}/toggle`, { enabled: false }],
-      ['POST', `/${held.id}/duplicate`],
-      ['POST', `/${held.id}/run`, { item: 'x' }],
-      ['POST', '/order', { ids: [held.id] }],
-      ['POST', '/test', { rule: ruleBody(), item: 'x' }],
-      ['GET', '/runs'],
-    ];
-    for (const [method, path, payload] of doors) {
+    for (const [method, path, payload] of doorsOf(held.id)) {
       const res = await w.call(method, path, payload, who);
       expect(res.status, `${method} ${path}`).toBe(403);
       expect(await res.json()).toEqual({ error: 'automations_need_editor' });
     }
     expect((await listOf()).rules).toHaveLength(1);
+  });
+
+  it('refuses a link visitor with no account before anything is read', async () => {
+    const held = await w.rule({});
+    for (const [method, path, payload] of doorsOf(held.id)) {
+      const res = await w.call(method, path, payload, 'link_visitor');
+      // No caller id at all (requireOwner's 400), never a rule's answer.
+      expect(res.status, `${method} ${path}`).toBe(400);
+      expect(await res.json()).toMatchObject({ error: 'bad_request' });
+    }
+    expect((await listOf()).rules).toHaveLength(1);
+  });
+
+  it('lets a read-only token list the rules and the Audit Trail, and nothing else', async () => {
+    const held = await w.rule({});
+    for (const [method, path, payload] of doorsOf(held.id)) {
+      const res = await w.call(method, path, payload, 'token_read_only');
+      if (method === 'GET') {
+        expect(res.status, path).toBe(200);
+        continue;
+      }
+      expect(res.status, `${method} ${path}`).toBe(403);
+      expect(await res.json()).toEqual({ error: 'read_only_token' });
+    }
+    const list = await body<AutomationsListResponse>(
+      w.call('GET', '', undefined, 'token_read_only'),
+    );
+    expect(list.rules.map((r) => r.id)).toEqual([held.id]);
+    expect((await listOf()).rules[0]).toMatchObject({ name: held.name, enabled: true });
+  });
+});
+
+describe('an agent (an API token) at the rules', () => {
+  it('stamps what it makes and changes as its person, marked an agent’s', async () => {
+    const made = await body<{ rule: AutomationRule }>(
+      w.call('POST', '', ruleBody({ name: 'By agent' }), 'token'),
+    );
+    expect(made.rule.made).toMatchObject({ by: { name: 'Someone' }, ai: true });
+    expect(made.rule.edited.ai).toBe(true);
+    const copy = await body<{ rule: AutomationRule }>(
+      w.call('POST', `/${made.rule.id}/duplicate`, undefined, 'token'),
+    );
+    expect(copy.rule.made.ai).toBe(true);
+    // A person's save after the agent's is the person's alone.
+    const saved = await body<{ rule: AutomationRule }>(
+      w.call('PUT', `/${made.rule.id}`, ruleBody({ name: 'By agent' })),
+    );
+    expect(saved.rule.edited.ai).toBeUndefined();
+    expect(saved.rule.made.ai).toBe(true);
+    const again = await body<{ rule: AutomationRule }>(
+      w.call('PUT', `/${made.rule.id}`, ruleBody({ name: 'By agent 2' }), 'token'),
+    );
+    expect(again.rule.edited.ai).toBe(true);
+    const person = await w.rule({ name: 'By a person' });
+    expect(person.made.ai).toBeUndefined();
+  });
+
+  it('lists the plan’s people, so an agent can name one', async () => {
+    const list = await body<AutomationsListResponse>(w.call('GET', '', undefined, 'token'));
+    expect(Array.isArray(list.people)).toBe(true);
+    for (const p of list.people!) expect(Object.keys(p).sort()).toEqual(['id', 'name']);
+  });
+
+  it('runs a Run from a Card rule as an agent, for Who Did It', async () => {
+    const asAgent = await w.rule({
+      name: 'Agents only',
+      trigger: { kind: 'manual' },
+      conditions: [{ kind: 'who', who: [{ role: 'agent' }] }],
+      steps: [{ kind: 'flag' }],
+    });
+    const c = await w.make('A', { title: 'Hot' });
+    const byPerson = await body<{ run: AutomationRun }>(
+      w.call('POST', `/${asAgent.id}/run`, { item: c.id }),
+    );
+    expect(byPerson.run.result).toBe('no_match');
+    const byAgent = await body<{ run: AutomationRun }>(
+      w.call('POST', `/${asAgent.id}/run`, { item: c.id }, 'token'),
+    );
+    expect(byAgent.run.result).toBe('done');
+    const tested = await body<{ run: AutomationRun }>(
+      w.call('POST', '/test', { rule: ruleBody({ ...asAgent, name: 'T' }), item: c.id }, 'token'),
+    );
+    expect(tested.run.result).toBe('done');
+  });
+
+  // Phase 2's rule holds: only an Editor of the whole plan saves a rule with an outgoing action, a token included.
+  it('saves an outgoing action only for a token whose account edits the whole plan', async () => {
+    const posting = ruleBody({
+      name: 'Tell Slack',
+      steps: [{ kind: 'notify', via: 'slack', webhook: 'wh_1', text: '{{card.title}} shipped' }],
+    });
+    expect((await w.call('POST', '', posting, 'token')).status).toBe(201);
+    for (const who of ['token_participant', 'token_tab', 'token_read_only'] as const) {
+      const res = await w.call('POST', '', { ...posting, name: `Tell ${who}` }, who);
+      expect(res.status, who).toBe(403);
+    }
   });
 });
 

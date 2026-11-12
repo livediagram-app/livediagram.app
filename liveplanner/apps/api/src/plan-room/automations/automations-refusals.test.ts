@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import {
   AUTOMATION_RULES_MAX,
   ITEMS_MAX,
@@ -116,14 +117,18 @@ describe('the day and the log against No Match runs', () => {
       });
     await w.rule({ name: 'Stamp' });
     const c = await make('Busy');
-    // 30 saves past 49 rules: 1,470 No Match runs, more than the day's 1,000.
-    for (let i = 0; i < 30; i += 1) {
-      await w.send('POST', `/api/projects/A/items/${c.id}`, {
-        set: { priority: i % 2 ? 'high' : 'low' },
-      });
-      room().automations.schedule.at = Date.now();
-      await room().alarm();
-    }
+    // 30 saves past 49 rules: 1,470 No Match runs, more than the day's 1,000. Held to CPU time, not the wall clock,
+    // so a loaded runner can't fail it (the test's own timeout is generous for the same reason).
+    const ms = await cpuMsOfAsync(async () => {
+      for (let i = 0; i < 30; i += 1) {
+        await w.send('POST', `/api/projects/A/items/${c.id}`, {
+          set: { priority: i % 2 ? 'high' : 'low' },
+        });
+        room().automations.schedule.at = Date.now();
+        await room().alarm();
+      }
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(3000));
     expect((await list()).runsToday).toBe(0);
     await move(c.id, 'done');
     await room().alarm();
@@ -135,7 +140,7 @@ describe('the day and the log against No Match runs', () => {
       .db.prepare("SELECT COUNT(*) AS n FROM automation_runs WHERE result = 'no_match'")
       .get();
     expect(rows).toEqual({ n: AUTOMATION_NO_MATCH_LOG_MAX });
-  });
+  }, 30_000);
 
   it('keeps 2,000 real runs however many No Match rows come after them', async () => {
     await w.rule({

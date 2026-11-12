@@ -51,3 +51,18 @@ export function automationsV19(
   if (!columns.some((c) => c.name === 'turn'))
     exec('ALTER TABLE automation_rules ADD COLUMN turn INTEGER NOT NULL DEFAULT 0');
 }
+
+// Phase 3 (#713), the plan schema's step V20: each Incoming Webhook rule's secret, as its SHA-256 hash and last 4
+// characters (never the secret), when it was made and last used, and its rate limit's minute (when the minute
+// started and the calls in it). A table of its own, so no rule body (every list, copy and file) holds the hash.
+export const AUTOMATION_HOOKS_SCHEMA = `
+CREATE TABLE IF NOT EXISTS automation_hooks (
+  rule_id      TEXT    PRIMARY KEY,
+  hash         TEXT    NOT NULL,
+  last4        TEXT    NOT NULL,
+  made_at      INTEGER NOT NULL,
+  used_at      INTEGER,
+  window_at    INTEGER NOT NULL DEFAULT 0,
+  window_calls INTEGER NOT NULL DEFAULT 0
+) WITHOUT ROWID;
+`;

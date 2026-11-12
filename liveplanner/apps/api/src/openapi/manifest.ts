@@ -752,8 +752,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Automations',
     summary:
-      "The plan's rules in their order, each with its last run, its runs this week, its failures in a row and what it names that the plan lacks; and the runs today against the day's budget. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.",
+      "The plan's rules in their order, each with its last run, its runs this week, its failures in a row and what it names that the plan lacks; and the runs today against the day's budget. Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.",
     auth: 'clerk',
+    tokenUsable: true,
     responseSchema: 'AutomationsListResponse',
     statuses: [200, 401, 403, 404, 405, 410],
   },
@@ -763,8 +764,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Automations',
     summary:
-      'Make a rule, last in the list: on once it has an action. Up to 50 rules, names unique. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+      'Make a rule, last in the list: on once it has an action. Up to 50 rules, names unique. Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.',
     auth: 'clerk',
+    tokenUsable: true,
     requestSchema: 'AutomationRuleBody',
     responseSchema: 'AutomationRuleResponse',
     statuses: [201, 400, 401, 403, 404, 409, 410],
@@ -775,8 +777,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Automations',
     summary:
-      "Save a rule's trigger, conditions, actions and details. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.",
+      "Save a rule's trigger, conditions, actions and details. Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.",
     auth: 'clerk',
+    tokenUsable: true,
     requestSchema: 'AutomationRuleBody',
     responseSchema: 'AutomationRuleResponse',
     statuses: [200, 400, 401, 403, 404, 405, 409, 410],
@@ -787,8 +790,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Automations',
     summary:
-      'Delete a rule. Its runs stay in the Audit Trail until they age out. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+      'Delete a rule. Its runs stay in the Audit Trail until they age out. Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.',
     auth: 'clerk',
+    tokenUsable: true,
     statuses: [204, 401, 403, 404, 405, 410],
   },
   {
@@ -797,11 +801,35 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Automations',
     summary:
-      'Turn a rule on or off. On clears a pause and its failures. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+      'Turn a rule on or off. On clears a pause and its failures. Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.',
     auth: 'clerk',
+    tokenUsable: true,
     requestSchema: 'AutomationToggleRequest',
     responseSchema: 'AutomationRuleResponse',
     statuses: [200, 400, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'POST',
+    path: '/projects/{id}/automations/{ruleId}/secret',
+    segment: 'projects',
+    tag: 'Automations',
+    summary:
+      'Make Secret or Regenerate for an Incoming Webhook rule: a new secret, in this answer only and never again, the old one stopped at once. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+    auth: 'clerk',
+    responseSchema: 'AutomationSecretResponse',
+    statuses: [201, 401, 403, 404, 405, 409, 410],
+  },
+  {
+    method: 'POST',
+    path: '/hooks/automations/{projectId}/{ruleId}',
+    segment: 'hooks',
+    tag: 'Automations',
+    summary:
+      "Another tool starts an Incoming Webhook rule. Prove the rule's secret with Authorization: Bearer lwh_… or X-Liveplanner-Signature: sha256=<hex HMAC-SHA256 of the raw body, keyed with the secret>. JSON only, at most 16 KB; `cards` names up to 10 cards by number. 60 calls a minute a rule. Every wrong secret, unknown rule or rule turned off answers the same 401.",
+    auth: 'public',
+    requestSchema: 'AutomationHookRequest',
+    responseSchema: 'AutomationHookAccepted',
+    statuses: [202, 400, 401, 404, 405, 413, 415, 429],
   },
   {
     method: 'POST',
@@ -809,8 +837,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Automations',
     summary:
-      'Copy a rule, off, as "<name> copy". Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+      'Copy a rule, off, as "<name> copy". Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.',
     auth: 'clerk',
+    tokenUsable: true,
     responseSchema: 'AutomationRuleResponse',
     statuses: [201, 401, 403, 404, 405, 409, 410],
   },
@@ -820,8 +849,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Automations',
     summary:
-      'Run a Run from a Card rule that is on, on one card, now. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+      'Run a Run from a Card rule that is on, on one card, now. Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.',
     auth: 'clerk',
+    tokenUsable: true,
     requestSchema: 'AutomationRunNowRequest',
     responseSchema: 'AutomationRunResponse',
     statuses: [200, 400, 401, 403, 404, 405, 409, 410, 429],
@@ -832,8 +862,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Automations',
     summary:
-      'Put the rules in this order; ids names every rule once. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+      'Put the rules in this order; ids names every rule once. Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.',
     auth: 'clerk',
+    tokenUsable: true,
     requestSchema: 'AutomationOrderRequest',
     statuses: [204, 400, 401, 403, 404, 405, 410],
   },
@@ -843,8 +874,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Automations',
     summary:
-      'Try a rule on a card: what each condition and action would do. Nothing changes and nothing is logged. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+      'Try a rule on a card: what each condition and action would do. Nothing changes and nothing is logged. Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.',
     auth: 'clerk',
+    tokenUsable: true,
     requestSchema: 'AutomationTestRequest',
     responseSchema: 'AutomationRunResponse',
     statuses: [200, 400, 401, 403, 404, 405, 410],
@@ -855,8 +887,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Automations',
     summary:
-      'The Audit Trail, newest first: by rule, result and since when, up to 200. Needs edit access to the whole plan, signed in; never an API token or a link to one tab.',
+      'The Audit Trail, newest first: by rule, result and since when, up to 200. Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.',
     auth: 'clerk',
+    tokenUsable: true,
     query: [
       { name: 'rule', required: false, description: 'A rule id.' },
       { name: 'result', required: false, description: 'done, no_match, skipped or failed.' },

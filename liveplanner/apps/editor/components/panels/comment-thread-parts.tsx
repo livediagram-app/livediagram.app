@@ -431,7 +431,7 @@ function CommentRow({
             </span>
           ) : null}
         </div>
-        {comment.ai && !automation ? (
+        {comment.ai ? (
           <p
             data-comment-ai=""
             className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-violet-50 px-1.5 py-px text-[10px] font-medium text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"

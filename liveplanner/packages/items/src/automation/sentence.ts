@@ -26,6 +26,7 @@ import type {
   AutomationWho,
 } from './types';
 import { isTimeTrigger } from './types';
+import { aiStepChip } from './ai-steps';
 
 // What the sentence reads a rule against. `tabs` names Form tabs and the boards' tabs; `filters` names saved filters
 // by id. Either may be absent where nothing reads them.
@@ -52,6 +53,7 @@ export const AUTOMATION_TRIGGER_NAMES: Readonly<Record<AutomationTriggerKind, st
   scheduled: 'Scheduled',
   due_in: 'Due In',
   overdue: 'Overdue',
+  incoming_webhook: 'Incoming Webhook',
 };
 
 export const AUTOMATION_CONDITION_NAMES: Readonly<Record<AutomationCondition['kind'], string>> = {
@@ -297,6 +299,7 @@ export function stepChip(step: AutomationStep, outline: RuleSentenceOutline): st
   if (step.kind === 'if') return AUTOMATION_STEP_NAMES.if;
   if (step.kind === 'for') return branchWords(step.related, outline);
   if (step.kind === 'notify') return notifyChip(step, outline);
+  if (step.kind === 'ai') return aiStepChip(step, (id) => outlineFieldName(id, outline));
   return actionChip(step, outline);
 }
 
@@ -317,6 +320,8 @@ export function triggerParts(
       ? [{ word: 'Every' }, { chip: words.slice('Every '.length), trigger: true }]
       : [{ word: 'When' }, { chip: words, trigger: true }];
   }
+  if (trigger.kind === 'incoming_webhook')
+    return [{ word: 'When a' }, { chip: 'Webhook Is Received', trigger: true }];
   const parts: RuleSentencePart[] = [
     { word: 'When' },
     { chip: AUTOMATION_TRIGGER_NAMES[trigger.kind], trigger: true },

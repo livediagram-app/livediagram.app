@@ -288,7 +288,7 @@ describe('outgoing actions', () => {
   });
 
   // Share roles (docs/instructions/gate-a-feature-by-share-role.md): a rule with an outgoing action is an Editor's
-  // of the whole plan, signed in, in person, like every rule.
+  // of the whole plan, signed in or through that person’s token, like every rule.
   it.each([
     ['owner', 201],
     ['team', 201],
@@ -296,7 +296,11 @@ describe('outgoing actions', () => {
     ['tab_editor_link', 403],
     ['participant', 403],
     ['viewer', 403],
-    ['token', 403],
+    // An Editor's API token saves one (Phase 3, automations.md "Agents and the CLI"); a Participant's does not.
+    ['token', 201],
+    ['token_participant', 403],
+    ['token_tab', 403],
+    ['token_read_only', 403],
     ['guest', 403],
   ] as [Caller, number][])('saving one as %s answers %i', async (who, status) => {
     const res = await w.call(

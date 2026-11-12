@@ -767,6 +767,22 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone tried an automation rule with Test on a Card, which shows what it would do and changes nothing.',
   'Plan|Ran|AutomationManual':
     "Someone ran a Run from a Card automation rule from a card's menu, under Run Rule.",
+  'Plan|Ran|AutomationAiSummarise':
+    "An automation rule's Summarise Card asked the AI for a summary of a card, written as a comment or into a text field.",
+  'Plan|Ran|AutomationAiCardType':
+    "An automation rule's Suggest Card Type asked the AI which of the plan's card types fits a card.",
+  'Plan|Ran|AutomationAiTriage':
+    "An automation rule's Triage asked the AI for a card's priority and labels, from the plan's own.",
+  'Plan|Ran|AutomationAiFailed':
+    "An automation rule's AI action failed: the model erred or was slow, its reply couldn't be read or didn't fit, or the card refused the write.",
+  'Plan|Ran|AutomationAiCapped':
+    "An automation rule's AI action was skipped because the plan had used its 100 AI steps that day.",
+  'Plan|Created|AutomationSecret':
+    'Someone made the secret for an Incoming Webhook automation rule, so another tool can start it.',
+  'Plan|Changed|AutomationSecret':
+    "Someone regenerated an Incoming Webhook rule's secret, which stops the old one at once.",
+  'Plan|Copied|AutomationSecret':
+    "Someone copied an Incoming Webhook rule's new secret from the field that shows it once.",
   'Plan|Created|BoardTab':
     'Someone started a Board tab from Start Planning: one board filling the tab.',
   'Plan|Created|SheetTab':
@@ -2586,6 +2602,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "Someone took a filter off a Card Search view, or deleted one of a board's saved filters.",
   'Plan|Selected': 'Someone started selecting several cards on a board, to change them together.',
   'Plan|Used': "Someone applied one of a board's saved filters.",
+  'Plan|Copied': 'Someone copied something from a plan, like a new webhook secret.',
   'Plan|Renamed': "Someone renamed one of a board's saved filters.",
   'Plan|Toggled':
     'Someone flagged a card for attention or took its flag off, or maximised a board, view or sheet or restored it (the value says which).',

@@ -7,6 +7,7 @@
 
 import type {
   AutomationAction,
+  AutomationAi,
   AutomationCondition,
   AutomationOutgoing,
   AutomationRelated,
@@ -47,8 +48,10 @@ function conditionNames(c: AutomationCondition): Need[] {
   }
 }
 
-function actionNames(a: AutomationAction | AutomationOutgoing): Need[] {
+function actionNames(a: AutomationAction | AutomationOutgoing | AutomationAi): Need[] {
   switch (a.kind) {
+    case 'ai':
+      return a.task === 'summarise' && a.field ? [{ kind: 'field', id: a.field }] : [];
     case 'move':
       return [{ kind: 'column', id: a.status }];
     case 'set_field':

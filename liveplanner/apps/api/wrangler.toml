@@ -134,6 +134,14 @@ simple = { limit = 60, period = 60 }
 [[send_email]]
 name = "EMAIL"
 
+# Workers AI for Automations' AI actions (docs/specs/026-plan/automations.md "AI actions"): no key, no secret, the
+# binding is the credential, billed in Neurons on this account (10,000 a day free). Optional: without it an AI step
+# fails "AI isn't set up here". It sets no `remote`, so `wrangler dev` needs no login: it warns, and a step run
+# locally fails "The AI couldn't answer". AI_GATEWAY (a var, unset here) routes the calls through an AI Gateway of
+# that id, where the account's spend limit caps every plan together.
+[ai]
+binding = "AI"
+
 # Sign-in (docs/specs/014-identity/auth-and-guest-access.md) goes through the
 # liveworkspace accounts Worker. Four values, provisioned out-of-band so none
 # lands in the repo (docs/specs/002-project-scope/secrets-policy.md):
@@ -292,6 +300,10 @@ simple = { limit = 60, period = 60 }
 # Bindings don't inherit into an environment, so staging restates the email binding (above).
 [[env.staging.send_email]]
 name = "EMAIL"
+
+# And the Workers AI binding (above).
+[env.staging.ai]
+binding = "AI"
 
 [[env.staging.durable_objects.bindings]]
 name = "PLAN_ROOM"

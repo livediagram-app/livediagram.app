@@ -1,6 +1,7 @@
 # Automations blueprint
 
-Derived from [Automations](../automations.md). Phase 1 (#711).
+Derived from [Automations](../automations.md). Phase 1 (#711), Phase 2 (#712), and Phase 3's agent and CLI rule
+tools, AI actions and Incoming Webhook trigger (#713).
 
 ## Domain and naming
 
@@ -67,7 +68,7 @@ apps/api/src/routes/automation-routes.ts   the routes below, dispatched from pro
 apps/api/src/routes/automation-source.ts   writeSource(ctx) (who made a route's write, worked out only when a rule
                                            hears it) and queueComment
 
-apps/api/src/routes/automation-routes.ts   the routes below; gate: whole-plan edit, signed-in person, no API token
+apps/api/src/routes/automation-routes.ts   the routes below; gate: whole-plan edit, signed-in person or their token
 apps/editor/components/automations/
   AutomationsButton.tsx       the footer button (in ChromeControls between Search and Settings), amber dot
   AutomationsDialog.tsx       the screen: tabs, meter, Rules and Audit Trail views, phone sheet
@@ -174,7 +175,8 @@ error logged.
 | `POST   /automations/:ruleId/run`       | `{ item }` → `AutomationRunResponse` (manual rules only)       | 404, 409 `automation_not_manual`    |
 | `GET    /automations/runs`              | `?rule&result&since&limit≤200` → `AutomationRunsResponse`      | 403                                 |
 
-Gate on every route: `gateEdit` for the whole plan, a signed-in caller, no API token, not a tab-scoped link
+Gate on every route: `gateEdit` for the whole plan, a signed-in caller or an API token of one (Phase 3, "Agents and
+the CLI" below, which also sets what a read-only token may do), never a workbench session, not a tab-scoped link
 (403 `automations_need_editor`). A Browser Storage plan never calls them. An unknown path under `/automations` is
 not routed (the OpenAPI drift probe's clean 404), and every route is in the OpenAPI manifest under the tag
 **Automations**. Run Rule past the day's budget answers 429 `automation_budget_spent` and runs nothing.
@@ -404,6 +406,362 @@ What the editor does, where it differs from or adds to the Editor list above (ea
   `planPalette` of the app's appearance, as the setup steps do.
 - **Labels.** The branch values' chips read Trigger Title, Trigger Number and Trigger Link
   (`AUTOMATION_BRANCH_VALUE_LABELS`).
+
+## Agents and the CLI (Phase 3, Work Item #713)
+
+Derived from the spec's "Agents and the CLI" and the API token bullet of "Who may do what".
+
+### The api door (`apps/api/src/routes/automation-routes.ts`)
+
+`gate(ctx, projectId)` lets a caller through when all of these hold, else 403 `automations_need_editor`:
+
+| Caller                                        | Through                                                        |
+| --------------------------------------------- | -------------------------------------------------------------- |
+| signed in (`accountUserId`), no token         | when `gateEdit` passes for the whole plan (as Phase 1)         |
+| API token (`ctx.token`, `verifiedUserId` set) | the same `gateEdit`, as the token's account                    |
+| read-only API token                           | `GET` only (the list and `/runs`); any other method 403        |
+|                                               | `read_only_token`, as the worker's choke point already answers |
+| workbench session (`ctx.workbench`)           | never                                                          |
+| guest, link visitor with no account           | never                                                          |
+| tab-scoped grant, Participant, Viewer         | never (`gateEdit` for the whole plan fails)                    |
+
+- `Gated` gains `ai: boolean` (`!!ctx.token`). A stamp made by a token is `{ by, at, ai: true }`
+  (`AutomationStamp.ai?: true`, packages/items types.ts), on `made` for create and duplicate and on `edited` for
+  create, save and duplicate; toggle and order write no stamp (as Phase 1). A person's save after an agent's writes
+  a stamp without `ai`.
+- Run Rule's and Test on a Card's manual event is `role: 'agent'` for a token, `'editor'` otherwise, so Who Did It's
+  `{ role: 'agent' }` holds for an agent's Run Rule.
+- `AutomationsListResponse` gains `people: { id, name }[]` (the plan's people as rules name them,
+  `readAutomationPlan(…).outline.people`, read once by the list already): what an agent needs to name a person by
+  name and to word a rule's people in its sentence. The editor ignores it.
+- An outgoing action still needs an Editor of the whole plan: the gate is the one door, and a token's account is
+  held to it as the person is. The webhooks themselves are the index's, listed only by that account.
+- The editor's builder reads "Edited by <name> (Agent)" when `edited.ai` is set (`RuleBuilder.tsx`).
+
+### The engine (`packages/agent-verbs/src/rules/`)
+
+```
+rule-state.ts      readRulesState(api, projectId) → { list: AutomationsListResponse, plan: PlanResponse }: the two
+                   reads in parallel; rulesPath(projectId); readRuns(api, projectId, { rule?, limit })
+rule-outline.ts    sentenceOutlineOf(state) → RuleSentenceOutline (types, statuses, people, tabs)
+rule-names.ts      namedRuleBody(body, state) → AutomationRuleBody-shaped JSON with columns, card types, fields,
+                   people and Form tabs given by name turned into their ids (an id, or a name the plan lacks, kept)
+rule-ref.ts        resolveRule(ref, rules) → Found<AutomationListedRule>: id, then exact name (case aside)
+rule-listing.ts    listedRule(rule, outline) (the list line), listedRun(run), sentenceText(parts), ruleLine(listed)
+rule-refusals.ts   ruleRefusalOf(err) → { code, message } | null: the api's code, its `path`, and the words
+rule-changes.ts    applyRuleChanges(api, projectId, changes, state) → { applied, runs, refusal? }; RuleChange
+index.ts           re-exports, from packages/agent-verbs/src/index.ts
+```
+
+- `listedRule`: `{ id, name, on, paused?, needsAttention?, trigger, sentence, lastRun, runsThisWeek, nextRun? }`;
+  `sentence` is `ruleSentence(rule, outline)` joined, words and chips with one space; times are ISO.
+- `RuleChange` = `add { rule }` | `set { rule, name?, trigger?, conditions?, steps?, chain?, timeZone? }` |
+  `on|off|delete|duplicate { rule }` | `test { rule: string | body, card }` | `run { rule, card }`. `add` fills
+  `conditions: []`, `steps: []`, `chain: false`, `timeZone: 'UTC'` when left out; `set` lays the given parts over the
+  held rule's body. Each write answers the rule, which replaces the held one in the state, so a later change sees it.
+  The cards are read (`GET …/items`) once, the first time a test or run names one.
+- Applied lines: `+ rule <id> "<name>" (on|off)`, `~ rule "<name>" changed (on|off)`, `~ rule "<name>" on|off`,
+  `+ rule <id> "<name>" (off, a copy of "<from>")`, `- rule "<name>"`, `? tested "<name>" on #12: <result>`,
+  `> ran "<name>" on #12: <result>`, each write's line ending `, needs attention: …` when the saved rule does.
+- Refusals: the api's body is read off `ApiError.body` for `path` and `message`. `automation_invalid`,
+  `automation_value_unknown`, `automation_condition_unsupported` and `automation_step_unsupported` read
+  "The api refused the rule at <path>: <message>." plus the code's words; the rest are words alone
+  (`automations_need_editor`, `read_only_token`, `automation_name_taken`, `automation_rules_full`,
+  `automation_not_found`, `automation_not_manual`, `automation_budget_spent`, `item_not_found`). Any other is
+  `apiRefusalOf`'s; a 5xx throws.
+
+### The MCP (`apps/mcp/src/rule-tools.ts`, `packages/agent-verbs/src/mcp/rule-schema.ts`)
+
+- `mcpListRules` (read) and `mcpChangeRules` (destructive) in `packages/agent-verbs/src/verbs/mcp-tools.ts`,
+  registered by `registerRuleTools(server, env)` from `apps/mcp/src/tools.ts`, after `change_card_types` in
+  `MCP_TOOL_VERBS` (the order `verb-parity.test` holds the registered tools to).
+- `list_rules` input `{ projectId, rule?, runs?, limit? }`; output `{ rules[], rule?, runs?, runsToday, runsPerDay,
+count, url }`. `change_rules` input `{ projectId, changes[1..20] }`; output `{ applied[], runs?, url }`.
+- The body's shape is a loose zod object (`name`, `trigger`, `conditions`, `steps`, `chain`, `timeZone`), its
+  `.describe()` texts the whole format (`RULE_TRIGGER_FORMAT`, `RULE_CONDITIONS_FORMAT`, `RULE_STEPS_FORMAT`); the api's `readRuleBody` is the one check, so the tool
+  and the api never disagree on what reads.
+
+### The CLI (`packages/agent-verbs/src/verbs/rule.ts`)
+
+`rule.ls`, `rule.get`, `rule.add`, `rule.set`, `rule.on`, `rule.off`, `rule.rm`, `rule.duplicate`, `rule.test`,
+`rule.run`, `rule.log`, in `VERBS` after the thread verbs, the resource `rule` ("Automations rules: list, change,
+test and run them") in `RESOURCES`; `add` and `set` read JSON from a file or `-` (stdin) as `type apply` does. The
+CLI's `COMMAND_OF_TOOL` maps `list_rules` → `rule ls`, `change_rules` → `rule set`.
+
+### Telemetry
+
+`Mcp·Used·ListRules`, `Mcp·Used·ChangeRules` from `registerTool`; `Cli·Used·Rule<Verb>` from the CLI's counted
+verbs. The liveworkspace site's liveplanner catalogue lists them (`liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/connections.ts`
+MCP_TOOL_METRICS, `liveworkspace/apps/site/app/telemetry/liveplanner/cli-commands.ts`).
+
+### Tests
+
+- api `automation-routes.test.ts`: every caller kind (owner, team, Editor link, token, tab Editor link, Participant,
+  Viewer, guest, read-only token, Participant's token, workbench session, link visitor) against every route; a
+  token's stamps carry `ai`; a token's Run Rule is an agent's to Who Did It; an outgoing action saved by a token
+  whose account is an Editor of the whole plan, refused for one whose account is not.
+- agent-verbs: each module to the package's thresholds (100%); `rule-listing.perf.test.ts` lists 50 rules within a
+  CPU budget. **Measured**: 50 full rules (10 conditions and 20 actions each) list in 1.4 to 1.8 ms of CPU on an
+  M-series Mac (the budget 20 ms), and naming a full rule's body takes 0.03 to 0.11 ms (the budget 5 ms). A call adds
+  two api reads in parallel, never one a rule.
+- mcp: the tool lists, annotations and telemetry suites name the two tools; a rule tools test drives both through
+  a fake api.
+- cli: the catalogue's examples route; a verb test per command through the fake api.
+
+## Phase 3: AI actions (Work Item 713)
+
+### Shapes (packages/items/src/automation/types.ts)
+
+```ts
+type AutomationAi =
+  | { kind: 'ai'; task: 'summarise'; field?: string } // absent field: a comment
+  | { kind: 'ai'; task: 'card_type'; set: boolean } // false: comment the suggestion
+  | { kind: 'ai'; task: 'triage'; priority: boolean; labels: boolean }; // at least one true
+type AutomationStep = AutomationAction | AutomationOutgoing | AutomationIf | AutomationBranch | AutomationAi;
+// The step line a call made carries `ai: true` (the day's count reads it).
+type AutomationStepLine = … | { kind: 'action'; ok: boolean; text: string; already?: true; ai?: true };
+```
+
+Constants beside Phase 2's: `AUTOMATION_AI_PER_DAY = 100`, `AUTOMATION_AI_STEPS_MAX = 3`,
+`AUTOMATION_AI_SUMMARY_MAX = 600`, `AUTOMATION_AI_LABELS_MAX = 3`, and in `ai-steps.ts` the prompt's caps
+(`AI_TITLE_MAX = 200`, `AI_DESCRIPTION_MAX = 2000`, `AI_CHECKLIST_ROWS = 20`, `AI_CHECKLIST_TEXT_MAX = 120`,
+`AI_COMMENTS_MAX = 5`, `AI_COMMENT_TEXT_MAX = 400`, `AI_LIST_MAX = 50`) and output caps (`AI_MAX_TOKENS`:
+summarise 300, card_type 40, triage 80). `ItemHistoryTag` gains `'automation_ai'`.
+
+`validate.ts` reads `kind: 'ai'` through `readAiStep` (ai-steps.ts): an unknown task, a summarise field that is not an
+id, card_type without a boolean `set`, triage with neither part on are `automation_invalid`; an AI step inside an If /
+Else or a branch is `automation_step_unsupported` (`NOT_IN_IF`, `NOT_IN_BRANCH` gain `'ai'`); more than 3 at the top
+level is `automation_invalid` at `steps`. An AI step counts as one action. `attention.ts` names a summarise field.
+
+### Pure parts (packages/items/src/automation/ai-steps.ts)
+
+- `planAi(step, index, walk)`: what `planActions` does for an AI step: the action counted, a `PlannedAi { step, ai,
+line }` on the run (`PlannedWrites.ai`, present only when a rule has one, so every Phase 1 and 2 answer is
+  unchanged), and a placeholder line the api settles.
+- `aiCardInput(card, outline, comments)`: the card as sent (title, description, type and column names, checklist, the
+  newest comments as the caller orders them), every part cut to its cap, empty parts left out; `planLabels(items)`: the labels the plan's cards use, most used first (ties by name), 50 at most.
+- `aiRequest(task, input, lists)`: `{ messages: [system, user], response_format: { type: 'json_schema', json_schema:
+{ name, schema, strict: true } }, max_tokens, temperature: 0 }`. The system message is fixed per task; the user
+  message is `JSON.stringify({ card, choices })` alone.
+- `readAiReply(raw)`: the reply's JSON object from any of the binding's shapes (`{ response: object | string }`,
+  `{ choices: [{ message: { content } }] }`, a string), tolerating a fenced block; null when none parses.
+- `aiOutcome(step, reply, ctx)`: the answer kept within the spec's bounds, as what the api writes (`{ comment, line }`
+  or `{ patch, line, already }`), or `{ failed: reason }`. A summary (`plainSummary`): a string, control characters
+  and markup (`<…>`, Markdown emphasis, headings, links and fences) stripped, whitespace collapsed, every link the
+  card's own text lacks removed, cut at a word to 600; empty fails; into a field only a custom Text or Long Text field
+  the card's type has. A card type: matched to the plan's types by name, case and spacing aside. Triage: priority one
+  of `PRIORITIES` (case aside); labels matched to the plan's (case aside), deduped, the card's own skipped, 3 at most
+  and within the card's 12, the rest dropped.
+- `aiDryLine(step, outline, labels)`: Test on a Card's "Would …" line; `aiStepChip(step, fieldLabel)`: the
+  sentence's chip (sentence.ts `stepChip` calls it).
+
+### The api (apps/api/src/plan-room/automations/automation-ai.ts)
+
+- `AutomationsAi = { run(model, inputs, options?) => Promise<unknown> }` is `PlanEnv.AI` (optional, the `[ai]` binding),
+  `AI_GATEWAY` an optional var naming an AI Gateway (`{ gateway: { id } }` on every call).
+  `AUTOMATION_AI_MODEL = '@cf/google/gemma-4-26b-a4b-it'`, `chat_template_kwargs: { enable_thinking: false }`,
+  `AUTOMATION_AI_TIMEOUT_MS = 15_000` (a race with a timer, cleared after).
+- `aiToday(sql, now)`: `SELECT COUNT(*) FROM automation_runs r, json_each(r.body, '$.steps') s WHERE r.at >= <UTC
+midnight> AND s.value ->> '$.ai' = 1`, read once per wake into `RunState.ai` when a rule with an AI step runs. No
+  schema step: the Audit Trail keeps every run of the day (at most 1,000 counted runs, under its 2,000).
+- `runAiSteps(deps, input, planned, lines, offset)`: after `applyPlannedRun` and the branches, before `sendMessages`.
+  Per step: dry → the "Would …" line; no binding → `AI_NOT_SET_UP`; `state.ai >= 100` → the step's line and the
+  run's reason `AI_CAPPED`, result **skipped** unless something failed (a skipped run still advances Assign in Turn,
+  since its writes stand); else `state.ai += 1`, the card read again
+  (`readItem`), its latest comments (`linksOfItem` home this plan, `readThreads`, newest 5 comments across them), the
+  plan's labels (`listItems`, triage only), the call, `readAiReply`, the constraint, then the write:
+  - summarise to a comment: `addComment(deps, rule, card, text, { ai: true })` (automation-writes.ts), the Comment
+    carrying `ai: true` beside `automation`;
+  - summarise to a field, card type set, triage: `patchCard(…, tag 'automation_ai')` with the run's `source`, so the
+    events it causes chain as the rule's do; a patch that changes nothing is "Already so";
+  - card type comment: `addComment`, "Suggested card type: Bug".
+    The line is `{ kind: 'action', ok, text, ai: true }`; the first failure is the run's reason.
+- Errors: `AI_NOT_SET_UP` "AI isn't set up here", `AI_FAILED` "The AI couldn't answer: try again later", `AI_SLOW`
+  "The AI took too long to answer", `AI_UNREADABLE` "The AI's reply couldn't be read", `AI_CAPPED` "This plan has
+  used its 100 AI steps today". Logged `[automations] ai` `{ task, ok, tookMs, reason? }`, the reason the line's own
+  words (never the card's text or the model's answer).
+- Telemetry: `reportServerEvent(env, 'Plan', 'Ran', 'AutomationAiSummarise' | 'AutomationAiCardType' |
+'AutomationAiTriage')` per call, plus `AutomationAiFailed` on a failure after the call and `AutomationAiCapped`, each
+  through `deps.defer`.
+- The wake stops taking new triggers once it has run `AUTOMATION_WAKE_MS = 60_000` (wall time; three 15 s calls a run
+  could otherwise hold a wake of 25 triggers for minutes); the rest wait for the next wake, at once.
+- `wrangler.toml`: `[ai] binding = "AI"` and `[env.staging.ai] binding = "AI"`. Absent at run time (tests, a fork
+  without it), every AI step fails "AI isn't set up here" and nothing else changes.
+
+### Editor
+
+- `StepAddButtons` lists **AI** after the other actions in + Add Action at the rule's top level, under its own heading
+  ("AI", "100 a day per plan") with the sparkle on each row's tile (`StepTile` kind `ai`): Summarise Card, Suggest
+  Card Type, Triage, left out once the rule holds 3 (`canAddAi` in rule-draft.ts) and never inside an If / Else or a
+  branch. `step-defaults.ts` holds `AI_KINDS` and each one's first form (`defaultAi`).
+- `apps/editor/components/automations/step-panels/AiStepPanel.tsx`: the task's panel. Summarise: **Write To** (a
+  Select: A Comment, or one of the plan's custom Text and Long Text fields; a field the plan lost stays listed as gone).
+  Suggest Card Type: **Then** (Comment the Suggestion, Set the Card Type). Triage: **Sets** (chip toggles Priority and
+  Up to 3 Labels; the last one on can't turn off). Each ends with the "Uses AI" note (`AiCostNote`): the sparkle,
+  "Uses AI: counts toward 100 a day for this plan", that its writes are by Automation and marked Generated by AI, and
+  that Test on a Card asks nothing. The step's card in the rule reads its chip and "Uses AI: counts toward 100 a day".
+- `RunSteps` draws a line with `ai` with the sparkle (a Tooltip, "Generated by AI"); `activity-timeline.ts` reads
+  `automation_ai` as Automation and AI at once, so `CardActivity` shows the bolt author and the sparkle;
+  `set-by-automation.ts` counts it as a rule's set; `comment-thread-parts` shows Generated by AI on an Automation
+  comment that has `ai`.
+
+### Tests
+
+- items `ai-steps.test.ts`: every branch of the reader, the prompt (data never in the system message), each shape of
+  reply, each constraint (injected text, made-up labels and types, links, markup, length), the dry lines; the prompt
+  sizes measured for the cost table.
+- api `automations-ai.test.ts` with a stand-in `env.AI`: each task end to end (writes, marks, tag, Generated by AI),
+  no binding, a throwing model, a slow model (fake timers), an unreadable reply, a write refused after the call, the
+  cap at 100 (counted from the Audit Trail, a failed call too), Test on a Card calling nothing, the gateway option.
+  The refusals (an AI step in a branch or an If, a fourth one) are items' validate tests.
+- editor `AiSteps.test.tsx`: the AI group in Add Action and its limit, each first form, each panel, the step's card
+  and the sparkle line in a run; `AutomationAuthor.test.tsx` the Generated by AI mark on an AI action's comment.
+- editor: the AI group in Add Action, each panel's states, the dry line, the sparkle line.
+
+## Phase 3: Incoming Webhook (Work Item 713)
+
+Derived from the spec's [Incoming Webhook](../automations.md#incoming-webhook). AI actions and the agent and CLI
+tools are their own sections.
+
+### Shapes (packages/items/src/automation)
+
+```ts
+type AutomationTrigger = … | { kind: 'incoming_webhook' };      // types.ts
+type AutomationEventKind = … | 'incoming';                       // matches.ts; queued only by the hook route
+interface AutomationEvent { …; webhook?: WebhookValues; cards?: number } // the values the rule names; how many
+                                                                 // cards the call named, for the trigger line
+type WebhookValues = Record<string, string | number | boolean>;  // incoming.ts, keyed by dot path
+```
+
+- `TRIGGER_EVENT_KINDS.incoming_webhook = ['incoming']`, which no write builds, so a plan whose only rules are
+  incoming ones pays nothing on a save. `triggerMatches` hears an `incoming` event for its `ruleId` alone.
+- `isPersonless(trigger)` (types.ts): a time trigger or `incoming_webhook`. validate.ts's person checks
+  (Who Did It, `{ trigger: true }` assignees and recipients) run for every personless trigger, refusing with
+  `automation_condition_unsupported` ("An incoming webhook has no person behind it to check").
+- `INCOMING_WEBHOOK_PERSON = { id: 'incoming_webhook', name: 'Incoming webhook', color: AUTOMATION_COLOR }`: an
+  incoming event's `by`, so `{{person}}` reads "Incoming webhook"; its `role` is `system` (never an Editor,
+  Participant or agent, and nobody to assign).
+- `incoming.ts` (pure): the constants `WEBHOOK_BODY_MAX = 16_384`, `WEBHOOK_CARDS_MAX = 10`,
+  `WEBHOOK_CALLS_PER_MINUTE = 60`, `WEBHOOK_PATH_DEPTH_MAX = 5`, `WEBHOOK_PATH_NAME_MAX = 64`,
+  `WEBHOOK_VALUE_MAX = 500`; `webhookPathOf(name)` (the segments of `webhook.<path>`, or null; a split and one
+  anchored character-class test per segment, never a backtracking pattern), `webhookPathsIn(steps)` (every
+  `{{webhook.…}}` the steps' text names), `webhookValues(payload, paths)` (each path read: a string cut at 500, a
+  number, a boolean; anything else left out), `readHookBody(raw)` (`{ cards: number[] | null; payload }` or
+  `{ error }`) and `runsWithoutCard(rule)` (no conditions; every step Create Card without `copy` or `linkField`, or
+  `notify`). `incomingTriggerWords(cards)`: "Webhook received: 2 cards" / "1 card" / "no card".
+- values.ts: `ValuePlace.webhook` makes `webhook.<path>` known; `ValueContext.webhook` fills it from the event's
+  values (missing reads nothing); `ValueContext.cardless` makes every `card.…` value read nothing. Filling stays one
+  pass, so a payload string is never read as a value. validate.ts passes `{ webhook: true }` to every text of an
+  incoming rule (top level, If / Else and branch; Create Card's title too).
+- sentence.ts: `AUTOMATION_TRIGGER_NAMES.incoming_webhook = 'Incoming Webhook'`; `triggerParts` reads
+  `When a [Webhook Is Received]`.
+
+### Storage (plan schema V20)
+
+```sql
+CREATE TABLE automation_hooks (
+  rule_id      TEXT    PRIMARY KEY,
+  hash         TEXT    NOT NULL,          -- hex SHA-256 of the whole secret, never the secret
+  last4        TEXT    NOT NULL,          -- its last 4 characters, for "Ends in …Xf3k"
+  made_at      INTEGER NOT NULL,
+  used_at      INTEGER,                   -- the last verified call
+  window_at    INTEGER NOT NULL DEFAULT 0,-- the rate limit's minute: when it started, and calls in it
+  window_calls INTEGER NOT NULL DEFAULT 0
+) WITHOUT ROWID;
+```
+
+A table of its own, so a rule's body (what every list, copy and file carries) never holds the hash. The step is
+additive and `IF NOT EXISTS`. `AutomationStore.remove` deletes the rule's row; `insert` and `update` delete it when the
+rule's trigger is not `incoming_webhook`. Copies and the plan's file never read the table.
+
+### The secret
+
+- `lwh_` + base64url(64 bytes from `crypto.getRandomValues`), 90 characters. **Why 64 bytes, not 32**: HMAC hashes a
+  key longer than its 64-byte block first (RFC 2104 §2), so for a 90-character secret `HMAC(secret, body)` equals
+  `HMAC(SHA-256(secret), body)`. The plan then stores only the SHA-256 and still checks a GitHub-style signature
+  keyed with the secret itself. This holds only while the encoded secret is longer than 64 bytes: a shorter one is
+  used as the key as it is, and every signature would fail. `automation-incoming.test.ts` pins both: a signature
+  made independently with the raw secret (node:crypto) passes `provesSecret`, and `newHookSecret()` encodes to more
+  than 64 bytes, so shortening `WEBHOOK_SECRET_BYTES` or the prefix fails loudly.
+- Residual risk, stated: whoever reads the plan's own storage could sign calls with the hash (any HMAC scheme keeps
+  key material server-side); the Bearer path still needs the secret itself.
+
+### Routes
+
+| Route                                               | Who                            | Answer                                      |
+| --------------------------------------------------- | ------------------------------ | ------------------------------------------- |
+| `POST /api/projects/:id/automations/:ruleId/secret` | the Automations gate, no token | 201 `AutomationSecretResponse` `{ secret,   |
+|                                                     |                                | hook }`; 404, 409 `automation_not_incoming` |
+| `POST /api/hooks/automations/:projectId/:ruleId`    | anyone holding the secret      | 202 `{ queued }`; 400, 401, 404, 405,       |
+|                                                     |                                | 413, 415, 429                               |
+
+- The listed rule (`AutomationListedRule`) of a saved incoming rule carries `hook: AutomationHookInfo`
+  (`{ url, secret: { last4, madeAt, usedAt } | null }`, null before Make Secret); every other rule has no `hook`.
+  `url` is `${appBaseUrl(env)}/api/hooks/automations/<plan>/<rule>`, so the panel shows the address before a secret
+  is made.
+- **The worker side** (`routes/automation-hook-routes.ts`), answered in index.ts before identity (as `internal`), so a
+  `Bearer lwh_…` is never read as a person: path matching `/api/hooks/automations/<plan>/<rule>` exactly, ids of 1 to 200
+  characters (`[A-Za-z0-9_-]`, one anchored regex, so the dispatch probe's vocabulary stays the projects'), else 404; POST, else 405; `Content-Type` `application/json` (parameters allowed), else 415; a
+  declared length past 16 KB, or a body that reads past it through the capped reader, 413; then
+  `WRITE_RATE_LIMITER` keyed `hook:<network>` (429). Then the plan's room: `PlanRoomRpc.incomingHook(planId, ruleId,
+{ body, authorization, signature })` answers `{ status, body, retryAfter? }`, made into the response.
+- **The room side** (`plan-room/automations/automation-incoming.ts`, `verifyHookCall` then `acceptHookCall`): a room
+  with no stored schema answers 401 without making one. Otherwise, in order: the rule (on, `incoming_webhook`) and its
+  hook row, else 401; the proof: Bearer → `timingSafeEqual(sha256hex(sent), hash)`; else signature →
+  `timingSafeEqual(hmacHex(hashBytes, body), sent)` (`@liveworkspace/index-app/timing-safe`); a missing row still
+  hashes the sent value against a fixed dummy so the work is the same; else 401. Then the minute window
+  (`window_at + 60 s > now` and `window_calls >= 60` → 429 with `Retry-After`), in ONE `UPDATE … RETURNING` that also
+  stamps `used_at`; then the day's budget (`runsToday >= 1000` → 429 until UTC midnight); then `readHookBody` (400);
+  the named numbers to cards (`SELECT id, item_key FROM items WHERE plan_id = ? AND item_key IN (json_each)`, then
+  the Trash left out); the events, id `w:<call uuid>:<card id | ->`, `kind: 'incoming'`, `by:
+INCOMING_WEBHOOK_PERSON`, `role: 'system'`, `ruleId`, `webhook: webhookValues(payload, webhookPathsIn(rule.steps))`,
+  `cards: named count`; `enqueueStatement` (the queue's cap) and `hook.queued(dropped)`; 202 with the inserted count.
+- Logs: `[automations] hook` `{ answer: 'accepted' | 'unauthorized' | 'rate_limited' | 'budget' | 'invalid',
+queued }`, never a secret, a signature, a hash or the body.
+
+### Runner additions
+
+- `triggerLine`: an `incoming` event reads `incomingTriggerWords(event.cards)`, with no `by`.
+- An `incoming` event with `cardId: ''`: `runsWithoutCard(rule)` false → **skipped** "No cards named: this rule's
+  steps need a card"; true → the run goes on with a blank card (`cardlessCard()`: no id, no fields), conditions none,
+  `cardless: true` and the payload's values on the plan context, `card: null` on the run, the sends' `card: null`
+  (the platform's contract allows it), the link the plan's own (`planUrl`).
+- `[automations] run` gains `trigger: rule.trigger.kind`.
+- Test on a Card of an incoming rule: an `incoming` event on the chosen card, `cards: 1`, no values.
+
+### Editor
+
+- `TriggerPanel` groups its kinds under "Something Happens to a Card", "A Time Comes Round" and "Another Tool Sends
+  It" (Incoming Webhook), and draws `components/automations/step-panels/IncomingWebhookPanel.tsx` for it: **Address** (the URL in a
+  monospace field with Copy; before the first save, "Save the rule to get its address."), **Secret** (Make Secret, or
+  "Ends in …Xf3k · Made 2 days ago · Last used 3 min ago" with Regenerate behind `ConfirmPopover`), the once-shown
+  secret (a monospace field, Copy, "You won't see it again. Keep it where the other tool keeps its passwords.",
+  Done), what it runs on (the `runsWithoutCard` line), and **How to Send** (an accordion, closed: a curl with the
+  header and one with the signature). The rule's id and hook come from `IncomingRuleContext` (incoming-rule.tsx),
+  provided by RuleBuilder; the call is `makeHookSecret` in automations-client.ts.
+- `ValueTextField` reads `useIncomingRule().incoming` and adds **Webhook Field…**: an inline field for the path
+  (checked by `webhookPathOf`) with Insert, at the end of Insert a Value's chips. A webhook value's chip reads its path.
+- Personless rules (time and incoming) leave out "whoever triggered" in Assign and Send Email, as time rules do
+  (`isPersonless`).
+- Telemetry: `Plan · Created | Changed | Copied · AutomationSecret`.
+
+### Tests
+
+- items: incoming.ts (paths, values, body, cardless, words), validate (webhook values only in incoming rules;
+  person checks), values (fill, cut, missing, `{{card.title}}` in a payload stays literal, cardless), matches,
+  sentence; to the package's 100% branches.
+- api, `automations-incoming.test.ts` (security, through the real worker): wrong secret; old secret after Regenerate;
+  off, paused, deleted and re-triggered rules; unknown rule and plan; missing auth; bad signature; a signature over a
+  changed body; the compare is `timingSafeEqual` (spied); the secret absent from every response after Make Secret,
+  from the list, the Audit Trail and every log line; body over 16 KB (declared and streamed); wrong content type;
+  the 61st call in a minute (429, Retry-After) and the next minute; a payload with `{{card.title}}` and `<script>`;
+  a 5-deep and a 6-deep path, a 16 KB string; cards from another plan and unknown numbers; the hash never in a list,
+  a rule body or a file; the secret route's role tests (Owner, team, Editor link, tab Editor link, Participant,
+  Viewer, API token, guest). The V20 step in plan-schema.test.ts.
+- perf, `automations-incoming.perf.test.ts`: verifying a signature over a 16 KB body and filling a rule's values from
+  it, inside `cpuBudgetMs` (`@liveworkspace/vitest-config/cpu-time`).
+- editor: the panel's states (unsaved, no secret, made, revealed, regenerate confirm), Copy, Webhook Field….
+- help: "Start a Rule from Another Tool" in plan/automations/page.mdx.
 
 ## Editor
 

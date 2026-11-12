@@ -1353,6 +1353,79 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "AutomationAi": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "ai",
+            "type": "string"
+          },
+          "task": {
+            "const": "summarise",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "task"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "ai",
+            "type": "string"
+          },
+          "set": {
+            "type": "boolean"
+          },
+          "task": {
+            "const": "card_type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "task",
+          "set"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "ai",
+            "type": "string"
+          },
+          "labels": {
+            "type": "boolean"
+          },
+          "priority": {
+            "type": "boolean"
+          },
+          "task": {
+            "const": "triage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "task",
+          "priority",
+          "labels"
+        ],
+        "type": "object"
+      }
+    ]
+  },
   "AutomationAssignee": {
     "anyOf": [
       {
@@ -1626,6 +1699,76 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "AutomationHookAccepted": {
+    "additionalProperties": false,
+    "properties": {
+      "queued": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "queued"
+    ],
+    "type": "object"
+  },
+  "AutomationHookInfo": {
+    "additionalProperties": false,
+    "properties": {
+      "secret": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/AutomationHookSecret"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "url": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "url",
+      "secret"
+    ],
+    "type": "object"
+  },
+  "AutomationHookRequest": {
+    "additionalProperties": {},
+    "properties": {
+      "cards": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      }
+    },
+    "type": "object"
+  },
+  "AutomationHookSecret": {
+    "additionalProperties": false,
+    "properties": {
+      "last4": {
+        "type": "string"
+      },
+      "madeAt": {
+        "type": "number"
+      },
+      "usedAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "last4",
+      "madeAt",
+      "usedAt"
+    ],
+    "type": "object"
+  },
   "AutomationIf": {
     "additionalProperties": false,
     "properties": {
@@ -1677,6 +1820,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "enabled": {
         "type": "boolean"
+      },
+      "hook": {
+        "$ref": "#/components/schemas/AutomationHookInfo"
       },
       "id": {
         "type": "string"
@@ -2111,6 +2257,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "AutomationSecretResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "hook": {
+        "$ref": "#/components/schemas/AutomationHookInfo"
+      },
+      "secret": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "secret",
+      "hook"
+    ],
+    "type": "object"
+  },
   "AutomationSetValue": {
     "anyOf": [
       {
@@ -2181,6 +2343,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AutomationStamp": {
     "additionalProperties": false,
     "properties": {
+      "ai": {
+        "const": true,
+        "type": "boolean"
+      },
       "at": {
         "type": "number"
       },
@@ -2207,6 +2373,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "$ref": "#/components/schemas/AutomationBranch"
+      },
+      {
+        "$ref": "#/components/schemas/AutomationAi"
       }
     ]
   },
@@ -2256,6 +2425,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         "additionalProperties": false,
         "properties": {
+          "ai": {
+            "const": true,
+            "type": "boolean"
+          },
           "already": {
             "const": true,
             "type": "boolean"
@@ -2514,6 +2687,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "at"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "incoming_webhook",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
       }
     ]
   },
@@ -2553,6 +2739,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AutomationsListResponse": {
     "additionalProperties": false,
     "properties": {
+      "people": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "name"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
       "rules": {
         "items": {
           "$ref": "#/components/schemas/AutomationListedRule"
@@ -7408,7 +7613,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "undo",
       "form",
       "repeat",
-      "automation"
+      "automation",
+      "automation_ai"
     ],
     "type": "string"
   },

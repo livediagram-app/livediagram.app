@@ -138,7 +138,21 @@ export type Env = {
   API_TOKEN_READ_RATE_LIMITER?: {
     limit: (input: { key: string }) => Promise<{ success: boolean }>;
   };
+  // Workers AI, for Automations' AI actions (docs/specs/026-plan/automations.md "AI actions"). No key: the binding is
+  // the credential. Absent (a fork, a test) means an AI step fails "AI isn't set up here".
+  AI?: AutomationsAi;
+  // An AI Gateway id the AI calls go through (optional), where the account's spend limit applies.
+  AI_GATEWAY?: string;
 };
+
+// The part of the Workers AI binding Automations calls (plan-room/automations/automation-ai.ts).
+export interface AutomationsAi {
+  run(
+    model: string,
+    inputs: Record<string, unknown>,
+    options?: { gateway?: { id: string } },
+  ): Promise<unknown>;
+}
 
 // The env a plan's own code runs with, inside its Durable Object (src/plan-room/plan-room.ts): the
 // worker's bindings plus `PLAN_DB`, the plan's own SQLite behind the D1 surface (plan-room/plan-db.ts).
