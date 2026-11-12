@@ -140,7 +140,7 @@ export function ShapeGlyph({
   dash?: string;
   size?: number;
   // Explicit placement + non-square sizing, for callers that paint the glyph
-  // at an element's footprint as a nested <svg> (e.g. the minimap). Default to
+  // at an element's footprint as a nested <svg>. Default to
   // a square `size` at the origin. Pass `preserveAspectRatio="none"` to let a
   // shape stretch to a non-square box (a wide "circle" reads as an ellipse,
   // matching the real element).

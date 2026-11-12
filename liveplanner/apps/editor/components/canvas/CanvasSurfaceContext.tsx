@@ -55,7 +55,7 @@ export function CanvasThemeProvider({
 }
 
 /** The categorical ramp the active tab's theme gives its charts, as the canvas hands them: for the
- *  previews drawn by the export renderer (minimap, layer rows, layout previews), which otherwise fall
+ *  previews drawn by the export renderer (layer rows, layout previews), which otherwise fall
  *  back to the built-in ramp and show charts in other colours (docs/specs/009-elements/pie-chart.md).
  *  Undefined outside the editor canvas, where that built-in ramp is the right answer. */
 export function useCanvasChartPalette(): readonly string[] | undefined {

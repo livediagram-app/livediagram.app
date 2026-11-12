@@ -1,5 +1,3 @@
-export type MapSize = 'short' | 'medium' | 'tall';
-
 // Per-user editor preference flags. See docs/specs/007-editor/user-preferences.md.
 //
 // Storage:
@@ -53,16 +51,6 @@ export type UserPreferences = {
   // NEXT_PUBLIC_TELEMETRY_ENABLED gate and the api worker's
   // TELEMETRY_ENABLED gate. Missing / undefined === on.
   telemetryEnabled?: boolean;
-  // Map panel options (docs/specs/008-canvas/minimap.md). Both default ON / medium via `!== false`
-  // and `?? 'medium'`, so an existing user's map is unchanged.
-  //
-  // `mapDimOutside` shades everything outside the current view. It reads as
-  // "you are here" at a glance, but on a dense canvas some people want the
-  // whole map bright, so it is a toggle rather than a rule.
-  mapDimOutside?: boolean;
-  // How tall the map is. A big canvas is unreadable in a 144px strip; a
-  // small one doesn't need more.
-  mapSize?: MapSize;
   // Layers panel options (docs/specs/006-project/layers.md). Both default ON via `!== false`.
   //
   // The row thumbnail is the quickest way to tell two similarly-named layers
@@ -141,10 +129,6 @@ export type UserPreferences = {
   // it mirrors Figma, and the pan works from anywhere on the canvas
   // regardless of the active tool. Lives in the Controls group.
   middleMousePan?: boolean;
-  // Minimap (docs/specs/008-canvas/minimap.md). When `false`, the bottom-left canvas minimap is hidden.
-  // Missing / undefined / true === shown, the default (and even then only once
-  // the tab has a few elements, and on desktop). The minimap's own close button writes an explicit `false`.
-  showMinimap?: boolean;
   // Explorer Home's banner, the hero (docs/specs/013-workspace/explorer-home.md "Hiding the banner"). When `false`,
   // Home opens on its ordinary page header and the header's search field instead. Missing / undefined / true ===
   // shown, the default. The banner's own close button writes an explicit `false`; Settings turns it back on.

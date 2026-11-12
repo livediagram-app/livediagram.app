@@ -3,7 +3,7 @@ import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { svgBoxed } from './svg-render';
 import type { ShapeKind } from './index';
 
-// Surface fidelity (docs/specs/008-canvas/minimap.md "Fidelity"). The headless
+// Surface fidelity (docs/specs/008-canvas/canvas-and-palette.md). The headless
 // renderer draws the Map, the layer thumbnails and the exports, and it has to
 // paint an element on dark paper the way the canvas does. The canvas never
 // shows a light card on a dark canvas unless the element stores that colour

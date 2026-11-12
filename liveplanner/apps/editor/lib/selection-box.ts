@@ -1,12 +1,11 @@
 import type { CanvasSurface } from '@liveplanner/project';
 import { BRAND_RAMP } from '@liveplanner/ui';
 
-// The colours of the two "selection box" rectangles the editor draws: the
-// drag-select marquee on the canvas and the Map's current-view window
-// (docs/specs/008-canvas/canvas-and-palette.md "Marquee select", docs/specs/008-canvas/minimap.md).
-// One helper so the two boxes always look alike.
+// The colours of the "selection box" rectangle the editor draws: the
+// drag-select marquee on the canvas
+// (docs/specs/008-canvas/canvas-and-palette.md "Marquee select").
 //
-// Both take the tab theme's accent (its element stroke). The paper decides how
+// It takes the tab theme's accent (its element stroke). The paper decides how
 // loud that accent is: on light paper it is drawn at full strength, but the
 // same saturated border + tint on dark paper glares, so there it is softened
 // (a translucent border, a fainter wash) to sit with the dark selection ring

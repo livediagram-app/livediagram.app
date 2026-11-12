@@ -71,7 +71,6 @@ export const HELP_ARTICLES = {
   explorerPanel: 'explorer/explorer-panel',
   layers: 'user-interface/panel-layout',
   // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
-  minimap: 'user-interface/panel-layout',
   sessionVoting: 'collaboration/session-tools/voting',
   sessionTimer: 'collaboration/session-tools/timer',
   home: 'explorer/home',
@@ -233,10 +232,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   layers: {
     title: 'Learn about layers',
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
-  },
-  minimap: {
-    title: 'Learn about the Map',
-    description: 'Tips for finding your way around a big canvas.',
   },
   sessionVoting: {
     title: 'Learn about voting',

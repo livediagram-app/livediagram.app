@@ -393,8 +393,6 @@ function CanvasView(props: CanvasProps) {
           {tabLoadState && tabLoadState !== 'ready' ? (
             <TabLoadOverlay state={tabLoadState} onRetry={() => onRetryTabLoad?.()} />
           ) : null}
-          {/* Map (docs/specs/008-canvas/minimap.md) now renders inside CanvasChrome's docking layer
-            (docs/specs/007-editor/panel-docking.md) so it snaps + stacks like the other floating panels. */}
           {/* Touch long-press "hold" ring at the finger: the docs/specs/008-canvas/canvas-and-palette.md
             press-and-hold affordance that opens the context menu on touch. */}
           <LongPressRing point={surface.canvasLongPress.pressPoint} />

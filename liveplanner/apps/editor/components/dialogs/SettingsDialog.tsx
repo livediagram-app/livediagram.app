@@ -177,7 +177,7 @@ export function SettingsDialog({
       size={SETTINGS_DIALOG_SIZE}
       // The existing see-through backdrop rather than the default dim+blur:
       // Settings is where you flip things whose effect is ON the canvas
-      // behind it (panel opacity, UI scale, the minimap), so blurring that
+      // behind it (panel opacity, UI scale), so blurring that
       // canvas out hides the very thing you are adjusting.
       backdrop="desktop-light"
       // One fixed height on desktop, not a cap: sized to content, the frame
