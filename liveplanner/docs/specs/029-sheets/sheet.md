@@ -785,7 +785,10 @@ whole Sheet.
   the cells and the chart changes, for everyone.
 - The chart sits **in its Sheet**, as a spreadsheet's chart sits over its cells: wherever the Sheet is drawn (on the
   canvas, maximised, filling a Sheet tab, in a Dashboard slot) its charts float over its cells, clipped to the grid,
-  and scroll and zoom with the cells (frozen rows and columns do not hold them). Nothing of them draws on the canvas,
+  and scroll and zoom with the cells (frozen rows and columns do not hold them). Once the Sheet scrolls down, they pass
+  under its frozen rows and their edge line, as the cells do, and once it scrolls right, under its frozen columns;
+  scrolled back to the top (or the left), a chart placed over the frozen rows (or columns) shows whole again. Nothing
+  of them draws on the canvas,
   so a maximised or tab-filling Sheet never has canvas showing behind it, and the canvas never draws a second copy.
 - Where it sits is the element's `sheetAnchor`: `{ x, y }`, the px from the top-left corner of the sheet's cells (A1's
   corner, at 100% zoom) to the chart's top-left, each 0 to 1,000,000. Its size is the element's own width and height.

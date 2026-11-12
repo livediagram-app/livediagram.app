@@ -1,7 +1,8 @@
 'use client';
 
 // The charts that sit in a Sheet (docs/specs/029-sheets/sheet.md "Charts"): drawn over its cells at their anchors,
-// clipped to the grid, scrolling and zooming with the cells. Someone who may shape the Sheet (an Editor) selects one
+// clipped to the grid, scrolling and zooming with the cells, and passing under its frozen rows and columns once it
+// scrolls (chartsClip). Someone who may shape the Sheet (an Editor) selects one
 // by clicking it, drags it to move it, drags its corner to resize it and removes it with Delete, Backspace or Delete
 // Chart; each is one undo step (bridge.commitElements). A right-click on one, or its Chart Options button, opens the
 // element menu the canvas opens for that chart (Style, Legend, Palette, the chart type, Unlink From Sheet). Anyone else
@@ -29,7 +30,7 @@ import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { useSheetCharts } from './sheet-charts-context';
 import { useSheetController } from './sheet-controller';
 import { SheetLinkedChart } from './SheetLinkedChart';
-import { movedAnchor, resizedChart, takePlacedChart } from './sheet-charts';
+import { chartsClip, movedAnchor, resizedChart, takePlacedChart } from './sheet-charts';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { openElementMenu } from '@/hooks/canvas/element-menu-opener';
 import { DeleteIcon, MoreIcon } from './sheet-icons';
@@ -146,6 +147,8 @@ export function SheetChartsLayer() {
       role="row"
       aria-label="Charts"
       className="pointer-events-none absolute inset-0 z-[6]"
+      // Under the frozen rows and columns once the Sheet scrolls past them, as the cells are.
+      style={{ clipPath: chartsClip(c.geometry, c.scroll) }}
       // A press on a chart is the chart's, never the cells' or the canvas's.
       onPointerDown={(e) => {
         if ((e.target as HTMLElement).closest('[data-sheet-chart]')) e.stopPropagation();

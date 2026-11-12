@@ -12,7 +12,9 @@ import {
   CHART_MIN_HEIGHT,
   CHART_MIN_WIDTH,
   chartRangeOf,
+  chartsClip,
   chartSizeOf,
+  FROZEN_EDGE_PX,
   movedAnchor,
   newChartAnchor,
   placeSheetChart,
@@ -356,5 +358,26 @@ describe('the charts Clear Sheet takes', () => {
     step.undo();
     expect(b.elements).toHaveLength(3);
     expect(b.commitElements).not.toHaveBeenCalled();
+  });
+});
+
+describe("the charts' clip under the frozen rows and columns", () => {
+  const g = { frozenRows: 1, frozenCols: 2, frozenHeight: 24, frozenWidth: 200 };
+  const edge = FROZEN_EDGE_PX;
+  it('hides nothing until the Sheet scrolls, or when nothing is frozen', () => {
+    expect(chartsClip(g, { top: 0, left: 0 })).toBeUndefined();
+    const none = { frozenRows: 0, frozenCols: 0, frozenHeight: 0, frozenWidth: 0 };
+    expect(chartsClip(none, { top: 300, left: 300 })).toBeUndefined();
+  });
+  it('passes them under the frozen rows and their edge once it scrolls down, and the columns once it scrolls right', () => {
+    expect(chartsClip(g, { top: 1, left: 0 })).toBe(`inset(${24 + edge}px 0px 0px 0px)`);
+    expect(chartsClip(g, { top: 0, left: 40 })).toBe(`inset(0px 0px 0px ${200 + edge}px)`);
+    expect(chartsClip(g, { top: 90, left: 40 })).toBe(
+      `inset(${24 + edge}px 0px 0px ${200 + edge}px)`,
+    );
+    // Only the axis that is frozen.
+    expect(chartsClip({ ...g, frozenCols: 0, frozenWidth: 0 }, { top: 90, left: 40 })).toBe(
+      `inset(${24 + edge}px 0px 0px 0px)`,
+    );
   });
 });

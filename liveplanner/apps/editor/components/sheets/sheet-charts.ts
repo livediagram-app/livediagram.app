@@ -178,6 +178,23 @@ export function resizedChart(
   };
 }
 
+// How far past the frozen rows (or columns) the charts' clip starts: the lower half of their 2 px edge line (SheetCells),
+// so a chart passes under the whole line.
+export const FROZEN_EDGE_PX = 1;
+
+// The charts layer's clip (sheet.md "Charts"): once the Sheet scrolls down, the charts pass under its frozen rows and
+// their edge line, as the cells do, and once it scrolls right, under its frozen columns. Unscrolled that way, a chart
+// placed over the frozen lines shows whole, where it was put. A clip-path, undefined when nothing is hidden; it hides
+// presses as well as paint, so the frozen cells take them.
+export function chartsClip(
+  g: Pick<Geometry, 'frozenRows' | 'frozenCols' | 'frozenHeight' | 'frozenWidth'>,
+  scroll: { top: number; left: number },
+): string | undefined {
+  const top = g.frozenRows > 0 && scroll.top > 0 ? g.frozenHeight + FROZEN_EDGE_PX : 0;
+  const left = g.frozenCols > 0 && scroll.left > 0 ? g.frozenWidth + FROZEN_EDGE_PX : 0;
+  return top || left ? `inset(${top}px 0px 0px ${left}px)` : undefined;
+}
+
 // Taking the charts anchored in sheet `sheetId` off the open tab, as a step (Clear Sheet, sheet.md "Sheet Settings"):
 // `redo` takes them and `undo` puts them back, each quietly (the sheet's own write carries the one undo step). Null
 // when it has none.
