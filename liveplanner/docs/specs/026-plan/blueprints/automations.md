@@ -896,3 +896,6 @@ Threads and Wait (spec "Actions", "Wait").
 - **Editor**: `trigger-groups.ts` gains Comments and Links; each trigger has a scene (`TriggerScene.tsx`) and its
   narrowing in the When panel (people for Someone Mentioned, the relation for Related Cards Done, the column and
   limit for Column Over Limit, days and columns for Card Stuck in `TimeTriggerPanel`).
+
+- **Template scenes** live in `apps/editor/components/automations/template-scenes/` (`first.tsx`, `board.tsx`,
+  `linked.tsx`); `TemplateScene.tsx` maps each template id to its scene.
