@@ -332,6 +332,9 @@ build):
 - **Copies** schedule each time rule they keep on, from the copy's moment (`copiedRuleStatements`).
   A copy's and a file's rules name the new tab ids (`ruleWithTabIds`, @liveplanner/items named.ts), the walk
   Describe a Rule's names take.
+- **A closed account** (plan-anonymise.ts): the rules' `made.by` and `edited.by` and the queue's and waiting runs'
+  `event.by` are set to Deleted account by `json_set` where the hashed id matches; Audit Trail rows that hold the hashed
+  id are read and rewritten by `anonymiseRun` (the line's person, and their name in the run's line texts).
 - **Branches.** The branch's actions count once toward the run's 20, not once per card. Its line reads "For each
   Child Card: on 3 related cards" (", failed on #12, #14" when any did; "on 100 of 340" past the cap); each related
   card's lines follow it headed by its number, and a card whose conditions don't hold gets one line naming the first

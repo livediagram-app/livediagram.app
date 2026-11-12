@@ -991,6 +991,9 @@ part at fault, the words, and the command to run next).
   whole plan to see.
 - A rule naming a card type, column, field or person the copy lacks needs attention there (above).
 - **Deleting** a plan deletes its rules, queue and Audit Trail with it.
+- A **closed account** leaves the plan's rules as it leaves its cards: a rule it made or last edited reads **Made by**
+  or **Edited by** Deleted account, an Audit Trail run its change started names Deleted account where it named them,
+  and its triggers still queued or held by a Wait run as Deleted account's.
 
 ## Telemetry
 
