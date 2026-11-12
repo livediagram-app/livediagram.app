@@ -115,7 +115,7 @@ going are navigation, the same as panning, and are not tracked.
   the kind is a grid office piece (`OfficeKind`), so it is placed, previewed and exported like one.
 - **`apps/editor/lib/wayfinding.ts`**: the pure half: `spacePlaces` (places per tab, named and ordered), each
   place's approach and arrival points and its walls' box, `walkThereRoute` (the waypoints a Walk There follows), and
-  `whoIsWhere` (presence into places). Unit-tested.
+  `whoIsWhere` (presence into places, `wayfinding-people.ts`). Unit-tested.
 - **`apps/editor/components/canvas/wayfinding/`**: the per-canvas store the popovers read
   (`wayfinding-store.ts`), the hook that fills it and owns Walk There and Go (`useWayfinding.ts`, composed into
   `useCanvasAvatar`), and the face and popover (`DirectoryFace.tsx`).

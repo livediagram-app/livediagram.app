@@ -23,7 +23,7 @@ Scope, by file:
 | `apps/editor/components/canvas/CanvasElementsLayer.tsx`              | Mounts `FreeArrowSelection` beside a selected free arrow's `<svg>`                              |
 | `apps/editor/components/canvas/element-parts.tsx`                    | Resize handles refuse a paired press (`handlePressStarts`)                                      |
 | `apps/editor/components/canvas/useBoxedElementGestures.ts`           | Body presses are recorded; a paired press starts no drag                                        |
-| `apps/editor/hooks/ui/usePressWithoutDrag.ts`                        | Reads `DOUBLE_PRESS_MS` from the ledger module                                                  |
+| `../packages/workbench/src/hooks/ui/usePressWithoutDrag.ts`          | Reads `DOUBLE_PRESS_MS` from the ledger module                                                  |
 
 ## Domain and naming
 

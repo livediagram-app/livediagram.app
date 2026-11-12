@@ -11,6 +11,7 @@
 
 import { DriveStore, FOLDER_MIME, type FakeFile, type StoreOptions } from './drive-store';
 import { parseFields, pickFields } from './fields';
+import { applyMetadata, createFromMetadata, respondFile, visibleFile } from './drive-files';
 import { parseMultipartRelated } from './multipart';
 import { compileQuery } from './query';
 import {
@@ -336,16 +337,6 @@ export class FakeGoogle {
     return jsonResponse(200, {});
   }
 
-  private respondFile(file: FakeFile, user: string, url: URL): Response {
-    const fields = parseFields(url.searchParams.get('fields') ?? DEFAULT_FILE_FIELDS);
-    return jsonResponse(200, pickFields(driveFileShape(file, user), fields));
-  }
-
-  private visible(user: string, id: string): FakeFile | null {
-    const f = this.store.files.get(id);
-    return f && this.store.appCanAccess(user, f) ? f : null;
-  }
-
   private async drive(request: Request, url: URL, method: string, user: string): Promise<Response> {
     const path = url.pathname;
 
@@ -452,13 +443,13 @@ export class FakeGoogle {
 
     if (path === '/drive/v3/files' && method === 'POST') {
       const meta = (await request.json()) as Record<string, unknown>;
-      const file = this.createFromMetadata(user, meta, '');
-      return this.respondFile(file, user, url);
+      const file = createFromMetadata(this.store, user, meta, '');
+      return respondFile(file, user, url);
     }
 
     const fileMatch = /^\/drive\/v3\/files\/([^/]+)$/.exec(path);
     if (fileMatch) {
-      const file = this.visible(user, fileMatch[1]!);
+      const file = visibleFile(this.store, user, fileMatch[1]!);
       if (!file) return driveError(404, 'notFound', `File not found: ${fileMatch[1]}.`);
       if (method === 'GET') {
         if (url.searchParams.get('alt') === 'media') {
@@ -467,12 +458,12 @@ export class FakeGoogle {
             headers: { 'Content-Type': file.mimeType, ...CORS },
           });
         }
-        return this.respondFile(file, user, url);
+        return respondFile(file, user, url);
       }
       if (method === 'PATCH') {
         const meta = (await request.json()) as Record<string, unknown>;
-        this.applyMetadata(file, meta, url, user);
-        return this.respondFile(file, user, url);
+        applyMetadata(this.store, file, meta, url, user);
+        return respondFile(file, user, url);
       }
       if (method === 'DELETE') {
         if (file.owner !== user) return driveError(403, 'insufficientFilePermissions');
@@ -485,53 +476,6 @@ export class FakeGoogle {
     if (uploadMatch) return this.upload(request, url, method, user, uploadMatch[1] ?? null);
 
     return driveError(404, 'notFound', `No route ${method} ${path}`);
-  }
-
-  private createFromMetadata(
-    user: string,
-    meta: Record<string, unknown>,
-    content: string,
-    thumbnail?: FakeFile['thumbnail'],
-  ): FakeFile {
-    const parents = Array.isArray(meta.parents) ? (meta.parents as string[]) : ['root'];
-    for (const p of parents) {
-      if (p !== 'root' && !this.visible(user, p)) throw new Error(`parent not found: ${p}`);
-    }
-    if (typeof meta.name !== 'string' || !meta.name) throw new Error('name required');
-    return this.store.create({
-      user,
-      name: meta.name,
-      mimeType: typeof meta.mimeType === 'string' ? meta.mimeType : 'application/octet-stream',
-      parents,
-      appProperties: (meta.appProperties as Record<string, string>) ?? {},
-      content,
-      viaApp: true,
-      thumbnail: thumbnail ?? thumbnailFromHints(meta),
-    });
-  }
-
-  private applyMetadata(
-    file: FakeFile,
-    meta: Record<string, unknown>,
-    url: URL,
-    user: string,
-  ): void {
-    if (file.owner !== user && (meta.trashed !== undefined || url.searchParams.has('addParents'))) {
-      throw new Error('insufficientFilePermissions');
-    }
-    const add = (url.searchParams.get('addParents') ?? '').split(',').filter(Boolean);
-    const remove = (url.searchParams.get('removeParents') ?? '').split(',').filter(Boolean);
-    for (const p of add) {
-      if (p !== 'root' && !this.visible(user, p)) throw new Error(`parent not found: ${p}`);
-    }
-    if (typeof meta.name === 'string') this.store.rename(file, meta.name);
-    if (add.length > 0 || remove.length > 0) this.store.move(file, add, remove, user);
-    if (meta.appProperties && typeof meta.appProperties === 'object') {
-      this.store.setAppProperties(file, meta.appProperties as Record<string, string | null>);
-    }
-    if (typeof meta.trashed === 'boolean' && meta.trashed !== file.trashed) {
-      this.store.setTrashed(file, meta.trashed);
-    }
   }
 
   private async upload(
@@ -565,7 +509,7 @@ export class FakeGoogle {
     if (type === 'resumable' && (method === 'POST' || method === 'PATCH')) {
       const text = await request.text();
       const meta = text ? (JSON.parse(text) as Record<string, unknown>) : {};
-      if (fileId && !this.visible(user, fileId))
+      if (fileId && !visibleFile(this.store, user, fileId))
         return driveError(404, 'notFound', `File not found: ${fileId}.`);
       const id = `upload-${++this.counter}`;
       this.uploads.set(id, { user, fileId, metadata: meta, query: url.searchParams });
@@ -585,15 +529,15 @@ export class FakeGoogle {
   ): Response {
     const url = new URL(`https://www.googleapis.com/drive/v3/files?${query.toString()}`);
     if (!fileId) {
-      const file = this.createFromMetadata(user, meta, content);
-      return this.respondFile(file, user, url);
+      const file = createFromMetadata(this.store, user, meta, content);
+      return respondFile(file, user, url);
     }
-    const file = this.visible(user, fileId);
+    const file = visibleFile(this.store, user, fileId);
     if (!file) return driveError(404, 'notFound', `File not found: ${fileId}.`);
     this.store.writeContent(file, content, thumbnailFromHints(meta));
     const { contentHints: _hints, ...rest } = meta;
     void _hints;
-    this.applyMetadata(file, rest, url, user);
-    return this.respondFile(file, user, url);
+    applyMetadata(this.store, file, rest, url, user);
+    return respondFile(file, user, url);
   }
 }

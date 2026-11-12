@@ -14,6 +14,7 @@ Scope, by file:
 | `liveworkspace/apps/export/src/job/durable-object.ts`   | `DataExport`: start, status, file, delete, and the alarm that runs chunks     |
 | `liveworkspace/apps/export/src/job/store.ts`            | The object's SQLite: the job, the queue, the zip's directory, parts, the rest |
 | `liveworkspace/apps/export/src/job/steps.ts`            | One chunk: list, items, images, finish, within its budget                     |
+| `liveworkspace/apps/export/src/job/item-files.ts`       | What one queued row adds: an item's files and comments, or one image          |
 | `liveworkspace/apps/export/src/zip/`                    | The zip writer: CRC-32, headers, deflate, the directory, the end record       |
 | `liveworkspace/apps/export/src/upload.ts`               | The R2 multipart upload in fixed parts, and what is left between chunks       |
 | `liveworkspace/apps/export/src/sources.ts`              | The index, the media service and the apps' doors as the job reads them        |

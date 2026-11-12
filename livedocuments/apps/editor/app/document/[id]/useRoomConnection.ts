@@ -34,7 +34,6 @@ import {
   type PresenceCoalescer,
 } from './presence-coalescer';
 import type { RemoteSelection } from '@/lib/presence-rows';
-import { pruneMapToPresent } from './editor-page-helpers';
 import { applyRoomOpToTabs, remoteRoomOp } from './room-op-apply';
 import { keepUnsavedTabChanges } from './meta-keep-local';
 import { migrateRoomOp } from './room-op-migrate';
@@ -45,6 +44,13 @@ import {
   withoutSupersededArticleOps,
   type OwnElementWrites,
 } from './own-element-writes';
+import {
+  forgetDeparted,
+  presenceRows,
+  pruneMapToPresent,
+  seededTabFocus,
+  yieldedColour,
+} from '@liveworkspace/workbench/lib/room-presence';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { shareLinkOpEffect } from '@liveworkspace/workbench/lib/share-link-ops';
 import {
@@ -242,60 +248,17 @@ export function useRoomConnection(opts: {
       // Each peer's server-verified role, read when their drag preview arrives: only an editor's is
       // drawn (docs/specs/008-canvas/drag-preview.md).
       roleByPresenceRef.current = new Map(participants.map((p) => [p.id, p.role] as const));
-      setLivePresence(
-        participants.map((p) => ({
-          id: p.id,
-          // The peer's browser key, claimed in their hello and relayed unchanged: it is what collapses their tabs into
-          // one avatar (lib/presence-rows.ts). `p.id` cannot, as the room mints that per socket.
-          ...(p.key ? { key: p.key } : {}),
-          name: p.name,
-          color: p.color,
-          // Status + lastActiveAt are derived locally rather than
-          // carried on the wire — the server doesn't track idle
-          // time. Seed any peer we haven't seen with `now` so the
-          // hover card reads "Active just now" until their first op
-          // arrives.
-          status: 'online',
-          lastActiveAt: lastSeenRef.current.get(p.id) ?? now,
-          // Role is server-verified (api worker resolved it at WS
-          // upgrade from the share-code / owner-id query params
-          // and stamped it onto the broadcast row). Optional on the
-          // wire so a connection without role info still parses.
-          ...(p.role ? { role: p.role } : {}),
-          // Only ever present when the room judged us an account session
-          // (docs/specs/014-identity/profile-picture.md §2).
-          ...(p.picture ? { picture: p.picture } : {}),
-        })),
-      );
+      setLivePresence(presenceRows(participants, lastSeenRef.current, now));
       // Seed lastSeen for any presence-arrival we haven't tracked yet, publishing it so the next
       // render has their `lastActiveAt`.
       for (const p of participants) {
         if (!lastSeenRef.current.has(p.id)) markSeen(p.id);
       }
-      // Unique-colour reconciliation. Every client computes the
-      // same allocation on every presence update; we only act when
-      // (a) someone else in the room shares our colour and (b) our
-      // participant id sorts later than theirs — that way only the
-      // later-joining peer yields, the earlier one keeps their
-      // colour, and every client converges on the same assignment
-      // without a server-side allocator. Persisting the new colour
-      // via setSelfParticipant flushes through the autosave effect
-      // and the next hello broadcast carries the fixed colour.
-      // selfParticipantRef instead of selfParticipant because this
-      // effect's deps intentionally omit the participant — without
-      // the ref we'd act on a stale snapshot.
-      const live = selfParticipantRef.current;
-      const me = participants.find((p) => p.id === live.id);
-      if (me) {
-        const conflictHolder = participants.find((p) => p.id !== live.id && p.color === live.color);
-        if (conflictHolder && live.id > conflictHolder.id) {
-          const taken = new Set(participants.filter((p) => p.id !== live.id).map((p) => p.color));
-          const fresh = nextFreeColor(taken, undefined);
-          if (fresh !== live.color) {
-            setSelfParticipant((prev) => ({ ...prev, color: fresh }));
-          }
-        }
-      }
+      // Unique-colour reconciliation (yieldedColour): only the later joiner yields. The new colour flushes through
+      // the autosave and the next hello carries it. Read through selfParticipantRef: this handler must not act on a
+      // stale snapshot of the participant.
+      const fresh = yieldedColour(participants, selfParticipantRef.current, nextFreeColor);
+      if (fresh) setSelfParticipant((prev) => ({ ...prev, color: fresh }));
       // Drop selections AND cursors for any participant who's no
       // longer connected. Stops stale presence indicators from
       // sticking after a tab close or network drop.
@@ -304,31 +267,14 @@ export function useRoomConnection(opts: {
       // Collaborators' carets in the writing take their names and colours from here, and go with
       // whoever left (docs/specs/007-editor/article-pages.md "Collaboration").
       syncArticlePeople(participants);
-      // Drop tab-focus entries for people who left so their avatar
-      // dot doesn't linger on a tab they no longer occupy, AND seed
-      // from the presence list: the room echoes each peer's current
-      // tab here, so a late joiner immediately sees where everyone
-      // already is instead of defaulting them to the first tab until
-      // they next switch. Skip self — the remote map never holds it
-      // (the live relay excludes the sender), and our own tab is
-      // tracked from local activeId. A fresh Map guarantees re-render.
+      // Each peer's tab, seeded from the list and without those who left (seededTabFocus).
       const selfId = selfParticipantRef.current.id;
-      setRemoteTabFocus((prev) => {
-        const next = new Map(pruneMapToPresent(prev, present));
-        for (const p of participants) {
-          if (p.tabId && p.id !== selfId) next.set(p.id, p.tabId);
-        }
-        return next;
-      });
+      setRemoteTabFocus((prev) => seededTabFocus(prev, participants, present, selfId));
       syncRemoteBesideTabs(participants, selfId);
       setRemoteSelections((prev) => pruneMapToPresent(prev, present));
       setRemoteCursors((prev) => pruneMapToPresent(prev, present));
-      // Same for the lastSeen idle tracker (a plain ref, not state):
-      // drop departed peers so it can't grow unbounded over a
-      // long-lived room with people joining / leaving via share links.
-      for (const id of [...lastSeenRef.current.keys()]) {
-        if (!present.has(id)) lastSeenRef.current.delete(id);
-      }
+      // Same for the lastSeen idle tracker (a plain ref, not state).
+      forgetDeparted(lastSeenRef.current, present);
     },
   );
 

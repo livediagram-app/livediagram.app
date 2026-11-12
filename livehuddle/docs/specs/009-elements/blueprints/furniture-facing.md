@@ -12,7 +12,7 @@ Scope, by file:
 | `packages/avatar/src/hooks/useAvatarWalk.ts`                                      | `followSeat`: a sitter carried round when the piece turns or moves                            |
 | `packages/document/src/furniture-facing.ts`                                       | `TURNING_SHAPES`, `turnsWithFacing`, `pieceFacing`, `defaultPieceFacing`, `turnPiece(By)`     |
 | `packages/document/src/rotation.ts`                                               | `supportsRotation` is false for every piece of furniture (`isFurnitureShape`)                 |
-| `packages/document/src/svg-render-faces.ts`                                       | The export draws `furnitureFrame(art, pieceFacing(el))`                                       |
+| `packages/document/src/svg-render-office-art.ts`                                  | The export draws `furnitureFrame(art, pieceFacing(el))`                                       |
 | `apps/editor/components/canvas/collab/FurnitureView.tsx`                          | The canvas draws the same frame                                                               |
 | `packages/avatar/src/components/TurnButtons.tsx`                                  | Rotate Left / Right                                                                           |
 | `apps/editor/components/canvas/SelectionPopover.tsx`, `MultiSelectionToolbar.tsx` | The pair after More and Edit Text, before Duplicate                                           |

@@ -4,7 +4,11 @@ import { cutAtNotches } from './chords';
 import { cutAtSeam, type Luminance } from './seam';
 import { cutNarrowRun, isNarrowNote } from './narrow';
 import type { NoteSizeField } from './size-field';
-import { median } from './stats';
+import { MERGE_GAP_FRACTION, mergeFragments, partsOf } from './merge';
+import { medianNoteSize } from './note-size';
+
+export { mergeFragments } from './merge';
+export { estimateNoteSize, estimateNoteSizes, isPlausibleNote } from './note-size';
 
 // From blobs to stickies (docs/specs/021-event-storming/event-storming.md Phase 8).
 //
@@ -36,29 +40,9 @@ export type Box = {
 // the raw median it is wrong too, because a thousand ink fragments are the
 // median. Merge first, then measure, then filter.
 const MIN_AREA_FRACTION = 0.35;
-// Two same-colour boxes this close (relative to the note size) are one note
-// the handwriting split in half.
-const MERGE_GAP_FRACTION = 0.12;
-// …and only while the result still looks like paper. The merge is
-// TRANSITIVE — each union grows the box, which brings the next fragment
-// within reach — so on a real wall a sprinkling of stray paper-coloured
-// pixels chains every note in the frame into one blob (measured: 856×497 at
-// fill 0.20, holding a dozen real notes, thrown away whole by the shape
-// filters). A note's own fragments all live inside the note, so merging them
-// keeps the box dense; two specks a hand's width apart do not. Too low and
-// the chain comes back; too high and a note shattered by heavy handwriting is
-// left in pieces.
-const MERGE_MIN_FILL = 0.55;
-// How far apart two pieces may be when the merge would leave them nearly
-// solid, and how solid that has to be. See `mergeFragments`.
-const MERGE_REACH_FRACTION = 0.3;
-const MERGE_REACH_MIN_FILL = 0.7;
 // A pen stroke, as a fraction of the working image's long side. This is what
 // separates one fragment of a note from the next.
 const PEN_STROKE_FRACTION = 0.006;
-// Enough for a note shattered into a long chain of fragments; the loop exits
-// as soon as a pass changes nothing.
-const MAX_MERGE_PASSES = 12;
 // Anything thinner than this, in either direction, is noise rather than paper.
 // Sensor noise, as a fraction of the working image's long edge: a property of
 // the camera rather than of the wall. detectStickies (and the scripts that
@@ -111,163 +95,6 @@ export function boxOf(c: Component): Box {
   };
 }
 
-// The note size this photo is working at: the median blob's SHORT side.
-//
-// The short side, not the long one, and not the area: a sticky lapped over
-// another is twice as long as it should be but exactly as tall, and two notes
-// side by side are one blob whose height is still one note. The short side is
-// the dimension overlap does not inflate.
-function medianNoteSize(boxes: Box[]): number {
-  return median(boxes.map((b) => Math.min(b.w, b.h)));
-}
-
-// How solid, and how square, a blob has to be before it is allowed to have an
-// opinion about how big a note is on this wall. A note is a filled rectangle;
-// a strip of masking tape, a shadow line along a seam and the web left by a
-// patch of sunlit kraft are none of those, and they outnumber the notes.
-const SIZE_SAMPLE_MIN_FILL = 0.5;
-const SIZE_SAMPLE_MAX_ASPECT = 2.4;
-// Below this many note-shaped blobs there is no population to take a median
-// of, only a coincidence.
-const MIN_SIZE_SAMPLE = 3;
-// …and before ONE COLOUR gets a size of its own, eight of them. A scarce
-// colour on a wall is as likely to be junk as notes — pale masking tape reads
-// as a yellow note, a cardboard corner as an orange one — and measured from
-// three or four of those scraps it came out a third of a real note, which let
-// every scrap of its colour through. Measured on the hand-labelled walls: the
-// colours that were really a smaller pad had 21 whole notes behind them; the
-// ones that were tape had 3 to 7. Any value from 8 to 20 scores the same on
-// all eight walls; 10 sits in that plateau rather than on its edge.
-const MIN_CLASS_SIZE_SAMPLE = 10;
-
-// The note size, measured BEFORE anything is fused.
-//
-// This is the number every threshold below divides by, and it was being taken
-// after the morphological close — which is exactly where it cannot be trusted,
-// because a close that welds four notes into a bar has already destroyed the
-// population it would be measured from. Measured here instead, on the raw
-// blobs, with the obvious non-notes dropped first: on the operator's six walls
-// that lands within a few pixels of the hand-labelled median (50 vs 52, 49 vs
-// 55, 36 vs 38), where the old number was less than half of it (24 vs 55) and
-// every rule that divides by it — the close radius, the split, the too-big
-// filter — was wrong by the same factor.
-// A raw blob that could be a whole note: bigger than noise, not a strip, and
-// mostly paper. What the note size is measured from.
-export function isPlausibleNote(b: Box, noiseFloor: number): boolean {
-  const short = Math.max(1, Math.min(b.w, b.h));
-  if (short < noiseFloor) return false;
-  if (Math.max(b.w, b.h) / short > SIZE_SAMPLE_MAX_ASPECT) return false;
-  return fillRatio(b) >= SIZE_SAMPLE_MIN_FILL;
-}
-
-export function estimateNoteSize(boxes: Box[], noiseFloor: number): number {
-  const plausible = boxes.filter((b) => isPlausibleNote(b, noiseFloor));
-  // Nothing on this wall looks like a whole note — every blob is a strip of a
-  // note the handwriting cut up, or a scrap. Say so (0) rather than answer
-  // with the median of the scraps: the caller then falls back to what it can
-  // know without the wall, which is the frame's own pen stroke.
-  if (plausible.length < MIN_SIZE_SAMPLE) return 0;
-  return medianNoteSize(plausible);
-}
-
-// The note size of each paper colour, measured the same way as the wall's
-// (see `estimateNoteSize`), for every colour with enough whole notes to
-// measure. Colours too scarce to measure are absent: the wall's size stands.
-export function estimateNoteSizes(
-  boxes: Box[],
-  noiseFloor: number,
-  minSample = MIN_CLASS_SIZE_SAMPLE,
-): Map<number, number> {
-  const byClass = new Map<number, Box[]>();
-  for (const b of boxes) byClass.set(b.classId, [...(byClass.get(b.classId) ?? []), b]);
-  const sizes = new Map<number, number>();
-  for (const [classId, group] of byClass) {
-    const plausible = group.filter((g) => isPlausibleNote(g, noiseFloor));
-    if (plausible.length < minSample) continue;
-    sizes.set(classId, medianNoteSize(plausible));
-  }
-  return sizes;
-}
-
-function gapBetween(a: Box, b: Box): number {
-  const dx = Math.max(0, Math.max(a.x, b.x) - Math.min(a.x + a.w, b.x + b.w));
-  const dy = Math.max(0, Math.max(a.y, b.y) - Math.min(a.y + a.h, b.y + b.h));
-  return Math.hypot(dx, dy);
-}
-
-function partsOf(box: Box): Box[] {
-  return box.parts ?? [box];
-}
-
-function union(a: Box, b: Box): Box {
-  const x = Math.min(a.x, b.x);
-  const y = Math.min(a.y, b.y);
-  return {
-    classId: a.classId,
-    x,
-    y,
-    w: Math.max(a.x + a.w, b.x + b.w) - x,
-    h: Math.max(a.y + a.h, b.y + b.h) - y,
-    pixels: a.pixels + b.pixels,
-    parts: [...partsOf(a), ...partsOf(b)],
-  };
-}
-
-// A piece at least this thick (in notes) is a WHOLE note already, not a
-// fragment of one: two such pieces are never merged. A line of handwriting or
-// a shadow cuts a note into pieces thinner than half a note, while two narrow
-// actors or two notes a pen stroke apart are each thicker, and their union is
-// a solid rectangle the fill test happily accepts. Measured on the eight
-// labelled walls, of 62 unions of several pieces 25 joined two labelled notes;
-// any value from 0.4 to 0.5 scores the same (0.55 lets one pair back in).
-const WHOLE_NOTE_SIDE = 0.45;
-
-function isWholeNote(b: Box, noteSize: number): boolean {
-  return Math.min(b.w, b.h) >= noteSize * WHOLE_NOTE_SIDE;
-}
-
-// Merge same-colour boxes that are touching or nearly so: one sticky with a
-// word written across it arrives as two or three blobs of paper.
-export function mergeFragments(boxes: Box[], noteSize: number): Box[] {
-  const gap = noteSize * MERGE_GAP_FRACTION;
-  // A merge that would turn two pieces of paper into a mostly-empty rectangle
-  // is not a note being reassembled; it is two different notes, or two specks.
-  // …and a SECOND reach, further out, for a merge that comes back nearly
-  // solid. A shadow edge crossing a note leaves two pieces a quarter of a note
-  // apart with nothing but wall-coloured paper between them, which no
-  // pen-stroke reach will ever join; two scraps of junk that far apart
-  // practically never make a solid rectangle together.
-  const reach = noteSize * MERGE_REACH_FRACTION;
-  const joins = (a: Box, b: Box) => {
-    if (a.classId !== b.classId) return false;
-    if (isWholeNote(a, noteSize) && isWholeNote(b, noteSize)) return false;
-    const between = gapBetween(a, b);
-    if (between > reach) return false;
-    const fill = fillRatio(union(a, b));
-    return between <= gap ? fill >= MERGE_MIN_FILL : fill >= MERGE_REACH_MIN_FILL;
-  };
-  let out: Box[] = boxes.map((b) => ({ ...b }));
-  // To a FIXED POINT, not one pass. Merging a fragment into a box grows that
-  // box, which brings the next fragment within reach — one pass leaves a note
-  // as three boxes and the note size as a fragment's, which poisons every
-  // threshold downstream. Bounded by the fact that each pass strictly reduces
-  // the count.
-  for (let pass = 0; pass < MAX_MERGE_PASSES; pass += 1) {
-    const next: Box[] = [];
-    for (const box of out) {
-      const hit = next.findIndex((o) => joins(o, box));
-      if (hit === -1) next.push({ ...box });
-      else next[hit] = union(next[hit]!, box);
-    }
-    if (next.length === out.length) return next;
-    out = next;
-  }
-  return out;
-}
-
-// How deep the rescue erodes, as a fraction of the note size, before counting
-// the pieces of a block that no geometric rule could take apart. Deep enough
-// to break the seam between two lapped notes, shallow enough that a note is
 // still most of itself afterwards.
 const RESCUE_ERODE_FRACTION = 0.12;
 // How many times the rescue may go deeper on a piece that still has not come

@@ -28,14 +28,12 @@ import { useArrowFinish } from './arrow-finish';
 import { BRAND_600 } from '@liveworkspace/workbench/components/canvas/arrow-handle-style';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { pressLedger } from '@liveworkspace/workbench/lib/double-press';
-
-// The mask region + backdrop for route-behind (docs/specs/008-canvas/arrow-route-behind.md) and label
-// knockouts (docs/specs/008-canvas/arrow-labels.md). Deliberately vast
-// rather than fitted to the arrow: a curve can bow well outside its chord,
-// and a region that ends where the geometry does clips the drawing instead
-// of the boxes.
-const MASK_SPAN = { origin: -100000, size: 200000 } as const;
+import {
+  arrowBehindMask,
+  arrowEndMarkers,
+  arrowFlowStyle,
+  arrowPressGuards,
+} from '@liveworkspace/workbench/components/canvas/arrow-view-parts';
 
 type ArrowViewProps = {
   arrow: ArrowElement;
@@ -241,38 +239,12 @@ function ArrowViewImpl({
   // Every press on this arrow (line, label, handles, move frame) passes the
   // double-press rule (docs/specs/008-canvas/arrow-bending.md): a press that pairs with the one
   // before never drags, and opens the label editor instead.
-  const pairsWithLast = (e: ReactPointerEvent): boolean =>
-    pressLedger.press({
-      id: arrow.id,
-      t: e.timeStamp,
-      x: e.clientX,
-      y: e.clientY,
-      wasSelected: isSelected,
-    }).pairs;
-  // Opened on the RELEASE of the second press, not its pointerdown: the
-  // browser moves focus as that press's default action, which would blur (and
-  // so commit) an editor opened a moment earlier.
-  const openEditor = () => {
-    if (isLocked) return;
-    const done = () => {
-      window.removeEventListener('pointerup', onUp);
-      window.removeEventListener('pointercancel', done);
-    };
-    // A cancelled press (a pinch, a lost pointer) opens nothing.
-    const onUp = () => {
-      done();
-      onBeginEdit(arrow.id);
-    };
-    window.addEventListener('pointerup', onUp);
-    window.addEventListener('pointercancel', done);
-  };
-  // For presses that do not select (label, handles, frame): true when it was
-  // the second of a double, which then opens the editor.
-  const guardPress = (e: ReactPointerEvent): boolean => {
-    if (!pairsWithLast(e)) return false;
-    openEditor();
-    return true;
-  };
+  const { pairsWithLast, openEditor, guardPress } = arrowPressGuards({
+    id: arrow.id,
+    isSelected,
+    blocked: isLocked,
+    onBeginEdit,
+  });
   const opacity = arrow.opacity ?? 1;
 
   // The shared marker def uses `fill="context-stroke"` which resolves to
@@ -296,46 +268,7 @@ function ArrowViewImpl({
           color={ownHeadColor}
         />
       ) : null}
-      {behindMaskId ? (
-        // White paints, black cuts. The backdrop is deliberately vast
-        // rather than the arrow's bbox: a curve can bow well outside the
-        // chord, and a mask that ends where the chord does would clip the
-        // bow instead of the boxes.
-        <mask
-          id={behindMaskId}
-          maskUnits="userSpaceOnUse"
-          // The mask REGION, stated explicitly. Without x/y/width/height a
-          // mask defaults to -10%/120% of the referencing element's bounding
-          // box, and anything outside that region is masked away. A straight
-          // horizontal (or vertical) arrow has a zero-height bbox, so the
-          // default region collapsed to a hairline and swallowed the
-          // arrowhead — which sticks out above and below the line — along
-          // with part of the stroke. Same vast box as the backdrop below.
-          x={MASK_SPAN.origin}
-          y={MASK_SPAN.origin}
-          width={MASK_SPAN.size}
-          height={MASK_SPAN.size}
-        >
-          <rect
-            x={MASK_SPAN.origin}
-            y={MASK_SPAN.origin}
-            width={MASK_SPAN.size}
-            height={MASK_SPAN.size}
-            fill="white"
-          />
-          {maskHoles.map((h, i) => (
-            <rect
-              key={i}
-              x={h.x}
-              y={h.y}
-              width={h.width}
-              height={h.height}
-              fill="black"
-              rx={h.rx}
-            />
-          ))}
-        </mask>
-      ) : null}
+      {behindMaskId ? arrowBehindMask(behindMaskId, maskHoles) : null}
       {isSelected ? (
         <path
           d={pathD}
@@ -378,32 +311,15 @@ function ArrowViewImpl({
         }
         // A shared end's pattern anchored there (arrow-dash.ts); a flowing arrow marches its own.
         strokeDashoffset={flowPathDash ? undefined : dashOffset}
-        markerStart={
-          arrow.arrowEnds === 'from' || arrow.arrowEnds === 'both' ? startMarker : undefined
-        }
-        markerEnd={
-          arrow.arrowEnds === 'to' || arrow.arrowEnds === 'both' || arrow.arrowEnds === undefined
-            ? headMarker
-            : undefined
-        }
-        style={{
-          pointerEvents: 'none',
-          // Flow speed scales each path animation's duration; phase-sync
-          // across arrows is pinned via the Web Animations API in the effect
-          // below, not animation-delay. The width-breathing flows (grow /
-          // heartbeat / breathe) need the base stroke width to swell relative
-          // to it; the halo flows (glow / shimmer) need the stroke colour to
-          // tint it.
-          ...(flowPathClass ? { '--lvd-flow-speed': flowFactor } : {}),
-          ...(arrow.flow === 'grow' || arrow.flow === 'heartbeat' || arrow.flow === 'breathe'
-            ? { '--lvd-flow-w': `${strokeWidth}px` }
-            : {}),
-          ...(arrow.flow === 'glow' || arrow.flow === 'shimmer'
-            ? { '--lvd-flow-color': baseStroke }
-            : {}),
-          // Repeat off = the flow plays once and holds (docs/specs/008-canvas/canvas-and-palette.md).
-          ...(arrow.flowRepeat === false ? { '--lvd-flow-iter': 1 } : {}),
-        }}
+        {...arrowEndMarkers(arrow.arrowEnds, startMarker, headMarker)}
+        style={arrowFlowStyle({
+          flow: arrow.flow,
+          flowRepeat: arrow.flowRepeat,
+          flowPathClass,
+          flowFactor,
+          strokeWidth,
+          baseStroke,
+        })}
       />
       {sketch?.lineOver ? (
         // Marker's second layer of strokes, crossing the first at every bend (marker.ts).

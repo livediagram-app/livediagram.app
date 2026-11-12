@@ -171,7 +171,7 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Realtime        | `apps/editor/app/project/[id]/useRoomConnection.ts`, `room-op-migrate.ts` | `migrateRoomOp` on receipt                                                          |
 | Clipboard       | `apps/editor/lib/clipboard-payload.ts`                                    | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
 | Tab file import | `apps/editor/lib/import-tab.ts`, `export-tab-text.ts`                     | migrate; `TAB_SCHEMA_VERSION` 2                                                     |
-| Api writes      | `apps/api/src/routes/projects.ts`, `project-subresource-routes.ts`        | `migrateStoredTab` before `isValidTab`                                              |
+| Api writes      | `apps/api/src/routes/project-create.ts`, `project-subresource-routes.ts`  | `migrateStoredTab` before `isValidTab`                                              |
 | Api reads       | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                 | unchanged (already migrate)                                                         |
 | Offline store   | `apps/editor/lib/offline/offline-store.ts`                                | unchanged (already migrates)                                                        |
 | MCP server      | `packages/project/src/element-normalise.ts`, `tools.ts`                   | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |

@@ -102,8 +102,8 @@ Never throws. No pages → `gone`; `DrawRefused` (a canvas read refused or a nul
 
 ## Interfaces and contracts
 
-- `ExportTabDialog` takes `deck?: Deck`, passed from `EditorTabDialogs` as `slideDeck?.deck`. Its `Format` gains
-  `'pptx' | 'docx'`; `PAGES_FORMATS` lists them after `gif`, filtered by `officeFormatFor(pages)`. The dialog loads
+- `ExportTabDialog` takes `deck?: Deck`, passed from `EditorTabDialogs` as `slideDeck?.deck`. Its `Format`
+  (`export-formats.ts`) gains `'pptx' | 'docx'`; `PAGES_FORMATS` lists them after `gif`, filtered by `officeFormatFor(pages)`. The dialog loads
   the images for the PowerPoint and Word cards as for the image formats and hands them to the panel
   (`render`), with the first page's preview SVG.
 - `renderTabToCanvas(tab, { only, crop })`: with `only`, only those elements are drawn and the page's paper,

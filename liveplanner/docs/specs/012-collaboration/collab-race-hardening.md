@@ -255,7 +255,8 @@ So the set-up moves the way the other multi-writer fields do:
   the set-up (`elementChangeIsDeltaOnly`). An agent's changeset is the exception: it is a writer
   with no deltas, so its copy of the set-up is taken.
 - **The ledger records it.** For each board, the latest value of every top-level field and every
-  column field, each column added or removed, and the latest order, each with the seq that set it.
+  column field, each column added or removed, and the latest order, each with the seq that set it
+  (`packages/project/src/collab-ledger-board.ts`).
   A save merges in only the entries the saver had not seen ([The store keeps multi-writer fields](#the-store-keeps-multi-writer-fields)), so the store keeps both renames.
 
 Residual, stated plainly: two people changing the SAME field of the same column (both renaming To

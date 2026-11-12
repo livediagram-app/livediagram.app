@@ -306,7 +306,12 @@ tests where it's cheap.
 - `apps/live/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
   shared flows (`openStartBlank`, `startBlankDesign`, `openBlankPage`, `onPage`, `seedTab`, `dismissQuickTour`).
 - `apps/live/e2e/fixtures/`: `audit-screens.ts` and `contrast.ts`: the screens and measurements the dark-mode audits share.
-- `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, marketing, liveworkspace's Explorer).
+- `scripts/e2e-stack.mjs`: this product's settings for the stack (its ports, canvas route, accounts client and
+  the api's own vars); the root's `scripts/e2e-stack/stack.mjs` boots it and serves the static sites (live, help, marketing, liveworkspace's Explorer).
+- The root's `scripts/e2e-stack/` (shared with the other product stacks): `stack.mjs` (the boot and the static
+  server), `accounts-stand-in.mjs` (here without records: API tokens and profiles only), `processes.mjs`,
+  `proxies.mjs` (the router's forwards and the WebSocket upgrade) and `static-serving.mjs` (caching, the Trusted Types
+  header, the 404 page, the simulated deploy).
 - The root `.github/workflows/e2e.yml` and `e2e-product.yml`: the sharded workflow, run on every pull request;
   the root `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).
 - `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:signed-in` scripts in `apps/live/package.json`; `build:signed-in`

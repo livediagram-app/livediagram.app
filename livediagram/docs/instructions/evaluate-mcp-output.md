@@ -13,6 +13,8 @@ The kit lives in `apps/mcp/eval/`:
   (an edit, run as a second turn of the same session), an optional `setup` (what the prompt takes for granted,
   made in the run's empty library) and an optional `gallery` (pictures from `bench/fixtures/` the user has uploaded,
   seeded into the run's image gallery before the round starts, under the names the prompt's user would have). Ids are stable: rounds compare on the ids they share.
+  The `D` diagrams, all but the Event Storming board (D12), are the bank livediagram and liveplanner share
+  (`packages/mcp-kit/eval/diagram-tasks.mjs`), judged with this product's own `checks.mjs`.
 - `apps/mcp/eval/bench/checks.mjs`: the readers checks are written with (boxes, arrows, shapes, words, links,
   the reply), each answering yes or no, with a reason on a no.
 - `apps/mcp/eval/bench/run.mjs`: runs a round. `apps/mcp/eval/bench/score.mjs`: scores one, offline. `packages/mcp-kit/eval/summary.mjs` (shared): the report.

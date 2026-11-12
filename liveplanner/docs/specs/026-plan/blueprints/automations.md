@@ -25,6 +25,9 @@ packages/items/src/automation/
   types.ts            the shapes and limits (written first; the contract both sides build on)
   validate.ts         readRuleBody(v) → { body } | { error, path, message }: every limit, every kind, values known;
                       ruleNameTaken / freeRuleName for names (what the plan lacks is attention.ts's, never a refusal)
+  validate-read.ts    the reading primitives (id, ids, text, day, clock, whole) and the Refused they throw
+  validate-conditions.ts
+                      readTrigger / readConditions: a rule's trigger and its conditions, read the same way
   outline.ts          AutomationOutline { types, statuses, people, savedFilters, formTabs }: the plan as rules read it
   attention.ts        ruleNeeds(rule, outline) → string[]: what a rule names that the plan lacks
   values.ts           VALUE_NAMES, valuesIn(text), fillValues(text, ctx) and the {{now ± Nd}} day maths, in the

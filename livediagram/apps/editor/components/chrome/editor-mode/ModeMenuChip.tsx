@@ -7,6 +7,7 @@ import {
   EDITOR_MODE_ICONS,
 } from '@livediagram/ui';
 import { TOOLBAR_TRIGGER_TONE } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
+import { cssZoomOf } from '@liveworkspace/workbench/lib/ui-scale';
 import {
   EDITOR_MODE_KEYSHORTCUT,
   MODE_SWITCH_FOCUS,
@@ -118,8 +119,8 @@ export function ModeMenuChip({
 // The effective CSS zoom an element draws at (its own and its ancestors'): `currentCSSZoom` where
 // the browser has it, else its screen width over its layout width. 1 when it cannot be read.
 function effectiveZoom(el: HTMLElement): number {
-  const current = (el as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom;
-  if (typeof current === 'number' && current > 0) return current;
+  const current = cssZoomOf(el);
+  if (current !== null) return current;
   const width = el.offsetWidth;
   const zoom = width > 0 ? el.getBoundingClientRect().width / width : 1;
   return Number.isFinite(zoom) && zoom > 0 ? zoom : 1;

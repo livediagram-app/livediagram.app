@@ -63,6 +63,8 @@ export type PlanRoomClient = {
   // whether it serves one now (to a tab-scoped reader, `tabScope`, only through a card its tab shows).
   grantImage(imageId: string): Promise<void>;
   servesImage(imageId: string, tabScope: string | null): Promise<boolean>;
+  // Which of these pictures the plan holds a grant for: the ones an agent may place on its cards.
+  grantedImages(imageIds: readonly string[]): Promise<string[]>;
   // A copy's two halves (plan-content.ts): the source as `copier` may take it (anyone but the owner takes the
   // comments without other people's author ids), and whether it went through the plan's open Community post's link.
   exportCopy(onlyTabId: string | null, copier: Copier | null): Promise<CopySource | null>;
@@ -118,6 +120,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     item: (itemId) => room.item(planId, itemId),
     grantImage: (imageId) => room.grantImage(planId, imageId),
     servesImage: (imageId, tabScope) => room.servesImage(planId, imageId, tabScope),
+    grantedImages: (imageIds) => room.grantedImages(planId, imageIds),
     exportCopy: (onlyTabId, copier) => room.exportCopy(planId, onlyTabId, copier),
     importCopy: (copy) => room.importCopy(planId, copy),
     importMigrated: (payload) => room.importMigrated(planId, payload),
@@ -152,6 +155,7 @@ export type PlanRoomRpc = {
   item(planId: string, itemId: string): Promise<Item | null>;
   grantImage(planId: string, imageId: string): Promise<void>;
   servesImage(planId: string, imageId: string, tabScope: string | null): Promise<boolean>;
+  grantedImages(planId: string, imageIds: readonly string[]): Promise<string[]>;
   exportCopy(
     planId: string,
     onlyTabId: string | null,

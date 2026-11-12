@@ -3,7 +3,7 @@
 // A share drawn as a bar (docs/specs/026-plan/item-types.md "Percent"): one drawing for every place a Percent field,
 // or a worked-out share shown as one (a Children Done; formulas and rollups after), appears. `PercentBar` is the track
 // and its fill; `PercentChip` the card face's pill (the bar and "40%", in the board's palette, as exports draw it:
-// svg-render-plan-card.ts); `PercentReading` the panel's read-only bar and number (a Viewer's Percent, a Calculated
+// svg-render-plan-card-bits.ts); `PercentReading` the panel's read-only bar and number (a Viewer's Percent, a Calculated
 // field shown as a Percent).
 import { PLAN_PERCENT_BAR, planPercentInks } from '@liveplanner/project';
 import { percentText } from '@liveplanner/items';

@@ -10,7 +10,7 @@ Scope, by file:
 | File                                                                    | Role                                                                                                                              |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/document/src/element-types.ts`                                | `PathElement`, `PathNode`, `PathHandleMode`, `PathPoint`                                                                          |
-| `packages/document/src/index.ts`                                        | `PathElement` joins `BoxedElement`; re-exports                                                                                    |
+| `packages/document/src/element-union.ts`                                | `PathElement` joins `BoxedElement`, re-exported from `index.ts`                                                                   |
 | `../packages/element-model/src/path-geometry.ts`                        | Pure curve maths: segments, `d`, bounds, split, bend, smooth, nearest                                                             |
 | `packages/document/src/path-element.ts`                                 | Element ⇄ anchors: `pathAnchors`, `pathWorldAnchors`, `pathGeometry`, `createPath`, `reshapePath`, `continuedPath`, `reversePath` |
 | `packages/document/src/validate.ts`                                     | `'path'` in `ELEMENT_TYPES`; node, handle, mode and count checks                                                                  |

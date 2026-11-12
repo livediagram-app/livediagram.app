@@ -113,6 +113,13 @@ elements' layer instead.
 - **The offset goes as it does today**: dropped on release in the same paint as the elements drawn
   at their new place, and on a cancel before the next paint.
 - **Below that size each element rides its own offset**, as above: few nodes are written anyway.
+- **An element's isometric side faces ride with it.** Under the isometric view each raised element's
+  column of side faces ([Isometric view](isometric-view.md)) is another node of that element, so a
+  move's offset shifts it with the element's top: a collaborator viewing in Isometric sees tops and
+  side faces move together mid-drag, never apart until the release. The columns sit in a layer of
+  their own that carries a very large move's offset as one transform, as the element layer does, so
+  a whole-board drag restyles that layer, not every column. A column is drawn as stored, so a
+  peer's live resize grows its side faces on release, not frame by frame.
 
 ## Live movement for collaborators
 

@@ -10,7 +10,7 @@ Scope, by file:
 | File                                                       | Role                                                                |
 | ---------------------------------------------------------- | ------------------------------------------------------------------- |
 | `packages/project/src/element-types.ts`                    | `AnnotationElement`                                                 |
-| `packages/project/src/index.ts`                            | `isBoxed` and the `BoxedElement` union include `'annotation'`       |
+| `packages/project/src/element-union.ts`                    | `isBoxed` and the `BoxedElement` union include `'annotation'`       |
 | `packages/project/src/factories.ts`                        | `createAnnotation`, `ANNOTATION_SIZE`                               |
 | `packages/project/src/colors.ts`                           | Per-type colour and padding defaults; `DARK_INK`; `supportsColours` |
 | `packages/project/src/themes.ts`                           | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                     |

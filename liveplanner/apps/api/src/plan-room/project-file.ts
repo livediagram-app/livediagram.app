@@ -137,7 +137,7 @@ const ROW_FIELDS = ['projectId', 'orderIndex', 'updatedAt', 'rev', 'folder', 'co
 const MAX_ID = 200;
 const NOBODY = { id: '', name: 'Someone', color: '#94a3b8' };
 
-// SQLite's length() of stored text: characters, not UTF-16 units (db/sheets.ts recountStatement).
+// SQLite's length() of stored text: characters, not UTF-16 units (db/sheet-writes.ts recountStatement).
 const sqlLength = (text: string | null) => (text === null ? 0 : [...text].length);
 
 function tabsOf(tabs: EnvelopeTab[], tabIdMap: Map<string, string>): PlanCopy['tabs'] | Failure {

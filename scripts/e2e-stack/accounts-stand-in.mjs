@@ -1,15 +1,24 @@
-// The e2e stacks' accounts stand-in (livediagram's and livehuddle's scripts/e2e-stack.mjs, their
+// The e2e stacks' accounts stand-in (every product's scripts/e2e-stack.mjs, through ./stack.mjs, and their
 // docs/specs/003-system-architecture/e2e-smoke.md): the stack acts as the liveworkspace accounts Worker, its key made
-// at boot, its JWKS, the guest handoff, minted access and guest tokens, and the account API the api calls with its
-// client credentials, all from its own records. Test-only: nothing outside the stack trusts the key or the records.
-// Dependency-free (node builtins), as the stacks are.
+// at boot, its JWKS, the guest handoff, minted access and guest tokens, the API tokens and profiles
+// (packages/auth-client e2e-token-stand-in.ts) and, where a product's specs seed them (`records`), the rest of the
+// account API the api calls with its client credentials, all from its own records. Test-only: nothing outside the
+// stack trusts the key or the records. Dependency-free (node builtins), as the stacks are.
 
 import { generateKeyPairSync, randomUUID, sign, verify } from 'node:crypto';
 import { createTokenStandIn } from '../../packages/auth-client/src/e2e-token-stand-in.ts';
 
 // `editorPort` is the live origin's port, `apiResource` the api's audience, `clientId` the api's accounts client,
-// and `mergeKey` what the index's teams call carries.
-export function createAccountsStandIn({ editorPort, apiResource, clientId, mergeKey }) {
+// and `mergeKey` what the index's teams call carries. `records: false` keeps no teams, settings or sightings: the
+// account API answers API tokens and profiles only, and tokens carry no teams claim (livedesign, livedocuments,
+// liveplanner, whose specs seed none).
+export function createAccountsStandIn({
+  editorPort,
+  apiResource,
+  clientId,
+  mergeKey,
+  records = true,
+}) {
   const EDITOR_PORT = editorPort;
   const API_RESOURCE = apiResource;
   const MERGE_KEY = mergeKey;
@@ -90,7 +99,9 @@ export function createAccountsStandIn({ editorPort, apiResource, clientId, merge
 
   // The account's API tokens, with each token's teams claim (packages/auth-client e2e-token-stand-in.ts, shared with
   // the other apps' stacks).
-  const accountTokens = createTokenStandIn(ACCOUNTS_PATH, teamsClaim);
+  const accountTokens = records
+    ? createTokenStandIn(ACCOUNTS_PATH, teamsClaim)
+    : createTokenStandIn(ACCOUNTS_PATH);
 
   // The claims of an access token this stack minted and that hasn't expired, or null.
   function accessTokenClaims(jwt) {
@@ -248,7 +259,7 @@ export function createAccountsStandIn({ editorPort, apiResource, clientId, merge
         nbf: now - 5,
         exp: now + 3600,
         ...(email ? { email, email_verified: true } : {}),
-        teams: teamsClaim(sub),
+        ...(records ? { teams: teamsClaim(sub) } : {}),
       }),
     );
     const signature = sign('sha256', Buffer.from(`${header}.${payload}`), accountsKey.privateKey);
@@ -279,7 +290,9 @@ export function createAccountsStandIn({ editorPort, apiResource, clientId, merge
   function serveAccountsStandIn(req, pathname, url, res) {
     const internal = `${ACCOUNTS_PATH}/api/account/internal`;
     const seed = `${ACCOUNTS_PATH}/__seed/`;
-    if (pathname.startsWith(internal) || pathname.startsWith(seed)) {
+    // Without records, only the shared API tokens and profiles answer the account API (and seed a token).
+    if (!records && accountTokens.serve(req, res, pathname)) return true;
+    if (records && (pathname.startsWith(internal) || pathname.startsWith(seed))) {
       const answer = pathname.startsWith(internal)
         ? answerAccountApi(req, pathname.slice(internal.length), url, res)
         : answerSeed(req, pathname.slice(seed.length), res);
@@ -291,7 +304,11 @@ export function createAccountsStandIn({ editorPort, apiResource, clientId, merge
     }
     // The index asking for a person's teams as they are now (liveworkspace/apps/index/src/fresh-teams.ts): a team
     // made or joined after their access token was minted is usable at once, as in production.
-    if (pathname === `${ACCOUNTS_PATH}/api/account/index/teams` && req.method === 'POST') {
+    if (
+      records &&
+      pathname === `${ACCOUNTS_PATH}/api/account/index/teams` &&
+      req.method === 'POST'
+    ) {
       if (req.headers.authorization !== `Bearer ${MERGE_KEY}`) {
         sendJson(res, 401, { error: 'unauthorized' });
         return true;

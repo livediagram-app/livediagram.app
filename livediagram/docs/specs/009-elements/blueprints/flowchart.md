@@ -8,10 +8,12 @@ Scope, by file:
 
 | File                                                         | Role                                                                                                                           |
 | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/document/src/flowchart.ts`                         | Step types, sizes, membership, edges, anchor, lanes, direction, `decisionExitLabel`, `createFlowchartStart`                    |
-| `packages/document/src/flowchart-layout.ts`                  | `layoutFlowchart`, `applyFlowchartLayout`: the unlaned and laned layouts                                                       |
-| `packages/document/src/flowchart-spread.ts`                  | `spreadDecisionExits`, `FLOWCHART_CORNER_CLEARANCE`: a Decision's steps beyond its corners                                     |
-| `packages/document/src/flowchart-grow.ts`                    | `planFlowchartStep`, `retypeFlowchartStep`, `setFlowchartDirection`, `addFlowchartLane`, `moveStepToLane`, `relayoutFlowchart` |
+| `../packages/element-model/src/flowchart.ts`                 | Step types, sizes, membership, edges, anchor, lanes, direction, `decisionExitLabel`, `createFlowchartStart`                    |
+| `../packages/element-model/src/flowchart-layout.ts`          | `layoutFlowchart`, `applyFlowchartLayout`: the unlaned and laned layouts                                                       |
+| `../packages/element-model/src/flowchart-spread.ts`          | `spreadDecisionExits`, `FLOWCHART_CORNER_CLEARANCE`: a Decision's steps beyond its corners                                     |
+| `../packages/element-model/src/flowchart-grow.ts`            | `planFlowchartStep`, `retypeFlowchartStep`, `setFlowchartDirection`, `addFlowchartLane`, `moveStepToLane`, `relayoutFlowchart` |
+| `../packages/element-model/src/flowchart-settle.ts`          | `settleFlowcharts`: a chart laid out again after any structural change                                                         |
+| `packages/document/src/flowchart.ts`, `flowchart-grow.ts`    | The bindings: the step and lane factories bound to this model's `createShape`                                                  |
 | `packages/document/src/auto-layout.ts`                       | `autoLayoutElements` takes `fixedSizeIds` (the layered positioning with sizes kept); exports `layerComponent`                  |
 | `packages/document/src/element-types.ts`                     | `flowchartId`, `flowDirection`, `flowLaneId` on `ShapeElement`                                                                 |
 | `packages/document/src/element-fields.ts`                    | The three fields in the shape's field list                                                                                     |
@@ -228,8 +230,9 @@ each structural change, never per frame. Budget: a 200-step, 260-connector chart
 
 ## Testing
 
-Each rule above maps to a test in `flowchart.test.ts`, `flowchart-layout.test.ts`,
-`flowchart-grow.test.ts`, the hook's test, and the templates' tests.
+Each rule above maps to a test in `../packages/element-model/src/flowchart.test.ts`,
+`flowchart-spread.test.ts` and `flowchart-settle.test.ts` beside it, `packages/document/src/flowchart.test.ts` (this
+model's step factories, kind labels and copies), the hook's test, and the templates' tests.
 
 ## Constants and configuration
 

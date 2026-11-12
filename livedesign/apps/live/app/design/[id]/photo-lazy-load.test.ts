@@ -23,6 +23,7 @@ describe('a photo page’s code', () => {
       'components/canvas/CanvasChrome.tsx',
       'components/dialogs/ExportTabDialog.tsx',
       'components/canvas/CanvasPages.tsx',
+      'components/canvas/page-title-bar-groups.tsx',
       'components/canvas/useCanvasChromePanels.tsx',
       'components/canvas/page-title-bar-room.ts',
       'hooks/canvas/useEditorCommands.ts',

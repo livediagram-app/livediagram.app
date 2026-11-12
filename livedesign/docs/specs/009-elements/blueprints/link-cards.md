@@ -10,7 +10,7 @@ Scope, by file:
 | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
 | `packages/design/src/element-types.ts`                                         | `LinkCardElement`, `LinkCardMeta`                                                                                         |
 | `packages/design/src/factories.ts`                                             | `createLinkCard`: 280×120, no link, no meta                                                                               |
-| `packages/design/src/index.ts`                                                 | `isBoxed` includes `link-card`; `elementSupportsText` excludes it                                                         |
+| `packages/design/src/element-union.ts`                                         | `isBoxed` includes `link-card`; `elementSupportsText` excludes it                                                         |
 | `packages/design/src/colors.ts`                                                | Default fill, stroke, text; `supportsColours` true                                                                        |
 | `packages/design/src/themes.ts`                                                | `THEME_COLOUR_FIELDS['link-card'] = []`                                                                                   |
 | `packages/design/src/validate.ts`                                              | Link card carries no extra required fields                                                                                |

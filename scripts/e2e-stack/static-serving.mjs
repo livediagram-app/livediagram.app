@@ -1,4 +1,4 @@
-// The e2e stacks' static serving (livediagram's and livehuddle's scripts/e2e-stack.mjs, their
+// The e2e stacks' static serving (every product's scripts/e2e-stack.mjs, through ./stack.mjs, and their
 // docs/specs/016-platform/stale-builds.md): files served with production's caching and its Trusted Types header, the
 // 404 page, and a simulated deploy per browser context. Dependency-free (node builtins), as the stacks are.
 

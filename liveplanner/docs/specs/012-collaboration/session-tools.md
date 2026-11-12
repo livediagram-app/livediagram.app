@@ -6,7 +6,7 @@ Live **session tools** that make a shared board interactive: a per-tab **timer**
 ## Why they need no new infrastructure
 
 Both tools store their state as optional **`Tab` fields**: `tab.timer` and
-`tab.vote` (`packages/project/src/index.ts`, helpers in `session.ts`). That
+`tab.vote` (`packages/project/src/tab-type.ts`, helpers in `session.ts`). That
 means they ride the **existing tab-sync pipeline** with zero realtime / API
 changes: a control mutates the tab via `commitTabs` → autosave (`useAutosave`,
 600 ms debounce) `PUT`s the tab to the plan's store → the `{kind:'tab'}` RoomOp broadcasts it

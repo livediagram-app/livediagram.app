@@ -331,7 +331,7 @@ none (blueprint [tracker-import.md](tracker-import.md) "A whole import"). Its ot
 - A move reads its neighbours on every attempt (`writeItem`'s change may be async): a retry ranks against the
   column as it then is.
 - Routes live in `apps/api/src/routes/item-routes.ts` (`/items/patches` in `item-patches-route.ts`, the parts they
-  share, such as the caller, refusals and relay, in `item-route-kit.ts`), dispatched from
+  share, such as the caller, refusals and relay, in `item-route-kit.ts`, the creates they write in `item-creates.ts`), dispatched from
   `project-subresource-routes.ts`; `db/items.ts` holds `readItems` and `updateItemsAtRev` for the many-item write.
 
 ## Comments
@@ -340,6 +340,8 @@ A card's comment threads (spec items.md "Comments"). A thread is stored once, in
 on each card it is on by a link row in that card's plan.
 
 ### Pure core (`packages/project/src/card-threads.ts`, type-only imports of `@liveplanner/items`)
+
+The shape, limits, ids, titles and checks are `card-thread-shape.ts`, which `card-threads.ts` re-exports.
 
 - **Types**: `CardRef = { projectId, itemId, key: number | null, projectName?: string }`; `ThreadPerson = { name,
 color, authorId? }`; `CardThread = { id, title, resolved, resolvedBy?: string, resolvedById?: string, resolvedAt?: number, comments:

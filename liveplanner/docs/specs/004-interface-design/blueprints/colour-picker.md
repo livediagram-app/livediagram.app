@@ -112,7 +112,7 @@ ColourPicker({
   light hex; Ink leaves a nameless element unchanged.
 - `customSwatches` and `quickSwatchOverrides` stay in the `UserPreferences` type, marked dead, so stored blobs load;
   nothing reads or writes them.
-- `Tab.customColours?: string[]` (`packages/project/src/index.ts`), read with `customColoursOf(tab)` (lower-case
+- `Tab.customColours?: string[]` (`packages/project/src/tab-type.ts`), read with `customColoursOf(tab)` (lower-case
   `#rrggbb`, deduped, anything else dropped, at most `CUSTOM_COLOURS_MAX` = 12) and written with
   `withCustomColour(tab, hex)` (moves `hex` to the front, caps; returns the tab itself when nothing changes), both in
   `packages/project/src/custom-colours.ts`. Synced as a `tab-meta` field like any other.

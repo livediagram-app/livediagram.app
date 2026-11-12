@@ -14,7 +14,7 @@ Scope, by file:
 | `packages/document/src/svg-render.ts`                                                                  | `contentBounds` counts routes and label plates; one pass per render                      |
 | `packages/document/src/svg-render-arrows.ts`                                                           | Export: multi-line caption, plate, knockout mask from the same layout                    |
 | `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`                                                     | One `arrowLabelPass` per element change; `draftLayout`; `labelRectOf`; `sameLabelRender` |
-| `apps/editor/components/canvas/Canvas.tsx`                                                             | Calls the hook; feeds `labelRectOf` to the selection derivation                          |
+| `apps/editor/components/canvas/useCanvasSelectionInput.ts`                                             | Calls the hook; feeds `labelRectOf` to the selection derivation                          |
 | `apps/editor/components/canvas/CanvasElementsLayer.tsx`                                                | Hands each `ArrowView` its render from the `arrowLabels` it is given                     |
 | `apps/editor/lib/canvas-selection.ts`                                                                  | Toolbar anchors span each selected arrow's selection extent                              |
 | `apps/editor/lib/export-tab.ts`                                                                        | PNG / PDF rasterise arrows from `svgArrow`; SVG export shares one pass                   |

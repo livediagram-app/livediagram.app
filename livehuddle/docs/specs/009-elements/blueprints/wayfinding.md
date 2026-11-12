@@ -16,7 +16,8 @@ Scope, by file:
 | `packages/document/src/colors.ts`, `animation-membership.ts`   | Self-painting; wordless                                                  |
 | `packages/document/src/svg-render-faces.ts`                    | Export through `furnitureArt`                                            |
 | `packages/api-schema/src/telemetry-schema.ts`                  | `Directory`, `Elevator` tokens                                           |
-| `apps/editor/lib/wayfinding.ts`                                | Places, names, approach / arrival points, floors, who is where           |
+| `apps/editor/lib/wayfinding.ts`                                | Places, names, approach / arrival points, floors                         |
+| `apps/editor/lib/wayfinding-people.ts`                         | Who is where (`whoIsWhere`, `peopleKey`), re-exported by `wayfinding.ts` |
 | `apps/editor/components/canvas/wayfinding/wayfinding-store.ts` | Per-canvas store: snapshot, open Elevator, door arrival                  |
 | `apps/editor/components/canvas/wayfinding/useWayfinding.ts`    | Fills the store; Walk There, Go, Ride; walk-in                           |
 | `apps/editor/components/canvas/wayfinding/DirectoryFace.tsx`   | Press, popover, rows                                                     |

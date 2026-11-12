@@ -141,7 +141,9 @@ ranges)` (the Space and press write; `null` when no checkbox cell is selected).
 - `apps/editor/components/sheets/rules/SheetValidationEditor.tsx`: the rule editor popover (`settingsOf` turns its
   draft into a rule's settings, or why not; new options take `OPTION_COLOURS`, the soft Standard Colours less ink
   and grey); `apps/editor/components/sheets/rules/SheetFormatRules.tsx`: the Conditional Formatting popover (list and
-  form, the preview through `rules.setFormatPreview`); `apps/editor/components/sheets/rules/SheetRuleSettings.tsx`:
+  form, the preview through `rules.setFormatPreview`; its draft, presets, `draftOf` and `ruleOf` are
+  `apps/editor/components/sheets/rules/format-rule-draft.ts`, its `Swatch` is
+  `apps/editor/components/sheets/rules/FormatRuleSwatch.tsx`); `apps/editor/components/sheets/rules/SheetRuleSettings.tsx`:
   the two Sheet Settings sections.
 - `apps/editor/components/sheets/rules/SheetCustomFormat.tsx`: the Custom Number Format popover.
 - `apps/editor/components/sheets/rules/useSheetRulesState.ts`: the controller's `rules` slice (`dropdown`, `panel`,

@@ -199,7 +199,7 @@ now), [id]).ids)` per landed file; "N images added" announced at the end. The ca
   unchanged) and marks the rows `waitingOn` names "Waits on this card" (worked out once while the list is open); a
   Blocks field's control is read-only unless the plan's `canEdit` (an Editor), whatever `canEditCards`; `refusalMessage('blocks_cycle')` "Those cards would block each other in a loop";
   `GanttArrows` (`apps/editor/components/plan/views/gantt-arrows.tsx`) an `aria-hidden`, `pointer-events-none` SVG over the track in px. The SVG
-  face (`svg-render-plan-card.ts`) draws a `blocked` bit (the link glyph path and count in red) after the title row's
+  face (`svg-render-plan-card.ts`, its bits in `svg-render-plan-card-bits.ts`) draws a `blocked` bit (the link glyph path and count in red) after the title row's
   flag (Detailed) or at the end of the trail (Minimal), from `CardFaceContext.blocking`, made once per board or card
   by `svg-render-plan.ts` from the render's `itemsDone` (the plan-wide done statuses the editor's image exports and tab
   thumbnails pass), else the board's own done columns (the api thumbnail and the MCP images, where a lone Plan card
@@ -436,7 +436,7 @@ index, through?)` filters without a second pass. A Lookup reads the first live l
     track, `shareAt(clientX, rect)` drawn live in local state and committed once on pointer up, a cancel putting it
     back; keys step and commit; the number box, the row label's target, `typedShare(raw)` committing on Enter or
     blur, Escape restoring; a Viewer gets `PercentReading`, or "None"). `CustomFieldEditor` routes `percent` to it; `PlanCardFace` and
-    `svg-render-plan-card.ts` draw every field `showsAsPercent` allows through the chip (a `percent` bit: the field's
+    `svg-render-plan-card-bits.ts` draw every field `showsAsPercent` allows through the chip (a `percent` bit: the field's
     name, a `PLAN_PERCENT_BAR` track and its fill in `planPercentInks`, then "40%"; a narrow pill shortens the name
     and keeps the bar and the share). `ItemTypeFieldForms` shows the `ShowAsPercentSwitch` (a `FieldSettingRow`,
     below, tracking `Plan` · `Changed` · `FieldShowAsPercent`) on a Calculated field `canShowAsPercent` allows, in Add
@@ -538,7 +538,7 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
     `components/plan/time/TimeSpentField.tsx` (total, Start Timer, Stop, Discard, others' timers, entries newest first, Show All,
     Add Time), routed from `ItemFieldEditor`; `usePlanItemWrites.trackTime` (through `usePlanSlice`) posts the write and sends the telemetry.
     Add Field's Time Tracking tile presets `timeSpent` (no switch in any form).
-  - Exports: `svg-render-plan-card.ts` draws the total and a green running pill (`TIMER_RUNNING_GREEN`).
+  - Exports: `svg-render-plan-card-bits.ts` draws the total and a green running pill (`TIMER_RUNNING_GREEN`).
   - Agents: `plan-schema.ts` adds `duration` and `timeSpent`; `plan-listing.ts` lists a card's `time` (total,
     running people) and a Time Spent field as read-only; agents never start, stop or add time.
 - The Linked Cards tab ([spec](../item-types.md#linked-cards-tab)): `ItemPanelTabs.tsx` `LINKED_TAB = 'card-linked'`

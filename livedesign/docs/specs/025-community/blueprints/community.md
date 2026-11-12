@@ -91,7 +91,8 @@ among its closed doors (`@livedesign/api-schema` `workbench.ts`).
    that state is `listed` and the app's chrome shows, so other opens make no request.
 2. **Community link.** `apiLoadShared` resolves the grant; for a view grant over every tab it reads
    `GET /api/share/<code>` beside the design. The session then opens it as a view with no owner, the author included,
-   and `useIdentityBootstrap` sets `sessionCommunity`, skips the name prompt and the Shared with you entry.
+   and `useIdentityBootstrap` (its share link's branch, `openShareLink` in `@liveworkspace/workbench/lib/editor-arrival`) sets
+   `sessionCommunity`, skips the name prompt and the Shared with you entry.
 3. **A Community session** never joins the room (`useRoomConnection` `enabled` is false), opens and adds no comments,
    draws no comment badges, shows the Community bar in place of the header's Make a Copy, and reads Public. Its photo
    pages load their pixels through the photo blob read, which the link opens (D7).

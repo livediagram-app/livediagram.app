@@ -170,6 +170,8 @@ PlanColumnPopover.tsx    a column's settings popover. On top a role=toolbar "Col
                          `ColumnAddedExisting` (Add All too), a new name with `ColumnAdded`; + Add Column After asks the new column's head to open its own
                          (column-settings-request.ts, a one-shot module request read on the head's mount) and
                          closes, and the new popover selects its name (`selectName`)
+PlanColumnToolbar.tsx    the popover's toolbar (`ColumnToolbar`, with `ToolbarButton` and the Remove and Collapse glyphs)
+PlanColumnFields.tsx     its WIP Limit stepper (`WipLimitRow`) and Width radio group (`ColumnWidthRow`)
 board-setup-edits.ts     the set-up's edits as pure functions (rename, recolour, WIP, done, move, add, remove;
                          `addColumnsAfter(setup, afterId, names)` adds several new columns in order as one set-up,
                          stopping at the limit, and gives the last one made)
@@ -314,6 +316,7 @@ plan-board-columns.ts    layout 'slot' (inSlot, not a phone, not covering): `min
 AddCardPopover.tsx       Add a Card: the board's types as MenuTiles in the shared PortalMenu (BottomSheet on a phone)
 PlanCardMenu.tsx         a card's right-click menu on the shared ContextMenu (Open, Duplicate, Move to, Delete) and PlanCardMenuHost
 PlanCardFace.tsx         a card face (custom fields as chips where Display places them; its gathered votes read-only)
+card-face-custom-bit.tsx a custom field's bit on the face (`customFieldBit`, a plain function the face's `pill` calls)
 PlanCardView.tsx         the plan-card element body (themed; a lone card's fill is its face); "Item not found"
 PlanModal.tsx            the Plan forms' modal (through Dialog) and SheetRow; fields are the shared TextInput/TextArea `compact`
 plan-board-moves.ts      the move a drop makes (boardMoveFor)

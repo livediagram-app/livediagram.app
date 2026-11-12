@@ -203,7 +203,7 @@ A socket can die without a close event: a laptop asleep, a NAT or proxy that dro
 connection. It then reads as open while nothing arrives, so collaborators' changes stop reaching
 the editor until a reload, and nothing says so. The client therefore checks its socket:
 
-- After 20 seconds with nothing heard (`ROOM_KEEPALIVE_IDLE_MS`, `apps/editor/lib/api/room.ts`) it
+- After 20 seconds with nothing heard (`ROOM_KEEPALIVE_IDLE_MS`, `apps/editor/lib/api/room-contract.ts`) it
   sends the bare text `ping` (`ROOM_PING` in `room-messages.ts`). Any traffic resets the clock, so
   a busy room sends none.
 - The room answers `pong` through the runtime's `setWebSocketAutoResponse`, which never wakes a
