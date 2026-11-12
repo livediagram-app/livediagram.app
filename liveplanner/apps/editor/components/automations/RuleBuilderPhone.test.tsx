@@ -179,7 +179,9 @@ describe('the rule builder on a phone', () => {
       /names a value rules don’t know/,
     );
     // Another step picked carries no refusal.
-    fireEvent.click(within(step!.closest('[role="dialog"]') as HTMLElement).getByLabelText('Close'));
+    fireEvent.click(
+      within(step!.closest('[role="dialog"]') as HTMLElement).getByLabelText('Close'),
+    );
     fireEvent.click(screen.getByRole('button', { name: 'When' }));
     expect(
       within(document.querySelector('[data-step-drawer]') as HTMLElement).queryByRole('alert'),
