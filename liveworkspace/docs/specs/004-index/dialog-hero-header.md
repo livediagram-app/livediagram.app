@@ -11,10 +11,17 @@ It is `HeroDialogHeader` in `@liveworkspace/ui` (`packages/ui/src/dialog/hero/`)
 `@liveworkspace/settings-ui` and every product app can wear it. The plain `DialogHeader` stays for every dialog that
 does not. Which dialogs wear it is each dialog's spec's call; today: liveplanner's Automations
 (liveplanner/docs/specs/026-plan/automations.md "The Automations screen") and Share
-(livediagram/docs/specs/007-editor/editor-app.md "Layout, top to bottom", every app's Share alike).
+(livediagram/docs/specs/007-editor/editor-app.md "Layout, top to bottom", every app's Share alike); every app's
+Settings and liveworkspace.app's (livediagram/docs/specs/007-editor/user-preferences.md "The header",
+liveworkspace/docs/specs/010-site/site.md "Settings"), Collaborators
+(livediagram/docs/specs/012-collaboration/collaborator-enhancements.md) and Tab Style
+(livediagram/docs/specs/011-theme/canvas-and-theme-dialog.md).
 
 ## The frame
 
+- **Not a landmark.** Its root is a plain block, not `<header>`: outside sectioning content a `<header>` is a banner
+  landmark, so every dialog wearing the hero would give the page it opens over a second banner. The `<h2>` is what
+  names it.
 - **Height.** From `sm` the header is exactly 100px tall in every dialog, its row centred in it. Nothing in it can
   make it taller: the title and its line are one line each, truncated.
 - **On a phone** (below `sm`) it is compact: 12px above and below, a 32px mark, an 18px title that may wrap to a
@@ -94,10 +101,14 @@ Automations: simple geometric SVG in the tokens, a plate or two lifted off the p
 
 What each dialog draws:
 
-| Dialog      | Art                                                                                                                                                                                                                                                                                                                                         |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Automations | A grid of dots fading toward the title; a cog rising from the bottom left, a looping arrow from the bottom right; centre: a rule as a flow, a trigger's bolt, a condition's diamond and an action's check joined by a line, a dashed arrow looping back, the bolt's ring spreading twice. Glyph: a bolt.                                    |
-| Share       | Rings spreading from the bottom right, where a pass rises from the edge, tilted as if just handed over (a link badge whose ring spreads twice, a perforation, two lines), the two people it reaches beside it; in the bottom left the one sharing, ringed in the accent; a dashed line along the foot from them to the pass. Glyph: a link. |
+| Dialog        | Art                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Automations   | A grid of dots fading toward the title; a cog rising from the bottom left, a looping arrow from the bottom right; centre: a rule as a flow, a trigger's bolt, a condition's diamond and an action's check joined by a line, a dashed arrow looping back, the bolt's ring spreading twice. Glyph: a bolt.                                                                   |
+| Share         | Rings spreading from the bottom right, where a pass rises from the edge, tilted as if just handed over (a link badge whose ring spreads twice, a perforation, two lines), the two people it reaches beside it; in the bottom left the one sharing, ringed in the accent; a dashed line along the foot from them to the pass. Glyph: a link.                                |
+| Settings      | A grid fading in from the title's side; a mixer's three faders rising in the bottom left, each at its own level; two cogs meshing as they rise in the bottom right; centre: a settings card, a switch turned on (its ring spreading twice) over a slider half way along, a hairline between them. Glyph: a cog. The switch's wider actions move the centre piece to 17rem. |
+| Site Settings | liveworkspace.app's Settings: one account, every app. The same grid; the apps' tiles rising in the bottom left, each to its own height; the account rising in the bottom right, a cog on its shoulder; centre: the account at the hub of four app tiles, a dashed line to each, its ring spreading twice. Glyph: the Settings cog.                                         |
+| Collaborators | The canvas's dots fading in from the title's side; a cursor gliding in on a dashed trail, its name tag beside it, in the bottom left; the presence stack rising in the bottom right, three avatars overlapping, the front one in the accent with its presence ring spreading twice, a cursor pointing at it. Glyph: two people.                                            |
+| Tab Style     | Rings spreading like a colour wheel's from the bottom right, where a fan of swatch chips rises from the edge, the front one in the accent lifting out of the fan twice; a brush sweeping a stroke of paint along the foot in the bottom left. Glyph: a palette.                                                                                                            |
 
 ## Where art lives
 

@@ -11,6 +11,10 @@ precision, read from the code. Paths are relative to the repository root.
 | `packages/ui/src/dialog/hero/index.ts`                                                     | the `@liveworkspace/ui/dialog-hero` subpath                                                                          |
 | `packages/ui/src/dialog/hero/art/<dialog>.tsx`                                             | shared art, `@liveworkspace/ui/dialog-hero-art/<dialog>` (a wildcard export: no package.json edit)                   |
 | `packages/ui/src/dialog/hero/art/share.tsx`                                                | `shareHeroArt`                                                                                                       |
+| `packages/ui/src/dialog/hero/art/settings.tsx`                                             | `settingsHeroArt` (every app's Settings, through `SettingsView`), `SETTINGS_GLYPH`, `cogPath`                        |
+| `packages/ui/src/dialog/hero/art/collaborators.tsx`                                        | `collaboratorsHeroArt` (every app's Collaborators)                                                                   |
+| `packages/ui/src/dialog/hero/art/canvas-theme.tsx`                                         | `canvasThemeHeroArt` (Tab Style: livedesign, livediagram, livedocuments, livehuddle)                                 |
+| `liveworkspace/apps/site/components/settings/SiteSettingsHeroArt.tsx`                      | `siteSettingsHeroArt`, passed to `SettingsPanel` as `heroArt`                                                        |
 | `liveplanner/apps/editor/components/automations/AutomationsHeroArt.tsx`                    | `automationsHeroArt` (product art: `<Dialog>HeroArt.tsx` beside its dialog)                                          |
 | `livedocuments/apps/editor/app/globals.css`, `liveworkspace/apps/site/app/app-colours.css` | the heading face's custom properties                                                                                 |
 | `packages/oxlint-config/raw-svg.ts`                                                        | `**/dialog/hero/**` and `**/*HeroArt.tsx` on the icon-art allowlist                                                  |
@@ -37,7 +41,9 @@ const titleId = useId();
 </Dialog>;
 ```
 
-The header must be the panel's first child (or follow the phone sheet's handle): its top corners inherit the
+The root is a `<div data-dialog-hero>`, not a `<header>`: outside sectioning content a `<header>` is a banner
+landmark, and a dialog must not give the page a second banner (`HeroDialogHeader.test.tsx` holds it; select the
+header by `[data-dialog-hero]`). The header must be the panel's first child (or follow the phone sheet's handle): its top corners inherit the
 panel's radius. A product app that imports `@liveworkspace/ui/dialog-hero` lists `@liveworkspace/ui` in its own
 dependencies (`corepack pnpm --filter <app> add @liveworkspace/ui@workspace:*`), as liveplanner's editor does.
 
@@ -98,10 +104,16 @@ switch as every `dark:` class (a `.light` island included). `--hero-lift` is the
 | Gaps             | 12px between mark, words and actions; 8px between actions          |
 
 Measured in a browser: 100px at 1280, 1024 and 768 wide for Automations and Share (liveplanner, livedocuments), 56px
-on a 390px phone.
+on a 390px phone. The same for Settings (signed in with the switch, and a guest without it), Collaborators and Tab
+Style (livedocuments, livediagram) and liveworkspace.app's Settings, light and dark.
+
+`SettingsView` (`@liveworkspace/settings-ui`) draws the header for every Settings: `settingsHeroArt` unless the host
+passes `heroArt` (through `SettingsPanel`), its line the panel's `subtitle` for the side shown, the scope switch and
+the kit's close as its actions, and `[--hero-centre-end:17rem]` while the switch shows. Tab Style's own panel (not
+`Dialog`) gives its `SheetHandle` `relative z-10` and the header `underHandle`, as `Dialog`'s phone sheet does.
 
 ## Size
 
 Measured minified (esbuild, React external): the frame, tokens and helpers are 5.6 KB, 2.4 KB gzipped, beyond the
 `DialogCloseButton` and `SheetHandle` every dialog already loads; Share's art 2.1 KB (1.0 KB gzipped), Automations'
-2.3 KB (1.0 KB gzipped). Art loads only with its dialog's chunk; the band paints once.
+2.3 KB (1.0 KB gzipped); Settings' 2.7 KB (1.0 KB gzipped), Collaborators' 1.7 KB (0.8 KB gzipped), Tab Style's 1.8 KB (0.8 KB gzipped) and liveworkspace.app's Settings 2.1 KB (0.9 KB gzipped, beside the shared Settings art `SettingsView` imports as its default). Art loads only with its dialog's chunk; the band paints once.

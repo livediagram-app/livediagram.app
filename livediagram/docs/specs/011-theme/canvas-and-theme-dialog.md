@@ -18,7 +18,14 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
   looks" at a glance. It shows on **every viewport, mobile included**, and stays hidden in zen mode and in
   read-only / embed views. While the dialog is open the button reads as expanded (`aria-expanded`), as Tidy Up and
   Layers do for their popovers.
-- The header is a title row with the **help icon beside the close button** on the right.
+- The header is the [dialog hero header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md): rings spreading like a colour
+  wheel's from the bottom right, where a fan of swatch chips rises from the edge, the front one in the accent lifting
+  out of it twice, and a brush sweeping a stroke of paint along the foot in the bottom left. The title mark is a
+  palette. The title is **Tab Style**, and its line says what the view that is up sets: the home "Pick a look for the
+  whole tab, then fine-tune any part of it.", and each Fine-tune panel its own few words (Colours "The colours every
+  element on the tab draws in.", Finish "How every element on the tab is drawn.", Text "The tab's font, and the size
+  new text starts at.", Canvas "The pattern and colours behind everything."). **Show Me**, the **help icon** and the
+  close sit at the right. On a phone the band runs up under the sheet's grab handle.
 - Every control applies **live** to the active tab, so the canvas updates behind the dialog. There is no
   Apply/Cancel: the dialog is an editor, not a wizard. Closing (the X, Escape, or a backdrop click) just dismisses
   it; nothing is rolled back.
