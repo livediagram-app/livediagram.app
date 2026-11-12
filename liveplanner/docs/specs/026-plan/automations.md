@@ -985,6 +985,8 @@ part at fault, the words, and the command to run next).
 - A **duplicated** plan keeps its rules, each as it was (on or off), its Audit Trail and counts empty. A plan made from
   a template has none.
 - An **export** of a plan (its file) carries its rules; an import of that file brings them back off.
+- A copy's tabs, and a file's once imported, take new ids, and the rules follow them: a Form Response narrowed to a
+  Form tab, and a saved filter (a condition or a branch's cards), name that tab's copy.
 - A copy made through a share link, of one tab, or of a Community post takes no rules: the rules are an Editor's of the
   whole plan to see.
 - A rule naming a card type, column, field or person the copy lacks needs attention there (above).

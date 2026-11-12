@@ -330,6 +330,8 @@ build):
   make the re-scan harmless. The Skipped "Ran on 100 of 340 …" row has id `time:<rule>:<moment>` and counts toward
   the day's budget like any Skipped row. A wake that throws pushes `timeAt` a minute on, as the queue's.
 - **Copies** schedule each time rule they keep on, from the copy's moment (`copiedRuleStatements`).
+  A copy's and a file's rules name the new tab ids (`ruleWithTabIds`, @liveplanner/items named.ts), the walk
+  Describe a Rule's names take.
 - **Branches.** The branch's actions count once toward the run's 20, not once per card. Its line reads "For each
   Child Card: on 3 related cards" (", failed on #12, #14" when any did; "on 100 of 340" past the cap); each related
   card's lines follow it headed by its number, and a card whose conditions don't hold gets one line naming the first
