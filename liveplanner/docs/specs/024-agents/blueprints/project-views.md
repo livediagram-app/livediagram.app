@@ -52,7 +52,7 @@ Scope, by file:
 | `apps/api/src/room-client.ts`                                                   | `readRoomSelections(env, projectId, tabId, personTag, reader)`: the warning names its reader                                |
 | `apps/api/src/routes/project-subresource-routes.ts`                             | The tab GET hands a `view` query to `answerTabView` after its gate and redaction                                            |
 | `apps/api/src/routes/projects.ts`                                               | The project GET hands `view=overview` to `answerOverview` after its gate and redaction                                      |
-| `apps/api/src/db/tabs.ts`                                                       | `tabBodiesInOrder(env, projectId, offset, limit)`                                                                           |
+| `apps/api/src/db/tab-reads.ts`                                                  | `tabBodiesInOrder(env, projectId, offset, limit)`                                                                           |
 | `apps/api/src/openapi/{manifest,project,types}.ts`                              | The view query parameters; `textResponse` on the two GETs                                                                   |
 | `apps/api/scripts/gen-openapi-schemas.mjs`                                      | The view wire types join `ROOT_TYPES`                                                                                       |
 | `apps/mcp/src/api.ts`                                                           | `apiText` → `{ text, etag }`, through the shared api client as `apiJson`                                                    |

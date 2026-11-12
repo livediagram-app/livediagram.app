@@ -16,20 +16,7 @@ import {
   exportRetryDelay,
   type StartExportCall,
 } from '@liveworkspace/data-export';
-import type { ExportThread } from '@liveworkspace/index-app';
-import {
-  APP_EXTENSION,
-  commentRows,
-  commentsCsv,
-  commentsJson,
-  itemFolder,
-  pictureNames,
-  readme,
-  safeName,
-  tabsOfEnvelope,
-  uniqueNames,
-  type CommentRow,
-} from '../files';
+import { commentsCsv, commentsJson, readme, type CommentRow } from '../files';
 import type { Sources } from '../sources';
 import { PartWriter, type PartSink, type UploadedPart } from '../upload';
 import {
@@ -41,6 +28,8 @@ import {
   type ZipFile,
 } from '../zip/zip';
 import { objectKey, type Job, type JobStore, type Problem, type QueueRow } from './store';
+import { itemFiles, imageFiles } from './item-files';
+export { imageName, UNREACHABLE_REASON } from './item-files';
 
 const encoder = new TextEncoder();
 
@@ -77,8 +66,6 @@ export const ITEM_REQUESTS_MAX = 4 + EXPORT_TAB_PICTURES_MAX;
 // After this many failed tries to tell accounts an export finished, the email is given up on (the file stays).
 export const NOTIFY_TRIES_MAX = 5;
 export const NOTIFY_RETRY_MS = 60_000;
-// What the README says of an item whose app the service can't reach (its origin or key unset).
-export const UNREACHABLE_REASON = 'its app is not part of downloads yet';
 
 // ---------- Starting and stopping -------------------------------------------------------------------------------
 
@@ -313,117 +300,6 @@ async function listStep(ctx: RunContext, job: Job): Promise<void> {
     ctx.store.enqueue(rows);
     ctx.store.save(job);
   });
-}
-
-type Made = { files: ZipFile[]; comments: CommentRow[]; problems: Problem[] };
-
-// A door call tried twice: a blip at the app is not an item left out.
-async function twice<T>(call: () => Promise<T>): Promise<T> {
-  try {
-    return await call();
-  } catch {
-    return call();
-  }
-}
-
-// An item's files: its whole file, a picture of each tab, its CSV (liveplanner) and its comments. An item gone since
-// the list adds nothing; one whose file the app can't answer is named in the README, and so is one whose app the
-// service has no origin or key for (data-export.md "The apps"), without a request.
-async function itemFiles(ctx: RunContext, job: Job, row: QueueRow): Promise<Made> {
-  const app = row.app!;
-  const doors = ctx.sources.doors;
-  const made: Made = { files: [], comments: [], problems: [] };
-  if (!ctx.sources.reachable(app)) {
-    made.problems.push({ app, name: row.name || row.ref, reason: UNREACHABLE_REASON });
-    return made;
-  }
-  let file: { body: string } | null;
-  try {
-    file = await twice(() => doors.exportFile(app, row.ref));
-  } catch {
-    made.problems.push({ app, name: row.name || row.ref, reason: 'its file could not be read' });
-    return made;
-  }
-  if (!file) return made;
-  const folder = itemFolder(app, row.name, row.ref);
-  const at = row.updatedAt;
-  made.files.push(
-    await zipFile(
-      `${folder}/${safeName(row.name)}.${APP_EXTENSION[app]}`,
-      encoder.encode(file.body),
-      { at },
-    ),
-  );
-
-  const tabs = tabsOfEnvelope(file.body).slice(0, EXPORT_TAB_PICTURES_MAX);
-  const names = pictureNames(tabs);
-  for (const [i, tab] of tabs.entries()) {
-    const png = await doors
-      .exportSvg(app, row.ref, tab.id)
-      .then((svg) => (svg ? ctx.rasterise(svg) : null))
-      .catch(() => null);
-    if (png) made.files.push(await zipFile(`${folder}/${names[i]}`, png, { store: true, at }));
-  }
-
-  if (app === 'liveplanner') {
-    const tables = await twice(() => doors.exportTables(app, row.ref)).catch(() => {
-      made.problems.push({
-        app,
-        name: row.name || row.ref,
-        reason: 'its boards and sheets could not be read',
-      });
-      return null;
-    });
-    const csvNames = uniqueNames(
-      (tables ?? []).map((t) => safeName(t.name, t.kind === 'board' ? 'Board' : 'Sheet')),
-    );
-    for (const [i, table] of (tables ?? []).entries()) {
-      made.files.push(
-        await zipFile(`${folder}/${csvNames[i]}.csv`, encoder.encode(table.csv), { at }),
-      );
-    }
-  }
-
-  const threads: ExportThread[] | null = await twice(() =>
-    doors.exportComments(app, row.ref),
-  ).catch(() => {
-    made.problems.push({
-      app,
-      name: row.name || row.ref,
-      reason: 'its comments could not be read',
-    });
-    return null;
-  });
-  const onlyBy = job.scope.kind === 'personal' ? job.scope.personId : null;
-  made.comments = commentRows({ app, id: row.ref, name: row.name }, threads ?? [], onlyBy);
-  return made;
-}
-
-const IMAGE_EXTENSIONS: Record<string, string> = {
-  'image/png': 'png',
-  'image/jpeg': 'jpg',
-  'image/gif': 'gif',
-  'image/webp': 'webp',
-  'image/svg+xml': 'svg',
-  'image/avif': 'avif',
-};
-
-/** An image's file name: its id, then the name it was uploaded with, with its type's extension. */
-export function imageName(row: Pick<QueueRow, 'ref' | 'name' | 'contentType'>): string {
-  const ext = IMAGE_EXTENSIONS[row.contentType ?? ''] ?? 'bin';
-  const base = safeName(row.name.replace(/\.[A-Za-z0-9]{1,5}$/, ''), 'image');
-  return `images/${safeName(row.ref, 'image')} ${base}.${ext}`;
-}
-
-async function imageFiles(ctx: RunContext, row: QueueRow): Promise<Made> {
-  const bytes = await ctx.sources.imageBytes(row.ref);
-  if (!bytes) return { files: [], comments: [], problems: [] };
-  // Stored as uploaded: an image is already compressed.
-  return {
-    files: [await zipFile(imageName(row), bytes, { store: true, at: row.updatedAt })],
-    comments: [],
-    problems: [],
-  };
 }
 
 // ---------- Finishing -------------------------------------------------------------------------------------------

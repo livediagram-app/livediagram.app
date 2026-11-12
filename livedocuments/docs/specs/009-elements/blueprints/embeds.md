@@ -13,7 +13,7 @@ Scope, by file:
 | `packages/document/src/youtube.ts`                                               | `embedTargetFor`: the shared rules bound to the host Figma is told, `livedocuments` |
 | `packages/document/src/element-types.ts`                                         | `VideoElement`                                                                      |
 | `packages/document/src/factories.ts`                                             | `createVideo`: 480×270, `aspectLocked`, optional `embedProvider`                    |
-| `packages/document/src/index.ts`                                                 | `isBoxed` includes `video`                                                          |
+| `packages/document/src/element-union.ts`                                         | `isBoxed` includes `video`                                                          |
 | `packages/document/src/colors.ts`                                                | Default fill / stroke / text, `supportsColours`, paper-independent ink              |
 | `packages/document/src/themes.ts`                                                | `THEME_COLOUR_FIELDS.video` is empty                                                |
 | `packages/document/src/shadow.ts`                                                | `supportsShadow` includes `video`                                                   |

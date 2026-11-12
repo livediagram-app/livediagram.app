@@ -12,7 +12,7 @@ Scope, by file:
 | `packages/document/src/shape-factory.ts`                          | 150x110, `reaction: REACTION_DEFAULT`, label "Celebrate"          |
 | `packages/document/src/validate.ts`                               | Validates the `reaction` field [QF21]                             |
 | `packages/document/src/session.ts`                                | `NON_VOTABLE_SHAPES` includes `reaction-pad`                      |
-| `packages/document/src/svg-render-faces.ts`                       | `reactionPad`: the export wash, spot, emoji and label chip        |
+| `packages/document/src/svg-render-behaviour-parts.ts`             | `reactionPad`: the export wash, spot, emoji and label chip        |
 | `packages/api-schema/src/room-op.ts`, `room-op-kinds.ts`          | The `reaction` op; `'reaction'` in `PRESENCE_OP_KINDS`            |
 | `apps/editor/components/canvas/ReactionPadFace.tsx`               | The face: glow, emoji, spot, press ring, label pill; the press    |
 | `apps/editor/app/qa-board.css`                                    | `pad-bob`, `pad-ring`, the hover lift and the press squash        |

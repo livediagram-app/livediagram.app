@@ -1,11 +1,17 @@
 'use client';
 
 // The page toolbar's menus and popovers (docs/specs/007-editor/article-pages.md "The page
-// toolbar"): Style, Align, Insert, the frame the colours open in, and the link field. Each opens
-// under its button, keeps the writing's caret (buttons never take focus; the link field does and
-// hands it back), and closes on a choice, Escape or an outside press.
+// toolbar"): Style, Align, Insert, the frame the colours open in, the link field, and the toolbar's
+// divider and button. Each menu opens under its button, keeps the writing's caret (buttons never take
+// focus; the link field does and hands it back), and closes on a choice, Escape or an outside press.
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { useClickOutside, useEscape, Portal } from '@livedocuments/ui';
+import { ChevronDownIcon, Tooltip, useClickOutside, useEscape, Portal } from '@livedocuments/ui';
+import { keyLabel } from '@liveworkspace/workbench/lib/key-label';
+import {
+  TOOLBAR_CONTROL_PRESSED,
+  TOOLBAR_CONTROL_REST,
+  TOOLBAR_DIVIDER,
+} from '@/components/chrome/toolbar-surface';
 
 /** A popover hung under `anchor`, in the page toolbar's keep-active zone. */
 export function ToolbarPopover({
@@ -155,5 +161,63 @@ export function LinkField({
         </button>
       ) : null}
     </form>
+  );
+}
+
+// The toolbar's own controls: a divider between its groups, and a button with its tooltip (its name and
+// keys, and why it is unavailable while disabled), pressed or opening a menu.
+export function Divider() {
+  return <span aria-hidden className={TOOLBAR_DIVIDER} />;
+}
+
+export function Button({
+  label,
+  keys,
+  pressed,
+  menu,
+  expanded,
+  disabled,
+  popup = 'menu',
+  onPress,
+  anchor,
+  why,
+  children,
+}: {
+  label: string;
+  disabled?: boolean;
+  // Why it is unavailable, added to its tooltip while disabled.
+  why?: string;
+  // What its menu opens: a menu, or a small dialog (the colours).
+  popup?: 'menu' | 'dialog';
+  keys?: string;
+  pressed?: boolean;
+  // Opens a menu (a small chevron says so), open while `expanded`.
+  menu?: boolean;
+  expanded?: boolean;
+  onPress: () => void;
+  // The name a popover finds this button by, to hang under it.
+  anchor?: string;
+  children: ReactNode;
+}) {
+  const name = keys ? `${label} (${keyLabel(keys)})` : label;
+  return (
+    <Tooltip label={disabled && why ? `${name}: ${why}` : name}>
+      <button
+        data-anchor={anchor}
+        type="button"
+        aria-label={name}
+        aria-pressed={menu ? undefined : pressed}
+        aria-haspopup={menu ? popup : undefined}
+        aria-expanded={menu ? (expanded ?? false) : undefined}
+        disabled={disabled}
+        onClick={onPress}
+        className={`flex h-9 shrink-0 items-center justify-center gap-1 rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-35 ${
+          menu ? 'px-2' : 'w-9'
+        } ${pressed || expanded ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_CONTROL_REST}`}
+      >
+        {children}
+        {menu ? <ChevronDownIcon className="shrink-0" /> : null}
+      </button>
+    </Tooltip>
   );
 }

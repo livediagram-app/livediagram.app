@@ -229,6 +229,7 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `packages/account-menu/src/test/setup.ts`                        |                                                                                                                                                                                                                                                                          |
 | `packages/settings-ui/src/AccordionSection.tsx`                  | A single-open accordion section: an uppercase header with the shared disclosure ChevronIcon, and a body that eases open on a grid-rows transition (which animates from not…                                                                                              |
 | `packages/settings-ui/src/CatalogueSettingsView.tsx`             | The Settings panel's view over what it reads from the accounts API (liveworkspace/docs/specs/010-site/site.md "Settings"): one app's settings from its plain-data catalogue (liveworkspac…                                                                               |
+| `packages/settings-ui/src/catalogue-panel-model.tsx`             | The Settings panel's model: one app's categories or All's, with the rail's headings (`panelModel`, `ACCOUNT_GROUP`, `APPS_GROUP`)                                                                                                                                        |
 | `packages/settings-ui/src/SettingsCategoryList.tsx`              |                                                                                                                                                                                                                                                                          |
 | `packages/settings-ui/src/app-marks.tsx`                         | The apps a setting applies to, as their logos left of its name, drawn under All only: one app's mark, several side by side, liveworkspace's for every app; tooltip and aria label                                                                                        |
 | `packages/settings-ui/src/SettingsCategoryPane.tsx`              |                                                                                                                                                                                                                                                                          |
@@ -316,7 +317,7 @@ The site keeps nothing on a server. In the browser:
 | `liveworkspace:explorer-app`        | `localStorage`   | `lib/explorer/host.ts`       | the last app the person came from                     |
 | the device preferences key per host | `localStorage`   | `@liveworkspace/settings-ui` | device settings (read by `lib/explorer/telemetry.ts`) |
 | `liveworkspace:handoff`             | `sessionStorage` | `lib/accounts.ts`            | the hand-off bind for this tab                        |
-| `liveworkspace:google`              | `sessionStorage` | `SignInFlow.tsx`             | the Google return-trip mark                           |
+| `liveworkspace:google`              | `sessionStorage` | `sign-in-flow-model.ts`      | the Google return-trip mark                           |
 | `liveworkspace:drive-consent`       | `sessionStorage` | `lib/drive/pages.ts`         | the Drive consent's state and return path             |
 
 Every access is wrapped so a blocked storage reads as empty.
@@ -429,8 +430,8 @@ Every access is wrapped so a blocked storage reads as empty.
 | `SETTINGS_HREF`                 | `'/explorer?settings=all'`                                      | `AccountMenu.tsx`           |
 | `ACCOUNT_TRIGGER_CLASS`         | `'relative touch-target-y inline-flex max-w-56 cursor-pointer…` | `face.tsx`                  |
 | `GUEST_LABEL`                   | `'Guest'`                                                       | `face.tsx`                  |
-| `ACCOUNT_GROUP`                 | `'account'`                                                     | `CatalogueSettingsView.tsx` |
-| `APPS_GROUP`                    | `'apps'`                                                        | `CatalogueSettingsView.tsx` |
+| `ACCOUNT_GROUP`                 | `'account'`                                                     | `catalogue-panel-model.tsx` |
+| `APPS_GROUP`                    | `'apps'`                                                        | `catalogue-panel-model.tsx` |
 | `SETTINGS_CARD`                 | `'rounded-xl border border-slate-200 bg-white dark:border-sla…` | `SettingsGroup.tsx`         |
 | `SETTINGS_CARD_SLOT`            | `'border-t border-slate-100 first:rounded-t-xl first:border-t…` | `SettingsGroup.tsx`         |
 | `SETTINGS_ROW_BUTTON`           | `'shrink-0 cursor-pointer rounded-lg border border-slate-200 …` | `SettingsRowShell.tsx`      |

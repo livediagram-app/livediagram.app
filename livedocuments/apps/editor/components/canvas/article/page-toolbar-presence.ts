@@ -1,11 +1,18 @@
 'use client';
 
 // Which article the page toolbar is for (docs/specs/007-editor/article-pages.md "The page
-// toolbar"): the one being worked on, else the article page under the pointer; and a press off the
-// worked-on article's pages ending the work on it.
+// toolbar"): the one being worked on, else the article page under the pointer, or kept while docked; and a
+// press off the worked-on article's pages ending the work on it.
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { canvasGestureNow } from '@liveworkspace/workbench/lib/canvas-gesture';
-import { clearActiveArticle, type ActiveArticle } from '@/lib/article/article-editor-store';
+import {
+  articleHandleOf,
+  clearActiveArticle,
+  useActiveArticle,
+  useArticleHandle,
+  type ActiveArticle,
+} from '@/lib/article/article-editor-store';
+import { useArticleDock } from '@/lib/article/article-dock';
 
 // Screen px of slack around a page that still counts as on it, and how long the pointer may be off
 // an article page before its toolbar goes (time to cross the gap to the card).
@@ -120,4 +127,58 @@ export function useOffPagePressClears(
     window.addEventListener('pointerdown', press, true);
     return () => window.removeEventListener('pointerdown', press, true);
   }, [flow]);
+}
+
+// The article the toolbar shows: the one being worked on, else the article page under the pointer;
+// docked in the Toolbar strip, the one last worked on or hovered, else the first, so the strip never
+// loses its controls as the pointer leaves a page for it. A press off the worked-on article's pages ends
+// the work on it.
+export function useShownArticle(
+  articlePages: readonly { id: string; flow: string; card?: boolean }[],
+) {
+  const worked = useActiveArticle();
+  const selected =
+    worked && articlePages.some((p) => p.flow === worked.handle.flow) ? worked : null;
+  const hovered = useHoveredArticlePage(articlePages);
+  // Shown for the article being worked on, else for the article page under the pointer.
+  const hoverHandle = !selected && hovered ? articleHandleOf(hovered.flow) : undefined;
+  const active: ActiveArticle | null =
+    selected ??
+    (hovered && hoverHandle
+      ? {
+          handle: hoverHandle,
+          pageId: hovered.pageId,
+          selection: hoverHandle.selection(),
+          focused: false,
+        }
+      : null);
+  // Docked in the Toolbar strip (the palette's kind is Article): always shown, for the article last
+  // worked on or hovered, else the first, so the strip never loses its controls as the pointer
+  // leaves a page for it.
+  const dock = useArticleDock();
+  const [last, setLast] = useState<{ flow: string; pageId: string | null } | null>(null);
+  if (active && (active.handle.flow !== last?.flow || active.pageId !== last?.pageId))
+    setLast({ flow: active.handle.flow, pageId: active.pageId });
+  const lastFlow = last?.flow;
+  // Followed as editors register: on load the strip shows before the first one mounts.
+  const lastHandle = useArticleHandle(lastFlow);
+  const firstArticleHandle = useArticleHandle(articlePages[0]?.flow);
+  const keptHandle =
+    dock && !active && lastFlow && articlePages.some((p) => p.flow === lastFlow)
+      ? lastHandle
+      : undefined;
+  const firstHandle = dock && !active && !keptHandle ? firstArticleHandle : undefined;
+  const fallbackHandle = keptHandle ?? firstHandle;
+  const shown: ActiveArticle | null =
+    active ??
+    (fallbackHandle
+      ? {
+          handle: fallbackHandle,
+          pageId: keptHandle ? (last?.pageId ?? null) : (articlePages[0]?.id ?? null),
+          selection: fallbackHandle.selection(),
+          focused: false,
+        }
+      : null);
+  useOffPagePressClears(worked, articlePages);
+  return { active, dock, shown };
 }

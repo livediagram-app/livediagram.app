@@ -86,7 +86,7 @@ already the stored name without waiting on a round trip:
 - `useSelectionEditing`: the auto-name path (the case that prompted this).
 - `useTabActions.renameTab`, and `useTabActions.duplicateTab`'s `<name> copy`, which can itself run past the cap.
 - The shared Explorer's rename (`@liveworkspace/explorer`), which the index caps too.
-- `EditorView`'s header rename.
+- The header rename in `editor-view-bars.tsx`.
 
 An Offline Mode design never reaches the server until it syncs, so for it
 these editor points are its enforcement; the sync is a create,

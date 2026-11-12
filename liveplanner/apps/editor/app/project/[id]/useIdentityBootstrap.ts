@@ -21,19 +21,9 @@ import { projectLoadOrigin, noteProjectLoadEnded, startEditorTiming } from '@/li
 import { errorNameToken, errorTypeToken } from '@liveplanner/api-schema';
 import type { WorkbenchProjectSession } from '@/components/providers/workbench-session-context';
 import { loadWorkbenchProject } from './workbench-bootstrap';
-import { openOwnAddress, openShareLink, type BootstrapSetters } from './bootstrap-arrivals';
-
-const isCallable = (v: unknown): v is (...args: unknown[]) => unknown => typeof v === 'function';
-
-// Every function of `fns`, doing nothing once `live` says its run was superseded.
-function guardRun<T extends object>(fns: T, live: () => boolean): T {
-  return new Proxy(fns, {
-    get: (target, name) => {
-      const fn: unknown = Reflect.get(target, name);
-      return isCallable(fn) ? (...args: unknown[]) => (live() ? fn(...args) : undefined) : fn;
-    },
-  });
-}
+import { guardRun } from '@liveworkspace/workbench/lib/guard-run';
+import { openOwnAddress, openShareLink } from '@liveworkspace/workbench/lib/editor-arrival';
+import { arrivalSetters, PLAN_ARRIVAL, type BootstrapSetters } from './bootstrap-arrivals';
 
 // One-shot identity + project hydration (auth gate -> guest id ->
 // participant -> project/share/password resolution -> tab seeding),
@@ -310,25 +300,12 @@ export function useIdentityBootstrap(opts: {
       // `?s=<code>` is a share URL another participant follows. Visitor
       // arrivals get full project data via the share-code endpoint and
       // are flagged `!isOwner` so the Share button hides.
+      const arrival = { self, seed: seedFetchedProject, set: arrivalSetters(guarded) };
       if (shareCodeParam) {
-        const reached = await openShareLink({
-          shareCodeParam,
-          id,
-          self,
-          embed,
-          seedFetchedProject,
-          set: guarded,
-        });
+        const reached = await openShareLink(PLAN_ARRIVAL, arrival, { shareCodeParam, id, embed });
         if (!reached) return;
       } else if (id) {
-        const reached = await openOwnAddress({
-          id,
-          self,
-          early,
-          accountUserId,
-          seedFetchedProject,
-          set: guarded,
-        });
+        const reached = await openOwnAddress(PLAN_ARRIVAL, arrival, { id, early, accountUserId });
         if (!reached) return;
       }
       setNameConfirmed(hasConfirmedName());

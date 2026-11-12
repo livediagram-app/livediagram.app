@@ -33,30 +33,35 @@ function cases(samples: string[], prefix = ''): Case[] {
 
 // One run's CPU time: wall-clock time also counts waiting for a core while other suites run, which read as growth
 // under CI coverage (cpu-time.js).
-function timeOf(text: string, run: (text: string) => unknown): number {
-  return cpuMsOf(() => void run(text));
+function timeOf(text: string, run: (text: string) => unknown, reps = 1): number {
+  return cpuMsOf(() => {
+    for (let i = 0; i < reps; i++) void run(text);
+  });
 }
+
+// Each growth sample runs the cap this many times, so the smaller sample takes milliseconds, not a fraction of
+// one, and a timer tick or a collection cannot read as growth.
+const REPS = 4;
 
 // Four times the text, under eight times the CPU.
 const RATIO_CEILING = cpuRatioCeiling(8);
 
-// The sweep only picks the three slowest cases, so one timing each will do; the two sizes compared for growth, two
-// and eight times the sweep's length, are built outside the timing, warmed and timed in turns (cpuGrowthRatio), so
-// the smaller takes milliseconds enough that noise cannot read as growth. Never past eight: at sixteen the largest
-// input, over a million characters, is past a cliff in V8's memory handling (the same linear scan took 3.2 times the
-// CPU for twice the text there), so four times the text cost seven to nine times the CPU (median 6.9, worst 9.0 of 20
-// runs) against the ceiling of 8. Two to eight measures 4.1 (worst 4.7), and a quadratic scan still reads 16.
+// The sweep only picks the three slowest cases, so one timing each will do; the two sizes compared for growth, one
+// and four times the sweep's length, are built outside the timing, warmed and timed in turns (cpuGrowthRatio), each
+// sample running the cap REPS times. Kept small: the larger input grows V8's memory handling costs faster than the
+// text (at sixteen times, four times the text cost seven to nine times the CPU), and two to eight read 8.13 once on
+// a CI runner (main 2026-11-12). One to four measures 3.4 to 3.9 here, and a quadratic scan still reads 16.
 function expectLinear(all: Case[], run: (text: string) => unknown): void {
   const slowest = all
     .map((c) => ({ c, ms: timeOf(c.build(RUN), run) }))
     .sort((a, b) => b.ms - a.ms)
     .slice(0, 3);
   for (const { c } of slowest) {
-    const small = c.build(RUN * 2);
-    const large = c.build(RUN * 8);
+    const small = c.build(RUN);
+    const large = c.build(RUN * 4);
     const ratio = cpuGrowthRatio(
-      () => timeOf(small, run),
-      () => timeOf(large, run),
+      () => timeOf(small, run, REPS),
+      () => timeOf(large, run, REPS),
       { ceiling: RATIO_CEILING },
     );
     expect(ratio, c.build(8)).toBeLessThan(RATIO_CEILING);

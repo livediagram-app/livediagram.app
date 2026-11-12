@@ -28,47 +28,22 @@ import {
   QUIET_BUTTON,
 } from './AccountPage';
 import { Pitch } from './Pitch';
+import {
+  type Step,
+  type Names,
+  GOOGLE_MARK,
+  storage,
+  codeDayMessage,
+  field,
+} from './sign-in-flow-model';
+import { NameFields, GoogleGlyph } from './SignInFlowParts';
+export { codeDayMessage } from './sign-in-flow-model';
 
 // Signing in and registering (liveworkspace/docs/specs/010-site/site.md "Accounts"): an email code, or Google, and
 // the person's first and last name. The page is static; an app's OAuth request rides in its query,
 // signed by the accounts Worker, and goes back with each step so the sign-in finishes in the app.
 
 type Flow = 'sign-in' | 'sign-up';
-type Step = 'email' | 'code' | 'name' | 'done';
-interface Names {
-  givenName: string;
-  familyName: string;
-}
-
-// Google: the page leaves for Google and comes back to itself, or straight to the app when the
-// provider can finish the sign-in on the way. A mark in this tab's storage says which visit is the
-// return trip.
-const GOOGLE_MARK = 'liveworkspace:google';
-
-function storage<T>(action: (s: Storage) => T): T | null {
-  try {
-    return action(sessionStorage);
-  } catch {
-    return null;
-  }
-}
-
-// The accounts Worker's refusal once an address has had its day's codes (liveworkspace/docs/specs/003-accounts/sign-in.md
-// "A day's codes per address"). Google still works, and so does a code already sent.
-const TOO_MANY_CODES = 'TOO_MANY_CODES';
-
-/** What the page says for that refusal, or null for any other answer. */
-export function codeDayMessage(code: unknown, google: boolean): string | null {
-  if (code !== TOO_MANY_CODES) return null;
-  const then = google ? 'Continue with Google, or try again tomorrow.' : 'Try again tomorrow.';
-  return `Too many codes sent to this address today. ${then}`;
-}
-
-// A text field's trimmed value.
-function field(form: HTMLFormElement, name: string): string {
-  const value = new FormData(form).get(name);
-  return typeof value === 'string' ? value.trim() : '';
-}
 
 export function SignInFlow({ flow }: { flow: Flow }) {
   const signingUp = flow === 'sign-up';
@@ -507,77 +482,5 @@ export function SignInFlow({ flow }: { flow: Flow }) {
       </AccountCard>
       <Pitch google={options?.google ?? false} />
     </>
-  );
-}
-
-function NameFields({
-  prefix,
-  max,
-  autoFocus = false,
-  givenRef,
-}: {
-  prefix: string;
-  max: number;
-  autoFocus?: boolean;
-  givenRef?: React.Ref<HTMLInputElement>;
-}) {
-  return (
-    <div className="grid grid-cols-2 gap-3">
-      <div>
-        <label htmlFor={`${prefix}-given`} className={LABEL}>
-          First name
-        </label>
-        <input
-          ref={givenRef}
-          id={`${prefix}-given`}
-          name="givenName"
-          type="text"
-          autoComplete="given-name"
-          placeholder="Jane"
-          maxLength={max}
-          required
-          autoFocus={autoFocus}
-          className={FIELD}
-        />
-      </div>
-      <div>
-        <label htmlFor={`${prefix}-family`} className={LABEL}>
-          Last name
-        </label>
-        <input
-          id={`${prefix}-family`}
-          name="familyName"
-          type="text"
-          autoComplete="family-name"
-          placeholder="Doe"
-          maxLength={max}
-          required
-          className={FIELD}
-        />
-      </div>
-    </div>
-  );
-}
-
-function GoogleGlyph() {
-  return (
-    <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
-      <path
-        fill="#4285F4"
-        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-      />
-      <path
-        fill="#EA4335"
-        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-      />
-    </svg>
   );
 }

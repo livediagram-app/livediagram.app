@@ -70,12 +70,13 @@ The triggers find the sheet's project through `plan_tabs` for the row's tab, and
   identity (a hashed id, `itemPersonId`); the rest is structural.
 - A purged plan's Durable Object drops its whole store (`PlanRoom.purge`, `storage.deleteAll()`), sheets and cells
   with it.
-- `apps/api/src/db/sheets.ts`: `listSheets` (sheets then their cells, two queries), `listSheetHeads`,
-  `readSheetHead` (the row without cells), `readCells`, `readFormulaCells`, `existingCells`, `lastUsedSheetRow`,
-  `insertSheetStatements`, `copySheetStatements`, `cellWriteStatements`, `axisDeleteStatement`,
-  `headWriteStatement` (the rev raise with a new layout or title, under the rev guard), `recountStatement`, `cellCountDeltaStatement`,
-  `projectSavedStatement`, `deleteSheetStatement` and `projectSheetTotals`; re-exported from `db/index.ts`. Row ↔
-  `Sheet` in the same file (`headFromRow`, `headToJson`).
+- `apps/api/src/db/sheets.ts`: the reads, `listSheets` (sheets then their cells, two queries), `listSheetHeads`,
+  `readSheetHead` (the row without cells), `readCells`, `readFormulaCells`, `existingCells`, `lastUsedSheetRow` and
+  `projectSheetTotals`, with row ↔ `Sheet` (`headFromRow`, `headToJson`). `apps/api/src/db/sheet-writes.ts`, which
+  `sheets.ts` re-exports: the writes, `insertSheetStatements`, `copySheetStatements`, `cellWriteStatements`,
+  `axisDeleteStatement`, `headWriteStatement` (the rev raise with a new layout or title, under the rev guard),
+  `recountStatement`, `cellCountDeltaStatement`, `projectSavedStatement` and `deleteSheetStatement`, and the
+  `cellsNamedBy` match both use. All re-exported from `db/index.ts`.
 - **Cell writes by `json_each`**: the changed cells go as one JSON parameter per statement, so a 5,000-cell
   write is a handful of statements whatever SQLite's 100-parameter cap in a Durable Object. From the engine's landed write the api builds
   `sets` (cells whose input is set; `{ r, c, i }`), `fmts` (format patches, `{ r, c, fp }` with `null` keys
@@ -236,7 +237,7 @@ rand })` (an `emptySheet`, `setupWrite` with the Header look, the header frozen 
 bundles the engine, `materialiseTemplateSheets(tabs, now, rand)` (`{ tabs, sheets: SheetCreateRequest[] }`, tinted dark
 when the tab's `backgroundColor` is not `isLightColor`, the mark dropped from each Sheet made). Callers:
 
-- `POST /api/projects` (`routes/projects.ts`): after the tabs validate, the made sheets are appended to the body's
+- `POST /api/projects` (`routes/project-create.ts`): after the tabs validate, the made sheets are appended to the body's
   seed sheets and go through `readSeedSheets` / `seedSheets`; log `[projects] template sheets made`.
 - Changesets (`apps/api/src/changesets/template-sheets.ts` `makeTemplateSheets`, from `submitChangeset` for a `replace`): each sheet
   inserted with `insertSheetStatements` unless it exists, the tab is full (`PROJECT_SHEETS_MAX`,

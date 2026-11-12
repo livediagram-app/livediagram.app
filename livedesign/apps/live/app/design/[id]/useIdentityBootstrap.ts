@@ -22,13 +22,9 @@ import { designLoadOrigin, noteDesignLoadEnded, startEditorTiming } from '@/lib/
 import { errorNameToken, errorTypeToken } from '@livedesign/api-schema';
 import type { WorkbenchDesignSession } from '@/components/providers/workbench-session-context';
 import { loadWorkbenchDesign } from './workbench-bootstrap';
-import {
-  guardRun,
-  openOwnDesign,
-  openSharedDesign,
-  type ArrivalContext,
-  type BootstrapSet,
-} from './design-arrival';
+import { guardRun } from '@liveworkspace/workbench/lib/guard-run';
+import { openOwnAddress, openShareLink } from '@liveworkspace/workbench/lib/editor-arrival';
+import { arrivalSetters, DESIGN_ARRIVAL, type BootstrapSet } from './design-arrival';
 
 // One-shot identity + design hydration (auth gate -> guest id ->
 // participant -> design/share/password resolution -> tab seeding),
@@ -311,19 +307,11 @@ export function useIdentityBootstrap(opts: {
       // `?s=<code>` is a share URL another participant follows. Visitor
       // arrivals get full design data via the share-code endpoint and
       // are flagged `!isOwner` so the Share button hides.
-      const arrival: ArrivalContext = {
-        id,
-        self,
-        early,
-        embed,
-        accountUserId,
-        set: guarded,
-        seedFetchedDesign,
-      };
+      const arrival = { self, seed: seedFetchedDesign, set: arrivalSetters(guarded) };
       if (shareCodeParam) {
-        if (await openSharedDesign(shareCodeParam, arrival)) return;
+        if (!(await openShareLink(DESIGN_ARRIVAL, arrival, { shareCodeParam, id, embed }))) return;
       } else if (id) {
-        if (await openOwnDesign(id, arrival)) return;
+        if (!(await openOwnAddress(DESIGN_ARRIVAL, arrival, { id, early, accountUserId }))) return;
       }
       setNameConfirmed(hasConfirmedName());
       setHydrated(true);

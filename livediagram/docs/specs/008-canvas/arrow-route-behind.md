@@ -89,7 +89,8 @@ bounding box. It deliberately does **not** work out where the path actually
 crosses: a mask hole over a box the arrow misses changes nothing on screen, so
 sampling the curve would buy precision nobody can see.
 
-`ArrowView` renders them as an **SVG mask** (white paints, black cuts) applied
+`ArrowView` renders them as an **SVG mask** (white paints, black cuts; `arrowBehindMask` in
+`packages/workbench/src/components/canvas/arrow-view-parts.tsx`) applied
 to the visible path and the selection halo:
 
 - A mask, not a split path, so the one path keeps its dash pattern, its flow

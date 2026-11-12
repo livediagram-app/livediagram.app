@@ -6,18 +6,18 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                   | Role                                                              |
-| ------------------------------------------------------ | ----------------------------------------------------------------- |
-| `packages/document/src/shape-factory.ts`               | 72x112, transparent, `#38bdf8` energy, `aspectLocked`, unlabelled |
-| `packages/document/src/validate.ts`                    | `portalTarget` must be a non-empty string                         |
-| `packages/document/src/svg-render-faces.ts`            | The export ring (`'portal'`)                                      |
-| `apps/editor/lib/portals.ts`                           | Names, sites, resolution, camera centring                         |
-| `apps/editor/components/canvas/portal-travel.ts`       | `usePortalTravel`: `enterPortal` and `resolvePortal`, no state    |
-| `apps/editor/components/canvas/PortalFace.tsx`         | The ring, lit / dead states, the press, hover cards               |
-| `apps/editor/components/canvas/behaviour-faces.tsx`    | Renders the face while not editing                                |
-| `apps/editor/components/palette/PortalMenuSection.tsx` | Name, Leads to, Create Portal                                     |
-| `apps/editor/hooks/canvas/usePortalSetters.ts`         | Link, unlink, rename, create across tabs                          |
-| `apps/editor/lib/themes.ts`                            | `deriveNewBoxedColours` leaves a portal's colours alone           |
+| File                                                                         | Role                                                              |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `packages/document/src/shape-factory.ts`                                     | 72x112, transparent, `#38bdf8` energy, `aspectLocked`, unlabelled |
+| `packages/document/src/validate.ts`                                          | `portalTarget` must be a non-empty string                         |
+| `packages/document/src/svg-render-faces.ts`, `svg-render-behaviour-parts.ts` | The export ring (`'portal'`, `portalArt`)                         |
+| `apps/editor/lib/portals.ts`                                                 | Names, sites, resolution, camera centring                         |
+| `apps/editor/components/canvas/portal-travel.ts`                             | `usePortalTravel`: `enterPortal` and `resolvePortal`, no state    |
+| `apps/editor/components/canvas/PortalFace.tsx`                               | The ring, lit / dead states, the press, hover cards               |
+| `apps/editor/components/canvas/behaviour-faces.tsx`                          | Renders the face while not editing                                |
+| `apps/editor/components/palette/PortalMenuSection.tsx`                       | Name, Leads to, Create Portal                                     |
+| `apps/editor/hooks/canvas/usePortalSetters.ts`                               | Link, unlink, rename, create across tabs                          |
+| `apps/editor/lib/themes.ts`                                                  | `deriveNewBoxedColours` leaves a portal's colours alone           |
 
 ## Domain and naming
 
