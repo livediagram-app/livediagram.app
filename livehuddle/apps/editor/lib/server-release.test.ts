@@ -5,7 +5,6 @@ import {
   isStaleBuild,
   noteServerBuild,
   serverBuild,
-  newVersionAvailable,
   noteServerDocumentFormat,
   resetServerReleaseForTests,
   serverDocumentFormat,
@@ -16,18 +15,17 @@ import {
 afterEach(() => resetServerReleaseForTests());
 
 describe('the server document format', () => {
-  it('starts unknown, with nothing newer', () => {
+  it('starts unknown', () => {
     expect(serverDocumentFormat()).toBeNull();
-    expect(newVersionAvailable()).toBe(false);
   });
 
-  it('offers a new version only when the server is ahead of this editor', () => {
+  it('keeps a number equal to or lower than this editor as heard', () => {
     noteServerDocumentFormat(String(DOCUMENT_FORMAT));
-    expect(newVersionAvailable()).toBe(false);
+    expect(serverDocumentFormat()).toBe(DOCUMENT_FORMAT);
     noteServerDocumentFormat(DOCUMENT_FORMAT - 1);
-    expect(newVersionAvailable()).toBe(false);
+    expect(serverDocumentFormat()).toBe(DOCUMENT_FORMAT);
     noteServerDocumentFormat(String(DOCUMENT_FORMAT + 1));
-    expect(newVersionAvailable()).toBe(true);
+    expect(serverDocumentFormat()).toBe(DOCUMENT_FORMAT + 1);
   });
 
   it('keeps the highest number heard and tells listeners only when it rises', () => {

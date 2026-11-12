@@ -887,6 +887,67 @@ export const PLAN_AUTOMATIONS_AI_FAILED = chart(
   { types: ['AutomationAiFailed', 'AutomationAiCapped'], rising: 'bad' },
 );
 
+// Automatic runs (docs/specs/026-plan/automations.md "Telemetry", in the liveplanner folder): what each run a wake
+// made came to, the trigger that started it, the trouble the engine met, and Incoming Webhook calls. Counted by the api.
+export const PLAN_AUTOMATION_RUN_RESULTS = chart(
+  'Plan',
+  'Ran',
+  'Automation Runs',
+  "Rules running on their own, by result: Done, Waiting (held by a Wait), Skipped, Failed, or No Match when the card didn't meet the rule's conditions.",
+  {
+    types: [
+      'AutomationDone',
+      'AutomationWaiting',
+      'AutomationSkipped',
+      'AutomationFailed',
+      'AutomationNoMatch',
+    ],
+    rising: 'neutral',
+  },
+);
+
+export const PLAN_AUTOMATION_RUN_TRIGGERS = chart(
+  'Plan',
+  'Ran',
+  'Automation Runs by Trigger',
+  'What started each run: a card moved, a field changed, a time, a webhook call, a pull request and the rest.',
+  { typeIn: (t) => t?.startsWith('AutomationTrigger.') ?? false, rising: 'neutral' },
+);
+
+export const PLAN_AUTOMATION_TROUBLE = chart(
+  'Plan',
+  'Ran',
+  'Automation Trouble',
+  'A rule paused after failing again and again, a run that broke, a burst of changes too big to queue, a time moment missed, or a wake that failed and tried again.',
+  {
+    types: [
+      'AutomationPaused',
+      'AutomationCrashed',
+      'AutomationQueueFull',
+      'AutomationTimeMissed',
+      'AutomationWakeFailed',
+    ],
+    rising: 'bad',
+  },
+);
+
+export const PLAN_AUTOMATION_HOOK_CALLS = chart(
+  'Plan',
+  'Ran',
+  'Incoming Webhook Calls',
+  "Calls to a rule's webhook address: accepted, or refused for a wrong secret, too many a minute, the day's runs spent, or a body that couldn't be read.",
+  {
+    types: [
+      'AutomationHookAccepted',
+      'AutomationHookUnauthorized',
+      'AutomationHookRateLimited',
+      'AutomationHookBudget',
+      'AutomationHookInvalid',
+    ],
+    rising: 'neutral',
+  },
+);
+
 // Describe a Rule (docs/specs/026-plan/automations.md "Describe a Rule", in the liveplanner folder): each ask the api
 // made, the requests that weren't a rule, and the drafts opened in the builder. Never the words or the reply.
 export const PLAN_AUTOMATION_DRAFTS = chart(
@@ -1329,6 +1390,10 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_AUTOMATIONS_RAN,
   PLAN_AUTOMATIONS_AI,
   PLAN_AUTOMATIONS_AI_FAILED,
+  PLAN_AUTOMATION_RUN_RESULTS,
+  PLAN_AUTOMATION_RUN_TRIGGERS,
+  PLAN_AUTOMATION_TROUBLE,
+  PLAN_AUTOMATION_HOOK_CALLS,
   PLAN_AUTOMATION_DRAFTS,
   PLAN_AUTOMATION_DRAFTS_OPENED,
   PLAN_AUTOMATION_SECRETS_MADE,

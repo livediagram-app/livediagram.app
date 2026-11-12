@@ -27,7 +27,11 @@ import {
 } from '@liveplanner/api-schema';
 import { countedVerbs } from '@liveplanner/agent-verbs';
 import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@liveplanner/forms';
-import { AUTOMATION_TEMPLATE_IDS, TRACKER_SOURCE_NAMES } from '@liveplanner/items';
+import {
+  AUTOMATION_TEMPLATE_IDS,
+  AUTOMATION_TRIGGER_KINDS,
+  TRACKER_SOURCE_NAMES,
+} from '@liveplanner/items';
 import { MCP_TOOL_VERBS } from '@liveplanner/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from '../_shared/event-vocab';
 
@@ -358,6 +362,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/editor/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },
   'apps/editor/app/new/useCtaAttribution.ts Cta·Created': { values: ALL_CTA_SOURCES },
+  'apps/api/src/plan-room/automations/automation-telemetry.ts Plan·Ran': {
+    values: AUTOMATION_TRIGGER_KINDS.map((kind) => `AutomationTrigger.${pascalToken(kind)}`),
+  },
   'apps/editor/components/automations/AutomationsDialog.tsx UI·Opened': {
     values: AUTOMATION_TEMPLATE_IDS.map((id) => `AutomationTemplate.${id}`),
   },

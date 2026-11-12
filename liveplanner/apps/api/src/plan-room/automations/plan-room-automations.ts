@@ -6,6 +6,7 @@ import { withoutLegacyThread } from '@liveplanner/project';
 import type { Item } from '@liveplanner/items';
 import type { PlanRoom } from '../plan-room';
 import { runAutomationWake, type RunnerDeps } from './automation-runner';
+import { AutomationTally } from './automation-telemetry';
 import { runTimeTriggers } from './automation-time';
 import { runWaits } from './automation-waits';
 
@@ -40,19 +41,24 @@ export async function runAutomations(room: PlanRoom, now: number): Promise<void>
     schedule.clear();
     return;
   }
+  // The wake's counts, posted once when it ends, a failed wake's too.
+  const tally = new AutomationTally();
   try {
     // A time rule's moment queues its cards first, so this wake starts running them.
     if (schedule.timeDue(now)) {
       // Runs a Wait held whose time is up go on in this wake too.
       runWaits(deps, schedule, now);
-      await runTimeTriggers(deps, schedule, now);
+      await runTimeTriggers(deps, schedule, now, tally);
     }
     if (!schedule.queueDue(now)) return;
-    const ran = await runAutomationWake(deps, schedule, now);
+    const ran = await runAutomationWake(deps, schedule, now, tally);
     if (ran > 0) console.info('[automations] wake', { ran });
   } catch (error) {
     console.warn('[automations] wake.failed', { error: String(error) });
+    tally.track('Plan', 'Ran', 'AutomationWakeFailed');
     schedule.at = now + AUTOMATION_RETRY_MS;
     if (schedule.timeDue(now)) schedule.timeAt = now + AUTOMATION_RETRY_MS;
+  } finally {
+    if (tally.size > 0) deps.defer(tally.flush(deps.env));
   }
 }

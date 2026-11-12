@@ -58,6 +58,7 @@ import type { AutomationStore, Sql } from './automation-store';
 import { applyPlannedRun, type WriteDeps } from './automation-writes';
 import { sendMessages, sendsClient } from './automation-sends';
 import { aiClient, runAiSteps } from './automation-ai';
+import { tallyRun, type AutomationTally } from './automation-telemetry';
 
 // Triggers one wake runs; the rest wait AUTOMATION_MORE_MS for the next.
 export const AUTOMATION_EVENTS_PER_WAKE = 25;
@@ -86,6 +87,8 @@ export type RunState = {
   cards?: { event: string; items: Item[] };
   // The columns this wake's Column Over Limit rules ran on, each as its rule and the column's cards.
   tipped?: Set<string>;
+  // A wake's counts (automation-telemetry.ts); absent for Test on a Card and Run Rule, which the browser counts.
+  tally?: AutomationTally;
 };
 
 const hex = (bytes: Uint8Array) =>
@@ -203,8 +206,12 @@ export async function runRule(
     if (result !== 'no_match') state.today += 1;
     if (result === 'done' || result === 'skipped' || result === 'waiting')
       deps.store.advanceTurn(rule.id, turns);
-    if (result === 'done' || result === 'failed' || result === 'waiting')
-      deps.store.settle(rule.id, result === 'waiting' ? 'done' : result, reason ?? '', at, webhook);
+    if (
+      (result === 'done' || result === 'failed' || result === 'waiting') &&
+      deps.store.settle(rule.id, result === 'waiting' ? 'done' : result, reason ?? '', at, webhook)
+    )
+      state.tally?.track('Plan', 'Ran', 'AutomationPaused');
+    if (state.tally && !opts.dry) tallyRun(state.tally, result, rule.trigger.kind);
     console.info('[automations] run', {
       result,
       trigger: rule.trigger.kind,
@@ -357,6 +364,7 @@ export async function runRule(
     return end('done');
   } catch (error) {
     console.warn('[automations] run.threw', { error: String(error) });
+    state.tally?.track('Plan', 'Ran', 'AutomationCrashed');
     try {
       return end('failed', WENT_WRONG);
     } catch (settling) {
@@ -407,11 +415,12 @@ export async function runAutomationWake(
   deps: RunnerDeps,
   schedule: AutomationSchedule,
   now: number,
+  tally?: AutomationTally,
 ): Promise<number> {
   const sql = deps.sql();
   const rows = schedule.next(AUTOMATION_EVENTS_PER_WAKE + 1);
   const rules = deps.store.enabled();
-  const state: RunState = { plan: null, today: runsToday(sql, now) };
+  const state: RunState = { plan: null, today: runsToday(sql, now), ...(tally ? { tally } : {}) };
   let ran = 0;
   let left = false;
   const started = Date.now();
@@ -460,6 +469,7 @@ export async function runAutomationWake(
       steps: [],
     });
     schedule.dropped = 0;
+    tally?.track('Plan', 'Ran', 'AutomationQueueFull');
   }
   trimRuns(sql, now);
   // A full batch leaves the rest a moment; a trigger the wake's own runs queued goes on the next wake.

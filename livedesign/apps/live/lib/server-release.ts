@@ -2,7 +2,7 @@
 // docs/specs/016-platform/stale-builds.md): the design format number and the live build id. Fed by
 // every api response's headers (apiFetch) and the realtime room's `format` message; read by the new
 // version prompt and the stale build navigation. Module state: one page, one server.
-import { DESIGN_FORMAT, parseBuildId, parseDesignFormat } from '@livedesign/api-schema';
+import { parseBuildId, parseDesignFormat } from '@livedesign/api-schema';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 /** The build id this editor was built with; null when the build set none (local development). */
@@ -38,11 +38,6 @@ export function serverDesignFormat(): number | null {
 
 export function serverBuild(): string | null {
   return latestBuild;
-}
-
-/** The server serves a design format newer than this editor was built for. */
-export function newVersionAvailable(): boolean {
-  return highestFormat !== null && highestFormat > DESIGN_FORMAT;
 }
 
 /** Stale: both build ids are known and differ. */
