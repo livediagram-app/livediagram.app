@@ -118,7 +118,9 @@ export function StepPicker<K extends string>({
               : 0;
     if (!step) return;
     e.preventDefault();
-    const next = at + step;
+    // A full group's tiles are disabled and take no focus: the keys walk past them.
+    let next = at + step;
+    while (next >= 0 && next < list.length && list[next]!.disabled) next += step;
     if (next < 0) {
       scroller.current
         ?.closest('[data-dialog-panel]')
@@ -126,7 +128,11 @@ export function StepPicker<K extends string>({
         ?.focus();
       return;
     }
-    list[Math.min(next, list.length - 1)]?.focus();
+    if (next >= list.length) {
+      next = list.length - 1;
+      while (next > at && list[next]!.disabled) next -= 1;
+    }
+    list[next]?.focus();
   };
   const onSearchKey = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown') {
