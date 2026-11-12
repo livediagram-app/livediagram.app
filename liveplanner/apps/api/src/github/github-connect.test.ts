@@ -180,6 +180,30 @@ describe('the round trip', () => {
     expect(w.kv.keys()).toEqual(['installation:7:A']);
   });
 
+  it('with over 100 repositories, lists every one, a page at a time', async () => {
+    w.gh.userRepositories = Array.from({ length: 250 }, (_, i) => repo(1000 + i));
+    await back(await start());
+    const c = await view();
+    expect(c!.repositories).toHaveLength(250);
+    expect(new Set(c!.repositories.map((r) => r.id)).size).toBe(250);
+    const pages = w.ghCalls
+      .filter((call) => new URL(call.url).pathname === '/user/installations/7/repositories')
+      .map((call) => new URL(call.url).search);
+    expect(pages).toEqual(['?per_page=100&page=1', '?per_page=100&page=2', '?per_page=100&page=3']);
+  });
+
+  it('reads at most 10 pages, and says so; a page failing fails the connect', async () => {
+    w.gh.userRepositories = Array.from({ length: 1005 }, (_, i) => repo(1 + i));
+    await back(await start());
+    expect((await view())!.repositories).toHaveLength(1000);
+    expect(logged.some((l) => l.includes('[github] repositories capped'))).toBe(true);
+    await w.as('owner', 'DELETE', '/github');
+    w.gh.userRepositories = w.gh.userRepositories.slice(0, 150);
+    w.gh.failingPage = 2;
+    expect(await back(await start())).toMatch(/#github=failed$/);
+    expect(await view()).toBeNull();
+  });
+
   it('leaves out a repository already connected to 20 other plans', async () => {
     for (let i = 0; i < 20; i += 1) await w.kv.kv.put(`repo:11:other${i}`, '');
     await back(await start());
@@ -246,6 +270,20 @@ describe('choosing repositories', () => {
     expect(w.kv.keys()).toEqual(['installation:7:A', 'repo:102:A']);
     await choose([]);
     expect(w.kv.keys()).toEqual(['installation:7:A']);
+  });
+
+  it('checks a choice against every page of the installation’s repositories', async () => {
+    // The connected ones come after 150 others, on the second page, one of them listed twice.
+    const others = Array.from({ length: 150 }, (_, i) => repo(5000 + i));
+    w.gh.installationRepositories = [...others, ...w.gh.userRepositories!, repo(120)];
+    expect((await choose([120])).status).toBe(200);
+    expect(w.ghCalls.filter((c) => c.method === 'GET').map((c) => new URL(c.url).search)).toEqual([
+      '?per_page=100&page=1',
+      '?per_page=100&page=2',
+    ]);
+    w.gh.failingPage = 2;
+    const failed = await choose([120]);
+    expect(failed.status).toBe(502);
   });
 
   it('refuses ids it does not list, too many, repeats or odd shapes', async () => {

@@ -132,6 +132,20 @@ describe('the GitHub calls', () => {
     expect(await installationRepositories(config, 7, Date.now())).toBeNull();
   });
 
+  it('a list page of an odd shape fails the whole list', async () => {
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+      const url = input instanceof Request ? input.url : String(input);
+      if (url.endsWith('/access_tokens')) return Response.json({ token: 't' }, { status: 201 });
+      return new URL(url).searchParams.get('page') === '1'
+        ? Response.json(
+            { repositories: [{ id: 1, full_name: 'a/b' }] },
+            { headers: { Link: '<https://api.github.com/x?page=2>; rel="next"' } },
+          )
+        : Response.json({ total_count: 2 });
+    });
+    expect(await installationRepositories(config, 7, Date.now())).toBeNull();
+  });
+
   it('a failed revoke is logged, never thrown', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     vi.stubGlobal('fetch', async () => new Response('x', { status: 500 }));

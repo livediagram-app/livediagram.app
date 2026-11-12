@@ -30,14 +30,20 @@ export async function hmacHex(secret: string, body: Uint8Array): Promise<string>
   return Array.from(mac, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+/** The header's 64 hex digits, lower case, or null when it is missing or malformed: refused before the body is read. */
+export function signatureHex(header: string | null): string | null {
+  if (!header?.startsWith(PREFIX)) return null;
+  const sent = header.slice(PREFIX.length).trim().toLowerCase();
+  return sent.length === HEX_DIGITS && isLowerHex(sent) ? sent : null;
+}
+
 /** Whether `header` is the body's signature under `secret`. A missing or malformed header is false. */
 export async function webhookSignatureOk(
   secret: string,
   body: Uint8Array,
   header: string | null,
 ): Promise<boolean> {
-  if (!header?.startsWith(PREFIX)) return false;
-  const sent = header.slice(PREFIX.length).trim().toLowerCase();
-  if (sent.length !== HEX_DIGITS || !isLowerHex(sent)) return false;
+  const sent = signatureHex(header);
+  if (!sent) return false;
   return timingSafeEqual(await hmacHex(secret, body), sent);
 }

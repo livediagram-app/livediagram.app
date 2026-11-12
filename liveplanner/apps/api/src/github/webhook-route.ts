@@ -3,7 +3,8 @@
 // Webhook call is: neither carries a person.
 //
 // `POST /api/github/webhook`: a delivery. Capped at 1 MB, declared or read, and its signature checked on the raw
-// bytes in constant time before anything parses it. The plans it reaches come from the reverse index; each plan's
+// bytes in constant time before anything parses it. Refused signatures are limited per network
+// (refused-signatures.ts): a network over its limit is turned away before its body is read. The plans it reaches come from the reverse index; each plan's
 // room checks it against its own connection and acts once per delivery id.
 //
 // `GET /api/github/callback`: GitHub sends the person back here after installing the App. The state names the plan;
@@ -26,7 +27,8 @@ import {
 } from './github-config';
 import { githubId, isDeliveryId, readDelivery, type GithubDelivery } from './github-delivery';
 import { plansOfInstallation, plansOfRepository, repoKey } from './github-links';
-import { SIGNATURE_HEADER, webhookSignatureOk } from './webhook-signature';
+import { countRefusal, isTurnedAway, refusalNetwork } from './refused-signatures';
+import { SIGNATURE_HEADER, signatureHex, webhookSignatureOk } from './webhook-signature';
 
 const answer = (status: number, body: Record<string, unknown>): Response =>
   json(body, { status, headers: { 'Cache-Control': 'no-store' } });
@@ -52,8 +54,24 @@ async function plansFor(config: GithubConfig, d: GithubDelivery): Promise<string
   return [...new Set(lists.flat())];
 }
 
+const limited = (): Response =>
+  json(
+    { error: 'github_rate_limited' },
+    { status: 429, headers: { 'Cache-Control': 'no-store', 'Retry-After': '60' } },
+  );
+
 async function webhook(request: Request, env: Env, config: GithubConfig): Promise<Response> {
   if (request.method !== 'POST') return methodNotAllowed();
+  // A network refused too often is turned away before its body is read or hashed; GitHub's own never is.
+  const network = refusalNetwork(request);
+  const now = Date.now();
+  if (network !== null && isTurnedAway(network, now)) return limited();
+  const refused = async (): Promise<Response> =>
+    network !== null && (await countRefusal(env, network, now))
+      ? limited()
+      : answer(401, { error: 'github_signature_invalid' });
+  const header = request.headers.get(SIGNATURE_HEADER);
+  if (!signatureHex(header)) return refused();
   const tooLarge = () => answer(413, { error: 'github_too_large' });
   const declared = Number(request.headers.get('Content-Length'));
   if (Number.isFinite(declared) && declared > WEBHOOK_BODY_MAX) return tooLarge();
@@ -62,10 +80,7 @@ async function webhook(request: Request, env: Env, config: GithubConfig): Promis
     : new Uint8Array();
   if (!body) return tooLarge();
   // Nothing of the body is read before this.
-  if (
-    !(await webhookSignatureOk(config.webhookSecret, body, request.headers.get(SIGNATURE_HEADER)))
-  )
-    return answer(401, { error: 'github_signature_invalid' });
+  if (!(await webhookSignatureOk(config.webhookSecret, body, header))) return refused();
   const id = request.headers.get('X-GitHub-Delivery');
   if (!isDeliveryId(id)) return answer(400, { error: 'github_delivery_invalid' });
   const payload = parsed(body);
