@@ -80,14 +80,17 @@ export function defaultOutgoing(via: AutomationVia): AutomationOutgoing {
   return { kind: 'notify', via, webhook: '', text: '{{card.title}} {{card.url}}' };
 }
 
-/** A new step of any kind + Add Action offers. */
+/** A new step of any kind + Add Action offers (`personless`: the rule's trigger has nobody behind it). */
 export function defaultStep(
   kind: AddKind,
-  outline: Outline,
+  outline: Outline & Pick<AutomationOutline, 'people'>,
+  personless = false,
 ): AutomationAction | AutomationOutgoing | AutomationAi | AutomationWait {
   if (kind === 'wait') return { kind: 'wait', hours: 24 };
   if (isAiKind(kind)) return defaultAi(kind);
-  return isOutgoingKind(kind) ? defaultOutgoing(viaOf(kind)) : defaultAction(kind, outline);
+  return isOutgoingKind(kind)
+    ? defaultOutgoing(viaOf(kind))
+    : startAction(kind, outline, personless);
 }
 
 export const CONDITION_KINDS: readonly AutomationCondition['kind'][] = [
@@ -146,6 +149,19 @@ export function defaultAction(kind: AutomationActionKind, outline: Outline): Aut
     case 'resolve_threads':
       return { kind };
   }
+}
+
+/** An action's first form on this rule: on a time trigger or an incoming webhook (nobody behind it) Assign starts on
+ *  the plan's first person, not whoever triggered it. Both + Add Action and Change the Action start here. */
+export function startAction(
+  kind: AutomationActionKind,
+  outline: Outline & Pick<AutomationOutline, 'people'>,
+  personless: boolean,
+): AutomationAction {
+  const action = defaultAction(kind, outline);
+  if (action.kind !== 'assign' || !personless) return action;
+  const first = outline.people[0]?.id;
+  return { kind: 'assign', to: first ? { person: first } : { nobody: true } };
 }
 
 export function defaultCondition(

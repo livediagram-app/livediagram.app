@@ -199,12 +199,8 @@ export function RuleBuilder({
       change(next.body, next.part);
     },
     addAction: (kind, branch) => {
-      let step = defaultStep(kind, outline);
       // A time trigger or an incoming webhook has nobody behind it: Assign starts on the plan's first person.
-      if (step.kind === 'assign' && isPersonless(body.trigger)) {
-        const first = outline.people[0]?.id;
-        step = { kind: 'assign', to: first ? { person: first } : { nobody: true } };
-      }
+      const step = defaultStep(kind, outline, isPersonless(body.trigger));
       const next = addAction(body, step, branch);
       change(next.body, next.part);
     },
