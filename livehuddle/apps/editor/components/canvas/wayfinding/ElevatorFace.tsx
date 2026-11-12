@@ -6,7 +6,12 @@ import { WAYFINDING_TONES } from '@livehuddle/document';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { elevatorName, spaceFloors, type WayPoint } from '@/lib/wayfinding';
-import { createWayfindingStore, useWayfindingSelect, type Wayfinding } from './wayfinding-store';
+import {
+  NO_WAYFINDING_STORE,
+  useWalkedInPanel,
+  useWayfindingSelect,
+  type Wayfinding,
+} from './wayfinding-store';
 import { useFloorsOnOpen } from './useFloorsOnOpen';
 import {
   LazyWayfindingPopover,
@@ -37,16 +42,19 @@ export function ElevatorFace({
 }) {
   const [pressed, setPressed] = useState(false);
   const press = usePressWithoutDrag(wayfinding ? () => setPressed((v) => !v) : undefined);
-  const positional = useWayfindingSelect(wayfinding?.store ?? NO_STORE, (s) => {
+  const positional = useWayfindingSelect(wayfinding?.store ?? NO_WAYFINDING_STORE, (s) => {
     const tab = s.tabs.find((t) => t.id === s.activeTabId);
     return tab ? elevatorName(tab.elements, elementId) : null;
   });
   const name = label.trim() || positional || 'Elevator';
+  const walkedIn = useWalkedInPanel(wayfinding, elementId);
   return (
     <>
+      {/* Hidden while its panel is open, which is titled with the same name (elevator.md "The panel"). */}
       <HoverCard
         block
         className="h-full w-full"
+        disabled={pressed || walkedIn}
         title={name}
         description="Click it, or walk your character in, and pick an Elevator: on this floor or another (each tab is a floor)."
       >
@@ -77,6 +85,7 @@ export function ElevatorFace({
           name={name}
           wayfinding={wayfinding}
           pressed={pressed}
+          walkedIn={walkedIn}
           onClosePressed={() => setPressed(false)}
         />
       ) : null}
@@ -84,22 +93,21 @@ export function ElevatorFace({
   );
 }
 
-const NO_STORE = createWayfindingStore();
-
 function ElevatorPanelHost({
   elementId,
   name,
   wayfinding,
   pressed,
+  walkedIn,
   onClosePressed,
 }: {
   elementId: string;
   name: string;
   wayfinding: Wayfinding;
   pressed: boolean;
+  walkedIn: boolean;
   onClosePressed: () => void;
 }) {
-  const walkedIn = useWayfindingSelect(wayfinding.store, (s) => s.openPanelId === elementId);
   if (!pressed && !walkedIn) return null;
   const close = () => {
     onClosePressed();

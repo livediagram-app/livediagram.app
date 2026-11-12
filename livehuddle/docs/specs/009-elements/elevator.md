@@ -65,6 +65,8 @@ Elevator, titled with its name. It lists **every Elevator in the space**. Every 
 - A space with **one tab** adds a line saying to add a tab (a floor) with an Elevator on it.
 - Escape, a click outside or pressing the Elevator again closes it; walking off the Elevator closes a panel the
   walk-in opened.
+- **No hover card while it is open.** The panel is titled with the Elevator's name, so the piece's hover card stays
+  hidden while the panel is open, however it opened, and shows again once it closes.
 
 ## Riding
 
