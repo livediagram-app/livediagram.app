@@ -77,14 +77,14 @@ export function StepPanel({
         {children}
       </StepDrawer>
     ) : (
-    <section aria-label={`${title} step`} data-step-panel="" className="flex flex-col gap-4">
-      <h3 className="flex items-center gap-2.5 text-[15px] font-semibold text-slate-900 dark:text-slate-50">
-        {tile}
-        {title}
-      </h3>
-      {children}
-    </section>
-  );
+      <section aria-label={`${title} step`} data-step-panel="" className="flex flex-col gap-4">
+        <h3 className="flex items-center gap-2.5 text-[15px] font-semibold text-slate-900 dark:text-slate-50">
+          {tile}
+          {title}
+        </h3>
+        {children}
+      </section>
+    );
   if (!part) return <PanelNote>Pick a step to change it, or add one under the steps.</PanelNote>;
   if (part.part === 'trigger')
     return shell(

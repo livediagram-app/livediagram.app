@@ -84,7 +84,10 @@ export function PhoneRuleHeader({
   onBack: () => void;
 }) {
   return (
-    <div data-rule-header="phone" className="shrink-0 border-b border-slate-100 px-4 pb-3 dark:border-slate-800">
+    <div
+      data-rule-header="phone"
+      className="shrink-0 border-b border-slate-100 px-4 pb-3 dark:border-slate-800"
+    >
       <div className="flex h-11 items-center justify-between gap-3">
         <BackButton onBack={onBack} />
         {state ? (

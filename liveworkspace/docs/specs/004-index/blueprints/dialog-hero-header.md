@@ -104,14 +104,14 @@ switch as every `dark:` class (a `.light` island included). `--hero-lift` is the
 
 ## Measures
 
-| What             | Value                                                              |
-| ---------------- | ------------------------------------------------------------------ |
-| Height           | `h-[100px]` at every width; `sm:px-6`, `px-4` on a phone           |
-| Mark             | `size-9`, `rounded-[11px]`, glyph 20px                             |
-| Title            | 20px, `leading-tight`, `sm:truncate`, `max-sm:line-clamp-2`        |
-| Line             | 13px / 18px, `truncate` (shown on a phone too)                     |
-| Centre piece     | from `@4xl` (56rem header); title and line `@4xl:max-w-[26rem]`    |
-| Gaps             | 12px between mark, words and actions; 8px between actions          |
+| What         | Value                                                           |
+| ------------ | --------------------------------------------------------------- |
+| Height       | `h-[100px]` at every width; `sm:px-6`, `px-4` on a phone        |
+| Mark         | `size-9`, `rounded-[11px]`, glyph 20px                          |
+| Title        | 20px, `leading-tight`, `sm:truncate`, `max-sm:line-clamp-2`     |
+| Line         | 13px / 18px, `truncate` (shown on a phone too)                  |
+| Centre piece | from `@4xl` (56rem header); title and line `@4xl:max-w-[26rem]` |
+| Gaps         | 12px between mark, words and actions; 8px between actions       |
 
 Measured in a browser: 100px at 1280, 1024 and 768 wide for Automations and Share (liveplanner, livedocuments), and
 for Export, Import, History and Share to Community (livediagram, livedocuments, light and dark), and 100px on a

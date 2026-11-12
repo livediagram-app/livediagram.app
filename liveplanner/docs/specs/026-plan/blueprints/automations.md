@@ -1001,34 +1001,35 @@ dialog's `!useMediaQuery('(min-width: 640px)')`, as before; nothing below change
 
 - `ScreenTabs`: on a phone the bar is `h-12 items-stretch`, each tab `flex items-center` (44 px of it a target).
 - `RuleFilters.tsx` (out of `RulesList`): the desktop row as before; on a phone a column of the search (`SearchInput`
-  at its `size="lg"`: 40 px, 14 px text) and a row of the trigger `Select` (`flex-1`, `PHONE_FILTER` = `h-10
-  rounded-lg text-[14px]`) and `SegmentedRadio` (`size="lg"`, All / On / Off, `h-10`).
+  at its `size="lg"`: 40 px, 14 px text) and a row of the trigger `Select` (`flex-1`, `PHONE_SELECT` = `h-10
+rounded-lg pl-3 pr-8 text-[14px]`) and `SegmentedRadio` (`size="lg"`, All / On / Off, `h-10`).
 - `AutomationsDialog`: on a phone, editing (`target.view === 'rule'`) keeps the rules screen mounted and renders the
-  builder in `RuleDrawer.tsx`: the shared `Dialog` with `phoneSheet`, `className` fixing it at `SHEET_FULL_HEIGHT`
-  (`h-[…] max-h-[…] overflow-hidden`), `beforeClose` = the dirty guard (returns false and opens Discard Changes? when
+  builder in `RuleDrawer.tsx`: the shared `Dialog` with `phoneSheet="tall"` (its height the full sheet's, the top bar
+  and the notch kept clear, `PHONE_SHEET_TALL`), an sr-only title (New Rule or Edit Rule), `beforeClose` = the dirty guard (returns false and opens Discard Changes? when
   dirty). Discarding unmounts the drawer straight away (the question was the exit).
-- `RuleBuilder` with `phone`: `PhoneRuleHeader.tsx` (back chevron, `RuleStateSwitch` = the shared `Switch` with its
-  visible word, or the Off pill; the name in `RuleNameField`, a one-row `textarea` that grows with its text, Enter
+- `RuleBuilder` with `phone`: `PhoneRuleChrome.tsx` holds `PhoneRuleHeader` (back chevron, the shared `Switch`
+  labelled with its visible word On or Off, or the Off · Not Saved pill for an unsaved rule; the name in `RuleNameField`, a one-row `textarea` that grows with its text, Enter
   ignored, newlines folded to spaces), the steps scrolling, and `PhoneRuleFoot` (Rule Details, then the two buttons
-  as `Button size="md"` `flex-1 h-11`; Save Rule reads **Saved** with a check when `rule && !dirty`).
+  as `Button size="md"` `flex-1 h-11`; a saved rule with nothing changed shows **Saved** with a check, a `role="status"`, in Save Rule's place).
 - `RuleDetails` takes `placement="foot"`: the accordion's bar sits in the foot and its body opens above the bar,
   `max-h-[40dvh] overflow-y-auto`.
 - `StepDrawer.tsx`: on a phone `StepPanel` renders its shell into the shared `Dialog` (`phoneSheet`, `size="lg"`) with
   the shell's tile and title as its header beside `DialogCloseButton`, the body `min-h-0 flex-1 overflow-y-auto
-  overscroll-contain`, and a `DialogFooter` holding **Done** (`useDialogDismiss`). `RuleBuilder` holds `stepOpen`:
+overscroll-contain`, and a foot holding **Done** (`useDialogDismiss`, so it slides out like the close). `RuleBuilder` holds `stepOpen`:
   set by a pick (`actions.select`), an add and a refusal's `partAt`; never by the first render's trigger selection.
-- `ValueInsert.tsx`: `ValueTextField` draws `ValueInsertButton` inside the field's box (`absolute right-1 top-1`, the
-  text padded `pr-10` on the textarea and its backdrop alike). `ValueInsertMenu.tsx`: `AnchoredPopover` (width 288,
+- `ValueInsert.tsx`: `ValueTextField` draws `ValueInsertButton` inside the field's box (`absolute right-1.5 top-1.5`, the
+  text padded `pr-10` on the textarea and its backdrop alike). `ValueInsertMenu.tsx`: `AnchoredPopover` (width 300,
   `pointer`) on a wide screen, the shared `Dialog` `phoneSheet` on a phone, both holding `ValueInsertList`: a
   `SearchInput` as a combobox over a `listbox` of `option`s grouped under `role="group"` headings, the active option
   moved by Up / Down (wrapping) and inserted by Enter, a click inserting too. `value-insert-options.ts` (pure):
   `valueInsertGroups(branch, fields, incoming)` and `filterValueGroups(groups, query)`. Webhook Field… swaps the list
   for `WebhookPathForm` (the old `WebhookFieldInsert` field, with Insert and Back). The field keeps the selection it
-  had (a textarea keeps `selectionStart` / `selectionEnd` through a blur), so `insertValue` lands at the caret.
+  had (a textarea keeps `selectionStart` / `selectionEnd` through a blur), so `insertValue` lands at the caret; a
+  field never focused inserts at the end. Focus returns to the field after the insert, its caret past the value.
 - `phone-board.ts`: `offColumnCard(card, view)` (the card's middle more than half its width from the view's middle)
   and `centreCardColumn(itemId, body, columnAttr)`; `PlanBoardView`'s open on a tap (the drag's `onClick` and the
   read-only press) calls it first when `look.columns === 'phone'`. It reads two rects on the tap, nothing per card.
 - Tests: `RuleFilters.test.tsx` (the phone layout, the segmented filter), `RuleBuilderPhone.test.tsx` (the drawer on a
   phone and not on a desktop, the step drawer opening on a pick and closing on Done, the header, the foot, Saved, the
-  Discard Changes? guard on Escape), `ValueInsert.test.tsx` (the button, the keyboard, insert at the caret, no list
+  Discard Changes? guard on Escape and Back), `ValueInsert.test.tsx` (the button, the keyboard, insert at the caret, no list
   under the field), `phone-board-tap.test.ts` (the off-column card centres its column and does not open).

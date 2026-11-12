@@ -117,7 +117,10 @@ export function ValueInsertList({
         className={`min-h-0 overflow-y-auto overscroll-contain ${phone ? 'px-2 pb-3' : 'max-h-72 px-1 pb-1.5'}`}
       >
         {shown.length === 0 ? (
-          <p role="status" className="px-3 py-4 text-center text-[13px] text-slate-500 dark:text-slate-400">
+          <p
+            role="status"
+            className="px-3 py-4 text-center text-[13px] text-slate-500 dark:text-slate-400"
+          >
             No values match.
           </p>
         ) : (
@@ -251,7 +254,12 @@ export function ValueInsertMenu({
       {webhook ? (
         <WebhookPathForm onInsert={pick} onBack={() => setWebhook(false)} />
       ) : (
-        <ValueInsertList groups={groups} onPick={pick} onWebhook={() => setWebhook(true)} autoFocus />
+        <ValueInsertList
+          groups={groups}
+          onPick={pick}
+          onWebhook={() => setWebhook(true)}
+          autoFocus
+        />
       )}
     </AnchoredPopover>
   );

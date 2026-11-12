@@ -26,14 +26,21 @@ const FLICK_PX_PER_MS = 0.5;
 export const SHEET_FULL_HEIGHT = 'calc(100dvh - 3.5rem - env(safe-area-inset-top, 0px))';
 // The exit's bounds (spec "Menus are bottom sheets on a phone"): a flick's pace is kept within them, so a fast flick
 // is never a blink and a slow drag never drags on.
+// The top is the motion ceiling (MOTION_CEILING_MS, docs/specs/004-interface-design/motion.md); a test holds it there.
 export const SHEET_EXIT_MIN_MS = 180;
-export const SHEET_EXIT_MAX_MS = 280;
+export const SHEET_EXIT_MAX_MS = 250;
 // Under reduced motion: a short fade in place of the slide.
 export const SHEET_EXIT_FADE_MS = 120;
 // How long past the exit's own length the sheet waits for `transitionend` before it goes anyway.
 const EXIT_FALLBACK_MS = 80;
 // Ease-out: the sheet leaves at the finger's pace and settles off screen.
 const EXIT_EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+
+/** One property's exit transition. Its length comes from `sheetExitMs` or the fade, never past the ceiling, which
+ * the motion guard can't read through a variable: useSheetDrag.test holds the bounds instead. */
+export function sheetExitTransition(property: 'transform' | 'opacity', ms: number): string {
+  return [property, `${ms}ms`, property === 'transform' ? EXIT_EASE : 'ease-out'].join(' ');
+}
 
 type Exit = { dy: number; ms: number; fade: boolean };
 
@@ -85,13 +92,13 @@ export function exitStyle(exit: Exit, expanded: boolean): CSSProperties {
       ...height,
       transform: `translateY(${exit.dy}px)`,
       opacity: 0,
-      transition: `opacity ${exit.ms}ms ease-out`,
+      transition: sheetExitTransition('opacity', exit.ms),
       pointerEvents: 'none',
     };
   return {
     ...height,
     transform: 'translateY(calc(100% + 24px))',
-    transition: `transform ${exit.ms}ms ${EXIT_EASE}`,
+    transition: sheetExitTransition('transform', exit.ms),
     pointerEvents: 'none',
   };
 }

@@ -101,11 +101,20 @@ function draw(value: PlanContextValue) {
     );
   place('[data-plan-card="i1"], [data-plan-column="todo"]', 44);
   place('[data-plan-card="i2"], [data-plan-column="doing"]', 358);
-  return { body, card: (id: string) => document.querySelector<HTMLElement>(`[data-plan-card="${id}"]`)! };
+  return {
+    body,
+    card: (id: string) => document.querySelector<HTMLElement>(`[data-plan-card="${id}"]`)!,
+  };
 }
 
 const tap = (el: HTMLElement) => {
-  fireEvent.pointerDown(el, { button: 0, pointerId: 1, pointerType: 'touch', clientX: 10, clientY: 10 });
+  fireEvent.pointerDown(el, {
+    button: 0,
+    pointerId: 1,
+    pointerType: 'touch',
+    clientX: 10,
+    clientY: 10,
+  });
   fireEvent.pointerUp(window, { button: 0, pointerId: 1, clientX: 10, clientY: 10 });
 };
 

@@ -85,10 +85,15 @@ export function ValueTextField({
   const area = useRef<HTMLTextAreaElement>(null);
   const backdrop = useRef<HTMLDivElement>(null);
   const caret = useRef<number | null>(null);
+  // Whether the field has had focus, so its selection is where the person left the caret.
+  const placed = useRef(false);
   const [menu, setMenu] = useState<HTMLButtonElement | null>(null);
   const { incoming } = useIncomingRule();
   const phone = !useMediaQuery('(min-width: 640px)');
-  const groups = useMemo(() => valueInsertGroups(branch, fields, incoming), [branch, fields, incoming]);
+  const groups = useMemo(
+    () => valueInsertGroups(branch, fields, incoming),
+    [branch, fields, incoming],
+  );
 
   // Grows with its text (no inner scroll, so the backdrop never drifts), and puts the caret after an inserted value.
   useLayoutEffect(() => {
@@ -105,8 +110,9 @@ export function ValueTextField({
 
   const insert = (name: string) => {
     const el = area.current;
-    const start = el?.selectionStart ?? value.length;
-    const end = el?.selectionEnd ?? value.length;
+    // A field never typed in has no caret of its own yet: the value goes at the end.
+    const start = (placed.current ? el?.selectionStart : null) ?? value.length;
+    const end = (placed.current ? el?.selectionEnd : null) ?? value.length;
     const next = insertValue(value, start, end, name);
     caret.current = next.caret;
     onChange(maxLength ? next.text.slice(0, maxLength) : next.text);
@@ -148,6 +154,9 @@ export function ValueTextField({
           placeholder={placeholder}
           aria-invalid={invalid || undefined}
           spellCheck
+          onFocus={() => {
+            placed.current = true;
+          }}
           onChange={(e) =>
             onChange(multiline ? e.target.value : e.target.value.replace(/\n/g, ' '))
           }

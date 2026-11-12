@@ -11,7 +11,7 @@ import {
 import { Portal } from '../Portal';
 import { useEscape } from '../useEscape';
 import { useFocusTrap, type FocusTrapInitial } from '../useFocusTrap';
-import { SHEET_EXIT_MAX_MS, useSheetDrag } from '../useSheetDrag';
+import { SHEET_EXIT_MAX_MS, sheetExitTransition, useSheetDrag } from '../useSheetDrag';
 import { SheetHandle } from '../SheetHandle';
 import { safeInset } from '../safe-area';
 import { useMediaQuery } from '../useMediaQuery';
@@ -280,7 +280,11 @@ export function Dialog({
         // A sheet sliding out takes its dim with it, over the same moment.
         style={
           sheet.exiting
-            ? { ...fitted.layer, opacity: 0, transition: `opacity ${SHEET_EXIT_MAX_MS}ms ease-out` }
+            ? {
+                ...fitted.layer,
+                opacity: 0,
+                transition: sheetExitTransition('opacity', SHEET_EXIT_MAX_MS),
+              }
             : fitted.layer
         }
         className={`fixed inset-0 z-[var(--z-modal)] flex animate-fade-in items-center justify-center ${

@@ -54,7 +54,8 @@ type Fault = { path: string; message: string };
 const REFUSAL_WORDS: Readonly<Record<string, string>> = {
   automation_name_taken: 'Another rule here has this name. Pick another.',
   automation_rules_full: 'This plan has 50 rules, the most it can hold. Delete one to add another.',
-  automation_value_unknown: 'This names a value rules don’t know. Pick one from Insert a Value in the field.',
+  automation_value_unknown:
+    'This names a value rules don’t know. Pick one from Insert a Value in the field.',
   automation_not_found: 'This rule was deleted elsewhere.',
   automation_condition_unsupported:
     'A time trigger has nobody behind it: nothing here can name whoever triggered it.',
@@ -320,7 +321,8 @@ export function RuleBuilder({
   const edited: ReactNode = rule ? (
     <>
       Edited by {rule.edited.by.name}
-      {rule.edited.ai ? ' (Agent)' : ''} · {formatRelativeTimeShort(Math.max(0, now - rule.edited.at))}
+      {rule.edited.ai ? ' (Agent)' : ''} ·{' '}
+      {formatRelativeTimeShort(Math.max(0, now - rule.edited.at))}
     </>
   ) : null;
   const panel = (
@@ -363,7 +365,11 @@ export function RuleBuilder({
                 nameFault={nameFault}
                 state={
                   rule
-                    ? { enabled: rule.enabled, busy: toggling, onToggle: (next) => void toggle(next) }
+                    ? {
+                        enabled: rule.enabled,
+                        busy: toggling,
+                        onToggle: (next) => void toggle(next),
+                      }
                     : null
                 }
                 edited={edited}
@@ -398,15 +404,15 @@ export function RuleBuilder({
             </>
           ) : (
             <>
-            {bar}
-            <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_380px]">
-              <div className="min-h-0 overflow-y-auto bg-slate-50/60 px-6 py-5 dark:bg-slate-950/40">
-                {steps}
+              {bar}
+              <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_380px]">
+                <div className="min-h-0 overflow-y-auto bg-slate-50/60 px-6 py-5 dark:bg-slate-950/40">
+                  {steps}
+                </div>
+                <div className="min-h-0 overflow-y-auto border-l border-slate-100 px-5 py-5 dark:border-slate-800">
+                  {panel}
+                </div>
               </div>
-              <div className="min-h-0 overflow-y-auto border-l border-slate-100 px-5 py-5 dark:border-slate-800">
-                {panel}
-              </div>
-            </div>
             </>
           )}
           {testing ? (
