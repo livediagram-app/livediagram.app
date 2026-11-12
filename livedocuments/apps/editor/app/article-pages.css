@@ -450,6 +450,11 @@ html[data-presenting] .article-flow .article-note {
 .article-flow .article-foot-break-before {
   break-before: column;
 }
+/* A repeated header row already starts the page a row moves to above the notes: the row's own break would leave the
+   copy alone on a page. */
+.article-flow .article-table-repeat + .article-foot-break-before {
+  break-before: auto;
+}
 .article-footnotes-host {
   display: contents;
   --article-line: calc(var(--article-size) * var(--article-leading));

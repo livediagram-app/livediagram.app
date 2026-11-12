@@ -22,8 +22,9 @@ import { articleSchema } from './article-schema';
 const S = articleSchema;
 
 /** Where a page's text ends above its notes: before the text at `pos` (`block` false, a break inside a block's
- *  lines), or before the block, table row or object at `pos` (`block` true). `page`: the page (column) it ends. */
-export type FootBreak = { page: number; pos: number; block: boolean };
+ *  lines), or before the block, table row or object at `pos` (`block` true). `page`: the page (column) it ends.
+ *  `also`: a table row split above the notes breaks in each of its cells, `pos` in one and the rest here. */
+export type FootBreak = { page: number; pos: number; block: boolean; also?: readonly number[] };
 
 export type FootState = {
   // Every reference's position, in the writing's order: number n is refs[n - 1].
@@ -99,13 +100,16 @@ function decorationsOf(doc: PMNode, refs: readonly number[], breaks: readonly Fo
         Decoration.node(b.pos, b.pos + node.nodeSize, { class: 'article-foot-break-before' }),
       );
     else if (!b.block)
-      decos.push(
-        Decoration.widget(b.pos, breakBox, {
-          key: `foot-break:${b.page}`,
-          side: -1,
-          ignoreSelection: true,
-        }),
-      );
+      [b.pos, ...(b.also ?? [])].forEach((at, i) => {
+        if (at < 0 || at > doc.content.size) return;
+        decos.push(
+          Decoration.widget(at, breakBox, {
+            key: i === 0 ? `foot-break:${b.page}` : `foot-break:${b.page}:${i}`,
+            side: -1,
+            ignoreSelection: true,
+          }),
+        );
+      });
   }
   return DecorationSet.create(doc, decos);
 }
@@ -135,11 +139,21 @@ export function mapBreaks(tr: Transaction, breaks: readonly FootBreak[]): FootBr
           $to.parent.inlineContent ? $to.end() : to,
         ] as const;
       });
+  const inChanged = (pos: number) => changed.some(([from, to]) => from <= pos && pos <= to);
   for (const b of breaks) {
     const r = tr.mapping.mapResult(b.pos, b.block ? 1 : -1);
     if (r.deleted) continue;
-    if (!b.block && changed.some(([from, to]) => from <= r.pos && r.pos <= to)) continue;
-    out.push({ ...b, pos: r.pos });
+    if (!b.block && inChanged(r.pos)) continue;
+    if (!b.also) {
+      out.push({ ...b, pos: r.pos });
+      continue;
+    }
+    // A split row's other cells: each kept while its cell did not change.
+    const also = b.also.flatMap((at) => {
+      const m = tr.mapping.mapResult(at, -1);
+      return m.deleted || inChanged(m.pos) ? [] : [m.pos];
+    });
+    out.push({ ...b, pos: r.pos, also });
   }
   return out;
 }
@@ -203,8 +217,20 @@ export const clearPendingNote = (view: EditorView): void =>
 
 /** The same breaks: the layout dispatches only a change. */
 export const sameFootBreaks = (a: readonly FootBreak[], b: readonly FootBreak[]): boolean =>
-  a.length === b.length &&
-  a.every((x, i) => x.page === b[i]!.page && x.pos === b[i]!.pos && x.block === b[i]!.block);
+  a.length === b.length && a.every((x, i) => sameFootBreak(x, b[i]!));
+
+/** The same break: its page, place, kind and a split row's other cells. */
+export function sameFootBreak(a: FootBreak, b: FootBreak): boolean {
+  const x = a.also ?? [];
+  const y = b.also ?? [];
+  return (
+    a.page === b.page &&
+    a.pos === b.pos &&
+    a.block === b.block &&
+    x.length === y.length &&
+    x.every((p, i) => p === y[i])
+  );
+}
 
 /** Puts a footnote's reference in at the caret, or after the selection, its note empty, the caret after it; its
  *  note takes the caret once laid out. Not in a code block, nor anywhere text cannot go. */
