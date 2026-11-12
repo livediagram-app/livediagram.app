@@ -54,6 +54,7 @@ describe('RuleBuilder', () => {
   it('shows a new rule Off, and says when a save fails or the name is taken', async () => {
     render(<Builder saved={null} />);
     expect(screen.getByText('Off')).toBeTruthy();
+    expect(screen.getByText('Not Saved')).toBeTruthy();
     api.save.mockRejectedValueOnce(new Error('offline'));
     fireEvent.click(screen.getByRole('button', { name: 'Save Rule' }));
     await waitFor(() =>
@@ -118,8 +119,8 @@ describe('ValueTextField', () => {
     (
       screen.getByRole('textbox', { name: 'Subject' }) as unknown as HTMLTextAreaElement
     ).setSelectionRange(3, 3);
-    fireEvent.click(screen.getByRole('button', { name: 'Any Field…' }));
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Completed On' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Insert a Value into Subject' }));
+    fireEvent.click(screen.getByRole('option', { name: /^Completed On/ }));
     expect(onChange).toHaveBeenLastCalledWith('Hi {{card.field.Completed On}}');
     fireEvent.change(screen.getByRole('textbox', { name: 'Subject' }), {
       target: { value: 'a\nb' },

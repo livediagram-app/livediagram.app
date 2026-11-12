@@ -5,24 +5,13 @@
 // says so with Clear. The rows' changes are the dialog's (it holds the list); this narrows and lays them out.
 
 import { useMemo, useState } from 'react';
-import {
-  AUTOMATION_TRIGGER_KINDS,
-  AUTOMATION_TRIGGER_NAMES,
-  type AutomationTriggerKind,
-  type RuleSentenceOutline,
-} from '@liveplanner/items';
+import type { AutomationTriggerKind, RuleSentenceOutline } from '@liveplanner/items';
 import type { AutomationListedRule } from '@liveplanner/api-schema';
-import { NoMatches, Select } from '@liveplanner/ui';
-import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
+import { NoMatches } from '@liveplanner/ui';
+import { RuleFilters, type OnFilter, type TriggerFilter } from './RuleFilters';
 import { RULE_GRID, RuleRow, type RuleRowActions } from './RuleRow';
 
-export type OnFilter = 'all' | 'on' | 'off';
-
-const ON_FILTERS: readonly { value: OnFilter; label: string }[] = [
-  { value: 'all', label: 'On and Off' },
-  { value: 'on', label: 'On' },
-  { value: 'off', label: 'Off' },
-];
+export type { OnFilter } from './RuleFilters';
 
 /** The rules a search and the two filters leave, in order. */
 export function filterRules(
@@ -39,8 +28,6 @@ export function filterRules(
       (on === 'all' || (on === 'on') === r.enabled),
   );
 }
-
-const FILTER_SELECT = 'h-8 rounded-lg pl-3 pr-7 text-[13px]';
 
 export function RulesList({
   rules,
@@ -59,7 +46,7 @@ export function RulesList({
   actionsFor: (rule: AutomationListedRule) => RuleRowActions;
 }) {
   const [query, setQuery] = useState('');
-  const [trigger, setTrigger] = useState<AutomationTriggerKind | 'all'>('all');
+  const [trigger, setTrigger] = useState<TriggerFilter>('all');
   const [on, setOn] = useState<OnFilter>('all');
   const shown = useMemo(() => filterRules(rules, query, trigger, on), [rules, query, trigger, on]);
   const filters = (trigger === 'all' ? 0 : 1) + (on === 'all' ? 0 : 1);
@@ -70,45 +57,15 @@ export function RulesList({
   };
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div
-        className={`flex flex-wrap items-center gap-2 ${phone ? 'px-4 pb-1 pt-3' : 'px-5 pb-1 pt-3'}`}
-      >
-        <div className={phone ? 'w-full' : 'w-[260px]'}>
-          <SearchInput
-            value={query}
-            onChange={setQuery}
-            placeholder="Find a rule"
-            ariaLabel="Find a rule"
-            clearAriaLabel="Clear Search"
-            clearDescription="Show every rule again."
-          />
-        </div>
-        <Select
-          aria-label="Trigger"
-          value={trigger}
-          onChange={(e) => setTrigger(e.target.value as AutomationTriggerKind | 'all')}
-          selectClassName={FILTER_SELECT}
-        >
-          <option value="all">All Triggers</option>
-          {AUTOMATION_TRIGGER_KINDS.map((k) => (
-            <option key={k} value={k}>
-              {AUTOMATION_TRIGGER_NAMES[k]}
-            </option>
-          ))}
-        </Select>
-        <Select
-          aria-label="On or off"
-          value={on}
-          onChange={(e) => setOn(e.target.value as OnFilter)}
-          selectClassName={FILTER_SELECT}
-        >
-          {ON_FILTERS.map((f) => (
-            <option key={f.value} value={f.value}>
-              {f.label}
-            </option>
-          ))}
-        </Select>
-      </div>
+      <RuleFilters
+        phone={phone}
+        query={query}
+        onQuery={setQuery}
+        trigger={trigger}
+        onTrigger={setTrigger}
+        on={on}
+        onOn={setOn}
+      />
       <div className={`min-h-0 flex-1 overflow-y-auto ${phone ? 'pb-2' : 'px-5 pb-5 pt-2'}`}>
         {shown.length === 0 ? (
           <NoMatches things="rules" query={query} filters={filters} onClear={clear} clearsBoth />

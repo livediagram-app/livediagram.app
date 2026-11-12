@@ -2,7 +2,7 @@
 
 // The panel beside the steps (docs/specs/026-plan/automations.md "The rule builder"): the selected step's fields,
 // read from the plan's own pickers, and for a comment or an email its Preview. Nothing selected: a line saying to pick
-// one. On a phone it opens under the steps.
+// one. On a phone (`drawer`) the same panel is a sheet over the rule drawer (StepDrawer).
 
 import {
   AUTOMATION_CONDITION_NAMES,
@@ -26,6 +26,7 @@ import {
   setStep,
   type RulePart,
 } from './rule-draft';
+import { StepDrawer } from './StepDrawer';
 import { StepPreview } from './StepPreview';
 import { ActionPanel } from './step-panels/ActionPanel';
 import { AiStepPanel } from './step-panels/AiStepPanel';
@@ -53,6 +54,7 @@ export function StepPanel({
   person,
   now,
   timeZone,
+  drawer,
 }: {
   body: AutomationRuleBody;
   part: RulePart | null;
@@ -63,11 +65,18 @@ export function StepPanel({
   now: number;
   // The zone the rule is saved in (this browser's).
   timeZone: string;
+  // On a phone: the panel is a sheet, and this closes it.
+  drawer?: { onClose: () => void };
 }) {
   const hooks = usePlanWebhooks();
   // A time rule or an incoming webhook's has nobody behind it: no "whoever triggered it".
   const timeRule = isPersonless(body.trigger);
-  const shell = (title: string, tile: React.ReactNode, children: React.ReactNode) => (
+  const shell = (title: string, tile: React.ReactNode, children: React.ReactNode) =>
+    drawer ? (
+      <StepDrawer title={title} tile={tile} onClose={drawer.onClose}>
+        {children}
+      </StepDrawer>
+    ) : (
     <section aria-label={`${title} step`} data-step-panel="" className="flex flex-col gap-4">
       <h3 className="flex items-center gap-2.5 text-[15px] font-semibold text-slate-900 dark:text-slate-50">
         {tile}

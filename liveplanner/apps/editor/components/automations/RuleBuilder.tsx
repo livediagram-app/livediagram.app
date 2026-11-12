@@ -2,13 +2,14 @@
 
 // The rule builder (docs/specs/026-plan/automations.md "The rule builder"): the bar (the breadcrumb back to
 // Automations, the name editable in place, the On / Off chip, "Edited by … · when", Test on a Card, Save Rule), the
-// steps on the left and the selected step's panel on the right (under the steps on a phone), and Rule Details under
-// the steps. It holds the rule as changed; the dialog asks Discard Changes? before leaving it dirty (onDirty). A
+// steps on the left and the selected step's panel on the right, and Rule Details under the steps; on a phone the
+// rule drawer's ("The rule builder on a phone"): PhoneRuleHeader, the steps scrolling, PhoneRuleFoot with Rule
+// Details pinned, and the picked step's panel in its own drawer (StepDrawer). It holds the rule as changed; the dialog asks Discard Changes? before leaving it dirty (onDirty). A
 // refusal's `path` marks the step at fault and selects it. A rule opened from a template (or drafted by Describe a
 // Rule, with its `notice` above the steps) marks the steps it left to pick until they are picked. It holds the plan's webhooks for its outgoing actions, read once when one first opens.
 // A save stamps the rule with this browser's time zone, the saver's (spec "Time triggers").
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { AutomationListedRule } from '@liveplanner/api-schema';
 import {
   AUTOMATION_NAME_MAX,
@@ -40,6 +41,7 @@ import {
   sameBody,
   type RulePart,
 } from './rule-draft';
+import { PhoneRuleFoot, PhoneRuleHeader } from './PhoneRuleChrome';
 import { RuleDetails } from './RuleDetails';
 import { RuleSteps, type StepsActions } from './RuleSteps';
 import { defaultCondition, defaultStep } from './step-defaults';
@@ -52,7 +54,7 @@ type Fault = { path: string; message: string };
 const REFUSAL_WORDS: Readonly<Record<string, string>> = {
   automation_name_taken: 'Another rule here has this name. Pick another.',
   automation_rules_full: 'This plan has 50 rules, the most it can hold. Delete one to add another.',
-  automation_value_unknown: 'This names a value rules don’t know. Pick one under Insert a Value.',
+  automation_value_unknown: 'This names a value rules don’t know. Pick one from Insert a Value in the field.',
   automation_not_found: 'This rule was deleted elsewhere.',
   automation_condition_unsupported:
     'A time trigger has nobody behind it: nothing here can name whoever triggered it.',
@@ -113,6 +115,8 @@ export function RuleBuilder({
   const [saved, setSaved] = useState(() => bodyOf(initial));
   const [body, setBody] = useState(() => bodyOf(initial));
   const [selected, setSelected] = useState<RulePart | null>({ part: 'trigger' });
+  // A phone's step drawer: opened by a pick, an add or a refusal, never by the first selection.
+  const [stepOpen, setStepOpen] = useState(false);
   const [fault, setFault] = useState<Fault | null>(null);
   const [saving, setSaving] = useState(false);
   const [toggling, setToggling] = useState(false);
@@ -134,7 +138,10 @@ export function RuleBuilder({
 
   const change = (next: AutomationRuleBody, part?: RulePart | null) => {
     setBody(next);
-    if (part !== undefined) setSelected(part);
+    if (part !== undefined) {
+      setSelected(part);
+      setStepOpen(part !== null);
+    }
     setFault(null);
   };
 
@@ -142,7 +149,10 @@ export function RuleBuilder({
     const path = r.path ?? (r.code === 'automation_name_taken' ? 'name' : '');
     setFault({ path, message: refusalMessage(r) });
     const part = path ? partAt(body, path) : null;
-    if (part) setSelected(part);
+    if (part) {
+      setSelected(part);
+      setStepOpen(true);
+    }
   };
 
   const save = async () => {
@@ -187,7 +197,10 @@ export function RuleBuilder({
   };
 
   const actions: StepsActions = {
-    select: (part) => setSelected(part),
+    select: (part) => {
+      setSelected(part);
+      setStepOpen(true);
+    },
     edit: (part, edit) => {
       const next = editPart(body, part, edit);
       change(next.body, next.part);
@@ -304,6 +317,12 @@ export function RuleBuilder({
       <RuleDetails chain={body.chain} onChain={(chain) => change({ ...body, chain })} />
     </div>
   );
+  const edited: ReactNode = rule ? (
+    <>
+      Edited by {rule.edited.by.name}
+      {rule.edited.ai ? ' (Agent)' : ''} · {formatRelativeTimeShort(Math.max(0, now - rule.edited.at))}
+    </>
+  ) : null;
   const panel = (
     <StepPanel
       body={body}
@@ -314,6 +333,7 @@ export function RuleBuilder({
       person={person}
       now={now}
       timeZone={timeZone}
+      {...(phone ? { drawer: { onClose: () => setStepOpen(false) } } : {})}
     />
   );
 
@@ -335,15 +355,50 @@ export function RuleBuilder({
     <IncomingRuleProvider value={incoming}>
       <PlanWebhooksProvider value={webhooks}>
         <div data-rule-builder="" className="flex min-h-0 flex-1 flex-col">
-          {bar}
           {phone ? (
-            <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 py-4">
-              {steps}
-              <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
-                {panel}
+            <>
+              <PhoneRuleHeader
+                name={body.name}
+                onName={(name) => change({ ...body, name })}
+                nameFault={nameFault}
+                state={
+                  rule
+                    ? { enabled: rule.enabled, busy: toggling, onToggle: (next) => void toggle(next) }
+                    : null
+                }
+                edited={edited}
+                onBack={onBack}
+              />
+              <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overscroll-contain bg-slate-50/60 px-4 py-4 dark:bg-slate-950/40">
+                {notice}
+                <RuleSteps
+                  body={body}
+                  outline={outline}
+                  selected={selected}
+                  fault={stepFault && fault ? { part: stepFault, message: fault.message } : null}
+                  actions={actions}
+                  picks={pickMarks}
+                />
               </div>
-            </div>
+              <PhoneRuleFoot
+                details={
+                  <RuleDetails
+                    placement="foot"
+                    chain={body.chain}
+                    onChain={(chain) => change({ ...body, chain })}
+                  />
+                }
+                message={nameFault ?? otherFault}
+                onTest={() => setTesting(true)}
+                onSave={() => void save()}
+                saving={saving}
+                saved={!!rule && !dirty}
+              />
+              {stepOpen && selected ? panel : null}
+            </>
           ) : (
+            <>
+            {bar}
             <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_380px]">
               <div className="min-h-0 overflow-y-auto bg-slate-50/60 px-6 py-5 dark:bg-slate-950/40">
                 {steps}
@@ -352,6 +407,7 @@ export function RuleBuilder({
                 {panel}
               </div>
             </div>
+            </>
           )}
           {testing ? (
             <TestOnCard

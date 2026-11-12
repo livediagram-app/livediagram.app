@@ -74,7 +74,7 @@ const element = {
 
 // A 390 px view with To Do in focus (its cards centred) and In Progress peeking in at the right.
 function draw(value: PlanContextValue) {
-  const view = render(
+  render(
     <SelectionStoreProvider store={createSelectionStore()}>
       <PlanProvider value={value}>
         <PlanBoardView element={element} />
