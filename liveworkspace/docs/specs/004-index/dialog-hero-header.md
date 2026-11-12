@@ -103,7 +103,8 @@ Automations: simple geometric SVG in the tokens, a plate or two lifted off the p
   offset stay within 24rem. Where it shows, the title and its line stop at 26rem, so the two never meet.
 - **The glyph**: the motif as one mark in a 20 x 20 box, in the accent.
 - **Motion**: at most one, only where motion is welcome (`motion-safe:`), two or three times over and then still: a
-  ring spreading from its centre, or a piece bobbing.
+  ring spreading from its centre, or a piece bobbing. The count is set important (`HERO_MOTION`), since the shared
+  keyframes loop forever and their `motion-safe:` shorthand would otherwise reset it.
 - **Cheap and silent**: no filter or blur, no image, nothing fetched; hidden from screen readers and the pointer.
   Each modal's art is a constant, so the band is drawn once and never again however often the dialog renders.
 

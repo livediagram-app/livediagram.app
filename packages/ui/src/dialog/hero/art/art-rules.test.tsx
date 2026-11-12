@@ -42,7 +42,8 @@ describe.each(arts)('$file', ({ file, art, source }) => {
     for (const el of moving) {
       const cls = String(el.getAttribute('class'));
       expect(cls).toMatch(/motion-safe:animate-/);
-      expect(cls).toMatch(/\[animation-iteration-count:[23]\]/);
+      // Important, or the later motion-safe shorthand's `infinite` overrides it and the art never stops.
+      expect(cls).toMatch(/\[animation-iteration-count:[23]\]!/);
     }
   });
 

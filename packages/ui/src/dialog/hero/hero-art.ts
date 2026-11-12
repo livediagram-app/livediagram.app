@@ -91,11 +91,12 @@ export const HERO_PLACE = {
 
 /**
  * The one motion a band may have: a ring spreading from its own centre twice, or a piece bobbing twice. The empty
- * states' keyframes (the shared theme), which reduced motion turns off.
+ * states' keyframes (the shared theme), which reduced motion turns off. The count is important (`!`): the
+ * `motion-safe:` shorthand sits in a media query later in the sheet, and its `infinite` would win otherwise.
  */
 export const HERO_MOTION = {
-  ring: 'motion-safe:animate-empty-ring [animation-iteration-count:2] [transform-box:fill-box] [transform-origin:center]',
-  float: 'motion-safe:animate-empty-float [animation-iteration-count:2]',
+  ring: 'motion-safe:animate-empty-ring [animation-iteration-count:2]! [transform-box:fill-box] [transform-origin:center]',
+  float: 'motion-safe:animate-empty-float [animation-iteration-count:2]!',
 } as const;
 
 /** A drawn piece's common SVG props: decorative, never focusable. */

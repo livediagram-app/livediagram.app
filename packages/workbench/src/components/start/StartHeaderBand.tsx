@@ -23,9 +23,10 @@ import {
 import type { StartBandColours } from './start-band-colours';
 
 // One motion each, at most, and only twice or three times over: the board's card bobs as it is dragged, the
-// speaker's ring spreads. Both are the empty states' shared keyframes, which reduced motion turns off.
-const FLOAT = 'motion-safe:animate-empty-float [animation-iteration-count:2]';
-const RING = 'motion-safe:animate-empty-ring [animation-iteration-count:3]';
+// speaker's ring spreads. Both are the empty states' shared keyframes, which reduced motion turns off. The count
+// is important (`!`), or the later `motion-safe:` shorthand's `infinite` wins.
+const FLOAT = 'motion-safe:animate-empty-float [animation-iteration-count:2]!';
+const RING = 'motion-safe:animate-empty-ring [animation-iteration-count:3]!';
 // The ring scales about its own centre.
 const ABOUT_CENTRE = '[transform-box:fill-box] [transform-origin:center]';
 
