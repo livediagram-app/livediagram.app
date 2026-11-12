@@ -3,11 +3,11 @@
 // complex") where node:sqlite allows 50,000, so a query that passes a test could fail in production: a GitHub
 // address (`%github.com/owner/repo/pull/n%`) did, 2026-11-12. Refuse a bound pattern the way production does. Look
 // for text with `instr(haystack, needle) > 0` instead, which has no such limit. No Worker imports this module.
+import { blankQuotedAndComments } from './sql-blank';
 
 /** The longest LIKE or GLOB pattern D1 and a Durable Object's SQLite take, in bytes. */
 export const D1_LIKE_PATTERN_MAX = 50;
 
-const QUOTED = /'(?:[^']|'')*'|"(?:[^"]|"")*"|--[^\n]*|\/\*[\s\S]*?\*\//g;
 // A bound parameter (`?` or `?N`), or a LIKE / GLOB naming one as its pattern.
 const TOKEN = /\b(?:LIKE|GLOB)\s+\?(\d*)|\?(\d*)/gi;
 
@@ -19,7 +19,7 @@ export function assertD1LikePatterns(
   max = D1_LIKE_PATTERN_MAX,
 ): void {
   let positional = 0;
-  for (const m of query.replace(QUOTED, ' ').matchAll(TOKEN)) {
+  for (const m of blankQuotedAndComments(query).matchAll(TOKEN)) {
     const isPattern = m[0][0] !== '?';
     const numbered = isPattern ? m[1] : m[2];
     const index = numbered ? Number(numbered) - 1 : positional++;
