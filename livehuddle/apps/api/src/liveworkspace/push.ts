@@ -47,8 +47,8 @@ export function pushTag(documentId: string, place: string): string {
   return `${documentId}:${place}`.replace(/[^A-Za-z0-9:_-]/g, '_').slice(0, 64);
 }
 
-/** The canvas's own link: an action with no place given. */
-export function documentUrl(env: Env, documentId: string): string {
+/** The canvas's own link. */
+function documentUrl(env: Env, documentId: string): string {
   return `${appBaseUrl(env)}/document/${enc(documentId)}`;
 }
 
@@ -60,16 +60,6 @@ export function elementThreadUrl(
   elementId: string,
 ): string {
   return `${documentUrl(env, documentId)}#t=${enc(tabId)}&el=${enc(elementId)}&open=comments`;
-}
-
-/** The link to an element's assigned action. */
-export function elementActionUrl(
-  env: Env,
-  documentId: string,
-  tabId: string,
-  elementId: string,
-): string {
-  return `${documentUrl(env, documentId)}#t=${enc(tabId)}&el=${enc(elementId)}&open=action`;
 }
 
 // A tab's threads as the pusher reads them, each placed at its element.

@@ -227,21 +227,6 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
     EDITOR_ONLY,
   );
 
-  row(
-    'Take part in a session tool (react)',
-    {
-      react: delta({
-        kind: 'comment-react',
-        commentId: 'c1',
-        emoji: 'thumbs-up',
-        by: ME,
-        name: 'Me',
-        on: true,
-      }),
-    },
-    TAKING_PART,
-  );
-
   // docs/specs/002-project-scope/not-in-livehuddle.md "The Vote": an old client's dot reaches nobody, from any role.
   it("drops an old client's dot from every level", () => {
     const dot = { kind: 'vote', tabId: 't', elementId: 'col', voter: ME, delta: 1 };
@@ -456,35 +441,25 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
     });
   });
 
-  // A Participant comments through the comment routes (gateParticipate, routes/comment-routes.test.ts: a
-  // Participant link comments, a view link is refused), which write the tab and tell the room; in the room the
-  // comment deltas are an Editor's, whose save carries them, and a comment's reaction is whoever may comment's.
-  describe('Comment, reply, resolve', () => {
-    const thread = {
-      comment: delta({ kind: 'comment-add', comment: { id: 'c1', text: 'Hi' } }),
-      resolve: delta({ kind: 'comment-resolve', resolved: true }),
-      remove: delta({ kind: 'comment-remove', commentId: 'c1' }),
-    };
-    const react = delta({
-      kind: 'comment-react',
-      commentId: 'c1',
-      emoji: 'eyes',
-      by: ME,
-      name: 'Me',
-      on: true,
-    });
-    it('edit: relayed', () => {
-      for (const op of [...Object.values(thread), react])
-        expect(roomDoes(op, 'edit')).toBe('relayed');
-    });
-    it('participate: reacts in the room, writes through the comment routes', () => {
-      expect(roomDoes(react, 'participate')).toBe('relayed');
-      for (const op of Object.values(thread)) expect(roomDoes(op, 'participate')).toBe('dropped');
-    });
-    it('view: dropped', () => {
-      for (const op of [...Object.values(thread), react])
-        expect(roomDoes(op, 'view')).toBe('dropped');
-    });
+  // livehuddle has no comments (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and
+  // notes"): every comment delta, a reaction included, is dropped from every level, and the comment routes answer 410
+  // (routes/comment-routes.test.ts).
+  it('drops every comment delta from every level', () => {
+    const ops = [
+      delta({ kind: 'comment-add', comment: { id: 'c1', text: 'Hi' } }),
+      delta({ kind: 'comment-resolve', resolved: true }),
+      delta({ kind: 'comment-remove', commentId: 'c1' }),
+      delta({
+        kind: 'comment-react',
+        commentId: 'c1',
+        emoji: 'eyes',
+        by: ME,
+        name: 'Me',
+        on: true,
+      }),
+    ];
+    for (const level of ['edit', 'participate', 'view'] as const)
+      for (const op of ops) expect(roomDoes(op, level)).toBe('dropped');
   });
 
   // Panning and zooming are the viewport a follower follows; export writes nothing and sends nothing.

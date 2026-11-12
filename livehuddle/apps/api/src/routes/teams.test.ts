@@ -196,10 +196,9 @@ describe('the notify routes, for someone in the team', () => {
     expect(accountsCalls).not.toContain('/teams/members');
   });
 
-  it('reach the handler for a joined member', async () => {
+  it('answer a joined member 410, livehuddle having no actions or mentions', async () => {
     const res = await call('GET', '/api/teams/team_1/access-check');
-    expect(res.status).toBe(400);
-    expect(accountsCalls).toContain('/teams/members');
+    expect(res.status).toBe(410);
   });
 });
 

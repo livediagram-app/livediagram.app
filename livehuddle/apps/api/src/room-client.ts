@@ -1,7 +1,6 @@
 import {
   ledgerCommentAuthors,
   mergeLedgerIntoTab,
-  type ElementDelta,
   type Tab,
   type TabLedger,
 } from '@livehuddle/document';
@@ -136,49 +135,6 @@ export function parseRoomCursor(header: string | null): { epoch: string; seq: nu
   const seq = Number(header.slice(cut + 1));
   if (epoch.length > 100 || !Number.isInteger(seq) || seq < 0) return null;
   return { epoch, seq };
-}
-
-// Hand the document's realtime room a change the api itself just wrote, so
-// everyone connected sees it (docs/specs/012-collaboration/collab-race-hardening.md).
-//
-// The one case today is a view-role visitor's comment. The room refuses
-// mutations from a view-role socket, so the visitor writes through the
-// comment endpoints instead; before this, the comment reached D1 but no
-// editor's screen, and the next editor save (built from a thread without it)
-// erased it. Relayed as the same `el-delta` an editor's own comment sends, so
-// receivers need nothing new.
-//
-// Best-effort, like the share-revoked broadcast: the D1 write is the record,
-// this is the live copy; a relay the room refused or never received is logged.
-export async function relayElementDelta(
-  env: Env,
-  documentId: string,
-  tabId: string,
-  elementId: string,
-  delta: ElementDelta,
-): Promise<boolean> {
-  // The comment is saved either way; a room that did not hear about it is logged (PR26).
-  const fields = { documentId, tabId, delta: delta.kind };
-  try {
-    const res = await roomFetch(
-      env,
-      documentId,
-      '/mutation',
-      mutationInit({ kind: 'el-delta', tabId, elementId, delta }),
-      ROOM_RELAY_TIMEOUT_MS,
-    );
-    if (res.ok) return true;
-    console.warn('[room-mutation] el-delta did not reach the room', {
-      ...fields,
-      error: `status ${res.status}`,
-    });
-  } catch (err) {
-    console.warn('[room-mutation] el-delta did not reach the room', {
-      ...fields,
-      error: String(err),
-    });
-  }
-  return false;
 }
 
 // One changeset into the room's ordered stream (docs/specs/024-agents/agent-changesets.md "The

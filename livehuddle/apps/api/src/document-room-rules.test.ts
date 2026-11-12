@@ -217,13 +217,11 @@ describe('admitFrame', () => {
 // docs/specs/013-workspace/share-roles.md "Integrity": a Participant answers only as itself.
 describe('answersAsSelf', () => {
   const delta = (d: Record<string, unknown>) => ({ kind: 'el-delta', delta: d });
-  it('admits its own comment reaction', () => {
-    expect(answersAsSelf(delta({ kind: 'comment-react', by: 'k' }), 'k')).toBe(true);
-  });
   it("refuses another's key, no key, and anything else", () => {
     // The retired Vote's dot is no answer (docs/specs/002-project-scope/not-in-livehuddle.md "The Vote").
     expect(answersAsSelf({ kind: 'vote', voter: 'k' }, 'k')).toBe(false);
-    expect(answersAsSelf(delta({ kind: 'comment-react', by: 'other' }), 'k')).toBe(false);
+    // A comment reaction left with comments (not-in-livehuddle.md "Comments, actions, links and notes").
+    expect(answersAsSelf(delta({ kind: 'comment-react', by: 'k' }), 'k')).toBe(false);
     expect(answersAsSelf(delta({ kind: 'check' }), 'k')).toBe(false);
     // The retired per-participant responses and idea box take no Participant answer any more.
     expect(answersAsSelf(delta({ kind: 'response', participantId: 'k' }), 'k')).toBe(false);
@@ -274,15 +272,5 @@ describe('answersAsSelf, Arcade Machine scores', () => {
     expect(answersAsSelf({ kind: 'el-delta', delta: { kind: 'arcade-clear' } }, 'k', 'adder')).toBe(
       false,
     );
-  });
-});
-
-// docs/specs/012-collaboration/comment-reactions.md "How it is stored and travels": a reaction names its reactor.
-describe('answersAsSelf, comment reactions', () => {
-  const react = (by: unknown) => ({ kind: 'el-delta', delta: { kind: 'comment-react', by } });
-  it('admits its own reaction only', () => {
-    expect(answersAsSelf(react('k'), 'k')).toBe(true);
-    expect(answersAsSelf(react('other'), 'k')).toBe(false);
-    expect(answersAsSelf(react('k'), undefined)).toBe(false);
   });
 });

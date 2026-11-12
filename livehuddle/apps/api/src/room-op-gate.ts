@@ -3,6 +3,7 @@
 import {
   isParticipationOp,
   isPresenceOpKind,
+  isRetiredDeltaOp,
   isRetiredOpKind,
   isSystemOpKind,
   parseAvatarBell,
@@ -91,6 +92,8 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // docs/specs/002-project-scope/not-in-livehuddle.md "The Vote"): dropped from every session, so it is never
   // sequenced, relayed, logged for catch-up or noted in the ledger.
   if (isRetiredOpKind(opKind)) return DROP;
+  // Nor a comment delta: livehuddle has no comments (not-in-livehuddle.md "Comments, actions, links and notes").
+  if (isRetiredDeltaOp(op)) return DROP;
   // A tab-scoped session acts on its own tab only, and never on the
   // document's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
   if (!scopedSenderMayRelay(op, sender.tabScope)) return DROP;
@@ -98,8 +101,8 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   if (scopedRenames(op, sender.tabScope)) return DROP;
   if (!keepsToItsTab(op)) return DROP;
   const presence = isPresenceOpKind(opKind);
-  // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's comment
-  // reactions relay like an Editor's; its `el` op goes through the participant content rule and
+  // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's pins, presses
+  // and scores relay like an Editor's; its `el` op goes through the participant content rule and
   // never relays as sent; everything else needs an Editor.
   const level = parseStoredLevel(sender.role);
   // Speaking is taking part too (docs/specs/008-canvas/avatar-mode.md "Who may speak"), and a message is held to
