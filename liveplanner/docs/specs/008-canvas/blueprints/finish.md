@@ -314,6 +314,10 @@ is. `svgChecklistShape`, `svgLegendShape` and a stored tab window's frame letter
   `shape` or `line` from `MARKER_FACE_FRAME_MIN_PX` (40), `MARKER_FACE_SHAPE_MIN_PX` (24), `MARKER_FACE_DISC_MIN_PX`
   (14), `MARKER_FACE_SHAPE_THIN_PX` (6), `MARKER_FACE_BACKDROP_SHARE` (0.6, rectangles only),
   `MARKER_FACE_BODY_SLACK_PX` (6, the face's own box: coloured in when filled), a pill or a dashed line is null.
+  A part painted `frame: true` (the face's `data-marker-frame`, `FRAME_ATTR` in `face-finish-marks.ts`, set on each
+  `PlanCardFace` frame) is a `frame` whenever it is an outlined, undashed rectangle, before the pill and size rules,
+  and `frameInk` keeps a round one: a Minimal card's inset rectangle is 36 px tall, under `MARKER_FACE_FRAME_MIN_PX`,
+  and was coloured in as a shape, which a card never is, so it kept its plain line.
   Colour: a line its stroke; a part with no line a deeper shade of its fill (`markerFrameInk`,
   `MARKER_FACE_FRAME_INK_SHIFT` 0.45) streaked at `MARKER_FACE_STREAK_OPACITY` (0.2); a frame `markerFrameInk` at
   `MARKER_FACE_FRAME_PX` (2.5). `handDrawnInk(stroke, fill)` draws a line under `HAND_DRAWN_INK_MIN_CONTRAST` (1.8)

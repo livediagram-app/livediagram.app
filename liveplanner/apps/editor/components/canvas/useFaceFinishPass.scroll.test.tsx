@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SKETCH_INK_SETTLE_MS } from '@liveworkspace/workbench/components/canvas/settle-watch';
 import { watchFaceArrivals } from './face-arrivals';
-import { useFaceFinishPass } from './useFaceFinishPass';
+import { drawMarkerFace, useFaceFinishPass } from './useFaceFinishPass';
 
 // Scrolling a busy Plan board under Marker (docs/specs/026-plan/plan-board.md "Marker draws what is in view"): a take
 // skips the cards the browser is not drawing (content-visibility), and a card scrolled into view changes nothing in
@@ -186,6 +186,83 @@ describe('scrolling a busy Plan board in marker', () => {
     expect(observer!.watched.size).toBe(CARDS - 8);
     again.unmount();
     expect(observer!.watched.size).toBe(0);
+  });
+});
+
+// On a phone every card is Minimal (40 px tall), as it is at any width on a Minimal board: its inset outline is under a
+// frame's least size, so it was coloured in as a shape, which a card never is, and kept its plain line. Each card face
+// is marked a frame (PlanCardFace's data-marker-frame).
+function PhoneBoard({ marked = true, radius = 8 }: { marked?: boolean; radius?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useFaceFinishPass(ref, 'marker', 'board');
+  return (
+    <div ref={ref} data-w="375" data-h="724" style={{ position: 'absolute' }}>
+      <div className="plan-col" data-plan-column="backlog" data-plan-lane="">
+        {Array.from({ length: CARDS }, (_, i) => (
+          <div
+            key={i}
+            data-plan-card={`c${i}`}
+            data-w="351"
+            data-h="40"
+            style={{ position: 'relative' }}
+          >
+            <div
+              className="plan-card"
+              data-w="351"
+              data-h="40"
+              {...(marked ? { 'data-marker-frame': '' } : {})}
+              style={{
+                position: 'relative',
+                border: '1px solid rgb(226, 232, 240)',
+                borderRadius: radius,
+                backgroundColor: 'rgb(255, 255, 255)',
+              }}
+            >
+              <span>Card {i}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+const faceInked = (root: ParentNode, i: number) => {
+  const face = card(root, i).firstElementChild!;
+  return (
+    !!face.querySelector(':scope > svg[data-marker-ink]') &&
+    face.getAttribute('data-marker-drawn') === 'frame'
+  );
+};
+
+describe('a phone board in marker (Minimal cards)', () => {
+  it('outlines every Minimal card, square or round', () => {
+    show(0, CARDS);
+    for (const radius of [8, 20]) {
+      const { container, unmount } = render(<PhoneBoard radius={radius} />);
+      drawMarkerFace(container.firstElementChild as HTMLElement, 'board');
+      for (let i = 0; i < CARDS; i++) expect(faceInked(container, i)).toBe(true);
+      unmount();
+    }
+  });
+
+  it('left an unmarked 40 px box plain, as before', () => {
+    show(0, CARDS);
+    const { container } = render(<PhoneBoard marked={false} />);
+    drawMarkerFace(container.firstElementChild as HTMLElement, 'board');
+    expect(faceInked(container, 0)).toBe(false);
+  });
+
+  it('inks the Minimal cards that scroll into view once the scrolling pauses', async () => {
+    vi.useFakeTimers();
+    show(0, 14);
+    const { container } = render(<PhoneBoard />);
+    await act(async () => {});
+    expect(faceInked(container, 13)).toBe(true);
+    expect(faceInked(container, 20)).toBe(false);
+    show(14, 28);
+    scroll(between(14, 28));
+    await vi.advanceTimersByTimeAsync(SKETCH_INK_SETTLE_MS * 2);
+    for (let i = 14; i < 28; i++) expect(faceInked(container, i)).toBe(true);
   });
 });
 

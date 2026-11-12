@@ -118,6 +118,8 @@ const cardHeading = (title: ReactNode) => (
 // sets).
 const FRAME =
   'plan-card group/card relative flex h-full overflow-hidden rounded-[var(--plan-card-r,12px)] border';
+// Marker outlines every card, a Minimal one included (shorter than a frame's least size; face-finish-marks.ts).
+const FRAME_MARK = { 'data-marker-frame': '' };
 // The lift under the pointer. Left off a face that carries a headAction: its host draws the hover, since a transform
 // would make the face a stacking context and sink the action under the host's own press target.
 // Under the pointer (docs/specs/026-plan/plan-board.md "Card hover"): it rises onto a shadow in its type's colour, its edge
@@ -416,7 +418,11 @@ export function PlanCardFace({
   if (size === 'minimal' && stacked) {
     const bits = [...slotBits('lead'), ...slotBits('trail'), ...(running ? [running] : [])];
     return (
-      <div className={`${FRAME} ${LIFT} flex-col gap-1.5 px-2.5 py-2`} style={frame}>
+      <div
+        className={`${FRAME} ${LIFT} flex-col gap-1.5 px-2.5 py-2`}
+        style={frame}
+        {...FRAME_MARK}
+      >
         {presenceTag}
         <div className="flex items-start gap-1.5">
           <span className="mt-[5px] flex shrink-0">
@@ -439,7 +445,11 @@ export function PlanCardFace({
   }
   if (size === 'minimal') {
     return (
-      <div className={`${FRAME} ${LIFT} items-center gap-2 px-3 py-2.5`} style={frame}>
+      <div
+        className={`${FRAME} ${LIFT} items-center gap-2 px-3 py-2.5`}
+        style={frame}
+        {...FRAME_MARK}
+      >
         {presenceTag}
         <TypeDot accent={accent} />
         {zone('lead', slotBits('lead'))}
@@ -468,7 +478,11 @@ export function PlanCardFace({
   const coverPlaced = (layout.head ?? []).includes('cover') && show('cover');
   const cover = coverPlaced ? (attachmentCover(item) ?? null) : null;
   return (
-    <div className={`${FRAME} ${headAction ? '' : LIFT} flex-col gap-2 px-3 py-2.5`} style={frame}>
+    <div
+      className={`${FRAME} ${headAction ? '' : LIFT} flex-col gap-2 px-3 py-2.5`}
+      style={frame}
+      {...FRAME_MARK}
+    >
       {presenceTag}
       {cover || (coverPlaced && edit) ? (
         <CardCover cover={cover} palette={palette} sample={!!edit} />

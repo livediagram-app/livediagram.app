@@ -30,6 +30,7 @@ import {
 import { isBoardHoverWrite } from '@/components/plan/board-hover';
 import {
   DRAWN_ATTR,
+  FRAME_ATTR,
   INK_ATTR,
   ISOLATED_ATTR,
   MEASURE_ATTR,
@@ -391,7 +392,7 @@ function frameInk(
   const round = isPillRect(w, h, rx);
   // A round part is a pill (left plain), unless it is the face's own (an annotation's disc, a progress bar's track) or
   // marked a shape: a marker circle, or a pill.
-  if (round && !own) return null;
+  if (round && !own && !el.hasAttribute(FRAME_ATTR)) return null;
   const disc = round && Math.abs(w - h) <= 2;
   const inset = 2;
   const part = PEN_PART[pen](
@@ -411,6 +412,7 @@ function frameInk(
       stroke: bordered ? css.borderTopColor : (ring?.colour ?? null),
       strokePx: bordered ? parseFloat(css.borderTopWidth) : (ring?.px ?? 0),
       ...(el.hasAttribute(SHAPE_ATTR) ? { shape: true } : {}),
+      ...(el.hasAttribute(FRAME_ATTR) ? { frame: true } : {}),
     },
     face,
     seed,
