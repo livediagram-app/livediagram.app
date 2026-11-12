@@ -11,6 +11,7 @@ import type {
   ItemTypeDef,
   PlanBoardOutline,
   PlanStatusName,
+  PullRequestStatus,
 } from '@liveplanner/items';
 
 // The item shapes the api projects, re-exported so the OpenAPI generator finds them here.
@@ -35,6 +36,9 @@ export type {
   PlanBoardKind,
   PlanColumnOutline,
   PlanStatusName,
+  PullRequestChecks,
+  PullRequestState,
+  PullRequestStatus,
 } from '@liveplanner/items';
 
 // GET /api/projects/:id/items[?tabId=][&include=calculated]: the store, or the items one tab shows.
@@ -45,6 +49,10 @@ export type ItemsResponse = {
    *  Formula's number, text, true or false or ISO day, or null), by card id then field id; only cards whose type has
    *  a Calculated field. Worked out as read, never stored. */
   calculated?: Record<string, Record<string, number | string | boolean | null>>;
+  /** For a plan connected to GitHub (docs/specs/026-plan/github-pull-requests.md "Pull request state on cards"): the
+   *  state of each pull request the answered cards link, by a field or by naming them. Absent for a plan with no
+   *  connection, and for a Community visitor. */
+  pullRequests?: PullRequestStatus[];
 };
 
 // One item as written: POST /items, PATCH /items/:itemId, POST .../move, POST .../vote.

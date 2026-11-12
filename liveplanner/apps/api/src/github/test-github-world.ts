@@ -13,6 +13,8 @@ import { linksOf, saveConnection, type GithubConnection } from '../plan-room/git
 import { NO_LINKS, rewriteLinks } from './github-links';
 import type { PlanEnv } from '../types';
 
+export { prPayload, suitePayload, type PrPayload } from './test-github-payloads';
+
 export const WEBHOOK_SECRET = 'whsec-test-0123456789';
 export const CLIENT_SECRET = 'client-secret-test';
 

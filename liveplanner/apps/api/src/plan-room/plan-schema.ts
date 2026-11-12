@@ -27,7 +27,7 @@ import {
   AUTOMATIONS_SCHEMA,
   automationsV19,
 } from './automations/automation-schema';
-import { GITHUB_SCHEMA } from './github/github-schema';
+import { GITHUB_PULLS_SCHEMA, GITHUB_SCHEMA } from './github/github-schema';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -475,6 +475,10 @@ const V20 = AUTOMATION_HOOKS_SCHEMA;
 // (github/github-schema.ts; docs/specs/026-plan/github-pull-requests.md "Storage").
 const V21 = GITHUB_SCHEMA;
 
+// GitHub pull requests part 3: each pull request's latest state and its commits' check suites (github/github-schema.ts;
+// docs/specs/026-plan/github-pull-requests.md "Pull request state on cards").
+const V22 = GITHUB_PULLS_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -497,6 +501,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V19,
   V20,
   V21,
+  V22,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

@@ -8,7 +8,9 @@ import {
   githubEnv,
   githubWorld,
   fakeKv,
+  prPayload,
   sign,
+  suitePayload,
   type GithubWorld,
 } from './test-github-world';
 
@@ -36,12 +38,7 @@ afterEach(() => {
   endRepeatWorld();
 });
 
-const pr = (repoId: number, installationId = 7) => ({
-  action: 'opened',
-  installation: { id: installationId },
-  repository: { id: repoId },
-  pull_request: { number: 42, title: 'Private title' },
-});
+const pr = (repoId: number, installationId = 7) => prPayload({ repoId, installationId });
 
 describe('off', () => {
   it('needs every secret and the namespace; missing any one, every door answers 404 and nothing is logged', async () => {
@@ -187,7 +184,7 @@ describe('a delivery', () => {
     // B disowned its key.
     expect(w.kv.keys()).toEqual(['installation:7:A', 'installation:8:B', 'repo:11:A']);
     // A repository nobody connects reaches nobody.
-    expect(await (await w.deliver('check_suite', pr(99))).json()).toEqual({ delivered: 0 });
+    expect(await (await w.deliver('check_suite', suitePayload({ repoId: 99 }))).json()).toEqual({ delivered: 0 });
   });
 
   it('a repository listed but not chosen reaches nothing', async () => {
