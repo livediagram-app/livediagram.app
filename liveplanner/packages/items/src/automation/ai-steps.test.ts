@@ -14,6 +14,8 @@ import {
   AI_TYPE_UNKNOWN,
   AI_UNREADABLE,
   aiCardInput,
+  AI_FIELDS_MAX,
+  AI_FIELD_TEXT_MAX,
   aiDryLine,
   aiOutcome,
   aiRequest,
@@ -241,12 +243,72 @@ describe('what the model is sent', () => {
     expect(JSON.stringify(input)).not.toMatch(/Priya|p1|card-/);
   });
 
+  it('sends the type’s filled text and choice fields by name, cut to their caps, and no other kind', () => {
+    const type: ItemTypeDef = {
+      ...STORY,
+      id: 'decision',
+      label: 'Decision',
+      fields: ['title', 'status'],
+      custom: [
+        { id: 'f-d', label: 'Decision', kind: 'longtext' },
+        { id: 'f-blank', label: 'Blank', kind: 'text' },
+        { id: 'f-url', label: 'Spec', kind: 'link' },
+        { id: 'f-mail', label: 'Contact', kind: 'email' },
+        { id: 'f-c', label: 'Outcome', kind: 'choice', options: ['Go', 'No go'] },
+        { id: 'f-m', label: 'Areas', kind: 'multichoice', options: ['Web', 'API'] },
+        { id: 'f-n', label: 'Count', kind: 'number' },
+        ...Array.from({ length: 6 }, (_, i) => ({
+          id: `f-x${i}`,
+          label: `Extra ${i}`,
+          kind: 'text' as const,
+        })),
+      ],
+    };
+    const o: AutomationOutline = { ...OUTLINE, types: [type] };
+    const card = bug(
+      {
+        title: 'Test',
+        'f-d': 'This is a test decision to see whether the automation worked',
+        'f-blank': '  ',
+        'f-url': 'https://example.com',
+        'f-mail': 'a@example.com',
+        'f-c': 'Go',
+        'f-m': ['Web', 'API'],
+        'f-n': 3,
+        'f-x0': 'x'.repeat(900),
+        'f-x1': 'one',
+        'f-x2': 'two',
+      },
+      { type: 'decision' },
+    );
+    const input = aiCardInput(card, o);
+    expect(input.fields).toEqual([
+      { name: 'Decision', value: 'This is a test decision to see whether the automation worked' },
+      { name: 'Outcome', value: 'Go' },
+      { name: 'Areas', value: 'Web, API' },
+      { name: 'Extra 0', value: `${'x'.repeat(AI_FIELD_TEXT_MAX - 1)}…` },
+      { name: 'Extra 1', value: 'one' },
+    ]);
+    expect(input.fields).toHaveLength(AI_FIELDS_MAX);
+    expect(JSON.stringify(input)).not.toMatch(/example\.com/);
+  });
+
+  it('asks for English unless the card is plainly in one other language', () => {
+    const r = aiRequest('summarise', { title: 'Test', type: 'Decision' }, {});
+    expect(r.messages[0]!.content).toContain('Write it in English');
+    expect(r.messages[0]!.content).toContain(
+      'Never translate into a language the card does not use',
+    );
+  });
+
   it('leaves out what the card lacks', () => {
     const input = aiCardInput(
       bug({ status: undefined, description: ' ', checklist: 'no' as never }),
       O,
     );
-    expect(input).toEqual({ title: 'Login fails', type: 'Bug' });
+    const { fields, ...rest } = input;
+    expect(rest).toEqual({ title: 'Login fails', type: 'Bug' });
+    expect(fields?.map((f) => f.name)).toEqual(['Severity']);
   });
 
   it('puts the card in the user message as data, the instructions fixed in the system message', () => {
@@ -297,15 +359,28 @@ describe('what the model is sent', () => {
   // The cost table's sizes (spec "Cost"): a card at every cap, and a typical one. Characters are measured; tokens
   // are taken as four characters each.
   it('measures the prompt sizes', () => {
+    // Every cap at once, the type's AI_FIELDS_MAX text fields among them, each named as long as a label runs.
+    const fieldIds = Array.from({ length: AI_FIELDS_MAX + 1 }, (_, i) => `f-w${i}`);
+    const wide: ItemTypeDef = {
+      ...STORY,
+      fields: [...STORY.fields, ...fieldIds],
+      custom: fieldIds.map((id) => ({
+        id,
+        label: `${id} ${'L'.repeat(36)}`,
+        kind: 'longtext' as const,
+      })),
+    };
     const worst = aiCardInput(
       story({
         title: 'T'.repeat(500),
         description: 'D'.repeat(5000),
         checklist: Array.from({ length: 50 }, () => ({ text: 'x'.repeat(200), done: false })),
+        ...Object.fromEntries(fieldIds.map((id) => [id, 'w'.repeat(900)])),
       }),
-      O,
+      { ...O, types: [BUG, NOTE, wide] },
       Array.from({ length: 9 }, () => 'c'.repeat(900)),
     );
+    expect(worst.fields).toHaveLength(AI_FIELDS_MAX);
     const typical = aiCardInput(
       story({
         description: 'Checkout takes 8 seconds on mobile since the last release. '.repeat(4),
@@ -328,7 +403,7 @@ describe('what the model is sent', () => {
       triage: [size('triage', worst), size('triage', typical)],
     };
     console.info('[ai-steps] prompt characters (worst, typical)', sizes);
-    for (const [worstChars] of Object.values(sizes)) expect(worstChars).toBeLessThan(10_000);
+    for (const [worstChars] of Object.values(sizes)) expect(worstChars).toBeLessThan(13_000);
   });
 });
 

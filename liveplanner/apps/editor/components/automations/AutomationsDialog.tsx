@@ -7,7 +7,7 @@
 // filled from the plan, unsaved and off, named uniquely. The plan's Webhooks dialog opens over it, for Fix Webhook
 // and an outgoing action's Add a Webhook….
 
-import { useCallback, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { AutomationListedRule } from '@liveplanner/api-schema';
 import {
   AUTOMATION_RULES_MAX,
@@ -42,7 +42,7 @@ import { RunsMeter } from './RunsMeter';
 import { localZone, useMinuteClock } from './screen-clock';
 import { ScreenTabs } from './ScreenTabs';
 import { TemplatesGallery } from './TemplatesGallery';
-import { useAutomations } from './use-automations';
+import { readAutomations, useAutomations } from './use-automations';
 
 /** A template's rule over this plan, named so no rule here has its name, and what it left to pick. */
 export function templateStart(
@@ -80,6 +80,11 @@ export function AutomationsDialog({
   signedIn?: boolean;
 }) {
   const api = useAutomations(scope);
+  // Each opening reads the list again, so Last Run, This Week and Runs today are fresh (the list read for the footer's
+  // dot, or by an earlier opening, keeps showing meanwhile). A read already under way is not repeated.
+  useEffect(() => {
+    void readAutomations(scope);
+  }, [scope]);
   const outline = useAutomationOutline();
   const plan = usePlan();
   const toast = useToast();

@@ -28,6 +28,10 @@ export const AI_CHECKLIST_ROWS = 20;
 export const AI_CHECKLIST_TEXT_MAX = 120;
 export const AI_COMMENTS_MAX = 5;
 export const AI_COMMENT_TEXT_MAX = 400;
+// The card type's own text and choice fields (never a link, email, phone or person): how many, and each one's cap.
+export const AI_FIELDS_MAX = 5;
+export const AI_FIELD_TEXT_MAX = 400;
+const AI_FIELD_KINDS: ReadonlySet<string> = new Set(['text', 'longtext', 'choice', 'multichoice']);
 // The card types and labels it may choose from.
 export const AI_LIST_MAX = 50;
 // The most the model may answer, in tokens, per task (a summary's 600 characters are about 150).
@@ -181,6 +185,8 @@ export interface AiCardInput {
   checklist?: { text: string; done: boolean }[];
   // Newest first, text only.
   comments?: string[];
+  // The type's filled text and choice fields, in the type's order, by their names.
+  fields?: { name: string; value: string }[];
 }
 
 const cut = (text: string, max: number): string =>
@@ -211,6 +217,20 @@ export function aiCardInput(
     .filter((c) => c !== '')
     .slice(0, AI_COMMENTS_MAX)
     .map((c) => cut(c, AI_COMMENT_TEXT_MAX));
+  const fields: { name: string; value: string }[] = [];
+  for (const def of type.custom ?? []) {
+    if (fields.length >= AI_FIELDS_MAX) break;
+    if (!AI_FIELD_KINDS.has(def.kind)) continue;
+    const raw = card.fields[def.id];
+    const value = (
+      Array.isArray(raw)
+        ? raw.filter((v): v is string => typeof v === 'string').join(', ')
+        : typeof raw === 'string'
+          ? raw
+          : ''
+    ).trim();
+    if (value !== '') fields.push({ name: def.label, value: cut(value, AI_FIELD_TEXT_MAX) });
+  }
   return {
     title: cut(itemTitle(card), AI_TITLE_MAX),
     type: type.label,
@@ -220,6 +240,7 @@ export function aiCardInput(
       : {}),
     ...(rows.length ? { checklist: rows } : {}),
     ...(said.length ? { comments: said } : {}),
+    ...(fields.length ? { fields } : {}),
   };
 }
 
@@ -257,9 +278,11 @@ const DATA_RULE =
 const SYSTEM: Readonly<Record<AutomationAiTask, string>> = {
   summarise:
     `You summarise one card of a project planner. ${DATA_RULE} Its "card" holds the card's title, type, column, ` +
-    'description, checklist and latest comments. Reply with JSON only, {"summary": string}: plain text of at most ' +
-    `${AUTOMATION_AI_SUMMARY_MAX} characters, in the card's own language, saying what the card is about, where it ` +
-    'stands and what is left. No markup, no links, no names of people.',
+    'description, checklist, latest comments and its own fields by name. Reply with JSON only, {"summary": string}: plain text of at most ' +
+    `${AUTOMATION_AI_SUMMARY_MAX} characters, saying what the card is about, where it stands and what is left. ` +
+    "Write it in English, unless the card's own text (its title, description and fields) is plainly written in one other language: then " +
+    'write it in that language. Never translate into a language the card does not use. No markup, no links, no ' +
+    'names of people.',
   card_type:
     `You pick the card type that fits one card of a project planner best. ${DATA_RULE} Its "card" holds the card, ` +
     'its "choices.types" the card types to choose from. Reply with JSON only, {"type": string}, the type written ' +
