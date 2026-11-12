@@ -103,6 +103,8 @@ function sampleCustom(c: CustomFieldDef): [string, unknown][] {
       return [[c.id, true]];
     case 'link':
       return [[c.id, 'https://example.com']];
+    case 'pullrequest':
+      return [[c.id, 'https://github.com/acme/web/pull/42']];
     case 'currency':
       return [[c.id, 12500]];
     case 'percent':

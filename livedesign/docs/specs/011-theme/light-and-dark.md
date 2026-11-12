@@ -69,6 +69,17 @@ the header (`colourIsOpaque`).
   against the paper. `apps/live/lib/template-overlay-contrast.test.ts` holds every
   template's labels at 3:1 under every theme, picked in either half and seen in either
   ([#819](https://github.com/livedesign-app/livedesign.app/issues/819)).
+- **Words on the plain paper keep the contrast they were made with.** A label straight on the plain paper (no fill of
+  its own and nothing filled under it) that the dark paper reads worse than the white one did is drawn, in the dark
+  editor, at the contrast it had on white (3:1 at the least), its lightness walked away from the dark paper with its
+  hue and chroma kept (`withPaperLabelInks`, `packages/design/src/paper-label-ink.ts`). So a wireframe's ink heading
+  is drawn near white, its slate body a pale slate and its muted caption a mid slate: the same three steps it has on
+  white, each at 4.5:1 or more, where the 3:1 walk above drew all three as one dim grey. A logo's espresso wordmark
+  is drawn a pale warm brown. Words on a card or a block keep the 3:1 walk against it; a quiet caption the author
+  made under 4.5:1 on white stays as quiet. Nothing stored changes, and an export prints the words as made.
+  `apps/live/lib/pages-template-contrast.test.ts` holds every Wireframes template, the Logo Design template
+  (Sunny Side) and the four logo explorations at 4.5:1 against the sheet or the card each word sits on, as the canvas draws them in the light
+  and the dark editor.
 - **A page's own paper.** An element on a page with a fill of its own (a solid, a gradient, an
   image) is drawn for that page, not for the viewer's chrome: its theme colours in the half whose surface matches
   the page's (a light page takes the light half, a dark one the dark half), its stock colours for that surface. A

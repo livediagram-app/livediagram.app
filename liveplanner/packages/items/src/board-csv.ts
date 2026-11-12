@@ -42,6 +42,7 @@ import { durationText, isTimeSpent, parseDuration } from './duration-fields';
 import { instantIso, parseDateTime } from './date-time-fields';
 import { isTimedRange, parseDateRange, rangeIso } from './date-range-fields';
 import { isPhoneNumber } from './phone-fields';
+import { pullRequestValueOf } from './pull-request-fields';
 
 // The built-in fields after Key, Title, Type and Status, in file order, each under its header.
 const BOARD_CSV_FIELDS = [
@@ -313,6 +314,9 @@ function customValue(
     }
     case 'email':
       return isEmailAddress(text) ? text : undefined;
+    // Any address of a pull request, kept canonical (github-pull-requests.md "The Pull Request field").
+    case 'pullrequest':
+      return pullRequestValueOf(text);
     // As typed; a leading ' an older download (or a spreadsheet) put before a + is dropped (item-types.md "Phone").
     case 'phone': {
       const number = text.replace(/^'/, '').trim();

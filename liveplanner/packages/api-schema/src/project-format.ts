@@ -9,7 +9,8 @@
 //      - Percent and Duration fields (31 Oct 2026).
 //      - Rollup, Lookup and Formula calculations (31 Oct 2026).
 //      - Date and Time, Date Range and Phone fields (1 Nov 2026).
-export const PROJECT_FORMAT = 3;
+//   4: the Pull Request field (12 Nov 2026; docs/specs/026-plan/github-pull-requests.md).
+export const PROJECT_FORMAT = 4;
 
 // Every api response carries the server's number in this header.
 export const PROJECT_FORMAT_HEADER = 'X-Liveplanner-Format';

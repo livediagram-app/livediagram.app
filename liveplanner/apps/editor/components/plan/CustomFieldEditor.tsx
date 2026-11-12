@@ -27,6 +27,7 @@ import { DurationInput } from './time/DurationInput';
 import { DateTimeInput } from './DateTimeInput';
 import { DateRangeField } from './DateRangeField';
 import { PhoneField } from './PhoneField';
+import { PullRequestField } from './PullRequestField';
 
 type Save = (value: ItemFieldValue | undefined) => void | boolean | Promise<boolean>;
 
@@ -81,6 +82,12 @@ export function CustomFieldEditor({
             else e.target.value = text;
           }}
         />
+      );
+    // Any address of a pull request, kept canonical (docs/specs/026-plan/github-pull-requests.md "The Pull Request
+    // field").
+    case 'pullrequest':
+      return (
+        <PullRequestField id={id} value={text} disabled={disabled} onSave={(v) => void onSave(v)} />
       );
     case 'number':
       return (

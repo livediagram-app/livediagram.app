@@ -357,7 +357,9 @@ const customField = z.object({
         'with timeSpent it adds up the time people track with a timer, read-only to agents), date (YYYY-MM-DD), datetime (a moment: ' +
         'written as ISO 8601 with its offset, 2026-10-31T17:00:00Z, listed as its UTC instant, shown in each viewer’s ' +
         'time zone), daterange (a start and an end: an ISO 8601 interval 2026-10-31/2026-11-02 or a list of two; ' +
-        'with withTime each end is a datetime), checkbox, link (a URL, shown as its site), email (one ' +
+        'with withTime each end is a datetime), checkbox, link (a URL, shown as its site), ' +
+        'pullrequest (a GitHub pull request: any of its addresses, stored as https://github.com/owner/repo/pull/42 ' +
+        'and shown as owner/repo#42), email (one ' +
         'address), phone (a phone number as typed: digits, spaces, brackets, dashes and a leading +), choice (one of its options), multichoice (several of its options, as a list), rating (a ' +
         'whole number from 1 to its scale, drawn as stars), card (one card of its linkTypes, as "#12", or several ' +
         'with multiple), ' +
@@ -615,7 +617,7 @@ const listedCustom = z.object({
   kind: z
     .string()
     .describe(
-      'text, longtext, number, currency, percent, duration, date, datetime, daterange, checkbox, link, email, ' +
+      'text, longtext, number, currency, percent, duration, date, datetime, daterange, checkbox, link, pullrequest, email, ' +
         'phone, choice, multichoice, ' +
         'rating, card, calculated, person, labels, colour, checklist or image.',
     ),

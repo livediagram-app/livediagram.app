@@ -9,6 +9,8 @@
 import { useMemo, useState, type FocusEvent, type KeyboardEvent } from 'react';
 import {
   PHONE_HINT,
+  PULL_REQUEST_HINT,
+  parsePullRequestUrl,
   isEmailAddress,
   isPhoneNumber,
   isTimeSpent,
@@ -58,6 +60,7 @@ const CHECKS: Partial<Record<CustomFieldKind, { ok: (text: string) => boolean; h
   phone: { ok: isPhoneNumber, hint: PHONE_HINT },
   email: { ok: isEmailAddress, hint: 'Write an email address like sam@example.com' },
   link: { ok: isLinkText, hint: 'Write a link that starts https://' },
+  pullrequest: { ok: (t) => parsePullRequestUrl(t) !== undefined, hint: PULL_REQUEST_HINT },
 };
 
 // What starts the try again: everything that shapes the value, never the name, Required or Notifies.

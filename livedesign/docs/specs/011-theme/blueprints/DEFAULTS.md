@@ -11,3 +11,4 @@ One row per default applied where a spec is silent or qualitative.
 | D6  | multicolour-themes | Branch map reuse in a switch                  | Build once, share for `prev` and `next`; the map depends only on the elements                                    |
 | D7  | retired-schemes    | Load-time vs D1 migration                     | Read time at every tab entry point; the next save persists it, and offline tabs and files never reach D1         |
 | D8  | retired-schemes    | Log level and fingerprint                     | `console.info('[tab-migrate] retired-scheme', { from, stripped })`, only when something was rewritten            |
+| D9  | paper-label-ink    | The contrast a paper label is walked to       | Its made contrast on white (3:1 at the least), not a fixed 4.5:1, so quiet captions and grey steps are kept      |
