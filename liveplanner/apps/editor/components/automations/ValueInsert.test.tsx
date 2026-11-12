@@ -28,7 +28,15 @@ afterEach(() => {
 });
 
 let text = '';
-function Field({ start = 'Done by ', branch = false }: { start?: string; branch?: boolean }) {
+function Field({
+  start = 'Done by ',
+  branch = false,
+  maxLength,
+}: {
+  start?: string;
+  branch?: boolean;
+  maxLength?: number;
+}) {
   const [value, setValue] = useState(start);
   return (
     <ValueTextField
@@ -40,6 +48,7 @@ function Field({ start = 'Done by ', branch = false }: { start?: string; branch?
       }}
       fields={[{ id: 'f1', name: 'Completed On' }]}
       branch={branch}
+      maxLength={maxLength}
     />
   );
 }
@@ -78,6 +87,19 @@ describe('Insert a Value', () => {
     expect(document.activeElement).toBe(area());
     expect(area().selectionStart).toBe('Done by {{person}}'.length);
     vi.useRealTimers();
+  });
+
+  it('inserts a value whole or not at all near the field’s limit', () => {
+    // 'Done by ' and {{person}} make 18: one short of room, nothing goes in; with room, all of it.
+    render(<Field maxLength={17} />);
+    fireEvent.click(button());
+    fireEvent.click(screen.getByRole('option', { name: /^Who Did It/ }));
+    expect(text).toBe('Done by ');
+    cleanup();
+    render(<Field maxLength={18} />);
+    fireEvent.click(button());
+    fireEvent.click(screen.getByRole('option', { name: /^Who Did It/ }));
+    expect(text).toBe('Done by {{person}}');
   });
 
   it('walks the values with the arrow keys from the search, inserts with Enter and closes on Escape', () => {
