@@ -34,6 +34,9 @@ Steps `email` → `code` → `name` (only when the account has no name) → `don
    path on this site (`returnPath`).
 5. Google: `POST /sign-in/social`; a mark in the tab's `sessionStorage` (`liveworkspace:google`) tells the return trip.
 
+`busy` is set at the press and cleared only on a failure, on the `done` step, or on `pageshow` with `persisted`
+(Back into a page the browser kept); steps 3 and 4 and the navigation run under the same busy label.
+
 The API is `/api/auth` on liveworkspace.app and `/api/workspace/auth` on an app's address (`accountsApi`). There, the
 last step asks `POST /handoff/start { return, bind }` and goes top level to liveworkspace.app, which sends the browser
 on to the app's callback; `bind` is the nonce hash from `?handoff=` (43 base64url characters), kept for the tab so a

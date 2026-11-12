@@ -909,6 +909,12 @@ says Google can come back to the app's address (`googleOnApps`). The build's ass
 `/_liveworkspace` (`assetPrefix`; `scripts/asset-prefix.mjs` moves the export's `_next` there) so
 they never meet an app's own `/_next`, and one build serves both addresses.
 
+**Busy until they leave.** Verify, Continue (the name step), Continue with Google, Allow and Deny stay busy from
+the press until the browser has gone where the step sends it: through the session check, the OAuth continue, the
+hand-off and the navigation ([busy-buttons.md](../../../livediagram/docs/specs/004-interface-design/busy-buttons.md)).
+A failed step, or a page that stays (signed in from the site's header with nowhere to go back to), makes them
+pressable again, and so does coming Back to a page the browser kept.
+
 ## Behaviour
 
 - No analytics. The one cookie is the accounts session, set by the accounts API when someone

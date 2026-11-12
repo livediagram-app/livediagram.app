@@ -15,6 +15,10 @@ every package and liveworkspace.app.
 - **`disabled` is for a button that cannot run yet** because of what the form or page lacks (no events chosen,
   an empty name). Busy and not-ready are separate: `disabled={!ready} busy={saving}`, never
   `disabled={saving}`.
+- **When the work leaves the page** (a sign-in that goes on to the app, Allow, Connect to Google) the button
+  stays busy until the browser has left: through every request still to make and the navigation itself, since
+  the old page stays on screen until the next one answers. It is pressable again only if a step fails or the
+  page stays (a "You're signed in" step), and when Back brings the page out of the browser's cache.
 - **When the work ends** the button is pressable again where it stands. If the work replaces the button (Turn On
   Link becomes the link and Copy, a form becomes the secret it made), focus moves to what took its place rather
   than falling to the page.
