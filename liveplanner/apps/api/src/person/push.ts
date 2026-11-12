@@ -10,6 +10,7 @@ import {
 } from '@liveworkspace/index-app';
 import { isAccountId, sendPush } from '@liveworkspace/auth-client';
 import {
+  cellThreadKey,
   elementThreads,
   MENTIONS_MAX,
   type Comment,
@@ -48,7 +49,7 @@ export function pushTag(planId: string, place: string): string {
   return `${planId}:${place}`.replace(/[^A-Za-z0-9:_-]/g, '_').slice(0, 64);
 }
 
-/** The link to a thread on a tab's element (a Sheet cell's thread opens its sheet's comments). */
+/** The link to a thread on a tab's element (a Sheet cell's, by its cell thread key, opens on that cell). */
 export function elementThreadUrl(
   env: Env,
   planId: string,
@@ -71,8 +72,9 @@ export function elementUrl(env: Env, planId: string, tabId: string, elementId: s
 // A tab's threads as the pusher reads them, each placed at its element.
 function threadsOf(elements: readonly Element[]): PushThread<Comment>[] {
   return elements.flatMap((el) =>
-    elementThreads(el).map(({ thread }) => ({
-      at: el.id,
+    elementThreads(el).map(({ cell, thread }) => ({
+      // A Sheet cell's thread at its cell (docs/specs/029-sheets/sheet.md "Cell comments" "Inbox"), so its link opens it.
+      at: cell === undefined ? el.id : cellThreadKey(el.id, cell),
       comments: (thread as CommentThread | undefined)?.comments ?? [],
     })),
   );

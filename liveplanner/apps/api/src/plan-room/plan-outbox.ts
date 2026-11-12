@@ -39,6 +39,7 @@ import { pushFormInbox } from '../forms/form-inbox';
 import { IMAGES_OUTBOX_KIND, pushImageRefs } from './image-refs';
 import { indexAppClient } from '../index-service';
 import { reportOwnerActivity } from '../person/account-app';
+import { sheetCellRefs } from '../sheet-cell-refs';
 import type { PlanEnv } from '../types';
 
 type TabRow = {
@@ -259,7 +260,11 @@ export async function drainOutbox(
         formStmts.push(formLinkStatement(env, planId, tabId, tab, parsed.form));
         formTabs.push(tabId);
       }
-      const found = collabIndexRowsFromElements(parsed.elements);
+      // A Sheet's cell threads are labelled by their A1 (docs/specs/029-sheets/sheet.md "Cell comments" "Inbox").
+      const found = collabIndexRowsFromElements(
+        parsed.elements,
+        await sheetCellRefs(env, planId, tabId, parsed.elements),
+      );
       return collabPushOf(found.threads, found.actions, tab?.name);
     },
     summary: async () => {

@@ -6,7 +6,9 @@
 //   (`POST /<items>/:id/tabs/:tabId/comments`, `…/comments/:commentId/resolve`, the thread named by its first
 //   comment, read from `GET /<items>/:id/comments?status=all`), and a Plan card's thread through the thread routes
 //   (`POST /projects/:id/threads/:threadId/comments`, `…/threads/:threadId/resolve`). The same read gives the pane
-//   the thread.
+//   the thread. A part of an element with its own thread (a liveplanner Sheet cell) is the row `<elementId>:<cell>`
+//   (one-explorer-contracts.md "What an item pushes"): found in the listing by `listedThreadKey`, and replied to with
+//   the listed thread's own element and cell.
 // - `openAction`: the item and tab the editor has open, and its own Mark Done. An element's action has no route of
 //   its own (an action's status is the people's to change, in the editor), so it is offered only there.
 //
@@ -35,6 +37,8 @@ export type InboxActionsOptions = {
 type ListedThread = {
   tabId: string;
   elementId: string;
+  // A Sheet cell's thread: its cell key.
+  cell?: string;
   resolved: boolean;
   comments: {
     id: string;
@@ -58,6 +62,11 @@ const enc = encodeURIComponent;
 
 function itemsPath(app: App): string | null {
   return isAppName(app) ? `/${APP_ITEMS[app].apiNoun}s` : null;
+}
+
+/** The Inbox row's `elementId` a listed thread is pushed under: its element's, then `:cell` for a part's. */
+export function listedThreadKey(t: { elementId: string; cell?: string }): string {
+  return t.cell ? `${t.elementId}:${t.cell}` : t.elementId;
 }
 
 async function ok(res: Response): Promise<Response> {
@@ -93,8 +102,9 @@ export function createInboxActions({ api, openAction }: InboxActionsOptions): In
   };
 
   const threadOf = async (t: InboxTarget, signal?: AbortSignal) =>
-    (await listOf(t, signal)).find((x) => x.tabId === t.tabId && x.elementId === t.elementId) ??
-    null;
+    (await listOf(t, signal)).find(
+      (x) => x.tabId === t.tabId && listedThreadKey(x) === t.elementId,
+    ) ?? null;
 
   const forget = (t: InboxTarget) => lists.delete(`${t.app}:${t.itemId}`);
 
@@ -124,10 +134,16 @@ export function createInboxActions({ api, openAction }: InboxActionsOptions): In
           })
           .then(ok);
       } else {
+        // A part's key holds a colon: its thread names its element and part, from the listing (read once, and kept
+        // for the pane). A plain element's id is posted as it is, with no read.
+        const listed = t.elementId.includes(':') ? await threadOf(t).catch(() => null) : null;
+        const at = listed?.cell
+          ? { elementId: listed.elementId, cell: listed.cell }
+          : { elementId: t.elementId };
         await c
           .call(`${c.base}/tabs/${enc(t.tabId)}/comments`, {
             method: 'POST',
-            body: { elementId: t.elementId, text },
+            body: { ...at, text },
           })
           .then(ok);
       }

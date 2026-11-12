@@ -7,6 +7,7 @@ import { deriveTabLoadState, patchTab } from '../editor-page-helpers';
 import { usePruneInertSelection } from '@liveworkspace/workbench/hooks/canvas/usePruneInertSelection';
 import { useLayersState } from '../useLayersState';
 import { useCollabDeepLink } from '../useCollabDeepLink';
+import { focusSheetCell } from '@/hooks/sheets/sheet-cell-refs';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { activeElementsCommit } from '../active-elements-commit';
 import type { EditorSelectionSlice } from './useEditorSelection';
@@ -117,6 +118,7 @@ export function useEditorEditing(
     scrollIntoView,
     openActionPopover,
     openComments,
+    focusCell: focusSheetCell,
     // Read when the link lands, after this render has made the Plan slice below.
     openItem: (itemId, threadId) => {
       arrivingCardRef.current = itemId;

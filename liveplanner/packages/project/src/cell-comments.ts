@@ -18,6 +18,26 @@ const CELL_KEY_PATTERN = /^[a-z0-9]{4,12}:[a-z0-9]{4,12}$/;
 
 export type CellCommentThreads = Record<string, CommentThread>;
 
+// The most cell threads one Sheet sends to the Inbox (sheet.md "Cell comments" "Inbox"): those with the newest
+// comments, so one big Sheet never crowds a tab's other threads out of the index's cap on a tab's push.
+export const CELL_INBOX_ROWS_MAX = 100;
+
+// A cell thread's key outside its Sheet (the Inbox row's `elementId`, its link's `el`, a phone notice's place): the
+// Sheet element's id, then the cell key.
+export function cellThreadKey(elementId: string, cell: string): string {
+  return `${elementId}:${cell}`;
+}
+
+// The Sheet element's id and the cell a `cellThreadKey` names, or null for a key that names no cell. The cell key is
+// the last two parts (an element id may itself hold a colon).
+export function splitCellThreadKey(key: string): { elementId: string; cell: string } | null {
+  const colon = key.lastIndexOf(':');
+  const before = colon > 0 ? key.lastIndexOf(':', colon - 1) : -1;
+  if (before <= 0) return null;
+  const cell = key.slice(before + 1);
+  return isCellKey(cell) ? { elementId: key.slice(0, before), cell } : null;
+}
+
 // One thread an element holds: its own (no cell) or a cell's.
 type ThreadEntry = { cell?: string; thread: CommentThread };
 

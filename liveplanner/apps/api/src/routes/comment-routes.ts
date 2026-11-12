@@ -20,16 +20,9 @@ import {
   type Element,
   type ElementDelta,
 } from '@liveplanner/project';
-import { formatA1, layoutIndex } from '@liveplanner/sheets';
 import { findCommentHost, removeComment, threadsOfTab } from '../comments';
-import {
-  getProject,
-  getTab,
-  listSheetHeads,
-  isTabRevStale,
-  tabIdsWithComments,
-  upsertTabAtRev,
-} from '../db';
+import { sheetCellRefs } from '../sheet-cell-refs';
+import { getProject, getTab, isTabRevStale, tabIdsWithComments, upsertTabAtRev } from '../db';
 import { getParticipant } from '../person/profiles';
 import { emailEnabled } from '../email/client';
 import { notifyMentions, notifyNewComment } from '../email/notifications';
@@ -317,29 +310,6 @@ async function threadVerb(
   return noContent();
 }
 
-// The A1 of a Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"), from the tab's stored sheets:
-// read only when a Sheet on the tab carries cell threads, one query for the tab's sheets. A cell whose row or
-// column is gone has none.
-async function cellRefsOf(
-  ctx: PlanRouteContext,
-  projectId: string,
-  tab: TabDTO,
-): Promise<(el: Element, cell: string) => string | null> {
-  const none = () => null;
-  if (!tab.elements.some((el) => (el as { cellComments?: unknown }).cellComments)) return none;
-  const heads = await listSheetHeads(ctx.env, projectId, tab.id);
-  const indexes = new Map(heads.map((h) => [h.id, layoutIndex(h.layout)]));
-  return (el, cell) => {
-    const sheetId = el.type === 'shape' ? el.planSheet?.sheetId : undefined;
-    const ix = sheetId ? indexes.get(sheetId) : undefined;
-    if (!ix) return null;
-    const [r, c] = cell.split(':');
-    const row = ix.rowPos.get(r!);
-    const col = ix.colPos.get(c!);
-    return row === undefined || col === undefined ? null : formatA1(row, col);
-  };
-}
-
 // GET /api/projects/:id/comments?status=: the threads across the project, one tab read at a time (PR21). A
 // grant confined to one tab lists that tab only.
 async function listThreads(ctx: PlanRouteContext, id: string): Promise<Response> {
@@ -358,7 +328,11 @@ async function listThreads(ctx: PlanRouteContext, id: string): Promise<Response>
     // A tab whose body does not parse is left out of the list, not the whole list refused (E21).
     try {
       const tab = await getTab(ctx.env, id, tabId);
-      if (tab) threads.push(...threadsOfTab(tab, status, viewer, await cellRefsOf(ctx, id, tab)));
+      if (tab) {
+        // A cell whose Sheet is not stored on the tab has no A1 either.
+        const refs = await sheetCellRefs(ctx.env, id, tab.id, tab.elements);
+        threads.push(...threadsOfTab(tab, status, viewer, (el, cell) => refs(el, cell) ?? null));
+      }
       tabsRead++;
     } catch (err) {
       console.warn('[comments] list skipped tab', { projectId: id, tabId, error: String(err) });

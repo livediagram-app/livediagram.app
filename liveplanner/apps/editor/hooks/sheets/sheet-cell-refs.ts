@@ -9,6 +9,10 @@ type Namer = (cell: string) => string | null;
 
 const namers = new Map<string, Namer>();
 const focusers = new Map<string, (cell: string) => void>();
+// A cell asked for before its Sheet was drawn (an Inbox link landing as the tab loads), one a Sheet: taken when the
+// Sheet registers its focuser within PENDING_FOCUS_MS, so a Sheet drawn much later never jumps to an old ask.
+const pendingFocus = new Map<string, { cell: string; at: number }>();
+export const PENDING_FOCUS_MS = 10_000;
 const listeners = createListeners();
 let version = 0;
 
@@ -47,12 +51,19 @@ export function useCellRef(elementId: string, cell: string | undefined): string 
 // A drawn Sheet takes requests to select one of its cells (the Comments panel going to a cell's thread).
 export function registerCellFocuser(elementId: string, focus: (cell: string) => void): () => void {
   focusers.set(elementId, focus);
+  const pending = pendingFocus.get(elementId);
+  if (pending) {
+    pendingFocus.delete(elementId);
+    if (Date.now() - pending.at <= PENDING_FOCUS_MS) focus(pending.cell);
+  }
   return () => {
     if (focusers.get(elementId) === focus) focusers.delete(elementId);
   };
 }
 
-// Selects `cell` on Sheet `elementId`, scrolling it into view; nothing when the Sheet is not drawn.
+// Selects `cell` on Sheet `elementId`, scrolling it into view; held until the Sheet is drawn when it is not yet.
 export function focusSheetCell(elementId: string, cell: string): void {
-  focusers.get(elementId)?.(cell);
+  const focus = focusers.get(elementId);
+  if (focus) focus(cell);
+  else pendingFocus.set(elementId, { cell, at: Date.now() });
 }

@@ -29,6 +29,7 @@ function arrive(
     scrollIntoView: vi.fn(),
     openActionPopover: vi.fn(),
     openComments: vi.fn(),
+    focusCell: vi.fn(),
     openItem: vi.fn(),
   };
   const props = {
@@ -104,6 +105,45 @@ describe('useCollabDeepLink', () => {
       itemId: null,
     });
     expect(calls.openComments).toHaveBeenCalledWith('b1');
+    expect(calls.focusCell).not.toHaveBeenCalled();
+  });
+
+  // A Sheet cell's Inbox row (docs/specs/029-sheets/sheet.md "Cell comments" "Inbox"): `el` is the Sheet's id
+  // then the cell key.
+  const sheet = { ...board, id: 's1', shape: 'plan-sheet' } as unknown as Element;
+
+  it('lands on a Sheet cell with its thread popover open', () => {
+    const { calls } = arrive(
+      { at: { tabId: 't1', elementId: 's1:rowb4b4:colb4b4' }, open: 'comments', itemId: null },
+      { elements: [sheet] },
+    );
+    expect(calls.select).toHaveBeenCalledWith('s1');
+    expect(calls.scrollIntoView).toHaveBeenCalledWith(10, 20, 300, 200, { center: true });
+    expect(calls.focusCell).toHaveBeenCalledWith('s1', 'rowb4b4:colb4b4');
+    expect(calls.openComments).toHaveBeenCalledWith('s1', 'rowb4b4:colb4b4');
+  });
+
+  it('selects the cell without a popover when the link opens none', () => {
+    const { calls } = arrive(
+      { at: { tabId: 't1', elementId: 's1:rowb4b4:colb4b4' }, open: null, itemId: null },
+      { elements: [sheet] },
+    );
+    expect(calls.focusCell).toHaveBeenCalledWith('s1', 'rowb4b4:colb4b4');
+    expect(calls.openComments).not.toHaveBeenCalled();
+  });
+
+  it('prefers an element whose own id is the whole key, and lands nowhere for a Sheet since deleted', () => {
+    const odd: Element = { ...board, id: 's1:rowb4b4:colb4b4' };
+    const own = arrive(
+      { at: { tabId: 't1', elementId: 's1:rowb4b4:colb4b4' }, open: 'comments', itemId: null },
+      { elements: [odd, sheet] },
+    );
+    expect(own.calls.openComments).toHaveBeenCalledWith('s1:rowb4b4:colb4b4');
+    const gone = arrive(
+      { at: { tabId: 't1', elementId: 's1:rowb4b4:colb4b4' }, open: 'comments', itemId: null },
+      { elements: [board] },
+    );
+    expect(gone.calls.select).not.toHaveBeenCalled();
   });
 });
 
