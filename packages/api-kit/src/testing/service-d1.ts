@@ -10,6 +10,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { assertD1Compound } from '../d1-compound-guard';
+import { assertD1LikePatterns } from '../d1-like-guard';
 
 const D1_BOUND_PARAMETERS_MAX = 100;
 
@@ -34,6 +35,7 @@ export function serviceD1(migrationsDir: string): { db: D1Database; sql: Databas
 
   const statement = (query: string, args: SQLInputValue[]) => {
     assertD1Compound(query);
+    assertD1LikePatterns(query, args);
     const rows = () =>
       sql
         .prepare(query)

@@ -8,6 +8,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { assertD1Compound } from '../d1-compound-guard';
+import { assertD1LikePatterns } from '../d1-like-guard';
 
 export const D1_MAX_BOUND_PARAMS = 100;
 
@@ -31,6 +32,7 @@ export function sqliteD1(migrationsDir: string): { db: D1Database; raw: Database
 
   const exec = (sql: string, args: SQLInputValue[]): D1Result => {
     if (args.length > D1_MAX_BOUND_PARAMS) throw new Error('D1_ERROR: too many SQL variables');
+    assertD1LikePatterns(sql, args);
     const stmt = raw.prepare(sql);
     if (/^\s*(SELECT|WITH)\b/i.test(sql)) {
       const results = stmt.all(...args) as Record<string, unknown>[];

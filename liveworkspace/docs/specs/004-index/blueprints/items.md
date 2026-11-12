@@ -87,7 +87,8 @@ lists are its personal scope only.
 | `shared`     | `shared_with` and live `share_links`                                                                                          | the person, live, not in their own scopes                     | `updated_at DESC`          |
 
 Filters (`filterClauses`): each search word (≤ 16 words, ≤ 200 chars) in the title or the name of one of the
-person's folders (`LIKE` with `\` escapes); `apps`, `source`, `intent` (`intent = w OR intent LIKE '%:' || w`, each
+person's folders (`instr(lower(…), lower(word)) > 0`, case-blind for ASCII as `LIKE` was; never a bound `LIKE`,
+which D1 refuses past 50 bytes); `apps`, `source`, `intent` (`intent = w OR intent LIKE '%:' || w`, each
 `^[a-z0-9-]{1,32}$`) up to 8 values; `modes` (the same word rule, up to 8: `json_extract(i.summary, '$.mode')` in
 the list, the mode the item's app last reported, such as livediagram's `diagram`, `draw`, `workshop`; read from the
 row the page already holds, so no index); `since` (`updated_at >=`); `owner` `me`/`others`; `space` (`mine`, `shared`,
