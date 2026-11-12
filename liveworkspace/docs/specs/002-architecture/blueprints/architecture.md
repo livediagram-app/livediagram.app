@@ -397,6 +397,11 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
   it hands in.
 - `@liveworkspace/workbench/components/canvas/useFaceFinishPass` is the canvas finish pass of livediagram,
   livedocuments, livedesign and livehuddle; liveplanner keeps its own (its Plan boards spend a frame budget).
+- `@liveworkspace/workbench/components/chrome/NewVersionPrompt` is the new version prompt of all five editors, with
+  its wait for a newer editor (`hooks/ui/useNewerEditorLive` over `lib/live-editor-build`: one GET of the page, its
+  build meta against the editor's build id). Each editor's `components/chrome/NewVersionPrompt.tsx` binds it with its
+  name, format number, server release store, build meta name and build id (`docs/specs/016-platform/new-version-prompt.md`
+  in each product).
 
 ## Testing
 
