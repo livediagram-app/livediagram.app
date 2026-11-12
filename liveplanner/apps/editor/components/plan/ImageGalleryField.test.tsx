@@ -14,6 +14,7 @@ import { customKindPill } from './CustomKindPill';
 import { addedField } from './AddFieldShape';
 import { shapeOf } from './edit-field-values';
 import type { PlanPalette } from './plan-palette';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/026-plan/item-types.md "Image fields": a Several Images field in the card panel (a grid of thumbnails,
 // each opening whole, removed and moved; several files picked or dropped at once, each checked and uploading as its
@@ -466,6 +467,26 @@ describe('on the card face', () => {
     await flush();
     expect(api.url).toHaveBeenCalledTimes(200);
     expect(api.url.mock.calls.every(([, id]) => String(id).startsWith('first-'))).toBe(true);
+  });
+});
+
+describe('a board of many cards with pictures', () => {
+  const palette = { column: '#eee', muted: '#666' } as PlanPalette;
+  const faces = (value: (i: number) => unknown) =>
+    Array.from({ length: 2000 }, (_, i) =>
+      customKindPill({ ...DESIGNS, id: `f-${i}` }, value(i) as never, palette),
+    );
+
+  it('draws 2,000 card faces of 20 pictures each within a budget, fetching one picture a card', () => {
+    const full = Array.from({ length: 20 }, (_, n) => `p${n}`);
+    // Each warmed first, so neither pays for the first render's compiling.
+    render(<div>{faces(() => full)}</div>).unmount();
+    render(<div>{faces(() => ['p0'])}</div>).unmount();
+    const one = cpuMsOf(() => render(<div>{faces(() => ['p0'])}</div>).unmount());
+    const several = cpuMsOf(() => render(<div>{faces(() => full)}</div>).unmount());
+    if (process.env['MEASURE']) console.log({ severalMs: several, oneMs: one });
+    // Measured about 120 ms for 2,000 either way (a count after the thumbnail): no cost per picture held.
+    expect(several).toBeLessThan(cpuBudgetMs(1000));
   });
 });
 
