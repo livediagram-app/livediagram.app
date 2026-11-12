@@ -9,7 +9,7 @@ import { newRuleBody } from './rule-draft';
 import { RuleSteps, type StepsActions } from './RuleSteps';
 import { RunSteps } from './RunSteps';
 import { nextRunWords } from './run-words';
-import { outline } from './test-fixtures';
+import { outline, pickable, pickerTile } from './test-fixtures';
 
 afterEach(cleanup);
 
@@ -43,7 +43,6 @@ const steps = (b: AutomationRuleBody, a = actions(), picks?: ReadonlyMap<string,
       picks={picks}
     />,
   );
-const menuNames = () => screen.getAllByRole('menuitem').map((m) => m.textContent);
 
 describe('the steps, in Phase 2', () => {
   it('draws a branch as For each, its own steps inset under it with their own add buttons', () => {
@@ -70,9 +69,9 @@ describe('the steps, in Phase 2', () => {
     expect(branch.textContent).toContain('trigger.title');
     // Its Add Action leaves out Create Card and the outgoing actions.
     fireEvent.click(inner.getByRole('button', { name: 'Add Action' }));
-    expect(menuNames()).not.toContain('Create Card');
-    expect(menuNames()).not.toContain('Post to Slack');
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Flag' }));
+    expect(pickerTile('create_card')).toBeNull();
+    expect(pickerTile('notify_slack')).toBeNull();
+    fireEvent.click(pickerTile('flag')!);
     expect(a.addAction).toHaveBeenCalledWith('flag', { step: 0, side: 'then' });
     fireEvent.click(inner.getByRole('button', { name: 'Add Condition' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Card Type' }));
@@ -94,15 +93,15 @@ describe('the steps, in Phase 2', () => {
     expect(a.addBranch).toHaveBeenCalled();
     const add = screen.getAllByRole('button', { name: 'Add Action' }).at(-1)!;
     fireEvent.click(add);
-    expect(menuNames()).toEqual(
-      expect.arrayContaining(['Send to Webhook', 'Post to Slack', 'Post to Microsoft Teams']),
+    expect(pickable()).toEqual(
+      expect.arrayContaining(['notify_webhook', 'notify_slack', 'notify_teams']),
     );
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Post to Microsoft Teams' }));
+    fireEvent.click(pickerTile('notify_teams')!);
     expect(a.addAction).toHaveBeenCalledWith('notify_teams');
     cleanup();
     steps(body({ steps: Array.from({ length: 5 }, () => slack) }));
     fireEvent.click(screen.getAllByRole('button', { name: 'Add Action' }).at(-1)!);
-    expect(menuNames()).not.toContain('Post to Slack');
+    expect(pickable()).not.toContain('notify_slack');
   });
 
   it('warns on a time rule’s When card while it has no conditions', () => {

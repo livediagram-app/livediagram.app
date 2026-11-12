@@ -42,6 +42,12 @@ export interface PlannedEmail {
   body: string;
 }
 
+// A thread @mentioning a person (null: nobody to mention, so none is started), its message filled in.
+export interface PlannedMention {
+  to: ItemPerson | null;
+  text: string;
+}
+
 // A message through one of the plan's webhooks: the step it came from (its key with the run's), the webhook, the
 // message filled in, and the line the run settles once the index answers.
 export interface PlannedSend {
@@ -59,6 +65,8 @@ export interface PlannedRelated {
   patch: ItemPatch;
   comments: string[];
   emails: PlannedEmail[];
+  mentions: PlannedMention[];
+  resolve: boolean;
   failed?: string;
 }
 
@@ -70,6 +78,11 @@ export interface PlannedWrites {
   comments: string[];
   created: PlannedCard[];
   emails: PlannedEmail[];
+  mentions: PlannedMention[];
+  // Resolve Threads: the card's open threads resolved.
+  resolve: boolean;
+  // A Wait reached: how long, and the step the rest of the rule goes on from.
+  wait?: { hours: number; from: number };
   related: PlannedRelated[];
   sends: PlannedSend[];
   turns: number;
@@ -103,6 +116,10 @@ export class Plan {
   readonly comments: string[] = [];
   readonly created: PlannedCard[] = [];
   readonly emails: PlannedEmail[] = [];
+  readonly mentions: PlannedMention[] = [];
+  resolve = false;
+  // Change Card Type: the type the card becomes.
+  type: string | undefined;
   card: Item;
 
   private readonly was: ItemFields;
@@ -145,10 +162,19 @@ export class Plan {
     this.run.lines.push({ kind: 'action', ok: false, text: `${this.prefix}${reason}` });
   }
 
+  // Changes the card's type: whether that changed it.
+  retype(type: string): boolean {
+    if (this.card.type === type) return false;
+    this.card = { ...this.card, type };
+    this.type = type;
+    return true;
+  }
+
   patch(): ItemPatch {
     return {
       ...(Object.keys(this.set).length ? { set: { ...this.set } } : {}),
       ...(this.clear.size ? { clear: [...this.clear] } : {}),
+      ...(this.type !== undefined ? { type: this.type } : {}),
     };
   }
 }

@@ -16,10 +16,12 @@ import {
   notifyChip,
   stepChip,
   triggerParts,
+  waitWords,
   type AutomationAction,
   type AutomationAi,
   type AutomationOutgoing,
   type AutomationRuleBody,
+  type AutomationWait,
   type RuleSentenceOutline,
 } from '@liveplanner/items';
 import type { AutomationOutline } from './automation-outline';
@@ -61,9 +63,16 @@ type CardProps = Omit<
 
 // What a step does: its chip, and under it the text it writes (a comment, a message, an email's subject).
 function stepBody(
-  a: AutomationAction | AutomationOutgoing | AutomationAi,
+  a: AutomationAction | AutomationOutgoing | AutomationAi | AutomationWait,
   outline: RuleSentenceOutline,
 ) {
+  if (a.kind === 'wait')
+    return (
+      <>
+        <span className={`${CHIP} self-start`}>{waitWords(a.hours)}</span>
+        <span className={QUIET}>The steps after it run when the time is up</span>
+      </>
+    );
   if (a.kind === 'ai')
     return (
       <>

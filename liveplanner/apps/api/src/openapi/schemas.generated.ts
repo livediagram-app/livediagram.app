@@ -1350,6 +1350,173 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "body"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "set_type",
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "type"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "colour": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "const": "set_colour",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "colour"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "restore",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "copy_card",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kind": {
+            "const": "add_checklist",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "link_card",
+            "type": "string"
+          },
+          "to": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "card": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "card"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "trigger": {
+                    "const": true,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "trigger"
+                ],
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "field",
+          "to"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "mention",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "to": {
+            "$ref": "#/components/schemas/AutomationRecipient"
+          }
+        },
+        "required": [
+          "kind",
+          "to",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "resolve_threads",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
       }
     ]
   },
@@ -2065,7 +2232,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "done",
       "no_match",
       "skipped",
-      "failed"
+      "failed",
+      "waiting"
     ],
     "type": "string"
   },
@@ -2151,6 +2319,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AutomationRun": {
     "additionalProperties": false,
     "properties": {
+      "afterWait": {
+        "type": "number"
+      },
       "at": {
         "type": "number"
       },
@@ -2203,6 +2374,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "array"
       },
       "tookMs": {
+        "type": "number"
+      },
+      "waitsUntil": {
         "type": "number"
       }
     },
@@ -2376,6 +2550,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "$ref": "#/components/schemas/AutomationAi"
+      },
+      {
+        "$ref": "#/components/schemas/AutomationWait"
       }
     ]
   },
@@ -2700,8 +2877,178 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "kind"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "card_archived",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "card_restored",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "checklist_completed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "threads_resolved",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "mentioned",
+            "type": "string"
+          },
+          "people": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "card_unblocked",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "related_done",
+            "type": "string"
+          },
+          "related": {
+            "enum": [
+              "children",
+              "linked"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "related"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "column_limit",
+            "type": "string"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "status",
+          "limit"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "$ref": "#/components/schemas/AutomationClock"
+          },
+          "days": {
+            "type": "number"
+          },
+          "kind": {
+            "const": "stuck",
+            "type": "string"
+          },
+          "statuses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind",
+          "days",
+          "at"
+        ],
+        "type": "object"
       }
     ]
+  },
+  "AutomationWait": {
+    "additionalProperties": false,
+    "properties": {
+      "hours": {
+        "type": "number"
+      },
+      "kind": {
+        "const": "wait",
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "hours"
+    ],
+    "type": "object"
   },
   "AutomationWho": {
     "anyOf": [

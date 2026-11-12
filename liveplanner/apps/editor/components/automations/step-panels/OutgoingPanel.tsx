@@ -7,7 +7,6 @@
 // never holds an address: a plan with no webhook of the kind says so and offers to add one.
 
 import {
-  AUTOMATION_NOTIFY_NAMES,
   AUTOMATION_TEXT_MAX,
   type AutomationOutgoing,
   type AutomationVia,
@@ -21,6 +20,7 @@ import { usePlanWebhooks } from '../plan-webhooks';
 import { OUTGOING_KINDS, defaultOutgoing, viaOf, type OutgoingKind } from '../step-defaults';
 import { ValueTextField } from '../ValueInsert';
 import { PanelField, PanelNote, PanelSelect } from './panel-parts';
+import { ChangeOutgoingField } from './ChangeActionField';
 
 const KIND_OF: Readonly<Record<AutomationVia, WebhookKind>> = {
   webhook: 'json',
@@ -149,24 +149,13 @@ export function OutgoingPanel({
 }) {
   return (
     <div className="flex flex-col gap-4">
-      <PanelField label="Action">
-        {(id) => (
-          <PanelSelect
-            id={id}
-            value={kindOfStep(step.via)}
-            onChange={(e) => {
-              const via = viaOf(e.target.value as OutgoingKind);
-              if (via !== step.via) onChange({ ...defaultOutgoing(via), text: step.text });
-            }}
-          >
-            {OUTGOING_KINDS.map((k) => (
-              <option key={k} value={k}>
-                {AUTOMATION_NOTIFY_NAMES[viaOf(k)]}
-              </option>
-            ))}
-          </PanelSelect>
-        )}
-      </PanelField>
+      <ChangeOutgoingField
+        kind={kindOfStep(step.via)}
+        onChange={(k) => {
+          const via = viaOf(k);
+          if (via !== step.via) onChange({ ...defaultOutgoing(via), text: step.text });
+        }}
+      />
       <WebhookPicker step={step} onChange={onChange} invalid={invalidPath === 'webhook'} />
       <ValueTextField
         label="Message"

@@ -307,3 +307,114 @@ describe('rule names and actions', () => {
     ).toBe(true);
   });
 });
+
+describe('the triggers after Phase 3', () => {
+  it('reads each, keeping only what narrows it', () => {
+    const triggers = [
+      { kind: 'card_archived' },
+      { kind: 'card_restored' },
+      { kind: 'checklist_completed' },
+      { kind: 'threads_resolved' },
+      { kind: 'card_unblocked' },
+      { kind: 'mentioned' },
+      { kind: 'mentioned', people: ['p1'] },
+      { kind: 'related_done', related: 'linked' },
+      { kind: 'column_limit', status: 'doing', limit: 5 },
+      { kind: 'stuck', days: 5, at: '09:00' },
+      { kind: 'stuck', days: 90, at: '09:15', statuses: ['doing'] },
+    ];
+    for (const trigger of triggers) {
+      const r = readRuleBody(withRule({ trigger }));
+      expect('body' in r && r.body.trigger).toEqual(trigger);
+    }
+    const empty = readRuleBody(withRule({ trigger: { kind: 'mentioned', people: [] } }));
+    expect('body' in empty && empty.body.trigger).toEqual({ kind: 'mentioned' });
+  });
+
+  it.each([
+    ['a relation it lacks', { kind: 'related_done', related: 'parents' }, 'trigger.related'],
+    ['a limit of 0', { kind: 'column_limit', status: 'doing', limit: 0 }, 'trigger.limit'],
+    ['a limit past 500', { kind: 'column_limit', status: 'doing', limit: 501 }, 'trigger.limit'],
+    ['stuck past 90 days', { kind: 'stuck', days: 91, at: '09:00' }, 'trigger.days'],
+  ])('refuses %s', (_, trigger, path) => {
+    expect(pathOf(withRule({ trigger }))).toBe(path);
+  });
+});
+
+describe('the actions after Phase 3 and Wait', () => {
+  const bodyOf = (raw: unknown) => {
+    const r = readRuleBody(raw);
+    if (!('body' in r)) throw new Error(r.path);
+    return r.body;
+  };
+
+  it('reads them, trimming checklist items', () => {
+    const body = bodyOf(
+      withRule({
+        steps: [
+          { kind: 'copy_card', status: 'done' },
+          { kind: 'add_checklist', items: [' Write tests ', 'Ship'] },
+          { kind: 'link_card', field: 'f-parent', to: { card: 'c1' } },
+          { kind: 'restore' },
+          { kind: 'resolve_threads' },
+          { kind: 'wait', hours: 48 },
+          { kind: 'flag' },
+        ],
+      }),
+    );
+    expect(body.steps).toEqual([
+      { kind: 'copy_card', status: 'done' },
+      { kind: 'add_checklist', items: ['Write tests', 'Ship'] },
+      { kind: 'link_card', field: 'f-parent', to: { card: 'c1' } },
+      { kind: 'restore' },
+      { kind: 'resolve_threads' },
+      { kind: 'wait', hours: 48 },
+      { kind: 'flag' },
+    ]);
+  });
+
+  it('lets a branch link to the card that started the rule', () => {
+    const step = {
+      kind: 'for',
+      related: { kind: 'children' },
+      conditions: [],
+      then: [{ kind: 'link_card', field: 'f-parent', to: { trigger: true } }],
+    };
+    expect(bodyOf(withStep(step)).steps).toEqual([step]);
+  });
+
+  it.each([
+    ['no checklist items', { kind: 'add_checklist', items: [] }, 'steps.0.items'],
+    [
+      'too many checklist items',
+      { kind: 'add_checklist', items: Array(21).fill('x') },
+      'steps.0.items',
+    ],
+    ['a blank checklist item', { kind: 'add_checklist', items: ['a', '  '] }, 'steps.0.items.1'],
+    ['a checklist item that is not text', { kind: 'add_checklist', items: [3] }, 'steps.0.items.0'],
+    ['a link to nothing', { kind: 'link_card', field: 'f-parent', to: {} }, 'steps.0.to'],
+    [
+      'a link to the starting card outside a branch',
+      { kind: 'link_card', field: 'f-parent', to: { trigger: true } },
+      'steps.0',
+    ],
+    ['a Wait of no time', { kind: 'wait', hours: 0 }, 'steps.0.hours'],
+    ['a Wait of part of an hour', { kind: 'wait', hours: 1.5 }, 'steps.0.hours'],
+    ['a Wait past 30 days', { kind: 'wait', hours: 721 }, 'steps.0.hours'],
+    ['a Wait in words', { kind: 'wait', hours: '3' }, 'steps.0.hours'],
+  ])('refuses %s', (_, step, path) => {
+    expect(pathOf(withStep(step))).toBe(path);
+  });
+
+  it('reads a bare Copy Card, and refuses a second card made in one run', () => {
+    expect(bodyOf(withStep({ kind: 'copy_card' })).steps).toEqual([{ kind: 'copy_card' }]);
+    expect(pathOf(withRule({ steps: [{ kind: 'copy_card' }, { kind: 'copy_card' }] }))).toBe(
+      'steps',
+    );
+  });
+
+  it('refuses more than three Waits', () => {
+    const steps = Array.from({ length: 4 }, () => ({ kind: 'wait', hours: 1 }));
+    expect(pathOf(withRule({ steps }))).toBe('steps');
+  });
+});

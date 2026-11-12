@@ -117,6 +117,7 @@ const RESULT_WORDS: Readonly<Record<AutomationRun['result'], string>> = {
   no_match: 'No Match',
   skipped: 'Skipped',
   failed: 'Failed',
+  waiting: 'Waiting',
 };
 
 /** A run's result as the Audit Trail's pill says it, with its reason. */

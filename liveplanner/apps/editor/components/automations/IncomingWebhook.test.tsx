@@ -88,12 +88,11 @@ const body = (over: Partial<AutomationRuleBody> = {}): AutomationRuleBody => ({
 });
 
 describe('the trigger', () => {
-  it('is offered under Another Tool Sends It and starts bare', () => {
+  it('is offered under Other Tools and starts bare', () => {
     render(<Panel body={newRuleBody('From CI', 'UTC')} rule={incoming({ ruleId: null })} />);
-    const select = screen.getByRole('combobox', { name: 'Trigger' });
-    const group = within(select).getByRole('group', { name: 'Another Tool Sends It' });
-    expect(within(group).getByRole('option', { name: 'Incoming Webhook' })).toBeTruthy();
-    fireEvent.change(select, { target: { value: 'incoming_webhook' } });
+    fireEvent.click(document.querySelector('[data-change-step]')!);
+    const group = screen.getByRole('region', { name: 'Other Tools' });
+    fireEvent.click(group.querySelector('[data-picker-tile="incoming_webhook"]')!);
     expect(latest.trigger).toEqual({ kind: 'incoming_webhook' });
     expect(screen.getByText(/Save the rule to get its address and secret/)).toBeTruthy();
   });

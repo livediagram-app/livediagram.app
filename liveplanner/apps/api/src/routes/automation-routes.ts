@@ -314,7 +314,7 @@ async function runNow(ctx: PlanRouteContext, g: Gated, held: AutomationRule): Pr
   return run ? json({ run }) : refuse(429, 'automation_budget_spent');
 }
 
-const RESULTS: readonly AutomationResult[] = ['done', 'no_match', 'skipped', 'failed'];
+const RESULTS: readonly AutomationResult[] = ['done', 'no_match', 'skipped', 'failed', 'waiting'];
 
 function runs(ctx: PlanRouteContext, g: Gated): Response {
   const p = ctx.url.searchParams;

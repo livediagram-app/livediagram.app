@@ -24,6 +24,7 @@ import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
 import { ITEM_IMPORTS_SCHEMA } from './item-imports-schema';
 import {
   AUTOMATION_HOOKS_SCHEMA,
+  AUTOMATION_WAITING_SCHEMA,
   AUTOMATIONS_SCHEMA,
   automationsV19,
 } from './automations/automation-schema';
@@ -475,6 +476,9 @@ const V20 = AUTOMATION_HOOKS_SCHEMA;
 // (github/github-schema.ts; docs/specs/026-plan/github-pull-requests.md "Storage").
 const V21 = GITHUB_SCHEMA;
 
+// Automations' Wait (automations/automation-schema.ts): the runs a Wait holds.
+const V22 = AUTOMATION_WAITING_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -497,6 +501,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V19,
   V20,
   V21,
+  V22,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

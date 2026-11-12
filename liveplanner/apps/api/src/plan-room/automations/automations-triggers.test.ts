@@ -1,0 +1,239 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  defaultCatalogue,
+  itemPersonId,
+  type AutomationRun,
+  type ItemTypeDef,
+} from '@liveplanner/items';
+import { endRepeatWorld } from '../test-repeat-world';
+import { automationWorld, type AutomationWorld } from './test-automation-world';
+
+// The triggers after Phase 3 and the Wait step, end to end (docs/specs/026-plan/automations.md "Triggers", "Wait";
+// blueprint automations.md "The triggers after Phase 3", "The actions after Phase 3"): a write makes the event, the
+// wake runs the rule, a derived trigger on the card it concerns, a held run going on when its time comes.
+vi.mock('../../auth/accounts', async () => (await import('../test-accounts-mock')).accountsMock);
+
+const TASK: ItemTypeDef = {
+  id: 'task',
+  label: 'Task',
+  newTitle: 'New task',
+  glyph: 'task',
+  color: '#2563eb',
+  fields: ['title', 'status', 'labels', 'checklist', 'f-blocked', 'f-parent'],
+  custom: [
+    {
+      id: 'f-blocked',
+      label: 'Blocked By',
+      kind: 'card',
+      linkType: 'task',
+      multiple: true,
+      blocks: true,
+    },
+    { id: 'f-parent', label: 'Parent', kind: 'card', linkType: 'task' },
+  ],
+};
+
+let w: AutomationWorld;
+beforeEach(async () => {
+  vi.spyOn(console, 'info').mockImplementation(() => {});
+  vi.spyOn(console, 'debug').mockImplementation(() => {});
+  w = await automationWorld();
+  const put = await w.send('PUT', '/api/projects/A/item-types', {
+    itemTypes: { version: defaultCatalogue().version, types: [TASK] },
+  });
+  expect(put.status).toBeLessThan(300);
+});
+afterEach(() => {
+  vi.restoreAllMocks();
+  endRepeatWorld();
+});
+
+const plan = () => w.plans.get('A')!;
+const room = () => plan().room;
+const card = async (id: string) => (await w.items('A')).find((i) => i.id === id)!;
+const move = (id: string, status: string) =>
+  w.send('POST', `/api/projects/A/items/${id}/move`, { status });
+const set = (id: string, fields: Record<string, unknown>) =>
+  w.send('POST', `/api/projects/A/items/${id}`, { set: fields });
+const runs = async () =>
+  (await (await w.call('GET', '/runs')).json<{ runs: AutomationRun[] }>()).runs;
+const labelled = async (id: string) => (await card(id)).fields['labels'];
+
+describe('card triggers', () => {
+  it('Card Archived runs on an archive, and Card Restored on bringing it back', async () => {
+    await w.rule({
+      name: 'Gone',
+      trigger: { kind: 'card_archived' },
+      steps: [{ kind: 'add_label', label: 'gone' }],
+    });
+    await w.rule({
+      name: 'Back',
+      trigger: { kind: 'card_restored' },
+      steps: [{ kind: 'add_label', label: 'back' }],
+    });
+    const c = await w.make('A', { title: 'Old' });
+    expect((await set(c.id, { archived: true })).status).toBe(200);
+    await room().alarm();
+    expect(await labelled(c.id)).toEqual(['gone']);
+    await w.send('POST', `/api/projects/A/items/${c.id}/move`, {
+      status: 'todo',
+      clear: ['archived'],
+    });
+    await room().alarm();
+    expect(await labelled(c.id)).toEqual(['gone', 'back']);
+  });
+
+  it('Checklist Completed runs when the last item is ticked, once', async () => {
+    await w.rule({
+      name: 'Ticked',
+      trigger: { kind: 'checklist_completed' },
+      steps: [{ kind: 'add_label', label: 'ready' }],
+    });
+    const c = await w.make('A', {
+      title: 'List',
+      checklist: [
+        { text: 'a', done: true },
+        { text: 'b', done: false },
+      ],
+    });
+    await set(c.id, {
+      checklist: [
+        { text: 'a', done: true },
+        { text: 'b', done: false },
+        { text: 'c', done: false },
+      ],
+    });
+    await room().alarm();
+    expect(await labelled(c.id)).toBeUndefined();
+    await set(c.id, {
+      checklist: [
+        { text: 'a', done: true },
+        { text: 'b', done: true },
+        { text: 'c', done: true },
+      ],
+    });
+    await room().alarm();
+    expect(await labelled(c.id)).toEqual(['ready']);
+  });
+
+  it('Column Over Limit runs on the card that takes the column past its limit', async () => {
+    await w.rule({
+      name: 'Too many',
+      trigger: { kind: 'column_limit', status: 'doing', limit: 1 },
+      steps: [{ kind: 'flag' }],
+    });
+    const a = await w.make('A', { title: 'A' });
+    const b = await w.make('A', { title: 'B' });
+    await move(a.id, 'doing');
+    await room().alarm();
+    expect((await card(a.id)).fields['flagged']).toBeUndefined();
+    await move(b.id, 'doing');
+    await room().alarm();
+    expect((await card(b.id)).fields['flagged']).toBe(true);
+    expect((await card(a.id)).fields['flagged']).toBeUndefined();
+  });
+
+  it('Card Unblocked runs on the blocked card once its last blocker is done', async () => {
+    await w.rule({
+      name: 'Free',
+      trigger: { kind: 'card_unblocked' },
+      steps: [{ kind: 'add_label', label: 'free' }],
+    });
+    const a = await w.make('A', { title: 'A' });
+    const b = await w.make('A', { title: 'B' });
+    const c = await w.make('A', { title: 'C', 'f-blocked': [a.id, b.id] });
+    await move(a.id, 'done');
+    await room().alarm();
+    expect(await labelled(c.id)).toBeUndefined();
+    await move(b.id, 'done');
+    await room().alarm();
+    expect(await labelled(c.id)).toEqual(['free']);
+    const [run] = await runs();
+    expect(run).toMatchObject({ result: 'done', card: { id: c.id } });
+  });
+
+  it('Related Cards Done runs on the parent once all its children are done', async () => {
+    await w.rule({
+      name: 'Close',
+      trigger: { kind: 'related_done', related: 'children' },
+      steps: [{ kind: 'move', status: 'done' }],
+    });
+    const parent = await w.make('A', { title: 'Parent' });
+    const one = await w.make('A', { title: 'One', 'f-parent': parent.id });
+    const two = await w.make('A', { title: 'Two', 'f-parent': parent.id });
+    await move(one.id, 'done');
+    await room().alarm();
+    expect((await card(parent.id)).fields['status']).not.toBe('done');
+    await move(two.id, 'done');
+    await room().alarm();
+    expect((await card(parent.id)).fields['status']).toBe('done');
+  });
+});
+
+describe('comment triggers', () => {
+  const thread = (itemId: string, text: string, extra: Record<string, unknown> = {}) =>
+    w.send('POST', `/api/projects/A/items/${itemId}/threads`, { text, ...extra });
+
+  it('All Threads Resolved runs when the last open thread on a card is resolved', async () => {
+    await w.rule({
+      name: 'Settled',
+      trigger: { kind: 'threads_resolved' },
+      steps: [{ kind: 'add_label', label: 'settled' }],
+    });
+    const c = await w.make('A', { title: 'Talked about' });
+    const one = (await (await thread(c.id, 'First')).json<{ thread: { id: string } }>()).thread.id;
+    const two = (await (await thread(c.id, 'Second')).json<{ thread: { id: string } }>()).thread.id;
+    expect((await w.send('POST', `/api/projects/A/threads/${one}/resolve`)).status).toBe(200);
+    await room().alarm();
+    expect(await labelled(c.id)).toBeUndefined();
+    expect((await w.send('POST', `/api/projects/A/threads/${two}/resolve`)).status).toBe(200);
+    await room().alarm();
+    expect(await labelled(c.id)).toEqual(['settled']);
+  });
+
+  it('Someone Mentioned runs on a comment that @mentions the person it names, and no other', async () => {
+    const ana = await itemPersonId('u-ana');
+    await w.rule({
+      name: 'For Ana',
+      trigger: { kind: 'mentioned', people: [ana] },
+      steps: [{ kind: 'add_label', label: 'ana' }],
+    });
+    const c = await w.make('A', { title: 'Ask' });
+    const d = await w.make('A', { title: 'Plain' });
+    await thread(c.id, '@ana look', {
+      mentions: [{ userId: 'u-ana', name: 'Ana', handle: 'ana' }],
+    });
+    await thread(d.id, 'No one');
+    await room().alarm();
+    expect(await labelled(c.id)).toEqual(['ana']);
+    expect(await labelled(d.id)).toBeUndefined();
+  });
+});
+
+describe('Wait', () => {
+  it('holds the run, then goes on with the steps after it when its time comes', async () => {
+    await w.rule({
+      name: 'Later',
+      steps: [{ kind: 'flag' }, { kind: 'wait', hours: 2 }, { kind: 'add_label', label: 'later' }],
+    });
+    const c = await w.make('A', { title: 'Wait for it' });
+    await move(c.id, 'done');
+    await room().alarm();
+    expect((await card(c.id)).fields['flagged']).toBe(true);
+    expect(await labelled(c.id)).toBeUndefined();
+    const [held] = await runs();
+    expect(held).toMatchObject({ result: 'waiting' });
+    expect(held!.waitsUntil).toBeGreaterThan(Date.now() + 60 * 60_000);
+    // Its time comes.
+    plan()
+      .db.prepare('UPDATE automation_waiting SET at = ?')
+      .run(Date.now() - 1);
+    room().automations.schedule.restoreTimes();
+    await room().alarm();
+    await room().alarm();
+    expect(await labelled(c.id)).toEqual(['later']);
+    const all = await runs();
+    expect(all.map((r) => r.result).sort()).toEqual(['done', 'done']);
+    expect(plan().db.prepare('SELECT COUNT(*) AS n FROM automation_waiting').get()!['n']).toBe(0);
+  });
+});
