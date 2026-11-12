@@ -15,6 +15,7 @@ import type { PongSession, PongView } from '@/lib/table-games/pong-session';
 import type { GamePlayer } from '@/lib/table-games/game-seats';
 import { Overlay } from './SocialFaces';
 import { usePingPong } from './usePingPong';
+import { useTableGameCamera } from './useTableGameCamera';
 
 // The Ping-Pong Table's game (docs/specs/009-elements/social-pieces.md "A game", "Controls", "Reduced motion"), over
 // the table's art on the art's own grid: the ball and both paddles, moved each frame through refs by the game's loop
@@ -56,6 +57,8 @@ export function PingPongGame({ element }: { element: ShapeElement }) {
     [frame],
   );
   const { view, seats, reduced, session, mine } = usePingPong(element.id, draw, frame.across);
+  // On a small screen, sitting down to play brings the table close (social-pieces.md "On a small screen").
+  useTableGameCamera(element, mine);
   const [p0, p1] = seats;
   if (!p0 || !p1 || view.status === 'rest') return null;
 
