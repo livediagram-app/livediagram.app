@@ -110,6 +110,8 @@ export * from './duration-fields';
 export * from './date-time-fields';
 export * from './date-range-fields';
 export * from './phone-fields';
+export * from './pull-request-fields';
+export * from './card-mentions';
 export * from './view-dates-write';
 export * from './time-tracking';
 export * from './view-fields';

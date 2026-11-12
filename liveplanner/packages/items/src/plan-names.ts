@@ -28,6 +28,7 @@ import { DURATION_HINT, isTimeSpent, parseDuration } from './duration-fields';
 import { parseDateTime } from './date-time-fields';
 import { isTimedRange, parseDateRange } from './date-range-fields';
 import { isPhoneNumber, PHONE_HINT } from './phone-fields';
+import { PULL_REQUEST_HINT, pullRequestValueOf } from './pull-request-fields';
 import { isBuiltInFieldId, PLAN_TYPE_COLOURS, slugOf } from './type-catalogue';
 import { itemSummary } from './views';
 import { REPEAT_FIELD } from './repeat';
@@ -384,6 +385,15 @@ export function resolveFields(
       if (!isEmailAddress(address))
         return refuse('value_invalid', `"${value}" is not an email address for ${field.label}.`);
       out[key] = address;
+    } else if (field.kind === 'pullrequest') {
+      // Any address of a pull request, stored canonical (github-pull-requests.md "The Pull Request field").
+      const url = pullRequestValueOf(value);
+      if (!url)
+        return refuse(
+          'value_invalid',
+          `"${String(value)}" is not a pull request for ${field.label}: ${PULL_REQUEST_HINT.charAt(0).toLowerCase()}${PULL_REQUEST_HINT.slice(1)}.`,
+        );
+      out[key] = url;
     } else if (field.kind === 'phone') {
       if (!isPhoneNumber(value))
         return refuse(

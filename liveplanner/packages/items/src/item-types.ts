@@ -55,6 +55,9 @@ export const CUSTOM_FIELD_KINDS = [
   'daterange',
   'checkbox',
   'link',
+  // One GitHub pull request's canonical address (docs/specs/026-plan/github-pull-requests.md "The Pull Request field";
+  // pull-request-fields.ts).
+  'pullrequest',
   // One email address.
   'email',
   // One phone number, kept as typed and called through a tel: link (item-types.md "Phone"; phone-fields.ts).
