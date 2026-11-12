@@ -340,9 +340,12 @@ threads (open and resolved), so you never ask the same question twice.
   inbox"). A thread this loop leaves open is the owner's to-do, so only a question waiting on them stays open.
   Anything else it posts (a move to Reviewed, a Type fix, "Answers acted on", a note) is resolved in the same
   `change_threads` call that posts it, and an answered question is resolved once acted on (step "Answers acted
-  on"). When a card it asked about is Cancelled, Done or Implemented, or gains a Pull Request link, its open
-  question threads are moot: reply in one line why ("Cancelled", "Built in <PR url>") and resolve them. Never
-  resolve a thread a person started.
+  on"). When a card it asked about is Cancelled, Done or Implemented, or gains a Pull Request link to a PR
+  that builds it, its open question threads are moot: reply in one line why ("Cancelled", "Built in <PR url>")
+  and resolve them. A Pull Request link alone isn't enough: follow-up cards often link the PR where the problem
+  was found, so read that PR's title and description first, and leave the question open unless the PR delivers
+  the card (2026-11-12: #656 and #658 lost their open security questions because they linked #1429, which only
+  found them). Never resolve a thread a person started.
 - Only ever do these: move Work Items from **Under Review** to **Reviewed**; start question threads on Under
   Review Work Items, reply in them and resolve them once their answer is acted on (or, on a card in any column,
   once moot, as above); correct a Work Item's
