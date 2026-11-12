@@ -52,6 +52,22 @@
   font-weight: 650;
   color: var(--article-heading-color);
 }
+/* A row split above a page's notes (article-footnote-split-look.ts): its part there would reach the page's foot, so
+   its side rules, a closing rule and a header row's tint are backgrounds that stop where its kept lines end. The
+   header tint's colour is also its outline colour (never drawn) for an export to read. */
+.article-flow table.article-table tr.article-foot-split > td,
+.article-flow table.article-table tr.article-foot-split > th {
+  border-right-color: transparent;
+  background: var(--article-foot-cell);
+}
+.article-flow table.article-table tr.article-foot-split > :first-child {
+  border-left-color: transparent;
+  background: var(--article-foot-cell), var(--article-foot-first);
+}
+.article-flow table.article-table tr.article-foot-split:has(> th) {
+  background: var(--article-foot-tint);
+  outline-color: color-mix(in srgb, var(--article-accent) 9%, transparent);
+}
 /* A header row repeated at the top of a later page: never the writing's, never pressed. */
 .article-flow table.article-table tr.article-table-repeat {
   break-before: column;

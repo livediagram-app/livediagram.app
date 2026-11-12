@@ -17,7 +17,14 @@ import {
   setFootBreaks,
   type FootBreak,
 } from './article-footnotes';
-import { hasHeader, rowFoot, tableCut, type RowReader } from './article-footnote-rows';
+import {
+  hasHeader,
+  rowFoot,
+  splitFoot,
+  splitRowOf,
+  tableCut,
+  type RowReader,
+} from './article-footnote-rows';
 import type { FootnoteNotes, NotePage } from './article-footnote-notes';
 import { articleSchema } from './article-schema';
 
@@ -100,13 +107,12 @@ function lineBefore(r: Reader, pos: number): Line | null {
   return sel ? lineAt(r, sel.from) : null;
 }
 
-// The line a break ends its page on: the text before it (before a row or a table, the last line before it, never
-// read forward into the row it moves).
+// The line a break ends its page on: the text before it. Before a block that follows a table (or a row, or the table
+// itself), the last line before it, never read forward into what it moves.
 function lineEnding(r: Reader, b: FootBreak): Line | null {
-  const type = b.block ? r.view.state.doc.nodeAt(b.pos)?.type : null;
-  return type === S.nodes.table || type === S.nodes.table_row
-    ? lineBefore(r, b.pos)
-    : lineAt(r, b.pos - 1);
+  if (!b.block || r.view.state.doc.resolve(b.pos - 1).parent.inlineContent)
+    return lineAt(r, b.pos - 1);
+  return lineBefore(r, b.pos);
 }
 
 // What a block break leaves to fit on its page, were it taken away: a row's or a table's foot (a row never breaks
@@ -156,7 +162,12 @@ export type FootLayout = {
   changed: boolean;
   // Each page's text foot above its notes, by page index (layout px from the text area's top).
   limits: ReadonlyMap<number, number>;
+  // Each table row split above a page's notes: the row's position, the page, and where its part there ends (layout
+  // px from the text area's top: its cells' lowest kept line, never past the notes' top, `limit`).
+  splits: readonly FootSplit[];
 };
+
+export type FootSplit = { row: number; page: number; bottom: number; limit: number };
 
 /**
  * Lays the footnotes out: the breaks above each page's notes, then the notes drawn at each page's foot. `pages`: the
@@ -182,9 +193,9 @@ export function layoutFootnotes(
   const limits = new Map<number, number>();
   if (!initial || initial.refs.length === 0) {
     notes.render([]);
-    if (!initial || initial.breaks.length === 0) return { changed: false, limits };
+    if (!initial || initial.breaks.length === 0) return { changed: false, limits, splits: [] };
     setFootBreaks(view, []);
-    return { changed: true, limits };
+    return { changed: true, limits, splits: [] };
   }
   notes.setVars(view.dom);
   const columnHeight = frame.height;
@@ -304,5 +315,14 @@ export function layoutFootnotes(
   }
   if (budget <= 0) debugLog('[article-footnotes] layout did not settle', { breaks });
   notes.render(drawn);
-  return { changed: !sameFootBreaks(initial.breaks, breaks), limits };
+  // Where each split row's part ends above its page's notes, for its look (article-footnote-split-look.ts).
+  const splits: FootSplit[] = [];
+  for (const b of breaks) {
+    const row = splitRowOf(view.state.doc, b);
+    if (!row) continue;
+    const bottom = splitFoot(rows, row.node, row.pos, b.page, [b.pos, ...(b.also ?? [])]);
+    const limit = limits.get(b.page) ?? columnHeight;
+    if (bottom !== null) splits.push({ row: row.pos, page: b.page, bottom, limit });
+  }
+  return { changed: !sameFootBreaks(initial.breaks, breaks), limits, splits };
 }

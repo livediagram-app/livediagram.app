@@ -185,6 +185,7 @@ function setUp(blocks: readonly ArticleBlock[]) {
       breaks: footnoteKey.getState(view.state)!.breaks,
       drawn,
       limits: laid.limits,
+      splits: laid.splits,
       settled: !laid.changed,
     };
   };
@@ -273,7 +274,7 @@ describe('the rows of a table above its page notes', () => {
     const { view, settle, underNotes, placeOf } = setUp(blocks);
     const t = tableAt(view.state.doc, 't');
     const [a, b, c] = t.cells[0]!;
-    const { breaks, drawn, limits, settled } = settle();
+    const { breaks, drawn, limits, settled, splits } = settle();
     // Each tall cell ends after its third line (bottom 60), above the notes' top (70); the short one is whole.
     expect(breaks).toEqual([{ page: 0, pos: a! + 30, block: false, also: [c! + 30] }]);
     expect(underNotes(limits)).toEqual([]);
@@ -283,6 +284,8 @@ describe('the rows of a table above its page notes', () => {
     expect(drawn.map((d) => d.index)).toEqual([0]);
     // Drawn as a break in each of the two cells.
     expect(view.dom.querySelectorAll('.article-foot-break')).toHaveLength(2);
+    // The row's part on page 0 ends under its lowest kept line (60), above the notes' top (70).
+    expect(splits).toEqual([{ row: t.rows[0], page: 0, bottom: 60, limit: 70 }]);
   });
 
   it('splits a row that starts its page under its repeated header row', () => {
@@ -308,6 +311,7 @@ describe('the rows of a table above its page notes', () => {
   });
 
   it('keeps no row under the notes for rows of any length', () => {
+    let split = 0;
     for (let lines = 1; lines <= 12; lines++) {
       const blocks = [
         para('a', 15, 5),
@@ -315,7 +319,7 @@ describe('the rows of a table above its page notes', () => {
           't',
           [
             [text(5), text(5)],
-            [text(lines * PER_LINE - 1), text(7)],
+            [text(lines * PER_LINE - 1, 2), text(7)],
             [text(9), text(9)],
           ],
           true,
@@ -323,10 +327,15 @@ describe('the rows of a table above its page notes', () => {
         para('b', 30),
       ];
       const { settle, underNotes } = setUp(blocks);
-      const { limits, settled } = settle();
+      const { limits, settled, splits } = settle();
       expect(underNotes(limits), `${lines} lines`).toEqual([]);
+      // A split row's part ends above its page's notes, never under them.
+      for (const s of splits) expect(s.bottom, `${lines} lines`).toBeLessThanOrEqual(s.limit);
+      split += splits.length;
       expect(settled, `${lines} lines`).toBe(true);
     }
+    // The longest rows split.
+    expect(split).toBeGreaterThan(0);
   });
 
   it('gives a split row back to its page when the notes go, and lays out as before', () => {
@@ -465,7 +474,13 @@ describe('the table pieces', () => {
   });
   it('leaves a cut to the writing when no row of a table there runs past the limit', () => {
     const read = { lineAt: () => ({ col: 0, top: 0, bottom: 10 }), lineBefore: () => null };
-    expect(tableCut(doc, read, 0, 50, t.cells[0]![0]!)).toBeNull();
+    // A place inside the table: the page ends before the block after it, while that is on the page.
+    expect(tableCut(doc, read, 0, 50, t.cells[0]![0]!)).toEqual({
+      page: 0,
+      pos: t.pos + t.node.nodeSize,
+      block: true,
+    });
+    expect(tableCut(doc, read, 1, 50, t.cells[0]![0]!)).toBeNull();
     expect(tableCut(doc, read, 0, 50, t.pos + t.node.nodeSize + 2)).toBeUndefined();
     expect(tableCut(doc, read, 0, 50, 2)).toBeUndefined();
   });

@@ -36,7 +36,7 @@ export function tableNear(doc: PMNode, pos: number): number | null {
 }
 
 // Each cell of the row at `rowPos`: where its text starts and ends.
-function cellsOf(row: PMNode, rowPos: number): { start: number; end: number }[] {
+export function cellsOf(row: PMNode, rowPos: number): { start: number; end: number }[] {
   const out: { start: number; end: number }[] = [];
   row.forEach((cell, offset) => {
     const start = rowPos + 1 + offset + 1;
@@ -140,10 +140,16 @@ export function tableCut(
     if (past(rowFoot(read, table.child(mid), rowPos[mid]!), page, limit)) hi = mid;
     else lo = mid + 1;
   }
-  // No row past the limit: a cut inside the table is nothing to cut (a place between its rows reads below them);
-  // one after it is the writing's own.
-  if (lo === rowPos.length)
-    return cut > tablePos && cut < tablePos + table.nodeSize ? null : undefined;
+  // No row past the limit: a cut after the table is the writing's own. One inside it is a place between its rows,
+  // read as the first line after the table: the page ends there, before the block after the table, while that is on
+  // the page (otherwise nothing is to cut).
+  const after = tablePos + table.nodeSize;
+  if (lo === rowPos.length) {
+    if (cut <= tablePos || cut >= after) return undefined;
+    return after < doc.content.size && read.lineAt(after).col === page
+      ? { page, pos: after, block: true }
+      : null;
+  }
   const whole = wholeRowAt(table, tablePos, lo);
   const before = read.lineBefore(whole);
   // A row lower on its page moves whole; one that starts its page (only the repeated header row above it) splits.
@@ -153,4 +159,33 @@ export function tableCut(
     return read.lineAt(whole).col > page ? null : { page, pos: whole, block: true };
   // A row with no line to keep on the page (a page shorter than its first line) is left to the writing's own cut.
   return splitRow(read, table.child(lo), rowPos[lo]!, page, limit);
+}
+
+/** Where a split row's part on page `page` ends: the lowest line its cells keep there (a cell cut at one of `cuts`,
+ *  the line before the cut; one not cut, its last line when that is on the page). Layout px, or null when no cell
+ *  keeps a line there. O(cells) reads. */
+export function splitFoot(
+  read: RowReader,
+  row: PMNode,
+  rowPos: number,
+  page: number,
+  cuts: readonly number[],
+): number | null {
+  let foot: number | null = null;
+  for (const c of cellsOf(row, rowPos)) {
+    const cut = cuts.find((p) => p >= c.start && p <= c.end);
+    const line =
+      cut === undefined ? read.lineAt(c.end) : cut > c.start ? read.lineAt(cut - 1) : null;
+    if (line && line.col === page) foot = Math.max(foot ?? line.bottom, line.bottom);
+  }
+  return foot;
+}
+
+/** The row a break inside a table cell splits: its position and node, or null for a break elsewhere. */
+export function splitRowOf(doc: PMNode, b: FootBreak): { pos: number; node: PMNode } | null {
+  if (b.block || b.pos < 0 || b.pos > doc.content.size) return null;
+  const $p = doc.resolve(b.pos);
+  for (let d = $p.depth; d > 0; d--)
+    if ($p.node(d).type === S.nodes.table_row) return { pos: $p.before(d), node: $p.node(d) };
+  return null;
 }

@@ -11,6 +11,7 @@ import { measureTocPages } from '@/lib/article/article-toc-view';
 import { clearPendingNote, footnoteKey } from '@/lib/article/article-footnotes';
 import { FootnoteNotes } from '@/lib/article/article-footnote-notes';
 import { layoutFootnotes } from '@/lib/article/article-footnote-layout';
+import { measureSplitRows } from '@/lib/article/article-footnote-split-look';
 import type { ArticleEditorProps, FlowLayout } from './article-editor-types';
 
 // How many times one change may re-measure for repeated header rows settling (each copy drawn can move
@@ -83,6 +84,8 @@ export function measureArticleLayout({
       return;
     }
     footTries.current = 0;
+    // A table row split above a page's notes, drawn ending there.
+    measureSplitRows(view, laid.splits, { frame, root, z });
     // A footnote just put in: its note takes the caret.
     const fs = footnoteKey.getState(view.state);
     if (fs && fs.pending !== null) {

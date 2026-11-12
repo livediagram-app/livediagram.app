@@ -448,7 +448,9 @@ undoes and copies with the text it sits in.
   repeating above it there (a table's first row under its header row takes the table with it, so a header row
   is never left alone above the notes). A row that already starts its page (nothing above it but the repeated
   header row) splits there instead: each of its cells ends above the notes at its own line, and the rest of every
-  cell goes on together at the top of the next page. No row runs under a page's notes, however long. A page with
+  cell goes on together at the top of the next page. The row's part on that page ends under its cells' last lines
+  there, closed by a rule, its side rules stopping with it, on screen and in every export. No row runs under a page's
+  notes, however long. A page with
   no notes lays out as it always has.
 - **Moving with reflow**: typing, a style, a zone or a page break that carries a reference onto
   another page carries its note with it; the pages are laid out again as the writing settles, as the

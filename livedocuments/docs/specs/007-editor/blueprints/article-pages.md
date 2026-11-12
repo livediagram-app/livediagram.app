@@ -507,7 +507,18 @@ pagesNeeded)` (adds pages like the last; removes trailing pages with no elements
   there (the break as drawn), read as nothing to cut (`null`), so the page's later-fits check can take the break
   back; a cut inside a table none of whose rows is past the limit is nothing to cut too. That check reads a row's
   foot (`lineAfterBreak`), not its first line, after a block break before a row or table, and counts the notes of
-  the references in it. The stylesheet's `.article-table-repeat + .article-foot-break-before` drops the row's own
+  the references in it. A box broken inside fills the rest of its page, and masks and clip paths are not drawn on
+  a broken box, so a split row is drawn ending above the notes by its look (`article-footnote-split-look.ts`):
+  `layoutFootnotes` returns each split row's `FootSplit` (`splitFoot`: its cells' lowest kept line on the page);
+  once the layout settles, `measureSplitRows` reads the row's parts (`getClientRects`, one a part) and, with
+  `hiddenSpans`, hides each part on a page it ends on from under its kept lines (plus the cell's bottom padding and
+  1 px, never past the notes' top) to the part's foot, on the parts' one background strip. `splitLookAttrs` makes
+  the row's node decoration (`setSplitRowLooks`, kept in the footnotes plugin's `looks`, mapped through edits):
+  class `article-foot-split`, the cells' side rules, a closing rule and a header row's tint as background layers
+  over the drawn stretches (`--article-foot-cell`, `--article-foot-first`, `--article-foot-tint`; the cells' own
+  side borders transparent), and `data-foot-keep` (`part:keep`) for an export, whose `snapshotWriting` cuts the
+  row's and its cells' parts there (`splitPartsOf`) and draws their rules, a closing rule and the tint (read from
+  the row's resolved outline colour). No opaque cover: a page's background can be its own. The stylesheet's `.article-table-repeat + .article-foot-break-before` drops the row's own
   forced break: the header copy before it already starts the page, never left alone above the notes. A page's
   break is found by where the text before it landed (`lineEnding`: before a block break, the last line before it,
   read backwards); a spare one goes; one whose next line (with that line's references' notes, and the margin a
