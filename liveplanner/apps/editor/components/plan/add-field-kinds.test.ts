@@ -73,6 +73,7 @@ describe('the kinds’ categories', () => {
     expect(categoryOfKind('image').id).toBe('links');
     expect(KIND_CATEGORIES.find((c) => c.id === 'links')!.kinds).toEqual([
       'link',
+      'pullrequest',
       'email',
       'phone',
       'image',
