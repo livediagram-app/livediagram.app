@@ -24,6 +24,10 @@ precision, read from the code. Paths are relative to the repository root.
 | `liveplanner/apps/editor/components/plan/SetupHeroArt.tsx`                                 | `setupBoardHeroArt`, `setupSheetHeroArt` (`SetupDialog`'s `art`)                                                                              |
 | `liveplanner/apps/editor/components/forms/ShareFormHeroArt.tsx`                            | `shareFormHeroArt` (Share Form)                                                                                                               |
 | `livedesign/apps/live/components/canvas/LayoutGalleryHeroArt.tsx`                          | `layoutGalleryHeroArt` (Choose a Layout's dialog)                                                                                             |
+| `packages/ui/src/dialog/hero/art/settings.tsx`                                             | `settingsHeroArt` (every app's Settings, through `SettingsView`), `SETTINGS_GLYPH`, `cogPath`                                                 |
+| `packages/ui/src/dialog/hero/art/collaborators.tsx`                                        | `collaboratorsHeroArt` (every app's Collaborators)                                                                                            |
+| `packages/ui/src/dialog/hero/art/canvas-theme.tsx`                                         | `canvasThemeHeroArt` (Tab Style: livedesign, livediagram, livedocuments, livehuddle)                                                          |
+| `liveworkspace/apps/site/components/settings/SiteSettingsHeroArt.tsx`                      | `siteSettingsHeroArt`, passed to `SettingsPanel` as `heroArt`                                                                                 |
 
 ## The frame's API
 
@@ -47,7 +51,9 @@ const titleId = useId();
 </Dialog>;
 ```
 
-The header must be the panel's first child (or follow the phone sheet's handle): its top corners inherit the
+The root is a `<div data-dialog-hero>`, not a `<header>`: outside sectioning content a `<header>` is a banner
+landmark, and a dialog must not give the page a second banner (`HeroDialogHeader.test.tsx` holds it; select the
+header by `[data-dialog-hero]`). The header must be the panel's first child (or follow the phone sheet's handle): its top corners inherit the
 panel's radius. A product app that imports `@liveworkspace/ui/dialog-hero` lists `@liveworkspace/ui` in its own
 dependencies (`corepack pnpm --filter <app> add @liveworkspace/ui@workspace:*`), as liveplanner's editor does.
 
@@ -110,7 +116,13 @@ switch as every `dark:` class (a `.light` island included). `--hero-lift` is the
 Measured in a browser: 100px at 1280, 1024 and 768 wide for Automations and Share (liveplanner, livedocuments), and
 for Export, Import, History and Share to Community (livediagram, livedocuments, light and dark), 56px on a 390px
 phone; livediagram's Import from Microsoft Whiteboard is 69px there, its title taking the second line the phone
-allows.
+allows. The same for Settings (signed in with the switch, and a guest without it),
+Collaborators and Tab Style (livedocuments, livediagram) and liveworkspace.app's Settings, light and dark.
+
+`SettingsView` (`@liveworkspace/settings-ui`) draws the header for every Settings: `settingsHeroArt` unless the host
+passes `heroArt` (through `SettingsPanel`), its line the panel's `subtitle` for the side shown, the scope switch and
+the kit's close as its actions, and `[--hero-centre-end:17rem]` while the switch shows. Tab Style's own panel (not
+`Dialog`) gives its `SheetHandle` `relative z-10` and the header `underHandle`, as `Dialog`'s phone sheet does.
 
 ## Size
 
@@ -119,5 +131,5 @@ Measured minified (esbuild, React external): the frame, tokens and helpers are 5
 2.3 KB (1.0 KB gzipped); the shared art: Export's 2.9 KB (1.0 KB), Import's 2.1 KB (1.0 KB), History's 2.4 KB
 (0.9 KB), Share to Community's 1.8 KB (0.9 KB), Webhooks' 2.7 KB (1.0 KB), Team's 2.2 KB (1.0 KB) and Team Invite's
 0.4 KB over it (0.3 KB); the product art: Configure Board's 2.0 KB (0.7 KB), Setup's two 4.2 KB (1.4 KB), Share
-Form's 2.3 KB (1.0 KB) and Choose a Layout's 2.9 KB (1.2 KB gzipped). Art loads only with its dialog's chunk; the
+Form's 2.3 KB (1.0 KB) and Choose a Layout's 2.9 KB (1.2 KB gzipped); Settings' 2.7 KB (1.0 KB), Collaborators' 1.7 KB (0.8 KB), Tab Style's 1.8 KB (0.8 KB) and liveworkspace.app's Settings 2.1 KB (0.9 KB, beside the shared Settings art `SettingsView` imports as its default). Art loads only with its dialog's chunk; the
 band paints once.

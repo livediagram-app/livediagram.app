@@ -26,6 +26,12 @@ function header(props: Partial<Parameters<typeof HeroDialogHeader>[0]> = {}) {
 }
 
 describe('the dialog hero header', () => {
+  it('adds no banner landmark to the page the dialog opens over', () => {
+    header();
+    expect(screen.queryByRole('banner')).toBeNull();
+    expect(screen.getByRole('heading', { level: 2, name: 'Share This Plan' })).toBeTruthy();
+  });
+
   it('titles the dialog with a real heading, by id, in the app’s heading face', () => {
     header();
     const h2 = screen.getByRole('heading', { level: 2, name: 'Share This Plan' });
@@ -41,7 +47,7 @@ describe('the dialog hero header', () => {
 
   it('stands exactly 100px tall from sm, compact on a phone, its line one row and heard there, not shown', () => {
     const { container } = header();
-    const root = container.querySelector('header')!;
+    const root = container.querySelector<HTMLElement>('[data-dialog-hero]')!;
     expect(root.className).toMatch(/\bsm:h-\[100px\]/);
     expect(root.className).toContain('max-sm:py-3');
     const line = container.querySelector('[data-dialog-hero-subtitle]')!;
@@ -51,7 +57,7 @@ describe('the dialog hero header', () => {
 
   it('carries the colour tokens and follows the app’s light or dark class', () => {
     const { container } = header();
-    const root = container.querySelector('header')!;
+    const root = container.querySelector<HTMLElement>('[data-dialog-hero]')!;
     expect(root.style.getPropertyValue('--hero-paper')).toContain('light-dark(');
     expect(root.style.getPropertyValue('--hero-lift')).toBe('32px');
     expect(root.className).toContain('[color-scheme:light]');

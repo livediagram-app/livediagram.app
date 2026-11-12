@@ -45,7 +45,11 @@ obvious question it asks: "tell me about this person".
   name.
 - The person whose avatar you clicked is highlighted and scrolled into view, so
   the click still reads as "tell me about _them_".
-- The subtitle counts the room: "3 people across 2 tabs", or "Just you so far"
+- The modal wears the [dialog hero header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md): the canvas's dots fading in from the
+  title's side, a cursor gliding in on a dashed trail in the bottom left, and in the bottom right the presence stack
+  rising from the edge, the front avatar in the accent with its ring spreading twice and a cursor pointing at it.
+  The title mark is two people. Help and the close sit at the right.
+- The title's line counts the room: "3 people across 2 tabs", or "Just you so far"
   when nobody else has joined yet.
 - View-role visitors get the full modal: it mutates nothing.
 - Available wherever the presence stack is, which is only a shared or team

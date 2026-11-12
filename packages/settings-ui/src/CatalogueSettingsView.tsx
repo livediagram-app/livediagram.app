@@ -9,6 +9,7 @@
 // never loads it.
 import { useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
 import { ACCOUNT_KEYS } from '@liveworkspace/settings/account';
+import type { HeroArt } from '@liveworkspace/ui/dialog-hero';
 import type {
   AppCatalogue,
   CatalogueBinding,
@@ -111,6 +112,8 @@ export type CatalogueSettingsViewProps = {
   isMobile: boolean;
   onClose: () => void;
   title?: string;
+  subtitle?: string;
+  heroArt?: HeroArt;
   footer?: ReactNode;
   switcher?: ReactNode;
   focus?: SettingsFocus | null;
@@ -213,6 +216,8 @@ export default function CatalogueSettingsView({
         isMobile={props.isMobile}
         onClose={props.onClose}
         title={props.title}
+        subtitle={props.subtitle}
+        heroArt={props.heroArt}
         switcher={props.switcher}
         footer={props.footer}
         placeholder={
@@ -570,6 +575,8 @@ function view({
   isMobile,
   onClose,
   title,
+  subtitle,
+  heroArt,
   footer,
   switcher,
   focus,
@@ -581,6 +588,8 @@ function view({
     isMobile,
     onClose,
     title,
+    subtitle,
+    heroArt,
     footer,
     switcher,
     focus,

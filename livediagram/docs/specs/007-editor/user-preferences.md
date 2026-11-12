@@ -807,6 +807,14 @@ and the dialog stays as the one complete, browsable index of them.
   ([liveworkspace/docs/specs/010-site/site.md](../../../../liveworkspace/docs/specs/010-site/site.md) "Settings"), so the app's
   settings look the same there as here.
 
+  **The header.** The dialog wears the [dialog hero header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), the one every app's Settings and
+  liveworkspace.app's share: a grid fading in from the title's side, a mixer's three faders rising in the bottom
+  left, two cogs meshing in the bottom right and, where the header is wide enough, a settings card between the title
+  and the switch (a switch turned on, its ring spreading twice, over a slider). The title mark is a cog. The title is
+  **Settings** (on a phone, a pushed pane's category), and its line says which side is shown: "How livediagram works
+  for you", or under **All** "Your account and every app, in one place". The switch below sits beside the close
+  on desktop, and on a phone in a row of its own under the header.
+
   **This app or All.** The dialog is the package's `SettingsPanel`, the one Settings panel every app
   and liveworkspace.app open. Its header carries a switch like the Explorer's filter: **livediagram**
   (this app's logo and name) and **All** (liveworkspace's logo). Both sides are one set of categories (liveworkspace/docs/specs/010-site/site.md "Settings"): **All** shows

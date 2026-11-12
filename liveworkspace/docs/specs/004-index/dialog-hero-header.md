@@ -19,10 +19,17 @@ Share to Community (liveworkspace/docs/specs/007-community/community.md "Publish
 Invite by Link, [one-explorer.md "Teams are run in the Explorer"](./one-explorer.md#teams-are-run-in-the-explorer)),
 liveplanner's Configure Board, Setup Board and Setup Sheet (liveplanner/docs/specs/026-plan/plan-board.md "Configure"
 and "Setup Board") and Share Form (liveplanner/docs/specs/030-forms/forms.md "Publishing and the form link"), and
-livedesign's Choose a Layout (livedesign/docs/specs/007-editor/pages-mode.md "An empty page offers its layouts").
+livedesign's Choose a Layout (livedesign/docs/specs/007-editor/pages-mode.md "An empty page offers its layouts"); every app's
+Settings and liveworkspace.app's (livediagram/docs/specs/007-editor/user-preferences.md "The header",
+liveworkspace/docs/specs/010-site/site.md "Settings"), Collaborators
+(livediagram/docs/specs/012-collaboration/collaborator-enhancements.md) and Tab Style
+(livediagram/docs/specs/011-theme/canvas-and-theme-dialog.md).
 
 ## The frame
 
+- **Not a landmark.** Its root is a plain block, not `<header>`: outside sectioning content a `<header>` is a banner
+  landmark, so every dialog wearing the hero would give the page it opens over a second banner. The `<h2>` is what
+  names it.
 - **Height.** From `sm` the header is exactly 100px tall in every dialog, its row centred in it. Nothing in it can
   make it taller: the title and its line are one line each, truncated.
 - **On a phone** (below `sm`) it is compact: 12px above and below, a 32px mark, an 18px title that may wrap to a
@@ -113,6 +120,10 @@ What each dialog draws:
 | Webhooks           | A grid of dots fading toward the title; the Automations flow's cousin along the foot: in the bottom left the item as a card, a line leaving its node and a payload (braces on the accent) riding it; a dashed send line along the foot to the bottom right, where it arrives as an arrow at an endpoint, a port whose ring spreads twice as it is delivered. Glyph: a webhook, three nodes joined. |
 | Team               | Rings spreading from the bottom right, where three people stand gathered and a fourth, ringed in the accent with a plus badge, has just joined them; in the bottom left an open door, a dashed path along the foot from it to them. Glyph: two people, one in front.                                                                                                                               |
 | Team Invite        | Team's drawing (Invite by Link), the newcomer's badge a link, the door's path the link's. Glyph: the same.                                                                                                                                                                                                                                                                                         |
+| Settings           | A grid fading in from the title's side; a mixer's three faders rising in the bottom left, each at its own level; two cogs meshing as they rise in the bottom right; centre: a settings card, a switch turned on (its ring spreading twice) over a slider half way along, a hairline between them. Glyph: a cog. The switch's wider actions move the centre piece to 17rem.                         |
+| Site Settings      | liveworkspace.app's Settings: one account, every app. The same grid; the apps' tiles rising in the bottom left, each to its own height; the account rising in the bottom right, a cog on its shoulder; centre: the account at the hub of four app tiles, a dashed line to each, its ring spreading twice. Glyph: the Settings cog.                                                                 |
+| Collaborators      | The canvas's dots fading in from the title's side; a cursor gliding in on a dashed trail, its name tag beside it, in the bottom left; the presence stack rising in the bottom right, three avatars overlapping, the front one in the accent with its presence ring spreading twice, a cursor pointing at it. Glyph: two people.                                                                    |
+| Tab Style          | Rings spreading like a colour wheel's from the bottom right, where a fan of swatch chips rises from the edge, the front one in the accent lifting out of the fan twice; a brush sweeping a stroke of paint along the foot in the bottom left. Glyph: a palette.                                                                                                                                    |
 
 ## Where art lives
 

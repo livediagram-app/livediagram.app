@@ -580,10 +580,15 @@ page of this site (`components/AccountControl.tsx`), and in the Explorer by its 
 `?settings=` ([The Explorer](#the-explorer-explorer)). There is no settings page: `/account/settings` only sends
 the browser on to the Explorer with the panel open ([Your account](#your-account-account)).
 
-- **The app's name.** Opened for an app, the header's title reads as that app's: its logo and wordmark ("live" in
-  the app's accent), then **Settings** ("liveplanner Settings"), on the front screen of either side of the switch. A
-  pushed pane's name takes its place, and the pane opens under the shared back bar (`BackBar`, `@liveworkspace/ui`) to
-  the screen that pushed it, the pane's name as its chip. Opened for no app, the title is **Settings** alone.
+- **The header.** The panel wears the [dialog hero header](../004-index/dialog-hero-header.md), drawn here with
+  liveworkspace.app's own art: one account, every app. A grid fades in from the title's side; in the bottom left
+  the apps' tiles rise from the edge, each to its own height; in the bottom right the account rises with a cog on its
+  shoulder; and where the header is wide enough, the account sits at the hub of four app tiles, a dashed line to
+  each, its ring spreading twice. The title mark is the Settings cog. The title is **Settings**, and its line names
+  the side shown: opened for an app, "How liveplanner works for you", and under **All** (or opened for no app) "Your
+  account and every app, in one place". A pushed pane's name takes the title's place on a phone, and the pane opens
+  under the shared back bar (`BackBar`, `@liveworkspace/ui`) to the screen that pushed it, the pane's name as its
+  chip.
 - **The switch.** Opened for an app, the header has the Explorer's switch: the app's logo and name, and **All** with
   liveworkspace's logo. The two sides are one panel and one set of categories (below): **All** shows every row, and
   the app's side, signed in, shows only the rows that apply to that app (each row's apps, below), and only the

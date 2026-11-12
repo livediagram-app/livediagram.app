@@ -2,7 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import type { Tab } from '@livehuddle/document';
-import { Button, DialogHeader, DialogCloseButton } from '@livehuddle/ui';
+import { Button } from '@livehuddle/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { collaboratorsHeroArt } from '@liveworkspace/ui/dialog-hero-art/collaborators';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HideCursorsFooter } from '@liveworkspace/workbench/components/dialogs/HideCursorsSwitch';
 import { FacilitatorButton } from '@/components/dialogs/CollaboratorFacilitatorButton';
@@ -100,13 +102,16 @@ export function CollaboratorsDialog({
       size="md"
       className="max-h-[min(36rem,calc(100dvh-2rem))]"
     >
-      <DialogHeader
-        title={<span id={TITLE_ID}>Collaborators</span>}
+      {/* The dialog hero header (liveworkspace/docs/specs/004-index/dialog-hero-header.md): the presence stack's band,
+          the title, how many are here, then Help and the close. */}
+      <HeroDialogHeader
+        art={collaboratorsHeroArt}
+        titleId={TITLE_ID}
+        title="Collaborators"
         subtitle={rosterSummary(roster)}
-      >
-        <HelpArticleLink article="livePresence" size="md" />
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        actions={<HelpArticleLink article="livePresence" size="md" />}
+        onClose={onClose}
+      />
       <div className="scrollbar-slim flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 py-4">
         {roster.groups.map((group) => (
           <section

@@ -94,7 +94,9 @@ export function HeroDialogHeader({
   // Where a centre piece shows, the title and its line stop short of it, so the two never meet.
   const cap = heroCentreCap(art);
   return (
-    <header
+    // A plain div, not <header>: outside sectioning content that is a banner landmark, so every dialog wearing the
+    // hero would give the page it opens over a second banner.
+    <div
       data-dialog-hero={art.name}
       // `color-scheme` from the app's `.dark` class (and a `.light` island), so the tokens' light-dark() pairs follow
       // the same switch every `dark:` class does.
@@ -125,6 +127,6 @@ export function HeroDialogHeader({
           {onClose ? <DialogCloseButton onClick={onClose} /> : null}
         </div>
       ) : null}
-    </header>
+    </div>
   );
 }

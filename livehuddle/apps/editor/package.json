@@ -47,7 +47,7 @@
     "@liveworkspace/style-guards": "workspace:*",
     "@liveworkspace/telemetry-client": "workspace:*",
     "@liveworkspace/trusted-types": "workspace:*",
-    "@liveworkspace/ui": "workspace:^",
+    "@liveworkspace/ui": "workspace:*",
     "@liveworkspace/workbench": "workspace:*",
     "next": "^16.4.5",
     "react": "^19.3.1",
