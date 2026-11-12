@@ -201,6 +201,7 @@ export function LinkedCardGroup({
   onOpen,
   onAdd,
   onLinkExisting,
+  emptyNote = true,
 }: {
   group: LinkedGroup;
   // The card the section is on (what Link Existing links to); absent, there is no Link Existing.
@@ -212,6 +213,9 @@ export function LinkedCardGroup({
   onAdd: (typeId: string) => void;
   // Sets the picked card's field to the target (docs/specs/026-plan/item-types.md "Link Existing"); false: refused.
   onLinkExisting?: (cardId: string, moved: boolean) => Promise<boolean> | boolean;
+  // "No cards link here as {Field} yet." under an empty section; false where the Linked Cards tab's own empty state
+  // already says so (LinkedCardsTab).
+  emptyNote?: boolean;
 }) {
   const headingId = useId();
   const plan = usePlan();
@@ -233,9 +237,11 @@ export function LinkedCardGroup({
         </span>
       </h3>
       {group.cards.length === 0 ? (
-        <p className="text-[13px] text-slate-500 dark:text-slate-400">
-          No cards link here as {group.label} yet.
-        </p>
+        emptyNote ? (
+          <p className="text-[13px] text-slate-500 dark:text-slate-400">
+            No cards link here as {group.label} yet.
+          </p>
+        ) : null
       ) : (
         <FilteredCards
           cards={group.cards}
