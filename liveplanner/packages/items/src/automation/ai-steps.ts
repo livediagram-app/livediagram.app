@@ -407,7 +407,17 @@ const LINK = /\b(?:https?:\/\/|www\.)[^\s<>()"']+/gi;
 export const keepOwnLink =
   (own: string) =>
   (link: string): string =>
-    own.includes(link.replace(/[.,;:!?]+$/, '')) ? link : ' ';
+    own.includes(trimSentenceMarks(link)) ? link : ' ';
+
+const SENTENCE_MARKS = '.,;:!?';
+
+/** `link` without the sentence marks it ends on. An index walk, linear in the link: a regex for "marks at the end"
+ *  backtracks over every run of marks the link holds, quadratic on model output full of them. */
+const trimSentenceMarks = (link: string): string => {
+  let end = link.length;
+  while (end > 0 && SENTENCE_MARKS.includes(link[end - 1]!)) end -= 1;
+  return link.slice(0, end);
+};
 
 /** Every link in `text` that `own` lacks, blanked; the rest of the text as it was. */
 export const dropForeignLinks = (text: string, own: string): string =>
