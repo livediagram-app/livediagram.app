@@ -157,12 +157,9 @@ export function voteHidesCursors(vote: TabVote | null | undefined): boolean {
   return !!vote && vote.active && vote.hideCursors === true;
 }
 
-// Should other people's dots be withheld right now? Until the results are
-// REVEALED, which spans both the open-casting and the ended-but-unrevealed
-// phases — "Show results" is the existing gate this switch defers to.
-export function voteHidesTallies(vote: TabVote | null | undefined): boolean {
-  return !!vote && !vote.revealed && vote.hideCounts === true;
-}
+// The rules a vote's tallies and casting follow are shared (@liveworkspace/model-core/vote-rules), so the vote
+// overlay every product's canvas mounts reads the same rules as the cast handler.
+export { canCastVote, voteHidesTallies, votesSpentBy } from '@liveworkspace/model-core/vote-rules';
 
 // Which element kinds a dot-vote can land on (docs/specs/012-collaboration/session-tools.md): stickies, images,
 // and shapes — but NOT a `frame` (it's a section backdrop, not content),
@@ -326,26 +323,6 @@ export function mergeIncomingVote(
   if (!local || !incoming) return incoming;
   if (incoming.round === undefined || incoming.round !== local.round) return incoming;
   return { ...incoming, votes: local.votes };
-}
-
-// How many dots a given participant has spent across the whole tab.
-export function votesSpentBy(vote: TabVote, participantId: string): number {
-  let n = 0;
-  for (const ids of Object.values(vote.votes)) {
-    for (const id of ids) if (id === participantId) n++;
-  }
-  return n;
-}
-
-// Can this participant place one more dot on this element? Out of budget
-// says no everywhere; a one-per-element vote also says no where they have
-// already placed one. The single rule the cast handler and the canvas
-// stepper both read, so the plus can't offer a dot the handler refuses.
-export function canCastVote(vote: TabVote, participantId: string, elementId: string): boolean {
-  if (!vote.active) return false;
-  if (votesSpentBy(vote, participantId) >= vote.votesPerPerson) return false;
-  if (vote.onePerElement && (vote.votes[elementId] ?? []).includes(participantId)) return false;
-  return true;
 }
 
 // Total dot count per element id (collapses the per-participant arrays).

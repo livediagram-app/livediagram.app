@@ -29,6 +29,11 @@ const HELD_AT_100 = [
   'src/hooks/persistence/useResolveSelf.ts',
   'src/hooks/canvas/useCanvasSurfaceGestures.ts',
   'src/hooks/canvas/useFocusCanvasOnMount.ts',
+  // The dot-vote overlay livediagram and liveplanner both mount (docs/specs/012-collaboration/session-tools.md).
+  'src/components/canvas/ElementVoteOverlay.tsx',
+  'src/components/canvas/VoteStepper.tsx',
+  'src/components/canvas/VoteDot.tsx',
+  'src/components/canvas/vote-badge.ts',
 ];
 
 export default defineProject({
