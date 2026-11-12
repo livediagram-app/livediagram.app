@@ -34,6 +34,14 @@
   }
 }
 
+/* The dialog hero header's title in the Typesetter's face (liveworkspace/docs/specs/004-index/dialog-hero-header.md
+ * "The title's face"), the start header's own (startHeadingFace): the system's serif, so nothing is fetched. */
+:root {
+  --hero-heading-family: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+  --hero-heading-weight: 600;
+  --hero-heading-tracking: -0.01em;
+}
+
 /* A phone held sideways (docs/specs/007-editor/editor-app.md "A phone held sideways"): the header and the
  * tab bar fold away there. The JS twin is LANDSCAPE_PHONE_MEDIA_QUERY (@liveworkspace/workbench/lib/responsive.ts); the two
  * state the same query. */

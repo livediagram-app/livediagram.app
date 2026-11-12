@@ -30,7 +30,9 @@
     "./web-vitals": "./src/web-vitals.ts",
     "./web-vitals-reporter": "./src/WebVitalsReporter.tsx",
     "./identity-fill": "./src/identity-fill.ts",
-    "./lazy-panel": "./src/lazy-panel.tsx"
+    "./lazy-panel": "./src/lazy-panel.tsx",
+    "./dialog-hero": "./src/dialog/hero/index.ts",
+    "./dialog-hero-art/*": "./src/dialog/hero/art/*.tsx"
   },
   "scripts": {
     "lint": "oxlint",

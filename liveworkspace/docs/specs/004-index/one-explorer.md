@@ -183,6 +183,9 @@ in the brand ramp under the chrome's light or dark class, the start header in th
 light or dark colours, never the tab's theme). The All Apps dots are no app's, so no start header shows
 them.
 
+Dialogs that are an app's main screens (Automations, Share) wear the same band as a header of their own, in the brand
+ramp and at the start header's height, mark and title: [The dialog hero header](./dialog-hero-header.md).
+
 #### New, on Home
 
 Directly above Most Used, Home shows what was **made** lately: the section **New**, the four items created most

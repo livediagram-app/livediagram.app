@@ -21,18 +21,15 @@ import { CompactEmptyState, Button, DialogCloseButton, useMediaQuery } from '@li
 import { ConfirmDialog } from '@liveworkspace/workbench/components/dialogs/ConfirmDialog';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { ItemWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
-import { AutomationsHeaderBand } from '@liveworkspace/workbench/components/start/AutomationsBand';
-import { StartTitleMark } from '@liveworkspace/workbench/components/start/StartTitleMark';
-import { useStartHeaderTheme } from '@liveworkspace/workbench/components/start/useStartHeaderTheme';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import { usePlan } from '@/components/plan/PlanContext';
-import { planPalette } from '@/components/plan/plan-palette';
-import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useAutomationOutline } from './automation-outline';
 import { BoltIcon } from './automation-glyphs';
 import { AutomationRefusal, type AutomationsScope } from './automations-client';
+import { automationsHeroArt } from './AutomationsHeroArt';
 import type { AutomationsTarget } from './AutomationsContext';
 import type { AutomationOutline } from './automation-outline';
 import { NewRuleMenu } from './NewRuleMenu';
@@ -88,9 +85,6 @@ export function AutomationsDialog({
   const toast = useToast();
   const now = useMinuteClock();
   const phone = !useMediaQuery('(min-width: 640px)');
-  // The header wears the start screens' band, in the app's light or dark colours (never a board's).
-  const palette = planPalette(useAppearance().appearance === 'dark' ? 'dark' : 'light');
-  const band = useStartHeaderTheme('liveplanner', palette);
   const titleId = useId();
   const [busy, setBusy] = useState<ReadonlySet<string>>(new Set());
   const [dirty, setDirty] = useState(false);
@@ -265,60 +259,49 @@ export function AutomationsDialog({
       size="3xl"
       className="flex flex-col overflow-hidden sm:h-[min(52rem,calc(100dvh-2rem))] sm:w-[min(67.5rem,calc(100vw-2rem))] sm:max-w-none max-h-[calc(100dvh-2rem)] max-sm:h-dvh max-sm:max-h-dvh"
     >
-      <h2 id={titleId} className="sr-only">
-        Automations
-      </h2>
       {editing && api.data ? (
-        <RuleBuilder
-          key={editing.ruleId ?? (editing.template ? `template:${editing.template}` : 'new')}
-          rule={editingRule}
-          initial={initial}
-          picks={fromTemplate?.picks}
-          timeZone={zone}
-          scope={scope}
-          signedIn={signedIn}
-          onOpenWebhooks={openWebhooks}
-          outline={outline}
-          api={api}
-          person={plan?.self?.name ?? 'You'}
-          now={now}
-          phone={phone}
-          onDirty={setDirty}
-          onBack={guard(() => onTarget({ view: 'rules' }))}
-          onSaved={(rule) => onTarget({ view: 'rule', ruleId: rule.id })}
-          trailing={<DialogCloseButton onClick={close} />}
-        />
+        <>
+          {/* The builder's breadcrumb stands where the header was; the dialog keeps its name for screen readers. */}
+          <h2 id={titleId} className="sr-only">
+            Automations
+          </h2>
+          <RuleBuilder
+            key={editing.ruleId ?? (editing.template ? `template:${editing.template}` : 'new')}
+            rule={editingRule}
+            initial={initial}
+            picks={fromTemplate?.picks}
+            timeZone={zone}
+            scope={scope}
+            signedIn={signedIn}
+            onOpenWebhooks={openWebhooks}
+            outline={outline}
+            api={api}
+            person={plan?.self?.name ?? 'You'}
+            now={now}
+            phone={phone}
+            onDirty={setDirty}
+            onBack={guard(() => onTarget({ view: 'rules' }))}
+            onSaved={(rule) => onTarget({ view: 'rule', ruleId: rule.id })}
+            trailing={<DialogCloseButton onClick={close} />}
+          />
+        </>
       ) : (
         <>
-          {/* The start screens' header band, drawn for rules (automations.md "The Automations screen"): 100px tall
-              from `sm`, the bolt's title mark, the title and its line; on a phone, compact and without the line. */}
-          <div
-            className={`relative isolate flex items-center gap-3 ${phone ? 'px-4 py-3' : 'min-h-[100px] px-6 py-4'}`}
-          >
-            <AutomationsHeaderBand band={band.band} />
-            <StartTitleMark kind={band.kind} band={band.band} variant="automations" />
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span
-                aria-hidden
-                className={`leading-tight ${phone ? 'text-[18px]' : 'text-[20px]'} ${band.face}`}
-                style={{ color: palette.text }}
-              >
-                Automations
-              </span>
-              {/* From `lg` it wraps short of the flow, so the two never meet. */}
-              {phone ? null : (
-                <p className="text-[13px] lg:max-w-[26rem]" style={{ color: band.band.muted }}>
-                  Rules that act on this plan’s cards for you when something happens.
-                </p>
-              )}
-            </div>
-            <NewRuleMenu
-              disabled={!api.data || full}
-              onBlank={newRule}
-              onTemplates={() => onTarget({ view: 'templates' })}
-            />
-            <DialogCloseButton onClick={close} />
-          </div>
+          {/* The dialog hero header, drawn for rules (automations.md "The Automations screen"). */}
+          <HeroDialogHeader
+            art={automationsHeroArt}
+            titleId={titleId}
+            title="Automations"
+            subtitle="Rules that act on this plan’s cards for you when something happens."
+            actions={
+              <NewRuleMenu
+                disabled={!api.data || full}
+                onBlank={newRule}
+                onTemplates={() => onTarget({ view: 'templates' })}
+              />
+            }
+            onClose={close}
+          />
           <ScreenTabs
             current={target.view === 'rule' ? 'rules' : target.view}
             rules={api.data ? rules.length : null}

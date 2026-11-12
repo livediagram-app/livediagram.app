@@ -7,9 +7,9 @@
 // shows only from `xl`, where the panel is at its widest (max-w-5xl) and the gap is wide enough that it never meets the
 // line; it stands 1.5rem left of where the search starts (the search's 17rem plus the header's 6rem right padding).
 //
-// `art` draws a screen's own band in its place (AutomationsBand's AutomationsHeaderBand for liveplanner's Automations
-// screen): its own texture and pieces instead of the app's, everything else as here. The art comes in from the
-// screen, so no start panel carries it.
+// A dialog's header band is @liveworkspace/ui's HeroDialogHeader (liveworkspace/docs/specs/004-index/
+// dialog-hero-header.md), in the brand ramp; this one keeps the start palette and the search beside it, at the same
+// height, mark and title metrics.
 import { memo, type CSSProperties, type ReactNode } from 'react';
 import { SHEET_HANDLE_PX } from '@liveworkspace/ui';
 import {
@@ -35,9 +35,6 @@ const GAP = 'absolute right-[23.5rem] top-1/2 hidden -translate-y-1/2 xl:block';
 // stands, the round table itself (23.5rem in, plus half its 4rem).
 const HUDDLE_AT =
   '[--start-huddle-at:calc(100%_-_3rem)_1.25rem] xl:[--start-huddle-at:calc(100%_-_25.5rem)_50%]';
-
-/** A screen's own band, drawn in the start band's frame. */
-export type StartBandArt = { name: string; texture: CSSProperties; pieces: ReactNode };
 
 /** The texture under each band: CSS gradients over the paper. */
 function texture(kind: HeroBackdropKind, band: StartBandColours): CSSProperties {
@@ -87,12 +84,9 @@ export const StartHeaderBand = memo(function StartHeaderBand({
   kind,
   band,
   underHandle = false,
-  art,
 }: {
   kind: HeroBackdropKind;
   band: StartBandColours;
-  // A screen's own band in place of the app's: its name, its texture and its pieces.
-  art?: StartBandArt | undefined;
   // On a phone the panel is a sheet with a grab handle over its header: the band runs up under it, so the sheet's
   // top is the band's colour, not a strip of plain card. The handle stands over it (`relative z-10`).
   underHandle?: boolean;
@@ -100,19 +94,19 @@ export const StartHeaderBand = memo(function StartHeaderBand({
   return (
     <div
       aria-hidden
-      data-start-band={art?.name ?? kind}
+      data-start-band={kind}
       className={`pointer-events-none absolute inset-0 -z-10 overflow-hidden ${
         underHandle ? 'max-sm:top-[calc(var(--start-band-lift)*-1)]' : ''
-      } ${kind === 'huddle' && !art ? HUDDLE_AT : ''}`}
+      } ${kind === 'huddle' ? HUDDLE_AT : ''}`}
       style={
         {
           backgroundColor: band.paper,
           '--start-band-lift': `${SHEET_HANDLE_PX}px`,
-          ...(art ? art.texture : texture(kind, band)),
+          ...texture(kind, band),
         } as CSSProperties
       }
     >
-      {art ? art.pieces : pieces(kind, band)}
+      {pieces(kind, band)}
     </div>
   );
 });

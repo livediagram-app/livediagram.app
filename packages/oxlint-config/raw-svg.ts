@@ -40,6 +40,10 @@ export const ICON_ART_ALLOWLIST = [
   // A start header's band and title mark: the app's Explorer hero motif, drawn in the start palette.
   '**/components/start/StartHeaderBand.tsx',
   '**/components/start/StartTitleMark.tsx',
+  // A dialog's hero header: its title mark and each modal's art, shared (packages/ui) or a product's own
+  // (`<Modal>HeroArt.tsx` beside its dialog).
+  '**/dialog/hero/**',
+  '**/*HeroArt.tsx',
   // Canvas content: a checklist tick and a collaborator's cursor.
   '**/components/canvas/ChecklistView.tsx',
   '**/components/canvas/RemoteCursor.tsx',
