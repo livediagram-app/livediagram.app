@@ -111,6 +111,33 @@ table's size when adding glyphs to a lazy panel.
 re-exported by `lucide.generated.ts`), so a first load carries only the glyphs its own code imports and a lazy panel's
 glyphs stay in its chunk. `/` went from 223.1 to 220.3 KiB gzipped and every editor page lost 6 to 12 KiB.
 
+**The error card loads on demand, and a budget (2026-11-12, Work Item 341).** Next ships `app/error.tsx` and
+`app/global-error.tsx` in every page's first load, and Turbopack gives each its own copy of what they import, never
+sharing it with the page's chunks. Both drew `PageError` statically (the shared empty state, `Button` and a
+`lucideGlyph`, whose optical centring brings `svgpath` and `svg-path-bbox`), so since the browser bug hunt that added
+them (`6a798b4b49`, #1181) every page carried three copies of the glyph maths. Both now draw
+`components/LazyPageError.tsx`, a `lazyPanel` (`@liveworkspace/ui/lazy-panel`) whose chunk is fetched only when a
+page fails; a failed fetch draws `PlainPageError`, the same words without the card. Measured with each build's own
+export (every script the page's HTML asks for, gzip level 9):
+
+| Page        | `ad24a3eec8^` | main before (`3236ee3d97`) | now       |
+| ----------- | ------------- | -------------------------- | --------- |
+| `/`         | 204.2 KiB, 9  | 223.2 KiB, 12              | 208.7, 11 |
+| `/explorer` | 388.3 KiB, 17 | 385.7 KiB, 18              | 371.1, 17 |
+
+(KiB gzipped, script files.) What `/` still carries over `ad24a3eec8^`, from the two builds' source maps: about
+3 KiB is `global-error.tsx`'s own copy of the appearance store and the app list it resolves the address with
+(deliberate: the page stands in for the layout and must be light or dark as the site is); about 2 KiB is the lazy
+card's wrapper, the plain card, the title hook and Turbopack's async-import runtime, a copy in each error file; about
+1.5 KiB is the app list itself growing with livehuddle (#1186, #1251) and each app's logo on sign-in (#1333); 0.5 KiB
+is the account menu's dark-mode hover (#1606); 0.4 KiB is Next 16.4.2 to 16.4.5's runtime. Against that, the
+glyph-per-module split (#1525) saved 2.8 KiB. `/explorer` is below its baseline because Settings and the Explorer's
+panels moved out of its first load. The page's HTML (51.7 KiB gzipped on `/`) is not part of this budget.
+
+The site's `build` ends with `scripts/first-load-budget.ts` (`lib/first-load/budget.ts`): it sums the same numbers
+from `out/` and fails the build when `/` passes 212 KiB or `/explorer` 380 KiB. `app/first-load-lazy.test.ts` keeps
+the error files' imports light and the check in the build.
+
 ## Presentation and UX
 
 The pages, their layout and their states are in [site.md](../site.md); the shared components come from
@@ -202,6 +229,7 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `liveworkspace/apps/site/lib/explorer/telemetry.ts`              | The Explorer's telemetry on liveworkspace.app (liveworkspace/docs/specs/008-telemetry/telemetry.md "The Explorer on liveworkspace.app"): the reports @liveworkspace/explorer hands its host, s…                                                                          |
 | `liveworkspace/apps/site/lib/explorer/token.ts`                  | Who the Explorer asks the index as (liveworkspace/docs/specs/010-site/site.md "The Explorer"): the token accounts hands this site for its session's account, or for the browser's guest (…                                                                               |
 | `liveworkspace/apps/site/lib/explorer/welcome.ts`                | Home's first run on liveworkspace.app: the starting points of the app the person came from, from that app's welcome manifest (`@<app>/templates/welcome.json`, generated f…                                                                                              |
+| `liveworkspace/apps/site/lib/first-load/budget.ts`               | The first-load budget ("Performance and limits"): the scripts each watched page asks for, their gzipped total and its budget, checked by `scripts/first-load-budget.ts` at the end of the site's build                                                                   |
 | `liveworkspace/apps/site/lib/legal.ts`                           | What the legal pages share (liveworkspace/docs/specs/010-site/site.md "Privacy and terms").                                                                                                                                                                              |
 | `liveworkspace/apps/site/lib/licences/apps.ts`                   |                                                                                                                                                                                                                                                                          |
 | `liveworkspace/apps/site/lib/licences/embedded-works.ts`         |                                                                                                                                                                                                                                                                          |
@@ -301,7 +329,7 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 
 | Folder        | Files |
 | ------------- | ----- |
-| `(top level)` | 7     |
+| `(top level)` | 12    |
 | `account`     | 4     |
 | `drive`       | 5     |
 | `explorer`    | 6     |
@@ -340,6 +368,7 @@ Every access is wrapped so a blocked storage reads as empty.
 | A `return` that leaves the site            | ignored; the page goes home                                                             |
 | A page that throws while rendering         | `app/error.tsx`: the `PageError` card, Try Again calls `reset`                          |
 | The root layout throws                     | `app/global-error.tsx`: its own `<html lang="en-GB">`, the same card, Try Again reloads |
+| The card's chunk can't load (offline)      | `LazyPageError` draws `PlainPageError`: the same title, words and two actions           |
 | No hand-off possible on an app's address   | straight to `next`; the app still signs in                                              |
 
 ## Constants and configuration: the Worker
@@ -476,9 +505,10 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 | root guards (`appearance-guard`, `optical-guard`, `touch-target-guard`, `trusted-types-guard`, `motion-budget`, `asset-prefix`, `cache-headers`) and `e2e/trusted-types.spec.ts` | 8        | site-wide rules: themes, optics, touch targets, Trusted Types, motion, the asset prefix and its caching |
 | `packages/sites`, `packages/account-menu`, `packages/settings-ui`                                                                                                                | the rest | the shared pieces the site renders                                                                      |
 
-127 test files:
+130 test files:
 
 - `liveworkspace/apps/site/app/error.test.tsx`
+- `liveworkspace/apps/site/app/first-load-lazy.test.ts`
 - `liveworkspace/apps/site/app/global-error.test.tsx`
 - `liveworkspace/apps/site/app/not-found.test.ts`
 - `liveworkspace/apps/site/app/seo-pages.test.ts`
@@ -544,6 +574,7 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 - `liveworkspace/apps/site/appearance-guard.test.ts`
 - `liveworkspace/apps/site/asset-prefix.test.ts`
 - `liveworkspace/apps/site/cache-headers.test.ts`
+- `liveworkspace/apps/site/components/LazyPageError.test.tsx`
 - `liveworkspace/apps/site/components/drive/drive-switch-dialog.test.tsx`
 - `liveworkspace/apps/site/components/settings/site-settings-dialog.test.tsx`
 - `liveworkspace/apps/site/components/status/StatusBoard.test.tsx`
@@ -560,6 +591,7 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 - `liveworkspace/apps/site/lib/comparison-redirects.test.ts`
 - `liveworkspace/apps/site/lib/drive/pages.test.ts`
 - `liveworkspace/apps/site/lib/explorer/daily-return.test.ts`
+- `liveworkspace/apps/site/lib/first-load/budget.test.ts`
 - `liveworkspace/apps/site/lib/explorer/guest-consent.test.ts`
 - `liveworkspace/apps/site/lib/explorer/host.test.ts`
 - `liveworkspace/apps/site/lib/explorer/imports.test.tsx`

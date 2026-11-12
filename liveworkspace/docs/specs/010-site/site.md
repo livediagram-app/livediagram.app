@@ -941,6 +941,8 @@ pressable again, and so does coming Back to a page the browser kept.
   the heading "Something went wrong", a line saying nothing was lost, **Try Again** (which renders the page
   again) and **Go to the Home Page**. A failure in the root layout itself gets the same card in a page of its
   own, with `lang`, the stylesheet and the appearance setting, so it is light or dark as the rest of the site.
+  The card's code loads only when a page fails, so it costs no page its first load; when that code can't load
+  (offline), the same title, heading, line and two actions show without the card's styling.
 - A button that starts work it waits for keeps the keyboard while it works (busy, never `disabled`;
   [busy buttons](../../../livediagram/docs/specs/004-interface-design/busy-buttons.md)).
 - Works at phone width with a 16px gutter. Tap targets are 44px on touch screens.
