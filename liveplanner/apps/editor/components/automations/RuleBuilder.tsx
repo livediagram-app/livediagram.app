@@ -148,14 +148,16 @@ export function RuleBuilder({
   const save = async () => {
     if (saving) return;
     setSaving(true);
+    // What went to the api: an edit made while it saves is kept, not replaced by the saved rule.
+    const sent = body;
     try {
-      const next = await api.save(rule?.id ?? null, { ...body, timeZone });
+      const next = await api.save(rule?.id ?? null, { ...sent, timeZone });
       if (!rule) {
         track('Plan', 'Created', 'AutomationRule');
         if (isGithubTrigger(body.trigger)) track('Plan', 'Created', 'AutomationRuleGithub');
       }
       setSaved(bodyOf(next));
-      setBody(bodyOf(next));
+      setBody((held) => (held === sent ? bodyOf(next) : held));
       setFault(null);
       toast.success(`Saved ${next.name}`);
       onSaved(next);
@@ -357,7 +359,8 @@ export function RuleBuilder({
             <TestOnCard
               body={body}
               outline={outline}
-              test={api.test}
+              // Tried as it would save: in this browser's time zone.
+              test={(tried, item) => api.test({ ...tried, timeZone }, item)}
               onRefused={refused}
               onClose={() => setTesting(false)}
             />
