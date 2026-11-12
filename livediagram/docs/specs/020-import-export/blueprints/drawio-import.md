@@ -639,8 +639,8 @@ pageIdToTab })`): nodes (`type: 'node'`) to a graph (`id` minted, `label` from `
   nothing left out skips the list) → importing ("Importing 3 of 12…",
   then "Importing images 3 of 12…") → the shared report (`ImportImageReport`, documents and libraries as
   links, failures listed). One `track('Tab', 'Imported', 'Drawio')` per document made.
-- `DrawioImportDialog`: title "Import from draw.io", subtitle "Each diagram becomes its own document,
-  named and dated after the file.", its help link the `drawioImport` article
+- `DrawioImportDialog`: title "Import from draw.io", subtitle "Each diagram becomes its own document."
+  (the header's one line; the panel's intro says how it is named and dated), its help link the `drawioImport` article
   (`explorer/drawio-import`, Explorer category).
 - `DrawioSourceIcon` (`packages/explorer/src/library/import-source-icons.tsx`, repo root): an original glyph, a box joined by an elbow
   connector to a decision diamond, white on `#c2410c` (5.2:1).

@@ -4,12 +4,15 @@
 // layouts"): what Choose a Layout opens on a page too small on screen for its card. A sheet risen
 // from the bottom on a phone, a centred dialog on a desktop zoomed out; a press (or Surprise Me)
 // places the layout and closes it, so the page is seen with it. Like the card it stands in for, it
-// keeps to its layouts (no Change Theme).
+// keeps to its layouts (no Change Theme). Headed by the dialog hero header
+// (liveworkspace/docs/specs/004-index/dialog-hero-header.md), drawn as the gallery: frames tiled, one chosen.
 import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livedesign/design';
 import { layoutCatalogueFor, type PageLayoutId } from '@livedesign/templates';
 import { CloseIcon, Tooltip } from '@livedesign/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';
+import { layoutGalleryHeroArt } from './LayoutGalleryHeroArt';
 
 export function LayoutGalleryDialog({
   page,
@@ -32,29 +35,27 @@ export function LayoutGalleryDialog({
       // The gallery is where anyone starts: no control takes focus (and shows its tooltip) on open.
       initialFocus="container"
     >
+      <HeroDialogHeader
+        art={layoutGalleryHeroArt}
+        titleId={titleId}
+        title="Start From a Layout"
+        subtitle={`${count} layouts in your theme. Pick one, then make it yours.`}
+        actions={
+          // The editor's close, with its tooltip (the header's own close has none).
+          <Tooltip label="Close">
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={onClose}
+              className="touch-target relative -mr-2 flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            >
+              <CloseIcon />
+            </button>
+          </Tooltip>
+        }
+        underHandle
+      />
       <div className="flex min-h-0 flex-col p-4" data-layout-gallery-dialog={page.id}>
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h2 id={titleId} className="text-base font-semibold text-slate-900 dark:text-slate-50">
-              Start From a Layout
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {count} layouts in your theme. Pick one, then make it yours.
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-1">
-            <Tooltip label="Close">
-              <button
-                type="button"
-                aria-label="Close"
-                onClick={onClose}
-                className="touch-target relative flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-              >
-                <CloseIcon />
-              </button>
-            </Tooltip>
-          </div>
-        </div>
         <LayoutGallery
           page={page}
           onApply={(layout) => {

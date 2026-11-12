@@ -183,6 +183,9 @@ in the brand ramp under the chrome's light or dark class, the start header in th
 light or dark colours, never the tab's theme). The All Apps dots are no app's, so no start header shows
 them.
 
+Dialogs that are an app's main screens (Automations, Share) wear the same band as a header of their own, in the brand
+ramp and at the start header's height, mark and title: [The dialog hero header](./dialog-hero-header.md).
+
 #### New, on Home
 
 Directly above Most Used, Home shows what was **made** lately: the section **New**, the four items created most
@@ -760,6 +763,13 @@ The journeys, one way each:
    joins it, then opens the team's view in the Explorer. Signed out, it signs in and comes back.
 5. **Decline from an email.** The email's Decline link (`/join/decline?token=…`) is a thin page that declines
    without an account, and points at the Explorer's Invites to accept instead.
+
+The team dialogs (the panel's Members, New Team, Edit Team and Invite by Link) wear the dialog hero header
+([dialog-hero-header.md](./dialog-hero-header.md)), drawn as people gathered with one being welcomed in, through an
+open door at the left; Invite by Link's newcomer carries a link. Their lines are short enough for one line at the
+dialog's width: Members "Who is in it, their roles and who is invited.", New Team "One home for your work, in every
+app.", Edit Team "Saved for the whole team, in every app.", and Invite by Link "Anyone signed in who opens it joins
+<team>." once on, "One link to join <team>, for 7 days." while off, the full sentence then in the dialog's body.
 
 Old addresses keep working: `liveworkspace.app/account/teams` goes to `/explorer/invites`, and
 `/account/teams/<id>` to that team's view, `/explorer/team?id=<id>` ([site.md](../010-site/site.md#your-account-account)).

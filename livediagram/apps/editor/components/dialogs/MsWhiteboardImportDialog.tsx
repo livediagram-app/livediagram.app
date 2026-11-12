@@ -1,5 +1,7 @@
+import { useId } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { importHeroArt } from '@liveworkspace/ui/dialog-hero-art/import';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { MsWhiteboardImportPanel } from './MsWhiteboardImportPanel';
 import type { ImportScenes } from '@/hooks/persistence/useMsWhiteboardImport';
@@ -15,6 +17,7 @@ export function MsWhiteboardImportDialog({
   importScenes: ImportScenes;
   onClose: () => void;
 }) {
+  const titleId = useId();
   return (
     <Dialog
       open
@@ -23,13 +26,15 @@ export function MsWhiteboardImportDialog({
       size="xl"
       className="max-h-[90vh]"
     >
-      <DialogHeader
+      {/* The dialog hero header (dialog-hero-header.md): Import's art, files coming in. */}
+      <HeroDialogHeader
+        art={importHeroArt}
+        titleId={titleId}
         title={MS_WHITEBOARD_IMPORT_TITLE}
-        subtitle="Each board becomes its own canvas, named and dated as the board."
-      >
-        <HelpArticleLink article="microsoftWhiteboardImport" size="md" />
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        subtitle="Each board becomes its own canvas."
+        actions={<HelpArticleLink article="microsoftWhiteboardImport" size="md" />}
+        onClose={onClose}
+      />
       <div className="flex-1 overflow-y-auto px-6 py-5">
         <MsWhiteboardImportPanel importScenes={importScenes} onClose={onClose} />
       </div>

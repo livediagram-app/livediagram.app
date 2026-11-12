@@ -905,7 +905,11 @@ in livedocuments.
   `EmptyPageInvite`, as livedocuments' Use a Layout: a soft white card with a brand tile holding the
   layouts glyph, its name and "Start from a ready-made page" muted under it, held at its screen
   size, rising in and lifting a little on hover), which opens the layout gallery on its own: a bottom
-  sheet on a phone, a centred dialog on a desktop, headed like the card; a press or Surprise Me
+  sheet on a phone, a centred dialog on a desktop, with the card's title and line in the [dialog hero
+  header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), drawn as the gallery itself: a faint
+  grid fading toward the title, a stack of layout frames rising in the bottom left, a sparkle for Surprise Me in the
+  bottom right, and, where the dialog is wide enough, frames tiled three by two, one selected in the accent with its
+  handles, bobbing twice (motion allowing); a layout's frame as the title mark. A press or Surprise Me
   places the layout and closes it. Opening it is tracked as `UI / Opened / EmptyPageInvite`.
 - **Hover previews the layout on the page**: while a tile is hovered (or focused) the page shows
   that layout as it would land, drawn over the whole sheet in the page's background, and the

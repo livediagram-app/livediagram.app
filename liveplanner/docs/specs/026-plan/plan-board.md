@@ -65,9 +65,12 @@ Stored on the element, shared by everyone, undone like any element edit:
   Style opens Tab Style: on a screen wider than a phone it flies up from the button, its bottom-right corner just
   above the cluster's right edge; on a phone it is a bottom sheet; without the cluster on screen it is a centred
   dialog. Nothing dims, as each change applies live; a click outside, Escape or the close button closes it, and
-  pressing Board again does too. Its header holds **Create Form** (where the board can take one, as in its element
-  menu: a form whose responses come to this board) beside the close button, left out on a phone, where it does not
-  fit beside the title. Its home holds:
+  pressing Board again does too. Its header is the [dialog hero header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), drawn as the board's set-up: a faint grid
+  fading toward the title, two swimlanes in the bottom left, and in the bottom right three columns, the middle one
+  lifted and tilted out of its dashed slot as if being dragged, bobbing twice, motion allowing; the title mark is a
+  board's columns, and its line "Start from a layout that suits your cards, then fine-tune any part of it." It holds **Create
+  Form** (where the board can take one, as in its element menu: a form whose responses come to this board) beside
+  the close button, left out on a phone, where it does not fit beside the title. Its home holds:
   - **Suggested for This Board**: presets, each a small drawing of the layout, its name, a line on what it does and,
     when the board's cards give one, why it suits them ("5 of 8 cards have someone on them"). A preset sets the
     swimlanes, the sort and the card size at once and never the columns or the cards, so trying one is safe and one
@@ -253,8 +256,10 @@ Where each is set, so a setting lives with what it changes, never in one central
     never drawn inside the board and never zoomed
     with the canvas. It is in the app's colours (light or dark, as the editor), 40 rem wide and a fixed height (up to
     40 rem, never past the window), so moving between steps never jumps it; on a phone it fills the screen. Its
-    header holds a board glyph, the title **Set up your board**, the line "Pick its cards, columns and layout. Change
-    them any time from its cog." and Help. Under it, the steps as a **step indicator**: a numbered circle per
+    header is the [dialog hero header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), drawn as the Start screen's lanes: four soft lanes the band's full height (from `sm`; a phone's compact band is plain),
+    and in the bottom right a card mid-drag over the dashed slot it will drop into, bobbing twice, motion allowing; a
+    board's columns as the title mark, the title **Set Up Your Board**, the line "Pick its cards, columns and layout.
+    Change them any time." and Help. Under it, the steps as a **step indicator**: a numbered circle per
     step joined by a connecting line, the step's name beside its circle (under it on a narrow dialog), and "Step 2 of
     3" read out (a polite live region) as the step changes. The current step's circle is filled in the brand colour
     and its name bold (`aria-current="step"`); a done step's circle holds a tick, the line up to the current step is

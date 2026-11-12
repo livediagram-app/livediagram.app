@@ -161,3 +161,12 @@
   --color-brand-900: #143b2e;
   --color-brand-950: #0e2920;
 }
+
+/* The dialog hero header's title in the face of the app a page is shown for (liveworkspace/docs/specs/004-index/
+ * dialog-hero-header.md "The title's face"): livedocuments' Typesetter serif; every other app keeps the page's own. */
+[data-explorer-app='livedocuments'],
+[data-community-app='livedocuments'] {
+  --hero-heading-family: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+  --hero-heading-weight: 600;
+  --hero-heading-tracking: -0.01em;
+}
