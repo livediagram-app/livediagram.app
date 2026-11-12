@@ -5,8 +5,6 @@ import { handleTabLink } from './tab-link-route';
 import { redactTabForCommunity } from '@liveworkspace/community/app';
 import { redactCommentAuthorIds } from '../comments';
 import { deleteTabRow, getDocument, getDocumentForSave, getTab } from '../db';
-import { tellConnectionLeft } from '@liveworkspace/index-app';
-import { indexAppClient } from '../index-service';
 import { conflict, forbidden, json, missingAuth, noContent, notFound } from '../responses';
 import { tabEtag } from '@livedocuments/api-schema';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
@@ -149,10 +147,6 @@ export async function handleDocumentSubresources(
       // once can't take the last two tabs.
       const removed = await deleteTabRow(env, id, tabId, { keepLast: !!ctx.token });
       if (removed === 'last') return conflict('last_tab');
-      // A connected tab has left its host: the index deletes its connection and its pass (connected-tabs.md
-      // "Removing"), off the response path.
-      if (removed?.connection)
-        ctx.waitUntil?.(tellConnectionLeft(indexAppClient(env), id, tabId, removed.connection));
       // A link scoped to it (the index's) now opens nothing here: the tab reads as missing.
       return noContent();
     }

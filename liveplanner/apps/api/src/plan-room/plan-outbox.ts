@@ -221,6 +221,9 @@ export { DRAIN_TABS } from '@liveworkspace/index-app';
 // drainIndexOutbox. Answers what it pushed. A push that fails keeps its keys, each counting the attempt and waiting
 // longer (settleOutbox); one refused for good, or failed too often, is parked. Without an index configured the keys
 // are dropped. Beside the pushes, a Form tab's name and heading go on its form link.
+// A connected tab that has left (`connection_left`, keyed by its connection id and tab id and written with the
+// tab's delete, db/tabs.ts) goes to the index as its removal (`removeConnection`), and a failed one waits and is
+// tried again like any key (liveworkspace/docs/specs/004-index/connected-tabs.md "Removing").
 export async function drainOutbox(
   env: PlanEnv,
   planId: string,

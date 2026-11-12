@@ -4,10 +4,12 @@
 
 import {
   shareLeaveStatements,
+  connectionLeftStatement,
   storedTabConnection,
   tabConnectionOf,
   tabConnectionStatement,
 } from '@liveworkspace/index-app';
+import { DOCUMENT_OUTBOX } from '../document-room/document-outbox';
 import type { TabConnection } from '@liveworkspace/index-client';
 import { drawnCount, type Tab } from '@livedocuments/document';
 import { rowToTab, type TabRow } from '../tab-row';
@@ -336,6 +338,9 @@ export async function deleteTabRow(
     )
     .bind(documentId, tabId, opts.keepLast ? 1 : 0, documentId);
   const rest = [
+    // A connected tab that has left: an outbox key, so the room's drain tells the index (removeConnection) and
+    // tries again after a failure (connected-tabs.md "Removing"). After the unlink, before the tab's row goes.
+    connectionLeftStatement(db, DOCUMENT_OUTBOX, 'document_tabs', documentId, tabId),
     // A shared tab (document-room/tab-shares.ts): every other holder hears that this document left, and nothing else it
     // owed them about the tab is sent. Before the tab's delete, which takes its `tab_shares` rows.
     ...shareLeaveStatements(env.DOCUMENT_DB, tabId),

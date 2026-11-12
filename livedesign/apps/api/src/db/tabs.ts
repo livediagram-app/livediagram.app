@@ -3,10 +3,12 @@
 
 import {
   shareLeaveStatements,
+  connectionLeftStatement,
   storedTabConnection,
   tabConnectionOf,
   tabConnectionStatement,
 } from '@liveworkspace/index-app';
+import { DESIGN_OUTBOX } from '../design-room/design-outbox';
 import type { TabConnection } from '@liveworkspace/index-client';
 import { capElementActions, componentRefIds, drawnCount, type Tab } from '@livedesign/design';
 import { rowToTab, type TabRow } from '../tab-row';
@@ -367,6 +369,9 @@ export async function deleteTabRow(
     )
     .bind(designId, tabId, opts.keepLast ? 1 : 0, designId);
   const rest = [
+    // A connected tab that has left: an outbox key, so the room's drain tells the index (removeConnection) and
+    // tries again after a failure (connected-tabs.md "Removing"). After the unlink, before the tab's row goes.
+    connectionLeftStatement(db, DESIGN_OUTBOX, 'design_tabs', designId, tabId),
     // The tab's image and photo references go with it (no foreign key cascades them); the outbox triggers tell
     // the media service the design no longer shows its images (design-room/design-outbox.ts).
     imageRefPruneTabStatement(env, tabId),
