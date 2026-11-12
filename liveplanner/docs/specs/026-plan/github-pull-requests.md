@@ -29,16 +29,16 @@ pull request's state where the team plans, and moves the card the moment the cod
 
 ## Domain language
 
-| Term                    | Means                                                                                             | Never called                 |
-| ----------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------- |
-| **pull request**        | One GitHub pull request, named by its repository and number (`acme/web#42`)                       | PR (in copy), merge request  |
-| **Pull Request field**  | A card field of kind `pullrequest` holding one pull request's address                             | GitHub field, PR link        |
-| **linked pull request** | A pull request a card names: in a Pull Request field, a Link field, or the pull request naming it | attached PR                  |
-| **card mention**        | A pull request's title or body naming a card as "{plan name} #{number}" ("Work Tracker #143")     | magic word, keyword          |
-| **GitHub connection**   | A plan's link to liveplanner's GitHub App: the installation and the repositories chosen from it   | integration (in copy), sync  |
-| **pull request state**  | Draft, Open, Checks Running, Checks Passing, Checks Failing, Merged or Closed                     | status (that is the card's)  |
-| **GitHub trigger**      | An Automations trigger a linked pull request starts: opened, merged, closed, checks finished      | GitHub rule, hook            |
-| **GitHub**              | Who a GitHub-triggered rule's changes are by, in card history, with the rule's name beside it     | bot, system, webhook         |
+| Term                    | Means                                                                                             | Never called                |
+| ----------------------- | ------------------------------------------------------------------------------------------------- | --------------------------- |
+| **pull request**        | One GitHub pull request, named by its repository and number (`acme/web#42`)                       | PR (in copy), merge request |
+| **Pull Request field**  | A card field of kind `pullrequest` holding one pull request's address                             | GitHub field, PR link       |
+| **linked pull request** | A pull request a card names: in a Pull Request field, a Link field, or the pull request naming it | attached PR                 |
+| **card mention**        | A pull request's title or body naming a card as "{plan name} #{number}" ("Work Tracker #143")     | magic word, keyword         |
+| **GitHub connection**   | A plan's link to liveplanner's GitHub App: the installation and the repositories chosen from it   | integration (in copy), sync |
+| **pull request state**  | Draft, Open, Checks Running, Checks Passing, Checks Failing, Merged or Closed                     | status (that is the card's) |
+| **GitHub trigger**      | An Automations trigger a linked pull request starts: opened, merged, closed, checks finished      | GitHub rule, hook           |
+| **GitHub**              | Who a GitHub-triggered rule's changes are by, in card history, with the rule's name beside it     | bot, system, webhook        |
 
 ## The Pull Request field
 
@@ -211,8 +211,8 @@ Pick a Trigger's **GitHub** group, each an ordinary rule with any conditions and
 request opens" and "Move to Done when it merges" are two rules, so a team picks its own columns, adds a label or a
 comment, and turns either off, with the Audit Trail saying what each did.
 
-| Trigger                 | Starts when a linked pull request                                                         |
-| ----------------------- | ----------------------------------------------------------------------------------------- |
+| Trigger                 | Starts when a linked pull request                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------- |
 | **Pull Request Opened** | opens ready for review, is reopened, or a draft is marked ready for review (a draft is not) |
 | **Pull Request Merged** | is closed as merged                                                                         |
 | **Pull Request Closed** | is closed without merging                                                                   |
@@ -234,11 +234,11 @@ comment, and turns either off, with the Audit Trail saying what each did.
 
 ## Who may do what
 
-| Role            | The Pull Request field                         | The GitHub connection and rules                                                 |
-| --------------- | ---------------------------------------------- | ------------------------------------------------------------------------------- |
+| Role            | The Pull Request field                         | The GitHub connection and rules                                                          |
+| --------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | **Editor**      | Sets, changes and clears it; opens it          | Connects, chooses repositories, disconnects (signed in, whole plan); writes GitHub rules |
-| **Participant** | Sets, changes and clears it, as any card field | Sees states and GitHub's moves; never connects or writes rules                  |
-| **Viewer**      | Sees it and opens it on GitHub                 | Sees states and GitHub's moves                                                  |
+| **Participant** | Sets, changes and clears it, as any card field | Sees states and GitHub's moves; never connects or writes rules                           |
+| **Viewer**      | Sees it and opens it on GitHub                 | Sees states and GitHub's moves                                                           |
 
 A tab-scoped Editor link may set the field on its tab's cards but never connects the plan, since a connection acts
 on the whole plan.

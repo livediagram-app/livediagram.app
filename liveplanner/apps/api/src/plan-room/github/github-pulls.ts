@@ -57,7 +57,10 @@ export async function actOnPullRequest(
   await sendStates(deps, [pullRequestKey(pr.ref)]);
   const heard = heardOfPull(action, pr.state);
   if (heard === null || !hearsGithub(env)) return 0;
-  const linked = [...(await fieldCardIds(env, planId, typesOf(head.itemTypes), pr.ref)), ...mentioned];
+  const linked = [
+    ...(await fieldCardIds(env, planId, typesOf(head.itemTypes), pr.ref)),
+    ...mentioned,
+  ];
   return queueGithubRuns(env, heard, pullRequestText(pr.ref), linked, deliveryId, now);
 }
 

@@ -48,10 +48,12 @@ describe('what a pull request did', () => {
 
   it('hears checks change into failing or passing, never running, a repeat or a closed one', () => {
     expect(heardOfChecks(undefined, { state: 'open', checks: 'failing' })).toBe('checks_failing');
-    expect(heardOfChecks({ state: 'open', checks: 'running' }, { state: 'draft', checks: 'passing' })).toBe(
-      'checks_passing',
-    );
-    expect(heardOfChecks({ state: 'open', checks: 'failing' }, { state: 'open', checks: 'failing' })).toBeNull();
+    expect(
+      heardOfChecks({ state: 'open', checks: 'running' }, { state: 'draft', checks: 'passing' }),
+    ).toBe('checks_passing');
+    expect(
+      heardOfChecks({ state: 'open', checks: 'failing' }, { state: 'open', checks: 'failing' }),
+    ).toBeNull();
     expect(heardOfChecks(undefined, { state: 'open', checks: 'running' })).toBeNull();
     expect(heardOfChecks(undefined, { state: 'open' })).toBeNull();
     expect(heardOfChecks(undefined, { state: 'merged', checks: 'failing' })).toBeNull();
@@ -111,7 +113,10 @@ describe('in a rule', () => {
       const read = readRuleBody({ ...ruleBody(), trigger: { ...trigger, extra: 1 } });
       expect('body' in read && read.body.trigger).toEqual(trigger);
     }
-    const bad = readRuleBody({ ...ruleBody(), trigger: { kind: 'pull_request_checks', result: 'running' } });
+    const bad = readRuleBody({
+      ...ruleBody(),
+      trigger: { kind: 'pull_request_checks', result: 'running' },
+    });
     expect('path' in bad && bad.path).toBe('trigger.result');
   });
 
@@ -137,7 +142,10 @@ describe('in a rule', () => {
       { chip: 'Failing' },
     ]);
     expect(
-      ruleSentence({ trigger: { kind: 'pull_request_merged' }, conditions: [], steps: [] }, outline as never),
+      ruleSentence(
+        { trigger: { kind: 'pull_request_merged' }, conditions: [], steps: [] },
+        outline as never,
+      ),
     ).toEqual([{ word: 'When' }, { chip: 'Pull Request Merged', trigger: true }]);
   });
 });

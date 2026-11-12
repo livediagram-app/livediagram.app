@@ -234,6 +234,8 @@ export function triggerMatches(
     case 'pull_request_merged':
     case 'pull_request_closed':
     case 'pull_request_checks':
-      return event.kind === 'github' && event.github !== undefined && githubHears(trigger, event.github);
+      return (
+        event.kind === 'github' && event.github !== undefined && githubHears(trigger, event.github)
+      );
   }
 }

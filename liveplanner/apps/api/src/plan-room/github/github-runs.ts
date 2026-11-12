@@ -27,16 +27,18 @@ export async function queueGithubRuns(
 ): Promise<number> {
   const hook = env.AUTOMATIONS;
   if (!hook?.kinds.has('github') || cardIds.length === 0) return 0;
-  const events: AutomationEvent[] = [...new Set(cardIds)].slice(0, RULE_MOVES_MAX).map((cardId) => ({
-    id: `g:${deliveryId}:${cardId}`,
-    kind: 'github',
-    cardId,
-    by: GITHUB_PERSON,
-    role: 'system',
-    github: heard,
-    pr,
-    at: now,
-  }));
+  const events: AutomationEvent[] = [...new Set(cardIds)]
+    .slice(0, RULE_MOVES_MAX)
+    .map((cardId) => ({
+      id: `g:${deliveryId}:${cardId}`,
+      kind: 'github',
+      cardId,
+      by: GITHUB_PERSON,
+      role: 'system',
+      github: heard,
+      pr,
+      at: now,
+    }));
   try {
     const res = await enqueueStatement(env.PLAN_DB, events, now).run();
     const queued = Number(res.meta.changes ?? 0);
