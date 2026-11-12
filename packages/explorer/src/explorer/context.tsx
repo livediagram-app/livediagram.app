@@ -21,6 +21,7 @@ import { DragProvider } from '../drag/store';
 import type { ThisBrowserItem } from '../this-browser';
 import { useItemActions, type HostTrash, type ItemActions } from '../data/useItemActions';
 import { useInbox, type InboxState } from '../data/useInbox';
+import { appHasInbox } from '../inbox-apps';
 import { defaultEntries, type DefaultEntry, type DefaultFolderOption } from '../defaults/entries';
 import {
   usePlacementDefaults,
@@ -121,6 +122,8 @@ export type ExplorerContextValue = {
   defaultEntries: readonly DefaultEntry[];
   actions: ItemActions;
   inbox: InboxState;
+  // Whether this app's Explorer shows the Inbox at all (appHasInbox): livehuddle's does not.
+  hasInbox: boolean;
   toast: ToastApi;
   teams: TeamRef[];
   teamName: (id: string | null) => string | null;
@@ -344,7 +347,8 @@ export function ExplorerProvider({
     placeName,
     onOrganise,
   });
-  const inbox = useInbox(client, app, filter, inboxHost);
+  const hasInbox = appHasInbox(app);
+  const inbox = useInbox(client, app, filter, inboxHost, hasInbox);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [dialog, openDialog] = useState<DialogTarget>(null);
   const [expansion] = useState(createExpansion);
@@ -435,6 +439,7 @@ export function ExplorerProvider({
       defaultEntries: entries,
       actions,
       inbox,
+      hasInbox,
       toast,
       teams,
       teamName,
@@ -481,6 +486,7 @@ export function ExplorerProvider({
       entries,
       actions,
       inbox,
+      hasInbox,
       toast,
       teams,
       teamName,

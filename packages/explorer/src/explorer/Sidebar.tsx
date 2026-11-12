@@ -255,7 +255,7 @@ function TrashRow({ depth = 0 }: { depth?: number }) {
 }
 
 export function Sidebar() {
-  const { view, navigate, folders, teams, inbox, viewerId } = useExplorer();
+  const { view, navigate, folders, teams, inbox, hasInbox, viewerId } = useExplorer();
   const { sidebarLinks } = useHostExtras();
   const library = useLibraryHost();
   const { expanded, toggle, expand } = useExpanded(view);
@@ -295,15 +295,17 @@ export function Sidebar() {
           onActivate={() => navigate({ kind: 'home' })}
           depth={0}
         />
-        <SidebarRow
-          icon={<InboxIcon />}
-          tone="violet"
-          label={SIDEBAR_LABELS.inbox}
-          selected={view.kind === 'inbox'}
-          onActivate={() => navigate({ kind: 'inbox' })}
-          depth={0}
-          badge={inboxCount(inbox.data, viewerId)}
-        />
+        {hasInbox ? (
+          <SidebarRow
+            icon={<InboxIcon />}
+            tone="violet"
+            label={SIDEBAR_LABELS.inbox}
+            selected={view.kind === 'inbox'}
+            onActivate={() => navigate({ kind: 'inbox' })}
+            depth={0}
+            badge={inboxCount(inbox.data, viewerId)}
+          />
+        ) : null}
         <SidebarRow
           icon={<ShareIcon />}
           tone="emerald"
