@@ -75,6 +75,13 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   animations"): an animation over the whole board makes the browser lay out the page's
   compositing again as it starts and as it ends, and a per-element entry re-renders every element
   view once more. Chrome may still fade in; it is small.
+- **A Tab Style change on a busy canvas eases the canvas, not its parts.** On a tab of more than 20 elements the
+  canvas's own colour (its backdrop) still eases into a new theme, look, finish, typeface, size or pattern, and every
+  part inside it snaps ([Canvas and theme dialog](../011-theme/canvas-and-theme-dialog.md) "Eased changes"). Easing
+  the parts sets a colour transition on every node of every element at once, and the browser restyles each of them
+  on every frame of the 250 ms ease, so the long frames grow with the board: on the reference board at 160 elements a theme pick took about 95 ms to paint, and snapping the parts paints it in about 30 ms; at the reference laptop's speed (the CPU slowed four times) 60 elements held the page in long frames for about 220 ms, and snapping the parts brings that to about 80 ms, the pick's own render. A small
+  board (20 elements or fewer) still eases every part. The threshold is the same in every editor that eases
+  (livediagram, livedocuments, livedesign, liveplanner and livehuddle), one shared constant.
 - **Questions about neighbours ask a spatial index.** Anything that asks, for each element, which
   other elements are near it (arrows passing behind boxes) queries one shared index of element
   bounds, updated for the elements that changed, so its per-frame cost follows the neighbourhood,

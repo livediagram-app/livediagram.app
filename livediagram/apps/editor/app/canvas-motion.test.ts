@@ -70,3 +70,42 @@ describe('the element plane rule', () => {
     );
   });
 });
+
+// A Tab Style change on a busy canvas eases the canvas, not its parts (docs/specs/008-canvas/canvas-performance.md):
+// the surface always takes the colour ease, its parts only while the canvas is not busy (Canvas sets
+// `data-canvas-busy` by canvasIsBusy, @liveworkspace/workbench/lib/tab-style-ease.ts).
+describe('the Tab Style ease', () => {
+  const selectors = () => {
+    // Split into rules rather than one regex over the file: a repeated selector group in a regex can backtrack.
+    const rule = read('./globals.css')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('}')
+      .map((r) => r.split('{'))
+      .find(
+        ([sel, body]) =>
+          sel?.includes(':root.lvd-style-transition') && body?.includes('transition-property'),
+      );
+    if (!rule) throw new Error('the Tab Style ease rule is missing from globals.css');
+    return rule[0]!
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.startsWith(':root.lvd-style-transition'));
+  };
+
+  it('eases the canvas surface itself', () => {
+    expect(selectors()).toContain(':root.lvd-style-transition [data-canvas-root]');
+  });
+
+  it('eases the parts only on a canvas that is not busy', () => {
+    const parts = selectors().filter((s) => s.endsWith('*'));
+    expect(parts).toEqual([
+      ':root.lvd-style-transition [data-canvas-root]:not([data-canvas-busy]) *',
+    ]);
+  });
+
+  it('marks a busy canvas on its surface', () => {
+    const canvas = read('../components/canvas/Canvas.tsx');
+    expect(canvas).toContain("data-canvas-busy={canvasIsBusy(elements.length) ? '' : undefined}");
+    expect(canvas).toContain("from '@liveworkspace/workbench/lib/tab-style-ease'");
+  });
+});

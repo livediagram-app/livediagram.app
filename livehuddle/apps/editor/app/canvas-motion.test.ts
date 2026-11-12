@@ -101,4 +101,10 @@ describe('the Tab Style ease', () => {
       ':root.lvd-style-transition [data-canvas-root]:not([data-canvas-busy]) *',
     ]);
   });
+
+  it('marks a busy canvas on its surface', () => {
+    const canvas = read('../components/canvas/Canvas.tsx');
+    expect(canvas).toContain("data-canvas-busy={canvasIsBusy(elements.length) ? '' : undefined}");
+    expect(canvas).toContain("from '@liveworkspace/workbench/lib/tab-style-ease'");
+  });
 });

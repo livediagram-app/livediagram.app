@@ -33,7 +33,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `../packages/workbench/src/components/canvas/CanvasArrivalContext.tsx` | `CanvasArrivalProvider`, `useArrivesWithBoard()`, `ARRIVAL_BURST`: what a tab opens with, and a burst                    |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts`            | Pops in only what is added after the board arrived; no timer when nothing pops                                           |
 | `apps/editor/app/globals.css`                                          | The editor fade-in rule (chrome markers only, never the canvas world); `[data-element-plane]`'s `cursor: auto`           |
-| `apps/editor/lib/canvas-busy.ts`                                       | `BUSY_CANVAS_ELEMENTS`, `canvasIsBusy(count)`: when a Tab Style change eases the canvas only                             |
+| `../packages/workbench/src/lib/tab-style-ease.ts`                      | `BUSY_CANVAS_ELEMENTS`, `canvasIsBusy(count)` (shared by every editor): when a Tab Style change eases the canvas only    |
 | `../packages/workbench/src/lib/sticky-peel-image.ts`                   | The sticky peel as a picture: `stickyPeelImage`, `stickyPeelVars` (blob-URL border-images), `useStickyPeelVars`          |
 | `../packages/workbench/src/lib/png-encode.ts`                          | `encodePngRgba`: a synchronous stored PNG, for pictures the editor makes itself                                          |
 | `apps/editor/hooks/canvas/useCanvasPinchZoom.ts`                       | Touch pinch: one view change a frame (`flushPinch`), the wrapper measured at the start, `pinchOffset`                    |
@@ -245,7 +245,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - The state change is unchanged and stays one step: `useTabTheme.setTheme` calls `commitTabs` once (one undo entry),
   and the autosave's `tabBroadcastOps` sends a theme repaint of more than `EL_OP_BROADCAST_LIMIT` elements as one
   whole-`tab` op.
-- Tests: `lib/canvas-busy.test.ts` (the threshold), `app/canvas-motion.test.ts` (the busy gate on the parts rule, the
+- Tests: `../packages/workbench/src/lib/tab-style-ease.test.ts` (the threshold), `app/canvas-motion.test.ts` (the busy gate on the parts rule, the
   surface rule ungated), `lib/tab-theme-apply.perf.test.ts` (2,000 elements: one whole-`tab` op, within a CPU-time
   budget), `hooks/canvas/useTabTheme.test.ts` (one commit a pick).
 
@@ -583,7 +583,7 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 | A press on the canvas selects no text                              | `useNoCanvasTextSelection.test.tsx` (workbench): cancelled on the board, left alone in editors, fields and `select-text`                                                                                                                                                                                                    |
 | A sweep adds and removes no element                                | `MarqueeRect.test.tsx` (workbench): one node through a sweep, hidden between                                                                                                                                                                                                                                                |
 | The budget holds                                                   | The nightly probe                                                                                                                                                                                                                                                                                                           |
-| A Tab Style change on a busy Space eases the canvas, not its parts | `canvas-busy.test.ts`; `canvas-motion.test.ts`: the parts' transition is gated on `:not([data-canvas-busy])`; `tab-theme-apply.perf.test.ts` (CPU time, one whole-`tab` op on 2,000 elements); `useTabTheme.test.ts` (one commit)                                                                                           |
+| A Tab Style change on a busy Space eases the canvas, not its parts | `tab-style-ease.test.ts` (workbench); `canvas-motion.test.ts`: the parts' transition is gated on `:not([data-canvas-busy])`; `tab-theme-apply.perf.test.ts` (CPU time, one whole-`tab` op on 2,000 elements); `useTabTheme.test.ts` (one commit)                                                                            |
 | What follows positions as a fact reads the coarse copy             | `CanvasCharactersLayer.perf.test.tsx`: 50 walking peers, the call's scene, the pieces and the game scene about 10 a second, no costume parse; `coarse-store.test.ts`                                                                                                                                                        |
 | Dragging a very large selection                                    | `drag-affected-arrows.perf.test.ts` (CPU time); `CanvasElementsLayer.renders.test.tsx` (no element renders, 1,770 elements); `drag-ride-dom.test.ts` (a plane carries the move); `e2e/perf/large-selection-drag.perf.ts` (script and frame, by hand); `e2e/drag-live.spec.ts` (a collaborator sees a 250-element move live) |
 
