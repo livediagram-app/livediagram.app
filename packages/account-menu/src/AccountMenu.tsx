@@ -18,6 +18,7 @@ import {
 } from '@liveworkspace/ui';
 import { ACCOUNT_TRIGGER_CLASS, GUEST_LABEL, GuestAvatar } from './face';
 import { avatarFill, initials } from './initials';
+import { ACCOUNT_PALETTE } from './palette';
 
 // The account control (liveworkspace/docs/specs/010-site/site.md "The header"). Signed in: the person's avatar (their Google picture
 // over their initials, liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures") and name, opening a menu of the Explorer (liveworkspace.app's header only), Settings and Sign
@@ -146,7 +147,7 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
   }
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className={`relative ${ACCOUNT_PALETTE}`}>
       <button
         ref={attachTrigger}
         type="button"
@@ -155,7 +156,7 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
         aria-label={`${label}, account menu`}
         onClick={toggle}
         onKeyDown={onTriggerKeyDown}
-        className={`${ACCOUNT_TRIGGER_CLASS} ${open ? 'bg-slate-100 dark:bg-slate-800' : ''}`}
+        className={`${ACCOUNT_TRIGGER_CLASS} ${open ? 'bg-(--account-raised)' : ''}`}
       >
         {avatar(false)}
         <span className="truncate max-sm:hidden">{label}</span>
@@ -168,20 +169,18 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
         <div
           ref={attach}
           {...surfaceProps}
-          className="absolute top-full right-0 z-50 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800"
+          className="absolute top-full right-0 z-50 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-(--account-line) bg-(--account-surface) p-1.5 shadow-lg shadow-slate-900/10"
         >
           <div className="flex items-center gap-3 px-2.5 pt-2 pb-3">
             {avatar(true)}
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
-                {label}
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="truncate text-sm font-semibold text-(--account-ink)">{label}</p>
+              <p className="text-xs text-(--account-hint)">
                 {guest ? 'Not signed in' : 'Your account'}
               </p>
             </div>
           </div>
-          <div className="my-1 h-px bg-slate-200 dark:bg-slate-700" />
+          <div className="my-1 h-px bg-(--account-line)" />
           {!account ? (
             guest && <GuestItems guest={guest} settingsIcon={SettingsIcon} close={close} />
           ) : (
@@ -210,7 +209,7 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
                   icon={SettingsIcon}
                 />
               )}
-              <div className="my-1 h-px bg-slate-200 dark:bg-slate-700" />
+              <div className="my-1 h-px bg-(--account-line)" />
               <button
                 type="button"
                 role="menuitem"
@@ -227,7 +226,7 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
                 <span className="min-w-0">
                   <span className="block">{leaving ? 'Signing Out…' : 'Sign Out'}</span>
                   <span
-                    className={`block text-xs ${refused ? 'text-red-700 dark:text-red-300' : 'text-slate-500 dark:text-slate-400'}`}
+                    className={`block text-xs ${refused ? 'text-(--account-error)' : 'text-(--account-hint)'}`}
                   >
                     {refused ? SIGN_OUT_REFUSED : SIGN_OUT_HINT}
                   </span>
@@ -250,8 +249,9 @@ const SIGN_OUT_HINT = 'Every app in this browser';
 // In its place when the sign-out was refused or never got through, so the click is never met with nothing.
 export const SIGN_OUT_REFUSED = 'Couldn’t sign out. Check your connection and try again.';
 
+// An item's row. Its colours are the control's palette (palette.ts), so no later stylesheet can repaint a hovered row.
 const ITEM =
-  'flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm text-slate-700 outline-none transition-colors hover:bg-slate-100 focus-visible:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-200 dark:hover:bg-slate-700/60 dark:focus-visible:bg-slate-700/60';
+  'flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm text-(--account-text) outline-none transition-colors hover:bg-(--account-hover) focus-visible:bg-(--account-hover) disabled:cursor-not-allowed disabled:opacity-50';
 
 // An item's name over its hint, its icon in a soft square.
 function ItemBody({
@@ -265,12 +265,12 @@ function ItemBody({
 }) {
   return (
     <>
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-(--account-tile) text-(--account-tile-ink)">
         <Icon aria-hidden className="size-4" />
       </span>
       <span className="min-w-0">
-        <span className="block font-medium text-slate-900 dark:text-white">{label}</span>
-        <span className="block text-xs text-slate-500 dark:text-slate-400">{hint}</span>
+        <span className="block font-medium text-(--account-ink)">{label}</span>
+        <span className="block text-xs text-(--account-hint)">{hint}</span>
       </span>
     </>
   );
@@ -312,7 +312,7 @@ function GuestItems({
         role="menuitem"
         tabIndex={-1}
         data-account-sign-in=""
-        className="m-1 flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white outline-none transition-colors hover:bg-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 dark:focus-visible:outline-white"
+        className="m-1 flex items-center justify-center gap-2 rounded-lg bg-(--account-ink) px-3 py-2 text-sm font-semibold text-(--account-on-ink) outline-none transition-colors hover:bg-(--account-text) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--account-ink)"
       >
         <SignInIcon />
         Sign in
@@ -443,7 +443,7 @@ function SignOutIcon() {
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="size-4 text-slate-500 dark:text-slate-400"
+      className="size-4 text-(--account-hint)"
     >
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
       <path d="m16 17 5-5-5-5" />
@@ -473,7 +473,7 @@ function Avatar({
       name={name}
       size={large ? 40 : 28}
       style={{ '--avatar': avatarFill(name, colour) } as CSSProperties}
-      className={`flex bg-[var(--avatar)] font-semibold text-white ring-1 ring-black/5 ring-inset dark:ring-white/10 ${
+      className={`flex bg-[var(--avatar)] font-semibold text-white ring-1 ring-(--account-disc-ring) ring-inset ${
         large ? 'text-sm' : 'text-[11px]'
       }`}
     >

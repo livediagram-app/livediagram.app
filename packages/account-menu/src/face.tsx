@@ -6,8 +6,8 @@
 export const ACCOUNT_TRIGGER_BOX =
   'inline-flex max-w-56 items-center gap-2 py-1 pr-2.5 pl-1 text-sm font-medium whitespace-nowrap';
 
-/** The trigger's own classes: its box as a rounded pill. */
-export const ACCOUNT_TRIGGER_CLASS = `relative touch-target-y cursor-pointer rounded-full text-slate-900 transition-colors hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800 ${ACCOUNT_TRIGGER_BOX}`;
+/** The trigger's own classes: its box as a rounded pill, in the control's palette (palette.ts), which its root sets. */
+export const ACCOUNT_TRIGGER_CLASS = `relative touch-target-y cursor-pointer rounded-full text-(--account-ink) transition-colors hover:bg-(--account-raised) ${ACCOUNT_TRIGGER_BOX}`;
 
 /** The word a guest's control shows in place of a name. */
 export const GUEST_LABEL = 'Guest';
@@ -18,7 +18,7 @@ export function GuestAvatar({ large = false }: { large?: boolean }) {
     <span
       aria-hidden
       data-guest-avatar=""
-      className={`flex shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 ring-1 ring-black/5 ring-inset dark:bg-slate-700 dark:text-slate-300 dark:ring-white/10 ${
+      className={`flex shrink-0 items-center justify-center rounded-full bg-(--account-disc) text-(--account-disc-ink) ring-1 ring-(--account-disc-ring) ring-inset ${
         large ? 'size-10' : 'size-7'
       }`}
     >

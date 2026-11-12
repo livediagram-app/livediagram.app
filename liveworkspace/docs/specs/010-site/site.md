@@ -90,7 +90,12 @@ wherever the surface has the panel: this site's header (its own lazily loaded pa
 an app's address (the Explorer's panel). A surface with no panel of its own, an app's marketing page, links instead
 to that app's own Explorer on the same address with the panel open (`/explorer?settings=all`, `settingsHref`). Only
 liveworkspace.app's header adds **Explorer** (`explorerHref`): on an app's address the app's own Explorer is a click
-away already. On an app's own pages Sign out is the app's, and it signs out of every app in the browser just the same, through the accounts site's hop. A marketing page learns who is signed in from the app's readable cookies,
+away already. The control keeps its own colours, light and dark: custom properties its root sets
+(`palette.ts`), read only by its classes, with no `dark:` class of its own. The dark variant weighs no more than a
+plain class, so a page's own stylesheet loaded after the site's (the telemetry dashboard's, the Explorer's, the
+Community's) could otherwise repaint it with a light class it emits again; this way the menu looks the same whatever
+loads after it. In dark mode a hovered or keyboard-focused item is slate-700 at 60% on the slate-800 menu, under a
+white name and a slate-400 hint; in light mode slate-100 on white. On an app's own pages Sign out is the app's, and it signs out of every app in the browser just the same, through the accounts site's hop. A marketing page learns who is signed in from the app's readable cookies,
 `<prefix>signed_in` and `<prefix>account` (the name), and makes no request for it
 ([accounts.md](../003-accounts/accounts.md#an-apps-signed-in-cookies)). There a guest's Sign in is the app's own
 (`/api/auth/sign-in?return_to=<the page>`) and Create account the same with `&screen=sign-up`, and the Guest button
