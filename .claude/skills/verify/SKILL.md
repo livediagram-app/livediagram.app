@@ -58,6 +58,9 @@ clients sit beside it. Ask before editing a `.dev.vars` you didn't make.
   `-- --persist-to <dir>` when its state is elsewhere), so the local client takes your router as a redirect. The accounts Worker accepts a sign-in on an
   app's own address only on that app's first port (3500 for livehuddle), so give it
   `SIGN_IN_ON_APP_ORIGINS=false` there: sign-in then runs on the site's address and comes back to the app.
+- Running two e2e stacks (`scripts/e2e-stack.mjs`) side by side: give each its own `E2E_EDITOR_PORT`, `E2E_API_PORT`,
+  `E2E_INDEX_PORT` and `E2E_MEDIA_PORT`. The wrangler inspectors of the index, media and api follow them (each port + 10),
+  so no port falls outside the stack's own; set `E2E_INDEX_INSPECTOR_PORT`, `E2E_MEDIA_INSPECTOR_PORT` or `E2E_API_INSPECTOR_PORT` to place one elsewhere.
 - Without the api's accounts vars the editor still opens: nobody can sign in, guests have no identity
   (`/api/auth/guest` comes straight back to `/auth/guest#error=guest_not_configured`), and share links can't be
   checked.

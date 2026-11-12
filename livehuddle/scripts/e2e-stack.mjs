@@ -53,8 +53,12 @@ const { buildFor, serveFile, serveNotFound, resolveIn, serveE2eControls, cacheCo
 
 const EDITOR_PORT = Number(process.env.E2E_EDITOR_PORT ?? 3502);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 9087);
+const API_INSPECTOR_PORT = Number(process.env.E2E_API_INSPECTOR_PORT ?? API_PORT + 10);
 const INDEX_PORT = Number(process.env.E2E_INDEX_PORT ?? 8119);
+// The index Worker's wrangler inspector stays beside it, inside this stack's own ports (never another product's block).
+const INDEX_INSPECTOR_PORT = Number(process.env.E2E_INDEX_INSPECTOR_PORT ?? INDEX_PORT + 10);
 const MEDIA_PORT = Number(process.env.E2E_MEDIA_PORT ?? 8120);
+const MEDIA_INSPECTOR_PORT = Number(process.env.E2E_MEDIA_INSPECTOR_PORT ?? MEDIA_PORT + 10);
 // The media service's local D1 and R2 for this stack, apart from a developer's `wrangler dev` state.
 const MEDIA_STATE = path.join(MEDIA_DIR, '.wrangler', `e2e-state-${MEDIA_PORT}`);
 const MEDIA_APP = 'livehuddle.app';
@@ -313,7 +317,7 @@ async function main() {
       '--port',
       String(INDEX_PORT),
       '--inspector-port',
-      String(INDEX_PORT + 1000),
+      String(INDEX_INSPECTOR_PORT),
       '--persist-to',
       INDEX_STATE,
       // Everything it trusts and calls is this stack, never what a developer's .dev.vars names: the accounts the
@@ -337,6 +341,7 @@ async function main() {
     run,
     waitForExit,
     port: MEDIA_PORT,
+    inspectorPort: MEDIA_INSPECTOR_PORT,
     state: MEDIA_STATE,
     apps: [MEDIA_APP],
     // Previews end to end: the stack's index decides who sees one, this api's export door draws it.
@@ -355,6 +360,8 @@ async function main() {
       '--local',
       '--port',
       String(API_PORT),
+      '--inspector-port',
+      String(API_INSPECTOR_PORT),
       // Verify access and guest tokens against the stack's own key (the accounts stand-in above), never a
       // real accounts Worker a developer's .dev.vars may name. The client id and secret also turn the
       // guest handoff (/api/auth/guest) on, to the stand-in's.

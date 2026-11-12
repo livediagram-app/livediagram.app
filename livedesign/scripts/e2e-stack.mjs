@@ -95,7 +95,10 @@ function assetsOutOfCacheFor(req) {
 
 const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3402);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8989);
+const API_INSPECTOR_PORT = Number(process.env.E2E_API_INSPECTOR_PORT ?? API_PORT + 10);
 const INDEX_PORT = Number(process.env.E2E_INDEX_PORT ?? 8419);
+// The index Worker's wrangler inspector stays beside it, inside this stack's own ports (never another product's block).
+const INDEX_INSPECTOR_PORT = Number(process.env.E2E_INDEX_INSPECTOR_PORT ?? INDEX_PORT + 10);
 // The key the api and the index share (the api's INDEX_KEY, the index's INDEX_KEY_LIVEDESIGN). Test-only.
 const INDEX_KEY = 'e2e-index-key';
 const INDEX_DIR = path.resolve(ROOT, '..', 'liveworkspace', 'apps', 'index');
@@ -628,7 +631,7 @@ async function main() {
       '--port',
       String(INDEX_PORT),
       '--inspector-port',
-      String(INDEX_PORT + 1000),
+      String(INDEX_INSPECTOR_PORT),
       '--persist-to',
       INDEX_STATE,
       // Everything it trusts and calls is this stack, never what a developer's .dev.vars names.
@@ -659,6 +662,8 @@ async function main() {
       '--local',
       '--port',
       String(API_PORT),
+      '--inspector-port',
+      String(API_INSPECTOR_PORT),
       // Verify access and guest tokens against the stack's own key, and reach the stack's index, never a real
       // accounts Worker or index a developer's .dev.vars may name. The client id and secret only turn the guest
       // handoff on; the stand-in checks neither.

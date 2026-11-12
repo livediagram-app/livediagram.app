@@ -23,7 +23,7 @@ const originVar = (app) => `APP_ORIGIN_${app.replace(/\.app$/, '').toUpperCase()
 
 /**
  * Applies the media migrations to a fresh local D1 under `state`, then starts the Worker on `port` (its inspector on
- * port + 1000). Returns the service's API URL for the api's MEDIA_URL. Wait on `port` before the api's first upload.
+ * `inspectorPort`, port + 10 unless given). Returns the service's API URL for the api's MEDIA_URL. Wait on `port` before the api's first upload.
  * Given `indexUrl` and each app's `appOrigins` (its api, where its export door is), previews run end to end too
  * (liveworkspace/docs/specs/006-media/previews.md): the stack's index decides who sees one, its api draws it.
  */
@@ -31,6 +31,7 @@ export async function startE2EMedia({
   run,
   waitForExit,
   port,
+  inspectorPort = port + 10,
   state,
   apps,
   indexUrl,
@@ -66,7 +67,7 @@ export async function startE2EMedia({
       '--port',
       String(port),
       '--inspector-port',
-      String(port + 1000),
+      String(inspectorPort),
       '--persist-to',
       state,
       // Only this stack's keys, never what a developer's .dev.vars names.
