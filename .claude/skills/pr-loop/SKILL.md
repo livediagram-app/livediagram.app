@@ -32,12 +32,25 @@ reason the loop orchestrates and helper agents do the fixing (section 2).
    A line ending `new` differs from the last digest. Report a `WAIT-PERSON` or `WAIT-CI` PR only when its line is
    `new`: one that waits on a person was already reported, and repeating it every pass is noise.
 
+3. **The backlog and the queue**, every pass:
+   - **Open PRs:** at **8 or more** open, message every peer session (ListAgents, SendMessage) once per build-up:
+     hold new work locally or add it to an open PR, split only for review risk, gate locally and push once. Tell
+     them when it drops below 8. More open than that kills CI (the owner, 2026-11).
+   - **Queued runs:** `gh api "repos/$REPO/actions/runs?status=queued&per_page=100" --jq
+'[.workflow_runs[]|select(.created_at > "<24h ago>")]|length'`, minus runs that will never start (0 jobs, or a
+     deploy stuck for a person). Over **about 9** (three PRs' worth of CI, E2E and CodeQL), throttle conflict fixes
+     ("Velocity first"). Put the count in the pass's ScheduleWakeup reason.
+
 If every line is `WAIT-*` without `new`, stop: a one-line "nothing to do" reply, then section 5.
 
 **Red with no log is not a code failure.** If a run's jobs have no steps and no runner (`gh api
 repos/$REPO/actions/runs/<id>/jobs --jq '.jobs[]|"\(.name) \(.steps|length)"'` shows 0 steps), Actions didn't
 start it: usually spent minutes or a billing hold. Don't push fixes or reruns for it. Say once in the report that
 CI isn't running, and carry on with conflicts and comments.
+
+**A run that sits `queued` with 0 jobs while other PRs' runs start** never will: Actions dropped it (it happens
+in an Actions outage; three PRs sat 11 hours that way in 2026-11). Close and reopen the PR (`gh pr close <n>` then
+`gh pr reopen <n>`): the reopen starts fresh runs with jobs. The dropped runs stay listed; they're harmless.
 
 ## Velocity first: CI is the bottleneck
 
@@ -52,6 +65,12 @@ used up the org's Actions minutes). So:
 - **Work from the front of the queue.** When more PRs need work than there are helper slots (section 2), start
   with the ones closest to merging (fewest pending checks, smallest fix). A PR far down the list will need another
   update by the time it reaches the front.
+- **Merge the PR that would cause the conflict first.** Before fixing a conflict, check whether a PR that is green
+  or minutes from green would conflict with it again (the overlap check in section 3). If so, merge that one
+  first, then fix every PR it conflicts with in one pass (one PR took three rounds of merging main in 2026-11).
+- **Throttle when the queue is high.** Over about 9 queued runs (section 1), start no helpers to merge main
+  into conflicting PRs, so the queue drains. Two exceptions: the PR closest to merging (everything else green),
+  and a red that blocks a merge. Resume once the queue falls.
 - **Never push to a PR whose CI is mid-run** unless a check on it has already failed.
 - **A red caused by a test since fixed on main**: merge main into that one PR when you get to it, not into every
   PR that shows the same red.
@@ -87,8 +106,9 @@ Steps for the helper, per PR:
    past main's highest and update every reference (blueprints, specs). The same goes for **ledger numbers** (a
    blueprint `DEFAULTS.md` row `D<n>` both sides added): renumber the PR's rows past main's and every `(D<n>)`
    reference in its blueprints.
-   - **After every merge, check no file was emptied**: `for f in $(git diff --name-only <pre> HEAD); do [ $(git
-show HEAD:$f | wc -c) -lt 5 ] && echo $f; done` (#644 shipped two 0-byte blueprints). In a resolve script,
+   - **After every merge, check no file was emptied**: `for f in $(git diff --name-only --diff-filter=AM <pre>
+HEAD); do [ $(git show HEAD:$f | wc -c) -lt 5 ] && echo $f; done` (#644 shipped two 0-byte blueprints; the
+     filter skips files the merge deleted, which would all show as empty). In a resolve script,
      read a file into a variable before opening it for writing: `open(p,'w').write(f(open(p).read()))`
      truncates first and writes back empty.
    - **Stage only the conflicted files** (`git add <path>...`), never `git add -A`: PR worktrees belong to other
