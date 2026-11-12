@@ -51,6 +51,26 @@ colours, as under Charcoal. A colour the user picked is kept. The backdrop follo
 equal to the retired theme's canvas becomes the new theme's canvas, and a pattern colour its pattern colour (never an
 element's colour, though Jewel's canvas and element fill were one colour).
 
+## UML
+
+UML left this product's catalogue (owner, 2026-11-12, Work Item 696): its colour per shape kind is a diagram notation,
+which livediagram keeps. Its definition stays in the shared catalogue data (`@liveworkspace/element-model/themes-data`)
+for livediagram, and this product's `THEMES` (`packages/design/src/themes-data.ts`, bound to the
+shared `@liveworkspace/element-model/retired-uml`) leaves it out, so no theme picker,
+Mashup or agent schema offers it.
+
+On load a tab on UML becomes **Mono**, the scheme nearest UML's colours (CIEDE2000, light half): the same white canvas,
+blank pattern, pattern colour and text; a white element fill for UML's `#f8fafc` (1.6, too close for an eye to tell
+apart); and a darker outline, slate 900 `#0f172a` for slate 700 `#334155` (13.5). In the dark half every role is within
+2.1. Steel keeps UML's outline but greys the canvas and fill (3.2 and 4.9) and darkens the pattern colour (18.6), and
+Rainbow and Sand paint new elements a palette or a warm grey. The rewrite is the one Autumn and Jewel take, role by role
+(`bindRetiredThemes`, `@liveworkspace/element-model/retired-themes`): `theme` becomes `mono`, and each element colour
+field and the backdrop still holding UML's value for its role (in either half) takes Mono's for the same role; a colour
+someone picked is kept. A colour UML gave one shape kind (a decision diamond's amber, a datastore cylinder's purple) is
+kept too, read as one someone picked: Mono has no colour per kind to map it to, and keeping it keeps the tab
+looking as it did. UML is frozen as it left (`UML_AS_RETIRED`, in the same shared module), so a later change to
+livediagram's UML never changes this migration.
+
 ## Custom themes
 
 Custom themes, the ones a person built and saved to their account (`custom:<uuid>` ids), were removed: only built-in
@@ -76,7 +96,7 @@ the api.
 
 ## Properties
 
-- **Idempotent.** A migrated tab has no Charcoal id and no previous dark- or light-half backdrop, so a second pass
+- **Idempotent.** A migrated tab has no Charcoal, Autumn, Jewel or UML id and no previous dark- or light-half backdrop, so a second pass
   changes nothing. A tab with nothing to migrate is returned as the same object.
 - **Pure.** No I/O, no clock; the same tab always migrates the same way.
 - **Lossless for choices.** Only values equal to what the retired scheme wrote are removed.

@@ -57,7 +57,7 @@ For Product Hunt, app store short descriptions, README intros.
 > and a spotlight. Lay out an infographic or poster for print or social.
 >
 > Teams work on the same document live, with cursors, comments and assigned
-> actions. Start from 23 templates, recolour every page with one of twenty-five
+> actions. Start from 23 templates, recolour every page with one of twenty-four
 > themes, and share view or edit links any time.
 >
 > It is MIT-licensed, free for everyone with no paid tier, and open for anyone
@@ -82,7 +82,7 @@ For longer listing bodies and "about this project" sections.
 >
 > Every page holds shapes, connectors, text, sticky notes, images, icons,
 > tables and charts. Start from 23 templates and recolour every page with one of
-> twenty-five themes. A document is a stack of tabs, filed in nested folders.
+> twenty-four themes. A document is a stack of tabs, filed in nested folders.
 >
 > Collaboration is built in: live cursors, selection rings, presence on each
 > tab, comment threads and actions you can assign to a teammate. Every change
@@ -131,7 +131,7 @@ detailed GitHub / Product Hunt write-up.
 > Lay out pages in print sizes (A4, US Letter, A3) or social sizes, starting
 > from one of 92 layouts. Every page holds shapes, connectors, text, sticky
 > notes, images, icons, tables, charts and Sankey diagrams. Start from 23
-> templates, and recolour every page with one of twenty-five themes in a single
+> templates, and recolour every page with one of twenty-four themes in a single
 > click.
 >
 > #### Made together, live

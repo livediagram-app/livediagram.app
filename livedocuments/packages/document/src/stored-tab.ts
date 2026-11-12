@@ -2,6 +2,7 @@
 // thumbnail render, the offline store's tab load and a file import all run this, so a new step is
 // added once and reaches every entry point.
 import { migrateRetiredPattern } from './retired-patterns';
+import { migrateRetiredTheme } from './retired-themes';
 import { migrateStoredElements } from './stored-elements';
 import { settleStacks } from './stack';
 import { settleTabFields } from './tab-fields';
@@ -12,8 +13,9 @@ export function migrateStoredTab<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
 >(tab: T): T {
   // The fields that renderers read raw (layers, the background colours) are settled before anything reads them.
-  // A retired background pattern (./retired-patterns) moves onto its replacement.
-  const settled = migrateRetiredPattern(settleTabFields(tab));
+  // A retired background pattern (./retired-patterns) and a retired theme (./retired-themes) move onto their
+  // replacements.
+  const settled = migrateRetiredPattern(migrateRetiredTheme(settleTabFields(tab)));
   if (!Array.isArray(settled.elements)) return settled;
   // Stacks lay out last (docs/specs/009-elements/stack.md), over the settled elements.
   const elements = settleStacks(migrateStoredElements(settled.elements));
