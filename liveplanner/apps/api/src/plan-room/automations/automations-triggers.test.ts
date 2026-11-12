@@ -282,6 +282,26 @@ describe('Wait', () => {
     ]);
   });
 
+  it('stops a held run at once when its rule is turned off, never going on when it is turned on again', async () => {
+    const { r, c } = await heldRun();
+    expect((await w.call('POST', `/${r.id}/toggle`, { enabled: false })).status).toBe(200);
+    expect(await ruleRuns(r.id)).toMatchObject([
+      { result: 'skipped', reason: 'The rule changed while this run waited' },
+    ]);
+    expect((await w.call('POST', `/${r.id}/toggle`, { enabled: true })).status).toBe(200);
+    await room().alarm();
+    await room().alarm();
+    expect(await labelled(c.id)).toBeUndefined();
+    expect(plan().db.prepare('SELECT COUNT(*) AS n FROM automation_waiting').get()!['n']).toBe(0);
+  });
+
+  it('stops a held run at once when its rule is deleted', async () => {
+    const { r } = await heldRun();
+    expect((await w.call('DELETE', `/${r.id}`)).status).toBe(204);
+    expect(await ruleRuns(r.id)).toMatchObject([{ result: 'skipped' }]);
+    expect(plan().db.prepare('SELECT COUNT(*) AS n FROM automation_waiting').get()!['n']).toBe(0);
+  });
+
   it('goes on for a derived trigger too, on the card the trigger found', async () => {
     await w.rule({
       name: 'Free later',

@@ -364,8 +364,8 @@ step of the rule's top level only (never inside an If / Else or a branch), at mo
   (the card moved on, someone took it), it stops there, a **No Match** run "Its conditions no longer hold after the
   wait". Otherwise the steps after the Wait run, as a run of their own in the Audit Trail ("After waiting 2 days"),
   counting toward the plan's 1,000 a day.
-- **What stops a waiting run**: the rule turned off, deleted or saved with changes (Skipped, "The rule changed while
-  this run waited"), the card deleted or trashed (Skipped, "The card is gone"). Archiving the card does not. A run
+- **What stops a waiting run**: the rule turned off (or paused), deleted or saved with changes, at once (Skipped, "The
+  rule changed while this run waited"; turning it on again does not bring the run back), the card deleted or trashed (Skipped, "The card is gone"). Archiving the card does not. A run
   whose time comes once the plan's 1,000 runs for the day are spent goes no further either (Skipped, "Daily limit
   reached: rules run again tomorrow"), so it never shows Waiting past its time.
 - **At most 500 runs wait** in a plan at once: past that, a Wait fails its run, "Too many runs are waiting in this

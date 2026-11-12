@@ -858,7 +858,9 @@ Threads and Wait (spec "Actions", "Wait").
   its writes, settles as `waiting` with `waitsUntil`, and is held under its run id with a `resume` event (the step to
   go on from, the rule's `edited.at`, the hours waited, the run's id). `AutomationSchedule.restoreTimes` takes the
   earliest of the time triggers' and the waiting runs' moments, so the alarm wakes for both; `runWaits` queues each due
-  run's resume event (or settles the run Skipped when its rule went, turned off or changed). The runner runs a resume
+  run's resume event (or settles the run Skipped when its rule went, turned off or changed). A rule write that turns
+  the rule off (Pause too), deletes it or changes it (a new `edited.at`) settles its waiting runs Skipped at once
+  (`AutomationStore.update`/`remove` through `stopWaits`), so turning it on again never brings one back. The runner runs a resume
   on its one rule from that step, its trigger line "After waiting 2 days", Skipped when the card is gone, No Match when
   the conditions no longer hold, and settles the waiting run Done. A resume that never ran (its rule off or gone by
   the wake, the day's budget spent) settles the waiting run Skipped with why in the same wake, so none shows Waiting
