@@ -12,7 +12,7 @@ Derived from [Room Builder and Door](../room-builder.md).
 | `packages/document/src/room-builder.ts`                    | `createOutlinedRoom` (the tool's commit), `roomOutlinePoints`, `snapDoorToWall`, `snapMovedDoors`, `withAttachedDoors`     |
 | `packages/document/src/validate-shape.ts`                  | `roomOutline` validation                                                                                                   |
 | `packages/document/src/call-geometry.ts`                   | A custom room's zone is its outline (`CallZone.polygon`)                                                                   |
-| `packages/document/src/svg-render-faces.ts`                | Export: a custom room's floor and walls, a door                                                                            |
+| `packages/document/src/svg-render-office-art.ts`           | Export: a custom room's floor and walls, a door                                                                            |
 | `apps/editor/lib/draw-mode.ts`                             | `PendingDraw` `{ type: 'room-walls' }` and its banner                                                                      |
 | `apps/editor/components/canvas/useCanvasPolygonGesture.ts` | The click-to-place gesture, shared with the polygon; the 45-degree snap and closed-only finish in room mode                |
 | `apps/editor/components/canvas/CanvasDrawPreview.tsx`      | The walls' preview at wall thickness                                                                                       |

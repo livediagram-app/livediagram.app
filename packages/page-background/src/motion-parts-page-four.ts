@@ -1,12 +1,12 @@
-// The Motion carousel's fourth page of slide backgrounds (docs/specs/007-editor/
+// The Motion carousel's fourth page of animated backgrounds (docs/specs/007-editor/
 // pages-mode.md "Animated backgrounds"): Warp, Orbits, Radar, Equaliser, Confetti and
-// Threads, as parts in the shape lib/page-motion-parts.ts describes, so the moving layer and the
+// Threads, as parts in the shape ./motion-parts.ts describes, so the moving layer and the
 // export draw them as they draw the rest.
 //
 // Held to the same budget: transform and opacity only, soft edges as gradients, at most about a
 // hundred parts, loops of 4 to 90 seconds, positions from fixed seeds.
-import { motionSeed, type MotionPaint } from './page-motion';
-import type { MotionBox, MotionNode, MotionSize, MotionWave } from './page-motion-parts';
+import { motionSeed, type MotionPaint } from './motion-paint';
+import type { MotionBox, MotionNode, MotionSize, MotionWave } from './motion-parts';
 
 const box = (b: Omit<MotionBox, 'type'>): MotionBox => ({ type: 'box', ...b });
 

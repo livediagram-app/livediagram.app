@@ -1,9 +1,9 @@
-// The Motion carousel's first three pages of slide backgrounds (docs/specs/007-editor/pages-mode.md "Animated
-// backgrounds"), Flow to Clouds, as parts in the shape lib/page-motion-parts.ts describes, with the wave outlines they
-// and the export share. Split out of page-motion-parts.ts, which re-exports wavePath and waveLine.
+// The Motion carousel's first three pages of animated backgrounds (docs/specs/007-editor/pages-mode.md "Animated
+// backgrounds"), Flow to Clouds, as parts in the shape ./motion-parts.ts describes, with the wave outlines they
+// and the export share. Split out of motion-parts.ts, which re-exports wavePath and waveLine.
 
-import { motionSeed, type MotionPaint } from './page-motion';
-import type { MotionBox, MotionNode, MotionSize, MotionWave } from './page-motion-parts';
+import { motionSeed, type MotionPaint } from './motion-paint';
+import type { MotionBox, MotionNode, MotionSize, MotionWave } from './motion-parts';
 
 const box = (b: Omit<MotionBox, 'type'>): MotionBox => ({ type: 'box', ...b });
 

@@ -12,6 +12,8 @@ The kit lives in `apps/mcp/eval/`:
   workshop, `W` draw, `Q` forms). Each task is a prompt as a user would type it, its checks, an optional `after`
   (an edit, run as a second turn of the same session), and an optional `setup` (what the prompt takes for granted,
   made in the run's empty library). Ids are stable: rounds compare on the ids they share.
+  The `D` diagrams are the bank liveplanner and livediagram share (`packages/mcp-kit/eval/diagram-tasks.mjs`),
+  judged with this product's own `checks.mjs`.
 - `apps/mcp/eval/bench/checks.mjs`: the readers checks are written with (boxes, arrows, cards, card types, sheet cells, forms,
   the reply), each answering yes or no, with a reason on a no.
 - `apps/mcp/eval/bench/run.mjs`: runs a round. `apps/mcp/eval/bench/score.mjs`: scores one, offline. `packages/mcp-kit/eval/summary.mjs` (shared): the report.

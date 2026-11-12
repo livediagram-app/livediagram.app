@@ -1,6 +1,6 @@
 # Flowchart: blueprint
 
-**In liveplanner** the flowchart is model code in `packages/project`: step types, sizes and membership (`flowchart.ts`), the layouts (`flowchart-layout.ts`, `flowchart-spread.ts`), growth planning (`flowchart-grow.ts`) and settling (`flowchart-settle.ts`), exported from the package and covered by its tests. The editor calls none of the growth or layout functions: no Plan tab holds a flowchart, and there is no Add Step, step toolbar, Flowchart menu or lane editing ([Flowchart](../flowchart.md)). What runs is the start step (`createFlowchartStart`, from `component-factories.ts`), validation, copying and every export.
+**In liveplanner** the flowchart is model code shared with livediagram in `@liveworkspace/element-model`: step types, sizes and membership (`flowchart.ts`), the layouts (`flowchart-layout.ts`, `flowchart-spread.ts`), growth planning (`flowchart-grow.ts`) and settling (`flowchart-settle.ts`), covered by that package's tests. `packages/project` binds the step and lane factories to its own `createShape` and exports it all. The editor calls none of the growth or layout functions: no Plan tab holds a flowchart, and there is no Add Step, step toolbar, Flowchart menu or lane editing ([Flowchart](../flowchart.md)). What runs is the start step (`createFlowchartStart`, from `component-factories.ts`), validation, copying and every export.
 
 Derived from [The flowchart](../flowchart.md). The spec decides; this file only adds engineering
 precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and
@@ -10,10 +10,12 @@ Scope, by file:
 
 | File                                                      | Role                                                                                                                           |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/project/src/flowchart.ts`                       | Step types, sizes, membership, edges, anchor, lanes, direction, `decisionExitLabel`, `createFlowchartStart`                    |
-| `packages/project/src/flowchart-layout.ts`                | `layoutFlowchart`, `applyFlowchartLayout`: the unlaned and laned layouts                                                       |
-| `packages/project/src/flowchart-spread.ts`                | `spreadDecisionExits`, `FLOWCHART_CORNER_CLEARANCE`: a Decision's steps beyond its corners                                     |
-| `packages/project/src/flowchart-grow.ts`                  | `planFlowchartStep`, `retypeFlowchartStep`, `setFlowchartDirection`, `addFlowchartLane`, `moveStepToLane`, `relayoutFlowchart` |
+| `../packages/element-model/src/flowchart.ts`              | Step types, sizes, membership, edges, anchor, lanes, direction, `decisionExitLabel`, `createFlowchartStart`                    |
+| `../packages/element-model/src/flowchart-layout.ts`       | `layoutFlowchart`, `applyFlowchartLayout`: the unlaned and laned layouts                                                       |
+| `../packages/element-model/src/flowchart-spread.ts`       | `spreadDecisionExits`, `FLOWCHART_CORNER_CLEARANCE`: a Decision's steps beyond its corners                                     |
+| `../packages/element-model/src/flowchart-grow.ts`         | `planFlowchartStep`, `retypeFlowchartStep`, `setFlowchartDirection`, `addFlowchartLane`, `moveStepToLane`, `relayoutFlowchart` |
+| `../packages/element-model/src/flowchart-settle.ts`       | `settleFlowcharts`: a chart laid out again after any structural change                                                         |
+| `packages/project/src/flowchart.ts`, `flowchart-grow.ts`  | The bindings: the step and lane factories bound to this model's `createShape`                                                  |
 | `packages/project/src/auto-layout.ts`                     | `autoLayoutElements` takes `fixedSizeIds` (the layered positioning with sizes kept); exports `layerComponent`                  |
 | `packages/project/src/element-types.ts`                   | `flowchartId`, `flowDirection`, `flowLaneId` on `ShapeElement`                                                                 |
 | `packages/project/src/element-fields.ts`                  | The three fields in the shape's field list                                                                                     |
@@ -216,8 +218,9 @@ each structural change, never per frame. Budget: a 200-step, 260-connector chart
 
 ## Testing
 
-Each rule above maps to a test in `flowchart.test.ts`, `flowchart-spread.test.ts` and
-`flowchart-settle.test.ts`.
+Each rule above maps to a test in `../packages/element-model/src/flowchart.test.ts`,
+`flowchart-spread.test.ts` and `flowchart-settle.test.ts` beside it, and `packages/project/src/flowchart.test.ts` (this
+model's step factories, kind labels and copies).
 
 ## Constants and configuration
 

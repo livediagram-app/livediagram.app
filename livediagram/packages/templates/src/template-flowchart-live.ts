@@ -34,7 +34,7 @@ export function liveFlowchart(
   const chartId = steps[0]!.id;
   const lanes = (opts.lanes ?? []).map((l) => ({ ...l, flowchartId: chartId }));
   const members = steps.map((s) => ({ ...s, flowchartId: chartId, flowDirection: opts.direction }));
-  const laid = relayoutFlowchart([...lanes, ...connectors, ...members], chartId);
+  const laid = relayoutFlowchart<Element>([...lanes, ...connectors, ...members], chartId);
   const boxes = laid.filter(
     (el): el is ShapeElement => el.type === 'shape' && el.flowchartId === chartId,
   );

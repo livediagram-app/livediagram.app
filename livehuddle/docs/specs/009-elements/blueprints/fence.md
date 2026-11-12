@@ -16,7 +16,7 @@ Scope, by file:
 | `packages/document/src/element-types.ts`                          | `UNTYPED_SHAPES`: no caret                                            |
 | `packages/document/src/behaviour-shapes.ts`                       | In `BEHAVIOUR_SHAPES`; `carriesSharedSettingsMenu('fence') === false` |
 | `packages/document/src/validate.ts`                               | Accepts the kind                                                      |
-| `packages/document/src/svg-render-faces.ts`                       | `fenceArt`: the export fence                                          |
+| `packages/document/src/svg-render-office-art.ts`                  | `fenceArt`: the export fence                                          |
 | `packages/document/src/animation-membership.ts`                   | Wordless                                                              |
 | `apps/editor/components/canvas/collab/FenceView.tsx`              | The canvas fence                                                      |
 | `apps/editor/components/canvas/BoxedElementView.tsx`              | Mounts `FenceView` with the resolved stroke                           |

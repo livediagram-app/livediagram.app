@@ -18,7 +18,7 @@ Scope, by file:
 | `packages/document/src/data-shapes.ts`, `element-types.ts`        | Self-drawing, untyped: no label, no caret                                 |
 | `packages/document/src/colors.ts`                                 | Furniture skin (theme stroke, no box); in `SELF_PAINTING_SHAPES`          |
 | `packages/document/src/animation-membership.ts`                   | Wordless                                                                  |
-| `packages/document/src/svg-render-faces.ts`                       | `avatarPadArt`: the export drawing                                        |
+| `packages/document/src/svg-render-office-art.ts`                  | `avatarPadArt`: the export drawing                                        |
 | `packages/avatar/src/components/avatar-sprite-palette.ts`         | Re-exports the sprite tones from `AVATAR_PALETTE`                         |
 | `apps/editor/components/canvas/collab/AvatarPadView.tsx`          | The canvas drawing; the shimmering lights                                 |
 | `apps/editor/components/canvas/BoxedElementView.tsx`              | Mounts `AvatarPadView`                                                    |

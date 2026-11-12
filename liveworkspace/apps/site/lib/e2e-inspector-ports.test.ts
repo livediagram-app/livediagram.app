@@ -31,8 +31,18 @@ describe.each(PRODUCTS)('%s e2e stack', (product) => {
     expect(source).toContain('inspectorPortOf(process.env.E2E_API_INSPECTOR_PORT, API_PORT)');
   });
 
-  it('passes an inspector port to every wrangler dev and never port + 1000', () => {
+  it('starts no wrangler dev of its own without an inspector port, and never port + 1000', () => {
     const wranglerDevs = source.split("'dev',").length - 1;
+    expect(source.split("'--inspector-port',").length - 1).toBe(wranglerDevs);
+    expect(source).not.toMatch(/\+ 1000/);
+  });
+});
+
+describe('the shared stack every product boots (scripts/e2e-stack/stack.mjs)', () => {
+  it('passes an inspector port to every wrangler dev and never port + 1000', () => {
+    const source = read('scripts/e2e-stack/stack.mjs');
+    const wranglerDevs = source.split("'dev',").length - 1;
+    expect(wranglerDevs).toBeGreaterThan(0);
     expect(source.split("'--inspector-port',").length - 1).toBe(wranglerDevs);
     expect(source).not.toMatch(/\+ 1000/);
   });

@@ -133,7 +133,7 @@ Exclude), **Wordmark**, **Logo Kit**.
 - `PagePanel.tsx`: a logo page has the Background and Layouts tabs (`pagePanelTabs`
   drops Page: one size, no orientation); Pattern is hidden for logo. The cog asks for `'page'`,
   which a logo page lacks, so the panel opens on its first tab, Background (`tabs[0]`).
-- `CanvasPages.tsx`: a logo page's title bar holds, before the cog, `LogoTitleBar pageId`
+- `CanvasPages.tsx`: a logo page's title bar holds, before the cog, `LogoTitleBar pageId` (`page-title-bar-groups.tsx`)
   (Beside the cog, below), its room reserved by `logoTitleBarRoom`; an
   empty logo page draws its guides first in the page's own box (under its cards); the layout card
   shows on an empty logo page.

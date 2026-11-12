@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { createPinnedArrow } from './factories';
-import { createFlowchartStep, type FlowchartStepType } from './flowchart';
-import { addFlowchartLane, moveStepToLane } from './flowchart-grow';
+import { createPinnedArrow } from './testing/elements';
+import { addFlowchartLane, createFlowchartStep } from './testing/flowchart';
+import type { FlowchartStepType } from './flowchart';
+import { moveStepToLane } from './flowchart-grow';
 import { relayoutFlowchart } from './flowchart-layout';
 import { FLOWCHART_CORNER_CLEARANCE, spreadDecisionExits } from './flowchart-spread';
 import type { Pt } from './auto-layout-shared';
-import type { ArrowElement, Element, ShapeElement } from './index';
+import type { ArrowElement, Element, ShapeElement } from './element';
 
 // docs/specs/009-elements/flowchart.md "A Decision's steps sit beyond its corners" and "No two exits of
 // a Decision share a face"; blueprint flowchart.md "Layout" steps 3 and 5.

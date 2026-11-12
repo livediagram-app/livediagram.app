@@ -14,7 +14,7 @@ Scope, by file:
 | `packages/document/src/event-storming-lane-landing.ts`           | `settleNotesOnLanes`, `groupRows`, `rowsToLanes`, `landArrivals`          |
 | `packages/document/src/event-storming-photo-place.ts`            | `placeNewNotes`: columns, rows to lanes with the cascade, along-row slide |
 | `packages/document/src/event-storming-photo.ts`                  | `reconcilePhoto` hands each addition its detector row                     |
-| `packages/document/src/index.ts`                                 | `Tab.esLanesSettled`                                                      |
+| `packages/document/src/tab-type.ts`                              | `Tab.esLanesSettled`                                                      |
 | `packages/document/src/comments.ts` (`graftLiveTabState`)        | The mark survives undo / redo / cancel                                    |
 | `packages/sticky-vision/src/normalised.ts`                       | `toNormalised`: both axes in fractions of the photo's width               |
 | `packages/templates/src/template-canvas-overrides.ts`            | `templateCanvasOverrides('event-storming')` marks the board settled       |
