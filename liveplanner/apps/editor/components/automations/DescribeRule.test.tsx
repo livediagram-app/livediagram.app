@@ -103,6 +103,13 @@ describe('where it starts', () => {
     expect(document.activeElement).toBe(box());
   });
 
+  it('rises as a sheet on a phone, with its grab handle', async () => {
+    render(<Harness />);
+    await openFromMenu();
+    const dialog = screen.getByRole('dialog', { name: 'Describe a Rule' });
+    expect(dialog.querySelector('[data-sheet-handle]')).toBeTruthy();
+  });
+
   it('is a button of the empty Rules list', async () => {
     client.listAutomations.mockResolvedValue({ rules: [], runsToday: 0, runsPerDay: 1000 });
     render(<Harness />);

@@ -973,7 +973,7 @@ four new codes in `AUTOMATION_ERRORS`; the route in `openapi/manifest.ts`, `sche
 ### Editor
 
 - `automations-client.ts` `draftRule(scope, prompt, timeZone)`.
-- `DescribeRuleDialog.tsx`: the dialog (the shared `Dialog`, `DialogHeader`, `TextArea`, the examples as secondary
+- `DescribeRuleDialog.tsx`: the dialog (the shared `Dialog` with `phoneSheet`, a sheet on a phone, `DialogHeader`, `TextArea`, the examples as secondary
   Buttons, the `AiNote` sparkle line shared with the AI steps' `AiCostNote`), its states (idle, drafting, said). A
   refusal says the api's `message` (fixed words from items); anything else "That didn't work. Check your
   connection and try again.".
