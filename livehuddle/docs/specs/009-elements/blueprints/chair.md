@@ -18,7 +18,7 @@ Scope, by file:
 | `packages/document/src/behaviour-skin.ts`                   | `ownColours`: the stamped `#94a3b8` / `#0f172a` pair reads as unset      |
 | `packages/document/src/validate.ts`                         | Rejects an unknown `chairFacing`                                         |
 | `packages/document/src/behaviour-shapes.ts`                 | `carriesSharedSettingsMenu('chair') === false`                           |
-| `packages/document/src/svg-render-faces.ts`                 | The export chair                                                         |
+| `packages/document/src/svg-render-office-art.ts`            | The export chair                                                         |
 | `packages/document/src/svg-render.ts`                       | Keeps the generic label for `chair` (bottom-aligned under the seat)      |
 | `packages/api-schema/src/room-messages.ts`                  | `AvatarPresence.seatedOn`                                                |
 | `apps/editor/components/canvas/BoxedElementView.tsx`        | Mounts `FurnitureView`; the ordinary label under it                      |

@@ -8,7 +8,7 @@ Scope, by file:
 
 | File                                                             | Role                                                                    |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `packages/document/src/lane-gutter.ts`                           | `LANE_GUTTER_PX`, `LANE_BAND_PX`, `laneGutterEdge`, `laneSizeOfElement` |
+| `../packages/element-model/src/lane-gutter.ts`                   | `LANE_GUTTER_PX`, `LANE_BAND_PX`, `laneGutterEdge`, `laneSizeOfElement` |
 | `packages/document/src/lane-seam-snapping.ts`                    | `laneSeamCoordinates`, `alignmentCoordinates`, `snapSeamCoordinate`     |
 | `packages/document/src/shape-factory.ts`                         | `SHAPE_DEFAULT_SIZE.lane` (900 × 200) and the lane defaults             |
 | `packages/document/src/colors.ts`                                | `hasHeadingBand`                                                        |
@@ -100,7 +100,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// packages/document/src/lane-gutter.ts
+// packages/element-model/src/lane-gutter.ts (bound by packages/document/src/lane-gutter.ts)
 export const LANE_GUTTER_PX = 132;
 export const LANE_BAND_PX = 64;
 export type LaneGutterEdge = 'left' | 'right' | 'top' | 'bottom' | 'centre-x';
@@ -235,7 +235,7 @@ None in code today [GA1]. The upright toggle tracks `Element·Changed·LaneUprig
 | A lane carries its contents                             | none [GA14]                                                                  |                                                                                                               |
 | Drag clamp, centred 2x, one commit (I2)                 | none [GA14]                                                                  |                                                                                                               |
 | Render clamp of a stored size                           | none [QA10]                                                                  |                                                                                                               |
-| Upright: default size, side only, band ignores          | isUprightTitle, laneSizeOfElement                                            | `packages/document/src/lane-gutter.test.ts`                                                                   |
+| Upright: default size, side only, band ignores          | isUprightTitle, laneSizeOfElement                                            | `../packages/element-model/src/lane-gutter.test.ts`                                                           |
 | Upright Title renders turned on canvas and export       | the strip and the turned frame                                               | `packages/document/src/svg-render.test.ts`, `apps/editor/components/canvas/upright-title.test.ts`             |
 | Upright toggle: offered on side strips only, one commit | the Text section switch                                                      | `apps/editor/components/palette/*.test.tsx`                                                                   |
 

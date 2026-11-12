@@ -19,7 +19,7 @@ Scope, by file:
 | `apps/live/components/palette/TextStyleSection.tsx`        | The Text flyout's Text Style rows                                                                         |
 | `apps/live/lib/text-style.ts`                              | `restyleTextAs(id, measure)`: restyle then re-hug, the mapper a row previews and commits                  |
 | `apps/live/components/palette/EditorContextMenuHost.tsx`   | Binds `onSetTextStyle` / `onPreviewTextStyle` to `commitElementStyle` / `previewElementStyle`             |
-| `packages/agent-verbs/src/mcp/schema.ts`                   | Names the styles' sizes and weights for agents, from `TEXT_PRESET_LIST`                                   |
+| `packages/agent-verbs/src/mcp/element-docs.ts`             | Names the styles' sizes and weights for agents, from `TEXT_PRESET_LIST`                                   |
 
 ## Domain and naming
 

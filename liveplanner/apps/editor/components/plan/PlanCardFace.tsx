@@ -6,7 +6,8 @@ import { useMemo, type ReactNode } from 'react';
 // number and priority signal; the title; the project; the description; custom fields; label chips; then a footer
 // of pills and who has it). The type's colour fills
 // the card's number (a dot on Minimal, which shows none); the card lifts a little under the pointer. Face-down while its board hides writing;
-// ringed in someone's colour while they drag or read it. The parts live in plan-card-parts.tsx.
+// ringed in someone's colour while they drag or read it. The parts live in plan-card-parts.tsx, a custom field's
+// bit in card-face-custom-bit.tsx.
 import { NewResponseMark } from '@/components/forms/NewResponseMark';
 import { useFreshResponse } from '@/components/forms/fresh-responses';
 import {
@@ -21,10 +22,8 @@ import {
   itemVoteTotal,
   typeIn,
   itemColourOf,
-  linkedCard,
   cardFieldsAt,
   fieldCardIds,
-  holdsSeveral,
   type CardField,
   type CardSize,
   type Item,
@@ -33,16 +32,10 @@ import {
   typeCardLayout,
   type CardSlot,
   isCustomCardField,
-  isNewerField,
-  calculatedText,
-  FORMULA_ERROR_TEXT,
-  percentShown,
-  showsAsPercent,
   attachmentCover,
   itemAttachments,
   itemHasStamp,
   runningOnCard,
-  pastDue,
   typeFieldLabel,
   hasBlocksFields,
   type FormulaOutcome,
@@ -53,12 +46,7 @@ import type { PlanCardPresence } from './PlanContext';
 import { usePlanCard } from './PlanCardContext';
 import { sameEntries, usePlanItemsSelect } from './plan-items-store';
 import { planBlocking } from './blocking';
-import { customFieldText } from './custom-field-text';
 import { calculatedFieldOutcome } from './calculated-values';
-import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
-import { customKindPill, isBuiltInKindPill } from './CustomKindPill';
-import { PercentChip } from './PercentBar';
-import { LinkedNumbersPill } from './SeveralValuesPills';
 import { accentOn, chipInkOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -74,7 +62,6 @@ import {
   FlagMark,
   RepeatMark,
   KeyTag,
-  LATE_COLOUR,
   LabelChips,
   MetaPill,
   PrioritySignal,
@@ -84,6 +71,7 @@ import {
   VotesPill,
   checklistProgress,
 } from './plan-card-parts';
+import { customFieldBit } from './card-face-custom-bit';
 
 type PlanCardFaceProps = {
   item: Item;
@@ -367,118 +355,17 @@ export function PlanCardFace({
             {description}
           </p>
         ) : null;
-      default: {
-        // A custom field the type's Display places: its kind's glyph (a linked card's own, in its colour) and value.
-        const def = isCustomCardField(f) ? (type.custom ?? []).find((c) => c.id === f) : undefined;
-        // A field a newer liveplanner made is never drawn here (item-types.md "Fields from a newer version").
-        if (def && isNewerField(def)) return null;
-        // A Comments field counts its own open threads, as the built-in's chip (item-types.md "Comments and Votes fields").
-        if (def?.kind === 'comments')
-          return (
-            <CommentsPill
-              key={f}
-              item={item}
-              palette={palette}
-              type={type}
-              field={f}
-              name={def.label}
-            />
-          );
-        // A field of a built-in kind draws as its built-in field does, an Image as its thumbnail.
-        if (def && isBuiltInKindPill(def)) return customKindPill(def, item.fields[def.id], palette);
-        // A Calculated field's value is worked out (docs/specs/026-plan/item-types.md "Calculated fields"); a Formula
-        // that can't be on this card reads "Error", its problem spoken with it and shown in the panel ("Formula
-        // fields").
-        const outcome =
-          def?.kind === 'calculated' ? (outcomes[calcDefs.indexOf(def)] ?? null) : null;
-        // A Percent field, or a share shown as one, draws its bar (docs/specs/026-plan/item-types.md "Percent").
-        if (def && showsAsPercent(def) && outcome?.ok !== false) {
-          const share = percentShown(
-            def,
-            def.kind === 'calculated'
-              ? outcome?.ok && typeof outcome.value === 'number'
-                ? outcome.value
-                : null
-              : item.fields[def.id],
-          );
-          return share === undefined ? null : (
-            <PercentChip key={f} name={def.label} value={share} palette={palette} />
-          );
-        }
-        // A Card field that holds several reads its linked cards' numbers (item-types.md "Holds Several").
-        if (def?.kind === 'card' && holdsSeveral(def))
-          return plan ? (
-            <LinkedNumbersPill
-              key={f}
-              label={def.label}
-              ids={fieldCardIds(def, item.fields[def.id])}
-              items={items}
-              types={plan.types}
-              palette={palette}
-            />
-          ) : null;
-        if (def && outcome && !outcome.ok)
-          return (
-            <MetaPill
-              key={f}
-              palette={palette}
-              tone={LATE_COLOUR}
-              label={`${def.label}: ${FORMULA_ERROR_TEXT}. ${outcome.error}`}
-            >
-              <span className="flex [&_svg]:h-[11px] [&_svg]:w-[11px]">
-                {CUSTOM_KIND_ICONS[def.kind]}
-              </span>
-              <span aria-hidden>{FORMULA_ERROR_TEXT}</span>
-            </MetaPill>
-          );
-        const text = !def
-          ? null
-          : def.kind === 'calculated'
-            ? outcome?.ok
-              ? calculatedText(def, outcome.value)
-              : null
-            : customFieldText(def, item.fields[def.id], items);
-        if (!def || !text) return null;
-        // A linked card with its own Colour shows it (a Parent project's colour), else its own type's glyph (a field
-        // may link to several types), the field's first type's while the card is missing.
-        const linked =
-          def.kind === 'card' && plan
-            ? linkedCard(items, fieldCardIds(def, item.fields[def.id])[0])
-            : undefined;
-        const linkedTypeId = def.kind === 'card' ? (linked?.type ?? def.linkType) : undefined;
-        const linkedType = linkedTypeId
-          ? typeIn(plan?.types ?? ITEM_TYPES, linkedTypeId)
-          : undefined;
-        const linkedColour = linked ? itemColourOf(linked, linkedType) : undefined;
-        // A Date and Time or Date Range that has passed draws red, as an overdue Due does, never on a done card
-        // (item-types.md "Past due").
-        const late = !muted && pastDue(def, item.fields[def.id]);
-        return (
-          <MetaPill
-            key={f}
-            palette={palette}
-            {...(late ? { tone: LATE_COLOUR } : {})}
-            label={`${def.label}: ${text}${late ? ', overdue' : ''}`}
-          >
-            {linkedColour ? (
-              <ColourDot colour={linkedColour} />
-            ) : linkedType ? (
-              <PlanTypeGlyph
-                glyph={linkedType.glyph}
-                size={11}
-                color={accentOn(linkedType.color, palette)}
-              />
-            ) : (
-              <span className="flex [&_svg]:h-[11px] [&_svg]:w-[11px]">
-                {CUSTOM_KIND_ICONS[def.kind]}
-              </span>
-            )}
-            <span aria-hidden className="max-w-[10rem] truncate">
-              {text}
-            </span>
-          </MetaPill>
-        );
-      }
+      default:
+        return customFieldBit(f, {
+          item,
+          type,
+          palette,
+          plan,
+          muted,
+          calcDefs,
+          outcomes,
+          items,
+        });
     }
   };
   // A slot's bits, in its order, of the fields this card shows there (docs/specs/026-plan/item-types.md "Card

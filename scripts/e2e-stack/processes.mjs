@@ -1,4 +1,4 @@
-// The e2e stacks' processes (livediagram's and livehuddle's scripts/e2e-stack.mjs): the children a stack starts,
+// The e2e stacks' processes (every product's scripts/e2e-stack.mjs, through ./stack.mjs): the children a stack starts,
 // waiting on one to finish or on a port to answer, and the shutdown that stops them all on SIGINT or SIGTERM.
 // Dependency-free (node builtins), as the stacks are.
 

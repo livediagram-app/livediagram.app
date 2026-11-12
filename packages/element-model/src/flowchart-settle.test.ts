@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { createPinnedArrow, createShape } from './factories';
-import { createFlowchartStart } from './flowchart';
-import { addFlowchartLane, applyFlowchartStep, planFlowchartStep } from './flowchart-grow';
+import { createPinnedArrow } from './testing/elements';
+import {
+  addFlowchartLane,
+  createFlowchartStart,
+  createShape,
+  planFlowchartStep,
+} from './testing/flowchart';
+import { applyFlowchartStep } from './flowchart-grow';
 import { settleFlowcharts } from './flowchart-settle';
-import type { ArrowElement, Element, ShapeElement } from './index';
+import type { ArrowElement, Element, ShapeElement } from './element';
 
 // docs/specs/009-elements/flowchart.md "The layout", "Swimlanes"; blueprint D171.
 

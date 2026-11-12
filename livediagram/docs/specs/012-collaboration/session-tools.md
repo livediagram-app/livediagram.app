@@ -8,7 +8,7 @@ participant in real time.
 ## Why they need no new infrastructure
 
 Both tools store their state as optional **`Tab` fields**: `tab.timer` and
-`tab.vote` (`packages/document/src/index.ts`, helpers in `session.ts`). That
+`tab.vote` (`packages/document/src/tab-type.ts`, helpers in `session.ts`). That
 means they ride the **existing tab-sync pipeline** with zero realtime / API
 changes: a control mutates the tab via `commitTabs` → autosave (`useAutosave`,
 600 ms debounce) `PUT`s the tab to the api → the `{kind:'tab'}` RoomOp broadcasts it

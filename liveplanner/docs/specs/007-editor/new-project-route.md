@@ -131,7 +131,8 @@ resumes"), which then asks for the item's grant and, when it is an edit grant (t
 the create on with it, so the Retry opens the new plan; any other answer fails as before (Work Tracker #397).
 
 The distinction is made at every call site that can fail this way,
-the project load and the share-link resolve in `useIdentityBootstrap`,
+the project load and the share-link resolve in `useIdentityBootstrap` (`openOwnAddress` and
+`openShareLink`, in `bootstrap-arrivals.ts` beside it),
 and the create in `/new`, rather than in one place, so it is worth
 knowing about when adding another.
 

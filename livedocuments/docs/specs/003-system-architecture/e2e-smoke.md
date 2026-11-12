@@ -287,7 +287,12 @@ tests where it's cheap.
   dark-mode audits share. `apps/editor/e2e/fixtures/` holds `fake-workbench.html`, the page the workbench specs frame the app in.
 - `apps/editor/e2e/perf/`: the canvas performance probe (`canvas.perf.ts`) and its pure helpers, run by
   `perf:canvas`, never by the suite ([Canvas performance](../008-canvas/canvas-performance.md)).
-- `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, marketing).
+- `scripts/e2e-stack.mjs`: this product's settings for the stack (its ports, canvas route, accounts client and
+  the api's own vars); the root's `scripts/e2e-stack/stack.mjs` boots it and serves the static sites (live, help, marketing).
+- The root's `scripts/e2e-stack/` (shared with the other product stacks): `stack.mjs` (the boot and the static
+  server), `accounts-stand-in.mjs` (here without records: API tokens and profiles only), `processes.mjs`,
+  `proxies.mjs` (the router's forwards and the WebSocket upgrade) and `static-serving.mjs` (caching, the Trusted Types
+  header, the 404 page, the simulated deploy).
 - The root `.github/workflows/e2e.yml` and `e2e-product.yml`: the sharded workflow, run on every pull request;
   `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).
 - `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:signed-in` scripts in `apps/editor/package.json`; `build:signed-in`

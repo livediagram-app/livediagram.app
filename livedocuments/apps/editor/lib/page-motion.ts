@@ -163,21 +163,10 @@ export {
 } from '@livedocuments/document';
 import type { PageMotionColouringId } from '@livedocuments/document';
 
-export type MotionPaint = {
-  // The two stops, for parts tinted like the page.
-  a: string;
-  b: string;
-  // A light that reads on the page: near white on a dark page, white on a light one.
-  hi: string;
-  // A shade deeper than the page, for parts that sit in its shadows.
-  lo: string;
-  // How strongly the moving parts show: a light page takes them softer.
-  strength: number;
-  // Two companion hues, the page's colour turned either way round the wheel and lit: what gives
-  // an aurora or a mesh its play of colour on a one-colour theme.
-  warm: string;
-  cool: string;
-};
+// What a motion's parts are painted with, and the seeds that place them: one copy for every product,
+// @liveworkspace/page-background/motion-paint. The paint is worked out here, from this product's colours.
+export { motionSeed, type MotionPaint } from '@liveworkspace/page-background/motion-paint';
+import type { MotionPaint } from '@liveworkspace/page-background/motion-paint';
 
 /** The colours a motion layer paints in, from its gradient. */
 export function motionPaint(fill: { from: string; to: string }): MotionPaint {
@@ -228,11 +217,4 @@ export function hueTurned(color: string, degrees: number, lightness: number): st
               ? [x, 0, c]
               : [c, 0, x];
   return rgbToHex({ r: (r1 + m) * 255, g: (g1 + m) * 255, b: (b1 + m) * 255 });
-}
-
-/** A fixed pseudo-random number in [0, 1) for part `i` of a motion: the same on every render and
- *  every machine, so a slide looks the same wherever it is opened. */
-export function motionSeed(i: number, salt: number): number {
-  const x = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453;
-  return x - Math.floor(x);
 }

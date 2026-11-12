@@ -1,11 +1,11 @@
-// The e2e stacks' proxies (livediagram's and livehuddle's scripts/e2e-stack.mjs): the router's forwards to the index,
-// the media service's previews and the api worker, and the realtime room's WebSocket upgrade, so the app stays
-// same-origin as in production. Dependency-free (node builtins), as the stacks are.
+// The e2e stacks' proxies (every product's scripts/e2e-stack.mjs, through ./stack.mjs): the router's forwards to the
+// index, the media service's previews (where the stack runs media) and the api worker, and the realtime room's
+// WebSocket upgrade, so the app stays same-origin as in production. Dependency-free (node builtins), as the stacks are.
 
 import http from 'node:http';
 import net from 'node:net';
 
-// The ports of this stack's api worker, index and media service.
+// The ports of this stack's api worker, index and media service (none: previews go to the api, as everything else).
 export function createProxies({ apiPort, indexPort, mediaPort }) {
   const API_PORT = apiPort;
   const INDEX_PORT = indexPort;
@@ -20,7 +20,7 @@ export function createProxies({ apiPort, indexPort, mediaPort }) {
   function proxyApi(req, res) {
     const pathname = new URL(req.url, 'http://localhost').pathname;
     const toIndex = isIndexPath(pathname);
-    const toPreviews = isPreviewsPath(pathname);
+    const toPreviews = MEDIA_PORT !== undefined && isPreviewsPath(pathname);
     const port = toIndex ? INDEX_PORT : toPreviews ? MEDIA_PORT : API_PORT;
     const headers = { ...req.headers };
     if (toIndex || toPreviews) {
@@ -55,7 +55,7 @@ export function createProxies({ apiPort, indexPort, mediaPort }) {
     req.pipe(proxyReq);
   }
 
-  // The realtime room is a WebSocket on /api/documents/<id>/ws. Production routes
+  // The realtime room is a WebSocket on the api (a canvas's /api/<kind>/<id>/ws). Production routes
   // the upgrade through the router like any other /api request; without this the
   // browser's socket was never answered here, so no e2e test could see a room op.
   // Relays the raw upgrade to the api worker and pipes both directions.

@@ -19,7 +19,8 @@
     "./tool-result": "./src/tool-result.ts",
     "./tool-scope": "./src/tool-scope.ts",
     "./eval/summary": "./eval/summary.mjs",
-    "./eval/mcp-client": "./eval/mcp-client.mjs"
+    "./eval/mcp-client": "./eval/mcp-client.mjs",
+    "./eval/diagram-tasks": "./eval/diagram-tasks.mjs"
   },
   "scripts": {
     "lint": "oxlint",
