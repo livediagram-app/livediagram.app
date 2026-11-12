@@ -64,11 +64,10 @@ element box, so a pinned end touches the chip. On the caption's side the anchors
 connector leaving towards the caption starts beyond the text instead of crossing it
 ([Arrow anchors and auto-rebind](../008-canvas/arrow-anchors.md)).
 
-## The UML theme
+## Brand colours on every theme
 
-The UML theme gives each shape kind its own colours (`shapeColors`: a new diamond takes its decision colour,
-`themes.test.ts`), the architecture-diagram counterpart of the brand marks; a Technology mark keeps its brand colours
-on every theme.
+A Technology mark keeps its brand colours on every theme. liveplanner offers no per-shape theme: UML, which gave each
+shape kind its own colours, is livediagram's alone ([Retired colour schemes](../011-theme/retired-schemes.md#uml)).
 
 ## Telemetry
 
