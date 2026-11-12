@@ -287,7 +287,7 @@ function pass(u: Ui, x: number, y: number, w: number, h: number) {
   u.card(x, y, w, h);
   u.block(x, y, w, 64, { fillColor: WF.ink, borderRadius: 'lg' });
   u.text(x + 20, y, w - 40, 64, 'Boarding Pass', { size: 17, bold: true, color: WF.white });
-  u.text(x + w - 140, y, 120, 64, 'Flight YA 214', { size: 13, color: WF.line, align: 'right' });
+  u.text(x + w - 140, y, 120, 64, 'Flight YA 214', { size: 13, color: WF.place, align: 'right' });
   const big = (cx: number, code: string, city: string, align: 'left' | 'right') => {
     u.text(cx, y + 84, w / 2 - 20, 48, code, { size: 40, bold: true, color: WF.ink, align });
     u.text(cx, y + 132, w / 2 - 20, 20, city, { size: 13, color: WF.muted, align });
