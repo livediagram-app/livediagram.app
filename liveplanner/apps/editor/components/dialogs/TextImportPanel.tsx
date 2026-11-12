@@ -1,16 +1,22 @@
 import { useState } from 'react';
 import { Button } from '@liveplanner/ui';
 import type { ImportOutcome } from '@/lib/import-tab';
+import { HeldFileChip, type HeldFile } from './import/HeldFileChip';
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 
 // The paste-or-file view of the Import dialog. A textarea to paste the
 // content, an Import button, and a "pick a file instead" escape hatch. The
 // parent supplies the placeholder example and the two runners (text vs file).
-// Owns its own text / busy / error so the dialog stays simple.
+// Owns its own text / busy / error so the dialog stays simple. A large dropped file is
+// held in the box's place (HeldFileChip) and imported straight from it, through the
+// same text runner, so its checks and messages are a paste's.
 export function TextImportPanel({
   placeholder,
   initialText = '',
+  held = null,
+  onRemoveHeld,
+  onBusyChange,
   onImportText,
   onImportFile,
   onDone,
@@ -18,6 +24,11 @@ export function TextImportPanel({
   placeholder: string;
   // Text already in hand (a file dropped on the Import dialog), shown in the box to import with a press.
   initialText?: string;
+  // A dropped file too large for the box (DROP_INLINE_MAX_BYTES), shown in its place; Remove brings the box back.
+  held?: HeldFile | null;
+  onRemoveHeld?: () => void;
+  // Told as an import starts and ends, so the dialog lets a drop go meanwhile.
+  onBusyChange?: (busy: boolean) => void;
   onImportText: (text: string) => Promise<ImportOutcome>;
   onImportFile: () => Promise<ImportOutcome>;
   onDone: (outcome: DoneOutcome) => void;
@@ -29,6 +40,7 @@ export function TextImportPanel({
   const run = async (runner: () => Promise<ImportOutcome>) => {
     if (busy) return;
     setBusy(true);
+    onBusyChange?.(true);
     setError(null);
     // A runner that throws must still hand the panel back: an uncaught
     // rejection here left `busy` set, every control disabled, and no message.
@@ -36,6 +48,7 @@ export function TextImportPanel({
       status: 'error',
       error: "Couldn't import that. Check the file and try again.",
     }));
+    onBusyChange?.(false);
     if (outcome.status === 'done') {
       onDone(outcome);
     } else {
@@ -46,15 +59,19 @@ export function TextImportPanel({
 
   return (
     <div>
-      <textarea
-        // Named: the placeholder (a sample) is no name, and clears once anything is typed.
-        aria-label="JSON to import"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        spellCheck={false}
-        placeholder={placeholder}
-        className="h-56 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-xs leading-relaxed text-slate-800 placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-200 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-600 dark:focus:ring-brand-500/30"
-      />
+      {held ? (
+        <HeldFileChip file={held} onRemove={() => onRemoveHeld?.()} disabled={busy} />
+      ) : (
+        <textarea
+          // Named: the placeholder (a sample) is no name, and clears once anything is typed.
+          aria-label="JSON to import"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          spellCheck={false}
+          placeholder={placeholder}
+          className="h-56 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-xs leading-relaxed text-slate-800 placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-200 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-600 dark:focus:ring-brand-500/30"
+        />
+      )}
       {error ? (
         <p
           // Announced when it appears: the Import button keeps focus, so a reader would never hear why nothing landed.
@@ -78,8 +95,8 @@ export function TextImportPanel({
           size="md"
           // Wide enough for "Importing…", so the label swap moves nothing.
           className="min-w-[7.5rem]"
-          onClick={() => void run(() => onImportText(text))}
-          disabled={text.trim().length === 0}
+          onClick={() => void run(() => onImportText(held ? held.text : text))}
+          disabled={!held && text.trim().length === 0}
           busy={busy}
         >
           {busy ? 'Importing…' : 'Import'}

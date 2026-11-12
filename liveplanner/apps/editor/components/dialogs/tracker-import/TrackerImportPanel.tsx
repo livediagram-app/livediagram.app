@@ -16,9 +16,12 @@ export function TrackerImportPanel({
   head,
   flow,
   preview,
+  error = flow.error,
 }: {
   // What heads the body (the dialog's back bar).
   head?: ReactNode;
+  // What is said under the preview: the flow's own error, or why a file dropped on it was not taken.
+  error?: string | null;
   flow: TrackerFlow;
   preview: TrackerPreviewState;
 }) {
@@ -38,7 +41,7 @@ export function TrackerImportPanel({
           onTarget={(t) => void flow.changeTarget(t)}
           disabled={busy}
         />
-        {flow.error ? <ImportError>{flow.error}</ImportError> : null}
+        {error ? <ImportError>{error}</ImportError> : null}
         {/* A phone's footer has room for its buttons alone: the line goes at the end of the preview. */}
         <p className={`sm:hidden ${SUMMARY}`}>{summary}</p>
       </div>
