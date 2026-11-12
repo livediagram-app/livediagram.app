@@ -12,6 +12,7 @@ export * from './import-item';
 export * from './migration-door';
 export * from './migration-room';
 export * from './outbox';
+export * from './outbox-parked';
 export * from './activity';
 export * from './anonymise';
 export * from './teams';
