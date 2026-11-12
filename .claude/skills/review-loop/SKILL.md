@@ -63,7 +63,12 @@ From the Work Item cards in **Under Review**, work out each card's state from it
 - **Waiting:** an open question thread on it ends with a comment marked `ai: true` (nobody has replied since
   the loop asked). Don't review it again this pass, but check its `needs-owner` flag (see "Flag for the owner").
 - **Answered:** it has question threads, and none is waiting: each was resolved, or a
-  person replied after the loop's last comment. Review it again (step 3) with the answers in hand.
+  person replied after the loop's last comment. Review it again (step 3) with the answers in hand. The plan's
+  "Mark Answered When the Owner Replies" rule labels such a card **`answered`** (and takes off `needs-owner`) the
+  moment a person comments on it in Under Review, so start from the `answered` cards: a card with question threads
+  and no `answered` label is Waiting unless a person resolved its last thread without replying. Take `answered`
+  off in the same `set` that acts on its answers (a move, labels or new threads), and add `needs-owner` back when
+  an open question still needs it.
 - **New:** no question threads. Review it (step 3).
 
 **Work in Priority order: Critical, High, Medium, Low, then unset.** Ties keep their board order. The order
@@ -157,7 +162,8 @@ vocabulary: the labels already on its Work Items (`list_items` shows each card's
 or area the work reaches. Label from where the work really lives in the code (step 3.2), not the App field.
 
 - Only add. Never remove or rename a label a person set, even one you think is wrong (say so in the report).
-  The one label this loop removes is its own `needs-owner` flag (see "Flag for the owner").
+  The labels this loop removes are its own `needs-owner` flag (see "Flag for the owner") and the rule's
+  `answered` (see step 1).
 - `set` replaces the whole list, so write the card's existing labels plus the new ones:
   `{"op": "set", "item": "#12", "fields": {"labels": ["liveplanner", "dashboards"]}}`.
 - Add a label the plan doesn't use yet only when no existing one fits a product or area the card clearly

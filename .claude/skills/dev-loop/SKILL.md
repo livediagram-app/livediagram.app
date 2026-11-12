@@ -34,6 +34,13 @@ The same as review-loop (`.claude/skills/review-loop/SKILL.md`): the liveplanner
   `{"op": "set", "item": "#12", "fields": {"f-pull-request": "<PR url>"}}`.
 - Every question, answer, decision and piece of context about a card is in its comment threads. There are no
   Question cards: never make one, and never put a question or answer in a card's fields.
+- **The plan's Automations move some cards themselves** (`list_rules` lists them). A linked PR merging moves its
+  card to Done. A PR opening moves a card to Implemented, and a PR closed unmerged flags the card with a comment,
+  but both skip In Progress, so this loop still moves its own cards to Implemented once verified (step 4), and a
+  Large card stays In Progress while its parts merge. Failing checks add `ci-red` and passing ones clear it. A
+  card left a day unchanged in In Progress is flagged, with a mention to the owner. Never redo or undo a rule's
+  move, flag or label, except to unflag a card this loop picks up again. A PR links its cards by the Pull Request
+  field or by naming them in its body ("Work Tracker #12"), so keep naming every card the PR carries.
 
 Only this loop's coordinator (you) writes to the board. Agents never call the liveplanner MCP.
 
