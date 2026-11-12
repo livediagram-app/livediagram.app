@@ -15,7 +15,7 @@ import {
   CURRENCY_CODE,
   CURRENCY_DEFAULT,
   CALCULATIONS,
-  CUSTOM_FIELD_KINDS,
+  OFFERED_FIELD_KINDS,
   RATING_FIELD_SCALE_DEFAULT,
   RATING_FIELD_SCALE_MAX,
   RATING_FIELD_SCALE_MIN,
@@ -145,10 +145,10 @@ export function customOf(
     .replace(/[\s_-]+/g, '');
   // An American agent's "color" is the Colour kind.
   const kind = typed === 'color' ? 'colour' : typed;
-  const known = CUSTOM_FIELD_KINDS.find((k) => k === kind);
+  const known = OFFERED_FIELD_KINDS.find((k) => k === kind);
   if (!known)
     throw invalid(
-      `"${input.kind}" is not a custom field kind. Kinds: ${CUSTOM_FIELD_KINDS.join(', ')}.`,
+      `"${input.kind}" is not a custom field kind. Kinds: ${OFFERED_FIELD_KINDS.join(', ')}.`,
     );
   const name = input.name.trim();
   if ((type.custom ?? []).some((f) => statusKey(f.label) === statusKey(name)))

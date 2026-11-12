@@ -111,6 +111,7 @@ export * from './duration-fields';
 export * from './date-time-fields';
 export * from './date-range-fields';
 export * from './phone-fields';
+export * from './risk-fields';
 export * from './pull-request-fields';
 export * from './card-mentions';
 export * from './pull-request-state';

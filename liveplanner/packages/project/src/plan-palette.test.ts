@@ -8,7 +8,10 @@ import {
   planPalette,
   PLAN_BORDER_ACCENT_SHARE,
   PLAN_CHIP_TINT,
+  PRIORITY_COLOURS,
+  RISK_COLOURS,
 } from './plan-palette';
+import { RISKS } from '@liveplanner/items';
 import { canvasSurface } from './colors';
 import { THEMES } from './themes-data';
 import { themeHalf } from './theme-halves';
@@ -123,5 +126,16 @@ describe('every theme on a board', () => {
     expect(chipInkOn('transparent', planPalette('light'))).toBe('transparent');
     expect(accentOn('#2563eb', { card: 'transparent' })).toBe('#2563eb');
     expect(chipInkOn('#777777', { card: '#777777', text: '#777777' })).toBe('#777777');
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Risk": fixed colours, the pressing three Priority's own, Low green.
+describe('RISK_COLOURS', () => {
+  it('colours every level, Critical to Low, in order', () => {
+    expect(Object.keys(RISK_COLOURS)).toEqual([...RISKS]);
+    expect(RISK_COLOURS.critical).toBe(PRIORITY_COLOURS.urgent);
+    expect(RISK_COLOURS.high).toBe(PRIORITY_COLOURS.high);
+    expect(RISK_COLOURS.medium).toBe(PRIORITY_COLOURS.medium);
+    expect(RISK_COLOURS.low).toBe('#16a34a');
   });
 });

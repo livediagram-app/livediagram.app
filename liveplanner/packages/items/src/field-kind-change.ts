@@ -17,6 +17,7 @@ import type { CustomFieldDef, CustomFieldKind, ItemTypeDef } from './item-types'
 import { inheritingTypesOf } from './type-inheritance';
 import { ITEM_LABELS_MAX, ITEM_LABEL_MAX, ITEM_UNKNOWN_STRING_MAX } from './limits';
 import { richFieldOf } from './rich-text-field';
+import { RISKS, RISK_LABELS, riskLabel, riskOf } from './risk-fields';
 import { holdsSeveral, storedCardIds, storedPeople } from './several-values';
 import { holdsSeveralImages, storedImageIds } from './image-values';
 import type { ItemPatchOf } from './store';
@@ -150,6 +151,9 @@ function textOf(from: KindShape, value: ItemFieldValue, ctx: KindChangeContext):
     case 'daterange':
     case 'card':
       return customFieldText(asDef(from), value, ctx.items);
+    // A level as its name, "High", so a Choice or a text keeps it as a person reads it.
+    case 'risk':
+      return riskLabel(value);
     default:
       return typeof value === 'string' ? value : null;
   }
@@ -235,6 +239,11 @@ export function changedValue(
       const picks = (to.options ?? []).filter((o) => parts.some((p) => lower(p) === lower(o)));
       return rewritten(picks.length ? picks : undefined, picks.length < parts.length);
     }
+    // The first part that names a level, in any case; anything else it held is lost (item-types.md "Risk").
+    case 'risk': {
+      const level = parts.map(riskOf).find((r) => r !== undefined);
+      return rewritten(level, parts.length > 1);
+    }
     case 'labels': {
       // A list's items are a label each, whatever they hold ("Yes, with notes", "Lopez, Ana"); only a text is read as
       // a line of labels split at its commas.
@@ -286,7 +295,9 @@ export function optionsFromValues(
     seen.add(lower(t));
     out.push(t);
   };
-  for (const o of from.options ?? []) add(o);
+  // A Risk starts its Choice with the four levels, in order (item-types.md "Risk").
+  const first = from.kind === 'risk' ? RISKS.map((r) => RISK_LABELS[r]) : (from.options ?? []);
+  for (const o of first) add(o);
   for (const v of values) {
     if (out.length >= CUSTOM_CHOICE_OPTIONS_MAX) break;
     if (holdsValue(v)) for (const p of partsOf(from, v, ctx)) add(p);

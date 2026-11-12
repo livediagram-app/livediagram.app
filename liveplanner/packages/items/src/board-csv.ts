@@ -42,6 +42,7 @@ import { durationText, isTimeSpent, parseDuration } from './duration-fields';
 import { instantIso, parseDateTime } from './date-time-fields';
 import { isTimedRange, parseDateRange, rangeIso } from './date-range-fields';
 import { isPhoneNumber } from './phone-fields';
+import { riskLabel, riskOf } from './risk-fields';
 import { pullRequestValueOf } from './pull-request-fields';
 
 // The built-in fields after Key, Title, Type and Status, in file order, each under its header.
@@ -189,6 +190,8 @@ export function boardCsvRows(
           // ISO 8601: a moment as its UTC instant, a range as its interval "start/end" (item-types.md "Date and
           // Time", "Date Range").
           if (f.kind === 'datetime') return instantIso(item.fields[f.id]) ?? '';
+          // A Risk as its level's name, "High" (item-types.md "Risk").
+          if (f.kind === 'risk') return riskLabel(item.fields[f.id]) ?? '';
           if (f.kind === 'daterange') return rangeIso(item.fields[f.id]) ?? '';
           // An option may hold a comma, so a Multiple Choice's picks are kept apart by semicolons.
           if (f.kind === 'multichoice') {
@@ -297,6 +300,9 @@ function customValue(
       return f.options?.find((o) => lower(o) === lower(text));
     case 'multichoice':
       return multiChoiceOf(f.options ?? [], text);
+    // A level by its name or id, in any case (item-types.md "Risk").
+    case 'risk':
+      return riskOf(text);
     case 'rating': {
       const n = Number(text);
       return Number.isInteger(n) && n >= 1 && n <= ratingScaleOf(f) ? n : undefined;
