@@ -69,7 +69,7 @@ describe('Setup Sheet', () => {
 
   it('fills a start in a look, as one change, and ends setup', async () => {
     show(h);
-    expect(screen.getByRole('dialog', { name: 'Set up your sheet' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Set Up Your Sheet' })).toBeTruthy();
     // Without cards, Plan Cards is not offered.
     expect(screen.queryByRole('radio', { name: /Plan Cards/ })).toBeNull();
     // The templates sit under their headings.
@@ -336,11 +336,11 @@ describe('Setup Sheet as a dialog', () => {
   it('opens at once for whoever placed the sheet, with focus inside, and Escape keeps it open', async () => {
     markPlacedHere(SHEET_ID);
     renderSheet(h, host, {});
-    const dialog = await screen.findByRole('dialog', { name: 'Set up your sheet' });
+    const dialog = await screen.findByRole('dialog', { name: 'Set Up Your Sheet' });
     expect(dialog.contains(document.activeElement)).toBe(true);
     fireEvent.keyDown(dialog, { key: 'Escape' });
     await new Promise((r) => setTimeout(r, 50));
-    expect(screen.getByRole('dialog', { name: 'Set up your sheet' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Set Up Your Sheet' })).toBeTruthy();
     expect(sheet(h).layout.setupPending).toBe(true);
   });
 

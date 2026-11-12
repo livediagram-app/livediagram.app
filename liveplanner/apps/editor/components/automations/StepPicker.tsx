@@ -1,18 +1,15 @@
 'use client';
 
 // The rule builder's pickers (docs/specs/026-plan/automations.md "The rule builder"): Add an Action and Pick a Trigger
-// share this one dialog. The start screens' header band with its mark, a search that narrows the tiles across the
+// share this one dialog. The dialog hero header with the picker's art, a search that narrows the tiles across the
 // groups, a rail that scrolls to a group from sm (chips on a phone), and the grouped tiles: each a picture that plays
 // on hover, the step's icon, its name and a line on what it does. The arrow keys walk the tiles; Enter picks.
 
 import { useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { Button, DialogCloseButton, useMediaQuery } from '@liveplanner/ui';
-import { StartTitleMark } from '@liveworkspace/workbench/components/start/StartTitleMark';
-import { useStartHeaderTheme } from '@liveworkspace/workbench/components/start/useStartHeaderTheme';
+import { Button, useMediaQuery } from '@liveplanner/ui';
+import { HeroDialogHeader, type HeroArt } from '@liveworkspace/ui/dialog-hero';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
-import { planPalette } from '@/components/plan/plan-palette';
-import { useAppearance } from '@/hooks/ui/useAppearance';
 
 export type PickerTile<K extends string> = {
   key: K;
@@ -31,8 +28,6 @@ export type PickerSection<K extends string> = {
   full?: string;
   tiles: readonly PickerTile<K>[];
 };
-
-type Band = ReturnType<typeof useStartHeaderTheme>['band'];
 
 const RAIL_ON = 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-200';
 const RAIL_OFF =
@@ -64,7 +59,6 @@ function searchSections<K extends string>(
 export function StepPicker<K extends string>({
   title,
   line,
-  mark,
   art,
   noun,
   emptyHint,
@@ -74,11 +68,10 @@ export function StepPicker<K extends string>({
   onClose,
 }: {
   title: string;
-  // The header's line under the title (left out on a phone).
+  // The header's line under the title (for screen readers alone on a phone).
   line: string;
-  mark: 'automations' | 'actions';
-  // The band's picture, drawn in the band's colours.
-  art: (band: Band) => ReactNode;
+  // The header's art and title mark (AddActionHeroArt, AutomationsHeroArt).
+  art: HeroArt;
   // What a tile is, for the search and the rail: "action", "trigger".
   noun: string;
   // The empty search's suggestion: "Try another word, such as “label”".
@@ -91,9 +84,6 @@ export function StepPicker<K extends string>({
 }) {
   const titleId = useId();
   const phone = useMediaQuery('(max-width: 639.98px)');
-  // The header wears the start screens' band, in the app's light or dark colours, as the Automations screen does.
-  const palette = planPalette(useAppearance().appearance === 'dark' ? 'dark' : 'light');
-  const band = useStartHeaderTheme('liveplanner', palette);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState<string>('all');
   const shown = useMemo(() => searchSections(sections, query), [sections, query]);
@@ -184,29 +174,17 @@ export function StepPicker<K extends string>({
       initialFocus="first"
       className="max-h-[min(44rem,calc(100dvh-2rem))] overflow-hidden"
     >
-      {/* The start screens' header band: 100px tall from `sm`, the mark, the title and its line; on a phone,
-          compact and without the line. */}
-      <div
-        className={`relative isolate flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 ${phone ? 'px-4 py-3' : 'min-h-[100px] px-6 py-4'}`}
-      >
-        {art(band.band)}
-        <StartTitleMark kind={band.kind} band={band.band} variant={mark} />
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <h2
-            id={titleId}
-            className={`leading-tight ${phone ? 'text-[18px]' : 'text-[20px]'} ${band.face}`}
-            style={{ color: palette.text }}
-          >
-            {title}
-          </h2>
-          {phone ? null : (
-            <p className="text-[13px] sm:max-w-[22rem]" style={{ color: band.band.muted }}>
-              {line}
-            </p>
-          )}
-        </div>
-        <DialogCloseButton onClick={onClose} />
-      </div>
+      {/* The dialog hero header (dialog-hero-header.md), under the sheet's handle on a phone. Only the close stands
+          beside the title, so the centre piece moves out to 4.5rem from the edge. */}
+      <HeroDialogHeader
+        art={art}
+        titleId={titleId}
+        title={title}
+        subtitle={line}
+        onClose={onClose}
+        underHandle
+        className="[--hero-centre-end:4.5rem]"
+      />
       <div className="flex flex-col gap-3 border-b border-slate-100 px-6 py-3 dark:border-slate-800">
         <SearchInput
           value={query}

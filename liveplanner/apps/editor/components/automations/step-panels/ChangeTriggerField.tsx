@@ -6,7 +6,7 @@
 import { useMemo, useState } from 'react';
 import { AUTOMATION_TRIGGER_NAMES, type AutomationTriggerKind } from '@liveplanner/items';
 import { Button } from '@liveplanner/ui';
-import { AutomationsHeaderBand } from '@liveworkspace/workbench/components/start/AutomationsBand';
+import { automationsHeroArt } from '../AutomationsHeroArt';
 import { StepTile } from '../automation-glyphs';
 import { StepPicker } from '../StepPicker';
 import { TRIGGER_GROUPS, TRIGGER_LINES, isTimeKind } from '../trigger-groups';
@@ -61,8 +61,7 @@ export function ChangeTriggerField({
             <StepPicker
               title="Pick a Trigger"
               line="When should this rule run?"
-              mark="automations"
-              art={(band) => <AutomationsHeaderBand band={band} />}
+              art={automationsHeroArt}
               noun="trigger"
               emptyHint="Try another word, such as “moved”, “due” or “form”."
               sections={sections}

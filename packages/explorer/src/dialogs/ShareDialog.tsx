@@ -7,7 +7,7 @@
 // opens and applies each change at once, taking it back if the index refuses. Everything app-specific (the links'
 // address, the embed and live image, help articles, telemetry, the guest's name) comes from the host.
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   APP_DEFAULT_LINK_LEVEL,
   APP_LINK_LEVELS,
@@ -18,7 +18,9 @@ import {
 } from '@liveworkspace/index-client';
 import { useShareLinks } from '../data/useShareLinks';
 import { useNow } from '../time';
-import { Button, CountBadge, DialogCloseButton, DialogHeader } from '@liveworkspace/ui';
+import { Button, CountBadge } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { shareHeroArt } from '@liveworkspace/ui/dialog-hero-art/share';
 import { Dialog } from '../ui/Dialog';
 import type { ItemRef, ShareUrl } from '../types';
 import { kindWords } from '../words';
@@ -148,6 +150,7 @@ export function ShareDialog({
   const levels = APP_LINK_LEVELS[item.app];
   const legacy = (link: ShareLink) => !link.public && !levels.includes(link.level);
   const shareTour = useShareTour(multiTab, word, onTelemetry);
+  const titleId = useId();
   // Show Me walks the passes, so it starts on their tab.
   const tour = {
     ...shareTour,
@@ -211,6 +214,14 @@ export function ShareDialog({
     else notify('Pass created. Copy it from its card.', 'info');
   };
 
+  const status = {
+    passes: active.length,
+    password: share.passwordSet,
+    team: Boolean(item.teamId),
+    word,
+    publicNote,
+  };
+
   return (
     <Dialog
       onClose={close}
@@ -221,22 +232,20 @@ export function ShareDialog({
       // The body scrolls between a fixed header and footer.
       className="max-h-[calc(100%-2rem)]"
     >
-      <DialogHeader
+      {/* The dialog hero header (dialog-hero-header.md): sharing drawn as a connection, the status its one line. */}
+      <HeroDialogHeader
+        art={shareHeroArt}
+        titleId={titleId}
         title={`Share This ${kindWords(item.app).one}`}
-        subtitle={
-          <ShareStatus
-            passes={active.length}
-            password={share.passwordSet}
-            team={Boolean(item.teamId)}
-            word={word}
-            publicNote={publicNote}
-          />
+        subtitle={<ShareStatus {...status} />}
+        actions={
+          <>
+            <ShowMeButton tour={tour} />
+            <HelpLink href={helpHref?.('sharing')} label="Help with sharing" variant="labelled" />
+          </>
         }
-      >
-        <ShowMeButton tour={tour} />
-        <HelpLink href={helpHref?.('sharing')} label="Help with sharing" variant="labelled" />
-        <DialogCloseButton onClick={close} />
-      </DialogHeader>
+        onClose={close}
+      />
       {appTab ? (
         <ShareTabs view={view} onView={setView} appLabel={appTab.label} appBadge={appTab.badge} />
       ) : null}

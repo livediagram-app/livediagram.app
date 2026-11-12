@@ -930,8 +930,15 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
     for them), so an id pasted into another plan serves nothing there. A tab-scoped link reads it only when a card
     its tab shows holds it (items.md "Who sees the bytes"). Anything else answers 404.
   - **This Browser plans** upload too (as the person, their guest or account), and show their pictures to them.
-    **Copies** carry the ids, every picture of a Several Images field among them; a copy shows the pictures to their
-    uploader, and to the copy's share visitors once someone who may edit it uploads them there again.
+    **Copies** carry the ids, every picture of a Several Images field among them, and the source plan's grant for
+    each picture the copied cards hold (owner, 2026-11-12, Work Item 215), so a copy shows its cards' pictures to its
+    readers as the original does. Only a picture the source holds a grant for is granted in the copy, so a copy never
+    serves more than the plan it came from. The copy reports those pictures in use under its own id (items.md
+    "Images in use"): the original dropping one never lets the sweep take the copy's, the copy dropping one never
+    takes the original's, and deleting the copy for good releases only the copy's reference. A Drive file and the
+    migration door carry no grants (a file is the person's own bytes and could name any id): what they bring shows
+    to its uploader, and to the plan's readers once someone who may edit it uploads it there again. A copy made
+    before grants were copied keeps none, as before.
   - **Where it is left out**: a form can't ask it, Import CSV skips its column and Export CSV leaves it out, card
     text (search, the outline, a card's line in an agent's view) says nothing for it, and image exports and tab
     thumbnails draw no picture bytes (a picture is drawn on the board, never written), whether it holds one or

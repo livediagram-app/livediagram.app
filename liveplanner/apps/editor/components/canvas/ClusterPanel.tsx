@@ -6,7 +6,7 @@
 // centred dialog, and on a phone a bottom sheet whose grab handle drags it taller or down to close. No dimming: what
 // it changes applies live, so the work behind stays in view, and the full-screen layer is a transparent click-catcher
 // (click outside closes it; a right-click never leaks to the canvas).
-import { use, useRef, useState, type ReactNode } from 'react';
+import { use, useId, useRef, useState, type ReactNode } from 'react';
 import { browser } from 'react-dom';
 import {
   useEscape,
@@ -17,6 +17,7 @@ import {
   safeInset,
   useSheetDrag,
 } from '@liveplanner/ui';
+import { HeroDialogHeader, type HeroArt } from '@liveworkspace/ui/dialog-hero';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
@@ -28,6 +29,7 @@ export function ClusterPanel({
   headerEnd,
   anchorSelector,
   width = 'w-[44rem]',
+  hero,
   onClose,
   children,
 }: {
@@ -42,6 +44,9 @@ export function ClusterPanel({
   anchorSelector: string;
   // Its width on a screen wider than a phone (a Tailwind width class).
   width?: string;
+  // The dialog hero header's art (liveworkspace/docs/specs/004-index/dialog-hero-header.md), drawn in place of the
+  // plain title row: Configure Board wears it, Tab Style keeps the row.
+  hero?: HeroArt;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -52,6 +57,7 @@ export function ClusterPanel({
   const anchor = useClusterAnchor(anchorSelector);
   const panelScale = useUiScale('panels');
   const sheet = useSheetDrag(onClose);
+  const titleId = useId();
   useEscape(onClose);
 
   return (
@@ -88,24 +94,40 @@ export function ClusterPanel({
               : { ...uiScaleStyle(panelScale), ...sheet.style, paddingBottom: safeInset('bottom') }
           }
         >
-          <SheetHandle handleProps={sheet.handleProps} className="sm:hidden" />
-          <div className="flex flex-col gap-2 border-b border-slate-200 px-4 pb-2.5 pt-3 max-sm:pt-0 dark:border-slate-800">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex min-w-0 flex-col">
-                <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                  {title}
-                </h2>
-                {subtitle ? (
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">{subtitle}</p>
-                ) : null}
-              </div>
-              {/* Help sits with the close button, where the editor's dialogs keep their window controls. */}
-              <div className="flex items-center gap-1">
-                {headerEnd}
-                <DialogCloseButton compact onClick={onClose} />
+          {/* Over a hero band on a phone, the handle stands over it (relative z-10). */}
+          <SheetHandle
+            handleProps={sheet.handleProps}
+            className={hero ? 'relative z-10 sm:hidden' : 'sm:hidden'}
+          />
+          {hero ? (
+            <HeroDialogHeader
+              art={hero}
+              titleId={titleId}
+              title={title}
+              subtitle={subtitle}
+              actions={headerEnd}
+              onClose={onClose}
+              underHandle
+            />
+          ) : (
+            <div className="flex flex-col gap-2 border-b border-slate-200 px-4 pb-2.5 pt-3 max-sm:pt-0 dark:border-slate-800">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 flex-col">
+                  <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                    {title}
+                  </h2>
+                  {subtitle ? (
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">{subtitle}</p>
+                  ) : null}
+                </div>
+                {/* Help sits with the close button, where the editor's dialogs keep their window controls. */}
+                <div className="flex items-center gap-1">
+                  {headerEnd}
+                  <DialogCloseButton compact onClick={onClose} />
+                </div>
               </div>
             </div>
-          </div>
+          )}
           {/* A fixed least height, so moving between the home and its panels never makes it jump. */}
           <div className="min-h-[20rem] overflow-y-auto px-5 pb-4 pt-2">{children}</div>
         </div>

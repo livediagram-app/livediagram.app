@@ -233,8 +233,8 @@ export function Dialog({
       }${className ? ` ${className}` : ''}`}
     >
       {phoneSheet ? (
-        // The grab handle, phone only (BottomSheet's).
-        <SheetHandle handleProps={sheet.handleProps} className="sm:hidden" />
+        // The grab handle, phone only (BottomSheet's). Raised, so a hero header's band can run up under it.
+        <SheetHandle handleProps={sheet.handleProps} className="relative z-10 sm:hidden" />
       ) : null}
       {children}
     </div>

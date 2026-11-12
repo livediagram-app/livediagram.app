@@ -539,13 +539,15 @@ the badge amber, or with no badge puts a small amber dot on the icon, until it i
 A large dialog over the editor (a full-screen sheet on a phone), titled **Automations** with the line "Rules that act
 on this plan's cards for you when something happens.", a **New Rule** button and Close.
 
-Its header is the start screens' header band (start-panel.md "The header band"), drawn for rules: 100px tall from
-`sm`, a bolt as the title mark, then the title and its line, in the app's light or dark colours. Behind them, hidden
-from screen readers and the pointer, a faint dot grid fading out toward the title, a cog rising from the bottom left
-and a looping arrow from the bottom right (both at every size), and, from `lg` only, between the line (which wraps
-short of it) and the header's buttons, a rule as a flow: a trigger's bolt, a condition's diamond and an action's
-check joined by a line, a dashed arrow looping back over them. The bolt's ring spreads twice, motion allowing. On a
-phone the header stays compact: the mark and title, no line.
+Its header is the dialog hero header ([The dialog hero
+header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md)), the start screens' band drawn for
+rules: 100px tall from `sm`, a bolt as the title mark, then the title and its line, in the app's brand colours light
+or dark (a themed tab's accent where the tab retints them, as for the rest of the dialog). Behind them, hidden from
+screen readers and the pointer, a faint dot grid fading out toward the title, a cog rising from the bottom left and a
+looping arrow from the bottom right (both at every size), and, once the header is 56rem wide only, between the line
+(which stops short of it) and the header's buttons, a rule as a flow: a trigger's bolt, a condition's diamond and an
+action's check joined by a line, a dashed arrow looping back over them. The bolt's ring spreads twice, motion
+allowing. On a phone the header stays compact: the mark and title, the line left to screen readers.
 
 - Three tabs: **Rules · n**, **Audit Trail** and **Templates**.
 - A **Runs today** meter at the right of the tabs: "142 of 1,000" (No Match runs are not counted).
@@ -632,8 +634,9 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
   conditions), then one **Then** card per action, each with its icon. Under them: **+ Add Action**, **+ Add
   Condition**, **+ If / Else** and **+ For Related Cards**. A branch is a card ("For each **Blocked By Card**") with
   its own conditions and actions inset beneath it.
-- **+ Add Action** opens the **Add an Action** picker, a dialog (a sheet on a phone) rather than a long menu: a
-  search box ("Find an action"), then the actions in groups, each a tile drawn as the template tiles are: a small
+- **+ Add Action** opens the **Add an Action** picker, a dialog (a sheet on a phone) rather than a long menu: the
+  dialog hero header (a card with a plus as its mark; a tag, a flag and, on a wide header, a hand of action tiles
+  fanned out, the one in front lifted with the accent's plus), then a search box ("Find an action"), then the actions in groups, each a tile drawn as the template tiles are: a small
   picture of the action at work on a card, in its group's colour (a label dropping onto the card, the card sliding to
   the next column, a message landing in a Slack channel), which plays on hover or focus as a template's does, then
   the step's own icon, its name and a line on what it does:
@@ -663,8 +666,8 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
   tile closes the picker and adds the step, selected, as the menu did.
 
 - The **When** panel opens on its **Trigger** field: the trigger's icon, name and what it hears, and **Change**,
-  which opens the **Pick a Trigger** picker, drawn as the Add an Action picker is (the same header band with the
-  Automations mark, search "Find a trigger", the rail or chips, tiles with a picture that plays on hover), in three
+  which opens the **Pick a Trigger** picker, drawn as the Add an Action picker is (the dialog hero header with the
+  Automations screen's art and bolt, search "Find a trigger", the rail or chips, tiles with a picture that plays on hover), in three
   groups, each one thing: **Cards** (Card Created, Form Response, Card Moved, Field Changed, Card Archived, Card
   Restored, Checklist Completed, Column Over Limit, Run from a Card), **Comments** (Comment Added, All Threads
   Resolved, Someone Mentioned), **Links** (Card Unblocked, Related Cards Done), **Times** (Scheduled, Due In,

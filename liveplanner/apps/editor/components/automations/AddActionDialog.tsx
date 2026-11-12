@@ -7,8 +7,8 @@
 import { useMemo, useState } from 'react';
 import type { AutomationRuleBody } from '@liveplanner/items';
 import { Button, PlusIcon } from '@liveplanner/ui';
-import { ActionsHeaderBand } from '@liveworkspace/workbench/components/start/AutomationsBand';
 import { ActionScene } from './ActionScene';
+import { addActionHeroArt } from './AddActionHeroArt';
 import { StepTile } from './automation-glyphs';
 import { ACTION_LINES, pickerGroups, type ActionGroupId } from './action-groups';
 import { StepPicker } from './StepPicker';
@@ -107,8 +107,7 @@ export function AddActionDialog({
     <StepPicker
       title={current ? 'Change the Action' : 'Add an Action'}
       line={current ? 'What should this step do instead?' : 'What should this rule do to the card?'}
-      mark="actions"
-      art={(band) => <ActionsHeaderBand band={band} />}
+      art={addActionHeroArt}
       noun="action"
       emptyHint="Try another word, such as “label”, “email” or “Slack”."
       sections={sections}

@@ -36,6 +36,29 @@ export function shareStatusText({
     : `Private: only you can open this ${word}.`;
 }
 
+/**
+ * The same in a few words, for the one line under the hero header's title (dialog-hero-header.md: one line, never
+ * wrapped): the sentence above is the line's hint and what a screen reader hears.
+ */
+export function shareStatusShort({
+  passes,
+  password,
+  team,
+  publicNote = null,
+}: {
+  passes: number;
+  password: boolean;
+  team: boolean;
+  publicNote?: string | null;
+}): string {
+  if (publicNote) return `Public: ${publicNote}`;
+  const count = `${passes} ${passes === 1 ? 'pass' : 'passes'}`;
+  const withPassword = password ? ', password on' : '';
+  if (team)
+    return passes > 0 ? `Team and ${count}${withPassword}` : 'Team: every member can open it';
+  return passes > 0 ? `Shared: ${count} live${withPassword}` : 'Private: only you can open it';
+}
+
 export function ShareStatus(props: {
   passes: number;
   password: boolean;
@@ -44,6 +67,8 @@ export function ShareStatus(props: {
   publicNote?: string | null;
 }) {
   const isPublic = Boolean(props.publicNote);
+  const full = shareStatusText(props);
+  const short = shareStatusShort(props);
   const glyph = isPublic ? (
     <GlobeGlyph />
   ) : props.team ? (
@@ -59,15 +84,25 @@ export function ShareStatus(props: {
       ? 'text-emerald-600 dark:text-emerald-400'
       : 'text-slate-400 dark:text-slate-500';
   return (
+    // One line in the hero header's subtitle: the short words, truncating after the glyph if they must.
     <span
-      className="inline-flex items-center gap-2"
+      className="flex min-w-0 items-center gap-2"
       role="status"
       data-share-status={isPublic ? 'public' : ''}
     >
       <span aria-hidden className={`flex shrink-0 ${tone}`}>
         {glyph}
       </span>
-      {shareStatusText(props)}
+      {short === full ? (
+        <span className="truncate">{full}</span>
+      ) : (
+        <>
+          <span aria-hidden className="truncate">
+            {short}
+          </span>
+          <span className="sr-only">{full}</span>
+        </>
+      )}
     </span>
   );
 }

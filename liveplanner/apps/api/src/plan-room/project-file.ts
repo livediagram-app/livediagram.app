@@ -326,7 +326,9 @@ export async function importProjectFile(
   file: ProjectFileImport,
   now = Date.now(),
 ): Promise<void> {
-  await importPlanCopy(env, planId, file.copy, now);
+  // A file is the person's own bytes and could name any picture: it brings no grants (item-types.md "Image fields").
+  const { imageGrants: _none, ...copy } = file.copy;
+  await importPlanCopy(env, planId, copy, now);
   await initPlan(env, planId, {
     name: file.name,
     ownerId: file.ownerId,

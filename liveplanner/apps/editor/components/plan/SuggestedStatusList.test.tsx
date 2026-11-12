@@ -182,7 +182,7 @@ describe('who sees the suggestions', () => {
   it('an Editor reaches them from Set up board', async () => {
     render(host(true));
     fireEvent.click(screen.getByRole('button', { name: 'Set up board' }));
-    await screen.findByRole('dialog', { name: 'Set up your board' });
+    await screen.findByRole('dialog', { name: 'Set Up Your Board' });
     fireEvent.click(screen.getByRole('button', { name: 'Select All' }));
     fireEvent.click(screen.getByRole('button', { name: 'Next: Columns' }));
     expect(suggested()).toHaveLength(5);

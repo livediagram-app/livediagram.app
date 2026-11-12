@@ -169,8 +169,9 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
   the media service ("Images in use", below), and the service's daily sweep deletes a picture nothing in any
   app has placed for 30 days.
 - **Copies**: duplicating a card, or a whole plan, carries the attachment ids: no bytes are copied. In the same
-  plan the copy shows them to everyone; a copied plan shows them to their uploader, and to its other readers once
-  someone who may edit it uploads them there again (as an Image field's).
+  plan the copy shows them to everyone; a copied plan carries the source's grants for them too, so it shows them
+  to its readers as the original does, and reports them in use under its own id (as an Image field's,
+  [item-types.md](item-types.md#image-fields) "Image fields").
 - **This Browser plans** take no attachments: the server holds no record of them, so nothing would report their
   pictures and the sweep would take them. The zone reads "Save this plan to your account to add images." and
   takes no file; a card that came in with attachments (a plan taken offline) keeps them and shows them to their

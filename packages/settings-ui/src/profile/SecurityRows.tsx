@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { Button } from '@liveworkspace/ui';
+import { Button, usePageRestore } from '@liveworkspace/ui';
 import { DAY_LONG_MONTH, DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
 
@@ -155,6 +155,8 @@ export function SignInMethodsRows({
   const [load, , retry] = useLoad(security.signInMethods);
   const [connecting, setConnecting] = useState(false);
   const [failed, setFailed] = useState(false);
+  // Connect stays busy until the browser has gone to Google (busy-buttons.md); Back into the kept page lets go.
+  usePageRestore(() => setConnecting(false));
   const [refused] = useState(linkRefusalOnReturn);
   const google = load.state === 'ready' ? load.data.google : null;
   return (

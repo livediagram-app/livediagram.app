@@ -213,8 +213,10 @@ From the document's own ⋯ menu wherever it is listed (the Explorer in every ap
 Explorer panel inside each editor), and from the open document's own menu in each editor (the Explorer header's ⋯,
 beside Share and Export): **Webhooks**, offered to anyone signed in who can edit the whole document (an editor also
 leaves it off for a Viewer, a Participant or a one-tab link, which it knows). It opens a
-dialog titled "Webhooks for “<document>”" whose first line says that what is set here applies to this document
-only. In it: the document's webhooks, each with Send Test, Pause or Resume, Delete, Edit Events and its Recent
+dialog titled "Webhooks for “<document>”" whose line says that what is set here applies to this document
+only. It wears the dialog hero header ([dialog-hero-header.md](./dialog-hero-header.md)): a payload leaving the
+document along a send line to an endpoint, the title its name, the line the app's mark with "<Kind> · These apply to
+this <kind> only". In it: the document's webhooks, each with Send Test, Pause or Resume, Delete, Edit Events and its Recent
 Deliveries, and **Add Webhook**: where it posts (Slack, Microsoft Teams, Your Own Service), the address with how to
 get it, a name, **What Should It Send?** (the document's app's events in groups, none chosen at first, with Select
 All and Clear) and **Who Did It** (Anyone or Only Me). A plain webhook's signing secret shows once. Edit Events'

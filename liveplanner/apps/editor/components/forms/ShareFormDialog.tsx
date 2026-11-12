@@ -6,7 +6,8 @@
 // Responses, and Delete Link, which asks first. On a project in This Browser it offers Sync Project first (the project
 // Share dialog's prompt), then carries straight on to publishing as the project stops being offline.
 import { useId, useState } from 'react';
-import { Button, DialogCloseButton, DialogHeader, SwitchRow } from '@liveplanner/ui';
+import { Button, SwitchRow } from '@liveplanner/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import type { DestinationProblem, PublishProblem } from '@liveplanner/forms';
 import { SyncProjectPrompt } from '@/components/dialogs/SyncProjectPrompt';
 // The editor's Dialog, so the modal guard counts it (shortcuts behind it go quiet, and the tours wait for it).
@@ -16,6 +17,7 @@ import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { formUrlFor } from '@/lib/form-path';
 import { track } from '@/lib/telemetry';
 import { FormProblems, formProblemCount } from './FormProblems';
+import { shareFormHeroArt } from './ShareFormHeroArt';
 
 export function ShareFormDialog({
   open,
@@ -57,15 +59,16 @@ export function ShareFormDialog({
   const syncFirst = link.status === 'offline' && !!onSyncToCloud;
   return (
     <Dialog open={open} onClose={onClose} titleId={titleId} size="md" phoneSheet>
-      <div id={titleId} className="sr-only">
-        Share Form
-      </div>
-      <DialogHeader
+      {/* The dialog hero header (dialog-hero-header.md): the form handed out by its link. Under the sheet's handle
+          on a phone. */}
+      <HeroDialogHeader
+        art={shareFormHeroArt}
+        titleId={titleId}
         title="Share Form"
-        subtitle="Anyone with the link can fill in this form. They won’t see your plan."
-      >
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        subtitle="Anyone with the link can answer, not see your plan."
+        onClose={onClose}
+        underHandle
+      />
       {syncFirst && onSyncToCloud ? (
         <SyncProjectPrompt
           onSyncToCloud={() => {
