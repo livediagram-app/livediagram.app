@@ -40,7 +40,13 @@ Nothing else scales: not the canvas or its elements (the canvas has its
 own zoom), the tab bar and footer, the editor header, dialogs (Settings
 included), context menus, tooltips and hover cards, toasts, the selection
 toolbars that sit on elements. (Draw mode's dock is the strip's twin and
-draws at the **toolbar** scale, its flyouts at design size.) Menus and tooltips
+draws at the **toolbar** scale, and so do its flyouts: Shapes, More Tools,
+Settings and each tool's options are the dock's own tiles opened out, so at
+every toolbar scale their tiles match the bar's (each flyout takes its
+opener's zoom, so a marker tile's flyout matches its tile wherever the tile
+sits). A flyout stays inside the
+window at its scaled size: it is placed and clamped in screen px, and never
+wider than the window less its 12px margins.) Menus and tooltips
 opened FROM a scaled surface portal out of it, so they stay at their
 design size too.
 

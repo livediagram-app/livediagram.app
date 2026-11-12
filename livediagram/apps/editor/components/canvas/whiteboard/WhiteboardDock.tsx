@@ -363,7 +363,7 @@ export function WhiteboardDock({ model: ownModel, ink, onDrawn }: WhiteboardDock
         data-dock-centred={placed.centred ? '' : undefined}
         className={`pointer-events-none absolute z-[var(--z-toolbar)] w-max ${placement}`}
       >
-        <DockBody below={below} hint={hint} fly={fly} open={open} groups={groups} />
+        <DockBody below={below} hint={hint} fly={fly} open={open} groups={groups} scale={scale} />
       </div>
     </>
   );
@@ -376,10 +376,13 @@ function DockFlyoutHost({
   fly,
   open,
   below,
+  scale,
 }: {
   fly: DockFlyoutApi;
   open: OpenFlyout;
   below: boolean;
+  // The dock's toolbar UI scale: its flyouts draw at it too.
+  scale: number;
 }) {
   if (!fly.flyout || !open) return null;
   return (
@@ -398,6 +401,7 @@ function DockFlyoutHost({
       takeFocus={!fly.flyout.hover || fly.flyout.kind === 'shapes'}
       restoreFocus={fly.flyout.viaHover}
       hideTitle={open.hideTitle}
+      scale={scale}
     >
       {open.body}
     </WhiteboardFlyout>
@@ -411,16 +415,18 @@ function DockBody({
   fly,
   open,
   groups,
+  scale,
 }: {
   below: boolean;
   hint: { left: number } | null;
   fly: DockFlyoutApi;
   open: OpenFlyout;
   groups: ReactNode;
+  scale: number;
 }) {
   return (
     <>
-      <DockFlyoutHost fly={fly} open={open} below={below} />
+      <DockFlyoutHost fly={fly} open={open} below={below} scale={scale} />
       {hint ? (
         <p
           aria-hidden

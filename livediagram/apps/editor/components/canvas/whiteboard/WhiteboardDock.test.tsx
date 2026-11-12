@@ -5,7 +5,8 @@ import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { dockModel as model, renderDock } from './dock-test-utils';
 import { PenWidthIcon } from './PenWidthIcon';
 import { WhiteboardDock } from './WhiteboardDock';
-import { offDock } from './WhiteboardFlyout';
+import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { flyoutZoom, offDock } from './WhiteboardFlyout';
 
 const itemsOf = (group: string) =>
   [
@@ -434,7 +435,7 @@ describe('WhiteboardDock position', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     const flyout = screen.getByRole('group', { name: 'Settings' });
     expect(flyout.dataset.side).toBe('below');
-    // Portalled and fixed, so the toolbar UI scale never zooms it.
+    // Portalled and fixed, placed in screen px; its card takes the zoom (see "at the toolbar UI scale").
     expect(flyout.className).toContain('fixed');
     expect(dock().contains(flyout)).toBe(false);
     // Its tip points up at the button that opened it.
@@ -565,6 +566,104 @@ describe('offDock', () => {
     const at = offDock(dockBox, { left: 10, width: 36 }, flyout, true, { width: 1280 });
     expect(at.left).toBe(12);
     expect(at.tipLeft).toBe(28 - 12);
+  });
+});
+
+// docs/specs/007-editor/ui-scale.md: the dock's flyouts draw at the toolbar scale, so their tiles match the bar's,
+// and are placed and clamped to the window in screen px.
+describe('WhiteboardDock flyouts at the toolbar UI scale', () => {
+  const at = (scale: number) =>
+    render(
+      <UiScaleProvider value={{ panels: 1, toolbar: scale, cornerButtons: 1 }}>
+        <WhiteboardDock model={model('pen')} ink="#1c1917" />
+      </UiScaleProvider>,
+    );
+  const card = (name: string) =>
+    screen.getByRole('group', { name }).querySelector<HTMLElement>('[data-flyout-card]')!;
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it('draws every flyout card at the scale the bar is zoomed to', () => {
+    at(1.61);
+    expect(document.querySelector<HTMLElement>('[data-whiteboard-dock]')!.style.zoom).toBe('1.61');
+    // Shapes, Settings and a tool's options (the held marker's).
+    for (const item of ['shapes', 'settings', 'main']) {
+      const opener = document.querySelector<HTMLElement>(
+        `[data-whiteboard-dock] [data-dock-item="${item}"]`,
+      )!;
+      fireEvent.click(opener);
+      const root = document.getElementById(opener.getAttribute('aria-controls')!)!;
+      // The placed root takes no zoom; only the card inside it does.
+      expect(root.style.zoom).toBe('');
+      expect(root.querySelector<HTMLElement>('[data-flyout-card]')!.style.zoom).toBe('1.61');
+      fireEvent.click(opener);
+      expect(document.getElementById(root.id)).toBeNull();
+    }
+  });
+
+  it('draws them at design size at 100%', () => {
+    at(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    expect(card('Settings').style.zoom).toBe('');
+  });
+
+  it("takes the opener's own zoom where the browser reports it", () => {
+    Object.defineProperty(HTMLElement.prototype, 'currentCSSZoom', {
+      configurable: true,
+      get: () => 1.38,
+    });
+    try {
+      at(1.61);
+      fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+      expect(card('Settings').style.zoom).toBe('1.38');
+    } finally {
+      delete (HTMLElement.prototype as { currentCSSZoom?: number }).currentCSSZoom;
+    }
+  });
+
+  it('stays inside the window at its scaled size, its tip over the opener in card px', () => {
+    // A 600px window, the opener near the right edge, the scaled card 300px wide.
+    vi.stubGlobal('innerWidth', 600);
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.getAttribute('role') === 'group' ? 300 : 0;
+    });
+    const real = Element.prototype.getBoundingClientRect;
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      if ((this as HTMLElement).dataset?.dockItem === 'settings')
+        return { left: 540, top: 12, right: 576, bottom: 58, width: 36, height: 46 } as DOMRect;
+      if (this.hasAttribute('data-whiteboard-dock'))
+        return { left: 0, top: 12, right: 600, bottom: 58, width: 600, height: 46 } as DOMRect;
+      return real.call(this);
+    });
+    try {
+      at(1.5);
+      fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+      const root = screen.getByRole('group', { name: 'Settings' });
+      // 600 - 12 - 300: its right edge 12px in from the window's.
+      expect(root.style.left).toBe('288px');
+      expect(root.className).toContain('max-w-[calc(100vw-1.5rem)]');
+      expect(card('Settings').className).toContain('max-w-[min(20rem,100%)]');
+      // The opener's centre is 558px, 270px into the card: 180 card px at 1.5.
+      const tip = root.querySelector<HTMLElement>('[data-flyout-tip]')!;
+      expect(tip.style.left).toBe(`${180 - 5}px`);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
+describe('flyoutZoom', () => {
+  it("reads the opener's currentCSSZoom, else the fallback", () => {
+    const el = document.createElement('button');
+    expect(flyoutZoom(el, 1.61)).toBe(1.61);
+    Object.defineProperty(el, 'currentCSSZoom', { value: 1.15 });
+    expect(flyoutZoom(el, 1.61)).toBe(1.15);
   });
 });
 

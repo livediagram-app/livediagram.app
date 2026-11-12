@@ -5,6 +5,7 @@ import {
   UI_SCALE_MIN,
   UI_SCALE_TOOLBAR_BASE,
   UI_SCALE_TOOLBAR_MAX,
+  cssZoomOf,
   resolveUiScale,
   resolveUiScalePart,
   resolveUiScales,
@@ -143,5 +144,13 @@ describe('toSurfacePx', () => {
   it('converts screen px to px inside the zoomed surface', () => {
     expect(toSurfacePx(300, 1.5)).toBe(200);
     expect(toSurfacePx(16, 1)).toBe(16);
+  });
+});
+
+describe('cssZoomOf', () => {
+  it('reads currentCSSZoom, and null where the browser has none or a junk one', () => {
+    expect(cssZoomOf({} as Element)).toBeNull();
+    expect(cssZoomOf({ currentCSSZoom: 1.61 } as unknown as Element)).toBe(1.61);
+    expect(cssZoomOf({ currentCSSZoom: 0 } as unknown as Element)).toBeNull();
   });
 });

@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Tooltip, Portal } from '@livediagram/ui';
+import { cssZoomOf, toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 
 const VIEWPORT_MARGIN_PX = 12;
 // How close the tip may come to a corner of the card (its rounding is 12px).
@@ -70,10 +71,17 @@ type Place = {
   tip: { edge: 'top' | 'bottom'; offset: number };
 };
 
+// The zoom a flyout draws at: its opener's (the dock at the toolbar UI scale, a marker tile wherever it sits),
+// read from the browser, or `fallback` (the dock's own scale) where the browser cannot say.
+export function flyoutZoom(opener: Element, fallback: number): number {
+  return cssZoomOf(opener) ?? fallback;
+}
+
 // A Draw tool's settings (a pen, the eraser, Shapes, a slot's menu, Settings). Always portalled
-// and placed in screen px from its opener, so it draws at design size whatever the toolbar UI
-// scale zooms the dock to (docs/specs/007-editor/ui-scale.md) and escapes the dock's scroll clip:
-// off the dock's board side. The dock never moves for it. Focus
+// and placed in screen px from its opener, escaping the dock's scroll clip: off the dock's board
+// side. Its card draws at its opener's zoom, so at every toolbar UI scale its tiles match the bar's
+// (docs/specs/007-editor/ui-scale.md); the unzoomed root it sits in is what is placed and kept in
+// the window, so the clamp works in screen px. The dock never moves for it. Focus
 // moves into it on open; Escape closes it and hands focus back to its opener; a press outside
 // closes it without stealing focus.
 export function WhiteboardFlyout({
@@ -89,6 +97,7 @@ export function WhiteboardFlyout({
   restoreFocus = false,
   hideTitle = false,
   scope = '[data-whiteboard-dock]',
+  scale = 1,
   children,
 }: {
   id: string;
@@ -113,6 +122,9 @@ export function WhiteboardFlyout({
   hideTitle?: boolean;
   // The toolbar its opener sits in: the whiteboard dock, or a logo page's toolbars.
   scope?: string;
+  // The zoom the opener's surface is drawn at (the dock's toolbar UI scale), for a browser without
+  // `currentCSSZoom`.
+  scale?: number;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -120,6 +132,14 @@ export function WhiteboardFlyout({
   // one frame rather than flashing at the corner). Layout sizes, not the bounding rect: the pop-in
   // starts at scale(0).
   const [place, setPlace] = useState<Place | null>(null);
+  // The card's zoom: read off the opener before the card is measured, since the card's size depends on it.
+  const [zoom, setZoom] = useState(scale);
+  useLayoutEffect(() => {
+    const opener = document
+      .querySelector<HTMLElement>(scope)
+      ?.querySelector<HTMLElement>(`[data-dock-item="${anchor}"]`);
+    setZoom(opener ? flyoutZoom(opener, scale) : scale);
+  }, [anchor, scope, scale]);
   useLayoutEffect(() => {
     const node = ref.current;
     const wrapEl = document.querySelector<HTMLElement>(scope);
@@ -128,13 +148,14 @@ export function WhiteboardFlyout({
     const wrap = wrapEl.getBoundingClientRect();
     const btn = opener.getBoundingClientRect();
     const below = placement === 'below';
+    // The root is unzoomed, so its layout size is the zoomed card's size in screen px.
     const at = offDock(wrap, btn, node, below);
     setPlace({
       left: at.left,
       top: at.top,
-      tip: { edge: below ? 'top' : 'bottom', offset: at.tipLeft },
+      tip: { edge: below ? 'top' : 'bottom', offset: toSurfacePx(at.tipLeft, zoom) },
     });
-  }, [anchor, placement, revision, scope]);
+  }, [anchor, placement, revision, scope, zoom]);
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -204,12 +225,18 @@ export function WhiteboardFlyout({
           top: place?.top ?? 0,
           visibility: place ? undefined : 'hidden',
         }}
-        className="pointer-events-auto fixed z-[var(--z-popover)] w-max max-w-[min(20rem,calc(100vw-1.5rem))] animate-pop-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+        className="pointer-events-auto fixed z-[var(--z-popover)] w-max max-w-[calc(100vw-1.5rem)]"
       >
-        {/* The tip points at the button that opened it, wherever the card sits. */}
-        {place ? <FlyoutTip edge={place.tip.edge} offset={place.tip.offset} /> : null}
-        {hideTitle ? null : <FlyoutHeading className="mb-2">{label}</FlyoutHeading>}
-        {children}
+        <div
+          data-flyout-card=""
+          style={uiScaleStyle(zoom)}
+          className="relative max-w-[min(20rem,100%)] animate-pop-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+        >
+          {/* The tip points at the button that opened it, wherever the card sits. */}
+          {place ? <FlyoutTip edge={place.tip.edge} offset={place.tip.offset} /> : null}
+          {hideTitle ? null : <FlyoutHeading className="mb-2">{label}</FlyoutHeading>}
+          {children}
+        </div>
       </div>
     </Portal>
   );

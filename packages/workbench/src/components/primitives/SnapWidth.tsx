@@ -1,6 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { cssZoomOf } from '../../lib/ui-scale';
 
 // Rounds a content-sized box UP to a whole-pixel width, so whatever sits
 // after it (or inside a centred parent) lands on the pixel grid.
@@ -34,7 +35,8 @@ export function SnapWidth({
     const measure = () => {
       // Inside a UI-scaled surface (docs/specs/007-editor/ui-scale.md) the
       // rects are screen px and the width written is the zoomed box's own px.
-      const zoom = currentZoom(inner);
+      // 1 where the browser predates `currentCSSZoom`.
+      const zoom = cssZoomOf(inner) ?? 1;
       const box = inner.getBoundingClientRect();
       // Not drawn (a strip hidden while another stands in): keep the width it had, so the box comes back where
       // it was rather than a frame at zero, its content hanging off one side until the next measure.
@@ -74,11 +76,4 @@ export function SnapWidth({
       </div>
     </div>
   );
-}
-
-// The element's effective CSS zoom; 1 where the browser predates
-// `currentCSSZoom`.
-function currentZoom(el: HTMLElement): number {
-  const zoom = (el as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom;
-  return typeof zoom === 'number' && zoom > 0 ? zoom : 1;
 }

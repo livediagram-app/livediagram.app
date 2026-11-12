@@ -77,8 +77,8 @@ screen-px length it writes on that root or a descendant with `toSurfacePx`.
 `toolbar`: `ToolbarPalette`, `ToolbarExplorerButton`, and Draw mode's dock
 (`WhiteboardDock`, its `dock` variant; from
 [Draw mode](../../023-draw-mode/draw-mode.md#what-a-whiteboard-shows), which
-the spec's "Nothing else scales" list names: the dock at the toolbar scale,
-its flyouts at design size).
+the spec's "Nothing else scales" list names: the dock and its flyouts at the
+toolbar scale).
 `cornerButtons`: the cluster in `CanvasChrome`, `usePanelDock`.
 
 - **`MovablePanel`** (both branches):
@@ -113,11 +113,17 @@ its flyouts at design size).
   the same way. Inline in the phone strip it takes no zoom of its own.
 - **`WhiteboardDock`** (`variant="dock"`): zoom on the wrapper; a top dock's
   `top` is restated as `toSurfacePx(12)`. Its flyouts (`WhiteboardFlyout`)
-  are portalled to the body and `fixed`, placed in screen px from the
-  opener's `getBoundingClientRect`, so they take no zoom and need no
-  `toSurfacePx`: they draw at design size. The `panel` variant takes no zoom:
-  it sits inside the Palette's `MovablePanel` (`panels`); its flyouts are
-  portalled the same way.
+  are portalled to the body. The `fixed` root takes no zoom and is placed in
+  screen px from the opener's `getBoundingClientRect` (`offDock`, from the
+  root's `offsetWidth` / `offsetHeight`, which are screen px because only its
+  child is zoomed), with `max-width: calc(100vw - 1.5rem)`. Its one child, the
+  card, spreads `uiScaleStyle(zoom)`, where `zoom` is `flyoutZoom(opener,
+fallback)`: the opener's `currentCSSZoom`, or the dock's `scale` prop where
+  a browser lacks it (1 for a marker tile). The card's `max-width` is
+  `min(20rem, 100%)`, so it never outgrows the root, and the tip's `left`
+  (inside the zoomed card) is `toSurfacePx(tipLeft, zoom)`. The `panel`
+  variant takes no zoom: it sits inside the Palette's `MovablePanel`
+  (`panels`); its flyouts are portalled the same way and read its zoom.
 
 Popovers that MovablePanel anchors to a scaled button read the button's
 `getBoundingClientRect` (screen px), so they line up at any scale.

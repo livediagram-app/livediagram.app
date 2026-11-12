@@ -58,8 +58,12 @@ A whiteboard trades the palette for Draw's own tools: one **floating dock**, cen
 **top** of the canvas by default (see [Where the dock sits](#where-the-dock-sits)), like Microsoft
 Whiteboard's. It is the strip's twin: the **same height** as the Diagram strip (its buttons the
 strip's tile size) and drawn at the **toolbar UI scale** ([UI scale](../007-editor/ui-scale.md)), so
-switching modes never changes the size of the bar at the top. Its flyouts are not scaled: they open
-at their design size, like every menu opened from a scaled surface. Every flyout has a **tip**
+switching modes never changes the size of the bar at the top. Its flyouts (Shapes, More Tools,
+Settings and each tool's options) draw at the same toolbar scale, so their tiles match the bar's at
+every size; they are placed and kept inside the window in screen px at that size. A flyout takes
+the zoom its opener is drawn at (`currentCSSZoom`, falling back to the dock's toolbar scale where a
+browser lacks it), so a marker's flyout opened from a palette tile matches that tile too: the
+strip's scale on the strip, design size in a menu. Every flyout has a **tip**
 pointing at the button that opened it, on the edge facing the dock, over its button.
 
 - **Hidden in Draw mode:** the Toolbar strip (the dock replaces it), the format painter, the Highlighter tile with the palette's catalogue (a whiteboard's pens are its markers), the Theme &
