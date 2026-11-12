@@ -32,7 +32,8 @@ import { useBoardCsv } from '@/hooks/plan/useBoardCsv';
 import { cellStatus, laneMove } from './plan-board-moves';
 import { boardColumnTemplate } from './plan-board-columns';
 import { useBoardCollapsed } from '@/hooks/plan/useBoardCollapsed';
-import { shownQuick } from './phone-board';
+import { centreCardColumn, shownQuick } from './phone-board';
+import { COLUMN_ATTR } from './column-move-flip';
 import { useRegisterConfigurableBoard } from '@/hooks/plan/board-configure-store';
 import { RunRevealContext } from '@/hooks/plan/useCardRunReveal';
 import { usePlan } from './PlanContext';
@@ -173,7 +174,15 @@ export function PlanBoardView({
         }
       : null;
 
+  // A tap that opens a card: on a phone board of one column a screen, a card in a neighbouring column brings that
+  // column in instead (plan-board.md "On a phone"). Read at the tap, so `look` is this render's by then.
+  const openTapped = (id: string) => {
+    const body = bodyRef.current;
+    if (body && look.columns === 'phone' && centreCardColumn(id, body, COLUMN_ATTR)) return;
+    plan?.openItem(id);
+  };
   const { drag, incoming } = usePlanBoardDrop({
+    onOpen: openTapped,
     element,
     boardRef,
     plan,
@@ -222,7 +231,7 @@ export function PlanBoardView({
     if (canEditCards) drag.onCardPointerDown(id, e, look.holdToDrag, group);
     else {
       stop(e);
-      plan?.openItem(id);
+      openTapped(id);
     }
   };
 
