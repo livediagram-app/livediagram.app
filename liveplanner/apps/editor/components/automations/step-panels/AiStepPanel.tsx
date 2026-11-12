@@ -117,7 +117,7 @@ function SummarisePart({
   onChange: (next: AutomationAi) => void;
 }) {
   const fields = summaryFields(outline);
-  // A field the plan no longer has stays listed by its id, so the panel shows what the rule holds.
+  // A field the plan no longer has stays listed, so the panel shows what the rule holds.
   const gone = step.field && !fields.some((f) => f.id === step.field) ? step.field : null;
   return (
     <PanelField
@@ -142,7 +142,7 @@ function SummarisePart({
               {f.name}
             </option>
           ))}
-          {gone ? <option value={gone}>{gone} (gone)</option> : null}
+          {gone ? <option value={gone}>A field no longer here</option> : null}
         </PanelSelect>
       )}
     </PanelField>

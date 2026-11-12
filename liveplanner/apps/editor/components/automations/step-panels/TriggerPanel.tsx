@@ -6,9 +6,14 @@
 // schedule (TimeTriggerPanel), an Incoming Webhook's address and secret (IncomingWebhookPanel), and a GitHub trigger's
 // result and connection (GithubTriggerFields).
 
-import { isGithubTrigger, isTimeTrigger, type AutomationTrigger } from '@liveplanner/items';
+import {
+  BUILT_IN_FIELD_NAMES,
+  isGithubTrigger,
+  isTimeTrigger,
+  type AutomationTrigger,
+} from '@liveplanner/items';
 import { GithubTriggerFields } from '../github/GithubTriggerFields';
-import { outlineFields, type AutomationOutline } from '../automation-outline';
+import { RULE_BUILT_IN_FIELDS, outlineFields, type AutomationOutline } from '../automation-outline';
 import { ChipToggles, PanelField, PanelNote, PanelSelect } from './panel-parts';
 import { IncomingWebhookPanel } from './IncomingWebhookPanel';
 import { TimeTriggerPanel } from './TimeTriggerPanel';
@@ -30,6 +35,13 @@ const LIMITS = [
   500,
 ];
 
+const GONE_COLUMN = 'A column no longer here';
+
+// A single pick the plan no longer has (a deleted column or Form tab) stays listed, so the select shows what the rule
+// holds rather than its first choice.
+const goneOption = (value: string | undefined, known: readonly string[], label: string) =>
+  value && !known.includes(value) ? <option value={value}>{label}</option> : null;
+
 export function TriggerPanel({
   trigger,
   onChange,
@@ -47,6 +59,20 @@ export function TriggerPanel({
 }) {
   const fields = outlineFields(outline.types);
   const columns = outline.columns.map((c) => ({ value: c.status, label: c.name }));
+  const statuses = columns.map((c) => c.value);
+  // Field Changed's chips: the plan's fields, and a built-in one the rule names that no card type lists, by its name.
+  const fieldOptions = fields.map((f) => ({ value: f.id, label: f.name }));
+  if (trigger.kind === 'field_changed')
+    for (const id of trigger.fields)
+      if (
+        !fields.some((f) => f.id === id) &&
+        RULE_BUILT_IN_FIELDS.has(id) &&
+        id in BUILT_IN_FIELD_NAMES
+      )
+        fieldOptions.push({
+          value: id,
+          label: BUILT_IN_FIELD_NAMES[id as keyof typeof BUILT_IN_FIELD_NAMES],
+        });
   return (
     <div className="flex flex-col gap-4">
       <ChangeTriggerField
@@ -81,6 +107,7 @@ export function TriggerPanel({
                   {c.label}
                 </option>
               ))}
+              {goneOption(trigger.status, statuses, GONE_COLUMN)}
             </PanelSelect>
           )}
         </PanelField>
@@ -105,6 +132,11 @@ export function TriggerPanel({
                   {f.name}
                 </option>
               ))}
+              {goneOption(
+                trigger.formTab,
+                outline.forms.map((f) => f.id),
+                'A form no longer here',
+              )}
             </PanelSelect>
           )}
         </PanelField>
@@ -116,6 +148,7 @@ export function TriggerPanel({
             options={columns}
             value={trigger.from ?? []}
             hint="None picked: from any column."
+            gone={GONE_COLUMN}
             onChange={(from) => onChange({ ...trigger, from })}
           />
           <ChipToggles
@@ -123,6 +156,7 @@ export function TriggerPanel({
             options={columns}
             value={trigger.to ?? []}
             hint="None picked: to any column."
+            gone={GONE_COLUMN}
             onChange={(to) => onChange({ ...trigger, to })}
           />
         </>
@@ -130,9 +164,10 @@ export function TriggerPanel({
       {trigger.kind === 'field_changed' ? (
         <ChipToggles
           label="Fields"
-          options={fields.map((f) => ({ value: f.id, label: f.name }))}
+          options={fieldOptions}
           value={trigger.fields}
           hint="Pick at least one."
+          gone="A field no longer here"
           onChange={(next) => onChange({ kind: 'field_changed', fields: next })}
         />
       ) : null}
@@ -158,6 +193,7 @@ export function TriggerPanel({
           options={outline.people.map((p) => ({ value: p.id, label: p.name }))}
           value={trigger.people ?? []}
           hint="None picked: anyone mentioned."
+          gone="Someone No Longer Here"
           onChange={(people) =>
             onChange(people.length ? { kind: 'mentioned', people } : { kind: 'mentioned' })
           }
@@ -193,6 +229,7 @@ export function TriggerPanel({
                     {c.label}
                   </option>
                 ))}
+                {goneOption(trigger.status, statuses, GONE_COLUMN)}
               </PanelSelect>
             )}
           </PanelField>

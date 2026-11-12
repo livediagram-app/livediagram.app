@@ -151,7 +151,7 @@ describe('the AI panels', () => {
 
   it('keeps a field the plan lost, named as gone', () => {
     render(<Panel start={{ kind: 'ai', task: 'summarise', field: 'f-gone' }} />);
-    expect(screen.getByRole('option', { name: 'f-gone (gone)' })).toBeTruthy();
+    expect(screen.getByRole('option', { name: 'A field no longer here' })).toBeTruthy();
   });
 
   it('sets the suggested type or comments it', () => {
