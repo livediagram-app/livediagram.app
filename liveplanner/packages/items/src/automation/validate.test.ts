@@ -307,3 +307,36 @@ describe('rule names and actions', () => {
     ).toBe(true);
   });
 });
+
+describe('the triggers after Phase 3', () => {
+  it('reads each, keeping only what narrows it', () => {
+    const triggers = [
+      { kind: 'card_archived' },
+      { kind: 'card_restored' },
+      { kind: 'checklist_completed' },
+      { kind: 'threads_resolved' },
+      { kind: 'card_unblocked' },
+      { kind: 'mentioned' },
+      { kind: 'mentioned', people: ['p1'] },
+      { kind: 'related_done', related: 'linked' },
+      { kind: 'column_limit', status: 'doing', limit: 5 },
+      { kind: 'stuck', days: 5, at: '09:00' },
+      { kind: 'stuck', days: 90, at: '09:15', statuses: ['doing'] },
+    ];
+    for (const trigger of triggers) {
+      const r = readRuleBody(withRule({ trigger }));
+      expect('body' in r && r.body.trigger).toEqual(trigger);
+    }
+    const empty = readRuleBody(withRule({ trigger: { kind: 'mentioned', people: [] } }));
+    expect('body' in empty && empty.body.trigger).toEqual({ kind: 'mentioned' });
+  });
+
+  it.each([
+    ['a relation it lacks', { kind: 'related_done', related: 'parents' }, 'trigger.related'],
+    ['a limit of 0', { kind: 'column_limit', status: 'doing', limit: 0 }, 'trigger.limit'],
+    ['a limit past 500', { kind: 'column_limit', status: 'doing', limit: 501 }, 'trigger.limit'],
+    ['stuck past 90 days', { kind: 'stuck', days: 91, at: '09:00' }, 'trigger.days'],
+  ])('refuses %s', (_, trigger, path) => {
+    expect(pathOf(withRule({ trigger }))).toBe(path);
+  });
+});

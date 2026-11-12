@@ -101,25 +101,45 @@ work. A rule does it every time, at once, and says that it did.
 
 ## Triggers
 
-| Trigger              | Starts when                                                                                    | Narrowed by                       |
-| -------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------- |
-| **Card Created**     | a card is added, by anyone or anything (a person, Duplicate, an import, a Repeat, an agent)    | the column it lands in (optional) |
-| **Form Response**    | a [Form](../030-forms/forms.md) response makes a card                                          | which Form tab (optional)         |
-| **Card Moved**       | a card's status changes                                                                        | From columns, To columns          |
-| **Field Changed**    | any of the chosen fields changes value (title, description, assignee, priority, labels, start, | one or more fields, required      |
-|                      | due, estimate, checklist, flag or any custom field of the plan's card types)                   |                                   |
-| **Comment Added**    | someone starts a thread on a card or replies on one (not Automation's own comments)            | none                              |
-| **Run from a Card**  | an Editor picks the rule under **Run Rule** in a card's ⋯ menu                                 | none                              |
-| **Scheduled**        | a time comes round: every day, every weekday (Monday to Friday), weekly on chosen days, or     | the rule's conditions pick the    |
-|                      | monthly on a day (1 to 31), at a time (on the quarter hour)                                    | cards, as a filter                |
-| **Due In**           | a card's due date is a chosen number of days away (1 to 30), at a time on that day             | the rule's conditions             |
-| **Overdue**          | a card's due date has passed and it is not in a done column, at a time on the day after        | the rule's conditions             |
-| **Incoming Webhook** | another tool sends the rule's own address a JSON call, proving it holds the rule's secret      | the cards the call names, then    |
-|                      | ([Incoming Webhook](#incoming-webhook))                                                        | the rule's conditions             |
+| Trigger                  | Starts when                                                                                    | Narrowed by                       |
+| ------------------------ | ---------------------------------------------------------------------------------------------- | --------------------------------- |
+| **Card Created**         | a card is added, by anyone or anything (a person, Duplicate, an import, a Repeat, an agent)    | the column it lands in (optional) |
+| **Form Response**        | a [Form](../030-forms/forms.md) response makes a card                                          | which Form tab (optional)         |
+| **Card Moved**           | a card's status changes                                                                        | From columns, To columns          |
+| **Field Changed**        | any of the chosen fields changes value (title, description, assignee, priority, labels, start, | one or more fields, required      |
+|                          | due, estimate, checklist, flag or any custom field of the plan's card types)                   |                                   |
+| **Comment Added**        | someone starts a thread on a card or replies on one (not Automation's own comments)            | none                              |
+| **Run from a Card**      | an Editor picks the rule under **Run Rule** in a card's ⋯ menu                                 | none                              |
+| **Scheduled**            | a time comes round: every day, every weekday (Monday to Friday), weekly on chosen days, or     | the rule's conditions pick the    |
+|                          | monthly on a day (1 to 31), at a time (on the quarter hour)                                    | cards, as a filter                |
+| **Due In**               | a card's due date is a chosen number of days away (1 to 30), at a time on that day             | the rule's conditions             |
+| **Overdue**              | a card's due date has passed and it is not in a done column, at a time on the day after        | the rule's conditions             |
+| **Incoming Webhook**     | another tool sends the rule's own address a JSON call, proving it holds the rule's secret      | the cards the call names, then    |
+|                          | ([Incoming Webhook](#incoming-webhook))                                                        | the rule's conditions             |
+| **Card Archived**        | a card is archived                                                                             | none                              |
+| **Card Restored**        | an archived card is brought back                                                               | none                              |
+| **Checklist Completed**  | the last unticked item on a card's checklist is ticked (a checklist of at least one item)      | none                              |
+| **All Threads Resolved** | the last open comment thread on a card is resolved                                             | none                              |
+| **Someone Mentioned**    | a comment on a card @mentions someone (not Automation's own comments)                          | the people mentioned (optional)   |
+| **Card Unblocked**       | the last open card blocking a card reaches a done column or is archived (the unblocked card    | none                              |
+|                          | runs the rule)                                                                                 |                                   |
+| **Related Cards Done**   | the last of a card's children, or of the cards its Card fields point at, reaches a done column | children or linked cards          |
+|                          | (the card they belong to runs the rule; it must have at least one)                             |                                   |
+| **Column Over Limit**    | a card goes into a column that then holds more cards than the limit (1 to 500): once each      | the column and its limit,         |
+|                          | time the column goes over, the card that tipped it running the rule                            | required                          |
+| **Card Stuck**           | a card has not changed for a number of days (1 to 90), checked daily at a time; done columns   | the columns (optional), then the  |
+|                          | and archived cards never match                                                                 | rule's conditions                 |
+
+- **Card Stuck** is a time trigger (below). It fires once for each stretch a card sits unchanged: the run id holds
+  when the card last changed, so any change re-arms it.
+- **Card Unblocked, Related Cards Done and Column Over Limit** are worked out when the rule runs, from the plan's cards
+  as they are then: a move or archive that sets one off may be another card's (the blocker, the last child), and the
+  rule runs on the card it concerns, with Who Did It the person who made that move. Archiving or restoring a card
+  starts only Card Archived and Card Restored.
 
 ### Time triggers
 
-- **Scheduled, Due In and Overdue** are **time triggers**: at their moment, the rule looks over the plan's cards and
+- **Scheduled, Due In, Overdue and Card Stuck** are **time triggers**: at their moment, the rule looks over the plan's cards and
   runs once **for each card** its conditions match, as a card trigger runs for one card. Its conditions are the
   card filter ("Every Weekday at 9:00 for cards Overdue, not Done"); a time trigger with no conditions matches
   every card, which the builder warns about ("Runs on every card in the plan").
@@ -253,10 +273,43 @@ with what is missing.
 |                                 | message (values allowed)                                                                          |
 | **Post to Slack**               | posts the message, with an **Open in liveplanner** link, through one of the plan's Slack webhooks |
 | **Post to Microsoft Teams**     | the same, as a card in a Teams channel through one of the plan's Teams webhooks                   |
+| **Change Card Type**            | sets the card's type to one of the plan's card types (its column must suit the new type)          |
+| **Set Colour**                  | sets the card's Colour to one of the standard colours, or none                                    |
+| **Restore From Archive**        | brings an archived card back                                                                      |
+| **Copy Card**                   | adds a copy of the card (its type, title and fields), in its column or a chosen one               |
+| **Add a Checklist**             | adds 1 to 20 unticked items (values allowed) to the card's checklist; an item already on it, by   |
+|                                 | its text, is not added twice                                                                      |
+| **Link Cards**                  | points one of the card's Card fields (a Blocked By field too) at a chosen card, or, in a branch,  |
+|                                 | at the card that started the rule; a field of several cards gains it, a single one is replaced    |
+| **Mention Someone**             | starts a thread on the card that @mentions the assignee, whoever triggered it or a chosen person, |
+|                                 | with a short message (values allowed); it reaches their Inbox and their mention email             |
+| **Resolve Threads**             | resolves every open comment thread on the card                                                    |
+| **Wait**                        | holds the rest of the rule for 1 hour to 30 days (below)                                          |
 | **For Related Cards**           | a branch: runs its own conditions and actions on each related card (below)                        |
 | **Summarise Card** (AI)         | writes a short plain-text summary of the card to a comment, or to a text field (below)            |
 | **Suggest Card Type** (AI)      | picks one of the plan's card types from the card's text, and sets it or comments the suggestion   |
 | **Triage** (AI)                 | sets the priority and adds up to 3 of the plan's labels, from the card's text                     |
+
+### Wait
+
+**Wait** holds the rest of the rule: the steps before it act now, the steps after it act when the time is up. It is a
+step of the rule's top level only (never inside an If / Else or a branch), at most 3 a rule, and holds for **1 hour to
+30 days**, in days and hours ("Wait 2 days", "Wait 1 day 4 hours").
+
+- **When the time is up** the rule reads the card again and checks its conditions again: if they no longer hold
+  (the card moved on, someone took it), it stops there, a **No Match** run "Its conditions no longer hold after the
+  wait". Otherwise the steps after the Wait run, as a run of their own in the Audit Trail ("After waiting 2 days"),
+  counting toward the plan's 1,000 a day.
+- **What stops a waiting run**: the rule turned off, deleted or saved with changes (Skipped, "The rule changed while
+  this run waited"), the card deleted or trashed (Skipped, "The card is gone"). Archiving the card does not.
+- **At most 500 runs wait** in a plan at once: past that, a Wait fails its run, "Too many runs are waiting in this
+  plan".
+- A waiting run shows in the Audit Trail as **Waiting** (a pill of its own) with when it goes on ("Goes on Mon 14
+  Nov, 9:00"), until it does. A time is the rule's time zone; it goes on at the first wake after its time, never
+  early.
+- **Test on a Card** does not wait: it shows "Would wait 2 days, then:" and the steps after.
+- The engine holds each waiting run in the plan room's storage (the rule, the card, the step it waits at, the
+  rule's version, when it goes on), and the room's alarm wakes for the earliest, as it does for time triggers.
 
 ### Assign in turn
 
@@ -476,8 +529,9 @@ the builder and shown there as chips:
 **Automations** sits in the editor's footer cluster between **Search** and **Settings**
 ([Editor app](../007-editor/editor-app.md)), with a lightning-bolt icon, labelled from `sm` up like its neighbours,
 icon-only on a phone (a 40 px target). Its hover card reads **Automations**: "Rules that move, assign and tell people
-about cards for you." It is drawn only for an Editor on a plan saved to an account. A rule that paused itself puts
-a small amber dot on the icon until it is resumed or turned off. It opens the Automations screen and sends
+about cards for you." It is drawn only for an Editor on a plan saved to an account. A badge beside it counts the
+rules that are on (none on, no badge), and its name says so ("Automations, 3 on"). A rule that paused itself turns
+the badge amber, or with no badge puts a small amber dot on the icon, until it is resumed or turned off. It opens the Automations screen and sends
 `UI · Opened · Automations`.
 
 ### The Automations screen
@@ -504,22 +558,41 @@ phone the header stays compact: the mark and title, no line.
   moving, assigning, labelling and telling people about cards. Start from one below or build your own.", **New
   Rule** and **How Rules Work** (the help article), then **Start From a Template** with the gallery below.
 - **Templates** (the tab, and under the empty state): category chips **All**, **Status**, **Assigning**, **Due
-  Dates**, **Forms** and **Telling People**, then a tile per template, its name, its sentence and its category:
+  Dates**, **Forms**, **Telling People** and **AI**, then a tile per template: a small picture of the rule at work on a
+  board, in the template's colour, then its name, its sentence and its category. The picture shows the moment before
+  the rule acts (a card in Review, an empty assignee); hovering or focusing the tile plays it (the card slides into
+  Done and is stamped with the date, an avatar drops onto the card), and leaving it plays back. It is decoration,
+  hidden from screen readers. With reduced motion, or on a touch screen, it shows the moment after, still. The tile
+  lifts a little on hover:
 
-  | Template                   | Does                                                                                 | Category       |
-  | -------------------------- | ------------------------------------------------------------------------------------ | -------------- |
-  | Stamp the Finish Date      | When a card moves to a done column, set Completed On to today and clear its flag.    | Status         |
-  | Assign on Start            | When a card moves to In Progress with no assignee, assign whoever moved it.          | Assigning      |
-  | Overdue Nudge              | Every weekday at 9:00, flag overdue cards and email their assignee.                  | Due Dates      |
-  | Share Out Form Responses   | When a form response lands, assign people in turn and thank the sender in a comment. | Forms          |
-  | Post Shipped Work to Slack | When a card with a chosen label moves to Done, post its title and link to a channel. | Telling People |
-  | Triage New Bugs            | When a Bug card is added, label it triage and assign the people on triage in turn.   | Assigning      |
-  | Unblock the Next Card      | When a card is done, comment on every card it was blocking that it can start.        | Status         |
-  | Due Soon Reminder          | Two days before a card is due, email its assignee with a link to the card.           | Due Dates      |
+  | Template                       | Does                                                                                        | Category       |
+  | ------------------------------ | ------------------------------------------------------------------------------------------- | -------------- |
+  | Stamp the Finish Date          | When a card moves to a done column, set Completed On to today and clear its flag.           | Status         |
+  | Assign on Start                | When a card moves to In Progress with no assignee, assign whoever moved it.                 | Assigning      |
+  | Overdue Nudge                  | Every weekday at 9:00, flag overdue cards and email their assignee.                         | Due Dates      |
+  | Share Out Form Responses       | When a form response lands, assign people in turn and thank the sender in a comment.        | Forms          |
+  | Post Shipped Work to Slack     | When a card with a chosen label moves to Done, post its title and link to a channel.        | Telling People |
+  | Triage New Bugs                | When a Bug card is added, label it triage and assign the people on triage in turn.          | Assigning      |
+  | Unblock the Next Card          | When a card is done, comment on every card it was blocking that it can start.               | Status         |
+  | Due Soon Reminder              | Two days before a card is due, email its assignee with a link to the card.                  | Due Dates      |
+  | Clean Up Done                  | Every Monday at 9:00, archive cards that have been done for more than 14 days.              | Status         |
+  | Escalate Urgent Work           | When a card's priority becomes Urgent, flag it, email its assignee and post to Slack.       | Telling People |
+  | Reopen on New Comment          | When someone comments on a done card, move it back to In Progress and flag it.              | Status         |
+  | Route Reviews                  | When a card moves to Review, assign reviewers in turn and say it is ready for them.         | Assigning      |
+  | Give It a Due Date             | When a card moves to In Progress with no due date, set it due a week from today.            | Due Dates      |
+  | Flag Blocked Cards             | When a card gets the blocked label, flag it and ask in a comment what it waits on.          | Status         |
+  | Verify the Fix                 | When a Bug card is done, add a Verify Fix card to its first column to check it.             | Status         |
+  | Back to the Backlog            | When a card moves back to a to-do column, unassign it and clear its due date.               | Assigning      |
+  | Sort Incoming Cards            | When a card is added, AI suggests its card type and sets its priority and labels.           | AI             |
+  | Summarise Form Requests        | When a form response lands, AI summarises it in a comment and sets its priority and labels. | AI             |
+  | Close the Parent               | When the last of a card’s children is done, move the card to Done too.                      | Status         |
+  | Tell Them It’s Unblocked       | When the last card blocking a card is done, mention its assignee so they can start.         | Telling People |
+  | Nudge Stuck Cards              | Each morning, flag cards that have not changed for 5 days and ask for an update.            | Telling People |
+  | Done When Feedback Is Resolved | When the last comment thread on a card in Review is resolved, move it to Done.              | Status         |
 
   Picking one opens the builder filled in, unsaved and off, named after it (made unique). What the plan has is
-  filled in by its role (its done columns, its In Progress column, a date field named like Completed On, a Bug
-  type); what it lacks or the template leaves to you (a label, the people in turn, a Slack webhook) is left empty,
+  filled in by its role (its done columns, its In Progress column, a column named like Review, a date field named like
+  Completed On, a Bug type, its first to-do column); what it lacks or the template leaves to you (a label, the people in turn, a Slack webhook) is left empty,
   its step marked "Pick a field" (or a label, people, a webhook) until picked. Nothing is saved until **Save Rule**.
   **New Rule** is a menu: **Blank Rule** (the builder, empty) and **Start From a Template** (the Templates tab). With
   the plan at its 50 rules the tiles show but don't open.
@@ -532,6 +605,22 @@ phone the header stays compact: the mark and title, no line.
 - On a phone the rows stack (name, sentence, last run and week on one line, the switch at the right) and the
   dialog fills the screen.
 
+#### Motion
+
+Nothing on the screen jumps: every change of view moves, within the motion budget
+([motion.md](../004-interface-design/motion.md): 250ms at most, cascades included), and with reduced motion it simply
+appears.
+
+- **Tabs**: the active tab's underline slides to the one picked (`short`), and the new tab's content fades in.
+- **Rules list, Audit Trail and Templates**: rows and tiles cascade in (the shared row cascade) when the tab opens or
+  a filter or chip changes; a template tile lifts on hover.
+- **List to builder and back**: the builder slides in from the right, and the list comes back from the left, as a
+  drill-in view does.
+- **In the builder**: a new step rises into place where it lands; the step panel slides in when a step is picked,
+  and its contents fade across when another step is picked.
+- **Add an Action**: the picker opens as every dialog does, its tiles cascade in, and the search narrows them in
+  place.
+
 ### The rule builder
 
 Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back to **Automations**, the rule's name
@@ -541,6 +630,50 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
   conditions), then one **Then** card per action, each with its icon. Under them: **+ Add Action**, **+ Add
   Condition**, **+ If / Else** and **+ For Related Cards**. A branch is a card ("For each **Blocked By Card**") with
   its own conditions and actions inset beneath it.
+- **+ Add Action** opens the **Add an Action** picker, a dialog (a sheet on a phone) rather than a long menu: a
+  search box ("Find an action"), then the actions in groups, each a tile drawn as the template tiles are: a small
+  picture of the action at work on a card, in its group's colour (a label dropping onto the card, the card sliding to
+  the next column, a message landing in a Slack channel), which plays on hover or focus as a template's does, then
+  the step's own icon, its name and a line on what it does:
+
+  | Group           | Actions                                                              |
+  | --------------- | -------------------------------------------------------------------- |
+  | **Cards**       | Move to Column, Set Field, Clear Field, Change Card Type, Set Colour |
+  | **New Cards**   | Create Card, Copy Card                                               |
+  | **Archive**     | Archive, Restore From Archive                                        |
+  | **Labels**      | Add Label, Remove Label                                              |
+  | **Flags**       | Flag, Unflag                                                         |
+  | **Checklists**  | Add a Checklist                                                      |
+  | **Links**       | Link Cards                                                           |
+  | **People**      | Assign, Mention Someone, Send Email                                  |
+  | **Comments**    | Add Comment, Resolve Threads                                         |
+  | **Timing**      | Wait                                                                 |
+  | **Other Tools** | Send to Webhook, Post to Slack, Post to Microsoft Teams              |
+  | **AI**          | Summarise Card, Suggest Card Type, Triage ("100 a day per plan")     |
+
+  Each group is one thing, named in a word or two, never two things joined by "and".
+
+  From `sm` the groups are also a rail at the left (**All** first) that scrolls to its group; on a phone they are
+  chips above the tiles. Timing, Other Tools and AI show at the rule's top level only, and in a branch Create Card and Copy Card are
+  left out. A group the rule has filled (5 outgoing actions, 3 AI actions, 3 Waits) stays, its tiles dimmed with
+  why ("A rule holds up to 5 outgoing actions"). Typing narrows the tiles across every group by name and line ("No
+  actions match", with **Clear Search**); the arrow keys move between tiles and Enter adds the one in focus. Picking a
+  tile closes the picker and adds the step, selected, as the menu did.
+
+- The **When** panel opens on its **Trigger** field: the trigger's icon, name and what it hears, and **Change**,
+  which opens the **Pick a Trigger** picker, drawn as the Add an Action picker is (the same header band with the
+  Automations mark, search "Find a trigger", the rail or chips, tiles with a picture that plays on hover), in three
+  groups, each one thing: **Cards** (Card Created, Form Response, Card Moved, Field Changed, Card Archived, Card
+  Restored, Checklist Completed, Column Over Limit, Run from a Card), **Comments** (Comment Added, All Threads
+  Resolved, Someone Mentioned), **Links** (Card Unblocked, Related Cards Done), **Times** (Scheduled, Due In,
+  Overdue, Card Stuck) and **Other Tools** (Incoming Webhook).
+  The current trigger is marked **Current**; picking another starts that trigger afresh.
+- An action's step panel opens on its **Action** field: the action's icon and name and **Change**, which opens the same
+  picker, titled **Change the Action**, offering what the step can become (the plain actions: every group but Timing, Other Tools and AI), the
+  current one marked **Current**. Picking another starts that kind afresh, as before; picking the current one changes
+  nothing.
+  An outgoing step's **Change** opens the picker on **Other Tools** alone (Webhook, Slack, Teams), keeping its
+  message.
 - Picking a card selects it (a violet ring) and opens it on the right in the **step panel**: its own fields (columns,
   fields, people and types picked from the plan's), and for text, **Insert a Value** chips that drop a value at the
   caret, shown as violet chips. An action's panel shows a **Preview** on a real card of the plan, filled in.

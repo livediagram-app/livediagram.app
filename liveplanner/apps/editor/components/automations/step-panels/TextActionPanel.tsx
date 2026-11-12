@@ -1,7 +1,7 @@
 'use client';
 
-// Add a Comment and Send an Email (docs/specs/026-plan/automations.md "Actions"): the text written with its values,
-// and for an email who it goes to and its subject. The Preview under it fills the values from a real card.
+// Add a Comment, Send an Email and Mention Someone (docs/specs/026-plan/automations.md "Actions"): the text written
+// with its values, and for an email or a mention who it goes to (and an email's subject). The Preview under it fills the values from a real card.
 
 import {
   AUTOMATION_TEXT_MAX,
@@ -12,7 +12,7 @@ import { outlineFields, type AutomationOutline } from '../automation-outline';
 import { ValueTextField } from '../ValueInsert';
 import { PersonPicker } from './PeopleActionPanel';
 
-type TextAction = AutomationAction & { kind: 'comment' | 'email' };
+type TextAction = AutomationAction & { kind: 'comment' | 'email' | 'mention' };
 
 const RECIPIENTS: readonly {
   key: 'assignee' | 'trigger';
@@ -55,6 +55,28 @@ export function TextActionPanel({
         hint="Posted as Automation, in violet, so everyone can tell it from a person’s."
         onChange={(text) => onChange({ kind: 'comment', text })}
       />
+    );
+  if (action.kind === 'mention')
+    return (
+      <div className="flex flex-col gap-4">
+        <PersonPicker
+          label="Mention"
+          value={action.to}
+          outline={outline}
+          extra={recipients}
+          onChange={(to) => onChange({ ...action, to })}
+        />
+        <ValueTextField
+          label="Message"
+          maxLength={AUTOMATION_TEXT_MAX}
+          value={action.text}
+          fields={fields}
+          invalid={invalidPath !== null}
+          branch={branch}
+          hint="Starts a thread on the card that @mentions them. It reaches their Inbox, and their email unless they turned mention emails off."
+          onChange={(text) => onChange({ ...action, text })}
+        />
+      </div>
     );
   return (
     <div className="flex flex-col gap-4">

@@ -5,7 +5,7 @@
 // a flow: a trigger's bolt, a condition's diamond and an action's check joined by a line, a dashed arrow looping back
 // over them. The bolt's ring spreads twice, motion allowing. CSS gradients and small inline SVGs, nothing fetched, no
 // filter.
-import { memo, useMemo, type CSSProperties } from 'react';
+import { memo, useMemo, type CSSProperties, type ReactNode } from 'react';
 import { DOTS_PX } from '@liveworkspace/explorer/hero-theme';
 import type { StartBandColours } from './start-band-colours';
 import { StartHeaderBand, type StartBandArt } from './StartHeaderBand';
@@ -128,6 +128,121 @@ export const AutomationsHeaderBand = memo(function AutomationsHeaderBand({
       name: 'automations',
       texture: automationsTexture(band),
       pieces: <AutomationsBandPieces band={band} />,
+    }),
+    [band],
+  );
+  return <StartHeaderBand kind="dots" band={band} art={art} />;
+});
+
+// The Add an Action picker's band (liveplanner's automations.md "The rule builder"): the same frame and dots, its
+// own pieces. A tag rising from the bottom left and a flag from the bottom right, and, from `sm` (clear of the close
+// button), a hand of action tiles fanned out (a label, a flag, a letter, a sparkle), the one in front lifted with the
+// accent's plus, its ring spreading twice, motion allowing.
+const HAND = 'absolute right-[4.5rem] top-1/2 hidden -translate-y-1/2 sm:block';
+
+function ActionTile({
+  band,
+  x,
+  turn,
+  children,
+}: {
+  band: StartBandColours;
+  x: number;
+  turn: number;
+  children: ReactNode;
+}) {
+  return (
+    <g transform={`translate(${x} 34) rotate(${turn})`}>
+      <rect x="-15" y="-15" width="30" height="30" rx="8" fill={band.plate} stroke={band.line} />
+      {children}
+    </g>
+  );
+}
+
+export function ActionsBandPieces({ band }: { band: StartBandColours }) {
+  const stroke = {
+    fill: 'none',
+    stroke: band.mark,
+    strokeWidth: 1.6,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+  } as const;
+  return (
+    <>
+      {/* A tag rising from the bottom left. */}
+      <svg width="40" height="22" viewBox="0 0 40 22" className="absolute bottom-0 left-2">
+        <path d="M6 24V10a3 3 0 0 1 3-3h12l11 11-9 9" fill={band.wash} />
+        <circle cx="13" cy="13" r="2.5" fill={band.paper} />
+      </svg>
+      {/* A flag rising from the bottom right. */}
+      <svg width="40" height="24" viewBox="0 0 40 24" className="absolute bottom-0 right-3">
+        <path d="M12 26V5" stroke={band.line} strokeWidth="3" strokeLinecap="round" />
+        <path d="M12 5c6-3 10 3 18 0v11c-8 3-12-3-18 0Z" fill={band.wash} />
+      </svg>
+      {/* A hand of action tiles. */}
+      <svg width="190" height="68" viewBox="0 0 190 68" className={HAND} data-actions-hand="">
+        <path
+          d="M18 60C60 66 130 66 172 56"
+          fill="none"
+          stroke={band.line}
+          strokeWidth="1.25"
+          strokeDasharray="3 4"
+          strokeLinecap="round"
+        />
+        <ActionTile band={band} x={28} turn={-10}>
+          {/* A label. */}
+          <path d="M-6 -5h7l5 5-5 5h-7Z" {...stroke} />
+          <circle cx="-2.5" cy="0" r="1.2" fill={band.mark} />
+        </ActionTile>
+        <ActionTile band={band} x={68} turn={-4}>
+          {/* A flag. */}
+          <path d="M-5 7V-7M-5 -6c4-2 6 2 10 0v7c-4 2-6-2-10 0" {...stroke} />
+        </ActionTile>
+        <ActionTile band={band} x={108} turn={4}>
+          {/* A letter. */}
+          <rect x="-7" y="-5" width="14" height="10" rx="2" {...stroke} />
+          <path d="M-7 -4l7 5 7-5" {...stroke} />
+        </ActionTile>
+        <ActionTile band={band} x={148} turn={10}>
+          {/* A sparkle. */}
+          <path
+            d="M0 -8C1 -2 2 -1 8 0C2 1 1 2 0 8C-1 2 -2 1 -8 0C-2 -1 -1 -2 0 -8Z"
+            fill={band.mark}
+          />
+        </ActionTile>
+        {/* The tile in front, lifted, with the accent's plus. */}
+        <circle
+          cx="88"
+          cy="16"
+          r="9"
+          fill="none"
+          stroke={band.accent}
+          strokeWidth="1.5"
+          className={RING}
+        />
+        <circle cx="88" cy="16" r="9" fill={band.accent} />
+        <path
+          d="M88 11.5v9M83.5 16h9"
+          stroke={band.plate}
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+      </svg>
+    </>
+  );
+}
+
+/** The Add an Action picker's header band: the start band's frame, its hand of actions. */
+export const ActionsHeaderBand = memo(function ActionsHeaderBand({
+  band,
+}: {
+  band: StartBandColours;
+}) {
+  const art = useMemo<StartBandArt>(
+    () => ({
+      name: 'actions',
+      texture: automationsTexture(band),
+      pieces: <ActionsBandPieces band={band} />,
     }),
     [band],
   );

@@ -72,6 +72,16 @@ function glyph(kind: HeroBackdropKind, ink: string): ReactNode {
 }
 
 // The Automations screen's mark (StartHeaderBand's `variant`): a bolt, what sets a rule off.
+// The Add an Action picker's mark: a card with a plus, an action to add.
+function addAction(ink: string): ReactNode {
+  return (
+    <g fill="none" stroke={ink} strokeWidth="1.8" strokeLinecap="round">
+      <rect x="2.75" y="2.75" width="14.5" height="14.5" rx="4" />
+      <path d="M10 6.5v7M6.5 10h7" />
+    </g>
+  );
+}
+
 function bolt(ink: string): ReactNode {
   return <path d="M11.5 1.75L4.5 11.25h5L8.25 18.25l7.25-9.75h-5Z" fill={ink} />;
 }
@@ -83,7 +93,7 @@ export const StartTitleMark = memo(function StartTitleMark({
 }: {
   kind: HeroBackdropKind;
   band: StartBandColours;
-  variant?: 'automations' | undefined;
+  variant?: 'automations' | 'actions' | undefined;
 }) {
   return (
     <span
@@ -93,7 +103,11 @@ export const StartTitleMark = memo(function StartTitleMark({
       style={{ backgroundColor: band.wash, boxShadow: `inset 0 0 0 1px ${band.line}` }}
     >
       <svg width="20" height="20" viewBox="0 0 20 20">
-        {variant ? bolt(band.accent) : glyph(kind, band.accent)}
+        {variant === 'actions'
+          ? addAction(band.accent)
+          : variant
+            ? bolt(band.accent)
+            : glyph(kind, band.accent)}
       </svg>
     </span>
   );

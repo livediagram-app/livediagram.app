@@ -5,7 +5,7 @@
 // be on a card of it the caller reaches. The write itself is the home plan's (plan-room/card-thread-store.ts),
 // directly when that is this plan, else over its `threadWrite`.
 
-import { queueComment } from './automation-source';
+import { queueComment, queueResolved } from './automation-source';
 import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
 import {
   CARD_THREADS_MAX,
@@ -246,7 +246,7 @@ export async function startOnCard(
     now,
   });
   await insertThread(ctx.env, thread, defer(ctx));
-  await queueComment(ctx, projectId, itemId, caller.owner, comment.id);
+  await queueComment(ctx, projectId, itemId, caller.owner, comment.id, comment.mentions);
   afterCommentPosted(ctx, asCommenter(caller), comment, mentionPart(itemId, thread.id));
   if (!ctx.token)
     ctx.waitUntil?.(
@@ -285,7 +285,14 @@ async function reply(ctx: PlanRouteContext, r: Reached, threadId: string): Promi
     actor,
   });
   if (!out.ok) return refusal(out.error);
-  await queueComment(ctx, r.caller.projectId, r.links[0]!.itemId, r.caller.owner, comment.id);
+  await queueComment(
+    ctx,
+    r.caller.projectId,
+    r.links[0]!.itemId,
+    r.caller.owner,
+    comment.id,
+    comment.mentions,
+  );
   afterCommentPosted(
     ctx,
     asCommenter(r.caller),
@@ -397,6 +404,15 @@ async function setResolved(
     actor,
   });
   if (!out.ok) return refusal(out.error);
+  if (resolved && out.thread)
+    await queueResolved(
+      ctx,
+      r.caller.projectId,
+      r.links.map((l) => l.itemId),
+      r.caller.owner,
+      threadId,
+      out.thread.comments.length,
+    );
   console.info(`[threads] ${resolved ? 'resolved' : 'reopened'}`, { agent: actor.agent });
   return answer(r.caller, out.thread);
 }

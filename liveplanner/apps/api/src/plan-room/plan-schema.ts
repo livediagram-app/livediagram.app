@@ -24,6 +24,7 @@ import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
 import { ITEM_IMPORTS_SCHEMA } from './item-imports-schema';
 import {
   AUTOMATION_HOOKS_SCHEMA,
+  AUTOMATION_WAITING_SCHEMA,
   AUTOMATIONS_SCHEMA,
   automationsV19,
 } from './automations/automation-schema';
@@ -470,6 +471,9 @@ const V19 = automationsV19;
 // Automations Phase 3 (automations/automation-schema.ts): Incoming Webhook rules' hashed secrets.
 const V20 = AUTOMATION_HOOKS_SCHEMA;
 
+// Automations' Wait (automations/automation-schema.ts): the runs a Wait holds.
+const V21 = AUTOMATION_WAITING_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -491,6 +495,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V18,
   V19,
   V20,
+  V21,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

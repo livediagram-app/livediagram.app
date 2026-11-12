@@ -33,8 +33,19 @@ export const RULE_TRIGGER_FORMAT =
   '{"kind":"scheduled","every":"day"|"weekday"|"week"|"month","days"?:[0 Sunday to 6 Saturday, for week],' +
   '"dayOfMonth"?:1 to 31 (for month; past the month’s end is its last day),"at":"HH:MM" on the quarter hour}; ' +
   '{"kind":"due_in","days":1 to 30,"at":"HH:MM"} (that many days before a card is due); ' +
-  '{"kind":"overdue","at":"HH:MM"} (the day after a card’s due date passed, not in a done column). ' +
-  'A time trigger (scheduled, due_in, overdue) runs once for each card its conditions match (every card with none), ' +
+  '{"kind":"overdue","at":"HH:MM"} (the day after a card’s due date passed, not in a done column); ' +
+  '{"kind":"stuck","days":1 to 90,"at":"HH:MM","statuses"?:[columns]} (daily: cards unchanged that long, outside ' +
+  'done columns, once per stretch unchanged); ' +
+  '{"kind":"card_archived"}; {"kind":"card_restored"}; ' +
+  '{"kind":"checklist_completed"} (the last checklist item is ticked); ' +
+  '{"kind":"threads_resolved"} (the last open comment thread on a card is resolved); ' +
+  '{"kind":"mentioned","people"?:[people]} (a comment @mentions someone, or one of them); ' +
+  '{"kind":"card_unblocked"} (the last open card blocking it is done or archived; the unblocked card runs it); ' +
+  '{"kind":"related_done","related":"children"|"linked"} (the last of its children, or of the cards its Card fields ' +
+  'point at, reaches a done column; that card runs it); ' +
+  '{"kind":"column_limit","status":column,"limit":1 to 500} (a card goes in and the column holds more than the ' +
+  'limit; once each time it goes over). ' +
+  'A time trigger (scheduled, due_in, overdue, stuck) runs once for each card its conditions match (every card with none), ' +
   'up to 100 a moment, at the time in the rule’s timeZone, and has nobody behind it: no who condition, no ' +
   '"trigger" assignee or recipient. ' +
   NAMING;
@@ -66,12 +77,22 @@ export const RULE_STEPS_FORMAT =
   '"linkField"?:a Card field of the new card pointing back}; at most one a run; ' +
   '{"kind":"email","to":{"assignee":true}|{"trigger":true}|{"person":person},"subject":"... up to 200",' +
   '"body":"..."} (people with an account only); ' +
+  '{"kind":"set_type","type":card type} (its column must suit the new type); ' +
+  '{"kind":"set_colour","colour":"#rrggbb"|null}; {"kind":"restore"} (out of the archive); ' +
+  '{"kind":"copy_card","status"?:column} (a copy of the card, in its column or that one; counts as the run’s one ' +
+  'new card); {"kind":"add_checklist","items":["... up to 200",1 to 20]} (unticked; an item already there is ' +
+  'left out); {"kind":"link_card","field":a Card field,"to":{"card":card id}|{"trigger":true}} (trigger: the card ' +
+  'that started it, inside a for only); ' +
+  '{"kind":"mention","to":{"assignee":true}|{"trigger":true}|{"person":person},"text":"..."} (a thread ' +
+  '@mentioning them, their Inbox and a mention email); {"kind":"resolve_threads"}; ' +
+  '{"kind":"wait","hours":1 to 720} (top level only, up to 3 a rule: the steps after it run when the time is up, ' +
+  'if the conditions still hold); ' +
   '{"kind":"notify","via":"webhook"|"slack"|"teams","webhook":the webhook’s id from the plan’s Webhooks dialog,' +
   '"text":"..."} (top level only, up to 5 a rule; only an Editor of the whole plan can name one); ' +
   '{"kind":"if","conditions":[conditions],"then":[actions],"else":[actions]} (actions only inside); ' +
   '{"kind":"for","related":{"kind":"linked","field"?:a Card field}|{"kind":"blocked_by"}|{"kind":"blocking"}|' +
   '{"kind":"children"}|{"kind":"saved_filter","tab":tab,"filter":id},"conditions":[conditions on the related card],' +
-  '"then":[1 to 10 actions, no create_card or notify]} (each related card, up to 100). ' +
+  '"then":[1 to 10 actions, no create_card, copy_card, notify or wait]} (each related card, up to 100). ' +
   'Text (a comment, a title, a text value, an email body, a message, up to 2,000 characters) may hold values: ' +
   '{{card.title}}, {{card.key}}, {{card.url}}, {{card.assignee}}, {{card.column}}, {{card.due}}, ' +
   '{{card.field.<Field Name>}}, {{person}} (who triggered it), {{rule}}, {{now}}, {{now.date}}, {{now + 3d}} and ' +
@@ -205,8 +226,8 @@ const listedRun = z.object({
   card: z.string().nullable().describe('The card it ran on, "#12 Title", or null.'),
   at: z.string().describe('When, as an ISO time.'),
   result: z
-    .enum(['done', 'no_match', 'skipped', 'failed'])
-    .describe('done (its actions ran), no_match, skipped or failed.'),
+    .enum(['done', 'no_match', 'skipped', 'failed', 'waiting'])
+    .describe('done (its actions ran), no_match, skipped, failed or waiting (held by a Wait).'),
   reason: z.string().optional().describe('Why it was skipped or failed.'),
   tookMs: z.number().describe('How long it took, in milliseconds.'),
   steps: z

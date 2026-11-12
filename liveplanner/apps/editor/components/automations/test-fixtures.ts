@@ -1,3 +1,4 @@
+import { fireEvent } from '@testing-library/react';
 // Shared fixtures for the Automations tests: a plan outline, rules as the list answers them, and runs.
 
 import { ITEM_TYPES, type AutomationRun, type Item, type ItemPerson } from '@liveplanner/items';
@@ -92,3 +93,23 @@ export function run(over: Partial<AutomationRun> = {}): AutomationRun {
     ...over,
   };
 }
+
+/** Picks a trigger or an action kind the way a person does: the panel's Change, then the picker's tile for `kind`. */
+export function pickStep(kind: string): void {
+  const change = document.querySelector<HTMLButtonElement>('[data-change-step]');
+  if (!change) throw new Error('No Change button');
+  fireEvent.click(change);
+  const tile = document.querySelector<HTMLButtonElement>(`[data-picker-tile="${kind}"]`);
+  if (!tile) throw new Error(`No picker tile for ${kind}`);
+  fireEvent.click(tile);
+}
+
+/** An open picker's tile for `kind`, or null when it does not offer one. */
+export const pickerTile = (kind: string): HTMLButtonElement | null =>
+  document.querySelector<HTMLButtonElement>(`[data-picker-tile="${kind}"]`);
+
+/** The kinds an open picker offers that can be picked now (a full group's are disabled). */
+export const pickable = (): string[] =>
+  [...document.querySelectorAll<HTMLButtonElement>('[data-picker-tile]')]
+    .filter((t) => !t.disabled)
+    .map((t) => t.getAttribute('data-picker-tile')!);

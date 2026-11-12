@@ -7,6 +7,7 @@ import type { Item } from '@liveplanner/items';
 import type { PlanRoom } from '../plan-room';
 import { runAutomationWake, type RunnerDeps } from './automation-runner';
 import { runTimeTriggers } from './automation-time';
+import { runWaits } from './automation-waits';
 
 const AUTOMATION_RETRY_MS = 60_000;
 
@@ -41,7 +42,11 @@ export async function runAutomations(room: PlanRoom, now: number): Promise<void>
   }
   try {
     // A time rule's moment queues its cards first, so this wake starts running them.
-    if (schedule.timeDue(now)) await runTimeTriggers(deps, schedule, now);
+    if (schedule.timeDue(now)) {
+      // Runs a Wait held whose time is up go on in this wake too.
+      runWaits(deps, schedule, now);
+      await runTimeTriggers(deps, schedule, now);
+    }
     if (!schedule.queueDue(now)) return;
     const ran = await runAutomationWake(deps, schedule, now);
     if (ran > 0) console.info('[automations] wake', { ran });

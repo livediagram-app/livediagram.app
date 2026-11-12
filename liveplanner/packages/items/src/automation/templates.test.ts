@@ -67,7 +67,7 @@ const BARE: AutomationTemplatePlan = {
 const build = (id: string, plan: AutomationTemplatePlan) => automationTemplate(id)!.build(plan);
 
 describe('the templates', () => {
-  it('are the spec’s eight, in its order, each with a category and a fixed id', () => {
+  it('are the spec’s, in its order, each with a category and a fixed id', () => {
     expect(AUTOMATION_TEMPLATES.map((t) => t.name)).toEqual([
       'Stamp the Finish Date',
       'Assign on Start',
@@ -77,6 +77,20 @@ describe('the templates', () => {
       'Triage New Bugs',
       'Unblock the Next Card',
       'Due Soon Reminder',
+      'Clean Up Done',
+      'Escalate Urgent Work',
+      'Reopen on New Comment',
+      'Route Reviews',
+      'Give It a Due Date',
+      'Flag Blocked Cards',
+      'Verify the Fix',
+      'Back to the Backlog',
+      'Close the Parent',
+      'Tell Them It’s Unblocked',
+      'Nudge Stuck Cards',
+      'Done When Feedback Is Resolved',
+      'Sort Incoming Cards',
+      'Summarise Form Requests',
     ]);
     expect(AUTOMATION_TEMPLATES.map((t) => t.id)).toEqual([...AUTOMATION_TEMPLATE_IDS]);
     for (const t of AUTOMATION_TEMPLATES) {
@@ -85,7 +99,7 @@ describe('the templates', () => {
     }
     expect(
       AUTOMATION_TEMPLATE_CATEGORIES.map((c) => AUTOMATION_TEMPLATE_CATEGORY_NAMES[c]),
-    ).toEqual(['Status', 'Assigning', 'Due Dates', 'Forms', 'Telling People']);
+    ).toEqual(['Status', 'Assigning', 'Due Dates', 'Forms', 'Telling People', 'AI']);
     expect(automationTemplate('nope')).toBeUndefined();
   });
 

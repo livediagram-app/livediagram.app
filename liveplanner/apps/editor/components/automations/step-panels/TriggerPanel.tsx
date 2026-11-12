@@ -1,60 +1,32 @@
 'use client';
 
 // The When panel (docs/specs/026-plan/automations.md "Triggers"): which trigger starts the rule, a card's or a
-// time's, then what narrows it: Card Created's column, Form Response's Form tab, Card Moved's From and To columns,
+// time's (picked in the Pick a Trigger picker, ChangeTriggerField), then what narrows it: Card Created's column, Form Response's Form tab, Card Moved's From and To columns,
 // Field Changed's fields (at least one), nothing for Comment Added and Run from a Card, and a time trigger's
 // schedule (TimeTriggerPanel), and an Incoming Webhook's address and secret (IncomingWebhookPanel).
 
-import {
-  AUTOMATION_TRIGGER_KINDS,
-  AUTOMATION_TRIGGER_NAMES,
-  isTimeTrigger,
-  type AutomationTrigger,
-  type AutomationTriggerKind,
-} from '@liveplanner/items';
+import { isTimeTrigger, type AutomationTrigger } from '@liveplanner/items';
 import { outlineFields, type AutomationOutline } from '../automation-outline';
 import { ChipToggles, PanelField, PanelNote, PanelSelect } from './panel-parts';
 import { IncomingWebhookPanel } from './IncomingWebhookPanel';
-import { TimeTriggerPanel, freshTimeTrigger } from './TimeTriggerPanel';
+import { TimeTriggerPanel } from './TimeTriggerPanel';
+import { ChangeTriggerField } from './ChangeTriggerField';
+import { freshTrigger } from '../trigger-groups';
 
-const TIME_KINDS: readonly AutomationTriggerKind[] = ['scheduled', 'due_in', 'overdue'];
-const TOOL_KINDS: readonly AutomationTriggerKind[] = ['incoming_webhook'];
-const CARD_KINDS = AUTOMATION_TRIGGER_KINDS.filter(
-  (k) => !TIME_KINDS.includes(k) && !TOOL_KINDS.includes(k),
-);
-
-const DESCRIPTIONS: Readonly<Record<AutomationTriggerKind, string>> = {
-  card_created: 'A card is added: by a person, Duplicate, an import, a Repeat or an agent.',
-  form_response: 'A Form response makes a card.',
-  card_moved: 'A card’s column changes.',
-  field_changed: 'Any of the chosen fields changes value.',
-  comment_added: 'Someone starts a thread on a card or replies on one.',
-  manual: 'An Editor picks this rule under Run Rule in a card’s ⋯ menu.',
-  scheduled: 'A time comes round. The rule runs once on each card its conditions match.',
-  due_in: 'A card’s due date is the chosen number of days away. Once for each due date it has.',
-  overdue:
-    'A card’s due date has passed and it is not in a done column. Once for each due date it has.',
-  incoming_webhook:
-    'Another tool, such as CI or a form, sends this rule’s address JSON, proved with its secret.',
-};
-
-function fresh(kind: AutomationTriggerKind, fields: readonly string[]): AutomationTrigger {
-  switch (kind) {
-    case 'field_changed':
-      return { kind, fields: fields.slice(0, 1) };
-    case 'card_created':
-    case 'form_response':
-    case 'card_moved':
-    case 'comment_added':
-    case 'manual':
-    case 'incoming_webhook':
-      return { kind };
-    case 'scheduled':
-    case 'due_in':
-    case 'overdue':
-      return freshTimeTrigger(kind);
-  }
-}
+// Column Over Limit's choices: every limit to 20, then in steps.
+const LIMITS = [
+  ...Array.from({ length: 20 }, (_, i) => i + 1),
+  25,
+  30,
+  40,
+  50,
+  75,
+  100,
+  150,
+  200,
+  300,
+  500,
+];
 
 export function TriggerPanel({
   trigger,
@@ -75,44 +47,18 @@ export function TriggerPanel({
   const columns = outline.columns.map((c) => ({ value: c.status, label: c.name }));
   return (
     <div className="flex flex-col gap-4">
-      <PanelField label="Trigger" hint={DESCRIPTIONS[trigger.kind]}>
-        {(id) => (
-          <PanelSelect
-            id={id}
-            value={trigger.kind}
-            onChange={(e) =>
-              onChange(
-                fresh(
-                  e.target.value as AutomationTriggerKind,
-                  fields.map((f) => f.id),
-                ),
-              )
-            }
-          >
-            <optgroup label="Something Happens to a Card">
-              {CARD_KINDS.map((k) => (
-                <option key={k} value={k}>
-                  {AUTOMATION_TRIGGER_NAMES[k]}
-                </option>
-              ))}
-            </optgroup>
-            <optgroup label="A Time Comes Round">
-              {TIME_KINDS.map((k) => (
-                <option key={k} value={k}>
-                  {AUTOMATION_TRIGGER_NAMES[k]}
-                </option>
-              ))}
-            </optgroup>
-            <optgroup label="Another Tool Sends It">
-              {TOOL_KINDS.map((k) => (
-                <option key={k} value={k}>
-                  {AUTOMATION_TRIGGER_NAMES[k]}
-                </option>
-              ))}
-            </optgroup>
-          </PanelSelect>
-        )}
-      </PanelField>
+      <ChangeTriggerField
+        kind={trigger.kind}
+        onChange={(kind) =>
+          onChange(
+            freshTrigger(
+              kind,
+              fields.map((f) => f.id),
+              outline.columns.map((c) => c.status),
+            ),
+          )
+        }
+      />
       {trigger.kind === 'card_created' ? (
         <PanelField label="In Column">
           {(id) => (
@@ -195,11 +141,81 @@ export function TriggerPanel({
         <TimeTriggerPanel
           trigger={trigger}
           onChange={onChange}
+          columns={columns}
           timeZone={timeZone}
           conditions={conditions}
         />
       ) : null}
       {trigger.kind === 'incoming_webhook' ? <IncomingWebhookPanel /> : null}
+      {trigger.kind === 'mentioned' ? (
+        <ChipToggles
+          label="Mentioning"
+          options={outline.people.map((p) => ({ value: p.id, label: p.name }))}
+          value={trigger.people ?? []}
+          hint="None picked: anyone mentioned."
+          onChange={(people) =>
+            onChange(people.length ? { kind: 'mentioned', people } : { kind: 'mentioned' })
+          }
+        />
+      ) : null}
+      {trigger.kind === 'related_done' ? (
+        <PanelField label="Related Cards">
+          {(id) => (
+            <PanelSelect
+              id={id}
+              value={trigger.related}
+              onChange={(e) =>
+                onChange({ kind: 'related_done', related: e.target.value as 'children' | 'linked' })
+              }
+            >
+              <option value="children">Its Children</option>
+              <option value="linked">The Cards Its Card Fields Point At</option>
+            </PanelSelect>
+          )}
+        </PanelField>
+      ) : null}
+      {trigger.kind === 'column_limit' ? (
+        <>
+          <PanelField label="Column">
+            {(id) => (
+              <PanelSelect
+                id={id}
+                value={trigger.status}
+                onChange={(e) => onChange({ ...trigger, status: e.target.value })}
+              >
+                {columns.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </PanelSelect>
+            )}
+          </PanelField>
+          <PanelField label="Limit" hint="Runs on the card that takes the column past it.">
+            {(id) => (
+              <PanelSelect
+                id={id}
+                value={String(trigger.limit)}
+                onChange={(e) => onChange({ ...trigger, limit: Number(e.target.value) })}
+              >
+                {LIMITS.map((n) => (
+                  <option key={n} value={n}>
+                    {n === 1 ? '1 Card' : `${n} Cards`}
+                  </option>
+                ))}
+              </PanelSelect>
+            )}
+          </PanelField>
+        </>
+      ) : null}
+      {trigger.kind === 'card_unblocked' ? (
+        <PanelNote>
+          Runs on the blocked card once the last card blocking it is done or archived.
+        </PanelNote>
+      ) : null}
+      {trigger.kind === 'threads_resolved' || trigger.kind === 'checklist_completed' ? (
+        <PanelNote>Runs again only after something new is opened and finished.</PanelNote>
+      ) : null}
       {trigger.kind === 'manual' ? (
         <PanelNote>
           While the rule is on, it is listed under Run Rule in every card’s ⋯ menu.

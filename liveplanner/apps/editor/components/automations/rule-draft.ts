@@ -7,6 +7,7 @@
 import {
   AUTOMATION_ACTIONS_MAX,
   AUTOMATION_AI_STEPS_MAX,
+  AUTOMATION_WAITS_MAX,
   AUTOMATION_BRANCH_ACTIONS_MAX,
   AUTOMATION_CONDITIONS_MAX,
   AUTOMATION_OUTGOING_MAX,
@@ -20,6 +21,7 @@ import {
   type AutomationOutgoing,
   type AutomationRuleBody,
   type AutomationStep,
+  type AutomationWait,
 } from '@liveplanner/items';
 
 export const NEW_RULE_NAME = 'New Rule';
@@ -91,6 +93,9 @@ export const canAddOutgoing = (body: AutomationRuleBody): boolean =>
 /** Whether another AI action fits (3 a rule, at its top level). */
 export const canAddAi = (body: AutomationRuleBody): boolean =>
   canAddAction(body) && body.steps.filter((s) => s.kind === 'ai').length < AUTOMATION_AI_STEPS_MAX;
+/** Whether another Wait fits (3 a rule, at its top level). */
+export const canAddWait = (body: AutomationRuleBody): boolean =>
+  body.steps.filter((s) => s.kind === 'wait').length < AUTOMATION_WAITS_MAX;
 export const canAddCondition = (conditions: readonly unknown[]) =>
   conditions.length < AUTOMATION_CONDITIONS_MAX;
 
@@ -240,10 +245,10 @@ export function addCondition(
  *  goes at the top level only (the panels never offer one inside). */
 export function addAction(
   body: AutomationRuleBody,
-  action: AutomationAction | AutomationOutgoing | AutomationAi,
+  action: AutomationAction | AutomationOutgoing | AutomationAi | AutomationWait,
   branch?: { step: number; side: Side },
 ): { body: AutomationRuleBody; part: RulePart } {
-  if (!branch || action.kind === 'notify' || action.kind === 'ai')
+  if (!branch || action.kind === 'notify' || action.kind === 'ai' || action.kind === 'wait')
     return {
       body: { ...body, steps: [...body.steps, action] },
       part: { part: 'step', index: body.steps.length },
@@ -389,6 +394,7 @@ export function canDuplicate(body: AutomationRuleBody, part: RulePart): boolean 
       if (!step) return false;
       if (step.kind === 'notify') return canAddOutgoing(body);
       if (step.kind === 'ai') return canAddAi(body);
+      if (step.kind === 'wait') return canAddWait(body);
       return actionCount(body.steps) + actionCount([step]) <= AUTOMATION_ACTIONS_MAX;
     }
   }

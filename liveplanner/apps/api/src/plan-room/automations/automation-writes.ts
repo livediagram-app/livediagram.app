@@ -3,7 +3,7 @@
 // with the checks a card write passes (a column its type leaves out, a required field emptied, a Calculated field
 // set, the card's size), by Automation with the rule's name and history tag 'automation'. Then the card it makes (as
 // a Repeat makes its copies), the threads it starts (by Automation, through the thread store) and its emails
-// (account people alone, their opt-out honoured, in the background). Each write is relayed to the room and carries
+// (account people alone, their opt-out honoured, in the background), its mentions and Resolve Threads. Each write is relayed to the room and carries
 // the rule and chain, so the events it causes know where they came from.
 import {
   ITEMS_MAX,
@@ -30,8 +30,16 @@ import {
   type ItemPatch,
   type PlannedCard,
   type PlannedEmail,
+  type PlannedMention,
 } from '@liveplanner/items';
-import { CARD_THREADS_MAX, newThreadId, startThread, type Comment } from '@liveplanner/project';
+import {
+  CARD_THREADS_MAX,
+  mentionHandle,
+  newThreadId,
+  startThread,
+  type Comment,
+  type CommentMention,
+} from '@liveplanner/project';
 import { isAccountId } from '@liveworkspace/auth-client';
 import {
   getItemStoreHead,
@@ -40,13 +48,13 @@ import {
   readItem,
   updateItemAtRev,
 } from '../../db/items';
-import { threadCountOfItem } from '../../db/card-threads';
+import { linksOfItem, threadCountOfItem } from '../../db/card-threads';
 import { appendItemHistory } from '../../db/item-history';
 import { notifyRecipients } from '../../person/notify';
 import { emailEnabled, sendEmail } from '../../email/client';
 import { automationEmail } from '../../email/templates';
 import type { PlanEnv } from '../../types';
-import { insertThread } from '../card-thread-store';
+import { SYSTEM_ACTOR, insertThread, writeThread } from '../card-thread-store';
 import type { AutomationPlan } from './automation-plan';
 import type { HistorySource } from './automation-queue';
 
@@ -95,7 +103,12 @@ export async function patchCard(
       typeof status === 'string' && status !== itemStatus(before)
         ? applyMove(
             before,
-            { status, set, ...(patch.clear ? { clear: patch.clear } : {}) },
+            {
+              status,
+              set,
+              ...(patch.clear ? { clear: patch.clear } : {}),
+              ...(patch.type ? { type: patch.type } : {}),
+            },
             await listItems(deps.env, deps.planId),
             { now, by },
           )
@@ -176,7 +189,7 @@ export async function addComment(
   rule: AutomationRule,
   card: Item,
   text: string,
-  mark: { ai?: true } = {},
+  mark: { ai?: true; mentions?: CommentMention[] } = {},
 ): Promise<WriteOutcome> {
   if ((await threadCountOfItem(deps.env, deps.planId, card.id)) >= CARD_THREADS_MAX)
     return { ok: false, reason: 'The card holds as many threads as it may' };
@@ -190,6 +203,7 @@ export async function addComment(
     authorId: AUTOMATION_PERSON_ID,
     automation: { ruleId: rule.id, rule: rule.name },
     ...(mark.ai ? { ai: true as const } : {}),
+    ...(mark.mentions?.length ? { mentions: mark.mentions } : {}),
   };
   const thread = startThread({
     id: newThreadId(),
@@ -227,6 +241,80 @@ async function sendOne(
   });
 }
 
+// Mention Someone: a thread "@handle message" naming the person (their Inbox reads it), and an email unless they
+// turned mention emails off. Nobody to mention: nothing is written.
+async function mentionOne(
+  deps: WriteDeps,
+  plan: AutomationPlan,
+  rule: AutomationRule,
+  card: Item,
+  mention: PlannedMention,
+  url: string,
+): Promise<WriteOutcome> {
+  const to = mention.to;
+  if (!to) return { ok: true };
+  const handle = mentionHandle(to.name) || 'teammate';
+  const accountId = plan.accounts.get(to.id);
+  const text = `@${handle} ${mention.text}`.trim();
+  const out = await addComment(deps, rule, card, text, {
+    mentions: [{ userId: accountId ?? null, name: to.name, handle }],
+  });
+  if (!out.ok || !accountId || !isAccountId(accountId) || !emailEnabled(deps.env)) return out;
+  deps.defer(
+    (async () => {
+      const email = (await notifyRecipients(deps.env, [accountId], 'notifyMentions')).get(
+        accountId,
+      );
+      if (!email) return;
+      await sendEmail(deps.env, {
+        to: email,
+        ...automationEmail(deps.env, {
+          subject: `${rule.name} mentioned you on ${itemTitle(card)}`,
+          body: mention.text,
+          rule: rule.name,
+          planName: plan.name,
+          cardUrl: url,
+        }),
+      });
+    })().catch((error: unknown) =>
+      console.warn('[automations] mention.failed', { error: String(error) }),
+    ),
+  );
+  return out;
+}
+
+// Resolve Threads: each open thread on the card, resolved by Automation. One already resolved, or gone, is passed.
+async function resolveThreads(deps: WriteDeps, card: Item): Promise<WriteOutcome> {
+  const links = await linksOfItem(deps.env, deps.planId, card.id);
+  for (const link of links) {
+    const out = await writeThread(
+      deps.env,
+      link.home,
+      link.threadId,
+      {
+        kind: 'change',
+        change: { kind: 'resolve', resolved: true, by: 'Automation', byId: AUTOMATION_PERSON_ID },
+        actor: SYSTEM_ACTOR,
+      },
+      deps.planId,
+      deps.defer,
+    );
+    if (!out.ok && out.error === 'thread_busy')
+      return { ok: false, reason: 'A thread kept changing' };
+  }
+  return { ok: true };
+}
+
+// What a run (or one related card) writes.
+export type RunWrites = {
+  patch: ItemPatch;
+  comments: string[];
+  created: PlannedCard[];
+  emails: PlannedEmail[];
+  mentions: PlannedMention[];
+  resolve: boolean;
+};
+
 // The planned run's writes, in order: the card's one patch, the card it makes, its threads, then its emails. The
 // first that is refused stops the rest; what landed before it stays.
 export async function applyPlannedRun(
@@ -234,11 +322,11 @@ export async function applyPlannedRun(
   plan: AutomationPlan,
   rule: AutomationRule,
   card: Item,
-  planned: { patch: ItemPatch; comments: string[]; created: PlannedCard[]; emails: PlannedEmail[] },
+  planned: RunWrites,
   source: HistorySource,
   url: string,
 ): Promise<WriteOutcome> {
-  if (planned.patch.set || planned.patch.clear) {
+  if (planned.patch.set || planned.patch.clear || planned.patch.type) {
     const out = await patchCard(deps, plan, rule, card.id, planned.patch, source);
     if (!out.ok) return out;
   }
@@ -248,6 +336,14 @@ export async function applyPlannedRun(
   }
   for (const text of planned.comments) {
     const out = await addComment(deps, rule, card, text);
+    if (!out.ok) return out;
+  }
+  for (const mention of planned.mentions) {
+    const out = await mentionOne(deps, plan, rule, card, mention, url);
+    if (!out.ok) return out;
+  }
+  if (planned.resolve) {
+    const out = await resolveThreads(deps, card);
     if (!out.ok) return out;
   }
   for (const email of planned.emails)
