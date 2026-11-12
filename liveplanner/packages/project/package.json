@@ -14,8 +14,9 @@
     "@liveplanner/forms": "workspace:*",
     "@liveplanner/items": "workspace:*",
     "@liveworkspace/element-model": "workspace:*",
-    "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/index-client": "workspace:^",
+    "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/page-background": "workspace:*",
     "perfect-freehand": "^1.2.3"
   },

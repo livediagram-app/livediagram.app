@@ -710,7 +710,8 @@ whole Sheet.
   share a row and the key holds through inserted, moved and sorted lines. Its label is the Sheet's label and the
   cell's A1 (`Budget!B4`), worked out from the stored sheet when the tab is pushed: "Budget (Deleted Cell)" when the
   cell's row or column is gone, "Budget" alone where the sheet is not at hand (a This Browser plan). An A1 that an
-  inserted row moves is renamed on the tab's next push. Its link (`#t=<tab>&el=<sheetElementId>:<cell>&open=comments`)
+  inserted row moves follows within the minute: a change to a Sheet's layout (a line inserted, deleted, moved or
+  sorted) queues its tab's push when the tab carries cell threads. Its link (`#t=<tab>&el=<sheetElementId>:<cell>&open=comments`)
   lands on the tab with the cell selected and its thread popover open, as the Comments panel row does; a phone
   notice for a cell comment lands there too. Reply and Resolve in the Inbox's reading pane reach the cell's thread.
   A Sheet sends at most 100 cell rows (`CELL_INBOX_ROWS_MAX`), those with the newest comments, so one big Sheet

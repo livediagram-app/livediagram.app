@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from './index';
-import { collabIndexRowsFromElements, INDEX_PART_ID_MAX } from './collab-index-rows';
+import { INDEX_ID_MAX } from '@liveworkspace/index-client/constants';
+import { collabIndexRowsFromElements } from './collab-index-rows';
 import { CELL_INBOX_ROWS_MAX, cellThreadKey, splitCellThreadKey } from './cell-comments';
 
 // A Sheet's cell threads in the Inbox (docs/specs/029-sheets/sheet.md "Cell comments" "Inbox"): one row a cell,
@@ -111,15 +112,15 @@ describe('collabIndexRowsFromElements: cell threads', () => {
   });
 
   it('sends no row for a cell whose key would pass the index id limit', () => {
-    const long = 'x'.repeat(INDEX_PART_ID_MAX - B4.length);
-    const fits = 'y'.repeat(INDEX_PART_ID_MAX - B4.length - 1);
+    const long = 'x'.repeat(INDEX_ID_MAX - B4.length);
+    const fits = 'y'.repeat(INDEX_ID_MAX - B4.length - 1);
     const cells = { [B4]: { comments: [comment('b', 1)], resolved: false } };
     const { threads } = collabIndexRowsFromElements([
       sheet(long, { cellComments: cells }),
       sheet(fits, { cellComments: cells }),
     ]);
     expect(threads.map((t) => t.elementId)).toEqual([`${fits}:${B4}`]);
-    expect(threads[0]!.elementId.length).toBe(INDEX_PART_ID_MAX);
+    expect(threads[0]!.elementId.length).toBe(INDEX_ID_MAX);
   });
 
   it('keeps element and card-free rows as they were beside a Sheet', () => {

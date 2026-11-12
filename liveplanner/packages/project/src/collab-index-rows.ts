@@ -13,6 +13,7 @@
 // on this tab now" for the index, and a full snapshot is what lets a
 // save be a replace rather than a diff.
 
+import { INDEX_ID_MAX } from '@liveworkspace/index-client/constants';
 import {
   CELL_INBOX_ROWS_MAX,
   cellThreadKey,
@@ -69,10 +70,6 @@ export type CollabIndexRows = {
   actions: CollabActionRow[];
   threads: CollabThreadRow[];
 };
-
-// The longest id the index takes for an element (liveworkspace/apps/index/src/config.ts ID_MAX): a cell thread's
-// key past it would make the index refuse the tab's whole push, so such a cell sends no row.
-export const INDEX_PART_ID_MAX = 128;
 
 // The A1 of a Sheet's cell for its Inbox label: a string, null when the cell's row or column is gone, undefined
 // when the sheet is not at hand (the label is then the Sheet's alone).
@@ -148,7 +145,8 @@ function cellThreadRows(
     const thread = cells[cell]!;
     const comments = thread.comments;
     if (!comments?.length) continue;
-    if (cellThreadKey(el.id, cell).length > INDEX_PART_ID_MAX) continue;
+    // A key past the index's id limit would make it refuse the tab's whole push: that cell sends no row.
+    if (cellThreadKey(el.id, cell).length > INDEX_ID_MAX) continue;
     picked.push([cell, comments, thread.resolved]);
   }
   if (picked.length > CELL_INBOX_ROWS_MAX) {

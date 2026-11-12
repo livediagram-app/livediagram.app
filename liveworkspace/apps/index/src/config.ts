@@ -1,7 +1,7 @@
 // The Worker's settings. They live apart from src/index.ts because a Worker's entry module may only
 // export handlers: the runtime refuses to start on any other export there.
 
-import { INDEX_API_PATH } from '@liveworkspace/index-client';
+import { INDEX_API_PATH, INDEX_ID_MAX } from '@liveworkspace/index-client';
 
 // The path of liveworkspace.app this Worker owns.
 export const API_PATH = INDEX_API_PATH;
@@ -10,7 +10,7 @@ export const API_PATH = INDEX_API_PATH;
 export const MAX_BODY_BYTES = 512 * 1024;
 
 // Opaque ids from callers (folders, tabs, elements): bounded.
-export const ID_MAX = 128;
+export const ID_MAX = INDEX_ID_MAX;
 // An app-defined creation intent, and a placement default's key.
 export const INTENT_MAX = 100;
 export const DEFAULT_KEY_MAX = 100;

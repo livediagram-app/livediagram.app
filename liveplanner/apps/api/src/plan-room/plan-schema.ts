@@ -485,6 +485,21 @@ const V23 = GITHUB_PULLS_SCHEMA;
 // Describe a Rule (automations/automation-schema.ts): each ask, for the day's AI count and the drafts a day.
 const V24 = AUTOMATION_AI_DRAFTS_SCHEMA;
 
+// A Sheet cell thread's Inbox label names its cell by A1 (docs/specs/029-sheets/sheet.md "Cell comments" "Inbox"): a
+// change to a Sheet's layout (a line inserted, deleted, moved or sorted) queues its tab's push, so the label follows.
+// Only for a tab carrying cell threads, so an ordinary Sheet's edits push nothing more.
+const V25 = `
+CREATE TRIGGER IF NOT EXISTS outbox_sheet_layout AFTER UPDATE OF layout ON sheets
+WHEN NEW.layout IS NOT OLD.layout
+  AND EXISTS (SELECT 1 FROM tabs WHERE id = NEW.tab_id AND instr(data, '"cellComments"') > 0)
+BEGIN
+  DELETE FROM outbox WHERE (plan_id, kind, key) IN
+    (SELECT plan_id, 'tab', NEW.tab_id FROM plan_tabs WHERE tab_id = NEW.tab_id AND plan_id = NEW.plan_id);
+  INSERT INTO outbox (plan_id, kind, key)
+    SELECT plan_id, 'tab', NEW.tab_id FROM plan_tabs WHERE tab_id = NEW.tab_id AND plan_id = NEW.plan_id;
+END;
+`;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -510,6 +525,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V22,
   V23,
   V24,
+  V25,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
