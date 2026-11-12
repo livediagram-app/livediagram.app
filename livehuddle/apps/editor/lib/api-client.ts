@@ -39,6 +39,7 @@ export {
 export * from './api/documents';
 export * from './api/tabs';
 export * from './api/suggestions';
+export * from './api/attendance';
 export * from './api/changesets';
 export * from './api/share';
 export * from '@liveworkspace/workbench/lib/api/tokens';

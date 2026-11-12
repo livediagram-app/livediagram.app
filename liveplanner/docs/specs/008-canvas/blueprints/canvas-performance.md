@@ -44,6 +44,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `../packages/e2e-kit/src/perf/trace-tasks.ts`                          | `mainThreadTasks`: the renderer main thread's task durations from a trace                                                |
 | `apps/editor/e2e/perf/canvas.perf.ts`                                  | The probe: seeds, runs each gesture under a trace, writes the report                                                     |
 | root `.github/workflows/canvas-perf.yml`                               | The nightly run and the budget issue                                                                                     |
+| `../packages/workbench/src/lib/tab-style-ease.ts`                      | `BUSY_CANVAS_ELEMENTS`, `canvasIsBusy(count)` (shared by every editor): when a Tab Style change eases the canvas only    |
 
 ## Domain and naming
 
@@ -209,6 +210,18 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   that starts entered arms nothing, so opening a board sets no timers and re-renders no view
   afterwards. An element mounted on a still canvas stays entered if the tab switches to Diagram
   mode.
+
+### A Tab Style change on a busy canvas
+
+- `Canvas` sets `data-canvas-busy=""` on the `data-canvas-root` surface when `canvasIsBusy(elements.length)`
+  (`elements.length > BUSY_CANVAS_ELEMENTS`, both from `../packages/workbench/src/lib/tab-style-ease.ts`), and no
+  attribute otherwise.
+- `globals.css`: under `:root.lvd-style-transition` (set for 300 ms by `easeNextStyleChange`) the surface
+  `[data-canvas-root]` always takes the colour transition; its descendants take it only under
+  `[data-canvas-root]:not([data-canvas-busy])`. A busy surface's parts therefore snap to the new style in the first
+  frame, the backdrop easing.
+- Tests: `../packages/workbench/src/lib/tab-style-ease.test.ts` (the threshold), `app/canvas-motion.test.ts` (the
+  busy gate on the parts rule, the surface rule ungated, and `Canvas` marking the surface).
 
 ### What comes and goes beside the board
 
@@ -507,6 +520,7 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 | A press on the canvas selects no text            | `useNoCanvasTextSelection.test.tsx` (workbench): cancelled on the board, left alone in editors, fields and `select-text`                                                                                                                                   |
 | A sweep adds and removes no element              | `MarqueeRect.test.tsx` (workbench): one node through a sweep, hidden between                                                                                                                                                                               |
 | The budget holds                                 | The nightly probe                                                                                                                                                                                                                                          |
+| A busy canvas eases the canvas, not its parts    | `tab-style-ease.test.ts` (workbench); `canvas-motion.test.ts`: the parts' transition is gated on `:not([data-canvas-busy])` and `Canvas` sets it                                                                                                           |
 
 ## Constants and configuration
 
@@ -530,6 +544,7 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 | `IDLE_WORK_MS`                       | 5            | D66                                                | 0–16                             |
 | `schedule.cron` (`canvas-perf.yml`)  | `30 2 * * *` | D67                                                | Any off-peak time                |
 | `retention-days` (`canvas-perf.yml`) | 14           | Spec                                               | Spec-fixed                       |
+| `BUSY_CANVAS_ELEMENTS`               | 20           | Spec (D129: measured eased restyle per element)    | 10–60                            |
 
 ## Defaults ledger
 

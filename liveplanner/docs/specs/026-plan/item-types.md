@@ -155,7 +155,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   100, drawn as a bar, [below](#percent-fields)), Duration (hours and minutes, "2h 30m", and the time a team
   tracks, [below](#duration-fields)), Date, Date and Time (a moment, read in each viewer's own time zone,
   [below](#date-and-time-fields)), Date Range (a start and an end, days or with times, [below](#date-range-fields)),
-  Checkbox, Link (an `https://` URL), Email, Phone (a phone number that calls on a phone, [below](#phone-fields)),
+  Checkbox, Link (an `https://` URL), Pull Request (a GitHub pull request's address,
+  [GitHub pull requests](github-pull-requests.md#the-pull-request-field)), Email, Phone (a phone number that calls
+  on a phone, [below](#phone-fields)),
   Choice (one of up to 20 named options), Multiple Choice (several of up to 20 named
   options), Rating (a whole number from 1 to its scale, 3 to 10), Card (a link to one card of another type, or
   to several, below), Calculated (a value worked out from the plan, below), and the kinds the built-in fields are:
@@ -173,7 +175,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - **Currency** is an amount in the one currency its field names (`currency`, an ISO 4217 code such as GBP, USD or
     EUR, chosen when the field is made and changeable later; GBP when none is given). Its value is a number with up to
     two decimals; it reads, on the card and in the panel, as the person's locale formats that currency ("£12,500",
-    "$1,200.50"). Changing the field's currency changes how every value reads, never the numbers.
+    "$1,200.50"). Changing the field's currency changes how every value reads, never the numbers. A Deal brought into a project from the editor starts with the currency of the browser's region (`localeCurrency`, the common codes only); GBP otherwise, and a field or value already stored never changes.
   - On a card a value reads short: a Number grouped as the reader's locale groups digits ("82,000"), a Link as its
     site and its last path step ("sentry.io/…/4521", the site alone for a bare address), a Long Text its first line.
   - **Long Text** is rich text, edited as the Description is ([Working on a board](plan-board.md#working-on-a-board)):
@@ -1250,7 +1252,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
         | Time             | How long something takes, or the time spent on it. | Duration, Time Tracking                                      |
         | Choices          | Pick from a list, tick a box or tag a card.        | Choice, Multiple Choice, Checkbox, Checklist, Labels, Colour |
         | People           | Who has it, and what the team says about it.       | Person, Several People, Comments, Votes                      |
-        | Links and Images | Web pages, contact details and pictures.           | Link, Email, Phone, Image, Several Images                    |
+        | Links and Images | Web pages, contact details and pictures.           | Link, Pull Request, Email, Phone, Image, Several Images      |
         | Cards            | Connect a card to other cards.                     | Link to Card, Several Cards, Blocked By                      |
         | Calculated       | Values worked out for you.                         | Calculated, Formula, Rollup, Lookup                          |
 
@@ -1275,7 +1277,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 
       - **Each kind is a tile**, two to a row (one in a gallery under 460 px), as a widget's tile is: a strip on top
         drawing what the kind does. Where a value explains itself (Text, Number, Currency, Percent, Rating, Choice,
-        Labels, Person, Colour, Link, Email, Phone) the strip is a sample value as the card's panel draws it (the
+        Labels, Person, Colour, Link, Pull Request, Email, Phone) the strip is a sample value as the card's panel draws it (the
         samples of Preview, below). Where a bare value would say nothing, the strip is a small picture of the idea
         instead: Calculated a card with three child cards, two ticked, giving "2/3"; Formula two field chips worked
         into a result ("Estimate × Rate = £1,200"); Rollup three linked cards' numbers summed ("Sum 10"); Lookup a
@@ -1285,7 +1287,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
         with "2h 30m"; Checkbox a ticked and an unticked line; Checklist three to-dos, two ticked, "2/3"; Comments
         two speech bubbles from two people; Votes an up-vote button with voters; Image one picture; Several Images three thumbnails in a row. Then its
         icon, name and a one-line description in plain words: Text "A short line of text", Long Text "Paragraphs of
-        notes", Link "A web address", Email "An address that opens your mail app", Phone "A number that calls on a
+        notes", Link "A web address", Pull Request "A GitHub pull request, with its state", Email "An address that opens your mail app", Phone "A number that calls on a
         phone", Number "Points, counts and sizes", Currency "An amount, like £12,500", Percent "How far along, drawn
         as a bar", Duration "Hours and minutes, like an estimate", Time Tracking "Time logged on the card with a
         timer", Rating "Stars out of 3 to 10", Date

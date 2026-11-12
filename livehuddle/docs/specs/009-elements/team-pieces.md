@@ -162,4 +162,5 @@ because a Viewer adds nothing to a Space; a team that wants visitors' ideas give
   a link to an outside calendar.
 - Replying to a suggestion, voting on one, or telling its writer it was read.
 - A signpost whose places an Editor picks, or arrows that point to another tab.
-- A photo wall of the Space's members, uploaded photos, or a wall that remembers who was in.
+- A photo wall of the Space's members, uploaded photos, or a wall that remembers who was in. Who was in a tab and
+  when is the room's own record, not a piece: [Tab attendance](../012-collaboration/tab-attendance.md).

@@ -86,6 +86,7 @@ const ALL_KINDS = [
   'Comments',
   'Votes',
   'Link',
+  'Pull Request',
   'Email',
   'Phone',
   'Image',

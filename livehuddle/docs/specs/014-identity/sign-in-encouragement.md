@@ -68,9 +68,10 @@ never triggers it; staying in one for 5+ minutes does.
   [Colour scheme](../004-interface-design/color-scheme.md)). The lighter brand steps fail it. The
   reasons modal's header wears the same gradient.
 - Contents: a small icon/illustration, a headline ("Sign in to access
-  Teams & AI"), one line of supporting copy saying what those give and
-  that documents sync ("Share with your team, build with AI, sync across
-  devices."), a primary **Sign in**
+  Teams"), one line of supporting copy saying what an account gives and
+  that spaces sync ("Share with your team, sync across devices, connect
+  scripts with API tokens."). livehuddle has no MCP server, so unlike the
+  other apps it never says "AI", a primary **Sign in**
   button (→ `/sign-in/`), a secondary **Learn more** button (opens the
   reasons modal), and a dismiss (×) control.
 - Responsive: the copy and buttons stack / shrink gracefully on a

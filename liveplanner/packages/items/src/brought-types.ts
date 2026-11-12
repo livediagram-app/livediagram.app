@@ -4,7 +4,14 @@
 // Candidates. Making a board chooses or adds the project's card types (catalogueWithBoardTypes); a project that
 // already has a type (by id) keeps its own. Pure data, one catalogue the board presets and the Plan templates share.
 import type { CardField } from './board';
-import { ITEM_TYPES, PARENT_FIELD, type CustomFieldDef, type ItemTypeDef } from './item-types';
+import {
+  CURRENCY_CODE,
+  CURRENCY_DEFAULT,
+  ITEM_TYPES,
+  PARENT_FIELD,
+  type CustomFieldDef,
+  type ItemTypeDef,
+} from './item-types';
 import {
   ITEM_TYPES_MAX,
   typesOf,
@@ -387,6 +394,20 @@ export function boardTypesToAdd(
   return broughtTypesToAdd(boardTypeIdsOf(elements), types);
 }
 
+// A brought type's Currency fields in `code` (a Deal's Value, in the viewer's own currency), for a type the project is
+// newly given: the ready-made GBP becomes `code`, stored as absent when it is GBP. Types already stored are never
+// passed through here, so values and fields already in GBP keep it. No code (or an unusable one) leaves the type as is.
+function withCurrency(type: ItemTypeDef, code: string | undefined): ItemTypeDef {
+  if (!code || !CURRENCY_CODE.test(code) || code === CURRENCY_DEFAULT) return type;
+  if (!type.custom?.some((f) => f.kind === 'currency')) return type;
+  return {
+    ...type,
+    custom: type.custom.map((f) =>
+      f.kind === 'currency' && f.currency === CURRENCY_DEFAULT ? { ...f, currency: code } : f,
+    ),
+  };
+}
+
 // The catalogue a project holds once the boards among `elements` are made in it (docs/specs/026-plan/item-types.md
 // "The type catalogue"), or null when that is what it holds already: its types (none while not chosen) with the
 // ready-made types the boards bring that it lacks after them, at most ITEM_TYPES_MAX in all. The first boards in a
@@ -394,6 +415,7 @@ export function boardTypesToAdd(
 export function catalogueWithBoardTypes(
   stored: ItemTypeCatalogue | null,
   elements: readonly BoardLike[],
+  options: { currency?: string | undefined } = {},
 ): ItemTypeCatalogue | null {
   const types = typesOf(stored);
   const room = ITEM_TYPES_MAX - types.length;
@@ -411,7 +433,8 @@ export function catalogueWithBoardTypes(
   );
   const withStatuses = missing.map((t) => {
     const statuses = given.get(t.id)!;
-    return statuses.length ? { ...t, statuses } : t;
+    const local = withCurrency(t, options.currency);
+    return statuses.length ? { ...local, statuses } : local;
   });
   return { version: ITEM_TYPE_CATALOGUE_VERSION, types: [...types, ...withStatuses] };
 }

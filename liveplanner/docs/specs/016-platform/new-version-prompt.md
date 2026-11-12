@@ -25,6 +25,8 @@ the open editor asks, calmly, to be reloaded.
     Image, Person, Labels, Colour, Checklist, Comments, Votes, Percent and Duration fields and the
     Rollup, Lookup and Formula calculations (31 October 2026), and Date and Time, Date Range and
     Phone fields (1 November 2026).
+  - `4`: the [Pull Request](../026-plan/github-pull-requests.md#the-pull-request-field) field
+    (12 November 2026), which editors built on `3` keep read-only.
 
 ## How a running editor learns the server's number
 

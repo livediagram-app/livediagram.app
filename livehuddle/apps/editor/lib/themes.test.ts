@@ -49,8 +49,8 @@ describe('THEMES catalogue', () => {
   // own, never offered in a picker, so the catalogue's counts are of the year-round themes.
   const yearRound = THEMES.filter((t) => !t.seasonal);
 
-  it('lists exactly 25 year-round themes (matches docs/specs/019-marketing/marketing-site.md)', () => {
-    expect(yearRound).toHaveLength(25);
+  it('lists exactly 24 year-round themes (matches docs/specs/019-marketing/marketing-site.md)', () => {
+    expect(yearRound).toHaveLength(24);
   });
 
   it('holds six seasonal themes, all listed after the year-round ones', () => {
@@ -65,11 +65,11 @@ describe('THEMES catalogue', () => {
     expect(THEMES.slice(0, yearRound.length)).toEqual(yearRound);
   });
 
-  it('splits cleanly into 12 default + 13 extra (retained as catalogue metadata)', () => {
+  it('splits cleanly into 12 default + 12 extra (retained as catalogue metadata)', () => {
     const defaults = yearRound.filter((t) => !t.extra);
     const extras = yearRound.filter((t) => t.extra);
     expect(defaults).toHaveLength(12);
-    expect(extras).toHaveLength(13);
+    expect(extras).toHaveLength(12);
   });
 
   it('leads with the brand theme (the un-themed default is the most common pick)', () => {

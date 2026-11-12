@@ -12,7 +12,11 @@
 // legacyCatalogue): a `bring` made earlier (a Plan template picked outside Plan mode) waits for them.
 import { useCallback, useEffect, useRef, type RefObject } from 'react';
 import type { Tab } from '@liveplanner/project';
-import { catalogueWithBoardTypes, type ItemTypeCatalogue } from '@liveplanner/items';
+import {
+  catalogueWithBoardTypes,
+  localeCurrency,
+  type ItemTypeCatalogue,
+} from '@liveplanner/items';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
@@ -36,7 +40,9 @@ function applyBoards(
   via: string,
 ): void {
   const now = latest.current;
-  const next = catalogueWithBoardTypes(now.catalogue, boards);
+  const next = catalogueWithBoardTypes(now.catalogue, boards, {
+    currency: localeCurrency(typeof navigator === 'undefined' ? undefined : navigator.language),
+  });
   if (!next) return;
   debugLog('[item-types] brought', {
     via,

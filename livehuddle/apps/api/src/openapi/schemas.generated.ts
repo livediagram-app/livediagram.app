@@ -127,6 +127,49 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "AttendanceVisit": {
+    "additionalProperties": false,
+    "description": "One person's stretch in one tab. `leftAt` is null while they are still there.",
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "guest": {
+        "type": "boolean"
+      },
+      "id": {
+        "type": "number"
+      },
+      "joinedAt": {
+        "type": "number"
+      },
+      "leftAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "name": {
+        "type": "string"
+      },
+      "picture": {
+        "type": "string"
+      },
+      "self": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "color",
+      "guest",
+      "self",
+      "joinedAt",
+      "leftAt"
+    ],
+    "type": "object"
+  },
   "BackgroundPattern": {
     "enum": [
       "grid",
@@ -4780,6 +4823,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id",
       "name",
       "elements"
+    ],
+    "type": "object"
+  },
+  "TabAttendanceResponse": {
+    "additionalProperties": false,
+    "description": "`GET /api/documents/:id/tabs/:tabId/attendance`: the tab's visits, newest first.",
+    "properties": {
+      "perTabMax": {
+        "type": "number"
+      },
+      "retentionDays": {
+        "type": "number"
+      },
+      "visits": {
+        "items": {
+          "$ref": "#/components/schemas/AttendanceVisit"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "visits",
+      "retentionDays",
+      "perTabMax"
     ],
     "type": "object"
   },

@@ -137,6 +137,10 @@ type TabBarProps = {
   // How many people follow us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), on our own avatar.
   followerCount?: number;
   onOpenCollaborators?: (participantId: string | null) => void;
+  // Open a tab's Attendance (docs/specs/012-collaboration/tab-attendance.md "Where it shows"): given only to a session
+  // that may see it (`can.seeAttendance`) on a document with a room. A read-only session's tab menu then opens with
+  // this one row.
+  onOpenAttendance?: (tabId: string) => void;
 };
 
 export function TabBar({
@@ -167,6 +171,7 @@ export function TabBar({
   followingId,
   followerCount,
   onOpenCollaborators,
+  onOpenAttendance,
   onOpenSettings,
   onOpenSearch,
   canvasMenu,
@@ -213,6 +218,14 @@ export function TabBar({
             onConnectAgain: () => onConnectAgain(tab.id),
           }
         : undefined,
+    onOpenAttendance: onOpenAttendance
+      ? () => {
+          onOpenAttendance(tab.id);
+          close();
+        }
+      : undefined,
+    // A read-only session (a Participant, a tab-scoped link) gets the Attendance row alone.
+    attendanceOnly: readOnly,
     canDelete: tabs.length > 1,
     canClearContent: activeTabHasContent,
     selfId,
@@ -269,6 +282,7 @@ export function TabBar({
     menuFor,
     setMenuFor,
     readOnly,
+    attendance: onOpenAttendance !== undefined,
     isDark,
     // A tap on the tab already open selects nothing again; the strip brings all of it into view instead.
     onSelect: (id: string) => {

@@ -33,6 +33,7 @@ describe('counts on the comparisons', () => {
   it('match the themes a picker offers (the seasonal ones are their looks’ own)', () => {
     const offered = THEMES.filter((t) => !('seasonal' in t && t.seasonal)).length;
     const counts = counted(/\b(\d+|twenty-[a-z]+) (?:one-click )?(?:whole-canvas )?themes\b/gi, {
+      'twenty-four': 24,
       'twenty-five': 25,
     });
     for (const n of counts) expect(n).toBe(offered);

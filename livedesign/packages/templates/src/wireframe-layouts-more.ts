@@ -42,20 +42,21 @@ function monthGrid(u: Ui, x: number, y: number, w: number, cell: number) {
     const cx = x + (at % 7) * cw + cw / 2;
     const cy = y + 28 + Math.floor(at / 7) * cell + cell / 2 - 4;
     const today = day === TODAY;
+    // Today is a labelled disc, its number white on the ink: the words and the disc they read on are one element.
     if (today)
       u.els.push(
         u.k.shape('circle', cx - 18, cy - 18, 36, 36, {
-          label: '',
+          label: String(day),
+          textSize: 15,
+          textBold: true,
+          textColor: WF.white,
           fillColor: WF.ink,
           strokeWidth: 'none',
+          padding: 'none',
         }),
       );
-    u.text(cx - 18, cy - 18, 36, 36, String(day), {
-      size: 15,
-      bold: today,
-      color: today ? WF.white : WF.ink,
-      align: 'center',
-    });
+    else
+      u.text(cx - 18, cy - 18, 36, 36, String(day), { size: 15, color: WF.ink, align: 'center' });
     if (BUSY.has(day) && !today)
       u.els.push(
         u.k.shape('circle', cx - 2.5, cy + 14, 5, 5, {
@@ -127,7 +128,7 @@ export const calendar = responsive(
         bold: true,
         color: now ? WF.white : WF.ink,
       });
-      u.text(x + 80, ey + 26, w - 100, 18, time, { size: 12, color: now ? WF.line : WF.muted });
+      u.text(x + 80, ey + 26, w - 100, 18, time, { size: 12, color: now ? WF.place : WF.muted });
     };
     slot(0, 1, 1);
     slot(1, 3.5, 1);

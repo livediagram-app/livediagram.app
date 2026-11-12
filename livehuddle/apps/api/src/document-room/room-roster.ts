@@ -5,6 +5,7 @@ import type { LiveSession } from '../room-selections';
 import type { SessionAttachment } from '../room-session';
 import { reportServerEvent } from '../server-telemetry';
 import { sendFollowers } from './room-message';
+import { noteAttendance } from './room-attendance';
 import type { DocumentRoom } from './document-room';
 
 // Who is in the room (document-room.ts): its roster, the agents beside it, a session leaving, and the multiplayer
@@ -49,6 +50,8 @@ export function dropSession(room: DocumentRoom, ws: WebSocket): void {
     room.bells.forget(presenceId);
     void room.selections.drop(presenceId).catch(() => {});
   }
+  // Their last connection on a tab gone ends their visit there (docs/specs/012-collaboration/tab-attendance.md).
+  noteAttendance(room, ws, leaving, null);
   // Exclude the departing socket explicitly: depending on when the
   // runtime prunes it from getWebSockets(), it could otherwise still
   // appear in the roster of this very broadcast.

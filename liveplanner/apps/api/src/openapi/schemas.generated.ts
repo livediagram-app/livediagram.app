@@ -4531,6 +4531,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "daterange",
       "checkbox",
       "link",
+      "pullrequest",
       "email",
       "phone",
       "choice",
@@ -9580,6 +9581,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "null"
           }
         ]
+      },
+      "widgets": {
+        "items": {
+          "$ref": "#/components/schemas/BoardWidgetId"
+        },
+        "type": "array"
       }
     },
     "required": [

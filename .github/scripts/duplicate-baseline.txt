@@ -124,7 +124,6 @@ livedesign/scripts/ci-test-filters.mjs	livediagram/scripts/ci-test-filters.mjs	l
 livedesign/scripts/git-hooks/install.mjs	livediagram/scripts/git-hooks/install.mjs	livedocuments/scripts/git-hooks/install.mjs	livehuddle/scripts/git-hooks/install.mjs	liveplanner/scripts/git-hooks/install.mjs
 livedesign/scripts/ts-source-hooks.mjs	livediagram/scripts/ts-source-hooks.mjs	livedocuments/scripts/ts-source-hooks.mjs	livehuddle/scripts/ts-source-hooks.mjs	liveplanner/scripts/ts-source-hooks.mjs
 livediagram/apps/api/src/db/content-summary.ts	livehuddle/apps/api/src/db/content-summary.ts
-livediagram/apps/api/src/document-room/document-anonymise.ts	livehuddle/apps/api/src/document-room/document-anonymise.ts
 livediagram/apps/api/src/legacy-request-forms.ts	livehuddle/apps/api/src/legacy-request-forms.ts
 livediagram/apps/api/src/liveworkspace/activity.ts	livehuddle/apps/api/src/liveworkspace/activity.ts
 livediagram/apps/api/src/redact-document.ts	livehuddle/apps/api/src/redact-document.ts
@@ -240,7 +239,6 @@ livediagram/packages/document/src/flowchart-spread.ts	liveplanner/packages/proje
 livediagram/packages/document/src/flowchart.ts	liveplanner/packages/project/src/flowchart.ts
 livediagram/packages/document/src/malformed-ids.ts	liveplanner/packages/project/src/malformed-ids.ts
 livediagram/packages/document/src/mind-grow.ts	liveplanner/packages/project/src/mind-grow.ts
-livediagram/packages/document/src/retired-themes.ts	livehuddle/packages/document/src/retired-themes.ts
 livediagram/packages/document/src/savable.ts	livehuddle/packages/document/src/savable.ts
 livediagram/packages/document/src/svg-render-sequence.ts	liveplanner/packages/project/src/svg-render-sequence.ts
 livediagram/packages/document/src/svg-render-temperature.ts	liveplanner/packages/project/src/svg-render-temperature.ts

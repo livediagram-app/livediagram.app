@@ -44,8 +44,29 @@ canvas with another grid colour, or on another scheme, was a choice and is left 
 Autumn and Jewel left the catalogue ([Light and dark halves](light-and-dark.md#retired-autumn-and-jewel)). On load a tab
 on Autumn becomes Tropical and a tab on Jewel becomes Rainbow: `theme` is rewritten, and every element colour field
 still holding the retired theme's value for that role (its fill, outline, text, or a palette branch's) takes the new
-theme's value for the same role. A colour the user picked is kept. The backdrop follows the same rule: a canvas or
+theme's value for the same role, field by field (a fill to a fill, an outline or an arrowhead to an outline, text to
+text). Only the fields a theme paints on that kind change (`themeColourFields`), so a sticky note and a retired diagram
+kind keep every colour they stored. A colour the user picked is kept. The backdrop follows the same rule: a canvas or
 pattern colour still equal to the retired theme's becomes the new theme's.
+
+## UML
+
+UML left this product's catalogue (owner, 2026-11-12, Work Item 696): its colour per shape kind is a diagram notation,
+which livediagram keeps. Its definition stays in the shared catalogue data (`@liveworkspace/element-model/themes-data`)
+for livediagram, and this product's `THEMES` (`packages/document/src/themes-data.ts`, bound to the
+shared `@liveworkspace/element-model/retired-uml`) leaves it out, so no theme picker,
+Mashup or agent schema offers it.
+
+On load a tab on UML becomes **Mono**, the scheme nearest UML's colours (CIEDE2000, light half): the same white canvas,
+blank pattern, pattern colour and text; a white element fill for UML's `#f8fafc` (1.6, too close for an eye to tell
+apart); and a darker outline, slate 900 `#0f172a` for slate 700 `#334155` (13.5). In the dark half every role is within
+2.1. Steel keeps UML's outline but greys the canvas and fill (3.2 and 4.9) and darkens the pattern colour (18.6), and
+Rainbow and Sand paint new elements a palette or a warm grey. The rewrite is the one Autumn and Jewel take, role by role
+(`bindRetiredThemes`, `@liveworkspace/element-model/retired-themes`): `theme` becomes `mono`, and each element colour
+field and the backdrop still holding UML's value for its role (in either half) takes Mono's for the same role; a colour
+someone picked is kept. livehuddle's retired diagram kinds keep every colour they stored, a theme's included
+([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)), so only the base colours change. UML is frozen as it left (`UML_AS_RETIRED`, in the same shared module), so a later change to
+livediagram's UML never changes this migration.
 
 ## Custom themes
 
@@ -77,7 +98,7 @@ fields), which SQL over a JSON blob cannot express safely, and because offline d
 
 ## Properties
 
-- **Idempotent.** A migrated tab has no Charcoal, Autumn, Jewel or `custom:` id and no previous dark- or light-half backdrop, so a second pass
+- **Idempotent.** A migrated tab has no Charcoal, Autumn, Jewel, UML or `custom:` id and no previous dark- or light-half backdrop, so a second pass
   changes nothing. A tab with nothing to migrate is returned as the same object.
 - **Pure.** No I/O, no clock; the same tab always migrates the same way.
 - **Lossless for choices.** Only values equal to what the retired scheme wrote are removed.

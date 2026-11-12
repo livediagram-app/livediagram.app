@@ -1,12 +1,13 @@
 // Retired themes (docs/specs/011-theme/retired-schemes.md, docs/specs/011-theme/light-and-dark.md "Retired: Autumn and
-// Jewel"): a theme leaves the catalogue by being migrated away on read. A tab saved on one moves to the theme that
-// replaced it, and every colour still equal to what the retired theme painted becomes the replacement's colour for the
-// same role (canvas, pattern, element paints, root, each palette branch by position); a colour someone picked stays.
-// These definitions are data about the past, frozen as they shipped; they never change.
+// Jewel" and "Retired: UML"), bound to @liveworkspace/element-model's retired-theme migration over livehuddle's own
+// halves and theme colour fields: a theme leaves the catalogue by being migrated away on read. A tab saved on one moves
+// to the theme that replaced it, and every colour still equal to what the retired theme painted becomes the
+// replacement's colour for the same role (canvas, pattern, element paints, root, each palette branch by position); a
+// colour someone picked stays. These definitions are data about the past, frozen as they shipped; they never change.
+import { bindRetiredThemes, type RetiredTheme } from '@liveworkspace/element-model/retired-themes';
+import { RETIRED_THEMES as RETIRED_UML } from '@liveworkspace/element-model/retired-uml';
 import { themeHalf } from './theme-halves';
-import { THEMES } from './themes-data';
-import type { ThemeDefinition } from './themes';
-import type { Tab } from './index';
+import { themeColourFields, type ThemeDefinition } from './themes';
 
 // Retired ids are not ThemeIds any more, hence the cast.
 const AUTUMN = {
@@ -49,81 +50,16 @@ const JEWEL = {
   ],
 } satisfies ThemeDefinition;
 
-/** Each retired theme and the theme that replaced it. */
-const RETIRED_THEMES: Readonly<Record<string, { from: ThemeDefinition; to: string }>> = {
+/** Each retired theme and the theme that replaced it. UML is the shared one livehuddle retired while livediagram
+ *  keeps it (./themes-data leaves it out of THEMES). */
+export const RETIRED_THEMES: Readonly<Record<string, RetiredTheme<ThemeDefinition>>> = {
   autumn: { from: AUTUMN, to: 'tropical' },
   jewel: { from: JEWEL, to: 'rainbow' },
+  ...RETIRED_UML,
 };
 
-// A theme's colours by role, in a fixed order, so two themes pair up slot by slot.
-function slots(t: ThemeDefinition): (string | null | undefined)[] {
-  const out: (string | null | undefined)[] = [t.elementFill, t.elementStroke, t.elementText];
-  for (let i = 0; i < 6; i++) {
-    const p = t.palette?.[i];
-    out.push(p?.fill, p?.stroke, p?.text);
-  }
-  out.push(
-    t.rootColor?.fill,
-    t.rootColor?.stroke,
-    t.rootColor?.text,
-    t.backgroundColor,
-    t.patternColor,
-  );
-  return out;
-}
-
-const MAPS = new Map<string, ReadonlyMap<string, string>>();
-
-// Every colour the retired theme painted (as written, and in either derived half) mapped to the replacement's colour
-// in the same slot, keys lower case. Element roles come first, so a colour shared with the canvas maps as an element's.
-function colourMap(id: string): ReadonlyMap<string, string> {
-  const cached = MAPS.get(id);
-  if (cached) return cached;
-  const { from, to } = RETIRED_THEMES[id]!;
-  const target = slots(THEMES.find((t) => t.id === to)!);
-  const map = new Map<string, string>();
-  for (const source of [from, themeHalf(from, 'light'), themeHalf(from, 'dark')]) {
-    slots(source).forEach((colour, i) => {
-      const next = target[i];
-      if (colour && next && !map.has(colour.toLowerCase())) map.set(colour.toLowerCase(), next);
-    });
-  }
-  MAPS.set(id, map);
-  return map;
-}
-
-const FIELDS = ['fillColor', 'strokeColor', 'textColor', 'arrowheadColor'] as const;
-
-type ThemedTab = Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>;
-
-/** Rewrite a stored tab off a retired theme onto its replacement. The same tab when it is on neither. */
-export function migrateRetiredTheme<T extends ThemedTab>(tab: T): T {
-  const retired = tab.theme ? RETIRED_THEMES[tab.theme] : undefined;
-  if (!retired) return tab;
-  const map = colourMap(tab.theme!);
-  const swap = (c: string | undefined) => (c ? (map.get(c.toLowerCase()) ?? c) : c);
-  let recoloured = 0;
-  const elements = Array.isArray(tab.elements)
-    ? tab.elements.map((el) => {
-        const record = el as unknown as Record<string, unknown>;
-        let patch: Record<string, string> | null = null;
-        for (const field of FIELDS) {
-          const value = record[field];
-          if (typeof value !== 'string') continue;
-          const next = map.get(value.toLowerCase());
-          if (next && next !== value) (patch ??= {})[field] = next;
-        }
-        if (!patch) return el;
-        recoloured++;
-        return { ...record, ...patch } as unknown as typeof el;
-      })
-    : tab.elements;
-  console.info('[tab-migrate] retired-theme', { from: tab.theme, to: retired.to, recoloured });
-  return {
-    ...tab,
-    theme: retired.to,
-    backgroundColor: swap(tab.backgroundColor),
-    patternColor: swap(tab.patternColor),
-    elements,
-  };
-}
+/** Rewrite a stored tab off a retired theme onto its replacement. The same tab when it is on none. */
+export const migrateRetiredTheme = bindRetiredThemes(RETIRED_THEMES, {
+  half: themeHalf,
+  colourFields: themeColourFields,
+}).migrate;

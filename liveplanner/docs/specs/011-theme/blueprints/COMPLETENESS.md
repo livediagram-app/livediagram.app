@@ -16,3 +16,12 @@
 - [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
+
+## retired-schemes
+
+- [x] Behaviour and state
+- [x] Errors and edge cases
+- [x] Performance and limits
+- [x] Observability
+- [x] Testing
+- [x] Constants and configuration

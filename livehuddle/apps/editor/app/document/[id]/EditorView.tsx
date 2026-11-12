@@ -7,7 +7,7 @@ import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
 import { registerUnsavedWork } from '@liveworkspace/workbench/lib/unsaved-work';
 import { useRegionCycle } from '@liveworkspace/workbench/hooks/ui/useRegionCycle';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { addToDocumentTargets } from '@/lib/add-to-document-targets';
 import { canvasSurface } from '@livehuddle/document';
 import { resolveTabBackdrop } from '@/lib/themes';
@@ -37,6 +37,7 @@ import { EditorModals } from '@/components/dialogs/EditorModals';
 import { FocusInviteDialog } from '@/components/dialogs/FocusInviteDialog';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
+import { TabAttendanceHost } from '@/components/dialogs/TabAttendanceHost';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
 import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
 import { EditorTours } from '@/components/tour/EditorTours';
@@ -173,6 +174,16 @@ export function EditorView() {
     { mobile: isMobileViewport },
   );
   const role = useRoleIndicator();
+  // A tab's Attendance (docs/specs/012-collaboration/tab-attendance.md "Where it shows"): the tab whose dialog is open.
+  // An Editor's and a Participant's, on a document with a room (not one saved only in This Browser).
+  const [attendanceTabId, setAttendanceTabId] = useState<string | null>(null);
+  const openAttendance =
+    ctx.can.seeAttendance && !isOffline
+      ? (tabId: string) => {
+          setAttendanceTabId(tabId);
+          track('UI', 'Opened', 'Attendance');
+        }
+      : undefined;
 
   const selectTab = useSelectTab();
   // Contextual command palette for the SearchPanel "Actions" group (docs/specs/008-canvas/canvas-and-palette.md):
@@ -266,6 +277,7 @@ export function EditorView() {
             followingId={followMe.followingId}
             followerCount={followMe.followerCount}
             onOpenCollaborators={openCollaborators}
+            onOpenAttendance={openAttendance}
             onMoveTabToFolder={moveTabToFolder}
             onRemoveTabFromFolder={removeTabFromFolder}
             onRenameFolder={renameTabFolder}
@@ -366,6 +378,10 @@ export function EditorView() {
                       </AreaErrorBoundary>
                       <AreaErrorBoundary area="Collaborators">
                         <CollaboratorsHost />
+                        <TabAttendanceHost
+                          tabId={attendanceTabId}
+                          onClose={() => setAttendanceTabId(null)}
+                        />
                       </AreaErrorBoundary>
                       {/* At the canvas's top edge, under the header and any Community bar. */}
                       {landscapeBarsHandle}

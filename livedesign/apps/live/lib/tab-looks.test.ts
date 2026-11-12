@@ -28,8 +28,8 @@ describe('TAB_LOOKS', () => {
     expect(TAB_LOOKS.map((l) => l.label)).toEqual([
       'Everyday',
       'Textbook',
-      'Whiteboard',
       'Spectrum',
+      'Whiteboard',
       'Boardroom',
       'Notebook',
       'Seaside',
@@ -83,10 +83,14 @@ describe('TAB_LOOKS', () => {
     shown.slice(i * LOOKS_PER_PAGE, (i + 1) * LOOKS_PER_PAGE).filter((l) => l !== null),
   );
 
-  it('opens on Everyday and has ten multi-colour looks, two on every page', () => {
+  it('opens on Everyday and has eight multi-colour looks, one or two on every page', () => {
     expect(TAB_LOOKS[0]!.id).toBe('everyday');
-    expect(TAB_LOOKS.filter((l) => multicolour(l.theme))).toHaveLength(10);
-    for (const page of pages) expect(page.filter((l) => multicolour(l.theme))).toHaveLength(2);
+    expect(TAB_LOOKS.filter((l) => multicolour(l.theme))).toHaveLength(8);
+    for (const page of pages) {
+      const count = page.filter((l) => multicolour(l.theme)).length;
+      expect(count).toBeGreaterThanOrEqual(1);
+      expect(count).toBeLessThanOrEqual(2);
+    }
   });
 
   it('never sets two neighbours on a page in the same theme or the same finish', () => {
@@ -107,6 +111,13 @@ describe('TAB_LOOKS', () => {
       'greenboard',
       'mural',
     ]);
+  });
+
+  // UML is retired here (docs/specs/011-theme/retired-schemes.md "UML"): its two looks wear Mono.
+  it('dresses Textbook and Schematic in Mono, and no look in UML', () => {
+    expect(tabLookById('textbook')!.theme).toBe('mono');
+    expect(tabLookById('schematic')!.theme).toBe('mono');
+    expect(TAB_LOOKS.map((l) => l.theme)).not.toContain('uml');
   });
 
   it('gives every look a distinct mix, so at most one reads as selected', () => {

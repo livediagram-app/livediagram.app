@@ -10,7 +10,8 @@ import { kit, type Kit, type LayoutBox } from './page-layout-kit';
 export const WF = {
   ink: '#0f172a',
   body: '#334155',
-  muted: '#64748b',
+  // Muted reads at 4.5:1 on the soft grey (a table's header, a chat bubble), not only on white.
+  muted: '#5f6f86',
   line: '#cbd5e1',
   soft: '#f1f5f9',
   place: '#e2e8f0',

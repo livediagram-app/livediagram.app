@@ -6,6 +6,7 @@
 import type { Tab } from '@liveplanner/project';
 import {
   catalogueWithBoardTypes,
+  localeCurrency,
   type ItemCreate,
   type ItemTypeCatalogue,
 } from '@liveplanner/items';
@@ -62,6 +63,11 @@ export async function newProjectContent(input: {
     ? catalogueWithBoardTypes(
         null,
         tabs.flatMap((t) => t.elements),
+        {
+          currency: localeCurrency(
+            typeof navigator === 'undefined' ? undefined : navigator.language,
+          ),
+        },
       )
     : null;
   if (itemTypes) debugLog('[item-types] brought', { types: itemTypes.types.length, via });

@@ -10,6 +10,7 @@ export * from './documents';
 export * from './tab-save-document';
 export * from './tabs';
 export * from './suggestions';
+export * from './tab-attendance';
 export * from './api-tokens';
 export * from './account';
 export * from './image-grants';

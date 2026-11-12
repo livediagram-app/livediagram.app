@@ -11,6 +11,7 @@ import { itemColourValue } from './item-colour';
 import { fieldCardIds, fieldPeople } from './several-values';
 import { dateTimeText } from './date-time-fields';
 import { dateRangeText } from './date-range-fields';
+import { pullRequestValueText } from './pull-request-fields';
 
 const FORMATS = {
   // A board card, where room is tight: "30 Oct".
@@ -70,6 +71,9 @@ export function customFieldText(
       return dateRangeText(value, 'short');
     case 'link':
       return typeof value === 'string' ? linkHost(value) : null;
+    // "acme/web#42" (github-pull-requests.md "The Pull Request field").
+    case 'pullrequest':
+      return pullRequestValueText(value);
     case 'currency':
       return typeof value === 'number' ? currencyText(value, field.currency) : null;
     // "40%", held to 0..100 (docs/specs/026-plan/item-types.md "Percent").

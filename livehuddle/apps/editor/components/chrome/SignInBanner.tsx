@@ -95,10 +95,10 @@ export function SignInBanner({
           </span>
 
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold sm:text-base">Sign in to access Teams &amp; AI</p>
+            <p className="text-sm font-semibold sm:text-base">Sign in to access Teams</p>
             {/* A sideways phone has little height to give: the headline and the buttons say enough. */}
             <p className="mt-0.5 text-xs text-white/90 sm:text-sm landscape-phone:hidden">
-              Share with your team, build with AI, sync across devices.
+              Share with your team, sync across devices, connect scripts with API tokens.
             </p>
           </div>
 

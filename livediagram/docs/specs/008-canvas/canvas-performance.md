@@ -107,6 +107,13 @@ large move rides as one layer").
   animations"): an animation over the whole board makes the browser lay out the page's
   compositing again as it starts and as it ends, and a per-element entry re-renders every element
   view once more. Chrome may still fade in; it is small.
+- **A Tab Style change on a busy canvas eases the canvas, not its parts.** On a tab of more than 20 elements the
+  canvas's own colour (its backdrop) still eases into a new theme, look, finish, typeface, size or pattern, and every
+  part inside it snaps ([Canvas and theme dialog](../011-theme/canvas-and-theme-dialog.md) "Eased changes"). Easing
+  the parts sets a colour transition on every node of every element at once, and the browser restyles each of them
+  on every frame of the 250 ms ease, so the long frames grow with the board: on the reference board at 400 elements a theme pick took about 310 ms to paint, and snapping the parts paints it in about 155 ms; at 100 and 160 elements it removes every long frame of the ease (about 75 and 145 ms). The long frames left at 400 elements (about 480 ms) are the re-render of every element in its new colours, not the ease. A small
+  board (20 elements or fewer) still eases every part. The threshold is the same in every editor that eases
+  (livediagram, livedocuments, livedesign, liveplanner and livehuddle), one shared constant.
 - **Adding many elements animates nothing.** More than 24 elements landing in one commit (a paste,
   a duplicate, an undo, an import, a collaborator's change) appear at once, with no pop-in
   ([Canvas and palette](canvas-and-palette.md) "Motion and animations"). Safari gives each element

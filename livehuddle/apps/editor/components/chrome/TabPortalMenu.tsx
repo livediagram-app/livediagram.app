@@ -30,10 +30,12 @@ import {
 } from '@livehuddle/ui';
 import { useSplitViewContext } from '@/components/split/SplitViewContext';
 import { lucideGlyph } from '@livehuddle/ui';
-import { lucideLink } from '@liveworkspace/icons/lucide';
+import { lucideCalendarClock, lucideLink } from '@liveworkspace/icons/lucide';
 import type { ConnectedTabMenu } from '@liveworkspace/workbench/components/connect/tab-connection';
 
 const ConnectAgainIcon = lucideGlyph(lucideLink, 16);
+// Attendance: a calendar with a clock, who was in the tab and when.
+const AttendanceIcon = lucideGlyph(lucideCalendarClock, 16);
 
 // The unified tab / canvas portal menu (actions, copy-to-document, and
 // folder sub-views). Extracted from TabBar.tsx, where it had grown into a
@@ -59,6 +61,8 @@ export function PortalMenu({
   canClearContent,
   canDelete,
   connected,
+  onOpenAttendance,
+  attendanceOnly = false,
 }: {
   // Positioned EITHER above an anchor button (tab ellipsis) OR at a screen
   // point (canvas right-click / footer button). Exactly one is provided.
@@ -88,6 +92,10 @@ export function PortalMenu({
   // A connected tab (liveworkspace/docs/specs/004-index/connected-tabs.md "How it looks"): it has no content and its name
   // follows its file, so its menu keeps only Remove Tab, its folder and, when it opens nothing, Connect Again.
   connected?: ConnectedTabMenu | undefined;
+  // A tab's Attendance (docs/specs/012-collaboration/tab-attendance.md "Where it shows"): absent for a session that
+  // may not see it. `attendanceOnly` (a Participant, a tab-scoped link) makes it the menu's one row.
+  onOpenAttendance?: (() => void) | undefined;
+  attendanceOnly?: boolean;
 }) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
   // organise pickers — "copyTo" (docs/specs/006-document/tab-document-many-to-many.md, link the tab into another
@@ -204,6 +212,11 @@ export function PortalMenu({
     );
   }
 
+  // Attendance, who was in the tab and when.
+  const attendanceRow = onOpenAttendance ? (
+    <MenuActionRow plain icon={<AttendanceIcon />} label="Attendance" onClick={onOpenAttendance} />
+  ) : null;
+
   // A connected tab's menu: Remove Tab (the file stays as it is), its folder and, when it opens nothing, Connect Again.
   const connectedBody = connected ? (
     <>
@@ -224,6 +237,7 @@ export function PortalMenu({
         label="Organise in Tab Folder"
         onClick={() => setView('folder')}
       />
+      {attendanceRow}
       {/* Three verbs at most, so plain rows, Remove last under a hairline: an icon row would hold the bin alone. */}
       <MenuGroupSeparator />
       <MenuActionRow
@@ -239,132 +253,141 @@ export function PortalMenu({
     </>
   ) : null;
 
-  // The menu's rows, the same in the anchored box and in a phone's bottom sheet.
-  const body = connectedBody ?? (
-    <>
-      {view === 'actions' ? (
+  // The menu's rows, the same in the anchored box and in a phone's bottom sheet. A read-only session that may see
+  // Attendance gets that row alone: every other verb here changes the tab.
+  const body = attendanceOnly
+    ? attendanceRow
+    : (connectedBody ?? (
         <>
-          {/* Quick actions: the verbs reached for most often, as a compact
+          {view === 'actions' ? (
+            <>
+              {/* Quick actions: the verbs reached for most often, as a compact
             icon row so they're one glance away. The rest of the menu
             groups the verbose / destructive actions into sections. */}
-          <MenuToolbar>
-            {/* The buttons spread evenly across the row, Delete last (docs/specs/004-interface-design/menus.md
+              <MenuToolbar>
+                {/* The buttons spread evenly across the row, Delete last (docs/specs/004-interface-design/menus.md
               "Control menus"), so the row has no gap. */}
-            <div className="flex w-full items-center justify-between">
-              <MenuToolButton
-                icon={<PencilIcon />}
-                label="Rename"
-                description="Rename this tab."
-                onClick={onRename}
-              />
-              <MenuToolButton
-                icon={<DuplicateIcon />}
-                label="Duplicate"
-                description="Create a copy of this tab in this space."
-                onClick={onDuplicate}
-              />
-              {/* Paste in the tab ⋯ menu: one tab verb among several, so an
+                <div className="flex w-full items-center justify-between">
+                  <MenuToolButton
+                    icon={<PencilIcon />}
+                    label="Rename"
+                    description="Rename this tab."
+                    onClick={onRename}
+                  />
+                  <MenuToolButton
+                    icon={<DuplicateIcon />}
+                    label="Duplicate"
+                    description="Create a copy of this tab in this space."
+                    onClick={onDuplicate}
+                  />
+                  {/* Paste in the tab ⋯ menu: one tab verb among several, so an
               icon. Opened from an empty-canvas right-click (`point`) it
               is a labelled row below instead (docs/specs/008-canvas/canvas-and-palette.md). Greyed, not
               hidden, when the buffer is empty. */}
-              {canvas && !point ? (
-                <MenuToolButton
-                  icon={<PasteMenuIcon />}
-                  label="Paste"
-                  description={
-                    canvas.canPaste
-                      ? 'Paste what you copied onto this tab.'
-                      : 'Nothing to paste yet.'
-                  }
-                  onClick={() => {
-                    canvas.onPaste();
-                    onClose();
-                  }}
-                  disabled={!canvas.canPaste}
-                />
-              ) : null}
-              {/* Side by side (docs/specs/007-editor/split-view.md): the menu's way to what dragging the
+                  {canvas && !point ? (
+                    <MenuToolButton
+                      icon={<PasteMenuIcon />}
+                      label="Paste"
+                      description={
+                        canvas.canPaste
+                          ? 'Paste what you copied onto this tab.'
+                          : 'Nothing to paste yet.'
+                      }
+                      onClick={() => {
+                        canvas.onPaste();
+                        onClose();
+                      }}
+                      disabled={!canvas.canPaste}
+                    />
+                  ) : null}
+                  {/* Side by side (docs/specs/007-editor/split-view.md): the menu's way to what dragging the
               pill to the right does, for a keyboard or a trackpad that would rather not drag. */}
-              {sideBySide ? (
-                <MenuToolButton
-                  icon={<SideBySideIcon />}
-                  label={sideBySide.closing ? 'Close Side by Side' : 'Side by Side'}
-                  description={
-                    sideBySide.closing
-                      ? 'Go back to one tab: this one, across the whole window.'
-                      : 'Show this tab on the right, beside the tab you were on. Or drag its pill to the right edge.'
-                  }
-                  onClick={() => {
-                    sideBySide.run();
-                    onClose();
-                  }}
-                  active={sideBySide.closing}
-                />
-              ) : null}
-              <MenuToolButton
-                icon={<TrashIcon />}
-                label="Delete"
-                description="Delete this tab."
-                onClick={() => {
-                  onDelete();
-                  onClose();
-                }}
-                disabled={!canDelete}
-              />
-            </div>
-          </MenuToolbar>
-          {/* Separator under the toolbar, isolating the quick verbs from the rows below. */}
-          <MenuGroupSeparator />
-          {/* The empty-canvas right-click is usually "put what I copied
+                  {sideBySide ? (
+                    <MenuToolButton
+                      icon={<SideBySideIcon />}
+                      label={sideBySide.closing ? 'Close Side by Side' : 'Side by Side'}
+                      description={
+                        sideBySide.closing
+                          ? 'Go back to one tab: this one, across the whole window.'
+                          : 'Show this tab on the right, beside the tab you were on. Or drag its pill to the right edge.'
+                      }
+                      onClick={() => {
+                        sideBySide.run();
+                        onClose();
+                      }}
+                      active={sideBySide.closing}
+                    />
+                  ) : null}
+                  <MenuToolButton
+                    icon={<TrashIcon />}
+                    label="Delete"
+                    description="Delete this tab."
+                    onClick={() => {
+                      onDelete();
+                      onClose();
+                    }}
+                    disabled={!canDelete}
+                  />
+                </div>
+              </MenuToolbar>
+              {/* Separator under the toolbar, isolating the quick verbs from the rows below. */}
+              <MenuGroupSeparator />
+              {/* The empty-canvas right-click is usually "put what I copied
             HERE", so there Paste leads the menu as a labelled row
             (docs/specs/008-canvas/canvas-and-palette.md "Canvas menu: Paste"). */}
-          {canvas && point ? (
-            <>
-              <div data-testid="canvas-paste-row">
-                <MenuActionRow
-                  plain
-                  icon={<PasteMenuIcon />}
-                  label="Paste"
-                  disabled={!canvas.canPaste}
-                  onClick={() => {
-                    canvas.onPaste();
-                    onClose();
-                  }}
-                />
-              </div>
-              <MenuGroupSeparator />
-            </>
-          ) : null}
-          {/* The rest as full-width rows, no categories: the menu is short enough to show it
+              {canvas && point ? (
+                <>
+                  <div data-testid="canvas-paste-row">
+                    <MenuActionRow
+                      plain
+                      icon={<PasteMenuIcon />}
+                      label="Paste"
+                      disabled={!canvas.canPaste}
+                      onClick={() => {
+                        canvas.onPaste();
+                        onClose();
+                      }}
+                    />
+                  </div>
+                  <MenuGroupSeparator />
+                </>
+              ) : null}
+              {/* The rest as full-width rows, no categories: the menu is short enough to show it
             all (docs/specs/007-editor/editor-app.md "Tab menu"). Separators part the related groups:
             where the tab lives and what is on it. */}
-          <MenuActionRow
-            plain
-            icon={<FolderMenuIcon />}
-            label="Organise in Tab Folder"
-            onClick={() => setView('folder')}
-          />
-          <MenuActionRow
-            plain
-            icon={<MoveIcon />}
-            label="Add to Another Space"
-            onClick={() => setView('copyTo')}
-            disabled={otherDocuments.length === 0}
-          />
-          <MenuGroupSeparator />
-          <MenuActionRow plain icon={<FileImportIcon />} label="Import" onClick={onImport} />
-          <MenuActionRow plain icon={<FileExportIcon />} label="Export" onClick={onExport} />
-          <MenuActionRow
-            plain
-            icon={<ClearIcon />}
-            label="Clear"
-            onClick={onClearContent}
-            disabled={!canClearContent}
-          />
+              <MenuActionRow
+                plain
+                icon={<FolderMenuIcon />}
+                label="Organise in Tab Folder"
+                onClick={() => setView('folder')}
+              />
+              <MenuActionRow
+                plain
+                icon={<MoveIcon />}
+                label="Add to Another Space"
+                onClick={() => setView('copyTo')}
+                disabled={otherDocuments.length === 0}
+              />
+              {attendanceRow ? (
+                <>
+                  <MenuGroupSeparator />
+                  {attendanceRow}
+                </>
+              ) : null}
+              <MenuGroupSeparator />
+              <MenuActionRow plain icon={<FileImportIcon />} label="Import" onClick={onImport} />
+              <MenuActionRow plain icon={<FileExportIcon />} label="Export" onClick={onExport} />
+              <MenuActionRow
+                plain
+                icon={<ClearIcon />}
+                label="Clear"
+                onClick={onClearContent}
+                disabled={!canClearContent}
+              />
+            </>
+          ) : null}
         </>
-      ) : null}
-    </>
-  );
+      ));
   // A phone gets the menu as a bottom sheet (docs/specs/007-editor/editor-app.md "Menus are bottom
   // sheets on a phone"), as the element menu does: the dismissers above reach it through `ref`.
   if (phone) {

@@ -220,7 +220,10 @@ Undo puts every tab back."
 Options do not preview on hover (tried and removed: the canvas changing under a passing pointer was distracting); a
 click applies. Each pick **eases** the canvas's colours (background, fill, outline, text) over 250 ms instead of
 snapping (`../packages/workbench/src/lib/tab-style-ease.ts`); the transition is switched on only for the moment of the change (a class on the
-root, scoped to the canvas), so it costs nothing the rest of the time. Reduced motion snaps.
+root, scoped to the canvas), so it costs nothing the rest of the time. Reduced motion snaps. On a busy canvas (more than 20 elements,
+[Canvas performance](../008-canvas/canvas-performance.md) "A Tab Style change on a busy canvas eases the canvas, not its parts") the parts
+snap too, the canvas's own colour still easing: easing every node of every element held a large board in long
+frames a pick.
 
 ### Text panel
 
@@ -273,7 +276,7 @@ per-element resolution every theme transform uses.
 
 Most themes paint every shape the same fill / stroke / text. A **Formal** theme instead colours each shape **kind** by its conventional meaning, so a diagram reads as a standard notation at a glance.
 
-- **UML** is the first Formal theme. Each `ShapeKind` carries its own colours: a decision **diamond** is amber, a datastore **cylinder** is purple, a start/end **stadium** is green, a process **square** is blue, and so on. Kinds without a specific colour fall back to the theme's crisp dark-on-light box. The canvas is plain white so the colour coding (not the backdrop) carries the meaning.
+- **UML** is the first Formal theme, and livediagram's alone: livehuddle, liveplanner, livedocuments and livedesign retired it (owner, 2026-11-12, Work Item 696), each moving a tab saved on it onto Mono on read, so its definition stays in the shared catalogue data (`@liveworkspace/element-model/themes-data`) for livediagram. Here it stays in every theme picker, the Mashup and the Textbook and Schematic looks. Each `ShapeKind` carries its own colours: a decision **diamond** is amber, a datastore **cylinder** is purple, a start/end **stadium** is green, a process **square** is blue, and so on. Kinds without a specific colour fall back to the theme's crisp dark-on-light box. The canvas is plain white so the colour coding (not the backdrop) carries the meaning.
 - Mechanically, a theme may define `shapeColors?: Partial<Record<ShapeKind, { fill?; stroke?; text? }>>`. These win over the single `elementFill` / `-Stroke` / `-Text` for that kind; unset fields fall through. Resolution flows through the same `elementThemeView` synthetic-theme path the multi-colour ([Multi-colour (rainbow) themes](multicolour-themes.md)) branch colours use, so every theme transform (apply to new shapes, recolour a scaffold, switch themes, reset to theme) is shape-aware through one code path. A theme can in principle combine `shapeColors` with a `palette`, but in practice per-shape (UML) and per-branch (rainbow) themes are distinct.
 - The theme card preview (`ThemeSwatch`) stripes a per-shape theme's kind colours, like it does a multi-colour palette, so the card reads as colourful rather than as one neutral dot.
 

@@ -33,6 +33,7 @@ import {
   lucideMessageSquare,
   lucidePalette,
   lucidePhone,
+  lucideGitPullRequest,
   lucideScanEye,
   lucideSquareDashed,
   lucideTag,
@@ -54,6 +55,7 @@ import { OptionChip } from './OptionChip';
 import { choiceColour } from './choice-options';
 
 const TypeIcon = lucideGlyph(lucideType, 16);
+const PullRequestIcon = lucideGlyph(lucideGitPullRequest, 16);
 const HashIcon = lucideGlyph(lucideHash, 16);
 const ListIcon = lucideGlyph(lucideList, 16);
 const LinkIcon = lucideGlyph(lucideLink, 16);
@@ -91,6 +93,7 @@ export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
   daterange: <DateRangeIcon />,
   checkbox: <PlanTypeGlyph glyph="task" size={16} />,
   link: <LinkIcon />,
+  pullrequest: <PullRequestIcon />,
   email: <PlanTypeGlyph glyph="mail" size={16} />,
   phone: <PhoneIcon />,
   choice: <ListIcon />,
@@ -264,6 +267,8 @@ function SampleValue({
       );
     case 'link':
       return <span className="text-brand-700 underline dark:text-brand-300">example.com</span>;
+    case 'pullrequest':
+      return <span className="text-brand-700 underline dark:text-brand-300">acme/web#42</span>;
     // The panel's option chips, coloured by place (docs/specs/026-plan/item-types.md "Choice and Multiple Choice in the
     // card panel").
     case 'choice':

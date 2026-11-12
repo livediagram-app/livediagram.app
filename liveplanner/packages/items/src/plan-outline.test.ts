@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_BOARD_WIDGETS } from './board-widgets';
 import { ITEM_TYPES } from './item-types';
 import { planOutline, statusColumnsOfSetups } from './plan-outline';
 import { presetSetup, statusColumn } from './presets';
@@ -58,6 +59,17 @@ describe('planOutline', () => {
     expect(statuses.some((s) => s.status === 'later')).toBe(true);
     const archive = presetSetup('archive');
     expect(statusColumnsOfSetups([archive])).toEqual([]);
+  });
+
+  it('lists each board’s header widgets, the default set when it never arranged them', () => {
+    const never = { ...kanban, widgets: undefined };
+    const arranged = { ...kanban, widgets: ['due', 'field:sum:f-budget', 'nope'] };
+    const plan = planOutline(
+      [{ id: 't1', name: 'Board', elements: [board('b1', never), board('b2', arranged)] }],
+      null,
+    );
+    expect(plan.boards[0]!.widgets).toEqual([...DEFAULT_BOARD_WIDGETS]);
+    expect(plan.boards[1]!.widgets).toEqual(['due', 'field:sum:f-budget']);
   });
 
   it('answers no types without a catalogue, else the stored ones', () => {

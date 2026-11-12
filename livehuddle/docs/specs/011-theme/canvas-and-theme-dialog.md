@@ -40,9 +40,9 @@ The table is in the order the carousel shows them after the Mashup card, six to 
 | Look            | Theme    | Finish       | Tab font      | Floor        | Floor strength |
 | --------------- | -------- | ------------ | ------------- | ------------ | -------------- |
 | Everyday        | Default  | Flexible     | (none)        | Carpet Tiles | (kept)         |
-| Textbook        | UML      | Professional | Oswald        | Tiles        | (kept)         |
-| Whiteboard      | Mono     | Marker       | (none)        | None         | (kept)         |
+| Textbook        | Mono     | Professional | Oswald        | Tiles        | (kept)         |
 | Spectrum        | Rainbow  | Flexible     | Inter         | Terrazzo     | (kept)         |
+| Whiteboard      | Mono     | Marker       | (none)        | None         | (kept)         |
 | Boardroom       | Steel    | Professional | Inter         | Carpet       | (kept)         |
 | Notebook        | Mocha    | Sketch       | (none)        | Wood Floor   | (kept)         |
 | Seaside         | Ocean    | Flexible     | Nunito        | Sand         | (kept)         |
@@ -61,7 +61,7 @@ The table is in the order the carousel shows them after the Mashup card, six to 
 | Patchwork       | Pastel   | Sketch       | Lora          | Carpet       | 70%            |
 | Northern Lights | Abyss    | Flexible     | Poppins       | Decking      | (kept)         |
 | Coffeehouse     | Espresso | Sketch       | Kalam         | Terrazzo     | (kept)         |
-| Schematic       | UML      | Professional | Roboto Mono   | Carpet Tiles | (kept)         |
+| Schematic       | Mono     | Professional | Roboto Mono   | Carpet Tiles | (kept)         |
 | Flipchart       | Rainbow  | Marker       | (none)        | Carpet       | (kept)         |
 | Sketchbook      | Rose     | Sketch       | (none)        | None         | (kept)         |
 | Greenboard      | Pine     | Marker       | (none)        | None         | (kept)         |
@@ -75,15 +75,19 @@ The table is in the order the carousel shows them after the Mashup card, six to 
   least one look, so the Mashup draws from the whole set. Daydream and Patchwork soften their carpet into the pastel
   canvas at 70%.
 - **Multi-colour looks.** Eight looks use a theme whose nodes take different colours: the branch palettes of Rainbow,
-  Pastel and Tropical ([Multi-colour themes](multicolour-themes.md)) and UML's colour per shape kind. Each is a
+  Pastel and Tropical ([Multi-colour themes](multicolour-themes.md)). Each is a
   different feel: Spectrum is crisp colour-coding for everyday work (rainbow branches in a clean sans on terrazzo),
   Doodle a bold hand-drawn rainbow, Daydream soft pastels on a soft carpet, Lagoon a fresh tropical spread on sand,
-  Poster a bold tropical display face on decking, Textbook a crisp colour-coded notation on tiles, Patchwork pastel
-  branches sketched on carpet, and Schematic the UML colours in a monospace on carpet tiles. A dark-mode viewer sees each in its theme's
+  Poster a bold tropical display face on decking, and Patchwork pastel
+  branches sketched on carpet. A dark-mode viewer sees each in its theme's
   dark half ([Light and dark halves](light-and-dark.md)), so the bright-on-dark versions come for free.
+- **Textbook and Schematic wear Mono.** Both wore UML, which this product retired (owner, 2026-11-12, Work Item
+  696, [Retired colour schemes](retired-schemes.md#uml)); each took Mono, the scheme nearest UML's colours, so
+  Textbook is a crisp single-ink notation in Oswald and Schematic the same ink in a monospace. Textbook moved to the
+  second slot on page one, before Spectrum, so it never sits beside Whiteboard, the other Mono look.
 - **Order.** The **Mashup** card leads the carousel (below), then the looks; Everyday is always the first look (it
   is what an untouched tab reads as). The rest follow a fixed, interleaved
-  order written into the catalogue (`TAB_LOOKS`, never shuffled at runtime): every page holds two multi-colour looks,
+  order written into the catalogue (`TAB_LOOKS`, never shuffled at runtime): every page holds one or two of the eight multi-colour looks,
   and no two neighbours on a page share a theme or a finish, so each page reads as a spread of contrasting styles
   rather than the colourful looks clumping on one page. `apps/editor/lib/tab-looks.test.ts` locks both rules.
 - **Retired looks.** A look is not stored, so a tab whose four settings match no current look (a retired one,
@@ -98,7 +102,7 @@ The table is in the order the carousel shows them after the Mashup card, six to 
   Workshop, and on page five Flipchart, Greenboard and Mural, a flip chart, a green board and a wall to draw on, each in
   marker on a theme no other look used (Rose, Pine, Plum and Olive arrive with page five). Page five alternates them
   with Sketchbook, Picnic and Field Notes, so no two neighbours share a finish, and its two multi-colour looks
-  (Flipchart and Picnic) keep two to every page.
+  (Flipchart and Picnic) keep two on it.
 - When the tab matches no look, no card is selected (there is no "Current" card for the tab's own mix).
 - Each look is a card: a **tiny Space** drawn in the look, its name, and a line on what it is made of. The scene is a
   slice of the look's floor ([Floors](floors.md)) with a small room on it (walls, a door, a desk with its chair, a
@@ -291,12 +295,10 @@ per-element resolution every theme transform uses.
 
 ### Formal themes / per-shape colours
 
-Most themes paint every shape the same fill / stroke / text. A **Formal** theme instead colours each shape **kind** by its conventional meaning, so a diagram reads as a standard notation at a glance.
+A **Formal** theme colours each shape **kind** by its conventional meaning, so a diagram reads as a standard notation at a glance. UML was the one Formal theme, and it is livediagram's alone: this product retired it (owner, 2026-11-12, Work Item 696; [Retired colour schemes](retired-schemes.md#uml)), so no theme picker, Mashup or agent schema here offers it, and a tab saved on it opens on Mono.
 
-- **Not in livehuddle**: the diagram kinds these colours were for (the diamond, cylinder, stadium, square and the rest) left with [the element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine), part 5, and so did their per-shape overrides (D34 in the project scope's DEFAULTS.md); the rest of this list describes livediagram's Formal themes.
-- **UML** is the first Formal theme. Each `ShapeKind` carries its own colours: a decision **diamond** is amber, a datastore **cylinder** is purple, a start/end **stadium** is green, a process **square** is blue, and so on. Kinds without a specific colour fall back to the theme's crisp dark-on-light box. The canvas is plain white so the colour coding (not the backdrop) carries the meaning.
-- Mechanically, a theme may define `shapeColors?: Partial<Record<ShapeKind, { fill?; stroke?; text? }>>`. These win over the single `elementFill` / `-Stroke` / `-Text` for that kind; unset fields fall through. Resolution flows through the same `elementThemeView` synthetic-theme path the multi-colour ([Multi-colour (rainbow) themes](multicolour-themes.md)) branch colours use, so every theme transform (apply to new shapes, recolour a scaffold, switch themes, reset to theme) is shape-aware through one code path. A theme can in principle combine `shapeColors` with a `palette`, but in practice per-shape (UML) and per-branch (rainbow) themes are distinct.
-- The theme card preview (`ThemeSwatch`) stripes a per-shape theme's kind colours, like it does a multi-colour palette, so the card reads as colourful rather than as one neutral dot.
+- The mechanism stays in the shared theme engine (`@liveworkspace/element-model/themes`): a theme may define `shapeColors?: Partial<Record<ShapeKind, { fill?; stroke?; text? }>>`, which win over the single `elementFill` / `-Stroke` / `-Text` for that kind, resolved through the same `elementThemeView` path as the multi-colour branch colours. No theme this product offers defines it.
+- UML's definition stays in the shared catalogue data (`@liveworkspace/element-model/themes-data`) because livediagram still offers it; this product's `THEMES` leaves it out.
 
 ## Editor chrome follows the active theme
 

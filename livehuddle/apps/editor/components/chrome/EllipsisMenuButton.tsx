@@ -29,6 +29,8 @@ export function EllipsisMenuButton({
   onDelete,
   selfId,
   connected,
+  onOpenAttendance,
+  attendanceOnly,
 }: {
   open: boolean;
   onToggle: () => void;
@@ -55,6 +57,9 @@ export function EllipsisMenuButton({
   onDelete: () => void;
   // A connected tab: its own short menu (TabPortalMenu).
   connected?: ConnectedTabMenu | undefined;
+  // A tab's Attendance (docs/specs/012-collaboration/tab-attendance.md), and whether it is the menu's one row.
+  onOpenAttendance?: (() => void) | undefined;
+  attendanceOnly?: boolean;
 }) {
   // In state, so the menu anchors to the button on the render that opens it.
   const [button, setButton] = useState<HTMLButtonElement | null>(null);
@@ -94,6 +99,8 @@ export function EllipsisMenuButton({
             canDelete={canDelete}
             canClearContent={canClearContent}
             connected={connected}
+            onOpenAttendance={onOpenAttendance}
+            attendanceOnly={attendanceOnly}
           />
         </MenuErrorBoundary>
       ) : null}

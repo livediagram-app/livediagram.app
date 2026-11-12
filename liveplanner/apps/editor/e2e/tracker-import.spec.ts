@@ -21,9 +21,12 @@ const columns = (page: Page) =>
       ns.map((n) => (n.getAttribute('aria-label') ?? '').replace(' column settings', '')),
     );
 
-// Start Planning's Import card, then a tool's row and the file it asks for.
+// Start Planning's Import entry (the rail's, below Connect File), then a tool's row and the file it asks for.
 async function importFrom(page: Page, tool: string, file: string) {
-  await page.getByRole('button', { name: /^Import:/ }).click();
+  await page
+    .getByRole('navigation', { name: 'Categories' })
+    .getByRole('button', { name: 'Import', exact: true })
+    .click();
   const dialog = page.getByRole('dialog', { name: 'Import' });
   await expect(dialog).toBeVisible();
   // The format is the first decision: focus starts on the list's first row.

@@ -8,7 +8,7 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
 | Spec term        | Identifier                                                                                                                           |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | the plan         | `PlanOutline` (`packages/items/src/plan-outline.ts`), on the wire `PlanResponse`                                                     |
-| board (outline)  | `PlanBoardOutline { tabId, tabName, elementId, title, kind, types, columns }`                                                        |
+| board (outline)  | `PlanBoardOutline { tabId, tabName, elementId, title, kind, types, columns, sortBy?, widgets? }`                                     |
 | column name      | `PlanColumnOutline.name`; a project's statuses `PlanStatusName { status, name }`                                                     |
 | naming           | `resolveStatus`, `resolveType`, `resolveItem`, `fieldKeyOf`, `resolveFields`, `personNamed` (`plan-names.ts`)                        |
 | card type change | `CardTypeChange`, `applyCardTypeChanges` (`packages/items/src/type-changes.ts`)                                                      |
@@ -19,7 +19,12 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
 
 - `planOutline(tabs, catalogue)`: boards in tab order then canvas order; damaged set-ups skipped
   (`normaliseBoardSetup` null); statuses from `statusColumnsOfSetups` (first board's name wins; All Cards and
-  Archive name none); types `typesOf(catalogue)`. The editor's `usePlanStatusNames` imports the same
+  Archive name none); types `typesOf(catalogue)`. Each board's `widgets` is `widgetsOf(setup)` (`BoardWidgetId[]`,
+  the default set when it names none); optional on the wire, as an older api sends none.
+- `planListing` names each board's widgets with `listedWidgets` → `widgetName` (`board-widget-change.ts`, the names
+  `change_board` answers); the board's fields (`boardFields(…, false)` over its `types`) are read only when it holds a
+  field widget. A board the api sent without `widgets` lists none. The CLI's `item ls` appends
+  ` | Widgets: Item Count, Filter` to each board's line. The editor's `usePlanStatusNames` imports the same
   `statusColumnsOfSetups`.
 - Blocked By ([item-types.md "Blocked By"](../item-types.md#blocked-by)): `listedType` lists `custom[].blocks`;
   `planListing` makes one `blockingIndexOf(state.items, plan.types, doneStatusesOf(plan.boards))` and adds `blocked`
@@ -174,18 +179,19 @@ types? }`, `change_card_types { projectId, changes[1..32] }`, `change_board`'s `
 
 ## Testing
 
-| Rule                                                  | Test                                                                                           |
-| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| outline order, statuses once, types                   | `packages/items/src/plan-outline.test.ts`                                                      |
-| naming and refusals                                   | `packages/items/src/plan-names.test.ts`                                                        |
-| card type changes                                     | `packages/items/src/type-changes.test.ts`                                                      |
-| Blocked By: listing, set by number, loop stop, switch | `packages/agent-verbs/src/plan/plan-engine.test.ts`, `packages/items/src/type-changes.test.ts` |
-| board placement                                       | `packages/items/src/board-place.test.ts`                                                       |
-| change_board widgets: names, add, remove, refusals    | `packages/agent-verbs/src/plan/board-widget-change.test.ts`, `plan-engine.test.ts`             |
-| plan route gate, scope, batching                      | `apps/api/src/routes/plan-route.test.ts`                                                       |
-| engine: listing, changes, types, board                | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                            |
-| CLI verbs                                             | `packages/agent-verbs/src/verbs/item.test.ts`, `plan-verbs.test.ts`                            |
-| MCP tools, outputs, annotations                       | `apps/mcp/src/output-schema.test.ts`, `tools.test.ts`, `verb-parity.test.ts`                   |
+| Rule                                                           | Test                                                                                                                                           |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| outline order, statuses once, types                            | `packages/items/src/plan-outline.test.ts`                                                                                                      |
+| naming and refusals                                            | `packages/items/src/plan-names.test.ts`                                                                                                        |
+| card type changes                                              | `packages/items/src/type-changes.test.ts`                                                                                                      |
+| Blocked By: listing, set by number, loop stop, switch          | `packages/agent-verbs/src/plan/plan-engine.test.ts`, `packages/items/src/type-changes.test.ts`                                                 |
+| board placement                                                | `packages/items/src/board-place.test.ts`                                                                                                       |
+| change_board widgets: names, add, remove, refusals             | `packages/agent-verbs/src/plan/board-widget-change.test.ts`, `plan-engine.test.ts`                                                             |
+| list_items widgets: outline default set, names, gone field key | `packages/items/src/plan-outline.test.ts`, `packages/agent-verbs/src/plan/plan-listing.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts` |
+| plan route gate, scope, batching                               | `apps/api/src/routes/plan-route.test.ts`                                                                                                       |
+| engine: listing, changes, types, board                         | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                                                                            |
+| CLI verbs                                                      | `packages/agent-verbs/src/verbs/item.test.ts`, `plan-verbs.test.ts`                                                                            |
+| MCP tools, outputs, annotations                                | `apps/mcp/src/output-schema.test.ts`, `tools.test.ts`, `verb-parity.test.ts`                                                                   |
 
 ## Constants and configuration
 

@@ -146,7 +146,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How many templates and themes are there?',
-        a: `${TEMPLATE_COUNT} starter templates (a blank Space and ${TEMPLATE_COUNT - 1} Spaces to walk round), and twenty-five themes that recolour the whole board in one click, including dark and multi-colour schemes. You can also build and save a colour scheme of your own.`,
+        a: `${TEMPLATE_COUNT} starter templates (a blank Space and ${TEMPLATE_COUNT - 1} Spaces to walk round), and twenty-four themes that recolour the whole board in one click, including dark and multi-colour schemes. You can also build and save a colour scheme of your own.`,
       },
       {
         q: 'Do I need to switch modes?',

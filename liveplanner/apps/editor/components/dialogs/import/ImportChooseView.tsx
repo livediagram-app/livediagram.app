@@ -2,10 +2,8 @@
 
 // The Import dialog's list (docs/specs/026-plan/plan-tabs.md "The Import dialog"): Into This Tab, then A Board from
 // Another Tool for an Editor, each a Plan option list of rows with their icon, name, file type and a line saying what
-// file to bring. A file dropped anywhere on it is read as what it is (the dialog decides where it goes).
-import { useEffect, useRef, useState, type DragEvent, type ReactNode } from 'react';
-import { lucideGlyph } from '@liveplanner/ui';
-import { lucideFileDown } from '@liveworkspace/icons/lucide';
+// file to bring. A file dropped on it is the dialog's (useFileDrop, on every step), which decides where it goes.
+import { useEffect, useRef, type ReactNode } from 'react';
 import type { TrackerSource } from '@liveplanner/items';
 import { OptionRows, type OptionRow } from '@/components/plan/OptionRows';
 import type { IntoTab } from './into-tab';
@@ -15,7 +13,6 @@ import { ImportError } from './ImportError';
 const HEADING =
   'text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
 const NOTE = 'text-[12px] leading-relaxed text-slate-500 dark:text-slate-400';
-const DropIcon = lucideGlyph(lucideFileDown, 22);
 
 // The file type at a row's right.
 function FileChip({ file }: { file: string }) {
@@ -61,7 +58,6 @@ export function ImportChooseView({
   error,
   onIntoTab,
   onTool,
-  onDropFile,
 }: {
   intoTab: IntoTab;
   // Whether this person may import a board from another tool (an Editor).
@@ -71,7 +67,6 @@ export function ImportChooseView({
   error: string | null;
   onIntoTab: () => void;
   onTool: (source: TrackerSource) => void;
-  onDropFile: (file: File) => void;
 }) {
   // The format is the first decision: on a desktop the list opens with focus on its first row that can be pressed (Into
   // This Tab, or Trello when that row is dimmed). Runs before the dialog's focus trap, which keeps a focus already
@@ -83,45 +78,13 @@ export function ImportChooseView({
       ?.querySelector<HTMLButtonElement>('button:not([disabled])')
       ?.focus({ preventScroll: true });
   }, []);
-  // Entering a child fires before leaving its parent: a count keeps the outline steady over the rows.
-  const depth = useRef(0);
-  const [over, setOver] = useState(false);
-  const hasFiles = (e: DragEvent) => e.dataTransfer.types.includes('Files');
-  const dragEnter = (e: DragEvent) => {
-    if (!hasFiles(e)) return;
-    e.preventDefault();
-    depth.current += 1;
-    setOver(true);
-  };
-  const dragLeave = () => {
-    depth.current = Math.max(0, depth.current - 1);
-    if (depth.current === 0) setOver(false);
-  };
-  const drop = (e: DragEvent) => {
-    e.preventDefault();
-    depth.current = 0;
-    setOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) onDropFile(file);
-  };
-
   const into = intoTabCopy(intoTab);
   const toolRows = TOOL_ROWS.map((t) =>
     rowOf(t.source, t, reading === t.source ? { detail: hintOf('Reading the File…') } : {}),
   );
 
   return (
-    <div
-      ref={list}
-      data-testid="import-choose"
-      className="relative flex flex-col gap-5"
-      onDragEnter={dragEnter}
-      onDragOver={(e) => {
-        if (hasFiles(e)) e.preventDefault();
-      }}
-      onDragLeave={dragLeave}
-      onDrop={drop}
-    >
+    <div ref={list} data-testid="import-choose" className="flex flex-col gap-5">
       <Section id="import-into-tab" title="Into This Tab">
         <OptionRows
           kind="action"
@@ -145,15 +108,6 @@ export function ImportChooseView({
         </Section>
       ) : null}
       {error ? <ImportError>{error}</ImportError> : null}
-      {over ? (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -inset-2 flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-brand-400 bg-white/90 text-brand-700 animate-fade-in dark:border-brand-500/70 dark:bg-slate-900/90 dark:text-brand-200"
-        >
-          <DropIcon />
-          <span className="text-sm font-semibold">Drop to Import</span>
-        </div>
-      ) : null}
     </div>
   );
 }

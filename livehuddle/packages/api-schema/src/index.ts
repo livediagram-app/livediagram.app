@@ -304,6 +304,7 @@ export * from './viewport';
 export * from './table-game';
 // A Suggestion Box's notes (docs/specs/009-elements/team-pieces.md "The wire").
 export * from './suggestions';
+export * from './tab-attendance';
 export * from './calls-mode';
 export * from './changesets';
 export * from './telemetry-schema';

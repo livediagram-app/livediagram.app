@@ -53,7 +53,7 @@ The unit of value is the group in the room.
 - Real-time presence: live cursors, characters, selection rings and presence on
   each tab.
 - Comments with mentions and reactions, and actions assigned to a teammate.
-- 25 themes in the picker that recolour the whole Space in one click.
+- 24 themes in the picker that recolour the whole Space in one click.
 - Undo and redo (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z), personal to each person.
 - Tabs per Space (each a floor), nested folders in the Explorer.
 - Teams: shared team Spaces with their own folders, members and invites.
