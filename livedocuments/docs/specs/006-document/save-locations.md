@@ -23,7 +23,7 @@ A document in This Browser says what it is on the document itself: the editor he
 | A signed-in person | **livedocuments** |
 
 Why a guest starts local: [Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local).
-A document in This Browser is still in the shared Explorer: its This Browser row and view, and Jump Back In, list this
+A document in This Browser is still in the shared Explorer: its This Browser row and view, and Most Used and Recent, list this
 browser's documents beside the index's ([liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md),
 [Offline Mode → This Browser badge + Explorer](offline-mode.md#this-browser-badge--explorer)).
 

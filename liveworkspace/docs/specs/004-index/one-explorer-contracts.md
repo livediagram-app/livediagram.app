@@ -166,7 +166,7 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 |                                |                     | `updatedAt`, or by `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent`             |
 |                                |                     | only, first page) adds `mostUsed`: up to N items opened in the last 14 days, ranked by |
 |                                |                     | how many times (ties: opened last first), each with `useOpens` (and                    |
-|                                |                     | `useDays`), in the same response (Jump Back In). On any first page,                    |
+|                                |                     | `useDays`), in the same response (Most Used on Home). On any first page,               |
 |                                |                     | `mine=N` (1 to 200) adds `mine: {count, more}`, the live items in `app` in             |
 |                                |                     | every space the person is in (their own and each team's; each item once)               |
 |                                |                     | counted up to N (Home's pill), and `any=1` adds `any`, whether                         |
@@ -190,7 +190,8 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 | `DELETE /items/:id`            | owner / team        | To the Trash; `?permanent=true` purges (below).                                        |
 | `POST /items/:id/restore`      | owner / team        | `{item}`                                                                               |
 | `POST /items/:id/copy`         | anyone who can view | `{title?}` → 201 `{item}`. The index makes the row, then asks the                      |
-|                                |                     | app to copy the content (`POST <app>/api/internal/items/:from/copy-to/:to`).           |
+|                                |                     | app to copy the content (`POST <app>/api/internal/items/:from/copy-to/:to`),           |
+|                                |                     | naming the row's title, which the copy opens with.                                     |
 | `POST /items/:id/open`         | person or link      | Records an open for Recent, and counts it on the day's row for Most Used               |
 |                                |                     | (`use_days.opens`, kept 14 days). Debounced: at most one write a minute                |
 |                                |                     | per person and item.                                                                   |

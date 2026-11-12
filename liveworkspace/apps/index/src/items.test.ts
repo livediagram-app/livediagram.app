@@ -391,8 +391,16 @@ describe('copies', () => {
     expect(h.appCalls[0]).toMatchObject({
       method: 'POST',
       url: `https://liveplanner.app/api/internal/items/${item.id}/copy-to/${copy.id}`,
-      body: { tabId: null, by: 'user_a', code: null, ip: null },
+      // The row's title too, so the copy opens with the name the Explorer lists (#671).
+      body: { tabId: null, by: 'user_a', code: null, ip: null, title: 'Roadmap (copy)' },
     });
+    // A copy named by its maker carries that name.
+    await call(`/items/${item.id}/copy`, {
+      method: 'POST',
+      auth: ada.auth,
+      body: { title: 'Roadmap 2027' },
+    });
+    expect((h.appCalls[1]!.body as { title: string }).title).toBe('Roadmap 2027');
   });
 
   it("names the copier's address to the app: their router's word for it, else the connection's", async () => {

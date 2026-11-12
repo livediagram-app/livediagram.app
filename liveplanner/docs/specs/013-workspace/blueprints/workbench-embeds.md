@@ -435,14 +435,14 @@ The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface =
 
 | Gate                                                                                                 | File                                                                  | In a workbench                                            |
 | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------- |
-| `EditorHeader` (and with it the account menu, Share, Make a copy, role pill)                         | `EditorView.tsx`                                                      | Not rendered                                              |
-| TabBar, palette, toolbars, Quick style, panels, search                                               | `EditorView.tsx`                                                      | Rendered as in the app                                    |
+| `EditorHeader` (and with it the account menu, Share, Make a copy, role pill)                         | `EditorViewBars.tsx`                                                  | Not rendered                                              |
+| TabBar, palette, toolbars, Quick style, panels, search                                               | `EditorViewBars.tsx`                                                  | Rendered as in the app                                    |
 | `EmbedChrome`                                                                                        | `EditorView.tsx`                                                      | Not rendered; `WorkbenchChrome` instead                   |
 | Explorer (popover)                                                                                   | `useCanvasChromePanels.tsx`                                           | Not rendered; status screens use `EmbedShell`             |
 | Sign-in banner, theme-mode banner                                                                    | `EditorView.tsx`                                                      | Off                                                       |
 | Settings categories `projects`, `account`, `tokens`; the Appearance choice                           | `settings-catalogue.ts`                                               | Hidden                                                    |
 | Share, delete, move, take offline, copy                                                              | `editor-commands.ts`                                                  | Absent                                                    |
-| TabBar "copy to another project"                                                                     | `EditorView.tsx` `otherProjects`                                      | `[]`                                                      |
+| TabBar "copy to another project"                                                                     | `EditorViewBars.tsx` `otherProjects`                                  | `[]`                                                      |
 | `useFolders`, `useFavourites`, `useTeams`, `useTeamPeople`, `useTeamLibrariesSweep`, `useShareLinks` | `app/project/[id]/editor-state/` slices                               | `enabled: false`                                          |
 | `useCommentMentions`, `useAssigneeOptions`                                                           | `hooks/collab`                                                        | Candidates from presence only; no team read, no notify    |
 | Identity screen                                                                                      | `app/project/[id]/editor-state/useEditorComments.ts` `joinScreenOpen` | Never                                                     |
@@ -687,18 +687,18 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
 
 `useExplorerSurface()` reads `useWorkbenchSession()?.scope === 'workspace'`. The Surface table, Explorer side:
 
-| Gate                                                                    | File                                    | In a workbench                                              |
-| ----------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------- |
-| App header (brand, product nav, `AuthControls`)                         | `ExplorerShell.tsx`                     | Not rendered; the lens field in a slim bar instead (WB61)   |
-| Home hero                                                               | `ExplorerShell.tsx`                     | Rendered as in the app                                      |
-| Bottom bar: Settings, Appearance                                        | `ExplorerShell.tsx`, `ChromeControls`   | Absent; Search stays; Open in liveplanner at the right end  |
-| Settings dialog, `?settings=` links, `useOpenSettingsRequests`          | `useExplorerState.ts`, `ExplorerShell`  | Never opens                                                 |
-| Search panel's settings rows                                            | `ExplorerShell.tsx`                     | `[]`                                                        |
-| Sign-in banner, `LocalMovePrompt`                                       | `ExplorerShell.tsx`                     | Not rendered                                                |
-| `useTokens`                                                             | `useExplorerState.ts`                   | `enabled: false`                                            |
-| Teams administration: New team, the Invites row and view, team settings | `sidebar/*`, `TeamLibraryHeader`, views | Absent (WB62)                                               |
-| Timeline token cards' Revoke                                            | `timeline/*`                            | Absent                                                      |
-| Every `window.location.assign`, `<a href>`, `router.push`/`replace`     | the Explorer                            | Through `assignAppLocation` / `useAppNavigation`: the frame |
+| Gate                                                                    | File                                                                  | In a workbench                                              |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------- |
+| App header (brand, product nav, `AuthControls`)                         | `ExplorerShell.tsx`                                                   | Not rendered; the lens field in a slim bar instead (WB61)   |
+| Home hero                                                               | `ExplorerShell.tsx`                                                   | Rendered as in the app                                      |
+| Bottom bar: Settings, Appearance                                        | `ExplorerShell.tsx`, `ChromeControls`                                 | Absent; Search stays; Open in liveplanner at the right end  |
+| Settings dialog, `?settings=` links, `useOpenSettingsRequests`          | `useExplorerState.ts`, `ExplorerShell`, `useExplorerSettingsPanel.ts` | Never opens                                                 |
+| Search panel's settings rows                                            | `ExplorerShell.tsx`                                                   | `[]`                                                        |
+| Sign-in banner, `LocalMovePrompt`                                       | `ExplorerShell.tsx`                                                   | Not rendered                                                |
+| `useTokens`                                                             | `useExplorerState.ts`                                                 | `enabled: false`                                            |
+| Teams administration: New team, the Invites row and view, team settings | `sidebar/*`, `TeamLibraryHeader`, views                               | Absent (WB62)                                               |
+| Timeline token cards' Revoke                                            | `timeline/*`                                                          | Absent                                                      |
+| Every `window.location.assign`, `<a href>`, `router.push`/`replace`     | the Explorer                                                          | Through `assignAppLocation` / `useAppNavigation`: the frame |
 
 #### The CLI, workspace scope
 

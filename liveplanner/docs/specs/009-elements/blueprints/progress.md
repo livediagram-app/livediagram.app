@@ -6,26 +6,26 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                        | Role                                                                         |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `packages/project/src/shape-kind.ts`                        | `'progress-bar'` and `'progress-ring'` in the `ShapeKind` union              |
-| `packages/project/src/element-types.ts`                     | `progress`, `progressAnim`, `progressAnimSpeed`, `progressAnimRepeat` fields |
-| `packages/project/src/animation.ts`                         | `ProgressAnim`, `PROGRESS_ANIMS`, `PROGRESS_LOOPING_ANIMS`, `animLoops`      |
-| `packages/project/src/data-shapes.ts`                       | `isProgressShape`, `clampPercent`, membership of `isSelfDrawingShape`        |
-| `packages/project/src/shape-factory.ts`                     | `SHAPE_DEFAULT_SIZE` rows and the `createShape` seeds                        |
-| `packages/project/src/colors.ts`                            | `SELF_PAINTING_SHAPES` membership (no wrapper border, no Border controls)    |
-| `packages/project/src/svg-render-data.ts`                   | `svgProgressBar`, `svgProgressRing`: the export body                         |
-| `packages/project/src/svg-render-body.ts`                   | `svgElementBody`: the export dispatch, its track from `progressTrackColour`  |
-| `packages/project/src/progress-colours.ts`                  | `PROGRESS_TRACK_DEFAULT`, `progressTrackColour`, `progressLabelInks`         |
-| `apps/editor/components/canvas/ProgressView.tsx`            | Canvas bar and ring, the `lvd-prog-*` class choice                           |
-| `apps/editor/components/canvas/ShapeContentRouter.tsx`      | Routes the two kinds to `ProgressView` ahead of `ShapeSvgOverlay`            |
-| `apps/editor/app/canvas-motion.css`                         | The `lvd-prog-*` keyframes and their reduced-motion override                 |
-| `apps/editor/lib/icons.ts`                                  | `animSpeedVars`: the `--lvd-prog-speed` / `--lvd-prog-iter` properties       |
-| `apps/editor/components/palette/ElementDataSections.tsx`    | The Progress section inside the Tools flyout                                 |
-| `apps/editor/components/palette/context-menu-data-rows.tsx` | `ProgressRow`, `PercentSliderRow`, `ProgressAnimTiles`, `AnimTiles`          |
-| `apps/editor/hooks/canvas/useDataShapeSetters.ts`           | The four progress setters, via `makeShapePatcher`                            |
-| `apps/editor/hooks/canvas/shape-patcher.ts`                 | `makeShapePatcher`: selection-wide, kind-gated patch plus telemetry          |
-| `apps/editor/components/palette/palette-tile-defs.tsx`      | Tiles `data:progress-bar` and `data:progress-ring`                           |
+| File                                                                                  | Role                                                                         |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `packages/project/src/shape-kind.ts`                                                  | `'progress-bar'` and `'progress-ring'` in the `ShapeKind` union              |
+| `packages/project/src/element-types.ts`                                               | `progress`, `progressAnim`, `progressAnimSpeed`, `progressAnimRepeat` fields |
+| `packages/project/src/animation.ts`                                                   | `ProgressAnim`, `PROGRESS_ANIMS`, `PROGRESS_LOOPING_ANIMS`, `animLoops`      |
+| `packages/project/src/data-shapes.ts`                                                 | `isProgressShape`, `clampPercent`, membership of `isSelfDrawingShape`        |
+| `packages/project/src/shape-default-size.ts`, `packages/project/src/shape-factory.ts` | `SHAPE_DEFAULT_SIZE` rows and the `createShape` seeds                        |
+| `packages/project/src/colors.ts`                                                      | `SELF_PAINTING_SHAPES` membership (no wrapper border, no Border controls)    |
+| `packages/project/src/svg-render-data.ts`                                             | `svgProgressBar`, `svgProgressRing`: the export body                         |
+| `packages/project/src/svg-render-body.ts`                                             | `svgElementBody`: the export dispatch, its track from `progressTrackColour`  |
+| `packages/project/src/progress-colours.ts`                                            | `PROGRESS_TRACK_DEFAULT`, `progressTrackColour`, `progressLabelInks`         |
+| `apps/editor/components/canvas/ProgressView.tsx`                                      | Canvas bar and ring, the `lvd-prog-*` class choice                           |
+| `apps/editor/components/canvas/ShapeContentRouter.tsx`                                | Routes the two kinds to `ProgressView` ahead of `ShapeSvgOverlay`            |
+| `apps/editor/app/canvas-motion.css`                                                   | The `lvd-prog-*` keyframes and their reduced-motion override                 |
+| `apps/editor/lib/icons.ts`                                                            | `animSpeedVars`: the `--lvd-prog-speed` / `--lvd-prog-iter` properties       |
+| `apps/editor/components/palette/ElementDataSections.tsx`                              | The Progress section inside the Tools flyout                                 |
+| `apps/editor/components/palette/context-menu-data-rows.tsx`                           | `ProgressRow`, `PercentSliderRow`, `ProgressAnimTiles`, `AnimTiles`          |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`                                     | The four progress setters, via `makeShapePatcher`                            |
+| `apps/editor/hooks/canvas/shape-patcher.ts`                                           | `makeShapePatcher`: selection-wide, kind-gated patch plus telemetry          |
+| `apps/editor/components/palette/palette-tile-defs.tsx`                                | Tiles `data:progress-bar` and `data:progress-ring`                           |
 
 ## Domain and naming
 

@@ -1012,6 +1012,11 @@ Both show the same list:
   - **In the popover** (a bottom sheet on a phone) the rows are compact, one line each: the **⋯**
     sits under the page's number, and the grip stays at the row's right edge, where a thumb finds
     it. Delete is in the menu.
+  - **One reveal rule** for both homes: a row's grip and its ⋯ show and hide together. Under a mouse
+    or pen they show while the row is hovered or holds focus (and in the sidebar while it is the page
+    here), or while its menu is open; to a finger they always show. The pointer decides, never the
+    window's width, so a desktop window about 450 px wide with a mouse, where Contents is the bottom
+    sheet, reveals both on hover as a wide one does.
   - **The ⋯ menu** (also a right-click on the row, or a long press on it by a finger) is one menu for
     the whole list, a header naming the page, then in groups: **Page Settings** (the cog: glides to
     the page and opens its settings, where it is renamed and resized); **Duplicate** (while the copy
@@ -1032,8 +1037,8 @@ Both show the same list:
   The page in view is the one holding the middle of what shows beside the sidebar, else the nearest.
 - **Reordering**: an Editor drags a row to move its page: a caret shows where it will land and
   the move commits on release, one edit (one undo), the page's content with it, as the cog panel's Move Left and Move Right do.
-  A mouse or pen drags the whole row; a finger drags the row's grip (shown on a phone and on hover
-  on a desktop), so the list still scrolls by touch. The release is not a press of the row: it
+  A mouse or pen drags the whole row; a finger drags the row's grip (always shown to a finger, on
+  hover to a mouse or pen, by the one reveal rule), so the list still scrolls by touch. The release is not a press of the row: it
   does not glide there, but marks the moved page as here. A Participant and a Viewer see no grip
   and cannot drag. The drag is `useRowReorderDrag`.
 - **For a screen reader** the rows are a list named Pages. Each row opens through one button stretched across it,

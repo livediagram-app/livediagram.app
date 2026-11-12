@@ -18,7 +18,7 @@ Scope, by file:
 | `packages/document/src/containment.ts`                           | `isContainer`, `containerContents`: what a moved frame or lane carries  |
 | `apps/editor/components/canvas/LaneGutter.tsx`                   | The canvas strip, the seam and its drag                                 |
 | `apps/editor/components/canvas/boxed-element-face-parts.tsx`     | Mounts `LaneGutter` behind the label                                    |
-| `apps/editor/components/canvas/CanvasElementsLayer.tsx`          | Wires `onCommitHeaderSize` and `onSnapSeam`                             |
+| `apps/editor/components/canvas/useElementLayerHandlers.ts`       | Wires `onCommitHeaderSize` and `onSnapSeam`                             |
 | `apps/editor/app/document/[id]/useSelectionEditing.ts`           | `commitHeaderSize`                                                      |
 | `apps/editor/hooks/canvas/useColorStyleSetters.ts`               | `setHeaderFillSelected`                                                 |
 | `apps/editor/components/palette/ElementColourBorderSections.tsx` | The Heading colour row                                                  |

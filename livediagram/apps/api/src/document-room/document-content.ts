@@ -153,7 +153,8 @@ export async function initDocument(
      ON CONFLICT (id) DO UPDATE SET
        presentation = COALESCE(document.presentation, excluded.presentation),
        saved_at = excluded.saved_at,
-       name = excluded.name,
+       -- A copy lands unstarted with the index's title for it (its import): starting it keeps that name.
+       name = CASE WHEN document.created_at = 0 AND document.name <> '' THEN document.name ELSE excluded.name END,
        created_at = CASE WHEN document.created_at = 0 THEN excluded.created_at ELSE document.created_at END,
        owner_id = CASE WHEN document.created_at = 0 THEN excluded.owner_id ELSE document.owner_id END,
        team_id = CASE WHEN document.created_at = 0 THEN excluded.team_id ELSE document.team_id END,
@@ -224,6 +225,9 @@ export async function setDocumentPresentation(
 // without one. Sent as one RPC message, so a document past the 32 MiB a message may carry cannot be copied this
 // way (the follow-up is to stream it in pages).
 export type DocumentCopy = {
+  // The copy's name, the index's title for it (internal-items.ts); absent from an index that does not send one,
+  // and from a Drive file's import, which names the canvas as it starts it.
+  name?: string;
   tabs: {
     id: string;
     name: string;
@@ -349,10 +353,13 @@ export async function importDocumentCopy(
     db
       .prepare(
         // created_at stays 0: the copy's first open with a grant starts it, as its new owner (initDocument).
-        `INSERT INTO document (id, saved_at, created_at) VALUES (?1, ?2, 0)
-         ON CONFLICT (id) DO UPDATE SET saved_at = excluded.saved_at`,
+        // Its name is the index's title for it, which that start keeps (initDocument).
+        `INSERT INTO document (id, saved_at, created_at, name) VALUES (?1, ?2, 0, ?3)
+         ON CONFLICT (id) DO UPDATE SET saved_at = excluded.saved_at,
+           name = CASE WHEN document.created_at = 0 AND excluded.name <> '' THEN excluded.name
+                       ELSE document.name END`,
       )
-      .bind(documentId, now),
+      .bind(documentId, now, copy.name ?? ''),
   ];
   for (const tab of copy.tabs) {
     const images = imageRefIdsFromData(tab.data);

@@ -289,7 +289,7 @@ describe('drag and drop in the panel', () => {
       />,
     );
     const rail = within(screen.getByRole('navigation', { name: 'Explorer sections' }));
-    const grid = await screen.findByRole('list', { name: 'Jump Back In' });
+    const grid = await screen.findByRole('list', { name: 'Recent' });
     const card = within(grid).getAllByRole('listitem')[0]!;
     dragOnto(card, rail.getByRole('button', { name: 'My Work' }));
     await waitFor(() =>

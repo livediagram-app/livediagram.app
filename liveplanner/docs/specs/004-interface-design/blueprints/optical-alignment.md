@@ -21,8 +21,8 @@ geometry check are [Iconography](../iconography.md)'s; this blueprint builds eve
 | `apps/{live,help,telemetry}/optical-guard.test.ts`              | Each app runs the guard over its own sources (as `motion-budget.test.ts`)                                                       |
 | `../packages/marketing-site/src/guards/source-guards.test.ts`   | The guard over every product's marketing app and the shared marketing pages                                                     |
 | `packages/ui/optical-guard.test.ts`                             | The guard over `packages/ui/src`                                                                                                |
-| `apps/editor/e2e/optical.ts`                                    | `auditOptical(page)`: the runner (screenshots, ink diff, verdicts)                                                              |
-| `apps/editor/e2e/optical-discover.ts`                           | `discover`: the in-page half (candidates, cap bands, intent, stack rows); one self-contained function                           |
+| `../packages/e2e-kit/src/optical.ts`                            | `auditOptical(page)`: the runner (screenshots, ink diff, verdicts), shared by every editor                                      |
+| `../packages/e2e-kit/src/optical-discover.ts`                   | `discover`: the in-page half (candidates, cap bands, intent, stack rows); one self-contained function                           |
 | `../packages/e2e-kit/src/optical-snap.ts`                       | `paintedBaseline`, `inheritedSnap`: Chromium's whole-pixel baseline snap and the part a shape inherits from its position (pure) |
 | `../packages/e2e-kit/src/optical-snap.test.ts`                  | Their contracts (Vitest)                                                                                                        |
 | `apps/editor/e2e/optical-snap.spec.ts`                          | The snap guard: the browser paints baselines where `paintedBaseline` says, and transforms move them after                       |
@@ -195,8 +195,9 @@ as a hydration mismatch), pointer parked at 0,0.
    `[data-optical-ignore]` or an SVG, not an input, with: height 8..44px, width 8..220px; visible and in
    the viewport; painted (a non-clear background colour or image, a non-clear border, or a
    `0 0 0 Npx` ring); text of at most 28 characters and/or SVG; at most 8 descendants; no
-   `input, textarea, img, canvas, video` inside. Its **own text** is the text not inside a painted
-   shape nested within it.
+   `input, textarea, img, canvas, video` inside. Its **own text** is the text that renders and is not inside a painted
+   shape nested within it: a text node under `display: none` (a label a container query hides) has no
+   client rects, and its empty rect at the viewport's origin once read as content far off the shape's centre.
 2. **Intent.** Horizontal centring is asked of a shape with centring `justify-content`, `text-align:
 center`, or shrink-wrapped content (its in-flow children, text and gaps fill the inner width, and
    none grows). Vertical centring is asked of a row flexbox with `align-items: center`, a column

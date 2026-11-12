@@ -159,8 +159,12 @@ describe('the bottom-right cluster is chrome, not canvas', () => {
   });
 
   it('is the element CanvasChrome renders the Undo strip in', () => {
-    // The guard is only as good as the marker it reads: the cluster that holds Undo carries it.
-    const src = readFileSync(join(__dirname, '../../components/canvas/CanvasChrome.tsx'), 'utf8');
+    // The guard is only as good as the marker it reads: the cluster that holds Undo carries it (CanvasChrome draws it
+    // through CanvasCornerCluster).
+    const src = readFileSync(
+      join(__dirname, '../../components/canvas/CanvasCornerCluster.tsx'),
+      'utf8',
+    );
     const cluster = src.indexOf('data-zoom-cluster=""');
     expect(cluster).toBeGreaterThan(-1);
     expect(src.indexOf('<UndoRedoClusterStrip', cluster)).toBeGreaterThan(cluster);

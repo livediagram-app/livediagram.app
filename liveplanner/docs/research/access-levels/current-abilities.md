@@ -104,7 +104,7 @@ no client offers it; **U** the editor offers it but the server refuses it; **n/a
 | ----------------------------- | --- | --- | --- | --- | --- | --- | ---- | ---- | --- | --- | --- | --- | -------------------------------------------------------------------------------------- |
 | Read threads                  | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | Y   | Y   | Y   | tab GET; author ids redacted for non-owners                                            |
 | Add a comment                 | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | Y   | N   | N   | edit roles: autosave plus `comment-add` delta; view: `POST .../comments` on `gateRead` |
-| Add from a comment panel      | Y   | Y   | Y   | N   | T   | N   | Y    | N    | Y   | n/a | n/a | n/a | `EditorCanvasHost.tsx` `commentPanelActions` undefined when `isReadOnly`               |
+| Add from a comment panel      | Y   | Y   | Y   | N   | T   | N   | Y    | N    | Y   | n/a | n/a | n/a | `useCanvasThreadProps.ts` `commentPanelActions` undefined when `isReadOnly`            |
 | Delete own comment            | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | Y   | N   | N   | `DELETE .../comments/:id`, `found.authorId !== owner` refused                          |
 | Delete someone else's comment | Y   | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | S   | tab PUT (`gateEdit`) or `comment-remove` delta (mutation class)                        |
 | Resolve, reopen a thread      | Y   | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | S   | same; `CommentThreadPopover.tsx` hides the button when `readOnly`                      |

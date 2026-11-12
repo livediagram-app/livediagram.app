@@ -19,6 +19,7 @@ describe('a photo page’s code', () => {
   it('is never imported statically by the editor’s canvas, chrome, pages or state', () => {
     for (const file of [
       'components/canvas/Canvas.tsx',
+      'components/canvas/CanvasWorldLayer.tsx',
       'components/canvas/CanvasChrome.tsx',
       'components/dialogs/ExportTabDialog.tsx',
       'components/canvas/CanvasPages.tsx',
@@ -44,7 +45,9 @@ describe('a photo page’s code', () => {
   // as Photo makes a tab's first photo page), so each surface renders only once the tab has a photo page.
   it('renders none of its surfaces for a tab without a photo page', () => {
     expect(
-      read('components/canvas/Canvas.tsx').match(/pagesMode\?\.photo\?\.hasPhotoPage \? \(/g),
+      read('components/canvas/CanvasWorldLayer.tsx').match(
+        /pagesMode\?\.photo\?\.hasPhotoPage \? \(/g,
+      ),
     ).toHaveLength(2);
     expect(read('components/canvas/CanvasChrome.tsx')).toContain(
       'chromeHidden || !props.pagesMode?.photo?.hasPhotoPage ? null',

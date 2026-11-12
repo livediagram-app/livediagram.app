@@ -150,7 +150,8 @@ item.type), ...)`; `projectBoard` passes its catalogue), the Inbox push (below) 
   reused while the catalogue and status phases keep their identity; `BlockedMark` (`plan-card-parts.tsx`, the Lucide
   link glyph at 12 px in `BLOCKED_COLOUR` `#dc2626` with its count, `role="img"` and a Tooltip, "Blocked by N open
   card(s)") before `FlagMark` in every `PlanCardFace` size, never on the Display's example card; `BlockedBySections`
-  (`BlockedBy.tsx`, from `blockedByGroups`) leads `ItemPanel`'s Linked as sections, and `LinkedCardGroup` draws a
+  (`BlockedBy.tsx`, from `blockedByGroups`) sits on `ItemPanel`'s first tab before its Comments (the Linked as sections
+  are on the Linked Cards tab, below), and `LinkedCardGroup` draws a
   `group.blocks` group as the Blocks mirror (no add buttons, not drawn when empty); `LinkedCardField` with `blocksFor`
   (the card's id) checks `blockingLoop` before a pick adds a card (refused: announce and toast the message, the field
   unchanged) and marks the rows `waitingOn` names "Waits on this card" (worked out once while the list is open); a
@@ -453,7 +454,7 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
   - Editor: `DateTimeInput` (`components/plan/DateTimeInput.tsx`, a `datetime-local` box with `DateInput`'s whole-
     value rules), `DateRangeField` (`components/plan/DateRangeField.tsx`, From and To), `PhoneField`
     (`components/plan/PhoneField.tsx`, a `tel` box and its `tel:` link), each from `CustomFieldEditor`; samples in
-    `CustomFieldKindParts` and `ItemTypeDisplay`; Add Field's Date and Time Range tile presets `withTime` (no switch);
+    `CustomFieldKindParts` and `item-type-display-sample.ts`; Add Field's Date and Time Range tile presets `withTime` (no switch);
     `add-field-kinds.ts` places Phone in Links and Images and Date and Time and Date Range in Dates, with the
     spec's words; the card face draws a past Date and Time or Date Range in red (`pastDue(field, value, now?, tz?)`
     in `date-range-fields.ts`), never on a done card; `CustomFieldEditor`'s `ZoneLine` (`dateTimeZones`) sits under
@@ -491,11 +492,24 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
     while a readout is mounted), `components/plan/time/TimerReadouts.tsx` (`Elapsed`, the only subscriber; `RunningDot`;
     `RunningTimerPill` on `PlanCardFace` at every size), `components/plan/time/DurationInput.tsx` (the panel's box),
     `components/plan/time/TimeSpentField.tsx` (total, Start Timer, Stop, Discard, others' timers, entries newest first, Show All,
-    Add Time), routed from `ItemFieldEditor`; `usePlanSlice.trackTime` posts the write and sends the telemetry.
+    Add Time), routed from `ItemFieldEditor`; `usePlanItemWrites.trackTime` (through `usePlanSlice`) posts the write and sends the telemetry.
     Add Field's Time Tracking tile presets `timeSpent` (no switch in any form).
   - Exports: `svg-render-plan-card.ts` draws the total and a green running pill (`TIMER_RUNNING_GREEN`).
   - Agents: `plan-schema.ts` adds `duration` and `timeSpent`; `plan-listing.ts` lists a card's `time` (total,
     running people) and a Time Spent field as read-only; agents never start, stop or add time.
+- The Linked Cards tab ([spec](../item-types.md#linked-cards-tab)): `ItemPanelTabs.tsx` `LINKED_TAB = 'card-linked'`
+  (a type's own tab ids start `t-`, so it never clashes) and `LINKED_TAB_LABEL`; `panelTabs(tabs, details, linked)`
+  adds it after the type's tabs and before Activity when `linked` (the count) is not null, or puts the count on the
+  type's own tab `namedLinkedTab(tabs)` finds (label trimmed, ignoring case). `ItemPanel` passes
+  `linkedGroups.length > 0 ? linkedCardCount(linkedGroups) : null`, so the tab follows `linkedCardsOf` (a group for
+  every Card field whose types include the card's, cards or none). `LinkedCardsTab.tsx` draws the groups:
+  `linkedCardCount` (distinct card ids across groups); at none a `CompactEmptyState` (small, the Lucide link glyph,
+  dashed border, "No Linked Cards Yet", the line with or without the adding half), then for `canAdd` the groups with
+  `emptyNote={false}`; a Viewer gets the empty state alone. The tab is never in the type: the type editor, its
+  6-tab limit and `readTabs` never see it. A card picked onto it keeps it while `shownTabs` holds it, and the panel
+  falls back to the first tab when it goes (`current` is `shownTabs[0]` when `picked` is not found). Tab pill: 11px
+  medium, slate-100/600 (brand-50/700 when selected, dark brand-500/15 and brand-300), `aria-hidden`, the tab named
+  "{Label}, N card(s)" through `aria-label`. Tests: `apps/editor/components/plan/ItemPanel.linked.test.tsx`.
 - Consumers: `PlanCardFace` (stripe, glyph, custom field chips via `custom-field-text.ts`), `ItemPanel` (the
   type's field order, `CustomFieldEditor`), `AddCardPopover`, `PlanBoardView`
   (projection), `PlanBoardCells`/`PlanCardView` names,
@@ -738,7 +752,7 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
     Long Text's `<id>Rich` cleared) and `retypedValuePatches(before, after, types, items, ctx)` (every changed field,
     one patch per card).
   - Saving: `PlanSheetsHost`'s `onSave` works out `retypedValuePatches(editing, next, …)`; with any, it calls
-    `ctx.reshapeValues(patches)` (`usePlanSlice`: one `patches` write marked `undo: true`, past the Required rule,
+    `ctx.reshapeValues(patches)` (`usePlanItemWrites`: one `patches` write marked `undo: true`, past the Required rule,
     `usePlanItems.write(input, { onUndo })` handing its undo step back instead of pushing it) and passes that promise
     to `itemTypes.saveType(next, along)`, whose `change` pushes `combinedStep([typeStep, itemsStep])`
     (`item-undo-journal.ts`) once the write settles (the type's step alone when it made none).
@@ -755,7 +769,7 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
     `apps/editor/components/plan/field-retype-tabs.ts` walks `Tab[]` (boards `shape: 'plan-board'`, views
     `shape: 'plan-view'`): `countFieldFilters(tabs, target)` and `tabsWithoutFieldFilters(tabs, target)` (a tab
     and an element replaced only when one changed; the array returned as is when none did).
-  - **Gap: all or none** (spec "Saving the type"). `usePlanSlice.reshapeValues(patches)` resolves
+  - **Gap: all or none** (spec "Saving the type"). `usePlanItemWrites.reshapeValues(patches)` resolves
     `{ ok, step }` (`ValuesWrite`, `item-undo-journal.ts`): `ok` is the write's own answer, `step` the undo of
     whatever landed (`usePlanItems.write`'s `onUndo`, called for a partial write too). `useItemTypes.saveType(type,
 along?)` takes `along: SaveAlong = { values?: Promise<ValuesWrite>, settle?: () => boolean, name }`;
@@ -919,7 +933,7 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
   refuses `field_required` for a patch, patches or move whose item `requiredCleared` unless `undo`. The api's single
   create and bulk create run `createRefusal` per create (after the Default State), `writeItem` and the patches route
   run `requiredCleared` beside `excludedStatus`; the refusal is 400 `{ error: 'field_required', field: <id> }`. The
-  offline store runs the same checks. The editor's `usePlanSlice.addItem` goes through `useRequiredFieldsGate`:
+  offline store runs the same checks. The editor's `usePlanItemWrites.addItem` goes through `useRequiredFieldsGate`:
   a create missing a required field opens `RequiredFieldsDialog` (PlanSheetsHost draws it first) and is written,
   filled, only on Create; Cancel answers false. `refusalMessage('field_required')` reads "That field is required on
   this card type". `boardCsvImport` counts a row missing one in `missingRequired` (also in `skipped`).

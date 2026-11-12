@@ -14,7 +14,7 @@ Five mechanisms, layered. Every cell below comes from one of them.
 | Owner-only guards     | `routes/context.ts` `ownsDocument`, `requireOwnedDocument`, `mayDeleteDocument`                                                      | Ownership is separate from the edit grant already: share family and tab linking need the owner; delete, trash and moves need the owner or a joined member.                                                                                      |
 | Read-only token choke | `apps/api/src/index.ts` `routeApiRequest`, `if (tokenAuth?.readOnly && isWrite) return forbidden('read_only_token')`                 | A read-only token may only `GET` / `HEAD`, on every route.                                                                                                                                                                                      |
 | Session-only routes   | `routes/tokens.ts`, `livediagram/apps/api/src/routes/oauth.ts`, `routes/account.ts`, `routes/teams.ts` (non-GET)                     | Need `ctx.accountUserId` (a signed-in session) , so neither a guest nor any API token can reach them.                                                                                                                                           |
-| Room op gate          | `apps/api/src/document-room/document-room.ts` `webSocketMessage`; op classes in `packages/api-schema/src/room-messages.ts`           | `if (sender.role !== 'edit' && !isPresenceOp) return;` A view session may send only `PRESENCE_OP_KINDS`; `MUTATION_OP_KINDS` need edit; `SYSTEM_OP_KINDS` never come from a socket.                                                             |
+| Room op gate          | `apps/api/src/document-room/document-room.ts` `webSocketMessage`; op classes in `packages/api-schema/src/room-op-kinds.ts`           | `if (sender.role !== 'edit' && !isPresenceOp) return;` A view session may send only `PRESENCE_OP_KINDS`; `MUTATION_OP_KINDS` need edit; `SYSTEM_OP_KINDS` never come from a socket.                                                             |
 
 The editor mirrors this with two flags: `sessionRole` (`apps/editor/app/document/[id]/editor-page-helpers.ts`
 `resolveDocumentSession`, owner or link role) and `isReadOnly = !canEdit` (`useEditorState.ts`, from
@@ -285,7 +285,7 @@ offers "can view" and "can edit" with ownership and admin rights handled separat
    live today for view links, so Participant is a promotion of an existing behaviour plus the missing votes and
    responses, not a new surface.
 2. **Introduce a third room op class** (participation) beside presence and mutation, owned by
-   `packages/api-schema/src/room-messages.ts`, and move `poll-answer` into it, so the role gate stops leaning on
+   `packages/api-schema/src/room-op-kinds.ts`, and move `poll-answer` into it, so the role gate stops leaning on
    "presence" for a write.
 3. **Define ownership as a list of doors, not a role**: share family, password, delete, Trash, move, Take offline,
    baton override; decide per door whether a team member or admin also holds it, and route all of them through

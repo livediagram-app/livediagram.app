@@ -60,11 +60,11 @@ async function importBoards(page: Page, boards: 1 | 2): Promise<void> {
   await expect(page.getByTestId('import-documents')).toContainText('Sprint board');
 }
 
-// Jump Back In's documents: the Most Used and Recent lists on a wide screen, the strip on a phone.
-const jumpBackIn = (page: Page) =>
-  page.getByRole('region', { name: 'Jump Back In' }).getByRole('listitem');
+// Home's opened documents: the Most Used and Recent sections, grids on a wide screen, strips on a phone.
+const homeOpened = (page: Page) =>
+  page.getByRole('region', { name: /^(Most Used|Recent)$/ }).getByRole('listitem');
 
-test('an API client’s document is in Jump Back In unless it says markUsed: false', async ({
+test('an API client’s document is in Home’s Most Used or Recent unless it says markUsed: false', async ({
   page,
   pageErrors,
 }) => {
@@ -73,29 +73,28 @@ test('an API client’s document is in Jump Back In unless it says markUsed: fal
   await apiCreate(page, headers, 'One of a batch', { markUsed: false });
 
   await page.goto('/explorer/home');
-  await expect(jumpBackIn(page).getByRole('link', { name: 'Made by a script' })).toBeVisible({
+  await expect(homeOpened(page).getByRole('link', { name: 'Made by a script' })).toBeVisible({
     timeout: 30_000,
   });
-  await expect(jumpBackIn(page).getByRole('link', { name: 'One of a batch' })).toHaveCount(0);
+  await expect(homeOpened(page).getByRole('link', { name: 'One of a batch' })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
 
-test('signed in, a single imported board is in Jump Back In; a two-board import is not', async ({
+test('signed in, a single imported board is in Home’s Most Used or Recent; a two-board import is not', async ({
   page,
   pageErrors,
 }) => {
   await signedIn(page, freshUserId('importer'));
   await importBoards(page, 2);
   await page.goto('/explorer/home');
-  await expect(page.getByRole('region', { name: 'Jump Back In' })).toContainText(
-    /will gather here\./,
-    { timeout: 30_000 },
-  );
+  await expect(page.getByRole('region', { name: 'Recent' })).toContainText(/will gather here\./, {
+    timeout: 30_000,
+  });
 
   await importBoards(page, 1);
   await page.goto('/explorer/home');
-  await expect(jumpBackIn(page).getByRole('link')).toHaveCount(1);
-  await expect(jumpBackIn(page).getByRole('link', { name: 'Sprint board' })).toBeVisible();
+  await expect(homeOpened(page).getByRole('link')).toHaveCount(1);
+  await expect(homeOpened(page).getByRole('link', { name: 'Sprint board' })).toBeVisible();
   await page.screenshot({ path: test.info().outputPath('signed-in-import-home.png') });
   expectNoPageErrors(pageErrors);
 });

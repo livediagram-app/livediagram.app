@@ -3,7 +3,7 @@
 // The item panel (docs/specs/026-plan/plan-board.md "Working on a board"): a wide modal in two columns.
 // The main column holds the title and the type's tabs (docs/specs/026-plan/item-types.md); the Details
 // panel beside it holds the fields in no tab, then who made the item and who last changed it. Every type's tabs end
-// with Activity (the card's history); on a phone it is one column and Details becomes the last tab. It opens on the
+// with Linked Cards (when a Card field can link to the type) and Activity (the card's history); on a phone it is one column and Details becomes the last tab. It opens on the
 // type's first tab. Every field saves as it changes. It follows the item wherever someone moves it, and closes if
 // someone deletes it.
 import { useEffect, useState, type ReactNode } from 'react';
@@ -42,7 +42,7 @@ import { useRunRule } from '@/components/automations/use-run-rule';
 import { useCardThreadsContext } from './threads/CardThreadsContext';
 import { useSetByAutomation } from '@/components/automations/set-by-automation';
 import { SetByAutomationChip } from '@/components/automations/SetByAutomationChip';
-import { LinkedCardGroup } from './LinkedCards';
+import { LinkedCardsTab, linkedCardCount } from './LinkedCardsTab';
 import { BlockedBySections } from './BlockedBy';
 import { LinkedActionBanner } from './LinkedActionBanner';
 import type { PlanContextValue } from './PlanContext';
@@ -61,7 +61,14 @@ import {
   type ItemFieldContext,
 } from './ItemFieldEditor';
 import { ItemDetailsRow, ItemMeta, ItemPanelSection, ItemTypeBand } from './ItemPanelLayout';
-import { ACTIVITY_TAB, DETAILS_TAB, ItemPanelTabBar, panelTabs } from './ItemPanelTabs';
+import {
+  ACTIVITY_TAB,
+  DETAILS_TAB,
+  LINKED_TAB,
+  ItemPanelTabBar,
+  namedLinkedTab,
+  panelTabs,
+} from './ItemPanelTabs';
 import { track } from '@/lib/telemetry';
 import { CardActivityTab } from './threads/CardActivity';
 import { CardThreads } from './threads/CardThreads';
@@ -241,10 +248,13 @@ function ItemPanelContent({
         item.fields[f] !== undefined,
     ),
   ];
-  // The type's tabs, then Activity, then (on a phone) Details at the far right; the panel opens on the first.
+  // The type's tabs, then Linked Cards when a Card field can link to the type, then Activity, then (on a phone)
+  // Details at the far right; the panel opens on the first.
+  const linked = linkedGroups.length > 0;
   const shownTabs = panelTabs(
     tabs,
     mobile ? { id: DETAILS_TAB, label: detailsLabelOf(type), fields: details } : null,
+    linked ? linkedCardCount(linkedGroups) : null,
   );
   const [picked, setPicked] = useState<string>(shownTabs[0]!.id);
   const current = shownTabs.find((t) => t.id === picked) ?? shownTabs[0]!;
@@ -265,33 +275,41 @@ function ItemPanelContent({
     onOpenItem,
   };
 
-  // The Linked as sections sit on the type's first tab, before Comments, even with no cards in them; a card's Blocked
-  // By sections lead them (docs/specs/026-plan/item-types.md "Blocked By").
+  // A card's Blocked By sections sit on the type's first tab, before Comments, since they say what stops it
+  // (docs/specs/026-plan/item-types.md "Blocked By"). The Linked as sections sit on the Linked Cards tab, even with no
+  // cards in them: the generated one, or the type's own tab of that name, before its Comments ("The Linked Cards tab").
   const firstTabId = tabs[0]?.id;
-  const showsChildren = linkedGroups.length > 0 || hasBlocksFields([type]);
-  const childSection = (
-    <div key="child-cards">
-      <BlockedBySections item={item} type={type} onOpen={(id) => onOpenItem(id, 'ChildCard')} />
-      {linkedGroups.map((g) => (
-        <LinkedCardGroup
-          key={g.fieldId}
-          group={g}
-          types={types}
-          statusNames={statusNames}
-          canAdd={canEdit && !!onAddLinked}
-          onOpen={(id) => onOpenItem(id, 'ChildCard')}
-          onAdd={(typeId) => onAddLinked?.(g, typeId)}
-          target={item}
-          {...(onLinkExisting
-            ? {
-                onLinkExisting: (cardId: string, moved: boolean) =>
-                  onLinkExisting(g, cardId, moved),
-              }
-            : {})}
-        />
-      ))}
-    </div>
+  const blockedOnFirst = hasBlocksFields([type]);
+  const linkedHostId = linked ? (namedLinkedTab(tabs)?.id ?? LINKED_TAB) : null;
+  const linkedSection = (
+    <LinkedCardsTab
+      key="linked-cards"
+      item={item}
+      groups={linkedGroups}
+      types={types}
+      statusNames={statusNames}
+      canAdd={canEdit && !!onAddLinked}
+      onOpen={(id) => onOpenItem(id, 'ChildCard')}
+      onAdd={(g, typeId) => onAddLinked?.(g, typeId)}
+      onLinkExisting={onLinkExisting}
+    />
   );
+  // What a type's own tab adds before its Comments: the Blocked By sections on the first, the Linked as sections on
+  // one named Linked Cards (both when the first is that one).
+  const inserted = (id: string): ReactNode[] => [
+    ...(id === firstTabId && blockedOnFirst
+      ? [
+          <BlockedBySections
+            key="blocked-by"
+            item={item}
+            type={type}
+            onOpen={(cardId) => onOpenItem(cardId, 'ChildCard')}
+          />,
+        ]
+      : []),
+    ...(id === linkedHostId ? [linkedSection] : []),
+  ];
+  const currentInserted = inserted(current.id);
 
   // The breadcrumb, the shared back bar, takes a row of its own above the header, so neither it nor the type picker
   // is squeezed.
@@ -424,8 +442,10 @@ function ItemPanelContent({
           {repeat.line}
           {meta}
         </div>
-      ) : current.id === firstTabId && showsChildren ? (
-        tabFieldsWithChildren(type, current.fields, mainField, childSection)
+      ) : current.id === LINKED_TAB ? (
+        linkedSection
+      ) : currentInserted.length > 0 ? (
+        tabFieldsWithInserted(type, current.fields, mainField, currentInserted)
       ) : current.fields.length > 0 ? (
         current.fields.map(mainField)
       ) : (
@@ -495,19 +515,16 @@ function ItemPanelContent({
   );
 }
 
-// A first tab's fields with the Linked as sections placed before its first Comments field (or last when it has none).
-function tabFieldsWithChildren(
+// A tab's fields with sections (Blocked By, Linked as) placed before its first Comments field (or last when it has
+// none).
+function tabFieldsWithInserted(
   type: ItemTypeDef,
   fields: readonly string[],
   mainField: (f: string) => ReactNode,
-  childSection: ReactNode,
+  sections: readonly ReactNode[],
 ): ReactNode[] {
   const comments = new Set(commentsFieldsOf(type));
   const at = fields.findIndex((f) => comments.has(f));
   const cut = at < 0 ? fields.length : at;
-  return [
-    ...fields.slice(0, cut).map(mainField),
-    childSection,
-    ...fields.slice(cut).map(mainField),
-  ];
+  return [...fields.slice(0, cut).map(mainField), ...sections, ...fields.slice(cut).map(mainField)];
 }

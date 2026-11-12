@@ -6,6 +6,7 @@ import { usePageContents, type ContentsUse } from '../../hooks/ui/usePageContent
 import type { ContentsRowBase } from '../../lib/page-contents';
 import { ContentsPanel, usePageInViewOnOpen } from './PageContentsPanel';
 import { CONTENTS_FOLLOW_SETTLE_MS, ContentsSidebar } from './PageContentsSidebar';
+import { ROW_TOOLS_REVEAL } from './PageRowMenu';
 import { ViewportStoreProvider } from '../../hooks/canvas/useViewportStore';
 import { createViewportStore } from '../../lib/viewport-store';
 
@@ -226,6 +227,30 @@ describe('the shared Contents popover', () => {
     expect(screen.getAllByRole('listitem')).toHaveLength(8);
   });
 
+  // pages-mode.md "One reveal rule": the grip and ⋯ show together, by the pointer and never the window's width. The
+  // bottom sheet (a window under 640 px, a mouse in a ~450 px desktop window included) once showed its grip always
+  // while its ⋯ waited for a hover.
+  it.each([
+    ['the desktop popover', false],
+    ['the bottom sheet of a narrow window', true],
+  ])(
+    'reveals a row’s grip and ⋯ together in %s, and pins both while its menu is open',
+    (_, mobile) => {
+      render(<Panel h={harness()} mobile={mobile} />);
+      const toolsOf = (name: string) => {
+        const row = rowButton(name).closest('[role="listitem"]')!;
+        return [
+          row.querySelector('[data-contents-grip]')!,
+          row.querySelector('[data-contents-row-menu]')!,
+        ];
+      };
+      for (const el of toolsOf('Page 2')) expect(el.className).toContain(ROW_TOOLS_REVEAL);
+      fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page 2' }));
+      for (const el of toolsOf('Page 2')) expect(el.className).not.toContain('opacity-0');
+      for (const el of toolsOf('Page 3')) expect(el.className).toContain(ROW_TOOLS_REVEAL);
+    },
+  );
+
   it('gives a Viewer the list alone: no menu, no grip and no Add Page', () => {
     render(<Panel h={harness({ canEdit: false })} />);
     expect(screen.queryByRole('button', { name: /More Actions/ })).toBeNull();
@@ -334,6 +359,17 @@ describe('the shared Contents sidebar', () => {
     expect(picture('Page 1').className).toContain('ring-brand-500');
     expect(veilOf('Page 1')?.textContent).toBe('Hidden');
     expect(describedAs('Page 1')).toBe('Hidden in Slides');
+  });
+
+  it('reveals a row’s grip, Delete and ⋯ together by the same rule, the page here showing them', () => {
+    render(<Sidebar h={harness()} />);
+    const stackOf = (name: string) =>
+      rowButton(name).closest('[role="listitem"]')!.querySelector('[data-page-row-stack]')!;
+    expect(stackOf('Page 3').className).toContain(ROW_TOOLS_REVEAL);
+    expect(stackOf('Page 3').querySelector('[data-contents-grip]')!.className).not.toContain(
+      'opacity',
+    );
+    expect(stackOf('Page 1').className).not.toContain('opacity-0');
   });
 
   it('keeps Contents Options at a Viewer’s foot, with no Add Page', () => {

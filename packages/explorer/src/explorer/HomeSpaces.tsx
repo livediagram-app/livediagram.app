@@ -1,11 +1,11 @@
 'use client';
 
-// Home's Spaces (liveworkspace/docs/specs/004-index/one-explorer.md "Spaces, on Home"): directly under Jump Back In, one
+// Home's Spaces (liveworkspace/docs/specs/004-index/one-explorer.md "Spaces, on Home"): directly under Most Used and Recent, one
 // tile per space the person has, My Work then each team, each a link straight into that space's list. A tile is drawn
 // as Home's large cards are: a mosaic of the space's newest items (FolderMosaic, the folder cards' own), over the
 // space's disc, its name and a line saying how much it holds and when it last changed; a team's adds its member count
 // and the faces behind its newest items. One request for every space (useSpacePreviews). On a phone the tiles are one
-// strip that snaps tile by tile, as Jump Back In's is; from `md` a grid of two, of four from `lg`.
+// strip that snaps tile by tile, as Most Used and Recent's is; from `md` a grid of two, of four from `lg`.
 
 import { useId, useMemo, useState, type ReactNode } from 'react';
 import { APP_KINDS, type SpacePreview } from '@liveworkspace/index-client';
@@ -56,7 +56,7 @@ const TILE = `group flex w-full min-w-0 flex-col gap-2.5 rounded-[18px] p-2 pb-3
 // A tile that makes or asks rather than opens: the same footprint, dashed, its words centred.
 const DASHED = `group flex min-h-[11.25rem] w-full min-w-0 flex-col items-center justify-center gap-2 rounded-[18px] border border-dashed border-slate-300 p-4 text-center transition duration-micro hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-600 dark:hover:border-brand-400/60 dark:hover:bg-brand-400/[0.06] ${FOCUS_RING}`;
 const MOSAIC = `relative h-28 w-full rounded-xl ${THUMB_EDGE}`;
-// Readable over the mosaic, as Jump Back In's menu chip is.
+// Readable over the mosaic, as Most Used and Recent's menu chip is.
 const CHIP =
   'absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900/90 dark:text-slate-200 dark:ring-slate-700';
 

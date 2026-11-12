@@ -36,7 +36,7 @@ it, from the room too.
 
 ## Op vocabulary
 
-Three additions to `RoomOp` (`packages/api-schema/src/room-messages.ts`). The
+Three additions to `RoomOp` (`packages/api-schema/src/room-op.ts`). The
 wire keeps `op: unknown`; the room reads each op's kind to gate and order it,
 and reads these three to keep the running poll (above).
 

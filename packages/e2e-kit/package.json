@@ -6,7 +6,11 @@
   "sideEffects": false,
   "exports": {
     "./contrast": "./src/contrast.ts",
+    "./optical": "./src/optical.ts",
+    "./optical-discover": "./src/optical-discover.ts",
     "./optical-snap": "./src/optical-snap.ts",
+    "./perf/budget": "./src/perf/budget.ts",
+    "./perf/budget-report": "./src/perf/budget-report.ts",
     "./perf/calibrate": "./src/perf/calibrate.ts",
     "./perf/interactive": "./src/perf/interactive.ts",
     "./perf/trace-tasks": "./src/perf/trace-tasks.ts"

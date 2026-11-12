@@ -106,9 +106,9 @@ export function rowState(row: PostRow): CommunityPostState {
   return row.state === 'hidden' ? 'hidden' : 'listed';
 }
 
-// What search matches against: lowercased title, description and tags.
+// What search matches against: title, description and tags, lowercased and NFC-normalised like the search terms.
 export function searchText(title: string, description: string, tags: string[]): string {
-  return `${title}\n${description}\n${tags.join(' ')}`.toLowerCase();
+  return `${title}\n${description}\n${tags.join(' ')}`.toLowerCase().normalize('NFC');
 }
 
 // Escape a term for a LIKE pattern with ESCAPE '\'.

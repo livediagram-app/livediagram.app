@@ -57,7 +57,7 @@ export type OfflineDocumentRecord = {
   // A trashed record keeps everything else so a restore is exact.
   trashedAt?: number;
   // This Browser's opens of the document (docs/specs/013-workspace/explorer-home.md "Opens"),
-  // for Home's Jump Back In; see ./offline-opens.ts. Optional: a record never opened has none.
+  // for Home's Recent; see ./offline-opens.ts. Optional: a record never opened has none.
   opens?: StoredLocalOpens;
 };
 

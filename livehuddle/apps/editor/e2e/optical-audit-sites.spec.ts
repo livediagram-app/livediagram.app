@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from './fixtures';
-import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
+import { auditOptical, OPTICAL_TOLERANCE_PX } from '@liveworkspace/e2e-kit/optical';
 
 // Optical alignment audit on the other sites (docs/specs/004-interface-design/optical-alignment.md): the
 // help centre, the Community and the marketing site. The e2e stack serves their static builds (help under its

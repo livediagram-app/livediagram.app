@@ -19,7 +19,7 @@ codeWrap?: boolean; // absent meaning true
 
 `CODE_LANGUAGES` (`data-shapes.ts`) is the closed set `plain`, `ts`, `js`, `python`, `json`, `bash`, `sql`, `html`,
 `css`, `yaml`, wire-validated (`validate-shape.ts`) so a saved project can't smuggle an arbitrary string into the
-renderer. A new block is 320 × 180 (`shape-factory.ts`). `code-block` is in the self-painting set, so it has no centred
+renderer. A new block is 320 × 180 (`shape-default-size.ts`). `code-block` is in the self-painting set, so it has no centred
 label.
 
 ## Colour schemes

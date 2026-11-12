@@ -73,7 +73,7 @@ export function panelSectionGroups(
     },
     {
       id: 'more',
-      // The sidebar's Library, in its order (Recent is Home's Jump Back In here).
+      // The sidebar's Library, in its order (Recent is Home's Recent here).
       sections: [
         { kind: 'favourites' },
         ...(library ? [{ kind: 'library' as const }] : []),

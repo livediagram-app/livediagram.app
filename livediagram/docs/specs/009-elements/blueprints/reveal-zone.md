@@ -14,7 +14,7 @@ Scope, by file:
 | `packages/document/src/validate.ts`                                         | `revealed` must be a boolean                                    |
 | `packages/document/src/svg-render-faces.ts`                                 | `revealCover`, omitted when `revealed === true`                 |
 | `apps/editor/components/canvas/RevealFace.tsx`                              | Cover, double press, Hide pill                                  |
-| `apps/editor/components/canvas/ElementFaceRouter.tsx`                       | Resolves the accent: `ownColours(element).stroke` or default    |
+| `apps/editor/components/canvas/behaviour-faces.tsx`                         | Resolves the accent: `ownColours(element).stroke` or default    |
 | `apps/editor/app/qa-board.css`                                              | `.reveal-sweep`, `.reveal-cover` hover                          |
 | `apps/editor/hooks/ui/usePressWithoutDrag.ts`                               | `requireDouble` and `isDoublePress`                             |
 | `../packages/workbench/src/lib/double-press.ts`                             | `DOUBLE_PRESS_MS`                                               |

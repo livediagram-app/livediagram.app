@@ -347,7 +347,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           type: 'boolean',
           description:
             'Whether making the document counts as a use of it for the caller, so it joins their ' +
-            'Jump back in at once. Default true; send false when making many documents in one go ' +
+            'Most Used and Recent at once. Default true; send false when making many documents in one go ' +
             '(the editor does for an import of more than one), so they wait until opened. Not a ' +
             'boolean: 400 invalid markUsed.',
         },

@@ -29,7 +29,7 @@ and in `isSelfDrawingShape` (no label editor, no markers, no text alignment, no 
 - **No text, by any route.** No Add-text button, no double-click editor, no type-to-edit, all from
   `isSelfDrawingShape`.
 - **Square and aspect-locked.** A new sticker is 104 × 104 and `aspectLocked`, because the plate and its content
-  are drawn to one shape (`shape-factory.ts`).
+  are drawn to one shape (`shape-default-size.ts`, `shape-factory.ts`).
 
 ## The artwork is built once
 

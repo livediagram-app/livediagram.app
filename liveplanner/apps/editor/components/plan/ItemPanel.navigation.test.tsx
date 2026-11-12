@@ -9,8 +9,9 @@ vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
   useIsMobileViewport: () => viewport.mobile,
 }));
 
-// docs/specs/026-plan/plan-board.md "Open an item": a project's Linked as Parent sits on its first tab before
-// Comments, and the header's breadcrumb steps back; each says how it opened the next card.
+// docs/specs/026-plan/plan-board.md "Open an item": a project's Linked as Parent sits on its Linked Cards tab
+// (item-types.md "The Linked Cards tab"), and the header's breadcrumb steps back; each says how it opened the next
+// card.
 
 afterEach(() => {
   cleanup();
@@ -97,14 +98,12 @@ describe('the item panel’s first focus', () => {
 });
 
 describe('the item panel’s navigation', () => {
-  it('lists a Project’s Linked as Parent before Comments and opens one as a ChildCard', () => {
+  it('lists a Project’s Linked as Parent on Linked Cards and opens one as a ChildCard', () => {
     const project = item('p', 1, 'project');
     const onOpenItem = panel(project, [project], [item('c', 2, 'task')]);
-    const children = screen.getByRole('heading', { name: /Linked as Parent/ });
-    const comments = screen.getByText('Comments');
-    expect(
-      children.compareDocumentPosition(comments) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: /Linked as Parent/ })).toBeNull();
+    fireEvent.click(screen.getByRole('tab', { name: 'Linked Cards, 1 card' }));
+    expect(screen.getByRole('heading', { name: /Linked as Parent/ })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^Open #2 Card 2/ }));
     expect(onOpenItem).toHaveBeenCalledWith('c', 'ChildCard');
   });

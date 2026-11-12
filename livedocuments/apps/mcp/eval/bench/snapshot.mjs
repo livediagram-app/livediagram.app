@@ -1,6 +1,6 @@
 // Reads back every document a run touched, through the same MCP tools an assistant has, so a task's checks judge
 // what was made rather than what the agent said it made. Read-only: it never writes.
-import { resultJson, resultText } from './mcp-client.mjs';
+import { resultJson, resultText } from '@liveworkspace/mcp-kit/eval/mcp-client';
 
 // The outline's first line names the tab's pages: `tab 3be5 "Deck" · 53 elements: 53 boxes · 6 pages: 6 slide
 // (view pages) · rev 5`.

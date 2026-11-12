@@ -15,6 +15,8 @@ Scope, by file (under `apps/editor/lib/office-import/` unless marked):
 | `tally.ts`                                      | `SkipTally`: counts of what was left out                                                   |
 | `docx-styles.ts`                                | Paragraph styles, numbering and run properties of a Word package                           |
 | `docx.ts`                                       | `readDocx`: the body walked into `DocxBlock`s and the pictures they name                   |
+| `docx-parts.ts`                                 | The walker's pure parts: a to-do's box, alignment, field links, table parts, a VML size    |
+| `docx-footnotes.ts`                             | `readFootnotes`: each footnote's plain text by id                                          |
 | `pptx-shapes.ts`                                | Placeholders, transforms and a text body into a slide's items                              |
 | `pptx.ts`                                       | `readPptx`: slides, their items, notes and hidden flags, the deck size                     |
 | `store-images.ts`                               | `storePictures`: each picture once, three at a time, through an `ImportImageSession`       |

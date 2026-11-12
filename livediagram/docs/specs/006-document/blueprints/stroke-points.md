@@ -208,7 +208,7 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Canvas view         | `apps/editor/components/canvas/boxed-element-overlays.tsx`                           | decode                                                                              |
 | Live ink            | `apps/editor/components/canvas/whiteboard/LiveInk.tsx`                               | unchanged: raw geometry through `PenStrokeSource`                                   |
 | Pen gesture         | `apps/editor/components/canvas/useWhiteboardPenGesture.ts`                           | ink type                                                                            |
-| Commit types        | `apps/editor/components/canvas/Canvas.types.ts`                                      | `PenInk` owns `pressures`                                                           |
+| Commit types        | `apps/editor/components/canvas/Canvas.add.types.ts`                                  | `PenInk` owns `pressures`                                                           |
 | Pen commit          | `apps/editor/hooks/canvas/commit-freehand.ts`                                        | pressures to `createFreehand`                                                       |
 | Style presets       | `apps/editor/lib/style-presets.ts`                                                   | re-pack without pressures                                                           |
 | Excalidraw export   | `apps/editor/lib/excalidraw-export.ts`                                               | decode                                                                              |

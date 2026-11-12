@@ -29,6 +29,9 @@ import { copiedRuleStatements, copiedRules } from './automations/automation-copy
 // one RPC message, so a plan past the 32 MiB a message may carry cannot be copied this way (the follow-up is to
 // stream it in pages).
 export type PlanCopy = {
+  // The copy's name, the index's title for it (internal-items.ts); absent from an index that does not send one,
+  // and from a Drive file's import, which names the plan as it starts it.
+  name?: string;
   itemTypes: string | null;
   itemsRev: number;
   itemsNextKey: number;
@@ -326,12 +329,14 @@ export async function importPlanCopy(
     db
       .prepare(
         // created_at stays 0: the copy's first open with a grant starts it, as its new owner (initPlan).
-        `INSERT INTO plan (id, item_types, items_rev, items_next_key, saved_at, created_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, 0)
+        // Its name is the index's title for it, which that start keeps (initPlan).
+        `INSERT INTO plan (id, item_types, items_rev, items_next_key, saved_at, created_at, name)
+         VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6)
          ON CONFLICT (id) DO UPDATE SET item_types = excluded.item_types, items_rev = excluded.items_rev,
-           items_next_key = excluded.items_next_key, saved_at = excluded.saved_at`,
+           items_next_key = excluded.items_next_key, saved_at = excluded.saved_at,
+           name = CASE WHEN plan.created_at = 0 AND excluded.name <> '' THEN excluded.name ELSE plan.name END`,
       )
-      .bind(planId, copy.itemTypes, copy.itemsRev, copy.itemsNextKey, now),
+      .bind(planId, copy.itemTypes, copy.itemsRev, copy.itemsNextKey, now, copy.name ?? ''),
   ];
   for (const tab of copy.tabs) {
     stmts.push(

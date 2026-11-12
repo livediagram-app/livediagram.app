@@ -492,7 +492,8 @@
     "lint": "oxlint",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules .turbo",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "peerDependencies": {
     "next": "^16.4.5",

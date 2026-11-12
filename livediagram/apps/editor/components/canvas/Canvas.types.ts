@@ -1,49 +1,34 @@
-import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
-import type { TidyUpActions } from './tidy-up-actions';
-import type { PenInk } from '@/hooks/canvas/commit-freehand';
 import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
-import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
-import type { ShapeLibraryItem } from '@livediagram/api-schema';
-import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 // Prop contract for the Canvas component, split out of Canvas.tsx
 // (it was a 320-line inline type). Most field types are referenced
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type {
-  CommentMention,
-  EmbedProvider,
-  EsSide,
-  EventStormingNoteKind,
-  Finish,
-  FrameHandle,
-} from '@livediagram/document';
+import type { Finish } from '@livediagram/document';
 import type {
   BackgroundPattern,
   TabKind,
   EditorMode,
   Element,
   Layer,
-  IconPosition,
   ShapeKind,
-  TextAlignX,
-  TextAlignY,
-  TextRun,
 } from '@livediagram/document';
-import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
-import type { PendingDraw } from '@/lib/draw-mode';
-import type { UserPreferences } from '@/lib/user-preferences';
+import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 import type { WorkspaceFrameHooks } from '@/components/providers/workbench-session-context';
+import type { CanvasAddProps } from './Canvas.add.types';
+import type { CanvasEditProps } from './Canvas.edit.types';
+import type { CanvasPanelProps } from './Canvas.panels.types';
+import type { CanvasSessionProps } from './Canvas.session.types';
 
 // A connection-point marker shown while dragging an arrow endpoint: the
 // world-space position of a nearby shape's anchor, with `active` set on the
 // one the endpoint is currently snapped to. Rendered by CanvasChrome.
 export type SnapTarget = { x: number; y: number; active: boolean };
 
-export type CanvasProps = {
+// The props no one group holds: the tab and its view, selection, menus, the Explorer and the chrome's gates.
+type CanvasCoreProps = {
   tabName: string;
   tabLocked: boolean;
   // True for a view-only ('view' share role) session: the editing chrome
@@ -119,153 +104,6 @@ export type CanvasProps = {
   onSelectMarquee: (ids: Set<string>) => void;
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
-  // Press a Mode Button element (docs/specs/009-elements/mode-button.md): hands the LOCAL participant the
-  // mode the element carries. Optional — the read-only embed has no tool picker
-  // to drive, so its buttons render inert.
-  onPressModeButton?: (element: import('@livediagram/document').ShapeElement) => void;
-  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else in the room to come and look at
-  // this element. Absent on a surface with nobody to ask (an export, a solo
-  // canvas), which renders the face inert.
-  onPressFocusButton?: (element: import('@livediagram/document').ShapeElement) => void;
-  // Session button (docs/specs/012-collaboration/session-button.md): starts the tool the pressed element carries.
-  onPressSessionButton?: (element: import('@livediagram/document').ShapeElement) => void;
-  // True when this viewer can't start session tools (view role): the button
-  // renders inert and says why instead of failing silently on press.
-  sessionStartBlocked?: boolean;
-  // Who is running the session when it is somebody else (docs/specs/012-collaboration/facilitator.md), so a blocked
-  // face names the person to ask; null when nobody else holds the baton.
-  sessionRunBy?: string | null;
-  // The tab timer's state for the session button's face (docs/specs/012-collaboration/session-button.md).
-  timerState?: import('@/components/canvas/SessionButtonFace').TimerState;
-  // Reveal zones (docs/specs/009-elements/reveal-zone.md) this viewer has lifted for themselves. Ephemeral
-  // and local — the shared state is `revealed` on the element.
-  revealedIds?: ReadonlySet<string>;
-  onToggleReveal?: (elementId: string) => void;
-  // Per-element session settings from the element's own `…` menu (docs/specs/012-collaboration/session-button.md):
-  // the timer's length, the vote's dots, the poll's question and answers.
-  // Absent on a read-only surface, which renders the menu's trigger not at all.
-  // Comment panel (docs/specs/012-collaboration/comment-pin.md): who I am, plus the thread mutators, so a panel
-  // shows and edits its thread in place. All keyed by element id, which is how
-  // the anchored popover already drives them.
-  commentSelfId?: string;
-  commentPanelActions?: {
-    add: (elementId: string, text: string, mentions?: CommentMention[]) => void;
-    remove: (elementId: string, commentId: string) => void;
-    resolve: (elementId: string) => void;
-    unresolve: (elementId: string) => void;
-  };
-  // Action panel (docs/specs/012-collaboration/action-panel.md): who I am (for "Assigned to you"), plus the
-  // docs/specs/012-collaboration/assigned-actions.md action mutators, keyed by element id like everything else that
-  // drives an action. Absent on a read-only surface: the card renders inert.
-  actionSelfId?: string | null;
-  actionPanelActions?: {
-    // Opens the Assign Action dialog: to add (no action id) or edit one.
-    configure: (elementId: string, actionId?: string | null) => void;
-    complete: (elementId: string, actionId?: string | null) => void;
-    reopen: (elementId: string, actionId?: string | null) => void;
-  };
-  onSetSessionConfig?: (
-    element: import('@livediagram/document').ShapeElement,
-    config: import('@livediagram/document').SessionButtonConfig,
-  ) => void;
-  // Open an element's own context menu from the `…` on its face, anchored at
-  // the trigger's screen position (docs/specs/008-canvas/canvas-and-palette.md). Absent on a read-only surface,
-  // where there is nothing to configure.
-  onOpenElementSettings?: (elementId: string) => void;
-  // Picker (docs/specs/012-collaboration/picker.md): the candidates a roll can land on, and the roll itself.
-  // `shared` says whether this viewer's roll is written back (and so reaches
-  // the room), which is how the face tells its own landing apart from a peer's.
-  onRollPicker?: (element: import('@livediagram/document').ShapeElement) => {
-    candidates: import('@/lib/picker').PickerCandidate[];
-    shared: boolean;
-    roll: () => import('@/lib/picker').PickerCandidate | null;
-  };
-  // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): the viewer's identity,
-  // the room, and the writes they may make — one prop for all five faces.
-  collab?: import('@/components/canvas/collab/CollabFaceRouter').CollabApi;
-  // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): the name of whoever we are following, for the pill,
-  // and the way out of it. Null / absent = not following anybody.
-  followingName?: string | null;
-  onStopFollowing?: () => void;
-  // Portal (docs/specs/009-elements/portal-element.md): resolve a portal's pairing — the paired portal's name and, when
-  // it has one, the action that travels there.
-  onEnterPortal?: (element: import('@livediagram/document').ShapeElement) => {
-    targetName: string | null;
-    travel?: () => void;
-  };
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): set one off. Absent on a read-only surface, which
-  // renders the pad inert rather than hiding it.
-  onFireReaction?: (element: import('@livediagram/document').ShapeElement) => void;
-  // The bursts currently playing, keyed by the pad's element id, plus the way
-  // to retire one when its animation ends. Ephemeral: never document state.
-  reactionBursts?: Map<
-    string,
-    { reaction: import('@livediagram/document').Reaction; seed: number }
-  >;
-  onReactionBurstDone?: (elementId: string) => void;
-  // The laser pen (docs/specs/008-canvas/spotlight-panel.md). Owned in editor state, not here: the broadcaster
-  // stamps it onto every sample and the trail rows carry it, both of which sit
-  // above Canvas — so Canvas forwards it to the panel rather than owning it.
-  laserConfig?: import('@/lib/laser-config').LaserConfig;
-  onChangeLaserField?: <K extends keyof import('@/lib/laser-config').LaserConfig>(
-    field: K,
-    value: import('@/lib/laser-config').LaserConfig[K],
-  ) => void;
-  // Laser Panel (docs/specs/008-canvas/spotlight-panel.md): where it sits.
-  laserPanelPosition?: { x: number; y: number } | null;
-  onMoveLaserPanel?: (x: number, y: number) => void;
-  onResetLaserPanel?: () => void;
-  // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): where it sits.
-  spotlightPanelPosition?: { x: number; y: number } | null;
-  onMoveSpotlightPanel?: (x: number, y: number) => void;
-  onResetSpotlightPanel?: () => void;
-  // The eraser's settings (docs/specs/008-canvas/eraser-panel.md). Owned in editor state, where the erase
-  // gesture lives; Canvas forwards them to the panel.
-  eraserConfig?: import('@/lib/eraser-config').EraserConfig;
-  onChangeEraserField?: <K extends keyof import('@/lib/eraser-config').EraserConfig>(
-    field: K,
-    value: import('@/lib/eraser-config').EraserConfig[K],
-  ) => void;
-  // The format painter's settings (docs/specs/008-canvas/format-panel.md) and what its brush holds. Owned
-  // in editor state, where the paint happens; Canvas forwards them.
-  formatConfig?: import('@liveworkspace/workbench/lib/format-config').FormatConfig;
-  onToggleFormatGroup?: (
-    group: import('@liveworkspace/workbench/lib/format-config').FormatGroup,
-  ) => void;
-  onSetFormatMode?: (mode: import('@liveworkspace/workbench/lib/format-config').FormatMode) => void;
-  formatBrushSource?: import('@/components/panels/FormatPanel').FormatBrushSource | null;
-  formatPanelPosition?: { x: number; y: number } | null;
-  onMoveFormatPanel?: (x: number, y: number) => void;
-  onResetFormatPanel?: () => void;
-  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): where it sits.
-  eraserPanelPosition?: { x: number; y: number } | null;
-  onMoveEraserPanel?: (x: number, y: number) => void;
-  onResetEraserPanel?: () => void;
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the deck builder, present only while its tool
-  // is picked. The deck itself rides `slideDeck`.
-  slideDeckPanelPosition?: { x: number; y: number } | null;
-  onMoveSlideDeckPanel?: (x: number, y: number) => void;
-  onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/document/[id]/useSlideDeck').SlideDeckState;
-  // Map of elementId -> remote participants currently focused on that
-  // element. Drives a small badge ring on each element so participants
-  // can see in real time what others are working on.
-  remoteSelectionsByElement: Map<string, RemoteSelector[]>;
-  // Live cursor positions for remote participants — canvas-coords +
-  // participant identity. Rendered inside the transformed wrapper so
-  // they pan and zoom with the canvas.
-  remoteCursors: { id: string; name: string; color: string; x: number; y: number }[];
-  // Laser-pointer trails for the LaserOverlay — local user first
-  // followed by any peers laser-pointing on the active tab. The
-  // overlay handles fading and cleanup; Canvas just renders.
-  // A store, read by the laser overlay alone (docs/specs/008-canvas/canvas-performance.md).
-  laserTrails: ReadableStore<
-    {
-      participantId: string;
-      color: string;
-      points: { x: number; y: number; t: number }[];
-    }[]
-  >;
   // `target` is what the pointer is over, so a paste can tell the canvas from
   // a floating panel lying on top of it (@liveworkspace/workbench/lib/canvas-pointer.ts).
   onCanvasPointerMove: (
@@ -288,137 +126,6 @@ export type CanvasProps = {
   formatSourceId: string | null;
   canUndo: boolean;
   canRedo: boolean;
-  onAddShape: (kind: ShapeKind) => void;
-  onAddIcon: (iconId: string) => void;
-  // Sticker (docs/specs/010-palette/stickers.md): its own kind, its own handler.
-  onAddSticker: (stickerId: string) => void;
-  // Add a Technology (brand) icon as a standalone element (docs/specs/010-palette/technology-icons.md).
-  onAddTechIcon: (iconId: string) => void;
-  // Places a shape from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md) at the
-  // middle of the view.
-  onInsertLibraryShape: (item: ShapeLibraryItem) => void;
-  onAddTable: () => void;
-  onAddAnnotation: () => void;
-  onAddLinkCard: () => void;
-  onAddVideo: (provider?: EmbedProvider) => void;
-  // Composite "Components" (docs/specs/008-canvas/canvas-and-palette.md), dropped at the viewport centre. Hero /
-  // Header / Avatar carry an image and open the picker on drop.
-  onAddBanner: () => void;
-  onAddHero: () => void;
-  onAddHeader: () => void;
-  onAddCallout: () => void;
-  onAddStatRow: () => void;
-  onAddProcess: () => void;
-  onAddFlowchart: () => void;
-  onAddAvatar: () => void;
-  onAddText: () => void;
-  // Optional fill + kind: an Event Storming note (docs/specs/021-event-storming/event-storming.md).
-  onAddSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
-  // True when the active tab is an event-storming board (docs/specs/021-event-storming/event-storming.md) — the
-  // palette opens on the Event Storming category instead of Favourites, and
-  // a palette drag can offer to insert BETWEEN two notes.
-  esBoard?: boolean;
-  // Board-level switches for the palette's Event Storming category
-  // (docs/specs/021-event-storming/event-storming.md Phase 6: timeline lanes). Supplied only on such a board.
-  esBoardControls?: EsBoardControls;
-  // Add the next note beside a note (docs/specs/021-event-storming/event-storming.md Phase 7), from its next-note
-  // button. Absent when the session cannot create.
-  onAddNextNote?: (fromId: string, side: EsSide) => void;
-  // Read a photograph of the wall dropped on the canvas (docs/specs/021-event-storming/event-storming.md Phase 8).
-  // Present only on an event-storming board with the model configured.
-  onDropPhoto?: (file: File) => void;
-  // Any other file dropped on the canvas, at its canvas point (an Excalidraw file or export,
-  // docs/specs/020-import-export/excalidraw-import-export.md "Paste"). Absent where files are refused.
-  onDropFile?: (file: File, at: { x: number; y: number }) => void;
-  // A shape dragged from My shapes, at its canvas point (docs/specs/013-workspace/shape-libraries.md).
-  // Absent where nothing can be placed.
-  onDropLibraryShape?: (ref: LibraryShapeRef, at: { x: number; y: number }) => void;
-  // True when a new element cannot land at all: a locked tab, a view-only
-  // session, or a hidden / locked active layer (docs/specs/006-document/layers.md). The insert-between
-  // preview reads it so it never offers a slot the drop would refuse.
-  createBlocked?: boolean;
-  // Spawn an empty image placeholder + open the picker. Optional so
-  // view-role visitors / no-R2 deployments can simply omit it; the
-  // Palette's Image entry hides when missing (docs/specs/009-elements/images.md).
-  onAddImage?: () => void;
-  // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
-  onAddArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
-  // The arrow whose shape a handle drag is changing (a bend, curve, elbow or endpoint): its
-  // selection frame stands down until the drag ends (docs/specs/008-canvas/arrow-bending.md).
-  reshapingArrowId?: string | null;
-  onBeginFreehand: () => void;
-  // Highlighter variant of the pencil (docs/specs/008-canvas/highlighter.md) + the polygon
-  // click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from the palette tiles.
-  onBeginHighlighter: () => void;
-  // One of Draw mode's markers, picked up from the Toolbar strip's Search in another mode.
-  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId) => void;
-  onBeginShapePen: () => void;
-  onBeginPolygon: () => void;
-  // Draw-to-size mode. Picking any palette element except the annotation
-  // (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas then
-  // enters a drag-to-define gesture. pointer-up calls onCommitDraw with the start + end
-  // canvas-coord points (raw, no axis swap) so the editor can decide
-  // how to interpret them per intent: box intents floor to a 16px
-  // minimum and convert to top-left + width/height; the arrow intent
-  // treats the points as from / to. onCancelDraw backs the Cancel
-  // button on the in-canvas ModeBanner (Escape calls it from the
-  // keyboard hook too).
-  pendingDraw: PendingDraw | null;
-  onCommitDraw: (
-    intent: PendingDraw,
-    startX: number,
-    startY: number,
-    endX: number,
-    endY: number,
-  ) => void;
-  // Freehand commit (pen intent). Receives the raw pointer-sample
-  // polyline in canvas coords. The editor applies RDP simplification
-  // and Catmull-Rom-to-Bezier smoothing before minting the
-  // FreehandElement, both for storage size and visual smoothness.
-  // `recogniseShapes` says whether this stroke came from the Shape Pen
-  // (docs/specs/010-palette/stickers.md); when true the caller (commitFreehand) runs the polyline
-  // through recogniseShape and may mint a real shape primitive instead of a
-  // FreehandElement. It reads off the armed intent's variant, not a
-  // preference — the toggle that used to set it is gone. A whiteboard pen's points are its raw
-  // samples, landed as they are with their `ink` (pressures, streamline; lib/live-stroke).
-  onCommitFreehand: (
-    points: { x: number; y: number }[],
-    recogniseShapes: boolean,
-    // `snapped`: the shape a held-still stroke locked to, as the pen reshaped it (lib/live-stroke);
-    // `keepInk`: the stroke was broken out of a shape, so it lands as drawn.
-    ink?: PenInk,
-  ) => void;
-  // Polygon commit (docs/specs/008-canvas/polygon-tool.md). Receives the deliberately clicked
-  // vertices in canvas coords (no simplification — the user placed
-  // each one) plus whether the loop closed on the start vertex.
-  onCommitPolygon: (vertices: { x: number; y: number }[], closed: boolean) => void;
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn or continued path lands, an
-  // edit-mode gesture lands, and how a new path is dressed (style memory), so the path being
-  // drawn shows the style it will land with.
-  onCommitPath: (commit: import('@/components/canvas/path/usePathDrawGesture').PathCommit) => void;
-  onCommitPathEdit: (
-    id: string,
-    next: { anchors: import('@livediagram/document').PathAnchor[]; closed: boolean },
-    kind: import('@/hooks/canvas/usePathCommits').PathEditKind,
-  ) => void;
-  onDressPath?: <T extends import('@livediagram/document').Element>(el: T) => T;
-  // The line or arrow a draw would land if released now, as the canvas would show it
-  // (docs/specs/023-draw-mode/draw-mode.md "Shapes"), drawn in place of a stand-in while the drag
-  // is in flight. From lib/drawn-arrow-preview.
-  previewDrawnArrow?: (
-    intent: Extract<PendingDraw, { type: 'arrow' }>,
-    startX: number,
-    startY: number,
-    endX: number,
-    endY: number,
-  ) => import('@livediagram/document').ArrowElement;
-  // The user preferences (docs/specs/007-editor/user-preferences.md) the chrome reads.
-  settings: UserPreferences;
-  onCancelDraw: () => void;
-  // The Fill tool's press (docs/specs/023-draw-mode/fill-tool.md), at a canvas point.
-  onPaintBucket?: (point: { x: number; y: number }) => void;
-  onUndo: () => void;
-  onRedo: () => void;
   // Lightweight id + name of this document's tabs, so a link badge's
   // hover card can name the tab/element a link points at (docs/specs/008-canvas/canvas-and-palette.md). Kept
   // minimal + memoised by the caller so element edits don't churn it.
@@ -431,86 +138,6 @@ export type CanvasProps = {
   // False while the active tab's content is still on its way (a tab never opened before): its elements arrive with
   // the board once it lands, not as additions. Omitted, the tab is loaded.
   activeTabLoaded?: boolean;
-  // Map panel (docs/specs/008-canvas/minimap.md) position + move/reset, shared with the other panels.
-  mapPosition: { x: number; y: number } | null;
-  onMoveMap: (x: number, y: number) => void;
-  onResetMap: () => void;
-  // Layers panel (docs/specs/006-document/layers.md). `layers` is the NORMALISED stack (bottom ->
-  // top, never empty) the panel renders; `tabLayers` above stays the raw
-  // field for the render-order helpers. A popover over its bottom-right
-  // cluster button.
-  layers: Layer[];
-  activeLayerId: string;
-  layerCounts: Map<string, number>;
-  // The session tools for the Session strip (docs/specs/012-collaboration/session-tools.md "The Session
-  // strip"): the same bundle the tab menu's Session Studio drives. Absent on a surface without one.
-  sessionTools?: import('@/components/chrome/session-tools-props').SessionToolsProps;
-  // Live poll (docs/specs/012-collaboration/live-poll.md). The panel exists only while a poll is running
-  // and its results are yours to see, so null means the Poll button opens the composer instead.
-  pollPanel: {
-    poll: import('@livediagram/api-schema').LivePoll;
-    answers: Map<string, string | null>;
-    isHost: boolean;
-    onEnd: () => void;
-    // Keep the tallies so far on the canvas as a chart, without ending the
-    // poll (docs/specs/012-collaboration/poll-result-capture.md). Absent for a viewer who can't add elements.
-    onKeepResults?: () => void;
-    onDismiss: () => void;
-  } | null;
-  // Per-user preferences (docs/specs/007-editor/user-preferences.md): where Contents sits, among others.
-  userPreferences: UserPreferences;
-  // Live vote panel (docs/specs/012-collaboration/session-tools.md): turnout while casting is open, then the
-  // clickable ranked results. Null when no vote is running on this tab.
-  voteResults: { id: string; votes: number }[];
-  onJumpToVoteResult: (index: number) => void;
-  // Whether the local participant started the running vote — the only
-  // one who may end / reveal / clear it or move the results focus.
-  isVoteHost: boolean;
-  // Everyone in the room right now who can cast (remote presence + you, one per person, no Viewers or agents),
-  // the turnout denominator.
-  participantCount: number;
-  // Bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
-  // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
-  onOpenCanvasTheme?: () => void;
-  // The CanvasThemeDialog is open: the button reads as expanded, so the guest sign-in banner steps aside for it.
-  canvasThemeOpen?: boolean;
-  // Diagram mode's Tidy Up button and popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up
-  // button"). Absent in a session that may not tidy (a Participant, a Viewer, an embed): no button.
-  tidyUp?: TidyUpActions;
-  onSelectLayer: (layerId: string) => void;
-  onAddLayer: () => void;
-  onRemoveLayer: (layerId: string) => void;
-  onRenameLayer: (layerId: string, name: string) => void;
-  onToggleLayerVisibility: (layerId: string) => void;
-  onToggleLayerLock: (layerId: string) => void;
-  onReorderLayer: (layerId: string, toIndex: number) => void;
-  onMergeLayer: (direction: 'above' | 'below') => void;
-  onSetLayerOpacity: (layerId: string, opacity: number) => void;
-  onClearLayer: (layerId: string) => void;
-  onHideOtherLayers: (layerId: string) => void;
-  // Hover-to-solo (docs/specs/006-document/layers.md): while set, the canvas renders ONLY this
-  // layer. Driven by hovering a Layers-panel row; pure view state.
-  layerPreviewId: string | null;
-  onPreviewLayer: (layerId: string | null) => void;
-  // Floating Comments panel. Only mounted when commentRows is
-  // non-empty: the panel exists to list discussion that already
-  // exists, so on documents without it the panel stays out of the
-  // chrome entirely.
-  commentRows: import('@/components/panels/CollaboratePanel').CommentRow[];
-  commentsPanelPosition: { x: number; y: number } | null;
-  onMoveCommentsPanel: (x: number, y: number) => void;
-  onResetCommentsPanel: () => void;
-  // Row click: editor selects the element + opens its thread popover.
-  onOpenCommentsForElement: (elementId: string) => void;
-  // Floating Actions panel (docs/specs/012-collaboration/assigned-actions.md). Mirrors the Comments panel: only
-  // mounted when actionRows is non-empty (at least one OPEN action on
-  // the active tab).
-  actionRows: import('@/components/panels/CollaboratePanel').ActionRow[];
-  // Row click: editor selects the element + opens its action popover.
-  onOpenActionForElement: (elementId: string) => void;
-  // The Collaborate panel row's round check (docs/specs/012-collaboration/assigned-actions.md §5): complete
-  // (done) or reopen the action in place. Absent for a read-only visitor.
-  onToggleActionDone?: (elementId: string, done: boolean, actionId: string) => void;
   currentDocumentId: string | null;
   // The link this session came in on, so the Explorer panel reads the open document as the link allows.
   currentShareCode?: string | null;
@@ -550,118 +177,6 @@ export type CanvasProps = {
   // 'multi' menu, or closes it if already open (mirrors onOpenElementContextMenu
   // for the single-element ellipsis).
   onOpenMultiContextMenu?: (screenX: number, screenY: number) => void;
-  onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
-  // The armed action a press on an element takes instead of selecting it (an arrow armed to connect, the
-  // format painter): true when it took it. For a touch press that panned instead of dragging, whose tap
-  // must still connect or paint (docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)").
-  onPressArmedAction?: (id: string) => boolean;
-  onBeginEdit: (id: string) => void;
-  onCommitLabel: (id: string, label: string, runs?: TextRun[]) => void;
-  // Inline label-editor (rich-text) alignment control, threaded through
-  // CanvasElementsLayer to the in-place editor on the selected element.
-  onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
-  // Single combined table commit (cells + the parallel colWidths /
-  // rowHeights / cellStyles arrays) applied in ONE commit, so structural
-  // ops can't drop a side array or clobber each other off a stale base.
-  // A lane's title gutter, resized by dragging its seam (docs/specs/009-elements/lane.md). One
-  // commit per gesture, so a drag is one undo step.
-  onCommitHeaderSize?: (elementId: string, px: number) => void;
-  onCommitTable: (
-    id: string,
-    patch: Partial<
-      Pick<
-        import('@livediagram/document').TableElement,
-        'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'
-      >
-    >,
-  ) => void;
-  onCancelEdit: () => void;
-  // Table quick-connect ring (docs/specs/008-canvas/canvas-and-palette.md): append a row / column to the
-  // selected table from the bottom / right plus.
-  onAddTableRow: () => void;
-  onAddTableColumn: () => void;
-  // Toggle one checklist row's done state (docs/specs/009-elements/checklist.md). Omitted in read-only.
-  onToggleChecklistItem?: (elementId: string, index: number) => void;
-  // Entities (docs/specs/009-elements/entity.md): fields saved in place, relationships drawn from a field,
-  // the ring's Add Field / Add Related Entity and the arrow toolbar's Cardinality. Omitted in read-only.
-  entityActions?: import('@/hooks/canvas/useEntityActions').EntityActions;
-  // The Page masthead (docs/specs/009-elements/page-element.md): its heading and subtitle are their own
-  // fields, so they commit through here rather than the label editor.
-  // Mind map (docs/specs/009-elements/mind-node.md): grows the next node from the label editor.
-  onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
-  // Flowchart (docs/specs/009-elements/flowchart.md): a step's type and lane from its toolbar. An
-  // Editor's only, so absent for anyone else (who still grows a chart through onGrowMindNode).
-  flowchartActions?: import('@/hooks/canvas/useFlowchartSetters').FlowchartActions;
-  // Edit Outline (docs/specs/009-elements/mind-node.md): whether `id` is a root whose outline may be
-  // edited, and opening it.
-  canEditMindOutline?: (id: string) => boolean;
-  onEditMindOutline?: (id: string) => void;
-  // Tidy Map on the map `id` belongs to (the badge on a map's root).
-  onTidyMindMap?: (id: string) => void;
-  // Escape on the empty node a Tab made one time too many removes it.
-  onAbandonMindNode: (id: string) => boolean;
-  onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
-  // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a row edited in place, one more row from
-  // the quick-connect ring, and a hero's caption line. Omitted in read-only.
-  onSetWebRows?: (elementId: string, rows: import('@livediagram/document').WebRows) => void;
-  // A pointer note's tip let go at a canvas point (docs/specs/009-elements/pointer-note.md). Omitted in read-only.
-  onSetPointerTip?: (elementId: string, tipAbs: { x: number; y: number }) => void;
-  onAppendWebRow?: (elementId: string) => void;
-  onSetHeroCaptionLine?: (
-    elementId: string,
-    field: keyof import('@livediagram/document').HeroCaption,
-    value: string,
-  ) => void;
-  // Default chart slice colours derived from the active theme (docs/specs/009-elements/pie-chart.md), used
-  // by pie charts for slices without an explicit colour.
-  chartPalette: readonly string[];
-  onBeginEndpointDrag: (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => void;
-  onBeginArrowCurveDrag: (arrowId: string, e: ReactPointerEvent) => void;
-  onBeginArrowCurvePointDrag: (arrowId: string, index: number, e: ReactPointerEvent) => void;
-  onBeginArrowBend: (arrowId: string, e: ReactPointerEvent<SVGElement>) => void;
-  // Scale a selected free arrow from its frame handles (docs/specs/008-canvas/arrow-bending.md).
-  onBeginArrowScale: (arrowId: string, handle: FrameHandle, e: ReactPointerEvent) => void;
-  onDeleteCurvePoint: (arrowId: string, index: number) => void;
-  onBeginArrowElbowDrag: (arrowId: string, e: ReactPointerEvent) => void;
-  onBeginArrowLabelDrag: (arrowId: string, e: ReactPointerEvent) => void;
-  onBeginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;
-  onShiftSelect: (id: string) => void;
-  // Wrap up the Format canvas tool (the palette tool): drops back to the
-  // tool active before it. Drives the format-tool mode banner's "Done" button.
-  onExitFormatTool: () => void;
-  onFollowLink: (link: import('@livediagram/document').ElementLink) => void;
-  onOpenComments: (elementId: string) => void;
-  // Open the element's assigned-action popover (docs/specs/012-collaboration/assigned-actions.md). Available in
-  // read-only sessions too — visitors may read an action; the popover
-  // gates its mutations itself.
-  onOpenAction: (elementId: string) => void;
-  onOpenNote?: (elementId: string) => void;
-  // Drop a palette icon onto a shape: set its inline iconId and the
-  // position (which side of the text) derived from where it was dropped.
-  // Optional so read-only / pre-identity Canvas mounts can omit it.
-  onDropIcon?: (elementId: string, iconId: string, position: IconPosition) => void;
-  // Open the link picker for a specific table cell. Optional so read-
-  // only / pre-identity Canvas mounts can omit it.
-  onLinkCell?: (tableId: string, r: number, c: number) => void;
-  // Open the link picker for a link-card element (docs/specs/009-elements/link-cards.md), on double-click.
-  // Omitted for read-only viewers.
-  onEditLink?: (id: string) => void;
-  // Open an element's own edit dialog on double-click: a code block's code (docs/specs/009-elements/code-block.md),
-  // a Sankey's flows (docs/specs/009-elements/sankey.md). Omitted for read-only viewers.
-  onOpenEditDialog?: (id: string) => void;
-  // Per-render context for image elements: identity + auth bits the
-  // ImageElementView needs to fetch bitmap bytes. Optional so the
-  // welcome / new-document surface (where Canvas mounts before
-  // identity / share-code are settled) can omit it.
-  imageContext?: {
-    ownerId: string;
-    documentId: string;
-    shareCode: string | null;
-    onOpenPicker?: (elementId: string) => void;
-  };
-  // Touch-friendly fallback for right-click: a SelectionPopover
-  // ellipsis button opens the same context menu under the cursor.
-  onOpenElementContextMenu?: (elementId: string, screenX: number, screenY: number) => void;
   // The visitor name prompt (IdentityPrompt).
   showIdentityPrompt: boolean;
   // True after the page has resolved its initial identity + document
@@ -690,36 +205,6 @@ export type CanvasProps = {
   // section (right-hand inspector) houses them next to theme +
   // canvas, where the user is editing the tab anyway. Optional so
   // welcome-flow surfaces with no tab loaded yet can omit them.
-  // Live session tools (docs/specs/012-collaboration/session-tools.md): the active tab's timer / vote state +
-  // the facilitator controls (Tab Settings) and the per-element dot
-  // cast/retract used by the canvas vote interaction. State is read off
-  // the tab; handlers no-op when edits are blocked.
-  tabTimer?: import('@livediagram/document').TabTimer;
-  tabVote?: import('@livediagram/document').TabVote;
-  onStartTimer: (mode: import('@livediagram/document').TimerMode, durationMs?: number) => void;
-  onPauseTimer: () => void;
-  onResumeTimer: () => void;
-  onResetTimer: () => void;
-  onClearTimer: () => void;
-  // Change a running / paused countdown's length, restarting it at the new
-  // one (docs/specs/012-collaboration/session-button.md). Driven by the Timer element's own `…` menu.
-  onSetTimerDuration?: (durationMs: number) => void;
-  onStartVote: (
-    votesPerPerson: number,
-    privacy?: import('@livediagram/document').VoteSetup,
-  ) => void;
-  onEndVote: () => void;
-  onRevealVote: () => void;
-  onClearVote: () => void;
-  onCastVote: (elementId: string) => void;
-  onRetractVote: (elementId: string) => void;
-  // Vote-results walkthrough (docs/specs/012-collaboration/session-tools.md): the currently-reviewed top pick
-  // (pulsed on the canvas, described in the vote banner) and the banner's
-  // Previous / Next / Done controls. Null when not reviewing.
-  voteReview: import('@/hooks/canvas/useVoteReview').VoteReview | null;
-  onNextVoteResult: () => void;
-  onPrevVoteResult: () => void;
-  onDoneVoteReview: () => void;
   // Recent-images list for the Current Tab "Images" accordion (docs/specs/009-elements/images.md).
   // Forwarded through to TabSection unchanged.
   onToggleAspectLock: () => void;
@@ -778,3 +263,10 @@ export type CanvasProps = {
   // place at the canvas's top left.
   workbenchBack?: Pick<WorkspaceFrameHooks, 'back' | 'backTitle'> | null;
 };
+
+// The whole contract, one group per file beside this one.
+export type CanvasProps = CanvasCoreProps &
+  CanvasSessionProps &
+  CanvasPanelProps &
+  CanvasAddProps &
+  CanvasEditProps;

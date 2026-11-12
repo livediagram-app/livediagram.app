@@ -84,7 +84,7 @@ describe('Home’s first run', () => {
     expect(onFirstRun).toHaveBeenCalled();
     fireEvent.click(start);
     expect(onSelected).toHaveBeenCalledWith('Welcome.Blank');
-    // One small question for the answer, in this app, asked beside Jump Back In's read (data/homeReads.ts).
+    // One small question for the answer, in this app, asked beside Most Used and Recent's read (data/homeReads.ts).
     const probe = index.calls.find(
       (c) => c.method === 'listItems' && (c.args[0] as { any?: boolean }).any === true,
     );
@@ -134,8 +134,8 @@ describe('Home’s first run', () => {
   it('shows the ordinary Home to someone with anything to open', async () => {
     const index = createFakeIndex({ items: [makeItem(1)] });
     renderHome(index);
-    expect(await screen.findByRole('heading', { name: 'Jump Back In' })).toBeTruthy();
-    // Jump Back In, the hero's count and the first-run question: one request.
+    expect(await screen.findByRole('heading', { name: 'Recent' })).toBeTruthy();
+    // Most Used and Recent, the hero's count and the first-run question: one request.
     await waitFor(() => expect(index.count('listItems')).toBe(1));
     expect(screen.queryByRole('heading', { name: 'Start Blank' })).toBeNull();
     expect(screen.getByRole('heading', { level: 1 }).textContent).not.toMatch(/Welcome/);
@@ -144,7 +144,7 @@ describe('Home’s first run', () => {
   it('asks nothing without a welcome', async () => {
     const index = createFakeIndex();
     renderHome(index, { welcome: undefined });
-    expect(await screen.findByRole('heading', { name: 'Jump Back In' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Recent' })).toBeTruthy();
     expect(
       index.calls.some(
         (c) =>

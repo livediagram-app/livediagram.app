@@ -1,13 +1,15 @@
 'use client';
 
-// Home (livediagram's HomePane): under the hero, New (HomeNew: the four items made most recently), then Jump Back In as livediagram draws it, Most Used (up to eight large
-// cards, two rows of four on a desktop: the items opened most often in the last 14 days, "Opened N times") then Recent
-// (up to eight more of the same size, the latest opened of the rest), then Spaces (HomeSpaces: My Work and each team,
-// each a tile into its list), and Shared With You Recently. On a phone Jump Back
-// In is one scrolling strip of up to eight, the two groups alternating. An item kept only in this browser is one card among the rest (LocalCard): the same frame, size, menu
-// and drag, with the This Browser badge on its line and This Browser's own verbs. With the hero hidden, Home takes the
+// Home (liveworkspace/docs/specs/004-index/one-explorer.md "Most Used and Recent, on Home"): under the hero, New
+// (HomeNew: the four items made most recently), then Most Used (up to eight large cards, two rows of four on a desktop:
+// the items opened most often in the last 14 days, "Opened N times") and Recent directly after it (up to eight more of
+// the same size, the latest opened of the rest, See More at its heading's right), each a section headed as New is,
+// then Spaces (HomeSpaces: My Work and each team, each a tile into its list), and Shared With You Recently. On a phone
+// each of Most Used and Recent is its own strip of up to eight under its own heading. A section with nothing in it is
+// left out. An item kept only in this browser is one card among Recent's (LocalCard): the same frame, size, menu and
+// drag, with the This Browser badge on its line and This Browser's own verbs. With the hero hidden, Home takes the
 // ordinary page header. Three requests, each one small page: Recent carries Most Used and New beside it (the index's
-// `used` and `newest`), the spaces' previews, and Shared. The cards themselves are HomeCards.tsx's.
+// `used` and `newest`), so its two sections cost one; the spaces' previews; and Shared. The cards are HomeCards.tsx's.
 
 import { useEffect, useMemo, useState } from 'react';
 import type { ShownItem } from '../data/overlay';
@@ -26,18 +28,18 @@ import { HomeFailed, HomeSection } from './HomeSection';
 import { CardGroup, GridSkeleton, HomeCardsProvider, Strip, StripSkeleton } from './HomeCards';
 import { HomeNew } from './HomeNew';
 import { HomeSpaces } from './HomeSpaces';
+import type { ThisBrowserItem } from '../this-browser';
 import { useFirstRun } from '../welcome/context';
 import { HomeWelcome } from '../welcome/HomeWelcome';
 import { mergeOpened, useThisBrowserItems } from './ThisBrowser';
 
 export const HOME_SHARED = 4;
-// Jump Back In's Recent group with this browser's own items merged in.
+// Recent with this browser's own items merged in.
 const HOME_RECENT_MAX = JUMP_BACK_IN_PER_GROUP;
-// The phone's strip: one row, at most this many tiles before See More, both groups and this browser's together.
-export const HOME_STRIP_MAX = 8;
+// A phone's strip, one per section: at most this many tiles (Recent's then its See More tile).
+export const HOME_STRIP_MAX = JUMP_BACK_IN_PER_GROUP;
 
 export const HOME_COPY = {
-  jumpBackIn: 'Jump Back In',
   sharedRecently: 'Shared With You Recently',
   seeMore: 'See More',
   seeAll: 'See All',
@@ -45,7 +47,7 @@ export const HOME_COPY = {
   recent: 'Recent',
 } as const;
 
-/** Jump Back In's grid from `md` up; below it, the strip. */
+/** Home's grids from `md` up; below it, the strips. */
 const WIDE_QUERY = '(min-width: 768px)';
 
 function useWide(): boolean {
@@ -97,10 +99,12 @@ export function HomePane({ hero }: { hero: boolean }) {
       ),
     [recent.items, localOpened],
   );
-  const empty = !recent.loading && recent.items.length === 0 && localOpened.length === 0;
+  const mostUsed = useMemo(() => recent.items.filter(isMostUsed), [recent.items]);
+  const empty = !recent.loading && mostUsed.length === 0 && recentRest.length === 0;
   const { firstRun } = useFirstRun();
-  // A failed read of Jump Back In says so, with Try again, never "nothing yet".
-  const failed = !recent.loading && recent.error;
+  // A failed read says so once, under Recent's heading, with Try again, never "nothing yet".
+  const failed = !recent.loading && Boolean(recent.error);
+  const loading = recent.loading;
   const retry = () => {
     onHome?.('Loaded', 'Retry');
     recent.retry();
@@ -130,45 +134,40 @@ export function HomePane({ hero }: { hero: boolean }) {
       <HomeCardsProvider>
         <div className="flex flex-col gap-10">
           <HomeNew wide={wide} showApp={showApp} />
-          <HomeSection
-            id="jump-back-in"
-            title={HOME_COPY.jumpBackIn}
-            busy={recent.loading}
-            link={
-              wide && !recent.loading && !empty && !failed
-                ? { view: { kind: 'recent' }, label: HOME_COPY.seeMore }
-                : undefined
-            }
-          >
-            {failed ? (
-              <HomeFailed message="Couldn’t load Home." onRetry={retry} />
-            ) : recent.loading ? (
-              wide ? (
-                <GridSkeleton />
+          {/* Most Used: left out once the read finds none, and while Home could not load (Recent says so). */}
+          {loading || (!failed && mostUsed.length > 0) ? (
+            <HomeSection id="most-used" title={HOME_COPY.mostUsed} busy={loading}>
+              {loading ? (
+                <SectionSkeleton wide={wide} />
               ) : (
-                <StripSkeleton />
-              )
-            ) : empty ? (
-              <HomeEmpty />
-            ) : !wide ? (
-              <Strip
-                items={phoneOrder(recent.items)}
-                local={localOpened}
-                max={HOME_STRIP_MAX}
-                seeMore={HOME_COPY.seeMore}
-              />
-            ) : (
-              <div className="flex flex-col gap-4">
-                <CardGroup
-                  label={HOME_COPY.mostUsed}
-                  items={recent.items.filter(isMostUsed)}
-                  large
-                  showApp={showApp}
-                />
-                <CardGroup label={HOME_COPY.recent} items={recentRest} large showApp={showApp} />
-              </div>
-            )}
-          </HomeSection>
+                <SectionCards wide={wide} items={mostUsed} showApp={showApp} />
+              )}
+            </HomeSection>
+          ) : null}
+          {/* Recent: left out when Most Used holds everything opened; with nothing opened at all, it keeps Home's one
+              empty state. */}
+          {loading || failed || empty || recentRest.length > 0 ? (
+            <HomeSection
+              id="recent"
+              title={HOME_COPY.recent}
+              busy={loading}
+              link={
+                wide && !loading && !failed && recentRest.length > 0
+                  ? { view: { kind: 'recent' }, label: HOME_COPY.seeMore }
+                  : undefined
+              }
+            >
+              {failed ? (
+                <HomeFailed message="Couldn’t load Home." onRetry={retry} />
+              ) : loading ? (
+                <SectionSkeleton wide={wide} />
+              ) : empty ? (
+                <HomeEmpty />
+              ) : (
+                <SectionCards wide={wide} items={recentRest} showApp={showApp} seeMore />
+              )}
+            </HomeSection>
+          ) : null}
           <HomeSpaces />
           {shared.items.length > 0 ? (
             <HomeSection
@@ -187,22 +186,38 @@ export function HomePane({ hero }: { hero: boolean }) {
 }
 
 const live = (i: ShownItem) => i.trashedAt === null;
-// Jump Back In leaves out what the person hid from Recent (the index does too; this catches a change made here).
+// Most Used and Recent leave out what the person hid from Recent (the index does too; this catches a change made here).
 const notHidden = (i: ShownItem) => live(i) && !i.hiddenFromRecent;
 
-/** The phone's strip: most used and recent alternating, the rest of the longer group after. */
-export function phoneOrder(items: ShownItem[]): ShownItem[] {
-  const used = items.filter(isMostUsed);
-  const recent = items.filter((i) => !isMostUsed(i));
-  const out: ShownItem[] = [];
-  for (let k = 0; k < Math.max(used.length, recent.length); k++) {
-    if (used[k]) out.push(used[k]!);
-    if (recent[k]) out.push(recent[k]!);
-  }
-  return out;
+/** One section's placeholders: a full group of large cards from `md`, the strip's below. */
+function SectionSkeleton({ wide }: { wide: boolean }) {
+  return wide ? <GridSkeleton /> : <StripSkeleton />;
 }
 
-// Jump Back In with nothing opened yet: the Explorer's one empty state, as every other list shows it.
+/** One section's cards: the large cards' grid from `md`; below it a strip, Recent's ending on See More. */
+function SectionCards({
+  wide,
+  items,
+  showApp,
+  seeMore = false,
+}: {
+  wide: boolean;
+  items: readonly (ShownItem | ThisBrowserItem)[];
+  showApp: boolean;
+  seeMore?: boolean;
+}) {
+  if (wide) return <CardGroup items={items} large showApp={showApp} />;
+  return (
+    <Strip
+      items={items.filter((i): i is ShownItem => 'app' in i)}
+      local={items.filter((i): i is ThisBrowserItem => !('app' in i))}
+      max={HOME_STRIP_MAX}
+      seeMore={seeMore ? HOME_COPY.seeMore : undefined}
+    />
+  );
+}
+
+// Nothing opened yet: the Explorer's one empty state, as every other list shows it.
 function HomeEmpty() {
   const { words } = useExplorer();
   return (

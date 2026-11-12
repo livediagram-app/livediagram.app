@@ -6,22 +6,22 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                                        | Role                                                                                                                 |
-| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `packages/project/src/data-shapes.ts`                       | `RATING_MAX`, `RATING_DEFAULT`, `RatingAnim`, `RATING_ANIMS`, `RATING_LOOPING_ANIMS`, `isRatingShape`, `clampRating` |
-| `packages/project/src/element-types.ts`                     | `rating`, `ratingAnim`, `ratingAnimSpeed`, `ratingAnimRepeat`                                                        |
-| `packages/project/src/shape-factory.ts`                     | Size 200 × 44; seeds `rating` and the amber stroke                                                                   |
-| `packages/project/src/colors.ts`                            | `SELF_PAINTING_SHAPES` membership                                                                                    |
-| `packages/project/src/svg-render-data.ts`                   | `svgRating`: the export body                                                                                         |
-| `packages/project/src/svg-render-body.ts`                   | `svgElementBody`: routes `'rating'` to `svgRating` with the resolved stroke                                          |
-| `apps/editor/components/canvas/RatingView.tsx`              | Canvas stars, animation class, stagger                                                                               |
-| `apps/editor/components/canvas/ShapeContentRouter.tsx`      | Routes `'rating'` to `RatingView`                                                                                    |
-| `apps/editor/components/canvas/element-variant.ts`          | Borderless wrapper via `SELF_PAINTING_SHAPES`                                                                        |
-| `apps/editor/app/canvas-motion.css`                         | `lvd-rating-*` keyframes and the reduced-motion override                                                             |
-| `apps/editor/components/palette/context-menu-data-rows.tsx` | `RatingPickerRow`, `RatingAnimTiles`, `AnimTiles`, `RatingMenuGlyph`                                                 |
-| `apps/editor/components/palette/ElementDataSections.tsx`    | The Rating section inside the Tools flyout                                                                           |
-| `apps/editor/hooks/canvas/useChartSetters.ts`               | The four rating setters, via `makeShapePatcher`                                                                      |
-| `apps/editor/components/palette/palette-tile-defs.tsx`      | Tile `data:rating`                                                                                                   |
+| File                                                                                  | Role                                                                                                                 |
+| ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `packages/project/src/data-shapes.ts`                                                 | `RATING_MAX`, `RATING_DEFAULT`, `RatingAnim`, `RATING_ANIMS`, `RATING_LOOPING_ANIMS`, `isRatingShape`, `clampRating` |
+| `packages/project/src/element-types.ts`                                               | `rating`, `ratingAnim`, `ratingAnimSpeed`, `ratingAnimRepeat`                                                        |
+| `packages/project/src/shape-default-size.ts`, `packages/project/src/shape-factory.ts` | Size 200 × 44; seeds `rating` and the amber stroke                                                                   |
+| `packages/project/src/colors.ts`                                                      | `SELF_PAINTING_SHAPES` membership                                                                                    |
+| `packages/project/src/svg-render-data.ts`                                             | `svgRating`: the export body                                                                                         |
+| `packages/project/src/svg-render-body.ts`                                             | `svgElementBody`: routes `'rating'` to `svgRating` with the resolved stroke                                          |
+| `apps/editor/components/canvas/RatingView.tsx`                                        | Canvas stars, animation class, stagger                                                                               |
+| `apps/editor/components/canvas/ShapeContentRouter.tsx`                                | Routes `'rating'` to `RatingView`                                                                                    |
+| `apps/editor/components/canvas/element-variant.ts`                                    | Borderless wrapper via `SELF_PAINTING_SHAPES`                                                                        |
+| `apps/editor/app/canvas-motion.css`                                                   | `lvd-rating-*` keyframes and the reduced-motion override                                                             |
+| `apps/editor/components/palette/context-menu-data-rows.tsx`                           | `RatingPickerRow`, `RatingAnimTiles`, `AnimTiles`, `RatingMenuGlyph`                                                 |
+| `apps/editor/components/palette/ElementDataSections.tsx`                              | The Rating section inside the Tools flyout                                                                           |
+| `apps/editor/hooks/canvas/useChartSetters.ts`                                         | The four rating setters, via `makeShapePatcher`                                                                      |
+| `apps/editor/components/palette/palette-tile-defs.tsx`                                | Tile `data:rating`                                                                                                   |
 
 ## Domain and naming
 

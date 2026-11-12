@@ -128,6 +128,18 @@ function swallowLiftClick() {
   window.addEventListener('pointerup', lifted, true);
 }
 
+/** The one reveal rule for a Contents row's tools, its grip and ⋯ together (pages-mode.md "One reveal rule"):
+ *  under a fine pointer (a mouse, a pen) hidden until the row's `group` is hovered or holds focus; under a coarse
+ *  one (a finger) always shown, since there is no hover. It reads the pointer, never the window's width, so a
+ *  narrow desktop window with a mouse reveals both on hover as a wide one does. */
+export const ROW_TOOLS_REVEAL =
+  'pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:group-focus-within:opacity-100';
+
+/** The rule for one row's tools: none while `shown` (the page here in the sidebar, its menu open). */
+export function rowToolsReveal(shown: boolean): string {
+  return shown ? '' : ROW_TOOLS_REVEAL;
+}
+
 // A row's grip carries this: a finger held on it is starting a drag, never a long press for the menu.
 export const PAGE_ROW_GRIP_ATTR = 'data-contents-grip';
 
@@ -239,25 +251,21 @@ export function PageRowMenu({
 }
 
 // A row's ⋯ (Tooltip "More Actions"): the page's menu, anchored here. Its presses are its own (no
-// glide, no drag).
+// glide, no drag). When it shows is its row's (rowToolsReveal), with the grip.
 export function PageRowMenuButton({
   id,
   name,
   menu,
-  reveal = false,
 }: {
   id: string;
   name: string;
   menu: PageRowMenuState;
-  // Hidden under a fine pointer until the row is hovered or focused (EllipsisTriggerButton).
-  reveal?: boolean;
 }) {
   return (
     <Tooltip label="More Actions">
       <EllipsisTriggerButton
         ref={(el) => menu.registerTrigger(id, el)}
         size="md"
-        reveal={reveal}
         expanded={menu.openId === id}
         label={`More Actions for ${name}`}
         onPointerDown={(e) => e.stopPropagation()}
@@ -279,8 +287,8 @@ export function PageRowMenuButton({
 
 // The sidebar row's tools, stacked down its left under the page's number: the grip, Delete and
 // ⋯, each a glyph with its Tooltip, spaced 44 px apart under a coarse pointer so each keeps its
-// tap area. Shown while the row is hovered or focused, when `shown` (the page here, or a finger),
-// and while its menu is open.
+// tap area. Shown by the one reveal rule (rowToolsReveal): always to a finger, else while the row is
+// hovered or focused, when `shown` (the page here), and while its menu is open.
 export function PageRowStack({
   id,
   name,
@@ -300,9 +308,9 @@ export function PageRowStack({
   return (
     <span
       data-page-row-stack=""
-      className={`relative z-10 flex flex-col items-center gap-0.5 transition-opacity duration-micro pointer-coarse:gap-5 ${
-        shown || open ? '' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
-      }`}
+      className={`relative z-10 flex flex-col items-center gap-0.5 transition-opacity duration-micro pointer-coarse:gap-5 ${rowToolsReveal(
+        shown || open,
+      )}`}
     >
       {grip}
       {remove ? (

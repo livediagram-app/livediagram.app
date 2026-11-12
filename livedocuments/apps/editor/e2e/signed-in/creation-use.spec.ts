@@ -3,9 +3,9 @@ import { expect, test } from '../fixtures';
 import { freshUserId, installSession, type StubUser } from './session';
 
 // Making a document is a use (docs/specs/015-api/api.md "Marking a document used"), signed in, against the
-// signed-in export: the api records an API client's create as its open, so the document is in Jump Back In
+// signed-in export: the api records an API client's create as its open, so the document is in Home’s Most Used or Recent
 // unopened; one it makes with markUsed: false is not.
-// Jump Back In is the shared Explorer's (liveworkspace's, not served here), so this asks the index for
+// Home's Most Used and Recent are the shared Explorer's (liveworkspace's, not served here), so this asks the index for
 // what it reads: Recent's first page with its Most Used beside it.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1280, height: 800 } });
@@ -46,8 +46,8 @@ async function apiCreate(
   expect(res.status(), `create ${name}`).toBe(201);
 }
 
-// Jump Back In's documents, as the Explorer reads them: Recent's first page and its Most Used.
-async function jumpBackIn(page: Page, headers: Record<string, string>): Promise<string[]> {
+// Home's Most Used and Recent documents, as the Explorer reads them: Recent's first page and its Most Used.
+async function homeOpened(page: Page, headers: Record<string, string>): Promise<string[]> {
   const res = await page.request.get(
     '/api/index/items?app=livedocuments&view=recent&limit=10&used=5',
     {
@@ -59,7 +59,7 @@ async function jumpBackIn(page: Page, headers: Record<string, string>): Promise<
   return [...(body.mostUsed ?? []), ...body.items].map((item) => item.title);
 }
 
-test('an API client’s document is in Jump Back In unless it says markUsed: false', async ({
+test('an API client’s document is in Home’s Most Used or Recent unless it says markUsed: false', async ({
   page,
 }) => {
   const headers = await signedIn(page, freshUserId('maker'));
@@ -67,7 +67,7 @@ test('an API client’s document is in Jump Back In unless it says markUsed: fal
   await apiCreate(page, headers, 'One of a batch', { markUsed: false });
 
   await expect
-    .poll(() => jumpBackIn(page, headers), { timeout: 30_000 })
+    .poll(() => homeOpened(page, headers), { timeout: 30_000 })
     .toContain('Made by a script');
-  expect(await jumpBackIn(page, headers)).not.toContain('One of a batch');
+  expect(await homeOpened(page, headers)).not.toContain('One of a batch');
 });

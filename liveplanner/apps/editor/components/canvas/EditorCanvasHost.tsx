@@ -8,13 +8,9 @@ import { canvasSurface, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/project';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { useState } from 'react';
 import { ItemWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
-import { isBoxed, isVoteHost, threadAt } from '@liveplanner/project';
-import { commentPersisters } from '@/lib/comment-persistence';
-import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import { useElementMenuOpener } from '@/hooks/canvas/element-menu-opener';
 import { useSheetChartMenuSelection } from '@/hooks/sheets/useSheetChartMenuSelection';
-import { focusSheetCell } from '@/hooks/sheets/sheet-cell-refs';
-import { answeringKeys, participantKey, selfInRoom } from '@/lib/identity';
+import { participantKey } from '@/lib/identity';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
@@ -29,7 +25,10 @@ import { useStableCollab } from '@/components/canvas/element-layer-props';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { canEditSequence } from '@/lib/sequence-edit';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
-import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
+import { useCanvasMenuProps } from '@/components/canvas/useCanvasMenuProps';
+import { useCanvasThreadProps } from '@/components/canvas/useCanvasThreadProps';
+import { useCanvasSessionProps } from '@/components/canvas/useCanvasSessionProps';
+import { useCanvasLayerProps } from '@/components/canvas/useCanvasLayerProps';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -40,28 +39,8 @@ import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 export function EditorCanvasHost() {
   const {
     activeTab,
-    scrollIntoView,
     activeTabLoadState,
     activeTabLocked,
-    layers,
-    activeLayerId,
-    layerInertIds,
-    layerCounts,
-    voteResults,
-    jumpToVoteResult,
-    setActiveLayer,
-    addLayer,
-    renameLayer,
-    removeLayer,
-    toggleLayerVisibility,
-    toggleLayerLock,
-    reorderLayer,
-    mergeActiveLayer,
-    setLayerOpacityLive,
-    clearLayer,
-    hideOtherLayersOp,
-    layerPreviewId,
-    setLayerPreviewId,
     beginArrowBend,
     beginArrowScale,
     dropBoardFile,
@@ -84,16 +63,10 @@ export function EditorCanvasHost() {
     canUndo,
     canvasMainRef,
     canvasTool,
-    castVote,
     confirmIdentity,
     cancelIdentity,
-    clearTimer,
-    clearVote,
     accountDisplayName,
     accountUserId,
-    actionRows,
-    commentRows,
-    commentsPanelPosition,
     commitLabel,
     deleteCurvePoint,
     deleteMultiSelected,
@@ -111,7 +84,6 @@ export function EditorCanvasHost() {
     editingId,
     embedMode,
     workbenchMode,
-    endVote,
     fitToScreen,
     followLink,
     handleCanvasDoubleClick,
@@ -127,31 +99,17 @@ export function EditorCanvasHost() {
     isReadOnly,
     can,
     participating,
-    livePresence,
     lockedByOther,
     mapPosition,
     narrowMultiSelection,
     newProject,
     openActionPopover,
-    openAssignActionDialog,
-    completeAction,
-    reopenAction,
-    linkedActions,
     openComments,
     openNote,
-    pauseTimer,
     redo,
     peerRows,
     remoteSelectionsByElement,
-    resetTimer,
-    resumeTimer,
-    retractVote,
-    voteReview,
-    nextVoteResult,
-    prevVoteResult,
-    doneVoteReview,
     retryActiveTabLoad,
-    revealVote,
     readSelection,
     selectElement,
     selectMarquee,
@@ -159,16 +117,10 @@ export function EditorCanvasHost() {
     sessionShareCode,
     pressSessionButton,
     setSessionConfigFor,
-    setTimerDuration,
-    addComment,
-    deleteComment,
-    resolveThread,
-    unresolveThread,
     pickerFor,
     collabElements,
     tabs,
     setCanvasThemeTab,
-    setCommentsPanelPosition,
     setContextMenu,
     setEditingId,
     setExportOpen,
@@ -188,8 +140,6 @@ export function EditorCanvasHost() {
     shiftDupGhostIds,
     snapGuideStore,
     spawnConnectSelected,
-    startTimer,
-    startVote,
     tabSummaries,
     toggleAspectLockSelected,
     toggleInMultiSelect,
@@ -221,14 +171,6 @@ export function EditorCanvasHost() {
   // module store nothing re-renders for.
   const { appearance } = useAppearance();
   const landscapePhone = useIsLandscapePhone();
-  // The Collaborate panel's jump to a conversation card (docs/specs/012-collaboration/assigned-actions.md §5):
-  // true when the row's element is that kind of card, now centred in view.
-  const jumpToCard = (id: string, shape: 'comment-pin' | 'action-card'): boolean => {
-    const el = activeTab.elements.find((e) => e.id === id);
-    if (!el || el.type !== 'shape' || el.shape !== shape) return false;
-    scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
-    return true;
-  };
   // Double-click on an element with its own edit dialog (docs/specs/009-elements/code-block.md,
   // docs/specs/009-elements/sankey.md): which dialog depends on the kind.
   const openEditDialog = (id: string) => {
@@ -237,18 +179,6 @@ export function EditorCanvasHost() {
     if (el.shape === 'code-block') setCodeEditOpenForId(id);
     else if (el.shape === 'sankey' && canEditSankey(can, el)) setSankeyFlowsOpenForId(id);
     else if (el.shape === 'sequence' && canEditSequence(can, el)) setSequenceOpenForId(id);
-  };
-  // How a comment change made on a Comment panel is kept: shared with the anchored popover.
-  const commentPersist = commentPersisters({
-    readOnly: isReadOnly,
-    projectId,
-    tabId: activeTab.id,
-    selfId: selfParticipant.id,
-    shareCode: sessionShareCode,
-  });
-  const threadOn = (elementId: string) => {
-    const el = activeTab.elements.find((e) => e.id === elementId);
-    return el && isBoxed(el) ? threadAt(el) : undefined;
   };
   const backdrop = resolveViewBackdrop(activeTab, appearance);
   // Stock colours stored by name are drawn in their version for this canvas, on every tab and in
@@ -323,6 +253,11 @@ export function EditorCanvasHost() {
   // Object props the canvas boundary compares by identity (docs/specs/008-canvas/canvas-performance.md
   // "The canvas re-renders only for what it shows"): new only when their data changes.
   const activeTheme = getTheme(activeTab.theme);
+  // The Canvas's props by panel, each read from EditorContext beside its own code.
+  const menuProps = useCanvasMenuProps();
+  const threadProps = useCanvasThreadProps();
+  const sessionProps = useCanvasSessionProps();
+  const layersProps = useCanvasLayerProps();
 
   return (
     // The tab's theme for faces that dress in it unstored (the image placeholder).
@@ -363,8 +298,6 @@ export function EditorCanvasHost() {
             setViewportOffset={setViewportOffset}
             elements={canvasElements}
             projectElement={projectStockColours.one}
-            tabLayers={activeTab.layers}
-            layerInertIds={layerInertIds}
             shiftDupGhostIds={shiftDupGhostIds}
             snapGuideStore={snapGuideStore}
             remoteSelectionsByElement={remoteSelectionsByElement}
@@ -380,57 +313,14 @@ export function EditorCanvasHost() {
             // element and calls the tool that already exists.
             onPressSessionButton={pressSessionButton}
             sessionStartBlocked={isReadOnly}
-            timerState={activeTab.timer ? (activeTab.timer.running ? 'running' : 'paused') : 'none'}
+            {...sessionProps}
             onSetSessionConfig={isReadOnly ? undefined : setSessionConfigFor}
             // The `…` on a Behaviours element's face (docs/specs/008-canvas/canvas-and-palette.md). Anchored from the
             // ELEMENT's rect, not the trigger's, so it lands exactly where a
             // right-click on the same element would — one menu, one position,
             // whichever way you asked for it.
-            onOpenElementSettings={
-              isReadOnly
-                ? undefined
-                : (elementId) => {
-                    const node = document.querySelector(elementSelector(elementId));
-                    if (!(node instanceof HTMLElement)) return;
-                    const { x, y } = elementMenuAnchor(node.getBoundingClientRect());
-                    setContextMenu({ mode: 'element', elementId, x, y });
-                  }
-            }
-            // Comment panels (docs/specs/012-collaboration/comment-pin.md) drive the SAME thread machinery the anchored
-            // popover does — it is all keyed by element id already.
-            commentSelfId={selfParticipant.id}
-            // Commenting is a Participant's too (docs/specs/013-workspace/share-roles.md); a Viewer only reads.
-            commentPanelActions={
-              !can.takePart
-                ? undefined
-                : {
-                    // A Participant has no autosave: its panel changes go through the comment endpoints, as the
-                    // popover's do (lib/comment-persistence.ts); an Editor's ride the room and its save.
-                    add: (id, text, mentions) =>
-                      addComment(id, text, commentPersist.add(id, text, mentions), mentions),
-                    remove: (id, cid) => deleteComment(id, cid, commentPersist.remove(cid)),
-                    resolve: (id) =>
-                      resolveThread(id, commentPersist.threadState(threadOn(id), true)),
-                    unresolve: (id) =>
-                      unresolveThread(id, commentPersist.threadState(threadOn(id), false)),
-                  }
-            }
-            // Action panels (docs/specs/012-collaboration/action-panel.md) drive the SAME action machinery the popover
-            // and the Assign Action dialog do. The viewer identity is the one the
-            // popover uses: the account, else the guest participant.
-            actionSelfId={accountUserId ?? selfParticipant.id}
-            actionPanelActions={
-              isReadOnly
-                ? undefined
-                : {
-                    configure: openAssignActionDialog,
-                    complete: completeAction,
-                    reopen: reopenAction,
-                    ...(linkedActions.openOnBoard
-                      ? { openBoard: () => linkedActions.openOnBoard?.() }
-                      : {}),
-                  }
-            }
+            {...menuProps}
+            {...threadProps}
             // Everyone sees what a Picker holds; only an Editor spins it (ElementFaceRouter, share-roles.md).
             onRollPicker={pickerFor}
             collab={collab}
@@ -458,18 +348,7 @@ export function EditorCanvasHost() {
               setMapPosition((p) => (p && p.x === x && p.y === y ? p : { x, y }))
             }
             onResetMap={() => setMapPosition((p) => (p === null ? p : null))}
-            layers={layers}
-            activeLayerId={activeLayerId}
-            layerCounts={layerCounts}
             sessionTools={sessionTools}
-            voteResults={voteResults}
-            onJumpToVoteResult={jumpToVoteResult}
-            isVoteHost={isVoteHost(activeTab.vote, participantKey(selfParticipant))}
-            // Who can cast, ourselves included (livePresence is the REMOTE roster): one per person, never a
-            // view-link guest or an agent row (answeringKeys), so turnout never waits on someone who cannot vote.
-            participantCount={
-              answeringKeys([selfInRoom(selfParticipant, can.level), ...livePresence]).length
-            }
             // Bottom-dock Theme & canvas button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
             // CanvasThemeDialog on its home, the Looks and the Fine-tune rows.
             onOpenCanvasTheme={
@@ -480,47 +359,7 @@ export function EditorCanvasHost() {
                     track('UI', 'Opened', 'ThemePicker');
                   }
             }
-            onSelectLayer={setActiveLayer}
-            onAddLayer={addLayer}
-            onRemoveLayer={removeLayer}
-            onRenameLayer={renameLayer}
-            onToggleLayerVisibility={toggleLayerVisibility}
-            onToggleLayerLock={toggleLayerLock}
-            onReorderLayer={reorderLayer}
-            onMergeLayer={mergeActiveLayer}
-            onSetLayerOpacity={setLayerOpacityLive}
-            onClearLayer={clearLayer}
-            onHideOtherLayers={hideOtherLayersOp}
-            layerPreviewId={layerPreviewId}
-            onPreviewLayer={setLayerPreviewId}
-            commentRows={commentRows}
-            commentsPanelPosition={commentsPanelPosition}
-            onMoveCommentsPanel={(x, y) => setCommentsPanelPosition({ x, y })}
-            onResetCommentsPanel={() => setCommentsPanelPosition(null)}
-            onOpenCommentsForElement={(id, cell) => {
-              setSelectedId(id);
-              // A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): its cell selected, so the
-              // popover sits beside it.
-              if (cell !== undefined) {
-                focusSheetCell(id, cell);
-                return openComments(id, cell);
-              }
-              // A Comment panel IS the thread (docs/specs/012-collaboration/assigned-actions.md §5): go to it
-              // rather than open a popover repeating it beside the card.
-              if (!jumpToCard(id, 'comment-pin')) openComments(id);
-            }}
-            actionRows={actionRows}
-            onOpenActionForElement={(id) => {
-              setSelectedId(id);
-              // An Action panel IS the action: the same jump.
-              if (!jumpToCard(id, 'action-card')) openActionPopover(id);
-            }}
-            onToggleActionDone={
-              isReadOnly
-                ? undefined
-                : (id, done, actionId) =>
-                    done ? completeAction(id, actionId) : reopenAction(id, actionId)
-            }
+            {...layersProps}
             currentProjectId={projectId}
             currentShareCode={sessionShareCode}
             onRenameCurrentProject={nameProject}
@@ -553,82 +392,6 @@ export function EditorCanvasHost() {
               setContextMenu(null);
             }}
             onSelect={selectElement}
-            onElementContextMenu={(id, sx, sy) => {
-              // Concurrent-selection lock (docs/specs/007-editor/editor-app.md): a peer holds this
-              // element, so it can't be selected, dragged, or edited — don't
-              // pop a dead context menu on it either. Same gate as
-              // selectElement. A Participant or a Viewer still opens its own menu there
-              // (comments, a link), less Edit Text (docs/specs/008-canvas/element-menu-quick-bar.md).
-              if (!isReadOnly && lockedByOther(id)) return;
-              // Right-clicking the element that already owns the menu AT THE
-              // SAME ANCHOR is a no-op: return the SAME state object so React
-              // re-renders nothing. Re-opening would restart the entrance
-              // animation and flash the selection popover in the gap, for a
-              // gesture that asked for the menu already on screen.
-              //
-              // The anchor has to be part of that comparison: selectElement
-              // runs first and retargets an open menu's elementId in place
-              // (keeping the old x / y), so an id-only check would see 'same
-              // element' for a right-click on a DIFFERENT one and strand the
-              // menu at the previous element's position.
-              setContextMenu((cur) =>
-                cur &&
-                cur.mode === 'element' &&
-                cur.elementId === id &&
-                cur.x === sx &&
-                cur.y === sy
-                  ? cur
-                  : { mode: 'element', elementId: id, x: sx, y: sy },
-              );
-            }}
-            onMultiContextMenu={
-              isReadOnly
-                ? undefined
-                : // Right-click on a group / multi-selection always OPENS at the
-                  // cursor (a direct set, like onElementContextMenu). A toggle here
-                  // meant a lingering multi menu — which clicking elsewhere doesn't
-                  // dismiss, since element pointerdown stops propagation — got
-                  // closed by the next right-click instead of reopening, so the
-                  // group menu "wouldn't open".
-                  (sx, sy) => setContextMenu({ mode: 'multi', x: sx, y: sy })
-            }
-            onOpenMultiContextMenu={
-              isReadOnly
-                ? undefined
-                : (sx, sy) =>
-                    // Toggle: the selection toolbar's ⋯ button closes an
-                    // already-open multi menu instead of reopening it.
-                    setContextMenu((cur) =>
-                      cur && cur.mode === 'multi' ? null : { mode: 'multi', x: sx, y: sy },
-                    )
-            }
-            onOpenElementContextMenu={
-              isReadOnly
-                ? undefined
-                : (id, sx, sy) =>
-                    // Ellipsis is a toggle: clicking it while its menu is already
-                    // open for this element closes it (the ContextMenu ignores the
-                    // trigger's mousedown so this onClick gets to decide).
-                    setContextMenu((cur) =>
-                      cur && cur.mode === 'element' && cur.elementId === id
-                        ? null
-                        : { mode: 'element', elementId: id, x: sx, y: sy },
-                    )
-            }
-            onCanvasContextMenu={
-              isReadOnly
-                ? undefined
-                : (sx, sy) =>
-                    setContextMenu({
-                      mode: 'canvas',
-                      x: sx,
-                      y: sy,
-                      // Open upward when the click is in the bottom fifth of the
-                      // viewport so the canvas menu's categories don't run
-                      // off-screen (matching the tab menu).
-                      openUp: sy > window.innerHeight * 0.8,
-                    })
-            }
             onBeginDrag={beginDrag}
             onBeginEdit={beginEdit}
             onCommitLabel={commitLabel}
@@ -669,24 +432,6 @@ export function EditorCanvasHost() {
             onConfirmIdentity={confirmIdentity}
             onCancelIdentity={cancelIdentity}
             tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
-            tabTimer={activeTab.timer}
-            tabVote={activeTab.vote}
-            onStartTimer={startTimer}
-            onPauseTimer={pauseTimer}
-            onResumeTimer={resumeTimer}
-            onResetTimer={resetTimer}
-            onClearTimer={clearTimer}
-            onSetTimerDuration={setTimerDuration}
-            onStartVote={startVote}
-            onEndVote={endVote}
-            onRevealVote={revealVote}
-            onClearVote={clearVote}
-            onCastVote={castVote}
-            onRetractVote={retractVote}
-            voteReview={voteReview}
-            onNextVoteResult={nextVoteResult}
-            onPrevVoteResult={prevVoteResult}
-            onDoneVoteReview={doneVoteReview}
             onToggleAspectLock={toggleAspectLockSelected}
             onSpawnConnect={spawnConnectSelected}
             onStartArrow={handleStartArrow}

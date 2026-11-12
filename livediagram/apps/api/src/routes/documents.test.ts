@@ -1,7 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DocumentDTO } from '../types';
+import type { DocumentDTO, Env } from '../types';
 import { sqliteD1, testShareLink, testTrash, type SqliteD1 } from '../test-sqlite-d1';
-import type { ItemGrant } from '../index-service';
+import {
+  clearGrantCacheForTests,
+  setGrantVerifierForTests,
+  type ItemGrant,
+} from '../index-service';
+import type { GrantClaims } from '@liveworkspace/index-client';
 
 // The index as these doors call it: the canvas's share links (a deleted tab's go with it), and the list.
 const { index } = vi.hoisted(() => ({
@@ -10,6 +15,7 @@ const { index } = vi.hoisted(() => ({
     revoked: [] as string[],
     items: [] as Record<string, unknown>[],
     queries: [] as unknown[],
+    renames: [] as { id: string; input: unknown }[],
   },
 }));
 vi.mock('../index-service', async (importOriginal) => ({
@@ -17,6 +23,10 @@ vi.mock('../index-service', async (importOriginal) => ({
   indexFor: () => ({
     listShareLinks: async () => ({ links: index.links, passwordSet: false }),
     revokeShareLink: async (code: string) => void index.revoked.push(code),
+    updateItem: async (id: string, input: unknown) => {
+      index.renames.push({ id, input });
+      return { item: {} };
+    },
     listItems: async (query: unknown) => {
       index.queries.push(query);
       return { items: index.items, nextCursor: null };
@@ -69,6 +79,7 @@ beforeEach(() => {
   index.links = [];
   index.revoked = [];
   index.items = [];
+  index.renames = [];
   vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
@@ -206,6 +217,63 @@ describe('a view grant', () => {
     expect(write.status).toBe(403);
     const rename = await call(db, 'PUT', '/api/documents/P', { ...who, body: { name: 'Hijack' } });
     expect(rename.status).toBe(403);
+  });
+});
+
+// Work Tracker #690: a rename through the API reaches the index's title, as the editor's own rename does. An API
+// token's (an API client, `docs/specs/015-api/api.md`) is sent by the worker; a browser's bearer is the editor's,
+// which renames at the index itself (editor lib/api/documents.ts renameInIndex), so the worker sends nothing.
+describe('a rename through the API', () => {
+  const token = { id: 'tok1', readOnly: false, name: 'CI' };
+  // The worker's side of the request (forwardToDocument): no canvas tables of its own, the canvas's Durable Object
+  // reached through DOCUMENT_ROOM, the index's grant sent as the editor sends it.
+  const grantClaims = {
+    item: 'P',
+    sub: 'owner',
+    level: 'edit',
+    tab: null,
+    team: null,
+    owner: 'owner',
+    exp: 9e9,
+  };
+  beforeEach(() => {
+    clearGrantCacheForTests();
+    setGrantVerifierForTests(async (t: string) =>
+      t === 'G.P' ? (grantClaims as unknown as GrantClaims) : null,
+    );
+  });
+  const rename = async (db: SqliteD1, name: string, opts: Opts = {}) => {
+    const waits: Promise<unknown>[] = [];
+    const ctx = makeTestRouteContext('PUT', '/api/documents/P', {
+      owner: 'owner',
+      body: { name },
+      headers: { 'X-Index-Grant': 'G.P' },
+      waitUntil: (p) => void waits.push(p),
+      ...opts,
+    });
+    const res = await handleDocuments({
+      ...ctx,
+      env: { DOCUMENT_ROOM: (db.env as unknown as Env).DOCUMENT_ROOM } as unknown as Env,
+    });
+    await Promise.all(waits);
+    return res;
+  };
+
+  it("sends an API token's rename to the index as the item's title", async () => {
+    const db = await seeded();
+    const res = await rename(db, '  Roadmap 2027 ', { token, verifiedUserId: 'owner' });
+    expect(res.status).toBe(200);
+    expect(index.renames).toEqual([{ id: 'P', input: { title: 'Roadmap 2027' } }]);
+    expect((await read(await call(db, 'GET', '/api/documents/P'))).name).toBe('Roadmap 2027');
+  });
+
+  it("leaves the editor's rename to the editor, and sends nothing for a refused one", async () => {
+    const db = await seeded();
+    expect((await rename(db, 'Plans')).status).toBe(200);
+    expect((await read(await call(db, 'GET', '/api/documents/P'))).name).toBe('Plans');
+    // An empty name is refused by the canvas: the index hears nothing either.
+    expect((await rename(db, '', { token, verifiedUserId: 'owner' })).status).toBe(400);
+    expect(index.renames).toEqual([]);
   });
 });
 

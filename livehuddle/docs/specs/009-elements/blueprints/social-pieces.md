@@ -109,7 +109,7 @@ Derived from [Social pieces](../social-pieces.md).
 Built in two parts: part 1 the spec, the wire, the room's rule and the model; part 2 (this state) the session, the
 drawing and the controls.
 
-- **The wire**: `game-input` and `game-event` are presence op kinds (`PRESENCE_OP_KINDS`, room-messages.ts), so the
+- **The wire**: `game-input` and `game-event` are presence op kinds (`PRESENCE_OP_KINDS`, room-op-kinds.ts), so the
   room relays them unordered and never logs them. `gateClientOp` drops either from a Viewer, and either that fails
   its parser. `game-input` joins `ROOM_SAMPLE_KINDS` (document-room.ts), so `PresenceRelay` sends it to its `tabId`'s
   sockets only and, in a room of more than 10, coalesces it to the sender's newest sample each step. The editor sends
@@ -129,7 +129,7 @@ drawing and the controls.
   from the striker, or a miss giving the other seat a point.
   `ballShown` holds the ball at the far paddle line until that end's word comes; `silentAfter` is when the waiting
   seat counts as gone.
-- **The inbox**: `useRoomConnection` hands both kinds to `receiveGameOp`, which parses and notifies `onGameOp`
+- **The inbox**: `useRoomConnection` (its op chain in `room-op-receive.ts`) hands both kinds to `receiveGameOp`, which parses and notifies `onGameOp`
   listeners; each table's `usePingPong` listens and keeps only the ops for its piece on the scene's tab.
 - **The scene** (`useTableGameScene`, called by `useCanvasAvatar` after `seatsOf`): you first (`You`, your colour,
   `avatar.seatedOn`, `seatClaim.index`, `plays: takePart`), then each `remoteAvatars` row (its seat by `claimOf` over
@@ -249,7 +249,7 @@ Editor's Clear High Scores, copies starting empty, the answers flush's no-op and
   table and the scores rebuild the same one as new objects, so every later flush (any Participant's reaction, pin or
   press on the tab) rewrote the row for nothing: `applyArcadeEvents` hands back the element itself when the table it
   ends on holds the same scores in the same order (`sameArcadeTable`), so `writeParticipantAnswers` skips the write.
-- **The room's rule**: `arcade-score` joins `PARTICIPATION_DELTA_KINDS` (room-messages.ts); `answersAsSelf` admits
+- **The room's rule**: `arcade-score` joins `PARTICIPATION_DELTA_KINDS` (room-op-kinds.ts); `answersAsSelf` admits
   it when `score.by` equals the session's non-empty adder key. `arcade-clear` is not a participation delta, so the
   gate drops a Participant's; an Editor's relays as every Editor delta does. A Viewer's either is dropped.
 

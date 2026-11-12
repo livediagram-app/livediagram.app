@@ -19,7 +19,7 @@ const trashOf = (item: { teamId: string | null }) => (item.teamId ? 'Team' : 'Pe
 export type ItemActions = {
   rename: (item: Item, title: string) => Promise<boolean>;
   setFavourite: (item: Item, favourite: boolean) => Promise<boolean>;
-  /** Hide from Recent / Show in Recent: the person's own Recent and Jump Back In. */
+  /** Hide from Recent / Show in Recent: the person's own Recent and Home's Most Used. */
   setHiddenFromRecent: (item: Item, hidden: boolean) => Promise<boolean>;
   move: (item: Item, to: { folderId: string | null; teamId: string | null }) => Promise<boolean>;
   /** Move to Archived: out of every list but Archived and Search, closed until moved out (`move`). */

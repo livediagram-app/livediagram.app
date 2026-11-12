@@ -90,11 +90,11 @@ kinds; Home's 8 server items plus this browser's opened local documents).
 | Short groups, empty input, `n <= 0`, stable ties    | same                                                                                               |
 | The merge property over two lists                   | same                                                                                               |
 | The Shapes flyout unchanged                         | `apps/editor/lib/whiteboard-shape-slots.test.ts`, `apps/editor/e2e/whiteboard-shape-slots.spec.ts` |
-| Jump Back In's Most Used                            | `../liveworkspace/apps/index/src/most-used.test.ts`                                                |
+| Home's Most Used                                    | `../liveworkspace/apps/index/src/most-used.test.ts`                                                |
 
 ## Constants and configuration
 
-None of its own: N, the measure of a use and its window belong to each surface (Shape slots: 3; Jump Back In: 4,
+None of its own: N, the measure of a use and its window belong to each surface (Shape slots: 3; Most Used and Recent: 4,
 over `WITHIN_REACH_USE_WINDOW_DAYS`).
 
 ## Defaults ledger

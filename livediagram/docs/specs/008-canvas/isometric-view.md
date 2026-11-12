@@ -114,7 +114,7 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
   canvas just consumes it. The orbit-able angle lives in its own hook
   (`useIsometricCamera`). No god-file accretion.
 - Rendering: when the tool is active, the existing transformed content
-  wrapper (`Canvas.tsx`, the `scale(zoom) translate(offset)` layer) also
+  wrapper (`CanvasWorldLayer.tsx`, the `scale(zoom) translate(offset)` layer) also
   carries the isometric tilt **innermost** (appended after scale/translate so
   it tilts the content first and the pan translate stays in screen space:
   drag-to-pan then moves the scene the way the cursor moves at any camera

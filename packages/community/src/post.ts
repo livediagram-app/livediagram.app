@@ -83,17 +83,42 @@ export function isCommunityKey(value: unknown): value is string {
 // Tags
 // ---------------------------------------------------------------------
 
-// Spec "Tags": trimmed, lowercased, whitespace and underscores become one hyphen, anything outside a-z 0-9 - is
-// dropped, hyphen runs and edge hyphens collapse. Null when the result is outside 2..24 characters.
+// Spec "Tags": lowercased with the locale-free rule (`toLowerCase`, never `toLocaleLowerCase`, so every browser and
+// the worker agree), then NFC-normalised so an accent typed as a separate mark joins its letter. Whitespace and
+// underscores become one hyphen; letters and digits of any script are kept, with the combining marks that follow
+// them (Devanagari's vowel signs, an accent NFC has no single character for); every other character (punctuation,
+// symbols, emoji) is dropped; hyphen runs and edge hyphens collapse. Null when the result is outside 2..24 code
+// points. One left-to-right pass that tests each code point on its own, so no input can make it backtrack, and it
+// stops as soon as the tag is too long. A tag stored under the old a-z 0-9 rule is already in this form.
+const TAG_LETTER = /^[\p{L}\p{N}]$/u;
+const TAG_MARK = /^\p{M}$/u;
+const TAG_SPACE = /^[\s_]$/u;
+
 export function normaliseCommunityTag(raw: string): string | null {
-  const tag = raw
-    .trim()
-    .toLowerCase()
-    .replace(/[\s_]+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-  return tag.length >= COMMUNITY_TAG_MIN && tag.length <= COMMUNITY_TAG_MAX ? tag : null;
+  let tag = '';
+  let length = 0;
+  // A hyphen waits until a letter follows it, so edge hyphens and runs never land.
+  let hyphen = false;
+  // Whether the last character kept was a letter, digit or mark: a mark is kept only after one of those.
+  let afterLetter = false;
+  for (const char of raw.toLowerCase().normalize('NFC')) {
+    if (char === '-' || TAG_SPACE.test(char)) {
+      hyphen = length > 0;
+      afterLetter = false;
+      continue;
+    }
+    if (!TAG_LETTER.test(char) && !(afterLetter && TAG_MARK.test(char))) continue;
+    if (hyphen) {
+      tag += '-';
+      length += 1;
+      hyphen = false;
+    }
+    tag += char;
+    length += 1;
+    if (length > COMMUNITY_TAG_MAX) return null;
+    afterLetter = true;
+  }
+  return length >= COMMUNITY_TAG_MIN ? tag : null;
 }
 
 // ---------------------------------------------------------------------

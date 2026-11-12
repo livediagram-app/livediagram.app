@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { IndexError } from '@liveworkspace/index-client';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import {
   EXPLORER_POPOVER_HEIGHT,
@@ -82,11 +83,11 @@ describe('<ExplorerPanel>', () => {
     );
   });
 
-  it("leaves the open item out of Home's Jump Back In, from one request", async () => {
+  it("leaves the open item out of Home's Recent, from one request", async () => {
     const items = [1, 2, 3].map((i) => makeItem(i, { lastOpenedAt: 5_000_000 - i }));
     const index = createFakeIndex({ items });
     renderPanel(index, { current: items[0], currentId: items[0]!.id });
-    const grid = await screen.findByRole('list', { name: 'Jump Back In' });
+    const grid = await screen.findByRole('list', { name: 'Recent' });
     const names = within(grid)
       .getAllByRole('button')
       .map((b) => b.textContent);
@@ -94,35 +95,89 @@ describe('<ExplorerPanel>', () => {
     expect(index.count('listItems')).toBe(1);
   });
 
-  it("fills Jump Back In's two rows of four from recent ones alone, the open one left out, in one request", async () => {
+  it('draws Most Used then Recent, each under its own heading with no Jump Back In title, See all on Recent', async () => {
+    const items = Array.from({ length: 12 }, (_, i) =>
+      makeItem(i + 1, { lastOpenedAt: 5_000_000 - i, ...(i < 6 ? { useOpens: 20 - i } : {}) }),
+    );
+    const index = createFakeIndex({ items });
+    const { onOpenExplorer } = renderPanel(index);
+    const used = await screen.findByRole('region', { name: 'Most Used' });
+    const recent = screen.getByRole('region', { name: 'Recent' });
+    expect(used.compareDocumentPosition(recent) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByText('Jump Back In')).toBeNull();
+    // Four of each: the four most used, then the four latest opened of the rest (the fifth and sixth most used among
+    // them, as the index sends only four as most used).
+    const names = (el: HTMLElement) =>
+      within(within(el).getByRole('list'))
+        .getAllByRole('listitem')
+        .map((c) => c.textContent);
+    expect(names(used)).toEqual([1, 2, 3, 4].map((k) => expect.stringContaining(`Item ${k}`)));
+    expect(names(recent)).toEqual([5, 6, 7, 8].map((k) => expect.stringContaining(`Item ${k}`)));
+    // A row of four ends on a full row at three across too.
+    for (const el of [used, recent])
+      expect(within(el).getByRole('list').className.split(' ')).toContain(
+        '@sm:@max-[44rem]:[&>li:nth-child(n+4)]:hidden',
+      );
+    expect(within(used).queryByRole('link', { name: 'See all' })).toBeNull();
+    fireEvent.click(within(recent).getByRole('link', { name: 'See all' }));
+    expect(onOpenExplorer).toHaveBeenCalledWith({ kind: 'recent' });
+    expect(index.count('listItems')).toBe(1);
+    expect(index.calls.find((c) => c.method === 'listItems')!.args[0]).toMatchObject({
+      view: 'recent',
+      used: 4,
+      limit: 13,
+    });
+  });
+
+  it('leaves Most Used out while nothing is most used, and lets Recent fill two rows of four, the open one left out', async () => {
     // Nothing most used yet: the recent ones must fill all eight, with one to spare for the open item.
     const items = Array.from({ length: 12 }, (_, i) =>
       makeItem(i + 1, { lastOpenedAt: 5_000_000 - i }),
     );
     const index = createFakeIndex({ items });
     renderPanel(index, { current: items[0], currentId: items[0]!.id });
-    const grid = await screen.findByRole('list', { name: 'Jump Back In' });
+    const grid = await screen.findByRole('list', { name: 'Recent' });
     const cards = within(grid).getAllByRole('listitem');
     expect(cards).toHaveLength(8);
     expect(cards.some((c) => c.textContent?.includes(items[0]!.title))).toBe(false);
+    expect(screen.queryByRole('region', { name: 'Most Used' })).toBeNull();
+    // Eight are drawn: four across shows them all, two and three across their first six, ending on a full row.
+    expect(grid.className.split(' ')).toContain('@max-[44rem]:[&>li:nth-child(n+7)]:hidden');
     expect(index.count('listItems')).toBe(1);
   });
 
-  it('hides Jump Back In\u2019s seventh and eighth cards below four across, so two and three across end on a full row', async () => {
-    const items = Array.from({ length: 10 }, (_, i) =>
-      makeItem(i + 1, { lastOpenedAt: 5_000_000 - i }),
-    );
+  it('leaves Recent out when Most Used holds everything opened', async () => {
+    const items = [1, 2].map((i) => makeItem(i, { lastOpenedAt: 5_000_000 - i, useOpens: 3 }));
     renderPanel(createFakeIndex({ items }));
-    const grid = await screen.findByRole('list', { name: 'Jump Back In' });
-    expect(grid.className.split(' ')).toContain('@max-[44rem]:[&>li:nth-child(n+7)]:hidden');
-    // Eight are asked for and drawn: four across shows all of them.
-    expect(within(grid).getAllByRole('listitem')).toHaveLength(8);
+    await screen.findByRole('region', { name: 'Most Used' });
+    expect(screen.queryByRole('region', { name: 'Recent' })).toBeNull();
+  });
+
+  it('draws each section\u2019s card placeholders under its heading while it loads, and one notice when it fails', async () => {
+    const index = createFakeIndex({ items: [makeItem(1, { lastOpenedAt: 1 })] });
+    index.hold.add('listItems');
+    renderPanel(index);
+    for (const name of ['Most Used', 'Recent']) {
+      const el = await screen.findByRole('region', { name });
+      expect(el.querySelectorAll('[data-pane-card-skeleton] > li')).toHaveLength(4);
+    }
+    index.hold.delete('listItems');
+    index.release();
+    await screen.findByRole('list', { name: 'Recent' });
+    cleanup();
+    const down = createFakeIndex({ items: [makeItem(1, { lastOpenedAt: 1 })] });
+    down.fail.set('listItems', new IndexError(500, 'unknown'));
+    renderPanel(down);
+    expect((await screen.findByRole('alert')).textContent).toContain('Home could not load.');
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    expect(screen.queryByRole('region', { name: 'Most Used' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Recent' })).toBeNull();
   });
 
   it('runs its preview cards compact: two across, three from 24rem, four from 44rem', async () => {
     const items = [1, 2].map((i) => makeItem(i, { lastOpenedAt: 5_000_000 - i }));
     renderPanel(createFakeIndex({ items }));
-    const grid = await screen.findByRole('list', { name: 'Jump Back In' });
+    const grid = await screen.findByRole('list', { name: 'Recent' });
     const classes = grid.className.split(' ');
     for (const c of ['grid-cols-2', '@sm:grid-cols-3', '@[44rem]:grid-cols-4'])
       expect(classes).toContain(c);
@@ -438,7 +493,7 @@ describe("the panel's This Browser", () => {
     expect(screen.getByText('Changed').tagName).toBe('SPAN');
   });
 
-  it('lists the opened ones in Home’s Jump Back In beside the index’s, with the pill and its menu', async () => {
+  it('lists the opened ones in Home’s Recent beside the index’s, with the pill and its menu', async () => {
     const indexed = makeItem(1, { lastOpenedAt: 1_000 });
     const open = vi.fn();
     const remove = vi.fn();
@@ -453,7 +508,7 @@ describe("the panel's This Browser", () => {
         ],
       }),
     });
-    const grid = await screen.findByRole('list', { name: 'Jump Back In' });
+    const grid = await screen.findByRole('list', { name: 'Recent' });
     const cards = within(grid).getAllByRole('listitem');
     // Last opened first: this browser's, then the index's; never the unopened or trashed one.
     expect(cards.map((c) => c.textContent)).toEqual([
@@ -478,7 +533,7 @@ describe("the panel's This Browser", () => {
     renderPanel(createFakeIndex({ items: [] }), {
       thisBrowser: host({ items: [local('l1', 'Kept here', { lastOpenedAt: 2_000 })] }),
     });
-    const grid = await screen.findByRole('list', { name: 'Jump Back In' });
+    const grid = await screen.findByRole('list', { name: 'Recent' });
     expect(within(grid).getByText('Kept here')).toBeTruthy();
     expect(screen.queryByText('No plans yet')).toBeNull();
     cleanup();

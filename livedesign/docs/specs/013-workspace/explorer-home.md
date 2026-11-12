@@ -18,12 +18,12 @@ backdrop, a heavy display heading, pills with a coloured dot, the glowing search
 
 - **The hero** opens the page ([The hero](#the-hero)): a full-width band under the Explorer header, above the
   sidebar and the sections. It is Home's page header; Home has no other.
-- **One column** under it, beside the sidebar, at every width: **New**, then **Jump Back In**. It scrolls
+- **One column** under it, beside the sidebar, at every width: **New**, then **Most Used** and **Recent**. It scrolls
   with the page.
 - **Display headings** set the sections apart. Each section opens with its heading row: the title (about 24 px,
   extra bold, tight tracking) and the section's quiet link at the right end (**See More**). No rule
   runs under the row. Generous space (about 40 px) separates one section from the next.
-- Jump Back In's designs are **cards** ([Jump Back In](#jump-back-in)).
+- Most Used and Recent's designs are **cards** ([Most Used and Recent](#most-used-and-recent)).
 - Home has no import, no folder and no view switch.
 - The person's own history (what they created, updated or opened) is not on Home: New holds the four designs made
   most recently in livedesign (theirs and their teams', made by AI ones included, wearing Made by AI; hidden while there
@@ -87,7 +87,7 @@ With the banner hidden, Home is drawn like every other Explorer page:
 - the **header's search field** is drawn on Home too ([Explorer filters](explorer-filters.md#the-field)), so the page
   still has exactly one lens field;
 - Home takes the ordinary **page header** (the title "Home", its Help link and New Design), so it keeps its `h1`;
-- Jump Back In, or a first run's sections, follow as before.
+- Most Used and Recent, or a first run's sections, follow as before.
 
 One reading, the `homeBanner` preference, which the editor's Explorer host hands the shared Explorer as
 `heroHidden` (`apps/live/app/embed/workbench/ExplorerHost.tsx`), decides all three, so Home never shows two fields or
@@ -119,7 +119,7 @@ The hero speaks to a beginning:
   **Start Blank** makes a blank Pages design with its start closed (`/new?start=blank`).
 - **What it makes**: the same four pictures as the ordinary hero, so a first run shows what can be made.
 
-Under it, beside the sidebar, Home holds three sections in place of Jump Back In:
+Under it, beside the sidebar, Home holds three sections in place of Most Used and Recent:
 
 - **Start Blank**: the Pages blanks (Blank Logo, the blank wireframes, Photo Edit and the rest), each a card with its preview,
   title and one-line description. Activating one makes
@@ -136,10 +136,12 @@ Under it, beside the sidebar, Home holds three sections in place of Jump Back In
 The welcome's previews are loaded only for a person with nothing yet, so everyone else's Home pays nothing for
 them. It follows the share-role rule trivially: it is the person's own Home, with no shared design in reach.
 
-## Jump Back In
+## Most Used and Recent
 
-Jump Back In is a **[Within reach](../004-interface-design/within-reach.md)** set of the person's designs:
-the **8 most used** and the **8 most recent**, no design twice.
+Most Used and Recent are a **[Within reach](../004-interface-design/within-reach.md)** set of the person's designs,
+drawn as two sections of Home, each under its own heading as New is, with no title over the pair: the **8 most used**
+and the **8 most recent**, no design twice ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)
+"Most Used and Recent, on Home").
 
 - **Most Used**: the designs the person opened in the **last 14 days**, the most opened first. Every open counts
   ([Opens](#opens); at most one a minute), so a design used a lot over a few days ranks by how much it was used,
@@ -149,8 +151,8 @@ the **8 most used** and the **8 most recent**, no design twice.
 - **Recent**: the designs the person used most recently, newest first: the latest of their last open, their last
   edit and their making of it. A design that is both shows under **Most Used**, and Recent takes the next most
   recent instead.
-- **Making a design is a use** ([Making a design](#making-a-design)): what the person just made is in Jump
-  Back In at once, opened or not.
+- **Making a design is a use** ([Making a design](#making-a-design)): what the person just made is in Most
+  Used and Recent at once, opened or not.
 - Only designs the person can open now: never one in the Trash, nor one whose share link has lapsed or whose
   team they have left.
 - A design stored only in this browser ([Offline Mode](../006-design/offline-mode.md)) takes part with this
@@ -175,47 +177,46 @@ the **8 most used** and the **8 most recent**, no design twice.
     right-click open it in the same place.
   - **Rename** edits the name in place on the card, as on an Explorer card; while renaming, the card does not open.
   - What changes shows at once: a renamed design shows its new name, and a design moved to the Trash or taken
-    off Shared With Me leaves Jump Back In (and comes back if the move is undone).
+    off Shared With Me leaves Most Used and Recent (and comes back if the move is undone).
   - The menu is the Explorer's own, so it offers each design what the Explorer does and nothing more
     ([Share roles](share-roles.md)): your own and your team's designs get the full menu, and one
     shared with you gets the shared-with-you menu.
   - A design the Explorer has not loaded (a team library the sidebar has not read yet) has no ⋯: a menu that
     guesses is worse than none, and the card still opens on click.
-- **Two labelled groups** on a desktop or tablet: a small uppercase label, **Most Used** then **Recent**, over each.
-  The designs are one list of links named **Jump Back In**; each group's label is its own list's name.
-- **See More** opens the **Recent** page: a quiet link at the end of the section's heading row on a desktop or
-  tablet, the strip's last tile on a phone. It shows only once Jump Back In has a design: not while it loads, and
-  not when it is empty. The Recent page is `/explorer/recent`: every design the person can
-  open, most recently saved first (a save by anyone), not by the person's own use as Jump Back In's recent
-  group is, with the shared filter chips ([Explorer filters](explorer-filters.md)). Its breadcrumb leads
+- **Two sections**, **Most Used** then **Recent** directly after it, each headed as New and Spaces are. Each
+  section's designs are one list of links. A section with nothing in it is left out, heading and all.
+- **See More** opens the **Recent** page: a quiet link at the end of Recent's heading row on a desktop or tablet, the
+  last tile of Recent's strip on a phone. It shows only once Recent has a design: not while it loads, not when it is
+  empty, and not when Recent is left out. The Recent page is `/explorer/recent`: every design the person can
+  open, most recently saved first (a save by anyone), not by the person's own use as Home's Recent
+  is, with the shared filter chips ([Explorer filters](explorer-filters.md)). Its breadcrumb leads
   back to Home (**Home › Recent**).
 
 ### Desktop and tablet
 
 - **Most Used** first: up to 8 large cards (a white, rounded, hairline-bordered card; the thumbnail 128 px high
   inside it, the name in semibold and the quiet line under it), most used first from the left.
-- **Recent** under it: up to 8 cards the size of Most Used's (the thumbnail above the name and the quiet line), newest first, so every card in Jump Back In reads, opens and drags alike.
-- Four across from the `lg` breakpoint, so each full group is two rows of four; two across below it. Nothing
+- **Recent** under it: up to 8 cards the size of Most Used's (the thumbnail above the name and the quiet line), newest first, so every card in either section reads, opens and drags alike.
+- Four across from the `lg` breakpoint, so each full section is two rows of four; two across below it. Nothing
   scrolls sideways.
 - A card lifts a little on hover (a rose edge and a soft rose shadow), within the motion budget.
 
 ### Phone
 
-- One **sideways-scrolling strip** of at most **8** thumbnails (This Browser's included): most used, recent, most used, recent, and so on;
-  when one group runs out, the rest of the other follows. The strip interleaves the groups, so it carries no group
-  labels and no quiet lines: each tile is its thumbnail and name.
-- The strip ends in a **See More** tile, the same size as a thumbnail, that opens the Recent page.
+- Each section is its own **sideways-scrolling strip** of at most **8** thumbnails under its own heading (This
+  Browser's among Recent's), with no quiet lines: each tile is its thumbnail and name.
+- Recent's strip ends in a **See More** tile, the same size as a thumbnail, that opens the Recent page.
 - The strip scrolls sideways (touch, trackpad, Shift+wheel, and keyboard focus moving through it). Its trailing
   edge fades to say there is more, and only while there is more.
 
 ### Fewer designs
 
-- Only the designs that exist are drawn: no empty boxes. A short group leaves the rest of its row blank; a group
-  with no design at all is not drawn, label included.
-- While it loads, each group's skeleton is two rows of cards (the phone's, one strip), the height of full groups.
-- With **no design at all** it looks as if it held one: a single slot the size and place of one most used card
-  (the first column, a dashed edge), holding the empty state ("No designs yet", "The designs you use most and last
-  will gather here."), and no group labels. Only then is Jump Back In shorter than its reserved height.
+- Only the designs that exist are drawn: no empty boxes. A short section leaves the rest of its row blank; a
+  section with no design at all is not drawn, heading included.
+- While it loads, each section's heading stands over its own skeleton, two rows of cards (the phone's, one strip),
+  the height of a full section; a section the read finds empty then leaves.
+- With **no design at all** Most Used is left out and Recent keeps its heading over the Explorer's one empty state
+  ("No designs yet", "The designs you open will gather here."). Only then is Recent shorter than its reserved height.
 - On a phone with no design at all, the strip holds the small [empty state](../004-interface-design/empty-states.md)'s
   heading alone, the size of one tile, and no See More tile.
 
@@ -224,7 +225,7 @@ the **8 most used** and the **8 most recent**, no design twice.
 - **Making a design is a use.** The day a person makes a design is a use day of it, and the moment they make
   it a use, however they make it: `/new`, a duplicate, a copy of a
   design shared with them, or one an AI tool or an API client makes for them. So a design made without being
-  opened is in Jump Back In at once.
+  opened is in Most Used and Recent at once.
 - **Once a day, as ever.** `/new` opens what it makes: the making counts only on a day with no open yet, so a
   design made and opened counts its opens, not one more.
 - **The create says so.** Creating a design says whether it counts as a use: `markUsed`, true unless the caller
@@ -248,14 +249,14 @@ An **open** is the editor loading a design for a person to look at.
   **last open** of the design, which is what Recent reads.
 - These are **not** opens: a snapshot or thumbnail, an embed ([Read-only embeds](embeds.md)), a duplicate, Take
   Offline, and any read through the public API or an AI tool.
-- Opens are **private**. Only the person who opened a design ever sees that they did: in their Jump Back In, never in a design's
+- Opens are **private**. Only the person who opened a design ever sees that they did: in their Most Used and Recent, never in a design's
   History ([History](history.md)).
 - Offline Mode designs never reach the server, so the server records none of their opens. **This Browser counts
   them instead**: the editor opening a design stored only here adds the day to that design's own record in
   this browser, by the same once-per-UTC-day rule, keeping the days of the last 90, and moves its last open. Its
   last edit is the record's own save time. Making a design here starts that record with the day and the moment
   it was made, as an open would ([Making a design](#making-a-design)). So
-  Jump Back In places it among the rest by the same rule. The record lives and dies with the design's local
+  Most Used and Recent places it among the rest by the same rule. The record lives and dies with the design's local
   record and never leaves the browser.
 
 ### Guests, sign-up and deletion
@@ -272,14 +273,14 @@ An **open** is the editor loading a design for a person to look at.
 
 Every state keeps the layout it lands in: headings are in place from the first paint, and each section's skeleton
 has the size of what replaces it, so nothing shifts (CLS 0). The one exception is a person with no design at all:
-Jump Back In's single empty slot is shorter than the skeleton, on a page with nothing else on it.
+Recent's empty state is shorter than the skeleton, on a page with nothing else on it.
 
-| State                 | What shows                                                                                               |
-| --------------------- | -------------------------------------------------------------------------------------------------------- |
-| Loading               | Each section's skeleton: both groups' cards (the phone's strip)                                          |
-| Jump Back In, partial | What exists, no empty boxes (see [Fewer than 8 designs](#fewer-than-8-designs))                          |
-| Jump Back In, empty   | One card-sized slot: empty state "No designs yet": "The designs you use most and last will gather here." |
-| Read failed           | "Home could not load. Check your connection and try again." with **Try again**, in place of the body     |
+| State          | What shows                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------ |
+| Loading        | Each section's heading over its skeleton: Most Used's cards, Recent's cards (the phone's strips) |
+| Partial        | What exists, no empty boxes; a section with none left out ([Fewer designs](#fewer-designs))      |
+| Nothing opened | Recent alone, its empty state "No designs yet": "The designs you open will gather here."         |
+| Read failed    | Recent's heading over one "Couldn’t load Home." with **Try again**; no Most Used                 |
 
 Under reduced motion nothing animates: no skeleton pulse, no smooth scrolling.
 
@@ -287,8 +288,8 @@ Under reduced motion nothing animates: no skeleton pulse, no smooth scrolling.
 
 One-liners on the closed vocabulary ([Telemetry](../017-telemetry/telemetry.md)), never a name or an id:
 
-- `Home·Selected·JumpBackIn.MostUsed` / `JumpBackIn.Recent`: a design opened from Jump Back In, by the group it
-  belongs to (most used or recent), wherever it sits.
+- `Home·Selected·JumpBackIn.MostUsed` / `JumpBackIn.Recent`: a design opened from Most Used or Recent, by the section
+  it belongs to (the names keep their older prefix, so stored rows still chart).
 - `Home·Selected·JumpBackIn.SeeMore`: See More followed to the Recent page (the link or the phone's tile).
 - `Home·Loaded·Retry`: a failed read retried.
 - Retired with What Happened: `Home·Selected·WhatHappened`, `Home·Selected·SeeTimeline` and `Home·Opened·Group`.
@@ -301,13 +302,13 @@ One-liners on the closed vocabulary ([Telemetry](../017-telemetry/telemetry.md))
 
 ## Help
 
-The help centre's Home article (Home's Help link) describes Home and Jump Back In.
+The help centre's Home article (Home's Help link) describes Home, Most Used and Recent.
 
 ## Accessibility
 
-- Each section is a landmark (`section`) named by its heading (**Jump Back In**).
-- Jump Back In's designs are one list named **Jump Back In**; each design is one link named by its design's
+- Each section is a landmark (`section`) named by its heading (**Most Used**, **Recent**).
+- Each section's designs are one list; each design is one link named by its design's
   name (plus **This Browser** for a design stored only here). No row or group carries a label of its own.
-- Keyboard order follows the reading order: See More (desktop and tablet), Jump Back In's designs in their order
-  (then the See More tile on a phone).
+- Keyboard order follows the reading order: Most Used's designs, Recent's See More (desktop and tablet), then Recent's
+  designs in their order (then the See More tile on a phone).
 - WCAG 2.2 AA: contrast, visible focus, and targets of at least 24 by 24 px.

@@ -22,7 +22,7 @@ drags for collaborators.
 | `apps/editor/e2e/perf/large-selection-drag.perf.ts`                 | The large-selection bench: script and frame per pointer move                             |
 | `apps/editor/hooks/canvas/useCanvasSelectionView.ts`                | Derives the selection from the previewed elements while a preview lasts                  |
 | `livediagram/apps/editor/hooks/canvas/useArrowLabelLayouts.ts`      | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label                |
-| `packages/api-schema/src/room-messages.ts`                          | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                                       |
+| `packages/api-schema/src/room-op-kinds.ts`                          | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                                       |
 | `apps/editor/hooks/collab/useDragPreviewBroadcast.ts`               | Sends the local preview at `DRAG_PREVIEW_SEND_MS`, and its end                           |
 | `apps/editor/hooks/collab/peer-drag-previews.ts`                    | Receives peers' previews: role check, expiry, cleared by real ops                        |
 
@@ -188,7 +188,7 @@ arrowLinks, stackedIds)` (on a board without arrows, which has no `elementIndex`
   see the result on release.
 - A boxed patch carries `x`, `y`, `width`, `height`, `rotation`; an arrow patch `from`, `to`,
   `curveOffset`, `elbowOffset`, `curvePoints`, `labelOffset` (each field the element has).
-- Receiving (`peer-drag-previews.ts`, called from `useRoomConnection`): on a `drag-preview` from a
+- Receiving (`peer-drag-previews.ts`, called from `useRoomConnection` through `room-op-receive.ts`): on a `drag-preview` from a
   presence id whose role (kept from the latest presence list) is `edit`, parses the patches
   (`parseDragPreviewPatches`), or the ride (`parseDragPreviewRide`) when the op has one, and sets
   that peer's preview (`setPeerPreview(presenceId, tabId, patches, ride?)`: a ride without `ids`

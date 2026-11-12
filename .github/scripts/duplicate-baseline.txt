@@ -62,9 +62,6 @@ livedesign/apps/live/components/tour/TabStyleTour.tsx	livediagram/apps/editor/co
 livedesign/apps/live/components/tour/TourStage.tsx	livedocuments/apps/editor/components/tour/TourStage.tsx
 livedesign/apps/live/components/tour/chevrons-tour-steps.ts	livedocuments/apps/editor/components/tour/chevrons-tour-steps.ts
 livedesign/apps/live/components/tour/stack-tour-steps.ts	livedocuments/apps/editor/components/tour/stack-tour-steps.ts
-livedesign/apps/live/e2e/optical-discover.ts	livedocuments/apps/editor/e2e/optical-discover.ts
-livedesign/apps/live/e2e/perf/budget.ts	livediagram/apps/editor/e2e/perf/budget.ts	livedocuments/apps/editor/e2e/perf/budget.ts	livehuddle/apps/editor/e2e/perf/budget.ts
-livedesign/apps/live/e2e/perf/nightly.mjs	livediagram/apps/editor/e2e/perf/nightly.mjs	livedocuments/apps/editor/e2e/perf/nightly.mjs	livehuddle/apps/editor/e2e/perf/nightly.mjs	liveplanner/apps/editor/e2e/perf/nightly.mjs
 livedesign/apps/live/hooks/canvas/drag-gesture.ts	livedocuments/apps/editor/hooks/canvas/drag-gesture.ts
 livedesign/apps/live/hooks/canvas/useEditorContextMenu.ts	livediagram/apps/editor/hooks/canvas/useEditorContextMenu.ts	livedocuments/apps/editor/hooks/canvas/useEditorContextMenu.ts	livehuddle/apps/editor/hooks/canvas/useEditorContextMenu.ts	liveplanner/apps/editor/hooks/canvas/useEditorContextMenu.ts
 livedesign/apps/live/hooks/canvas/useEraserConfig.ts	livediagram/apps/editor/hooks/canvas/useEraserConfig.ts
@@ -91,7 +88,6 @@ livedesign/apps/live/lib/settings-search-items.ts	livediagram/apps/editor/lib/se
 livedesign/apps/live/lib/tidy-engine.ts	livediagram/apps/editor/lib/tidy-engine.ts	livedocuments/apps/editor/lib/tidy-engine.ts	liveplanner/apps/editor/lib/tidy-engine.ts
 livedesign/apps/live/scripts/icon-sheet/shoot.mjs	livediagram/apps/editor/scripts/icon-sheet/shoot.mjs	livedocuments/apps/editor/scripts/icon-sheet/shoot.mjs	livehuddle/apps/editor/scripts/icon-sheet/shoot.mjs	liveplanner/apps/editor/scripts/icon-sheet/shoot.mjs
 livedesign/apps/marketing/components/feature-art/features.tsx	livedocuments/apps/marketing/components/feature-art/features.tsx
-livedesign/apps/mcp/eval/bench/mcp-client.mjs	livediagram/apps/mcp/eval/bench/mcp-client.mjs	liveplanner/apps/mcp/eval/bench/mcp-client.mjs
 livedesign/apps/mcp/eval/bench/tasks/index.d.mts	livediagram/apps/mcp/eval/bench/tasks/index.d.mts	livedocuments/apps/mcp/eval/bench/tasks/index.d.mts	liveplanner/apps/mcp/eval/bench/tasks/index.d.mts
 livedesign/packages/agent-verbs/src/define.ts	livediagram/packages/agent-verbs/src/define.ts	livedocuments/packages/agent-verbs/src/define.ts	liveplanner/packages/agent-verbs/src/define.ts
 livedesign/packages/agent-verbs/src/folders.ts	livediagram/packages/agent-verbs/src/folders.ts	livedocuments/packages/agent-verbs/src/folders.ts	liveplanner/packages/agent-verbs/src/folders.ts
@@ -176,8 +172,6 @@ livediagram/apps/editor/components/start/StartCard.tsx	livehuddle/apps/editor/co
 livediagram/apps/editor/components/start/StartViewTransition.tsx	livehuddle/apps/editor/components/start/StartViewTransition.tsx
 livediagram/apps/editor/components/start/start-closed-key.ts	livehuddle/apps/editor/components/start/start-closed-key.ts
 livediagram/apps/editor/components/tour/TourStage.tsx	livehuddle/apps/editor/components/tour/TourStage.tsx	liveplanner/apps/editor/components/tour/TourStage.tsx
-livediagram/apps/editor/e2e/optical-discover.ts	liveplanner/apps/editor/e2e/optical-discover.ts
-livediagram/apps/editor/e2e/optical.ts	livedocuments/apps/editor/e2e/optical.ts	livehuddle/apps/editor/e2e/optical.ts
 livediagram/apps/editor/e2e/signed-in/session.ts	livehuddle/apps/editor/e2e/signed-in/session.ts
 livediagram/apps/editor/e2e/stored.ts	livedocuments/apps/editor/e2e/stored.ts	livehuddle/apps/editor/e2e/stored.ts
 livediagram/apps/editor/hooks/canvas/drag-gesture.ts	liveplanner/apps/editor/hooks/canvas/drag-gesture.ts

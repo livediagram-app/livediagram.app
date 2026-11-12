@@ -117,7 +117,7 @@ The words for the editor framed beside code ([Workbench embeds](../013-workspace
 
 **Browser Storage** is the Explorer's name for the place a document saved only in this browser lives
 ([Offline Mode](../006-document/offline-mode.md)): its Space in the sidebar, beside My Work and the teams, its view and folders, its tile on
-Home, and the pill on its Explorer rows and cards (Archived, the Trash, Jump Back In, the Inbox, the editor's
+Home, and the pill on its Explorer rows and cards (Archived, the Trash, Most Used and Recent, the Inbox, the editor's
 Explorer panel). The owner renamed it from "This Browser" on 2026-11-10, for clarity. **This Browser** stays the
 editor's badge on such a document (the pill at the top of an open document, and the editor's own copy). In the
 Explorer a document is **in Browser Storage**, never "This Browser", "Local Only" or "Local Browser", and never

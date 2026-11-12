@@ -38,7 +38,7 @@ page) never suspends whole: its URL reads use an external store whose server sna
 | `EditorContextMenu` (`anchorBottom`)                                                                      | `innerHeight`                       | `useViewportHeight()`                                                             |
 | `StartAgainTray` (`pillPlace` default argument)                                                           | `innerHeight`                       | a required argument; the caller passes `useViewportHeight()`                      |
 | `useViewportWidth`, `useViewportHeight`                                                                   | `innerWidth`, `innerHeight`         | `useSyncExternalStore` on `resize`, 0 in the prerender                            |
-| `EditorCanvasHost` (`openUp`, in the context-menu handler)                                                | `innerHeight`                       | the guard goes: a handler runs in the browser                                     |
+| `useCanvasMenuProps` (`openUp`, in the context-menu handler)                                              | `innerHeight`                       | the guard goes: a handler runs in the browser                                     |
 | `packages/ui/src/SiteFooter.tsx`                                                                          | the clock (`new Date()`)            | `NEXT_PUBLIC_BUILD_YEAR`                                                          |
 
 What stays, with where it runs, is the allow-list in `apps/editor/render-browser-globals.test.ts`.

@@ -248,7 +248,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   home: {
     title: 'Learn about Home',
-    description: 'Jump back in, and what was shared with you recently.',
+    description: 'Most Used, Recent and what was shared with you recently.',
   },
   folders: {
     title: 'Learn about folders',

@@ -185,7 +185,8 @@ The gallery's reads (posts, featured, facets, a post with its related), likes an
 - Query parsing is `parseCommunityListQuery(URLSearchParams)`: unknown sort → `new`, unknown category or bad tag →
   `invalid_query`, offset clamped to `[0, COMMUNITY_MAX_OFFSET]`.
 - Validation is `validateCommunityPostInput(input)` → `{ ok: true, value } | { ok: false, error }`, trimming title and
-  description, collapsing description runs of 3+ newlines to 2, normalising and de-duplicating tags.
+  description, collapsing description runs of 3+ newlines to 2, normalising and de-duplicating tags (spec "Tags":
+  Unicode letters and digits of any script, NFC, locale-free lowercase, 2 to 24 code points).
 - A share password and a post exclude each other: the owner's `PUT` refuses one while a password is set
   (`client.listShareLinks(id).passwordSet`), and the community link is made `public`, so a password set later closes
   it (404) rather than asking visitors for one.

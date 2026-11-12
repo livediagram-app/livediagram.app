@@ -1,4 +1,4 @@
-// Home's requests, counted: opening Home asks the index each distinct list once. Jump Back In, the hero's My Work
+// Home's requests, counted: opening Home asks the index each distinct list once. Most Used and Recent, the hero's My Work
 // count and the first-run question are one items request; Shared With You Recently and the sidebar's Shared With Me
 // count are one page of Shared. The folding itself (homeReads.ts): one request per tick and scope, every asker
 // answered, cancelled only once every asker lets go, and the old reads when the index answers no fold.

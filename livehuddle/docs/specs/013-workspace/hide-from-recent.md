@@ -7,7 +7,7 @@ Status: shipped, on liveworkspace's index and the shared Explorer
 
 Every item's menu, wherever it is listed (the Explorer page, the editor's Explorer panel, Home's cards), has
 **Hide from Recent**, or **Show in Recent** once it is hidden. A hidden item never appears in **Recent** or in
-Home's **Jump Back In** however recently it was opened, and behaves exactly as before everywhere else: folders,
+Home's **Most Used** and **Recent** however recently it was opened, and behaves exactly as before everywhere else: folders,
 search, Favourites, direct links, sharing, teams.
 
 ## Per person, not per item
@@ -31,7 +31,7 @@ defaults"):
 - **Recent** (`view=recent`) leaves hidden items out in the index, on the partial `opens_recent` index, before the
   page is cut, so hiding one lets the next in. The Explorer's Recent shows the 12 most recently opened
   (`RECENT_LIMIT`), from a page of 24, so a hide made here fills the gap at once.
-- **Jump Back In's** Most Used (`used`) leaves them out too.
+- Home's **Most Used** (`used`) leaves them out too.
 - The Explorer lays the change over every loaded list at once (the overlay), and takes it back with a toast when
   the index refuses.
 
