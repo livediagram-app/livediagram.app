@@ -4,10 +4,7 @@ import { donePhase } from '@liveplanner/items';
 import { usePlan } from '@/components/plan/PlanContext';
 import { tabCsvText } from '@/lib/export-plan/tab-csv';
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
-import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
-import { exportHeroArt } from '@liveworkspace/ui/dialog-hero-art/export';
-import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCard';
+import { exportTabDialogFrame } from '@liveworkspace/workbench/components/dialogs/export-tab-dialog';
 import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from '@liveworkspace/workbench/components/dialogs/TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
@@ -314,78 +311,52 @@ export function ExportTabDialog({
       ? 'Pick a format to export the selected elements.'
       : 'Pick a format to export the current tab.';
 
-  return (
-    <Dialog
-      open
-      onClose={onClose}
-      ariaLabel={isSelection ? 'Export Selection' : 'Export Tab'}
-      size="xl"
-      className="max-h-[90vh]"
-    >
-      {/* The dialog hero header (dialog-hero-header.md): the tab leaving as files. */}
-      <HeroDialogHeader
-        art={exportHeroArt}
-        titleId={titleId}
-        title={isSelection ? 'Export Selection' : 'Export Tab'}
-        subtitle={subtitle}
-        actions={<HelpArticleLink article="exportingDiagrams" size="md" />}
-        onClose={onClose}
-      />
-      <div className="flex-1 overflow-y-auto px-6 py-5">
-        {active && isTextFormat(active) ? (
-          <TextExportPanel
-            formatTitle={CARDS.find((c) => c.kind === active)?.title ?? ''}
-            initialText={activeText}
-            blurb={TEXT_PANELS[active].blurb}
-            downloadLabel={TEXT_PANELS[active].downloadLabel}
-            onDownload={(text) => {
-              const cfg = TEXT_PANELS[active];
-              downloadBlob(new Blob([text], { type: cfg.mime }), `${baseName}.${cfg.ext}`);
-              trackTextExport(active, tab);
-            }}
-            onCopied={() => trackTextExport(active, tab)}
-            onBack={() => setActive(null)}
-          />
-        ) : active ? (
-          <ImageExportPanel
-            label={activeCard!.title}
-            // A Plan tab as laid out: no canvas to tilt or pattern.
-            pageExport={plain}
-            // Held while a download is drawn.
-            busy={busy}
-            error={error}
-            hasHiddenLayers={
-              !plain && offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
-            }
-            renderPreview={renderPreview}
-            previewReady={previewReady && planImage.ready}
-            onExport={(opts) => void runImageExport(active, opts)}
-            onBack={() => {
-              setError(null);
-              setActive(null);
-            }}
-          />
-        ) : (
-          <div
-            // Two columns on a phone: three left each card about 110px wide, its description wrapping to eight lines.
-            className="grid grid-cols-2 gap-3 sm:grid-cols-3"
-          >
-            {cards.map((c) => (
-              <FormatCard
-                key={c.kind}
-                title={c.title}
-                description={c.description}
-                onClick={() => {
-                  setError(null);
-                  setActive(c.kind);
-                }}
-              >
-                <FormatIcon kind={c.kind} />
-              </FormatCard>
-            ))}
-          </div>
-        )}
-      </div>
-    </Dialog>
-  );
+  return exportTabDialogFrame({
+    isSelection,
+    titleId,
+    subtitle,
+    help: <HelpArticleLink article="exportingDiagrams" size="md" />,
+    onClose,
+    panel:
+      active && isTextFormat(active) ? (
+        <TextExportPanel
+          formatTitle={CARDS.find((c) => c.kind === active)?.title ?? ''}
+          initialText={activeText}
+          blurb={TEXT_PANELS[active].blurb}
+          downloadLabel={TEXT_PANELS[active].downloadLabel}
+          onDownload={(text) => {
+            const cfg = TEXT_PANELS[active];
+            downloadBlob(new Blob([text], { type: cfg.mime }), `${baseName}.${cfg.ext}`);
+            trackTextExport(active, tab);
+          }}
+          onCopied={() => trackTextExport(active, tab)}
+          onBack={() => setActive(null)}
+        />
+      ) : active ? (
+        <ImageExportPanel
+          label={activeCard!.title}
+          // A Plan tab as laid out: no canvas to tilt or pattern.
+          pageExport={plain}
+          // Held while a download is drawn.
+          busy={busy}
+          error={error}
+          hasHiddenLayers={
+            !plain && offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
+          }
+          renderPreview={renderPreview}
+          previewReady={previewReady && planImage.ready}
+          onExport={(opts) => void runImageExport(active, opts)}
+          onBack={() => {
+            setError(null);
+            setActive(null);
+          }}
+        />
+      ) : null,
+    cards,
+    onPick: (kind) => {
+      setError(null);
+      setActive(kind);
+    },
+    FormatIcon,
+  });
 }

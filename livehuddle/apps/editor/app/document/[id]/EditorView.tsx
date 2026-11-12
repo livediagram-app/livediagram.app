@@ -43,22 +43,17 @@ import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHos
 import { EditorTours } from '@/components/tour/EditorTours';
 import { ModifierHintBanner } from '@/components/chrome/ModifierHintBanner';
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
-import { useDismissibleBanner } from '@liveworkspace/workbench/hooks/ui/useDismissibleBanner';
+import { useSignInNudge } from '@liveworkspace/workbench/hooks/ui/useSignInNudge';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
-import { useDelayedReveal } from '@liveworkspace/workbench/hooks/ui/useDelayedReveal';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 import { useSelectTab } from './useSelectTab';
 import { useRoleIndicator } from './useRoleIndicator';
 import { RolePill } from '@/components/chrome/RoleIndicator';
-import {
-  UiScaleProvider,
-  useUiScalePreview,
-} from '@liveworkspace/workbench/components/providers/ui-scale';
+import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
-import { resolveUiScales } from '@liveworkspace/workbench/lib/ui-scale';
-import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { useEditorUiScales } from '@liveworkspace/workbench/hooks/ui/useEditorUiScales';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ClearStylesHost } from '@/components/canvas/ClearStylesHost';
@@ -67,11 +62,6 @@ import { EditorStartPanels } from '@/components/start/EditorStartPanels';
 // Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
 // fetched once the editor is idle (EDITOR_SURFACE_CODE), so opening it does not wait.
 const EditorSearchPanel = dynamic(loadEditorSearchPanel, { ssr: false });
-
-// How long a guest edits before the sign-in nudge appears (docs/specs/014-identity/sign-in-encouragement.md).
-// Long enough that it never greets someone the instant they open a
-// document; short enough to catch an invested session.
-const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
 
 // The editor's full view (header + canvas + tab bar + all dialogs),
 // lifted out of editor-page.tsx. Every value/handler it needs is read
@@ -164,15 +154,8 @@ export function EditorView() {
     community: sessionCommunity !== null && !sessionCommunity.ownDocumentId,
     makeCopy,
   });
-  // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, so a phone resolves to 1.
-  // While a Settings slider is dragged its patch wins, so the chrome resizes
-  // as you go; the preference is written once, on release.
-  const uiScalePreview = useUiScalePreview();
-  const isMobileViewport = useIsMobileViewport();
-  const uiScales = resolveUiScales(
-    uiScalePreview === null ? userPreferences : { ...userPreferences, ...uiScalePreview },
-    { mobile: isMobileViewport },
-  );
+  // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
+  const { uiScales } = useEditorUiScales(userPreferences);
   const role = useRoleIndicator();
   // A tab's Attendance (docs/specs/012-collaboration/tab-attendance.md "Where it shows"): the tab whose dialog is open.
   // An Editor's and a Participant's, on a document with a room (not one saved only in This Browser).
@@ -195,15 +178,14 @@ export function EditorView() {
   // The viewer's own light / dark chrome (docs/specs/007-editor/editor-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
   const { appearance } = useAppearance();
-  // Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md): the same banner the Explorer shows,
-  // but on the editor it waits ~5 minutes into the session before
-  // appearing so it never interrupts someone the moment they open a
-  // document. Hidden in embed (read-only iframe).
-  const { dismissed: signInDismissed, dismiss: dismissSignIn } =
-    useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
-  const signInTimerEnabled = !accountUserId && appChrome && !signInDismissed;
-  const signInDelayElapsed = useDelayedReveal(SIGNIN_BANNER_DELAY_MS, signInTimerEnabled);
-  const showSignInBanner = signInTimerEnabled && signInDelayElapsed;
+  // Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed into the session.
+  const { showSignInBanner, dismissSignIn } = useSignInNudge({
+    dismissKey: SIGNIN_BANNER_DISMISS_KEY,
+    accountUserId,
+    appChrome,
+    // This view has no zen mode to hide it in.
+    hidden: false,
+  });
   const backdrop = resolveTabBackdrop(activeTab, appearance);
 
   // Whether the document shows as public on Community, for the header's share state.

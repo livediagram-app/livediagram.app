@@ -53,6 +53,24 @@ the lazy per-tab load (`hooks/persistence/usePerTabLoad`'s `createPerTabLoad`, a
 timing), the canvas backdrop (`lib/canvas-backgrounds`'s `createCanvasBackgrounds`, around the seasonal motifs) and
 the Looks' lookup and match (`lib/tab-looks`'s `createTabLooks`, over the editor's own catalogue).
 
+The canvas surface's press routing (`hooks/canvas/useCanvasSurfaceGestures`) is one hook that takes the editor's
+arguments and a small module-scope options object: livedocuments, livedesign and liveplanner each bind it in their
+`hooks/canvas/useCanvasSurfaceGestures.ts` (livedesign ignores a portal's press on `<main>`, liveplanner a press on
+its board's cover); a tool an editor lacks never matches, so its branch never runs there. livediagram's (whiteboard
+pen routing, Isometric orbits) and livehuddle's (Avatar mode walks) interleave too much of their own to share and stay
+in those editors. Each Canvas focuses its surface on mount through `hooks/canvas/useFocusCanvasOnMount`.
+
+The Export Tab dialog's frame, format grid and image-preview load (`components/dialogs/export-tab-dialog`'s
+`exportTabDialogFrame` and `useExportPreviewImages`) are called by every editor's
+`components/dialogs/ExportTabDialog.tsx`, which keeps its own formats, panels, telemetry and copy. The frame is a plain
+function returning the editor's tree, not a component, so the dialog's tree is as it was; liveplanner draws no bitmaps
+and keeps its own preview load. A tab export's file name (`lib/tab-export-name`) takes the editor's noun for its
+fallback (livediagram, livehuddle, livedesign; livedocuments and liveplanner keep their own name rules). Each
+`EditorView` reads its UI scales and guest sign-in nudge through `hooks/ui/useEditorUiScales` and
+`hooks/ui/useSignInNudge` (given the editor's dismiss key, and whether zen mode hides it), and each `app/new/page.tsx`
+its commit identity through `hooks/persistence/useResolveSelf`; livedocuments, livedesign and liveplanner also back out
+of a restored `/new` through `hooks/ui/useBackOutOnRestore` (livediagram and livehuddle back out their own way).
+
 Never by importing the product: a workbench module that needs `@<product>/…` is not ready to move.
 
 ## Bindings

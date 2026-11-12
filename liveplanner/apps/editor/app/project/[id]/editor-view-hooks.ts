@@ -9,8 +9,7 @@ import {
   useAutoCopyParam,
   useCommunityState,
 } from '@liveworkspace/community-ui/editor';
-import { useDismissibleBanner } from '@liveworkspace/workbench/hooks/ui/useDismissibleBanner';
-import { useDelayedReveal } from '@liveworkspace/workbench/hooks/ui/useDelayedReveal';
+import { useSignInNudge as useSharedSignInNudge } from '@liveworkspace/workbench/hooks/ui/useSignInNudge';
 import { API_BASE } from '@/lib/api-client';
 import type { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
@@ -19,11 +18,6 @@ import { useAutomationsGate } from '@/components/automations/use-automations-gat
 import type { useEditorContext } from './EditorContext';
 
 type EditorContextValue = ReturnType<typeof useEditorContext>;
-
-// How long a guest edits before the sign-in nudge appears (docs/specs/014-identity/sign-in-encouragement.md).
-// Long enough that it never greets someone the instant they open a
-// project; short enough to catch an invested session.
-const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
 
 // Whether the plan shows as public on the Community, for the header's share state; and a Community link's
 // `?copy=1` acted on.
@@ -51,23 +45,18 @@ export function useHeaderCommunity(ctx: EditorContextValue): boolean {
   return headerCommunity;
 }
 
+// The guest sign-in nudge, delayed into the session (the shared useSignInNudge), hidden in zen mode.
 export function useSignInNudge(ctx: EditorContextValue): {
   showSignInBanner: boolean;
   dismissSignIn: () => void;
 } {
   const { accountUserId, appChrome, zenMode } = ctx;
-  // Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md): the same banner the Explorer shows,
-  // but on the editor it waits ~5 minutes into the session before
-  // appearing so it never interrupts someone the moment they open a
-  // project. Hidden in embed (read-only iframe) and zen mode. zenMode
-  // is deliberately kept OUT of the timer's `enabled` so toggling zen
-  // doesn't restart the countdown; it only hides the card at render.
-  const { dismissed: signInDismissed, dismiss: dismissSignIn } =
-    useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
-  const signInTimerEnabled = !accountUserId && appChrome && !signInDismissed;
-  const signInDelayElapsed = useDelayedReveal(SIGNIN_BANNER_DELAY_MS, signInTimerEnabled);
-  const showSignInBanner = signInTimerEnabled && !zenMode && signInDelayElapsed;
-  return { showSignInBanner, dismissSignIn };
+  return useSharedSignInNudge({
+    dismissKey: SIGNIN_BANNER_DISMISS_KEY,
+    accountUserId,
+    appChrome,
+    hidden: zenMode,
+  });
 }
 
 // The canvas style, for the pages that cover the canvas and must draw its motion themselves.

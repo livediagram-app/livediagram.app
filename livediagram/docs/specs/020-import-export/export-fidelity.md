@@ -166,7 +166,7 @@ known gap is the Callout body's indent, a few pixels off the canvas's.
 ## File names
 
 A downloaded tab export is named `<document> - <tab>` (` - selection` added for a selection export) by
-`tabExportBaseName` (`apps/editor/components/dialogs/ExportTabDialog.tsx`), run through the shared `sanitizeFilename`
+`tabExportBaseName` (`../packages/workbench/src/lib/tab-export-name.ts`, re-exported by `apps/editor/components/dialogs/ExportTabDialog.tsx`), run through the shared `sanitizeFilename`
 (`../packages/model-core/src/file-name.ts`, the one rule every editor's exports use) so it is safe on Windows, macOS
 and Linux: brackets `() [] {}` are dropped, any other character that is not a letter or digit (in any script, so a
 Japanese or Russian name stays itself), dot, dash, underscore or space (a colon, a slash, a question mark, an emoji)

@@ -21,6 +21,14 @@ const HELD_AT_100 = [
   'src/lib/tab-looks.ts',
   'src/lib/editor-viewport-defaults.ts',
   'src/components/canvas/label-align.ts',
+  'src/components/dialogs/export-tab-dialog.tsx',
+  'src/lib/tab-export-name.ts',
+  'src/hooks/ui/useEditorUiScales.ts',
+  'src/hooks/ui/useSignInNudge.ts',
+  'src/hooks/ui/useBackOutOnRestore.ts',
+  'src/hooks/persistence/useResolveSelf.ts',
+  'src/hooks/canvas/useCanvasSurfaceGestures.ts',
+  'src/hooks/canvas/useFocusCanvasOnMount.ts',
 ];
 
 export default defineProject({

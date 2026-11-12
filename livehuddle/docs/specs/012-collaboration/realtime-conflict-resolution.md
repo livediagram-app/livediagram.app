@@ -204,7 +204,7 @@ connection. It then reads as open while nothing arrives, so collaborators' chang
 the editor until a reload, and nothing says so. The client therefore checks its socket:
 
 - After 20 seconds with nothing heard (`ROOM_KEEPALIVE_IDLE_MS`, `apps/editor/lib/api/room-contract.ts`) it
-  sends the bare text `ping` (`ROOM_PING` in `room-messages.ts`). Any traffic resets the clock, so
+  sends the bare text `ping` (`ROOM_PING`, `@liveworkspace/api-schema/room-wire`, re-exported by `room-messages.ts`). Any traffic resets the clock, so
   a busy room sends none.
 - The room answers `pong` through the runtime's `setWebSocketAutoResponse`, which never wakes a
   hibernating room, so a keepalive costs the room nothing.

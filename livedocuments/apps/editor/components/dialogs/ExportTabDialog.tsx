@@ -1,9 +1,9 @@
-import { lazy, Suspense, useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useId, useMemo, useState } from 'react';
 import { ensureMapGeometryFor } from '@/lib/map-geometry-loader';
-import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
-import { exportHeroArt } from '@liveworkspace/ui/dialog-hero-art/export';
-import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCard';
+import {
+  exportTabDialogFrame,
+  useExportPreviewImages,
+} from '@liveworkspace/workbench/components/dialogs/export-tab-dialog';
 import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from '@liveworkspace/workbench/components/dialogs/TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
@@ -45,6 +45,16 @@ import {
 } from './export-formats';
 
 export type { Format };
+
+// The image preview's load: the icon catalogues, a map's land (docs/specs/009-elements/map.md, so the preview shows
+// it rather than the placeholder), then the image and avatar bitmaps when there is a context.
+const loadPreviewImages = async (tab: Tab, imageContext: ExportTabDialogProps['imageContext']) => {
+  await ensureIconCatalogs();
+  await ensureMapGeometryFor(tab.elements);
+  return imageContext ? await loadTabImages(tab, imageContext) : undefined;
+};
+// A GIF's panel draws its own frames, so it loads no preview.
+const isGif = (f: Format) => f === 'gif';
 
 // Telemetry (docs/specs/017-telemetry/telemetry.md): map the internal format key to the public label
 // the dashboard shows. 'file' is the portable .json export.
@@ -134,14 +144,6 @@ export function ExportTabDialog({
   const [active, setActive] = useState<Format | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Image / avatar bitmaps + icon catalogues loaded for the image-format
-  // preview (docs/specs/010-palette/style-presets.md). Loaded once when an image format is picked, then
-  // reused for both the live preview and the actual export so nothing is
-  // fetched twice. `ready` gates the preview on the (async) load.
-  const [previewImages, setPreviewImages] = useState<
-    Awaited<ReturnType<typeof loadTabImages>> | undefined
-  >(undefined);
-  const [previewReady, setPreviewReady] = useState(false);
   // The page One page exports (and every preview shows), by its place in the row.
   const [pageIndex, setPageIndex] = useState(0);
   const page = pages?.[Math.min(pageIndex, pages.length - 1)];
@@ -170,36 +172,16 @@ export function ExportTabDialog({
   const baseName =
     sanitizeFilename(`${documentName || 'document'} - ${tab.name || 'tab'}${suffix}`) || 'document';
 
-  // A new image load (format picked, tab or image context changed) is not ready until it lands;
-  // adjusted during render so the panel never shows the previous load as ready.
-  const [loadInputs, setLoadInputs] = useState({ active, tab, imageContext });
-  if (
-    loadInputs.active !== active ||
-    loadInputs.tab !== tab ||
-    loadInputs.imageContext !== imageContext
-  ) {
-    setLoadInputs({ active, tab, imageContext });
-    if (active && !isTextFormat(active)) setPreviewReady(false);
-  }
-
-  // When an image format is picked, load the icon catalogues + image bitmaps
-  // so the preview (and export) renders the real glyphs, not placeholders.
-  useEffect(() => {
-    if (!active || isTextFormat(active) || active === 'gif') return;
-    let cancelled = false;
-    void (async () => {
-      await ensureIconCatalogs();
-      // A map's land (docs/specs/009-elements/map.md), so the preview shows it rather than the placeholder.
-      await ensureMapGeometryFor(tab.elements);
-      const images = imageContext ? await loadTabImages(tab, imageContext) : undefined;
-      if (cancelled) return;
-      setPreviewImages(images);
-      setPreviewReady(true);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [active, tab, imageContext]);
+  // Image / avatar bitmaps + icon catalogues for the image-format preview, loaded once an image format is picked
+  // and reused by the export (export-tab-dialog.tsx).
+  const { previewImages, previewReady } = useExportPreviewImages({
+    active,
+    tab,
+    imageContext,
+    isTextFormat,
+    load: loadPreviewImages,
+    skipLoad: isGif,
+  });
 
   // The open text format's text, built once per format and tab change rather than on every render.
   // The panel reads it only as its starting text.
@@ -364,148 +346,120 @@ export function ExportTabDialog({
         ? 'Pick a format to export the pages.'
         : 'Pick a format to export the current tab.';
 
-  return (
-    <Dialog
-      open
-      onClose={onClose}
-      ariaLabel={isSelection ? 'Export Selection' : 'Export Tab'}
-      size="xl"
-      className="max-h-[90vh]"
-    >
-      {/* The dialog hero header (dialog-hero-header.md): the tab leaving as files. */}
-      <HeroDialogHeader
-        art={exportHeroArt}
-        titleId={titleId}
-        title={isSelection ? 'Export Selection' : 'Export Tab'}
-        subtitle={subtitle}
-        actions={<HelpArticleLink article="exportingDiagrams" size="md" />}
-        onClose={onClose}
-      />
-      <div className="flex-1 overflow-y-auto px-6 py-5">
-        {active && isTextFormat(active) ? (
-          <TextExportPanel
-            formatTitle={CARDS.find((c) => c.kind === active)?.title ?? ''}
-            initialText={activeText}
-            blurb={TEXT_PANELS[active].blurb}
-            downloadLabel={TEXT_PANELS[active].downloadLabel}
-            onDownload={(text) => {
-              const cfg = TEXT_PANELS[active];
-              downloadBlob(new Blob([text], { type: cfg.mime }), `${baseName}.${cfg.ext}`);
-              trackTextExport(active);
-            }}
-            onCopied={() => trackTextExport(active)}
-            onBack={() => setActive(null)}
-          />
-        ) : active === 'gif' && pages && page ? (
-          <Suspense
-            fallback={
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Preparing the GIF options…
-              </p>
-            }
-          >
-            <GifExportPanel
-              tab={tab}
-              pages={pages}
-              page={page}
-              baseName={baseName}
-              onPick={setPageIndex}
-              onDone={onClose}
-              onBack={() => setActive(null)}
-              onClearSelection={onClearSelection}
-            />
-          </Suspense>
-        ) : isOfficeFormat(active) && pages && pages.length > 0 ? (
-          <Suspense
-            fallback={
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Preparing the {OFFICE_CARDS[active].title} export…
-              </p>
-            }
-          >
-            <OfficeExportPanel
-              format={active}
-              tab={tab}
-              pages={pages}
-              {...(deck ? { deck } : {})}
-              title={documentName || 'document'}
-              baseName={baseName}
-              render={officeRender}
-              previewSvg={officePreview}
-              ready={previewReady}
-              onDone={onClose}
-              onBack={() => setActive(null)}
-            />
-          </Suspense>
-        ) : active === 'print' && pages && page ? (
-          <PrintPanel
+  return exportTabDialogFrame({
+    isSelection,
+    titleId,
+    subtitle,
+    help: <HelpArticleLink article="exportingDiagrams" size="md" />,
+    onClose,
+    panel:
+      active && isTextFormat(active) ? (
+        <TextExportPanel
+          formatTitle={CARDS.find((c) => c.kind === active)?.title ?? ''}
+          initialText={activeText}
+          blurb={TEXT_PANELS[active].blurb}
+          downloadLabel={TEXT_PANELS[active].downloadLabel}
+          onDownload={(text) => {
+            const cfg = TEXT_PANELS[active];
+            downloadBlob(new Blob([text], { type: cfg.mime }), `${baseName}.${cfg.ext}`);
+            trackTextExport(active);
+          }}
+          onCopied={() => trackTextExport(active)}
+          onBack={() => setActive(null)}
+        />
+      ) : active === 'gif' && pages && page ? (
+        <Suspense
+          fallback={
+            <p className="text-xs text-slate-500 dark:text-slate-400">Preparing the GIF options…</p>
+          }
+        >
+          <GifExportPanel
+            tab={tab}
             pages={pages}
             page={page}
-            scope={printScope}
-            counts={{ pages: sheets.length, tabs: printTabCount(sheets) }}
-            busy={busy}
-            error={error}
-            onScope={setPrintScope}
+            baseName={baseName}
             onPick={setPageIndex}
-            onPrint={() => void runPrint()}
-            onBack={() => {
-              setError(null);
-              setActive(null);
-            }}
+            onDone={onClose}
+            onBack={() => setActive(null)}
+            onClearSelection={onClearSelection}
           />
-        ) : active ? (
-          <ImageExportPanel
-            pagePicker={
-              pages && page ? (
-                <ExportPagePicker
-                  pages={pages}
-                  page={page}
-                  scope={scopeOf(active as ImageFormat)}
-                  format={active as ImageFormat}
-                  onScope={(next) => setScopes((s) => ({ ...s, [active as ImageFormat]: next }))}
-                  onPick={setPageIndex}
-                />
-              ) : undefined
-            }
-            label={activeCard!.title}
-            // A page: no canvas to tilt or pattern.
-            pageExport={!!pages}
-            busy={busy}
-            error={error}
-            renderPreview={renderPreview}
-            previewReady={previewReady}
-            onExport={(opts) => void runImageExport(active as ImageFormat, opts)}
-            onBack={() => {
-              setError(null);
-              setActive(null);
-            }}
+        </Suspense>
+      ) : isOfficeFormat(active) && pages && pages.length > 0 ? (
+        <Suspense
+          fallback={
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Preparing the {OFFICE_CARDS[active].title} export…
+            </p>
+          }
+        >
+          <OfficeExportPanel
+            format={active}
+            tab={tab}
+            pages={pages}
+            {...(deck ? { deck } : {})}
+            title={documentName || 'document'}
+            baseName={baseName}
+            render={officeRender}
+            previewSvg={officePreview}
+            ready={previewReady}
+            onDone={onClose}
+            onBack={() => setActive(null)}
           />
-        ) : (
-          <div
-            // Two columns on a phone: three left each card about 110px wide, its description wrapping to eight lines.
-            className="grid grid-cols-2 gap-3 sm:grid-cols-3"
-          >
-            {cards.map((c) => (
-              <FormatCard
-                key={c.kind}
-                title={c.title}
-                description={c.description}
-                onClick={() => {
-                  setError(null);
-                  // Print starts on the page in view (docs/specs/020-import-export/print.md "The panel").
-                  if (c.kind === 'print' && pages) {
-                    const inView = pages.findIndex((p) => p.id === currentPageIdNow());
-                    if (inView >= 0) setPageIndex(inView);
-                  }
-                  setActive(c.kind);
-                }}
-              >
-                <FormatIcon kind={c.kind} />
-              </FormatCard>
-            ))}
-          </div>
-        )}
-      </div>
-    </Dialog>
-  );
+        </Suspense>
+      ) : active === 'print' && pages && page ? (
+        <PrintPanel
+          pages={pages}
+          page={page}
+          scope={printScope}
+          counts={{ pages: sheets.length, tabs: printTabCount(sheets) }}
+          busy={busy}
+          error={error}
+          onScope={setPrintScope}
+          onPick={setPageIndex}
+          onPrint={() => void runPrint()}
+          onBack={() => {
+            setError(null);
+            setActive(null);
+          }}
+        />
+      ) : active ? (
+        <ImageExportPanel
+          pagePicker={
+            pages && page ? (
+              <ExportPagePicker
+                pages={pages}
+                page={page}
+                scope={scopeOf(active as ImageFormat)}
+                format={active as ImageFormat}
+                onScope={(next) => setScopes((s) => ({ ...s, [active as ImageFormat]: next }))}
+                onPick={setPageIndex}
+              />
+            ) : undefined
+          }
+          label={activeCard!.title}
+          // A page: no canvas to tilt or pattern.
+          pageExport={!!pages}
+          busy={busy}
+          error={error}
+          renderPreview={renderPreview}
+          previewReady={previewReady}
+          onExport={(opts) => void runImageExport(active as ImageFormat, opts)}
+          onBack={() => {
+            setError(null);
+            setActive(null);
+          }}
+        />
+      ) : null,
+    cards,
+    onPick: (kind) => {
+      setError(null);
+      // Print starts on the page in view (docs/specs/020-import-export/print.md "The panel").
+      if (kind === 'print' && pages) {
+        const inView = pages.findIndex((p) => p.id === currentPageIdNow());
+        if (inView >= 0) setPageIndex(inView);
+      }
+      setActive(kind);
+    },
+    FormatIcon,
+  });
 }
