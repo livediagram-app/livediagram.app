@@ -236,14 +236,19 @@ describe('what it refuses', () => {
 
   it('a model that is slow', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-    ai.run = () => new Promise(() => {});
-    let res: Response | undefined;
-    const pending = draft().then((r) => (res = r));
-    // The route reads the plan before it asks: step the clock until the ask's timer has run out.
-    for (let i = 0; i < 40 && !res; i++)
-      await vi.advanceTimersByTimeAsync(AUTOMATION_AI_TIMEOUT_MS / 10);
-    await pending;
-    if (!res) throw new Error('never answered');
+    // The ask sets its timeout's timer before it calls the model, so once the model is called the timer exists,
+    // however long the route took reading the plan first (on a loaded runner, a fixed number of clock steps could
+    // all run before it).
+    let asked!: () => void;
+    const called = new Promise<void>((resolve) => (asked = resolve));
+    ai.run = () => {
+      asked();
+      return new Promise(() => {});
+    };
+    const pending = draft();
+    await called;
+    await vi.advanceTimersByTimeAsync(AUTOMATION_AI_TIMEOUT_MS);
+    const res = await pending;
     expect(res.status).toBe(503);
     expect(await res.json()).toMatchObject({ message: AI_DRAFT_FAILED });
   });
