@@ -44,6 +44,11 @@ import { useStartHeaderTheme } from '@liveworkspace/workbench/components/start/u
 import { usePalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
 import { focusIsFree } from '@liveworkspace/workbench/lib/focus-is-free';
 import { ConnectRailEntry } from '@liveworkspace/workbench/components/connect/ConnectRailEntry';
+import {
+  RailFoot,
+  RailFootButton,
+  type RailFootColours,
+} from '@liveworkspace/workbench/components/start/RailFoot';
 
 const TAB_BAR_SELECTOR = '[data-editor-tabbar]';
 
@@ -65,6 +70,14 @@ type StartPanelCategory<C extends string> = {
 };
 
 export type { StartPanelCard } from './StartCard';
+
+// An entry at the rail's foot, below Connect File, that opens a dialog (Start Planning's Import).
+export type StartPanelFootAction = {
+  id: string;
+  name: string;
+  icon: ReactNode;
+  onPick: () => void;
+};
 
 // A result group, headed by its category's rail name, or `name` for a group the rail doesn't show.
 type StartPanelResult<C extends string> = {
@@ -89,6 +102,7 @@ export function StartPanel<C extends string>({
   onChoose,
   footer,
   connect,
+  footActions = [],
 }: {
   titleId: string;
   title: string;
@@ -115,6 +129,9 @@ export function StartPanel<C extends string>({
   // Connect File (liveworkspace/docs/specs/004-index/connected-tabs.md "Connecting"): the rail's last entry,
   // at its very bottom, and what the content area shows once it is chosen. Absent where connecting cannot work.
   connect?: ((palette: PlanPalette) => ReactNode) | undefined;
+  // Entries below Connect File in the same foot group, each opening a dialog (plan-mode.md "Starting a board": Import);
+  // alone under the hairline where Connect File is not offered.
+  footActions?: readonly StartPanelFootAction[];
 }) {
   // A category's flyout, More or Search hangs from the palette: the start steps aside for it (palette-popover-open).
   const paletteOpen = usePalettePopoverOpen();
@@ -214,6 +231,29 @@ export function StartPanel<C extends string>({
       </button>
     );
   };
+  // The foot's rows wear the rail's own colours.
+  const footColours: RailFootColours = {
+    text: palette.text,
+    border: palette.border,
+    card: palette.card,
+    chosenText: palette.focus,
+    chosenTint: startTint(palette, 14),
+    hoverTint: startTint(palette, 7),
+    chosenHoverTint: startTint(palette, 18),
+  };
+  // Each a row like Connect File's, a rail gap under the one before it on a desktop.
+  const footRows = footActions.map((a, i) => (
+    <RailFootButton
+      key={a.id}
+      railId={a.id}
+      onPick={a.onPick}
+      colours={footColours}
+      icon={<span className="shrink-0">{a.icon}</span>}
+      name={a.name}
+      opensDialog
+      className={connect || i > 0 ? 'sm:mt-1' : ''}
+    />
+  ));
   const above = categories.filter((c) => !c.below);
   const below = categories.filter((c) => c.below);
   // The cards cascade in as the panel arrives, and again each time the category or search changes them (the
@@ -420,16 +460,12 @@ export function StartPanel<C extends string>({
                     setConnecting(true);
                     if (cardsScroller.current) cardsScroller.current.scrollTop = 0;
                   }}
-                  colours={{
-                    text: palette.text,
-                    border: palette.border,
-                    card: palette.card,
-                    chosenText: palette.focus,
-                    chosenTint: startTint(palette, 14),
-                    hoverTint: startTint(palette, 7),
-                    chosenHoverTint: startTint(palette, 18),
-                  }}
-                />
+                  colours={footColours}
+                >
+                  {footRows}
+                </ConnectRailEntry>
+              ) : footRows.length ? (
+                <RailFoot colours={footColours}>{footRows}</RailFoot>
               ) : null}
             </nav>
           </div>

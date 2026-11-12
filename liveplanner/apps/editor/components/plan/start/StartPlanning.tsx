@@ -12,6 +12,7 @@ import { lucideGlyph } from '@liveplanner/ui';
 import {
   lucideChartPie,
   lucideClipboardList,
+  lucideFileDown,
   lucideGrid3x3,
   lucideLayoutGrid,
   lucideLightbulb,
@@ -43,6 +44,7 @@ import { FormStarterPicture } from '@liveplanner/template-previews';
 import type { StarterId } from '@liveplanner/forms';
 import type { PlanVisualisation } from '@liveplanner/items';
 import {
+  IMPORT_ITEM,
   KIND_NAMES,
   START_CATEGORIES,
   START_SEARCH_ORDER,
@@ -56,6 +58,9 @@ import { useStartPalette } from '@/components/start/useStartPalette';
 import { ImportPicture } from './ImportPicture';
 import { useConnectStart } from '@/components/connect/useConnectStart';
 import { COMMUNITY_START_GROUP, communityStartTiles } from './community-start-cards';
+
+// The rail's Import entry, below Connect File (plan-mode.md "Starting a board"): the tab menu's Import… glyph.
+const ImportGlyph = lucideGlyph(lucideFileDown, 16);
 
 const RAIL_ICONS: Record<Exclude<StartCategory, 'import'>, ReturnType<typeof lucideGlyph>> = {
   recommended: lucideGlyph(lucideStar, 16),
@@ -188,7 +193,8 @@ export function StartPlanning({
   onVisualisation?: ((view: PlanVisualisation, name: string) => void) | undefined;
   // Makes the tab a Form tab from a starter (Forms); absent, Forms is left out.
   onForm?: ((starter: StarterId) => void) | undefined;
-  // Opens the Import dialog on its list (an Editor's: plan-tabs.md "The Import dialog"); absent, no Import card.
+  // Opens the Import dialog on its list (an Editor's: plan-tabs.md "The Import dialog"); absent, no Import entry on
+  // the rail and no Import card in a search.
   onImport?: (() => void) | undefined;
   // Leaving for a Community tile's copy (a full navigation; tests watch it instead).
   leave?: (href: string) => void;
@@ -301,6 +307,19 @@ export function StartPlanning({
       // Where the new plan lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
       footer={(p) => <StartSaveSwitch palette={p} />}
       connect={connect}
+      // Import, below Connect File: it places nothing and opens the Import dialog on its list.
+      footActions={
+        onImport
+          ? [
+              {
+                id: IMPORT_ITEM.id,
+                name: IMPORT_ITEM.name,
+                icon: <ImportGlyph />,
+                onPick: onImport,
+              },
+            ]
+          : []
+      }
     />
   );
 }
