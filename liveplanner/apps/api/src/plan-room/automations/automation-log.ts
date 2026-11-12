@@ -66,6 +66,30 @@ export function settleRun(sql: Sql, run: AutomationRun): void {
   );
 }
 
+// A waiting run settled once its Wait ends: Done when the rest went on (a run of its own), Skipped with why when it
+// never could. A row gone (trimmed) is left gone.
+export function settleWaiting(
+  sql: Sql,
+  id: string,
+  result: Exclude<AutomationResult, 'waiting'>,
+  reason?: string,
+): void {
+  const row = sql
+    .exec("SELECT body FROM automation_runs WHERE id = ? AND result = 'waiting'", id)
+    .toArray()[0];
+  if (!row) return;
+  const body = row['body'];
+  if (typeof body !== 'string') return;
+  let run: AutomationRun;
+  try {
+    run = JSON.parse(body) as AutomationRun;
+  } catch {
+    return;
+  }
+  const { waitsUntil: _until, reason: _reason, ...rest } = run;
+  settleRun(sql, { ...rest, result, ...(reason ? { reason } : {}) });
+}
+
 // No Match rows kept, apart from the runs: however many there are, they never push a run out of the log.
 export const AUTOMATION_NO_MATCH_LOG_MAX = 500;
 
@@ -107,6 +131,7 @@ const RESULTS: ReadonlySet<string> = new Set<AutomationResult>([
   'no_match',
   'skipped',
   'failed',
+  'waiting',
 ]);
 
 // The Audit Trail, newest first: by rule, result and since when, at most AUTOMATION_RUNS_LIST_MAX.

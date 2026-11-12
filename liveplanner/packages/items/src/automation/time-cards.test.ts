@@ -88,3 +88,32 @@ describe('timeCards', () => {
     expect(undated).toEqual([...undated].sort((x, y) => x - y));
   });
 });
+
+describe('Card Stuck', () => {
+  it('runs on live cards unchanged for its days, outside done, in its columns, once per stretch', () => {
+    const day = 24 * 60 * 60 * 1000;
+    const old = bug({}, { updatedAt: MOMENT - 6 * day });
+    const fresh = bug({}, { updatedAt: MOMENT - day });
+    const done = bug({ status: 'done' }, { updatedAt: MOMENT - 9 * day });
+    const doing = bug({ status: 'doing' }, { updatedAt: MOMENT - 9 * day });
+    const r = timeCards(
+      rule({ kind: 'stuck', days: 5, at: '09:00' }),
+      [old, fresh, done, doing],
+      MOMENT,
+      ctx,
+    );
+    expect(r.cards.map((c) => c.card.id)).toEqual(
+      [old.id, doing.id].sort((a, b) => (a < b ? -1 : 1)),
+    );
+    expect(r.cards.find((c) => c.card.id === old.id)!.eventId).toBe(
+      `k:r1:${old.id}:${old.updatedAt}`,
+    );
+    const only = timeCards(
+      rule({ kind: 'stuck', days: 5, at: '09:00', statuses: ['doing'] }),
+      [old, doing],
+      MOMENT,
+      ctx,
+    );
+    expect(only.cards.map((c) => c.card.id)).toEqual([doing.id]);
+  });
+});

@@ -31,27 +31,30 @@ At the right of the tabs, **Runs today** shows how many of the plan's 1,000 runs
 
 ## Start From a Template
 
-The **Templates** tab, and the empty Rules list, show ready-made rules: **Stamp the Finish Date**, **Assign on Start**, **Overdue Nudge**, **Share Out Form Responses**, **Post Shipped Work to Slack**, **Triage New Bugs**, **Unblock the Next Card** and **Due Soon Reminder**. The chips above them (**Status**, **Assigning**, **Due Dates**, **Forms**, **Telling People**) narrow the list.
+The **Templates** tab, and the empty Rules list, show ready-made rules: **Stamp the Finish Date**, **Assign on Start**, **Overdue Nudge**, **Share Out Form Responses**, **Post Shipped Work to Slack**, **Triage New Bugs**, **Unblock the Next Card**, **Due Soon Reminder**, **Clean Up Done**, **Escalate Urgent Work**, **Reopen on New Comment**, **Route Reviews**, **Give It a Due Date**, **Flag Blocked Cards**, **Verify the Fix**, **Back to the Backlog**, **Close the Parent**, **Tell Them It’s Unblocked**, **Nudge Stuck Cards**, **Done When Feedback Is Resolved**, and two that use AI: **Sort Incoming Cards** and **Summarise Form Requests**. The chips above them (**Status**, **Assigning**, **Due Dates**, **Forms**, **Telling People**, **AI**) narrow the list. Hover a template to watch it at work on a small board.
 
-Pick one and it opens in the builder, filled in from your plan: its done columns, its In Progress column, a date field named like Completed On, a Bug card type. Whatever your plan doesn't have, or the rule leaves to you (a label, the people in turn, a Slack channel), is marked on its step ("Pick a label", "Pick a webhook") until you pick it. Nothing is saved, and the rule stays off, until you press **Save Rule**. **New Rule** offers **Start From a Template** too.
+Pick one and it opens in the builder, filled in from your plan: its done columns, its In Progress and Review columns, a date field named like Completed On, a Bug card type. Whatever your plan doesn't have, or the rule leaves to you (a label, the people in turn, a Slack channel), is marked on its step ("Pick a label", "Pick a webhook") until you pick it. Nothing is saved, and the rule stays off, until you press **Save Rule**. **New Rule** offers **Start From a Template** too.
 
 ## Make a Rule
 
 Press **New Rule**, then **Blank Rule**. The rule reads from top to bottom:
 
-- **When**: the trigger. Pick one of **Card Created**, **Form Response** (a card made by one of the plan's forms), **Card Moved** (from and to the columns you choose), **Field Changed** (any of the fields you choose), **Comment Added**, or **Run from a Card** (you start it from a card's **⋯** menu). Or pick a time (below).
+- **When**: the trigger. Pick one of **Card Created**, **Form Response** (a card made by one of the plan's forms), **Card Moved** (from and to the columns you choose), **Field Changed** (any of the fields you choose), **Card Archived**, **Card Restored**, **Checklist Completed** (the last item is ticked), **Column Over Limit** (a column holds more cards than the limit you set), **Comment Added**, **All Threads Resolved** (the card's last open thread is resolved), **Someone Mentioned** (anyone, or the people you pick), **Card Unblocked** (the last card blocking it is done or archived), **Related Cards Done** (all its children, or all the cards its Card fields point at, are done), or **Run from a Card** (you start it from a card's **⋯** menu). Or pick a time (below). **Change** opens **Pick a Trigger**, a gallery of every trigger in groups, each with a picture of what it hears.
 - **If all of these**: the conditions, all of which must hold. Check the **Card Type**, the **Column**, a **Field** (is, is not, is empty, contains, before or after a day, and more), **Who Did It** (a person, an Editor, a Participant, an agent), or whether it **Matches a Saved Filter** of one of your boards.
-- **Then**: the actions, in order. **Move to Column**, **Set Field**, **Clear Field**, **Assign**, **Add Label** or **Remove Label**, **Add Comment**, **Flag** or **Unflag**, **Archive**, **Create Card** and **Send Email**, and **Send to Webhook**, **Post to Slack** and **Post to Microsoft Teams** (below).
+- **Then**: the actions, in order. **Move to Column**, **Set Field**, **Clear Field**, **Assign**, **Add Label** or **Remove Label**, **Add Comment**, **Flag** or **Unflag**, **Archive** or **Restore From Archive**, **Change Card Type**, **Set Colour**, **Create Card** or **Copy Card**, **Add a Checklist**, **Link Cards**, **Send Email**, **Mention Someone**, **Resolve Threads** and **Wait**, and **Send to Webhook**, **Post to Slack** and **Post to Microsoft Teams** (below). **+ Add Action** opens a picker of them by group; on a step's panel, **Change** opens it again to swap the action.
+
+- **Wait** holds the rest of the rule for 1 hour to 30 days. When the time is up the rule checks its conditions again, and if they still hold, the steps after the Wait run. The run shows as **Waiting** in the Audit Trail until then, with when it goes on. Editing or turning off the rule stops the runs waiting on it.
 
 Press **+ Add Action**, **+ Add Condition**, **+ If / Else** or **+ For Related Cards** to add a step. An **If / Else** runs one list of actions when its conditions hold and another when they don't. Click any step to change it in the panel on the right; its **⋯** menu moves it up or down, duplicates it or deletes it. Name the rule at the top, then press **Save Rule**.
 
 ### Rules on a Time
 
-Three triggers start a rule at a time instead of when something happens to a card:
+Four triggers start a rule at a time instead of when something happens to a card:
 
 - **Scheduled**: every **Day**, **Weekday**, **Week** (on the days you pick) or **Month** (on a day from the 1st to the 31st; past the month's end, its last day), **At** a time on the quarter hour.
 - **Due In**: 1 to 30 days before a card is due, at a time. A card is reminded once for each due date it has.
 - **Overdue**: on the day after a card was due, at a time. A Done card is never overdue.
+- **Card Stuck**: once a day at a time, cards that have not changed for 1 to 90 days, outside Done columns (only in the columns you pick, if you pick any). Any change to a card starts its count again.
 
 At its time, the rule runs once for each card its conditions match: "Every Weekday at 9:00 **for cards** Overdue, not Done". A rule on a time with no conditions runs on every card in the plan, and the builder warns you. Times are in your time zone when you save the rule, which the trigger's panel names ("Times are Europe/London"). A rule on a time has nobody behind it, so it can't check **Who Did It** or assign or email whoever triggered it.
 

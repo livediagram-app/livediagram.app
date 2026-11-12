@@ -113,3 +113,21 @@ describe('ruleNeeds, Phase 2', () => {
     expect(ruleNeeds(rule, OUTLINE, new Set(['wh1']))).not.toContain('Webhook wh1 is gone');
   });
 });
+
+describe('the triggers after Phase 3', () => {
+  it('needs the columns and people they name', () => {
+    expect(
+      ruleNeeds(ruleBody({ trigger: { kind: 'column_limit', status: 'gone', limit: 3 } }), OUTLINE),
+    ).toHaveLength(1);
+    expect(
+      ruleNeeds(
+        ruleBody({ trigger: { kind: 'stuck', days: 3, at: '09:00', statuses: ['todo', 'gone'] } }),
+        OUTLINE,
+      ),
+    ).toHaveLength(1);
+    expect(
+      ruleNeeds(ruleBody({ trigger: { kind: 'mentioned', people: ['p-nobody'] } }), OUTLINE),
+    ).toHaveLength(1);
+    expect(ruleNeeds(ruleBody({ trigger: { kind: 'mentioned' } }), OUTLINE)).toEqual([]);
+  });
+});

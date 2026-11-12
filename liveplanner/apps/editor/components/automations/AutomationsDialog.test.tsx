@@ -9,7 +9,7 @@ import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanConte
 import { AutomationsDialog } from './AutomationsDialog';
 import type { AutomationsTarget } from './AutomationsContext';
 import { forgetAutomations } from './use-automations';
-import { ANA, outline, rule, run } from './test-fixtures';
+import { ANA, outline, pickerTile, rule, run } from './test-fixtures';
 
 const client = vi.hoisted(() => ({
   listAutomations: vi.fn(),
@@ -259,7 +259,7 @@ describe('the rule builder', () => {
     wrap(<Harness initial={{ view: 'rule', ruleId: null }} />);
     await screen.findByRole('textbox', { name: 'Rule name' });
     fireEvent.click(screen.getAllByRole('button', { name: 'Add Action' }).at(-1)!);
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Flag' }));
+    fireEvent.click(pickerTile('flag')!);
     expect(screen.getByText('Flags the card. Nothing else to set.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Save Rule' }));
     await waitFor(() => expect(client.createRule).toHaveBeenCalled());

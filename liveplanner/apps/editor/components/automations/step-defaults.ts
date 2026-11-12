@@ -12,6 +12,7 @@ import {
   type AutomationCondition,
   type AutomationOutgoing,
   type AutomationVia,
+  type AutomationWait,
 } from '@liveplanner/items';
 import { outlineFields, type AutomationOutline } from './automation-outline';
 
@@ -28,11 +29,19 @@ export const ACTION_KINDS: readonly AutomationActionKind[] = [
   'archive',
   'create_card',
   'email',
+  'set_type',
+  'set_colour',
+  'restore',
+  'copy_card',
+  'add_checklist',
+  'link_card',
+  'mention',
+  'resolve_threads',
 ];
 
-// A branch takes no Create Card (nor an If, a branch or an outgoing action, which its menu never offers).
+// A branch makes no card (nor holds an If, a branch, a Wait or an outgoing action, which its picker never offers).
 export const BRANCH_ACTION_KINDS: readonly AutomationActionKind[] = ACTION_KINDS.filter(
-  (k) => k !== 'create_card',
+  (k) => k !== 'create_card' && k !== 'copy_card',
 );
 
 // + Add Action at the rule's top level offers the outgoing actions too, one per kind of webhook.
@@ -41,7 +50,8 @@ export type OutgoingKind = (typeof OUTGOING_KINDS)[number];
 // And, under them, the AI actions, while the rule holds fewer than 3 (docs/specs/026-plan/automations.md "AI actions").
 export const AI_KINDS = ['ai_summarise', 'ai_card_type', 'ai_triage'] as const;
 export type AiKind = (typeof AI_KINDS)[number];
-export type AddKind = AutomationActionKind | OutgoingKind | AiKind;
+// Wait: a step of the rule's top level, holding the ones after it (docs/specs/026-plan/automations.md "Wait").
+export type AddKind = AutomationActionKind | OutgoingKind | AiKind | 'wait';
 export const ADD_NAMES: Readonly<Record<AddKind, string>> = {
   ...AUTOMATION_STEP_NAMES,
   notify_webhook: AUTOMATION_NOTIFY_NAMES.webhook,
@@ -74,7 +84,8 @@ export function defaultOutgoing(via: AutomationVia): AutomationOutgoing {
 export function defaultStep(
   kind: AddKind,
   outline: Outline,
-): AutomationAction | AutomationOutgoing | AutomationAi {
+): AutomationAction | AutomationOutgoing | AutomationAi | AutomationWait {
+  if (kind === 'wait') return { kind: 'wait', hours: 24 };
   if (isAiKind(kind)) return defaultAi(kind);
   return isOutgoingKind(kind) ? defaultOutgoing(viaOf(kind)) : defaultAction(kind, outline);
 }
@@ -114,9 +125,25 @@ export function defaultAction(kind: AutomationActionKind, outline: Outline): Aut
       return { kind, type: outline.types[0]?.id ?? '', title: '' };
     case 'email':
       return { kind, to: { assignee: true }, subject: '', body: '' };
+    case 'set_type':
+      return { kind, type: (outline.types[1] ?? outline.types[0])?.id ?? '' };
+    case 'set_colour':
+      return { kind, colour: '#dc2626' };
+    case 'copy_card':
+      return { kind };
+    case 'add_checklist':
+      return { kind, items: [''] };
+    case 'link_card': {
+      const field = outline.types.flatMap((t) => t.custom ?? []).find((f) => f.kind === 'card');
+      return { kind, field: field?.id ?? '', to: { card: '' } };
+    }
+    case 'mention':
+      return { kind, to: { assignee: true }, text: '' };
     case 'flag':
     case 'unflag':
     case 'archive':
+    case 'restore':
+    case 'resolve_threads':
       return { kind };
   }
 }

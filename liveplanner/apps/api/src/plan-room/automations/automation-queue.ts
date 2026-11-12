@@ -82,20 +82,18 @@ export function enqueueStatement(
     .bind(now, JSON.stringify(events.map((e) => JSON.stringify(e))), AUTOMATION_QUEUE_MAX);
 }
 
-// A comment's event, when some rule hears comments: queued on its own, and the room asked for a wake.
+// A comment's event (or a resolve's that left a card no open thread), when some rule hears it: queued on its own,
+// and the room asked for a wake.
 export async function enqueueComment(
   env: Pick<PlanEnv, 'PLAN_DB' | 'AUTOMATIONS'>,
   event: Omit<AutomationEvent, 'kind' | 'at'>,
+  kind: 'comment' | 'resolved' = 'comment',
 ): Promise<void> {
   const hook = env.AUTOMATIONS;
-  if (!hook?.kinds.has('comment')) return;
+  if (!hook?.kinds.has(kind)) return;
   const now = Date.now();
   try {
-    const res = await enqueueStatement(
-      env.PLAN_DB,
-      [{ ...event, kind: 'comment', at: now }],
-      now,
-    ).run();
+    const res = await enqueueStatement(env.PLAN_DB, [{ ...event, kind, at: now }], now).run();
     hook.queued(1 - (res.meta.changes ?? 0));
   } catch (error) {
     console.warn('[automations] enqueue.failed', { error: String(error) });
@@ -130,13 +128,19 @@ export class AutomationSchedule {
     this.restoreTimes();
   }
 
-  // The earliest time-trigger moment stored.
+  // The earliest time-trigger moment stored, or a waiting run's.
   restoreTimes(): void {
     if (!this.ready()) {
       this.timeAt = null;
       return;
     }
-    const row = this.sql().exec('SELECT MIN(next_at) AS at FROM automation_schedule').toArray()[0];
+    // With the waiting runs' (a Wait's) earliest moment: one indexed MIN read each.
+    const row = this.sql()
+      .exec(
+        `SELECT MIN(at) AS at FROM (SELECT MIN(next_at) AS at FROM automation_schedule
+           UNION ALL SELECT MIN(at) FROM automation_waiting)`,
+      )
+      .toArray()[0];
     this.timeAt = typeof row?.['at'] === 'number' ? row['at'] : null;
   }
 

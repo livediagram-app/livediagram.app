@@ -7,8 +7,18 @@
 // that would change nothing is "Already so"; one the card refuses fails the run there, with the lines so far. The api
 // applies the plan (automation-writes.ts); Test on a Card shows it. Pure.
 
-import { itemAssignee, itemLabels, type ItemFields, type ItemPerson } from '../item';
-import { ITEM_LABELS_MAX, ITEM_TITLE_MAX } from '../limits';
+import {
+  itemAssignee,
+  itemLabels,
+  itemStatus,
+  itemTitle,
+  type ItemFields,
+  type ItemPerson,
+} from '../item';
+import { ITEM_CHECKLIST_MAX, ITEM_LABELS_MAX, ITEM_TITLE_MAX } from '../limits';
+import { colourFieldOf } from '../item-colour';
+import { blockingCycleOf, isBlocksField } from '../blocked-by';
+import { linkedCardIds } from '../several-values';
 import { validateFields } from '../fields';
 import { isEmptyFieldValue, requiredCustomFieldsOf } from '../required-fields';
 import { typeAllowsStatus } from '../type-catalogue';
@@ -23,10 +33,10 @@ import {
   type AutomationStep,
 } from './types';
 import { allHold } from './conditions';
-import { fieldDefOf, fieldName, personOf, statusName, typeName } from './outline';
+import { fieldDefOf, fieldName, personOf, statusName, typeHasField, typeName } from './outline';
 import { fieldText, fillValues } from './values';
 import { relatedCards } from './related';
-import { branchWords, notifyChip } from './sentence';
+import { branchWords, notifyChip, waitWords } from './sentence';
 import { Failed, fail, fieldKind, setValueOf } from './set-value';
 import { planAi } from './ai-steps';
 import {
@@ -43,6 +53,7 @@ export type {
   PlanActionsContext,
   PlannedCard,
   PlannedEmail,
+  PlannedMention,
   PlannedRelated,
   PlannedRun,
   PlannedSend,
@@ -158,6 +169,43 @@ function apply(a: AutomationAction, w: Walk) {
       return plan.line('Archive', plan.write('archived', true));
     case 'create_card':
       return createCard(a, w);
+    case 'copy_card':
+      return copyCard(a, w);
+    case 'set_type': {
+      const to = o.types.find((t) => t.id === a.type);
+      if (!to) return fail(`Card type ${a.type} is gone`);
+      const status = itemStatus(plan.card);
+      if (status && !typeAllowsStatus(to, status))
+        fail(`A ${to.label} card can't be in ${statusName(o, status)}`);
+      const changed = plan.retype(to.id);
+      w.type = to;
+      return plan.line(`Change to ${typeName(o, to.id)}`, changed);
+    }
+    case 'set_colour':
+      return plan.line(
+        a.colour ? `Set Colour ${a.colour}` : 'Clear Colour',
+        plan.write(colourFieldOf(type), a.colour ?? undefined),
+      );
+    case 'restore':
+      return plan.line('Restore From Archive', plan.write('archived', undefined));
+    case 'add_checklist':
+      return addChecklist(a, w);
+    case 'link_card':
+      return linkCard(a, w);
+    case 'mention': {
+      const to =
+        'assignee' in a.to
+          ? (itemAssignee(plan.card) ?? null)
+          : 'trigger' in a.to
+            ? triggerPerson(ctx)
+            : (personOf(o, a.to.person) ?? null);
+      plan.mentions.push({ to, text: fill(a.text).slice(0, AUTOMATION_TEXT_MAX) });
+      return plan.line(to ? `Mention ${to.name}` : 'Mention (nobody to mention)', to !== null);
+    }
+    case 'resolve_threads': {
+      plan.resolve = true;
+      return plan.line('Resolve Threads');
+    }
     case 'email': {
       const to =
         'assignee' in a.to
@@ -202,6 +250,71 @@ function createCard(a: Extract<AutomationAction, { kind: 'create_card' }>, w: Wa
   }
   plan.created.push({ type: type.id, ...(a.status ? { status: a.status } : {}), fields });
   plan.line(`Create ${typeName(o, type.id)} "${fields['title'] as string}"`);
+}
+
+// Copy Card: a new card of the card's type, its title and fields, in its column or the one chosen.
+function copyCard(a: Extract<AutomationAction, { kind: 'copy_card' }>, w: Walk) {
+  const { plan, ctx } = w;
+  const o = ctx.outline;
+  if (plan.created.length >= AUTOMATION_CREATED_PER_RUN)
+    fail(`A run makes up to ${AUTOMATION_CREATED_PER_RUN} card`);
+  if (a.status && !o.statuses.some((s) => s.status === a.status))
+    fail(`Column ${a.status} is gone`);
+  const status = a.status ?? itemStatus(plan.card);
+  if (status && !typeAllowsStatus(w.type, status))
+    fail(`A ${w.type.label} card can't go in ${statusName(o, status)}`);
+  const { status: _status, archived: _archived, ...fields } = plan.card.fields;
+  plan.created.push({ type: plan.card.type, ...(status ? { status } : {}), fields: { ...fields } });
+  plan.line(`Copy Card "${itemTitle(plan.card)}"`);
+}
+
+type ChecklistRow = { text: string; done: boolean };
+
+// Add a Checklist: the items the card's checklist lacks (by their text), unticked, after the ones it holds.
+function addChecklist(a: Extract<AutomationAction, { kind: 'add_checklist' }>, w: Walk) {
+  const { plan, type } = w;
+  if (!typeHasField(type, 'checklist')) fail(`A ${type.label} card has no Checklist`);
+  const had = Array.isArray(plan.card.fields['checklist'])
+    ? (plan.card.fields['checklist'] as ChecklistRow[])
+    : [];
+  const texts = new Set(had.map((r) => r.text.trim().toLowerCase()));
+  const rows = [...had];
+  for (const item of a.items) {
+    const text = fillValues(item, { ...w.values, card: plan.card }).trim();
+    if (!text || texts.has(text.toLowerCase())) continue;
+    texts.add(text.toLowerCase());
+    rows.push({ text, done: false });
+  }
+  if (rows.length > ITEM_CHECKLIST_MAX) fail(`A checklist holds up to ${ITEM_CHECKLIST_MAX} items`);
+  const added = rows.length - had.length;
+  const words = added === 1 ? '1 checklist item' : `${added} checklist items`;
+  return plan.line(`Add ${words}`, plan.write('checklist', rows));
+}
+
+// Link Cards: a Card field pointed at a chosen card, or (a branch's) the card that started the rule. A field of
+// several gains it; a single one is replaced. A Blocked By link never closes a loop.
+function linkCard(a: Extract<AutomationAction, { kind: 'link_card' }>, w: Walk) {
+  const { plan, ctx, type } = w;
+  const def = type.custom?.find((f) => f.id === a.field && f.kind === 'card');
+  if (!def || !type.fields.includes(def.id))
+    return fail(`A ${type.label} card has no Card field ${a.field}`);
+  const chosen = 'card' in a.to ? a.to.card : undefined;
+  const to =
+    chosen === undefined ? w.values.trigger?.card : ctx.items?.find((i) => i.id === chosen);
+  if (chosen !== undefined && ctx.items && !to) return fail('The card to link is gone');
+  const id = to?.id ?? chosen;
+  if (!id) return fail('No card to link');
+  if (id === plan.card.id) return fail("A card can't link to itself");
+  const has = linkedCardIds(plan.card, def);
+  const next = def.multiple ? (has.includes(id) ? has : [...has, id]) : id;
+  const changed = plan.write(def.id, next);
+  if (changed && isBlocksField(def) && ctx.items) {
+    const before = ctx.items.find((i) => i.id === plan.card.id);
+    if (blockingCycleOf(ctx.items, ctx.outline.types, [{ before, next: plan.card }]))
+      fail('That link would close a Blocked By loop');
+  }
+  const title = to ? `#${to.key}` : 'a card';
+  return plan.line(`Link ${def.label} to ${title}`, changed);
 }
 
 function count(run: Run, n = 1) {
@@ -265,6 +378,8 @@ function branch(s: AutomationBranch, top: Walk) {
       patch: w.plan.patch(),
       comments: w.plan.comments,
       emails: w.plan.emails,
+      mentions: w.plan.mentions,
+      resolve: w.plan.resolve,
       ...(reason ? { failed: reason } : {}),
     });
   }
@@ -278,24 +393,47 @@ function branch(s: AutomationBranch, top: Walk) {
 }
 
 // The run's steps against the card, worked out: the one patch, the comments, the card to make, the emails, the
-// related cards' writes and the messages, with a line per step; or where it failed and why.
-export function planActions(steps: readonly AutomationStep[], ctx: PlanActionsContext): PlannedRun {
+// related cards' writes and the messages, with a line per step; or where it failed and why. A Wait ends the plan
+// there (`wait`: the rest goes on later, from its next step); `from` starts at a step (the rest after a Wait), and
+// `through` plans past every Wait (Test on a Card: "Would wait 2 days, then:").
+export function planActions(
+  steps: readonly AutomationStep[],
+  ctx: PlanActionsContext,
+  opts: { from?: number; through?: boolean } = {},
+): PlannedRun {
   const run = new Run();
   const w = walkOf(ctx.card, run, ctx);
+  let wait: { hours: number; from: number } | undefined;
   try {
-    steps.forEach((s, index) => {
-      if (s.kind === 'for') return branch(s, w);
+    for (let index = opts.from ?? 0; index < steps.length; index += 1) {
+      const s = steps[index]!;
+      if (s.kind === 'wait') {
+        if (opts.through) {
+          w.plan.line(`Would ${waitWords(s.hours).toLowerCase()}, then:`, true);
+          continue;
+        }
+        w.plan.line(waitWords(s.hours));
+        wait = { hours: s.hours, from: index + 1 };
+        break;
+      }
+      if (s.kind === 'for') {
+        branch(s, w);
+        continue;
+      }
       if (s.kind === 'notify') {
         count(run);
-        return notify(s, index, w);
+        notify(s, index, w);
+        continue;
       }
       if (s.kind === 'ai') {
         count(run);
-        return planAi(s, index, w);
+        planAi(s, index, w);
+        continue;
       }
       if (s.kind !== 'if') {
         count(run);
-        return apply(s, w);
+        apply(s, w);
+        continue;
       }
       const held = allHold(s.conditions, { ...ctx, card: w.plan.card });
       for (const l of held.lines) run.lines.push({ kind: 'condition', ...l });
@@ -303,13 +441,13 @@ export function planActions(steps: readonly AutomationStep[], ctx: PlanActionsCo
         count(run);
         apply(a, w);
       }
-    });
+    }
   } catch (error) {
     if (!(error instanceof Failed)) throw error;
     w.plan.failure(error.message);
     return { failed: error.message, lines: run.lines, done: writesOf(w.plan) };
   }
-  return { ...writesOf(w.plan), lines: run.lines };
+  return { ...writesOf(w.plan), ...(wait ? { wait } : {}), lines: run.lines };
 }
 
 const writesOf = (plan: Plan): PlannedWrites => ({
@@ -317,6 +455,8 @@ const writesOf = (plan: Plan): PlannedWrites => ({
   comments: plan.comments,
   created: plan.created,
   emails: plan.emails,
+  mentions: plan.mentions,
+  resolve: plan.resolve,
   related: plan.run.related,
   sends: plan.run.sends,
   turns: plan.run.turns,

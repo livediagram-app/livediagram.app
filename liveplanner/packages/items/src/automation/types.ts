@@ -33,6 +33,16 @@ export const AUTOMATION_AI_PER_DAY = 100;
 export const AUTOMATION_AI_STEPS_MAX = 3;
 export const AUTOMATION_AI_SUMMARY_MAX = 600;
 export const AUTOMATION_AI_LABELS_MAX = 3;
+// The actions after Phase 3 (spec "Actions", "Wait"): a checklist's items, the Waits a rule holds and how long one
+// holds, and the runs a plan holds waiting.
+export const AUTOMATION_CHECKLIST_ITEMS_MAX = 20;
+export const AUTOMATION_WAITS_MAX = 3;
+export const AUTOMATION_WAIT_HOURS_MIN = 1;
+export const AUTOMATION_WAIT_HOURS_MAX = 30 * 24;
+export const AUTOMATION_WAITING_RUNS_MAX = 500;
+// The triggers after Phase 3 (spec "Triggers"): Card Stuck's days and Column Over Limit's limit.
+export const AUTOMATION_STUCK_DAYS_MAX = 90;
+export const AUTOMATION_COLUMN_LIMIT_MAX = 500;
 
 // Who a rule's changes are by: `name` is the rule's name at the moment it ran, the history tag says it was a rule.
 export const AUTOMATION_PERSON_ID = 'automation';
@@ -71,7 +81,18 @@ export type AutomationTrigger =
   | { kind: 'due_in'; days: number; at: AutomationClock }
   | { kind: 'overdue'; at: AutomationClock }
   // Phase 3: another tool's call to the rule's own address, proving it holds the rule's secret (incoming.ts).
-  | { kind: 'incoming_webhook' };
+  | { kind: 'incoming_webhook' }
+  | { kind: 'card_archived' }
+  | { kind: 'card_restored' }
+  | { kind: 'checklist_completed' }
+  | { kind: 'threads_resolved' }
+  // `people`: only when one of them is mentioned; absent, anyone.
+  | { kind: 'mentioned'; people?: string[] }
+  | { kind: 'card_unblocked' }
+  | { kind: 'related_done'; related: 'children' | 'linked' }
+  | { kind: 'column_limit'; status: string; limit: number }
+  // A time trigger: cards unchanged for `days`, outside done columns (in `statuses`, when named).
+  | { kind: 'stuck'; days: number; at: AutomationClock; statuses?: string[] };
 
 export type AutomationTriggerKind = AutomationTrigger['kind'];
 export const AUTOMATION_TRIGGER_KINDS: readonly AutomationTriggerKind[] = [
@@ -85,12 +106,21 @@ export const AUTOMATION_TRIGGER_KINDS: readonly AutomationTriggerKind[] = [
   'due_in',
   'overdue',
   'incoming_webhook',
+  'card_archived',
+  'card_restored',
+  'checklist_completed',
+  'threads_resolved',
+  'mentioned',
+  'card_unblocked',
+  'related_done',
+  'column_limit',
+  'stuck',
 ];
-export type AutomationTimeTriggerKind = 'scheduled' | 'due_in' | 'overdue';
+export type AutomationTimeTriggerKind = 'scheduled' | 'due_in' | 'overdue' | 'stuck';
 export const isTimeTrigger = (
   t: AutomationTrigger,
 ): t is Extract<AutomationTrigger, { kind: AutomationTimeTriggerKind }> =>
-  t.kind === 'scheduled' || t.kind === 'due_in' || t.kind === 'overdue';
+  t.kind === 'scheduled' || t.kind === 'due_in' || t.kind === 'overdue' || t.kind === 'stuck';
 // A trigger with no person behind it (a time, another tool's call): no Who Did It, nobody to assign or email as
 // whoever triggered it.
 export const isPersonless = (t: AutomationTrigger): boolean =>
@@ -168,7 +198,20 @@ export type AutomationAction =
       // A Card field on the new card that points back at the triggering card.
       linkField?: string;
     }
-  | { kind: 'email'; to: AutomationRecipient; subject: string; body: string };
+  | { kind: 'email'; to: AutomationRecipient; subject: string; body: string }
+  | { kind: 'set_type'; type: string }
+  // `colour`: a #rrggbb, or null for none.
+  | { kind: 'set_colour'; colour: string | null }
+  | { kind: 'restore' }
+  // A copy of the card: its type, title and fields, in its column or `status`.
+  | { kind: 'copy_card'; status?: string }
+  // Unticked items to add (values allowed); one the card's checklist already holds, by its text, is left out.
+  | { kind: 'add_checklist'; items: string[] }
+  // One of the card's Card fields pointed at a card: a chosen one by id, or (in a branch) the card that started it.
+  | { kind: 'link_card'; field: string; to: { card: string } | { trigger: true } }
+  // A thread @mentioning someone, with a message (values allowed).
+  | { kind: 'mention'; to: AutomationRecipient; text: string }
+  | { kind: 'resolve_threads' };
 
 export type AutomationActionKind = AutomationAction['kind'];
 
@@ -222,8 +265,16 @@ export const AUTOMATION_AI_TASKS: readonly AutomationAiTask[] = [
   'triage',
 ];
 
+// Wait (spec "Wait"): the rest of the rule holds for `hours` (1 to 720). The rule's top level only.
+export type AutomationWait = { kind: 'wait'; hours: number };
+
 export type AutomationStep =
-  AutomationAction | AutomationOutgoing | AutomationIf | AutomationBranch | AutomationAi;
+  | AutomationAction
+  | AutomationOutgoing
+  | AutomationIf
+  | AutomationBranch
+  | AutomationAi
+  | AutomationWait;
 
 // ---- A rule ------------------------------------------------------------------------------------------------------
 
@@ -257,7 +308,8 @@ export interface AutomationRule extends AutomationRuleBody {
 
 // ---- Runs --------------------------------------------------------------------------------------------------------
 
-export type AutomationResult = 'done' | 'no_match' | 'skipped' | 'failed';
+// `waiting`: a run held by a Wait until `waitsUntil`; it settles when the run goes on (its own row) or is dropped.
+export type AutomationResult = 'done' | 'no_match' | 'skipped' | 'failed' | 'waiting';
 
 export type AutomationStepLine =
   | { kind: 'trigger'; text: string; by?: ItemPerson }
@@ -278,6 +330,10 @@ export interface AutomationRun {
   reason?: string;
   tookMs: number;
   steps: AutomationStepLine[];
+  // A waiting run's moment to go on (ms).
+  waitsUntil?: number;
+  // A run that went on after a Wait: how long it waited, in hours.
+  afterWait?: number;
 }
 
 // One rule's figures for the Rules list.

@@ -10,14 +10,17 @@ export const RESULT_LABELS: Readonly<Record<AutomationResult, string>> = {
   no_match: 'No Match',
   skipped: 'Skipped',
   failed: 'Failed',
+  waiting: 'Waiting',
 };
 
-// Each pill's tint: done green, no match quiet slate, skipped amber, failed red; dark mode on the same hues.
+// Each pill's tint: done green, no match quiet slate, skipped amber, failed red, waiting brand blue; dark mode on the
+// same hues.
 export const RESULT_PILL: Readonly<Record<AutomationResult, string>> = {
   done: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
   no_match: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
   skipped: 'bg-amber-50 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
   failed: 'bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-300',
+  waiting: 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300',
 };
 
 const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);

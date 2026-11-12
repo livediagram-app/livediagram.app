@@ -47,4 +47,10 @@ export const ICON_ART_ALLOWLIST = [
   // Canvas content: a checklist tick and a collaborator's cursor.
   '**/components/canvas/ChecklistView.tsx',
   '**/components/canvas/RemoteCursor.tsx',
+  // Automations' living pictures: the template, action and trigger scenes and their parts (a cursor, a flow line).
+  '**/components/automations/scene-parts.tsx',
+  '**/components/automations/TemplateScene.tsx',
+  '**/components/automations/template-scenes/**',
+  '**/components/automations/ActionScene.tsx',
+  '**/components/automations/TriggerScene.tsx',
 ];

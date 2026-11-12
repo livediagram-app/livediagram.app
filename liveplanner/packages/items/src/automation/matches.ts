@@ -17,7 +17,14 @@ export type AutomationEventKind =
   | 'manual'
   | 'time'
   // An Incoming Webhook call's, queued only by the hook route, for its one rule.
-  | 'incoming';
+  | 'incoming'
+  // A run held by a Wait going on (automation-waits.ts), for its one rule.
+  | 'resume'
+  // A card archived, or brought back.
+  | 'archived'
+  | 'restored'
+  // A resolve that left a card with no open thread (the thread routes).
+  | 'resolved';
 
 export interface AutomationEvent {
   // `${cardId}:${rev}` for a card write; `c:${commentId}`; `m:${nonce}`; a time trigger's from time-cards.ts: with
@@ -43,6 +50,16 @@ export interface AutomationEvent {
   // card is `cardId`, '' when it named none).
   webhook?: WebhookValues;
   cards?: number;
+  // A resume's: the step the rule goes on from, the rule's edit stamp when it waited, the hours it waited and the
+  // waiting run's id.
+  step?: number;
+  edited?: number;
+  waited?: number;
+  origin?: string;
+  // A changed or moved write that ticked a checklist's last item.
+  checklistDone?: true;
+  // A comment's: the person ids it @mentions.
+  mentioned?: string[];
   at: number;
 }
 
@@ -62,13 +79,32 @@ export const TRIGGER_EVENT_KINDS: Readonly<
   overdue: ['time'],
   // Queued by the hook route for its one rule, never by a write.
   incoming_webhook: ['incoming'],
+  card_archived: ['archived'],
+  card_restored: ['restored'],
+  checklist_completed: ['changed', 'moved'],
+  threads_resolved: ['resolved'],
+  mentioned: ['comment'],
+  // Worked out at run time from another card's move (derived.ts).
+  card_unblocked: ['moved', 'archived'],
+  related_done: ['moved'],
+  column_limit: ['created', 'moved'],
+  stuck: ['time'],
 };
 
 // Who and why a write was made, as the event carries it.
 export type EventSource = Pick<AutomationEvent, 'role' | 'rule' | 'chain' | 'form'>;
 
-// Changes that start nothing: the Trash both ways, and the Archive both ways.
-const QUIET = new Set(['trashed', 'untrashed', 'archived', 'unarchived']);
+// Changes that start nothing: the Trash both ways. The Archive both ways starts Card Archived and Card Restored alone.
+const QUIET = new Set(['trashed', 'untrashed']);
+
+type Row = { done?: unknown };
+// Whether a card's checklist holds at least one item, every one ticked.
+const checklistDone = (card: Item): boolean => {
+  const rows = card.fields['checklist'];
+  return (
+    Array.isArray(rows) && rows.length > 0 && rows.every((r) => (r as Row | null)?.done === true)
+  );
+};
 
 // The event one landed write makes, or null when it starts nothing.
 export function eventOfWrite(
@@ -78,6 +114,7 @@ export function eventOfWrite(
   source: EventSource,
 ): AutomationEvent | null {
   if (changes.some((c) => QUIET.has(c.kind))) return null;
+  const archive = changes.find((c) => c.kind === 'archived' || c.kind === 'unarchived');
   const by = before ? after.updatedBy : after.createdBy;
   const base = {
     id: `${after.id}:${after.rev}`,
@@ -87,6 +124,12 @@ export function eventOfWrite(
     at: after.updatedAt,
     ...(source.rule !== undefined ? { rule: source.rule, chain: source.chain ?? 0 } : {}),
   };
+  if (archive)
+    return before ? { ...base, kind: archive.kind === 'archived' ? 'archived' : 'restored' } : null;
+  const done =
+    before && checklistDone(after) && !checklistDone(before)
+      ? { checklistDone: true as const }
+      : {};
   if (!before) {
     const status = typeof after.fields['status'] === 'string' ? after.fields['status'] : undefined;
     return {
@@ -110,9 +153,10 @@ export function eventOfWrite(
       ...(moved.from ? { from: moved.from } : {}),
       ...(moved.to ? { to: moved.to } : {}),
       ...(fields.length ? { fields } : {}),
+      ...done,
     };
   }
-  return fields.length ? { ...base, kind: 'changed', fields } : null;
+  return fields.length ? { ...base, kind: 'changed', fields, ...done } : null;
 }
 
 // Whether `trigger` hears `event`. A manual or time event names its one rule (`ruleId`).
@@ -121,6 +165,8 @@ export function triggerMatches(
   event: AutomationEvent,
   ruleId: string,
 ): boolean {
+  // A held run going on answers its own rule alone, whatever its trigger.
+  if (event.kind === 'resume') return event.ruleId === ruleId;
   switch (trigger.kind) {
     case 'card_created':
       return event.kind === 'created' && (!trigger.status || trigger.status === event.to);
@@ -151,5 +197,28 @@ export function triggerMatches(
       return event.kind === 'time' && event.ruleId === ruleId;
     case 'incoming_webhook':
       return event.kind === 'incoming' && event.ruleId === ruleId;
+    case 'stuck':
+      return event.kind === 'time' && event.ruleId === ruleId;
+    case 'card_archived':
+      return event.kind === 'archived';
+    case 'card_restored':
+      return event.kind === 'restored';
+    case 'checklist_completed':
+      return (event.kind === 'changed' || event.kind === 'moved') && event.checklistDone === true;
+    case 'threads_resolved':
+      return event.kind === 'resolved';
+    case 'mentioned':
+      return (
+        event.kind === 'comment' &&
+        !!event.mentioned?.length &&
+        (!trigger.people?.length || event.mentioned.some((p) => trigger.people!.includes(p)))
+      );
+    // Heard here, then worked out against the plan's cards (derived.ts derivedTargets).
+    case 'card_unblocked':
+      return event.kind === 'moved' || event.kind === 'archived';
+    case 'related_done':
+      return event.kind === 'moved';
+    case 'column_limit':
+      return (event.kind === 'created' || event.kind === 'moved') && event.to === trigger.status;
   }
 }

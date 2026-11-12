@@ -3,7 +3,8 @@
 // refusal with the `path` of the part at fault (`steps.2.text`) for the builder to mark. What a rule names that the
 // plan lacks is not a refusal: it needs attention (attention.ts). Also the rule's name rules. Pure.
 
-import { ITEM_LABEL_MAX, ITEM_TITLE_MAX } from '../limits';
+import { ITEM_CHECKLIST_TEXT_MAX, ITEM_LABEL_MAX, ITEM_TITLE_MAX } from '../limits';
+import { itemColourValue } from '../item-colour';
 import { isRuleTimeZone } from '../repeat-dates';
 import {
   AUTOMATION_ACTIONS_MAX,
@@ -17,6 +18,10 @@ import {
   isPersonless,
   isTimeTrigger,
   AUTOMATION_AI_STEPS_MAX,
+  AUTOMATION_CHECKLIST_ITEMS_MAX,
+  AUTOMATION_WAITS_MAX,
+  AUTOMATION_WAIT_HOURS_MAX,
+  AUTOMATION_WAIT_HOURS_MIN,
   type AutomationAction,
   type AutomationAi,
   type AutomationBranch,
@@ -26,6 +31,7 @@ import {
   type AutomationRuleBody,
   type AutomationSetValue,
   type AutomationStep,
+  type AutomationWait,
 } from './types';
 import type { ValuePlace } from './values';
 import { readAiStep } from './ai-steps';
@@ -52,8 +58,8 @@ export const AUTOMATION_SUBJECT_MAX = 200;
 const COPIES = new Set(['assignee', 'labels', 'due']);
 const VIA = new Set(['webhook', 'slack', 'teams']);
 // The steps a branch may not hold, and an If / Else's actions neither.
-const NOT_IN_BRANCH = new Set(['if', 'for', 'create_card', 'notify', 'ai']);
-const NOT_IN_IF = new Set(['if', 'for', 'notify', 'ai']);
+const NOT_IN_BRANCH = new Set(['if', 'for', 'create_card', 'copy_card', 'notify', 'ai', 'wait']);
+const NOT_IN_IF = new Set(['if', 'for', 'notify', 'ai', 'wait']);
 
 function readSetValue(v: unknown, path: string, place: ValuePlace): AutomationSetValue {
   const o = obj(v, path);
@@ -149,9 +155,87 @@ function readAction(v: unknown, path: string, place: ValuePlace = {}): Automatio
         body: text_(a['body'], `${path}.body`, AUTOMATION_TEXT_MAX),
       };
     }
+    case 'set_type':
+      return { kind: 'set_type', type: id(a['type'], `${path}.type`) };
+    case 'set_colour': {
+      if (a['colour'] === null) return { kind: 'set_colour', colour: null };
+      const colour = itemColourValue(a['colour']);
+      return colour
+        ? { kind: 'set_colour', colour }
+        : refuse(`${path}.colour`, `${path}.colour must be a #rrggbb colour or null`);
+    }
+    case 'restore':
+    case 'resolve_threads':
+      return { kind: a['kind'] };
+    case 'copy_card':
+      return {
+        kind: 'copy_card',
+        ...(a['status'] !== undefined ? { status: id(a['status'], `${path}.status`) } : {}),
+      };
+    case 'add_checklist': {
+      const items = a['items'];
+      if (
+        !Array.isArray(items) ||
+        items.length === 0 ||
+        items.length > AUTOMATION_CHECKLIST_ITEMS_MAX
+      )
+        refuse(
+          `${path}.items`,
+          `${path}.items must hold 1 to ${AUTOMATION_CHECKLIST_ITEMS_MAX} items`,
+        );
+      // text() refuses a blank item, so each one trimmed still holds text.
+      const read = (items as unknown[]).map((t, i) =>
+        text_(t, `${path}.items.${i}`, ITEM_CHECKLIST_TEXT_MAX).trim(),
+      );
+      return { kind: 'add_checklist', items: read };
+    }
+    case 'link_card': {
+      const to = obj(a['to'], `${path}.to`);
+      const target =
+        to['trigger'] === true
+          ? { trigger: true as const }
+          : to['card'] !== undefined
+            ? { card: id(to['card'], `${path}.to.card`) }
+            : refuse(`${path}.to`, `${path}.to must be a card or the card that started the rule`);
+      return { kind: 'link_card', field: id(a['field'], `${path}.field`), to: target };
+    }
+    case 'mention': {
+      const to = obj(a['to'], `${path}.to`);
+      const recipient =
+        to['assignee'] === true
+          ? { assignee: true as const }
+          : to['trigger'] === true
+            ? { trigger: true as const }
+            : to['person'] !== undefined
+              ? { person: id(to['person'], `${path}.to.person`) }
+              : refuse(
+                  `${path}.to`,
+                  `${path}.to must be the assignee, whoever triggered it, or a person`,
+                );
+      return {
+        kind: 'mention',
+        to: recipient,
+        text: text_(a['text'], `${path}.text`, AUTOMATION_TEXT_MAX),
+      };
+    }
     default:
       return refuse(`${path}.kind`, `${path}.kind is not an action`);
   }
+}
+
+function readWait(s: Record<string, unknown>, path: string): AutomationWait {
+  const hours = s['hours'];
+  if (
+    typeof hours !== 'number' ||
+    !Number.isInteger(hours) ||
+    hours < AUTOMATION_WAIT_HOURS_MIN ||
+    hours > AUTOMATION_WAIT_HOURS_MAX
+  )
+    refuse(
+      `${path}.hours`,
+      `${path}.hours must be a whole number from ${AUTOMATION_WAIT_HOURS_MIN} to ${AUTOMATION_WAIT_HOURS_MAX}`,
+    );
+  return { kind: 'wait', hours: hours as number };
 }
 
 // The actions of an If / Else or a branch: never a step `refused` names (said as `where`).
@@ -226,6 +310,7 @@ function readStep(v: unknown, path: string, place: ValuePlace): AutomationStep {
   const s = obj(v, path);
   if (s['kind'] === 'notify') return readNotify(s, path, place);
   if (s['kind'] === 'for') return readBranch(s, path, place);
+  if (s['kind'] === 'wait') return readWait(s, path);
   if (s['kind'] === 'ai') {
     const read = readAiStep(s);
     return 'step' in read ? read.step : refuse(`${path}${read.path}`, read.message);
@@ -241,14 +326,16 @@ function readStep(v: unknown, path: string, place: ValuePlace): AutomationStep {
   };
 }
 
-const creates = (actions: readonly AutomationAction[]) =>
-  actions.filter((a) => a.kind === 'create_card').length;
+const makesCard = (a: { kind: string }) => a.kind === 'create_card' || a.kind === 'copy_card';
+const creates = (actions: readonly AutomationAction[]) => actions.filter(makesCard).length;
 
 // The actions a step holds: an If / Else's both lists, a branch's, else the step itself.
 export function stepActions(
   s: AutomationStep,
 ): readonly (AutomationAction | AutomationOutgoing | AutomationAi)[] {
   if (s.kind === 'if') return [...s.then, ...s.else];
+  // A Wait is no action: it only holds the ones after it.
+  if (s.kind === 'wait') return [];
   return s.kind === 'for' ? s.then : [s];
 }
 
@@ -262,12 +349,7 @@ export function countActions(steps: readonly AutomationStep[]): number {
 function createsPerRun(steps: readonly AutomationStep[]): number {
   return steps.reduce(
     (n, s) =>
-      n +
-      (s.kind === 'if'
-        ? Math.max(creates(s.then), creates(s.else))
-        : s.kind === 'create_card'
-          ? 1
-          : 0),
+      n + (s.kind === 'if' ? Math.max(creates(s.then), creates(s.else)) : makesCard(s) ? 1 : 0),
     0,
   );
 }
@@ -289,7 +371,7 @@ function checkPersonless(
   steps.forEach((s, i) => {
     if (s.kind === 'if' || s.kind === 'for') checkConditions(s.conditions, `steps.${i}.conditions`);
     for (const a of stepActions(s))
-      if ((a.kind === 'assign' || a.kind === 'email') && 'trigger' in a.to)
+      if ((a.kind === 'assign' || a.kind === 'email' || a.kind === 'mention') && 'trigger' in a.to)
         no(`steps.${i}`, 'person who triggered it');
   });
 }
@@ -320,6 +402,15 @@ export function readRuleBody(v: unknown): { body: AutomationRuleBody } | RuleRef
       refuse('steps', `a rule holds up to ${AUTOMATION_OUTGOING_MAX} outgoing actions`);
     if (steps.filter((s) => s.kind === 'ai').length > AUTOMATION_AI_STEPS_MAX)
       refuse('steps', `a rule holds up to ${AUTOMATION_AI_STEPS_MAX} AI actions`);
+    if (steps.filter((s) => s.kind === 'wait').length > AUTOMATION_WAITS_MAX)
+      refuse('steps', `a rule holds up to ${AUTOMATION_WAITS_MAX} Waits`);
+    // Link to the card that started the rule: a branch's alone (outside one, that is the card itself).
+    steps.forEach((s, i) => {
+      if (s.kind === 'for') return;
+      for (const a of stepActions(s))
+        if (a.kind === 'link_card' && 'trigger' in a.to)
+          refuse(`steps.${i}`, 'only a branch links to the card that started the rule');
+    });
     if (isPersonless(trigger))
       checkPersonless(
         conditions,
