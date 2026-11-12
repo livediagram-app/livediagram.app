@@ -32,7 +32,7 @@ function read(name: string): string {
 
 const BOXED_SRC = read('./element-types.ts');
 const ARROW_SRC = read('./arrow-types.ts');
-const INDEX_SRC = read('./index.ts');
+const UNION_SRC = read('./element-union.ts');
 
 // Each element interface declares its discriminant as `  type: 'shape';`.
 const discriminants = (src: string): string[] =>
@@ -46,7 +46,7 @@ const declaredTypes = [...boxedTypes, ...arrowTypes];
 // with a discriminant that never joins the union is unreachable: nothing can
 // hold one, so the validator entry for it is dead too.
 const boxedUnionMembers = (() => {
-  const block = /export type BoxedElement =([\s\S]*?);/.exec(INDEX_SRC)?.[1] ?? '';
+  const block = /export type BoxedElement =([\s\S]*?);/.exec(UNION_SRC)?.[1] ?? '';
   return [...block.matchAll(/\|?\s*(\w+Element)\b/g)].map((m) => m[1]!);
 })();
 

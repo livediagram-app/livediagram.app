@@ -394,6 +394,9 @@ importers:
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../../../packages/model-core
+      '@liveworkspace/page-background':
+        specifier: workspace:*
+        version: link:../../../packages/page-background
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -2650,6 +2653,9 @@ importers:
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../../../packages/model-core
+      '@liveworkspace/page-background':
+        specifier: workspace:*
+        version: link:../../../packages/page-background
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -4776,6 +4782,9 @@ importers:
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../../../packages/model-core
+      '@liveworkspace/page-background':
+        specifier: workspace:*
+        version: link:../../../packages/page-background
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings

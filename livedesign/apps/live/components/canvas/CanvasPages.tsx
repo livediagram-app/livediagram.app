@@ -1,30 +1,20 @@
 'use client';
 
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
-import dynamic from 'next/dynamic';
-import { lucidePanelsTopLeft } from '@liveworkspace/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
 import { layoutCardShows, layoutInviteShows, type LayoutCardContext } from './page-layout-card';
 import { EmptyPageLayouts } from './EmptyPageLayouts';
 import { EmptyPageInvite } from '@liveworkspace/workbench/components/canvas/EmptyPageInvite';
 import { LayoutGalleryDialog } from './LayoutGalleryDialog';
 import { LogoGuidesSvg, showsLogoGuides } from './LogoPageGuides';
-import { LogoTitleBar } from './LogoTitleBar';
-import { PageLockButton } from '@liveworkspace/workbench/components/canvas/PageLockButton';
 import { PageCog, PageTitleBar } from '@liveworkspace/workbench/components/canvas/PageTitleBar';
+import { LayoutInvite } from './LayoutInvite';
+import { LABEL_MIN } from './page-title-bar-room';
+import { pageChromeLayout } from './page-chrome-layout';
+import { pageTitleBarGroups } from './page-title-bar-groups';
 import { PageLabelCard } from '@liveworkspace/workbench/components/canvas/PageLabelCard';
-import { PageBackgroundButton } from './PageBackgroundButton';
-import { appearanceRows, PageAppearanceButton } from './PageAppearanceButton';
-import { PageLayoutsButton } from './PageLayoutsButton';
 import { PageMotionLayer } from './PageMotionLayer';
 import { WireframeDeviceSheet } from './WireframeDeviceSheet';
-import { PageDeviceButton } from './wireframe/PageDeviceButton';
-import {
-  appearanceNamed,
-  LABEL_MIN,
-  titleBarFixedRoom,
-  titleBarNamed,
-} from './page-title-bar-room';
 import { track } from '@/lib/telemetry';
 import {
   lastPageOfTabKind,
@@ -34,7 +24,6 @@ import {
   pageScreenRect,
   type LaidOutPage,
 } from '@livedesign/design';
-import { lucideGlyph, Tooltip } from '@livedesign/ui';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { PageLayoutPreview } from './PageLayoutPreview';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
@@ -58,23 +47,11 @@ import {
   usePageBackgroundPreview,
 } from '@/lib/page-background-preview';
 
-const LayoutIcon = lucideGlyph(lucidePanelsTopLeft, 14);
-
-// The empty page's layout button beside the cog: with its words, or just its icon.
-const INVITE_WIDE = 150;
-const INVITE_ICON = 30;
-
 // Held at one screen size whatever the zoom: counter-scaled about the given corner.
 const steady = (zoom: number, origin: string): CSSProperties => ({
   transform: `scale(${1 / zoom})`,
   transformOrigin: origin,
 });
-
-// A photo page's menus: the photo editor's code, fetched only for a tab with a photo page.
-const PhotoTitleBar = dynamic(
-  () => import('@/components/photo/PhotoTitleBar').then((m) => m.PhotoTitleBar),
-  { ssr: false },
-);
 
 // Pages mode's pages (docs/specs/007-editor/pages-mode.md): sheets in a row, painted
 // in canvas space under every element so they pan and zoom with them, on the tab's own canvas,
@@ -193,6 +170,14 @@ export function CanvasPages({
     <>
       {pages.map((page) => {
         const background = previewedBackground(page, preview);
+        const layout = pageChromeLayout(page, {
+          view,
+          zoom,
+          bare,
+          mobile,
+          quickStyleRoom,
+          quickStylePhone,
+        });
         // No "Page n": the page navigator under the page says which it is. A photo page names its
         // pixel size (docs/specs/031-photo/photo-pages.md "A photo page").
         const photoSize = page.kind === 'photo' ? view.photo?.photos[page.id] : undefined;
@@ -201,67 +186,7 @@ export function CanvasPages({
         const labelParts = page.name
           ? { name: page.name, rest: label.slice(page.name.length + 3) }
           : { name: '', rest: label };
-        // The label fits the page's on-screen width, less the title bar's buttons; too narrow, it
-        // hides. The title bar's room on screen: the page's width at this zoom. The cog takes its
-        // corner; an empty logo page's layout invite sits beside it, with its words while there is
-        // room for them and the label, as an icon while there is room for that, else not at all.
-        const room = page.rect.width * zoom;
-        // A locked page offers nothing to add (docs/specs/007-editor/pages-mode.md
-        // "Locking a page"): no Layouts, no layout invite, no kind choice.
-        const locked = page.locked === true;
-        // A wireframe page's Layouts and Background sit beside its cog, always; a locked page offers
-        // neither.
-        const pageButtons = !!edit && !locked && page.kind === 'wireframe';
-        // A wireframe page's Device, first beside its Layouts (PageDeviceButton).
-        const deviceButton = pageButtons && page.kind === 'wireframe';
-        // A logo page's empty artboard invites its layouts (its panel's Layouts tab).
-        const empty = !!edit && !locked && page.kind === 'logo' && edit.contentCount(page.id) === 0;
-        // The first page, unchosen and empty, offers its kind first (FirstPageChoice).
-        const choosing =
-          !!edit &&
-          !bare &&
-          !locked &&
-          offersPageKindChoice(pages, page.id, edit.contentCount(page.id));
-        const logoButtons = !!edit && page.kind === 'logo' && !!view.logo;
-        // A photo page's Image, Select and Filter menus (PhotoTitleBar), for someone who may edit it.
-        const photoButtons = !!edit && !locked && page.kind === 'photo' && !!view.photo?.canEdit;
-        // The title bar's fixed buttons (the cog, the lock, a logo page's own and
-        // a wireframe page's): the invite and the label share what they leave.
-        const buttons = {
-          edit: !!edit,
-          locked,
-          logo: logoButtons,
-          photo: photoButtons,
-          page: pageButtons,
-          device: deviceButton,
-          selected:
-            mobile && quickStylePhone?.pageId === page.id && quickStylePhone.rows.length > 0,
-        };
-        // The buttons name themselves on a desktop while the page is wide enough on screen to hold
-        // them named; zoomed out further they drop to their icons, as a phone shows them.
-        const labelled = titleBarNamed(room, buttons, mobile);
-        // A phone's Appearance is named while the page on screen holds it (appearanceNamed).
-        const appearanceLabelled = mobile && appearanceNamed(room, buttons);
-        const fixedRoom = titleBarFixedRoom(
-          buttons,
-          mobile ? appearanceLabelled : labelled,
-          mobile,
-        );
-        const invite =
-          !empty || choosing
-            ? null
-            : !mobile && room - fixedRoom >= INVITE_WIDE + LABEL_MIN * 2
-              ? 'wide'
-              : room - fixedRoom >= INVITE_ICON + LABEL_MIN
-                ? 'icon'
-                : null;
-        // A wireframe page's sheet is its device (WireframeDeviceSheet): the paint is its screen's.
-        const device = page.kind === 'wireframe';
-        const labelRoom =
-          room -
-          fixedRoom -
-          (invite === 'wide' ? INVITE_WIDE : invite === 'icon' ? INVITE_ICON : 0) -
-          (quickStyleRoom?.pageId === page.id ? quickStyleRoom.px : 0);
+        const { locked, choosing, labelled, invite, device, labelRoom } = layout;
         return (
           <div
             key={page.id}
@@ -358,94 +283,14 @@ export function CanvasPages({
                 {/* The page's own controls, one toolbar card (PageTitleBar): the page kind's tools,
                     then the page itself at its corner. */}
                 <PageTitleBar
-                  groups={[
-                    [
-                      // A logo page's Tidy Up, Mirror and Guides (LogoTitleBar).
-                      logoButtons && view.logo ? (
-                        <LogoTitleBar
-                          key="logo"
-                          pageId={page.id}
-                          tools={view.logo}
-                          labelled={labelled}
-                        />
-                      ) : null,
-                      // A photo page's Image, Select and Filter menus (PhotoTitleBar).
-                      photoButtons && view.photo ? (
-                        <PhotoTitleBar
-                          key="photo"
-                          pageId={page.id}
-                          photo={view.photo}
-                          labelled={labelled}
-                        />
-                      ) : null,
-                      // On a phone a wireframe page's looks gather under Appearance, their own
-                      // controls mounted headless.
-                      mobile ? (
-                        <PageAppearanceButton
-                          key="appearance"
-                          rows={appearanceRows(buttons)}
-                          device={page.device ?? 'iphone'}
-                          labelled={appearanceLabelled}
-                          selected={quickStylePhone?.pageId === page.id ? quickStylePhone : null}
-                          onPick={(row) => ask(page.id, row)}
-                        />
-                      ) : null,
-                      // A wireframe page's Device (PageDeviceButton).
-                      deviceButton ? (
-                        <PageDeviceButton
-                          key="device"
-                          page={page}
-                          labelled={labelled}
-                          headless={mobile}
-                          openRequest={askOf(page.id, 'device')}
-                          onDevice={(patch) => edit.setDevice(page.id, patch)}
-                          frameTheme={view.frameTheme}
-                        />
-                      ) : null,
-                      // A wireframe page's Layouts (PageLayoutsButton).
-                      pageButtons ? (
-                        <PageLayoutsButton
-                          key="layouts"
-                          page={page}
-                          labelled={labelled}
-                          headless={mobile}
-                          openRequest={askOf(page.id, 'layout')}
-                          onApply={(layout) => void edit.applyLayout(page.id, layout)}
-                          onPreview={(layout) =>
-                            view.setLayoutPreview(layout ? { pageId: page.id, layout } : null)
-                          }
-                        />
-                      ) : null,
-                      // A wireframe page's Background (PageBackgroundButton).
-                      pageButtons ? (
-                        <PageBackgroundButton
-                          key="background"
-                          page={page}
-                          labelled={labelled}
-                          headless={mobile}
-                          openRequest={askOf(page.id, 'background')}
-                          themePresets={view.themeBackgrounds}
-                          onBackground={(patch) => edit.setBackground(page.id, patch)}
-                          onPreview={(patch) =>
-                            setPreview(patch ? { pageId: page.id, patch } : null)
-                          }
-                          applyToAll={{
-                            reach: edit.applyToAllReach(page.id),
-                            onApply: () => edit.applyBackgroundToAll(page.id),
-                          }}
-                        />
-                      ) : null,
-                    ],
-                    [
-                      // No lock on a phone: the cog sheet holds it (PagePanel's actions).
-                      mobile ? null : (
-                        <PageLockButton
-                          key="lock"
-                          locked={locked}
-                          labelled={labelled}
-                          onToggle={() => edit.setLocked(page.id, !locked)}
-                        />
-                      ),
+                  groups={pageTitleBarGroups({
+                    page,
+                    view,
+                    edit,
+                    layout,
+                    mobile,
+                    quickStylePhone,
+                    cog: (
                       <PageCog
                         key="cog"
                         name={`${page.name ?? (pages.length > 1 ? `Page ${page.index + 1}` : 'Page')} settings`}
@@ -455,9 +300,12 @@ export function CanvasPages({
                           if (el) cogs.current.set(page.id, el);
                           else cogs.current.delete(page.id);
                         }}
-                      />,
-                    ],
-                  ]}
+                      />
+                    ),
+                    ask,
+                    askOf,
+                    setPreview,
+                  })}
                 />
               </div>
             ) : null}
@@ -585,32 +433,5 @@ export function CanvasPages({
       ) : null}
       <PageTourStage tour={pageTour.tour} kind={pageTour.kind} />
     </>
-  );
-}
-
-// The cog that opens the page's panel (PagePanel).
-// On an empty page, beside its cog: start it from a layout. Its words show on a wide screen with
-// room in the title bar; on a phone, or when the page is small on screen, just the icon.
-function LayoutInvite({ wide, onOpen }: { wide: boolean; onOpen: () => void }) {
-  return (
-    <div
-      className="pointer-events-auto"
-      onPointerDown={(e) => e.stopPropagation()}
-      onDoubleClick={(e) => e.stopPropagation()}
-    >
-      <Tooltip label="Start From a Layout">
-        <button
-          type="button"
-          aria-label="Start From a Layout"
-          onClick={onOpen}
-          className="flex h-6 items-center gap-1.5 rounded-md px-1.5 text-xs font-medium text-slate-500 transition hover:bg-white hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-        >
-          <LayoutIcon />
-          {wide ? (
-            <span className="hidden whitespace-nowrap sm:inline">Start From a Layout</span>
-          ) : null}
-        </button>
-      </Tooltip>
-    </div>
   );
 }

@@ -345,11 +345,12 @@ function notifiable(field: Pick<CustomFieldDef, 'kind' | 'label'>): true {
   return true;
 }
 
-// `true`, for a Person or Card field: no other kind holds several people or cards.
+// `true`, for a Person, Card or Image field: no other kind holds several people, cards or pictures (an Image field
+// holding several is a Several Images field, docs/specs/026-plan/item-types.md "Image fields").
 function severalable(field: Pick<CustomFieldDef, 'kind' | 'label'>): true {
-  if (!holdsSeveralKind(field.kind))
+  if (!holdsSeveralKind(field.kind) && field.kind !== 'image')
     throw invalid(
-      `"${field.label}" is ${withArticle(field.kind)} field: only a person or card field holds several.`,
+      `"${field.label}" is ${withArticle(field.kind)} field: only a person, card or image field holds several.`,
     );
   return true;
 }

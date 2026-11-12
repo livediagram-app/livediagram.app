@@ -19,6 +19,7 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   unarchive_project: 'project unarchive',
   list_items: 'item ls',
   change_items: 'item set',
+  upload_image: 'image add',
   list_threads: 'thread ls',
   change_threads: 'thread reply',
   list_rules: 'rule ls',

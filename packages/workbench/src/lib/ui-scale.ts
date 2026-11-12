@@ -97,7 +97,10 @@ export function uiScalePartPatch(part: UiScalePart, value: number): UiScalePrefe
 }
 
 // Applies a patch to a product's preferences, dropping the keys it clears rather than storing undefined.
-export function withUiScalePatch<P extends UiScalePreferences>(prefs: P, patch: UiScalePreferences): P {
+export function withUiScalePatch<P extends UiScalePreferences>(
+  prefs: P,
+  patch: UiScalePreferences,
+): P {
   const next: P = { ...prefs, ...patch };
   for (const [key, value] of Object.entries(patch)) {
     if (value === undefined) delete next[key as keyof UiScalePreferences];
@@ -122,4 +125,11 @@ export function uiUnscaleStyle(scale: number): CSSProperties | undefined {
 // clientX) are in screen px. Converts a screen-px length to the px to write.
 export function toSurfacePx(px: number, scale: number): number {
   return px / scale;
+}
+
+// The effective CSS zoom an element draws at (its own times its ancestors'), from `currentCSSZoom`; null in a
+// browser that predates it, so each caller picks its own fallback.
+export function cssZoomOf(el: Element): number | null {
+  const zoom = (el as Element & { currentCSSZoom?: number }).currentCSSZoom;
+  return typeof zoom === 'number' && zoom > 0 ? zoom : null;
 }

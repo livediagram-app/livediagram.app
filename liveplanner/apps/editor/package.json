@@ -44,6 +44,7 @@
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/media": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
+    "@liveworkspace/page-background": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/settings-ui": "workspace:*",
     "@liveworkspace/sites": "workspace:*",

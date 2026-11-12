@@ -192,8 +192,15 @@ function galleryFullWords(err: ApiError, words: UploadWords): string {
       : full.limit !== undefined && full.current !== undefined
         ? `it holds ${full.current} of its ${full.limit} images`
         : 'it holds as much as it may';
-  return `The image gallery is full: ${holds}. Remove pictures it no longer needs with ${words.remove} (${words.list} lists them), then upload again.`;
+  // One place that both lists and removes (liveplanner's Explorer Image Gallery) is named once.
+  const where =
+    words.list === words.remove ? words.remove : `${words.remove} (${words.list} lists them)`;
+  return `The image gallery is full: ${holds}. Remove pictures it no longer needs with ${where}, then upload again.`;
 }
+
+// The api's upload route: the gallery's own, or one that also records the picture for an item (liveplanner's
+// `/images?p={planId}`, docs/specs/015-api/mcp-server.md §4.5b there).
+export const GALLERY_UPLOAD_PATH = '/images';
 
 // Upload a prepared picture to the caller's gallery as `source`: its new image, or the one the gallery already had
 // with those bytes (`deduped`). A refusal the caller can act on is a VerbRefusal in words.
@@ -202,6 +209,7 @@ export async function uploadToGallery(
   image: PreparedImage,
   source: ImageSource,
   words: UploadWords,
+  path: string = GALLERY_UPLOAD_PATH,
 ): Promise<UploadedImage> {
   const headers: Record<string, string> = {
     'Content-Type': image.contentType,
@@ -212,15 +220,22 @@ export async function uploadToGallery(
   if (image.name) headers['X-Image-Original-Name'] = encodeURIComponent(image.name);
   let answer: { image: GalleryUpload; deduped: boolean };
   try {
-    answer = await api.json('/images', {
+    answer = await api.json(path, {
       method: 'POST',
       headers,
       // The DOM types take only an ArrayBuffer-backed view as a body; these bytes are never shared memory.
       body: image.bytes as Uint8Array<ArrayBuffer>,
     });
   } catch (err) {
-    if (err instanceof ApiError && err.status === 403 && err.code === 'gallery_full') {
-      refuse(403, 'gallery_full', galleryFullWords(err, words), `run ${words.list} to choose`);
+    // A full gallery, as the api passes the service's answer on (403 in some products, the service's own 409 in
+    // others).
+    if (err instanceof ApiError && err.code === 'gallery_full') {
+      refuse(
+        err.status,
+        'gallery_full',
+        galleryFullWords(err, words),
+        `run ${words.list} to choose`,
+      );
     }
     if (err instanceof ApiError && err.status === 413) tooLarge(sizeText(image.bytes.byteLength));
     if (err instanceof ApiError && err.status === 503) {
@@ -262,10 +277,17 @@ export async function addImage(
     source,
     words,
     fetch: fetchOptions = {},
-  }: { source: ImageSource; words: UploadWords; fetch?: Omit<PublicFetchOptions, 'maxBytes'> },
+    path = GALLERY_UPLOAD_PATH,
+  }: {
+    source: ImageSource;
+    words: UploadWords;
+    fetch?: Omit<PublicFetchOptions, 'maxBytes'>;
+    // The upload route, when not the gallery's own (GALLERY_UPLOAD_PATH).
+    path?: string;
+  },
 ): Promise<UploadedImage> {
   if ('bytes' in from)
-    return uploadToGallery(api, prepareImage(from.bytes, from.name), source, words);
+    return uploadToGallery(api, prepareImage(from.bytes, from.name), source, words, path);
   const { data, url, name } = from;
   if ((data === undefined) === (url === undefined)) {
     refuse(
@@ -285,7 +307,14 @@ export async function addImage(
       prepareImage(fetched.bytes, name ?? nameFromUrl(fetched.url)),
       source,
       words,
+      path,
     );
   }
-  return uploadToGallery(api, prepareImage(decodeImageData(data!), name ?? null), source, words);
+  return uploadToGallery(
+    api,
+    prepareImage(decodeImageData(data!), name ?? null),
+    source,
+    words,
+    path,
+  );
 }

@@ -43,10 +43,17 @@ export function IsometricDepthLayer({ elements }: { elements: Element[] }) {
   // canvas's ink when the element carries none (docs/specs/007-editor/editor-app.md).
   const surface = useCanvasSurface();
   return (
+    // A ride plane whose every child is one element's column, tagged with the element's id: a drag's offset
+    // writer (workbench drag-ride-dom, through the element layer's preview store, which writes under this
+    // layer's parent) shifts each column with its element, or this whole layer as one transform on a very large
+    // move, so a collaborator's drag moves the side faces with the tops without rendering this layer again
+    // (docs/specs/008-canvas/drag-preview.md "An element's isometric side faces ride with it").
     <div
       className="pointer-events-none absolute inset-0"
       style={{ transformStyle: 'preserve-3d' }}
       aria-hidden
+      data-iso-depth=""
+      data-ride-plane=""
     >
       {elements
         .filter(isBoxed)
@@ -70,6 +77,8 @@ export function IsometricDepthLayer({ elements }: { elements: Element[] }) {
           return (
             <div
               key={el.id}
+              data-iso-column=""
+              data-ride-id={el.id}
               className="absolute"
               style={{
                 left: el.x,

@@ -7,7 +7,7 @@ canvas DOM it captures); nothing in it is shared with another app.
 
 | Term (spec)     | Identifier                                                                         |
 | --------------- | ---------------------------------------------------------------------------------- |
-| the GIF format  | `'gif'` in `Format` (`apps/editor/components/dialogs/ExportTabDialog.tsx`)         |
+| the GIF format  | `'gif'` in `Format` (`apps/editor/components/dialogs/export-formats.ts`)           |
 | each page holds | `holdSeconds` (one number for every page)                                          |
 | size            | `GifSize` = `'small' \| 'medium' \| 'large'`                                       |
 | a page's clock  | `t` (ms since the page came in)                                                    |
@@ -185,7 +185,7 @@ pages.length > 1`; the transition is `config.transition`, its length `SLIDE_SPEE
 
 ## Interfaces and contracts
 
-- `Format` (`ExportTabDialog.tsx`) includes `'gif'`; `PAGES_FORMATS` is `['pdf', 'png', 'svg', 'gif', 'file']`.
+- `Format` (`export-formats.ts`) includes `'gif'`; `PAGES_FORMATS` is `['pdf', 'png', 'svg', 'gif', 'file']`.
   A tab with no pages yet, and a selection export, leave out `'gif'`.
 - `GifExportError` codes: `'page-missing' | 'tainted' | 'failed'`; the panel maps them to the spec's three lines
   (`GIF_ERROR_COPY`).

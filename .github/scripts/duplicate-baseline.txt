@@ -82,7 +82,6 @@ livedesign/apps/live/lib/import-images/test-fakes.ts	livediagram/apps/editor/lib
 livedesign/apps/live/lib/import-images/upload-error.ts	livediagram/apps/editor/lib/import-images/upload-error.ts	livedocuments/apps/editor/lib/import-images/upload-error.ts	livehuddle/apps/editor/lib/import-images/upload-error.ts
 livedesign/apps/live/lib/live-stroke-test-utils.ts	livediagram/apps/editor/lib/live-stroke-test-utils.ts
 livedesign/apps/live/lib/page-motion-frame.ts	livedocuments/apps/editor/lib/page-motion-frame.ts
-livedesign/apps/live/lib/page-motion-parts-page-four.ts	livedocuments/apps/editor/lib/page-motion-parts-page-four.ts
 livedesign/apps/live/lib/page-panel-request.ts	livedocuments/apps/editor/lib/page-panel-request.ts
 livedesign/apps/live/lib/settings-search-items.ts	livediagram/apps/editor/lib/settings-search-items.ts	livedocuments/apps/editor/lib/settings-search-items.ts	livehuddle/apps/editor/lib/settings-search-items.ts	liveplanner/apps/editor/lib/settings-search-items.ts
 livedesign/apps/live/lib/tidy-engine.ts	livediagram/apps/editor/lib/tidy-engine.ts	livedocuments/apps/editor/lib/tidy-engine.ts	liveplanner/apps/editor/lib/tidy-engine.ts
@@ -233,9 +232,6 @@ livediagram/packages/document-views/src/freehand-runs.ts	livedocuments/packages/
 livediagram/packages/document/src/collab-index-rows.ts	livehuddle/packages/document/src/collab-index-rows.ts
 livediagram/packages/document/src/component-factories.ts	liveplanner/packages/project/src/component-factories.ts
 livediagram/packages/document/src/flowchart-grow.ts	liveplanner/packages/project/src/flowchart-grow.ts
-livediagram/packages/document/src/flowchart-layout.ts	liveplanner/packages/project/src/flowchart-layout.ts
-livediagram/packages/document/src/flowchart-settle.ts	liveplanner/packages/project/src/flowchart-settle.ts
-livediagram/packages/document/src/flowchart-spread.ts	liveplanner/packages/project/src/flowchart-spread.ts
 livediagram/packages/document/src/flowchart.ts	liveplanner/packages/project/src/flowchart.ts
 livediagram/packages/document/src/malformed-ids.ts	liveplanner/packages/project/src/malformed-ids.ts
 livediagram/packages/document/src/mind-grow.ts	liveplanner/packages/project/src/mind-grow.ts

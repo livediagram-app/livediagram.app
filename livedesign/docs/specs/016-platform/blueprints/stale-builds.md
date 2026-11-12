@@ -40,7 +40,7 @@ Derived from [Stale builds](../stale-builds.md).
 | `apps/live/lib/stale-html-guard.ts`                                       | `STALE_HTML_GUARD_SCRIPT` (static source) and `STALE_HTML_GUARD_ATTRIBUTES` (its settings as data): the pre-boot guard, first script in the layout's head |
 | `../packages/workbench/src/lib/reload-guard.ts`                           | The one reload guard: `claimReloadIn`, `claimReload`, `RELOAD_GUARD_KEY`, `APP_RECOVERY_FLAG`                                                             |
 | `../packages/workbench/src/lib/api/base.ts`                               | `API_BASE`, browser-free, for the guard                                                                                                                   |
-| `scripts/e2e-stack.mjs`                                                   | Production's caching, the router's rules, and the deploy simulation                                                                                       |
+| `scripts/e2e-stack.mjs`                                                   | Production's caching, the router's rules, and the deploy simulation, in the root's `scripts/e2e-stack/static-serving.mjs`                                 |
 
 ## Interfaces and contracts
 

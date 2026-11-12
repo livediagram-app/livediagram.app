@@ -18,127 +18,24 @@
 // DRAIN_SHARES messages, one Durable Object call each, reading each body once however many holders it goes to. A tab
 // is held by at most MAX_TAB_HOLDERS items, so one write fans out to at most MAX_TAB_HOLDERS - 1 calls.
 
+import { OUTBOX_MAX_ATTEMPTS, retryDelayMs } from './outbox';
+import { shareLeaveStatements } from './share-schedule';
 import {
-  FLUSH_IDLE_MS,
-  FLUSH_RETRY_MS,
-  OUTBOX_MAX_ATTEMPTS,
-  outboxDueAt,
-  retryDelayMs,
-  type SqlExec,
-} from './outbox';
+  DRAIN_SHARES,
+  type ShareAnswer,
+  type ShareDb,
+  type ShareDrain,
+  type ShareMessage,
+  type ShareSend,
+  type SharedTabBody,
+  type SharedTabCopy,
+  type SharedTabsCount,
+  type TabSharesConfig,
+} from './tab-share-types';
 
-// The items one tab may be held by at once, the first included. Each join tells every earlier holder, so a tab held
-// by n items has sent about n²/2 small `join` messages over its life, and a write to it is n - 1 calls.
-export const MAX_TAB_HOLDERS = 20;
-
-// Messages one drain sends. Each is one call to another item; a body is up to a tab's size.
-export const DRAIN_SHARES = 50;
-
-// The tables and the trigger, in the item's SQLite, for the app's link table (`<item>_tabs`). Idempotent. The
-// tables reference `tabs (id)`, so a tab's delete takes its holders with it.
-export function tabSharesSchema(): string {
-  return `
--- A tab shared with other items (@liveworkspace/index-app tab-shares.ts): every item that holds it keeps its own
--- copy under the same tab id, and this lists the OTHER items holding it.
-CREATE TABLE IF NOT EXISTS tab_shares (
-  tab_id  TEXT NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
-  item_id TEXT NOT NULL,
-  PRIMARY KEY (tab_id, item_id)
-) WITHOUT ROWID;
-
--- What this item owes the other holders of its shared tabs, drained by the room's alarm:
---   body:  the tab's current name and body, read when sent
---   join:  member now holds the tab too
---   leave: this item no longer holds the tab
--- A key written again is deleted and inserted under a new id, so a drain in flight keeps it. The app's next step,
--- outbox.ts outboxRetrySchema, adds each key's failed sends (attempts) and next try (retry_at).
-CREATE TABLE IF NOT EXISTS share_outbox (
-  id      INTEGER PRIMARY KEY,
-  kind    TEXT    NOT NULL CHECK (kind IN ('body', 'join', 'leave')),
-  tab_id  TEXT    NOT NULL,
-  to_item TEXT    NOT NULL,
-  member  TEXT    NOT NULL DEFAULT '',
-  UNIQUE (kind, tab_id, to_item, member)
-);
-CREATE TRIGGER IF NOT EXISTS share_outbox_tab_update AFTER UPDATE OF data, name ON tabs
-  WHEN EXISTS (SELECT 1 FROM tab_shares WHERE tab_id = NEW.id)
-BEGIN
-  DELETE FROM share_outbox WHERE kind = 'body' AND tab_id = NEW.id;
-  INSERT INTO share_outbox (kind, tab_id, to_item) SELECT 'body', NEW.id, item_id FROM tab_shares WHERE tab_id = NEW.id;
-END;
-`;
-}
-
-export type ShareMessage =
-  // The tab as the sender holds it, and the holders it knows (itself included). `extra` is the app's (the images
-  // the sender may serve, say), read by the sender and applied by the receiver.
-  | {
-      kind: 'body';
-      tabId: string;
-      name: string;
-      data: string;
-      updatedAt: number;
-      members: string[];
-      extra?: unknown;
-    }
-  | { kind: 'join'; tabId: string; member: string }
-  | { kind: 'leave'; tabId: string };
-
-// `gone`: the receiver does not hold the tab, so the sender stops sending it.
-export type ShareAnswer = 'ok' | 'gone';
-
-// What an item joining a tab's holders takes from the one it joins through.
-export type SharedTabCopy = {
-  name: string;
-  data: string;
-  updatedAt: number;
-  // Every holder but the joining one, the sender first.
-  members: string[];
-  extra?: unknown;
-};
-
-// A tab as it travels between holders.
-export type SharedTabBody = { id: string; name: string; data: string; updatedAt: number };
-
-// The slice of D1 (or an item's D1-shaped facade, item-db.ts) this uses.
-export type ShareDb = Pick<D1Database, 'prepare' | 'batch'>;
-
-export type TabSharesConfig<E> = {
-  // The item's SQLite (its D1-shaped facade) in the env the app's code runs with.
-  db: (env: E) => ShareDb;
-  // The app's link table and its item column (`document_tabs`, `document_id`).
-  linkTable: string;
-  itemColumn: string;
-  // The statements that store a tab taken in from another holder as a new tab of `itemId` at `orderIndex`: the app's
-  // own tab write (body, link row, stats, references, saved time). The kit then dates it as the copy.
-  insertTab: (
-    env: E,
-    itemId: string,
-    tab: SharedTabBody,
-    orderIndex: number,
-  ) => D1PreparedStatement[];
-  // Beside a later body taken in over the held one (the kit writes name, data, updated_at and rev): the rows the app
-  // derives from a body, as a local write keeps them (element count, stats, references, the item's saved time).
-  bodyTaken: (env: E, itemId: string, tab: SharedTabBody, now: number) => D1PreparedStatement[];
-  // What travels beside a body, when the app needs more than the body (optional): `read` on the sender, `apply`'s
-  // statements in the same transaction as the body on the receiver (a join, or a later body).
-  extra?: {
-    read: (env: E, itemId: string, tab: SharedTabBody) => Promise<unknown>;
-    apply: (
-      env: E,
-      itemId: string,
-      tab: SharedTabBody,
-      extra: unknown,
-      now: number,
-    ) => Promise<D1PreparedStatement[]>;
-  };
-};
-
-export type ShareDrain = { sent: number; failed: number; more: boolean };
-export type SharedTabsCount = { tabs: number; items: number };
-
-// The send a drain makes: one call to the item `to`'s Durable Object (its `receiveShares` RPC).
-export type ShareSend = (to: string, messages: ShareMessage[]) => Promise<ShareAnswer[]>;
+// The schema and shapes (tab-share-types.ts) and the standalone parts (share-schedule.ts), from here as before.
+export * from './tab-share-types';
+export * from './share-schedule';
 
 export type TabShares<E> = ReturnType<typeof createTabShares<E>>;
 
@@ -529,89 +426,4 @@ export function createTabShares<E>(config: TabSharesConfig<E>) {
     drain,
     count,
   };
-}
-
-// Before a tab's delete from an item, in the same batch: every other holder hears that this item left, and nothing
-// else it owed them about the tab is sent. Before the tab row's delete, which takes its `tab_shares`. Standalone, so
-// the app's tab delete needs no more of the kit than its database.
-export function shareLeaveStatements(db: ShareDb, tabId: string): D1PreparedStatement[] {
-  return [
-    db
-      .prepare("DELETE FROM share_outbox WHERE tab_id = ? AND kind IN ('body', 'join')")
-      .bind(tabId),
-    db
-      .prepare(
-        `INSERT OR REPLACE INTO share_outbox (kind, tab_id, to_item)
-         SELECT 'leave', tab_id, item_id FROM tab_shares WHERE tab_id = ?`,
-      )
-      .bind(tabId),
-  ];
-}
-
-// When the item's SQLite next owes another holder something (ms; 0 for a key never tried), or null when it owes
-// nothing but parked keys. The room arms its share send from this.
-export function sharesDueAt(sql: SqlExec): number | null {
-  return outboxDueAt(sql, 'share_outbox');
-}
-
-// When the room next sends its shared tabs' holders what they are owed: on idle after a write (FLUSH_IDLE_MS), not
-// held to the index outbox's once a minute, since it is a call to another item rather than a push; after a failure,
-// when the earliest key's wait is over (`drain`). The room reads `at` into its one alarm, and runs `send` from the
-// alarm when `due`. `dueAt` is sharesDueAt over the room's SQLite (null before its schema).
-export class ShareSchedule {
-  at: number | null = null;
-  private readonly dueAt: () => number | null;
-  private readonly now: () => number;
-
-  constructor(dueAt: () => number | null, now: () => number = Date.now) {
-    this.dueAt = dueAt;
-    this.now = now;
-  }
-
-  // After a wake: anything owed goes now, or when its wait is over.
-  restore(): void {
-    const due = this.dueAt();
-    if (due !== null) this.at = Math.max(this.now(), due);
-  }
-
-  // A write happened: true when it armed a send (the room then re-arms its alarm). A send set on idle stays without
-  // a read; one set far off, for a key in backoff, gives way to the key just written.
-  noteWrite(): boolean {
-    const now = this.now();
-    if (this.at !== null && this.at <= now + FLUSH_IDLE_MS) return false;
-    const due = this.dueAt();
-    if (due === null) return false;
-    const at = Math.max(now + FLUSH_IDLE_MS, due);
-    if (this.at !== null && this.at <= at) return false;
-    this.at = at;
-    return true;
-  }
-
-  due(now: number): boolean {
-    return this.at !== null && this.at <= now;
-  }
-
-  clear(): void {
-    this.at = null;
-  }
-
-  // One drain; more to send goes on idle, a key that failed when its wait is over, and a drain that threw tries
-  // again in a minute.
-  async send(drain: () => Promise<ShareDrain>): Promise<ShareDrain | null> {
-    this.at = null;
-    let result: ShareDrain | null = null;
-    try {
-      result = await drain();
-      if (result.more) this.at = this.now() + FLUSH_IDLE_MS;
-    } catch (error) {
-      console.warn('[tab-shares] send failed', { error: String(error) });
-      this.at = this.now() + FLUSH_RETRY_MS;
-    }
-    // What failed goes when its wait is over; anything written while the send was in flight goes on idle.
-    if (this.at === null) {
-      const due = this.dueAt();
-      if (due !== null) this.at = Math.max(this.now() + FLUSH_IDLE_MS, due);
-    }
-    return result;
-  }
 }

@@ -40,7 +40,7 @@ never told a change worked when it shows on no board.
   back, each resolved as one value is, and one value sets a list of one. `change_card_types` sets the switch with
   `multiple` (a Person, Card or Image field only; any other kind is refused).
 - **Pictures** ([Image fields](item-types.md#image-fields), [Attachments](items.md#attachments)): `upload_image`
-  (the CLI's `image add`) uploads a picture for the plan and answers its id; a `set` then places it on an Image
+  (the CLI's `image add`) uploads a picture for the plan and answers its id; an `add` or a `set` then places it on an Image
   field, a Several Images field or Attachments with `{ "add": ["<id>"] }`, takes ids off with `{ "remove": [...] }`,
   and `clear` empties either. Only ids the plan holds a grant for are placed. `list_items` lists every picture as its
   id and a `link` the agent can read.

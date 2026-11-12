@@ -351,8 +351,17 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
   livediagram's and livehuddle's `slug.ts` bind model-core's. New shared fields: a shape's icon size, weight and
   position, its Sankey fields, its sequence rows and its entity fields as `EntityField`; a text's wordmark type; a
   label's underline and strikethrough. Each product's `MAX_TABLE_*` is the shared `TABLE_*_MAX`.
-- Left per product, and why: the flowchart modules, `mind-grow` and `component-factories` (D, P) build with each
-  product's own `createShape` and factories; `svg-render-sequence` and `svg-render-temperature` (D, P) draw through
+- Moved (part 6, D and P): the flowchart (`flowchart`, `flowchart-layout`, `flowchart-spread`, `flowchart-settle`,
+  `flowchart-grow`) and `lane-gutter` (D's, so P gains `laneDrawnSize`). The reads that hand elements back are generic
+  (`flowchartSteps`, `flowchartLanes`, `flowchartConnectors`, `flowchartAnchor`, `applyFlowchartLayout`,
+  `relayoutFlowchart`, `settleFlowcharts`, `applyFlowchartStep`, `retypeFlowchartStep`, `setFlowchartDirection`,
+  `moveStepToLane`). What makes a step or a lane takes the product's own shape factory: each product's
+  `flowchart.ts` binds `flowchartStepMakers(createShape)` (`createFlowchartStep`, `createFlowchartStart`) and its
+  `flowchart-grow.ts` binds `flowchartGrowth<Element>(createShape)` (`planFlowchartStep`, `addFlowchartLane`). New
+  shared fields: a shape's `flowchartId`, `flowDirection` and `flowLaneId`. `src/testing/flowchart.ts` binds the same
+  factories to the test builders, and the flowchart's tests moved in with it.
+- Left per product, and why: `mind-grow` and `component-factories` (D, P) build with each product's own
+  `createShape` and factories; `svg-render-sequence` and `svg-render-temperature` (D, P) draw through
   each product's renderer and Collaborate kinds; `label-backdrop`, `tab-as-seen` and
   `collab-index-rows` read livediagram's wrapped or livehuddle's own colours, themes and labels; `savable` and
   `malformed-ids` read each product's validator and catalogue keys; the page modules (`page-lock`, `page-of`,

@@ -36,12 +36,12 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ model-core               what every product's model shares and needs nothing of its element union (the Reaction Pad's five bursts among it); each re-exports it
 │  ├─ licences                 the /licences generator, its contract and the one pool of licence texts; each product binds its tables
 │  ├─ marketing-site           the marketing pages every product shares (hero, Build with AI, FAQ, licences)
-│  ├─ mcp-kit                  an MCP Worker's app: the Streamable-HTTP transport and CORS, the OAuth 2.1 server with the device grant, request and tool scopes, preview fonts, tool results and fixable errors; each product hands in its server and OAuth config; and the MCP benchmark's client and report
+│  ├─ mcp-kit                  an MCP Worker's app: the Streamable-HTTP transport and CORS, the OAuth 2.1 server with the device grant, request and tool scopes, preview fonts, tool results and fixable errors; each product hands in its server and OAuth config; and the MCP benchmark's client, report and shared diagram tasks
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
 │  ├─ migration                the move from the historical livediagram.app: the payload contract and the splitter
 │  ├─ next-config              the Next.js settings every Next app spreads (liveworkspaceNextConfig), and the dev entry every app's dev script runs (scripts/next-dev.mjs, which refuses a busy port)
 │  ├─ oxlint-config            the lint rules every workspace runs, with the liveworkspace plugin
-│  ├─ page-background          a colour background (fill, gradient, pattern, motion) and its parser: pages and form covers
+│  ├─ page-background          a colour background (fill, gradient, pattern, motion) and its parser, and an animated background's moving parts: pages and form covers
 │  ├─ prettier-config          the formatting settings, for the root and every product
 │  ├─ render-png               SVG to PNG with resvg and the Inter fonts, for every api, mcp and cli
 │  ├─ settings                 the settings scopes, shared keys, and each app's catalogue as plain data
@@ -58,7 +58,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  │                           chrome icons, appearance, browser repair and the site chrome a product binds
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
 │  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell
-├─ scripts/                    the root's own scripts: git-hooks, and e2e-stack (the e2e stacks' shared parts: the accounts stand-in, processes, proxies, static serving)
+├─ scripts/                    the root's own scripts: git-hooks, and e2e-stack (the e2e stack every product boots, stack.mjs, and its parts: the accounts stand-in, processes, proxies, static serving)
 ├─ liveworkspace/              the platform's own apps, and the packages only they use
 │  ├─ apps/site                www.liveworkspace.app, one static site: the front door, /explorer, /community, /telemetry, /status, /sign-in
 │  ├─ apps/accounts            liveworkspace.app/api/auth and /api/account: sign-in, teams and tokens for every product

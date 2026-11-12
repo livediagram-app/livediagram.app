@@ -14,6 +14,7 @@ import {
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { applyItemChanges, type ItemChange } from '../plan/item-changes';
 import { FIELD_HINT } from '../plan/api-refusal';
+import { pictureLinkFor } from '../plan/card-pictures';
 import { planListing, resolveListingFilter } from '../plan/plan-listing';
 import { readPlanState, type PlanState } from '../plan/plan-state';
 import { columns, projectOf } from './shared';
@@ -90,6 +91,21 @@ export function fieldsFromPairs(pairs: readonly string[]): ItemFields {
   return fields;
 }
 
+// `--remove key=id,id` into `fields`: the pictures to take off an Image field or Attachments (docs/specs/015-api/cli.md
+// "Pictures"), beside any the same key adds.
+export function withPictureRemovals(fields: ItemFields, pairs: readonly string[]): ItemFields {
+  const out: Record<string, unknown> = { ...fields };
+  for (const [key, raw] of Object.entries(fieldsFromPairs(pairs))) {
+    // fieldsFromPairs gives text, a number (estimate) or a list (labels).
+    const remove = (Array.isArray(raw) ? (raw as string[]).join(',') : `${raw as string | number}`)
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
+    out[key] = { ...(key in fields ? { add: fields[key] } : {}), remove };
+  }
+  return out as ItemFields;
+}
+
 const lineOut = z.object({ item: itemOut, text: z.string() });
 
 export const itemLs = defineVerb({
@@ -106,7 +122,7 @@ export const itemLs = defineVerb({
   output: z.object({ items: z.array(itemOut), boards: z.array(z.string()) }),
   listKey: 'items',
   run: async (ctx, input) => {
-    const { state } = await planOf(ctx, input.project);
+    const { projectId, state } = await planOf(ctx, input.project);
     const filter = resolveListingFilter(state, input);
     if (!filter.ok)
       throw new VerbRefusal({
@@ -115,7 +131,8 @@ export const itemLs = defineVerb({
         message: filter.message,
         hint: 'list the columns and card types with: liveplanner item ls <project>',
       });
-    const listing = planListing(state, filter);
+    // Each picture with a link the CLI's token reads (docs/specs/015-api/cli.md "Pictures").
+    const listing = planListing(state, filter, pictureLinkFor(ctx.host, projectId));
     const keys = new Map(state.items.map((i) => [i.id, i.key]));
     // A board's line: its title and each column with its card count, a done column ticked, then its header widgets
     // ("Sprint: To Do 2 · Done ✓ 1 | Widgets: Item Count, Filter").
@@ -193,7 +210,9 @@ export const itemAdd = defineVerb({
 export const itemSet = defineVerb({
   id: 'item.set',
   summary: 'Change an item',
-  description: 'Sets fields of an item as key=value, clears fields by name, or changes its type.',
+  description:
+    'Sets fields of an item as key=value, clears fields by name, or changes its type. An Image field or attachments ' +
+    'takes picture ids from image add (key=<id>, several as a comma list, added at the end); --remove takes them off.',
   behaviour: 'write',
   input: z.object({
     project: projectArg,
@@ -203,6 +222,12 @@ export const itemSet = defineVerb({
       .array(z.string())
       .default([])
       .describe('Fields to clear, by name (a field that holds several also clears with key=)'),
+    remove: z
+      .array(z.string())
+      .default([])
+      .describe(
+        'Pictures to take off an Image field or attachments, as key=<id> (a comma list too)',
+      ),
     type: z.string().optional().describe('A new type'),
   }),
   output: lineOut,
@@ -210,7 +235,7 @@ export const itemSet = defineVerb({
     const item = await changeOne(ctx, input.project, {
       op: 'set',
       item: input.item,
-      fields: fieldsFromPairs(input.fields),
+      fields: withPictureRemovals(fieldsFromPairs(input.fields), input.remove),
       ...(input.clear.length ? { clear: input.clear } : {}),
       ...(input.type ? { type: input.type } : {}),
     });

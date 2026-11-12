@@ -11,7 +11,7 @@ Derived from [Office](../office.md).
 | `packages/document/src/shape-factory.ts`                 | Default sizes and fields (`roomDoor`, label, padding, aspect lock)                                         |
 | `packages/document/src/validate-shape.ts`                | `roomDoor` validation                                                                                      |
 | `packages/document/src/colors.ts`                        | Skins (floor and rug fills), the room's `md` padding                                                       |
-| `packages/document/src/svg-render-faces.ts`              | Export: `furnitureArt` for the pieces, `roomSvg` for a room                                                |
+| `packages/document/src/svg-render-office-art.ts`         | Export: `furnitureArt` for the pieces, `roomSvg` for a room                                                |
 | `packages/api-schema/src/room-messages.ts`               | `AvatarPresence.holding`                                                                                   |
 | `apps/editor/components/canvas/collab/FurnitureView.tsx` | Canvas drawing of every piece but the room; `MachineAnswer`                                                |
 | `apps/editor/components/canvas/collab/RoomView.tsx`      | Canvas drawing of a room at its own size; `SizedPieceView`, shared with the stage                          |

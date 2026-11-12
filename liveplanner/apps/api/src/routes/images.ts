@@ -1,13 +1,21 @@
 // /api/images: the pictures of Image fields (docs/specs/026-plan/item-types.md "Image fields"), an upload for one
-// plan and the auth-gated byte read. The pictures live in liveworkspace's media service
+// plan, the check of which pictures were uploaded for it (an agent's, before it places them) and the auth-gated byte
+// read. The pictures live in liveworkspace's media service
 // (liveworkspace/docs/specs/006-media/media.md, src/media.ts), in their uploader's gallery: this route keeps who may
 // upload for a plan and who may see what, and the service keeps the bytes, the dedupe and the caps. Each plan
 // records the pictures uploaded for it (plan-room/image-grants.ts). There is no gallery list, usage or delete here:
 // the Explorer's gallery lists a person's images from every app.
 
-import { levelAtLeast } from '@liveplanner/api-schema';
+import {
+  IMAGE_GRANT_CHECK_MAX,
+  levelAtLeast,
+  type GrantedImage,
+  type ImageGrantsResponse,
+} from '@liveplanner/api-schema';
 import {
   ACCEPTED_IMAGE_TYPES,
+  IMAGE_SOURCE_HEADER,
+  imageSourceOf,
   MAX_IMAGE_BYTES,
   ORIGINAL_NAME_MAX,
   type MediaClient,
@@ -29,7 +37,7 @@ import {
   json,
   notFound,
 } from '../responses';
-import { COMMUNITY_CONTENT, grantOn, requireOwner, type RouteContext } from './context';
+import { COMMUNITY_CONTENT, grantOn, readBody, requireOwner, type RouteContext } from './context';
 import { resolvePlanGrant } from './plan-grant';
 import type { PlanGrant } from '../index-service';
 
@@ -42,6 +50,9 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   const media = mediaClient(ctx.env);
   if (!media) return imagesUnavailable();
   if (segments.length === 2 && request.method === 'POST') return upload(ctx, media);
+  if (segments.length === 3 && segments[2] === 'grants' && request.method === 'POST') {
+    return grants(ctx, media);
+  }
   if (segments.length === 3 && segments[2] && request.method === 'GET') {
     return read(ctx, media, segments[2]);
   }
@@ -104,6 +115,9 @@ async function upload(ctx: RouteContext, media: MediaClient): Promise<Response> 
     height: Number(request.headers.get('X-Image-Height') ?? '0'),
     originalName: originalNameOf(request.headers.get('X-Image-Original-Name')),
     sha256,
+    // An API token's upload names its tool (the MCP's upload_image, the CLI's `image add`) so the gallery can say
+    // Made by AI (liveworkspace/docs/specs/006-media/media.md "Uploaded by a tool"); the editor never sends one.
+    source: ctx.token ? imageSourceOf(request.headers.get(IMAGE_SOURCE_HEADER)) : null,
     // A plan the server holds claims the picture, so the media sweep keeps it until that plan reports it gone. A This
     // Browser plan names none (media.md "Uploads").
     document: planId,
@@ -113,6 +127,56 @@ async function upload(ctx: RouteContext, media: MediaClient): Promise<Response> 
   rememberMediaOwner(image.id, named);
   if (planId !== null) await planRoom(env, planId).grantImage(image.id);
   return json({ image: imageSummary(image), deduped });
+}
+
+// POST /api/images/grants?p={planId}: which of `ids` were uploaded for plan `p`, each with its upload's name, size and
+// type as the service keeps them: what an agent may place on the plan's cards, checked before a card is written
+// (docs/specs/015-api/mcp-server.md §4.5b), and what an Attachments entry is made from. Body `{ ids }`, at most
+// IMAGE_GRANT_CHECK_MAX. The caller must be able to write the plan's cards, as for an upload. An id the plan holds no
+// grant for, or one the service no longer has, is left out of the answer.
+async function grants(ctx: RouteContext, media: MediaClient): Promise<Response> {
+  const owner = requireOwner(ctx);
+  if (owner instanceof Response) return owner;
+  const planId = ctx.url.searchParams.get('p') || null;
+  const session = projectSession(ctx);
+  // The plan is the question's subject: without it there is nothing to ask (400); one it can't be is a plan not found.
+  if (!planId) return badRequest('p must name the plan the pictures are for');
+  if (planId.length > PLAN_ID_MAX || (session && planId !== session.projectId)) return notFound();
+  const body = await readBody(ctx);
+  if (body instanceof Response) return body;
+  const ids = body['ids'];
+  if (
+    !Array.isArray(ids) ||
+    ids.length > IMAGE_GRANT_CHECK_MAX ||
+    !ids.every((id) => typeof id === 'string' && id.length > 0 && id.length <= IMAGE_ID_MAX)
+  ) {
+    return badRequest(`ids must be a list of at most ${IMAGE_GRANT_CHECK_MAX} image ids`);
+  }
+  const refused = await refusedUpload(ctx, planId);
+  if (refused) return refused;
+  const granted = await planRoom(ctx.env, planId).grantedImages(ids as string[]);
+  // One service read a granted picture, in parallel: a call's pictures are few (IMAGE_GRANT_CHECK_MAX at most).
+  const records = await Promise.all(granted.map((id) => media.get(id)));
+  const images = records.flatMap((r): GrantedImage[] =>
+    r
+      ? [
+          {
+            id: r.image.id,
+            name: r.image.originalName ?? null,
+            size: r.image.byteSize,
+            type: r.image.contentType,
+          },
+        ]
+      : [],
+  );
+  if (images.length < ids.length) {
+    console.info('[images] grant check left ids out', {
+      planId,
+      asked: ids.length,
+      held: images.length,
+    });
+  }
+  return json({ images } satisfies ImageGrantsResponse);
 }
 
 // The caller's hold on the plan through `grant`, as the plan's own doors read it. A grant through the plan's

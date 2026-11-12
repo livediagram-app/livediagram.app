@@ -80,6 +80,7 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Reading a project’s Plan items: cards, tasks and their fields.',
   ),
   mcpTool('ChangeItems', 'Change Items', 'Adding, changing, moving or removing Plan items.'),
+  mcpTool('UploadImage', 'Upload Image', 'Uploading a picture for a plan’s cards.'),
   mcpTool('ListThreads', 'List Threads', 'Reading the comment threads on a project’s Plan cards.'),
   mcpTool(
     'ChangeThreads',

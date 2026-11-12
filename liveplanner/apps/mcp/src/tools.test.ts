@@ -14,6 +14,7 @@ vi.mock('./image-result', () => ({
 import { registerTools } from './tools';
 import { deleteProjectShape } from '@liveplanner/agent-verbs/mcp';
 import { TOOL_ANNOTATIONS, type ToolBehaviour } from './tool-annotations';
+import { toolAnnotations } from '@liveworkspace/mcp-kit/tool-result';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 
 // Every registered MCP tool must report itself (docs/specs/015-api/mcp-server.md §4, docs/specs/017-telemetry/telemetry.md).
@@ -134,6 +135,19 @@ function okResponse(request: Request): Response {
   }
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
+  // upload_image (docs/specs/015-api/mcp-server.md §4.5b): the plan's own upload route.
+  if (path === '/images' && request.method === 'POST') {
+    const image = {
+      id: 'img-1',
+      contentType: 'image/png',
+      byteSize: 29,
+      width: 4,
+      height: 3,
+      originalName: 'mock.png',
+      createdAt: 1,
+    };
+    return json({ image, deduped: false });
+  }
   if (path === '/projects' && request.method === 'GET') return json({ projects: [] });
   if (path.endsWith('/sheets'))
     return request.method === 'POST' ? json({ sheet: SHEET }) : json({ sheets: [SHEET] });
@@ -225,6 +239,8 @@ const ARGS = {
   sheet: 'Budget',
   action: 'close',
   content: 'ID,Title,Status,Team\nX-1,One,Todo,Eng',
+  // upload_image's picture: the first bytes of a 4 by 3 PNG, which is all its checks read.
+  data: 'iVBORw0KGgoAAAANSUhEUgAAAAQAAAADCAYAAAA=',
 };
 
 const AUTHED = { authInfo: { token: 'tok_test' } };
@@ -275,6 +291,7 @@ describe('registerTools', () => {
       'try_form',
       'unarchive_project',
       'update_project',
+      'upload_image',
     ]);
     // The description is what the calling model reads to pick a tool, so an
     // undescribed tool is effectively unreachable.
@@ -367,6 +384,8 @@ describe('registerTools', () => {
 // the other route in: calling `server.registerTool` directly and hand-rolling
 // an annotations block, which types can't catch.
 describe('tool annotations', () => {
+  // The tools that reach beyond the caller's library: upload_image fetches a url.
+  const OPEN_WORLD = new Set(['upload_image']);
   const BEHAVIOURS: Record<string, ToolBehaviour> = {
     find_projects: 'read',
     read_project: 'read',
@@ -384,6 +403,8 @@ describe('tool annotations', () => {
     // Items (docs/specs/026-plan/plan-mode.md "Agents"): change_items may delete.
     list_items: 'read',
     change_items: 'destructive',
+    // docs/specs/015-api/mcp-server.md §4.5b: a picture for a plan's cards, fetched from a url on the open web.
+    upload_image: 'write',
     // docs/specs/026-plan/plan-agents.md "Comment threads": change_threads deletes the agent's own comments.
     list_threads: 'read',
     change_threads: 'destructive',
@@ -417,9 +438,12 @@ describe('tool annotations', () => {
     // stops a hand-rolled block drifting from the table in docs/specs/015-api/mcp-server.md §4.14.
     const presets = Object.values(TOOL_ANNOTATIONS);
     for (const r of registered) {
-      expect(presets, `${r.name} uses an off-catalogue annotations block`).toContainEqual(
-        r.config.annotations,
-      );
+      // A tool that reaches the open web adds openWorldHint to its preset (§4.14).
+      const { openWorldHint: _hint, ...preset } = r.config.annotations as ToolAnnotations;
+      expect(
+        presets.map(({ openWorldHint: _o, ...p }) => p),
+        `${r.name} uses an off-catalogue annotations block`,
+      ).toContainEqual(preset);
     }
   });
 
@@ -430,7 +454,12 @@ describe('tool annotations', () => {
       // A tool missing from the table is a new tool whose behaviour nobody has
       // decided yet. Decide it here and in the spec; don't delete this line.
       expect(behaviour, `${r.name} has no documented behaviour`).toBeDefined();
-      expect(r.config.annotations).toEqual(TOOL_ANNOTATIONS[behaviour!]);
+      expect(r.config.annotations).toEqual(
+        toolAnnotations({
+          behaviour: behaviour!,
+          ...(OPEN_WORLD.has(r.name) ? { openWorld: true } : {}),
+        }),
+      );
     }
   });
 

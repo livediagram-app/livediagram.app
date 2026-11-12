@@ -485,7 +485,32 @@ describe('agents and CSV', () => {
       ),
     ).toMatchObject({
       ok: false,
-      message: '"Area" is a text field: only a person or card field holds several.',
+      message: '"Area" is a text field: only a person, card or image field holds several.',
     });
+  });
+
+  // A Several Images field (docs/specs/026-plan/item-types.md "Image fields"): change_card_types makes one with
+  // multiple, on a new field or an Image field the type has.
+  it('takes multiple on an image field, added or edited', () => {
+    const r = applyCardTypeChanges(
+      null,
+      [
+        {
+          op: 'add',
+          name: 'Work Item',
+          custom: [
+            { name: 'Designs', kind: 'image', multiple: true },
+            { name: 'Mock', kind: 'image' },
+          ],
+        },
+        { op: 'set', type: 'Work Item', editCustom: [{ field: 'Mock', multiple: true }] },
+      ],
+      [{ status: 'todo~a1', name: 'To Do' }],
+    );
+    if (!r.ok) throw new Error(r.message);
+    expect(r.catalogue!.types[0]!.custom).toEqual([
+      { id: 'f-designs', label: 'Designs', kind: 'image', multiple: true },
+      { id: 'f-mock', label: 'Mock', kind: 'image', multiple: true },
+    ]);
   });
 });

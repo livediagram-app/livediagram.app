@@ -16,6 +16,12 @@ runs out of its cell. The table itself is specified in [Canvas and palette](../0
   Tab off the last cell, a paste into the grid, and the cell menu's Clear; and on a cell style change (a bigger text
   size, bold), which measures every row. The grown height lands **in the same
   commit** as the words, so one undo takes both back.
+- **One step per edit.** A table commit that writes what the table already holds is not a step (as every commit,
+  [Canvas and palette](../008-canvas/canvas-and-palette.md) "Undo / Redo"). Leaving a cell can commit it twice
+  (Escape or Enter commits, then the editor's blur commits the same text again), and opening a cell and leaving it
+  untouched commits its own text: `commitTable` compares the patch with the table, cell by cell
+  (`tablePatchChangesNothing`, `apps/editor/lib/table-patch.ts`), and keeps the same element when nothing differs,
+  so the history sees no change and one undo takes back one cell edit.
 - **Never smaller.** A row never shrinks on its own: deleting words leaves the height it had, as a resized table
   keeps the size it was given. Dragging the row's divider, or resizing the table, is how it gets shorter.
 - **A table sized to scale** (its text tracks the row height) is measured again after growing, since its font grew

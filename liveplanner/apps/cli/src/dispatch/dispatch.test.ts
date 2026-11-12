@@ -266,6 +266,13 @@ describe('repeated flags', () => {
     expect(fieldsOf(set.input).find((f) => f.key === 'clear')).toMatchObject({ kind: 'list' });
     expect(
       parseVerbArgs(set, ['3f9c', '#4', '--clear', 'labels', '--clear', 'due', '--type', 'bug']),
-    ).toEqual({ project: '3f9c', item: '#4', fields: [], clear: ['labels', 'due'], type: 'bug' });
+    ).toEqual({
+      project: '3f9c',
+      item: '#4',
+      fields: [],
+      clear: ['labels', 'due'],
+      remove: [],
+      type: 'bug',
+    });
   });
 });
