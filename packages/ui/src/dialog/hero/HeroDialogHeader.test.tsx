@@ -39,20 +39,23 @@ describe('the dialog hero header', () => {
     expect(h2.className).toContain('[font-family:var(--hero-heading-family)]');
     expect(h2.className).toContain('[font-weight:var(--hero-heading-weight,800)]');
     expect(h2.className).toContain('text-[20px]');
-    expect(h2.className).toContain('max-sm:text-[18px]');
-    // One line from sm, never wrapping the band taller; up to two on a phone, where the header is not fixed.
+    // The desktop's 20px on a phone too, never shrunk.
+    expect(h2.className).not.toContain('max-sm:text-');
+    // One line from sm; up to two on a phone, inside the same 100px.
     expect(h2.className).toContain('sm:truncate');
     expect(h2.className).toContain('max-sm:line-clamp-2');
   });
 
-  it('stands exactly 100px tall from sm, compact on a phone, its line one row and heard there, not shown', () => {
+  it('stands exactly 100px tall at every width, its line one row and shown on a phone too', () => {
     const { container } = header();
     const root = container.querySelector<HTMLElement>('[data-dialog-hero]')!;
-    expect(root.className).toMatch(/\bsm:h-\[100px\]/);
-    expect(root.className).toContain('max-sm:py-3');
+    expect(root.className).toMatch(/(^|\s)h-\[100px\]/);
+    expect(root.className).not.toContain('max-sm:py-');
+    expect(root.className).toContain('px-4');
+    expect(root.className).toContain('sm:px-6');
     const line = container.querySelector('[data-dialog-hero-subtitle]')!;
     expect(line.className).toContain('truncate');
-    expect(line.className).toContain('max-sm:sr-only');
+    expect(line.className).not.toContain('sr-only');
   });
 
   it('carries the colour tokens and follows the app’s light or dark class', () => {
@@ -83,12 +86,12 @@ describe('the dialog hero header', () => {
     );
   });
 
-  it('marks the title with the art’s glyph on a 36px tile, 32px on a phone', () => {
+  it('marks the title with the art’s glyph on a 36px tile at every width', () => {
     const { container } = header();
     const mark = container.querySelector('[data-dialog-hero-mark]')!;
     expect(mark.getAttribute('aria-hidden')).toBe('true');
     expect(mark.className).toContain('size-9');
-    expect(mark.className).toContain('max-sm:size-8');
+    expect(mark.className).not.toContain('max-sm:size-');
     const svg = mark.querySelector('svg')!;
     expect(svg.getAttribute('width')).toBe('20');
     expect(svg.querySelector('circle')).not.toBeNull();

@@ -1,7 +1,9 @@
 'use client';
 
 // Rule Details (docs/specs/026-plan/automations.md "The rule builder"): an accordion, closed to start, holding Let
-// this rule's changes trigger other rules and the line on whose access a rule runs with.
+// this rule's changes trigger other rules and the line on whose access a rule runs with. On a phone (`placement="foot"`)
+// it is a bar pinned in the rule drawer's foot, its body opening upward over the steps and scrolling when tall
+// ("The rule builder on a phone").
 
 import { useState } from 'react';
 import { SwitchRow } from '@liveplanner/ui';
@@ -10,23 +12,30 @@ import { AccordionSection } from '@liveworkspace/workbench/components/primitives
 export function RuleDetails({
   chain,
   onChain,
+  placement = 'inline',
 }: {
   chain: boolean;
   onChain: (next: boolean) => void;
+  placement?: 'inline' | 'foot';
 }) {
   const [open, setOpen] = useState(false);
+  const foot = placement === 'foot';
   return (
     <div
-      data-rule-details=""
-      className="rounded-xl border border-slate-200 px-4 dark:border-slate-700"
+      data-rule-details={placement}
+      className={
+        foot
+          ? 'px-4 [&>div]:flex [&>div]:flex-col-reverse'
+          : 'rounded-xl border border-slate-200 px-4 dark:border-slate-700'
+      }
     >
       <AccordionSection
         title="Rule Details"
         open={open}
         onToggle={() => setOpen((v) => !v)}
-        headerClassName="flex w-full items-center justify-between py-3 text-left"
+        headerClassName={`flex w-full cursor-pointer items-center justify-between text-left ${foot ? 'h-11' : 'py-3'}`}
         titleClassName="text-[13px] font-semibold text-slate-800 dark:text-slate-100"
-        bodyClassName="flex flex-col gap-3 pb-4"
+        bodyClassName={`flex flex-col gap-3 ${foot ? 'max-h-[40dvh] overflow-y-auto overscroll-contain pb-2 pt-3' : 'pb-4'}`}
       >
         <SwitchRow
           checked={chain}

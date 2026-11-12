@@ -11,6 +11,7 @@ export function SegmentedRadio<T extends string | number>({
   value,
   onChange,
   className = '',
+  size = 'md',
 }: {
   // The group's accessible name.
   label: string;
@@ -18,12 +19,14 @@ export function SegmentedRadio<T extends string | number>({
   value: T;
   onChange: (id: T) => void;
   className?: string;
+  // `lg`: a phone filter row's 40px control, matching the search and select beside it.
+  size?: 'md' | 'lg';
 }) {
   return (
     <div
       role="radiogroup"
       aria-label={label}
-      className={`relative grid rounded-lg p-0.5 ${SEGMENT_TRACK} ${className}`}
+      className={`relative grid rounded-lg p-0.5 ${size === 'lg' ? 'h-10' : ''} ${SEGMENT_TRACK} ${className}`}
       style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
     >
       <SegmentSlider
@@ -40,7 +43,7 @@ export function SegmentedRadio<T extends string | number>({
             role="radio"
             aria-checked={on}
             onClick={() => onChange(o.id)}
-            className={`relative z-10 rounded-md py-1 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-brand-600 ${
+            className={`relative z-10 cursor-pointer rounded-md font-medium transition-colors focus-visible:outline-2 focus-visible:outline-brand-600 ${size === 'lg' ? 'h-full px-3 text-[13px]' : 'py-1 text-xs'} ${
               on ? 'text-white' : SEGMENT_REST
             }`}
           >

@@ -179,9 +179,12 @@ describe('the Rules list', () => {
     ]);
     wrap(<Harness />);
     await screen.findByText('Escalate');
-    fireEvent.change(screen.getByRole('combobox', { name: 'On or off' }), {
-      target: { value: 'off' },
-    });
+    // A phone's On / Off is a segmented control.
+    fireEvent.click(
+      within(screen.getByRole('radiogroup', { name: 'On or off' })).getByRole('radio', {
+        name: 'Off',
+      }),
+    );
     expect(screen.queryByText('Done Means Wrapped Up')).toBeNull();
     fireEvent.change(screen.getByRole('textbox', { name: 'Find a rule' }), {
       target: { value: 'zzz' },

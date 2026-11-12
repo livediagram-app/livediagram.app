@@ -1,0 +1,65 @@
+'use client';
+
+// A step's fields on a phone (docs/specs/026-plan/automations.md "The rule builder on a phone"): a sheet stacked over
+// the rule drawer, its own grab handle, the step's tile and name as its title beside the close, its fields scrolling
+// inside, and Done at its foot. Every way out (swipe, the dim, Escape, close, Done) slides it down first.
+
+import { useId, type ReactNode } from 'react';
+import { Button, DialogCloseButton, useDialogDismiss } from '@liveplanner/ui';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+
+function DoneButton({ onDone }: { onDone: () => void }) {
+  const dismiss = useDialogDismiss();
+  return (
+    <Button variant="primary" size="md" className="h-11 w-full" onClick={() => dismiss(onDone)}>
+      Done
+    </Button>
+  );
+}
+
+export function StepDrawer({
+  title,
+  tile,
+  onClose,
+  children,
+}: {
+  title: string;
+  tile: ReactNode;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  const titleId = useId();
+  return (
+    <Dialog
+      open
+      onClose={onClose}
+      titleId={titleId}
+      size="lg"
+      phoneSheet
+      initialFocus="container"
+      className="max-h-[85dvh] overflow-hidden"
+    >
+      <div className="flex shrink-0 items-center gap-2.5 border-b border-slate-100 px-4 pb-3 dark:border-slate-800">
+        {tile}
+        <h2
+          id={titleId}
+          className="min-w-0 flex-1 truncate text-[16px] font-semibold text-slate-900 dark:text-slate-50"
+        >
+          {title}
+        </h2>
+        <DialogCloseButton onClick={onClose} />
+      </div>
+      <section
+        aria-label={`${title} step`}
+        data-step-panel=""
+        data-step-drawer=""
+        className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-4 py-4"
+      >
+        {children}
+      </section>
+      <div className="shrink-0 border-t border-slate-100 px-4 pb-3 pt-3 dark:border-slate-800">
+        <DoneButton onDone={onClose} />
+      </div>
+    </Dialog>
+  );
+}

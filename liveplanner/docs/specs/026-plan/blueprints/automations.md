@@ -79,7 +79,7 @@ apps/editor/components/automations/
   RunLog.tsx, RunRow.tsx
   RuleBuilder.tsx             breadcrumb bar, step cards, add buttons, Rule Details accordion, Discard Changes?
   StepCard.tsx, StepPanel.tsx, step-panels/*.tsx   one panel per trigger, condition and action kind
-  ValueInsert.tsx             Insert a Value chips and the chip-rendered text field
+  ValueInsert.tsx             the chip-rendered text field and its Insert a Value button (ValueInsertMenu.tsx)
   TestOnCard.tsx              the card finder and the dry-run result
   RunRuleMenu.tsx             the card ⋯ menu's Run Rule submenu
   use-automations.ts          fetch, mutate and cache the list for the open plan
@@ -742,8 +742,8 @@ queued }`, never a secret, a signature, a hash or the body.
   Done), what it runs on (the `runsWithoutCard` line), and **How to Send** (an accordion, closed: a curl with the
   header and one with the signature). The rule's id and hook come from `IncomingRuleContext` (incoming-rule.tsx),
   provided by RuleBuilder; the call is `makeHookSecret` in automations-client.ts.
-- `ValueTextField` reads `useIncomingRule().incoming` and adds **Webhook Field…**: an inline field for the path
-  (checked by `webhookPathOf`) with Insert, at the end of Insert a Value's chips. A webhook value's chip reads its path.
+- `ValueTextField` reads `useIncomingRule().incoming` and its Insert a Value popover adds **Webhook Field…**: a line for the path
+  (checked by `webhookPathOf`) with Insert and Back (`WebhookPathForm`). A webhook value's chip reads its path.
 - Personless rules (time and incoming) leave out "whoever triggered" in Assign and Send Email, as time rules do
   (`isPersonless`).
 - Telemetry: `Plan · Created | Changed | Copied · AutomationSecret`.
@@ -993,6 +993,46 @@ picks, n }`) in state, the target `{ view: 'rule', ruleId: null, draft: true }`,
 Characters, four to a token; Neurons at 9,091 per million in and 27,273 per million out (spec "Cost"). A typical
 draft's reply is about 300 tokens, so about 29 Neurons. Before the caps were added the first measurement was 145,503
 characters for the wide plan; the field budget brought it to 19,603.
+
+## Phones: drawers, the header, the filters and Insert a Value
+
+Derived from the spec's "The rule builder on a phone", the screen's phone bullets and "Values". `phone` is the
+dialog's `!useMediaQuery('(min-width: 640px)')`, as before; nothing below changes a desktop.
+
+- `ScreenTabs`: on a phone the bar is `h-12 items-stretch`, each tab `flex items-center` (44 px of it a target).
+- `RuleFilters.tsx` (out of `RulesList`): the desktop row as before; on a phone a column of the search (`SearchInput`
+  at its `size="lg"`: 40 px, 14 px text) and a row of the trigger `Select` (`flex-1`, `PHONE_SELECT` = `h-10
+rounded-lg pl-3 pr-8 text-[14px]`) and `SegmentedRadio` (`size="lg"`, All / On / Off, `h-10`).
+- `AutomationsDialog`: on a phone, editing (`target.view === 'rule'`) keeps the rules screen mounted and renders the
+  builder in `RuleDrawer.tsx`: the shared `Dialog` with `phoneSheet="tall"` (its height the full sheet's, the top bar
+  and the notch kept clear, `PHONE_SHEET_TALL`), an sr-only title (New Rule or Edit Rule), `beforeClose` = the dirty guard (returns false and opens Discard Changes? when
+  dirty). Discarding unmounts the drawer straight away (the question was the exit).
+- `RuleBuilder` with `phone`: `PhoneRuleChrome.tsx` holds `PhoneRuleHeader` (back chevron, the shared `Switch`
+  labelled with its visible word On or Off, or the Off · Not Saved pill for an unsaved rule; the name in `RuleNameField`, a one-row `textarea` that grows with its text, Enter
+  ignored, newlines folded to spaces), the steps scrolling, and `PhoneRuleFoot` (Rule Details, then the two buttons
+  as `Button size="md"` `flex-1 h-11`; a saved rule with nothing changed shows **Saved** with a check, a `role="status"`, in Save Rule's place).
+- `RuleDetails` takes `placement="foot"`: the accordion's bar sits in the foot and its body opens above the bar,
+  `max-h-[40dvh] overflow-y-auto`.
+- `StepDrawer.tsx`: on a phone `StepPanel` renders its shell into the shared `Dialog` (`phoneSheet`, `size="lg"`) with
+  the shell's tile and title as its header beside `DialogCloseButton`, the body `min-h-0 flex-1 overflow-y-auto
+overscroll-contain`, and a foot holding **Done** (`useDialogDismiss`, so it slides out like the close). `RuleBuilder` holds `stepOpen`:
+  set by a pick (`actions.select`), an add and a refusal's `partAt`; never by the first render's trigger selection.
+- `ValueInsert.tsx`: `ValueTextField` draws `ValueInsertButton` inside the field's box (`absolute right-1.5 top-1.5`, the
+  text padded `pr-10` on the textarea and its backdrop alike). `ValueInsertMenu.tsx`: `AnchoredPopover` (width 300,
+  `pointer`) on a wide screen, the shared `Dialog` `phoneSheet` on a phone, both holding `ValueInsertList`: a
+  `SearchInput` as a combobox over a `listbox` of `option`s grouped under `role="group"` headings, the active option
+  moved by Up / Down (wrapping) and inserted by Enter, a click inserting too. `value-insert-options.ts` (pure):
+  `valueInsertGroups(branch, fields, incoming)` and `filterValueGroups(groups, query)`. Webhook Field… swaps the list
+  for `WebhookPathForm` (the old `WebhookFieldInsert` field, with Insert and Back). The field keeps the selection it
+  had (a textarea keeps `selectionStart` / `selectionEnd` through a blur), so `insertValue` lands at the caret; a
+  field never focused inserts at the end. Focus returns to the field after the insert, its caret past the value.
+- `phone-board.ts`: `offColumnCard(card, view)` (the card's middle more than half its width from the view's middle)
+  and `centreCardColumn(itemId, body, columnAttr)`; `PlanBoardView`'s open on a tap (the drag's `onClick` and the
+  read-only press) calls it first when `look.columns === 'phone'`. It reads two rects on the tap, nothing per card.
+- Tests: `RuleFilters.test.tsx` (the phone layout, the segmented filter), `RuleBuilderPhone.test.tsx` (the drawer on a
+  phone and not on a desktop, the step drawer opening on a pick and closing on Done, the header, the foot, Saved, the
+  Discard Changes? guard on Escape and Back), `ValueInsert.test.tsx` (the button, the keyboard, insert at the caret, no list
+  under the field), `phone-board-tap.test.ts` (the off-column card centres its column and does not open).
 
 ## Run telemetry
 

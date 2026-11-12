@@ -60,6 +60,14 @@ const limited = (): Response =>
     { status: 429, headers: { 'Cache-Control': 'no-store', 'Retry-After': '60' } },
   );
 
+// A room's failure as its name and message, cut short: enough to say why, never a payload.
+const ERROR_TEXT_MAX = 500;
+const errorText = (reason: unknown): string =>
+  (reason instanceof Error ? `${reason.name}: ${reason.message}` : String(reason)).slice(
+    0,
+    ERROR_TEXT_MAX,
+  );
+
 async function webhook(request: Request, env: Env, config: GithubConfig): Promise<Response> {
   if (request.method !== 'POST') return methodNotAllowed();
   // A network refused too often is turned away before its body is read or hashed; GitHub's own never is.
@@ -104,6 +112,14 @@ async function webhook(request: Request, env: Env, config: GithubConfig): Promis
       disowned.push(config.links.delete(repoKey(delivery.repositoryIds[0]!, plans[i]!)));
   });
   await Promise.allSettled(disowned);
+  for (const s of settled) {
+    if (s.status === 'rejected')
+      console.error('[github] delivery.threw', {
+        event: delivery.event,
+        action: delivery.action,
+        error: errorText(s.reason),
+      });
+  }
   console.info('[github] delivery', {
     event: delivery.event,
     action: delivery.action,

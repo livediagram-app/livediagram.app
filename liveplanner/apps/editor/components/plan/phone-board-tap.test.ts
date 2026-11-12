@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { centreTappedColumn, centredScrollLeft, tappedColumn } from './phone-board';
+import {
+  centreCardColumn,
+  centreTappedColumn,
+  centredScrollLeft,
+  offColumnCard,
+  tappedColumn,
+} from './phone-board';
 
 // docs/specs/026-plan/plan-board.md "On a phone": a tap on a column's empty space glides it to the centre.
 const ATTR = 'data-plan-column';
@@ -84,5 +90,23 @@ describe('centreTappedColumn', () => {
     expect(centreTappedColumn(el('title'), body, ATTR)).toBe(false);
     expect(centreTappedColumn(el('add'), body, ATTR)).toBe(false);
     expect(body.scrollTo).not.toHaveBeenCalled();
+  });
+});
+
+describe('offColumnCard', () => {
+  const view = { left: 0, width: 390 };
+  it('is false for a card centred in the view, and true for one peeking in at either side', () => {
+    expect(offColumnCard({ left: 44, width: 302 }, view)).toBe(false);
+    expect(offColumnCard({ left: 358, width: 302 }, view)).toBe(true);
+    expect(offColumnCard({ left: -270, width: 302 }, view)).toBe(true);
+  });
+});
+
+describe('centreCardColumn', () => {
+  it('does nothing for a card it cannot find, or one in no column', () => {
+    const body = board();
+    expect(centreCardColumn('missing', body, ATTR)).toBe(false);
+    document.getElementById('outside')!.innerHTML = '<div data-plan-card="loose"></div>';
+    expect(centreCardColumn('loose', body, ATTR)).toBe(false);
   });
 });

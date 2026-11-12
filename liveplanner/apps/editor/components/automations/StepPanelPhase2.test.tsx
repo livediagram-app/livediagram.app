@@ -207,10 +207,11 @@ describe('For Related Cards', () => {
         part={{ part: 'branch', step: 0, side: 'then', index: 0 }}
       />,
     );
-    const values = screen.getByRole('group', { name: 'Insert a Value into Comment' });
+    fireEvent.click(screen.getByRole('button', { name: 'Insert a Value into Comment' }));
+    const values = screen.getByRole('group', { name: 'The Triggering Card' });
     for (const name of ['Trigger Title', 'Trigger Number', 'Trigger Link'])
-      expect(within(values).getByRole('button', { name })).toBeTruthy();
-    fireEvent.click(within(values).getByRole('button', { name: 'Trigger Title' }));
+      expect(within(values).getByRole('option', { name: new RegExp(`^${name}`) })).toBeTruthy();
+    fireEvent.click(within(values).getByRole('option', { name: /^Trigger Title/ }));
     expect(latest.steps[0]).toMatchObject({ then: [{ text: '{{trigger.title}}' }] });
     // A branch holds no Create Card.
     fireEvent.click(document.querySelector('[data-change-step]')!);

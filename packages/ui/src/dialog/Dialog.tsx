@@ -11,11 +11,12 @@ import {
 import { Portal } from '../Portal';
 import { useEscape } from '../useEscape';
 import { useFocusTrap, type FocusTrapInitial } from '../useFocusTrap';
-import { useSheetDrag } from '../useSheetDrag';
+import { SHEET_EXIT_MAX_MS, sheetExitTransition, useSheetDrag } from '../useSheetDrag';
 import { SheetHandle } from '../SheetHandle';
 import { safeInset } from '../safe-area';
 import { useMediaQuery } from '../useMediaQuery';
 import { useVisualViewportBand, type VisualViewportBand } from '../useVisualViewportBand';
+import { DialogDismissContext, type DialogDismiss } from './dialog-dismiss';
 
 // The shared modal shell (packages/ui, so the public sites use it too; the editor wraps it with its modal
 // guard). Every editor dialog (ConfirmDialog,
@@ -78,8 +79,9 @@ export type DialogProps = {
   backdrop?: 'dim' | 'desktop-light';
   // On a phone (below sm), rise as a sheet docked to the bottom edge, with a grab handle that drags
   // it down to close, instead of filling the screen (docs/specs/007-editor/editor-app.md "Working
-  // dialogs rise as sheets on a phone"). A centred card from sm up either way.
-  phoneSheet?: boolean;
+  // dialogs rise as sheets on a phone"). A centred card from sm up either way. 'tall': a sheet as tall as a sheet
+  // grows (the screen below the top bar), for a dialog that is a whole screen of work (the rule builder).
+  phoneSheet?: boolean | 'tall';
   // Where focus lands on open: the first control (default), or the panel itself ('container') when the
   // first control is not where anyone starts.
   initialFocus?: FocusTrapInitial;
@@ -87,12 +89,18 @@ export type DialogProps = {
   // panel (its size) morphs: the panel is named for that type alone (its view-transition class is the type), so the
   // browser animates its old picture into the new one; no other change animates it. Absent, none.
   resizeTransition?: string;
+  // Asked before the dialog closes by its backdrop, Escape, a phone sheet's swipe or a close inside it: false keeps it
+  // open (the host asks about unsaved changes instead), and a phone sheet springs back rather than sliding away.
+  beforeClose?: () => boolean;
   children: ReactNode;
 };
 
 // A phone sheet's panel below sm: the BottomSheet's shape, taller (a dialog holds a form).
-const PHONE_SHEET =
-  ' max-sm:max-h-[85dvh] max-sm:w-full max-sm:max-w-none max-sm:animate-sheet-up max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-b-0';
+const SHEET_SHAPE =
+  ' max-sm:w-full max-sm:max-w-none max-sm:animate-sheet-up max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-b-0';
+const PHONE_SHEET = ` max-sm:max-h-[85dvh]${SHEET_SHAPE}`;
+// A tall sheet: SHEET_FULL_HEIGHT, the height a sheet dragged up fills, so dragging it up changes nothing.
+const PHONE_SHEET_TALL = ` max-sm:h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))] max-sm:max-h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px))]${SHEET_SHAPE}`;
 
 const BACKDROPS: Record<NonNullable<DialogProps['backdrop']>, string> = {
   dim: 'bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60',
@@ -158,22 +166,35 @@ export function Dialog({
   phoneSheet = false,
   initialFocus = 'first',
   resizeTransition,
+  beforeClose,
   children,
 }: DialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const sheet = useSheetDrag(onClose, open);
+  const sheet = useSheetDrag(onClose, open, beforeClose);
   // Whether the press now under way began on the backdrop itself.
   const pressedBackdrop = useRef(false);
   // Escape stays bound while open and reads closeOnEscape at the moment of the key: re-binding the listener
   // when it flips would leave a gap (a mid-submit dialog that fails and re-enables Escape) where the key
   // reaches no listener at all.
+  const phone = useMediaQuery(PHONE_QUERY);
+  // Every way out goes through here: asked first (beforeClose), then a phone sheet slides out before `then` runs
+  // (spec "Menus are bottom sheets on a phone"); a card closes at once.
+  const slides = !!phoneSheet && phone;
+  const requestClose: DialogDismiss = (then) => {
+    if (slides) {
+      sheet.dismiss(panelRef.current, then);
+      return;
+    }
+    if (beforeClose && !beforeClose()) return;
+    then();
+  };
   const closeOnEscapeRef = useRef(closeOnEscape);
   useLayoutEffect(() => {
     closeOnEscapeRef.current = closeOnEscape;
   }, [closeOnEscape]);
   useEscape(
     () => {
-      if (closeOnEscapeRef.current && isTopDialog(panelRef.current)) onClose();
+      if (closeOnEscapeRef.current && isTopDialog(panelRef.current)) requestClose(onClose);
     },
     { enabled: open, preventDefault: true },
   );
@@ -182,8 +203,7 @@ export function Dialog({
   // `open` because the dialog stays mounted and toggles rather than unmounting.
   useFocusTrap(panelRef, open, initialFocus);
   const band = useVisualViewportBand();
-  const phone = useMediaQuery(PHONE_QUERY);
-  const fitted = keyboardBandStyles(band, phone && (phoneSheet || EDGE_TO_EDGE_SIZES.has(size)));
+  const fitted = keyboardBandStyles(band, phone && (!!phoneSheet || EDGE_TO_EDGE_SIZES.has(size)));
   // The field being typed in stays in sight as the band changes: the panel has just shrunk to fit above the
   // keyboard, so the scroll areas inside it bring the field back into view.
   useLayoutEffect(() => {
@@ -224,7 +244,9 @@ export function Dialog({
       // of the default and manage their own scroll region.
       className={`flex ${WIDTHS[size]} max-w-[92%] animate-dialog-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40${
         phoneSheet
-          ? PHONE_SHEET
+          ? phoneSheet === 'tall'
+            ? PHONE_SHEET_TALL
+            : PHONE_SHEET
           : EDGE_TO_EDGE_SIZES.has(size)
             ? ' max-sm:h-full max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:border-0'
             : ''
@@ -236,7 +258,7 @@ export function Dialog({
         // The grab handle, phone only (BottomSheet's). Raised, so a hero header's band can run up under it.
         <SheetHandle handleProps={sheet.handleProps} className="relative z-10 sm:hidden" />
       ) : null}
-      {children}
+      <DialogDismissContext value={requestClose}>{children}</DialogDismissContext>
     </div>
   );
   return (
@@ -255,14 +277,23 @@ export function Dialog({
         }}
         // The dim fades in (fade-in, micro) while the panel settles (dialog-in, long), so the modal
         // arrives rather than appearing (docs/specs/004-interface-design/motion.md "Dialogs").
-        style={fitted.layer}
+        // A sheet sliding out takes its dim with it, over the same moment.
+        style={
+          sheet.exiting
+            ? {
+                ...fitted.layer,
+                opacity: 0,
+                transition: sheetExitTransition('opacity', SHEET_EXIT_MAX_MS),
+              }
+            : fitted.layer
+        }
         className={`fixed inset-0 z-[var(--z-modal)] flex animate-fade-in items-center justify-center ${
           phoneSheet ? 'max-sm:items-end ' : ''
         }${BACKDROPS[backdrop]}`}
         onClick={(e) => {
           // Only a press that began on the backdrop closes: a text selection dragged out of the
           // panel and released over the backdrop clicks there too, and must not lose the edit.
-          if (e.target === e.currentTarget && pressedBackdrop.current) onClose();
+          if (e.target === e.currentTarget && pressedBackdrop.current) requestClose(onClose);
           pressedBackdrop.current = false;
         }}
       >
