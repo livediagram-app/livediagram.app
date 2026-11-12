@@ -17,6 +17,7 @@ import {
   allHold,
   cardlessCard,
   fieldName,
+  githubTriggerWords,
   incomingTriggerWords,
   isTimeTrigger,
   isTrashed,
@@ -100,6 +101,9 @@ function triggerLine(
   // An Incoming Webhook call's: no person behind it.
   if (event.kind === 'incoming')
     return { kind: 'trigger', text: incomingTriggerWords(event.cards ?? 0) };
+  // A GitHub delivery's: what the pull request did.
+  if (event.kind === 'github' && event.github)
+    return { kind: 'trigger', text: githubTriggerWords(event.github, event.pr), by: event.by };
   const who = event.by.name;
   const column = (s: string | undefined) =>
     s && plan ? statusName(plan.outline, s) : (s ?? 'no column');
@@ -259,7 +263,12 @@ export async function runRule(
       at,
       dry: opts.dry === true,
     };
-    const source = { role: 'automation' as const, rule: rule.id, chain: (event.chain ?? 0) + 1 };
+    const source = {
+      role: 'automation' as const,
+      rule: rule.id,
+      chain: (event.chain ?? 0) + 1,
+      ...(event.kind === 'github' ? { via: 'github' as const } : {}),
+    };
     const ai = (dry: boolean) =>
       runAiSteps(
         deps,

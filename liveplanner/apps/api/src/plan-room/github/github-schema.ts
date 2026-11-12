@@ -1,8 +1,8 @@
 // A plan's GitHub connection in its own SQLite (docs/specs/026-plan/github-pull-requests.md "Storage"; blueprint
 // "Part 2" "The plan's object"), the schema's step V21. Every statement is IF NOT EXISTS, so it runs again harmlessly.
 //
-//   github_connection     the installation, its account, who connected it (a card history's person, JSON) and when,
-//                         and the plan's GitHub rules (part 3; null until then)
+//   github_connection     the installation, its account, who connected it (a card history's person, JSON) and when;
+//                         `rules` held part 3's column rules, dropped in part 4: written NULL, never read
 //   github_repositories   the installation's repositories the person who connected it could reach; `chosen` the
 //                         ones connected
 //   github_connect_states a connect's one-time state, by its SHA-256 hash, with whoever started it

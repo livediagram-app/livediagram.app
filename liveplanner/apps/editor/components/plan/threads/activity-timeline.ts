@@ -67,10 +67,12 @@ export function dayHeading(at: number, now: number): string {
   });
 }
 
-// An AI step's write (tag 'automation_ai') is Automation's, marked AI too.
+// An AI step's write (tag 'automation_ai') is Automation's, marked AI too; a GitHub-triggered rule's write (tag
+// 'automation_github') is Automation's run by GitHub (docs/specs/026-plan/github-pull-requests.md "GitHub triggers").
 const byAi = (e: ItemHistoryEntry) => e.tag === 'ai' || e.tag === 'automation_ai';
-const byAutomation = (e: ItemHistoryEntry) => e.tag === 'automation' || e.tag === 'automation_ai';
-const byGithub = (e: ItemHistoryEntry) => e.tag === 'github';
+const byAutomation = (e: ItemHistoryEntry) =>
+  e.tag === 'automation' || e.tag === 'automation_ai' || e.tag === 'automation_github';
+const byGithub = (e: ItemHistoryEntry) => e.tag === 'github' || e.tag === 'automation_github';
 const sameAuthor = (a: ItemHistoryEntry, b: ItemHistoryEntry) =>
   a.by.name === b.by.name &&
   a.by.color === b.by.color &&

@@ -6,6 +6,7 @@
 import type { Item, ItemPerson } from '../item';
 import type { ItemHistoryChange } from '../item-history';
 import type { AutomationTrigger, AutomationTriggerKind } from './types';
+import { githubHears, type GithubHeard } from './github-triggers';
 import type { WebhookValues } from './webhook-paths';
 import type { AutomationRole } from './conditions';
 
@@ -24,7 +25,9 @@ export type AutomationEventKind =
   | 'archived'
   | 'restored'
   // A resolve that left a card with no open thread (the thread routes).
-  | 'resolved';
+  | 'resolved'
+  // A linked pull request's delivery (github-runs.ts), for every rule on a GitHub trigger.
+  | 'github';
 
 export interface AutomationEvent {
   // `${cardId}:${rev}` for a card write; `c:${commentId}`; `m:${nonce}`; a time trigger's from time-cards.ts: with
@@ -60,6 +63,9 @@ export interface AutomationEvent {
   checklistDone?: true;
   // A comment's: the person ids it @mentions.
   mentioned?: string[];
+  // A GitHub delivery's: what the pull request did, and its short name (`acme/web#42`).
+  github?: GithubHeard;
+  pr?: string;
   at: number;
 }
 
@@ -89,6 +95,10 @@ export const TRIGGER_EVENT_KINDS: Readonly<
   related_done: ['moved'],
   column_limit: ['created', 'moved'],
   stuck: ['time'],
+  pull_request_opened: ['github'],
+  pull_request_merged: ['github'],
+  pull_request_closed: ['github'],
+  pull_request_checks: ['github'],
 };
 
 // Who and why a write was made, as the event carries it.
@@ -220,5 +230,12 @@ export function triggerMatches(
       return event.kind === 'moved';
     case 'column_limit':
       return (event.kind === 'created' || event.kind === 'moved') && event.to === trigger.status;
+    case 'pull_request_opened':
+    case 'pull_request_merged':
+    case 'pull_request_closed':
+    case 'pull_request_checks':
+      return (
+        event.kind === 'github' && event.github !== undefined && githubHears(trigger, event.github)
+      );
   }
 }

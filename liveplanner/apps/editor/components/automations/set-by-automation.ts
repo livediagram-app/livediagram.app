@@ -10,7 +10,8 @@ import { AUTOMATION_PERSON_ID, type Item, type ItemHistoryEntry } from '@livepla
 import { useCardHistory } from '@/hooks/plan/useCardHistory';
 import type { ItemsScope } from '@/lib/api/items';
 
-/** The fields whose newest set or clear in `entries` (newest first) is tagged 'automation' (or 'automation_ai'). */
+/** The fields whose newest set or clear in `entries` (newest first) is tagged 'automation' (or 'automation_ai', or
+ *  'automation_github'). */
 export function fieldsSetByAutomation(entries: readonly ItemHistoryEntry[]): ReadonlySet<string> {
   const seen = new Set<string>();
   const out = new Set<string>();
@@ -19,7 +20,12 @@ export function fieldsSetByAutomation(entries: readonly ItemHistoryEntry[]): Rea
       if (change.kind !== 'set' && change.kind !== 'cleared') continue;
       if (seen.has(change.field)) continue;
       seen.add(change.field);
-      if (entry.tag === 'automation' || entry.tag === 'automation_ai') out.add(change.field);
+      if (
+        entry.tag === 'automation' ||
+        entry.tag === 'automation_ai' ||
+        entry.tag === 'automation_github'
+      )
+        out.add(change.field);
     }
   }
   return out;

@@ -47,7 +47,7 @@ Describing a rule uses AI: each draft counts toward the plan's 100 AI steps a da
 
 Press **New Rule**, then **Blank Rule**. The rule reads from top to bottom:
 
-- **When**: the trigger. Pick one of **Card Created**, **Form Response** (a card made by one of the plan's forms), **Card Moved** (from and to the columns you choose), **Field Changed** (any of the fields you choose), **Card Archived**, **Card Restored**, **Checklist Completed** (the last item is ticked), **Column Over Limit** (a column holds more cards than the limit you set), **Comment Added**, **All Threads Resolved** (the card's last open thread is resolved), **Someone Mentioned** (anyone, or the people you pick), **Card Unblocked** (the last card blocking it is done or archived), **Related Cards Done** (all its children, or all the cards its Card fields point at, are done), or **Run from a Card** (you start it from a card's **⋯** menu). Or pick a time (below). **Change** opens **Pick a Trigger**, a gallery of every trigger in groups, each with a picture of what it hears.
+- **When**: the trigger. Pick one of **Card Created**, **Form Response** (a card made by one of the plan's forms), **Card Moved** (from and to the columns you choose), **Field Changed** (any of the fields you choose), **Card Archived**, **Card Restored**, **Checklist Completed** (the last item is ticked), **Column Over Limit** (a column holds more cards than the limit you set), **Comment Added**, **All Threads Resolved** (the card's last open thread is resolved), **Someone Mentioned** (anyone, or the people you pick), **Card Unblocked** (the last card blocking it is done or archived), **Related Cards Done** (all its children, or all the cards its Card fields point at, are done), or **Run from a Card** (you start it from a card's **⋯** menu). Or pick a time, or a pull request on GitHub (both below). **Change** opens **Pick a Trigger**, a gallery of every trigger in groups, each with a picture of what it hears.
 - **If all of these**: the conditions, all of which must hold. Check the **Card Type**, the **Column**, a **Field** (is, is not, is empty, contains, before or after a day, and more), **Who Did It** (a person, an Editor, a Participant, an agent), or whether it **Matches a Saved Filter** of one of your boards.
 - **Then**: the actions, in order. **Move to Column**, **Set Field**, **Clear Field**, **Assign**, **Add Label** or **Remove Label**, **Add Comment**, **Flag** or **Unflag**, **Archive** or **Restore From Archive**, **Change Card Type**, **Set Colour**, **Create Card** or **Copy Card**, **Add a Checklist**, **Link Cards**, **Send Email**, **Mention Someone**, **Resolve Threads** and **Wait**, and **Send to Webhook**, **Post to Slack** and **Post to Microsoft Teams** (below). **+ Add Action** opens a picker of them by group; on a step's panel, **Change** opens it again to swap the action.
 
@@ -128,6 +128,15 @@ The rule runs on each card the body names by number in `cards` (up to 10). With 
 
 The tool hears back `202` with how many runs were queued. A wrong or old secret, or a rule that is off or deleted, all answer `401`; a body that isn't JSON `415`; one over 16 KB `413`; more than 60 calls a minute, or a plan past its runs for the day, `429` with when to try again. **Regenerate** makes a new secret and stops the old one at once; turning the rule off or deleting it stops calls too. Only an Editor of the whole plan, signed in, makes or regenerates the secret.
 
+## Start a Rule from GitHub
+
+Once the plan is [connected to GitHub](/help/plan/connect-github/), the **GitHub** group of **Pick a Trigger** starts a rule from a linked pull request: **Pull Request Opened** (ready for review, reopened, or out of draft), **Pull Request Merged**, **Pull Request Closed** (without merging) and **Checks Finished** (turned **Failing**, or **Passing**). The rule runs once on each card the pull request links: by a Pull Request field, a Link field, or its title or body naming the card, like "Work Tracker #12". Two rules cover the usual flow:
+
+- **Pull Request Opened**, then **Move to Column** In Review.
+- **Pull Request Merged**, then **Move to Column** Done.
+
+Their changes are by **GitHub** on the card, with the rule's name beside it, and a GitHub event never runs a rule twice or moves a card backwards. Press **GitHub** in the screen's header to connect, pick the repositories the plan hears, or disconnect; a GitHub trigger's panel connects in place and brings you back to the rule. On a liveplanner without GitHub set up, neither shows.
+
 ## What You See on a Card
 
 A rule's changes are by **Automation**, with the rule's name beside it:
@@ -135,6 +144,7 @@ A rule's changes are by **Automation**, with the rule's name beside it:
 - The card's [Activity](/help/plan/card-activity/) lists them with a lightning bolt: "**Automation** set Completed On to 11 Nov 2026 · Done Means Wrapped Up".
 - A field a rule set last shows a small **Set by Automation** chip in Details.
 - A comment a rule added shows the bolt and the rule's name; one an AI action wrote also says **Generated by AI**.
+- A rule a GitHub trigger started is by **GitHub** instead, with GitHub's mark: "**GitHub** · Done When It Merges".
 
 ## Run Rule
 

@@ -127,6 +127,18 @@ describe('the Activity tab', () => {
     expect(runs()[1]!.querySelector('[data-github-disc]')).toBeNull();
   });
 
+  it('shows a GitHub-triggered rule’s writes as GitHub and the rule, with GitHub’s mark', async () => {
+    fetchItemHistory.mockResolvedValue([
+      entry(5, { by: { name: 'Move on Merge', color: '#7c3aed' }, tag: 'automation_github' }),
+    ]);
+    show();
+    await flush();
+    expect(runs()[0]!.querySelector('[data-github-disc]')).toBeTruthy();
+    expect(runs()[0]!.querySelector('[data-automation-author]')!.textContent).toMatch(
+      /^GitHub·Move on Merge/,
+    );
+  });
+
   it('heads older days with their date and their rows with the time of day', async () => {
     fetchItemHistory.mockResolvedValue([entry(5), entry(60 * 24 * 3)]);
     show();

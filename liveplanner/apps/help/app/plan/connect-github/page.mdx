@@ -1,0 +1,83 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Connect GitHub',
+  description:
+    'Connect a plan to GitHub: pull request states on cards, rules that run when one opens, merges or its checks finish, card mentions and privacy.',
+  path: '/help/plan/connect-github/',
+});
+
+<ArticleLayout
+  title="Connect GitHub"
+  description="Link pull requests to cards: each card shows where its code stands, and rules move it along for you."
+  categoryTitle="Plan"
+  categorySlug="plan"
+>
+
+Connect a plan to GitHub and the cards its pull requests link say how that code is doing: a draft, open, its checks running, passing or failing, merged or closed. Then [Automations](/help/plan/automations/) can act on it: move a card to In Review when its pull request opens, and to Done when it merges.
+
+## Connect a Plan
+
+1. Open **Automations** in the footer and press **GitHub** in its header. (A GitHub trigger in **Pick a Trigger**, or its panel in a rule, takes you to the same place.)
+2. Press **Connect GitHub**. GitHub opens.
+3. Install liveplanner's GitHub App on your account or organisation, or open an installation you already have, and choose its repositories.
+4. GitHub sends you back to the plan, to the **GitHub** view, which says it is connected.
+
+If an organisation's owner must approve the install first, the view says so: connect again once they have. If you started from a rule, you come back to that rule, as you left it, to finish and save.
+
+The App asks GitHub for read-only access to pull requests, checks and metadata, and writes nothing to GitHub. No personal GitHub token is kept: the one GitHub hands back while you connect is used once, to check which repositories you can reach, and revoked straight after.
+
+## Pick the Repositories
+
+The **GitHub** view lists the installation's repositories you can reach, a lock on each private one. When there are 20 or fewer, the plan hears them all. With more, pick up to 20 with their switches and press **Save Repositories**. **Change on GitHub** takes you back to GitHub to add or remove repositories from the installation itself.
+
+## Link a Pull Request to a Card
+
+A card is linked to a pull request in any of three ways:
+
+- a **Pull Request** field holding its address (see [Card types](/help/plan/card-types/));
+- a **Link** field holding its address;
+- the pull request's title or body naming the card: the plan's name, then the card's number, like "Work Tracker #143" (the `#` is optional, and case doesn't matter). It only counts in plans connected to that repository.
+
+A card shows up to 10 linked pull requests. Each is a small pill on the card in GitHub's colours, and in the card's panel the state is spelled out beside the field, with the pull request's title.
+
+## Rules That Run on Pull Requests
+
+The **GitHub** group in **Pick a Trigger** holds four triggers:
+
+- **Pull Request Opened**: a linked pull request opens ready for review, is reopened, or leaves draft.
+- **Pull Request Merged**: it merges.
+- **Pull Request Closed**: it closes without merging.
+- **Checks Finished**: its checks turn **Failing**, or **Passing** (pick which).
+
+The rule runs once on each card the pull request links, with any conditions and actions. Each GitHub event runs a rule once, even if GitHub sends it again, and an event that arrives late never moves a card backwards.
+
+### Example: In Review When It Opens
+
+1. In **Automations**, press **New Rule**.
+2. Pick **Pull Request Opened** under **GitHub**.
+3. Add the action **Move to Column** and pick **In Review**.
+4. Save the rule.
+
+### Example: Done When It Merges
+
+1. Press **New Rule** and pick **Pull Request Merged**.
+2. Add **Move to Column**, pick **Done**, then add **Add Comment** if the team likes a note ("Merged on GitHub").
+3. Save the rule.
+
+What these rules do is by **GitHub** on the card: its [Activity](/help/plan/card-activity/) shows GitHub's mark and the rule's name ("GitHub · Done When It Merges"), and the Audit Trail says which pull request started each run. Nobody is behind these runs, so a GitHub rule can't check or assign **Who Did It**.
+
+## Privacy
+
+Anyone who can see a card sees its linked pull requests' short names, states and titles, a public share link's visitors included. The view says so when you pick a private repository. Nothing else from GitHub reaches the plan: no body, commit, author or check name. A Community post shows none of it.
+
+## Disconnect
+
+In the **GitHub** view press **Disconnect**, then **Disconnect** again in **Disconnect GitHub?**. Cards stop showing states, and GitHub rules stay but hear nothing until you connect again; the fields keep their addresses. Uninstalling the App on GitHub, or removing a repository from it, disconnects in the same way.
+
+## Who Can
+
+Only an Editor of the whole plan, signed in, connects GitHub, picks repositories, disconnects and makes GitHub rules. Participants and Viewers see the states and what GitHub's rules did. A plan in [Browser Storage](/help/privacy-and-security/offline-mode/) can't connect, since GitHub talks to our servers. On a liveplanner you run yourself, GitHub appears only once its App is set up.
+
+</ArticleLayout>

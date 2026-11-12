@@ -1,8 +1,9 @@
 # GitHub pull requests
 
 A plan that builds software links its cards to the **pull requests** that build them. A card shows each linked pull
-request's state (open, draft, checks passing or failing, merged, closed), and the board moves the card when its pull
-request opens or merges, so nobody moves cards by hand when the code lands. It is liveplanner's first connector to
+request's state (open, draft, checks passing or failing, merged, closed), and the plan's
+[Automations](automations.md#github-triggers) act when a linked pull request opens, merges, closes or its checks finish
+(move the card, assign it, comment on it), so nobody moves cards by hand when the code lands. It is liveplanner's first connector to
 another tool, brought forward from Later by the owner (2026-11-11, [Product scope](../002-project-scope/product-scope.md#non-goals)).
 The engineering detail is [blueprints/github-pull-requests.md](blueprints/github-pull-requests.md).
 
@@ -12,9 +13,11 @@ It is built in parts (Work Item 157):
    a pull request's address, or a pull request naming the card), read in pure code, with no call to GitHub. Built.
 2. **The GitHub App's webhook receiver and the repository connection**, off while its secrets are absent. Built
    (the server side; the dialog that drives it is part 4).
-3. **Pull request state on cards and the board's GitHub rules**, with moves made by GitHub in card history. Built
-   (the rules' server side; the dialog that sets them is part 4).
-4. **The entry points**: the plan's GitHub dialog, the help article, telemetry and the agents' listing of states.
+3. **Pull request state on cards**, and moves made by GitHub in card history. Built.
+4. **GitHub in Automations**: the GitHub triggers, connecting and managing the connection from the Automations screen,
+   the help article and telemetry. Built. It replaced part 3's two fixed column rules (the owner, 2026-11-12: "surface
+   the GitHub Integration via the Automation screen instead of the settings"): no screen ever set them, so nothing was
+   migrated.
 
 Until a part is built, what it describes below is the design it is built to.
 
@@ -26,16 +29,16 @@ pull request's state where the team plans, and moves the card the moment the cod
 
 ## Domain language
 
-| Term                    | Means                                                                                             | Never called                 |
-| ----------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------- |
-| **pull request**        | One GitHub pull request, named by its repository and number (`acme/web#42`)                       | PR (in copy), merge request  |
-| **Pull Request field**  | A card field of kind `pullrequest` holding one pull request's address                             | GitHub field, PR link        |
-| **linked pull request** | A pull request a card names: in a Pull Request field, a Link field, or the pull request naming it | attached PR                  |
-| **card mention**        | A pull request's title or body naming a card as "{plan name} #{number}" ("Work Tracker #143")     | magic word, keyword          |
-| **GitHub connection**   | A plan's link to liveplanner's GitHub App: the installation and the repositories chosen from it   | integration (in copy), sync  |
-| **pull request state**  | Draft, Open, Checks Running, Checks Passing, Checks Failing, Merged or Closed                     | status (that is the card's)  |
-| **GitHub rule**         | A board move a GitHub connection makes: when a linked pull request opens, or merges               | automation (those are rules) |
-| **GitHub**              | Who a GitHub rule's moves are by, in card history                                                 | bot, system, webhook         |
+| Term                    | Means                                                                                             | Never called                |
+| ----------------------- | ------------------------------------------------------------------------------------------------- | --------------------------- |
+| **pull request**        | One GitHub pull request, named by its repository and number (`acme/web#42`)                       | PR (in copy), merge request |
+| **Pull Request field**  | A card field of kind `pullrequest` holding one pull request's address                             | GitHub field, PR link       |
+| **linked pull request** | A pull request a card names: in a Pull Request field, a Link field, or the pull request naming it | attached PR                 |
+| **card mention**        | A pull request's title or body naming a card as "{plan name} #{number}" ("Work Tracker #143")     | magic word, keyword         |
+| **GitHub connection**   | A plan's link to liveplanner's GitHub App: the installation and the repositories chosen from it   | integration (in copy), sync |
+| **pull request state**  | Draft, Open, Checks Running, Checks Passing, Checks Failing, Merged or Closed                     | status (that is the card's) |
+| **GitHub trigger**      | An Automations trigger a linked pull request starts: opened, merged, closed, checks finished      | GitHub rule, hook           |
+| **GitHub**              | Who a GitHub-triggered rule's changes are by, in card history, with the rule's name beside it     | bot, system, webhook        |
 
 ## The Pull Request field
 
@@ -104,7 +107,9 @@ route answers 404, and nothing logs an error. Pull Request fields still read and
 - **Who**: a signed-in Editor of the whole plan (the owner, the plan's team, a whole-plan Editor link), as the plan's
   webhooks are: never an API token, a workbench session, a guest, a Participant, a Viewer or a link to one tab. A
   plan in Browser Storage has no connection (deliveries reach the server, not a browser).
-- **How**: the plan's GitHub dialog asks the api to start a connection, and the api answers the App's install page
+- **Where**: the Automations screen's **GitHub** view ([Automations](automations.md#github-triggers)), reached from
+  the screen's header, from the GitHub group of Pick a Trigger, and from a GitHub trigger's panel in the builder.
+- **How**: the GitHub view asks the api to start a connection, and the api answers the App's install page
   with a one-time **state** naming the plan (kept by the plan, as a hash, for 10 minutes, `CONNECT_STATE_TTL_MS`).
   On GitHub the person installs the App (or opens an installation they already have) and chooses its repositories;
   GitHub sends them back to the api's callback with the installation and a code. The state is spent first, once,
@@ -122,17 +127,18 @@ route answers 404, and nothing logs an error. Pull Request fields still read and
   repository already connected to 20 plans (`PLANS_PER_REPOSITORY_MAX`) is not chosen.
 - **What is kept**: the installation's id and account name, each repository the person could reach (its id,
   `owner/name` and whether it is private) and whether it is chosen, who connected it (as a card's history names a
-  person) and when, and the plan's GitHub rules (part 3).
+  person) and when. (Part 3 kept two column rules here; part 4 dropped them: the `rules` column stays empty.)
 - **Private repositories**: a pull request's title and state reach everyone who can see the card, public share links
   included. Connecting a private repository to a plan that has a public link says so first ("Anyone with this plan's
   link will see these pull requests' titles and states").
-- **Disconnecting** (any Editor who may connect) drops the connection, its rules and the state it holds; the cards'
-  fields stay as addresses. Removing a repository from the installation on GitHub drops it from every plan;
+- **Disconnecting** (any Editor who may connect, after an in-app **Disconnect GitHub?** confirm) drops the connection
+  and the state it holds; the cards' fields stay as addresses, and the plan's GitHub-triggered rules stay, hearing
+  nothing until it connects again. Removing a repository from the installation on GitHub drops it from every plan;
   uninstalling the App drops every plan's connection to it.
 
 ### Storage
 
-liveplanner has no D1. The **plan's Durable Object** keeps its own connection, rules and the latest state of each
+liveplanner has no D1. The **plan's Durable Object** keeps its own connection and the latest state of each
 linked pull request: the source of truth. The **`GITHUB_LINKS` KV namespace** keeps only the reverse index a delivery
 needs, one key per pair so two plans connecting at once never overwrite each other: `repo:{repository id}:{plan id}`
 for each chosen repository and `installation:{installation id}:{plan id}` for the installation, written from the
@@ -198,30 +204,41 @@ the editor:
   changed since the plan connected) shows its short name alone, as part 1 drew it.
 - **Disconnecting**, or a repository leaving the plan, drops the states it held; every screen drops them at once.
 
-## GitHub rules
+## GitHub triggers
 
-A connected plan has two GitHub rules, each off until an Editor picks a column (status) for it:
+A connected plan's linked pull requests start the plan's [Automations](automations.md#github-triggers): four triggers in
+Pick a Trigger's **GitHub** group, each an ordinary rule with any conditions and actions. "Move to In Review when a pull
+request opens" and "Move to Done when it merges" are two rules, so a team picks its own columns, adds a label or a
+comment, and turns either off, with the Audit Trail saying what each did.
 
-- **When a linked pull request opens**: opened ready for review, reopened, or a draft marked ready for review. A
-  draft opening is not yet open.
-- **When a linked pull request merges**: closed as merged. Closed without merging moves nothing.
+| Trigger                 | Starts when a linked pull request                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------- |
+| **Pull Request Opened** | opens ready for review, is reopened, or a draft is marked ready for review (a draft is not) |
+| **Pull Request Merged** | is closed as merged                                                                         |
+| **Pull Request Closed** | is closed without merging                                                                   |
+| **Checks Finished**     | has its checks turn Failing (or, picked instead, Passing), open or a draft                  |
 
-The rules belong to the plan's GitHub connection: they are kept with it, set by the same Editors who connect it
-(`PUT /api/projects/:id/github/rules`), and go when it goes. A column that is no board's any longer stops its rule
-moving cards until an Editor picks again. A move keeps every rule a manual move keeps: a card whose type leaves the
-column's status out ([The statuses a type uses](item-types.md#the-statuses-a-type-uses)) stays where it is; a card
-already there, in the Trash or archived is left alone. A move lands the card at the end of its new column, as a drop
-there would, raises the plan's Automations as a move does, and is a history entry **by GitHub** (GitHub's mark and
-name, "Moved To Implemented"), never by the person who connected the plan. A pull request that links up to 20 cards
-moves up to 20 (`MENTIONS_MAX` by mention, plus its fields' cards, at most 50 in all, `RULE_MOVES_MAX`).
+- **The cards**: the rule runs once on each card the pull request links ([How a card names its pull
+  requests](#how-a-card-names-its-pull-requests)): its Pull Request fields, its Link fields, and the cards its title
+  or body names, up to 50 cards a delivery (`RULE_MOVES_MAX`).
+- **Once, never backwards**: each delivery is acted on once ([Deliveries](#deliveries)), and a run's id is the
+  delivery's and the card's, so GitHub's redelivery runs nothing twice. A delivery older than the state the plan holds
+  ([Out of order](#pull-request-state-on-cards)) starts no rule, so a late "opened" never follows a "merged". Checks
+  Finished fires when the pull request's checks change into Failing (or Passing), not on each suite that agrees.
+- **By GitHub**: a GitHub-triggered rule's writes are by **GitHub** in card history (GitHub's mark, "GitHub · Move on
+  Merge"), and its Who Did It (`{{person}}`) reads "GitHub". Nobody is behind it, so it can't check Who Did It or
+  assign or email whoever triggered it, as a time trigger can't.
+- **Off when the App is**: with the App's settings missing, Pick a Trigger shows no GitHub group and the screen no
+  GitHub entry. A GitHub rule saved before stays, and hears nothing. A plan that is not connected may save one too:
+  its trigger panel says to connect first.
 
 ## Who may do what
 
-| Role            | The Pull Request field                         | The GitHub connection and rules                                                 |
-| --------------- | ---------------------------------------------- | ------------------------------------------------------------------------------- |
-| **Editor**      | Sets, changes and clears it; opens it          | Connects, chooses repositories, sets rules, disconnects (signed in, whole plan) |
-| **Participant** | Sets, changes and clears it, as any card field | Sees states and GitHub's moves; never connects or sets rules                    |
-| **Viewer**      | Sees it and opens it on GitHub                 | Sees states and GitHub's moves                                                  |
+| Role            | The Pull Request field                         | The GitHub connection and rules                                                          |
+| --------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **Editor**      | Sets, changes and clears it; opens it          | Connects, chooses repositories, disconnects (signed in, whole plan); writes GitHub rules |
+| **Participant** | Sets, changes and clears it, as any card field | Sees states and GitHub's moves; never connects or writes rules                           |
+| **Viewer**      | Sees it and opens it on GitHub                 | Sees states and GitHub's moves                                                           |
 
 A tab-scoped Editor link may set the field on its tab's cards but never connects the plan, since a connection acts
 on the whole plan.
@@ -235,9 +252,18 @@ check name.
 ## Agents
 
 The plan agents read and set a Pull Request field as its canonical address (`add_field` and `change_card_types` take
-the kind `pullrequest`; a value that is not a pull request is refused as `value_invalid` with the field's hint). Part
-4 adds each linked pull request's state to a card's listing; the api's `GET /items` already answers the states with
-the cards.
+the kind `pullrequest`; a value that is not a pull request is refused as `value_invalid` with the field's hint). The
+rule tools take the GitHub triggers as any other (`pull_request_opened`, `pull_request_merged`, `pull_request_closed`,
+`pull_request_checks` with `result`). Connecting stays a person's, in the browser. The api's `GET /items` answers the
+states with the cards.
+
+## Telemetry
+
+From the existing vocabulary: `Plan · Started · GithubConnect` (Connect GitHub pressed), `Plan · Linked · Github`
+(back connected), `Plan · Ended · GithubConnectFailed` (back failed), `Plan · Ended · GithubConnectRequested` (an
+organisation's owner must approve), `Plan · Unlinked · Github` (disconnected), and `Plan · Created ·
+AutomationRuleGithub` beside `AutomationRule` when a new rule with a GitHub trigger is saved. None carries a
+repository, a pull request or a title.
 
 ## Limits
 
@@ -249,7 +275,7 @@ the cards.
 | `PULL_REQUESTS_KEPT`               | 500    | A plan's recent pull requests; older ones show no state   |
 | `CHECK_SUITES_KEPT`                | 2,000  | Several suites for each recent commit                     |
 | `PULL_REQUEST_TITLE_MAX`           | 256    | GitHub's own cap on a pull request's title                |
-| `RULE_MOVES_MAX`                   | 50     | Bounds one delivery's card moves                          |
+| `RULE_MOVES_MAX`                   | 50     | Bounds the cards one delivery's GitHub triggers run on    |
 | `REPOSITORIES_MAX`                 | 20     | One plan, one team's repositories                         |
 | `PLANS_PER_REPOSITORY_MAX`         | 20     | Bounds one delivery's fan-out                             |
 | `INSTALLATION_REPOSITORIES_LISTED` | 100    | One page of GitHub's repository list                      |

@@ -107,6 +107,13 @@ export function readTrigger(v: unknown): AutomationTrigger {
       };
     case 'overdue':
       return { kind: 'overdue', at: clock(t['at'], 'trigger.at') };
+    case 'pull_request_checks':
+      if (t['result'] !== 'failing' && t['result'] !== 'passing')
+        refuse('trigger.result', 'trigger.result must be failing or passing');
+      return { kind: 'pull_request_checks', result: t['result'] as 'failing' | 'passing' };
+    case 'pull_request_opened':
+    case 'pull_request_merged':
+    case 'pull_request_closed':
     case 'incoming_webhook':
     case 'card_archived':
     case 'card_restored':

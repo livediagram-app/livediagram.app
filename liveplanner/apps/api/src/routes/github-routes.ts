@@ -7,16 +7,14 @@
 //   GET    /github               the connection, or null
 //   POST   /github/connect       a one-time state and the App's install page on GitHub to send the person to
 //   PUT    /github/repositories  the repositories to connect, from the ones the connection lists
-//   PUT    /github/rules         the two GitHub rules: the column a linked pull request's card moves to when it opens,
-//                                and when it merges (part 3, spec "GitHub rules")
-//   DELETE /github               the connection gone, its rules and the pull request states it held with it
+//   DELETE /github               the connection gone, the pull request states it held with it
+// (Part 3's PUT /github/rules went in part 4: the plan's Automations hear pull requests instead.)
 import type {
   GithubConnectionResponse,
   GithubConnectStartResponse,
   GithubRepositoriesRequest,
-  GithubRules,
 } from '@liveplanner/api-schema';
-import { planOutline, type ItemPerson } from '@liveplanner/items';
+import type { ItemPerson } from '@liveplanner/items';
 import { getProject } from '../db';
 import { installationRepositories } from '../github/github-api';
 import { githubConfig, REPOSITORIES_MAX, type GithubConfig } from '../github/github-config';
@@ -29,11 +27,9 @@ import {
   dropConnection,
   linksOf,
   readConnection,
-  saveRules,
 } from '../plan-room/github/github-store';
 import { json, methodNotAllowed, noContent } from '../responses';
 import { writer } from './item-route-kit';
-import { planTabs } from './plan-route';
 import { gateEdit, missingProject, readBody, requireOwner, type PlanRouteContext } from './context';
 
 type Gated = { config: GithubConfig; projectId: string; by: ItemPerson };
@@ -110,29 +106,6 @@ async function choose(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   return view(ctx, g);
 }
 
-// A rule's column: a status of 1 to 64 characters, or null for off.
-const ruleOf = (v: unknown): string | null | undefined =>
-  v === null ? null : typeof v === 'string' && v.length > 0 && v.length <= 64 ? v : undefined;
-
-async function setRules(ctx: PlanRouteContext, g: Gated): Promise<Response> {
-  const raw = await readBody(ctx);
-  if (raw instanceof Response) return raw;
-  const db = ctx.env.PLAN_DB;
-  if (!(await readConnection(db, g.projectId))) return refuse(409, 'github_not_connected');
-  const body = raw as Partial<Record<keyof GithubRules, unknown>>;
-  const rules = { opened: ruleOf(body.opened), merged: ruleOf(body.merged) };
-  if (rules.opened === undefined || rules.merged === undefined)
-    return refuse(400, 'github_invalid');
-  // Each a column one of the plan's boards names.
-  const { statuses } = planOutline(await planTabs(ctx, g.projectId, null), null);
-  const named = new Set(statuses.map((s) => s.status));
-  for (const r of [rules.opened, rules.merged])
-    if (r !== null && !named.has(r)) return refuse(400, 'github_invalid');
-  await saveRules(db, g.projectId, rules as GithubRules);
-  console.info('[github] rules', { opened: rules.opened !== null, merged: rules.merged !== null });
-  return view(ctx, g);
-}
-
 async function disconnect(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   const db = ctx.env.PLAN_DB;
   const before = await readConnection(db, g.projectId);
@@ -158,7 +131,6 @@ function doorOf(ctx: PlanRouteContext): Door | 'method' | null {
   if (segments.length !== 5) return null;
   if (segments[4] === 'connect') return method === 'POST' ? connect : 'method';
   if (segments[4] === 'repositories') return method === 'PUT' ? choose : 'method';
-  if (segments[4] === 'rules') return method === 'PUT' ? setRules : 'method';
   return null;
 }
 

@@ -13,6 +13,7 @@ import type { AutomationListedRule } from '@liveplanner/api-schema';
 import {
   AUTOMATION_NAME_MAX,
   AUTOMATION_PICK_WORDS,
+  isGithubTrigger,
   isPersonless,
   picksLeft,
   runsWithoutCard,
@@ -25,6 +26,7 @@ import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import type { AutomationOutline } from './automation-outline';
 import { AutomationRefusal, type AutomationsScope } from './automations-client';
+import { useGithubAutomations } from './github/github-automations';
 import { IncomingRuleProvider, type IncomingRule } from './incoming-rule';
 import { PlanWebhooksProvider, usePlanWebhooksState } from './plan-webhooks';
 import {
@@ -117,6 +119,14 @@ export function RuleBuilder({
   const [testing, setTesting] = useState(false);
   const dirty = !rule || !sameBody(body, saved);
   useEffect(() => onDirty(dirty), [dirty, onDirty]);
+  // A new rule as it stands, for Connect GitHub to keep for the round trip (github-return.ts).
+  const github = useGithubAutomations();
+  const keepDraft = github?.keepDraft;
+  useEffect(() => {
+    if (!keepDraft || rule) return;
+    keepDraft({ ...body, timeZone });
+    return () => keepDraft(null);
+  }, [keepDraft, rule, body, timeZone]);
   const pickMarks = useMemo(
     () => new Map(picksLeft(body, picks).map((p) => [p.path, AUTOMATION_PICK_WORDS[p.pick]])),
     [body, picks],
@@ -140,7 +150,10 @@ export function RuleBuilder({
     setSaving(true);
     try {
       const next = await api.save(rule?.id ?? null, { ...body, timeZone });
-      if (!rule) track('Plan', 'Created', 'AutomationRule');
+      if (!rule) {
+        track('Plan', 'Created', 'AutomationRule');
+        if (isGithubTrigger(body.trigger)) track('Plan', 'Created', 'AutomationRuleGithub');
+      }
       setSaved(bodyOf(next));
       setBody(bodyOf(next));
       setFault(null);

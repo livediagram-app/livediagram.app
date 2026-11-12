@@ -30,6 +30,13 @@ describe('fieldsSetByAutomation', () => {
     expect([...fields]).toEqual(['due']);
   });
 
+  it('marks a field a GitHub-triggered rule set', () => {
+    const fields = fieldsSetByAutomation([
+      { at: 1, by, tag: 'automation_github', changes: [{ kind: 'set', field: 'status' }] },
+    ]);
+    expect([...fields]).toEqual(['status']);
+  });
+
   it('marks a field an AI action set', () => {
     const fields = fieldsSetByAutomation([
       { at: 1, by, tag: 'automation_ai', changes: [{ kind: 'set', field: 'priority' }] },

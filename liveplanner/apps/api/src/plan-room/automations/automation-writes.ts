@@ -80,6 +80,11 @@ function refusalOf(plan: AutomationPlan, next: Item, before: Item): string | nul
   return fieldsWithinBounds(next.fields) ? 'The card would be too big' : null;
 }
 
+// A rule's history tag: GitHub's when a GitHub trigger started the run (docs/specs/026-plan/github-pull-requests.md
+// "GitHub triggers").
+const historyTag = (source: HistorySource): 'automation' | 'automation_github' =>
+  source.via === 'github' ? 'automation_github' : 'automation';
+
 // The one write to the triggering card: the patch, as a move when it changes the column (so the card goes to the
 // end of its new column, as a drop would put it).
 // `tag`: the history line's, 'automation_ai' for an AI step's write.
@@ -93,6 +98,7 @@ export async function patchCard(
   tag: 'automation' | 'automation_ai' = 'automation',
 ): Promise<WriteOutcome> {
   const by = automationPerson(rule.name);
+  const line = tag === 'automation' ? historyTag(source) : tag;
   for (let attempt = 1; attempt <= ITEM_WRITE_RETRIES; attempt += 1) {
     const now = Date.now();
     const before = await readItem(deps.env, deps.planId, cardId);
@@ -118,7 +124,7 @@ export async function patchCard(
     const rev = await updateItemAtRev(deps.env, deps.planId, next, before.rev);
     if (rev === null) continue;
     deps.relay([next], rev);
-    await appendItemHistory(deps.env, deps.planId, [{ before, after: next }], tag, source);
+    await appendItemHistory(deps.env, deps.planId, [{ before, after: next }], line, source);
     return { ok: true };
   }
   return { ok: false, reason: 'The card kept changing' };
@@ -170,7 +176,7 @@ async function createCard(
         deps.env,
         deps.planId,
         [{ before: null, after: made }],
-        'automation',
+        historyTag(source),
         source,
       );
       return { ok: true };

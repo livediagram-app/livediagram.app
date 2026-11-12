@@ -5,17 +5,28 @@
 // Automation comment's link to its rule all read one value, and none of them draws for anyone else.
 
 import { createContext, use } from 'react';
-import type { AutomationTemplateId } from '@liveplanner/items';
+import type { AutomationRuleBody, AutomationTemplateId } from '@liveplanner/items';
 import type { AutomationsScope } from './automations-client';
+import type { GithubResult } from './github/github-hash';
 
-// Where the screen opens: the Rules list, one rule's builder (null: a new rule, blank or from a template), the Run
-// Log (one rule's runs), or the Templates tab.
+// Where the screen opens: the Rules list, one rule's builder (null: a new rule, blank, from a template, or the draft
+// kept for the round trip to GitHub), the Run Log (one rule's runs), the Templates tab, or the GitHub view (with how a
+// round trip to GitHub went).
 export type AutomationsTarget =
   | { view: 'rules' }
-  // `draft`: the rule Describe a Rule drafted, which the screen holds (never in the address).
-  | { view: 'rule'; ruleId: string | null; template?: AutomationTemplateId; draft?: true }
+  // `draft`: the rule Describe a Rule drafted, which the screen holds (never in the address). `kept`: the rule kept
+  // for the round trip to GitHub, with how it went.
+  | {
+      view: 'rule';
+      ruleId: string | null;
+      template?: AutomationTemplateId;
+      draft?: true;
+      kept?: AutomationRuleBody;
+      github?: GithubResult;
+    }
   | { view: 'runs'; ruleId?: string }
-  | { view: 'templates' };
+  | { view: 'templates' }
+  | { view: 'github'; result?: GithubResult };
 
 export type AutomationsAccess = {
   scope: AutomationsScope;

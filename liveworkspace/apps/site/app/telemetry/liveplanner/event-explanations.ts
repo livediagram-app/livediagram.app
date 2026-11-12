@@ -763,6 +763,15 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone linked an existing card to this one from a Linked as section (Link Existing).',
   'Plan|Linked|LinkedCardMoved':
     'Someone moved an existing card’s link to this one from a Linked as section (Link Existing), after confirming the move.',
+  'Plan|Started|GithubConnect':
+    'Someone pressed Connect GitHub in Automations and went to GitHub to install the App.',
+  'Plan|Linked|Github': 'Someone came back from GitHub with the plan connected to it.',
+  'Plan|Ended|GithubConnectFailed': 'Someone came back from GitHub without the plan connected.',
+  'Plan|Ended|GithubConnectRequested':
+    "Someone came back from GitHub waiting for an organisation's owner to approve the install.",
+  'Plan|Unlinked|Github': 'Someone disconnected the plan from GitHub in Automations.',
+  'Plan|Created|AutomationRuleGithub':
+    'Someone saved a new automation rule started by a pull request on GitHub.',
   'Plan|Tested|AutomationRule':
     'Someone tried an automation rule with Test on a Card, which shows what it would do and changes nothing.',
   'Plan|Ran|AutomationManual':

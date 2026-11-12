@@ -4,7 +4,7 @@
 import type { AutomationTrigger, AutomationTriggerKind } from '@liveplanner/items';
 import { freshTimeTrigger } from './step-panels/TimeTriggerPanel';
 
-export type TriggerGroupId = 'cards' | 'comments' | 'links' | 'times' | 'tools';
+export type TriggerGroupId = 'cards' | 'comments' | 'links' | 'times' | 'github' | 'tools';
 
 export const TRIGGER_GROUPS: readonly {
   id: TriggerGroupId;
@@ -29,6 +29,17 @@ export const TRIGGER_GROUPS: readonly {
   { id: 'comments', name: 'Comments', kinds: ['comment_added', 'threads_resolved', 'mentioned'] },
   { id: 'links', name: 'Links', kinds: ['card_unblocked', 'related_done'] },
   { id: 'times', name: 'Times', kinds: ['scheduled', 'due_in', 'overdue', 'stuck'] },
+  // Only where the deployment has liveplanner's GitHub App (offeredGroups).
+  {
+    id: 'github',
+    name: 'GitHub',
+    kinds: [
+      'pull_request_opened',
+      'pull_request_merged',
+      'pull_request_closed',
+      'pull_request_checks',
+    ],
+  },
   { id: 'tools', name: 'Other Tools', kinds: ['incoming_webhook'] },
 ];
 
@@ -55,7 +66,20 @@ export const TRIGGER_LINES: Readonly<Record<AutomationTriggerKind, string>> = {
   stuck: 'Daily at a time: cards that have not changed for a number of days, outside done columns.',
   incoming_webhook:
     'Another tool, such as CI or a form, sends this rule’s address JSON, proved with its secret.',
+  pull_request_opened:
+    'A linked pull request opens ready for review, reopens, or leaves draft. Runs on each card it links.',
+  pull_request_merged: 'A linked pull request merges. Runs on each card it links.',
+  pull_request_closed: 'A linked pull request closes without merging. Runs on each card it links.',
+  pull_request_checks:
+    'A linked pull request’s checks turn failing, or passing. Runs on each card it links.',
 };
+
+/** The groups Pick a Trigger offers: GitHub's only where the deployment has the App, or for a rule already on one. */
+export const offeredGroups = (githubEnabled: boolean, current?: AutomationTriggerKind) =>
+  TRIGGER_GROUPS.filter(
+    (g) =>
+      g.id !== 'github' || githubEnabled || (current !== undefined && g.kinds.includes(current)),
+  );
 
 export const isTimeKind = (kind: AutomationTriggerKind): boolean =>
   kind === 'scheduled' || kind === 'due_in' || kind === 'overdue' || kind === 'stuck';
@@ -74,6 +98,8 @@ export function freshTrigger(
       return { kind, status: columns[0] ?? '', limit: 5 };
     case 'related_done':
       return { kind, related: 'children' };
+    case 'pull_request_checks':
+      return { kind, result: 'failing' };
     case 'scheduled':
     case 'due_in':
     case 'overdue':

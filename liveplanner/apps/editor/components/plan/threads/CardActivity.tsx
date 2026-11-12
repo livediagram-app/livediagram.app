@@ -160,7 +160,11 @@ function ActivityRun({
       <div className="min-w-0 flex-1">
         <div className="flex min-h-6 items-center gap-2">
           {run.automation ? (
-            <AutomationAuthorName rule={run.by.name} className="text-[13px]" />
+            <AutomationAuthorName
+              rule={run.by.name}
+              author={run.github ? 'GitHub' : undefined}
+              className="text-[13px]"
+            />
           ) : (
             <span className="min-w-0 truncate text-[13px] font-semibold text-slate-900 dark:text-slate-50">
               {run.github ? 'GitHub' : run.mine ? 'You' : run.by.name}

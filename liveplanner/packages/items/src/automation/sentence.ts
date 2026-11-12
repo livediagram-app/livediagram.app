@@ -63,6 +63,10 @@ export const AUTOMATION_TRIGGER_NAMES: Readonly<Record<AutomationTriggerKind, st
   related_done: 'Related Cards Done',
   column_limit: 'Column Over Limit',
   stuck: 'Card Stuck',
+  pull_request_opened: 'Pull Request Opened',
+  pull_request_merged: 'Pull Request Merged',
+  pull_request_closed: 'Pull Request Closed',
+  pull_request_checks: 'Checks Finished',
 };
 
 export const AUTOMATION_CONDITION_NAMES: Readonly<Record<AutomationCondition['kind'], string>> = {
@@ -421,6 +425,9 @@ export function triggerParts(
         { word: 'past' },
         { chip: String(trigger.limit) },
       );
+      break;
+    case 'pull_request_checks':
+      parts.push({ word: 'as' }, { chip: trigger.result === 'failing' ? 'Failing' : 'Passing' });
       break;
     default:
       break;

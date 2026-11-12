@@ -136,6 +136,24 @@ describe('GitHub’s moves', () => {
   });
 });
 
+describe('a GitHub-triggered rule’s writes', () => {
+  it('are Automation’s run by GitHub, apart from a rule’s plain writes and GitHub’s own', () => {
+    const [day] = activityTimeline(
+      [
+        entry(at(31, 12, 3), undefined, { tag: 'automation_github' }),
+        entry(at(31, 12, 2), undefined, { tag: 'automation' }),
+        entry(at(31, 12, 1), undefined, { tag: 'github' }),
+      ],
+      NOW,
+    );
+    expect(day!.runs.map((r) => [r.automation, r.github])).toEqual([
+      [true, true],
+      [true, false],
+      [false, true],
+    ]);
+  });
+});
+
 describe('an AI action’s writes', () => {
   it('are Automation’s, marked AI, in a run apart from a rule’s plain writes', () => {
     const [day] = activityTimeline(

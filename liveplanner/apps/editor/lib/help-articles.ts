@@ -62,6 +62,8 @@ export const HELP_ARTICLES = {
   // Automations (docs/specs/026-plan/automations.md "The Automations screen": How Rules Work). The Plan section's
   // landing until the Automations article lands; then its own path.
   planAutomations: 'plan/automations',
+  // Connect GitHub (docs/specs/026-plan/automations.md "The GitHub view": How It Works).
+  planGithub: 'plan/connect-github',
   links: 'plan/dashboards',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -123,6 +125,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   planAutomations: {
     title: 'Learn about automations',
     description: 'Rules that move, assign and tell people about cards for you.',
+  },
+  planGithub: {
+    title: 'Learn about connecting GitHub',
+    description: 'Pull request states on cards, and rules that run when one opens or merges.',
   },
   planCardActivity: {
     title: 'Learn about card activity',

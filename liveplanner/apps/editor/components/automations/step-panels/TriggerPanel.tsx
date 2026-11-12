@@ -3,9 +3,11 @@
 // The When panel (docs/specs/026-plan/automations.md "Triggers"): which trigger starts the rule, a card's or a
 // time's (picked in the Pick a Trigger picker, ChangeTriggerField), then what narrows it: Card Created's column, Form Response's Form tab, Card Moved's From and To columns,
 // Field Changed's fields (at least one), nothing for Comment Added and Run from a Card, and a time trigger's
-// schedule (TimeTriggerPanel), and an Incoming Webhook's address and secret (IncomingWebhookPanel).
+// schedule (TimeTriggerPanel), an Incoming Webhook's address and secret (IncomingWebhookPanel), and a GitHub trigger's
+// result and connection (GithubTriggerFields).
 
-import { isTimeTrigger, type AutomationTrigger } from '@liveplanner/items';
+import { isGithubTrigger, isTimeTrigger, type AutomationTrigger } from '@liveplanner/items';
+import { GithubTriggerFields } from '../github/GithubTriggerFields';
 import { outlineFields, type AutomationOutline } from '../automation-outline';
 import { ChipToggles, PanelField, PanelNote, PanelSelect } from './panel-parts';
 import { IncomingWebhookPanel } from './IncomingWebhookPanel';
@@ -147,6 +149,9 @@ export function TriggerPanel({
         />
       ) : null}
       {trigger.kind === 'incoming_webhook' ? <IncomingWebhookPanel /> : null}
+      {isGithubTrigger(trigger) ? (
+        <GithubTriggerFields trigger={trigger} onChange={onChange} />
+      ) : null}
       {trigger.kind === 'mentioned' ? (
         <ChipToggles
           label="Mentioning"

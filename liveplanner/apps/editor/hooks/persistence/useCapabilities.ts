@@ -9,15 +9,17 @@ import { apiGetCapabilities } from '@/lib/api-client';
 // The result is stable for the lifetime of the page; no polling needed
 // because capabilities are determined by deployment config, not runtime
 // state.
-export function useCapabilities(enabled = true): { emailEnabled: boolean } {
-  const [emailEnabled, setEmailEnabled] = useState(false);
+// `githubEnabled`: the deployment has liveplanner's GitHub App (docs/specs/026-plan/github-pull-requests.md "The App");
+// the Automations screen reads it from the same one read (apiGetCapabilities shares it), never the board.
+export function useCapabilities(enabled = true): { emailEnabled: boolean; githubEnabled: boolean } {
+  const [caps, setCaps] = useState({ emailEnabled: false, githubEnabled: false });
 
   useEffect(() => {
     if (!enabled) return;
-    void apiGetCapabilities().then((caps) => {
-      setEmailEnabled(caps.emailEnabled ?? false);
+    void apiGetCapabilities().then((c) => {
+      setCaps({ emailEnabled: c.emailEnabled ?? false, githubEnabled: c.githubEnabled === true });
     });
   }, [enabled]);
 
-  return { emailEnabled };
+  return caps;
 }

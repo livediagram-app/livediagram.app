@@ -3089,6 +3089,66 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "at"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "pull_request_opened",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "pull_request_merged",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "pull_request_closed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "pull_request_checks",
+            "type": "string"
+          },
+          "result": {
+            "enum": [
+              "failing",
+              "passing"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "result"
+        ],
+        "type": "object"
       }
     ]
   },
@@ -7118,9 +7178,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/GithubRepositoryView"
         },
         "type": "array"
-      },
-      "rules": {
-        "$ref": "#/components/schemas/GithubRules"
       }
     },
     "required": [
@@ -7128,8 +7185,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "account",
       "connectedBy",
       "connectedAt",
-      "repositories",
-      "rules"
+      "repositories"
     ],
     "type": "object"
   },
@@ -7173,33 +7229,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "chosen"
     ],
     "type": "object"
-  },
-  "GithubRules": {
-    "additionalProperties": false,
-    "description": "A connected plan's two GitHub rules (docs/specs/026-plan/github-pull-requests.md \"GitHub rules\"): the column (a status) a linked pull request's card moves to when it opens, and when it merges; null for a rule that is off.",
-    "properties": {
-      "merged": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "opened": {
-        "type": [
-          "string",
-          "null"
-        ]
-      }
-    },
-    "required": [
-      "opened",
-      "merged"
-    ],
-    "type": "object"
-  },
-  "GithubRulesRequest": {
-    "$ref": "#/components/schemas/GithubRules",
-    "description": "PUT /api/projects/:id/github/rules: both rules, each a status a board of the plan names, or null for off."
   },
   "HeroCaption": {
     "additionalProperties": false,
@@ -8177,7 +8206,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "repeat",
       "automation",
       "automation_ai",
-      "github"
+      "github",
+      "automation_github"
     ],
     "type": "string"
   },

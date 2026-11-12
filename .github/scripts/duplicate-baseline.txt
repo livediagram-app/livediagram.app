@@ -67,7 +67,7 @@ livedesign/apps/live/hooks/canvas/useEditorContextMenu.ts	livediagram/apps/edito
 livedesign/apps/live/hooks/canvas/useEraserConfig.ts	livediagram/apps/editor/hooks/canvas/useEraserConfig.ts
 livedesign/apps/live/hooks/canvas/useLaserConfig.ts	livediagram/apps/editor/hooks/canvas/useLaserConfig.ts	livedocuments/apps/editor/hooks/canvas/useLaserConfig.ts
 livedesign/apps/live/hooks/editor/useModeDefaultTool.ts	livedocuments/apps/editor/hooks/editor/useModeDefaultTool.ts
-livedesign/apps/live/hooks/persistence/useCapabilities.ts	livedocuments/apps/editor/hooks/persistence/useCapabilities.ts	livehuddle/apps/editor/hooks/persistence/useCapabilities.ts	liveplanner/apps/editor/hooks/persistence/useCapabilities.ts
+livedesign/apps/live/hooks/persistence/useCapabilities.ts	livedocuments/apps/editor/hooks/persistence/useCapabilities.ts	livehuddle/apps/editor/hooks/persistence/useCapabilities.ts
 livedesign/apps/live/hooks/persistence/useSignedGuestId.ts	livedocuments/apps/editor/hooks/persistence/useSignedGuestId.ts	liveplanner/apps/editor/hooks/persistence/useSignedGuestId.ts
 livedesign/apps/live/hooks/ui/useCornerDocking.ts	livediagram/apps/editor/hooks/ui/useCornerDocking.ts	livedocuments/apps/editor/hooks/ui/useCornerDocking.ts
 livedesign/apps/live/hooks/ui/useEditorAccent.ts	livediagram/apps/editor/hooks/ui/useEditorAccent.ts	livedocuments/apps/editor/hooks/ui/useEditorAccent.ts	livehuddle/apps/editor/hooks/ui/useEditorAccent.ts	liveplanner/apps/editor/hooks/ui/useEditorAccent.ts
