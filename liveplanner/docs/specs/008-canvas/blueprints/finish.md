@@ -339,7 +339,12 @@ is. `svgChecklistShape`, `svgLegendShape` and a stored tab window's frame letter
   `<g data-marker-ink>` after it, and a `[data-marker-grid]` (a table)'s cell borders joined into whole rules
   (`marker-grid-rules.ts`; the marks it sets are named in `face-finish-marks.ts`). A take skips a busy board's card
   whose contents the browser skips (`offScreenCard`: `checkVisibility` with `contentVisibilityAuto` on its first child;
-  plan-board.md "A busy board").
+  plan-board.md "A busy board"), and hands the cards it skipped to `face-arrivals.ts` `watchFaceArrivals`: one
+  `IntersectionObserver` (implicit root, so the board's scroll box clips it) per pass watches only those cards, and a
+  card entering the view re-takes the face (`take('frame')`) once the arrivals pause (`SKETCH_INK_SETTLE_MS` after the
+  last, at most `SKETCH_INK_MAX_WAIT_MS` after the first). A card is counted once per arrival (a `WeakSet`, cleared
+  when it leaves the view), so a card the take still skips in view never re-takes in a loop. No scroll listener: the
+  observer fires only when a skipped card crosses into view.
   - A take sets `data-marker-taking` on the root for its whole length; face-finish.css holds `transition: none` under
     it, and reads a hovered `.plan-card-hover` at its resting `--card-line`. It reads every part first (sizes, computed
     style, the part's drawing) and only then runs each part's write (its ink, `data-marker-drawn`, isolation), then

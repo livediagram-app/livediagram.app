@@ -1345,7 +1345,10 @@ theme, with the page answering throughout.
   cards it moved: a card showing another card (a Parent, a Card field, a Calculated field, its blockers) redraws when
   that card changes, never for another.
 - **Marker draws what is in view.** Marker's hand-drawn parts on a busy board are drawn on the cards in view, up to the
-  usual limit; a card scrolled into view takes them the next time the board settles after a change.
+  usual limit; a card scrolled into view takes them as soon as the scrolling pauses (the same short settle as an
+  edit's), on a computer and a phone alike, so every card in view keeps its marker line however far the board is
+  scrolled. Scrolling itself draws nothing: the board is redrawn only when a card it skipped comes into view, never on
+  every frame of the scroll.
 - **Sketch keeps the board.** Picking Sketch, or leaving it, keeps the board as it is (its scroll, its collapsed
   columns): only its drawing changes.
 
