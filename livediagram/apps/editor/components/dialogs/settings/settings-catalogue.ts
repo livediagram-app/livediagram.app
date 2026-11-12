@@ -767,8 +767,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       }),
       uiScalePartRow('toolbar', {
         label: 'Toolbar Scale',
-        keywords: 'toolbar strip top bar menu button size bigger smaller zoom toolbar scale',
-        description: 'The toolbar strip and its menu button.',
+        keywords:
+          'toolbar strip top bar menu button draw dock flyouts size bigger smaller zoom toolbar scale',
+        description: "The toolbar strip and its menu button, and Draw's dock and its flyouts.",
         changed: 'UiScaleToolbar',
       }),
       uiScalePartRow('cornerButtons', {

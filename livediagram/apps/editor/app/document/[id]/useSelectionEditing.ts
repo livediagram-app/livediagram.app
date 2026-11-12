@@ -20,6 +20,7 @@ import { hugCommittedText, hugsText } from '@/lib/text-hug';
 import { measureDrawnMindLabel, measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { fitMindLabel } from '@/lib/mind-label-fit';
 import { patchTab } from './editor-page-helpers';
+import { tablePatchChangesNothing } from '@/lib/table-patch';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
@@ -159,6 +160,9 @@ export function useSelectionEditing(opts: {
     commit((els) =>
       els.map((el) => {
         if (el.id !== elementId || el.type !== 'table') return el;
+        // Writing what the table holds keeps the same element, so the history pushes no empty step
+        // (docs/specs/009-elements/table-rows-fit-text.md "One step per edit").
+        if (tablePatchChangesNothing(el, patch)) return el;
         const next = { ...el, ...patch };
         // A row grows to fit the words a cell commit leaves in it, in this same commit
         // (docs/specs/009-elements/table-rows-fit-text.md): taller only, its top staying put. A style change (a

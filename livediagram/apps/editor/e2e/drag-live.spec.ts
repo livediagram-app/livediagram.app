@@ -224,3 +224,88 @@ test('a collaborator sees a whole-board drag live, as one layer', async ({
       .evaluate((el) => (el as HTMLElement).style.transform),
   ).toBe('');
 });
+
+// docs/specs/008-canvas/drag-preview.md "An element's isometric side faces ride with it": a collaborator viewing in
+// Isometric sees each box's raised side faces move with its top mid-drag, for a drag of a few dozen boxes (each rides
+// its own offset) and a whole-board one past RIDE_PLANE_MIN_NODES (200), where the layers carry one offset. The large
+// case stays at 300: under Isometric, Chromium's compositing of a moving 3D scene grows faster than linearly with the
+// board (measured on a dev build at 4x CPU throttle, a peer's first drag frame took 0.1 s at 300 boxes, 0.9 s at 600 and 5.7 s at
+// 1,200, the same with or without the side faces riding), so 1,200 outran the poll on CI without telling us anything
+// about the side faces. IsometricDepthLayer.ride.test.tsx covers the 1,200-element ride.
+const gridOf = (n: number) =>
+  Array.from({ length: n }, (_, i) => ({
+    id: `m${i}`,
+    type: 'shape',
+    shape: 'square',
+    x: 200 + (i % 40) * 140,
+    y: 200 + Math.floor(i / 40) * 100,
+    width: 100,
+    height: 60,
+    fillColor: '#ffffff',
+  }));
+
+// Where a page draws a box's top and its side faces, in canvas px, read in one go so both come from the same frame.
+const topAndSides = (page: Page, id: string) =>
+  page.locator(CANVAS).evaluate((root, id) => {
+    const at = (el: HTMLElement | null) => {
+      if (!el) return NaN;
+      const plane = el.parentElement?.closest<HTMLElement>('[data-ride-plane]');
+      const carried = /translate\(([-\d.e]+)px/.exec(plane?.style.transform ?? '');
+      return (
+        parseFloat(el.style.left || 'NaN') +
+        (parseFloat(el.style.translate) || 0) +
+        (carried ? parseFloat(carried[1]!) : 0)
+      );
+    };
+    return {
+      top: at(root.querySelector<HTMLElement>(`[data-element-id="${id}"]`)),
+      sides: at(root.querySelector<HTMLElement>(`[data-iso-column][data-ride-id="${id}"]`)),
+    };
+  }, id);
+
+// The box the owner presses and the collaborator watches: the middle of the first row. Selecting everything opens
+// the Quick Style panel on the left, which covers the first boxes of a board this wide.
+const HELD = 'm20';
+
+for (const n of [62, 300]) {
+  test(`a collaborator in Isometric sees side faces move with their tops in a ${n}-element drag`, async ({
+    page,
+    browser,
+    baseURL,
+  }) => {
+    test.slow();
+    const { ownerPage, peerPage, savedX } = await sharedBoard(page, browser, baseURL!, gridOf(n));
+    await expect(box(peerPage, HELD)).toBeAttached();
+    await peerPage.locator(CANVAS).click({ position: { x: 5, y: 5 } });
+    await peerPage.keyboard.press('i');
+    await expect(peerPage.locator(`${CANVAS} [data-iso-column]`).first()).toBeAttached();
+    const start = await topAndSides(peerPage, HELD);
+    expect(start.sides).toBe(start.top);
+
+    await ownerPage.keyboard.press('v');
+    await ownerPage.locator(CANVAS).click({ position: { x: 5, y: 5 } });
+    await ownerPage.keyboard.press('ControlOrMeta+a');
+    const r = (await box(ownerPage, HELD).boundingBox())!;
+    await ownerPage.mouse.move(r.x + r.width / 2, r.y + r.height / 2);
+    await ownerPage.mouse.down();
+    for (let i = 1; i <= 15; i++)
+      await ownerPage.mouse.move(r.x + r.width / 2 + i * 10, r.y + r.height / 2);
+
+    await expect
+      .poll(async () => (await topAndSides(peerPage, HELD)).top, { timeout: 5_000 })
+      .toBeGreaterThan(start.top + 20);
+    const mid = await topAndSides(peerPage, HELD);
+    expect(mid.sides).toBeCloseTo(mid.top, 2);
+    if (SHOTS) await peerPage.screenshot({ path: `${SHOTS}/drag-live-peer-isometric-${n}.png` });
+
+    await ownerPage.mouse.up();
+    // Together once it lands too, the preview handing over to the saved board.
+    await expect.poll(() => savedX(HELD), { timeout: 10_000 }).toBeGreaterThan(start.top);
+    const saved = (await savedX(HELD))!;
+    await expect
+      .poll(async () => (await topAndSides(peerPage, HELD)).top, { timeout: 5_000 })
+      .toBeCloseTo(saved, 2);
+    const landed = await topAndSides(peerPage, HELD);
+    expect(landed.sides).toBeCloseTo(landed.top, 2);
+  });
+}
