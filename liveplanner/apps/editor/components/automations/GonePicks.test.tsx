@@ -125,3 +125,19 @@ describe('a pick the plan no longer has', () => {
     expect(latest.conditions[0]).toEqual({ kind: 'column', statuses: [] });
   });
 });
+
+describe('Set Field from another field the plan no longer has', () => {
+  it('keeps the gone field shown under From Field', () => {
+    render(
+      <Panel
+        body={{
+          ...newRuleBody('R', 'UTC'),
+          steps: [{ kind: 'set_field', field: 'due', value: { from: 'f-gone' } }],
+        }}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    expect(select('From Field').value).toBe('f-gone');
+    expect(select('From Field').selectedOptions[0]!.textContent).toBe('A field no longer here');
+  });
+});
