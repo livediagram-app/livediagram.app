@@ -25,7 +25,7 @@ import {
   type CommunitySitemapEntry,
 } from '@liveworkspace/community';
 import type { Env } from './env';
-import { likePattern, POST_COLS, PUBLIC_POST, publicWhere, type PostRow } from './rows';
+import { POST_COLS, PUBLIC_POST, publicWhere, type PostRow } from './rows';
 
 const ORDER_BY: Record<CommunityListQuery['sort'], string> = {
   new: 'p.published_at DESC, p.id',
@@ -84,8 +84,9 @@ export async function listPosts(
     binds.push(tag);
   }
   for (const term of communitySearchTerms(query.q)) {
-    where.push("p.search_text LIKE ? ESCAPE '\\'");
-    binds.push(likePattern(term));
+    // `instr`, never a bound LIKE: D1 refuses a LIKE pattern over 50 bytes. Both sides are lower-cased already.
+    where.push('instr(p.search_text, ?) > 0');
+    binds.push(term);
   }
   const result = await env.COMMUNITY_DB.prepare(
     `SELECT ${POST_COLS} FROM posts p

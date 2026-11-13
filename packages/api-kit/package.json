@@ -14,6 +14,7 @@
     "./csv": "./src/csv.ts",
     "./d1-compound": "./src/d1-compound.ts",
     "./d1-compound-guard": "./src/d1-compound-guard.ts",
+    "./d1-like-guard": "./src/d1-like-guard.ts",
     "./embed-images": "./src/embed-images.ts",
     "./image-refs": "./src/image-refs.ts",
     "./oauth": "./src/oauth.ts",

@@ -123,30 +123,32 @@ export async function anonymisePlan(
 ): Promise<number> {
   const db = env.PLAN_DB;
   const now = Date.now();
-  const like = `%${personId}%`;
+  // `instr`, never a bound LIKE: Durable Object SQLite refuses a LIKE pattern over 50 bytes.
+  const needle = personId;
   const hashed = await itemPersonId(personId);
-  const hashLike = `%${hashed}%`;
+  const hashNeedle = hashed;
   const [tabs, items, threads, runs] = await db.batch([
     db
       .prepare(
         `SELECT t.id, t.data, t.rev FROM tabs t JOIN plan_tabs pt ON pt.tab_id = t.id
-          WHERE pt.plan_id = ?1 AND (t.data LIKE ?2 OR t.data LIKE ?3)`,
+          WHERE pt.plan_id = ?1 AND (instr(t.data, ?2) > 0 OR instr(t.data, ?3) > 0)`,
       )
-      .bind(planId, like, hashLike),
+      .bind(planId, needle, hashNeedle),
     db
-      .prepare('SELECT id, fields FROM items WHERE plan_id = ? AND fields LIKE ?')
-      .bind(planId, like),
+      .prepare('SELECT id, fields FROM items WHERE plan_id = ? AND instr(fields, ?) > 0')
+      .bind(planId, needle),
     // The cards' comment threads this plan stores: their comments, who started them, who resolved them and the
     // reactions on their comments (the last two by hashed id).
     db
       .prepare(
         `SELECT id, comments, created_by, resolved_by_id FROM card_threads
           WHERE plan_id = ?1
-            AND (comments LIKE ?2 OR created_by LIKE ?2 OR comments LIKE ?3 OR resolved_by_id = ?4)`,
+            AND (instr(comments, ?2) > 0 OR instr(created_by, ?2) > 0 OR instr(comments, ?3) > 0
+                 OR resolved_by_id = ?4)`,
       )
-      .bind(planId, like, hashLike, hashed),
+      .bind(planId, needle, hashNeedle, hashed),
     // The Audit Trail's runs a change of theirs started.
-    db.prepare('SELECT id, body FROM automation_runs WHERE body LIKE ?').bind(hashLike),
+    db.prepare('SELECT id, body FROM automation_runs WHERE instr(body, ?) > 0').bind(hashNeedle),
   ]);
   const writes: D1PreparedStatement[] = [];
   for (const tab of (tabs?.results ?? []) as { id: string; data: string; rev: number }[]) {
@@ -224,16 +226,16 @@ export async function anonymisePlan(
             SET created_by = CASE WHEN ${names('created_by')} THEN ?1 ELSE created_by END,
                 updated_by = CASE WHEN ${names('updated_by')} THEN ?1 ELSE updated_by END
           WHERE plan_id = ?2
-            AND (created_by LIKE ?5 OR updated_by LIKE ?5 OR created_by = ?4 OR updated_by = ?4)
+            AND (instr(created_by, ?5) > 0 OR instr(updated_by, ?5) > 0 OR created_by = ?4 OR updated_by = ?4)
             AND (${names('created_by')} OR ${names('updated_by')})`,
       )
-      .bind(ANONYMISED_AUTHOR, planId, hashed, personId, hashLike),
+      .bind(ANONYMISED_AUTHOR, planId, hashed, personId, hashNeedle),
     db
       .prepare(
         `UPDATE sheets SET updated_by = ?1
-          WHERE plan_id = ?2 AND updated_by LIKE ?4 AND ${personIdOf('updated_by')} = ?3`,
+          WHERE plan_id = ?2 AND instr(updated_by, ?4) > 0 AND ${personIdOf('updated_by')} = ?3`,
       )
-      .bind(ANONYMISED_AUTHOR, planId, hashed, hashLike),
+      .bind(ANONYMISED_AUTHOR, planId, hashed, hashNeedle),
     // Who connected the plan to GitHub (docs/specs/026-plan/github-pull-requests.md "Connecting a repository").
     db
       .prepare(

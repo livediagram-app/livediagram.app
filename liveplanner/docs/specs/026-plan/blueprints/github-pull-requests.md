@@ -315,8 +315,10 @@ head_sha, cards JSON, updated_at, seen_at)` with indexes on `(repo_id, head_sha)
   commit's suites folded by `checksOf`), `keysAtHead(db, repoId, sha)`, `dropPulls(db, repoIds | null)`, and the trims
   to `PULL_REQUESTS_KEPT` (by `seen_at`) and `CHECK_SUITES_KEPT` (by `updated_at`).
 - `github-cards.ts`: `mentionedCardIds(env, planId, numbers)` by `item_key`, out of the Trash; `fieldCardIds(env,
-planId, types, ref)`: the cards whose fields hold the pull request (`fields LIKE '%github.com/{owner}/{repo}/pull/{n}%'`,
-  `LIKE`'s wildcards escaped, case aside, each hit confirmed by `cardPullRequests`).
+planId, types, ref)`: the cards whose fields hold the pull request (`instr(lower(fields), ?) > 0` with
+  `github.com/{owner}/{repo}/pull/{n}` lower-cased, each hit confirmed by `cardPullRequests`). Never a bound
+  `LIKE` pattern: Durable Object SQLite refuses one over 50 bytes ("LIKE or GLOB pattern too complex"), and every
+  repository's address is longer.
 - `github-pulls.ts`: `actOnPullRequest(deps, delivery, now)` and `actOnCheckSuite`. A pull request: the plan's name
   read (`readPlanOutline`), its mentions read (`cardMentions` of title, a line break, body), the row upserted; a stale
   one (older `updated_at`) stops there. The changed status is sent (`send`). Then the rule: `opened` for `opened`,
@@ -370,7 +372,7 @@ planId, types, ref)`: the cards whose fields hold the pull request (`fields LIKE
 ### Performance and limits (part 3)
 
 - Per delivery, per plan: one row upsert, one mention lookup by `item_key` (indexed, at most 20 numbers), and, only
-  when a rule fires, one `LIKE` scan of the plan's `items.fields` in SQLite plus a read of the plan's tabs. The
+  when a rule fires, one `instr` scan of the plan's `items.fields` in SQLite plus a read of the plan's tabs. The
   measured cost on a 2,000-card plan is in `github-pulls.perf.test.ts` (`cpuMsOf`).
 - `GET /items` adds one read of the plan's kept statuses (at most 500) and `cardPullRequests` over the cards answered.
 - The editor redraws only the cards whose linked statuses change. A delivery on a 2,000-card board makes the lookups

@@ -3,13 +3,13 @@
 // the way D1 does: count UNION / INTERSECT / EXCEPT at each level of parentheses, per statement, ignoring what sits
 // in quotes and comments. No Worker imports this module.
 import { D1_COMPOUND_MAX } from './d1-compound';
+import { blankQuotedAndComments } from './sql-blank';
 
-const QUOTED = /'(?:[^']|'')*'|"(?:[^"]|"")*"|--[^\n]*|\/\*[\s\S]*?\*\//g;
 const COMPOUND = /\(|\)|;|\b(?:UNION(?:\s+ALL)?|INTERSECT|EXCEPT)\b/gi;
 
 export function assertD1Compound(query: string, max = D1_COMPOUND_MAX): void {
   let counts = [0];
-  for (const [token] of query.replace(QUOTED, ' ').matchAll(COMPOUND)) {
+  for (const [token] of blankQuotedAndComments(query).matchAll(COMPOUND)) {
     if (token === '(') counts.push(0);
     else if (token === ')') counts.pop();
     else if (token === ';') counts = [0];

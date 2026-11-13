@@ -116,6 +116,24 @@ describe('a rule on a GitHub trigger', () => {
     expect(moves.map((e) => e.tag)).toEqual(['automation_github']);
   });
 
+  it('finds a card by a long repository address, as Durable Object SQLite allows', async () => {
+    // Production refuses a LIKE pattern over 50 bytes; this address is 54 with its wildcards (2026-11-12).
+    await moveOn({ kind: 'pull_request_opened' }, 'review');
+    const res = await w.send('POST', '/api/projects/A/items', {
+      type: 'task',
+      fields: {
+        title: 'Card',
+        'f-pr': 'https://github.com/livediagram-app/livediagram.app/pull/1668',
+      },
+      place: { status: 'todo' },
+    });
+    const c = (await res.json<{ item: Item }>()).item;
+    const delivered = await pr({ fullName: 'livediagram-app/livediagram.app', number: 1668 });
+    expect(delivered.status).toBe(202);
+    await room().alarm();
+    expect(itemStatus(await card(c.id))).toBe('review');
+  });
+
   it('hears a draft only once it is ready, and a reopen', async () => {
     await moveOn({ kind: 'pull_request_opened' }, 'review');
     const c = await linked();
