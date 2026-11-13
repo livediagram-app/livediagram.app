@@ -958,6 +958,16 @@ export const PLAN_AUTOMATION_DRAFTS = chart(
   { types: ['AutomationAiDraft', 'AutomationAiOffTopic'], rising: 'neutral' },
 );
 
+// Describe a Plan (docs/specs/026-plan/describe-a-plan.md, in the liveplanner folder): each ask the api made and the
+// requests that weren't a plan. Never the words or the reply.
+export const PLAN_DESCRIBE_DRAFTS = chart(
+  'Plan',
+  'Ran',
+  'Describe a Plan Asks',
+  "Describe a Plan asking Workers AI to draft a board's columns and card types from someone's words on Start Planning (a draft that didn't read is asked once more), and the requests it answered weren't a plan.",
+  { types: ['PlanAiDraft', 'PlanAiOffTopic'], rising: 'neutral' },
+);
+
 export const PLAN_AUTOMATION_DRAFTS_OPENED = chart(
   'Plan',
   'Created',
@@ -1396,6 +1406,7 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_AUTOMATION_HOOK_CALLS,
   PLAN_AUTOMATION_DRAFTS,
   PLAN_AUTOMATION_DRAFTS_OPENED,
+  PLAN_DESCRIBE_DRAFTS,
   PLAN_AUTOMATION_SECRETS_MADE,
   PLAN_AUTOMATION_SECRETS_REGENERATED,
   PLAN_AUTOMATION_SECRETS_COPIED,

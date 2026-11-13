@@ -28,6 +28,7 @@ import type { Env, PlanEnv, ServerMessage } from '../types';
 import { type LoggedOp } from '../project-room-rules';
 import { ROOM_ELEMENT_RULES } from '../room-element-rules';
 import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
+import { spendPlanDraftIn } from '../plan-draft-count';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { readSessionAttachment, verifiedSessionOf, type SessionAttachment } from '../room-session';
 import { planHasTab } from '../db/tabs';
@@ -565,6 +566,13 @@ export class PlanRoom extends DurableObject<Env> {
       ensureSchema(this);
     }
     return answerGithubCall({ env: this.requireEnv(), planId, schema }, call, Date.now());
+  }
+
+  // ---------- RPC: Describe a Plan's count (plan-draft-count.ts) -------------------------------------------------
+
+  // Only on an account's `~plan-drafts:` instance, never a plan's: one storage key, no plan schema made or read.
+  spendPlanDraft(day: string, cap: number): Promise<boolean> {
+    return spendPlanDraftIn(this.state.storage, day, cap);
   }
 
   requireEnv(): PlanEnv {

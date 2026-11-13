@@ -1914,6 +1914,18 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   // ---- Account ----
   {
     method: 'POST',
+    path: '/plan-drafts',
+    segment: 'plan-drafts',
+    tag: 'Plans',
+    summary:
+      'Describe a Plan: draft a board’s columns and card types with their fields from words (up to 500 characters) with AI, answered as names to check and change before anything is made. Nothing is saved. Signed in only (a guest is refused); an account drafts up to 10 plans a day.',
+    auth: 'clerk',
+    requestSchema: 'PlanDraftRequest',
+    responseSchema: 'PlanDraftResponse',
+    statuses: [200, 400, 401, 403, 405, 422, 429, 503],
+  },
+  {
+    method: 'POST',
     path: '/account/deletion-code',
     segment: 'account',
     tag: 'Account',

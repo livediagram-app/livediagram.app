@@ -819,6 +819,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Describe a Rule asked the AI to draft an automation rule from someone's words; a draft that didn't read is asked once more.",
   'Plan|Ran|AutomationAiOffTopic':
     "Describe a Rule's request wasn't an automation rule for the plan, so nothing was drafted.",
+  'Plan|Ran|PlanAiDraft':
+    "Describe a Plan asked the AI to draft a board's columns and card types from someone's words; a draft that didn't read is asked once more.",
+  'Plan|Ran|PlanAiOffTopic': "Describe a Plan's request wasn't a plan, so nothing was drafted.",
   'Plan|Created|AutomationDraft':
     'Someone opened a rule Describe a Rule drafted in the rule builder, unsaved and off until they save it.',
   'UI|Opened|AutomationDescribe':

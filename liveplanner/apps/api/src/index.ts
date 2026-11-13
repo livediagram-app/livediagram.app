@@ -29,6 +29,7 @@ import { withCappedBody } from '@liveworkspace/api-kit/request-body';
 import { MAX_IMAGE_BYTES } from '@liveworkspace/media';
 import { handleImages } from './routes/images';
 import { handleAccount } from './routes/account';
+import { handlePlanDrafts } from './routes/plan-drafts';
 import { handleEvents } from './routes/events';
 import { handleCatalogues } from './routes/catalogues';
 import { handleCapabilities } from './routes/capabilities';
@@ -313,6 +314,9 @@ async function routeApiRequest(
       return await handleOauthExchange(ctx);
     case 'account':
       return await handleAccount(ctx);
+    // Describe a Plan (docs/specs/026-plan/describe-a-plan.md): a board and card types drafted from words, made nowhere.
+    case 'plan-drafts':
+      return await handlePlanDrafts(ctx);
     case 'trash':
       return await handleTrash(ctx);
     case 'preferences':
