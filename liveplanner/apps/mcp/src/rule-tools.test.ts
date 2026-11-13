@@ -23,6 +23,7 @@ const RULE = {
   edited: { by: BY, at: 1 },
   stats: { lastRunAt: null, runsThisWeek: 0, failuresInARow: 0 },
   needs: [],
+  attention: [],
 };
 
 function api(sent: string[]) {

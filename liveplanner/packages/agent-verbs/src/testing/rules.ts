@@ -77,6 +77,7 @@ export function listed(over: Partial<AutomationListedRule> = {}): AutomationList
     edited: { by: BY, at: NOW, ai: true },
     stats: { lastRunAt: NOW, runsThisWeek: 3, failuresInARow: 0 },
     needs: [],
+    attention: [],
     ...over,
   };
 }

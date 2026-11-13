@@ -190,6 +190,7 @@ describe('the rules', () => {
       made: { by: { name: 'Someone' } },
       stats: { lastRunAt: null, runsThisWeek: 0, failuresInARow: 0 },
       needs: [],
+      attention: [],
     });
     expect(list).toMatchObject({ runsToday: 0, runsPerDay: 1000 });
   });
@@ -288,7 +289,9 @@ describe('the rules', () => {
 
   it('says what a rule names that the plan lacks', async () => {
     await w.rule({ steps: [{ kind: 'move', status: 'qa' }] });
-    expect((await listOf()).rules[0]!.needs).toEqual(['Column qa is gone']);
+    const [rule] = (await listOf()).rules;
+    expect(rule!.needs).toEqual(['Column qa is gone']);
+    expect(rule!.attention).toEqual([{ kind: 'column', id: 'qa' }]);
   });
 });
 

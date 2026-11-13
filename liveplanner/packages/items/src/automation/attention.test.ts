@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ItemTypeDef } from '../item-types';
-import { ruleNeeds } from './attention';
+import { needLine, ruleNeedItems, ruleNeeds } from './attention';
 import { unheardFields } from './outline';
 import { OUTLINE, ruleBody } from './test-fixtures';
 
@@ -64,6 +64,27 @@ describe('ruleNeeds', () => {
       'Column qa2 is gone',
       'Field f-link is gone',
     ]);
+  });
+
+  it('answers the same needs as data, for the editor to word without ids', () => {
+    expect(
+      ruleNeedItems(
+        ruleBody({
+          trigger: { kind: 'card_moved', to: ['qa'] },
+          steps: [
+            { kind: 'assign', to: { person: 'p-gone' } },
+            { kind: 'move', status: 'qa' },
+          ],
+        }),
+        OUTLINE,
+      ),
+    ).toEqual([
+      { kind: 'column', id: 'qa' },
+      { kind: 'person', id: 'p-gone' },
+    ]);
+    expect(needLine({ kind: 'unheard', name: 'Time Spent' })).toBe(
+      'Field Changed never hears Time Spent',
+    );
   });
 
   it('checks the trigger: a column made in, a Form tab', () => {

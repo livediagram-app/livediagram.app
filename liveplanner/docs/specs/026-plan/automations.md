@@ -328,7 +328,10 @@ Each condition is one line in the builder, a chip sentence:
 
 A condition on a field the card's type lacks does not hold (it never errors). A condition naming a type, column,
 field, person or saved filter that is gone since does not hold, and the Rules list marks the rule **Needs Attention**
-with what is missing. So does a **Link Cards** step whose chosen card has since been deleted.
+with what is missing. So does a **Link Cards** step whose chosen card has since been deleted. The editor never shows
+an id: the line says each kind of thing gone once, in words ("Needs Attention: A column is gone · Someone is gone",
+"2 fields are gone", "A card is gone"), and the rule's sentence and step cards read a gone pick as its panel does
+("to a column no longer here", "Set a field no longer here", "Assign Someone No Longer Here"). Agents read the ids.
 
 ## Actions
 

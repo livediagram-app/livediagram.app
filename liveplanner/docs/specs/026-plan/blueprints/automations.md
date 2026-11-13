@@ -44,7 +44,7 @@ packages/items/src/automation/
   *.test.ts           one per module; 100% branches (the package's thresholds)
 
 packages/api-schema/src/automations.ts
-                      AutomationsListResponse { rules: (AutomationRule & { stats, needs: string[] })[],
+                      AutomationsListResponse { rules: (AutomationRule & { stats, needs: string[], attention })[],
                         runsToday: number, runsPerDay: number },
                       AutomationRunsResponse { runs: AutomationRun[] }, AutomationRunResponse { run: AutomationRun },
                       AutomationRunResponse { run: AutomationRun }, error codes below
@@ -362,7 +362,11 @@ build):
   actions' names; webhooks only when the caller passes the plan's webhook ids (`ruleNeeds(rule, outline, webhooks)`,
   the builder): the api's list does not, since the webhooks live in the index. A Link Cards step's chosen card is
   checked against `outline.cards`, the ids of the cards `readAutomationPlan` already read (no extra query); an outline
-  without them leaves chosen cards unchecked.
+  without them leaves chosen cards unchecked. `ruleNeedItems` answers the needs as data (`AutomationNeed`: a kind and
+  stored id, or `unheard` with the field's name); `ruleNeeds` words each by id (`needLine`) for agents. The api's list
+  sends both (`needs`, `attention`); the editor's RuleRow words `attention` with `needsWords` (needs-words.ts), each
+  kind once and counted, never an id. The editor's outline sets `goneWords`, so `outlineStatusName`, `outlineTypeName`,
+  `outlineFieldName` and `outlineTabName` read a gone one as `GONE_NAMES` ("a column no longer here") instead of its id.
 - **Test on a Card** of a time rule runs on the chosen card as at its moment, without checking its due date.
 - **Measured** (`automations.perf.test.ts`): 2,000 cards and 50 overdue rules due at once (5 hearing every card, 45
   checking a condition that never holds): the wake's CPU time is 165 to 191 ms on an M-series Mac, against the
