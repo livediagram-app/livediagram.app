@@ -15,8 +15,16 @@ import {
   type AutomationVia,
   type AutomationWait,
 } from '@liveplanner/items';
+import { standardColours } from '@liveplanner/project';
 import { fieldChangeFields, outlineFields, type AutomationOutline } from './automation-outline';
 import { OWN_ACTION_FIELDS, startText } from './field-pick';
+
+// Set Colour starts on the standard Red the card's Colour picker offers (the spec: one of the standard colours), so
+// the field and the picker name it alike. An older Plan red (#dc2626) read "Red" in the field but showed as a custom
+// "#dc2626" swatch, the standard Red unpressed.
+const DEFAULT_COLOUR = standardColours('strong', 'light')
+  .find((c) => c.name === 'red')!
+  .hex.toLowerCase();
 
 export const ACTION_KINDS: readonly AutomationActionKind[] = [
   'move',
@@ -152,7 +160,7 @@ export function defaultAction(
     case 'set_type':
       return { kind, type: (outline.types[1] ?? outline.types[0])?.id ?? '' };
     case 'set_colour':
-      return { kind, colour: '#dc2626' };
+      return { kind, colour: DEFAULT_COLOUR };
     case 'copy_card':
       return { kind };
     case 'add_checklist':

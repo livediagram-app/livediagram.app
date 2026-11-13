@@ -10,6 +10,7 @@ import { ValueTextField, ValueChipsText, insertValue } from './ValueInsert';
 import { lastRunWords, meterWords, runWhen, runsWords, tookWords } from './run-words';
 import { RunsMeter } from './RunsMeter';
 import type { CustomFieldDef } from '@liveplanner/items';
+import { standardColours } from '@liveplanner/project';
 import { ANA, NOW, outline, rule, run } from './test-fixtures';
 
 const track = vi.hoisted(() => vi.fn());
@@ -230,6 +231,15 @@ describe('the words', () => {
     render(<RunsMeter used={1000} max={1000} stacked />);
     render(<RunsMeter used={0} max={0} />);
     expect(screen.getAllByRole('meter')).toHaveLength(2);
+  });
+
+  it('starts Set Colour on the standard Red, so the field and the picker name it alike', () => {
+    const start = defaultAction('set_colour', outline());
+    if (start.kind !== 'set_colour' || !start.colour) throw new Error('no colour');
+    const red = standardColours('strong', 'light').find((c) => c.name === 'red')!;
+    expect(start.colour).toBe(red.hex.toLowerCase());
+    // The old start, an earlier Plan red, showed in the picker as a custom "#dc2626" swatch.
+    expect(start.colour).not.toBe('#dc2626');
   });
 
   it('starts every kind from the plan, and from nothing in an empty one', () => {
