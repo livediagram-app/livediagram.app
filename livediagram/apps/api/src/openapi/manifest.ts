@@ -17,6 +17,7 @@ import { LINT_VIEW_NAME, TAB_VIEW_NAMES } from '@livediagram/api-schema';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livediagram/document-views';
 import type { BodySchema } from '@liveworkspace/api-kit/openapi-types';
+import { TAB_DELTA_MAX_OPS } from '@liveworkspace/api-schema/tab-delta';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
  *  - `public`: no identity required.
@@ -514,6 +515,31 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'guest-or-clerk',
     requestSchema: 'Tab',
     responseSchema: wrap('tab', 'TabRecord'),
+    statuses: [200, 400, 401, 403, 404, 405, 409, 410, 413],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/delta',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "The editor's tab save sent as the element ops since the stored copy at `baseRev`: rebuilt over the stored tab, stored only when the SHA-256 of the rebuilt elements' JSON is `digest`, then saved as the whole-tab save is. Anything that does not line up is 409 `delta_refused` with a `reason` (`too_many_ops`, `no_base`, `stale_base`, `digest_mismatch`), answered by saving the tab whole. An API token is refused with 405 `use_changesets`.",
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        baseRev: { type: 'integer', minimum: 0 },
+        digest: { type: 'string', pattern: '^[0-9a-f]{64}$' },
+        ops: { type: 'array', maxItems: TAB_DELTA_MAX_OPS, items: { type: 'object' } },
+        tab: { type: 'object' },
+      },
+      required: ['baseRev', 'digest', 'ops', 'tab'],
+    },
+    responseSchema: {
+      type: 'object',
+      properties: { rev: { type: 'integer' }, digest: { type: 'string' } },
+      required: ['rev', 'digest'],
+    },
     statuses: [200, 400, 401, 403, 404, 405, 409, 410, 413],
   },
   {

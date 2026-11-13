@@ -38,6 +38,8 @@ const KNOWN_WRITERS: Record<string, number> = {
   // The test database's stand-in for a document's purge (its object deletes everything it stores); the
   // references go with the tabs by their foreign key.
   'api/src/test-sqlite-d1.ts': 1,
+  // The tab save tests' stand-in for a changeset recorded behind the saver's back (recordAdd), in the test database.
+  'api/src/routes/tab-save-test-kit.ts': 1,
 };
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
