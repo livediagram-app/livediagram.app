@@ -16,7 +16,7 @@ Scope, by file:
 | `../packages/workbench/src/lib/image-search/openverse.ts`                | Pure: `openverseSearchUrl`, `parseOpenverseSearch`, `creditFor`         |
 | `../packages/workbench/src/lib/image-search/search.ts`                   | `searchOpenverse`: one page over an injected `fetch`, typed errors      |
 | `../packages/workbench/src/lib/image-search/telemetry.ts`                | `searchWarningType`, `pickWarningType`: failure → `Error·Warning` token |
-| `apps/editor/lib/image-search/pick.ts`                                   | `storeSearchResult`: download (full, else thumbnail) and store          |
+| `../packages/workbench/src/lib/image-search/pick.ts`                     | `storeSearchResult`: download (full, else thumbnail) and store          |
 | `../packages/workbench/src/lib/image-search/read-capped.ts`              | `readCapped`: read a body, refusing past a byte cap                     |
 | `apps/editor/hooks/ui/useImageSearch.ts`                                 | Search tab state: query, pages, status, picking                         |
 | `apps/editor/components/panels/ImageSearchPane.tsx`                      | The Search tab's form, grid, states and footer credit                   |

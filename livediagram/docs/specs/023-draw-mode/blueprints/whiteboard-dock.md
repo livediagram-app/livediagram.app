@@ -28,7 +28,7 @@ Scope, by file (all under `apps/editor/` unless stated):
 | `lib/whiteboard-shape-slots.ts`                                         | Default pins, the six slots, pick record, drops, outcomes (pure)                         |
 | `lib/whiteboard-dock-prefs.ts`                                          | The dock's synced preferences: parse and write, the dock position                        |
 | `components/canvas/CanvasChrome.tsx`                                    | The dock; top corners and stack clear a top dock                                         |
-| `hooks/ui/useStripCrowdsCorners.ts`                                     | Whether a top bar (the strip or a top dock) reaches a top corner                         |
+| `../packages/workbench/src/hooks/ui/useStripCrowdsCorners.ts`           | Whether a top bar (the strip or a top dock) reaches a top corner                         |
 | `components/chrome/TopCenter.tsx`                                       | `TopCenterStack` `below`: under the strip or under a top dock                            |
 | `components/dialogs/settings/settings-catalogue.ts`                     | Editor's Draw section: the Dock Position row                                             |
 | `hooks/canvas/useWhiteboardDockPrefs.ts`                                | Those preferences as state, written like every synced preference                         |
@@ -513,7 +513,7 @@ to measure` (warn).
 | Shapes flyout: hover focus, slots, results, menu, closing | `apps/editor/components/canvas/whiteboard/ShapesFlyout.test.tsx`                   |
 | Dock position: parse, write, default top                  | `apps/editor/lib/whiteboard-dock-prefs.test.ts`                                    |
 | Top and bottom wrapper, flyout and hint below or above    | `apps/editor/components/canvas/whiteboard/WhiteboardDock.test.tsx`                 |
-| A top bar (strip or dock) crowding the top corners        | `apps/editor/hooks/ui/useStripCrowdsCorners.test.tsx`                              |
+| A top bar (strip or dock) crowding the top corners        | `../packages/workbench/src/hooks/ui/useStripCrowdsCorners.test.tsx`                |
 | Settings row: Top / Bottom round trip, section, token     | `apps/editor/components/dialogs/settings/settings-catalogue.test.ts`               |
 | Telemetry sentences                                       | liveworkspace/apps/site/app/telemetry/livediagram/event-explanation.test.ts        |
 | Dock position and snap colours end to end                 | `whiteboard-dock-position.spec.ts`, `whiteboard-snap-colours.spec.ts`              |

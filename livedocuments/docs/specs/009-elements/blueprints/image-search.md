@@ -13,7 +13,7 @@ Scope, by file:
 | `packages/document/src/element-types.ts`                                       | `ImageElement.credit`                                                   |
 | `packages/document/src/validate.ts`                                            | Image branch calls `isImageCredit` on `credit`                          |
 | `apps/editor/lib/upload-image.ts`                                              | `PickedImage`: what every picker tab hands back                         |
-| `apps/editor/lib/image-search/openverse.ts`                                    | Pure: `openverseSearchUrl`, `parseOpenverseSearch`, `creditFor`         |
+| `../packages/workbench/src/lib/image-search/openverse.ts`                      | Pure: `openverseSearchUrl`, `parseOpenverseSearch`, `creditFor`         |
 | `../packages/workbench/src/lib/image-search/search.ts`                         | `searchOpenverse`: one page over an injected `fetch`, typed errors      |
 | `../packages/workbench/src/lib/image-search/telemetry.ts`                      | `searchWarningType`, `pickWarningType`: failure → `Error·Warning` token |
 | `../packages/workbench/src/lib/image-search/pick.ts`                           | `storeSearchResult`: download (full, else thumbnail) and store          |

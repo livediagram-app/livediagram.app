@@ -14,8 +14,8 @@ Scope, by file:
 | `packages/design/src/validate.ts`                                           | Image branch calls `isImageCredit` on `credit`                          |
 | `apps/live/lib/upload-image.ts`                                             | `PickedImage`: what every picker tab hands back                         |
 | `../packages/workbench/src/lib/image-search/openverse.ts`                   | Pure: `openverseSearchUrl`, `parseOpenverseSearch`, `creditFor`         |
-| `apps/live/lib/image-search/search.ts`                                      | `searchOpenverse`: one page over an injected `fetch`, typed errors      |
-| `apps/live/lib/image-search/telemetry.ts`                                   | `searchWarningType`, `pickWarningType`: failure → `Error·Warning` token |
+| `../packages/workbench/src/lib/image-search/search.ts`                      | `searchOpenverse`: one page over an injected `fetch`, typed errors      |
+| `../packages/workbench/src/lib/image-search/telemetry.ts`                   | `searchWarningType`, `pickWarningType`: failure → `Error·Warning` token |
 | `../packages/workbench/src/lib/image-search/pick.ts`                        | `storeSearchResult`: download (full, else thumbnail) and store          |
 | `../packages/workbench/src/lib/image-search/read-capped.ts`                 | `readCapped`: read a body, refusing past a byte cap                     |
 | `apps/live/hooks/ui/useImageSearch.ts`                                      | Search tab state: query, pages, status, picking                         |
@@ -239,7 +239,7 @@ Pick failure copy (`pickFailureMessage`):
 | O4  | Pipeline outcome     | (pipeline)     | `[import-images] <outcome>`                           |
 
 O1 to O3 each also send one `Error·Warning` event (`searchWarningType` / `pickWarningType` in
-`apps/live/lib/image-search/telemetry.ts`, a fixed table from kind / failure to token): O1
+`../packages/workbench/src/lib/image-search/telemetry.ts`, a fixed table from kind / failure to token): O1
 `ImageSearch.RateLimited` or `ImageSearch.SearchFailed`; O2 `ImageSearch.ThumbnailFallback`; O3
 `ImageSearch.Pick.<Failure>` in PascalCase (`download-failed` → `DownloadFailed`). A search answer
 dropped as stale sends nothing.
@@ -248,13 +248,13 @@ dropped as stale sends nothing.
 
 | Rule                                                         | Test file                                                        |
 | ------------------------------------------------------------ | ---------------------------------------------------------------- |
-| URL carries q, page, page_size 20, licence filter, mature    | `apps/live/lib/image-search/openverse.test.ts`                   |
-| Parse keeps valid results, drops broken ones, rejects junk   | `apps/live/lib/image-search/openverse.test.ts`                   |
-| Credit text, licence labels, no landing URL → no credit      | `apps/live/lib/image-search/openverse.test.ts`                   |
-| 429 → rate-limited; 500, network, bad JSON → failed          | `apps/live/lib/image-search/search.test.ts`                      |
+| URL carries q, page, page_size 20, licence filter, mature    | `../packages/workbench/src/lib/image-search/openverse.test.ts`   |
+| Parse keeps valid results, drops broken ones, rejects junk   | `../packages/workbench/src/lib/image-search/openverse.test.ts`   |
+| Credit text, licence labels, no landing URL → no credit      | `../packages/workbench/src/lib/image-search/openverse.test.ts`   |
+| 429 → rate-limited; 500, network, bad JSON → failed          | `../packages/workbench/src/lib/image-search/search.test.ts`      |
 | Full image stored; CORS / non-image / unsupported → thumb    | `../packages/workbench/src/lib/image-search/pick.test.ts`        |
 | Gallery-full is final; both downloads fail → download-failed | `../packages/workbench/src/lib/image-search/pick.test.ts`        |
-| Warning token per search kind and pick failure               | `apps/live/lib/image-search/telemetry.test.ts`                   |
+| Warning token per search kind and pick failure               | `../packages/workbench/src/lib/image-search/telemetry.test.ts`   |
 | Thumbnail fallback reported once, not on a direct store      | `../packages/workbench/src/lib/image-search/pick.test.ts`        |
 | Over the source cap: refused, no thumbnail, nothing stored   | `../packages/workbench/src/lib/image-search/pick.test.ts`        |
 | Cap by Content-Length, mid-stream cancel, under-cap join     | `../packages/workbench/src/lib/image-search/read-capped.test.ts` |
