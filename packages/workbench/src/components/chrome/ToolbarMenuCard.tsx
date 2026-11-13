@@ -8,11 +8,11 @@ import {
   MENU_CARD_FRAME_MOTION,
   MENU_CARD_JOINED,
 } from '@liveworkspace/workbench/components/canvas/menu-join';
-import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
+import { PHONE_TOOLBAR_ITEMS } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
 
 // The card at the canvas's top left, before the palette strip (docs/specs/007-editor/toolbar-layout.md): the
 // Explorer's menu button in the app, a workspace frame's Back in a workbench. `data-toolbar-menu` is what the strip
-// measures to keep clear of it (useStripCrowded, useBarLabels) and what a maximised board's insets
+// measures to keep clear of it (useStripCrowded, useBarLabels, and useStripTileLimit where an editor has one) and what a maximised board's insets
 // read (canvas-layer-insets), so whatever the card holds, the strip makes room for it.
 //
 // `inline` drops the corner positioning so the strip's row can hold it in its own card at the far left, beside the

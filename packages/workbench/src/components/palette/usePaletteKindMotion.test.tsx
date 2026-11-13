@@ -13,7 +13,7 @@ vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
 }));
 let reduced = false;
 
-// A change of the palette's kind (a change of editor mode) cascades in (docs/specs/004-interface-design/motion.md).
+// A change of the palette's kind cascades in (docs/specs/004-interface-design/motion.md).
 describe('usePaletteKindMotion', () => {
   afterEach(() => {
     reduced = false;

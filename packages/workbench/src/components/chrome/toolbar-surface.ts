@@ -6,7 +6,7 @@
 export const TOOLBAR_CARD =
   'flex items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40';
 
-/** A phone strip's rail that gives way and swipes sideways (the category bar, the tile rail, an article's dock): it pads
+/** A phone strip's rail that gives way and swipes sideways (the category bar, the tile rail where an editor has one, an article's dock): it pads
  *  for its tiles' pressed rings (cancelled by a matching negative margin, so the strip doesn't move), contains its swipe
  *  so it never pans the page, hides its scrollbar, and fades the edge with more beyond it (`scroll-edge-fade`), so a
  *  tile cut by the edge reads as more to swipe to rather than a stray sliver. Its y axis is hidden, not auto: the

@@ -2,15 +2,18 @@
 import { act, cleanup, render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_LASER_CONFIG, laserLifetimeMs, type LaserConfig } from '@/lib/laser-config';
-import { LaserPanel } from './LaserPanel';
+import { DEFAULT_LASER_CONFIG, laserLifetimeMs, type LaserConfig } from '../../lib/laser-config';
+import { createLaserPanel } from './LaserPanel';
 
-// The panel's chrome is MovablePanel's own (tested there): here, only the preview.
-vi.mock('@/components/primitives/MovablePanel', () => ({
-  MovablePanel: ({ title, children }: { title: string; children: ReactNode }) => (
+// The panel's chrome is each editor's ModePanel (tested there), and its colour row the editor's own: here, only the
+// preview.
+type Placement = { position: null; onMoveTo: () => void };
+const LaserPanel = createLaserPanel<Placement>({
+  ModePanel: ({ title, children }: { title: string; children: ReactNode }) => (
     <section aria-label={title}>{children}</section>
   ),
-}));
+  LaserColourRow: () => <div data-colour-row />,
+});
 
 // docs/specs/008-canvas/laser-panel.md "The settings": the preview holds still, and a setting changed draws the sweep
 // across once.

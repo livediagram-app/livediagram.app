@@ -1,8 +1,8 @@
 'use client';
 
-// The strip's change of kind: when the
-// palette's kind changes (a change of editor mode), its new categories come in as a quick cascade, each rising and fading in a moment after the one
-// before, so the change reads as one motion rather than a jump. The whole cascade
+// The strip's change of kind: when the palette's kind changes (a page of another kind, or another
+// editor mode), its new categories come in as a quick cascade, each rising and fading in a moment
+// after the one before, so the change reads as one motion rather than a jump. The whole cascade
 // settles within the chrome budget (docs/specs/004-interface-design/motion.md: 250 ms). Nothing
 // moves under reduced motion, or on the first render.
 import { useLayoutEffect, useRef, type RefObject } from 'react';

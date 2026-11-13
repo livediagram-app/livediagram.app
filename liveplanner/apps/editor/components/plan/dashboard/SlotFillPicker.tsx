@@ -31,7 +31,7 @@ import { lucideGlyph } from '@liveplanner/ui';
 import { lucideArrowUpDown } from '@liveworkspace/icons/lucide';
 import { PICK_CARD, SlotCategoryCard, type SlotCategory } from './slot-fill-categories';
 import { tileById, tilesForCategory } from '@/components/palette/palette-tile-defs';
-import { tileCaption } from '@/components/palette/tile-caption';
+import { tileCaption } from '@liveworkspace/workbench/components/palette/tile-caption';
 import type { PaletteTileDef } from '@/components/palette/palette-tile-defs';
 import {
   DASHBOARD_CARD_TILES,

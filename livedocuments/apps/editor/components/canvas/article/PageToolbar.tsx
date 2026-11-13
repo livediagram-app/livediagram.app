@@ -27,7 +27,7 @@ import {
 } from '@liveworkspace/icons/lucide';
 import { ChevronDownIcon, lucideGlyph, Portal } from '@livedocuments/ui';
 import { TOOLBAR_TRIGGER_TONE } from '@/components/palette/PaletteDropdown';
-import { TOOLBAR_CARD, TOOLBAR_CONTROL_PRESSED } from '@/components/chrome/toolbar-surface';
+import { TOOLBAR_CARD, TOOLBAR_CONTROL_PRESSED } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 import { useCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import {

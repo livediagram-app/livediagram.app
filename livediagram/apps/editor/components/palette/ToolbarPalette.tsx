@@ -48,7 +48,7 @@ import { useStripCrowded } from '@liveworkspace/workbench/components/palette/use
 import { SessionBrowse } from './session-category';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
-import { usePaletteKindMotion } from './usePaletteKindMotion';
+import { usePaletteKindMotion } from '@liveworkspace/workbench/components/palette/usePaletteKindMotion';
 
 // The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
 // top centre of the canvas, the way Excalidraw's tool bar works. Selection

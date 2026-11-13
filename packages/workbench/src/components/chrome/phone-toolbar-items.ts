@@ -7,7 +7,7 @@
 // (or use their own row classes), so they are untouched.
 export const PHONE_TOOLBAR_ITEMS = 'phone:[&_.px-2]:px-1 [&_.h-9]:relative [&_.h-9]:touch-target-y';
 
-// The bottom-right cluster's buttons on a phone (docs/specs/007-editor/editor-app.md "Mobile chrome"): at most
+// The bottom-right cluster's buttons on a phone (docs/specs/007-editor/editor-app.md "Mobile chrome", live-app.md in livedesign): at most
 // six 44px-wide buttons (Undo, Redo, Slides, Contents, Collaborate, the theme brush) beside Fit, more than a
 // phone's row holds. Each takes an equal share of the width left once
 // the page gutters (2 x 16px), the cluster's gaps (3 x 6px), Fit (about 45px) and the strips' borders (8px)

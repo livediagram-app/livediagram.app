@@ -44,7 +44,7 @@ import { useBarLabels } from '@liveworkspace/workbench/components/palette/useBar
 import { useStripCrowded } from '@liveworkspace/workbench/components/palette/useStripCrowded';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
-import { usePaletteKindMotion } from './usePaletteKindMotion';
+import { usePaletteKindMotion } from '@liveworkspace/workbench/components/palette/usePaletteKindMotion';
 import { usePaletteKind } from '@/lib/palette-kind';
 import { CARD_CLASS, CardWidth, StripRow } from './ToolbarStripRow';
 import type { ToolbarPaletteProps } from './toolbar-palette-props';

@@ -13,7 +13,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDownIcon, HoverCard, useClickOutside } from '@livedesign/ui';
-import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
+import { TOOLBAR_CONTROL_REST } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 
 // preventDefault on mousedown keeps focus + the live selection in the
 // contentEditable when a control is clicked (the classic rich-text-toolbar

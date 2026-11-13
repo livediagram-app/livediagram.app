@@ -9,7 +9,7 @@ import { SwatchChip } from '@/components/colour/ColourSwatch';
 import { standardGroup, standardOptions } from '@/components/colour/colour-options';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useDesignColours } from '@/hooks/ui/useDesignColours';
-import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
+import { TOOLBAR_CONTROL_REST } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 
 // The theme-tinted palette tile + its tint context moved to
 // PaletteIconButton.tsx; re-exported so existing imports keep working.

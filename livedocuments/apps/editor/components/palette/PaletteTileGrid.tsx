@@ -6,7 +6,7 @@ import {
 } from '@livedocuments/document';
 import type { EmbedProvider } from '@livedocuments/document';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
-import { tileCaption } from './tile-caption';
+import { tileCaption } from '@liveworkspace/workbench/components/palette/tile-caption';
 import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';

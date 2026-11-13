@@ -7,7 +7,7 @@
 import { useLayoutEffect, useRef } from 'react';
 import { FIND_QUERY_MAX } from '@/lib/find/find-text';
 import type { FindView } from '@/hooks/editor/useFindReplace';
-import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
+import { TOOLBAR_CARD } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 
 // Whether the keyboard was in this field as the bar replaced it: the bar then keeps what was typed and puts the caret
 // after it. Read once by the bar as it mounts (takeLoadingHandover).

@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { STRIP_RAIL_SCROLL } from '@/components/chrome/toolbar-surface';
+import { STRIP_RAIL_SCROLL } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import { useEdgeDividers } from '@liveworkspace/workbench/components/palette/useEdgeDividers';
 import { tileEnterAnimation } from './palette-tile-finish';
