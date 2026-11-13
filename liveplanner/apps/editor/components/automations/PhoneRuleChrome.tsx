@@ -16,6 +16,10 @@ import {
   useDialogDismiss,
 } from '@liveplanner/ui';
 
+// The rule's On / Off switch's name, the same whichever way it is set (its state is the switch's own, read as on or
+// off), on a phone as on a wide screen.
+export const RULE_SWITCH_NAME = 'Rule On';
+
 const BACK =
   'touch-target-y relative -ml-2 flex h-11 cursor-pointer items-center gap-1 rounded-lg px-2 text-[14px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 motion-reduce:transition-none dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
 
@@ -97,7 +101,7 @@ export function PhoneRuleHeader({
               size="sm"
               checked={state.enabled}
               busy={state.busy}
-              label={state.enabled ? 'On' : 'Off'}
+              label={RULE_SWITCH_NAME}
               onChange={state.onToggle}
             />
           </label>
@@ -136,6 +140,14 @@ export function PhoneRuleFoot({
   // A saved rule with nothing changed: Save Rule reads Saved.
   saved: boolean;
 }) {
+  // Saved takes Save Rule's place: when the save had the keyboard (focus fell to the page with the button), it moves
+  // to Saved rather than to the top of the dialog (busy-buttons.md "When the work ends").
+  const savedRef = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    if (!saved) return;
+    const at = document.activeElement;
+    if (at === null || at === document.body) savedRef.current?.focus({ preventScroll: true });
+  }, [saved]);
   return (
     <div
       data-rule-foot=""
@@ -158,14 +170,16 @@ export function PhoneRuleFoot({
         {saved ? (
           // Nothing to save: a plain, full-contrast state rather than a faded button.
           <span
+            ref={savedRef}
             role="status"
+            tabIndex={-1}
             className="flex h-11 items-center justify-center gap-1.5 rounded-md bg-emerald-50 text-sm font-medium text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200"
           >
             <CheckIcon size={14} />
             Saved
           </span>
         ) : (
-          <Button variant="primary" size="md" className="h-11" onClick={onSave} disabled={saving}>
+          <Button variant="primary" size="md" className="h-11" onClick={onSave} busy={saving}>
             {saving ? 'Saving…' : 'Save Rule'}
           </Button>
         )}

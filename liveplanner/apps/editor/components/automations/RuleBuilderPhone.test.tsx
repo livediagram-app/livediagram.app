@@ -93,7 +93,7 @@ describe('the rule builder on a phone', () => {
     expect(screen.getByRole('tab', { name: 'Rules · 1' })).toBeTruthy();
     const header = document.querySelector('[data-rule-header="phone"]')!;
     expect(header.querySelector('button')!.textContent).toContain('Automations');
-    expect(screen.getByRole('switch', { name: 'On' })).toBeTruthy();
+    expect(screen.getByRole('switch', { name: 'Rule On' })).toBeTruthy();
     expect(header.textContent).toContain('Edited by Ana Costa');
     // The name is a title on its own line that never breaks.
     const name = screen.getByRole('textbox', { name: 'Rule name' });

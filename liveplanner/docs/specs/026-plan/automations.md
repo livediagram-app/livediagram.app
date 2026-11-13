@@ -842,7 +842,11 @@ appears.
 ### The rule builder
 
 Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back to **Automations**, the rule's name
-(editable in place), its On / Off chip, "Edited by … · when", **Test on a Card** and **Save Rule**.
+(editable in place), its On / Off chip, "Edited by … · when", **Test on a Card** and **Save Rule**. The chip of a
+saved rule is a switch named **Rule On** whichever way it is set (a screen reader hears its state from the switch).
+**Save Rule** keeps the keyboard while it saves ([Busy buttons](../004-interface-design/busy-buttons.md)) and once
+saved with nothing changed: there it reads as unavailable and a press does nothing (on a phone **Saved** takes its
+place and the focus with it).
 
 - The rule reads top to bottom as cards joined by a line: **When** (the trigger), **If all of these** (the
   conditions), then one **Then** card per action, each with its icon. Under them: **+ Add Action**, **+ Add
