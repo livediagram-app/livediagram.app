@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AccountsUnavailable } from '../db/api-tokens';
-import { noteWorkbenchRoom, resolveWorkbenchSession, sessionPrefixOf } from './workbench-session';
+import { resolveWorkbenchSession } from './workbench-session';
 
 // Sessions are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the api asks accounts about each with its client
-// credentials and reads the answer in its own words.
+// credentials and reads the answer in its own words. The checking, caching, refusals and room notes are
+// @liveworkspace/auth-client's, tested in workbench-sessions.test.ts; this holds the api's names for what a session reaches.
 const ENV = {
   ACCOUNTS_URL: 'https://accounts.test',
   ACCOUNTS_CLIENT_ID: 'livedesign',
@@ -88,60 +88,5 @@ describe('resolveWorkbenchSession', () => {
       ok: true,
       workbench: { scope: 'workspace', designId: null, folderId: 'fold1' },
     });
-  });
-
-  it('is unknown for a session confined to one item that names none', async () => {
-    stubAccounts(() => Response.json({ ...CHECKED, itemId: null }));
-    expect(await resolveWorkbenchSession(ENV, secret())).toEqual({ ok: false, reason: 'unknown' });
-  });
-
-  it('passes on why accounts refused it', async () => {
-    stubAccounts(() =>
-      Response.json({ error: 'invalid_session', reason: 'revoked' }, { status: 404 }),
-    );
-    expect(await resolveWorkbenchSession(ENV, secret())).toEqual({ ok: false, reason: 'revoked' });
-  });
-
-  it('is unknown with no accounts configured, and unavailable when accounts fails', async () => {
-    expect(await resolveWorkbenchSession({}, secret())).toEqual({ ok: false, reason: 'unknown' });
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-    stubAccounts(() => new Response(null, { status: 503 }));
-    await expect(resolveWorkbenchSession(ENV, secret())).rejects.toBeInstanceOf(
-      AccountsUnavailable,
-    );
-  });
-
-  it('logs a session by its id’s first eight characters', () => {
-    expect(sessionPrefixOf('abcdefghijkl')).toBe('abcdefgh');
-  });
-});
-
-describe('noteWorkbenchRoom', () => {
-  it('tells accounts once per session and design', async () => {
-    const calls = stubAccounts(() => new Response(null, { status: 204 }));
-    const session = { ownerId: 'user_1', sessionId: `s-${secret()}` };
-    await noteWorkbenchRoom(ENV, session, 'doc1');
-    await noteWorkbenchRoom(ENV, session, 'doc1');
-    expect(calls).toEqual([
-      {
-        path: '/api/account/internal/workbench/rooms',
-        body: { ownerId: 'user_1', sessionId: session.sessionId, itemId: 'doc1' },
-      },
-    ]);
-  });
-
-  it('asks nothing with no accounts configured, and only logs a note that fails', async () => {
-    const calls = stubAccounts(() => new Response(null, { status: 204 }));
-    await noteWorkbenchRoom({}, { ownerId: 'user_1', sessionId: `s-${secret()}` }, 'doc1');
-    expect(calls).toEqual([]);
-    vi.stubGlobal('fetch', async () => {
-      throw new Error('offline');
-    });
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    await expect(
-      noteWorkbenchRoom(ENV, { ownerId: 'user_1', sessionId: `s-${secret()}` }, 'doc1'),
-    ).resolves.toBeUndefined();
-    expect(warn).toHaveBeenCalledWith('[workbench] room note failed', expect.anything());
-    warn.mockRestore();
   });
 });
