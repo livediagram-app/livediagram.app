@@ -320,7 +320,10 @@ describe('the Trash', () => {
     const kept = await body<ItemBody>(await call(`/items/${shared.id}`, { auth: ada.auth }));
     expect(kept.item).toMatchObject({ trashReason: 'deleted' });
     expect(kept.item.trashedAt).not.toBeNull();
-    expect(h.appCalls).toHaveLength(0);
+    // Not purged: the app hears only that it stands in the Trash.
+    expect(h.appCalls.map((c) => [c.method, c.url.split('/api/internal')[1]])).toEqual([
+      ['POST', `/items/${shared.id}/standing`],
+    ]);
     const trash = await body<{ items: Item[] }>(
       await call('/trash?team=team_off', { auth: ada.auth }),
     );
