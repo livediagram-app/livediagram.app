@@ -8,6 +8,7 @@ import {
   elementIndexFor,
   endpointPosition,
   isBoxed,
+  isDefaultMindConnectorLook,
   queryElementGrid,
   resolveFinish,
   routeBehindHoles,
@@ -18,7 +19,12 @@ import {
   type ElementIndex,
 } from '@liveplanner/project';
 import { createDragAffectedArrows } from '@liveworkspace/workbench/lib/drag-affected-arrows';
-import { deriveArrowViewFrame, type ArrowViewFrame } from './arrow-view-frame';
+import { createArrowGeometryCache } from '@liveworkspace/workbench/lib/arrow-geometry-cache';
+import {
+  deriveArrowViewFrame,
+  type ArrowViewFrame,
+  type arrowViewGeometry,
+} from './arrow-view-frame';
 
 export type { ArrowLinks } from '@liveworkspace/workbench/lib/drag-affected-arrows';
 
@@ -36,4 +42,22 @@ export const { buildArrowLinks, affectedArrows, movedBoxesGrid, previewArrowGeom
     queryElementGrid,
     frameOf: (arrow, index, tabFinish) =>
       deriveArrowViewFrame(arrow, index, resolveFinish(arrow.finish, tabFinish)),
+  });
+
+// A mind map's connector: a finish may route it from the map's shape (mind-connector-route.ts), so what it draws reads
+// more than its neighbours.
+export const mindRoutable = (el: Element): boolean =>
+  el.type === 'arrow' &&
+  el.from.kind === 'pinned' &&
+  el.to.kind === 'pinned' &&
+  isDefaultMindConnectorLook(el);
+
+// The element layer's arrow geometry, carried over for the arrows a change cannot reach (canvas-performance.md "A drop
+// redraws what it reached"). One per layer.
+export const arrowGeometryCache = () =>
+  createArrowGeometryCache<Element, ReturnType<typeof arrowViewGeometry>>({
+    isArrow: (el) => el.type === 'arrow',
+    ends: (arrow) => [(arrow as ArrowElement).from, (arrow as ArrowElement).to],
+    reach: ({ frame }) => routeBehindQueryRect(frame.from, frame.to),
+    structural: mindRoutable,
   });

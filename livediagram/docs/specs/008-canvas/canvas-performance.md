@@ -150,6 +150,10 @@ large move rides as one layer").
   each time anything over it repaints (on the 1,000-element reference board a pan's frame went from
   about 36 ms to about 15 ms in WebKit at iPad size). The Map's body is the one every editor shares
   (`MinimapMap`, `@liveworkspace/workbench`).
+- **The Map draws what changed.** The picture is rebuilt when the board settles, from parts carried
+  over from the last build: each box's markup by its element, and each arrow's by the same rule as
+  the layer's arrow geometry. A drop draws the boxes it changed and the arrows it reached, not the
+  whole board again. A seeded test checks that the carried-over picture equals one built afresh.
 - **Questions about neighbours ask a spatial index.** Anything that asks, for each element, which
   other elements are near it (arrows passing behind boxes) queries one shared index of element
   bounds, updated for the elements that changed, so its per-frame cost follows the neighbourhood,
@@ -179,6 +183,17 @@ large move rides as one layer").
   recomputed. A preview frame renders neither the canvas nor the element layer: each element view
   reads its own part of the preview, so a frame's work follows what moved, not the board, and only
   what follows the moved selection (its chrome) reads the whole preview.
+- **A drop redraws what it reached.** A commit (a drop, a stroke, an edit) changes one element or a
+  few, and redraws those and what they reach, not the board. Each arrow's geometry is carried over
+  from the last board unless the change reaches it: a box it is pinned to, a box sharing a pin with
+  its other end (the converging fan), a box inside its route-behind reach where it was or where it
+  went, or a change to the arrow or to another arrow at its pins. A mind map's connectors, which a
+  finish routes from the map's shape, and the arrows at a fan with an end on another arrow are
+  derived every time, and a change of finish, or to an element whose extent is unknown, derives the
+  board. A label whose layout did not change keeps its render object. Each element's row in the
+  layer is memoised on what it draws (its element, its arrow's geometry and label, its depth and
+  opacity, and the props every row shares), so a row nothing reached is not drawn again. Seeded
+  tests check that the carried-over geometry equals the geometry derived afresh after random edits.
 - **Arrow labels ask their neighbourhood.** Laying a label out tests its candidate places against
   the boxes and the labels already placed; both are asked of a grid of their bounds (the boxes built
   once per board, the labels as they are placed), never by scanning every box and label for every
