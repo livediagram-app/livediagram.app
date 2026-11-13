@@ -35,7 +35,7 @@ export function RemoveColumnPopover({
   const [kind, setKind] = useState<'move' | 'trash'>(others.length > 0 ? 'move' : 'trash');
   const [to, setTo] = useState(others[0]?.status ?? '');
   const selectId = useId();
-  const cards = cardCount === 1 ? 'Its card' : `Its ${cardCount} cards`;
+  const cards = cardCount === 1 ? 'One card' : `Its ${cardCount} cards`;
   return (
     <AnchoredPopover
       anchor={anchor}
@@ -64,7 +64,7 @@ export function RemoveColumnPopover({
               title="Move to Another Column"
             >
               <label htmlFor={selectId} className="sr-only">
-                Move the cards to
+                {cardCount === 1 ? 'Move the card to' : 'Move the cards to'}
               </label>
               <Select
                 id={selectId}
@@ -92,7 +92,7 @@ export function RemoveColumnPopover({
             title="Move to the Trash"
           >
             <p className="mt-0.5 text-[12px] text-slate-500 dark:text-slate-400">
-              You can restore them from the Trash.
+              You can restore {cardCount === 1 ? 'it' : 'them'} from the Trash.
             </p>
           </Option>
         </div>

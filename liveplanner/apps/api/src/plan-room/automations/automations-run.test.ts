@@ -114,6 +114,16 @@ describe('runs, limits and loops', () => {
     expect((await card(c.id)).fields['status']).toBe('doing');
   });
 
+  it('runs a rule no more once it pauses, even on triggers the same wake still holds', async () => {
+    const rule = await w.rule({ steps: [{ kind: 'move', status: 'gone-column' }] });
+    for (let i = 0; i < 12; i += 1) {
+      const c = await w.make('A', { title: `F${i}` });
+      await move(c.id, 'done');
+    }
+    await room().alarm();
+    expect(await runs(`?rule=${rule.id}`)).toHaveLength(10);
+  });
+
   it('pauses a rule after ten failures in a row, and Resume turns it on again', async () => {
     const rule = await w.rule({ steps: [{ kind: 'move', status: 'gone-column' }] });
     for (let i = 0; i < 10; i += 1) {
@@ -128,6 +138,18 @@ describe('runs, limits and loops', () => {
     }>();
     expect(list.rules[0]).toMatchObject({ enabled: false, stats: { failuresInARow: 10 } });
     expect(list.rules[0]!.paused?.reason).toMatch(/gone/);
+    // What is gone rides as data with the pause, each run's reason and its failed line, so the editor words it
+    // without the id; the reason keeps the id for agents.
+    const gone = { kind: 'column', id: 'gone-column' };
+    expect(list.rules[0]!.paused).toMatchObject({ reason: 'Column gone-column is gone', gone });
+    const failed = (await runs(`?rule=${rule.id}`))[0]!;
+    expect(failed).toMatchObject({ reason: 'Column gone-column is gone', gone });
+    expect(failed.steps.at(-1)).toEqual({
+      kind: 'action',
+      ok: false,
+      text: 'Column gone-column is gone',
+      gone,
+    });
     // Off now: a card reaching Done runs nothing.
     expect(room().automations.kinds.size).toBe(0);
     const resumed = await (
@@ -204,6 +226,9 @@ describe('runs, limits and loops', () => {
     }
     const skipped = await runs('?result=skipped');
     expect(skipped).toMatchObject([{ reason: 'Too many changes at once' }]);
+    // The line is the Audit Trail's own, no run: it spends none of the day's runs.
+    const list = await (await w.call('GET', '')).json<{ runsToday: number }>();
+    expect(list.runsToday).toBe(0);
   });
 
   it('hears again after the room wakes on the same storage', async () => {
@@ -289,6 +314,31 @@ describe('copies, exports and deletes', () => {
     await c.room.importCopy('C', read.content.copy);
     expect(ruleRows(c.db)).toMatchObject([{ enabled: 0 }]);
     expect(c.room.automations.kinds.size).toBe(0);
+  });
+
+  it("a copy's and a file's rules name the copy's tabs, as its Form tab and saved filters moved to new ids", async () => {
+    const filter = { kind: 'saved_filter' as const, tab: 't1', filter: 'f1' };
+    await w.rule({
+      name: 'Form card',
+      trigger: { kind: 'form_response', formTab: 't1' },
+      conditions: [filter],
+    });
+    const source = await room().exportCopy('A', null, null);
+    const tab = source!.copy.tabs[0]!.id;
+    expect(tab).not.toBe('t1');
+    expect(source!.copy.automations![0]).toMatchObject({
+      trigger: { formTab: tab },
+      conditions: [{ ...filter, tab }],
+    });
+    const file = await exportProjectFile(room().roomEnv!, 'A', null);
+    if (file.status !== 'ok') throw new Error(file.status);
+    const read = readProjectFile(String(file.body));
+    if (!read.ok) throw new Error(read.failure);
+    const fileTab = read.content.copy.tabs[0]!.id;
+    expect(read.content.copy.automations![0]).toMatchObject({
+      trigger: { formTab: fileTab },
+      conditions: [{ ...filter, tab: fileTab }],
+    });
   });
 
   it('a delete drops them with the rest of the plan', async () => {

@@ -88,6 +88,8 @@ export function ValueTextField({
   // Whether the field has had focus, so its selection is where the person left the caret.
   const placed = useRef(false);
   const [menu, setMenu] = useState<HTMLButtonElement | null>(null);
+  // A phone's sheet just closed: its button keeps its hover card away until focus leaves it.
+  const [quiet, setQuiet] = useState(false);
   const { incoming } = useIncomingRule();
   const phone = !useMediaQuery('(min-width: 640px)');
   const groups = useMemo(
@@ -114,8 +116,10 @@ export function ValueTextField({
     const start = (placed.current ? el?.selectionStart : null) ?? value.length;
     const end = (placed.current ? el?.selectionEnd : null) ?? value.length;
     const next = insertValue(value, start, end, name);
+    // A value goes in whole or not at all: past the field's limit it is refused, as the field refuses typing.
+    if (maxLength !== undefined && next.text.length > maxLength) return;
     caret.current = next.caret;
-    onChange(maxLength ? next.text.slice(0, maxLength) : next.text);
+    onChange(next.text);
     // The popover's (or sheet's) own focus return lands on the button as it goes: the field takes focus back after it.
     requestAnimationFrame(() => {
       const field = area.current;
@@ -169,6 +173,8 @@ export function ValueTextField({
           label={label}
           open={menu !== null}
           onOpen={(anchor) => setMenu(menu ? null : anchor)}
+          quiet={quiet}
+          onBlur={() => setQuiet(false)}
         />
       </div>
       {hint ? <p className="text-[12px] text-slate-500 dark:text-slate-400">{hint}</p> : null}
@@ -178,7 +184,10 @@ export function ValueTextField({
           groups={groups}
           phone={phone}
           onInsert={insert}
-          onClose={() => setMenu(null)}
+          onClose={() => {
+            setMenu(null);
+            if (phone) setQuiet(true);
+          }}
         />
       ) : null}
     </div>

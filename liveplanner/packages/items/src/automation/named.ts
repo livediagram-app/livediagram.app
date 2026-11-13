@@ -118,9 +118,13 @@ function nameStep(s: Json, n: Namers): void {
     name(s, 'type', n.type);
     name(s, 'linkField', n.field);
   }
-  if (s['kind'] === 'set_field' || s['kind'] === 'clear_field') name(s, 'field', n.field);
+  if (s['kind'] === 'set_type') name(s, 'type', n.type);
+  // A Card field to link through, a field to set or clear, or an AI summary's text field.
+  if (['set_field', 'clear_field', 'link_card', 'ai'].includes(s['kind'] as string))
+    name(s, 'field', n.field);
   if (s['kind'] === 'set_field' && isObject(s['value'])) name(s['value'], 'from', n.field);
-  if (s['kind'] === 'assign' || s['kind'] === 'email') namePeople(s['to'], n);
+  if (s['kind'] === 'assign' || s['kind'] === 'email' || s['kind'] === 'mention')
+    namePeople(s['to'], n);
   if (s['kind'] === 'if' || s['kind'] === 'for') {
     nameAll(s['conditions'], (c) => nameCondition(c, n));
     nameAll(s['then'], (a) => nameStep(a, n));
@@ -141,6 +145,26 @@ export function namedRuleBody<T>(body: T, names: RuleNames): T {
   if (!isObject(body)) return body;
   const out = structuredClone(body) as Json;
   const n = namersOf(names);
+  if (isObject(out['trigger'])) nameTrigger(out['trigger'], n);
+  nameAll(out['conditions'], (c) => nameCondition(c, n));
+  nameAll(out['steps'], (s) => nameStep(s, n));
+  return out as T;
+}
+
+const same: Namer = (ref) => ref;
+
+/** `body` with the tabs it names (a Form Response's Form tab, a saved filter's board tab) put through `tabIds`, as a
+ *  plan's copy or file gives its tabs new ids; a tab the map lacks is kept. A copy, the input untouched. */
+export function ruleWithTabIds<T>(body: T, tabIds: ReadonlyMap<string, string>): T {
+  if (!isObject(body)) return body;
+  const out = structuredClone(body) as Json;
+  const n: Namers = {
+    status: same,
+    type: same,
+    field: same,
+    person: same,
+    tab: (ref) => tabIds.get(ref) ?? ref,
+  };
   if (isObject(out['trigger'])) nameTrigger(out['trigger'], n);
   nameAll(out['conditions'], (c) => nameCondition(c, n));
   nameAll(out['steps'], (s) => nameStep(s, n));

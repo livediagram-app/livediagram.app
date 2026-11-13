@@ -95,6 +95,27 @@ describe('a rule on a GitHub trigger', () => {
     });
   });
 
+  it("keeps a held run GitHub's after its Wait, in the card's history", async () => {
+    await w.rule({
+      name: 'Later on Open',
+      trigger: { kind: 'pull_request_opened' },
+      steps: [{ kind: 'flag' }, { kind: 'wait', hours: 1 }, { kind: 'move', status: 'review' }],
+    });
+    const c = await linked();
+    await pr();
+    await room().alarm();
+    w.plans
+      .get('A')!
+      .db.prepare('UPDATE automation_waiting SET at = ?')
+      .run(Date.now() - 1);
+    room().automations.schedule.restoreTimes();
+    await room().alarm();
+    await room().alarm();
+    expect(itemStatus(await card(c.id))).toBe('review');
+    const moves = (await history(c.id)).filter((e) => e.changes.some((x) => x.kind === 'moved'));
+    expect(moves.map((e) => e.tag)).toEqual(['automation_github']);
+  });
+
   it('finds a card by a long repository address, as Durable Object SQLite allows', async () => {
     // Production refuses a LIKE pattern over 50 bytes; this address is 54 with its wildcards (2026-11-12).
     await moveOn({ kind: 'pull_request_opened' }, 'review');

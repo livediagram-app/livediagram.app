@@ -2,10 +2,13 @@
 
 import { HoverCard, Glyph, SearchIcon } from '@liveworkspace/ui';
 
-// The box's two sizes: `md` the compact panel field it always was; `lg` a thumb's field on a phone (a filter row's,
-// 40px tall with 14px text and a leading search mark, the brand focus ring the Select and the other fields wear).
+// The box's sizes: `md` the compact panel field it always was; `row` a wide screen's filter row field (32px tall with
+// 13px text, a leading search mark and the brand focus ring, level with the 32px Selects beside it); `lg` a thumb's
+// field on a phone (a filter row's, 40px tall with 14px text and a leading search mark, the brand focus ring the
+// Select and the other fields wear).
 const FIELD = {
   md: 'w-full rounded-md border border-slate-200 bg-white py-1 pl-2 pr-7 text-xs text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200',
+  row: 'h-8 w-full rounded-lg border border-slate-200 bg-white pl-8 pr-8 text-[13px] text-slate-800 placeholder:text-slate-500 transition focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100 motion-reduce:transition-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:ring-brand-500/20',
   lg: 'h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-10 text-[14px] text-slate-800 placeholder:text-slate-500 transition focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100 motion-reduce:transition-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:ring-brand-500/20',
 } as const;
 
@@ -54,12 +57,12 @@ export function SearchInput({
 }) {
   return (
     <div className="relative flex-1">
-      {size === 'lg' ? (
+      {size === 'md' ? null : (
         <SearchIcon
           aria-hidden
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400"
+          className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 ${size === 'lg' ? 'left-3' : 'left-2.5'}`}
         />
-      ) : null}
+      )}
       <input
         type="text"
         value={value}
@@ -83,7 +86,7 @@ export function SearchInput({
             aria-label={clearAriaLabel}
             // slate-500 / slate-400 rather than a fainter grey: an icon needs 3:1 against the field
             // (WCAG 2.2 1.4.11), and the lighter one was easy to miss.
-            className={`absolute top-1/2 flex -translate-y-1/2 cursor-pointer touch-target items-center justify-center rounded text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200 ${size === 'lg' ? 'right-2 h-6 w-6' : 'right-1 h-5 w-5'}`}
+            className={`absolute top-1/2 flex -translate-y-1/2 cursor-pointer touch-target items-center justify-center rounded text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200 ${size === 'md' ? 'right-1 h-5 w-5' : size === 'lg' ? 'right-2 h-6 w-6' : 'right-1.5 h-5 w-5'}`}
           >
             <Glyph size={14} units={12} strokeLinejoin="miter">
               <path d="M3 3 L9 9 M9 3 L3 9" />

@@ -2,10 +2,11 @@
 // [Card Moved] to [Done] then [Set Completed On] [Remove Label blocked]", as words and chips, and the names of each
 // trigger, condition and action the builder's step cards and panels read too. Names come from the plan's outline
 // (its card types, columns, people, tabs and saved filters); one the plan no longer has reads as its stored id, so a
-// rule needing attention still says what it names. Pure.
+// rule needing attention still says what it names to an agent. The editor, which never shows an id, sets `goneWords`:
+// then one reads as the step panels' gone picks do ("a column no longer here", "Someone No Longer Here"). Pure.
 
 import { automationDayWords } from './conditions';
-import { BUILT_IN_FIELD_NAMES, builtInFieldLabel } from '../built-in-field-labels';
+import { builtInFieldLabel, builtInFieldName } from '../built-in-field-labels';
 import { isPriority, PRIORITY_LABELS } from '../fields';
 import type { ItemPerson } from '../item';
 import type { ItemTypeDef } from '../item-types';
@@ -27,9 +28,11 @@ import type {
 } from './types';
 import { isTimeTrigger } from './types';
 import { aiStepChip } from './ai-steps';
+import { checkboxOf, fieldKind, personNamed } from './set-value';
 
 // What the sentence reads a rule against. `tabs` names Form tabs and the boards' tabs; `filters` names saved filters
-// by id. Either may be absent where nothing reads them.
+// by their tab and id (savedFilterKey), as two boards may hold filters of the same id. Either may be absent where
+// nothing reads them.
 export interface RuleSentenceOutline {
   types: readonly Pick<ItemTypeDef, 'id' | 'label' | 'fields' | 'custom' | 'fieldLabels'>[];
   statuses: ReadonlyMap<string, string>;
@@ -38,7 +41,32 @@ export interface RuleSentenceOutline {
   filters?: ReadonlyMap<string, string>;
   // The plan's webhooks by id, named (the builder's list from the index); absent, a step's kept name reads.
   webhooks?: ReadonlyMap<string, string>;
+  // A column, card type, field or Form tab the plan no longer has reads in words, not as its stored id (the editor's).
+  goneWords?: boolean;
 }
+
+// What a gone column, card type, field or Form tab reads as, where `goneWords` asks.
+export const GONE_NAMES = {
+  column: 'a column no longer here',
+  type: 'a card type no longer here',
+  field: 'a field no longer here',
+  form: 'a form no longer here',
+} as const;
+
+// What a pick never made (an empty id: a template's field the plan has none like) reads as: the pick it waits for,
+// not something gone.
+export const UNPICKED_NAMES = {
+  column: 'a column',
+  type: 'a card type',
+  field: 'a field',
+  form: 'a form',
+} as const;
+
+const gone = (outline: RuleSentenceOutline, id: string, kind: keyof typeof GONE_NAMES): string =>
+  outline.goneWords ? (id ? GONE_NAMES[kind] : UNPICKED_NAMES[kind]) : id;
+
+/** A saved filter's key in RuleSentenceOutline.filters: its board's tab and its id. */
+export const savedFilterKey = (tab: string, filter: string): string => `${tab}\u0000${filter}`;
 
 // A joining word, or a chip (the trigger's own chip is drawn in the brand tint).
 export type RuleSentencePart = { word: string } | { chip: string; trigger?: true };
@@ -171,7 +199,7 @@ export function branchWords(related: AutomationRelated, outline?: RuleSentenceOu
   if (related.kind === 'linked' && related.field)
     return outline ? `${head} (${outlineFieldName(related.field, outline)})` : head;
   if (related.kind === 'saved_filter')
-    return `For each Card Matching ${outline?.filters?.get(related.filter) ?? 'a Saved Filter'}`;
+    return `For each Card Matching ${outline?.filters?.get(savedFilterKey(related.tab, related.filter)) ?? 'a Saved Filter'}`;
   return head;
 }
 
@@ -206,11 +234,11 @@ export function sentenceOrList(names: readonly string[]): string {
 }
 
 export function outlineStatusName(status: string, outline: RuleSentenceOutline): string {
-  return outline.statuses.get(status) ?? status;
+  return outline.statuses.get(status) ?? gone(outline, status, 'column');
 }
 
 export function outlineTypeName(typeId: string, outline: RuleSentenceOutline): string {
-  return outline.types.find((t) => t.id === typeId)?.label ?? typeId;
+  return outline.types.find((t) => t.id === typeId)?.label ?? gone(outline, typeId, 'type');
 }
 
 export function outlinePersonName(personId: string, outline: RuleSentenceOutline): string {
@@ -218,18 +246,18 @@ export function outlinePersonName(personId: string, outline: RuleSentenceOutline
 }
 
 export function outlineTabName(tabId: string, outline: RuleSentenceOutline): string {
-  return outline.tabs?.get(tabId) ?? tabId;
+  return outline.tabs?.get(tabId) ?? gone(outline, tabId, 'form');
 }
 
-/** A built-in field's name as the plan's types agree on it, or a custom field's label, else the id. */
+/** A built-in field's name as the plan's types agree on it, or a custom field's label, else the id (or words). */
 export function outlineFieldName(fieldId: string, outline: RuleSentenceOutline): string {
-  if (fieldId in BUILT_IN_FIELD_NAMES)
+  if (builtInFieldName(fieldId) !== undefined)
     return builtInFieldLabel(fieldId, outline.types as readonly ItemTypeDef[]);
   for (const t of outline.types) {
     const custom = t.custom?.find((f) => f.id === fieldId);
     if (custom) return custom.label;
   }
-  return fieldId;
+  return gone(outline, fieldId, 'field');
 }
 
 /** A day a date condition or Set Field names: "Today", "Today + 3 days", "Today - 1 day", or the day itself. */
@@ -258,7 +286,7 @@ export function conditionChip(
     case 'who':
       return `Who Did It ${condition.not ? 'is not' : 'is'} ${sentenceOrList(condition.who.map((w) => whoWords(w, outline)))}`;
     case 'saved_filter':
-      return `Matches ${outline.filters?.get(condition.filter) ?? 'a Saved Filter'}`;
+      return `Matches ${outline.filters?.get(savedFilterKey(condition.tab, condition.filter)) ?? 'a Saved Filter'}`;
     case 'field': {
       const head = `${outlineFieldName(condition.field, outline)} ${AUTOMATION_FIELD_OP_WORDS[condition.op]}`;
       const { value } = condition;
@@ -279,6 +307,13 @@ function setChip(field: string, value: AutomationSetValue, outline: RuleSentence
   const text = value.text.trim();
   // Text holding values, or too long for a chip, is the builder's to show.
   if (!text || text.includes('{{') || text.length > SENTENCE_VALUE_MAX) return head;
+  // A person by name (picked by id), as Assign reads one; a Checkbox as Yes or No.
+  const def = outline.types.flatMap((t) => t.custom ?? []).find((f) => f.id === field);
+  const kind = fieldKind(field, def);
+  if (kind === 'person')
+    return `${head} ${personNamed(outline.people, text)?.name ?? 'Someone No Longer Here'}`;
+  const on = kind === 'checkbox' ? checkboxOf(text) : undefined;
+  if (on !== undefined) return `${head} ${on ? 'Yes' : 'No'}`;
   return `${head} ${valueWords(field, text)}`;
 }
 

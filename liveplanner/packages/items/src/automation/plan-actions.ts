@@ -15,7 +15,12 @@ import {
   type ItemFields,
   type ItemPerson,
 } from '../item';
-import { ITEM_CHECKLIST_MAX, ITEM_LABELS_MAX, ITEM_TITLE_MAX } from '../limits';
+import {
+  ITEM_CHECKLIST_MAX,
+  ITEM_CHECKLIST_TEXT_MAX,
+  ITEM_LABELS_MAX,
+  ITEM_TITLE_MAX,
+} from '../limits';
 import { colourFieldOf } from '../item-colour';
 import { blockingCycleOf, isBlocksField } from '../blocked-by';
 import { linkedCardIds } from '../several-values';
@@ -29,15 +34,25 @@ import {
   AUTOMATION_TEXT_MAX,
   type AutomationAction,
   type AutomationBranch,
+  type AutomationGone,
   type AutomationOutgoing,
   type AutomationStep,
 } from './types';
 import { allHold } from './conditions';
-import { fieldDefOf, fieldName, personOf, statusName, typeHasField, typeName } from './outline';
+import {
+  changeNeverHeard,
+  fieldDefOf,
+  fieldName,
+  personOf,
+  planHasField,
+  statusName,
+  typeHasField,
+  typeName,
+} from './outline';
 import { fieldText, fillValues } from './values';
 import { relatedCards } from './related';
 import { branchWords, notifyChip, waitWords } from './sentence';
-import { Failed, fail, fieldKind, setValueOf } from './set-value';
+import { Failed, fail, failGone, fieldKind, setValueOf } from './set-value';
 import { planAi } from './ai-steps';
 import {
   walkOf,
@@ -97,7 +112,14 @@ function setField(a: Extract<AutomationAction, { kind: 'set_field' | 'clear_fiel
   const { plan, ctx, type } = w;
   const def = fieldDefOf(ctx.outline, a.field, type);
   const name = fieldName(ctx.outline, a.field, type);
+  // A field gone from the plan (the rule needs attention) is never written as hidden data, nor read from.
+  if (!planHasField(ctx.outline, a.field)) failGone({ kind: 'field', id: a.field });
+  if (a.kind === 'set_field' && 'from' in a.value && !planHasField(ctx.outline, a.value.from))
+    failGone({ kind: 'field', id: a.value.from });
   if (def?.kind === 'calculated' || def?.calculation) fail(`${name} is worked out, never set`);
+  // Time Spent's entries, a Votes tally and a Comments field change without a write: a rule never writes them.
+  if (def && changeNeverHeard(def))
+    fail(`${name} is never ${a.kind === 'set_field' ? 'set' : 'cleared'} by a rule`);
   const value =
     a.kind === 'set_field'
       ? setValueOf({
@@ -130,7 +152,8 @@ function apply(a: AutomationAction, w: Walk) {
   switch (a.kind) {
     case 'move': {
       const name = statusName(o, a.status);
-      if (!o.statuses.some((s) => s.status === a.status)) fail(`Column ${a.status} is gone`);
+      if (!o.statuses.some((s) => s.status === a.status))
+        failGone({ kind: 'column', id: a.status });
       if (!typeAllowsStatus(type, a.status)) fail(`A ${type.label} card can't go in ${name}`);
       return plan.line(`Move to ${name}`, plan.write('status', a.status));
     }
@@ -173,7 +196,7 @@ function apply(a: AutomationAction, w: Walk) {
       return copyCard(a, w);
     case 'set_type': {
       const to = o.types.find((t) => t.id === a.type);
-      if (!to) return fail(`Card type ${a.type} is gone`);
+      if (!to) return failGone({ kind: 'type', id: a.type });
       const status = itemStatus(plan.card);
       if (status && !typeAllowsStatus(to, status))
         fail(`A ${to.label} card can't be in ${statusName(o, status)}`);
@@ -232,9 +255,9 @@ function createCard(a: Extract<AutomationAction, { kind: 'create_card' }>, w: Wa
   if (plan.created.length >= AUTOMATION_CREATED_PER_RUN)
     fail(`A run makes up to ${AUTOMATION_CREATED_PER_RUN} card`);
   const type = o.types.find((t) => t.id === a.type);
-  if (!type) return fail(`Card type ${a.type} is gone`);
+  if (!type) return failGone({ kind: 'type', id: a.type });
   if (a.status && !o.statuses.some((s) => s.status === a.status))
-    fail(`Column ${a.status} is gone`);
+    failGone({ kind: 'column', id: a.status });
   const title = fillValues(a.title, { ...w.values, card: plan.card })
     .trim()
     .slice(0, ITEM_TITLE_MAX);
@@ -245,12 +268,18 @@ function createCard(a: Extract<AutomationAction, { kind: 'create_card' }>, w: Wa
   }
   if (a.linkField) {
     const def = type.custom?.find((f) => f.id === a.linkField && f.kind === 'card');
-    if (!def) return fail(`A ${type.label} card has no Card field ${a.linkField}`);
+    if (!def) return noCardField(a.linkField, type.label, w);
     fields[a.linkField] = def.multiple ? [plan.card.id] : plan.card.id;
   }
   plan.created.push({ type: type.id, ...(a.status ? { status: a.status } : {}), fields });
   plan.line(`Create ${typeName(o, type.id)} "${fields['title'] as string}"`);
 }
+
+// A Card field the card's type lacks: gone from the plan (its id kept for agents), else named.
+const noCardField = (field: string, label: string, w: Walk): never =>
+  planHasField(w.ctx.outline, field)
+    ? fail(`A ${label} card has no Card field ${fieldName(w.ctx.outline, field)}`)
+    : failGone({ kind: 'field', id: field });
 
 // Copy Card: a new card of the card's type, its title and fields, in its column or the one chosen.
 function copyCard(a: Extract<AutomationAction, { kind: 'copy_card' }>, w: Walk) {
@@ -259,7 +288,7 @@ function copyCard(a: Extract<AutomationAction, { kind: 'copy_card' }>, w: Walk) 
   if (plan.created.length >= AUTOMATION_CREATED_PER_RUN)
     fail(`A run makes up to ${AUTOMATION_CREATED_PER_RUN} card`);
   if (a.status && !o.statuses.some((s) => s.status === a.status))
-    fail(`Column ${a.status} is gone`);
+    failGone({ kind: 'column', id: a.status });
   const status = a.status ?? itemStatus(plan.card);
   if (status && !typeAllowsStatus(w.type, status))
     fail(`A ${w.type.label} card can't go in ${statusName(o, status)}`);
@@ -280,7 +309,11 @@ function addChecklist(a: Extract<AutomationAction, { kind: 'add_checklist' }>, w
   const texts = new Set(had.map((r) => r.text.trim().toLowerCase()));
   const rows = [...had];
   for (const item of a.items) {
-    const text = fillValues(item, { ...w.values, card: plan.card }).trim();
+    // Cut as a person's item is: a value filled in (a description, a webhook's) may run past it.
+    const text = fillValues(item, { ...w.values, card: plan.card })
+      .trim()
+      .slice(0, ITEM_CHECKLIST_TEXT_MAX)
+      .trimEnd();
     if (!text || texts.has(text.toLowerCase())) continue;
     texts.add(text.toLowerCase());
     rows.push({ text, done: false });
@@ -296,8 +329,7 @@ function addChecklist(a: Extract<AutomationAction, { kind: 'add_checklist' }>, w
 function linkCard(a: Extract<AutomationAction, { kind: 'link_card' }>, w: Walk) {
   const { plan, ctx, type } = w;
   const def = type.custom?.find((f) => f.id === a.field && f.kind === 'card');
-  if (!def || !type.fields.includes(def.id))
-    return fail(`A ${type.label} card has no Card field ${a.field}`);
+  if (!def || !type.fields.includes(def.id)) return noCardField(a.field, type.label, w);
   const chosen = 'card' in a.to ? a.to.card : undefined;
   const to =
     chosen === undefined ? w.values.trigger?.card : ctx.items?.find((i) => i.id === chosen);
@@ -365,12 +397,14 @@ function branch(s: AutomationBranch, top: Walk) {
       continue;
     }
     let reason: string | undefined;
+    let gone: AutomationGone | undefined;
     try {
       for (const a of s.then) apply(a, w);
     } catch (error) {
       if (!(error instanceof Failed)) throw error;
       reason = error.message;
-      w.plan.failure(reason);
+      gone = error.gone;
+      w.plan.failure(reason, gone);
       failed.push(`#${card.key}`);
     }
     run.related.push({
@@ -381,6 +415,7 @@ function branch(s: AutomationBranch, top: Walk) {
       mentions: w.plan.mentions,
       resolve: w.plan.resolve,
       ...(reason ? { failed: reason } : {}),
+      ...(gone ? { gone } : {}),
     });
   }
   if (failed.length)
@@ -444,8 +479,13 @@ export function planActions(
     }
   } catch (error) {
     if (!(error instanceof Failed)) throw error;
-    w.plan.failure(error.message);
-    return { failed: error.message, lines: run.lines, done: writesOf(w.plan) };
+    w.plan.failure(error.message, error.gone);
+    return {
+      failed: error.message,
+      ...(error.gone ? { gone: error.gone } : {}),
+      lines: run.lines,
+      done: writesOf(w.plan),
+    };
   }
   return { ...writesOf(w.plan), ...(wait ? { wait } : {}), lines: run.lines };
 }

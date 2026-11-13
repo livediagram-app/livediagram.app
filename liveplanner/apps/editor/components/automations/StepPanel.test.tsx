@@ -76,6 +76,330 @@ describe('StepPanel', () => {
     expect(screen.getByText(/listed under Run Rule/)).toBeTruthy();
   });
 
+  it('leaves out of Set Field and Clear Field the fields no write changes, unless a step holds one', () => {
+    const [first, ...rest] = outline().types;
+    const o = outline({
+      types: [
+        {
+          ...first!,
+          fields: [...first!.fields, 'f-votes', 'f-spent', 'f-score'],
+          custom: [
+            ...(first!.custom ?? []),
+            { id: 'f-votes', label: 'Votes', kind: 'votes' },
+            { id: 'f-spent', label: 'Time Spent', kind: 'duration', timeSpent: true },
+            { id: 'f-score', label: 'Score', kind: 'calculated', calculation: 'childCount' },
+          ],
+        },
+        ...rest,
+      ],
+    });
+    const names = (name: string) =>
+      [...screen.getByRole('combobox', { name }).querySelectorAll('option')].map(
+        (x) => x.textContent,
+      );
+    const set = render(
+      <Panel
+        o={o}
+        body={body({ steps: [{ kind: 'set_field', field: 'title', value: { from: 'due' } }] })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    for (const list of [names('Field'), names('From Field')])
+      for (const gone of ['Votes', 'Time Spent', 'Score']) expect(list).not.toContain(gone);
+    expect(names('Field')).toContain('Title');
+    set.unmount();
+    const clear = render(
+      <Panel
+        o={o}
+        body={body({ steps: [{ kind: 'clear_field', field: 'due' }] })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    expect(names('Field')).not.toContain('Votes');
+    clear.unmount();
+    // A step saved on one before still reads as what it holds.
+    render(
+      <Panel
+        o={o}
+        body={body({ steps: [{ kind: 'set_field', field: 'f-votes', value: { text: '5' } }] })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    expect(names('Field')).toContain('Votes');
+    expect(names('Field')).not.toContain('Score');
+  });
+
+  it('sets Priority and a Choice field to one of their values, picked, never typed', () => {
+    const [first, ...rest] = outline().types;
+    const o = outline({
+      types: [
+        {
+          ...first!,
+          fields: [...first!.fields, 'f-size'],
+          custom: [
+            ...(first!.custom ?? []),
+            { id: 'f-size', label: 'Size', kind: 'choice', options: ['S', 'M', 'L'] },
+          ],
+        },
+        ...rest,
+      ],
+    });
+    render(
+      <Panel
+        o={o}
+        body={body({ steps: [{ kind: 'set_field', field: 'title', value: { text: 'Hi' } }] })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    // Flagged and Checklist have their own actions.
+    const fieldNames = [
+      ...screen.getByRole('combobox', { name: 'Field' }).querySelectorAll('option'),
+    ];
+    expect(fieldNames.map((f) => f.textContent)).not.toContain('Flagged');
+    expect(fieldNames.map((f) => f.value)).not.toContain('checklist');
+    pick('Field', 'priority');
+    expect(latest.steps[0]).toEqual({
+      kind: 'set_field',
+      field: 'priority',
+      value: { text: 'urgent' },
+    });
+    expect(screen.queryByRole('textbox', { name: 'Text' })).toBeNull();
+    const setTo = screen.getByRole('combobox', { name: 'Set To' });
+    expect([...setTo.querySelectorAll('option')].map((x) => x.textContent)).toEqual([
+      'A Choice',
+      'Another Field’s Value',
+    ]);
+    const choice = screen.getByRole('combobox', { name: 'Choice' });
+    expect([...choice.querySelectorAll('option')].map((x) => x.textContent)).toEqual([
+      'Urgent',
+      'High',
+      'Medium',
+      'Low',
+    ]);
+    pick('Choice', 'high');
+    expect(latest.steps[0]).toMatchObject({ value: { text: 'high' } });
+    pick('Set To', 'from');
+    pick('Set To', 'text');
+    expect(latest.steps[0]).toMatchObject({ value: { text: 'urgent' } });
+    pick('Field', 'f-size');
+    expect(latest.steps[0]).toMatchObject({ field: 'f-size', value: { text: 'S' } });
+    pick('Choice', 'L');
+    expect(latest.steps[0]).toMatchObject({ value: { text: 'L' } });
+    // Back on a free field, text again.
+    pick('Field', 'title');
+    expect(screen.getByRole('textbox', { name: 'Text' })).toBeTruthy();
+  });
+
+  it('sets the Assignee and a Person field to one of the plan’s people, and a Checkbox to Yes or No', () => {
+    const [first, ...rest] = outline().types;
+    const o = outline({
+      types: [
+        {
+          ...first!,
+          fields: [...first!.fields, 'f-who', 'f-ok'],
+          custom: [
+            ...(first!.custom ?? []),
+            { id: 'f-who', label: 'Reviewer', kind: 'person' },
+            { id: 'f-ok', label: 'Signed Off', kind: 'checkbox' },
+          ],
+        },
+        ...rest,
+      ],
+    });
+    const people = o.people;
+    render(
+      <Panel
+        o={o}
+        body={body({ steps: [{ kind: 'set_field', field: 'title', value: { text: 'Hi' } }] })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    pick('Field', 'assignee');
+    // Kept by id, shown by name, as Assign's pick is; never typed.
+    expect(latest.steps[0]).toEqual({
+      kind: 'set_field',
+      field: 'assignee',
+      value: { text: people[0]!.id },
+    });
+    expect(screen.queryByRole('textbox', { name: 'Text' })).toBeNull();
+    const setTo = screen.getByRole('combobox', { name: 'Set To' });
+    expect([...setTo.querySelectorAll('option')].map((x) => x.textContent)).toEqual([
+      'A Person',
+      'Another Field’s Value',
+    ]);
+    const person = screen.getByRole('combobox', { name: 'Person' });
+    expect([...person.querySelectorAll('option')].map((x) => x.textContent)).toEqual(
+      people.map((p) => p.name),
+    );
+    pick('Person', people[1]!.id);
+    expect(latest.steps[0]).toMatchObject({ value: { text: people[1]!.id } });
+    pick('Field', 'f-who');
+    expect(latest.steps[0]).toMatchObject({ field: 'f-who', value: { text: people[1]!.id } });
+    pick('Field', 'f-ok');
+    expect(latest.steps[0]).toMatchObject({ field: 'f-ok', value: { text: 'true' } });
+    const yesNo = screen.getByRole('combobox', { name: 'Value' });
+    expect([...yesNo.querySelectorAll('option')].map((x) => x.textContent)).toEqual(['Yes', 'No']);
+    expect(
+      [...screen.getByRole('combobox', { name: 'Set To' }).querySelectorAll('option')][0]!
+        .textContent,
+    ).toBe('Yes or No');
+    pick('Value', 'false');
+    expect(latest.steps[0]).toMatchObject({ value: { text: 'false' } });
+  });
+
+  it('shows a person picked who has left in words, and a name an agent wrote as it is', () => {
+    const steps = (text: string): AutomationRuleBody['steps'] => [
+      { kind: 'set_field', field: 'assignee', value: { text } },
+    ];
+    render(<Panel body={body({ steps: steps('user_left') })} part={{ part: 'step', index: 0 }} />);
+    expect(screen.getByRole('option', { name: 'Someone No Longer Here' })).toBeTruthy();
+    expect(screen.queryByText(/user_left/)).toBeNull();
+    cleanup();
+    const name = outline().people[0]!.name.toUpperCase();
+    render(<Panel body={body({ steps: steps(name) })} part={{ part: 'step', index: 0 }} />);
+    expect(screen.getByRole('option', { name })).toBeTruthy();
+    cleanup();
+    render(<Panel body={body({ steps: steps('') })} part={{ part: 'step', index: 0 }} />);
+    expect(screen.getByRole('option', { name: 'Pick a person' })).toBeTruthy();
+  });
+
+  it('keeps a choice field’s text that is no choice, and a number it was saved with, shown', () => {
+    render(
+      <Panel
+        body={body({
+          steps: [{ kind: 'set_field', field: 'priority', value: { text: '{{card.priority}}' } }],
+        })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    expect(screen.getByRole('option', { name: '{{card.priority}}' })).toBeTruthy();
+    cleanup();
+    render(
+      <Panel
+        body={body({ steps: [{ kind: 'set_field', field: 'priority', value: { number: 2 } }] })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    expect(screen.getByRole('combobox', { name: 'Set To' })).toBe(
+      screen.getByDisplayValue('A Number'),
+    );
+    cleanup();
+    render(
+      <Panel
+        body={body({
+          steps: [{ kind: 'set_field', field: 'priority', value: { date: { today: 1 } } }],
+        })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    expect(screen.getByRole('combobox', { name: 'Set To' })).toBe(
+      screen.getByDisplayValue('A Day'),
+    );
+  });
+
+  it('starts Set Field afresh when the field changes kind, never carrying Priority’s value to Labels', () => {
+    render(
+      <Panel
+        body={body({
+          steps: [{ kind: 'set_field', field: 'priority', value: { text: 'low' } }],
+        })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    pick('Field', 'labels');
+    expect(latest.steps[0]).toEqual({ kind: 'set_field', field: 'labels', value: { text: '' } });
+    pick('Field', 'priority');
+    expect(latest.steps[0]).toMatchObject({ value: { text: 'urgent' } });
+    // A number starts on 0 and a date on Today, never on empty Text the save would refuse.
+    pick('Field', 'estimate');
+    expect(latest.steps[0]).toMatchObject({ field: 'estimate', value: { number: 0 } });
+    pick('Field', 'start');
+    expect(latest.steps[0]).toMatchObject({ field: 'start', value: { date: { today: 0 } } });
+    // The same kind keeps what it holds.
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Today, shifted by' }), {
+      target: { value: '3' },
+    });
+    pick('Field', 'due');
+    expect(latest.steps[0]).toEqual({
+      kind: 'set_field',
+      field: 'due',
+      value: { date: { today: 3 } },
+    });
+  });
+
+  it('keeps a template’s Today when its empty field is picked as a date field', () => {
+    render(
+      <Panel
+        body={body({
+          steps: [{ kind: 'set_field', field: '', value: { date: { today: 0 } } }],
+        })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    pick('Field', 'due');
+    expect(latest.steps[0]).toEqual({
+      kind: 'set_field',
+      field: 'due',
+      value: { date: { today: 0 } },
+    });
+  });
+
+  it('starts a template’s empty field afresh when the value does not suit the field picked', () => {
+    render(
+      <Panel
+        body={body({
+          steps: [{ kind: 'set_field', field: '', value: { date: { today: 0 } } }],
+        })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    pick('Field', 'title');
+    expect(latest.steps[0]).toEqual({ kind: 'set_field', field: 'title', value: { text: '' } });
+  });
+
+  it('leaves out of Field Changed the fields no write changes', () => {
+    const [first, ...rest] = outline().types;
+    const timed = {
+      ...first!,
+      fields: [...first!.fields, 'f-time', 'f-left'],
+      custom: [
+        ...(first!.custom ?? []),
+        { id: 'f-time', label: 'Time Spent', kind: 'duration' as const, timeSpent: true },
+        { id: 'f-left', label: 'Time Left', kind: 'duration' as const },
+      ],
+    };
+    render(
+      <Panel
+        body={body({ trigger: { kind: 'field_changed', fields: ['f-left'] } })}
+        part={{ part: 'trigger' }}
+        o={outline({ types: [timed, ...rest] })}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Time Left' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Time Spent' })).toBeNull();
+  });
+
+  it('names a field Field Changed never hears that the rule holds, never as gone', () => {
+    const [first, ...rest] = outline().types;
+    const timed = {
+      ...first!,
+      fields: [...first!.fields, 'f-time'],
+      custom: [
+        ...(first!.custom ?? []),
+        { id: 'f-time', label: 'Time Spent', kind: 'duration' as const, timeSpent: true },
+      ],
+    };
+    render(
+      <Panel
+        body={body({ trigger: { kind: 'field_changed', fields: ['f-time', 'f-lost'] } })}
+        part={{ part: 'trigger' }}
+        o={outline({ types: [timed, ...rest] })}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Time Spent', pressed: true })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: 'A field no longer here' })).toHaveLength(1);
+  });
+
   it('edits the type, column and who conditions, is and is not', () => {
     render(
       <Panel
@@ -169,6 +493,13 @@ describe('StepPanel', () => {
     pick('Column', 'done');
     expect(latest.steps[0]).toEqual({ kind: 'move', status: 'done' });
     pickStep('set_field');
+    // A new Set Field starts on Priority, at its first value; a free field takes a number or a day.
+    expect(latest.steps[0]).toEqual({
+      kind: 'set_field',
+      field: 'priority',
+      value: { text: 'urgent' },
+    });
+    pick('Field', 'estimate');
     pick('Set To', 'number');
     fireEvent.change(screen.getByRole('spinbutton', { name: 'Number' }), {
       target: { value: '5' },
@@ -184,8 +515,9 @@ describe('StepPanel', () => {
     expect(latest.steps[0]).toMatchObject({ value: { from: 'due' } });
     pick('Set To', 'text');
     fireEvent.change(screen.getByRole('textbox', { name: 'Text' }), { target: { value: 'Hi' } });
+    // A field of another kind (Estimate's number to Title's text) starts afresh.
     pick('Field', 'title');
-    expect(latest.steps[0]).toEqual({ kind: 'set_field', field: 'title', value: { text: 'Hi' } });
+    expect(latest.steps[0]).toEqual({ kind: 'set_field', field: 'title', value: { text: '' } });
     pickStep('clear_field');
     pick('Field', 'labels');
     expect(latest.steps[0]).toEqual({ kind: 'clear_field', field: 'labels' });
@@ -235,6 +567,8 @@ describe('StepPanel', () => {
       'Shipped by Ana Costa',
     );
     expect(screen.getByText(/Preview on #48 Publish pricing page/)).toBeTruthy();
+    // The rule's name beside Automation reads on the violet wash (slate 500 there was 4.34:1).
+    expect(document.querySelector('[data-preview-via]')!.className).toContain('text-slate-600');
   });
 
   it('writes an email to a person, and marks the part a refusal names', () => {

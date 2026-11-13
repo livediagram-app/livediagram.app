@@ -84,6 +84,24 @@ describe('one patch for the card', () => {
 });
 
 describe('Set Field', () => {
+  // Two plain text fields on the Bug type.
+  const WITH_TEXT = {
+    ...OUTLINE,
+    types: OUTLINE.types.map((t) =>
+      t.id === 'bug'
+        ? {
+            ...t,
+            fields: [...t.fields, 'f-x', 'f-y'],
+            custom: [
+              ...(t.custom ?? []),
+              { id: 'f-x', label: 'X', kind: 'text' as const },
+              { id: 'f-y', label: 'Y', kind: 'text' as const },
+            ],
+          }
+        : t,
+    ),
+  };
+
   it('fills values and reads them as the field takes them', () => {
     const r = done(
       run(
@@ -101,6 +119,7 @@ describe('Set Field', () => {
           { kind: 'set_field', field: 'f-y', value: { text: 'plain' } },
         ],
         bug({}, { key: 7 }),
+        { outline: WITH_TEXT },
       ),
     );
     expect(r.patch.set).toMatchObject({
@@ -121,6 +140,50 @@ describe('Set Field', () => {
       text: 'Clear Parent Bug',
       already: true,
     });
+  });
+
+  // A Checkbox field holds true or false, as the card's own tick writes it, never the text that set it.
+  const WITH_BOX = {
+    ...OUTLINE,
+    types: OUTLINE.types.map((t) =>
+      t.id === 'bug'
+        ? {
+            ...t,
+            fields: [...t.fields, 'f-ok'],
+            custom: [
+              ...(t.custom ?? []),
+              { id: 'f-ok', label: 'Signed Off', kind: 'checkbox' as const },
+            ],
+          }
+        : t,
+    ),
+  };
+
+  it('sets a Checkbox field on or off from its text, as true or false', () => {
+    const box = (text: string, card = bug()) =>
+      run([{ kind: 'set_field', field: 'f-ok', value: { text } }], card, { outline: WITH_BOX });
+    const on = done(box('true'));
+    expect(on.patch.set).toEqual({ 'f-ok': true });
+    expect(on.lines[0]!.text).toBe('Set Signed Off to Yes');
+    expect(done(box(' Yes ')).patch.set).toEqual({ 'f-ok': true });
+    expect(done(box('false', bug({ 'f-ok': true }))).patch.set).toEqual({ 'f-ok': false });
+    expect(done(box('No', bug({ 'f-ok': true }))).lines[0]!.text).toBe('Set Signed Off to No');
+    // A value filled in from another Checkbox reads as it shows (Yes or No).
+    expect(done(box('{{card.field.Signed Off}}', bug({ 'f-ok': true }))).lines[0]).toMatchObject({
+      already: true,
+    });
+    expect(failed(box('maybe'))).toBe('Signed Off is Yes or No, not "maybe"');
+  });
+
+  it('fails a person picked who has left as gone, a value filled in as naming nobody', () => {
+    const r = one({ kind: 'set_field', field: 'assignee', value: { text: 'p-left' } });
+    expect(r).toMatchObject({
+      failed: 'Nobody called "p-left" can be set',
+      gone: { kind: 'person', id: 'p-left' },
+    });
+    const filled = one({ kind: 'set_field', field: 'assignee', value: { text: '{{card.title}}' } });
+    expect(filled).toMatchObject({ failed: 'Nobody called "Login fails" can be set' });
+    expect('gone' in filled).toBe(false);
   });
 
   it('clears the field when the filled text is empty', () => {
@@ -156,6 +219,10 @@ describe('Set Field', () => {
       "Estimate can't hold that value",
     ],
     [{ kind: 'clear_field', field: 'f-severity' }, 'Bug cards need Severity'],
+    // A field gone from the plan, or a source field gone: never written as hidden data.
+    [{ kind: 'set_field', field: 'f-gone', value: { text: 'x' } }, 'Field f-gone is gone'],
+    [{ kind: 'clear_field', field: 'f-gone' }, 'Field f-gone is gone'],
+    [{ kind: 'set_field', field: 'due', value: { from: 'f-gone' } }, 'Field f-gone is gone'],
   ] as [AutomationAction, string][])('fails a value the field refuses: %o', (action, reason) => {
     expect(failed(one(action))).toBe(reason);
   });
@@ -281,7 +348,12 @@ describe('Comments, emails and Create Card', () => {
     [{ kind: 'create_card', type: 'bug', title: 't', status: 'qa' }, 'Column qa is gone'],
     [
       { kind: 'create_card', type: 'note', title: 't', linkField: 'f-nope' },
-      'A Note card has no Card field f-nope',
+      'Field f-nope is gone',
+    ],
+    // A field the plan has, but not as the new card's Card field: named.
+    [
+      { kind: 'create_card', type: 'note', title: 't', linkField: 'f-points' },
+      'A Note card has no Card field Points',
     ],
   ] as [AutomationAction, string][])('fails a card it cannot make: %o', (action, reason) => {
     expect(failed(one(action))).toBe(reason);
@@ -313,11 +385,14 @@ describe('If / Else, failing and the action limit', () => {
 
   it('stops at the failed step, keeping the lines before it', () => {
     const r = run([{ kind: 'flag' }, { kind: 'move', status: 'qa' }, { kind: 'unflag' }]);
+    // What is gone rides with the reason and its line, as data, so the editor words it without the id.
+    const gone = { kind: 'column', id: 'qa' };
     expect(r).toEqual({
       failed: 'Column qa is gone',
+      gone,
       lines: [
         { kind: 'action', ok: true, text: 'Flag' },
-        { kind: 'action', ok: false, text: 'Column qa is gone' },
+        { kind: 'action', ok: false, text: 'Column qa is gone', gone },
       ],
       // The Flag before it stays done; the Unflag after it never ran.
       done: {
@@ -349,5 +424,37 @@ describe('If / Else, failing and the action limit', () => {
     expect(() =>
       planActions([{ kind: 'move', status: 'done' }], ctxFor(bug(), { outline })),
     ).toThrow('boom');
+  });
+});
+
+describe('fields no write changes', () => {
+  // Time Spent's entries, a Votes tally and a Comments field: a rule never writes them (spec "Triggers").
+  const outline = {
+    ...OUTLINE,
+    types: OUTLINE.types.map((t) =>
+      t.id === 'bug'
+        ? {
+            ...t,
+            fields: [...t.fields, 'f-votes', 'f-spent', 'f-talk'],
+            custom: [
+              ...(t.custom ?? []),
+              { id: 'f-votes', label: 'Votes', kind: 'votes' as const },
+              { id: 'f-spent', label: 'Time Spent', kind: 'duration' as const, timeSpent: true },
+              { id: 'f-talk', label: 'Talk', kind: 'comments' as const },
+            ],
+          }
+        : t,
+    ),
+  };
+  it.each([
+    [{ kind: 'set_field', field: 'f-votes', value: { text: '5' } }, 'Votes is never set by a rule'],
+    [
+      { kind: 'set_field', field: 'f-spent', value: { number: 30 } },
+      'Time Spent is never set by a rule',
+    ],
+    [{ kind: 'set_field', field: 'f-talk', value: { text: 'hi' } }, 'Talk is never set by a rule'],
+    [{ kind: 'clear_field', field: 'f-votes' }, 'Votes is never cleared by a rule'],
+  ] as [AutomationAction, string][])('fails %o rather than write it', (action, reason) => {
+    expect(failed(planActions([action], ctxFor(bug(), { outline })))).toBe(reason);
   });
 });

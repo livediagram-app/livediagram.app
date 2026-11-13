@@ -28,7 +28,15 @@ afterEach(() => {
 });
 
 let text = '';
-function Field({ start = 'Done by ', branch = false }: { start?: string; branch?: boolean }) {
+function Field({
+  start = 'Done by ',
+  branch = false,
+  maxLength,
+}: {
+  start?: string;
+  branch?: boolean;
+  maxLength?: number;
+}) {
   const [value, setValue] = useState(start);
   return (
     <ValueTextField
@@ -40,6 +48,7 @@ function Field({ start = 'Done by ', branch = false }: { start?: string; branch?
       }}
       fields={[{ id: 'f1', name: 'Completed On' }]}
       branch={branch}
+      maxLength={maxLength}
     />
   );
 }
@@ -80,6 +89,19 @@ describe('Insert a Value', () => {
     vi.useRealTimers();
   });
 
+  it('inserts a value whole or not at all near the field’s limit', () => {
+    // 'Done by ' and {{person}} make 18: one short of room, nothing goes in; with room, all of it.
+    render(<Field maxLength={17} />);
+    fireEvent.click(button());
+    fireEvent.click(screen.getByRole('option', { name: /^Who Did It/ }));
+    expect(text).toBe('Done by ');
+    cleanup();
+    render(<Field maxLength={18} />);
+    fireEvent.click(button());
+    fireEvent.click(screen.getByRole('option', { name: /^Who Did It/ }));
+    expect(text).toBe('Done by {{person}}');
+  });
+
   it('walks the values with the arrow keys from the search, inserts with Enter and closes on Escape', () => {
     render(<Field />);
     fireEvent.focus(area());
@@ -98,6 +120,19 @@ describe('Insert a Value', () => {
     fireEvent.click(button());
     fireEvent.keyDown(screen.getByRole('combobox', { name: 'Find a value' }), { key: 'Escape' });
     expect(screen.queryByRole('listbox')).toBeNull();
+  });
+
+  it('draws the marked value’s token dark enough to read on its wash', () => {
+    render(<Field />);
+    fireEvent.click(button());
+    const search = screen.getByRole('combobox', { name: 'Find a value' });
+    const marked = document.getElementById(search.getAttribute('aria-activedescendant')!)!;
+    const token = marked.querySelector('[data-value-token]')!;
+    // Slate 500 on the violet wash was 4.34:1, under the 4.5:1 small text needs (axe color-contrast).
+    expect(token.className).toContain('text-slate-600');
+    expect(token.className).not.toContain('text-slate-500');
+    const other = screen.getAllByRole('option').find((o) => o !== marked)!;
+    expect(other.querySelector('[data-value-token]')!.className).toContain('text-slate-500');
   });
 
   it('narrows every group by the search, and says when nothing matches', () => {
@@ -127,6 +162,40 @@ describe('Insert a Value', () => {
     fireEvent.click(within(sheet).getByRole('option', { name: /^Trigger Link/ }));
     expect(text).toBe('Done by {{trigger.url}}');
     expect(screen.queryByRole('dialog', { name: 'Insert a Value' })).toBeNull();
+  });
+});
+
+describe('Insert a Value on a phone', () => {
+  // A sheet closed by Escape hands focus back to the button as keyboard focus: its hover card stays away, so it
+  // never sits over the step's fields, until focus leaves the button.
+  it('keeps its hover card away once Escape closes the sheet', () => {
+    wide = false;
+    vi.spyOn(HTMLElement.prototype, 'matches').mockImplementation(function (
+      this: HTMLElement,
+      q: string,
+    ) {
+      return q === ':focus-visible' ? true : Element.prototype.matches.call(this, q);
+    });
+    render(<Field />);
+    fireEvent.click(button());
+    const sheet = screen.getByRole('dialog', { name: 'Insert a Value' });
+    fireEvent.keyDown(sheet, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'Insert a Value' })).toBeNull();
+    fireEvent.focus(button());
+    expect(
+      screen.queryByText('Put a value of the card, like its title or due date, at the caret.', {
+        selector: 'p',
+      }),
+    ).toBeNull();
+    // Focus gone and back (a person tabbing to it again): the card shows as ever.
+    fireEvent.blur(button());
+    fireEvent.focus(button());
+    expect(
+      screen.getByText('Put a value of the card, like its title or due date, at the caret.', {
+        selector: 'p',
+      }),
+    ).toBeTruthy();
+    vi.restoreAllMocks();
   });
 });
 

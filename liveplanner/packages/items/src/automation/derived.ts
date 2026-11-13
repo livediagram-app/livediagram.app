@@ -8,11 +8,12 @@ import { isArchived, isTrashed } from '../board';
 import { blockingIndexOf, blocksFieldsOf } from '../blocked-by';
 import { childIndexOf, childrenOf } from '../calculated-fields';
 import { itemStatus, type Item } from '../item';
+import { itemStatusSince } from '../status-since';
 import type { ItemTypeDef } from '../item-types';
 import { linkedCardIds } from '../several-values';
 import { typeIn } from '../type-catalogue';
 import type { AutomationEvent } from './matches';
-import type { AutomationTrigger } from './types';
+import { AUTOMATION_DERIVED_CARDS_MAX, type AutomationTrigger } from './types';
 
 export type DerivedTrigger = Extract<
   AutomationTrigger,
@@ -48,8 +49,34 @@ function pointsAt(
   return out;
 }
 
-/** The cards a derived trigger runs on for `event`, in number order: none when it does not fire. */
+/** The cards a derived trigger runs on for `event`, in number order, at most AUTOMATION_DERIVED_CARDS_MAX: none when
+ *  it does not fire. A blocker of 2,000 cards would otherwise run each of 50 rules 2,000 times in one wake. */
 export function derivedTargets(
+  trigger: DerivedTrigger,
+  event: AutomationEvent,
+  items: readonly Item[],
+  types: readonly ItemTypeDef[],
+  isDone: IsDone,
+): Item[] {
+  return derivedFound(trigger, event, items, types, isDone).cards;
+}
+
+/** derivedTargets' cards with how many it found before the cut, for the Run Log's "Ran on 100 of 340 cards". */
+export function derivedFound(
+  trigger: DerivedTrigger,
+  event: AutomationEvent,
+  items: readonly Item[],
+  types: readonly ItemTypeDef[],
+  isDone: IsDone,
+): { cards: Item[]; found: number } {
+  const all = allTargets(trigger, event, items, types, isDone);
+  return {
+    cards: all.sort((a, b) => a.key - b.key).slice(0, AUTOMATION_DERIVED_CARDS_MAX),
+    found: all.length,
+  };
+}
+
+function allTargets(
   trigger: DerivedTrigger,
   event: AutomationEvent,
   items: readonly Item[],
@@ -62,12 +89,21 @@ export function derivedTargets(
   switch (trigger.kind) {
     case 'column_limit': {
       if (!live(card) || itemStatus(card) !== trigger.status) return [];
-      const count = items.filter((i) => live(i) && itemStatus(i) === trigger.status).length;
-      // Exactly one past: the card that tipped it, once each time the column goes over.
-      return count === trigger.limit + 1 ? [card] : [];
+      const column = items.filter((i) => live(i) && itemStatus(i) === trigger.status);
+      if (column.length <= trigger.limit) return [];
+      // Exactly one past: the card that tipped it, once each time the column goes over. Several in before the wake
+      // (three into a column of one): the card that arrived one past the limit, by when each entered the column.
+      if (column.length === trigger.limit + 1) return [card];
+      const byArrival = column.sort(
+        (a, b) => itemStatusSince(a) - itemStatusSince(b) || a.key - b.key,
+      );
+      return byArrival[trigger.limit] === card ? [card] : [];
     }
     case 'card_unblocked': {
-      if (!(finished(event, isDone) || event.kind === 'archived')) return [];
+      // Archiving frees what it blocked only when it was still open: a done blocker unblocked them when it finished.
+      const freed =
+        finished(event, isDone) || (event.kind === 'archived' && !isDone(itemStatus(card)));
+      if (!freed) return [];
       // The cards whose Blocks fields name it (an archived blocker is out of the index, so asked directly), now with
       // no open blocker.
       const index = blockingIndexOf(items, types, isDone);
@@ -97,7 +133,49 @@ export function derivedTargets(
           if (linked.some((l) => l.id === card.id) && linked.every(done)) out.push(holder);
         }
       }
-      return out.sort((a, b) => a.key - b.key);
+      return out;
     }
   }
+}
+
+/** The moment each target's trigger reached, as the plan's cards now stand: the cards it was worked out from (the
+ *  target's blockers, its children or the cards it links to, each at its rev; the column's cards, by id alone, as the
+ *  rule's own write to the card that tipped it moves its rev on). Two events a wake reads against the same cards (a
+ *  group move, two moves before the wake) reach the same moment, so the rule runs once; a related card changed since
+ *  makes a new one. */
+export function derivedMoments(
+  trigger: DerivedTrigger,
+  targets: readonly Item[],
+  items: readonly Item[],
+  types: readonly ItemTypeDef[],
+): string[] {
+  const byId = new Map(items.map((i) => [i.id, i]));
+  const index =
+    trigger.kind === 'related_done' && trigger.related === 'children'
+      ? childIndexOf(items, types)
+      : null;
+  const moment = (cards: readonly Item[], revs = true) =>
+    cards
+      .map((c) => (revs ? `${c.id}@${c.rev}` : c.id))
+      .sort()
+      .join(',');
+  return targets.map((target) => {
+    switch (trigger.kind) {
+      case 'column_limit':
+        return moment(
+          items.filter((i) => live(i) && itemStatus(i) === trigger.status),
+          false,
+        );
+      case 'card_unblocked':
+        return moment(
+          blocksFieldsOf(typeIn(types, target.type))
+            .flatMap((f) => linkedCardIds(target, f))
+            .flatMap((id) => byId.get(id) ?? []),
+        );
+      case 'related_done':
+        return moment(
+          (index ? childrenOf(target, index) : pointsAt(target, types, byId)).filter(live),
+        );
+    }
+  });
 }

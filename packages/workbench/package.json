@@ -501,6 +501,7 @@
     "./components/split/SplitDivider": "./src/components/split/SplitDivider.tsx",
     "./components/palette/MenuToggleRow": "./src/components/palette/MenuToggleRow.tsx",
     "./components/primitives/movable-panel-geometry": "./src/components/primitives/movable-panel-geometry.ts",
+    "./components/primitives/movable-panel-inside": "./src/components/primitives/movable-panel-inside.ts",
     "./lib/element-size-bounds": "./src/lib/element-size-bounds.ts",
     "./lib/split-sizes": "./src/lib/split-sizes.ts",
     "./components/palette/useContextMenuScaffold": "./src/components/palette/useContextMenuScaffold.ts",

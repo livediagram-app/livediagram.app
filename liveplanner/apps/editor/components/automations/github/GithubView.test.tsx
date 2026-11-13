@@ -223,7 +223,7 @@ describe('GithubView: connected', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Disconnect' }));
     fireEvent.click(screen.getAllByRole('button', { name: 'Disconnect' }).at(-1)!);
     await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith('Only an Editor signed in can connect GitHub.'),
+      expect(toast.error).toHaveBeenCalledWith('Only an Editor signed in can disconnect GitHub.'),
     );
     expect(screen.getByText('acme')).toBeTruthy();
   });
@@ -266,5 +266,55 @@ describe('GithubView: coming back and who may', () => {
     view();
     await act(async () => {});
     expect(client.readGithub).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('GithubView: reading again', () => {
+  beforeEach(() => client.readGithub.mockReset());
+  it('reads the connection again each time the view opens, keeping what it shows meanwhile', async () => {
+    client.readGithub.mockResolvedValueOnce(connection());
+    view();
+    await screen.findByText('acme');
+    cleanup();
+    // Disconnected elsewhere since: opening the view again shows it.
+    client.readGithub.mockResolvedValueOnce(null);
+    view();
+    expect(screen.getByText('acme')).toBeTruthy();
+    await screen.findByRole('heading', { name: 'Connect GitHub' });
+    expect(client.readGithub).toHaveBeenCalledTimes(2);
+  });
+
+  it('reads the list again when a picked repository left, and counts only the listed picks', async () => {
+    client.readGithub.mockResolvedValueOnce(connection());
+    view();
+    await screen.findByText('acme/secret');
+    fireEvent.click(screen.getAllByRole('switch').at(-1)!);
+    client.chooseGithubRepositories.mockRejectedValueOnce(
+      new GithubRefusal(409, 'github_repository_gone'),
+    );
+    // acme/secret left the installation.
+    client.readGithub.mockResolvedValueOnce(
+      connection({ repositories: [repo(1, 'acme/web', { chosen: true })] }),
+    );
+    fireEvent.click(button('Save Repositories'));
+    expect((await screen.findByRole('alert')).textContent).toMatch(/left the installation/);
+    await waitFor(() => expect(screen.queryByText('acme/secret')).toBeNull());
+    expect(client.readGithub).toHaveBeenCalledTimes(2);
+    // The gone pick is not counted, and nothing is left to save.
+    expect(screen.getByText('1 of 1 heard')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Save Repositories' })).toBeNull();
+  });
+
+  it('disconnects once for a double press', async () => {
+    client.readGithub.mockResolvedValue(connection());
+    let done: () => void = () => {};
+    client.disconnectGithub.mockReturnValue(new Promise<void>((r) => (done = r)));
+    view();
+    fireEvent.click(await screen.findByRole('button', { name: 'Disconnect' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Disconnect' }).at(-1)!);
+    fireEvent.click(screen.getAllByRole('button', { name: /Disconnect/ }).at(-1)!);
+    await act(async () => done());
+    expect(client.disconnectGithub).toHaveBeenCalledTimes(1);
+    expect(toast.info).toHaveBeenCalledTimes(1);
   });
 });

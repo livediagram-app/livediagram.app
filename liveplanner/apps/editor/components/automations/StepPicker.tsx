@@ -35,7 +35,7 @@ const RAIL_OFF =
 const CHIP_ON =
   'border-slate-900 bg-slate-900 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-900';
 const CHIP_OFF =
-  'border-slate-200 bg-white text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
+  'border-slate-200 bg-white text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600';
 const TILE =
   'flex w-full cursor-pointer flex-col overflow-hidden rounded-xl border border-slate-200 bg-white text-left outline-none transition duration-micro hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-[0_12px_28px_-12px_rgba(76,29,149,0.28),0_2px_6px_rgba(15,23,42,0.06)] focus-visible:border-brand-400 focus-visible:ring-2 focus-visible:ring-brand-400/50 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:border-slate-200 disabled:hover:shadow-none motion-reduce:transition-none dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-500/60 dark:disabled:hover:border-slate-700';
 
@@ -118,7 +118,9 @@ export function StepPicker<K extends string>({
               : 0;
     if (!step) return;
     e.preventDefault();
-    const next = at + step;
+    // A full group's tiles are disabled and take no focus: the keys walk past them.
+    let next = at + step;
+    while (next >= 0 && next < list.length && list[next]!.disabled) next += step;
     if (next < 0) {
       scroller.current
         ?.closest('[data-dialog-panel]')
@@ -126,7 +128,11 @@ export function StepPicker<K extends string>({
         ?.focus();
       return;
     }
-    list[Math.min(next, list.length - 1)]?.focus();
+    if (next >= list.length) {
+      next = list.length - 1;
+      while (next > at && list[next]!.disabled) next -= 1;
+    }
+    list[next]?.focus();
   };
   const onSearchKey = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown') {

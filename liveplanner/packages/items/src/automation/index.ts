@@ -19,3 +19,4 @@ export * from './github-triggers';
 export * from './named';
 export * from './rule-format';
 export * from './ai-draft';
+export * from './set-field-check';

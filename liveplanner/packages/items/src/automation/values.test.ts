@@ -97,6 +97,10 @@ describe('fillValues', () => {
     expect(fillValues('{{now - 1d}}|{{now.date}}|{{card.due}}', ctx(), { iso: true })).toBe(
       '2026-11-10|2026-11-11|2026-11-20',
     );
+    // A date field read by name, too, so Set Field Due to {{card.field.Deadline}} takes it.
+    expect(
+      fillValues('{{card.field.deadline}}|{{card.field.Severity}}', ctx(), { iso: true }),
+    ).toBe('2026-11-20|High');
   });
 
   it('reads what it cannot fill as nothing, and never reads a value twice', () => {
@@ -138,5 +142,34 @@ describe('the triggering card’s values', () => {
     const text = '{{trigger.title}} {{trigger.key}} {{trigger.url}}';
     expect(fillValues(text, ctx({}, { trigger }))).toBe('Epic #7 https://app.test/7');
     expect(fillValues(text, ctx())).toBe('  ');
+  });
+});
+
+describe('hostile templates', () => {
+  // Prototype names never read the prototype: a webhook value the call never gave, or a field no type holds, is
+  // nothing.
+  it('reads nothing for a prototype name', () => {
+    const c = ctx({}, { webhook: { 'build.status': 'ok' } });
+    for (const name of ['__proto__', 'constructor', 'toString', 'hasOwnProperty'])
+      expect(fillValues(`[{{webhook.${name}}}][{{card.field.${name}}}]`, c)).toBe('[][]');
+    expect(fillValues('{{webhook.build.status}}', c)).toBe('ok');
+  });
+
+  it('fills deep, brace-heavy and unterminated text in one linear pass, without a throw', () => {
+    const c = ctx({}, { webhook: {} });
+    const hostile = [
+      '{{'.repeat(50_000),
+      '}}'.repeat(50_000),
+      `{{card.field.${'x.'.repeat(20_000)}}}`,
+      `{{webhook.${'a.'.repeat(20_000)}a}}`,
+      `{{now ${' '.repeat(50_000)}+ 3d}}`,
+      `{{${'{'.repeat(30_000)}card.title`,
+      '{{card.title}}'.repeat(10_000),
+    ];
+    for (const text of hostile) {
+      expect(() => fillValues(text, c)).not.toThrow();
+      expect(() => unknownValueIn(text, { webhook: true, branch: true })).not.toThrow();
+    }
+    expect(cpuMsOf(() => hostile.forEach((t) => fillValues(t, c)))).toBeLessThan(cpuBudgetMs(300));
   });
 });

@@ -10,8 +10,10 @@ import {
   isTimeTrigger,
   nextMoment,
   type AutomationEventKind,
+  type AutomationGone,
   type AutomationRule,
 } from '@liveplanner/items';
+import { stopWaits } from './automation-waits';
 
 export type Sql = Pick<SqlStorage, 'exec'>;
 
@@ -34,6 +36,12 @@ export class AutomationStore {
   private readonly ready: () => boolean;
   // Called after the time triggers' schedule changed (the room's wake asks again).
   onSchedule: () => void = () => {};
+  // The runs claimed since the room woke, by any request: a run whose day's count was read before another claim
+  // reads it again (automation-runner.ts runRule), so a wake and a Run Rule at once never pass the day's budget.
+  claims = 0;
+  // The AI calls asked since the room woke, a rule's or Describe a Rule's: a count read before another ask is read
+  // again (automation-ai.ts runAiSteps).
+  aiAsks = 0;
 
   constructor(sql: () => Sql, ready: () => boolean) {
     this.sql = sql;
@@ -70,10 +78,26 @@ export class AutomationStore {
     return new Map(rows.map((r) => [r.rule_id, Number(r.next_at)]));
   }
 
-  // The rule's place in Assign in Turn's list.
+  // Turns runs under way have taken, by rule (in memory: a run settles before the room sleeps).
+  private readonly taken = new Map<string, number>();
+
+  // The rule's place in Assign in Turn's list, past the turns runs under way have taken, so two runs at once (two
+  // Run Rules) assign the next two people, never one twice.
   turn(id: string): number {
     const row = this.sql().exec('SELECT turn FROM automation_rules WHERE id = ?', id).toArray()[0];
-    return Number(row?.['turn'] ?? 0);
+    return Number(row?.['turn'] ?? 0) + (this.taken.get(id) ?? 0);
+  }
+
+  // A run under way takes `turns`, read and planned with no await between; it gives them back as it settles.
+  take(id: string, turns: number): void {
+    if (turns > 0) this.taken.set(id, (this.taken.get(id) ?? 0) + turns);
+  }
+
+  giveBack(id: string, turns: number): void {
+    if (turns <= 0) return;
+    const left = (this.taken.get(id) ?? 0) - turns;
+    if (left > 0) this.taken.set(id, left);
+    else this.taken.delete(id);
   }
 
   // A done run took `turns` turns: the next run starts that far on.
@@ -144,6 +168,7 @@ export class AutomationStore {
 
   // A rule as written now. `failures`: set it too (Resume and a matched run clear it).
   update(rule: AutomationRule, failures?: number): void {
+    const before = this.get(rule.id);
     this.sql().exec(
       `UPDATE automation_rules SET body = ?, enabled = ?, failures = COALESCE(?, failures) WHERE id = ?`,
       JSON.stringify(rule),
@@ -151,6 +176,8 @@ export class AutomationStore {
       failures ?? null,
       rule.id,
     );
+    // A Wait's held runs go on only for the rule as it was when they waited, and only while it stays on.
+    if (!rule.enabled || before?.edited.at !== rule.edited.at) stopWaits(this.sql(), rule.id);
     this.load();
     this.reschedule(rule, rule.id);
   }
@@ -159,6 +186,7 @@ export class AutomationStore {
     const gone =
       this.sql().exec('DELETE FROM automation_rules WHERE id = ? RETURNING id', id).toArray()
         .length > 0;
+    stopWaits(this.sql(), id);
     this.load();
     this.reschedule(null, id);
     return gone;
@@ -183,7 +211,8 @@ export class AutomationStore {
     result: 'done' | 'failed',
     reason: string,
     now: number,
-    webhook?: string,
+    // The webhook a message's failure names (for Fix Webhook), and what a reason names that the plan lacks.
+    about: { webhook?: string; gone?: AutomationGone } = {},
   ): boolean {
     const rule = this.get(id);
     if (!rule) return false;
@@ -196,10 +225,7 @@ export class AutomationStore {
       this.sql().exec('UPDATE automation_rules SET failures = ? WHERE id = ?', failures, id);
       return false;
     }
-    this.update(
-      { ...rule, enabled: false, paused: { reason, at: now, ...(webhook ? { webhook } : {}) } },
-      failures,
-    );
+    this.update({ ...rule, enabled: false, paused: { reason, at: now, ...about } }, failures);
     console.info('[automations] paused', { failures });
     return true;
   }

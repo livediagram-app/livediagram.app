@@ -7,7 +7,7 @@
 
 import type { AutomationAction, AutomationActionKind } from '@liveplanner/items';
 import type { AutomationOutline } from '../automation-outline';
-import { defaultAction } from '../step-defaults';
+import { startAction } from '../step-defaults';
 import { ChangeActionField } from './ChangeActionField';
 import { AssignPanel } from './AssignPanel';
 import { CopyCardPanel, SetColourPanel, SetTypePanel } from './CardActionPanels';
@@ -132,7 +132,7 @@ export function ActionPanel({
         kind={action.kind}
         branch={branch}
         onChange={(kind) => {
-          if (kind !== action.kind) onChange(defaultAction(kind, outline));
+          if (kind !== action.kind) onChange(startAction(kind, outline, timeRule));
         }}
       />
       {body}

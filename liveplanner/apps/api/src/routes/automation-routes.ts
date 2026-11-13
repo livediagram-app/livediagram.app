@@ -21,7 +21,12 @@ import {
   readRuleBody,
   ruleHasAction,
   ruleNameTaken,
-  ruleNeeds,
+  needLine,
+  ruleNeedItems,
+  ruleSetsFields,
+  setFieldRefusal,
+  typesOf,
+  unheardFields,
   type AutomationEvent,
   type AutomationResult,
   type AutomationRule,
@@ -40,6 +45,7 @@ import { getProject } from '../db';
 import { readItem } from '../db/items';
 import { json, methodNotAllowed, noContent } from '../responses';
 import { readAutomationPlan, type AutomationPlan } from '../plan-room/automations/automation-plan';
+import { readPlanHead } from '../plan-room/plan-content';
 import { listRuns, ruleStats, runsToday } from '../plan-room/automations/automation-log';
 import { runRule } from '../plan-room/automations/automation-runner';
 import type { PlanAutomations } from '../plan-room/automations/automation-queue';
@@ -108,6 +114,7 @@ function listed(
 ): AutomationListedRule {
   const s = stats.get(rule.id);
   const info = hooks.get(rule.id);
+  const attention = ruleNeedItems(rule, plan.outline);
   return {
     ...rule,
     ...(info ? { hook: info } : {}),
@@ -117,7 +124,8 @@ function listed(
       runsThisWeek: s?.runsThisWeek ?? 0,
       failuresInARow: hook.store.failures(rule.id),
     },
-    needs: ruleNeeds(rule, plan.outline),
+    needs: attention.map(needLine),
+    attention,
   };
 }
 
@@ -148,17 +156,53 @@ async function list(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   return json(answer);
 }
 
-// The request's rule, checked, or the refusal.
-async function bodyOf(ctx: PlanRouteContext): Promise<AutomationRuleBody | Response> {
+// The request's rule, checked, or the refusal. A Field Changed rule naming a field no write changes (Time Spent, a
+// Votes tally) would never run, and a Set Field giving a Checkbox anything but Yes or No would write what it can't
+// hold: each refused, naming the field, with the plan's types read only for a rule that holds one.
+// The fields a request's Field Changed trigger named, as sent (readRuleBody checked it is a list).
+const rawFields = (raw: Record<string, unknown>): unknown[] => {
+  const t = raw['trigger'] as Record<string, unknown>;
+  return t['fields'] as unknown[];
+};
+
+async function bodyOf(
+  ctx: PlanRouteContext,
+  projectId: string,
+): Promise<AutomationRuleBody | Response> {
   const raw = await readBody(ctx);
   if (raw instanceof Response) return raw;
   const read = readRuleBody(raw);
   if ('error' in read) return refuse(400, read.error, { path: read.path, message: read.message });
-  return read.body;
+  const trigger = read.body.trigger;
+  if (trigger.kind !== 'field_changed' && !ruleSetsFields(read.body)) return read.body;
+  const types = typesOf((await readPlanHead(ctx.env, projectId)).itemTypes);
+  if (trigger.kind === 'field_changed') {
+    const [unheard] = unheardFields(types, trigger.fields);
+    if (unheard)
+      return refuse(400, 'automation_invalid', {
+        // The body's own place for it: the read keeps each field once, so its index may differ.
+        path: `trigger.fields.${rawFields(raw).indexOf(unheard.id)}`,
+        message: `Field Changed never hears ${unheard.name}: it changes without an edit, so the rule would never run`,
+      });
+  }
+  const set = setFieldRefusal(read.body, types);
+  return set ? refuse(400, 'automation_invalid', set) : read.body;
+}
+
+// Test on a Card's rule, refused as a save would refuse its Set Field (a Checkbox given anything but Yes or No), its
+// path under `rule.`; the plan's types read only for a rule that holds one.
+async function testSetFieldRefusal(
+  ctx: PlanRouteContext,
+  projectId: string,
+  body: AutomationRuleBody,
+): Promise<Response | null> {
+  if (!ruleSetsFields(body)) return null;
+  const set = setFieldRefusal(body, typesOf((await readPlanHead(ctx.env, projectId)).itemTypes));
+  return set ? refuse(400, 'automation_invalid', { ...set, path: `rule.${set.path}` }) : null;
 }
 
 async function create(ctx: PlanRouteContext, g: Gated): Promise<Response> {
-  const body = await bodyOf(ctx);
+  const body = await bodyOf(ctx, g.projectId);
   if (body instanceof Response) return body;
   const rules = g.hook.store.list();
   if (rules.length >= AUTOMATION_RULES_MAX) return refuse(409, 'automation_rules_full');
@@ -177,9 +221,15 @@ async function create(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   return answerRule(ctx, g, rule, 201);
 }
 
-async function save(ctx: PlanRouteContext, g: Gated, held: AutomationRule): Promise<Response> {
-  const body = await bodyOf(ctx);
+// The rule as it is now, after a request's awaits (its body, the plan's types, the card), which let another Editor's
+// write land: one deleted meanwhile is not found, and one turned off stays off.
+const stillHeld = (g: Gated, held: AutomationRule) => g.hook.store.get(held.id);
+
+async function save(ctx: PlanRouteContext, g: Gated, read: AutomationRule): Promise<Response> {
+  const body = await bodyOf(ctx, g.projectId);
   if (body instanceof Response) return body;
+  const held = stillHeld(g, read);
+  if (!held) return notFoundRule();
   if (ruleNameTaken(body.name, g.hook.store.list(), held.id))
     return refuse(409, 'automation_name_taken', { path: 'name' });
   const rule: AutomationRule = {
@@ -192,9 +242,11 @@ async function save(ctx: PlanRouteContext, g: Gated, held: AutomationRule): Prom
   return answerRule(ctx, g, rule);
 }
 
-async function toggle(ctx: PlanRouteContext, g: Gated, held: AutomationRule): Promise<Response> {
+async function toggle(ctx: PlanRouteContext, g: Gated, read: AutomationRule): Promise<Response> {
   const raw = await readBody(ctx);
   if (raw instanceof Response) return raw;
+  const held = stillHeld(g, read);
+  if (!held) return notFoundRule();
   if (typeof raw['enabled'] !== 'boolean')
     return refuse(400, 'automation_invalid', {
       path: 'enabled',
@@ -270,8 +322,14 @@ async function test(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   const raw = await readBody(ctx);
   if (raw instanceof Response) return raw;
   const read = readRuleBody(raw['rule']);
+  // A rule that is no object is refused at `rule` itself, the body's own key.
   if ('error' in read)
-    return refuse(400, read.error, { path: `rule.${read.path}`, message: read.message });
+    return refuse(400, read.error, {
+      path: read.path === 'rule' ? 'rule' : `rule.${read.path}`,
+      message: read.message,
+    });
+  const refused = await testSetFieldRefusal(ctx, g.projectId, read.body);
+  if (refused) return refused;
   const card = await cardOf(ctx, g, raw);
   const deps = g.hook.deps();
   if (!card || !deps) return missingItem();
@@ -305,17 +363,21 @@ async function test(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   return json({ run });
 }
 
-async function runNow(ctx: PlanRouteContext, g: Gated, held: AutomationRule): Promise<Response> {
-  if (held.trigger.kind !== 'manual' || !held.enabled) return refuse(409, 'automation_not_manual');
+async function runNow(ctx: PlanRouteContext, g: Gated, read: AutomationRule): Promise<Response> {
+  if (read.trigger.kind !== 'manual' || !read.enabled) return refuse(409, 'automation_not_manual');
   const raw = await readBody(ctx);
   if (raw instanceof Response) return raw;
   const card = await cardOf(ctx, g, raw);
   const deps = g.hook.deps();
   if (!card || !deps) return missingItem();
-  const today = runsToday(g.hook.sql(), Date.now());
+  // Turned off, changed away from Run from a Card or deleted while the card was read: it runs as it now stands.
+  const held = stillHeld(g, read);
+  if (!held) return notFoundRule();
+  if (held.trigger.kind !== 'manual' || !held.enabled) return refuse(409, 'automation_not_manual');
+  // The day's count is read as the run claims its row (runRule), after the card read above.
   const run = await runRule(
     deps,
-    { plan: null, today },
+    { plan: null, today: 0 },
     held,
     manualEvent(g, card.id, 'm', held.id),
   );

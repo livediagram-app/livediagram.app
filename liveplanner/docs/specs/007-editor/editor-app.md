@@ -356,6 +356,22 @@ dialog panel itself takes focus instead: screen readers still land inside the di
 moves into it. A field a dialog deliberately focuses (`autoFocus`, a rename box) keeps its focus on
 every device (`useFocusTrap`).
 
+**Focus never falls to the page under an open dialog.** A dialog that closes hands focus back to what
+opened it; when that is gone (a template card that left the list once its rule was saved) or was the
+page itself (a tap on the dim, which focuses nothing, before a Discard Changes? that was then
+cancelled), focus goes to the dialog on top of those still open instead. While dialogs are stacked,
+only the top one takes back focus that a control swapped out inside it dropped (Save Rule turning into
+Saved), so it never jumps to a dialog behind (`useFocusTrap`).
+
+**Back closes a sheet that holds work.** A phone sheet that opts in (the rule builder's rule drawer and
+step drawer) takes an entry in the browser's history while it is open, so Back (Android's, an iPhone's
+swipe, the browser's) closes it the way a swipe down does, asking Discard Changes? first where it would,
+instead of leaving the page and dropping the work. Kept open after asking, it takes its entry again; closed
+any other way, it steps back off its entry, so the next Back does what it did before the sheet opened.
+Sheets that close together (the rule drawer with its step drawer over it) step back off every entry they
+took, and an entry left by the page before a reload never passes for a sheet open now
+(`Dialog`'s `closeOnBack`, `useBackCloses`).
+
 **The keyboard never hides the caret.** The on-screen keyboard shrinks the visual viewport, not
 the page, and the canvas never scrolls, so a label edited low on a phone was typed behind the
 keyboard. While a text field inside the canvas has focus, each visual-viewport change re-checks

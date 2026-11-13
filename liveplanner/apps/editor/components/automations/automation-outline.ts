@@ -11,7 +11,9 @@ import {
   knownFieldKind,
   labelUsage,
   typeFieldLabel,
+  unheardFields,
   normaliseBoardSetup,
+  savedFilterKey,
   type Item,
   type ItemPerson,
   type ItemTypeDef,
@@ -103,6 +105,12 @@ export function outlineFields(types: readonly ItemTypeDef[]): OutlineField[] {
   return out;
 }
 
+/** Field Changed's choices: the fields a write changes, so leaving out Time Spent, a Votes tally, a Comments field
+ *  and a Calculated value, which it never hears (spec "Triggers"). */
+export function fieldChangeFields(types: readonly ItemTypeDef[]): OutlineField[] {
+  return outlineFields(types).filter((f) => unheardFields(types, [f.id]).length === 0);
+}
+
 export function useAutomationOutline(): AutomationOutline {
   const plan = usePlan();
   const types = plan?.types;
@@ -118,7 +126,8 @@ export function useAutomationOutline(): AutomationOutline {
   return useMemo<AutomationOutline>(() => {
     const statuses = statusNames ?? new Map<string, string>();
     const filters = new Map<string, string>();
-    for (const b of fromTabs.boards) for (const f of b.filters) filters.set(f.id, f.name);
+    for (const b of fromTabs.boards)
+      for (const f of b.filters) filters.set(savedFilterKey(b.tabId, f.id), f.name);
     const tabs = new Map<string, string>();
     for (const f of fromTabs.forms) tabs.set(f.id, f.name);
     for (const b of fromTabs.boards) tabs.set(b.tabId, b.tabName);
@@ -134,6 +143,8 @@ export function useAutomationOutline(): AutomationOutline {
       forms: fromTabs.forms,
       boards: fromTabs.boards,
       items,
+      // The editor never shows an id: a gone column, card type, field or Form tab reads in words.
+      goneWords: true,
     };
   }, [types, statusNames, phases, people, labels, fromTabs, items]);
 }

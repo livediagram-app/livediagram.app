@@ -18,7 +18,7 @@ import {
 } from '@liveplanner/items';
 import { listItems } from '../../db/items';
 import { readAutomationPlan, type AutomationPlan } from './automation-plan';
-import { settleRun } from './automation-log';
+import { settleRun, timeLineId } from './automation-log';
 import type { AutomationSchedule } from './automation-queue';
 import type { RunnerDeps } from './automation-runner';
 import type { AutomationTally } from './automation-telemetry';
@@ -92,7 +92,7 @@ export async function runTimeTriggers(
       queued += events.length;
       if (found.matched > AUTOMATION_TIME_CARDS_MAX)
         settleRun(sql, {
-          id: `time:${rule.id}:${moment}`,
+          id: timeLineId(rule.id, moment),
           ruleId: rule.id,
           ruleName: rule.name,
           card: null,

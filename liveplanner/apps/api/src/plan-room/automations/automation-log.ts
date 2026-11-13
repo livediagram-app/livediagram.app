@@ -20,12 +20,21 @@ const PENDING = 'pending';
 
 const utcMidnight = (now: number) => Math.floor(now / DAY_MS) * DAY_MS;
 
+// The Audit Trail's own lines, which are no rule's run: a burst's "Too many changes at once", a time trigger's
+// "Ran on 100 of 340" and a move's (Card Unblocked, Related Cards Done) "Ran on 100 of 340 cards". A run's id is a
+// hash, so these prefixes never meet one.
+export const burstLineId = (now: number): string => `burst:${now}`;
+export const timeLineId = (ruleId: string, moment: number): string => `time:${ruleId}:${moment}`;
+export const derivedLineId = (ruleId: string, moment: string): string =>
+  `derived:${ruleId}:${moment}`;
+const NO_LINE = "id NOT LIKE 'burst:%' AND id NOT LIKE 'time:%' AND id NOT LIKE 'derived:%'";
+
 // Runs today (UTC) that did something, failed or were skipped, pending ones too: what the daily budget counts. A No
-// Match is logged and never counted.
+// Match is logged and never counted, nor is one of the Audit Trail's own lines.
 export function runsToday(sql: Sql, now: number): number {
   const row = sql
     .exec(
-      "SELECT COUNT(*) AS n FROM automation_runs WHERE at >= ? AND result != 'no_match'",
+      `SELECT COUNT(*) AS n FROM automation_runs WHERE at >= ? AND result != 'no_match' AND ${NO_LINE}`,
       utcMidnight(now),
     )
     .toArray()[0];
@@ -44,6 +53,19 @@ export function claimRun(sql: Sql, id: string, ruleId: string, at: number): bool
         at,
       )
       .toArray().length > 0
+  );
+}
+
+// A pending run's AI calls, `asked` of them, marked on its row as each is asked, before its answer comes: the day's
+// AI count (automation-ai.ts aiToday) reads every row's marked lines, pending ones too, so a call counts at once for
+// a Run Rule, a Describe a Rule or another run asking meanwhile. The settled row's lines replace these, the same calls
+// marked. A pending row's body is never listed.
+export function markAiAsked(sql: Sql, id: string, asked: number): void {
+  const steps = Array.from({ length: asked }, () => ({ ai: true }));
+  sql.exec(
+    `UPDATE automation_runs SET body = ? WHERE id = ? AND result = '${PENDING}'`,
+    JSON.stringify({ steps }),
+    id,
   );
 }
 
@@ -86,7 +108,7 @@ export function settleWaiting(
   } catch {
     return;
   }
-  const { waitsUntil: _until, reason: _reason, ...rest } = run;
+  const { waitsUntil: _until, reason: _reason, gone: _gone, ...rest } = run;
   settleRun(sql, { ...rest, result, ...(reason ? { reason } : {}) });
 }
 
@@ -109,7 +131,8 @@ export function trimRuns(sql: Sql, now: number): void {
   );
 }
 
-// Each rule's last run and its runs this week, by rule id; a rule never run is absent.
+// Each rule's last run and its runs this week, by rule id, counted as the day's meter counts them (No Match and the
+// Audit Trail's own lines aside); a rule never run is absent.
 export function ruleStats(
   sql: Sql,
   now: number,
@@ -117,7 +140,8 @@ export function ruleStats(
   const rows = sql
     .exec(
       `SELECT rule_id, MAX(at) AS last, SUM(CASE WHEN at >= ? THEN 1 ELSE 0 END) AS week
-         FROM automation_runs WHERE result != '${PENDING}' GROUP BY rule_id`,
+         FROM automation_runs WHERE result NOT IN ('${PENDING}', 'no_match') AND ${NO_LINE}
+         GROUP BY rule_id`,
       now - WEEK_MS,
     )
     .toArray() as unknown as { rule_id: string; last: number; week: number }[];
@@ -150,7 +174,8 @@ export function listRuns(sql: Sql, query: AutomationRunsQuery): AutomationRun[] 
     where.push('at >= ?');
     bindings.push(query.since);
   }
-  const limit = Math.min(Math.max(1, query.limit ?? 50), AUTOMATION_RUNS_LIST_MAX);
+  // A whole number: SQLite refuses a LIMIT of 2.5 (datatype mismatch).
+  const limit = Math.min(Math.max(1, Math.floor(query.limit ?? 50)), AUTOMATION_RUNS_LIST_MAX);
   const rows = sql
     .exec(
       `SELECT body FROM automation_runs WHERE ${where.join(' AND ')} ORDER BY at DESC, id LIMIT ?`,

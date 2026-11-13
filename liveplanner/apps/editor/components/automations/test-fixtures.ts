@@ -1,7 +1,13 @@
 import { fireEvent } from '@testing-library/react';
 // Shared fixtures for the Automations tests: a plan outline, rules as the list answers them, and runs.
 
-import { ITEM_TYPES, type AutomationRun, type Item, type ItemPerson } from '@liveplanner/items';
+import {
+  ITEM_TYPES,
+  savedFilterKey,
+  type AutomationRun,
+  type Item,
+  type ItemPerson,
+} from '@liveplanner/items';
 import type { AutomationListedRule } from '@liveplanner/api-schema';
 import type { AutomationOutline } from './automation-outline';
 
@@ -43,7 +49,7 @@ export function outline(over: Partial<AutomationOutline> = {}): AutomationOutlin
     people: [ANA, MARCO],
     labels: ['blocked', 'launch'],
     tabs: new Map([['t-form', 'Intake Form']]),
-    filters: new Map([['f1', 'Mine']]),
+    filters: new Map([[savedFilterKey('t-board', 'f1'), 'Mine']]),
     forms: [{ id: 't-form', name: 'Intake Form' }],
     boards: [
       {
@@ -72,6 +78,7 @@ export function rule(over: Partial<AutomationListedRule> = {}): AutomationListed
     edited: { by: ANA, at: NOW - 86_400_000 * 3 },
     stats: { lastRunAt: NOW - 4 * 60_000, runsThisWeek: 38, failuresInARow: 0 },
     needs: [],
+    attention: [],
     ...over,
   };
 }

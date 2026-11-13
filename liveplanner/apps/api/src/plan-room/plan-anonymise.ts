@@ -81,6 +81,48 @@ export function anonymiseTabReactions(text: string, hashed: string): Anonymised<
   return changed ? { value: JSON.stringify(next), changed } : { value: text, changed: false };
 }
 
+// The person's names as whole words, longest first (so a name holding a shorter one goes whole): never a run of
+// letters inside another word ("Al" in "Already") or a longer name ("Al" in "Alan").
+const regexEscape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function namePattern(names: ReadonlySet<string>): RegExp {
+  const alternatives = [...names].sort((a, b) => b.length - a.length).map(regexEscape);
+  return new RegExp(`(?<![\\p{L}\\p{N}_])(?:${alternatives.join('|')})(?![\\p{L}\\p{N}_])`, 'gu');
+}
+
+// An Audit Trail run's body (docs/specs/026-plan/automations.md "Runs, limits and loops") with the person's lines,
+// the trigger they made, naming Deleted account: the line's person, and their name in its text and the run's other
+// lines (an Assign or a Send Email to whoever triggered it). Unchanged when no line is theirs.
+export function anonymiseRun(text: string, hashed: string): Anonymised<string> {
+  if (!text.includes(hashed)) return { value: text, changed: false };
+  let run: { steps?: unknown };
+  try {
+    run = JSON.parse(text) as { steps?: unknown };
+  } catch {
+    return { value: text, changed: false };
+  }
+  if (!run || !Array.isArray(run.steps)) return { value: text, changed: false };
+  type Line = { by?: { id?: unknown; name?: unknown }; text?: unknown };
+  const lines = run.steps as Line[];
+  const names = new Set<string>();
+  for (const line of lines)
+    if (line?.by?.id === hashed && typeof line.by.name === 'string' && line.by.name)
+      names.add(line.by.name);
+  if (!lines.some((l) => l?.by?.id === hashed)) return { value: text, changed: false };
+  const pattern = names.size > 0 ? namePattern(names) : null;
+  const steps = lines.map((line) => {
+    if (!line || typeof line !== 'object') return line;
+    const said = line.text;
+    const renamed =
+      typeof said === 'string' && pattern ? said.replace(pattern, ANONYMISED_NAME) : null;
+    return {
+      ...line,
+      ...(renamed !== null ? { text: renamed } : {}),
+      ...(line.by?.id === hashed ? { by: ANONYMISED_ITEM_PERSON } : {}),
+    };
+  });
+  return { value: JSON.stringify({ ...run, steps }), changed: true };
+}
+
 export async function anonymisePlan(
   env: PlanEnv,
   planId: string,
@@ -92,7 +134,7 @@ export async function anonymisePlan(
   const needle = personId;
   const hashed = await itemPersonId(personId);
   const hashNeedle = hashed;
-  const [tabs, items, threads] = await db.batch([
+  const [tabs, items, threads, runs] = await db.batch([
     db
       .prepare(
         `SELECT t.id, t.data, t.rev FROM tabs t JOIN plan_tabs pt ON pt.tab_id = t.id
@@ -112,6 +154,8 @@ export async function anonymisePlan(
                  OR resolved_by_id = ?4)`,
       )
       .bind(planId, needle, hashNeedle, hashed),
+    // The Audit Trail's runs a change of theirs started.
+    db.prepare('SELECT id, body FROM automation_runs WHERE instr(body, ?) > 0').bind(hashNeedle),
   ]);
   const writes: D1PreparedStatement[] = [];
   for (const tab of (tabs?.results ?? []) as { id: string; data: string; rev: number }[]) {
@@ -167,6 +211,13 @@ export async function anonymisePlan(
       );
     }
   }
+  for (const run of (runs?.results ?? []) as { id: string; body: string }[]) {
+    const { value, changed } = anonymiseRun(run.body, hashed);
+    if (changed)
+      writes.push(
+        db.prepare('UPDATE automation_runs SET body = ? WHERE id = ?').bind(value, run.id),
+      );
+  }
   // The cards' history, the cards' makers and last editors and a sheet's last editor name people by their hashed id
   // (docs/specs/026-plan/items.md "Created and Last Edited", "History"): those read Deleted account. A card from
   // before cards held a person names the raw id, matched too. The LIKE narrows to rows that mention them before
@@ -198,6 +249,23 @@ export async function anonymisePlan(
         `UPDATE github_connection SET connected_by = ?1 WHERE plan_id = ?2 AND ${personIdOf('connected_by')} = ?3`,
       )
       .bind(ANONYMISED_AUTHOR, planId, hashed),
+    // A rule's Made by and Edited by (docs/specs/026-plan/automations.md "A rule"), and the triggers of theirs still
+    // queued or held by a Wait, which a run's Who Did It and trigger line read.
+    ...(['made', 'edited'] as const).map((stamp) =>
+      db
+        .prepare(
+          `UPDATE automation_rules SET body = json_set(body, '$.${stamp}.by', json(?1))
+            WHERE body ->> '$.${stamp}.by.id' = ?2`,
+        )
+        .bind(ANONYMISED_AUTHOR, hashed),
+    ),
+    ...(['automation_queue', 'automation_waiting'] as const).map((table) =>
+      db
+        .prepare(
+          `UPDATE ${table} SET event = json_set(event, '$.by', json(?1)) WHERE event ->> '$.by.id' = ?2`,
+        )
+        .bind(ANONYMISED_AUTHOR, hashed),
+    ),
     db
       .prepare(
         'UPDATE agent_changesets SET author_id = ?, author_name = ? WHERE plan_id = ? AND author_id = ?',

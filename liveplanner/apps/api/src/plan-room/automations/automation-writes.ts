@@ -7,6 +7,7 @@
 // the rule and chain, so the events it causes know where they came from.
 import {
   ITEMS_MAX,
+  ITEM_LABELS_MAX,
   ITEM_WRITE_RETRIES,
   AUTOMATION_COLOR,
   AUTOMATION_PERSON_ID,
@@ -16,6 +17,7 @@ import {
   calculatedWritten,
   createRefusal,
   fieldsWithinBounds,
+  itemLabels,
   itemPlacer,
   itemStatus,
   itemTitle,
@@ -34,6 +36,7 @@ import {
 } from '@liveplanner/items';
 import {
   CARD_THREADS_MAX,
+  THREAD_COMMENT_TEXT_MAX,
   mentionHandle,
   newThreadId,
   startThread,
@@ -85,15 +88,33 @@ function refusalOf(plan: AutomationPlan, next: Item, before: Item): string | nul
 const historyTag = (source: HistorySource): 'automation' | 'automation_github' =>
   source.via === 'github' ? 'automation_github' : 'automation';
 
+// A patch's labels, planned against `base` (the card as the run read it), rebased onto `now` (the card as read for
+// the write): the labels it added and took off, applied to what is there now, so a label someone added or took off
+// meanwhile (while the AI answered) stays as they left it. A card at its label cap gains no more. Any other patch, or
+// a card whose labels did not change, is the patch as planned.
+export function rebaseLabels(patch: ItemPatch, base: Item, now: Item): ItemPatch {
+  const planned = patch.set?.['labels'];
+  if (!Array.isArray(planned)) return patch;
+  const was = itemLabels(base);
+  const is = itemLabels(now);
+  if (was.length === is.length && was.every((l, i) => l === is[i])) return patch;
+  const wanted = planned.filter((l): l is string => typeof l === 'string');
+  const kept = is.filter((l) => !was.includes(l) || wanted.includes(l));
+  const added = wanted.filter((l) => !was.includes(l) && !kept.includes(l));
+  const labels = [...kept, ...added.slice(0, Math.max(0, ITEM_LABELS_MAX - kept.length))];
+  return { ...patch, set: { ...patch.set, labels } };
+}
+
 // The one write to the triggering card: the patch, as a move when it changes the column (so the card goes to the
-// end of its new column, as a drop would put it).
+// end of its new column, as a drop would put it). `card`: the card the patch was planned from, its labels rebased
+// onto the card as it is when written (rebaseLabels).
 // `tag`: the history line's, 'automation_ai' for an AI step's write.
 export async function patchCard(
   deps: WriteDeps,
   plan: AutomationPlan,
   rule: AutomationRule,
-  cardId: string,
-  patch: ItemPatch,
+  card: Item,
+  planned: ItemPatch,
   source: HistorySource,
   tag: 'automation' | 'automation_ai' = 'automation',
 ): Promise<WriteOutcome> {
@@ -101,8 +122,9 @@ export async function patchCard(
   const line = tag === 'automation' ? historyTag(source) : tag;
   for (let attempt = 1; attempt <= ITEM_WRITE_RETRIES; attempt += 1) {
     const now = Date.now();
-    const before = await readItem(deps.env, deps.planId, cardId);
+    const before = await readItem(deps.env, deps.planId, card.id);
     if (!before) return { ok: false, reason: 'The card is gone' };
+    const patch = rebaseLabels(planned, card, before);
     const status = patch.set?.['status'];
     const { status: _status, ...set } = patch.set ?? {};
     const next =
@@ -222,7 +244,8 @@ export async function addComment(
   return { ok: true };
 }
 
-// An email to a person of the plan with an account, unless they turned these off. Never fails the run.
+// An email to a person of the plan with an account whom the plan's own notices reach (AutomationPlan.mayEmail),
+// unless they turned these off. Never fails the run.
 async function sendOne(
   deps: WriteDeps,
   plan: AutomationPlan,
@@ -232,7 +255,8 @@ async function sendOne(
   url: string,
 ): Promise<void> {
   const accountId = email.to ? plan.accounts.get(email.to.id) : undefined;
-  if (!accountId || !isAccountId(accountId) || !emailEnabled(deps.env)) return;
+  if (!accountId || !isAccountId(accountId) || !plan.mayEmail(accountId)) return;
+  if (!emailEnabled(deps.env)) return;
   const to = (await notifyRecipients(deps.env, [accountId], 'notifyActionAssigned')).get(accountId);
   if (!to) return;
   await sendEmail(deps.env, {
@@ -247,8 +271,8 @@ async function sendOne(
   });
 }
 
-// Mention Someone: a thread "@handle message" naming the person (their Inbox reads it), and an email unless they
-// turned mention emails off. Nobody to mention: nothing is written.
+// Mention Someone: a thread "@handle message" naming the person (their Inbox reads it), at most a comment's 2,000
+// characters, and an email unless they turned mention emails off. Nobody to mention: nothing is written.
 async function mentionOne(
   deps: WriteDeps,
   plan: AutomationPlan,
@@ -261,11 +285,13 @@ async function mentionOne(
   if (!to) return { ok: true };
   const handle = mentionHandle(to.name) || 'teammate';
   const accountId = plan.accounts.get(to.id);
-  const text = `@${handle} ${mention.text}`.trim();
+  // The whole comment within a comment's limit: the message is cut, never the handle.
+  const text = `@${handle} ${mention.text}`.trim().slice(0, THREAD_COMMENT_TEXT_MAX);
   const out = await addComment(deps, rule, card, text, {
     mentions: [{ userId: accountId ?? null, name: to.name, handle }],
   });
-  if (!out.ok || !accountId || !isAccountId(accountId) || !emailEnabled(deps.env)) return out;
+  if (!out.ok || !accountId || !isAccountId(accountId) || !plan.mayEmail(accountId)) return out;
+  if (!emailEnabled(deps.env)) return out;
   deps.defer(
     (async () => {
       const email = (await notifyRecipients(deps.env, [accountId], 'notifyMentions')).get(
@@ -333,7 +359,7 @@ export async function applyPlannedRun(
   url: string,
 ): Promise<WriteOutcome> {
   if (planned.patch.set || planned.patch.clear || planned.patch.type) {
-    const out = await patchCard(deps, plan, rule, card.id, planned.patch, source);
+    const out = await patchCard(deps, plan, rule, card, planned.patch, source);
     if (!out.ok) return out;
   }
   for (const made of planned.created) {

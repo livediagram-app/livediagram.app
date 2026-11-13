@@ -293,7 +293,7 @@ export function readProjectFile(text: string, now = Date.now()): ProjectFileRead
         ...sheets,
         ...threadsOf(project.threads ?? [], items),
         ...(project.automations?.length
-          ? { automations: rulesFromFile(project.automations, now) }
+          ? { automations: rulesFromFile(project.automations, now, tabIdMap) }
           : {}),
       },
     },

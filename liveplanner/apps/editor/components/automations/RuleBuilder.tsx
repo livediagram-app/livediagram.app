@@ -39,31 +39,19 @@ import {
   editPart,
   partAt,
   sameBody,
+  samePart,
   type RulePart,
 } from './rule-draft';
-import { PhoneRuleFoot, PhoneRuleHeader } from './PhoneRuleChrome';
+import { PhoneRuleFoot, PhoneRuleHeader, RULE_SWITCH_NAME } from './PhoneRuleChrome';
 import { RuleDetails } from './RuleDetails';
 import { RuleSteps, type StepsActions } from './RuleSteps';
 import { defaultCondition, defaultStep } from './step-defaults';
 import { StepPanel } from './StepPanel';
+import { refusalWords } from './refusal-words';
 import { TestOnCard } from './TestOnCard';
 import type { AutomationsApi } from './use-automations';
 
 type Fault = { path: string; message: string };
-
-const REFUSAL_WORDS: Readonly<Record<string, string>> = {
-  automation_name_taken: 'Another rule here has this name. Pick another.',
-  automation_rules_full: 'This plan has 50 rules, the most it can hold. Delete one to add another.',
-  automation_value_unknown:
-    'This names a value rules don’t know. Pick one from Insert a Value in the field.',
-  automation_not_found: 'This rule was deleted elsewhere.',
-  automation_condition_unsupported:
-    'A time trigger has nobody behind it: nothing here can name whoever triggered it.',
-  automation_step_unsupported:
-    'This step can’t go here: a branch or an If / Else holds no outgoing action, branch or If.',
-};
-
-const refusalMessage = (r: AutomationRefusal) => REFUSAL_WORDS[r.code] ?? r.message;
 
 export function RuleBuilder({
   rule,
@@ -118,11 +106,15 @@ export function RuleBuilder({
   const [selected, setSelected] = useState<RulePart | null>({ part: 'trigger' });
   // A phone's step drawer: opened by a pick, an add or a refusal, never by the first selection.
   const [stepOpen, setStepOpen] = useState(false);
+  // The step a Move Up or Move Down just moved: its ⋯ takes focus once it is drawn in its new place.
+  const [moved, setMoved] = useState<RulePart | null>(null);
   const [fault, setFault] = useState<Fault | null>(null);
   const [saving, setSaving] = useState(false);
   const [toggling, setToggling] = useState(false);
   const [testing, setTesting] = useState(false);
   const dirty = !rule || !sameBody(body, saved);
+  // A saved rule with nothing changed: nothing to save.
+  const unchanged = !!rule && !dirty;
   useEffect(() => onDirty(dirty), [dirty, onDirty]);
   // A new rule as it stands, for Connect GitHub to keep for the round trip (github-return.ts).
   const github = useGithubAutomations();
@@ -148,7 +140,7 @@ export function RuleBuilder({
 
   const refused = (r: AutomationRefusal) => {
     const path = r.path ?? (r.code === 'automation_name_taken' ? 'name' : '');
-    setFault({ path, message: refusalMessage(r) });
+    setFault({ path, message: refusalWords(r) });
     const part = path ? partAt(body, path) : null;
     if (part) {
       setSelected(part);
@@ -159,14 +151,16 @@ export function RuleBuilder({
   const save = async () => {
     if (saving) return;
     setSaving(true);
+    // What went to the api: an edit made while it saves is kept, not replaced by the saved rule.
+    const sent = body;
     try {
-      const next = await api.save(rule?.id ?? null, { ...body, timeZone });
+      const next = await api.save(rule?.id ?? null, { ...sent, timeZone });
       if (!rule) {
         track('Plan', 'Created', 'AutomationRule');
         if (isGithubTrigger(body.trigger)) track('Plan', 'Created', 'AutomationRuleGithub');
       }
       setSaved(bodyOf(next));
-      setBody(bodyOf(next));
+      setBody((held) => (held === sent ? bodyOf(next) : held));
       setFault(null);
       toast.success(`Saved ${next.name}`);
       onSaved(next);
@@ -189,7 +183,7 @@ export function RuleBuilder({
       debugLog('[automations] toggle.failed', { error: String(error) });
       toast.error(
         error instanceof AutomationRefusal
-          ? refusalMessage(error)
+          ? refusalWords(error)
           : 'The rule didn’t change. Try again.',
       );
     } finally {
@@ -205,18 +199,21 @@ export function RuleBuilder({
     edit: (part, edit) => {
       const next = editPart(body, part, edit);
       change(next.body, next.part);
+      // A move keeps the steps in sight (a phone's drawer stays closed), focus on the moved step's ⋯ (the cards are
+      // drawn by position, so the menu's own focus return lands on whichever step took its place); a duplicate is an
+      // added step, and opens.
+      if (edit === 'up' || edit === 'down') {
+        setStepOpen(false);
+        setMoved(next.part);
+      }
     },
     addCondition: (kind, ifStep) => {
       const next = addCondition(body, defaultCondition(kind, outline), ifStep);
       change(next.body, next.part);
     },
     addAction: (kind, branch) => {
-      let step = defaultStep(kind, outline);
       // A time trigger or an incoming webhook has nobody behind it: Assign starts on the plan's first person.
-      if (step.kind === 'assign' && isPersonless(body.trigger)) {
-        const first = outline.people[0]?.id;
-        step = { kind: 'assign', to: first ? { person: first } : { nobody: true } };
-      }
+      const step = defaultStep(kind, outline, isPersonless(body.trigger));
       const next = addAction(body, step, branch);
       change(next.body, next.part);
     },
@@ -266,7 +263,7 @@ export function RuleBuilder({
             size="sm"
             checked={rule.enabled}
             busy={toggling}
-            label={rule.enabled ? 'On' : 'Off'}
+            label={RULE_SWITCH_NAME}
             onChange={(next) => void toggle(next)}
           />
         ) : (
@@ -286,11 +283,16 @@ export function RuleBuilder({
         <Button variant="secondary" size="xs" onClick={() => setTesting(true)}>
           Test on a Card
         </Button>
+        {/* Busy while it saves and only marked unavailable once saved (busy-buttons.md): a disabled button would drop
+            the keyboard to the dialog, away from the refusal or the toast it just raised. */}
         <Button
           variant="primary"
           size="xs"
-          onClick={() => void save()}
-          disabled={saving || (!!rule && !dirty)}
+          onClick={() => {
+            if (!unchanged) void save();
+          }}
+          busy={saving}
+          aria-disabled={unchanged || undefined}
         >
           {saving ? 'Saving…' : 'Save Rule'}
         </Button>
@@ -314,6 +316,8 @@ export function RuleBuilder({
         fault={stepFault && fault ? { part: stepFault, message: fault.message } : null}
         actions={actions}
         picks={pickMarks}
+        moved={moved}
+        onMovedFocused={() => setMoved(null)}
       />
       <RuleDetails chain={body.chain} onChain={(chain) => change({ ...body, chain })} />
     </div>
@@ -335,7 +339,14 @@ export function RuleBuilder({
       person={person}
       now={now}
       timeZone={timeZone}
-      {...(phone ? { drawer: { onClose: () => setStepOpen(false) } } : {})}
+      {...(phone
+        ? {
+            drawer: {
+              onClose: () => setStepOpen(false),
+              fault: stepFault && fault && samePart(stepFault, selected) ? fault.message : null,
+            },
+          }
+        : {})}
     />
   );
 
@@ -384,6 +395,8 @@ export function RuleBuilder({
                   fault={stepFault && fault ? { part: stepFault, message: fault.message } : null}
                   actions={actions}
                   picks={pickMarks}
+                  moved={moved}
+                  onMovedFocused={() => setMoved(null)}
                 />
               </div>
               <PhoneRuleFoot
@@ -419,7 +432,8 @@ export function RuleBuilder({
             <TestOnCard
               body={body}
               outline={outline}
-              test={api.test}
+              // Tried as it would save: in this browser's time zone.
+              test={(tried, item) => api.test({ ...tried, timeZone }, item)}
               onRefused={refused}
               onClose={() => setTesting(false)}
             />

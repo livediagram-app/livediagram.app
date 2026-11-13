@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import type { Item } from '../item';
 import type { ItemTypeDef } from '../item-types';
 import { item, SAM } from '../test-items';
-import { derivedTargets, isDerivedTrigger } from './derived';
+import { derivedFound, derivedMoments, derivedTargets, isDerivedTrigger } from './derived';
 import type { AutomationEvent } from './matches';
+import { AUTOMATION_DERIVED_CARDS_MAX } from './types';
 
 // docs/specs/026-plan/automations.md "Triggers": Card Unblocked, Related Cards Done and Column Over Limit, worked out
 // from the plan's cards when another card moves or is archived.
@@ -46,6 +47,41 @@ describe('derived triggers', () => {
     expect(isDerivedTrigger({ kind: 'card_moved' })).toBe(false);
   });
 
+  it('runs on at most 100 cards a move, the first by their number', () => {
+    const a = task('A', { status: 'done' });
+    const blocked = Array.from({ length: AUTOMATION_DERIVED_CARDS_MAX + 50 }, (_, i) =>
+      task(`B${i}`, { 'f-blocked': [a.id] }),
+    );
+    // The plan's cards in no set order: the answer is in number order all the same.
+    const items = [a, ...blocked.slice().reverse()];
+    const out = derivedTargets(
+      { kind: 'card_unblocked' },
+      moved(a, 'doing', 'done'),
+      items,
+      TYPES,
+      isDone,
+    );
+    expect(out.map((c) => c.key)).toEqual(
+      blocked.slice(0, AUTOMATION_DERIVED_CARDS_MAX).map((c) => c.key),
+    );
+  });
+
+  it('counts the cards a move concerns before the cut, for the Run Log', () => {
+    const a = task('A', { status: 'done' });
+    const blocked = Array.from({ length: AUTOMATION_DERIVED_CARDS_MAX + 7 }, (_, i) =>
+      task(`B${i}`, { 'f-blocked': [a.id] }),
+    );
+    const out = derivedFound(
+      { kind: 'card_unblocked' },
+      moved(a, 'doing', 'done'),
+      [a, ...blocked],
+      TYPES,
+      isDone,
+    );
+    expect(out.cards).toHaveLength(AUTOMATION_DERIVED_CARDS_MAX);
+    expect(out.found).toBe(AUTOMATION_DERIVED_CARDS_MAX + 7);
+  });
+
   it('answers nothing for a card the plan no longer holds', () => {
     const gone = task('Gone');
     expect(
@@ -76,6 +112,17 @@ describe('derived triggers', () => {
         isDone,
       ).map(name),
     ).toEqual(['Free']);
+    // Archiving a blocker already done frees nothing again: it unblocked them when it finished.
+    const archivedDoneA = { ...a, fields: { ...a.fields, archived: true } } as Item;
+    expect(
+      derivedTargets(
+        { kind: 'card_unblocked' },
+        { ...moved(a, 'done', 'done'), kind: 'archived' },
+        [archivedDoneA, b, free, still],
+        TYPES,
+        isDone,
+      ),
+    ).toEqual([]);
     // A card with no one it blocks answers nothing.
     expect(fire(moved(free, 'doing', 'done'))).toEqual([]);
   });
@@ -151,12 +198,72 @@ describe('derived triggers', () => {
     const trigger = { kind: 'column_limit' as const, status: 'doing', limit: 2 };
     const e = moved(cards[2]!, 'todo', 'doing');
     expect(derivedTargets(trigger, e, cards, TYPES, isDone).map(name)).toEqual(['3']);
-    // Two past: it went over already.
-    expect(
-      derivedTargets(trigger, e, [...cards, task('4', { status: 'doing' })], TYPES, isDone),
-    ).toEqual([]);
+    // Two past, and it came in last: the column went over already, as another card came in.
+    const late = { ...cards[2]!, fields: { ...cards[2]!.fields, statusSince: 9 } } as Item;
+    const four = task('4', { status: 'doing', statusSince: 5 });
+    expect(derivedTargets(trigger, e, [cards[0]!, cards[1]!, late, four], TYPES, isDone)).toEqual(
+      [],
+    );
     // The card is no longer in the column.
     const left = { ...cards[2]!, fields: { ...cards[2]!.fields, status: 'todo' } } as Item;
     expect(derivedTargets(trigger, e, [cards[0]!, cards[1]!, left], TYPES, isDone)).toEqual([]);
+  });
+
+  it('Column Over Limit: several in before the wake, the card that came in one past the limit runs it, once', () => {
+    const trigger = { kind: 'column_limit' as const, status: 'doing', limit: 1 };
+    const one = task('1', { status: 'doing', statusSince: 1 });
+    // Two and three came in after it, before the wake read the column (three past a limit of one).
+    const two = task('2', { status: 'doing', statusSince: 5 });
+    const three = task('3', { status: 'doing', statusSince: 7 });
+    const cards = [three, one, two];
+    const on = (c: Item) =>
+      derivedTargets(trigger, moved(c, 'todo', 'doing'), cards, TYPES, isDone).map(name);
+    expect(on(two)).toEqual(['2']);
+    expect(on(three)).toEqual([]);
+    expect(on(one)).toEqual([]);
+    // Within the limit: nothing.
+    expect(derivedTargets(trigger, moved(one, 'todo', 'doing'), [one], TYPES, isDone)).toEqual([]);
+    // Came in at the same moment: the lower number first.
+    const twin = task('Twin', { status: 'doing', statusSince: 5 });
+    const order = [one, two, twin].sort((a, b) => a.key - b.key);
+    const later = order[2]!;
+    expect(
+      derivedTargets(trigger, moved(later, 'todo', 'doing'), [...order, three], TYPES, isDone),
+    ).toEqual([]);
+    expect(
+      derivedTargets(
+        trigger,
+        moved(order[1]!, 'todo', 'doing'),
+        [...order, three],
+        TYPES,
+        isDone,
+      ).map(name),
+    ).toEqual([name(order[1]!)]);
+  });
+
+  it('names the moment each target reached by its related cards, so a second event at the same one runs nothing', () => {
+    const a = task('A', { status: 'done' });
+    const b = { ...task('B', { status: 'done' }), rev: 4 };
+    const gone = task('Gone', { status: 'done', archived: true });
+    const blocked = task('Blocked', { 'f-blocked': [b.id, a.id, 'missing'] });
+    const parent = task('Parent');
+    const kid = task('Kid', { status: 'done', 'f-parent': parent.id });
+    const holder = task('Holder', { 'f-links': [a.id, gone.id] });
+    const items = [a, b, gone, blocked, parent, kid, holder];
+    const at = (c: Item) => `${c.id}@${c.rev}`;
+    const sorted = (...ids: string[]) => ids.sort().join(',');
+    expect(derivedMoments({ kind: 'card_unblocked' }, [blocked], items, TYPES)).toEqual([
+      sorted(at(a), at(b)),
+    ]);
+    expect(
+      derivedMoments({ kind: 'related_done', related: 'children' }, [parent], items, TYPES),
+    ).toEqual([at(kid)]);
+    expect(
+      derivedMoments({ kind: 'related_done', related: 'linked' }, [holder], items, TYPES),
+    ).toEqual([at(a)]);
+    // A column by its cards alone: the rule's own write to the card that tipped it changes no moment.
+    expect(
+      derivedMoments({ kind: 'column_limit', status: 'done', limit: 1 }, [a], items, TYPES),
+    ).toEqual([sorted(a.id, b.id, kid.id)]);
   });
 });

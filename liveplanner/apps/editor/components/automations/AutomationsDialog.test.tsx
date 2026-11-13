@@ -150,14 +150,38 @@ describe('the Rules list', () => {
   it('shows a paused rule’s reason with Resume, and a rule needing attention', async () => {
     list([
       rule({ paused: { reason: 'the webhook answered 410 Gone.', at: 1 }, enabled: false }),
-      rule({ id: 'r2', name: 'Triage', needs: ['the column Review'] }),
+      rule({
+        id: 'r2',
+        name: 'Triage',
+        trigger: { kind: 'card_moved', to: ['review~wt6t'] },
+        steps: [
+          { kind: 'assign', to: { person: 'user_gone1234' } },
+          { kind: 'set_field', field: 'estimate_gone', value: { text: 'High' } },
+        ],
+        needs: [
+          'Column review~wt6t is gone',
+          'Person user_gone1234 is gone',
+          'Field estimate_gone is gone',
+        ],
+        attention: [
+          { kind: 'column', id: 'review~wt6t' },
+          { kind: 'person', id: 'user_gone1234' },
+          { kind: 'field', id: 'estimate_gone' },
+        ],
+      }),
     ]);
     client.toggleRule.mockResolvedValue({ rule: rule() });
     wrap(<Harness />);
     expect(await screen.findByText(/the webhook answered 410 Gone/)).toBeTruthy();
-    expect(screen.getByText(/Needs Attention/).closest('p,div')!.textContent).toContain(
-      'the column Review',
+    // In words, never by id: the line and the sentence alike.
+    const row = document.querySelector('[data-rule-row="r2"]')!;
+    expect(row.querySelector('[data-rule-needs]')!.textContent).toBe(
+      'Needs Attention: A column is gone · Someone is gone · A field is gone',
     );
+    expect(row.querySelector('[data-rule-sentence]')!.textContent).toContain(
+      'a column no longer here',
+    );
+    expect(row.textContent).not.toMatch(/wt6t|user_gone|estimate_gone/);
     fireEvent.click(screen.getByRole('button', { name: 'Resume' }));
     await waitFor(() => expect(client.toggleRule).toHaveBeenCalledWith(SCOPE, 'r1', true));
     expect(track).toHaveBeenCalledWith('Plan', 'Toggled', 'AutomationOn');
@@ -242,7 +266,7 @@ describe('the Audit Trail', () => {
         expect.objectContaining({ rule: 'r1', limit: 200 }),
       ),
     );
-    fireEvent.click(await screen.findByRole('button', { name: 'Expand run' }));
+    fireEvent.click(await screen.findByRole('button', { name: /^Expand run: / }));
     expect(screen.getByText('Removed the label blocked')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Open Card' }));
     expect(onClose).toHaveBeenCalled();
@@ -263,6 +287,18 @@ describe('the Audit Trail', () => {
     expect(await screen.findByRole('button', { name: /Clear/ })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /Clear/ }));
     expect(await screen.findByText('No Runs Yet')).toBeTruthy();
+  });
+
+  it('opened on a rule that is gone, reads every rule’s runs as its Rule select says', async () => {
+    list();
+    wrap(<Harness initial={{ view: 'runs', ruleId: 'r-gone' }} />);
+    await waitFor(() => expect(client.listRuns).toHaveBeenCalled());
+    expect(client.listRuns).not.toHaveBeenCalledWith(
+      SCOPE,
+      expect.objectContaining({ rule: 'r-gone' }),
+    );
+    expect(screen.getByRole<HTMLSelectElement>('combobox', { name: 'Rule' }).value).toBe('');
+    expect(screen.queryByRole('button', { name: /Clear/ })).toBeNull();
   });
 
   it('offers Try Again when the log would not load', async () => {
@@ -303,10 +339,9 @@ describe('the rule builder', () => {
     const name = await screen.findByRole('textbox', { name: 'Rule name' });
     fireEvent.change(name, { target: { value: 'Renamed' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save Rule' }));
-    expect(await screen.findByRole('alert')).toHaveProperty(
-      'textContent',
-      expect.stringContaining('Insert a Value'),
-    );
+    // On the step's card, and (a phone's) in the step drawer it opens.
+    for (const alert of await screen.findAllByRole('alert'))
+      expect(alert.textContent).toContain('Insert a Value');
     expect(document.querySelector('[data-fault]')).toBeTruthy();
     expect(screen.getByRole('textbox', { name: 'Comment' })).toBeTruthy();
   });
@@ -340,6 +375,10 @@ describe('the rule builder', () => {
     const chips = () =>
       [...document.querySelectorAll('[data-step-card]')].map((c) => c.textContent);
     expect(chips()[1]).toContain('Archive');
+    // Focus stays with the step that moved, in its new place, not the one that took its old one.
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'More for Flag' })),
+    );
     fireEvent.click(screen.getByRole('button', { name: 'More for Flag' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
     expect(chips().filter((t) => t?.includes('Flag'))).toHaveLength(2);

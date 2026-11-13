@@ -189,6 +189,7 @@ export function TimeTriggerPanel({
             options={columns}
             value={trigger.statuses ?? []}
             hint="None picked: any column that is not done."
+            gone="A column no longer here"
             onChange={(statuses) => {
               const { statuses: _s, ...rest } = trigger;
               onChange(statuses.length ? { ...rest, statuses } : rest);

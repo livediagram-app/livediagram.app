@@ -21,6 +21,8 @@ export const AUTOMATION_CREATED_PER_RUN = 1;
 // Phase 2 (spec "Time triggers", "For Related Cards", "Outgoing actions", "Assign in turn").
 export const AUTOMATION_TIME_CARDS_MAX = 100;
 export const AUTOMATION_BRANCH_CARDS_MAX = 100;
+// Card Unblocked and Related Cards Done (spec "Triggers"): the cards one move runs the rule on, the first by number.
+export const AUTOMATION_DERIVED_CARDS_MAX = 100;
 export const AUTOMATION_BRANCH_ACTIONS_MAX = 10;
 export const AUTOMATION_OUTGOING_MAX = 5;
 export const AUTOMATION_ROTATE_MIN = 2;
@@ -323,7 +325,7 @@ export interface AutomationRule extends AutomationRuleBody {
   id: string;
   enabled: boolean;
   // Set when the rule turned itself off after AUTOMATION_FAILURES_TO_PAUSE failures; cleared by Resume.
-  paused?: { reason: string; at: number; webhook?: string };
+  paused?: { reason: string; at: number; webhook?: string; gone?: AutomationGone };
   made: AutomationStamp;
   edited: AutomationStamp;
 }
@@ -333,11 +335,28 @@ export interface AutomationRule extends AutomationRuleBody {
 // `waiting`: a run held by a Wait until `waitsUntil`; it settles when the run goes on (its own row) or is dropped.
 export type AutomationResult = 'done' | 'no_match' | 'skipped' | 'failed' | 'waiting';
 
+// What a failed step or an unheld condition names that the plan lacks, as data: its kind and its stored id (by
+// construction the plan no longer has its name). The text keeps the id for agents ("Field estimate_x is gone"); the
+// editor words the line without it ("A field is gone"). Set only on such a line, and on the run or pause it explains.
+export type AutomationGone = {
+  kind: 'column' | 'type' | 'field' | 'person' | 'filter';
+  id: string;
+  // A condition naming several of its kind gone: the rest of them, after `id` (absent for one).
+  more?: string[];
+};
+
 export type AutomationStepLine =
   | { kind: 'trigger'; text: string; by?: ItemPerson }
-  | { kind: 'condition'; ok: boolean; text: string }
+  | { kind: 'condition'; ok: boolean; text: string; gone?: AutomationGone }
   // `ai`: an AI step that asked the model (the day's AI count reads it).
-  | { kind: 'action'; ok: boolean; text: string; already?: true; ai?: true }
+  | {
+      kind: 'action';
+      ok: boolean;
+      text: string;
+      already?: true;
+      ai?: true;
+      gone?: AutomationGone;
+    }
   | { kind: 'branch'; ok: boolean; text: string; cards: number };
 
 export interface AutomationRun {
@@ -348,8 +367,9 @@ export interface AutomationRun {
   card: { id: string; key: number; title: string } | null;
   at: number;
   result: AutomationResult;
-  // Why a run was skipped or failed, in a sentence.
+  // Why a run was skipped or failed, in a sentence; `gone`, what the reason names that the plan lacks.
   reason?: string;
+  gone?: AutomationGone;
   tookMs: number;
   steps: AutomationStepLine[];
   // A waiting run's moment to go on (ms).

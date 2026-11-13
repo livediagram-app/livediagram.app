@@ -161,6 +161,10 @@ under the keyboard the moment it was tapped. Every floating surface stays in vie
 - An anchored panel focuses its first control on opening. One whose first control is a text field it should not
   raise a keyboard for on a touch screen (a search) may ask to focus the panel itself instead
   (`initialFocus: 'panel'`): focus is inside it, for Escape and assistive technology, and no keyboard rises.
+- While focus is in a popover (an anchored panel, a confirm popover), Tab and Shift+Tab wrap at its ends. It is drawn
+  at the end of the page, outside the dialog it opened over, so Tab past its last control would otherwise fall to the
+  page and on to the editor behind the dialog. Escape closes it and hands focus back to its control. Focus outside it
+  (a field driving the list it shows) keeps its own Tab.
 - A modal `Dialog` first fits itself to the visible area (editor-app.md "A dialog stays above the on-screen keyboard"),
   so it fits there and the move above has nothing left to do.
 - Under a mouse nothing listens: no keyboard rises over the page.

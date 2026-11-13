@@ -32,6 +32,7 @@ import { reportServerEvent } from '../../server-telemetry';
 import type { AutomationsAi, PlanEnv } from '../../types';
 import type { AutomationPlan } from './automation-plan';
 import type { HistorySource } from './automation-queue';
+import { markAiAsked } from './automation-log';
 import type { Sql } from './automation-store';
 import { addComment, patchCard, type WriteDeps } from './automation-writes';
 
@@ -99,8 +100,12 @@ function called(env: PlanEnv, task: AutomationAiTask): Promise<void> {
 export interface AiStepsInput {
   client: AutomationsAi | null;
   sql: Sql;
-  // The wake's (or request's) count of today's calls, read once.
-  state: { ai?: number };
+  // The day's count of calls as last known, right while the room's `aiAsks` stays at `aiAsks`.
+  state: { ai?: number; aiAsks?: number };
+  // The room's count of calls asked since it woke (AutomationStore.aiAsks), which every ask moves.
+  room: { aiAsks: number };
+  // The run's row, whose pending lines mark each call as it is asked (absent for Test on a Card, which asks nothing).
+  runId?: string;
   plan: AutomationPlan;
   rule: AutomationRule;
   card: Item;
@@ -179,7 +184,7 @@ async function write(
     deps,
     input.plan,
     input.rule,
-    card.id,
+    card,
     outcome.patch,
     input.source,
     'automation_ai',
@@ -210,6 +215,8 @@ export async function runAiSteps(
     if (!ok) out.failed ??= text;
   };
   let labels: string[] | null = null;
+  // The calls this run asked, each marked on its row.
+  let made = 0;
   const planLabelsNow = async () => (labels ??= planLabels(await listItems(deps.env, deps.planId)));
   for (const p of planned) {
     const task = p.ai.task;
@@ -222,13 +229,27 @@ export async function runAiSteps(
       settle(p, false, AI_NOT_SET_UP);
       continue;
     }
-    input.state.ai ??= aiToday(input.sql, Date.now());
-    if (input.state.ai >= AUTOMATION_AI_PER_DAY) {
+    // Read again when another request asked since (a Run Rule, a Describe a Rule or a run while this one waited), with
+    // no await before this call is marked: calls at once never pass the day's cap between them.
+    const known = input.state.ai;
+    const today =
+      known !== undefined && input.state.aiAsks === input.room.aiAsks
+        ? known
+        : aiToday(input.sql, Date.now());
+    input.state.ai = today;
+    input.state.aiAsks = input.room.aiAsks;
+    if (today >= AUTOMATION_AI_PER_DAY) {
       lines[offset + p.line] = { kind: 'action', ok: false, text: AI_CAPPED };
       out.skipped = AI_CAPPED;
       deps.defer(reportServerEvent(env, 'Plan', 'Ran', 'AutomationAiCapped'));
       continue;
     }
+    // The call counts from now, whatever it answers: marked on the run's row with no await since the count was read.
+    made += 1;
+    if (input.runId) markAiAsked(input.sql, input.runId, made);
+    input.room.aiAsks += 1;
+    input.state.aiAsks = input.room.aiAsks;
+    input.state.ai = today + 1;
     const started = Date.now();
     const card = (await readItem(deps.env, deps.planId, input.card.id)) ?? input.card;
     const cardInput = aiCardInput(
@@ -242,8 +263,6 @@ export async function runAiSteps(
         : task === 'triage'
           ? { labels: await planLabelsNow() }
           : {};
-    // The call counts whatever it answers.
-    input.state.ai += 1;
     deps.defer(called(deps.env, task));
     const asked = await ask(input.client, aiRequest(task, cardInput, choices), input.gateway);
     const reply = asked.ok ? readAiReply(asked.raw) : null;

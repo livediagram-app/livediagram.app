@@ -106,6 +106,17 @@ describe('the values a rule names', () => {
       'list.1.one': 1,
     });
   });
+
+  it('keep a call that names a prototype key as its own value', () => {
+    const values = webhookValues(JSON.parse('{"__proto__":"x","constructor":{"name":"y"}}'), [
+      '__proto__',
+      'constructor.name',
+    ]);
+    expect(Object.hasOwn(values, '__proto__')).toBe(true);
+    expect(values['__proto__']).toBe('x');
+    expect(values['constructor.name']).toBe('y');
+    expect(Object.getPrototypeOf(values)).toBe(Object.prototype);
+  });
 });
 
 describe('a call’s body', () => {

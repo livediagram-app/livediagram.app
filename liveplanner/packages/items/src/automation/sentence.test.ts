@@ -7,7 +7,9 @@ import {
   outlineFieldName,
   outlinePersonName,
   outlineTabName,
+  outlineTypeName,
   ruleSentence,
+  savedFilterKey,
   sentenceOrList,
   stepChip,
   triggerParts,
@@ -23,7 +25,15 @@ const OUTLINE: RuleSentenceOutline = {
       fields: ['title', 'priority', 'due'],
       custom: [{ id: 'f-done', label: 'Completed On', kind: 'date' }],
     },
-    { id: 'bug', label: 'Bug', fields: ['title', 'priority'] },
+    {
+      id: 'bug',
+      label: 'Bug',
+      fields: ['title', 'priority', 'f-who', 'f-ok'],
+      custom: [
+        { id: 'f-who', label: 'Reviewer', kind: 'person' },
+        { id: 'f-ok', label: 'Signed Off', kind: 'checkbox' },
+      ],
+    },
   ],
   statuses: new Map([
     ['todo', 'To Do'],
@@ -35,7 +45,10 @@ const OUTLINE: RuleSentenceOutline = {
     { id: 'p-marco', name: 'Marco Ruiz' },
   ],
   tabs: new Map([['t-form', 'Intake Form']]),
-  filters: new Map([['sf-1', 'Blocked Work']]),
+  filters: new Map([
+    [savedFilterKey('t', 'sf-1'), 'Blocked Work'],
+    [savedFilterKey('t2', 'sf-1'), 'Mine'],
+  ]),
 };
 
 const BARE: RuleSentenceOutline = { types: [], statuses: new Map(), people: [] };
@@ -168,6 +181,9 @@ describe('conditionChip', () => {
     ],
     [{ kind: 'saved_filter', tab: 't', filter: 'sf-1' }, 'Matches Blocked Work'],
     [{ kind: 'saved_filter', tab: 't', filter: 'sf-x' }, 'Matches a Saved Filter'],
+    // Two boards may hold filters of one id: each reads its own board's name.
+    [{ kind: 'saved_filter', tab: 't2', filter: 'sf-1' }, 'Matches Mine'],
+    [{ kind: 'saved_filter', tab: 't3', filter: 'sf-1' }, 'Matches a Saved Filter'],
     [{ kind: 'field', field: 'f-done', op: 'empty' }, 'Completed On is empty'],
     [{ kind: 'field', field: 'priority', op: 'is', value: 'urgent' }, 'Priority is Urgent'],
     [{ kind: 'field', field: 'priority', op: 'is_not', value: 'odd' }, 'Priority is not odd'],
@@ -205,6 +221,22 @@ describe('actionChip', () => {
     [{ kind: 'set_field', field: 'estimate', value: { number: 8 } }, 'Set Estimate 8'],
     [{ kind: 'set_field', field: 'labels', value: { list: ['a', 'b'] } }, 'Set Labels a, b'],
     [{ kind: 'set_field', field: 'labels', value: { list: [] } }, 'Set Labels'],
+    // A person picked by id reads by name, as Assign's does; one who left as Assign's does too. A Checkbox, Yes or No.
+    [
+      { kind: 'set_field', field: 'assignee', value: { text: 'p-priya' } },
+      'Set Assignee Priya Shah',
+    ],
+    [
+      { kind: 'set_field', field: 'f-who', value: { text: 'marco ruiz' } },
+      'Set Reviewer Marco Ruiz',
+    ],
+    [
+      { kind: 'set_field', field: 'assignee', value: { text: 'p-left' } },
+      'Set Assignee Someone No Longer Here',
+    ],
+    [{ kind: 'set_field', field: 'f-ok', value: { text: 'true' } }, 'Set Signed Off Yes'],
+    [{ kind: 'set_field', field: 'f-ok', value: { text: 'false' } }, 'Set Signed Off No'],
+    [{ kind: 'set_field', field: 'f-ok', value: { text: 'odd' } }, 'Set Signed Off odd'],
     [
       { kind: 'set_field', field: 'due', value: { date: { today: -1 } } },
       'Set Due Date Today - 1 day',
@@ -257,6 +289,55 @@ describe('the names', () => {
     expect(outlineFieldName('title', BARE)).toBe('Title');
     expect(outlinePersonName('p-priya', OUTLINE)).toBe('Priya Shah');
     expect(outlineTabName('t-x', OUTLINE)).toBe('t-x');
+  });
+
+  it('reads a field named after a prototype key as gone, never as the prototype', () => {
+    for (const id of ['constructor', '__proto__', 'toString']) {
+      expect(outlineFieldName(id, { ...OUTLINE, goneWords: true })).toBe('a field no longer here');
+      expect(outlineFieldName(id, OUTLINE)).toBe(id);
+    }
+  });
+
+  it('reads what the plan lost in words, never by id, where the outline asks (the editor)', () => {
+    const editor = { ...OUTLINE, goneWords: true };
+    const sentence = ruleSentence(
+      rule({
+        trigger: { kind: 'card_moved', to: ['review~wt6t'] },
+        conditions: [{ kind: 'type', types: ['epic'] }],
+        steps: [
+          { kind: 'assign', to: { person: 'user_gone' } },
+          { kind: 'set_field', field: 'estimate_gone', value: { text: 'High' } },
+          { kind: 'move', status: 'qa' },
+        ],
+      }),
+      editor,
+    );
+    const text = sentence.map((p) => ('word' in p ? p.word : p.chip)).join(' ');
+    expect(text).toBe(
+      'When Card Moved to a column no longer here if Card Type is a card type no longer here then ' +
+        'Assign Someone No Longer Here Set a field no longer here High Move to a column no longer here',
+    );
+    expect(outlineTabName('t-x', editor)).toBe('a form no longer here');
+    // Known names read as ever.
+    expect(outlineTabName('t-form', editor)).toBe('Intake Form');
+    expect(outlineFieldName('f-done', editor)).toBe('Completed On');
+  });
+
+  it('reads a pick never made as the pick it waits for, not as gone (a template left it empty)', () => {
+    const editor = { ...OUTLINE, goneWords: true };
+    const sentence = ruleSentence(
+      rule({
+        trigger: { kind: 'card_moved', to: [''] },
+        steps: [{ kind: 'set_field', field: '', value: { date: { today: 0 } } }],
+      }),
+      editor,
+    );
+    const text = sentence.map((p) => ('word' in p ? p.word : p.chip)).join(' ');
+    expect(text).toBe('When Card Moved to a column then Set a field Today');
+    expect(outlineTypeName('', editor)).toBe('a card type');
+    expect(outlineTabName('', editor)).toBe('a form');
+    // An agent's sentence keeps what was stored.
+    expect(outlineFieldName('', OUTLINE)).toBe('');
   });
 });
 
@@ -341,6 +422,9 @@ describe('Phase 2 words', () => {
     );
     expect(chip(branch({ kind: 'saved_filter', tab: 't', filter: 'sf-x' }))).toBe(
       'For each Card Matching a Saved Filter',
+    );
+    expect(chip(branch({ kind: 'saved_filter', tab: 't2', filter: 'sf-1' }))).toBe(
+      'For each Card Matching Mine',
     );
     const notify = (extra: object) =>
       ({ kind: 'notify', via: 'slack', webhook: 'wh1', text: 'x', ...extra }) as never;

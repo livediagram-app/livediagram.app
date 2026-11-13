@@ -30,6 +30,7 @@ export function NamesConditionPanel({
           label="Card Types"
           options={outline.types.map((t) => ({ value: t.id, label: t.label }))}
           value={condition.types}
+          gone="A card type no longer here"
           onChange={(types) => onChange({ ...condition, types })}
         />
       ) : (
@@ -37,6 +38,7 @@ export function NamesConditionPanel({
           label="Columns"
           options={outline.columns.map((c) => ({ value: c.status, label: c.name }))}
           value={condition.statuses}
+          gone="A column no longer here"
           onChange={(statuses) => onChange({ ...condition, statuses })}
         />
       )}

@@ -22,6 +22,7 @@ import { listItems } from '../../db/items';
 import { tabOutlines } from '../../db/tab-outlines';
 import { planTabs } from '../../routes/plan-route';
 import { getParticipants } from '../../person/profiles';
+import { teamTargets, type TeamPerson } from '@liveworkspace/auth-client';
 import { teamPeople } from '../../person/notify';
 import { appBaseUrl } from '../../email/client';
 import type { PlanEnv } from '../../types';
@@ -37,6 +38,10 @@ export interface AutomationPlan {
   teamId: string | null;
   // The plan's own ids behind its people's hashes: the owner, its team's members and the editors it has seen.
   accounts: Map<string, string>;
+  // Whether a rule's email may reach this account (spec "Actions", Send Email): the owner, and the people a person's
+  // own mention email reaches (the plan's team, as the notifier's teamTargets picks them). Someone who left the team,
+  // or a share link's Editor, is not.
+  mayEmail: (accountId: string) => boolean;
 }
 
 // The link that opens a card, whichever board shows it.
@@ -84,12 +89,18 @@ async function accountPeople(
   ownerId: string,
   teamId: string | null,
   known: readonly string[],
-): Promise<{ people: ItemPerson[]; accounts: Map<string, string> }> {
+): Promise<{
+  people: ItemPerson[];
+  accounts: Map<string, string>;
+  mayEmail: (accountId: string) => boolean;
+}> {
   const accounts = new Map<string, string>();
   const ids = new Set<string>([ownerId, ...known]);
   const named: string[] = [ownerId];
+  let team: TeamPerson[] = [];
   try {
-    for (const m of teamId ? ((await teamPeople(env, teamId)) ?? []) : []) {
+    team = teamId ? ((await teamPeople(env, teamId)) ?? []) : [];
+    for (const m of team) {
       if (m.status !== 'joined' || !m.userId) continue;
       ids.add(m.userId);
       named.push(m.userId);
@@ -104,7 +115,9 @@ async function accountPeople(
     const p = profiles.get(id);
     if (p) people.push({ id: await itemPersonId(id), name: p.name, color: p.color });
   }
-  return { people, accounts };
+  const mayEmail = (accountId: string) =>
+    accountId === ownerId || teamTargets(team, [{ userId: accountId }], '').length > 0;
+  return { people, accounts, mayEmail };
 }
 
 export async function readAutomationPlan(env: PlanEnv, planId: string): Promise<AutomationPlan> {
@@ -135,6 +148,7 @@ export async function readAutomationPlan(env: PlanEnv, planId: string): Promise<
       people: [...people.values()],
       savedFilters: savedFiltersOf(tabs),
       formTabs: outlines.filter((t) => t.kind === 'form').map((t) => t.id),
+      cards: new Set(items.map((i) => i.id)),
     },
     types,
     isDone: doneStatusesOf(board.boards),
@@ -142,5 +156,6 @@ export async function readAutomationPlan(env: PlanEnv, planId: string): Promise<
     ownerId,
     teamId,
     accounts: fromAccounts.accounts,
+    mayEmail: fromAccounts.mayEmail,
   };
 }

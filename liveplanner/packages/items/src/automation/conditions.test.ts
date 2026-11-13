@@ -38,8 +38,29 @@ describe('Card Type and Column', () => {
     expect(holds({ kind: 'type', not: true, types: ['epic'] }, ctx())).toEqual({
       ok: false,
       text: 'Card Type is not epic (epic is gone)',
+      gone: { kind: 'type', id: 'epic' },
     });
-    expect(holds({ kind: 'column', statuses: ['qa'] }, ctx()).ok).toBe(false);
+    expect(holds({ kind: 'column', statuses: ['qa'] }, ctx()).gone).toEqual({
+      kind: 'column',
+      id: 'qa',
+    });
+  });
+
+  it('records every gone thing a condition names, each once', () => {
+    expect(holds({ kind: 'type', types: ['epic', 'bug', 'saga', 'epic'] }, ctx())).toEqual({
+      ok: false,
+      text: 'Card Type is epic or Bug or saga or epic (epic, saga are gone)',
+      gone: { kind: 'type', id: 'epic', more: ['saga'] },
+    });
+    expect(holds({ kind: 'column', statuses: ['qa', 'done', 'later'] }, ctx()).gone).toEqual({
+      kind: 'column',
+      id: 'qa',
+      more: ['later'],
+    });
+    expect(
+      holds({ kind: 'who', who: [{ person: 'p1' }, { role: 'agent' }, { person: 'p2' }] }, ctx())
+        .gone,
+    ).toEqual({ kind: 'person', id: 'p1', more: ['p2'] });
   });
 });
 
@@ -95,6 +116,21 @@ describe('Field', () => {
     expect(ok({ kind: 'field', field: 'labels', op: 'is', value: 'a' }, { labels: null })).toBe(
       false,
     );
+  });
+
+  it('names a priority by its label, as the rule sentence does', () => {
+    expect(
+      holds(
+        { kind: 'field', field: 'priority', op: 'is', value: 'high' },
+        ctx({ priority: 'medium' }),
+      ).text,
+    ).toBe('Priority is High (Medium)');
+    expect(
+      holds(
+        { kind: 'field', field: 'priority', op: 'is', value: ['urgent', 'low'] },
+        ctx({ priority: 'low' }),
+      ).text,
+    ).toBe('Priority is Urgent, Low (Low)');
   });
 
   it('compares empty and not empty, a false flag as empty', () => {
@@ -173,6 +209,7 @@ describe('Who Did It', () => {
     expect(holds({ kind: 'who', who: [{ person: 'p-gone' }] }, ctx())).toEqual({
       ok: false,
       text: 'Who Did It is p-gone (p-gone is gone)',
+      gone: { kind: 'person', id: 'p-gone' },
     });
   });
 });
@@ -197,7 +234,11 @@ describe('Matches a Saved Filter', () => {
   });
 
   it('does not hold when the filter is gone', () => {
-    expect(holds({ kind: 'saved_filter', tab: 't2', filter: 'sf-mine' }, ctx()).ok).toBe(false);
+    expect(holds({ kind: 'saved_filter', tab: 't2', filter: 'sf-mine' }, ctx())).toEqual({
+      ok: false,
+      text: 'Matches a Saved Filter (sf-mine is gone)',
+      gone: { kind: 'filter', id: 'sf-mine' },
+    });
   });
 });
 

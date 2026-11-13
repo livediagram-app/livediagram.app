@@ -126,7 +126,9 @@ describe('in a rule', () => {
       trigger: { kind: 'pull_request_merged' },
       conditions: [{ kind: 'who', who: [{ role: 'editor' }] }],
     });
-    expect('body' in read).toBe(false);
+    expect('message' in read && read.message).toBe(
+      'A GitHub trigger has no person behind it to check',
+    );
   });
 
   it('says Checks Finished’s result in the sentence', () => {

@@ -135,12 +135,30 @@ work. A rule does it every time, at once, and says that it did.
 | **Pull Request Closed**  | a linked pull request closes without merging                                                   | the rule's conditions             |
 | **Checks Finished**      | a linked pull request's checks turn Failing, or Passing (picked; Failing first)                | Failing or Passing, required      |
 
+- **Field Changed hears only fields a write changes.** Time Spent's entries and a Votes field's tally keep no history
+  by design, a Comments field's threads are its own, and a Calculated field is worked out, never stored: none of them
+  ever changes by a write, so Field Changed would never run on one. The builder leaves them out of its fields, and a
+  rule naming one is refused (`automation_invalid` at `trigger.fields.N`, "Field Changed never hears Time Spent: it
+  changes without an edit, so the rule would never run"). A rule saved before its field became one needs attention
+  ("Field Changed never hears Time Spent").
+- **Set Field and Clear Field write only fields a write changes**, the same ones: Time Spent's entries, a Votes
+  tally, a Comments field's threads and a Calculated value are never a rule's to write, and a value a rule wrote
+  there would be one the field cannot read. The builder leaves them out of both actions' fields and of Another
+  Field's Value (a step that holds one still shows it), and a run that reaches one fails: "Votes is never set by a
+  rule" ("never cleared" for Clear Field); a Calculated field keeps "Score is worked out, never set".
 - **Card Stuck** is a time trigger (below). It fires once for each stretch a card sits unchanged: the run id holds
   when the card last changed, so any change re-arms it.
 - **Card Unblocked, Related Cards Done and Column Over Limit** are worked out when the rule runs, from the plan's cards
   as they are then: a move or archive that sets one off may be another card's (the blocker, the last child), and the
   rule runs on the card it concerns, with Who Did It the person who made that move. Archiving or restoring a card
-  starts only Card Archived and Card Restored.
+  starts only Card Archived and Card Restored. Changes that reach one moment before the rule runs (the last two
+  blockers or children done in a group move, or one after the other; two cards dropped into a column together) run
+  it once: on the card they concern, and on one card for a column. Several cards into a column before it runs
+  (three into a column whose limit is one) run Column Over Limit once, on the card that came in one past the limit,
+  by when each card entered the column (then the lower number). One move runs Card Unblocked or Related Cards Done on
+  at most **100 cards**, the first by their number, as a branch's related cards are. Past that, the Run Log says
+  "Ran on 100 of 340 cards: at most 100 a move", and the rest are left out (no later move runs it on them unless it
+  concerns them again).
 
 ### Time triggers
 
@@ -274,6 +292,9 @@ The Automations screen's way to the plan's GitHub connection, inside the dialog 
   picked, a note says what that shares: "Anyone who can see this plan's cards, share links included, sees these pull
   requests' titles and states." **Change on GitHub** starts a connect again, so GitHub's own page adds or removes the
   installation's repositories.
+- The connection is read each time the view opens (what was read before shows meanwhile), so a change made in
+  another tab or by another Editor shows. A Save Repositories refused because the list changed on GitHub (a
+  repository gone from the installation) says so and reads the list again; a pick no longer listed is dropped.
 - **Disconnect** asks first, in the app (never a browser dialog): **Disconnect GitHub?**, "Cards stop showing pull
   request states, and GitHub rules stop running until you connect again. Your rules and fields stay.",
   **Disconnect** and **Cancel**.
@@ -292,7 +313,9 @@ The Automations screen's way to the plan's GitHub connection, inside the dialog 
 - A Form Response also counts as Card Created: a rule on Card Created hears form cards too, a Form Response rule
   hears only them.
 - A card leaving the Trash is not Card Created; a card moved into or out of the Trash is not Card Moved; archiving is
-  not Card Moved. Undo of a person's own change triggers like the change it puts back.
+  not Card Moved. Undo of a person's own change triggers like the change it puts back, except a card put back
+  whole: an undo of a card's delete (or a redo of its making, or an offline plan's sync) restores a card, not a new
+  one, so it is not Card Created and starts no rule.
 - One write that changes several cards (a group move, a bulk edit) starts one run per card per rule.
 - Changes **Automation** made trigger other rules only when the changing rule lets them (above), and never the same
   rule again.
@@ -313,14 +336,24 @@ Each condition is one line in the builder, a chip sentence:
 
 A condition on a field the card's type lacks does not hold (it never errors). A condition naming a type, column,
 field, person or saved filter that is gone since does not hold, and the Rules list marks the rule **Needs Attention**
-with what is missing.
+with what is missing. So does a **Link Cards** step whose chosen card has since been deleted, and a **Set Field**
+whose picked person has left the plan (its run fails, "Someone is gone"). The editor never shows
+an id: the line says each kind of thing gone once, in words ("Needs Attention: A column is gone · Someone is gone",
+"2 fields are gone", "A card is gone"), and the rule's sentence and step cards read a gone pick as its panel does
+("to a column no longer here", "Set a field no longer here", "Assign Someone No Longer Here"). Agents read the ids.
+A pick never made (a template's field the plan has none like, left for you) is not gone: it reads as the pick it
+waits for ("Set a field Today", "to a column"), beside the step's "Pick a field".
 
 ## Actions
 
 | Action                          | Does                                                                                              |
 | ------------------------------- | ------------------------------------------------------------------------------------------------- |
 | **Move to Column**              | sets the card's status to a column its type uses (as the Status picker offers)                    |
-| **Set Field**                   | sets a field to a value: a literal, a value from the card, or a date (Today ± days)               |
+| **Set Field**                   | sets a field to a value: a literal, a value from the card, or a date (Today ± days); a field of   |
+|                                 | fixed values to one of them, picked: Priority and a Choice field to a value, the Assignee and a   |
+|                                 | Person field to one of the plan's people (kept by id, shown by name, as Assign's), a Checkbox to  |
+|                                 | Yes or No (a Checkbox given other text, a number, a day or a list is refused on save and by Test  |
+|                                 | on a Card); Flagged and the Checklist are set by Flag, Unflag and Add a Checklist instead         |
 | **Clear Field**                 | empties a field                                                                                   |
 | **Assign**                      | assigns a chosen person, **whoever triggered the rule**, nobody, or **people in turn**: each run  |
 |                                 | the next of 2 to 10 chosen people, in order, round and round                                      |
@@ -333,6 +366,7 @@ with what is missing.
 | **Send Email**                  | emails the assignee, whoever triggered it or a chosen person, with a subject and a short body     |
 |                                 | (values allowed) and a link to the card; only people with an account get it, and the email        |
 |                                 | [notification](../014-identity/profile-and-email-notifications.md) opt-out applies                |
+|                                 | ([Who a rule's email reaches](#who-a-rules-email-reaches))                                        |
 | **Send to Webhook**             | sends a signed JSON event to one of the plan's own-service webhooks: the rule, the card and a     |
 |                                 | message (values allowed)                                                                          |
 | **Post to Slack**               | posts the message, with an **Open in liveplanner** link, through one of the plan's Slack webhooks |
@@ -342,11 +376,14 @@ with what is missing.
 | **Restore From Archive**        | brings an archived card back                                                                      |
 | **Copy Card**                   | adds a copy of the card (its type, title and fields), in its column or a chosen one               |
 | **Add a Checklist**             | adds 1 to 20 unticked items (values allowed) to the card's checklist; an item already on it, by   |
-|                                 | its text, is not added twice                                                                      |
+|                                 | its text, is not added twice; an item is cut to 200 characters once its values are filled in, as  |
+|                                 | a person's checklist item is                                                                      |
 | **Link Cards**                  | points one of the card's Card fields (a Blocked By field too) at a chosen card, or, in a branch,  |
 |                                 | at the card that started the rule; a field of several cards gains it, a single one is replaced    |
 | **Mention Someone**             | starts a thread on the card that @mentions the assignee, whoever triggered it or a chosen person, |
 |                                 | with a short message (values allowed); it reaches their Inbox and their mention email             |
+|                                 | ([Who a rule's email reaches](#who-a-rules-email-reaches)); the comment, @mention and all, keeps  |
+|                                 | within a comment's 2,000 characters, the message cut to fit                                       |
 | **Resolve Threads**             | resolves every open comment thread on the card                                                    |
 | **Wait**                        | holds the rest of the rule for 1 hour to 30 days (below)                                          |
 | **For Related Cards**           | a branch: runs its own conditions and actions on each related card (below)                        |
@@ -364,8 +401,10 @@ step of the rule's top level only (never inside an If / Else or a branch), at mo
   (the card moved on, someone took it), it stops there, a **No Match** run "Its conditions no longer hold after the
   wait". Otherwise the steps after the Wait run, as a run of their own in the Audit Trail ("After waiting 2 days"),
   counting toward the plan's 1,000 a day.
-- **What stops a waiting run**: the rule turned off, deleted or saved with changes (Skipped, "The rule changed while
-  this run waited"), the card deleted or trashed (Skipped, "The card is gone"). Archiving the card does not.
+- **What stops a waiting run**: the rule turned off (or paused), deleted or saved with changes, at once (Skipped, "The
+  rule changed while this run waited"; turning it on again does not bring the run back), the card deleted or trashed (Skipped, "The card is gone"). Archiving the card does not. A run
+  whose time comes once the plan's 1,000 runs for the day are spent goes no further either (Skipped, "Daily limit
+  reached: rules run again tomorrow"), so it never shows Waiting past its time.
 - **At most 500 runs wait** in a plan at once: past that, a Wait fails its run, "Too many runs are waiting in this
   plan".
 - A waiting run shows in the Audit Trail as **Waiting** (a pill of its own) with when it goes on ("Goes on Mon 14
@@ -375,12 +414,21 @@ step of the rule's top level only (never inside an If / Else or a branch), at mo
 - The engine holds each waiting run in the plan room's storage (the rule, the card, the step it waits at, the
   rule's version, when it goes on), and the room's alarm wakes for the earliest, as it does for time triggers.
 
+### Who a rule's email reaches
+
+A rule's Send Email and Mention Someone email reach the people a person's own notification would: the plan's
+owner, and the people of the plan's team as a person's own mention email picks them
+([comment mentions](../012-collaboration/comment-mentions.md), the platform's `teamTargets`). Someone removed from
+the team, or an Editor who came in through a share link, gets no rule email, though a card may still name them (the
+step is done; nothing is sent). A Mention Someone's thread is written all the same.
+
 ### Assign in turn
 
 **People in turn** keeps its place per rule: the first run assigns the first person, the next the second, and after
 the last back to the first. A person who has left the plan is passed over, their turn with them (and the rule needs
 attention). A branch assigning in turn gives each related card the next person. A run that
-fails or matches nothing doesn't move the turn, and Test on a Card shows whose turn it is without taking it.
+fails or matches nothing doesn't move the turn, and Test on a Card shows whose turn it is without taking it. Two runs of
+the rule at once (two Run Rules) take the next two people, never one twice.
 
 ### Outgoing actions
 
@@ -420,8 +468,8 @@ steps only; the run is **Failed** if any did, naming them.
 
 - An action that would change nothing (a label already there, a card already in the column) is not a change: the
   run says "Already so" for that step and carries on.
-- An action the card refuses (a column its type leaves out, a required field missing, the plan full) fails that
-  step: the run stops there and is **Failed** with the reason; the steps before it stay done.
+- An action the card refuses (a column its type leaves out, a required field missing, a field gone from the plan,
+  the plan full) fails that step: the run stops there and is **Failed** with the reason; the steps before it stay done.
 - Every change a run makes lands as **one write per card** where it can (the step's changes to the triggering card
   are batched into one patch, in step order), so the card's history reads as one entry and the board moves once.
 
@@ -456,6 +504,10 @@ own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel says 
   the rule's 20 actions.
 - It runs **after the run's card writes**, in step order, each one call, and reads the card as those writes left it;
   the run's outgoing messages go after. Its own writes are one more write each, by Automation.
+- **Someone editing the card meanwhile** keeps their change: a step's labels land on the card as it is when written,
+  so a label a person added or took off while the AI answered (or while the run read the card) stays as they left
+  it, and only the labels the step adds or takes off change. The same holds for Add Label, Remove Label and a Set
+  Field of Labels.
 - Its outcome is the step's line in the Audit Trail with the sparkle: "Summarised the card into a comment", "Set the
   card type to Bug", "Set priority High, added labels billing, urgent". A step that fails fails the run with its
   reason, as any action does, after the steps before it landed:
@@ -477,7 +529,9 @@ own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel says 
   counts, whatever it answered; Test on a Card and a step that never called (no model, the cap) count nothing.
 - Past it, the step is **skipped**: its line says "This plan has used its 100 AI steps today", nothing is asked, and
   the run is **Skipped** with that reason when nothing else failed. A skipped run never counts toward pausing.
-- The day's count is read from the Audit Trail (each called step's line is marked), once per wake.
+- The day's count is read from the Audit Trail (each called step's line is marked), again before each call, and a
+  call is marked on its run's row as it is asked, before its answer comes: a wake, a Run Rule and a Describe a Rule
+  asking at once never pass 100 between them.
 
 ### The model and what it is sent
 
@@ -579,7 +633,7 @@ it. A guest sees the sign-in gate the Automations screen already shows.
 
 - The fixed instructions (the system message), then one JSON object of data (the user message): the **request** (up
   to **500 characters**), the plan's **column** names, its **card type** names with each type's **custom field** names
-  and kinds, the built-in field names, up to **50 labels** its cards use (the most used first), and the trigger,
+  and kinds, the built-in field names, up to **30 labels** its cards use (the most used first), and the trigger,
   condition and action kinds a rule may hold with their fields and limits.
 - Never a person's name, email or id, a card's title or text, a comment, a webhook, a link, the plan's name or any
   other plan. A person the request names ("assign Ana") is written as said and matched to the plan's people by name
@@ -593,7 +647,7 @@ it. A guest sees the sign-in gate the Automations screen already shows.
   model to do anything but describe a rule). Nothing else is read.
 - **A rule** is then held to everything a person's rule is: `readRuleBody`'s checks and limits, names put back to the
   plan's ids, **chain off**, the saver's time zone, the name made unique. Its text (a comment, an email, a mention, a
-  message, a checklist item, a card title, the rule's name) is cut to its limits, control characters removed, and
+  message, a checklist item, a card title, a label, the rule's name) is cut to its limits, control characters removed, and
   any link the request didn't hold removed, so a draft can never carry a link the person didn't write.
 - A reply that does not read gets **one** second ask, with the refusal's words; a second reply that does not read is
   "Couldn't draft a rule from that". Each ask is one AI call.
@@ -624,7 +678,8 @@ Value**) holding a search ("Find a value") and the values in groups: **This Card
 Triggering Card** (inside a For Related Cards branch), **Card Fields** (each field of the card by name, the old Any
 Field…) and, in an Incoming Webhook rule, **Webhook Field…**, which turns the popover to a line for the path with
 Insert and Back. Up and Down walk the values from the search, Enter inserts the one marked, Escape closes; typing
-narrows every group, and nothing matching says so. Choosing one puts the value at the caret (over a selection) and
+narrows every group, and nothing matching says so. On a phone, Escape hands focus back to the button without its
+hover card, which would sit over the step's fields, until focus leaves it. Choosing one puts the value at the caret (over a selection) and
 hands focus back to the field, the caret after the value:
 
 | Value                          | Is                                                     |
@@ -668,8 +723,10 @@ hands focus back to the field, the caret after the value:
   its own changes. A change by a rule that does not let its changes trigger others starts nothing; a rule whose
   trigger and conditions it would have met logs a **Skipped** run ("Started by another rule's change").
 - **Per run**: at most **20 actions** and **1 created card**.
-- **Per plan per day** (UTC): at most **1,000 runs**. Only runs that did something, failed or were skipped count; a
-  **No Match** is logged and costs nothing. Past it, triggers are dropped until the next day, the Automations screen's meter reads full, a line says "Daily limit reached: rules run again
+- **Per plan per day** (UTC): at most **1,000 runs**, counted afresh as each run starts (a run counts from then), so a
+  wake and Run Rules at once never pass it between them. Only runs that did something, failed or were skipped count; a
+  **No Match** is logged and costs nothing, and so do the Audit Trail's own lines, which are no rule's run (a burst's
+  "Too many changes at once", a time trigger's "Ran on 100 of 340 matching cards", a move's "Ran on 100 of 340 cards"). Past it, triggers are dropped until the next day, the Automations screen's meter reads full, a line says "Daily limit reached: rules run again
   tomorrow", and Run Rule answers that it cannot run now.
 - **Waiting**: at most **500 triggers** wait at once; a burst past that drops the newest and logs one Skipped line
   ("Too many changes at once").
@@ -704,11 +761,19 @@ action's check joined by a line, a dashed arrow looping back over them. The bolt
 allowing. On a phone the header keeps its desktop look (100px, the mark, the title and its line).
 
 - Three tabs: **Rules · n**, **Audit Trail** and **Templates**. On a phone the bar is 48 px tall, each tab a 44 px
-  target with its label centred in it, the active tab's underline along the bar's foot.
-- A **Runs today** meter at the right of the tabs: "142 of 1,000" (No Match runs are not counted).
-- **Rules**: a search box ("Find a rule"), **All Triggers** and **On and Off** filters, then one row per rule:
+  target with its label centred in it, the active tab's underline along the bar's foot. The bar is one Tab stop, the
+  open tab: Left and Right move to the next tab and open it (wrapping), Home and End to the first and last, and the
+  open tab names its panel.
+- A **Runs today** meter at the right of the tabs, beside the tab list rather than in it: "142 of 1,000" (No Match runs are not counted).
+- The rules are read each time the screen opens (what was read before shows meanwhile), so a rule another Editor
+  or an agent made, changed or deleted shows; there is no live push between two people's screens. A change made
+  while that read is under way is kept: the list is read once more after it, never left as the read had it.
+- **Rules**: a search box ("Find a rule"), **All Triggers** and **On and Off** filters (on a wide screen one row, all
+  32 px tall; **All Triggers** lists GitHub's triggers only where Pick a Trigger offers them, or one a rule is
+  already on), then one row per rule:
   its switch, its name, its sentence (When `Card Moved` to `Done` then `Set Completed On` `Remove Label blocked`),
-  **Last Run** ("4 min ago", "Never") and **This Week** ("38 runs"), and a ⋯ menu (Edit, Duplicate, Audit Trail,
+  **Last Run** ("4 min ago", "Never") and **This Week** ("38 runs"), counting the runs the meter counts (a No Match
+  aside), and a ⋯ menu (Edit, Duplicate, Audit Trail,
   Delete). A paused rule's row is amber, with **Paused**, the reason, and **Resume**. A rule needing attention
   says what is missing. Clicking a row opens the builder.
   On a phone the filters are laid out for a thumb: the search across the full width (40 px tall, 14 px text), then
@@ -760,9 +825,16 @@ allowing. On a phone the header keeps its desktop look (100px, the mark, the tit
 
 - **Audit Trail**: filters **All Rules**, **Any Result** and **Last 7 Days**, the line "Kept for 30 days or the last
   2,000 runs, and the last 500 No Matches" (No Matches are kept apart, so they never push a run out), and one row per run: When, Rule, Card (`#48` and title), Result (**Done**, **No Match**, **Skipped**,
-  **Failed** pills), Took. A row opens to its steps, one line each with a tick or a cross: who did what (the
+  **Failed** pills), Took. A row opens to its steps, a click anywhere on it or on its chevron (whose name says which
+  run: "Expand run: Stamp the Finish Date, #48"), one line each with a tick or a cross: who did what (the
   trigger), each condition with what it found, each action, and **Open Card**. A failed or skipped row shows its
-  reason under it.
+  reason under it. Neither shows an id: a step that failed on something the plan lost says what, as Needs Attention
+  does ("A field is gone", "#12 A column is gone", "Failed on #12, #14: A card type is gone"), and a condition naming
+  one reads it as the sentence does ("Column is Done or a column no longer here (a column is gone)"); so do Paused's
+  reason, Test on a Card and Run Rule's message. Agents read the ids: such a line, its run and a pause carry what is
+  gone as data (`gone`: its kind and id, and for a condition naming several gone, the rest in `more`) beside the
+  text, which keeps the ids; several of one kind are counted ("(2 columns are gone)"). A run logged before `gone`
+  existed reads as it was stored.
 - On a phone the rows stack (name, sentence, last run and week on one line, the switch at the right) and the
   dialog fills the screen.
 
@@ -787,7 +859,11 @@ appears.
 ### The rule builder
 
 Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back to **Automations**, the rule's name
-(editable in place), its On / Off chip, "Edited by … · when", **Test on a Card** and **Save Rule**.
+(editable in place), its On / Off chip, "Edited by … · when", **Test on a Card** and **Save Rule**. The chip of a
+saved rule is a switch named **Rule On** whichever way it is set (a screen reader hears its state from the switch).
+**Save Rule** keeps the keyboard while it saves ([Busy buttons](../004-interface-design/busy-buttons.md)) and once
+saved with nothing changed: there it reads as unavailable and a press does nothing (on a phone **Saved** takes its
+place and the focus with it).
 
 - The rule reads top to bottom as cards joined by a line: **When** (the trigger), **If all of these** (the
   conditions), then one **Then** card per action, each with its icon. Under them: **+ Add Action**, **+ Add
@@ -842,15 +918,38 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
   message.
 - Picking a card selects it (a violet ring) and opens it on the right in the **step panel**: its own fields (columns,
   fields, people and types picked from the plan's), and for text, the **Insert a Value** button in the field that drops a value at the
-  caret, shown as violet chips. An action's panel shows a **Preview** on a real card of the plan, filled in.
-- A step's ⋯ menu: Move Up, Move Down, Duplicate, Delete.
+  caret, shown as violet chips. An action's panel shows a **Preview** on a real card of the plan, filled in. A pick
+  the plan no longer has (a deleted column, Form tab, field, card type or person, or Link Cards' deleted card) stays
+  shown, as "A column no longer here" (or "Someone No Longer Here" for a person, "A card no longer here" for a card),
+  picked, so the panel never hides what the rule holds or shows another choice in its place, and it can be unpicked.
+- To a screen reader each step card's button reads its kind and what it does ("Then", described by "Assign Ana
+  Costa"), and a panel's **Change** reads "Change Trigger" or "Change Action", described by the current one, so the
+  name heard holds the word on the button.
+- A step's ⋯ menu: Move Up, Move Down, Duplicate, Delete. After a move, focus stays on the moved step's ⋯ in its new
+  place.
+- Set Field's field changed to one of another kind starts its value afresh, as a new Set Field does (a field of fixed
+  values on its first one, a date on A Day, Today, a number on 0, any other empty): Priority's Low never carries to
+  Labels or Estimate, and a Due Date never starts on empty Text the save would refuse. A field of the same kind keeps
+  the value (a choice field only one of its own options), and so does a step with no field picked yet whose value fits
+  the field picked (a template's Today on a date field).
 - **Rule Details** (an accordion, closed): **Let this rule's changes trigger other rules** with "Off keeps rules
   from setting each other off. Chains stop after 5 rules.", and "Runs as Automation, with an Editor's access, for
   changes anyone with edit or participate access makes."
 - **Test on a Card** picks a card (the card finder) and runs the rule as it stands in the builder, unsaved, without
   changing anything: the result shows as an Audit Trail row with its steps, each action saying what it would do.
 - Leaving with unsaved changes asks **Discard Changes?**. A save the api refuses keeps the builder open and marks
-  the step at fault.
+  the step at fault, in words, never a path: the api's message for agents leads with the part's path ("steps.2.text
+  must be text of 1 to 2000 characters"), and the builder, which marks that part, says the rest as a sentence ("Must
+  be text of 1 to 2000 characters."). A rule another Editor deleted since the builder opened is never saved back:
+  the save is refused ("This rule was deleted elsewhere."), and a save never turns on a rule another Editor turned
+  off meanwhile (its On / Off stays as last set). Two Editors saving one rule: the later save stands whole. Text a
+  step must hold is refused as "1 to N characters", text that may be
+  empty as "up to N characters". A pick left empty says what to pick, by the part's name ("Pick a field.", "Pick a
+  column.", "Pick a card type."), never a bare "Must name one."
+- A rule opened by its link (an Automation comment's) that the plan no longer has opens no builder: the screen says
+  **This Rule Was Deleted**, "It's no longer in this plan. Its runs stay in the Audit Trail until they age out.", with
+  **Back to Rules**, once a read of the list has answered without it. A read that fails says **Couldn't Load the
+  Rules** with **Try Again** instead, never that the rule was deleted.
 
 #### The rule builder on a phone
 
@@ -860,22 +959,26 @@ above, unchanged.
 - **The rule drawer.** New Rule, a template, Describe a Rule's draft and opening a rule raise the builder as a sheet
   over the Automations screen (which stays behind it, dimmed), as tall as a sheet goes, with the grab handle, the
   safe area at its foot, its middle scrolling between a fixed top and foot. Swiping it down, tapping the dim behind
-  it or Escape goes back to the rules; with unsaved changes each asks **Discard Changes?** first, and the drawer
-  springs back while it asks, so no edit is lost silently.
+  it, Escape or the browser's Back (Android's, an iPhone's swipe) goes back to the rules, never off the plan; with
+  unsaved changes each asks **Discard Changes?** first, and the drawer springs back while it asks, so no edit is
+  lost silently ([editor-app.md](../007-editor/editor-app.md) "Back closes a sheet that holds work"). Kept editing,
+  focus stays in the drawer; a rule saved from a template, whose card has left the list, goes back to the rules
+  with focus on the Automations screen.
 - **Its header.** A top row of a back chevron ("Automations", a 44 px target, back to the rules) and the rule's
   state at the right: the On / Off switch with its word beside it ("On", "Off"), or an **Off** pill ("Not Saved")
   for a rule not saved yet. Under it the rule's name as an editable title on its own line, 18 px semibold, wrapping
   to as many lines as it needs (Enter does not break it), then "Edited by … · when" in small type.
 - **Its foot**, pinned to the bottom over the safe area: **Rule Details** as a closed bar (its accordion, opening
-  upward over the steps, its body scrolling when tall), then **Test on a Card** and **Save Rule** side by side, equal
-  width, 44 px tall. A saved rule with nothing changed reads **Saved** with a tick, so the button says why it
+  upward over the steps, its body scrolling when tall), then **Test on a Card** and **Save Rule** (or **Saved**) side
+  by side, equal width, 44 px tall. A saved rule with nothing changed reads **Saved** with a tick, so the button says why it
   does nothing, instead of a faded Save Rule.
 - **The step drawer.** Picking a step (the When trigger, an If condition, an action, a branch, a Wait, every kind)
-  or adding one opens its fields in a second sheet stacked over the rule drawer, not under the steps: its own grab
+  or adding one (a Duplicate too) opens its fields in a second sheet stacked over the rule drawer, not under the steps
+  (Move Up and Move Down leave it closed, the steps in sight): its own grab
   handle, the step's tile and name as its title, a close and a **Done** at its foot, its fields scrolling inside.
-  Swipe it down, tap the dim behind it, press Escape, close or Done to go back to the steps; the step stays
-  selected. It sits above the on-screen keyboard rather than jumping under it. A save the api refuses opens the
-  step at fault in it.
+  Swipe it down, tap the dim behind it, press Escape or the browser's Back, close or Done to go back to the steps;
+  the step stays selected. It sits above the on-screen keyboard rather than jumping under it. A save the api refuses opens the
+  step at fault in it, the refusal's words at the top of its fields (the step's card, which says them, is behind it).
 - Every drawer slides out to the bottom as it closes ([editor-app.md](../007-editor/editor-app.md) "Menus are
   bottom sheets on a phone").
 
@@ -885,7 +988,8 @@ above, unchanged.
   11 Nov 2026 · Done Means Wrapped Up · 10:42" ([History](items.md#history)), and a field whose latest change in
   the history read was a rule's shows a small **Set by Automation** chip beside its value in the item panel.
 - A comment Automation added shows the bolt avatar, **Automation** and the rule's name (a link to the rule for an
-  Editor), on a violet-tinted card. It is not Generated by AI, unless an AI action wrote it ("AI actions").
+  Editor, live: a rule made or renamed since the screen was last open opens from it, and one deleted since says
+  **This Rule Was Deleted**), on a violet-tinted card. It is not Generated by AI, unless an AI action wrote it ("AI actions").
 - The card's ⋯ menu offers **Run Rule** (an Editor's, when at least one Run from a Card rule is on), a submenu headed
   "Rules You Can Run Here" listing them, then **Manage Automations**. Running one says "Ran Escalate to Leads" or the
   failure, as a toast.
@@ -975,10 +1079,15 @@ part at fault, the words, and the command to run next).
 - A **duplicated** plan keeps its rules, each as it was (on or off), its Audit Trail and counts empty. A plan made from
   a template has none.
 - An **export** of a plan (its file) carries its rules; an import of that file brings them back off.
+- A copy's tabs, and a file's once imported, take new ids, and the rules follow them: a Form Response narrowed to a
+  Form tab, and a saved filter (a condition or a branch's cards), name that tab's copy.
 - A copy made through a share link, of one tab, or of a Community post takes no rules: the rules are an Editor's of the
   whole plan to see.
 - A rule naming a card type, column, field or person the copy lacks needs attention there (above).
 - **Deleting** a plan deletes its rules, queue and Audit Trail with it.
+- A **closed account** leaves the plan's rules as it leaves its cards: a rule it made or last edited reads **Made by**
+  or **Edited by** Deleted account, an Audit Trail run its change started names Deleted account where it named them,
+  and its triggers still queued or held by a Wait run as Deleted account's.
 
 ## Telemetry
 

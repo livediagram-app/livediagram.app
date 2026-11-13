@@ -54,7 +54,9 @@ export function RunLog({
   initialRule?: string | undefined;
   onOpenCard: (cardId: string) => void;
 }) {
-  const [rule, setRule] = useState(initialRule ?? '');
+  const [picked, setRule] = useState(initialRule ?? '');
+  // A rule gone (deleted, or never in the list) filters nothing, as the Rule select then reads All Rules.
+  const rule = rules.some((r) => r.id === picked) ? picked : '';
   const [result, setResult] = useState<AutomationResult | ''>('');
   const [days, setDays] = useState<RunWindow>(7);
   const [attempt, setAttempt] = useState(0);
@@ -143,7 +145,7 @@ export function RunLog({
         </Select>
         <span className="flex-1" />
         <span className="text-[12px] text-slate-500 dark:text-slate-400">
-          Kept for 30 days or the last 2,000 runs
+          Kept for 30 days or the last 2,000 runs, and the last 500 No Matches
         </span>
       </div>
       <div className={`min-h-0 flex-1 overflow-y-auto ${phone ? 'pb-2' : 'px-5 pb-5'}`}>

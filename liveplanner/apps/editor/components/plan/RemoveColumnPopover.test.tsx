@@ -12,7 +12,7 @@ const others = [
   { id: 'done', status: 'done', name: 'Done' },
 ];
 
-function draw(otherColumns = others) {
+function draw(otherColumns = others, cardCount = 3) {
   const anchor = document.createElement('button');
   document.body.append(anchor);
   const onRemove = vi.fn();
@@ -22,7 +22,7 @@ function draw(otherColumns = others) {
       anchor={anchor}
       column={column}
       others={otherColumns}
-      cardCount={3}
+      cardCount={cardCount}
       onCancel={onCancel}
       onRemove={onRemove}
     />,
@@ -37,6 +37,16 @@ describe('removing a column with cards', () => {
     fireEvent.change(screen.getByLabelText('Move the cards to'), { target: { value: 'done' } });
     fireEvent.click(screen.getByRole('button', { name: 'Delete Status' }));
     expect(onRemove).toHaveBeenCalledWith({ kind: 'move', to: 'done' });
+  });
+
+  it('says one card in the singular', () => {
+    draw(others, 1);
+    expect(
+      screen.getByText('One card is in To Do, on every board that shows it. Where should it go?'),
+    ).toBeTruthy();
+    // The Trash's line and the column menu's name say it too.
+    expect(screen.getByText('You can restore it from the Trash.')).toBeTruthy();
+    expect(screen.getByLabelText('Move the card to')).toBeTruthy();
   });
 
   it('moves them to the Trash when that is picked', () => {

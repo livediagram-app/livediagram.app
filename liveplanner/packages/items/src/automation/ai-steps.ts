@@ -403,11 +403,21 @@ export function readAiReply(raw: unknown): Obj | null {
 const LINK = /\b(?:https?:\/\/|www\.)[^\s<>()"']+/gi;
 
 /** A replacer for LINK that keeps a link `own` already holds and blanks any other: an AI's text never brings a link
- *  the person's own words lacked. */
+ *  the person's own words lacked. A sentence's mark after a link ("see https://x.example/1.") is no part of it. */
 export const keepOwnLink =
   (own: string) =>
   (link: string): string =>
-    own.includes(link) ? link : ' ';
+    own.includes(trimSentenceMarks(link)) ? link : ' ';
+
+const SENTENCE_MARKS = '.,;:!?';
+
+/** `link` without the sentence marks it ends on. An index walk, linear in the link: a regex for "marks at the end"
+ *  backtracks over every run of marks the link holds, quadratic on model output full of them. */
+const trimSentenceMarks = (link: string): string => {
+  let end = link.length;
+  while (end > 0 && SENTENCE_MARKS.includes(link[end - 1]!)) end -= 1;
+  return link.slice(0, end);
+};
 
 /** Every link in `text` that `own` lacks, blanked; the rest of the text as it was. */
 export const dropForeignLinks = (text: string, own: string): string =>
@@ -420,6 +430,7 @@ const cardText = (input: AiCardInput): string =>
     input.description ?? '',
     ...(input.checklist ?? []).map((r) => r.text),
     ...(input.comments ?? []),
+    ...(input.fields ?? []).map((f) => f.value),
   ].join('\n');
 
 // The most of a reply a summary reads (a 300-token reply is about 1,200 characters).

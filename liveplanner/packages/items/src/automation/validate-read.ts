@@ -69,7 +69,7 @@ export function text(
   opts: { empty?: boolean } & ValuePlace = {},
 ): string {
   if (typeof v !== 'string' || v.length > max || (!opts.empty && v.trim() === ''))
-    refuse(path, `${path} must be text of up to ${max} characters`);
+    refuse(path, `${path} must be text of ${opts.empty ? 'up to' : '1 to'} ${max} characters`);
   const unknown = unknownValueIn(v as string, opts);
   if (unknown !== null)
     throw new Refused({

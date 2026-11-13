@@ -1,13 +1,15 @@
 'use client';
 
 // One run in the Audit Trail (docs/specs/026-plan/automations.md "The Automations screen": Audit Trail): When, Rule, Card
-// (its number and title), Result as a pill, Took, and the chevron that opens its steps. A failed or skipped run shows
-// its reason under it. An open row is tinted violet, its steps under it. On a phone the parts stack.
+// (its number and title), Result as a pill, Took, and the chevron that opens its steps (its hit area the whole row).
+// A failed or skipped run shows its reason under it. An open row is tinted violet, its steps under it. On a phone the
+// parts stack.
 
 import { useId, useState } from 'react';
 import type { AutomationRun } from '@liveplanner/items';
 import { ChevronDownIcon } from '@liveplanner/ui';
 import { RunSteps } from './RunSteps';
+import { goneText } from './needs-words';
 import { RESULT_LABELS, RESULT_PILL, nextRunWords, runWhen, tookWords } from './run-words';
 
 export const RUN_GRID =
@@ -63,7 +65,7 @@ export function RunRow({
     run.result === 'waiting' && run.waitsUntil !== undefined
       ? `Goes on ${nextRunWords(run.waitsUntil, now)}`
       : run.reason && (run.result === 'failed' || run.result === 'skipped')
-        ? run.reason
+        ? goneText(run.reason, run.gone)
         : null;
   const card = run.card;
   const openCard = card && onOpenCard ? () => onOpenCard(card.id) : undefined;
@@ -72,9 +74,11 @@ export function RunRow({
       type="button"
       aria-expanded={open}
       aria-controls={stepsId}
-      aria-label={open ? 'Collapse run' : 'Expand run'}
+      aria-label={`${open ? 'Collapse' : 'Expand'} run: ${run.ruleName}${card ? `, #${card.key}` : ''}`}
       onClick={() => setOpen((v) => !v)}
-      className="touch-target relative flex size-7 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 motion-reduce:transition-none dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+      // Its hit area spreads over the row (the row's `relative` holds it), so a click or a tap anywhere on the row
+      // opens it: the whole row is its touch target.
+      className="flex size-7 cursor-pointer after:absolute after:inset-0 after:rounded-xl after:content-[''] items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 motion-reduce:transition-none dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
     >
       <span
         className={`transition-transform motion-reduce:transition-none ${open ? 'rotate-180' : ''}`}
@@ -90,7 +94,7 @@ export function RunRow({
       className={`rounded-xl border-b border-slate-100 text-[13px] text-slate-700 last:border-b-0 dark:border-slate-800 dark:text-slate-200 ${tint}`}
     >
       {phone ? (
-        <div className="flex items-start gap-3 px-4 py-3">
+        <div className="relative flex items-start gap-3 px-4 py-3">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <span className="truncate font-semibold text-slate-900 dark:text-slate-50">
               {run.ruleName}
@@ -104,7 +108,7 @@ export function RunRow({
           {chevron}
         </div>
       ) : (
-        <div className={`${RUN_GRID} px-4 py-3`}>
+        <div className={`${RUN_GRID} relative px-4 py-3`}>
           <span className="tabular-nums">{runWhen(run.at, now)}</span>
           <span className="truncate font-semibold text-slate-900 dark:text-slate-50">
             {run.ruleName}

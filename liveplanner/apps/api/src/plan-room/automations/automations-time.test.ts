@@ -135,6 +135,12 @@ describe('a Scheduled rule', () => {
       await room().alarm();
     }
     expect(await runs('?result=done&limit=200')).toHaveLength(100);
+    // The "Ran on 100 of 103" line is the Audit Trail's own: it spends none of the day's runs, nor counts as one.
+    const list = await (
+      await w.call('GET', '')
+    ).json<{ runsToday: number; rules: { stats: { runsThisWeek: number } }[] }>();
+    expect(list.runsToday).toBe(100);
+    expect(list.rules[0]!.stats.runsThisWeek).toBe(100);
   });
 
   it('waits for room in the queue rather than dropping a moment', async () => {

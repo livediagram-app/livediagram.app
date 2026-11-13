@@ -93,7 +93,7 @@ describe('the rule builder on a phone', () => {
     expect(screen.getByRole('tab', { name: 'Rules · 1' })).toBeTruthy();
     const header = document.querySelector('[data-rule-header="phone"]')!;
     expect(header.querySelector('button')!.textContent).toContain('Automations');
-    expect(screen.getByRole('switch', { name: 'On' })).toBeTruthy();
+    expect(screen.getByRole('switch', { name: 'Rule On' })).toBeTruthy();
     expect(header.textContent).toContain('Edited by Ana Costa');
     // The name is a title on its own line that never breaks.
     const name = screen.getByRole('textbox', { name: 'Rule name' });
@@ -116,8 +116,12 @@ describe('the rule builder on a phone', () => {
   it('reads Saved for a saved rule with nothing changed', async () => {
     render(<Harness initial={{ view: 'rule', ruleId: 'r1' }} />);
     await screen.findByRole('textbox', { name: 'Rule name' });
-    expect(screen.getByRole('status').textContent).toBe('Saved');
+    const saved = screen.getByRole('status');
+    expect(saved.textContent).toBe('Saved');
     expect(screen.queryByRole('button', { name: 'Save Rule' })).toBeNull();
+    // As wide as Test on a Card: two equal columns, not two flex-1 boxes that a button's padding widens.
+    expect(saved.parentElement!.className).toContain('grid-cols-2');
+    expect(saved.className).not.toContain('flex-1');
   });
 
   it('shows a new rule Off and Not Saved', async () => {
@@ -160,6 +164,52 @@ describe('the rule builder on a phone', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Discard Changes' }));
     expect(drawer()).toBeNull();
     expect(shown).toEqual({ view: 'rules' });
+  });
+
+  it('opens the step at fault in its drawer with the refusal’s words, which the steps behind it hide', async () => {
+    const { AutomationRefusal } = await import('./automations-client');
+    client.updateRule.mockRejectedValueOnce(
+      new AutomationRefusal(400, { error: 'automation_value_unknown', path: 'steps.0.text' }),
+    );
+    render(<Harness initial={{ view: 'rule', ruleId: 'r1' }} />);
+    const name = await screen.findByRole('textbox', { name: 'Rule name' });
+    fireEvent.change(name, { target: { value: 'Changed' } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save Rule' }));
+    });
+    const step = document.querySelector('[data-step-drawer]');
+    expect(step).toBeTruthy();
+    expect(within(step as HTMLElement).getByRole('alert').textContent).toMatch(
+      /names a value rules don’t know/,
+    );
+    // Another step picked carries no refusal.
+    fireEvent.click(
+      within(step!.closest('[role="dialog"]') as HTMLElement).getByLabelText('Close'),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'When' }));
+    expect(
+      within(document.querySelector('[data-step-drawer]') as HTMLElement).queryByRole('alert'),
+    ).toBeNull();
+  });
+
+  it('keeps the steps in sight when a step moves, and opens a duplicate as an added step', async () => {
+    client.listAutomations.mockResolvedValue({
+      rules: [rule({ steps: [{ kind: 'flag' }, { kind: 'archive' }] })],
+      runsToday: 1,
+      runsPerDay: 1000,
+    });
+    render(<Harness initial={{ view: 'rule', ruleId: 'r1' }} />);
+    await screen.findByRole('textbox', { name: 'Rule name' });
+    fireEvent.click(screen.getByRole('button', { name: 'More for Flag' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Move Down' }));
+    expect(document.querySelector('[data-step-drawer]')).toBeNull();
+    // Moved again at once, no drawer to close first.
+    fireEvent.click(screen.getByRole('button', { name: 'More for Flag' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Move Up' }));
+    expect(document.querySelector('[data-step-drawer]')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'More for Flag' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
+    expect(document.querySelector('[data-step-drawer]')).toBeTruthy();
   });
 
   it('goes back at once when nothing changed', async () => {

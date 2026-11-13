@@ -7,6 +7,7 @@ import {
   isTimeTrigger,
   nextMoment,
   readRuleBody,
+  ruleWithTabIds,
   type AutomationRule,
   type AutomationStamp,
 } from '@liveplanner/items';
@@ -61,8 +62,13 @@ const isStamp = (v: unknown): v is AutomationStamp =>
   typeof (v as AutomationStamp).at === 'number' &&
   !!(v as AutomationStamp).by;
 
-// A file's rules as a new plan takes them: each checked, under a fresh id, off.
-export function rulesFromFile(raw: readonly unknown[], now: number): AutomationRule[] {
+// A file's rules as a new plan takes them: each checked, under a fresh id, off, the tabs it names at the new plan's
+// ids (`tabIds`, the file's tab ids to the plan's).
+export function rulesFromFile(
+  raw: readonly unknown[],
+  now: number,
+  tabIds: ReadonlyMap<string, string> = new Map(),
+): AutomationRule[] {
   const out: AutomationRule[] = [];
   for (const r of raw.slice(0, AUTOMATION_RULES_MAX)) {
     const read = readRuleBody(r);
@@ -70,7 +76,7 @@ export function rulesFromFile(raw: readonly unknown[], now: number): AutomationR
     const held = r as Partial<AutomationRule>;
     const stamp = { by: { id: '', name: 'Someone', color: '#94a3b8' }, at: now };
     out.push({
-      ...read.body,
+      ...ruleWithTabIds(read.body, tabIds),
       id: crypto.randomUUID(),
       enabled: false,
       made: isStamp(held.made) ? held.made : stamp,

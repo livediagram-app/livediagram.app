@@ -1,13 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import {
+  AUTOMATION_DERIVED_CARDS_MAX,
   AUTOMATION_QUEUE_MAX,
   AUTOMATION_RULES_MAX,
   ITEMS_MAX,
   addDays,
+  defaultCatalogue,
   localDay,
+  type ItemTypeDef,
 } from '@liveplanner/items';
 import { AUTOMATION_NO_MATCH_LOG_MAX, runsToday } from './automation-log';
+import { AUTOMATION_EVENTS_PER_WAKE, derivedCapped } from './automation-runner';
 import { endRepeatWorld } from '../test-repeat-world';
 import { automationWorld, type AutomationWorld } from './test-automation-world';
 
@@ -41,6 +45,37 @@ async function fiftyRules() {
       steps: [{ kind: 'flag' }],
     });
 }
+
+// The plan filled to its cap with copies of one card (`n` of them, numbered on from it), straight into its SQL.
+function fill(id: string, n = ITEMS_MAX - 1) {
+  w.plans.get('A')!.db.exec(
+    `WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < ${n})
+     INSERT INTO items (plan_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
+     SELECT plan_id, id || '-' || n.i, type, item_key + n.i, rank, fields, rev, created_at, updated_at, created_by,
+            updated_by
+       FROM items, n WHERE id = '${id}'`,
+  );
+}
+
+// A card type with a Blocked By field, for Card Unblocked.
+const BLOCKS: ItemTypeDef = {
+  id: 'task',
+  label: 'Task',
+  newTitle: 'New task',
+  glyph: 'task',
+  color: '#2563eb',
+  fields: ['title', 'status', 'f-blocked'],
+  custom: [
+    {
+      id: 'f-blocked',
+      label: 'Blocked By',
+      kind: 'card',
+      linkType: 'task',
+      multiple: true,
+      blocks: true,
+    },
+  ],
+};
 
 const saves = async (id: string) => {
   for (let i = 0; i < SAVES; i += 1)
@@ -79,6 +114,119 @@ describe('Automations cost', () => {
     expect(wake).toBeLessThan(cpuBudgetMs(1500));
   }, 30_000);
 
+  // A branch reads the plan's cards (blueprint "Worked out at run time", `cardsNow`): 50 rules with a For Related
+  // Cards step on a full plan, 25 triggers. Each run read all 2,000 cards afresh, 1,250 reads in one wake (measured
+  // 8,500 ms on an M-series Mac); now once, while nothing writes (measured 270 ms).
+  it('a wake of 25 triggers past 50 branch rules on a full plan reads its cards once', async () => {
+    const c = await w.make('A', { title: 'Busy' });
+    fill(c.id);
+    for (let i = 0; i < AUTOMATION_RULES_MAX; i += 1)
+      await w.rule({
+        name: `Branch ${i}`,
+        trigger: { kind: 'field_changed', fields: ['priority'] },
+        conditions: [{ kind: 'field', field: 'title', op: 'contains', value: `never ${i}` }],
+        steps: [
+          { kind: 'for', related: { kind: 'linked' }, conditions: [], then: [{ kind: 'flag' }] },
+        ],
+      });
+    for (let i = 0; i < AUTOMATION_EVENTS_PER_WAKE; i += 1)
+      await w.send('POST', `/api/projects/A/items/${c.id}`, {
+        set: { priority: i % 2 ? 'high' : 'low' },
+      });
+    room().automations.schedule.at = Date.now();
+    const wake = await cpuMsOfAsync(() => room().alarm());
+    expect(
+      w.plans.get('A')!.db.prepare('SELECT COUNT(*) AS n FROM automation_queue').get(),
+    ).toEqual({ n: 0 });
+    expect(wake).toBeLessThan(cpuBudgetMs(1500));
+  }, 30_000);
+
+  // The same, every run writing (`noteWrite`): each write raised the store's rev, so the next branch read all 2,000
+  // cards again, 1,000 reads in one wake (measured 7,530 ms on an M-series Mac); now the run's own writes go into the
+  // cards held, and only a write from elsewhere reads them afresh (measured 690 ms).
+  it('a wake of 25 triggers past 50 branch rules that each write reads its cards once', async () => {
+    const c = await w.make('A', { title: 'Busy' });
+    fill(c.id);
+    for (let i = 0; i < AUTOMATION_RULES_MAX; i += 1)
+      await w.rule({
+        name: `Writer ${i}`,
+        trigger: { kind: 'field_changed', fields: ['priority'] },
+        conditions: [],
+        // Each rule names the card its own way, so every run's write changes it.
+        steps: [
+          { kind: 'set_field', field: 'title', value: { text: `Writer ${i}` } },
+          { kind: 'for', related: { kind: 'linked' }, conditions: [], then: [{ kind: 'flag' }] },
+        ],
+      });
+    for (let i = 0; i < AUTOMATION_EVENTS_PER_WAKE; i += 1)
+      await w.send('POST', `/api/projects/A/items/${c.id}`, {
+        set: { priority: i % 2 ? 'high' : 'low' },
+      });
+    room().automations.schedule.at = Date.now();
+    const wake = await cpuMsOfAsync(() => room().alarm());
+    const db = w.plans.get('A')!.db;
+    // Every run up to the day's 1,000 wrote the card.
+    expect(
+      db.prepare("SELECT COUNT(*) AS n FROM automation_runs WHERE result = 'done'").get(),
+    ).toEqual({ n: 1000 });
+    expect(wake).toBeLessThan(cpuBudgetMs(1500));
+  }, 60_000);
+
+  // Card Unblocked (spec "Triggers"): a blocker of 2,000 cards finished seven times before one wake, under 17 Card
+  // Unblocked rules. Each rule ran on every card it freed (34,000 runs, and every event hashed and claimed them all
+  // again); now on the first 100.
+  it('a blocker of a full plan runs each Card Unblocked rule on 100 cards', async () => {
+    const put = await w.send('PUT', '/api/projects/A/item-types', {
+      itemTypes: { version: defaultCatalogue().version, types: [BLOCKS] },
+    });
+    expect(put.status).toBeLessThan(300);
+    const blocker = await w.make('A', { title: 'Blocker' });
+    const c = await w.make('A', { title: 'Blocked', 'f-blocked': [blocker.id] });
+    fill(c.id, ITEMS_MAX - 2);
+    const RULES = 17;
+    for (let i = 0; i < RULES; i += 1)
+      await w.rule({
+        name: `Free ${i}`,
+        trigger: { kind: 'card_unblocked' },
+        conditions: [{ kind: 'field', field: 'title', op: 'contains', value: 'never' }],
+        steps: [{ kind: 'flag' }],
+      });
+    // Done, back to Doing, done again: the wake reads the plan as it is, so the seven finishes reach one moment.
+    for (let i = 0; i < 13; i += 1)
+      await w.send('POST', `/api/projects/A/items/${blocker.id}/move`, {
+        status: i % 2 ? 'doing' : 'done',
+      });
+    const db = w.plans.get('A')!.db;
+    const store = room().automations.store;
+    const before = store.claims;
+    room().automations.schedule.at = Date.now();
+    const wake = await cpuMsOfAsync(() => room().alarm());
+    // 17 rules, 100 cards each: every one claimed and checked once, none matching.
+    expect(store.claims - before).toBe(RULES * AUTOMATION_DERIVED_CARDS_MAX);
+    expect(
+      db
+        .prepare(
+          "SELECT COUNT(*) AS n FROM automation_runs WHERE result != 'no_match' AND id NOT LIKE 'derived:%'",
+        )
+        .get(),
+    ).toEqual({ n: 0 });
+    // The cards past the first 100 are said once a rule on the Audit Trail, the seven finishes reaching one moment,
+    // and spend none of the day.
+    const capped = db
+      .prepare("SELECT rule_id, result, body FROM automation_runs WHERE id LIKE 'derived:%'")
+      .all() as { rule_id: string; result: string; body: string }[];
+    expect(capped).toHaveLength(RULES);
+    expect(new Set(capped.map((r) => r.rule_id)).size).toBe(RULES);
+    for (const r of capped) {
+      expect(r.result).toBe('skipped');
+      expect(JSON.parse(r.body)).toMatchObject({
+        reason: derivedCapped(AUTOMATION_DERIVED_CARDS_MAX, ITEMS_MAX - 1),
+      });
+    }
+    expect(runsToday(room().automations.sql(), Date.now())).toBe(0);
+    expect(wake).toBeLessThan(cpuBudgetMs(4000));
+  }, 60_000);
+
   // Phase 2 (docs/specs/026-plan/automations.md "Time triggers"; blueprint "The wake"): a full plan and 50 time
   // rules due at once. Five hear every card (each runs on its first 100, the queue's 500), the other 45 check every
   // card against a condition that never holds: 100,000 card checks in one wake, then its first 25 runs.
@@ -87,13 +235,7 @@ describe('Automations cost', () => {
     const moment = Math.floor(Date.now() / QUARTER) * QUARTER;
     const at = new Date(moment).toISOString().slice(11, 16);
     const c = await w.make('A', { title: 'Late', due: addDays(localDay(moment, 'UTC'), -1) });
-    w.plans.get('A')!.db.exec(
-      `WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < ${ITEMS_MAX - 1})
-       INSERT INTO items (plan_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
-       SELECT plan_id, id || '-' || n.i, type, item_key + n.i, rank, fields, rev, created_at, updated_at, created_by,
-              updated_by
-         FROM items, n WHERE id = '${c.id}'`,
-    );
+    fill(c.id);
     for (let i = 0; i < AUTOMATION_RULES_MAX; i += 1)
       await w.rule({
         name: `Time ${i}`,

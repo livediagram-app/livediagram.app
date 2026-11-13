@@ -7,7 +7,6 @@
 
 import { useState } from 'react';
 import { AUTOMATION_STEP_NAMES, type AutomationActionKind } from '@liveplanner/items';
-import { Button } from '@liveplanner/ui';
 import { AddActionDialog, tileIcon } from '../AddActionDialog';
 import { StepTile } from '../automation-glyphs';
 import {
@@ -17,7 +16,7 @@ import {
   isOutgoingKind,
   type OutgoingKind,
 } from '../step-defaults';
-import { PanelField } from './panel-parts';
+import { ChangeRow, PanelField } from './panel-parts';
 
 export function ChangeActionField({
   kind,
@@ -33,23 +32,14 @@ export function ChangeActionField({
     <PanelField label="Action">
       {(id) => (
         <>
-          <div className="flex h-11 items-center gap-2.5 rounded-lg border border-slate-200 bg-white pl-2 pr-1.5 dark:border-slate-700 dark:bg-slate-900">
-            <StepTile tone="action" kind={kind} size={24} />
-            <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-slate-900 dark:text-slate-50">
-              {AUTOMATION_STEP_NAMES[kind]}
-            </span>
-            <Button
-              id={id}
-              variant="secondary"
-              size="xs"
-              data-change-step=""
-              aria-haspopup="dialog"
-              aria-expanded={open}
-              onClick={() => setOpen(true)}
-            >
-              Change
-            </Button>
-          </div>
+          <ChangeRow
+            id={id}
+            noun="Action"
+            icon={<StepTile tone="action" kind={kind} size={24} />}
+            name={AUTOMATION_STEP_NAMES[kind]}
+            open={open}
+            onOpen={() => setOpen(true)}
+          />
           {open ? (
             <AddActionDialog
               body={null}
@@ -81,23 +71,14 @@ export function ChangeOutgoingField({
     <PanelField label="Action">
       {(id) => (
         <>
-          <div className="flex h-11 items-center gap-2.5 rounded-lg border border-slate-200 bg-white pl-2 pr-1.5 dark:border-slate-700 dark:bg-slate-900">
-            {tileIcon(kind)}
-            <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-slate-900 dark:text-slate-50">
-              {ADD_NAMES[kind]}
-            </span>
-            <Button
-              id={id}
-              variant="secondary"
-              size="xs"
-              data-change-step=""
-              aria-haspopup="dialog"
-              aria-expanded={open}
-              onClick={() => setOpen(true)}
-            >
-              Change
-            </Button>
-          </div>
+          <ChangeRow
+            id={id}
+            noun="Action"
+            icon={tileIcon(kind)}
+            name={ADD_NAMES[kind]}
+            open={open}
+            onOpen={() => setOpen(true)}
+          />
           {open ? (
             <AddActionDialog
               body={null}

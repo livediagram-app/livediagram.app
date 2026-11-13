@@ -66,14 +66,14 @@ export function StepPanel({
   // The zone the rule is saved in (this browser's).
   timeZone: string;
   // On a phone: the panel is a sheet, and this closes it.
-  drawer?: { onClose: () => void };
+  drawer?: { onClose: () => void; fault?: string | null };
 }) {
   const hooks = usePlanWebhooks();
   // A time rule or an incoming webhook's has nobody behind it: no "whoever triggered it".
   const timeRule = isPersonless(body.trigger);
   const shell = (title: string, tile: React.ReactNode, children: React.ReactNode) =>
     drawer ? (
-      <StepDrawer title={title} tile={tile} onClose={drawer.onClose}>
+      <StepDrawer title={title} tile={tile} onClose={drawer.onClose} fault={drawer.fault ?? null}>
         {children}
       </StepDrawer>
     ) : (

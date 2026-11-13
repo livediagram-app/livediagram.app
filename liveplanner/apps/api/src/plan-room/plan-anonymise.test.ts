@@ -6,7 +6,12 @@ import { appendItemHistory } from '../db/item-history';
 import { listItems } from '../db/items';
 import { readSheetHead } from '../db/sheets';
 import { listHomeThreads } from '../db/card-threads';
-import { anonymisePlan, anonymiseReactions, anonymiseTabReactions } from './plan-anonymise';
+import {
+  anonymisePlan,
+  anonymiseReactions,
+  anonymiseRun,
+  anonymiseTabReactions,
+} from './plan-anonymise';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 // A closed account's name off a plan that outlives them (plan-anonymise.ts): here, the card history they wrote
@@ -240,5 +245,121 @@ describe('anonymisePlan', () => {
     ]) {
       expect(anonymiseReactions(text, 'h1')).toEqual({ value: text, changed: false });
     }
+  });
+
+  // docs/specs/026-plan/automations.md "Copies, exports and deletes": a rule's Made by and Edited by, the Audit
+  // Trail's lines of a change they made, and their triggers still queued or waiting.
+  it('names a closed account Deleted account in the rules, the Audit Trail and the waiting triggers', async () => {
+    const db = sqliteD1();
+    db.sql.exec(`INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
+                 VALUES ('P', 'user_kept', 'Plan', 0, 1, 1)`);
+    const gone = { id: await itemPersonId('user_gone'), name: 'Gone Person', color: '#2563eb' };
+    const kept = { id: await itemPersonId('user_kept'), name: 'Kept Person', color: '#dc2626' };
+    const rule = (id: string, made: object, edited: object) =>
+      db.sql
+        .prepare('INSERT INTO automation_rules (id, body, enabled, position) VALUES (?, ?, 1, 0)')
+        .run(
+          id,
+          JSON.stringify({
+            id,
+            name: id,
+            made: { by: made, at: 1 },
+            edited: { by: edited, at: 2 },
+          }),
+        );
+    rule('r1', gone, kept);
+    rule('r2', kept, gone);
+    const run = (id: string, by: object) =>
+      db.sql
+        .prepare(
+          "INSERT INTO automation_runs (id, rule_id, at, result, body) VALUES (?, 'r1', 1, 'done', ?)",
+        )
+        .run(
+          id,
+          JSON.stringify({
+            id,
+            steps: [
+              { kind: 'trigger', text: `${(by as { name: string }).name} moved it`, by },
+              { kind: 'action', ok: true, text: `Assign ${(by as { name: string }).name}` },
+            ],
+          }),
+        );
+    run('theirs', gone);
+    run('others', kept);
+    const event = JSON.stringify({ id: 'e', kind: 'moved', cardId: 'c', by: gone, at: 1 });
+    db.sql.prepare('INSERT INTO automation_queue (event, at) VALUES (?, 1)').run(event);
+    db.sql
+      .prepare("INSERT INTO automation_waiting (id, rule_id, at, event) VALUES ('w', 'r1', 1, ?)")
+      .run(event);
+
+    await anonymisePlan(db.env, 'P', 'user_gone');
+
+    const all = (q: string) => db.sql.prepare(q).all() as { body: string; event: string }[];
+    const stamps = all('SELECT body FROM automation_rules ORDER BY id').map((r) => {
+      const body = JSON.parse(r.body) as {
+        made: { by: { name: string } };
+        edited: { by: { name: string } };
+      };
+      return [body.made.by.name, body.edited.by.name];
+    });
+    expect(stamps).toEqual([
+      [ANONYMISED_NAME, 'Kept Person'],
+      ['Kept Person', ANONYMISED_NAME],
+    ]);
+    const lines = all('SELECT body FROM automation_runs ORDER BY id').map((r) =>
+      (JSON.parse(r.body) as { steps: { text: string }[] }).steps.map((l) => l.text),
+    );
+    expect(lines).toEqual([
+      ['Kept Person moved it', 'Assign Kept Person'],
+      [`${ANONYMISED_NAME} moved it`, `Assign ${ANONYMISED_NAME}`],
+    ]);
+    for (const q of ['SELECT event FROM automation_queue', 'SELECT event FROM automation_waiting'])
+      expect((JSON.parse(all(q)[0]!.event) as { by: { name: string } }).by.name).toBe(
+        ANONYMISED_NAME,
+      );
+    expect(JSON.stringify(all('SELECT * FROM automation_runs'))).not.toContain(gone.id);
+    expect(await anonymisePlan(db.env, 'P', 'user_gone')).toBe(0);
+  });
+
+  it('renames the person as whole words only, never letters inside another word or a longer name', () => {
+    const run = {
+      steps: [
+        { kind: 'trigger', text: 'Al moved it', by: { id: 'h1', name: 'Al' } },
+        { text: 'Assign Al' },
+        { text: 'Already assigned Alan, not Al.' },
+        { text: 'Mention (Al) and Al-Smith' },
+      ],
+    };
+    const out = anonymiseRun(JSON.stringify(run), 'h1');
+    expect(out.changed).toBe(true);
+    expect((JSON.parse(out.value) as typeof run).steps.map((l) => l.text)).toEqual([
+      `${ANONYMISED_NAME} moved it`,
+      `Assign ${ANONYMISED_NAME}`,
+      `Already assigned Alan, not ${ANONYMISED_NAME}.`,
+      `Mention (${ANONYMISED_NAME}) and ${ANONYMISED_NAME}-Smith`,
+    ]);
+    // A name with characters a pattern reads specially is matched as written.
+    const odd = anonymiseRun(
+      JSON.stringify({ steps: [{ text: 'J. (Jo) moved it', by: { id: 'h1', name: 'J. (Jo)' } }] }),
+      'h1',
+    );
+    expect((JSON.parse(odd.value) as typeof run).steps[0]!.text).toBe(
+      `${ANONYMISED_NAME} moved it`,
+    );
+  });
+
+  it('leaves a run it cannot read, or one with no line of theirs, as it is', () => {
+    for (const text of ['{not json h1', '{"id": "h1"}', '{"steps": [null, {"text": "h1"}]}'])
+      expect(anonymiseRun(text, 'h1')).toEqual({ value: text, changed: false });
+    expect(anonymiseRun('{"steps": []}', 'h1')).toEqual({ value: '{"steps": []}', changed: false });
+    // A line of theirs with no name, beside lines with no text to rename.
+    const odd = anonymiseRun('{"steps": [null, {"by": {"id": "h1"}}, {"text": 5}]}', 'h1');
+    expect(JSON.parse(odd.value)).toEqual({
+      steps: [
+        null,
+        { by: { id: 'deleted', name: ANONYMISED_NAME, color: '#94a3b8' } },
+        { text: 5 },
+      ],
+    });
   });
 });

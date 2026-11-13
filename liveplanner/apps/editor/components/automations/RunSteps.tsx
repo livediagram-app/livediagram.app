@@ -5,12 +5,13 @@
 // Open Card on the last line. A test's lines say what each action would do. A branch's line ("For each Child Card: on
 // 3 related cards") wears the branch mark, and each related card's lines after it, headed by its number, sit inset
 // under it. An outgoing action's line says where it was queued ("Queued for Launch Channel"); an AI step's wears the
-// sparkle. Lines come from the api as written.
+// sparkle. Lines come from the api as written, but for what is gone, said without its id (needs-words.ts goneText).
 
 import type { AutomationStepLine } from '@liveplanner/items';
 import { CheckIcon, CloseIcon, SparkleIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideListTree, lucideMinus } from '@liveworkspace/icons/lucide';
 import { BoltIcon } from './automation-glyphs';
+import { goneText } from './needs-words';
 
 const AlreadyIcon = lucideGlyph(lucideMinus, 11);
 const BranchIcon = lucideGlyph(lucideListTree, 11);
@@ -79,6 +80,10 @@ const markWords = (line: AutomationStepLine) =>
           ? 'Held: '
           : 'Did not hold: ';
 
+// A line's words: what a failed step or an unheld condition names that is gone, never by its id.
+const lineText = (line: AutomationStepLine) =>
+  line.kind === 'action' || line.kind === 'condition' ? goneText(line.text, line.gone) : line.text;
+
 /** Which lines sit under a branch: the related cards' own, from the branch's line until one that names no card. */
 export function insetLines(steps: readonly AutomationStepLine[]): boolean[] {
   const out: boolean[] = [];
@@ -131,9 +136,9 @@ export function RunSteps({
                 {line.text.slice(line.by.name.length)}
               </>
             ) : inset[i] ? (
-              <RelatedText text={line.text} />
+              <RelatedText text={lineText(line)} />
             ) : (
-              line.text
+              lineText(line)
             )}
             {line.kind === 'action' && line.already ? (
               <span className="text-slate-500 dark:text-slate-400"> (Already so)</span>

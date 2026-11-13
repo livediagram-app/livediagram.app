@@ -134,6 +134,8 @@ describe('the Automations button', () => {
     const badge = document.querySelector('[data-automations-count]')!;
     expect(badge.textContent).toBe('2');
     expect(badge.className).toContain('bg-amber-500');
+    // Dark text on the amber, readable in both themes (white on amber-500 is 2.1:1).
+    expect(badge.className).toContain('text-amber-950');
     expect(document.querySelector('[data-automations-paused]')).toBeNull();
   });
 

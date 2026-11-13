@@ -7,6 +7,7 @@ import type { CustomFieldDef, ItemTypeDef } from '../item-types';
 import type { SavedBoardFilter } from '../saved-filters';
 import { customFieldOf, isBuiltInFieldId } from '../type-catalogue';
 import { typeFieldLabel } from '../built-in-field-labels';
+import { isTimeSpent } from '../duration-fields';
 
 // A board's saved filter: the tab the board is on, the filter, and the board's done statuses (Due Soon leaves them
 // out, as the board's chip does).
@@ -25,6 +26,9 @@ export interface AutomationOutline {
   savedFilters: readonly AutomationSavedFilter[];
   // The plan's Form tabs, by id.
   formTabs: readonly string[];
+  // The plan's cards by id, where the caller read them: a Link Cards step's chosen card that is gone needs attention.
+  // Absent, chosen cards are not checked.
+  cards?: ReadonlySet<string>;
 }
 
 // Fields every card has, whatever its type lists.
@@ -66,6 +70,38 @@ export function fieldName(o: AutomationOutline, id: string, type?: ItemTypeDef):
 // Whether the plan knows a field: a built-in, or a custom field of one of its types.
 export const planHasField = (o: AutomationOutline, id: string): boolean =>
   EVERY_CARD.has(id) || isBuiltInFieldId(id) || fieldDefOf(o, id) !== undefined;
+
+// Fields no card write ever changes, so Field Changed never hears them (spec "Triggers"): Time Spent's entries and a
+// Votes field's tally keep no history by design, a Comments field's threads are its own, and a Calculated field is
+// worked out, never stored. The built-in Votes and Comments are never a rule's.
+export const changeNeverHeard = (def: CustomFieldDef): boolean =>
+  isTimeSpent(def) ||
+  def.kind === 'votes' ||
+  def.kind === 'comments' ||
+  def.kind === 'calculated' ||
+  def.calculation !== undefined;
+
+// The fields a Field Changed trigger names that it can never hear, as the plan's types define them: each id with the
+// field's name. A field no type holds is not this check's (the rule needs attention instead).
+export function unheardFields(
+  types: readonly ItemTypeDef[],
+  ids: readonly string[],
+): { id: string; name: string }[] {
+  const out: { id: string; name: string }[] = [];
+  for (const id of ids) {
+    if (id === 'votes' || id === 'comments') {
+      out.push({ id, name: typeFieldLabel(undefined, id) });
+      continue;
+    }
+    for (const t of types) {
+      const def = customFieldOf(t, id);
+      if (!def) continue;
+      if (changeNeverHeard(def)) out.push({ id, name: def.label });
+      break;
+    }
+  }
+  return out;
+}
 
 // Whether a card of `type` has the field (a condition on a field its type lacks does not hold).
 export const typeHasField = (type: ItemTypeDef, id: string): boolean =>

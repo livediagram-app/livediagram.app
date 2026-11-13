@@ -1,6 +1,6 @@
 // Automations: what a rule names that the plan lacks (docs/specs/026-plan/automations.md "Conditions", "Copies,
-// exports and deletes"; blueprint automations.md "Files"). A card type, column, field, person, saved filter or Form tab
-// gone since the rule was written (or never in a copy): the Rules list marks the rule Needs Attention with these
+// exports and deletes"; blueprint automations.md "Files"). A card type, column, field, person, saved filter, Form tab
+// or Link Cards' chosen card gone since the rule was written (or never in a copy): the Rules list marks the rule Needs Attention with these
 // lines. Each thing is said once, in the order the rule names it. The plan's webhooks live in the index, not the plan:
 // a caller that has them (the builder) passes their ids, and one an outgoing action names that is gone needs
 // attention too. Pure.
@@ -9,26 +9,35 @@ import type {
   AutomationAction,
   AutomationAi,
   AutomationCondition,
+  AutomationGone,
   AutomationOutgoing,
   AutomationRelated,
   AutomationRuleBody,
 } from './types';
 import { stepActions } from './validate';
-import { personOf, planHasField, type AutomationOutline } from './outline';
+import { fieldKind, goneLine, personNamed } from './set-value';
+import {
+  fieldDefOf,
+  personOf,
+  planHasField,
+  unheardFields,
+  type AutomationOutline,
+} from './outline';
 
 type Need = {
-  kind: 'column' | 'type' | 'field' | 'person' | 'filter' | 'form' | 'webhook';
+  kind: 'column' | 'type' | 'field' | 'person' | 'filter' | 'form' | 'webhook' | 'card';
   id: string;
 };
 
-const WORDS: Readonly<Record<Need['kind'], string>> = {
-  column: 'Column',
-  type: 'Card type',
-  field: 'Field',
-  person: 'Person',
-  filter: 'Saved filter',
+// One thing a rule needs, as data: something it names that is gone (by kind and stored id), or a field Field Changed
+// can never hear (by the plan's name). The editor words these without ids; ruleNeeds words them for agents.
+export type AutomationNeed = Need | { kind: 'unheard'; name: string };
+
+// What the kinds a run never fails on read as (the rest read as a failed step's line does, goneLine).
+const WORDS: Readonly<Record<Exclude<Need['kind'], AutomationGone['kind']>, string>> = {
   form: 'Form tab',
   webhook: 'Webhook',
+  card: 'Card',
 };
 
 function conditionNames(c: AutomationCondition): Need[] {
@@ -48,7 +57,22 @@ function conditionNames(c: AutomationCondition): Need[] {
   }
 }
 
-function actionNames(a: AutomationAction | AutomationOutgoing | AutomationAi): Need[] {
+// The person a Set Field on a Person field (the Assignee too) picked: one its text names by id or name is there, any
+// other picked text is someone gone (by that text); a value filled in names whoever the card holds.
+function setPersonNames(
+  a: Extract<AutomationAction, { kind: 'set_field' }>,
+  o: AutomationOutline,
+): Need[] {
+  if (!('text' in a.value) || fieldKind(a.field, fieldDefOf(o, a.field)) !== 'person') return [];
+  const text = a.value.text.trim();
+  if (!text || text.includes('{{')) return [];
+  return [{ kind: 'person', id: personNamed(o.people, text)?.id ?? text }];
+}
+
+function actionNames(
+  a: AutomationAction | AutomationOutgoing | AutomationAi,
+  o: AutomationOutline,
+): Need[] {
   switch (a.kind) {
     case 'ai':
       return a.task === 'summarise' && a.field ? [{ kind: 'field', id: a.field }] : [];
@@ -58,6 +82,7 @@ function actionNames(a: AutomationAction | AutomationOutgoing | AutomationAi): N
       return [
         { kind: 'field', id: a.field },
         ...('from' in a.value ? [{ kind: 'field' as const, id: a.value.from }] : []),
+        ...setPersonNames(a, o),
       ];
     case 'clear_field':
       return [{ kind: 'field', id: a.field }];
@@ -80,7 +105,10 @@ function actionNames(a: AutomationAction | AutomationOutgoing | AutomationAi): N
     case 'copy_card':
       return a.status ? [{ kind: 'column', id: a.status }] : [];
     case 'link_card':
-      return [{ kind: 'field', id: a.field }];
+      return [
+        { kind: 'field', id: a.field },
+        ...('card' in a.to ? [{ kind: 'card' as const, id: a.to.card }] : []),
+      ];
     default:
       return [];
   }
@@ -91,7 +119,7 @@ function relatedNames(r: AutomationRelated): Need[] {
   return r.kind === 'linked' && r.field ? [{ kind: 'field', id: r.field }] : [];
 }
 
-function namesOf(rule: AutomationRuleBody): Need[] {
+function namesOf(rule: AutomationRuleBody, o: AutomationOutline): Need[] {
   const t = rule.trigger;
   const out: Need[] = [];
   if (t.kind === 'card_created' && t.status) out.push({ kind: 'column', id: t.status });
@@ -107,7 +135,7 @@ function namesOf(rule: AutomationRuleBody): Need[] {
     if (s.kind === 'for') out.push(...relatedNames(s.related));
     if (s.kind === 'if' || s.kind === 'for')
       for (const c of s.conditions) out.push(...conditionNames(c));
-    for (const a of stepActions(s)) out.push(...actionNames(a));
+    for (const a of stepActions(s)) out.push(...actionNames(a, o));
   }
   return out;
 }
@@ -128,23 +156,46 @@ function present(need: Need, o: AutomationOutline, webhooks?: ReadonlySet<string
       return o.savedFilters.some((s) => `${s.tab}/${s.filter.id}` === need.id);
     case 'form':
       return o.formTabs.includes(need.id);
+    case 'card':
+      return !o.cards || o.cards.has(need.id);
   }
 }
 
-// What the rule names that the plan lacks, a line each ("Column done is gone"). `webhooks`: the ids of the plan's
+// What the rule names that the plan lacks, in the order it names them, each once. `webhooks`: the ids of the plan's
 // webhooks, when the caller has them (absent, outgoing actions are not checked).
+export function ruleNeedItems(
+  rule: AutomationRuleBody,
+  outline: AutomationOutline,
+  webhooks?: ReadonlySet<string>,
+): AutomationNeed[] {
+  const seen = new Set<string>();
+  const out: AutomationNeed[] = [];
+  for (const need of namesOf(rule, outline)) {
+    const key = `${need.kind}:${need.id}`;
+    if (seen.has(key) || present(need, outline, webhooks)) continue;
+    seen.add(key);
+    out.push(need);
+  }
+  // A field Field Changed can never hear (a rule saved before it became one, a field made Time Spent since).
+  if (rule.trigger.kind === 'field_changed')
+    for (const f of unheardFields(outline.types, rule.trigger.fields))
+      out.push({ kind: 'unheard', name: f.name });
+  return out;
+}
+
+/** A need as agents read it, by its stored id: "Column done is gone", "Field Changed never hears Time Spent". */
+export const needLine = (need: AutomationNeed): string =>
+  need.kind === 'unheard'
+    ? `Field Changed never hears ${need.name}`
+    : need.kind === 'form' || need.kind === 'webhook' || need.kind === 'card'
+      ? `${WORDS[need.kind]} ${need.id} is gone`
+      : goneLine({ kind: need.kind, id: need.id });
+
+// What the rule names that the plan lacks, a line each ("Column done is gone"), for agents.
 export function ruleNeeds(
   rule: AutomationRuleBody,
   outline: AutomationOutline,
   webhooks?: ReadonlySet<string>,
 ): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const need of namesOf(rule)) {
-    const key = `${need.kind}:${need.id}`;
-    if (seen.has(key) || present(need, outline, webhooks)) continue;
-    seen.add(key);
-    out.push(`${WORDS[need.kind]} ${need.id} is gone`);
-  }
-  return out;
+  return ruleNeedItems(rule, outline, webhooks).map(needLine);
 }

@@ -91,7 +91,7 @@ export function DescribeRuleDialog({
   };
 
   return (
-    <Dialog open onClose={cancel} ariaLabel="Describe a Rule" size="xl">
+    <Dialog open onClose={cancel} ariaLabel="Describe a Rule" size="xl" phoneSheet>
       <DialogHeader
         title={
           <span className="flex items-center gap-2">

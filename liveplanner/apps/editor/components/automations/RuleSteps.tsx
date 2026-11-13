@@ -99,6 +99,8 @@ export function RuleSteps({
   fault,
   actions,
   picks,
+  moved = null,
+  onMovedFocused,
 }: {
   body: AutomationRuleBody;
   outline: AutomationOutline;
@@ -108,6 +110,9 @@ export function RuleSteps({
   actions: StepsActions;
   // What a template left to pick, by the path of the part it sits on ("steps.0" → "Pick a webhook").
   picks?: ReadonlyMap<string, string> | undefined;
+  // The step a move just put in its new place, whose ⋯ takes focus, and the word that it has.
+  moved?: RulePart | null;
+  onMovedFocused?: () => void;
 }) {
   const faultFor = (part: RulePart) => (fault && samePart(fault.part, part) ? fault.message : null);
   const card = (part: RulePart, props: CardProps, menuName?: string) => (
@@ -125,6 +130,8 @@ export function RuleSteps({
             canDown={canMove(body, part, 'down')}
             canDuplicate={canDuplicate(body, part)}
             onEdit={(edit) => actions.edit(part, edit)}
+            takeFocus={samePart(moved, part)}
+            onFocused={onMovedFocused}
           />
         ) : undefined
       }

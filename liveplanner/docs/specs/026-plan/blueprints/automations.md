@@ -29,7 +29,16 @@ packages/items/src/automation/
   validate-conditions.ts
                       readTrigger / readConditions: a rule's trigger and its conditions, read the same way
   outline.ts          AutomationOutline { types, statuses, people, savedFilters, formTabs }: the plan as rules read it
-  attention.ts        ruleNeeds(rule, outline) → string[]: what a rule names that the plan lacks
+  attention.ts        ruleNeeds(rule, outline) → string[]: what a rule names that the plan lacks (a Set Field on a
+                      Person field whose text names no one in the plan by id or name needs that person)
+  set-value.ts        setValueOf: the value a Set Field writes, read as its field's kind (fieldKind; Flagged and
+                      Archived read as a Checkbox, `checkboxOf`: Yes/No, true/false, On/Off, any case; a person by id
+                      or name, `personNamed`, a picked one who left failing with `gone`)
+  set-field-check.ts  setFieldRefusal(rule, types) → { path, message } | null: a Checkbox's Set Field given text
+                      that is no Yes or No (and no value filled in), a number, a day or a list, refused on save
+                      ("Signed Off is a Checkbox: set it to Yes or No", `automation_invalid` at `steps.N.value`);
+                      ruleSetsFields(rule), so the create and save routes (and Test on a Card, its path under
+                      `rule.`) read the plan's types only then
   values.ts           VALUE_NAMES, valuesIn(text), fillValues(text, ctx) and the {{now ± Nd}} day maths, in the
                       rule's time zone
   conditions.ts       holds(condition, ctx) → { ok, text }: one condition, with the line the Audit Trail shows
@@ -37,13 +46,14 @@ packages/items/src/automation/
                       (or null); triggerMatches(trigger, event, ruleId) → boolean; TRIGGER_EVENT_KINDS
   plan-actions.ts     planActions(steps, ctx) → { patch, comments, created, emails, lines } | { failed, lines }:
                       the pure run: walks steps and If / Else, folds every change to the triggering card into ONE
-                      patch (set / clear, in order), marks "Already so", never touches storage
+                      patch (set / clear, in order), marks "Already so", never touches storage; a Set or Clear
+                      Field naming a field gone from the plan fails (never hidden data)
   sentence.ts         ruleSentence(rule, outline) → chips[]: the Rules list's "When Card Moved to Done then …"
   index.ts            re-exports; packages/items/src/index.ts exports './automation'
   *.test.ts           one per module; 100% branches (the package's thresholds)
 
 packages/api-schema/src/automations.ts
-                      AutomationsListResponse { rules: (AutomationRule & { stats, needs: string[] })[],
+                      AutomationsListResponse { rules: (AutomationRule & { stats, needs: string[], attention })[],
                         runsToday: number, runsPerDay: number },
                       AutomationRunsResponse { runs: AutomationRun[] }, AutomationRunResponse { run: AutomationRun },
                       AutomationRunResponse { run: AutomationRun }, error codes below
@@ -78,7 +88,19 @@ apps/editor/components/automations/
   RulesList.tsx, RuleRow.tsx, RulesEmpty.tsx
   RunLog.tsx, RunRow.tsx
   RuleBuilder.tsx             breadcrumb bar, step cards, add buttons, Rule Details accordion, Discard Changes?
+  refusal-words.ts            a refusal as the builder says it: fixed words per code, else the api's message less
+                              the leading path it names, as a sentence (refusalWords); an empty pick ("must name
+                              one") as what to pick, by the path's last part ("Pick a field.")
   StepCard.tsx, StepPanel.tsx, step-panels/*.tsx   one panel per trigger, condition and action kind
+                              (FieldActionPanel: a field of fixed values (fieldPick) offers its own Set To
+                              option and a Select of its values, stored as text, the first picked as the field
+                              is: Priority and a Choice field A Choice; the Assignee and a Person field A Person,
+                              the plan's people by name, kept by id (a name an agent wrote shown as it is, any
+                              other picked text "Someone No Longer Here"); a Checkbox Yes or No, kept as `true`
+                              or `false`. Set Field lists neither Flagged nor Checklist, unless a step holds one;
+                              Set Field, Clear Field and From Field offer fieldChangeFields, the fields a write
+                              changes, plus the one a step holds)
+                              (panel-parts' ChipToggles and each single pick keep a gone pick shown, "no longer here")
   ValueInsert.tsx             the chip-rendered text field and its Insert a Value button (ValueInsertMenu.tsx)
   TestOnCard.tsx              the card finder and the dry-run result
   RunRuleMenu.tsx             the card ⋯ menu's Run Rule submenu
@@ -104,7 +126,9 @@ CREATE INDEX automation_runs_result ON automation_runs (result, at);   -- the tw
 ```
 
 The day's count is `SELECT COUNT(*) FROM automation_runs WHERE at >= <UTC midnight> AND result != 'no_match'`, indexed, so the budget needs no
-table of its own. A plan never given a rule has empty tables and `onKinds` empty.
+table of its own. It leaves out the Audit Trail's own lines, whose ids are `burst:<now>` (`burstLineId`),
+`time:<rule>:<moment>` (`timeLineId`) and `derived:<rule>:<moments>` (`derivedLineId`) where a run's is a hash. A rule's Last Run and This Week (`ruleStats`) count the
+same rows, settled ones only. A plan never given a rule has empty tables and `onKinds` empty.
 
 ## The event
 
@@ -145,9 +169,14 @@ type AutomationEvent = {
 
 For each event, for each rule that is on, in `position` order, whose trigger matches:
 
-1. Budget: today's count (read once per wake) ≥ `AUTOMATION_RUNS_PER_DAY` → drop (no row; the meter says why).
-2. `runId = sha256(event.id + ':' + rule.id)` (@liveworkspace/model-core sha256); `INSERT OR IGNORE` the run row as
-   `pending`. Not inserted means it ran already: skip.
+1. `runId = sha256(event.id + ':' + rule.id)` (@liveworkspace/model-core sha256).
+2. Budget: today's count (`runsToday`, pending rows too; read once per wake, and again at a claim when the room's
+   `AutomationStore.claims` moved since this wake's or request's last claim) ≥ `AUTOMATION_RUNS_PER_DAY` → drop (no
+   row; the meter says why). Then `INSERT OR IGNORE` the run row as `pending` and `claims += 1`. Not inserted means it
+   ran already: skip. Read and claim are one synchronous step of the room, so a wake and a Run Rule interleaved at
+   their awaits (a card read, an AI call) never pass the day's budget between them, and a wake alone reads the count
+   once (measured: `runsToday` over a full day's log is about 2.5 ms a read in node's SQLite, so a read per claim
+   would cost a 1,250-check wake about 3 s).
 3. Chain: the event's `rule === rule.id` → nothing (never its own changes). Event by Automation from a rule with
    `chain: false`, or `chain >= AUTOMATION_CHAIN_MAX` → **skipped** with its reason, only if the conditions hold.
 4. Read the card; gone or trashed → **no_match** "The card is gone".
@@ -169,7 +198,8 @@ error logged.
 |                                         | and an action; else on)                                        | `automation_value_unknown`,         |
 |                                         |                                                                | 409 `automation_name_taken`,        |
 |                                         |                                                                | 409 `automation_rules_full`         |
-| `PUT    /automations/:ruleId`           | `AutomationRuleBody` → `{ rule }`                              | as POST, 404 `automation_not_found` |
+| `PUT    /automations/:ruleId`           | `AutomationRuleBody` → `{ rule }` (the rule read again after   | as POST, 404 `automation_not_found` |
+|                                         | the body's reads: deleted meanwhile → 404, its on / off kept)  |                                     |
 | `POST   /automations/:ruleId/toggle`    | `{ enabled }` → `{ rule }` (on clears `paused`, `failures`)    | 404                                 |
 | `POST   /automations/:ruleId/duplicate` | → `{ rule }` ("<name> copy", off)                              | 404, 409 full                       |
 | `DELETE /automations/:ruleId`           | → 204 (its runs stay in the log until they age out)            | 404                                 |
@@ -192,10 +222,13 @@ not routed (the OpenAPI drift probe's clean 404), and every route is in the Open
   `authorId: 'automation'`, `authorName: 'Automation'`; it is written through the thread store, never the routes,
   so it starts no Comment Added rule.
 - Send Email resolves the recipient's account by hashing the owner, the team's joined members and `known_people`,
-  and honours the **assigned actions** email setting (`notifyActionAssigned`); a name typed onto a card has no
+  then sends only when `AutomationPlan.mayEmail(accountId)` holds: the owner, or one the plan's team people (the
+  `teamPeople` read `accountPeople` already makes) hold, picked by @liveworkspace/auth-client `teamTargets` as the
+  notifier's mention email picks them. Mention Someone's email takes the same check (its thread is written
+  regardless). It honours the **assigned actions** email setting (`notifyActionAssigned`); a name typed onto a card has no
   account and gets nothing. The template is `automationEmail` (`EmailKind` 'AutomationEmail').
 - Create Card needs a card type from the plan's catalogue: a plan whose types are not chosen fails the run with
-  "Card type <id> is gone".
+  "Card type <id> is gone" (with `gone`, "What is gone, in the Audit Trail" below).
 - The day's budget counts done, failed and skipped runs; a No Match is logged and never counted. The trim keeps the
   newest 2,000 of those and, apart from them, the newest 500 No Match rows, so a rule that matches nothing on every
   save never pushes a real run out of the log.
@@ -274,7 +307,9 @@ ALTER TABLE automation_rules ADD COLUMN turn INTEGER NOT NULL DEFAULT 0;        
 - **Branches**: `relatedCards` per branch, then each related card's conditions and actions through the same
   `planActions`, one write per card. The run's lines gain `{ kind: 'branch'; text; ok; cards: number }`.
 - **Rotate**: the run takes `turn % people.length` (skipping people who left), and on a done run writes `turn + 1`
-  in the batch that records the run.
+  in the batch that records the run. A run under way holds the turns it planned in memory
+  (`AutomationStore.take`, read and planned with no await between; `giveBack` as it settles), and `turn(id)` counts
+  them, so two Run Rules at once take the next two people.
 - **Notify**: after the card writes, the run's notify steps go in one `POST /app/items/:id/automation-sends`
   (index binding, the app's server credentials as card-moves uses), key `${runId}:${stepIndex}`, message filled by
   `values.ts`; each result marks its step done ("Queued for Launch Channel") or failed with the reason. The index
@@ -323,9 +358,14 @@ build):
   `AutomationStore.onSchedule`, and after each scan); `wakeAt` is the earlier of it and the queue's, which
   `armAlarm` takes. A due rule whose cards don't fit in the queue's room now is not dropped: its row stays due and
   the scan asks again in 1 s (`AUTOMATION_TIME_RETRY_MS`), so a moment never loses cards to the 500 cap; the run ids
-  make the re-scan harmless. The Skipped "Ran on 100 of 340 …" row has id `time:<rule>:<moment>` and counts toward
-  the day's budget like any Skipped row. A wake that throws pushes `timeAt` a minute on, as the queue's.
+  make the re-scan harmless. The Skipped "Ran on 100 of 340 …" row has id `time:<rule>:<moment>` and, as the Audit
+  Trail's own line, spends none of the day's budget (`runsToday` leaves it out). A wake that throws pushes `timeAt` a minute on, as the queue's.
 - **Copies** schedule each time rule they keep on, from the copy's moment (`copiedRuleStatements`).
+  A copy's and a file's rules name the new tab ids (`ruleWithTabIds`, @liveplanner/items named.ts), the walk
+  Describe a Rule's names take.
+- **A closed account** (plan-anonymise.ts): the rules' `made.by` and `edited.by` and the queue's and waiting runs'
+  `event.by` are set to Deleted account by `json_set` where the hashed id matches; Audit Trail rows that hold the hashed
+  id are read and rewritten by `anonymiseRun` (the line's person, and their name in the run's line texts).
 - **Branches.** The branch's actions count once toward the run's 20, not once per card. Its line reads "For each
   Child Card: on 3 related cards" (", failed on #12, #14" when any did; "on 100 of 340" past the cap); each related
   card's lines follow it headed by its number, and a card whose conditions don't hold gets one line naming the first
@@ -348,7 +388,25 @@ build):
 - **`{{person}}`** reads "Automation" whenever the trigger is by Automation (a time trigger or another rule's change).
 - **Needs Attention** names people in turn, a branch's saved filter and Card field, and its conditions' and
   actions' names; webhooks only when the caller passes the plan's webhook ids (`ruleNeeds(rule, outline, webhooks)`,
-  the builder): the api's list does not, since the webhooks live in the index.
+  the builder): the api's list does not, since the webhooks live in the index. A Link Cards step's chosen card is
+  checked against `outline.cards`, the ids of the cards `readAutomationPlan` already read (no extra query); an outline
+  without them leaves chosen cards unchecked. `ruleNeedItems` answers the needs as data (`AutomationNeed`: a kind and
+  stored id, or `unheard` with the field's name); `ruleNeeds` words each by id (`needLine`) for agents. The api's list
+  sends both (`needs`, `attention`); the editor's RuleRow words `attention` with `needsWords` (needs-words.ts), each
+  kind once and counted, never an id. The editor's outline sets `goneWords`, so `outlineStatusName`, `outlineTypeName`,
+  `outlineFieldName` and `outlineTabName` read a gone one as `GONE_NAMES` ("a column no longer here") instead of its id,
+  and an empty id (a pick never made) as `UNPICKED_NAMES` ("a field"), never as gone.
+- **The rule link on an Automation line** (`AutomationAuthorName`): a comment passes its `automation.ruleId`, which
+  is always a link for an Editor, so a rule made or renamed since the list was read still opens; the screen reads the
+  list as it opens and, while that read (`readAutomations`, which hands a second asker the read under way) has not
+  settled, a rule id the list lacks shows the loading rows (`ruleWaiting`), never This Rule Was Deleted, which waits
+  for the read (`fresh`, kept per scope, so a scope changed while open waits for its own) and for it to answer: a
+  failed read shows Couldn't Load the Rules. A history line has only the rule's name: one the list lacks reads it again through
+  `readAutomationsFor`, once per name per plan, so a rule really gone costs one read.
+- **A change answered during a read** (`use-automations.ts` `change`): the entry is marked `stale` when a read is
+  under way, and `readAutomations` reads again until a read started after the last change, so a list served before
+  a toggle, save or delete never lands over its answer. Each change folds into the scope it was made on (captured
+  when asked), whatever plan the hook shows by the time it is answered.
 - **Test on a Card** of a time rule runs on the chosen card as at its moment, without checking its due date.
 - **Measured** (`automations.perf.test.ts`): 2,000 cards and 50 overdue rules due at once (5 hearing every card, 45
   checking a condition that never holds): the wake's CPU time is 165 to 191 ms on an M-series Mac, against the
@@ -388,6 +446,26 @@ What the editor does, where it differs from or adds to the Editor list above (ea
   Templates Opened.
 - **Audit Trail.** A branch line wears its own mark (blue, a list tree; red when it failed on a card), and the lines after
   it that start with a card number are inset under it, the number in the card's weight (`insetLines`).
+- **What is gone, in the Audit Trail.** `AutomationGone` (`{ kind: 'column' | 'type' | 'field' | 'person' |
+'filter'; id; more? }`, types.ts) rides beside the text it explains: on a failed action line and an unheld condition
+  line (`gone?`), on the run (`AutomationRun.gone`, with its `reason`) and on a pause (`paused.gone`). The engine
+  fails a step on something the plan lost with `failGone(gone)` (set-value.ts), whose text is `goneLine(gone)`
+  ("Field estimate_x is gone", the words `needLine` uses for agents); `Failed.gone` carries it through
+  `planActions` (`{ failed, gone }`, a related card's `PlannedRelated.gone`) to the runner's `end(result, reason,
+gone)`, the run's first related failure giving its own, and `store.settle(..., { webhook, gone })` to the pause.
+  A condition's gone line is `goneLine(words, gone)` in conditions.ts, text `<words> (<id> is gone)`; one naming
+  several gone of its kind (`goneOf`, each once) keeps the first as `id` and the rest in `more`, text
+  `<words> (<id>, <id> are gone)` (`goneIdsWords`). A Card field
+  the card's type lacks fails as gone when the plan lost it, else by the field's name. `settleWaiting` drops a
+  stored `gone` with the reason it replaces. The editor's `goneText(text, gone)` (needs-words.ts) words each:
+  a step line or reason keeps its start (`#12 `, `Failed on #12, #14: `) and says `GONE`'s one ("A field is
+  gone"); a condition line keeps its words, the id (as a whole word) read as `a column no longer here` (person
+  "Someone No Longer Here"), and ends "(a column is gone)", or for several each read so, ending "(2 columns are gone)". RunSteps (action and condition lines), RunRow's
+  reason, TestOnCard's reason, RuleRow's Paused reason and Run Rule's toast use it; text without `gone` reads as
+  stored. Size: a gone line adds `,"gone":{"kind":"field","id":"<id>"}` (32 bytes plus the id, measured) to the
+  failed line and the run, so a failed run's row grows by 94 bytes for a 15-character id; no other run
+  changes. `more` adds `,"more":[...]` (10 bytes plus 3 and the id for each further one) only to a condition
+  line naming several gone, bounded by the condition's own list.
 - **The gate.** `automationsGateFor` gives whoever could edit the whole plan (hydrated, not an embed, edit level,
   structure editable, no tab scope) a kind: `sync` on a plan in This Browser, `sign_in` for a guest on a server plan
   once sign-in has answered (`authLoaded`), else none; `automationsScopeFor` now also needs `signedIn`, so a guest
@@ -565,18 +643,26 @@ line }` on the run (`PlannedWrites.ai`, present only when a rule has one, so eve
   `AUTOMATION_AI_MODEL = '@cf/google/gemma-4-26b-a4b-it'`, `chat_template_kwargs: { enable_thinking: false }`,
   `AUTOMATION_AI_TIMEOUT_MS = 15_000` (a race with a timer, cleared after).
 - `aiToday(sql, now)`: `SELECT COUNT(*) FROM automation_runs r, json_each(r.body, '$.steps') s WHERE r.at >= <UTC
-midnight> AND s.value ->> '$.ai' = 1`, read once per wake into `RunState.ai` when a rule with an AI step runs. No
+midnight> AND s.value ->> '$.ai' = 1`, read into `RunState.ai` before a call when nothing is known yet or the
+  room's `AutomationStore.aiAsks` moved since (another request asked; about 11 ms a read over a full day's log), with
+  no await between the read and `markAiAsked(sql, runId, n)`
+  (automation-log.ts), which writes the pending run row's body as `{ steps: [n × { ai: true }] }` so the call counts
+  before its answer comes; the settled row replaces it with the run's lines, the same calls marked. Describe a Rule
+  checks the count before each ask, its first too, after its plan reads. No
   schema step: the Audit Trail keeps every run of the day (at most 1,000 counted runs, under its 2,000).
 - `runAiSteps(deps, input, planned, lines, offset)`: after `applyPlannedRun` and the branches, before `sendMessages`.
   Per step: dry → the "Would …" line; no binding → `AI_NOT_SET_UP`; `state.ai >= 100` → the step's line and the
   run's reason `AI_CAPPED`, result **skipped** unless something failed (a skipped run still advances Assign in Turn,
-  since its writes stand); else `state.ai += 1`, the card read again
+  since its writes stand); else the call marked (above), the card read again
   (`readItem`), its latest comments (`linksOfItem` home this plan, `readThreads`, newest 5 comments across them), the
   plan's labels (`listItems`, triage only), the call, `readAiReply`, the constraint, then the write:
   - summarise to a comment: `addComment(deps, rule, card, text, { ai: true })` (automation-writes.ts), the Comment
     carrying `ai: true` beside `automation`;
   - summarise to a field, card type set, triage: `patchCard(…, tag 'automation_ai')` with the run's `source`, so the
-    events it causes chain as the rule's do; a patch that changes nothing is "Already so";
+    events it causes chain as the rule's do (`patchCard` takes the card the patch was planned from and rebases a
+    `labels` write onto the card as read for the write: the labels the step added and took off, applied to what is
+    there now, `rebaseLabels`, so a person's label added meanwhile stays, as the run's own card writes and a
+    branch's do); a patch that changes nothing is "Already so";
   - card type comment: `addComment`, "Suggested card type: Bug".
     The line is `{ kind: 'action', ok, text, ai: true }`; the first failure is the run's reason.
 - Errors: `AI_NOT_SET_UP` "AI isn't set up here", `AI_FAILED` "The AI couldn't answer: try again later", `AI_SLOW`
@@ -598,7 +684,7 @@ midnight> AND s.value ->> '$.ai' = 1`, read once per wake into `RunState.ai` whe
   Card Type, Triage, left out once the rule holds 3 (`canAddAi` in rule-draft.ts) and never inside an If / Else or a
   branch. `step-defaults.ts` holds `AI_KINDS` and each one's first form (`defaultAi`).
 - `apps/editor/components/automations/step-panels/AiStepPanel.tsx`: the task's panel. Summarise: **Write To** (a
-  Select: A Comment, or one of the plan's custom Text and Long Text fields; a field the plan lost stays listed as gone).
+  Select: A Comment, or one of the plan's custom Text and Long Text fields; a field the plan lost stays listed as "A field no longer here").
   Suggest Card Type: **Then** (Comment the Suggestion, Set the Card Type). Triage: **Sets** (chip toggles Priority and
   Up to 3 Labels; the last one on can't turn off). Each ends with the "Uses AI" note (`AiCostNote`): the sparkle,
   "Uses AI: counts toward 100 a day for this plan", that its writes are by Automation and marked Generated by AI, and
@@ -847,7 +933,7 @@ Threads and Wait (spec "Actions", "Wait").
   only, Copy Card counting as the run's one new card.
 - **Planning** (`plan-actions.ts`): Change Card Type sets the patch's `type` (`Plan.retype`) after checking the column
   suits it; Set Colour writes the type's colour field (`colourFieldOf`); Add a Checklist appends the rows the card
-  lacks by text; Link Cards writes the Card field and refuses a Blocked By loop (`blockingCycleOf`, so a rule with one
+  lacks by text, each filled in and cut to `ITEM_CHECKLIST_TEXT_MAX`; Link Cards writes the Card field and refuses a Blocked By loop (`blockingCycleOf`, so a rule with one
   reads the plan's cards); Copy Card plans a `PlannedCard` of the card's type and fields; Mention Someone and Resolve
   Threads plan `mentions` and `resolve`. A Wait ends the plan with `wait: {hours, from}`; `planActions(…, {from})`
   goes on from a step and `{through: true}` (Test on a Card) plans past every Wait.
@@ -858,9 +944,14 @@ Threads and Wait (spec "Actions", "Wait").
   its writes, settles as `waiting` with `waitsUntil`, and is held under its run id with a `resume` event (the step to
   go on from, the rule's `edited.at`, the hours waited, the run's id). `AutomationSchedule.restoreTimes` takes the
   earliest of the time triggers' and the waiting runs' moments, so the alarm wakes for both; `runWaits` queues each due
-  run's resume event (or settles the run Skipped when its rule went, turned off or changed). The runner runs a resume
+  run's resume event (or settles the run Skipped when its rule went, turned off or changed). A rule write that turns
+  the rule off (Pause too), deletes it or changes it (a new `edited.at`) settles its waiting runs Skipped at once
+  (`AutomationStore.update`/`remove` through `stopWaits`), so turning it on again never brings one back. The runner runs a resume
   on its one rule from that step, its trigger line "After waiting 2 days", Skipped when the card is gone, No Match when
-  the conditions no longer hold, and settles the waiting run Done. At most 500 wait.
+  the conditions no longer hold, and settles the waiting run Done. A resume that never ran (its rule off or gone by
+  the wake, the day's budget spent) settles the waiting run Skipped with why in the same wake, so none shows Waiting
+  past its time. A derived trigger's resume (Card Unblocked, Related Cards Done, Column Over Limit) runs on the card
+  it names, never worked out again. At most 500 wait.
 - **Editor**: the picker's groups (`action-groups.ts`) are one thing each: Cards, New Cards, Archive, Labels, Flags, Checklists, Links, People, Comments, Timing, Other Tools and AI; each
   kind has a glyph, a default (`step-defaults.ts`), a scene (`ActionScene.tsx`) and a panel (`CardActionPanels.tsx`,
   `ChecklistActionPanel.tsx`, `LinkCardPanel.tsx`, `WaitPanel.tsx`, Mention in `TextActionPanel.tsx`). The Audit Trail
@@ -879,23 +970,53 @@ Threads and Wait (spec "Actions", "Wait").
   their groups into it.
 - `trigger-groups.ts`: `TRIGGER_GROUPS` (card, time, tools), `TRIGGER_LINES` and `freshTrigger`; `TriggerScene.tsx`
   draws each trigger's picture (card triggers violet, time blue, tools emerald) from `scene-parts.tsx`.
-- `ChangeTriggerField` replaces the When panel's select: the trigger's tile, name, line and **Change**.
+- `ChangeTriggerField` replaces the When panel's select: the trigger's tile, name, line and **Change**. Its button,
+  and `ChangeActionField`'s, is named by `aria-label` ("Change Trigger", "Change Action") and described by the name
+  beside it, never by the field's `<label>` (which would name it "Trigger"); `LinkCardPanel`'s card button likewise
+  ("Pick a Card", "Change Card"), its chosen card "A card no longer here" when the plan lost it.
+- `StepCard`'s select button is described (`aria-describedby`) by the step's chips, so each "Then" reads apart.
+- `RunRow`'s chevron spreads its hit area over the row (`after:absolute after:inset-0`, as `StepCard` does), so a
+  click anywhere on the row opens it; its name says which run ("Expand run: <rule>, #<key>").
 
 ## The triggers after Phase 3
 
 - **Shapes** (`types.ts`): `card_archived`, `card_restored`, `checklist_completed`, `threads_resolved`, `mentioned`
   (`people?`), `card_unblocked`, `related_done` (`related: 'children' | 'linked'`), `column_limit` (`status`, `limit`
   1 to 500) and the time trigger `stuck` (`days` 1 to 90, `at`, `statuses?`).
+- **A card put back** (`automation-queue.ts` `eventsOfWrites`): a create tagged `undo` (the create route's
+  `restores`, a bulk sync's `putBack`) makes no event, so an undo of a delete never starts Card Created (its rev is 1
+  again, so its run id would otherwise collide with the first making's, or run on a rule made since).
+- **Field Changed's fields** (`outline.ts` `changeNeverHeard`, `unheardFields`): a Time Spent Duration, a Votes,
+  Comments or Calculated field (or one with a `calculation`), and the built-in `votes` and `comments`. The create
+  and save routes (`bodyOf`) read the plan head's types only for a `field_changed` rule and refuse the first such
+  field, 400 `automation_invalid` at `trigger.fields.N`; `ruleNeeds` adds "Field Changed never hears {name}"; the
+  editor's When panel offers `fieldChangeFields` (outlineFields less those), as do Set Field's and Clear Field's
+  panels; the run (`plan-actions.ts` `setField`) fails a Set or Clear Field on one, "{name} is never set by a rule"
+  ("cleared"), after a Calculated field's own "{name} is worked out, never set".
 - **Events** (`matches.ts`): `eventOfWrite` makes `archived` and `restored` events (the Trash stays quiet) and marks a
   `changed` or `moved` event `checklistDone` when the write ticks the last item. The thread routes queue `resolved`
   when a resolve leaves the card with no open thread (`SUM(open_comments) = 0` over its links), and a comment event
   carries `mentioned` (the mentioned people's person ids).
 - **Worked out at run time** (`derived.ts`, `derivedTargets`): Card Unblocked hears a card moving into a done column
-  or archived and answers the cards it blocks that have no open blocker left; Related Cards Done hears a card moving
+  or archived while still open (a done blocker freed its cards when it finished) and answers the cards it blocks that have no open blocker left; Related Cards Done hears a card moving
   into a done column and answers the cards it belongs to (its parents, or the cards whose Card fields hold it) whose
   related cards are all done; Column Over Limit hears a card created in or moved into its column and answers that
-  card when the column now holds exactly limit + 1. The runner reads the plan's cards for such an event only when a
-  rule on hears one, and runs the rule on each answered card under `${event.id}>${card.id}`.
+  card when the column now holds exactly limit + 1, or, past that, when the card is the (limit + 1)th of the
+  column's live cards by `itemStatusSince` (then key): several in before one wake run it once, on the card that tipped
+  it. Answered cards go in number order, at most `AUTOMATION_DERIVED_CARDS_MAX` (100), so a blocker of 2,000 cards
+  runs each rule on 100, not 2,000 (`automations.perf.test.ts`); `derivedFound` gives the count before the cut, and
+  past it the wake settles one Skipped line per rule and event, "Ran on 100 of 340 cards: at most 100 a move"
+  (`derivedCapped`, id `derivedLineId(rule, sha256 of the runs' ids)`, so events reaching the same moments say it once; the Audit Trail's own line, it spends none of the day). The runner reads the plan's cards for such an event
+  only when a rule on hears one; a branch or Link Cards reads them through `cardsNow`, again only once the store's
+  `items_rev` has moved, so a wake of 25 triggers past 50 such rules reads them once while nothing writes. A run's own
+  card writes go into the cards held through its relay (`noteWrite`), each only when it landed one rev past them (no
+  write from elsewhere between), so a wake whose every run writes still reads them once (7,530 ms to 690 ms of CPU
+  for 1,000 writing branch runs over 2,000 cards); any other write leaves them at their rev, and the next branch reads
+  afresh. Card Unblocked and Related Cards Done run the rule on each answered card under
+  `d:${card.id}:${sha256(moment)}`, the moment (`derivedMoments`) being the card's blockers, children or linked cards
+  as sorted `id@rev`, so two events read against the same cards make one run id. Column Over Limit runs under
+  `${event.id}>${card.id}`, once per wake per rule and set of card ids in the column (`RunState.tipped`): every event a
+  wake reads sees the column as it is then, and the rule's own write to the tipping card moves its rev on.
 - **Card Stuck** (`time-cards.ts`): daily at its time, the live cards outside done columns (in its columns, when
   named) whose `updatedAt` is at least `days` before the moment, the run id `k:${rule}:${card}:${updatedAt}`.
 - **Editor**: `trigger-groups.ts` gains Comments and Links; each trigger has a scene (`TriggerScene.tsx`) and its
@@ -962,7 +1083,7 @@ four new codes in `AUTOMATION_ERRORS`; the route in `openapi/manifest.ts`, `sche
 ### Editor
 
 - `automations-client.ts` `draftRule(scope, prompt, timeZone)`.
-- `DescribeRuleDialog.tsx`: the dialog (the shared `Dialog`, `DialogHeader`, `TextArea`, the examples as secondary
+- `DescribeRuleDialog.tsx`: the dialog (the shared `Dialog` with `phoneSheet`, a sheet on a phone, `DialogHeader`, `TextArea`, the examples as secondary
   Buttons, the `AiNote` sparkle line shared with the AI steps' `AiCostNote`), its states (idle, drafting, said). A
   refusal says the api's `message` (fixed words from items); anything else "That didn't work. Check your
   connection and try again.".
@@ -1000,23 +1121,36 @@ Derived from the spec's "The rule builder on a phone", the screen's phone bullet
 dialog's `!useMediaQuery('(min-width: 640px)')`, as before; nothing below changes a desktop.
 
 - `ScreenTabs`: on a phone the bar is `h-12 items-stretch`, each tab `flex items-center` (44 px of it a target).
-- `RuleFilters.tsx` (out of `RulesList`): the desktop row as before; on a phone a column of the search (`SearchInput`
+- `RuleFilters.tsx` (out of `RulesList`): the desktop row, the search at `SearchInput`'s `size="row"` (32 px, 13 px
+  text, level with the `h-8` selects); its trigger options are `kinds`, which `RulesList` takes from
+  `filterTriggerKinds(githubEnabled, used)` (trigger-groups.ts: GitHub's kinds only where the deployment has the App,
+  as `offeredGroups`, or one a rule or the current filter is on); on a phone a column of the search (`SearchInput`
   at its `size="lg"`: 40 px, 14 px text) and a row of the trigger `Select` (`flex-1`, `PHONE_SELECT` = `h-10
 rounded-lg pl-3 pr-8 text-[14px]`) and `SegmentedRadio` (`size="lg"`, All / On / Off, `h-10`).
 - `AutomationsDialog`: on a phone, editing (`target.view === 'rule'`) keeps the rules screen mounted and renders the
   builder in `RuleDrawer.tsx`: the shared `Dialog` with `phoneSheet="tall"` (its height the full sheet's, the top bar
   and the notch kept clear, `PHONE_SHEET_TALL`), an sr-only title (New Rule or Edit Rule), `beforeClose` = the dirty guard (returns false and opens Discard Changes? when
-  dirty). Discarding unmounts the drawer straight away (the question was the exit).
+  dirty), and `closeOnBack` (`useBackCloses`, @liveworkspace/ui: an entry in the browser's history while open, so Back
+  dismisses it as a swipe would; tokens carry the page load's id, and one shared pass a task after the last close
+  steps back off every closed sheet's entry, `history.go(-n)`). Discarding unmounts the drawer straight away (the question was the exit).
 - `RuleBuilder` with `phone`: `PhoneRuleChrome.tsx` holds `PhoneRuleHeader` (back chevron, the shared `Switch`
-  labelled with its visible word On or Off, or the Off · Not Saved pill for an unsaved rule; the name in `RuleNameField`, a one-row `textarea` that grows with its text, Enter
+  named `RULE_SWITCH_NAME` (Rule On) whichever way it is set, as the wide screen's, or the Off · Not Saved pill for an unsaved rule; the name in `RuleNameField`, a one-row `textarea` that grows with its text, Enter
   ignored, newlines folded to spaces), the steps scrolling, and `PhoneRuleFoot` (Rule Details, then the two buttons
-  as `Button size="md"` `flex-1 h-11`; a saved rule with nothing changed shows **Saved** with a check, a `role="status"`, in Save Rule's place).
+  as `Button size="md"` `h-11` in a two-column grid, so Saved, which has no button's padding, is as wide; a saved rule with nothing changed shows **Saved** with a check, a `role="status"`, in Save Rule's place).
 - `RuleDetails` takes `placement="foot"`: the accordion's bar sits in the foot and its body opens above the bar,
   `max-h-[40dvh] overflow-y-auto`.
-- `StepDrawer.tsx`: on a phone `StepPanel` renders its shell into the shared `Dialog` (`phoneSheet`, `size="lg"`) with
+- `StepDrawer.tsx`: on a phone `StepPanel` renders its shell into the shared `Dialog` (`phoneSheet`, `closeOnBack`, `size="lg"`) with
   the shell's tile and title as its header beside `DialogCloseButton`, the body `min-h-0 flex-1 overflow-y-auto
 overscroll-contain`, and a foot holding **Done** (`useDialogDismiss`, so it slides out like the close). `RuleBuilder` holds `stepOpen`:
-  set by a pick (`actions.select`), an add and a refusal's `partAt`; never by the first render's trigger selection.
+  set by a pick (`actions.select`), an add (a Duplicate from the step's menu too) and a refusal's `partAt`; never by
+  the first render's trigger selection, and cleared by Move Up and Move Down. A move also sets `moved` (the part in
+  its new place): `RuleSteps` draws cards by position, so the closing menu's focus return lands on whichever step
+  took the old place; the `StepMenu` whose part is `moved` focuses its ⋯ in an effect (after that return) and clears
+  it. Set Field's first value comes from `startText` (field-pick.ts); a field switched to another kind from
+  `startValue` (a date's Today, a number's 0, else `startText`), and one picked where none was keeps a value that
+  fits it (`fitsField`).
+  The drawer takes the refusal's message as `fault` while the selected part is the one at fault (`samePart`), drawn
+  as a `role="alert"` line at the top of its body.
 - `ValueInsert.tsx`: `ValueTextField` draws `ValueInsertButton` inside the field's box (`absolute right-1.5 top-1.5`, the
   text padded `pr-10` on the textarea and its backdrop alike). `ValueInsertMenu.tsx`: `AnchoredPopover` (width 300,
   `pointer`) on a wide screen, the shared `Dialog` `phoneSheet` on a phone, both holding `ValueInsertList`: a
@@ -1025,7 +1159,9 @@ overscroll-contain`, and a foot holding **Done** (`useDialogDismiss`, so it slid
   `valueInsertGroups(branch, fields, incoming)` and `filterValueGroups(groups, query)`. Webhook Field… swaps the list
   for `WebhookPathForm` (the old `WebhookFieldInsert` field, with Insert and Back). The field keeps the selection it
   had (a textarea keeps `selectionStart` / `selectionEnd` through a blur), so `insertValue` lands at the caret; a
-  field never focused inserts at the end. Focus returns to the field after the insert, its caret past the value.
+  field never focused inserts at the end. Focus returns to the field after the insert, its caret past the value. A
+  phone's sheet closing sets `quiet` on `ValueInsertButton` (its `HoverCard` `disabled`) until the button's blur, as
+  the sheet's focus return reads as keyboard focus (`:focus-visible`) after Escape.
 - `phone-board.ts`: `offColumnCard(card, view)` (the card's middle more than half its width from the view's middle)
   and `centreCardColumn(itemId, body, columnAttr)`; `PlanBoardView`'s open on a tap (the drag's `onClick` and the
   read-only press) calls it first when `look.columns === 'phone'`. It reads two rects on the tap, nothing per card.

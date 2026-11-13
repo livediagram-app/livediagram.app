@@ -117,14 +117,19 @@ function valueOf(name: string, ctx: ValueContext, iso: boolean): string {
   }
   const path = webhookPathOf(name);
   if (path !== null) {
-    const value = ctx.webhook?.[path.join('.')];
+    // Own values only: `{{webhook.constructor}}` (a valid path) never reads the prototype.
+    const key = path.join('.');
+    const value = ctx.webhook && Object.hasOwn(ctx.webhook, key) ? ctx.webhook[key] : undefined;
     return value === undefined ? '' : String(value);
   }
   if (ctx.cardless && name.startsWith('card.')) return '';
   const field = fieldNameOf(name);
   if (field !== null) {
     const id = fieldOfName(ctx.type, field);
-    return id ? fieldText(ctx.card.fields[id], id) : '';
+    if (!id) return '';
+    const raw = ctx.card.fields[id];
+    // A day another field holds stays `YYYY-MM-DD` for a date field, as {{card.due}} does.
+    return iso && isDay(raw) ? raw : fieldText(raw, id);
   }
   switch (name) {
     case 'card.title':

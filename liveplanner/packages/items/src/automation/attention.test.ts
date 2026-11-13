@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { ruleNeeds } from './attention';
+import type { ItemTypeDef } from '../item-types';
+import { needLine, ruleNeedItems, ruleNeeds } from './attention';
+import { unheardFields } from './outline';
 import { OUTLINE, ruleBody } from './test-fixtures';
 
 // docs/specs/026-plan/automations.md "Conditions" (Needs Attention) and "Copies, exports and deletes".
@@ -26,6 +28,26 @@ describe('ruleNeeds', () => {
         OUTLINE,
       ),
     ).toEqual([]);
+  });
+
+  it('names a person a Set Field on a Person field picked who has left, by the text it holds', () => {
+    const set = (field: string, text: string) =>
+      ({ kind: 'set_field', field, value: { text } }) as const;
+    expect(
+      ruleNeedItems(
+        ruleBody({
+          steps: [
+            set('assignee', 'p-sam'),
+            set('f-owner', 'ali'),
+            set('assignee', '{{person}}'),
+            set('assignee', ' '),
+            set('title', 'p-left'),
+            set('f-owner', 'p-left'),
+          ],
+        }),
+        OUTLINE,
+      ),
+    ).toEqual([{ kind: 'person', id: 'p-left' }]);
   });
 
   it('names each thing gone once, in the order the rule names it', () => {
@@ -62,6 +84,27 @@ describe('ruleNeeds', () => {
       'Column qa2 is gone',
       'Field f-link is gone',
     ]);
+  });
+
+  it('answers the same needs as data, for the editor to word without ids', () => {
+    expect(
+      ruleNeedItems(
+        ruleBody({
+          trigger: { kind: 'card_moved', to: ['qa'] },
+          steps: [
+            { kind: 'assign', to: { person: 'p-gone' } },
+            { kind: 'move', status: 'qa' },
+          ],
+        }),
+        OUTLINE,
+      ),
+    ).toEqual([
+      { kind: 'column', id: 'qa' },
+      { kind: 'person', id: 'p-gone' },
+    ]);
+    expect(needLine({ kind: 'unheard', name: 'Time Spent' })).toBe(
+      'Field Changed never hears Time Spent',
+    );
   });
 
   it('checks the trigger: a column made in, a Form tab', () => {
@@ -129,5 +172,61 @@ describe('the triggers after Phase 3', () => {
       ruleNeeds(ruleBody({ trigger: { kind: 'mentioned', people: ['p-nobody'] } }), OUTLINE),
     ).toHaveLength(1);
     expect(ruleNeeds(ruleBody({ trigger: { kind: 'mentioned' } }), OUTLINE)).toEqual([]);
+  });
+});
+
+describe('Link Cards', () => {
+  const rule = ruleBody({
+    steps: [
+      { kind: 'link_card', field: 'f-links', to: { card: 'c-gone' } },
+      { kind: 'link_card', field: 'f-links', to: { card: 'c-here' } },
+    ],
+  });
+  it('needs its chosen card when the plan has lost it', () => {
+    expect(ruleNeeds(rule, { ...OUTLINE, cards: new Set(['c-here']) })).toEqual([
+      'Card c-gone is gone',
+    ]);
+  });
+  it('leaves chosen cards unchecked when the caller read no cards', () => {
+    expect(ruleNeeds(rule, OUTLINE)).toEqual([]);
+  });
+});
+
+describe('Field Changed on a field no write changes', () => {
+  const timed: ItemTypeDef = {
+    ...OUTLINE.types[0]!,
+    id: 'timed',
+    fields: ['title', 'f-time', 'f-votes', 'f-talk', 'f-kids', 'f-left'],
+    custom: [
+      { id: 'f-time', label: 'Time Spent', kind: 'duration', timeSpent: true },
+      { id: 'f-votes', label: 'Votes Here', kind: 'votes' },
+      { id: 'f-talk', label: 'Talk', kind: 'comments' },
+      { id: 'f-kids', label: 'Children', kind: 'calculated', calculation: 'childCount' },
+      { id: 'f-left', label: 'Time Left', kind: 'duration' },
+    ],
+  };
+  const outline = { ...OUTLINE, types: [timed] };
+
+  it('names each one Field Changed never hears, and passes a field it does', () => {
+    const fields = [
+      'f-time',
+      'f-votes',
+      'f-talk',
+      'f-kids',
+      'f-left',
+      'votes',
+      'comments',
+      'title',
+    ];
+    expect(unheardFields(outline.types, fields)).toEqual([
+      { id: 'f-time', name: 'Time Spent' },
+      { id: 'f-votes', name: 'Votes Here' },
+      { id: 'f-talk', name: 'Talk' },
+      { id: 'f-kids', name: 'Children' },
+      { id: 'votes', name: 'Votes' },
+      { id: 'comments', name: 'Comments' },
+    ]);
+    const rule = ruleBody({ trigger: { kind: 'field_changed', fields: ['f-time', 'f-left'] } });
+    expect(ruleNeeds(rule, outline)).toEqual(['Field Changed never hears Time Spent']);
   });
 });

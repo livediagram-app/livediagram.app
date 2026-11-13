@@ -34,35 +34,34 @@ export function WhoConditionPanel({
     const { not: _, ...rest } = condition;
     onChange(not ? { ...rest, not: true } : rest);
   };
+  // Each group shows its own picks: the roles, and the people (one gone from the plan as Someone No Longer Here).
+  const keys = condition.who.map(keyOf);
+  const roles = keys.filter((k) => k.startsWith('role:'));
+  const people = keys.filter((k) => k.startsWith('person:'));
   return (
     <div className="flex flex-col gap-4">
       <IsNotPicker not={!!condition.not} onChange={setNot} />
       <ChipToggles
         label="Roles"
         options={ROLES}
-        value={condition.who.map(keyOf)}
-        onChange={(keys) =>
+        value={roles}
+        onChange={(next) =>
           onChange({
             ...condition,
-            who: [
-              ...keys.filter((k) => k.startsWith('role:')),
-              ...condition.who.filter((w) => 'person' in w).map(keyOf),
-            ].map(whoOf),
+            who: [...next.filter((k) => k.startsWith('role:')), ...people].map(whoOf),
           })
         }
       />
       <ChipToggles
         label="People"
         options={outline.people.map((p) => ({ value: `person:${p.id}`, label: p.name }))}
-        value={condition.who.map(keyOf)}
+        value={people}
         empty="No one in this plan yet."
-        onChange={(keys) =>
+        gone="Someone No Longer Here"
+        onChange={(next) =>
           onChange({
             ...condition,
-            who: [
-              ...condition.who.filter((w) => 'role' in w).map(keyOf),
-              ...keys.filter((k) => k.startsWith('person:')),
-            ].map(whoOf),
+            who: [...roles, ...next.filter((k) => k.startsWith('person:'))].map(whoOf),
           })
         }
       />

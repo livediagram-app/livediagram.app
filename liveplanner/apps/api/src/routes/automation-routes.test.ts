@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AUTOMATION_RULES_MAX, type AutomationRule, type AutomationRun } from '@liveplanner/items';
+import {
+  AUTOMATION_RULES_MAX,
+  defaultCatalogue,
+  type AutomationRule,
+  type AutomationRun,
+} from '@liveplanner/items';
 import type { AutomationListedRule, AutomationsListResponse } from '@liveplanner/api-schema';
 import { endRepeatWorld } from '../plan-room/test-repeat-world';
 import {
@@ -185,6 +190,7 @@ describe('the rules', () => {
       made: { by: { name: 'Someone' } },
       stats: { lastRunAt: null, runsThisWeek: 0, failuresInARow: 0 },
       needs: [],
+      attention: [],
     });
     expect(list).toMatchObject({ runsToday: 0, runsPerDay: 1000 });
   });
@@ -248,9 +254,90 @@ describe('the rules', () => {
     expect((await w.call('PUT', '')).status).toBe(405);
   });
 
+  it('refuses Field Changed on a field no write changes, naming it, and takes one that changes', async () => {
+    const put = await w.send('PUT', '/api/projects/A/item-types', {
+      itemTypes: {
+        version: defaultCatalogue().version,
+        types: [
+          {
+            id: 'task',
+            label: 'Task',
+            newTitle: 'New task',
+            glyph: 'task',
+            color: '#2563eb',
+            fields: ['title', 'status', 'f-time', 'f-left'],
+            custom: [
+              { id: 'f-time', label: 'Time Spent', kind: 'duration', timeSpent: true },
+              { id: 'f-left', label: 'Time Left', kind: 'duration' },
+            ],
+          },
+        ],
+      },
+    });
+    expect(put.status).toBeLessThan(300);
+    const trigger = (fields: string[]) => ruleBody({ trigger: { kind: 'field_changed', fields } });
+    const refused = await w.call('POST', '', trigger(['f-left', 'f-time']));
+    expect(refused.status).toBe(400);
+    expect(await refused.json()).toMatchObject({
+      error: 'automation_invalid',
+      path: 'trigger.fields.1',
+      message: expect.stringContaining('Field Changed never hears Time Spent') as string,
+    });
+    // A list naming a field twice is kept once, yet the path names the field where the body holds it.
+    const twice = await w.call('POST', '', trigger(['f-left', 'f-left', 'f-time']));
+    expect(await twice.json()).toMatchObject({ path: 'trigger.fields.2' });
+    const made = await w.rule(trigger(['f-left']));
+    expect((await w.call('PUT', `/${made.id}`, trigger(['f-time']))).status).toBe(400);
+  });
+
+  it('refuses a Set Field giving a Checkbox anything but Yes or No, naming the field and the step', async () => {
+    const put = await w.send('PUT', '/api/projects/A/item-types', {
+      itemTypes: {
+        version: defaultCatalogue().version,
+        types: [
+          {
+            id: 'task',
+            label: 'Task',
+            newTitle: 'New task',
+            glyph: 'task',
+            color: '#2563eb',
+            fields: ['title', 'status', 'f-ok'],
+            custom: [{ id: 'f-ok', label: 'Signed Off', kind: 'checkbox' }],
+          },
+        ],
+      },
+    });
+    expect(put.status).toBeLessThan(300);
+    const setting = (text: string) =>
+      ruleBody({
+        steps: [{ kind: 'flag' }, { kind: 'set_field', field: 'f-ok', value: { text } }],
+      });
+    const refused = await w.call('POST', '', setting('maybe'));
+    expect(refused.status).toBe(400);
+    expect(await refused.json()).toMatchObject({
+      error: 'automation_invalid',
+      path: 'steps.1.value',
+      message: 'Signed Off is a Checkbox: set it to Yes or No',
+    });
+    const made = await w.rule(setting('true'));
+    expect((await w.call('PUT', `/${made.id}`, setting('later'))).status).toBe(400);
+    // Test on a Card refuses it as a save does, under its rule's path.
+    const c = await w.make('A', { title: 'Try me' });
+    const tried = await w.call('POST', '/test', { rule: setting('maybe'), item: c.id });
+    expect(tried.status).toBe(400);
+    expect(await tried.json()).toMatchObject({
+      error: 'automation_invalid',
+      path: 'rule.steps.1.value',
+      message: 'Signed Off is a Checkbox: set it to Yes or No',
+    });
+    expect((await w.call('POST', '/test', { rule: setting('yes'), item: c.id })).status).toBe(200);
+  });
+
   it('says what a rule names that the plan lacks', async () => {
     await w.rule({ steps: [{ kind: 'move', status: 'qa' }] });
-    expect((await listOf()).rules[0]!.needs).toEqual(['Column qa is gone']);
+    const [rule] = (await listOf()).rules;
+    expect(rule!.needs).toEqual(['Column qa is gone']);
+    expect(rule!.attention).toEqual([{ kind: 'column', id: 'qa' }]);
   });
 });
 

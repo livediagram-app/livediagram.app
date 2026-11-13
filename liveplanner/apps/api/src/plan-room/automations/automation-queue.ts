@@ -60,6 +60,9 @@ export async function eventsOfWrites(
     ...(source.form !== undefined ? { form: source.form } : {}),
   };
   for (const w of writes) {
+    // A card put back (an undo of its delete, a redo of its making, an offline plan's sync) is no new card: its
+    // create starts nothing (spec "Triggers").
+    if (!w.before && tag === 'undo') continue;
     const event = eventOfWrite(w.before, w.after, w.changes, base);
     if (event && kinds.has(event.kind)) out.push(event);
   }

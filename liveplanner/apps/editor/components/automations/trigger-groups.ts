@@ -1,7 +1,11 @@
 // The Pick a Trigger picker's groups (docs/specs/026-plan/automations.md "The rule builder"): every trigger in groups,
 // each one thing, with a line on what it hears, and a trigger's first form when it is picked.
 
-import type { AutomationTrigger, AutomationTriggerKind } from '@liveplanner/items';
+import {
+  AUTOMATION_TRIGGER_KINDS,
+  type AutomationTrigger,
+  type AutomationTriggerKind,
+} from '@liveplanner/items';
 import { freshTimeTrigger } from './step-panels/TimeTriggerPanel';
 
 export type TriggerGroupId = 'cards' | 'comments' | 'links' | 'times' | 'github' | 'tools';
@@ -80,6 +84,18 @@ export const offeredGroups = (githubEnabled: boolean, current?: AutomationTrigge
     (g) =>
       g.id !== 'github' || githubEnabled || (current !== undefined && g.kinds.includes(current)),
   );
+
+const GITHUB_KINDS: ReadonlySet<AutomationTriggerKind> = new Set(
+  TRIGGER_GROUPS.find((g) => g.id === 'github')!.kinds,
+);
+
+/** The Rules list's All Triggers choices: GitHub's only where the deployment has the App, as Pick a Trigger offers
+ *  them, or the ones a rule is already on (`used`). */
+export const filterTriggerKinds = (
+  githubEnabled: boolean,
+  used: ReadonlySet<AutomationTriggerKind>,
+): AutomationTriggerKind[] =>
+  AUTOMATION_TRIGGER_KINDS.filter((k) => githubEnabled || !GITHUB_KINDS.has(k) || used.has(k));
 
 export const isTimeKind = (kind: AutomationTriggerKind): boolean =>
   kind === 'scheduled' || kind === 'due_in' || kind === 'overdue' || kind === 'stuck';

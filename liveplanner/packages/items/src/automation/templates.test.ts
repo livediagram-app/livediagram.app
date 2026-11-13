@@ -13,6 +13,7 @@ import {
 } from './templates';
 import type { AutomationRuleBody, AutomationStep } from './types';
 import { readRuleBody } from './validate';
+import { namedRuleBody } from './named';
 
 // docs/specs/026-plan/automations.md "The Automations screen": Templates.
 const TASK: ItemTypeDef = {
@@ -263,5 +264,15 @@ describe('picksLeft', () => {
     expect(AUTOMATION_PICK_WORDS.label).toBe('Pick a label');
     expect(AUTOMATION_PICK_WORDS.people).toBe('Pick people');
     expect(AUTOMATION_PICK_WORDS.webhook).toBe('Pick a webhook');
+  });
+});
+
+// docs/specs/026-plan/automations.md "Agents and the CLI": list_rules answers a rule by id and change_rules takes it
+// back unchanged, so every kind a template writes comes through namedRuleBody as it went in.
+describe('a template rule through the agents’ naming', () => {
+  it.each(AUTOMATION_TEMPLATES.map((t) => [t.id, t] as const))('%s round-trips', (_id, t) => {
+    const { body } = t.build(FULL);
+    const names = { statuses: FULL.statuses, types: FULL.types, people: [], tabs: [] };
+    expect(namedRuleBody(body, names)).toEqual(body);
   });
 });

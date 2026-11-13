@@ -6,6 +6,7 @@ import {
   AUTOMATION_AI_NAMES,
   AUTOMATION_NOTIFY_NAMES,
   AUTOMATION_STEP_NAMES,
+  PRIORITIES,
   type AutomationAction,
   type AutomationActionKind,
   type AutomationAi,
@@ -14,7 +15,16 @@ import {
   type AutomationVia,
   type AutomationWait,
 } from '@liveplanner/items';
-import { outlineFields, type AutomationOutline } from './automation-outline';
+import { standardColours } from '@liveplanner/project';
+import { fieldChangeFields, outlineFields, type AutomationOutline } from './automation-outline';
+import { OWN_ACTION_FIELDS, startText } from './field-pick';
+
+// Set Colour starts on the standard Red the card's Colour picker offers (the spec: one of the standard colours), so
+// the field and the picker name it alike. An older Plan red (#dc2626) read "Red" in the field but showed as a custom
+// "#dc2626" swatch, the standard Red unpressed.
+const DEFAULT_COLOUR = standardColours('strong', 'light')
+  .find((c) => c.name === 'red')!
+  .hex.toLowerCase();
 
 export const ACTION_KINDS: readonly AutomationActionKind[] = [
   'move',
@@ -80,14 +90,17 @@ export function defaultOutgoing(via: AutomationVia): AutomationOutgoing {
   return { kind: 'notify', via, webhook: '', text: '{{card.title}} {{card.url}}' };
 }
 
-/** A new step of any kind + Add Action offers. */
+/** A new step of any kind + Add Action offers (`personless`: the rule's trigger has nobody behind it). */
 export function defaultStep(
   kind: AddKind,
-  outline: Outline,
+  outline: Outline & Pick<AutomationOutline, 'people'>,
+  personless = false,
 ): AutomationAction | AutomationOutgoing | AutomationAi | AutomationWait {
   if (kind === 'wait') return { kind: 'wait', hours: 24 };
   if (isAiKind(kind)) return defaultAi(kind);
-  return isOutgoingKind(kind) ? defaultOutgoing(viaOf(kind)) : defaultAction(kind, outline);
+  return isOutgoingKind(kind)
+    ? defaultOutgoing(viaOf(kind))
+    : startAction(kind, outline, personless);
 }
 
 export const CONDITION_KINDS: readonly AutomationCondition['kind'][] = [
@@ -100,20 +113,39 @@ export const CONDITION_KINDS: readonly AutomationCondition['kind'][] = [
 
 type Outline = Pick<AutomationOutline, 'types' | 'columns' | 'labels' | 'boards'>;
 
-const firstField = (outline: Outline, prefer: string) => {
-  const fields = outlineFields(outline.types);
+// The first field, `prefer` where the plan has it; `writable`: only one a write changes (Clear Field's).
+const firstField = (outline: Outline, prefer: string, writable = false) => {
+  const fields = (writable ? fieldChangeFields : outlineFields)(outline.types);
   return (fields.find((f) => f.id === prefer) ?? fields[0])?.id ?? prefer;
 };
 
-export function defaultAction(kind: AutomationActionKind, outline: Outline): AutomationAction {
+// Set Field's first field (Priority where the plan has it, never one left to its own action nor one no write changes)
+// and its first value: a field of fixed values starts on its first one, so a person, choice or checkbox field never
+// starts on text its save refuses.
+function firstSetField(outline: Outline & Partial<Pick<AutomationOutline, 'people'>>) {
+  const fields = fieldChangeFields(outline.types).filter((f) => !OWN_ACTION_FIELDS.has(f.id));
+  const field = fields.find((f) => f.id === 'priority') ?? fields[0];
+  if (!field) return { field: 'priority', text: PRIORITIES[0] };
+  return {
+    field: field.id,
+    text: startText(field, { types: outline.types, people: outline.people ?? [] }),
+  };
+}
+
+export function defaultAction(
+  kind: AutomationActionKind,
+  outline: Outline & Partial<Pick<AutomationOutline, 'people'>>,
+): AutomationAction {
   const status = outline.columns[0]?.status ?? '';
   switch (kind) {
     case 'move':
       return { kind, status };
-    case 'set_field':
-      return { kind, field: firstField(outline, 'priority'), value: { text: '' } };
+    case 'set_field': {
+      const { field, text } = firstSetField(outline);
+      return { kind, field, value: { text } };
+    }
     case 'clear_field':
-      return { kind, field: firstField(outline, 'due') };
+      return { kind, field: firstField(outline, 'due', true) };
     case 'assign':
       return { kind, to: { trigger: true } };
     case 'add_label':
@@ -128,7 +160,7 @@ export function defaultAction(kind: AutomationActionKind, outline: Outline): Aut
     case 'set_type':
       return { kind, type: (outline.types[1] ?? outline.types[0])?.id ?? '' };
     case 'set_colour':
-      return { kind, colour: '#dc2626' };
+      return { kind, colour: DEFAULT_COLOUR };
     case 'copy_card':
       return { kind };
     case 'add_checklist':
@@ -146,6 +178,19 @@ export function defaultAction(kind: AutomationActionKind, outline: Outline): Aut
     case 'resolve_threads':
       return { kind };
   }
+}
+
+/** An action's first form on this rule: on a time trigger or an incoming webhook (nobody behind it) Assign starts on
+ *  the plan's first person, not whoever triggered it. Both + Add Action and Change the Action start here. */
+export function startAction(
+  kind: AutomationActionKind,
+  outline: Outline & Pick<AutomationOutline, 'people'>,
+  personless: boolean,
+): AutomationAction {
+  const action = defaultAction(kind, outline);
+  if (action.kind !== 'assign' || !personless) return action;
+  const first = outline.people[0]?.id;
+  return { kind: 'assign', to: first ? { person: first } : { nobody: true } };
 }
 
 export function defaultCondition(
