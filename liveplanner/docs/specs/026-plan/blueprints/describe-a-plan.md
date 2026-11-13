@@ -27,13 +27,27 @@ path, message } }` otherwise. Every list is cut to one past its cap before it is
   `star`; colours come from `PLAN_DRAFT_COLOURS` (the type colours, darkest left out) in turn; built-in fields by
   name or id, unknown ones dropped, Description and Assignee always kept; options dropped from kinds that hold none.
   Only `title`, `columns` and `cardTypes` are read: anything else the reply holds is dropped. Then `checkPlanDraft`.
-- `checkPlanDraft(draft)`: the board through `placeBoard({ title, columns }, [], [], …)`, then the draft's own caps
-  (types, fields, options, kinds), then the types as `add` changes (`planDraftChanges`) through
-  `applyCardTypeChanges(null, changes, the board's statuses)`. `{ ok: true, board, changes }` or `{ ok: false, path,
-message }`, the path the place at fault (`columns`, `cardTypes.1.fields.3.kind`). The editor's preview runs the same
-  check on what the person changed.
+- `checkPlanDraft(draft, plan?, random = () => 0)`: `plan` is `PlanDraftPlan` `{ catalogue, statuses }`, the plan the
+  draft would join (absent: an empty plan, as the reader checks a reply). The board through `placeBoard({ title,
+columns }, [], plan.statuses, …, random)`, so a column named as a status the plan has takes it; then the draft's own
+  caps (types, fields, options, kinds), skipping a type `keptPlanDraftTypes(draft, catalogue)` finds the plan already
+  has (by name, `statusKey`); then the other types as `add` changes (`planDraftChanges`) through
+  `applyCardTypeChanges(plan.catalogue, changes, the board's statuses)`. `{ ok: true, board, setup, changes, kept,
+catalogue }` (the placed board's set-up, the kept types' indexes, the catalogue with the new types) or `{ ok: false,
+path, message }`, the path the place at fault (`columns`, `cardTypes.1.fields.3.kind`).
 
-## The api (apps/api/src/routes/plan-draft-route.ts, plan-draft-count.ts)
+## The preview's checks and Make Plan (packages/items/src/plan-draft-preview.ts)
+
+- `planDraftProblems(draft, plan?)`: every problem as `{ path, message }`, in the preview's order: the board's name
+  (`title`), no columns (`columns`), each column empty or a second of one name (`columns.<i>`), no card types
+  (`cardTypes`), each type's name (`cardTypes.<i>.name`), and, for every type the plan lacks, each field's name
+  (`cardTypes.<i>.fields.<j>.name`) and each option (`….options.<k>`); only when none stands, `checkPlanDraft`'s one
+  refusal at its path. Empty: Make Plan may go. Linear in the draft (four types, eight fields, eight options).
+- `planFromDraft(draft, plan, random = Math.random)`: `checkPlanDraft` with a fresh status suffix, then `{ ok: true,
+setup, newTypes }`: the set-up with `addTypes` every drafted type's id (the plan's own where kept, the new one's where
+  added, by name), and `newTypes` the catalogue's types the plan's lacked. Or the refusal.
+
+## The api (apps/api/src/routes/plan-drafts.ts, plan-draft-count.ts)
 
 - `POST /api/plan-drafts` `{ prompt }`, its own segment in index.ts's dispatch. Who: `verifiedUserId` (signed in, a
   full API token or a workbench session; a read-only token is refused at the write choke point). A guest is 403
@@ -60,12 +74,34 @@ day, count }`) and never touches the plan schema, so the instance stays a room w
 
 ## Editor (part 2)
 
-- `components/plan/start/describe-plan/`: `plan-draft-client.ts` `draftPlan(prompt)`; `DescribePlanDialog.tsx` (the
-  shared `Dialog` with `phoneSheet`, `DialogHeader`, `TextArea`, the examples as secondary Buttons, the `AiNote`
-  sparkle line), its states (idle, drafting, said, preview); `PlanDraftPreview.tsx` (the board's title and column
-  chips, each type's fields, every problem from `checkPlanDraft` beside its place); `make-plan.ts` (Make Plan: the
-  board placed as Start Planning places one, the types the plan lacks added through the catalogue save, a type the
-  plan has kept); the rail entry and its search card in `StartPlanning.tsx`; the sign-in nudge for a guest.
+All in `apps/editor/components/plan/start/describe-plan/`:
+
+- `plan-draft-client.ts`: `draftPlan(ownerId, prompt)`, `POST ${API_BASE}/plan-drafts` with `apiHeaders(ownerId, {
+body: true })`; a `plan_draft_*` body with a `message` throws `PlanDraftRefusal(status, code, message)`, anything
+  else goes to `expectOk`.
+- `DescribePlanDialog.tsx`: the shared `Dialog` (`size="xl"`, `phoneSheet`, a column at most 46rem or 90dvh tall),
+  `DialogHeader` with the sparkle, `TextArea` (500, the count), `DESCRIBE_PLAN_EXAMPLES` as secondary `xs` Buttons,
+  `AiNote` ("Uses AI: you can describe 10 plans a day."). States: the words (idle, drafting with `busy` and the box
+  read-only, said: a `role="alert"` amber line), the guest's nudge (`DESCRIBE_PLAN_SIGN_IN`, Sign In to
+  `signInHref`), and the preview (a draft held in state, the heading focused). A stale answer (after Cancel or
+  unmount) is dropped by an ask counter, as Describe a Rule's is. Problems from `planDraftProblems(draft, plan)`,
+  memoised on the draft; Make Plan disabled while any stands; `onMake(draft)` answers null (made) or the words to say.
+- `PlanDraftPreview.tsx`: the Drafted by AI note, the board (name, `NameChips` of columns), the card types
+  (`PlanDraftTypeCard`), Add Card Type. `PlanDraftTypeCard.tsx`: one type (`CardTypeTile`, name, Shows chips, field
+  rows with the shared `Select` of `PLAN_DRAFT_FIELD_KINDS` named by `CUSTOM_KIND_LABELS`, options as `NameChips`), or
+  the kept type read-only. `NameChips.tsx`: renamed-in-place chips with × and Add, the new one focused and selected;
+  `ProblemText` (rose, `role="status"`). `draft-edits.ts`: `freshName`, `withKind`, `newDraftType`, `problemsByPath`.
+- `DescribePlanHost.tsx`: the dialog bound to the editor (`useEditorContext`): signed in is `accountUserId`; the plan
+  is the stored catalogue, else the types the plan shows, with `planOutline(tabs, catalogue).statuses`; the sign-in
+  return is this page. Make Plan: `planFromDraft`, then `itemTypes.addTypes(newTypes)` (one change), then
+  `planTabs.startElementTab('board', () => dropPaletteItem('plan-board', centre, { planBoard: setup }))`, which places
+  it through `planBoardSized` (lib/plan-board-placement.ts), then `Plan · Created · PlanDraft` and close. Opening
+  sends `UI · Opened · PlanDescribe`.
+- `DescribePicture.tsx`: the search card's picture. `start-planning-items.ts`: `DESCRIBE_ITEM` (kind `describe`, its
+  own search group after Inspiration and before Import). `StartPlanning.tsx`: `onDescribe` gives the rail entry
+  (`footLead`, the shared StartPanel's entries above Connect File, `ConnectRailEntry`'s `lead`) and the card.
+  `EditorStartPanels.tsx` gives `onDescribe` where Import is offered (an Editor's) and mounts the host, loaded with
+  `next/dynamic`, while it is open.
 
 ## Tests
 
@@ -74,11 +110,19 @@ day, count }`) and never touches the plan schema, so the instance stays a room w
   glyph Plan lacks, built-in fields by name, options dropped from kinds without them, extra keys dropped, every cap
   refused with its path, an injected request whose reply tries other kinds or keys, a huge reply (linear time), the
   board's and the catalogue's refusals.
-- api `plan-draft-route.test.ts` with a stand-in `env.AI` and a stand-in `PLAN_ROOM`: drafted, off topic, a retry
+- api `routes/plan-drafts.test.ts` with a stand-in `env.AI` and a stand-in `PLAN_ROOM`: drafted, off topic, a retry
   that reads, a retry that doesn't, the 10 a day per account (another account unaffected, a new UTC day), the count
   unreadable, no binding, a throwing and a slow model, who (guest 403, nobody 401, a token 200), the prompt never
   logged, nothing written but the count.
 - api `plan-draft-count.test.ts`: `spendPlanDraft` on a room's storage, the day turning over, the reserved name.
+- items `plan-draft-preview.test.ts`: every problem at its place, the fallback to the whole check, a kept type never
+  asked to be fixed and its caps skipped, a column taking the plan's status, the catalogue's cap, and `planFromDraft`
+  (only the new types, the board taking every type, the new types on the new board's statuses).
+- editor `DescribePlanDialog.test.tsx` (the words, busy, Cancel dropping a late answer, a refusal's words and a
+  failure's, the guest's nudge, the preview's edits, problems holding Make Plan, a kept type, Back),
+  `describe-plan-parts.test.tsx` (the client, the edit parts, the host's Make Plan and telemetry),
+  `StartPlanning.describe.test.tsx` (the rail entry above Connect File and Import, alone without Connect File, none for
+  a Participant or Viewer, the search card). workbench `StartPanel.test.tsx`: `footLead`'s order.
 
 ## Cost (measured in plan-draft.test.ts "measures the ask")
 
