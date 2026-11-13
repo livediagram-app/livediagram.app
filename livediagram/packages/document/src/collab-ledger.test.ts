@@ -3,6 +3,7 @@ import type { ElementLedger, ShapeElement, Tab, TabLedger, VoteLedger } from './
 import {
   ledgerCommentAuthors,
   ledgerEntryAccumulates,
+  ledgerEntryKeys,
   ledgerKey,
   mergeLedgerAnswersIntoTab,
   mergeLedgerIntoTab,
@@ -352,6 +353,39 @@ describe('reactions in the ledger (docs/specs/012-collaboration/comment-reaction
     // A saver who had seen everything up to seq 4 keeps its own copy.
     const stored = tab([thread()]);
     expect(mergeLedgerIntoTab(stored, ledger, 4)).toBe(stored);
+  });
+
+  it('keeps the person the room stamped on a reaction, and merges it back with it', () => {
+    const person = 'f'.repeat(24);
+    const stamped = delta({
+      kind: 'comment-react',
+      commentId: 'c1',
+      emoji: 'heart',
+      by: 'a',
+      name: 'A',
+      person,
+      on: true,
+    });
+    const ledger = ledgerOf([stamped]);
+    expect(Object.values(ledger.elements.card!.comments!.reacts!)[0]).toEqual({
+      on: true,
+      name: 'A',
+      person,
+      seq: 1,
+    });
+    const merged = mergeLedgerIntoTab(tab([thread()]), ledger, 0);
+    expect((merged.elements[0] as ShapeElement).commentThread?.comments[0]?.reactions).toEqual([
+      { emoji: 'heart', by: 'a', name: 'A', person },
+    ]);
+  });
+
+  it("names the entries a whole-tab write's lock reads", () => {
+    expect(ledgerEntryKeys('t1', { elementIds: ['a', 'b'], vote: true })).toEqual([
+      'ledger:t1:el:a',
+      'ledger:t1:el:b',
+      'ledger:t1:vote',
+    ]);
+    expect(ledgerEntryKeys('t1', { elementIds: [], vote: false })).toEqual([]);
   });
 
   it('refuses a malformed reaction, and one past the thread bound', () => {

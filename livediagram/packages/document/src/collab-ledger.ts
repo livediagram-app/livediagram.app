@@ -60,8 +60,9 @@ export type ElementLedger = {
     adds: Record<string, { comment: Comment; seq: number; cell?: string }>;
     removes: Record<string, number>;
     resolved?: { value: boolean; seq: number };
-    // Reactions, keyed `${commentId}\u0000${emoji}\u0000${by}`: each person's latest on or off.
-    reacts?: Record<string, { on: boolean; name: string; seq: number }>;
+    // Reactions, keyed `${commentId}\u0000${emoji}\u0000${by}`: each person's latest on or off, with the person the
+    // room stamped (absent on an entry recorded before it kept one).
+    reacts?: Record<string, { on: boolean; name: string; person?: string; seq: number }>;
   };
 };
 
@@ -109,6 +110,16 @@ export function ledgerKey(op: unknown): string | null {
     return `ledger:${o.tabId}:el:${o.elementId}`;
   }
   return null;
+}
+
+// The keys of the entries a whole-tab write's lock reads (whole-tab-lock.ts): the named elements', and the tab's
+// vote when asked.
+export function ledgerEntryKeys(
+  tabId: string,
+  want: { elementIds: readonly string[]; vote: boolean },
+): string[] {
+  const keys = want.elementIds.map((id) => `ledger:${tabId}:el:${id}`);
+  return want.vote ? [...keys, `ledger:${tabId}:vote`] : keys;
 }
 
 // Every key a tab's ledger may use starts with this.
@@ -256,7 +267,15 @@ function recordElement(
           ...(prev ?? {}),
           comments: {
             ...comments,
-            reacts: { ...reacts, [key]: { on: d.on, name: d.name, seq } },
+            reacts: {
+              ...reacts,
+              [key]: {
+                on: d.on,
+                name: d.name,
+                ...(d.person !== undefined ? { person: d.person } : {}),
+                seq,
+              },
+            },
           },
         };
       }
@@ -406,7 +425,15 @@ function applyCommentEvents<E extends Tab['elements'][number]>(
     const [commentId, emoji, by] = key.split('\u0000') as [string, CommentReactionId, string];
     events.push({
       seq: r.seq,
-      delta: { kind: 'comment-react', commentId, emoji, by, name: r.name, on: r.on },
+      delta: {
+        kind: 'comment-react',
+        commentId,
+        emoji,
+        by,
+        name: r.name,
+        ...(r.person !== undefined ? { person: r.person } : {}),
+        on: r.on,
+      },
     });
   }
   events.sort((a, b) => a.seq - b.seq);
