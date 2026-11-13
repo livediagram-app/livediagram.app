@@ -24,7 +24,9 @@ The name is **Describe a Plan**, apart from the marketing site's **Build with AI
 - Start Planning's rail gains **Describe a Plan**, with the sparkle, in the group at its foot, above Connect File and
   Import: like Import it opens a dialog and is never chosen, so the grid keeps what it shows. On a phone it is a chip
   before Connect File's. A search finds it by "describe", "ai", "custom", "generate" and "my own", as a card under
-  its own **Describe a Plan** heading.
+  its own **Describe a Plan** heading (or the Best Match, for a search its name begins with): "Say what you're
+  planning and AI drafts the board's columns and card types for you to check.", a picture of a note of words under
+  the sparkle flowing into a board, no kind badge. The dialog's code loads only once it is chosen.
 - It opens the **Describe a Plan** dialog (a sheet on a phone): the line "Say what you're planning: the stages work
   moves through and what each card should hold. You check the plan before anything is made.", a text box ("A hiring
   pipeline with Applied, Screen, Interview and Offer, and a Candidate card with Role, Salary Band and Interview Date"),
@@ -39,22 +41,37 @@ The name is **Describe a Plan**, apart from the marketing site's **Build with AI
 A draft turns the dialog to its **preview**, titled **Check Your Plan**, with a violet note: the sparkle, **Drafted by
 AI** and "Change anything you like. Nothing is made until you press Make Plan."
 
-- **The board**: its title (a text box) and its columns as a row of chips, each renamed in place, removed with its ×,
-  and **Add Column** at the end while there are fewer than 12.
-- **Each card type**: its glyph and colour, its name (a text box), the built-in fields it shows (chips, each removable),
-  and its own fields as rows: the name, the kind (the type editor's kind menu, the kinds below), a Choice field's
-  options as chips, and a remove button. **Add Field** under them while the type has fewer than 8, and **Remove Type**.
-  A type named as one the plan already has is marked "Already in this plan: yours is kept as it is" and drawn
-  read-only; Make Plan uses the plan's type.
-- Whatever is changed is held to the same checks as the draft (below), each problem said beside its place, and Make
-  Plan is disabled while one stands.
-- **Back** returns to the words, kept; **Make Plan** makes it.
+- **The board**: its name (a text box) and its columns as a row of chips ("4 of 12"), each renamed in place, removed
+  with its ×, and **Add Column** at the end while there are fewer than 12.
+- **Each card type**: its glyph and colour, its name (a text box), the built-in fields it **Shows** (chips, each
+  removable; with none, "Title and Status only"), and its own **Fields** as rows: the name, the kind (a menu of the
+  kinds below, by the type editor's names for them), a Choice field's options as chips (renamed in place, removed,
+  **Add Option** while it has fewer than 8), and a remove button. **Add Field** under them while the type has fewer
+  than 8 ("Add a field for anything else its cards should hold." while it has none), and **Remove Type** (the bin,
+  its words hidden on a phone). **Add Card Type** under the types while there are fewer than 4.
+- What is added starts named, its name selected to type over: **New Column**, **New Field**, **Option 2**, **New
+  Type** (with a number when the name is taken). A field turned into a Choice keeps its options, or starts with
+  **Option 1**; turned into any other kind it holds none.
+- A type named as one the plan already has is marked "Already in this plan: yours is kept as it is" and drawn
+  read-only (its name, and the plan's own fields as chips), Remove Type aside; Make Plan uses the plan's type.
+- Whatever is changed is held to the same checks as the draft (below), each problem said beside its place in rose,
+  the place ringed: "Give the board a name.", "Give this column a name.", "Two columns are called “Screen”.", "A board
+  needs at least one column.", "Keep at least one card type.", and the same for a card type's, a field's and an
+  option's names; once the names read, whatever the whole check still finds (a cap, the catalogue's rules) is said at
+  its place. Make Plan is disabled while one stands, and the footer says "Fix the marked problem to make the plan."
+  (or "Fix the 2 marked problems …").
+- **Back** returns to the words, kept; **Make Plan** makes it. The preview scrolls inside the dialog, its footer
+  always in view.
 
 **Make Plan** is the only thing that makes anything. It does what choosing a board on Start Planning and adding card
 types in the type editor do: the tab becomes a Board tab holding the board (placed as Start Planning places one,
 taking the drafted types), named after the board while the tab still has its default name, and the plan gains the
 card types it lacks. Undo takes the board away as it would any board; the card types stay, as a Plan template's do.
-`Plan · Created · PlanDraft` is sent.
+`Plan · Created · PlanDraft` is sent. The types the plan lacks are added first, as one change, so the board finds them
+as it lands and brings none of its own; each new type uses the new board's columns' statuses. A column named as a
+status the plan's boards already have takes that status, so its cards show on the new board too. Should the plan
+change under the preview so the draft no longer fits (another person adds a type of that name), Make Plan says the
+check's words in the footer and makes nothing.
 
 ## What can't be drafted
 
@@ -66,7 +83,9 @@ What can't be drafted is said in the dialog, under the box, the text kept so it 
   another way, or start from a template.";
 - the day's drafts spent: "You've described 10 plans today. Try again tomorrow, or start from a template.";
 - no model, or one that errs or is slow: "AI isn't set up here" or "The AI couldn't answer just now. Try again in a
-  moment."
+  moment.";
+- the ask not answered at all (offline, or an answer the editor can't read): "That didn't work. Check your connection
+  and try again."
 
 The model's own words are never shown: every message is one of these, fixed in code.
 
@@ -138,5 +157,5 @@ A Large card, built in parts, each leaving main working on its own:
 1. This spec and its blueprint, the pure parts (the ask, the reply's reader and the checks), the api route with the
    per-account count, and their tests. Nothing visible.
 2. The entry on Start Planning, the dialog, the preview, Make Plan and the sign-in nudge, with their tests, shots and
-   the help article.
+   the help article (Plan › **Describe a Plan**, `/help/plan/describe-a-plan/`).
 3. Optional: starter rules.

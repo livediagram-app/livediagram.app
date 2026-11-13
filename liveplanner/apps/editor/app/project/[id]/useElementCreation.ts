@@ -1,4 +1,5 @@
-import { planBoardPlacement } from '@/lib/plan-board-placement';
+import { planBoardPlacement, planBoardSized } from '@/lib/plan-board-placement';
+import type { PlanBoardSetup } from '@liveplanner/items';
 import { type Dispatch, type SetStateAction } from 'react';
 import {
   createShape,
@@ -51,12 +52,13 @@ export function useElementCreation(opts: {
     styleNewElement,
   } = opts;
 
-  // A board or Sheet from Start Planning, centred on the point; `choice` is the board preset or the Sheet start.
+  // A board or Sheet from Start Planning, centred on the point; `choice` is the board preset or the Sheet start, and
+  // `planBoard` a board's whole set-up (Describe a Plan's Make Plan), placed as it is.
   const dropPaletteItem = (
     kind: PlacedPlanKind,
     canvasX: number,
     canvasY: number,
-    art?: { choice?: string },
+    art?: { choice?: string; planBoard?: PlanBoardSetup },
   ) => {
     if (editsBlocked) return;
     addBoxedAt(
@@ -65,7 +67,11 @@ export function useElementCreation(opts: {
       (x, y) => ({
         ...createShape(kind, x, y),
         // A board wide enough for its columns (docs/specs/026-plan/plan-board.md).
-        ...(kind === 'plan-board' ? planBoardPlacement(art?.choice, activeTab.name) : {}),
+        ...(kind === 'plan-board'
+          ? art?.planBoard
+            ? planBoardSized(art.planBoard)
+            : planBoardPlacement(art?.choice, activeTab.name)
+          : {}),
         // Named after its tab (docs/specs/029-sheets/sheet.md "Placing a sheet").
         ...(kind === 'plan-sheet'
           ? {

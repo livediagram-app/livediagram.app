@@ -117,4 +117,6 @@ export type StartPanelProps<C extends string, P, K, H, G, M> = {
   // Entries below Connect File in the same foot group, each opening a dialog; alone under the hairline where Connect
   // File is not offered.
   footActions?: readonly StartPanelFootAction[];
+  // Entries above Connect File in the same foot group (liveplanner's Describe a Plan), each opening a dialog.
+  footLead?: readonly StartPanelFootAction[];
 };

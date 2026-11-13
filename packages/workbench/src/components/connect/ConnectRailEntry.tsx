@@ -30,22 +30,27 @@ export function ConnectRailEntry({
   on,
   onPick,
   colours,
+  lead,
   children,
 }: {
   on: boolean;
   onPick: () => void;
   colours: ConnectRailColours;
+  // The app's own entries above Connect File (liveplanner's Describe a Plan), in the same foot group.
+  lead?: ReactNode;
   // The app's own entries below Connect File, in the same foot group.
   children?: ReactNode;
 }) {
   return (
     <RailFoot colours={colours}>
+      {lead}
       <RailFootButton
         railId={CONNECT_RAIL_ID}
         on={on}
         onPick={onPick}
         colours={colours}
         name={CONNECT_RAIL_NAME}
+        className={lead ? 'sm:mt-1' : ''}
         icon={
           // The logos stand where a row's icon goes as one stacked cluster, like a row of avatars: each on a disc of
           // the panel's paper edged with its hairline, tucked 40% under the one before it, with a paper ring cutting a

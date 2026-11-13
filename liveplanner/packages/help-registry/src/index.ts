@@ -102,7 +102,7 @@ export const categories: Category[] = [
     title: 'Plan',
     description:
       'Run the work: boards of cards, sheets with real formulas, forms that fill a board, and dashboards drawn from it all.',
-    articleCount: 15,
+    articleCount: 16,
     kind: 'feature',
     groups: ['Getting Going', 'Boards and Cards', 'Sheets', 'Forms and Dashboards'],
   },
@@ -718,6 +718,17 @@ export const articles: Article[] = [
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Boards and Cards',
+  },
+  {
+    slug: 'describe-a-plan',
+    title: 'Describe a Plan',
+    description:
+      'Say how your work runs and AI drafts a board’s columns and card types, for you to check and change before Make Plan.',
+    keywords:
+      'describe a plan ai artificial intelligence generate generator draft custom my own words build plan make plan board columns stages card types fields prompt write describe workflow pipeline process set up start planning check your plan sign in',
+    category: 'Plan',
+    categorySlug: 'plan',
+    group: 'Getting Going',
   },
   {
     slug: 'connect-github',

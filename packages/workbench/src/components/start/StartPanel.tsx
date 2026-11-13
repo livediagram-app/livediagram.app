@@ -120,6 +120,7 @@ export function createStartPanel<
     footer,
     connect,
     footActions = [],
+    footLead = [],
   }: StartPanelProps<C, P, K, H, G, M>) {
     // A category's flyout, More or Search hangs from the palette: the start steps aside for it (palette-popover-open).
     const paletteOpen = usePalettePopoverOpen();
@@ -237,6 +238,20 @@ export function createStartPanel<
       hoverTint: startTint(palette, 7),
       chosenHoverTint: startTint(palette, CHOSEN_HOVER_TINT),
     };
+    // Each a row like Connect File's, a rail gap between it and the one after it on a desktop.
+    const leadRows = footLead.map((a, i) => (
+      <RailFootButton
+        key={a.id}
+        railId={a.id}
+        onPick={a.onPick}
+        colours={footColours}
+        icon={<span className="shrink-0">{a.icon}</span>}
+        name={a.name}
+        opensDialog
+        className={i > 0 ? 'sm:mt-1' : ''}
+      />
+    ));
+    const leadBefore = leadRows.length > 0;
     // Each a row like Connect File's, a rail gap under the one before it on a desktop.
     const footRows = footActions.map((a, i) => (
       <RailFootButton
@@ -247,7 +262,7 @@ export function createStartPanel<
         icon={<span className="shrink-0">{a.icon}</span>}
         name={a.name}
         opensDialog
-        className={connect || i > 0 ? 'sm:mt-1' : ''}
+        className={connect || leadBefore || i > 0 ? 'sm:mt-1' : ''}
       />
     ));
     // The cards cascade in as the panel arrives, and again each time the category or search changes them (the
@@ -504,11 +519,15 @@ export function createStartPanel<
                       cardsScroller.current!.scrollTop = 0;
                     }}
                     colours={footColours}
+                    lead={leadBefore ? leadRows : undefined}
                   >
                     {footRows}
                   </ConnectRailEntry>
-                ) : footRows.length ? (
-                  <RailFoot colours={footColours}>{footRows}</RailFoot>
+                ) : footRows.length || leadBefore ? (
+                  <RailFoot colours={footColours}>
+                    {leadRows}
+                    {footRows}
+                  </RailFoot>
                 ) : null}
               </nav>
             </div>
