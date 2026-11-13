@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import { SHAPE_DEFAULT_SIZE, createPinnedArrow, createShape } from './testing/elements';
 import { MIND_MAP } from './testing/mind';
@@ -102,9 +103,12 @@ describe('withMindBranches', () => {
   it('stays linear on a wide map', () => {
     const els: Element[] = [node('root', 0, 0)];
     for (let i = 0; i < 5000; i++) els.push(node(`n${i}`, 0, 0, i === 0 ? 'root' : `n${i - 1}`));
-    const start = performance.now();
-    expect(withMindBranches(els, new Set(['root'])).size).toBe(5001);
-    expect(performance.now() - start).toBeLessThan(200);
+    let size = 0;
+    const ms = cpuMsOf(() => {
+      size = withMindBranches(els, new Set(['root'])).size;
+    });
+    expect(size).toBe(5001);
+    expect(ms).toBeLessThan(cpuBudgetMs(200));
   });
 });
 
