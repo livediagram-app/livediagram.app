@@ -1052,7 +1052,10 @@ Threads and Wait (spec "Actions", "Wait").
 
 The spec's six GitHub rows of the Templates table, on the GitHub triggers of github-pull-requests.md part 4.
 
-- `packages/items/src/automation/templates.ts`: the category `github` ("GitHub", last of
+- `packages/items/src/automation/templates.ts` is now three files: `template-kit.ts` (the plan a template reads, the
+  categories, ids and picks, and the role finders), `templates-github.ts` (`GITHUB_TEMPLATES`) and `templates.ts` (the
+  rest, `AUTOMATION_TEMPLATES` ending with the GitHub ones, `picksLeft`, re-exporting the kit's public names). The
+  category `github` ("GitHub", last of
   `AUTOMATION_TEMPLATE_CATEGORIES`) and the ids, appended to `AUTOMATION_TEMPLATE_IDS` (telemetry reads the list, so
   the site's Templates Opened chart gains them with no change of its own):
   - `review-on-open`: `pull_request_opened`, Move to `reviewStatus` (else a column pick at `steps.0`).
