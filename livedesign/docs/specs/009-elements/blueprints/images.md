@@ -451,7 +451,7 @@ account)` (`mergeMediaOwner`; idempotent, and a failure keeps the notice to ask 
 - **Loading**: pulsing slate box with the element's radius. **Broken**: rose box, broken glyph,
   "Image unavailable". **Ready**: bitmap on white in every theme (D47), the white inset
   `IMAGE_BACKING_INSET_PX` (2 px, or the power of two that is a whole device pixel at the zoom: `imageBackingInsetPx`,
-  read from the `--lw-image-backing-inset` variable that `@liveworkspace/workbench/image-backing.css` sets on each `[data-image-frame]` under the zoomed layer's `data-image-inset` step, `imageBackingInsetAttribute`) from the box's
+  read from the `--lw-image-backing-inset` variable that `@liveworkspace/workbench/styles/image-backing.css` sets on each `[data-image-frame]` under the zoomed layer's `data-image-inset` step, `imageBackingInsetAttribute`) from the box's
   edge where the bitmap reaches it and to the edge in a
   `contain` picture's bands (`imageBackingStyle` from `@liveworkspace/element-model/image-backing`: the frame's
   `padding` insets its background colour, each band an inset `box-shadow` with no blur on a square-cornered layer under the bitmap, so no white fillet follows the corner radius into the picture; the bitmap absolutely positioned over the whole

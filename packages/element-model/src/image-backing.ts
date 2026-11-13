@@ -22,7 +22,7 @@ export const IMAGE_BACKING_INSET_PX = 2;
 export const IMAGE_BACKING_INSET_VAR = '--lw-image-backing-inset';
 
 /** The attribute the canvas's zoomed layer carries, its inset in canvas px (imageBackingInsetAttribute), and the one
- *  each picture's frame carries: the editor's stylesheet (@liveworkspace/workbench/image-backing.css) sets the
+ *  each picture's frame carries: the editor's stylesheet (@liveworkspace/workbench/styles/image-backing.css) sets the
  *  variable on the frames under a layer whose inset is more than IMAGE_BACKING_INSET_PX, one rule a step. An
  *  attribute and a rule that names the frames, not the variable on the layer: a variable set on the layer is
  *  inherited by every node under it, so each step restyled the whole board (6,086 nodes and about 120 ms a step on
@@ -62,7 +62,7 @@ export function imageBackingInsetAttribute(
   return { [IMAGE_BACKING_INSET_ATTRIBUTE]: String(imageBackingInsetPx(zoom, devicePixelRatio)) };
 }
 
-/** The stylesheet's rules, one a step (what @liveworkspace/workbench/image-backing.css holds; its test checks). */
+/** The stylesheet's rules, one a step (what @liveworkspace/workbench/styles/image-backing.css holds; its test checks). */
 export function imageBackingInsetRules(): string {
   return IMAGE_BACKING_INSET_STEPS.map(
     (px) =>
