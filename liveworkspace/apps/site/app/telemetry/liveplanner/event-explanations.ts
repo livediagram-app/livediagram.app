@@ -731,6 +731,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone filled in a form through its link, and the response became a card on its board.',
   'Form|Sent|Dropped':
     "A response that filled a form's hidden field was dropped: a bot, answered as if it were kept.",
+  'Form|Ran|FormAiDraft':
+    "Describe a Form asked the AI to draft a form's questions and where responses go from someone's words; a draft that didn't read is asked once more.",
+  'Form|Ran|FormAiOffTopic': "Describe a Form's request wasn't a form, so nothing was drafted.",
   'Form|Reported|Spam': 'Someone reported a form as spam.',
   'Form|Reported|Phishing': 'Someone reported a form as phishing or asking for passwords.',
   'Form|Reported|Offensive': 'Someone reported a form as offensive.',
@@ -2467,6 +2470,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Activity|Opened': "Someone opened the Explorer's Inbox.",
   'Activity|Selected': "Someone clicked a row in the Explorer's Inbox, jumping to what it's about.",
   'Form|Created': 'Someone started a form from Start Planning.',
+  'Form|Ran': 'Describe a Form asked the AI to draft a form from what someone described.',
   'Form|Added': 'Someone added a question to a form.',
   'Form|Linked':
     'Someone connected a form to where its responses go, from the box above its title.',

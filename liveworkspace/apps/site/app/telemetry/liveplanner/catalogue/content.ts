@@ -1324,6 +1324,40 @@ export const FORMS_PUBLISHED = chart(
   { types: ['Link', 'BoardCopy'] },
 );
 
+export const FORMS_SHARED_MORE = chart(
+  'Form',
+  'Shared',
+  'More Ways to Share',
+  "A published form shared from Share Form's More Ways to Share: its QR code downloaded as a PNG or an SVG, its embed code copied, or a pre-filled link copied.",
+  { types: ['QrPng', 'QrSvg', 'Embed', 'Prefilled'] },
+);
+
+export const FORM_FIELDS_FROM_QUESTIONS = chart(
+  'Form',
+  'Added',
+  'Card Type Fields from Questions',
+  "Fields added to a form's card type for its questions at once, so each answer lands in a field rather than the card's description.",
+  { types: ['FieldsFromQuestions'] },
+);
+
+// Describe a Form (docs/specs/030-forms/describe-a-form.md, in the liveplanner folder): each ask the api made, the
+// requests that weren't a form, and the forms made from a checked draft. Never the words or the reply.
+export const FORM_DESCRIBE_DRAFTS = chart(
+  'Form',
+  'Ran',
+  'Describe a Form Asks',
+  "Describe a Form asking Workers AI to draft a form's questions and where responses go from someone's words (a draft that didn't read is asked once more), and the requests it answered weren't a form.",
+  { types: ['FormAiDraft', 'FormAiOffTopic'], rising: 'neutral' },
+);
+
+export const FORM_DESCRIBE_MADE = chart(
+  'Form',
+  'Created',
+  'Forms Made from a Description',
+  'A form made with Create Form from a draft Describe a Form wrote and the person checked, with the board or sheet its responses go to.',
+  { types: ['FormDraft'] },
+);
+
 export const FORMS_OPENED_CLOSED = chart(
   'Form',
   'Toggled',
@@ -1380,9 +1414,13 @@ export const FORMS: MetricStack = {
     'Form tabs: forms started and built, published, opened and closed, and the responses and reports their links take.',
   members: [
     FORMS_CREATED,
+    FORM_DESCRIBE_MADE,
+    FORM_DESCRIBE_DRAFTS,
     FORM_QUESTIONS_ADDED,
+    FORM_FIELDS_FROM_QUESTIONS,
     FORMS_CONNECTED,
     FORMS_PUBLISHED,
+    FORMS_SHARED_MORE,
     FORMS_OPENED_CLOSED,
     FORMS_NOT_TAKING_OPENED,
     FORMS_SYNCED_TO_SHARE,
