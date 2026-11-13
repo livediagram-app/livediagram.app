@@ -60,6 +60,7 @@ import { packFreehandPoints } from './freehand-points';
 import { searchIcons } from '@liveworkspace/icons/search';
 import { imageResult } from './image-result';
 import { imageIdIssue, registerImageTools } from './image-tools';
+import { addOperationsFor, addToTemplateTab, getTab } from './template-elements';
 import {
   baseFor,
   changesetErrorText,
@@ -87,6 +88,11 @@ import {
   mcpShareDocument,
   mcpUpdateDocument,
 } from '@livediagram/agent-verbs/mcp';
+
+// A template builds its own boxes and arrows, so a graph or Mermaid beside it has no place to go.
+export const TEMPLATE_OR_GRAPH =
+  'Provide "template" or a "graph" / "mermaid", not both: a template builds its own boxes and arrows. Start ' +
+  'from the template and change it with update_document, or give the graph alone.';
 
 export function registerTools(server: McpServer, env: Env): void {
   // The user's image gallery, for image elements (docs/specs/015-api/mcp-server.md §4.5b).
@@ -142,6 +148,8 @@ export function registerTools(server: McpServer, env: Env): void {
     let firstTemplate: TemplateKind | null = null;
     // The tabs a template made, whose colours are its own.
     const templateTabIds = new Set<string>();
+    // Elements given beside a template, added to its tab once the document exists.
+    const withTemplate: { tab: Tab; operations: unknown[] }[] = [];
     for (const [index, given] of inputTabs.entries()) {
       const tabId = crypto.randomUUID();
       // An unnamed tab is named after its template, as the editor names one (templateTabName), else "Tab n".
@@ -160,8 +168,16 @@ export function registerTools(server: McpServer, env: Env): void {
               `Valid kinds: ${validTemplateKinds()}.`,
           );
         }
+        // A template builds its own boxes and arrows: a graph beside it was dropped without a word.
+        if (t.graph || t.mermaid) return errorResult(`Tab "${t.name}": ${TEMPLATE_OR_GRAPH}`);
         if (tabs.length === 0) firstTemplate = kind;
-        tabs.push(buildTemplateTab(tabId, t.name, kind, t.theme ?? args.theme));
+        const built = buildTemplateTab(tabId, t.name, kind, t.theme ?? args.theme);
+        if (t.elements?.length) {
+          const added = addOperationsFor(t.elements, built);
+          if ('error' in added) return errorResult(`Tab "${t.name}": ${added.error}`);
+          withTemplate.push({ tab: built, operations: added.operations });
+        }
+        tabs.push(built);
         templateTabIds.add(tabId);
         continue;
       }
@@ -217,6 +233,22 @@ export function registerTools(server: McpServer, env: Env): void {
         ...(args.markUsed !== undefined ? { markUsed: args.markUsed } : {}),
       }),
     });
+    // The elements given beside a template go onto its tab as update_document's add ops would
+    // (docs/specs/015-api/mcp-server.md §4.3), so they land beside the scaffold rather than being dropped.
+    let shown: Tab = tabs[0]!;
+    for (const { tab, operations } of withTemplate) {
+      const stored = await getTab(env, token, id, tab.id);
+      try {
+        await addToTemplateTab(env, token, id, tab.id, stored, operations);
+      } catch (err) {
+        if (isChangesetRefusal(err))
+          return errorResult(
+            `The document was made (${id}), but its elements for tab "${tab.name}" were refused: ${changesetErrorText(err)}`,
+          );
+        throw err;
+      }
+      if (tab.id === shown.id) shown = await getTab(env, token, id, tab.id);
+    }
     const tabIds = tabs.map((t) => t.id);
     // A template's colours are its design, not the agent's doing (diagram-lint.md "Where it runs"): its tabs' lint
     // names none.
@@ -236,7 +268,7 @@ export function registerTools(server: McpServer, env: Env): void {
         lint,
         ...(graphNotes.length ? { notes: graphNotes } : {}),
       },
-      tabs[0]!,
+      shown,
       { env, token },
       reports.map(lintTextOf),
     );
@@ -257,6 +289,7 @@ export function registerTools(server: McpServer, env: Env): void {
     }
     const input = resolveGraphInput(args);
     if (input.error) return errorResult(input.error);
+    if (args.template && input.graph) return errorResult(TEMPLATE_OR_GRAPH);
     if (!args.template && !input.graph && !args.elements) {
       return errorResult(
         'Invalid input. Provide a "graph" (nodes + edges), "mermaid", "elements", or a "template" kind ' +
@@ -268,7 +301,8 @@ export function registerTools(server: McpServer, env: Env): void {
     const given = drawn?.elements;
     const valueIssue = given ? elementsIssue(given) : null;
     if (valueIssue) return errorResult(valueIssue);
-    const ended = given ? resolveArrowEnds(given, idsOf(given)) : null;
+    // Beside a template, an arrow may pin to one of its elements: the ends are checked against the tab it built.
+    const ended = given && !args.template ? resolveArrowEnds(given, idsOf(given)) : null;
     if (ended && 'error' in ended) return errorResult(ended.error);
     // Default the new tab's theme to the document's existing one so it matches the other tabs
     // rather than landing as a clashing brand-white tab; the model can still pass a theme.
@@ -298,6 +332,29 @@ export function registerTools(server: McpServer, env: Env): void {
     } catch (err) {
       if (isChangesetRefusal(err)) return errorResult(changesetErrorText(err));
       throw err;
+    }
+    // Elements given beside a template are added to the tab it built, as update_document's add ops would.
+    if (args.template && args.elements?.length) {
+      const built = await getTab(env, token, args.documentId, tabId);
+      const added = addOperationsFor(args.elements, built);
+      if ('error' in added)
+        return errorResult(`The tab was made, but its elements: ${added.error}`);
+      try {
+        answer = await addToTemplateTab(
+          env,
+          token,
+          args.documentId,
+          tabId,
+          built,
+          added.operations,
+        );
+      } catch (err) {
+        if (isChangesetRefusal(err))
+          return errorResult(
+            `The tab was made, but its elements were refused: ${changesetErrorText(err)}`,
+          );
+        throw err;
+      }
     }
     // The result PNG: the tab as stored, read once more (CS36).
     const { tab } = await apiJson<TabResponse>(
