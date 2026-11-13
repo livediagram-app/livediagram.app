@@ -797,7 +797,9 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
   `cardOrRunSelector(id)` finds the card or its far run (the vote review's board for a card). Elsewhere a far card
   is not there: the card morph falls back to its fade, the drop slot and the face finish pass see only the built
   cards. The fan-in (`useCardFanIn`) reads only built cards, stops once `MAX_CARDS` in view are found, and on a
-  busy board whose cards are not built yet reads them in the next animation frame, before it is drawn.
+  busy board whose cards are not built yet reads them in the next animation frame, before it is drawn. A grid
+  measured at 0 by 0 (a reload, before layout) waits on a `ResizeObserver` for its first non-zero size, within
+  `WINDOW_MS` of the board being ready, then reads; the observer goes when the board unmounts.
 - <a id="body-end-anchor"></a>Body end anchor: `SplitViewFrame` calls `useBodyEndAnchor` (`@liveworkspace/workbench/hooks/ui/useBodyEndAnchor`),
   which keeps an empty hidden `div[data-body-end]` after the editor's root at the end of `<body>`. A portal (the drag
   copy, a menu, a tooltip) is appended after it, so the editor's root never gains or loses `:last-child`; Safari

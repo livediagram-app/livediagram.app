@@ -3,7 +3,8 @@
 // Cards fan in when a board first shows its cards, on a tab opened or loaded (docs/specs/026-plan/plan-board.md
 // "Cards fan in"): each card drops into place from a little above, turned a touch and slightly small, column by column
 // and down each column, over about half a second. One Web Animations pass over the cards in view, once per board
-// mount, with no React render; cards out of view, and everyone with reduced motion, simply show.
+// mount, with no React render; cards out of view, and everyone with reduced motion, simply show. A board with no size
+// yet as its cards arrive (a reload, before the page is laid out, Work Tracker 741) waits for its first size.
 import { useEffect, useRef, type RefObject } from 'react';
 
 const DURATION_MS = 520;
@@ -30,6 +31,9 @@ export function useCardFanIn(
 ): void {
   const done = useRef(false);
   const readyAt = useRef<number | null>(null);
+  // Watching for the board's first size, while it has none; let go when the board unmounts.
+  const sizing = useRef<ResizeObserver | null>(null);
+  useEffect(() => () => sizing.current?.disconnect(), []);
   useEffect(() => {
     const grid = gridRef.current;
     if (!grid || !ready || done.current) return;
@@ -43,12 +47,33 @@ export function useCardFanIn(
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
     )
       return;
-    // A busy board builds its near runs' cards in the render after it mounts (PlanCardRun), which can follow this
-    // effect: with none built yet they are read in the next frame, before it is drawn.
-    if (!grid.querySelector('[data-plan-card]') && grid.querySelector('[data-plan-run]'))
-      requestAnimationFrame(() => fanIn(grid));
-    else fanIn(grid);
+    const start = () => {
+      // A busy board builds its near runs' cards in the render after it mounts (PlanCardRun), which can follow this
+      // effect: with none built yet they are read in the next frame, before it is drawn.
+      if (!grid.querySelector('[data-plan-card]') && grid.querySelector('[data-plan-run]'))
+        requestAnimationFrame(() => fanIn(grid));
+      else fanIn(grid);
+    };
+    if (hasSize(grid) || typeof ResizeObserver !== 'function') {
+      start();
+      return;
+    }
+    // Measured at 0 by 0, no card is in view: wait for the first size, within the window, then read.
+    const since = readyAt.current;
+    const observer = new ResizeObserver(() => {
+      if (!hasSize(grid)) return;
+      observer.disconnect();
+      sizing.current = null;
+      if (performance.now() - since <= WINDOW_MS) start();
+    });
+    sizing.current = observer;
+    observer.observe(grid);
   }, [gridRef, ready, count]);
+}
+
+function hasSize(el: HTMLElement): boolean {
+  const box = el.getBoundingClientRect();
+  return box.right - box.left > 0 && box.bottom - box.top > 0;
 }
 
 function fanIn(grid: HTMLElement): void {
