@@ -268,6 +268,23 @@ describe('what it answers', () => {
   });
 });
 
+describe('a team document deleted for good', () => {
+  it('reads back Deleted for Good for each document of an emptied team Trash, with who emptied it', async () => {
+    world.roles.user_ad = [{ id: TEAM, role: 'admin' }];
+    names.user_ad = 'Ada';
+    const ad = await person('user_ad', { teams: [{ id: TEAM, role: 'admin' }] });
+    const item = await makeItem(ad.auth, { title: 'Roadmap', teamId: TEAM });
+    expect((await call(`/items/${item.id}`, { method: 'DELETE', auth: ad.auth })).ok).toBe(true);
+    expect((await call(`/trash?team=${TEAM}`, { method: 'DELETE', auth: ad.auth })).ok).toBe(true);
+    const deleted = (await page(ad.auth, '&kind=deleted')).events;
+    expect(deleted.map((e) => [e.type, e.title, e.itemId, e.actor])).toEqual([
+      ['deleted', 'Roadmap', item.id, { id: 'user_ad', name: 'Ada' }],
+    ]);
+    // Beside the trashed row that sent it there.
+    expect((await page(ad.auth)).events.map((e) => e.type)).toEqual(['deleted', 'trashed']);
+  });
+});
+
 describe('filters and pages', () => {
   beforeEach(() => {
     seed([

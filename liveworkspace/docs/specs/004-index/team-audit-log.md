@@ -58,8 +58,11 @@ and its name then, the event's detail, and when. A row of a document that is lat
 
 ## How long it is kept
 
-A year (`TEAM_AUDIT_RETENTION_MS`, 365 days) from when it happened, then deleted by the index's daily run, at most
-5,000 rows a day, the oldest first.
+A year (`TEAM_AUDIT_RETENTION_MS`, 365 days) from when it happened, then deleted by the index's daily run (its own
+`team audit` step), the oldest first: 500 rows a statement, repeated while a statement takes a full 500, for at most
+200 statements or a minute, whichever comes first. That is up to 100,000 rows a day, twenty times the most a day has
+logged, so every row past the year goes the night it lapses; a backlog bigger than that (the log down for days) goes
+over the next nights, and the step logs that some are left.
 
 ## Privacy
 

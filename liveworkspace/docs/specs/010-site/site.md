@@ -946,6 +946,17 @@ pressable again, and so does coming Back to a page the browser kept.
 - A button that starts work it waits for keeps the keyboard while it works (busy, never `disabled`;
   [busy buttons](../../../livediagram/docs/specs/004-interface-design/busy-buttons.md)).
 - Works at phone width with a 16px gutter. Tap targets are 44px on touch screens.
+- **Stylesheets.** Every page loads the site's own stylesheet (`app/globals.css`); the telemetry dashboard, the
+  Explorer and the Community each add their own after it (`telemetry.css`, `explorer.css`, `community.css`), so the
+  other pages don't carry their classes. Every sheet's utilities share one layer, and a `dark:` class weighs no more
+  than a plain one, so between sheets the later rule wins; and a page's sheet stays loaded after a client-side move.
+  A page's sheet that emits a light colour class an element elsewhere pairs with a `dark:` one (`hover:bg-slate-100`
+  beside `dark:hover:bg-slate-800`) would paint the light one over the dark one wherever that element is drawn. So
+  each page's sheet also emits the dark half of every such pair (`dark-pairs.css` beside it, `@source inline`
+  lines), after the light half, and a dark hover stays dark on every page whatever was visited before. The pairs are
+  found the way Tailwind scans: what each sheet's `@source` lines reach, colour classes of one family under the same
+  variants set on one element. A guard test writes and checks those files, and fails when a page's sheet would emit
+  a light class without its dark half. The dark variant itself is unchanged (`:where`, no weight), as in every app.
 - The front door, Comparison, the dashboard, Status and the privacy policy and terms are indexable: title, description, canonical,
   Open Graph, `robots.txt` and `sitemap.xml`. Every other page's title names the page and then the site
   (`Status · liveworkspace`), the same in its Open Graph and X cards, so a search result or a tab never reads

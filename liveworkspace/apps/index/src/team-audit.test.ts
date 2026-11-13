@@ -5,7 +5,15 @@ import { TEAM_AUDIT_RETENTION_MS } from '@liveworkspace/index-client';
 import type { SQLInputValue } from 'node:sqlite';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { budgetOf, purgePerson } from './account-purge';
-import { accountAuditStatement, itemAuditStatement, sweepTeamAudit } from './team-audit';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
+import worker from './index';
+import {
+  accountAuditStatement,
+  itemAuditStatement,
+  sweepTeamAudit,
+  TEAM_AUDIT_SWEEP_CHUNK,
+  TEAM_AUDIT_SWEEP_ROUNDS,
+} from './team-audit';
 import { call, h, makeItem, person, useHarness } from './test-support';
 
 useHarness();
@@ -285,11 +293,88 @@ describe('keeping it a year', () => {
     );
     for (let i = 0; i < 5; i++) insert.run(`old${i}`, now - TEAM_AUDIT_RETENTION_MS - 10 + i);
     insert.run('young', now - TEAM_AUDIT_RETENTION_MS + 1);
-    expect(await sweepTeamAudit(h.db.env, now, 3)).toBe(3);
+    // A chunk of 3, one round: the three oldest go, and it says more are left.
+    expect(await sweepTeamAudit(h.db.env, now, { chunk: 3, rounds: 1 })).toEqual({
+      deleted: 3,
+      more: true,
+    });
     expect(log('team_sw').map((r) => r.id)).toEqual(['old3', 'old4', 'young']);
-    expect(await sweepTeamAudit(h.db.env, now)).toBe(2);
+    expect(await sweepTeamAudit(h.db.env, now)).toEqual({ deleted: 2, more: false });
     expect(log('team_sw').map((r) => r.id)).toEqual(['young']);
+    expect(await sweepTeamAudit(h.db.env, now)).toEqual({ deleted: 0, more: false });
   });
+
+  it('runs chunk after chunk until one takes less than a chunk, within its rounds and its time', async () => {
+    const now = START + 400 * DAY;
+    const insert = h.db.sql.prepare(
+      `INSERT INTO team_audit_events (team_id, id, type, app, title, occurred_at)
+       VALUES ('team_sw', ?, 'shared', 'liveplanner', 'T', ?)`,
+    );
+    for (let i = 0; i < 12; i++) insert.run(`old${i}`, now - TEAM_AUDIT_RETENTION_MS - 100 + i);
+    // Exactly four chunks: the fifth statement takes none, so it finishes.
+    expect(await sweepTeamAudit(h.db.env, now, { chunk: 3, rounds: 5 })).toEqual({
+      deleted: 12,
+      more: false,
+    });
+    for (let i = 0; i < 12; i++) insert.run(`again${i}`, now - TEAM_AUDIT_RETENTION_MS - 100 + i);
+    // Out of rounds: two chunks of 5 go, the oldest first, and the rest wait.
+    expect(await sweepTeamAudit(h.db.env, now, { chunk: 5, rounds: 2 })).toEqual({
+      deleted: 10,
+      more: true,
+    });
+    expect(log('team_sw').map((r) => r.id)).toEqual(['again10', 'again11']);
+    // Out of time: one statement always runs, then the deadline stops it.
+    for (let i = 0; i < 12; i++) insert.run(`late${i}`, now - TEAM_AUDIT_RETENTION_MS - 50 + i);
+    expect(await sweepTeamAudit(h.db.env, now, { chunk: 5, ms: 0 })).toEqual({
+      deleted: 5,
+      more: true,
+    });
+  });
+
+  it('clears a backlog many chunks deep in one daily cron run, through the age index, within budget', async () => {
+    // The run reads the clock for its cutoff: held still, so the rows just inside the year stay inside it.
+    const now = START + 400 * DAY;
+    vi.useFakeTimers({ toFake: ['Date'], now });
+    const cut = now - TEAM_AUDIT_RETENTION_MS;
+    const sql = h.db.sql;
+    const plan = sql
+      .prepare(
+        `EXPLAIN QUERY PLAN DELETE FROM team_audit_events WHERE rowid IN (
+           SELECT rowid FROM team_audit_events WHERE occurred_at < ? ORDER BY occurred_at LIMIT ?)`,
+      )
+      .all(cut, TEAM_AUDIT_SWEEP_CHUNK)
+      .map((r) => String((r as { detail: string }).detail))
+      .join('\n');
+    expect(plan).toMatch(/team_audit_events USING (COVERING )?INDEX team_audit_age/);
+    expect(plan).not.toMatch(/TEMP B-TREE/);
+    // 12,000 rows past the year (24 chunks, more than twice the old 5,000 a day) across 40 teams, beside 20,000 kept.
+    const OLD = 12_000;
+    const insert = sql.prepare(
+      `INSERT INTO team_audit_events (team_id, id, type, app, title, occurred_at)
+       VALUES (?, ?, 'shared', 'liveplanner', 'T', ?)`,
+    );
+    sql.exec('BEGIN');
+    for (let i = 0; i < OLD; i++) insert.run(`team_${i % 40}`, `old-${i}`, cut - 1 - i);
+    for (let i = 0; i < 20_000; i++) insert.run(`team_${i % 40}`, `kept-${i}`, cut + 1 + i);
+    sql.exec('COMMIT');
+    const ms = await cpuMsOfAsync(() =>
+      worker.scheduled({ cron: '23 4 * * *' } as ScheduledController, h.db.env),
+    );
+    const left = (where: string) =>
+      (
+        sql.prepare(`SELECT COUNT(*) AS n FROM team_audit_events WHERE ${where}`).get() as {
+          n: number;
+        }
+      ).n;
+    expect(left(`occurred_at < ${cut}`)).toBe(0);
+    expect(left('true')).toBe(20_000);
+    console.info(
+      `[team audit] daily run: ${OLD} rows past the year (${OLD / TEAM_AUDIT_SWEEP_CHUNK} chunks) beside 20,000 kept, swept in ${ms.toFixed(1)} ms of CPU`,
+    );
+    expect(ms).toBeLessThan(cpuBudgetMs(2_000));
+    // Its bound: 200 statements of 500, so 100,000 rows a day at most.
+    expect(TEAM_AUDIT_SWEEP_CHUNK * TEAM_AUDIT_SWEEP_ROUNDS).toBe(100_000);
+  }, 60_000);
 });
 
 describe('the bound', () => {
