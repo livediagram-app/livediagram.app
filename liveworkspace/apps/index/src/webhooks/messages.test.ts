@@ -1,7 +1,7 @@
 // What a delivery says: the signed JSON event, a Slack message, a Teams Adaptive Card (webhooks.md "Destinations").
 import { WEBHOOK_PAYLOAD_MAX_BYTES } from '@liveworkspace/index-client';
 import { describe, expect, it } from 'vitest';
-import { bodyFor, summaryOf, type DeliveryEvent } from './messages';
+import { SLACK_SECTION_MAX, bodyFor, slackCut, summaryOf, type DeliveryEvent } from './messages';
 import { newSigningSecret, signatureOf } from './sign';
 
 const event = (over: Partial<DeliveryEvent> = {}): DeliveryEvent => ({
@@ -73,6 +73,9 @@ describe('summaryOf', () => {
   });
 });
 
+// A Teams body block's words: its one TextRun's.
+const textOf = (b: { inlines: { text: string }[] }) => b.inlines[0]!.text;
+
 describe('bodyFor', () => {
   it('sends a plain endpoint the event, with its item and actor', () => {
     expect(
@@ -111,7 +114,7 @@ describe('bodyFor', () => {
     expect(body.type).toBe('message');
     const card = body.attachments[0];
     expect(card.contentType).toBe('application/vnd.microsoft.card.adaptive');
-    expect(card.content.body[0].text).toBe('Ada moved “Sprint 4” to the Trash');
+    expect(card.content.body[0].inlines[0].text).toBe('Ada moved “Sprint 4” to the Trash');
     expect(card.content.actions).toEqual([
       {
         type: 'Action.OpenUrl',
@@ -122,6 +125,38 @@ describe('bodyFor', () => {
     expect(
       JSON.parse(bodyFor('teams', event({ url: null }))).attachments[0].content.actions,
     ).toEqual([]);
+  });
+
+  it('sends Teams every text as a plain TextRun, never Markdown, so a title cannot make a link', () => {
+    const title = '[Reset your password](https://evil.example) **now**';
+    const content = JSON.parse(bodyFor('teams', event({ title }))).attachments[0].content;
+    for (const block of content.body) {
+      expect(block.type).toBe('RichTextBlock');
+      expect(block.inlines).toHaveLength(1);
+      expect(block.inlines[0].type).toBe('TextRun');
+    }
+    expect(textOf(content.body[0])).toContain(title);
+    expect(JSON.stringify(content.body)).not.toContain('"TextBlock"');
+  });
+
+  it(`keeps a Slack section within ${SLACK_SECTION_MAX} characters, even a message of escapes`, () => {
+    const ampersands = event({
+      type: 'automation',
+      detail: {
+        rule: 'r',
+        card: { key: 1, title: 't', url: 'https://www.liveplanner.app/project/p1' },
+        text: '&'.repeat(2000),
+      } as never,
+    });
+    const text: string = JSON.parse(bodyFor('slack', ampersands)).blocks[0].text.text;
+    expect(text.length).toBeLessThanOrEqual(SLACK_SECTION_MAX);
+    const [said] = text.split('\n');
+    expect(said!.endsWith('&amp;…')).toBe(true);
+    // Short text is kept whole; a cut never ends inside an escape or between a surrogate pair's halves.
+    expect(slackCut('a &amp; b', 20)).toBe('a &amp; b');
+    expect(slackCut('ab &amp; c', 7)).toBe('ab …');
+    expect(slackCut('ab😀cd', 4)).toBe('ab…');
+    expect(slackCut('abc', 0)).toBe('…');
   });
 
   describe('an automation send', () => {
@@ -172,7 +207,7 @@ describe('bodyFor', () => {
 
     it('sends Teams the message, the card and the rule, with a button to the card', () => {
       const content = JSON.parse(bodyFor('teams', sent())).attachments[0].content;
-      expect(content.body.map((b: { text: string }) => b.text)).toEqual([
+      expect(content.body.map(textOf)).toEqual([
         'Pricing is live <!channel>',
         '#48 Publish <pricing> page',
         'Automation · Ship & tell',
@@ -185,7 +220,7 @@ describe('bodyFor', () => {
       const odd = JSON.parse(
         bodyFor('teams', sent({}, { card: { title: 'Loose', url: 1 }, rule: 5, text: 7 })),
       ).attachments[0].content;
-      expect(odd.body.map((b: { text: string }) => b.text)).toEqual(['', 'Loose', 'Automation · ']);
+      expect(odd.body.map(textOf)).toEqual(['', 'Loose', 'Automation · ']);
     });
 
     it('sends a plain endpoint the detail whole, the card nested', () => {

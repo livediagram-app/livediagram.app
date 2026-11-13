@@ -94,7 +94,8 @@ webhook, with the same address, secret, retries, pausing and Recent Deliveries; 
 - **What it says.** A Slack or Teams post is the message as the rule wrote it, then the card
   (`#48 Publish pricing page`) as an **Open in liveplanner** link and "Automation · <rule>" beneath; a plain
   webhook's `detail` is `{rule, card: {key, title, url}, text}`, its `actor` `{id: null, name: 'Automation'}`.
-  Slack's markup is escaped in the message as in every other text, so a rule can't ping `<!channel>`.
+  Slack's markup is escaped in the message as in every other text, so a rule can't ping `<!channel>`, and Teams
+  reads it as plain text, never Markdown, so a card title can't make a link.
 - The webhook's 500-pending cap holds: past it a send is refused ("Too many messages waiting for this webhook").
 
 ## Destinations
@@ -111,9 +112,13 @@ webhook, with the same address, secret, retries, pausing and Recent Deliveries; 
   made. Messages arrive as one sentence ("Ada moved “Fix sign-in” from Doing to Done on “Sprint 4”", "3 new responses to “Bug Report” on “Triage”") with an
   **Open in liveplanner** link and the app and event beneath. Every text Slack reads as markup, the notification
   text included, has its `&`, `<` and `>` escaped, so a name like `<!channel>` pings no one and can't hide a link.
+  Slack refuses a section over 3,000 characters, so the message is cut (at a whole character, never inside an
+  escape) to fit with its card line, and a message full of `&` still posts.
 - **Microsoft Teams**: a Workflows webhook URL (the "Post to a channel when a webhook request is received" flow,
   on `*.logic.azure.com` or `*.powerplatform.com`), taking an Adaptive Card: the same sentence, the app and event,
-  and an **Open in …** button. Office 365 connector webhooks are retired, so they are not offered.
+  and an **Open in …** button. Each text is a plain `TextRun` in a `RichTextBlock`, which Teams never reads as
+  Markdown, so a title like `[Reset your password](https://…)` shows as those characters and can't hide a link.
+  Office 365 connector webhooks are retired, so they are not offered.
 
 ## Delivery
 

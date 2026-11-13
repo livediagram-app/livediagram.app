@@ -134,6 +134,20 @@ export function jsonBodyOf(event: DeliveryEvent, detail = event.detail): unknown
 const slackEscape = (text: string) =>
   text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+// The most a Slack section's text may hold: past it Slack refuses the whole message (invalid_blocks).
+export const SLACK_SECTION_MAX = 3000;
+
+/** Escaped text cut to `max` characters with an ellipsis: never inside an escape (`&am`) or a surrogate pair. */
+export function slackCut(escaped: string, max: number): string {
+  if (escaped.length <= max) return escaped;
+  let head = escaped.slice(0, Math.max(0, max - 1));
+  const amp = head.lastIndexOf('&');
+  if (amp >= 0 && !head.includes(';', amp)) head = head.slice(0, amp);
+  const last = head.charCodeAt(head.length - 1);
+  if (last >= 0xd800 && last <= 0xdbff) head = head.slice(0, -1);
+  return `${head}…`;
+}
+
 /** A Slack incoming webhook's message: the sentence, a link back, and the app and event beneath. */
 export function slackBodyOf(event: DeliveryEvent, summary = summaryOf(event)): unknown {
   const url = linkOf(event);
@@ -142,15 +156,29 @@ export function slackBodyOf(event: DeliveryEvent, summary = summaryOf(event)): u
   const label = card ? slackEscape(cardLabel(card)) : '';
   const line = [label, open].filter(Boolean).join(' · ');
   const link = line ? `\n${line}` : '';
+  // Escaping can make a 2,000-character message five times longer: cut so the section stays within Slack's limit.
+  const said = slackCut(slackEscape(summary), SLACK_SECTION_MAX - link.length);
   return {
     // The notification and preview text: Slack reads its markup too, so a title can't ping a channel or hide a link.
     text: slackEscape(summary),
     blocks: [
-      { type: 'section', text: { type: 'mrkdwn', text: `${slackEscape(summary)}${link}` } },
+      { type: 'section', text: { type: 'mrkdwn', text: `${said}${link}` } },
       { type: 'context', elements: [{ type: 'mrkdwn', text: slackEscape(footerOf(event)) }] },
     ],
   };
 }
+
+// A text as Teams shows it: a TextRun in a RichTextBlock, which Teams never reads as Markdown (a TextBlock does), so a
+// title like [Reset your password](https://…) is those characters and never a link.
+const teamsText = (
+  text: string,
+  style: Record<string, unknown> = {},
+  block: Record<string, unknown> = {},
+) => ({
+  type: 'RichTextBlock',
+  ...block,
+  inlines: [{ type: 'TextRun', text, ...style }],
+});
 
 /** A Teams Workflows webhook's message: one Adaptive Card with the sentence, the app and event, and a button back. */
 export function teamsBodyOf(event: DeliveryEvent, summary = summaryOf(event)): unknown {
@@ -167,18 +195,9 @@ export function teamsBodyOf(event: DeliveryEvent, summary = summaryOf(event)): u
           type: 'AdaptiveCard',
           version: '1.4',
           body: [
-            { type: 'TextBlock', text: summary, wrap: true },
-            ...(card
-              ? [{ type: 'TextBlock', text: cardLabel(card), weight: 'Bolder', wrap: true }]
-              : []),
-            {
-              type: 'TextBlock',
-              text: footerOf(event),
-              isSubtle: true,
-              size: 'Small',
-              spacing: 'None',
-              wrap: true,
-            },
+            teamsText(summary),
+            ...(card ? [teamsText(cardLabel(card), { weight: 'Bolder' })] : []),
+            teamsText(footerOf(event), { isSubtle: true, size: 'Small' }, { spacing: 'None' }),
           ],
           actions: url
             ? [{ type: 'Action.OpenUrl', title: `Open in ${appName(event.app)}`, url }]

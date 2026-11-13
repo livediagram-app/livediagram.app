@@ -85,8 +85,10 @@ null, text}`, `occurred_at` the send's `at`, `next_at` as `cardMovesStatement`'s
   nothing.
 - `messages.ts` for `automation`: the summary is the message itself. Slack: the message, then a line with the card
   (`#48 Publish pricing page`) and `<url|Open in liveplanner>` (the card's link, else the plan's), and "Automation ·
-  <rule>" in the context block, every text escaped. Teams: the message, the card, "Automation · <rule>", and the
-  Open in liveplanner button to the same link. A plain webhook's `detail` is the stored one whole (the card nested;
+  <rule>" in the context block, every text escaped, the escaped message cut so the section stays within Slack's
+  3,000 characters (`SLACK_SECTION_MAX`; never inside an `&amp;`). Teams: the message, the card, "Automation ·
+  <rule>", each a plain `TextRun` in a `RichTextBlock` (no Markdown, for every event), and the Open in liveplanner
+  button to the same link. A plain webhook's `detail` is the stored one whole (the card nested;
   `shortened` cuts only string values).
 - `pingStatement`: a `ping` for one webhook, `app` `liveworkspace`, no item, its title the webhook's name, inserted
   only while the webhook is not paused (`INSERT ... SELECT ... WHERE paused_at IS NULL`); no row written is
