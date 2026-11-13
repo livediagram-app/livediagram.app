@@ -15,8 +15,7 @@ The name is **Describe a Plan**, apart from the marketing site's **Build with AI
   can still be This Browser's), so the plan's own 100 AI steps a day can't be the cap; the person's account is.
 - A guest sees the entry on Start Planning all the same, and choosing it shows a sign-in nudge in place of the text
   box: "Sign in to describe a plan in your own words. Your plan stays as it is." with **Sign In** (the app's sign-in,
-  coming back to this plan). The api answers a guest 403 `plan_draft_needs_account`, and a caller with no identity
-  401.
+  coming back to this plan). The api answers a guest 403 `plan_draft_needs_account`, and a caller with no identity 401.
 - Start Planning shows only to an Editor ([Start panel](../007-editor/start-panel.md#when-it-shows)), so a
   Participant or Viewer never sees it.
 
@@ -88,8 +87,7 @@ The model's own words are never shown: every message is one of these, fixed in c
   model to do anything but describe a plan). Nothing else is read.
 - **A plan** is then held to everything a person's board and card types are: every name and option cut to its limit,
   control characters removed and any link the request didn't hold removed; then the board through the same check an
-  agent's `add_board` meets (`placeBoard`: 1 to 12 columns, each name 1 to 40 characters, none twice, a title of 1 to
-  80) and the card types through the one an agent's `change_card_types` meets (`applyCardTypeChanges`, which checks
+  agent's `add_board` meets (`placeBoard`: 1 to 12 columns, each name 1 to 40 characters, none twice, a title of 1 to 80) and the card types through the one an agent's `change_card_types` meets (`applyCardTypeChanges`, which checks
   the whole catalogue with `validateItemTypeCatalogue`), as new types on an empty catalogue.
 - On top of those, a draft is small: **1 to 4 card types**, each with up to **8 fields** of its own, a Choice or
   Multiple Choice field up to **8 options**. A field is one of the kinds that need nothing else from the plan:
@@ -109,13 +107,14 @@ The model's own words are never shown: every message is one of these, fixed in c
   one account can never spend the deployment's AI on its own. Every call also rides the shared AI limits: the
   15-second wait, the AI Gateway's spend limit when `AI_GATEWAY` is set ([AI actions → Cost](automations.md#cost)),
   and the free 10,000 Neurons on the Workers Free plan.
-- An ask has **15 seconds** and answers at most **2,000 tokens** (a draft at every cap, four types of eight fields
-  with eight options each, is about 1,600; a rule's 1,500 would cut it). The ask's size is measured
-  (`plan-draft.test.ts`, "measures the ask"): about **6,000 characters** (1,500 tokens) whatever the request, since
-  the request is all the model is sent. A typical reply is about 350 tokens, so a draft costs about **24 Neurons**,
-  and **69** at worst (a 2,000-token reply); twice that with its second ask.
-- One account at its 10, every one asked twice at the worst, is about **1,380 Neurons** a day, about a seventh of the
-  account's free 10,000; past the free allowance that is about $0.015 a day.
+- An ask has **15 seconds** and answers at most **2,000 tokens**: a reply at every cap (12 columns, four types of
+  eight Choice fields with eight options each) is about 5,300 characters, about 1,500 tokens, which a rule's 1,500
+  would cut. The ask's size is measured (`plan-draft.test.ts`, "measures the ask"): about **5,200 characters** (1,300
+  tokens) for a 500-character request and 4,900 for a typical one, since the request is all the model is sent. A
+  typical reply is about 200 tokens, so a draft costs about **17 Neurons**, and **66** at worst (a 2,000-token
+  reply); twice that with its second ask.
+- One account at its 10, every one asked twice at the worst, is about **1,320 Neurons** a day, about an eighth of
+  the account's free 10,000; past the free allowance that is about $0.015 a day.
 - The count is kept per account on the server and holds nothing but the day and how many; no request or reply is
   stored. A count that can't be read refuses the ask ("The AI couldn't answer just now"), so a fault never lifts the
   cap.

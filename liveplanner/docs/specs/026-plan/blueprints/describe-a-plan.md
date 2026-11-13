@@ -82,10 +82,11 @@ day, count }`) and never touches the plan schema, so the instance stays a room w
 
 ## Cost (measured in plan-draft.test.ts "measures the ask")
 
-| Ask                       | System | User | Schema | Tokens in   | Neurons (2,000 out) |
-| ------------------------- | ------ | ---- | ------ | ----------- | ------------------- |
-| A 500-character request   | 4,400  | 520  | 1,100  | about 1,500 | about 69            |
-| A typical (150) request   | 4,400  | 170  | 1,100  | about 1,420 | about 13 + output   |
+| Ask                     | System | User | Schema | Tokens in   | Neurons (2,000 out) |
+| ----------------------- | ------ | ---- | ------ | ----------- | ------------------- |
+| A 500-character request | 2,880  | 514  | 1,808  | about 1,300 | about 66            |
+| A typical request       | 2,880  | 169  | 1,808  | about 1,210 | about 11 + output   |
 
 Characters, four to a token; Neurons at 9,091 per million in and 27,273 per million out (automations spec "Cost"). A
-typical reply is about 350 tokens, so a typical draft is about 24 Neurons.
+typical reply is about 200 tokens, so a typical draft is about 17 Neurons. A reply at every cap is 5,334 characters
+("measures the reply at every cap"), about 1,500 tokens, inside the 2,000.
