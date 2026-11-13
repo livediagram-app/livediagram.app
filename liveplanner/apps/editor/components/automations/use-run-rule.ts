@@ -2,7 +2,7 @@
 
 // Run Rule's choices for one card (docs/specs/026-plan/automations.md "On cards"): an Editor's, when at least one
 // Run from a Card rule is on; null otherwise (no Automations scope, nothing manual on). Running one says "Ran <rule>"
-// or the failure, as a toast.
+// (up to its Wait, and when it goes on, for one a Wait holds) or the failure, as a toast.
 
 import { useMemo } from 'react';
 import { track } from '@/lib/telemetry';
@@ -13,6 +13,7 @@ import { AutomationRefusal } from './automations-client';
 import type { RunRuleChoices } from './RunRuleMenu';
 import { useAutomations } from './use-automations';
 import { goneText } from './needs-words';
+import { nextRunWords } from './run-words';
 
 export function useRunRule(itemId: string): RunRuleChoices | null {
   const access = useAutomationsAccess();
@@ -33,6 +34,13 @@ export function useRunRule(itemId: string): RunRuleChoices | null {
             const reason = run.reason && goneText(run.reason, run.gone);
             if (run.result === 'failed') toast.error(reason || `${name} didn’t run.`);
             else if (run.result === 'done') toast.success(`Ran ${name}`);
+            // A Wait holds the rest: what ran before it is done, and the run says when it goes on.
+            else if (run.result === 'waiting')
+              toast.success(
+                run.waitsUntil === undefined
+                  ? `Ran ${name} up to its Wait.`
+                  : `Ran ${name} up to its Wait. It goes on ${nextRunWords(run.waitsUntil, Date.now())}.`,
+              );
             else toast.info(reason || `${name} found nothing to do on this card.`);
           },
           (error: unknown) => {

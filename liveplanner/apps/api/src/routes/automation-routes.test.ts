@@ -111,6 +111,16 @@ describe('who may use them', () => {
   });
 });
 
+describe('duplicating a rule', () => {
+  it('names a copy of a 60-character name "<name, cut> copy", then "copy 2"', async () => {
+    const held = await w.rule({ name: 'y'.repeat(60) });
+    const first = await body<{ rule: AutomationRule }>(w.call('POST', `/${held.id}/duplicate`));
+    expect(first.rule.name).toBe(`${'y'.repeat(55)} copy`);
+    const second = await body<{ rule: AutomationRule }>(w.call('POST', `/${held.id}/duplicate`));
+    expect(second.rule.name).toBe(`${'y'.repeat(53)} copy 2`);
+  });
+});
+
 describe('an agent (an API token) at the rules', () => {
   it('stamps what it makes and changes as its person, marked an agent’s', async () => {
     const made = await body<{ rule: AutomationRule }>(

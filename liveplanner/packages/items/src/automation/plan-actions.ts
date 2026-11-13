@@ -7,6 +7,7 @@
 // that would change nothing is "Already so"; one the card refuses fails the run there, with the lines so far. The api
 // applies the plan (automation-writes.ts); Test on a Card shows it. Pure.
 
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   itemAssignee,
   itemLabels,
@@ -27,6 +28,7 @@ import { linkedCardIds } from '../several-values';
 import { validateFields } from '../fields';
 import { isEmptyFieldValue, requiredCustomFieldsOf } from '../required-fields';
 import { typeAllowsStatus } from '../type-catalogue';
+import { AUTOMATION_SUBJECT_MAX } from './validate';
 import {
   AUTOMATION_ACTIONS_MAX,
   AUTOMATION_CREATED_PER_RUN,
@@ -182,7 +184,7 @@ function apply(a: AutomationAction, w: Walk) {
       );
     }
     case 'comment':
-      plan.comments.push(fill(a.text).slice(0, AUTOMATION_TEXT_MAX));
+      plan.comments.push(cutText(fill(a.text), AUTOMATION_TEXT_MAX));
       return plan.line('Add Comment');
     case 'flag':
       return plan.line('Flag', plan.write('flagged', true));
@@ -222,7 +224,7 @@ function apply(a: AutomationAction, w: Walk) {
           : 'trigger' in a.to
             ? triggerPerson(ctx)
             : (personOf(o, a.to.person) ?? null);
-      plan.mentions.push({ to, text: fill(a.text).slice(0, AUTOMATION_TEXT_MAX) });
+      plan.mentions.push({ to, text: cutText(fill(a.text), AUTOMATION_TEXT_MAX) });
       return plan.line(to ? `Mention ${to.name}` : 'Mention (nobody to mention)', to !== null);
     }
     case 'resolve_threads': {
@@ -238,8 +240,8 @@ function apply(a: AutomationAction, w: Walk) {
             : (personOf(o, a.to.person) ?? null);
       plan.emails.push({
         to,
-        subject: fill(a.subject),
-        body: fill(a.body).slice(0, AUTOMATION_TEXT_MAX),
+        subject: cutText(fill(a.subject), AUTOMATION_SUBJECT_MAX),
+        body: cutText(fill(a.body), AUTOMATION_TEXT_MAX),
       });
       return plan.line(
         to ? `Send Email to ${to.name}` : 'Send Email (nobody to send it to)',
@@ -258,9 +260,10 @@ function createCard(a: Extract<AutomationAction, { kind: 'create_card' }>, w: Wa
   if (!type) return failGone({ kind: 'type', id: a.type });
   if (a.status && !o.statuses.some((s) => s.status === a.status))
     failGone({ kind: 'column', id: a.status });
-  const title = fillValues(a.title, { ...w.values, card: plan.card })
-    .trim()
-    .slice(0, ITEM_TITLE_MAX);
+  const title = cutText(
+    fillValues(a.title, { ...w.values, card: plan.card }).trim(),
+    ITEM_TITLE_MAX,
+  );
   const fields: ItemFields = { title: title || type.newTitle };
   for (const part of a.copy ?? []) {
     const v = plan.card.fields[part];
@@ -310,10 +313,10 @@ function addChecklist(a: Extract<AutomationAction, { kind: 'add_checklist' }>, w
   const rows = [...had];
   for (const item of a.items) {
     // Cut as a person's item is: a value filled in (a description, a webhook's) may run past it.
-    const text = fillValues(item, { ...w.values, card: plan.card })
-      .trim()
-      .slice(0, ITEM_CHECKLIST_TEXT_MAX)
-      .trimEnd();
+    const text = cutText(
+      fillValues(item, { ...w.values, card: plan.card }).trim(),
+      ITEM_CHECKLIST_TEXT_MAX,
+    ).trimEnd();
     if (!text || texts.has(text.toLowerCase())) continue;
     texts.add(text.toLowerCase());
     rows.push({ text, done: false });
@@ -363,7 +366,7 @@ function notify(s: AutomationOutgoing, index: number, w: Walk) {
     via: s.via,
     webhook: s.webhook,
     ...(s.name ? { name: s.name } : {}),
-    text: fillValues(s.text, { ...w.values, card: w.plan.card }).slice(0, AUTOMATION_TEXT_MAX),
+    text: cutText(fillValues(s.text, { ...w.values, card: w.plan.card }), AUTOMATION_TEXT_MAX),
     line: run.lines.length,
   });
   w.plan.line(notifyChip(s));

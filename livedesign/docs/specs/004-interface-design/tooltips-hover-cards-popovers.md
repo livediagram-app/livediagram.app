@@ -155,6 +155,10 @@ under the keyboard the moment it was tapped. Every floating surface stays in vie
   of focus or the keyboard goes, it returns to where its placement puts it.
 - A panel anchored to a control (`AnchoredPopover`) never shrinks below 160 px of room on its side (or its own height,
   when less), however little the window leaves it, so a keyboard that shrinks the window cannot squeeze it to nothing.
+- While focus is in a popover (an anchored panel, a confirm popover), Tab and Shift+Tab wrap at its ends. It is drawn
+  at the end of the page, outside the dialog it opened over, so Tab past its last control would otherwise fall to the
+  page and on to the editor behind the dialog. Escape closes it and hands focus back to its control. Focus outside it
+  (a field driving the list it shows) keeps its own Tab.
 - A modal `Dialog` first fits itself to the visible area (live-app.md "A dialog stays above the on-screen keyboard"),
   so it fits there and the move above has nothing left to do.
 - Under a mouse nothing listens: no keyboard rises over the page.

@@ -55,8 +55,13 @@ export const RULE_STEPS_FORMAT =
   '{"kind":"move","status":column}; ' +
   '{"kind":"set_field","field":field,"value":{"text":"..."}|{"number":n}|{"list":["..."]}|' +
   '{"date":{"today":±days}} (today is {"date":{"today":0}})|{"date":{"day":"YYYY-MM-DD"}}|' +
-  '{"from":another field of the card}}; ' +
-  '{"kind":"clear_field","field":field}; ' +
+  '{"from":another field of the card}} (as the field’s kind takes it: start, due and a Date field a day, as a date ' +
+  'or {"text":"YYYY-MM-DD"}; the estimate and a Number, Currency, Percent, Duration or Rating field a number; ' +
+  'labels and a Multiple Choice field a list; a Checkbox (flagged too) {"text":"Yes"|"No"}; priority ' +
+  '{"text":"urgent"|"high"|"medium"|"low"}; the assignee and a Person field {"text":person}; a Choice field ' +
+  '{"text":one of its options}; any other field text); ' +
+  '{"kind":"clear_field","field":field} (neither ever sets nor clears a Time Spent, Votes, Comments or Calculated ' +
+  'field); ' +
   '{"kind":"assign","to":{"person":person}|{"trigger":true} (whoever triggered it)|{"nobody":true}|' +
   '{"rotate":[2 to 10 people]} (each run the next, in turn)}; ' +
   '{"kind":"add_label","label":"..."}; {"kind":"remove_label","label":"..."}; ' +

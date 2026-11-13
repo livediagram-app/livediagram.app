@@ -3,6 +3,7 @@
 // refusal with the `path` of the part at fault (`steps.2.text`) for the builder to mark. What a rule names that the
 // plan lacks is not a refusal: it needs attention (attention.ts). Also the rule's name rules. Pure.
 
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import { ITEM_CHECKLIST_TEXT_MAX, ITEM_LABEL_MAX, ITEM_TITLE_MAX } from '../limits';
 import { itemColourValue } from '../item-colour';
 import { isRuleTimeZone } from '../repeat-dates';
@@ -449,11 +450,16 @@ export const ruleNameTaken = (
   exceptId?: string,
 ): boolean => rules.some((r) => r.id !== exceptId && nameKey(r.name) === nameKey(name));
 
-// The first free name from `base`: "New Rule", then "New Rule 2" and on. Cut so the number always fits.
-export function freeRuleName(base: string, rules: readonly { id: string; name: string }[]): string {
+// The first free name from `base` and its `tail`: "New Rule", then "New Rule 2" and on, or with a tail of " copy",
+// "Triage copy", then "Triage copy 2". The base is cut, never the tail or the number, so both always fit.
+export function freeRuleName(
+  base: string,
+  rules: readonly { id: string; name: string }[],
+  tail = '',
+): string {
   for (let n = 1; ; n += 1) {
-    const suffix = n === 1 ? '' : ` ${n}`;
-    const name = `${base.trim().slice(0, AUTOMATION_NAME_MAX - suffix.length)}${suffix}`;
+    const suffix = `${tail}${n === 1 ? '' : ` ${n}`}`;
+    const name = `${cutText(base.trim(), AUTOMATION_NAME_MAX - suffix.length)}${suffix}`;
     if (!ruleNameTaken(name, rules)) return name;
   }
 }

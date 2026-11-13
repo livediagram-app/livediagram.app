@@ -3,6 +3,7 @@
 // read as the field's kind reads it (a day, a number, a priority, a person by name or id, a Checkbox's Yes or No).
 // One the field can't hold is refused with why. Pure; plan-actions.ts calls it.
 
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import type { Item, ItemFieldValue } from '../item';
 import type { CustomFieldDef } from '../item-types';
 import { ITEM_TITLE_MAX } from '../limits';
@@ -127,5 +128,5 @@ export function setValueOf(input: SetValueInput): ItemFieldValue | undefined {
       value.text.includes('{{') ? undefined : { kind: 'person', id: text },
     );
   }
-  return field === 'title' ? text.slice(0, ITEM_TITLE_MAX) : text;
+  return field === 'title' ? cutText(text, ITEM_TITLE_MAX) : text;
 }

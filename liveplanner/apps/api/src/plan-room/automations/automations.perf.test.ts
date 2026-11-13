@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import {
+  AUTOMATION_BRANCH_CARDS_MAX,
   AUTOMATION_DERIVED_CARDS_MAX,
   AUTOMATION_QUEUE_MAX,
   AUTOMATION_RULES_MAX,
@@ -225,6 +226,45 @@ describe('Automations cost', () => {
     }
     expect(runsToday(room().automations.sql(), Date.now())).toBe(0);
     expect(wake).toBeLessThan(cpuBudgetMs(4000));
+  }, 60_000);
+
+  // A branch that moves its related cards (blueprint "The run"): each move puts the card at the end of its new
+  // column, which read every card of the plan afresh, 100 reads of 2,000 cards for one run (measured 910 ms on an M-series Mac);
+  // now from the cards the wake holds, kept in step by the run's own writes (measured 85 ms).
+  it('a branch that moves 100 related cards of a full plan reads its cards once', async () => {
+    const put = await w.send('PUT', '/api/projects/A/item-types', {
+      itemTypes: { version: defaultCatalogue().version, types: [BLOCKS] },
+    });
+    expect(put.status).toBeLessThan(300);
+    const blocker = await w.make('A', { title: 'Blocker' });
+    const c = await w.make('A', { title: 'Blocked', 'f-blocked': [blocker.id] });
+    fill(c.id, ITEMS_MAX - 2);
+    await w.rule({
+      name: 'Finish the blocked',
+      trigger: { kind: 'field_changed', fields: ['priority'] },
+      conditions: [],
+      steps: [
+        {
+          kind: 'for',
+          related: { kind: 'blocking' },
+          conditions: [],
+          then: [{ kind: 'move', status: 'done' }],
+        },
+      ],
+    });
+    await w.send('POST', `/api/projects/A/items/${blocker.id}`, { set: { priority: 'high' } });
+    room().automations.schedule.at = Date.now();
+    const wake = await cpuMsOfAsync(() => room().alarm());
+    const db = w.plans.get('A')!.db;
+    const done = db
+      .prepare(
+        "SELECT rank FROM items WHERE json_extract(fields, '$.status') = 'done' ORDER BY item_key",
+      )
+      .all() as { rank: string }[];
+    // The first 100 by number, each at the end of Done as it landed: every rank past the one before it.
+    expect(done).toHaveLength(AUTOMATION_BRANCH_CARDS_MAX);
+    for (let i = 1; i < done.length; i += 1) expect(done[i]!.rank > done[i - 1]!.rank).toBe(true);
+    expect(wake).toBeLessThan(cpuBudgetMs(400));
   }, 60_000);
 
   // Phase 2 (docs/specs/026-plan/automations.md "Time triggers"; blueprint "The wake"): a full plan and 50 time

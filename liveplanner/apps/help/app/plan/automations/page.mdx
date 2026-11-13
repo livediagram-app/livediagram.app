@@ -63,7 +63,7 @@ Four triggers start a rule at a time instead of when something happens to a card
 
 - **Scheduled**: every **Day**, **Weekday**, **Week** (on the days you pick) or **Month** (on a day from the 1st to the 31st; past the month's end, its last day), **At** a time on the quarter hour.
 - **Due In**: 1 to 30 days before a card is due, at a time. A card is reminded once for each due date it has.
-- **Overdue**: on the day after a card was due, at a time. A Done card is never overdue.
+- **Overdue**: on the day after a card was due, at a time. A card is reminded once for each due date it has, and a Done card is never overdue.
 - **Card Stuck**: once a day at a time, cards that have not changed for 1 to 90 days, outside Done columns (only in the columns you pick, if you pick any). Any change to a card starts its count again.
 
 At its time, the rule runs once for each card its conditions match: "Every Weekday at 9:00 **for cards** Overdue, not Done". A rule on a time with no conditions runs on every card in the plan, and the builder warns you. Times are in your time zone when you save the rule, which the trigger's panel names ("Times are Europe/London"). A rule on a time has nobody behind it, so it can't check **Who Did It** or assign or email whoever triggered it.
@@ -164,7 +164,7 @@ A rule's changes don't set off other rules, so two rules can never keep changing
 
 - A plan holds up to 50 rules, each with up to 10 conditions and 20 actions (a For Related Cards step's count too), of which up to 5 post messages.
 - A plan makes up to 1,000 runs a day (UTC), counted as each run starts, so runs that start together never pass it; past that, what would start a rule is let go and rules run again the next day. A No Match doesn't count.
-- One move runs **Card Unblocked** or **Related Cards Done** on up to 100 cards, the first by their number; past that the Audit Trail says "Ran on 100 of 340 cards: at most 100 a move" and the rest are left out. A time trigger runs on up to 100 cards a time, and the rest wait for the next time.
+- One move runs **Card Unblocked** or **Related Cards Done** on up to 100 cards, the first by their number; past that the Audit Trail says "Ran on 100 of 340 cards: at most 100 a move" and the rest are left out. A time trigger runs on up to 100 cards a time. Past that, **Overdue** and **Card Stuck** reach the rest at their next times; **Scheduled** and **Due In** leave the rest out, and the Audit Trail says so.
 - A rule holds up to 3 AI actions, and a plan makes up to 100 AI steps a day, rules and Describe a Rule together, even when they ask at once; past that, AI steps are skipped until the next day.
 - A rule that fails 10 times in a row turns itself off and is marked **Paused** with the reason. Fix what it names, then press **Resume**. When a webhook stopped it, **Fix Webhook** opens the plan's webhooks.
 - A rule that names something the plan no longer has (a column, a card type, a field, a person, a saved filter, a Form tab, or the card a **Link Cards** step points at) says **Needs Attention** and what is missing, in words: "Needs Attention: A column is gone · Someone is gone". Its steps say the same ("Move to a column no longer here", "Assign Someone No Longer Here"). A condition naming one doesn't hold, and an action that reaches one fails its run, saying what is gone. Open the step and pick again.

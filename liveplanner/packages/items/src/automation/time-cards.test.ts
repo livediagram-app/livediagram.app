@@ -87,6 +87,17 @@ describe('timeCards', () => {
     const undated = r.cards.slice(75).map((c) => c.card.key);
     expect(undated).toEqual([...undated].sort((x, y) => x - y));
   });
+
+  it('leaves out the cards the rule already ran on before it takes 100, so the rest come next', () => {
+    const cards = Array.from({ length: 103 }, (_, i) => bug({ due: '2026-11-01' }, { key: i + 1 }));
+    const overdue = rule({ kind: 'overdue', at: '09:00' });
+    const first = timeCards(overdue, cards, MOMENT, ctx);
+    expect(first).toMatchObject({ matched: 103 });
+    const fired = new Set(first.cards.map((c) => c.eventId));
+    const next = timeCards(overdue, cards, MOMENT, { ...ctx, fired });
+    expect(next.matched).toBe(3);
+    expect(next.cards.map((c) => c.card.key)).toEqual([101, 102, 103]);
+  });
 });
 
 describe('Card Stuck', () => {

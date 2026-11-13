@@ -1,7 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { defaultCatalogue, type AutomationRun, type Item } from '@liveplanner/items';
+import {
+  defaultCatalogue,
+  type AutomationRun,
+  type Item,
+  type ItemTypeDef,
+} from '@liveplanner/items';
 import { endRepeatWorld } from '../test-repeat-world';
 import { exportProjectFile, readProjectFile } from '../project-file';
+import { rulesFromFile } from './automation-copy';
+import { ruleBody } from './test-automation-world';
 import { automationWorld, type AutomationWorld } from './test-automation-world';
 
 // A plan's rules running on its own alarm (docs/specs/026-plan/automations.md "Runs, limits and loops"), end to
@@ -314,6 +321,45 @@ describe('copies, exports and deletes', () => {
     await c.room.importCopy('C', read.content.copy);
     expect(ruleRows(c.db)).toMatchObject([{ enabled: 0 }]);
     expect(c.room.automations.kinds.size).toBe(0);
+  });
+
+  it('a file read into a new plan leaves behind the rules a save would refuse', () => {
+    const types: ItemTypeDef[] = [
+      {
+        id: 'task',
+        label: 'Task',
+        newTitle: 'New task',
+        glyph: 'task',
+        color: '#2563eb',
+        fields: ['title', 'status', 'f-ok', 'f-time'],
+        custom: [
+          { id: 'f-ok', label: 'Approved', kind: 'checkbox' },
+          { id: 'f-time', label: 'Time Spent', kind: 'duration', timeSpent: true },
+        ],
+      },
+    ];
+    const kept = rulesFromFile(
+      [
+        ruleBody({ name: 'Stamp' }),
+        // The same name, case aside: a save says it is taken.
+        ruleBody({ name: 'stamp ' }),
+        // Field Changed on a field that changes without an edit.
+        ruleBody({ name: 'Heard', trigger: { kind: 'field_changed', fields: ['f-time'] } }),
+        // A Checkbox set to neither Yes nor No.
+        ruleBody({
+          name: 'Approve',
+          steps: [{ kind: 'set_field', field: 'f-ok', value: { text: 'maybe' } }],
+        }),
+        ruleBody({
+          name: 'Approve Yes',
+          steps: [{ kind: 'set_field', field: 'f-ok', value: { text: 'Yes' } }],
+        }),
+      ],
+      Date.now(),
+      new Map(),
+      types,
+    );
+    expect(kept.map((r) => r.name)).toEqual(['Stamp', 'Approve Yes']);
   });
 
   it("a copy's and a file's rules name the copy's tabs, as its Form tab and saved filters moved to new ids", async () => {

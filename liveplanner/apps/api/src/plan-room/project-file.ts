@@ -8,6 +8,7 @@
 
 import {
   ITEMS_MAX,
+  typesOf,
   validateItemTypeCatalogue,
   type Item,
   type ItemTypeCatalogue,
@@ -293,7 +294,7 @@ export function readProjectFile(text: string, now = Date.now()): ProjectFileRead
         ...sheets,
         ...threadsOf(project.threads ?? [], items),
         ...(project.automations?.length
-          ? { automations: rulesFromFile(project.automations, now, tabIdMap) }
+          ? { automations: rulesFromFile(project.automations, now, tabIdMap, typesOf(itemTypes)) }
           : {}),
       },
     },

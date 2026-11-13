@@ -53,6 +53,11 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
     pattern: /nothing is sent to a server/i,
     why: 'projects save to the server; only a This Browser project stays local',
   },
+  {
+    pattern:
+      /does not have automation|not built-in recipes|automations\?","a":"Not in the way|"us":"API, MCP and CLI for scripts/i,
+    why: 'a plan has Automations: rules from templates or your own (docs/specs/026-plan/automations.md)',
+  },
 ];
 
 const copy: { where: string; text: string }[] = [

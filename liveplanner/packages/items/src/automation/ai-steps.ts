@@ -6,6 +6,7 @@
 // list, a priority from the four, labels from the plan's own, a summary cut to length as plain text with no link the
 // card didn't hold. The api makes the call and the write (apps/api/src/plan-room/automations/automation-ai.ts). Pure.
 
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import { itemLabels, itemStatus, itemTitle, type Item, type ItemPatch } from '../item';
 import { ITEM_LABELS_MAX } from '../limits';
 import { PRIORITIES, PRIORITY_LABELS, validateFields, type Priority } from '../fields';
@@ -190,7 +191,7 @@ export interface AiCardInput {
 }
 
 const cut = (text: string, max: number): string =>
-  text.length <= max ? text : `${text.slice(0, max - 1).trimEnd()}…`;
+  text.length <= max ? text : `${cutText(text, max - 1).trimEnd()}…`;
 
 // The card as the model is sent it: its title, type and column by name, description, checklist and latest comments
 // (newest first, as the caller gives them), each cut to its cap; empty parts left out. No person, id or link.
@@ -454,7 +455,7 @@ export function plainSummary(text: string, input: AiCardInput): string {
     .replace(/\s+/g, ' ')
     .trim();
   if (plain.length <= AUTOMATION_AI_SUMMARY_MAX) return plain;
-  const head = plain.slice(0, AUTOMATION_AI_SUMMARY_MAX - 1);
+  const head = cutText(plain, AUTOMATION_AI_SUMMARY_MAX - 1);
   const space = head.lastIndexOf(' ');
   return `${(space > AUTOMATION_AI_SUMMARY_MAX / 2 ? head.slice(0, space) : head).trimEnd()}…`;
 }

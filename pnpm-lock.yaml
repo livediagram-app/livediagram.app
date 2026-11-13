@@ -4618,6 +4618,9 @@ importers:
       '@liveworkspace/migration':
         specifier: workspace:*
         version: link:../../../packages/migration
+      '@liveworkspace/model-core':
+        specifier: workspace:^
+        version: link:../../../packages/model-core
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -7119,6 +7122,10 @@ importers:
         version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
   packages/email:
+    dependencies:
+      '@liveworkspace/model-core':
+        specifier: workspace:^
+        version: link:../model-core
     devDependencies:
       '@types/node':
         specifier: ^26.6.6

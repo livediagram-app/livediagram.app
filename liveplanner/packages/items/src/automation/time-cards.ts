@@ -5,7 +5,9 @@
 // columns, when named), once per stretch unchanged (`k:` rule, card, last change). The rule's conditions are the filter. The first
 // AUTOMATION_TIME_CARDS_MAX by due date (then number) run, each with an event id that makes its run once ever: per
 // moment for Scheduled (`t:` rule, day, time, card), per due date for Due In and Overdue (`d:` rule, card, due), so a
-// moved due date re-arms them. Pure; the api's wake queues what it answers.
+// moved due date re-arms them. A card whose event id the rule already ran on (`fired`, kept by the api apart from the
+// Audit Trail) is left out before the first 100 are taken, so the rest are reached on the next moments. Pure; the
+// api's wake queues what it answers.
 
 import { isArchived, isTrashed } from '../board';
 import type { Item } from '../item';
@@ -21,6 +23,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export interface TimeCardsContext extends Omit<ConditionContext, 'card' | 'now'> {
   // Whether a status is one of the plan's done columns.
   isDone: (status: string | undefined) => boolean;
+  // The event ids this rule has already run on (Due In, Overdue, Card Stuck): left out before the 100 are taken.
+  fired?: ReadonlySet<string>;
 }
 
 export interface TimeCard {
@@ -50,7 +54,13 @@ export function timeCards(
   const wanted = t.kind === 'due_in' ? dayNumber(addDays(day, t.days))! : null;
   // Card Stuck: unchanged since before this.
   const still = t.kind === 'stuck' ? moment - t.days * DAY_MS : null;
-  const hits: { card: Item; due: number | undefined }[] = [];
+  const eventId = (card: Item, due: number | undefined) =>
+    t.kind === 'scheduled'
+      ? `t:${rule.id}:${day}:${t.at}:${card.id}`
+      : t.kind === 'stuck'
+        ? `k:${rule.id}:${card.id}:${card.updatedAt}`
+        : `d:${rule.id}:${card.id}:${dayKey(due!)}`;
+  const hits: { card: Item; due: number | undefined; eventId: string }[] = [];
   for (const card of items) {
     if (isTrashed(card) || isArchived(card)) continue;
     const due = dayNumber(card.fields['due'], ctx.timeZone);
@@ -64,22 +74,18 @@ export function timeCards(
         (t.kind === 'stuck' && t.statuses?.length && !t.statuses.includes(itemStatus(card) ?? '')))
     )
       continue;
+    const id = eventId(card, due);
+    if (ctx.fired?.has(id)) continue;
     if (!allHold(rule.conditions, { ...ctx, card, now: moment }).ok) continue;
-    hits.push({ card, due });
+    hits.push({ card, due, eventId: id });
   }
   hits.sort(
     (a, b) =>
       (a.due ?? Number.MAX_SAFE_INTEGER) - (b.due ?? Number.MAX_SAFE_INTEGER) ||
       a.card.key - b.card.key,
   );
-  const cards = hits.slice(0, AUTOMATION_TIME_CARDS_MAX).map(({ card, due }) => ({
-    card,
-    eventId:
-      t.kind === 'scheduled'
-        ? `t:${rule.id}:${day}:${t.at}:${card.id}`
-        : t.kind === 'stuck'
-          ? `k:${rule.id}:${card.id}:${card.updatedAt}`
-          : `d:${rule.id}:${card.id}:${dayKey(due!)}`,
-  }));
+  const cards = hits
+    .slice(0, AUTOMATION_TIME_CARDS_MAX)
+    .map(({ card, eventId }) => ({ card, eventId }));
   return { cards, matched: hits.length };
 }

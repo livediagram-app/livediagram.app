@@ -6,6 +6,7 @@
 // most a reply can do is put an unsaved, off rule in front of the person who asked. The api makes the call
 // (apps/api/src/routes/automation-draft-route.ts). Pure.
 
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import { BUILT_IN_FIELD_NAMES } from '../built-in-field-labels';
 import { ITEM_CHECKLIST_TEXT_MAX, ITEM_LABEL_MAX, ITEM_TITLE_MAX } from '../limits';
 import { dropForeignLinks, type AiRequest } from './ai-steps';
@@ -55,8 +56,7 @@ export interface AiDraftPlan {
   labels: string[];
 }
 
-const cut = (s: string, max: number) => (s.length > max ? s.slice(0, max) : s);
-const nameOf = (s: string) => cut(s.replace(/\p{Cc}/gu, ' ').trim(), AI_DRAFT_NAME_MAX);
+const nameOf = (s: string) => cutText(s.replace(/\p{Cc}/gu, ' ').trim(), AI_DRAFT_NAME_MAX);
 
 /** The plan as the model sees it: column names (once each), card types with their custom fields' names and kinds
  *  (120 fields at most across them), the built-in fields' names and the labels its cards use. Names only, each list
@@ -129,10 +129,10 @@ export function aiDraftRequest(
   previous?: { path: string; message: string },
 ): AiRequest {
   const data = {
-    request: cut(prompt, AI_DRAFT_PROMPT_MAX),
+    request: cutText(prompt, AI_DRAFT_PROMPT_MAX),
     plan,
     ...(previous
-      ? { previous: { refused: cut(`${previous.path}: ${previous.message}`, 300) } }
+      ? { previous: { refused: cutText(`${previous.path}: ${previous.message}`, 300) } }
       : {}),
   };
   return {
@@ -176,11 +176,11 @@ const WEBHOOK_HOLE = 'draft-webhook';
  *  person's words lack removed, cut to `max`. Anything but a string is left for readRuleBody to refuse. */
 export function draftText(v: unknown, own: string, max: number, lines = false): unknown {
   if (typeof v !== 'string') return v;
-  const plain = v.slice(0, max * 2).replace(lines ? /[^\P{Cc}\n]/gu : /\p{Cc}/gu, ' ');
+  const plain = cutText(v, max * 2).replace(lines ? /[^\P{Cc}\n]/gu : /\p{Cc}/gu, ' ');
   const linked = dropForeignLinks(plain, own)
     .replace(/[ \t]{2,}/g, ' ')
     .trim();
-  return cut(linked, max);
+  return cutText(linked, max);
 }
 
 // Each text a step may hold, cleaned in place; an If's and a branch's actions too.

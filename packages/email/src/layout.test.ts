@@ -66,6 +66,8 @@ describe('the shared email layout', () => {
   it('flattens a subject name to one short line', () => {
     expect(subjectText('a\r\nb')).toBe('a b');
     expect(subjectText('x'.repeat(100))).toHaveLength(80);
+    // Never half an emoji at the cut.
+    expect(subjectText(`x${'😀'.repeat(50)}`)).toBe(`x${'😀'.repeat(39)}`);
   });
 
   it('cuts a mention quote at a word', () => {
@@ -74,5 +76,6 @@ describe('the shared email layout', () => {
     expect(words.endsWith('word…')).toBe(true);
     expect(words.length).toBeLessThanOrEqual(MENTION_QUOTE_CHARS + 1);
     expect(mentionQuote('x'.repeat(400))).toBe(`${'x'.repeat(MENTION_QUOTE_CHARS)}…`);
+    expect(mentionQuote(`x${'😀'.repeat(200)}`)).toBe(`x${'😀'.repeat(139)}…`);
   });
 });

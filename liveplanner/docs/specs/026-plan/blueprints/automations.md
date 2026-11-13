@@ -40,7 +40,9 @@ packages/items/src/automation/
                       ruleSetsFields(rule), so the create and save routes (and Test on a Card, its path under
                       `rule.`) read the plan's types only then
   values.ts           VALUE_NAMES, valuesIn(text), fillValues(text, ctx) and the {{now ± Nd}} day maths, in the
-                      rule's time zone
+                      rule's time zone; a filled text past its limit is cut by the
+                      shared cutText (@liveworkspace/model-core/text-cut), never through an emoji
+                      (text-cuts.test.ts)
   conditions.ts       holds(condition, ctx) → { ok, text }: one condition, with the line the Audit Trail shows
   matches.ts          AutomationEvent; eventOfWrite(before, after, changes, source) → the event a landed write makes
                       (or null); triggerMatches(trigger, event, ruleId) → boolean; TRIGGER_EVENT_KINDS
@@ -68,7 +70,8 @@ apps/api/src/plan-room/automations/
   automation-plan.ts     readAutomationPlan: the AutomationOutline, the plan's name and the account ids behind its
                          people's hashed ids (owner, joined team members, known_people), once per wake or request
   plan-room-automations.ts  the room's alarm step (runAutomations) and what a run needs from the room
-  automation-copy.ts     the rules in a copy and in the plan's file
+  automation-copy.ts     the rules in a copy and in the plan's file; rulesFromFile checks a file's as a save does
+                         (readRuleBody, ruleNameTaken, unheardFields, setFieldRefusal on the file's types)
   automation-runner.ts   one event against every rule it matches: run id, budget, chain, conditions, planActions,
                          then the writes (below), the Audit Trail row, the failure count and pausing
   automation-writes.ts   applies a planned run: one items patch for the triggering card via the shared write
@@ -296,6 +299,12 @@ ALTER TABLE automation_rules ADD COLUMN turn INTEGER NOT NULL DEFAULT 0;        
   and status not a done column), sorts by due date then number, takes 100, and enqueues one event per card with id
   `t:${ruleId}:${localDay}:${at}:${cardId}` (scheduled) or `d:${ruleId}:${cardId}:${due}` (due_in, overdue), so
   `runId` makes each once ever. Past 100, one Skipped line says how many waited. Then `next_at = nextMoment(now)`.
+- `automation_fired` (step V26: `id` the event id, `rule_id`, `at`) keeps the `d:` and `k:` event ids a wake queued,
+  apart from the Audit Trail, whose trim (30 days, 2,000 runs) would otherwise let an Overdue or Card Stuck card that
+  still matches run again. `timeCards` leaves out the ids the rule has there before it takes 100, so cards past 100
+  are reached on the next moments rather than the same 100 every time. One read of the rule's ids per due rule a
+  wake; the newest 20,000 rows are kept (`AUTOMATION_FIRED_MAX`); a rule deleted, or its trigger kind changed, drops
+  its rows. Scheduled ids (`t:`) are never kept: a moment's day never comes again.
 - The event's `kind` is `time`, its `by` `automationPerson(rule.name)`, its `role` `system`, its `ruleId` the rule:
   the runner runs only that rule for it, skipping the trigger match (the scan did it) but not the conditions (a card
   changed since is checked again).
@@ -1012,7 +1021,9 @@ Threads and Wait (spec "Actions", "Wait").
   card writes go into the cards held through its relay (`noteWrite`), each only when it landed one rev past them (no
   write from elsewhere between), so a wake whose every run writes still reads them once (7,530 ms to 690 ms of CPU
   for 1,000 writing branch runs over 2,000 cards); any other write leaves them at their rev, and the next branch reads
-  afresh. Card Unblocked and Related Cards Done run the rule on each answered card under
+  afresh. A move's place at the end of its new column (`patchCard`) comes from the same cards (`WriteDeps.cards`), so a
+  branch moving 100 related cards reads the plan's cards once, not 100 times (910 ms to 85 ms of CPU over 2,000
+  cards). Card Unblocked and Related Cards Done run the rule on each answered card under
   `d:${card.id}:${sha256(moment)}`, the moment (`derivedMoments`) being the card's blockers, children or linked cards
   as sorted `id@rev`, so two events read against the same cards make one run id. Column Over Limit runs under
   `${event.id}>${card.id}`, once per wake per rule and set of card ids in the column (`RunState.tipped`): every event a

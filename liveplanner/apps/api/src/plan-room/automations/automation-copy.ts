@@ -7,9 +7,13 @@ import {
   isTimeTrigger,
   nextMoment,
   readRuleBody,
+  ruleNameTaken,
   ruleWithTabIds,
+  setFieldRefusal,
+  unheardFields,
   type AutomationRule,
   type AutomationStamp,
+  type ItemTypeDef,
 } from '@liveplanner/items';
 import type { PlanEnv } from '../../types';
 
@@ -63,16 +67,23 @@ const isStamp = (v: unknown): v is AutomationStamp =>
   !!(v as AutomationStamp).by;
 
 // A file's rules as a new plan takes them: each checked, under a fresh id, off, the tabs it names at the new plan's
-// ids (`tabIds`, the file's tab ids to the plan's).
+// ids (`tabIds`, the file's tab ids to the plan's). Checked as a rule write is, against the file's own card types
+// (`types`): one that does not read, whose name an earlier one holds, whose Field Changed names a field it never
+// hears, or whose Set Field gives a Checkbox anything but Yes or No is left behind.
 export function rulesFromFile(
   raw: readonly unknown[],
   now: number,
   tabIds: ReadonlyMap<string, string> = new Map(),
+  types: readonly ItemTypeDef[] = [],
 ): AutomationRule[] {
   const out: AutomationRule[] = [];
   for (const r of raw.slice(0, AUTOMATION_RULES_MAX)) {
     const read = readRuleBody(r);
     if ('error' in read) continue;
+    const { trigger, name } = read.body;
+    if (ruleNameTaken(name, out)) continue;
+    if (trigger.kind === 'field_changed' && unheardFields(types, trigger.fields).length) continue;
+    if (setFieldRefusal(read.body, types)) continue;
     const held = r as Partial<AutomationRule>;
     const stamp = { by: { id: '', name: 'Someone', color: '#94a3b8' }, at: now };
     out.push({

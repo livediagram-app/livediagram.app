@@ -84,6 +84,27 @@ describe('useRunRule', () => {
     client.runRule.mockResolvedValueOnce({ run: run({ result: 'no_match' }) });
     act(() => result.current!.onRun('m1'));
     await waitFor(() => expect(toast.info).toHaveBeenCalled());
+    // A Wait holds the rest: it ran, and says when it goes on, never that it found nothing to do.
+    const later = new Date();
+    later.setDate(later.getDate() + 1);
+    later.setHours(9, 0, 0, 0);
+    client.runRule.mockResolvedValueOnce({
+      run: run({ result: 'waiting', waitsUntil: later.getTime() }),
+    });
+    act(() => result.current!.onRun('m1'));
+    await waitFor(() =>
+      expect(toast.success).toHaveBeenCalledWith(
+        expect.stringMatching(
+          /^Ran Escalate to Leads up to its Wait\. It goes on Tomorrow .*9.*00\.$/,
+        ),
+      ),
+    );
+    client.runRule.mockResolvedValueOnce({ run: run({ result: 'waiting' }) });
+    act(() => result.current!.onRun('m1'));
+    await waitFor(() =>
+      expect(toast.success).toHaveBeenCalledWith('Ran Escalate to Leads up to its Wait.'),
+    );
+    expect(toast.info).toHaveBeenCalledTimes(1);
     client.runRule.mockRejectedValueOnce(
       new AutomationRefusal(409, { error: 'automation_not_manual', message: 'Not manual.' }),
     );

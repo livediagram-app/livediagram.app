@@ -3,6 +3,7 @@
 // rule's `{{webhook.…}}` values read), which values a rule names, whether a rule can run with no card, and the Audit
 // Trail's trigger line. The secret, its checks and the queue are the api's (automation-incoming.ts). Pure.
 
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import type { Item } from '../item';
 import { INCOMING_WEBHOOK_PERSON, type AutomationRuleBody } from './types';
 import { valuesIn } from './values';
@@ -58,7 +59,7 @@ function readPath(payload: unknown, path: readonly string[]): WebhookValue | und
     else if (isObj(at)) at = Object.hasOwn(at, name) ? at[name] : undefined;
     else return undefined;
   }
-  if (typeof at === 'string') return at.slice(0, WEBHOOK_VALUE_MAX);
+  if (typeof at === 'string') return cutText(at, WEBHOOK_VALUE_MAX);
   if (typeof at === 'number') return Number.isFinite(at) ? at : undefined;
   return typeof at === 'boolean' ? at : undefined;
 }
