@@ -3,14 +3,16 @@
 // and the reply read into a draft of names, a board's columns and card types with their fields, held to everything an
 // agent's add_board and change_card_types are held to (placeBoard, applyCardTypeChanges) and to the draft's own
 // smaller caps. The most a reply can do is put a preview of names in front of the person who asked: the editor's
-// Make Plan makes the board and the types. The api makes the call (apps/api/src/routes/plan-draft-route.ts). Pure.
+// Make Plan makes the board and the types. The api makes the call (apps/api/src/routes/plan-drafts.ts). Pure.
 
 import { draftText } from './automation/ai-draft';
 import type { AiRequest } from './automation/ai-steps';
+import type { PlanBoardSetup } from './board-model';
 import { placeBoard, type BoardRequest } from './board-place';
 import { BUILT_IN_FIELD_NAMES } from './built-in-field-labels';
 import { PLAN_GLYPH_IDS, isPlanGlyphId, type PlanGlyphId } from './glyphs';
 import type { ItemFieldId } from './item-types';
+import type { PlanStatusName } from './plan-outline';
 import { PLAN_COLUMN_NAME_MAX, PLAN_COLUMNS_MAX, PLAN_TITLE_MAX } from './limits';
 import { statusKey } from './status-names';
 import {
@@ -18,6 +20,8 @@ import {
   CUSTOM_FIELD_LABEL_MAX,
   ITEM_TYPE_LABEL_MAX,
   PLAN_TYPE_COLOURS,
+  typesOf,
+  type ItemTypeCatalogue,
 } from './type-catalogue';
 import { applyCardTypeChanges, type CardTypeChange } from './type-changes';
 
@@ -238,16 +242,44 @@ export function planDraftRequest(
 
 // ---- The check --------------------------------------------------------------------------------------------------------
 
+/** The plan a draft would join: its card types (null while none are chosen) and the statuses its boards name. A
+ *  column named as a status the plan has takes it; a drafted type named as one the plan has is kept as the plan has
+ *  it, never added again. Absent: an empty plan, as the reader checks a reply. */
+export interface PlanDraftPlan {
+  catalogue: ItemTypeCatalogue | null;
+  statuses: readonly PlanStatusName[];
+}
+
 export type PlanDraftCheck =
-  | { ok: true; board: BoardRequest; changes: CardTypeChange[] }
+  | {
+      ok: true;
+      board: BoardRequest;
+      // The board as placed: its columns, each under a status the plan has by that name or a new one.
+      setup: PlanBoardSetup;
+      // The add changes for the types the plan lacks.
+      changes: CardTypeChange[];
+      // The drafted types the plan already has (their indexes in `cardTypes`), kept as the plan has them.
+      kept: number[];
+      // The plan's catalogue with the new types added.
+      catalogue: ItemTypeCatalogue | null;
+    }
   | { ok: false; path: string; message: string };
 
 const isDraftKind = (k: unknown): k is PlanDraftFieldKind =>
   (PLAN_DRAFT_FIELD_KINDS as readonly unknown[]).includes(k);
 
+/** The indexes of the drafted types the plan already has, by name (case and spacing aside). */
+export function keptPlanDraftTypes(
+  draft: Pick<PlanDraft, 'cardTypes'>,
+  catalogue: ItemTypeCatalogue | null,
+): number[] {
+  const own = new Set(typesOf(catalogue).map((t) => statusKey(t.label)));
+  return draft.cardTypes.flatMap((t, i) => (own.has(statusKey(t.name)) ? [i] : []));
+}
+
 /** The draft's card types as the `add` changes change_card_types takes: its colour, glyph, built-in fields by id and
  *  its own fields by name and kind, a choice's options with them. */
-export function planDraftChanges(draft: PlanDraft): CardTypeChange[] {
+export function planDraftChanges(draft: Pick<PlanDraft, 'cardTypes'>): CardTypeChange[] {
   return draft.cardTypes.map((t) => ({
     op: 'add',
     name: t.name,
@@ -264,19 +296,29 @@ export function planDraftChanges(draft: PlanDraft): CardTypeChange[] {
 
 const refuse = (path: string, message: string): PlanDraftCheck => ({ ok: false, path, message });
 
-/** A draft held to everything: the board as placeBoard checks an agent's, the draft's own caps, then its card types
- *  as new types through applyCardTypeChanges on an empty catalogue (validateItemTypeCatalogue whole). The preview
- *  runs it on what the person changed, the reader on the model's reply. */
-export function checkPlanDraft(draft: PlanDraft): PlanDraftCheck {
+/** A draft held to everything: the board as placeBoard checks an agent's (against the plan's statuses), the draft's
+ *  own caps, then the types the plan lacks as new types through applyCardTypeChanges on the plan's catalogue
+ *  (validateItemTypeCatalogue whole). The preview runs it on what the person changed, the reader on the model's reply
+ *  (with no plan). */
+export function checkPlanDraft(
+  draft: PlanDraft,
+  plan?: PlanDraftPlan,
+  // The board's new statuses' suffix (placeBoard); a check never keeps them, so a steady one by default.
+  random: () => number = () => 0,
+): PlanDraftCheck {
   const board: BoardRequest = { title: draft.title, columns: draft.columns };
-  const placed = placeBoard(board, [], [], 'plan-draft', () => 0);
+  const placed = placeBoard(board, [], plan?.statuses ?? [], 'plan-draft', random);
   if (!placed.ok) {
     const at = draft.title.trim() && draft.title.length <= PLAN_TITLE_MAX ? 'columns' : 'title';
     return refuse(at, placed.message);
   }
   if (draft.cardTypes.length === 0 || draft.cardTypes.length > PLAN_DRAFT_TYPES_MAX)
     return refuse('cardTypes', `A drafted plan has 1 to ${PLAN_DRAFT_TYPES_MAX} card types.`);
+  const catalogue = plan?.catalogue ?? null;
+  const kept = keptPlanDraftTypes(draft, catalogue);
   for (const [i, t] of draft.cardTypes.entries()) {
+    // A kept type is the plan's own: its drafted fields are never made.
+    if (kept.includes(i)) continue;
     if (t.fields.length > PLAN_DRAFT_FIELDS_MAX)
       return refuse(
         `cardTypes.${i}.fields`,
@@ -296,10 +338,19 @@ export function checkPlanDraft(draft: PlanDraft): PlanDraftCheck {
     }
   }
   const statuses = placed.board.planBoard.columns.map((c) => ({ status: c.status, name: c.name }));
-  const changes = planDraftChanges(draft);
-  const applied = applyCardTypeChanges(null, changes, statuses);
+  const changes = planDraftChanges({
+    cardTypes: draft.cardTypes.filter((_, i) => !kept.includes(i)),
+  });
+  const applied = applyCardTypeChanges(catalogue, changes, statuses);
   if (!applied.ok) return refuse('cardTypes', applied.message);
-  return { ok: true, board, changes };
+  return {
+    ok: true,
+    board,
+    setup: placed.board.planBoard,
+    changes,
+    kept,
+    catalogue: applied.catalogue,
+  };
 }
 
 // ---- The reply ------------------------------------------------------------------------------------------------------
