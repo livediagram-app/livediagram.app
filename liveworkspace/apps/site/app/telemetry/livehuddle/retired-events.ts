@@ -501,6 +501,38 @@ const UNSENT_OTHER_UNSENT = new Set([
 const DIAGRAM_ELEMENT_TOUR =
   /^(Boundary|Chart|Chevrons|Cycle|DiagramKey|Entity|Flowchart|Funnel|Hub|Lane|LayerStack|MindMap|Onion|OrgChart|Pyramid|Sankey|Sequence|Stack|Timeline)Tour|^ElementToursSeen/;
 
+// The UI·Opened, Help·View and Page·View events livehuddle no longer sends (Work Tracker 789): computed-emitters.ts now
+// lists the exact values of those three families, so each sentence for a value outside them is retired by name. Page
+// views of an Explorer address (livehuddle's /explorer opens liveworkspace's own Explorer now), the diagram app's
+// feature pages, a help article and a sign-in callback livehuddle has none of, the panels, groups and Settings category
+// it let go, and help links to articles only livediagram has.
+const UNSENT_OPEN_SET_LEFTOVERS = new Set([
+  'Page|View|/explorer',
+  'Page|View|/explorer/home',
+  'Page|View|/explorer/activity',
+  'Page|View|/explorer/inbox',
+  'Page|View|/explorer/shared',
+  'Page|View|/explorer/timeline',
+  'Page|View|/features/foundations',
+  'Page|View|/features/simple',
+  'Page|View|/help/canvas/links',
+  'Page|View|/sso-callback',
+  'UI|Opened|Collaborate',
+  'UI|Opened|TidyUp',
+  'UI|Opened|BehaviourGroup',
+  'UI|Opened|CollabGroup',
+  'UI|Opened|PresenterNotes',
+  'UI|Opened|SettingsControls',
+  'UI|Opened|SignInReasons',
+  'UI|Opened|SlideElementDetail',
+  'UI|Opened|ToolbarSearchOtherModes',
+  'UI|Opened|ToolbarSearchUnavailable',
+  'UI|Opened|AvatarPanel',
+  'UI|Opened|activity',
+  'UI|Opened|connect-ai-mcp',
+  'UI|Opened|your-first-diagram',
+]);
+
 // Sentences kept as history, not retired (docs/specs/017-telemetry/telemetry.md "Retired features"): nothing sends
 // these now, but their stored rows still read on a chart or in Search, so the dashboard keeps showing them. The bare
 // `MapSize` is what the Minimap Size row sent before it named the option picked (its counts stay under the bare token),
@@ -517,6 +549,7 @@ const UNSENT_SETS = [
   UNSENT_DIAGRAM_LEAVINGS,
   UNSENT_HOME_PAGE,
   UNSENT_OTHER_UNSENT,
+  UNSENT_OPEN_SET_LEFTOVERS,
 ];
 
 function isUnsentEvent(category: string, action: string, type: string | null): boolean {

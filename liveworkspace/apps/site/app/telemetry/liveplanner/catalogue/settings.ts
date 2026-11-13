@@ -83,7 +83,13 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
     rising: 'neutral',
   },
   changed('PanelLayout', 'Panel Layout', 'Floating or Toolbar chrome. No longer recorded.'),
-  toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
+  toggle(
+    'UI',
+    'MinimapOn',
+    'MinimapOff',
+    'Show Minimap',
+    'The minimap in the corner. No longer recorded: the Map was removed.',
+  ),
   toggle(
     'UI',
     'AutoOpenExplorerOn',
@@ -145,41 +151,41 @@ export const KEYBOARD_SETTINGS = settingsStack(
   ],
 );
 
-export const PANELS_SETTINGS = settingsStack(
-  'Panels Settings',
-  'What the Layers and minimap panels show.',
-  [
-    toggle(
-      'UI',
-      'LayerPreviewOn',
-      'LayerPreviewOff',
-      'Layer Thumbnails',
-      'Thumbnails in the Layers panel.',
-    ),
-    toggle(
-      'UI',
-      'LayerCountOn',
-      'LayerCountOff',
-      'Layer Element Counts',
-      'Element counts on each layer.',
-    ),
-    toggle(
-      'UI',
-      'LayerHoverPreviewOn',
-      'LayerHoverPreviewOff',
-      'Preview Layer on Hover',
-      'Highlighting a layer\u2019s elements on hover.',
-    ),
-    toggle(
-      'UI',
-      'MapDimOn',
-      'MapDimOff',
-      'Dim Outside the View',
-      'The minimap dimming what is off screen.',
-    ),
-    changed('MapSize', 'Minimap Size', 'Short, Medium or Tall.'),
-  ],
-);
+export const PANELS_SETTINGS = settingsStack('Panels Settings', 'What the Layers panel shows.', [
+  toggle(
+    'UI',
+    'LayerPreviewOn',
+    'LayerPreviewOff',
+    'Layer Thumbnails',
+    'Thumbnails in the Layers panel.',
+  ),
+  toggle(
+    'UI',
+    'LayerCountOn',
+    'LayerCountOff',
+    'Layer Element Counts',
+    'Element counts on each layer.',
+  ),
+  toggle(
+    'UI',
+    'LayerHoverPreviewOn',
+    'LayerHoverPreviewOff',
+    'Preview Layer on Hover',
+    'Highlighting a layer\u2019s elements on hover.',
+  ),
+  toggle(
+    'UI',
+    'MapDimOn',
+    'MapDimOff',
+    'Dim Outside the View',
+    'The minimap dimming what is off screen. No longer recorded: the Map was removed.',
+  ),
+  changed(
+    'MapSize',
+    'Minimap Size',
+    'Short, Medium or Tall. No longer recorded: the Map was removed.',
+  ),
+]);
 
 export const COLLABORATE_SETTINGS = settingsStack(
   'Collaborate Settings',

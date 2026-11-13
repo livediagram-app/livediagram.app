@@ -1144,10 +1144,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|ElementIndicatorsFooter':
     'Someone set element indicators (link, note, action, comments) to a labelled row along the bottom of each element, in Settings > Editor.',
   'UI|Changed|MapSize':
-    'Someone resized the minimap, in Settings > Editor. An earlier version of this event, before it recorded which size was chosen. No longer recorded.',
-  'UI|Changed|MapSizeMedium': 'Someone set the minimap to its medium size, in Settings > Editor.',
-  'UI|Changed|MapSizeShort': 'Someone set the minimap to its short size, in Settings > Editor.',
-  'UI|Changed|MapSizeTall': 'Someone set the minimap to its tall size, in Settings > Editor.',
+    'Someone resized the minimap, in Settings > Editor. An earlier version of this event, before it recorded which size was chosen. No longer recorded: the Map was removed.',
+  'UI|Changed|MapSizeMedium':
+    'Someone set the minimap to its medium size, in Settings > Editor. No longer recorded: the Map was removed.',
+  'UI|Changed|MapSizeShort':
+    'Someone set the minimap to its short size, in Settings > Editor. No longer recorded: the Map was removed.',
+  'UI|Changed|MapSizeTall':
+    'Someone set the minimap to its tall size, in Settings > Editor. No longer recorded: the Map was removed.',
   'UI|Changed|PaletteFavourite':
     'Someone reordered their palette Favourites by dragging, or reset the list back to its default tiles. No longer recorded: Favourites is gone.',
   'UI|Changed|PanelLayout':
@@ -1522,7 +1525,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|import-tabs':
     'Someone opened the help article about importing tabs, from the Import Tab dialog or a search result.',
   'UI|Opened|minimap':
-    'Someone opened the help article about the minimap, from a help link or a search result.',
+    'Someone opened the help article about the minimap, from a help link or a search result. No longer recorded: the Map was removed.',
   'UI|Opened|palette':
     'Someone opened the help article about the Palette, from a help link or a search result.',
   'UI|Opened|recent':
@@ -1665,9 +1668,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned on layer thumbnails in the Layers panel, in Settings > Panels.',
   'UI|Toggled|Light': "Someone set the editor's appearance to Light.",
   'UI|Toggled|MapDimOff':
-    'Someone turned off dimming the part of the minimap outside the current view.',
+    'Someone turned off dimming the part of the minimap outside the current view. No longer recorded: the Map was removed.',
   'UI|Toggled|MapDimOn':
-    'Someone turned on dimming the part of the minimap outside the current view.',
+    'Someone turned on dimming the part of the minimap outside the current view. No longer recorded: the Map was removed.',
   'UI|Toggled|MiddleMousePanOff':
     'Someone turned off panning the canvas by holding the middle mouse button, in Settings > Controls.',
   'UI|Toggled|MiddleMousePanOn':
@@ -1676,12 +1679,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched the panel layout back to Floating, from the quick toggle rather than the Settings dialog. No longer recorded: the Minimal layout was removed.',
   'UI|Toggled|MinimalPanelsOn':
     'Someone switched the panel layout to Minimal, from the quick toggle rather than the Settings dialog. No longer recorded: the Minimal layout was removed.',
-  'UI|Toggled|MinimapOff': 'Someone turned off the minimap, in Settings > Editor.',
+  'UI|Toggled|MinimapOff':
+    'Someone turned off the minimap, in Settings > Editor. No longer recorded: the Map was removed.',
   'UI|Toggled|DockButtonNamesOff':
     'Someone turned off Button Labels in Settings > Appearance, so the bottom-right buttons show icons alone on a wide desktop.',
   'UI|Toggled|DockButtonNamesOn':
     'Someone turned Button Labels back on in Settings > Appearance, naming the bottom-right buttons beside their icons on a wide desktop.',
-  'UI|Toggled|MinimapOn': 'Someone turned on the minimap, in Settings > Editor.',
+  'UI|Toggled|MinimapOn':
+    'Someone turned on the minimap, in Settings > Editor. No longer recorded: the Map was removed.',
   'UI|Toggled|AutoOpenExplorerOff':
     'Someone turned off Automatically Open Explorer in Settings > Explorer, so the homepage shows again when they open it.',
   'UI|Toggled|AutoOpenExplorerOn':
