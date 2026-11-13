@@ -86,8 +86,9 @@ describe('eventExplanation', () => {
   // event livehuddle sends or a named retirement.
   it('explains only events livehuddle sends or has retired', { timeout: 30_000 }, () => {
     const sent = new Set<string>();
-    // A computed site whose values are samples (an article slug, a page path, a Settings category) can send keys no
-    // list names, so its category and action are not held to the exact keys.
+    // A computed site whose values are samples (a status code, an error name) can send keys no list names, so its
+    // category and action are not held to the exact keys. UI·Opened, Help·View and Page·View are never among them
+    // (the next test): their values are read from the code that makes them.
     const open = new Set<string>();
     // Plus what liveworkspace's own Workers send in this app's name (emails, the Community, the Explorer's rows).
     const everything = [...EMITS, ...platformEmitters(isValidTelemetryEvent, 'Document')];
@@ -111,6 +112,13 @@ describe('eventExplanation', () => {
       );
     });
     expect(stale).toEqual([]);
+  });
+
+  it('lists the exact values of UI·Opened, Help·View and Page·View, with no open set', () => {
+    const open = Object.entries(COMPUTED_EMITTERS)
+      .filter(([site, v]) => v.open && /(UI·Opened|Help·View|Page·View)$/.test(site))
+      .map(([site]) => site);
+    expect(open).toEqual([]);
   });
 
   it('keeps a history sentence only for an event that is no longer sent', () => {

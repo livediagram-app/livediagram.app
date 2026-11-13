@@ -13,7 +13,7 @@
 // computed site with no entry, an entry with no site, or a value no chart
 // counts.
 
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { platformComputedEmitters } from '../platform-emitters';
 import {
@@ -113,7 +113,88 @@ const RECEPTIONIST_TOPIC_SOURCE: string[] = [
         .join('')}`,
   );
 
-const SLUGS = ['your-first-diagram', 'tips-format-painter', 'connect-ai-mcp'];
+// Help ids, settings categories and page paths are read from the sources that make them, so each family below
+// (UI·Opened, Help·View, Page·View) is the exact set livehuddle can send, never samples of an open one.
+const helpRead = (path: string) =>
+  readFileSync(resolve(APPS, '../packages/help-registry/src', path), 'utf8');
+
+// `categorySlug/slug` of every registered help article.
+const ARTICLE_PATHS: string[] = [
+  ...helpRead('index.ts').matchAll(
+    / {4}slug: '([a-z0-9-]+)',[\s\S]*?categorySlug: '([a-z0-9-]+)',/g,
+  ),
+].map((m) => `${m[2]}/${m[1]}`);
+
+// help-registry/telemetry.ts TELEMETRY_ID_OVERRIDES: the path of an article whose slug another uses, and its id.
+const ID_OVERRIDES = new Map(
+  [...helpRead('telemetry.ts').matchAll(/'([a-z0-9/-]+)': '([a-z0-9-]+)',/g)].map((m) => [
+    m[1]!,
+    m[2]!,
+  ]),
+);
+// helpPathTelemetryId: the override for a path, else its last segment.
+const helpId = (path: string) => ID_OVERRIDES.get(path) ?? path.slice(path.lastIndexOf('/') + 1);
+
+// Every page file under an app's `app` folder, as the path it serves (route groups dropped; a dynamic segment is
+// replaced by each of `dynamic`'s values for its parent route).
+function routesUnder(root: string, dynamic: Record<string, string[]> = {}, prefix = ''): string[] {
+  const out: string[] = [];
+  const walk = (dir: string, route: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = resolve(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name.startsWith('[')) {
+          for (const value of dynamic[route] ?? []) walk(full, `${route}/${value}`);
+        } else walk(full, entry.name.startsWith('(') ? route : `${route}/${entry.name}`);
+      } else if (/^page\.(tsx|mdx)$/.test(entry.name))
+        out.push(route === '' ? prefix || '/' : prefix + route);
+    }
+  };
+  walk(resolve(APPS, root), '');
+  return out;
+}
+
+// The marketing site's detail pages: a feature category per landing section, a comparison per alternative.
+const FEATURE_IDS = [
+  ...read('marketing/lib/landing-content.tsx').matchAll(/^ {4}id: '([a-z-]+)',/gm),
+].map((m) => m[1]!);
+const ALTERNATIVE_SLUGS = [
+  ...read('marketing/lib/alternatives.ts').matchAll(/^ {4}slug: '([a-z-]+)',/gm),
+].map((m) => m[1]!);
+
+// Every page livehuddle serves: the editor's (every document is /document), the marketing site's, and the help
+// centre's under /help; the telemetry dashboard and the Community are the platform's, counted under the same names.
+const PAGE_VIEW_PATHS = [
+  ...new Set([
+    ...routesUnder('editor/app', { '/document': ['x'] }).map((r) =>
+      r.startsWith('/document') ? '/document' : r,
+    ),
+    ...routesUnder('marketing/app', {
+      '/features': FEATURE_IDS,
+      '/alternatives': ALTERNATIVE_SLUGS,
+    }),
+    ...routesUnder('help/app', {}, '/help'),
+    '/telemetry',
+    '/community',
+  ]),
+];
+
+// Every help article's id: what the help centre's views, the editor's search results and its deep links are keyed by.
+const HELP_ARTICLE_IDS = ARTICLE_PATHS.map(helpId);
+// The editor's HELP_ARTICLES map, key to the path it links.
+const EDITOR_HELP_LINK_IDS = [
+  ...read('editor/lib/help-articles.ts').matchAll(/^ {2}[A-Za-z]+: '([a-z0-9/-]+)',/gm),
+].map((m) => helpId(m[1]!));
+// The Settings dialog's categories, as `Settings<Id>` (SettingsDialog's onCategoryOpened).
+const SETTINGS_OPENED = [
+  ...read('editor/components/dialogs/settings/settings-catalogue.ts').matchAll(
+    /^ {4}id: '([a-z]+)',/gm,
+  ),
+].map((m) => `Settings${m[1]!.charAt(0).toUpperCase()}${m[1]!.slice(1)}`);
+// COMMUNITY_HELP's two ids.
+const COMMUNITY_HELP_IDS = ['community', 'finding-community-documents'];
+// The help centre's votes and a Search result's help link use the same ids; an article slug stays "open" for votes.
+const SLUGS = HELP_ARTICLE_IDS;
 const SLUG_WHY = "a help article's telemetry id, one per registered article";
 const THEMES = ['Default', 'Plum'];
 const THEME_WHY = "themeTelemetryLabel(themeId): a built-in theme's label (Default for none)";
@@ -184,7 +265,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
 
   // The help centre.
-  'packages/help-site/src/components/ArticleShell.tsx Help·View': { values: SLUGS, open: SLUG_WHY },
+  'packages/help-site/src/components/ArticleShell.tsx Help·View': { values: HELP_ARTICLE_IDS },
   'packages/help-site/src/lib/use-article-vote.ts Help·Helpful': { values: SLUGS, open: SLUG_WHY },
   'packages/help-site/src/lib/use-article-vote.ts Help·Unhelpful': {
     values: SLUGS,
@@ -198,12 +279,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   // The Community's help deep links (docs/specs/018-help/contextual-help-links.md): COMMUNITY_HELP's two ids.
   'packages/ui/src/community/CommunityHelpLink.tsx UI·Opened': {
-    values: ['community', 'finding-community-documents'],
-    open: SLUG_WHY,
+    values: COMMUNITY_HELP_IDS,
   },
   'packages/ui/src/page-view-tracker.tsx Page·View': {
-    values: ['/', '/document', '/explorer', '/help/canvas/links', '/telemetry', '/community'],
-    open: 'the page path, ids and query strings stripped',
+    values: PAGE_VIEW_PATHS,
   },
 
   // The editor.
@@ -230,8 +309,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },
   'apps/editor/app/new/useCtaAttribution.ts Cta·Created': { values: ALL_CTA_SOURCES },
   'apps/editor/components/dialogs/SettingsDialog.tsx UI·Opened': {
-    values: ['SettingsAppearance', 'SettingsEditor', 'SettingsAccount', 'SettingsPrivacy'],
-    open: 'Settings<Category>, one per Settings category',
+    values: SETTINGS_OPENED,
   },
   'apps/editor/components/palette/PaletteCategoryBrowser.tsx UI·Searched': {
     values: ['IconSearch', 'TechSearch', 'StickerSearch'],
@@ -239,7 +317,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/components/palette/PaletteCategoryBrowser.tsx UI·Opened': {
     values: ['IconGroup', 'TechGroup', 'StickerGroup'],
   },
-  'apps/editor/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
+  'apps/editor/components/panels/SearchPanel.tsx UI·Opened': { values: HELP_ARTICLE_IDS },
   'apps/editor/components/panels/SearchPanel.tsx Search·Selected': {
     values: [
       'Document',
@@ -261,8 +339,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'Render.<Area>.<ErrorName>',
   },
   'apps/editor/components/primitives/HelpArticleLink.tsx UI·Opened': {
-    values: SLUGS,
-    open: SLUG_WHY,
+    values: EDITOR_HELP_LINK_IDS,
   },
   // Load recovery (docs/specs/007-editor/load-recovery.md): the watchdog's warnings, and a throw in
   // the load named by its error.
