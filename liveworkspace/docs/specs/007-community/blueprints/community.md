@@ -184,7 +184,8 @@ state = 'hidden', hidden_at = now WHERE state = 'listed'` and at least 3 distinc
   (`publicWhere(scope)`), or `OWN_POST` for My Shares (one app only); `category`; every tag (`tag` param and each
   `#tag` in `q`, at most 5) as `EXISTS (post_tags …)`; every plain term (lowercased and NFC-normalised, at most 5, each cut to 40)
   as
-  `search_text LIKE '%term%' ESCAPE '\'` with `\ % _` escaped; ordered `new` = `published_at DESC, id`, `loved` =
+  `instr(search_text, term) > 0` (never a bound `LIKE`: D1 refuses a pattern over 50 bytes, and a term of 40
+  characters can be 160); ordered `new` = `published_at DESC, id`, `loved` =
   `like_count DESC, published_at DESC, id`, `copied` likewise by `copy_count`; `LIMIT 25 OFFSET offset`. `nextOffset`
   is `offset + 24` when a 25th row came back and that does not pass `COMMUNITY_MAX_OFFSET` (2400), else null.
 - **Query parsing** `parseCommunityListQuery`: `q` trimmed and cut to 200; an unknown `category` or a tag that does not

@@ -56,11 +56,6 @@ export function parseLimit(text: string | null, fallback = LIST_LIMIT_DEFAULT): 
   return Number.isInteger(n) && n >= 1 && n <= LIST_LIMIT_MAX ? n : null;
 }
 
-// A LIKE pattern matching `text` anywhere, its own `%`, `_` and `\` taken literally (with ESCAPE '\').
-export function containsPattern(text: string): string {
-  return `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
-}
-
 // Share codes, as the apps have them: fourteen characters with no look-alike glyphs (no 0/O, 1/I/l). The
 // alphabet is 32 characters, so a byte modulo it carries no bias.
 const SHARE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

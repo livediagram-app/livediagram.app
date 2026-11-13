@@ -13,7 +13,7 @@ import {
   type MineCount,
 } from '@liveworkspace/index-client';
 import { archivedScope, personalScope, scopesOf, teamScope, type Person } from './auth';
-import { containsPattern, encodeCursor, type Cursor } from './codec';
+import { encodeCursor, type Cursor } from './codec';
 import type { Env } from './env';
 import { decorate, ITEM_COLUMNS, LIVE_LINK, type ItemRow } from './rows';
 
@@ -129,12 +129,13 @@ export function filterClauses(
   const args: unknown[] = [];
   const allScopes = JSON.stringify(scopesOf(person));
   for (const word of filters.words ?? []) {
-    const pattern = containsPattern(word);
+    // `instr`, never a bound LIKE: D1 refuses a LIKE pattern over 50 bytes, and a word may be 200 characters.
+    // `lower` folds ASCII alone, as LIKE did.
     where.push(
-      `(i.title LIKE ? ESCAPE '\\'
-        OR i.folder_id IN (SELECT f.id FROM folders f WHERE f.scope ${IN_JSON} AND f.name LIKE ? ESCAPE '\\'))`,
+      `(instr(lower(i.title), lower(?)) > 0
+        OR i.folder_id IN (SELECT f.id FROM folders f WHERE f.scope ${IN_JSON} AND instr(lower(f.name), lower(?)) > 0))`,
     );
-    args.push(pattern, allScopes, pattern);
+    args.push(word, allScopes, word);
   }
   if (filters.apps?.length) {
     where.push(`i.app ${IN_JSON}`);

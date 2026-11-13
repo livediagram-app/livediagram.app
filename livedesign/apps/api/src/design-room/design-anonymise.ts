@@ -15,13 +15,14 @@ export async function anonymiseDesign(
 ): Promise<number> {
   const db = env.DESIGN_DB;
   const now = Date.now();
-  const like = `%${personId}%`;
+  // `instr`, never a bound LIKE: Durable Object SQLite refuses a LIKE pattern over 50 bytes.
+  const needle = personId;
   const tabs = await db
     .prepare(
       `SELECT t.id, t.data, t.rev FROM tabs t JOIN design_tabs pt ON pt.tab_id = t.id
-        WHERE pt.design_id = ? AND t.data LIKE ?`,
+        WHERE pt.design_id = ? AND instr(t.data, ?) > 0`,
     )
-    .bind(designId, like)
+    .bind(designId, needle)
     .all();
   const writes: D1PreparedStatement[] = [];
   for (const tab of (tabs.results ?? []) as { id: string; data: string; rev: number }[]) {

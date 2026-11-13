@@ -45,9 +45,6 @@ export async function mentionedCardIds(
   });
 }
 
-// `LIKE`'s own characters in a name, escaped with `\`.
-const escapeLike = (text: string) => text.replace(/[\\%_]/g, (c) => `\\${c}`);
-
 /** The ids of the plan's cards whose fields hold the pull request (a Pull Request field or a Link field). */
 export async function fieldCardIds(
   env: PlanEnv,
@@ -55,11 +52,12 @@ export async function fieldCardIds(
   types: readonly ItemTypeDef[],
   ref: PullRequestRef,
 ): Promise<string[]> {
-  // Any address of it holds this run of text (with or without www., a page after the number); LIKE is case-blind
-  // for ASCII, as owners and repositories are. `/pull/4` also finds `/pull/42`: every hit is confirmed below.
-  const needle = `%github.com/${escapeLike(ref.owner)}/${escapeLike(ref.repo)}/pull/${ref.number}%`;
+  // Any address of it holds this run of text (with or without www., a page after the number), matched case-blind
+  // as owners and repositories are. `/pull/4` also finds `/pull/42`: every hit is confirmed below. `instr`, never a
+  // bound LIKE: Durable Object SQLite refuses a LIKE pattern over 50 bytes, and every repository's address is longer.
+  const needle = `github.com/${ref.owner}/${ref.repo}/pull/${ref.number}`.toLowerCase();
   const res = await env.PLAN_DB.prepare(
-    `SELECT id FROM items WHERE plan_id = ? AND fields LIKE ? ESCAPE '\\'`,
+    `SELECT id FROM items WHERE plan_id = ? AND instr(lower(fields), ?) > 0`,
   )
     .bind(planId, needle)
     .all<{ id: string }>();

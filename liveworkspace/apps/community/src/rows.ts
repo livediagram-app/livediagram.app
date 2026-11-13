@@ -111,11 +111,6 @@ export function searchText(title: string, description: string, tags: string[]): 
   return `${title}\n${description}\n${tags.join(' ')}`.toLowerCase().normalize('NFC');
 }
 
-// Escape a term for a LIKE pattern with ESCAPE '\'.
-export function likePattern(term: string): string {
-  return `%${term.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
-}
-
 // A post id: ten characters from an unambiguous alphabet, as livediagram's share codes are.
 const ID_ALPHABET = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 

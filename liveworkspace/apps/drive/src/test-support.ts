@@ -4,6 +4,7 @@
 
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { assertD1Compound } from '@liveworkspace/api-kit/d1-compound-guard';
+import { assertD1LikePatterns } from '@liveworkspace/api-kit/d1-like-guard';
 import {
   APP_FILE_FORMATS,
   bytesToBase64Url,
@@ -35,6 +36,7 @@ export function nodeSql(db = new DatabaseSync(':memory:')): Sql {
   return {
     exec(query, ...bindings) {
       assertD1Compound(query);
+      assertD1LikePatterns(query, bindings);
       if (bindings.length > DO_BOUND_PARAMETERS_MAX) {
         throw new Error('too many SQL variables: SQLITE_ERROR');
       }

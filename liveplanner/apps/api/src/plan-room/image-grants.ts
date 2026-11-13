@@ -102,11 +102,8 @@ export function copiedGrantsStatement(
   ).bind(planId, now, JSON.stringify(ids));
 }
 
-// LIKE's own characters in an id, escaped, so the prefilter matches the id's text and nothing wider.
-const likeEscaped = (text: string) => text.replace(/[\\%_]/g, (c) => `\\${c}`);
-
 // Whether the plan serves `imageId`: the grant first (a key lookup), then a card holding it. A text prefilter
-// (LIKE on the id as its JSON string, quoted and escaped as a card's fields store it) skips every card whose fields
+// (`instr` on the id as its JSON string, quoted and escaped as a card's fields store it) skips every card whose fields
 // never mention it before the exact check (a field whose value is the id itself, a list holding it, as a Several
 // Images field's, or an Attachments entry's id, read from the JSON; `json_each` reads only an array's value, through
 // the CASE, so a text value is never parsed as JSON), and the first
@@ -129,14 +126,15 @@ export function planServesImage(
     )
     .toArray();
   if (granted.length === 0) return false;
-  const like = `%${likeEscaped(JSON.stringify(imageId))}%`;
+  // `instr`, never a bound LIKE: Durable Object SQLite refuses a LIKE pattern over 50 bytes, and an id may be 200.
+  const needle = JSON.stringify(imageId);
   const scoped = onlyCards === null ? '' : 'AND items.id IN (SELECT value FROM json_each(?))';
   const bindings = onlyCards === null ? [] : [JSON.stringify(onlyCards)];
   return (
     sql
       .exec(
         `SELECT 1 FROM items, json_each(items.fields) AS f
-          WHERE items.plan_id = ? ${scoped} AND items.fields LIKE ? ESCAPE '\\'
+          WHERE items.plan_id = ? ${scoped} AND instr(items.fields, ?) > 0
             AND ((f.type = 'text' AND f.value = ?)
               OR (f.type = 'array' AND EXISTS (
                     SELECT 1 FROM json_each(CASE WHEN f.type = 'array' THEN f.value ELSE '[]' END) AS a
@@ -146,7 +144,7 @@ export function planServesImage(
           LIMIT 1`,
         planId,
         ...bindings,
-        like,
+        needle,
         imageId,
         imageId,
         imageId,
