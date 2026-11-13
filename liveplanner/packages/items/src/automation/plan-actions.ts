@@ -35,6 +35,7 @@ import {
 } from './types';
 import { allHold } from './conditions';
 import {
+  changeNeverHeard,
   fieldDefOf,
   fieldName,
   personOf,
@@ -111,6 +112,9 @@ function setField(a: Extract<AutomationAction, { kind: 'set_field' | 'clear_fiel
   if (a.kind === 'set_field' && 'from' in a.value && !planHasField(ctx.outline, a.value.from))
     failGone({ kind: 'field', id: a.value.from });
   if (def?.kind === 'calculated' || def?.calculation) fail(`${name} is worked out, never set`);
+  // Time Spent's entries, a Votes tally and a Comments field change without a write: a rule never writes them.
+  if (def && changeNeverHeard(def))
+    fail(`${name} is never ${a.kind === 'set_field' ? 'set' : 'cleared'} by a rule`);
   const value =
     a.kind === 'set_field'
       ? setValueOf({

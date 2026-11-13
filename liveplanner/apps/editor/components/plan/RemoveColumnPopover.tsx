@@ -64,7 +64,7 @@ export function RemoveColumnPopover({
               title="Move to Another Column"
             >
               <label htmlFor={selectId} className="sr-only">
-                Move the cards to
+                {cardCount === 1 ? 'Move the card to' : 'Move the cards to'}
               </label>
               <Select
                 id={selectId}
@@ -92,7 +92,7 @@ export function RemoveColumnPopover({
             title="Move to the Trash"
           >
             <p className="mt-0.5 text-[12px] text-slate-500 dark:text-slate-400">
-              You can restore them from the Trash.
+              You can restore {cardCount === 1 ? 'it' : 'them'} from the Trash.
             </p>
           </Option>
         </div>

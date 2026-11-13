@@ -76,6 +76,59 @@ describe('StepPanel', () => {
     expect(screen.getByText(/listed under Run Rule/)).toBeTruthy();
   });
 
+  it('leaves out of Set Field and Clear Field the fields no write changes, unless a step holds one', () => {
+    const [first, ...rest] = outline().types;
+    const o = outline({
+      types: [
+        {
+          ...first!,
+          fields: [...first!.fields, 'f-votes', 'f-spent', 'f-score'],
+          custom: [
+            ...(first!.custom ?? []),
+            { id: 'f-votes', label: 'Votes', kind: 'votes' },
+            { id: 'f-spent', label: 'Time Spent', kind: 'duration', timeSpent: true },
+            { id: 'f-score', label: 'Score', kind: 'calculated', calculation: 'childCount' },
+          ],
+        },
+        ...rest,
+      ],
+    });
+    const names = (name: string) =>
+      [...screen.getByRole('combobox', { name }).querySelectorAll('option')].map(
+        (x) => x.textContent,
+      );
+    const set = render(
+      <Panel
+        o={o}
+        body={body({ steps: [{ kind: 'set_field', field: 'title', value: { from: 'due' } }] })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    for (const list of [names('Field'), names('From Field')])
+      for (const gone of ['Votes', 'Time Spent', 'Score']) expect(list).not.toContain(gone);
+    expect(names('Field')).toContain('Title');
+    set.unmount();
+    const clear = render(
+      <Panel
+        o={o}
+        body={body({ steps: [{ kind: 'clear_field', field: 'due' }] })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    expect(names('Field')).not.toContain('Votes');
+    clear.unmount();
+    // A step saved on one before still reads as what it holds.
+    render(
+      <Panel
+        o={o}
+        body={body({ steps: [{ kind: 'set_field', field: 'f-votes', value: { text: '5' } }] })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    expect(names('Field')).toContain('Votes');
+    expect(names('Field')).not.toContain('Score');
+  });
+
   it('sets Priority and a Choice field to one of their values, picked, never typed', () => {
     const [first, ...rest] = outline().types;
     const o = outline({

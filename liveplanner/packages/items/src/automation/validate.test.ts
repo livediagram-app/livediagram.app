@@ -259,6 +259,14 @@ describe('readRuleBody', () => {
     });
   });
 
+  it('says text a step must hold needs 1 to its most characters, never "up to"', () => {
+    expect(readRuleBody(withStep({ kind: 'comment', text: '  ' }))).toEqual({
+      error: 'automation_invalid',
+      path: 'steps.0.text',
+      message: 'steps.0.text must be text of 1 to 2000 characters',
+    });
+  });
+
   it('counts a card in each branch of an If as one per run', () => {
     const step = {
       kind: 'if',

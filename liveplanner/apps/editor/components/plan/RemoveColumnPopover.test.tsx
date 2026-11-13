@@ -44,6 +44,9 @@ describe('removing a column with cards', () => {
     expect(
       screen.getByText('One card is in To Do, on every board that shows it. Where should it go?'),
     ).toBeTruthy();
+    // The Trash's line and the column menu's name say it too.
+    expect(screen.getByText('You can restore it from the Trash.')).toBeTruthy();
+    expect(screen.getByLabelText('Move the card to')).toBeTruthy();
   });
 
   it('moves them to the Trash when that is picked', () => {

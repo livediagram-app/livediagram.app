@@ -4,7 +4,8 @@
 // what it is set to: text with values, a number, a day (Today shifted), or another field's value. A field of fixed
 // values is set to one of them, picked, or to another field's value: Priority and a Choice field to a value, the
 // Assignee and a Person field to one of the plan's people (kept by id, shown by name, as Assign's pick is), a
-// Checkbox to Yes or No. Set Field leaves out Flagged and Checklist, which Flag, Unflag and Add a Checklist set.
+// Checkbox to Yes or No. Set Field leaves out Flagged and Checklist, which Flag, Unflag and Add a Checklist set, and
+// both leave out the fields no write changes.
 
 import {
   PRIORITIES,
@@ -13,7 +14,12 @@ import {
   type AutomationSetValue,
 } from '@liveplanner/items';
 import { TextInput } from '@liveplanner/ui';
-import { outlineFields, type AutomationOutline, type OutlineField } from '../automation-outline';
+import {
+  fieldChangeFields,
+  outlineFields,
+  type AutomationOutline,
+  type OutlineField,
+} from '../automation-outline';
 import { fieldClass } from '../field-kinds';
 import { ValueTextField } from '../ValueInsert';
 import { PanelField, PanelSelect, TodayShift } from './panel-parts';
@@ -121,12 +127,17 @@ export function FieldActionPanel({
   // Inside a branch: the triggering card's values join Insert a Value.
   branch?: boolean;
 }) {
-  const all = outlineFields(outline.types);
-  // Set Field offers what it can set; the field a step holds stays listed.
-  const fields =
-    action.kind === 'set_field'
-      ? all.filter((f) => !OWN_ACTION_FIELDS.has(f.id) || f.id === action.field)
-      : all;
+  // The fields a write changes (never Time Spent, a Votes tally, a Comments field or a Calculated value), less, for
+  // Set Field, those with their own actions; the field a step holds stays listed.
+  const writable = new Set(fieldChangeFields(outline.types).map((f) => f.id));
+  const held = (id: string) =>
+    id === action.field ||
+    (action.kind === 'set_field' && 'from' in action.value && id === action.value.from);
+  const fields = outlineFields(outline.types).filter(
+    (f) =>
+      held(f.id) ||
+      (writable.has(f.id) && !(action.kind === 'set_field' && OWN_ACTION_FIELDS.has(f.id))),
+  );
   const field = fields.find((f) => f.id === action.field);
   const cls = fieldClass(field?.kind ?? 'text');
   const fixed = fieldPick(field, outline);
