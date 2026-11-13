@@ -22,7 +22,7 @@ import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { CommunityBar } from '@/components/chrome/CommunityBar';
-import { useAutoCopyParam } from '@/hooks/canvas/useAutoCopyParam';
+import { useAutoCopyParam } from '@liveworkspace/workbench/hooks/canvas/useAutoCopyParam';
 import { documentIsPublic } from '@/lib/community-public';
 import { useCommunityState } from '@/lib/community-state-store';
 import { useCommunityEnabled } from '@livediagram/ui';

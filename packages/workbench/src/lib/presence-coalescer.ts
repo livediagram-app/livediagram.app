@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
-import type { LaserConfig } from '@/lib/laser-config';
+import { trimLaserBuffer, type LaserPoint } from './laser-buffer';
+import type { LaserConfig } from './laser-config';
 
 export type CursorPos = { tabId: string; x: number; y: number } | null;
 // The pen (docs/specs/008-canvas/laser-panel.md) rides along with the samples so peers render the
@@ -23,6 +23,12 @@ export type LaserTrail = { tabId: string; points: LaserPoint[]; config?: LaserCo
 export type PresenceCoalescer = {
   cursor(from: string, pos: CursorPos): void;
   laser(from: string, incoming: { tabId: string; point: LaserPoint; config?: LaserConfig }): void;
+  /**
+   * Forget buffered packets from anyone not in `present` (the roster just received). A peer's last
+   * cursor move often lands in the same frame as the roster that drops them; flushed after the
+   * roster's prune, it would put their cursor back on every screen until the next roster.
+   */
+  prune(present: ReadonlySet<string>): void;
   /** Drop a pending frame on teardown, so a flush can't land after unmount. */
   cancel(): void;
 };
@@ -107,6 +113,11 @@ export function createPresenceCoalescer({
         config: incoming.config ?? buffered?.config,
       });
       schedule();
+    },
+    prune(present) {
+      for (const pending of [pendingCursors, pendingLasers]) {
+        for (const id of pending.keys()) if (!present.has(id)) pending.delete(id);
+      }
     },
     cancel() {
       if (presenceRafId !== null) cancelAnimationFrame(presenceRafId);

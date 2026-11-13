@@ -1,14 +1,15 @@
 'use client';
 
 // Whether a bar across the top of the canvas reaches into a top-corner panel stack, MEASURED: the
-// Toolbar strip (docs/specs/007-editor/toolbar-layout.md "The top corners give way to the strip").
+// Toolbar strip (docs/specs/007-editor/toolbar-layout.md "The top corners give way to the strip") or
+// a whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
 // The bar's real extent against each top corner's real extent, re-checked whenever
 // either resizes (a panel docks, the strip gains a tile) or the window does.
 // Moving the corners below the strip changes neither extent horizontally, so
 // the answer can't feed back on itself.
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
-import { stripCrowdsCorners } from '@/components/palette/toolbar-strip-tiles';
+import { stripCrowdsCorners } from '../../lib/strip-crowds-corners';
 
 // The Toolbar layout's strip: its tile row, not the full-width positioning layer around it.
 export const STRIP_SELECTOR = '[data-toolbar-palette] [data-tour-id="palette"]';

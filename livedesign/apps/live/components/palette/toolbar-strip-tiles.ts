@@ -67,15 +67,8 @@ export function fitStripTiles({
   return Math.min(STRIP_TILE_LIMIT, Math.max(MIN_STRIP_TILES, (available - chrome) / pitch));
 }
 
-// Whether the strip reaches into a top-corner panel stack, horizontally, with
-// `gap` to spare. An empty corner (zero width) never counts. The canvas chrome
-// then starts its top corner stacks below the strip (docs/specs/007-editor/toolbar-layout.md).
-export type Span = { left: number; right: number };
-export function stripCrowdsCorners(strip: Span, corners: Span[], gap = 8): boolean {
-  return corners.some(
-    (c) => c.right - c.left > 0 && strip.left < c.right + gap && strip.right > c.left - gap,
-  );
-}
+// Whether the strip reaches into a top-corner panel stack (@liveworkspace/workbench/lib/strip-crowds-corners).
+export { stripCrowdsCorners, type Span } from '@liveworkspace/workbench/lib/strip-crowds-corners';
 
 // Categories whose body carries more than tiles: a search box or a library
 // picker. They always get More, even

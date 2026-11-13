@@ -31,6 +31,10 @@ the dev entry: it points `next dev` at its own `.next-dev/` and, before starting
 and exits, leaving it running, since sessions and agents share the machine. `--force` kills the holder and its children
 and takes the port (`corepack pnpm --filter <app> dev -- --force`). `--webpack` runs dev on webpack.
 
+Every editor's `build:signed-in` script runs `node ../../../packages/next-config/scripts/build-signed-in.mjs`, the
+one copy of the signed-in e2e build: `next build` with the test-only auth bridge (`NEXT_PUBLIC_E2E_AUTH=1`), same-origin
+`/api`, into `.next/out-signed-in/`.
+
 `typescriptConfig()` keeps `next build`'s type check unless `BUILD_SKIP_TYPECHECK=1`, which only the
 E2E Smoke jobs set: CI's required Checks job already type-checks every app with `tsc --noEmit`.
 

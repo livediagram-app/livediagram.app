@@ -2,11 +2,11 @@
 
 import { useEffect, useEffectEvent, useRef } from 'react';
 
-// `?copy=1` on a share URL (docs/specs/025-community/blueprints/community.md "Make a Copy": Make a Copy opens the
-// document in the editor and copies it in one step). Once the shared document has hydrated with a
+// `?copy=1` on a share URL (docs/specs/025-community/community.md "Post": Make a Copy opens the
+// item in the editor and copies it in one step). Once the shared item has hydrated with a
 // share code to copy through, the copy runs exactly once and the parameter leaves the address bar, so a
 // reload or Back never copies a second time. An owner (no session share code) only loses the
-// parameter: their own document has nothing to copy.
+// parameter: their own item has nothing to copy.
 
 const AUTO_COPY_PARAM = 'copy';
 
@@ -27,8 +27,8 @@ export function useAutoCopyParam(opts: {
   sessionShareCode: string | null;
   // Whether that code is a Community post's link, opened by someone other than its author. Only the Community's
   // Make a Copy carries `?copy=1`, so on any other share link the parameter is dropped without copying: a crafted
-  // link must not be able to copy someone else's document into a visitor's account the moment they open it. The
-  // author's own post copies nothing either (they get Edit Your Document).
+  // link must not be able to copy someone else's item into a visitor's account the moment they open it. The
+  // author's own post copies nothing either (they get its Edit Your button).
   community: boolean;
   makeCopy: () => void | Promise<void>;
 }): void {

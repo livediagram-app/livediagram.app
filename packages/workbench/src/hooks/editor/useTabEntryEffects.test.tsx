@@ -5,7 +5,10 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useTabEntryEffects } from './useTabEntryEffects';
+import { createTabEntryEffects } from './useTabEntryEffects';
+
+// An editor's addresses, as its lib/legacy-editor-path names them.
+const useTabEntryEffects = createTabEntryEffects((pathname) => pathname.startsWith('/document/'));
 
 type Props = {
   activeId: string;
@@ -97,7 +100,7 @@ describe('useTabEntryEffects', () => {
   });
 });
 
-// The tab pin (#t=<tab>) is the editor's: an address that names no document (new-document-route.md "Unknown
+// The tab pin (#t=<tab>) is the editor's: an address that names no item (the new route's "Unknown
 // addresses") shows the not-found card and keeps its own address.
 describe('useTabEntryEffects tab pin', () => {
   afterEach(() => window.history.replaceState(null, '', '/'));
