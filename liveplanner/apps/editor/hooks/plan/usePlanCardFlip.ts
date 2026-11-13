@@ -71,9 +71,13 @@ export function usePlanCardFlip(
   const last = useRef(new Map<string, { x: number; y: number }>());
   const remember = (run: HTMLElement) => {
     const body = root.current;
-    if (!body) return;
-    for (const card of run.querySelectorAll<HTMLElement>('[data-plan-card]'))
-      last.current.set(card.dataset.planCard!, placeWithin(card, body));
+    // A run near the view but off screen is skipped by the browser (content-visibility): each card place read in it
+    // laid the run out again, so a board's near runs built after it was first drawn (a 2,000-card import, the cards
+    // built as a transition) cost hundreds of layouts, 2 to 4 s, one time in two. None would see its cards glide.
+    // A run skips its own contents, so it is asked of its first card.
+    const cards = run.querySelectorAll<HTMLElement>('[data-plan-card]');
+    if (!body || cards[0]?.checkVisibility?.({ contentVisibilityAuto: true }) === false) return;
+    for (const card of cards) last.current.set(card.dataset.planCard!, placeWithin(card, body));
   };
   useLayoutEffect(() => {
     const body = root.current;

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render } from '@testing-library/react';
 import { useLayoutEffect, useRef } from 'react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FLIP_CARDS_MAX, cardsToMeasure, usePlanCardFlip } from './usePlanCardFlip';
 
 // docs/specs/026-plan/plan-board.md "Cards move visibly".
@@ -75,6 +75,21 @@ describe('cards moving on a board', () => {
     rerender(<Board ids={['a', 'b']} signature="2" />);
     expect(card('b').classList.contains('plan-card-flip')).toBe(true);
     expect(card('a').classList.contains('plan-card-flip')).toBe(false);
+  });
+
+  // A run the browser skips (near the view, off screen): its cards' places are not read, so none glides from one.
+  it('learns nothing from a run the browser skips', () => {
+    places.set('a', { x: 0, y: 0 }).set('b', { x: 0, y: 100 });
+    const { rerender } = render(<Board ids={['a']} signature="1" />);
+    rerender(<Board ids={['a', 'b']} signature="1" />);
+    const run = document.querySelector<HTMLElement>('[data-testid="body"]')!;
+    const seen = vi.fn(() => false);
+    Object.assign(card('a'), { checkVisibility: seen });
+    remembered.current!(run);
+    expect(seen).toHaveBeenCalledWith({ contentVisibilityAuto: true });
+    places.set('b', { x: 240, y: 100 });
+    rerender(<Board ids={['a', 'b']} signature="2" />);
+    expect(card('b').classList.contains('plan-card-flip')).toBe(false);
   });
 
   it('glides a card that moved, and only that card', () => {

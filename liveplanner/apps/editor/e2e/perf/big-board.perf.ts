@@ -97,7 +97,8 @@ const report = async (page: Page, what: string, rate: number, reading: MainThrea
 test('a 2,000-card board imported, then opened', async ({ page, browser }) => {
   test.setTimeout(300_000);
   const rate = await probeThrottle(browser, process.env.BIG_BOARD_THROTTLE);
-  const tracing = process.env.BIG_BOARD_TRACE === '1';
+  const tracing = !!process.env.BIG_BOARD_TRACE;
+  const invalidations = process.env.BIG_BOARD_TRACE === 'invalidations';
   const profiling = process.env.BIG_BOARD_PROFILE === '1';
   const json = bigBoardExport();
   expect(json.length).toBeGreaterThan(5 * 1024 * 1024);
@@ -130,7 +131,8 @@ test('a 2,000-card board imported, then opened', async ({ page, browser }) => {
   // Import: from the Import press until the board has drawn.
   const cdp = await throttleCpu(page, rate);
   await startMainThreadProbe(page);
-  if (tracing) await startProbeTrace(browser, page, `${OUT}/big-board-import.trace.json`);
+  if (tracing)
+    await startProbeTrace(browser, page, `${OUT}/big-board-import.trace.json`, invalidations);
   if (profiling) await startCpuProfile(cdp);
   await importButton.click();
   await drawn(page);

@@ -795,7 +795,9 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
   board's own task (built in a layout effect's sync re-render, 57 cards held a 2,000-card import for 0.45 s at the
   reference speed). A run whose cards
   were just built calls `drawn`, which `usePlanCardFlip`'s `remember` hears, so its cards' places are known for the
-  next glide. `markNear(run)` (`cardsToMeasure`) asks a run to draw, with the others of its commit. A far card has no element:
+  next glide; a run near but off screen, whose contents the browser skips (its first card's
+  `checkVisibility({ contentVisibilityAuto: true })` false), is not read: each place read in one laid the run out
+  again, 492 layouts and 2 to 4 s in one import in two once its cards were built as a transition. `markNear(run)` (`cardsToMeasure`) asks a run to draw, with the others of its commit. A far card has no element:
   `focusPlanCard(root, id, opts)` focuses the card when built, else asks its far run (`[data-plan-run-ids~=id]`) to
   draw and focus it once its cards are built (`PlanBoardView`'s keyboard moves and the focus after a move,
   `SetupBoardHost`'s focus after a setup, which takes a run met before any card by its first id);
