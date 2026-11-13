@@ -59,7 +59,7 @@ import { WAIT_CONDITIONS, WAIT_FULL, WAIT_RULE_CHANGED, holdRun } from './automa
 import type { AutomationSchedule } from './automation-queue';
 import type { AutomationStore, Sql } from './automation-store';
 import { applyPlannedRun, type WriteDeps } from './automation-writes';
-import { sendMessages, sendsClient } from './automation-sends';
+import { heldSends, sendMessages, sendsClient } from './automation-sends';
 import { aiClient, runAiSteps } from './automation-ai';
 import { tallyRun, type AutomationTally } from './automation-telemetry';
 
@@ -419,18 +419,22 @@ export async function runRule(
       refused.push(`#${r.card.key}`);
       failed ??= `Failed on ${refused[0]}: ${wrote.reason}`;
     }
-    // The AI steps, after the card writes: each one call, counted against the plan's day.
+    // The AI steps, after the card writes: each one call, counted against the plan's day. One that fails stops the
+    // run there: the messages of the steps after it are not sent (spec "How a step runs").
     const asked = await ai(false);
     failed ??= asked.failed ?? null;
-    const sent = await sendMessages(messages, writes.sends, lines, offset);
+    const sends = heldSends(writes.sends, asked.failedStep, lines, offset);
+    const sent = await sendMessages(messages, sends, lines, offset);
     if (failed === null && sent.failed !== undefined) {
       failed = sent.failed;
       webhook = sent.webhook;
     }
     if (failed !== null) return end('failed', failed, gone);
     turns = writes.turns;
-    // A step the day's AI cap skipped makes the run Skipped, not Failed: nothing is wrong with the rule.
-    if (asked.skipped) return end('skipped', asked.skipped);
+    // A step the day's AI cap skipped skips only itself: the run goes on, a Wait holding it as ever, and is Skipped
+    // (not Failed: nothing is wrong with the rule) once the rest is done, as the addresses limit's (spec "The daily
+    // cap").
+    capped = asked.skipped ?? capped;
     // A Wait reached: the rest goes on later, as a run of its own.
     if ('wait' in writes && writes.wait) {
       const until = holdRun(sql, id, rule.id, event, rule.edited.at, writes.wait, Date.now());

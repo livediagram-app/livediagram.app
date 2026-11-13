@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   AI_CAPPED,
   AI_FAILED,
+  AI_NOT_ASKED,
   AI_NOT_SET_UP,
   AI_SLOW,
   AI_UNREADABLE,
@@ -14,11 +15,25 @@ import { endRepeatWorld } from '../test-repeat-world';
 import { automationWorld, type AutomationWorld } from './test-automation-world';
 import { AUTOMATION_AI_MODEL, AUTOMATION_AI_TIMEOUT_MS, aiClient } from './automation-ai';
 import type { AutomationsAi } from '../../types';
+import { SEND_NOT_SENT, type AutomationSend, type AutomationSendsClient } from './automation-sends';
 
 // The AI actions on a plan's own alarm (docs/specs/026-plan/automations.md "AI actions"), end to end through the
 // real worker and room, Workers AI a stand-in binding: what it is sent, what its answer writes, and each way a step
 // fails or is skipped. No network.
 vi.mock('../../auth/accounts', async () => (await import('../test-accounts-mock')).accountsMock);
+
+// The index's automation sends, a stand-in that queues every message (automations-steps.test.ts has the rest).
+let sent: AutomationSend[][];
+const client: AutomationSendsClient = {
+  pushAutomationSends: (_plan, sends) => {
+    sent.push([...sends]);
+    return Promise.resolve({ results: sends.map((s) => ({ key: s.key, queued: true })) });
+  },
+};
+vi.mock('./automation-sends', async (original) => ({
+  ...(await original<typeof import('./automation-sends')>()),
+  sendsClient: () => client,
+}));
 
 const TASK: ItemTypeDef = {
   id: 'task',
@@ -63,6 +78,7 @@ beforeEach(async () => {
   vi.spyOn(console, 'debug').mockImplementation(() => {});
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   calls = [];
+  sent = [];
   answers({ summary: 'A summary.' });
   w = await automationWorld();
   bind('AI', ai);
@@ -255,11 +271,34 @@ describe('when the AI can’t answer', () => {
     await alarm;
     expect((await runs())[0]).toMatchObject({ result: 'failed', reason: AI_SLOW });
   });
+
+  // Spec "How a step runs": a failed AI step stops the run there; a message before it still goes.
+  it('stops at a failed step: no later AI step asked, no later message sent', async () => {
+    answer = () => Promise.reject(new Error('3040: capacity'));
+    const notify = (text: string) =>
+      ({ kind: 'notify', via: 'slack', webhook: 'wh1', name: 'Launch', text }) as const;
+    const { run } = await ran([
+      notify('Before'),
+      { kind: 'ai', task: 'summarise' },
+      { kind: 'ai', task: 'card_type', set: true },
+      notify('After'),
+    ]);
+    expect(run).toMatchObject({ result: 'failed', reason: AI_FAILED });
+    expect(calls).toHaveLength(1);
+    expect(run.steps.slice(1).map((s) => [s.ok, s.text])).toEqual([
+      [true, 'Queued for Launch'],
+      [false, AI_FAILED],
+      [false, AI_NOT_ASKED],
+      [false, SEND_NOT_SENT],
+    ]);
+    expect(sent.flat().map((s) => [s.key, s.text])).toEqual([[`${run.id}:0`, 'Before']]);
+  });
 });
 
 describe('the daily cap', () => {
-  it('skips a step once the plan has made its 100 calls today, asking nothing', async () => {
-    const steps = Array.from({ length: 100 }, () => ({
+  // `n` AI calls the plan made today, on one old run's lines.
+  const used = (n: number) => {
+    const steps = Array.from({ length: n }, () => ({
       kind: 'action',
       ok: true,
       text: 'x',
@@ -270,12 +309,37 @@ describe('the daily cap', () => {
         'INSERT INTO automation_runs (id, rule_id, at, result, body) VALUES (?, ?, ?, ?, ?)',
       )
       .run('old', 'r0', Date.now(), 'done', JSON.stringify({ steps }));
+  };
+  it('skips a step once the plan has made its 100 calls today, asking nothing', async () => {
+    used(100);
     const { run } = await ran([{ kind: 'flag' }, { kind: 'ai', task: 'summarise' }]);
     expect(calls).toHaveLength(0);
     expect(run).toMatchObject({ result: 'skipped', reason: AI_CAPPED });
     expect(run.steps.at(-1)).toMatchObject({ ok: false, text: AI_CAPPED });
     // The steps before it still ran.
     expect(run.steps.find((s) => s.text === 'Flag')).toMatchObject({ ok: true });
+  });
+
+  // Spec "The daily cap": only the capped step is skipped; the run goes on, a Wait and the steps after it included.
+  it('skips only the capped step, the run going on past a Wait', async () => {
+    used(100);
+    const { c, run } = await ran([
+      { kind: 'ai', task: 'summarise' },
+      { kind: 'wait', hours: 2 },
+      { kind: 'add_label', label: 'later' },
+    ]);
+    expect(calls).toHaveLength(0);
+    expect(run).toMatchObject({ result: 'waiting' });
+    expect(run.steps.slice(1).map((s) => s.text)).toEqual([AI_CAPPED, 'Wait 2 Hours']);
+    plan()
+      .db.prepare('UPDATE automation_waiting SET at = ?')
+      .run(Date.now() - 1);
+    room().automations.schedule.restoreTimes();
+    await room().alarm();
+    await room().alarm();
+    expect((await card(c.id)).fields['labels']).toEqual(['later']);
+    const tidy = (await runs()).filter((r) => r.ruleName === 'Tidy');
+    expect(tidy.map((r) => r.result).sort()).toEqual(['done', 'done']);
   });
 
   it('counts each call, a failed one too, from the Audit Trail', async () => {
