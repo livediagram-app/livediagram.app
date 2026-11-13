@@ -2,7 +2,7 @@
 // one wall line rather than standing their walls back to back, so the ordinary edge snap (box edge to box edge, which
 // leaves a double wall) is joined by a shared-wall snap. Pure, and linear in the elements: it runs per pointer frame.
 import { ROOM_BACK_FACE, ROOM_WALL } from '@livehuddle/avatar/office-geometry';
-import type { AlignmentGuide } from './geometry-guides';
+import type { AlignmentGuide } from '@liveworkspace/element-model/geometry-guides';
 import type { Element, ElementId, ShapeElement } from './index';
 
 type Box = { x: number; y: number; width: number; height: number };

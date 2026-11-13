@@ -367,7 +367,7 @@ import type { ElementGrid as SharedElementGrid } from '@liveworkspace/element-mo
 export * from '@liveworkspace/model-core/names';
 export * from './geometry-snapping';
 export * from './arrow-snapping';
-export * from './geometry-guides';
+export * from '@liveworkspace/element-model/geometry-guides';
 
 // Layer order + union bounds, and the load-time migration of projects saved
 // while groups existed (docs/specs/009-elements/web-components-and-no-groups.md).
