@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { itemPersonId } from '@liveplanner/items';
+import { AUTOMATION_TEXT_MAX, itemPersonId } from '@liveplanner/items';
+import { THREAD_COMMENT_TEXT_MAX } from '@liveplanner/project';
 import { endRepeatWorld } from '../test-repeat-world';
 import { USER, automationWorld, type AutomationWorld } from './test-automation-world';
 
@@ -125,6 +126,22 @@ describe('Send Email', () => {
     await w.plans.get('A')!.room.alarm();
     await settle();
     expect(sent.map((m) => m.to)).toEqual([`${USER}@example.test`]);
+  });
+
+  it("Mention Someone keeps the whole comment within a comment's 2,000 characters", async () => {
+    await w.rule({
+      steps: [{ kind: 'mention', to: { assignee: true }, text: 'x'.repeat(AUTOMATION_TEXT_MAX) }],
+    });
+    const c = await w.make('A', {
+      title: 'Long',
+      assignee: { id: 'n-ali', name: 'Ali', color: '#112233' },
+    });
+    await w.send('POST', `/api/projects/A/items/${c.id}/move`, { status: 'done' });
+    await w.plans.get('A')!.room.alarm();
+    const rows = w.plans.get('A')!.db.prepare('SELECT comments FROM card_threads').all();
+    const [comment] = JSON.parse(String(rows[0]!['comments'])) as { text: string }[];
+    expect(comment!.text).toMatch(/^@\S+ x+$/);
+    expect(comment!.text).toHaveLength(THREAD_COMMENT_TEXT_MAX);
   });
 
   it('sends nothing to a name typed onto the card', async () => {

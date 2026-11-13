@@ -36,6 +36,7 @@ import {
 } from '@liveplanner/items';
 import {
   CARD_THREADS_MAX,
+  THREAD_COMMENT_TEXT_MAX,
   mentionHandle,
   newThreadId,
   startThread,
@@ -270,8 +271,8 @@ async function sendOne(
   });
 }
 
-// Mention Someone: a thread "@handle message" naming the person (their Inbox reads it), and an email unless they
-// turned mention emails off. Nobody to mention: nothing is written.
+// Mention Someone: a thread "@handle message" naming the person (their Inbox reads it), at most a comment's 2,000
+// characters, and an email unless they turned mention emails off. Nobody to mention: nothing is written.
 async function mentionOne(
   deps: WriteDeps,
   plan: AutomationPlan,
@@ -284,7 +285,8 @@ async function mentionOne(
   if (!to) return { ok: true };
   const handle = mentionHandle(to.name) || 'teammate';
   const accountId = plan.accounts.get(to.id);
-  const text = `@${handle} ${mention.text}`.trim();
+  // The whole comment within a comment's limit: the message is cut, never the handle.
+  const text = `@${handle} ${mention.text}`.trim().slice(0, THREAD_COMMENT_TEXT_MAX);
   const out = await addComment(deps, rule, card, text, {
     mentions: [{ userId: accountId ?? null, name: to.name, handle }],
   });
