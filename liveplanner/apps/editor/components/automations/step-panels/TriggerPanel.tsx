@@ -16,6 +16,7 @@ import { GithubTriggerFields } from '../github/GithubTriggerFields';
 import {
   RULE_BUILT_IN_FIELDS,
   fieldChangeFields,
+  outlineFields,
   type AutomationOutline,
 } from '../automation-outline';
 import { ChipToggles, PanelField, PanelNote, PanelSelect } from './panel-parts';
@@ -65,19 +66,21 @@ export function TriggerPanel({
   const fields = fieldChangeFields(outline.types);
   const columns = outline.columns.map((c) => ({ value: c.status, label: c.name }));
   const statuses = columns.map((c) => c.value);
-  // Field Changed's chips: the plan's fields, and a built-in one the rule names that no card type lists, by its name.
+  // Field Changed's chips: the plan's fields, and one the rule names that is not offered by its name: a field it never
+  // hears (Needs Attention names it too) or a built-in one no card type lists. Only one the plan lacks reads as gone.
   const fieldOptions = fields.map((f) => ({ value: f.id, label: f.name }));
-  if (trigger.kind === 'field_changed')
-    for (const id of trigger.fields)
-      if (
-        !fields.some((f) => f.id === id) &&
-        RULE_BUILT_IN_FIELDS.has(id) &&
-        id in BUILT_IN_FIELD_NAMES
-      )
-        fieldOptions.push({
-          value: id,
-          label: BUILT_IN_FIELD_NAMES[id as keyof typeof BUILT_IN_FIELD_NAMES],
-        });
+  if (trigger.kind === 'field_changed') {
+    const held = trigger.fields.filter((id) => !fields.some((f) => f.id === id));
+    const all = held.length ? outlineFields(outline.types) : [];
+    for (const id of held) {
+      const label =
+        all.find((f) => f.id === id)?.name ??
+        (RULE_BUILT_IN_FIELDS.has(id) && id in BUILT_IN_FIELD_NAMES
+          ? BUILT_IN_FIELD_NAMES[id as keyof typeof BUILT_IN_FIELD_NAMES]
+          : null);
+      if (label) fieldOptions.push({ value: id, label });
+    }
+  }
   return (
     <div className="flex flex-col gap-4">
       <ChangeTriggerField

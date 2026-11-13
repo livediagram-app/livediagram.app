@@ -266,6 +266,27 @@ describe('StepPanel', () => {
     expect(screen.queryByRole('button', { name: 'Time Spent' })).toBeNull();
   });
 
+  it('names a field Field Changed never hears that the rule holds, never as gone', () => {
+    const [first, ...rest] = outline().types;
+    const timed = {
+      ...first!,
+      fields: [...first!.fields, 'f-time'],
+      custom: [
+        ...(first!.custom ?? []),
+        { id: 'f-time', label: 'Time Spent', kind: 'duration' as const, timeSpent: true },
+      ],
+    };
+    render(
+      <Panel
+        body={body({ trigger: { kind: 'field_changed', fields: ['f-time', 'f-lost'] } })}
+        part={{ part: 'trigger' }}
+        o={outline({ types: [timed, ...rest] })}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Time Spent', pressed: true })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: 'A field no longer here' })).toHaveLength(1);
+  });
+
   it('edits the type, column and who conditions, is and is not', () => {
     render(
       <Panel
