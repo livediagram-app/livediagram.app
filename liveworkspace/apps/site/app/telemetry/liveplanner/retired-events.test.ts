@@ -339,3 +339,12 @@ describe('the Plan tour step cards', () => {
     expect(isRetiredEvent('UI', 'Selected', 'PlanTourBoard')).toBe(false);
   });
 });
+
+// liveplanner/docs/specs/006-project/tab-project-many-to-many.md "Add to Plan": gone from the tab menu (2026-11-13).
+describe('Add to Plan', () => {
+  it('retires a tab linked into another plan, keeping the other tab events', () => {
+    expect(isRetiredEvent('Tab', 'Linked', null)).toBe(true);
+    expect(isRetiredEvent('Tab', 'Locked', null)).toBe(false);
+    expect(isRetiredEvent('Tab', 'Created', null)).toBe(false);
+  });
+});
