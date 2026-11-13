@@ -27,7 +27,7 @@ import { FORM_STARTERS, type StarterId } from '@liveplanner/forms';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
 
 export type StartKind =
-  'board' | 'sheet' | 'form' | 'visualisation' | 'dashboard' | 'template' | 'import';
+  'board' | 'sheet' | 'form' | 'visualisation' | 'dashboard' | 'template' | 'describe' | 'import';
 
 export type StartItem = {
   id: string;
@@ -53,6 +53,8 @@ export type StartItem = {
   | { kind: 'visualisation'; view: PlanVisualisation }
   // A Plan template: a way of working set up across tabs (Inspiration).
   | { kind: 'template'; template: PlanTemplateKind }
+  // Opens the Describe a Plan dialog (describe-a-plan.md "Where it starts").
+  | { kind: 'describe' }
   // Opens the one Import dialog on its list (plan-tabs.md "The Import dialog"): every way in stays there.
   | { kind: 'import' }
 );
@@ -65,11 +67,13 @@ export type StartCategory =
   | 'visualisations'
   | 'dashboards'
   | 'inspiration'
-  // Not a category: Import is the rail's own entry below Connect File, and one card in a search's results.
+  // Not categories: Describe a Plan and Import are the rail's own entries at its foot, each one card in a search's
+  // results.
+  | 'describe'
   | 'import';
 
 export const START_CATEGORIES: readonly {
-  id: Exclude<StartCategory, 'import'>;
+  id: Exclude<StartCategory, 'describe' | 'import'>;
   name: string;
   line: string;
 }[] = [
@@ -260,6 +264,16 @@ export const IMPORT_ITEM: StartItem = {
   ],
 };
 
+// The one Describe a Plan card, a search's (docs/specs/026-plan/describe-a-plan.md "Where it starts"): found by what
+// asking for a plan of your own is called. The rail's Describe a Plan entry does what it does.
+export const DESCRIBE_ITEM: StartItem = {
+  id: 'describe',
+  kind: 'describe',
+  name: 'Describe a Plan',
+  line: 'Say what you’re planning and AI drafts the board’s columns and card types for you to check.',
+  keywords: ['describe', 'ai', 'custom', 'generate', 'my own', 'own words', 'draft', 'write'],
+};
+
 // The sheet starts, in Start Planning's order: the empty sheet, the card table (only with cards), then every sheet
 // template (docs/specs/029-sheets/sheet.md "Sheet templates").
 export const SHEET_STARTS: readonly {
@@ -382,6 +396,7 @@ export function startItems({
     ...suggested,
     ...dashboards,
     ...templates,
+    DESCRIBE_ITEM,
     IMPORT_ITEM,
   ].map((i) => (START_KEYWORDS[i.id] ? { ...i, keywords: START_KEYWORDS[i.id] } : i));
 }
@@ -393,6 +408,7 @@ const KIND_OF: Record<Exclude<StartCategory, 'recommended'>, StartKind> = {
   visualisations: 'visualisation',
   dashboards: 'dashboard',
   inspiration: 'template',
+  describe: 'describe',
   import: 'import',
 };
 
@@ -403,6 +419,7 @@ export const KIND_NAMES: Record<StartKind, string> = {
   visualisation: 'Chart',
   dashboard: 'Dashboard',
   template: 'Template',
+  describe: 'Describe a Plan',
   import: 'Import',
 };
 
@@ -418,7 +435,7 @@ export function itemsIn(items: readonly StartItem[], category: StartCategory): S
   return items.filter((i) => i.kind === KIND_OF[category]);
 }
 
-// The order a search's groups follow: the rail's, Recommended left out, then Import.
+// The order a search's groups follow: the rail's, Recommended left out, then its foot: Describe a Plan, Import.
 export const START_SEARCH_ORDER = [
   'boards',
   'sheets',
@@ -426,6 +443,7 @@ export const START_SEARCH_ORDER = [
   'visualisations',
   'dashboards',
   'inspiration',
+  'describe',
   'import',
 ] as const satisfies readonly Exclude<StartCategory, 'recommended'>[];
 

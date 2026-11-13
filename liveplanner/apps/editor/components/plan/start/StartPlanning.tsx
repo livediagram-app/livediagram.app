@@ -8,7 +8,7 @@
 // badged Community; choosing one opens the person's own copy of it.
 import { useEffect, useMemo, type ReactNode } from 'react';
 import { DASHBOARD_PRESETS } from '@liveplanner/project';
-import { lucideGlyph } from '@liveplanner/ui';
+import { lucideGlyph, SparkleIcon } from '@liveplanner/ui';
 import {
   lucideChartPie,
   lucideClipboardList,
@@ -44,6 +44,7 @@ import { FormStarterPicture } from '@liveplanner/template-previews';
 import type { StarterId } from '@liveplanner/forms';
 import type { PlanVisualisation } from '@liveplanner/items';
 import {
+  DESCRIBE_ITEM,
   IMPORT_ITEM,
   KIND_NAMES,
   START_CATEGORIES,
@@ -56,13 +57,22 @@ import {
 } from './start-planning-items';
 import { useStartPalette } from '@/components/start/useStartPalette';
 import { ImportPicture } from './ImportPicture';
+import { DescribePicture } from './describe-plan/DescribePicture';
 import { useConnectStart } from '@/components/connect/useConnectStart';
 import { COMMUNITY_START_GROUP, communityStartTiles } from './community-start-cards';
 
 // The rail's Import entry, below Connect File (plan-mode.md "Starting a board"): the tab menu's Import… glyph.
 const ImportGlyph = lucideGlyph(lucideFileDown, 16);
 
-const RAIL_ICONS: Record<Exclude<StartCategory, 'import'>, ReturnType<typeof lucideGlyph>> = {
+// The rail's Describe a Plan entry, above Connect File (describe-a-plan.md "Where it starts"): the AI sparkle.
+function DescribeGlyph() {
+  return <SparkleIcon size={16} aria-hidden />;
+}
+
+const RAIL_ICONS: Record<
+  Exclude<StartCategory, 'describe' | 'import'>,
+  ReturnType<typeof lucideGlyph>
+> = {
   recommended: lucideGlyph(lucideStar, 16),
   boards: lucideGlyph(lucideSquareKanban, 16),
   sheets: lucideGlyph(lucideGrid3x3, 16),
@@ -76,6 +86,7 @@ const CHIPS_MAX = 3;
 
 function Picture({ item, palette }: { item: StartItem; palette: PlanPalette }) {
   if (item.kind === 'import') return <ImportPicture palette={palette} />;
+  if (item.kind === 'describe') return <DescribePicture palette={palette} />;
   if (item.kind === 'board') return <BoardPreview preset={item.preset} palette={palette} />;
   // A template's preview is light-canvas art, on a re-lit tile, as every start draws one.
   if (item.kind === 'template') return <TemplatePicture kind={item.template} />;
@@ -102,8 +113,8 @@ function Picture({ item, palette }: { item: StartItem; palette: PlanPalette }) {
 function toCard(item: StartItem, palette: PlanPalette, showKind: boolean): StartPanelCard {
   const chips = item.types?.slice(0, CHIPS_MAX) ?? [];
   const more = (item.types?.length ?? 0) - chips.length;
-  // Import is its own name: no badge, or kind read out, saying it again.
-  const kind = showKind && item.kind !== 'import';
+  // Import and Describe a Plan are their own names: no badge, or kind read out, saying it again.
+  const kind = showKind && item.kind !== 'import' && item.kind !== 'describe';
   const badge =
     item.kind === 'dashboard' && item.suggestion
       ? 'For You'
@@ -175,6 +186,7 @@ export function StartPlanning({
   onVisualisation,
   onForm,
   onImport,
+  onDescribe,
   leave = (href) => window.location.assign(href),
 }: {
   onPickBoard: (preset: string) => void;
@@ -196,6 +208,9 @@ export function StartPlanning({
   // Opens the Import dialog on its list (an Editor's: plan-tabs.md "The Import dialog"); absent, no Import entry on
   // the rail and no Import card in a search.
   onImport?: (() => void) | undefined;
+  // Opens Describe a Plan (an Editor's: describe-a-plan.md "Where it starts"); absent, no rail entry and no card in a
+  // search.
+  onDescribe?: (() => void) | undefined;
   // Leaving for a Community tile's copy (a full navigation; tests watch it instead).
   leave?: (href: string) => void;
 }) {
@@ -225,7 +240,8 @@ export function StartPlanning({
           (i.kind !== 'template' || !!onTemplate) &&
           (i.kind !== 'visualisation' || !!onVisualisation) &&
           (i.kind !== 'form' || !!onForm) &&
-          (i.kind !== 'import' || !!onImport),
+          (i.kind !== 'import' || !!onImport) &&
+          (i.kind !== 'describe' || !!onDescribe),
       ),
     [
       hasCards,
@@ -236,6 +252,7 @@ export function StartPlanning({
       onVisualisation,
       onForm,
       onImport,
+      onDescribe,
     ],
   );
   // The Community's tiles join Inspiration: one read the first time the panel shows this session, none where
@@ -269,6 +286,7 @@ export function StartPlanning({
     else if (item.kind === 'visualisation') onVisualisation?.(item.view, item.name);
     else if (item.kind === 'form') onForm?.(item.starter);
     else if (item.kind === 'import') onImport?.();
+    else if (item.kind === 'describe') onDescribe?.();
     else if (item.suggestion) onSuggestedDashboard?.(item.suggestion);
     else if (item.layout) onDashboard?.(item.layout);
   };
@@ -294,8 +312,10 @@ export function StartPlanning({
       search={(query) => {
         const found = searchStartItems(items, query).map((g) => ({
           category: g.category,
-          // Import has no rail entry to name its group.
-          ...(g.category === 'import' ? { name: KIND_NAMES.import } : {}),
+          // Describe a Plan and Import have no category to name their groups.
+          ...(g.category === 'import' || g.category === 'describe'
+            ? { name: KIND_NAMES[g.category] }
+            : {}),
           cards: g.items.map((item) => toCard(item, palette, false)),
         }));
         // The tiles join only where Inspiration is offered.
@@ -307,6 +327,19 @@ export function StartPlanning({
       // Where the new plan lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
       footer={(p) => <StartSaveSwitch palette={p} />}
       connect={connect}
+      // Describe a Plan, above Connect File: it places nothing and opens its dialog.
+      footLead={
+        onDescribe
+          ? [
+              {
+                id: DESCRIBE_ITEM.id,
+                name: DESCRIBE_ITEM.name,
+                icon: <DescribeGlyph />,
+                onPick: onDescribe,
+              },
+            ]
+          : []
+      }
       // Import, below Connect File: it places nothing and opens the Import dialog on its list.
       footActions={
         onImport
