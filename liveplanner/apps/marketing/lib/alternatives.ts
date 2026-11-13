@@ -94,7 +94,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Does liveplanner have Power-Ups or automations?',
-        a: 'Not in the way Trello does. liveplanner has no marketplace of add-ons. Instead, a REST API, an MCP server and a command-line tool let your own scripts and AI agents read and change the cards.',
+        a: 'Automations, yes: rules act when a card moves, a field changes, a form response lands or a due date nears, from a ready-made template or your own, much as Butler does. Power-Ups, no: there is no marketplace of add-ons. A REST API, an MCP server and a command-line tool let your own scripts and AI agents read and change the cards instead.',
       },
       {
         q: 'Do my teammates need an account?',
@@ -213,12 +213,12 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Automation',
-        us: 'API, MCP and CLI for scripts and AI agents',
+        us: 'Rules from ready-made templates, plus an API, MCP and CLI for scripts and AI agents',
         them: 'Built-in automation recipes and integrations',
       },
     ],
     themBest: [
-      'You want built-in automation recipes and a broad marketplace of integrations, set up without code.',
+      'You want automation recipes for many outside tools and a broad marketplace of integrations, set up without code.',
       'Your teams run CRM, service or development work on purpose-built products from the same vendor.',
       'You need enterprise permissions, audit and administration at scale.',
     ],
@@ -241,7 +241,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Where Monday.com goes further',
         paragraphs: [
-          'Monday.com has invested heavily in no-code automation and integrations, and in products built for particular teams. liveplanner does not have automation recipes. What it has instead is an open interface: a REST API, an MCP server and a command-line tool, so a script or an AI agent can do the routine moving and tidying for you.',
+          'Monday.com has invested heavily in no-code automation and integrations, and in products built for particular teams. liveplanner’s Automations work inside the plan, moving, assigning, labelling and stamping dates, and post to Slack, Microsoft Teams, email or a webhook, but there is no catalogue of recipes for outside tools. Past that, a REST API, an MCP server and a command-line tool let a script or an AI agent do the rest.',
         ],
       },
       {
@@ -260,7 +260,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Does liveplanner have automations?',
-        a: 'Not built-in recipes. A REST API, an MCP server and a command-line tool let your own scripts and AI agents change cards, sheets and forms, with their edits shown live to everyone.',
+        a: 'Yes. Rules act when a card moves, a field changes, a form response lands or a due date nears, from a ready-made template or your own, and can post to Slack, Microsoft Teams, email or a webhook. A REST API, an MCP server and a command-line tool let your own scripts and AI agents change cards, sheets and forms too, with their edits shown live to everyone.',
       },
       {
         q: 'Do guests need an account?',
