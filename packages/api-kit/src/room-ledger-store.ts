@@ -32,6 +32,8 @@ export const LEDGER_MARKS_KEY = 'ledger-marks';
 export const LEDGER_MARK_EVERY_MS = 60 * 60 * 1000;
 /** Keys per batched get: the runtime's limit. */
 export const LEDGER_GET_BATCH = 128;
+/** Element ids one lock read may name (`readKeys` through the room's `/ledger-entries`); a client asks in chunks. */
+export const LEDGER_LOCK_ELEMENTS_MAX = 1024;
 const SEQ_DIGITS = 16;
 
 /** The op that last changed an entry: its room seq and when the room took it. Never leaves the room. */
@@ -191,6 +193,23 @@ export class RoomLedgerStore<E extends object, L> {
       const stamp = stampOf(value);
       if (since !== undefined && stamp && stamp.seq <= since && stamp.at <= recent) continue;
       entries.push([key, unstamped<E>(value)]);
+    }
+    return this.rules.tabLedgerFrom(tabId, entries);
+  }
+
+  // Named entries of a tab's ledger, whatever their seq: what a whole-tab write's lock reads beside the stored tab
+  // (each product's docs/specs/013-workspace/share-roles.md "Whole-tab writes keep other people's entries"). The
+  // lock needs each person's latest on or off however old, so no cursor applies; it names only the entries of the
+  // elements the write changes on someone else's behalf, so this is a batched get of those keys, never a list. A
+  // key outside the tab's prefix is ignored.
+  async readKeys(tabId: string, keys: readonly string[]): Promise<L> {
+    await this.queue;
+    const prefix = this.rules.ledgerPrefix(tabId);
+    const wanted = [...new Set(keys)].filter((key) => key.startsWith(prefix));
+    const entries: [string, unknown][] = [];
+    for (let i = 0; i < wanted.length; i += LEDGER_GET_BATCH) {
+      const got = await this.storage.get<unknown>(wanted.slice(i, i + LEDGER_GET_BATCH));
+      for (const [key, value] of got) if (isEntry(value)) entries.push([key, unstamped<E>(value)]);
     }
     return this.rules.tabLedgerFrom(tabId, entries);
   }
