@@ -158,6 +158,14 @@ describe('RuleBuilder', () => {
     expect(api.save).toHaveBeenCalledWith('r1', expect.objectContaining({ chain: true }));
   });
 
+  it('rings the card in focus in Test on a Card, not just a faint wash', async () => {
+    render(<Builder />);
+    fireEvent.click(screen.getByRole('button', { name: 'Test on a Card' }));
+    const card = await screen.findByRole('button', { name: /Publish pricing page/ });
+    // Slate 100 on white alone was about 1.1:1, short of the 3:1 a focus indicator needs.
+    expect(card.className).toContain('focus-visible:ring-2');
+  });
+
   it('marks the step a test refused, and says when a test did not run', async () => {
     render(<Builder saved={rule({ steps: [{ kind: 'comment', text: '{{x}}' }] })} />);
     api.test.mockRejectedValueOnce(

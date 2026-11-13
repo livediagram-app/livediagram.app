@@ -41,7 +41,7 @@ function CardRow<R extends CardPickerRow>({
         disabled={card.disabled}
         aria-label={`${card.title}, ${card.typeLabel} #${card.key}${note ? `, ${note}` : ''}`}
         onClick={() => onPick(card)}
-        className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-left transition hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:outline-none disabled:cursor-default disabled:opacity-60 disabled:hover:bg-transparent motion-reduce:transition-none pointer-coarse:py-3 dark:hover:bg-slate-800 dark:focus-visible:bg-slate-800"
+        className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-left transition hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-400/60 disabled:cursor-default disabled:opacity-60 disabled:hover:bg-transparent motion-reduce:transition-none pointer-coarse:py-3 dark:hover:bg-slate-800 dark:focus-visible:bg-slate-800"
       >
         <span
           aria-hidden

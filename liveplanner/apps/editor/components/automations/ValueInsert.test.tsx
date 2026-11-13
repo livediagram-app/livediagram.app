@@ -122,6 +122,19 @@ describe('Insert a Value', () => {
     expect(screen.queryByRole('listbox')).toBeNull();
   });
 
+  it('draws the marked value’s token dark enough to read on its wash', () => {
+    render(<Field />);
+    fireEvent.click(button());
+    const search = screen.getByRole('combobox', { name: 'Find a value' });
+    const marked = document.getElementById(search.getAttribute('aria-activedescendant')!)!;
+    const token = marked.querySelector('[data-value-token]')!;
+    // Slate 500 on the violet wash was 4.34:1, under the 4.5:1 small text needs (axe color-contrast).
+    expect(token.className).toContain('text-slate-600');
+    expect(token.className).not.toContain('text-slate-500');
+    const other = screen.getAllByRole('option').find((o) => o !== marked)!;
+    expect(other.querySelector('[data-value-token]')!.className).toContain('text-slate-500');
+  });
+
   it('narrows every group by the search, and says when nothing matches', () => {
     render(<Field />);
     fireEvent.click(button());
