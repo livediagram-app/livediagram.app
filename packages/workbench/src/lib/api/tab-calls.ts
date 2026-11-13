@@ -275,7 +275,8 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
 
   // The last-ditch unload flush of pending tab/meta writes, so a fast edit then reload doesn't lose changes. A
   // `beforeunload` handler can't await, and the account token provider is async, so this builds headers
-  // synchronously and uses `keepalive` to let each request outlive the teardown. Callers pass an already-diffed
+  // synchronously and uses `keepalive` to let each request outlive the teardown. A tab with a base copy goes as a
+  // delta, planned synchronously, when it fits the keepalive budget (delta saves). Callers pass an already-diffed
   // change set; empty sets fire nothing. Only tabs whose content is authoritative in memory (`loadedTabIds`) may
   // authorise an empty-body overwrite.
   function flushSavesBeacon(args: {
@@ -331,14 +332,41 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
         ...(seen !== undefined ? { [config.changesetSeenHeader]: String(seen) } : {}),
         ...(changes ? { [config.saveChangesHeader as string]: changes } : {}),
       };
-      const body = JSON.stringify(core.tabForWire(t));
-      void core
-        .apiFetch(
-          tabUrl(t.id),
-          { method: 'PUT', headers, body, keepalive: keepaliveFor(body) },
-          config.noGrantWait,
-        )
-        .catch(() => {});
+      const wire = core.tabForWire(t);
+      const url = tabUrl(t.id);
+      const whole = () => {
+        const body = JSON.stringify(wire);
+        void core
+          .apiFetch(
+            url,
+            { method: 'PUT', headers, body, keepalive: keepaliveFor(body) },
+            config.noGrantWait,
+          )
+          .catch(() => {});
+      };
+      // A delta where one is held and fits the keepalive budget, so a large tab's last edits outlive the page
+      // (delta-saves.md "Unload"). Refused, the whole tab follows if the page is still here to send it.
+      const delta = deltas?.planUnload({
+        itemId: args.itemId,
+        tabId: t.id,
+        url,
+        tab: wire as { elements: DeltaElement[] },
+      });
+      if (delta && keepaliveFor(delta.body)) {
+        void core
+          .apiFetch(
+            delta.url,
+            { method: 'POST', headers, body: delta.body, keepalive: true },
+            config.noGrantWait,
+          )
+          .then((res) => delta.settle(res))
+          .then((settled) => {
+            if (settled === 'refused') whole();
+          })
+          .catch(() => {});
+        continue;
+      }
+      whole();
     }
     for (const tabId of args.deletedIds) {
       void core

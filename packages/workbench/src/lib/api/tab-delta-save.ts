@@ -1,12 +1,15 @@
 // The editor's side of the delta save (livediagram's docs/specs/006-document/delta-saves.md "How the editor uses it"):
 // the base copy of each tab, the elements exactly as the api stores them at a revision, and the one delta save that
 // turns the editor's tab into ops over it. `send` answers null whenever the save should go whole instead: no base
-// copy, a delta not worth sending, or the api's `409 delta_refused`.
+// copy, a delta not worth sending, or the api's `409 delta_refused`. `planUnload` is the unload flush's delta
+// ("Unload"), planned at once since the page is going.
 import {
   TAB_DELTA_REFUSED,
   TAB_DELTA_SEGMENT,
   planTabDelta,
+  planTabDeltaSync,
   type TabDeltaOp,
+  type TabDeltaPlan,
 } from '@liveworkspace/api-schema/tab-delta';
 import { debugLog } from '../debug-log';
 
@@ -93,6 +96,37 @@ export function createTabDeltaSaves<E extends El>(deps: {
     return bases.get(keyOf(itemId, tabId)) ?? null;
   }
 
+  // A delta's answer: 'refused' (the base copy dropped) to save whole, or the revision written. The base copy is held
+  // at that revision when the stored digest is the plan's, and dropped otherwise, unless a newer copy was held while
+  // the request was out (`sentOver` no longer the held one). Any other failure throws as the whole save's, or, `quiet`
+  // (the unload flush, which reads no answers), answers 'failed'.
+  async function settle(
+    itemId: string,
+    tabId: string,
+    sentOver: Base<E> | null,
+    plan: TabDeltaPlan,
+    elements: E[],
+    res: Response,
+    quiet = false,
+  ): Promise<'refused' | 'failed' | { rev: number | null }> {
+    const reason = await refusalOf(res);
+    if (reason) {
+      debugLog('[tab-delta] refused', { tabId, reason });
+      if (base(itemId, tabId) === sentOver) drop(itemId, tabId);
+      return 'refused';
+    }
+    if (quiet && !res.ok) return 'failed';
+    await deps.expectOkVoid(res, 'save tab');
+    const answer = await answerOf(res);
+    // The store holds exactly the elements sent only when its digest is theirs; otherwise the next save is whole.
+    if (answer.rev !== null && answer.digest === plan.digest) {
+      hold(itemId, tabId, answer.rev, elements);
+    } else if (base(itemId, tabId) === sentOver) {
+      drop(itemId, tabId);
+    }
+    return { rev: answer.rev };
+  }
+
   /** One delta save of `tab` (as the whole save would send it) to `${url}/delta` with the whole save's headers.
    *  Answers the revision written, or null to save the tab whole. Any other failure throws, as the whole save's. */
   async function send(args: {
@@ -114,22 +148,38 @@ export function createTabDeltaSaves<E extends El>(deps: {
       // A hung save would hold every later save of this tab behind it, as the whole save's.
       signal: deps.saveTimeoutSignal(plan.body),
     });
-    const reason = await refusalOf(res);
-    if (reason) {
-      debugLog('[tab-delta] refused', { tabId, reason });
-      if (base(itemId, tabId) === sentOver) drop(itemId, tabId);
-      return null;
-    }
-    await deps.expectOkVoid(res, 'save tab');
-    const answer = await answerOf(res);
-    // The store holds exactly the elements sent only when its digest is theirs; otherwise the next save is whole.
-    if (answer.rev !== null && answer.digest === plan.digest) {
-      hold(itemId, tabId, answer.rev, args.tab.elements);
-    } else if (base(itemId, tabId) === sentOver) {
-      drop(itemId, tabId);
-    }
-    return { rev: answer.rev };
+    const settled = await settle(itemId, tabId, sentOver, plan, args.tab.elements, res);
+    // Not quiet, so a failure has thrown: only a refusal or a revision reaches here.
+    return typeof settled === 'string' ? null : settled;
   }
 
-  return { hold, holdEcho, drop, base, send };
+  /** The unload flush's delta of `tab`, planned at once (the page cannot wait for Web Crypto): the url and body to
+   *  POST, and `settle` for its answer: 'saved', 'refused' (send the tab whole) or 'failed' (any other failure, the
+   *  whole save's own refusals among them); or null to send the tab whole now. The caller sends it, with its own
+   *  headers and keepalive. */
+  function planUnload(args: {
+    itemId: string;
+    tabId: string;
+    url: string;
+    tab: { elements: E[] };
+  }): {
+    url: string;
+    body: string;
+    settle: (res: Response) => Promise<'saved' | 'refused' | 'failed'>;
+  } | null {
+    const { itemId, tabId } = args;
+    const sentOver = base(itemId, tabId);
+    const plan = planTabDeltaSync({ base: sentOver, tab: args.tab, diff: deps.diff });
+    if (!plan) return null;
+    return {
+      url: `${args.url}/${TAB_DELTA_SEGMENT}`,
+      body: plan.body,
+      settle: async (res) => {
+        const settled = await settle(itemId, tabId, sentOver, plan, args.tab.elements, res, true);
+        return typeof settled === 'string' ? settled : 'saved';
+      },
+    };
+  }
+
+  return { hold, holdEcho, drop, base, send, planUnload };
 }

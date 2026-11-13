@@ -4,6 +4,7 @@ import {
   elementsDigest,
   parseTabDelta,
   planTabDelta,
+  planTabDeltaSync,
   type TabDeltaOp,
 } from './tab-delta';
 
@@ -111,5 +112,26 @@ describe('planTabDelta', () => {
   it('saves whole when the delta is over half the elements', async () => {
     const changed = base.elements.map((e, i) => (i < 3 ? { ...e, label: 'changed' } : e));
     expect(await planTabDelta({ base, tab: { elements: changed }, diff: updates })).toBeNull();
+  });
+});
+
+describe('planTabDeltaSync', () => {
+  it('plans the same delta, digest and all, without waiting', async () => {
+    const elements = Array.from({ length: 30 }, (_, i) => ({ id: `e${i}`, label: `Step ${i} é` }));
+    const tab = {
+      id: 't1',
+      elements: elements.map((e, i) => (i === 7 ? { ...e, label: 'new' } : e)),
+    };
+    const args = { base: { rev: 9, elements }, tab, diff: updates };
+    const plan = planTabDeltaSync(args);
+    expect(plan).toEqual(await planTabDelta(args));
+    expect(plan!.digest).toBe(await elementsDigest(tab.elements));
+  });
+
+  it('answers null where planTabDelta does', () => {
+    expect(planTabDeltaSync({ base: null, tab: { elements: [] }, diff: updates })).toBeNull();
+    const base = { rev: 1, elements: [{ id: 'a' }, { id: 'b' }] };
+    const changed = base.elements.map((e) => ({ ...e, label: 'changed' }));
+    expect(planTabDeltaSync({ base, tab: { elements: changed }, diff: updates })).toBeNull();
   });
 });
