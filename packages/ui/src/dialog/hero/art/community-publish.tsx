@@ -2,7 +2,7 @@
 // app's alike): what you made, going up on the gallery's shelf. Faint rings spread from the top right, a spotlight;
 // in the bottom right a shelf along the foot holds two cards already shown, and between them the owner's card rises
 // onto it, its picture and title, an accent star on its corner, bobbing twice over the dashed place it will stand,
-// motion allowing; in the bottom left a heart rises from the edge with two sparkles, the likes it will gather. The
+// motion allowing. The title's side stays plain paper. The
 // title mark is a sparkle. Every app's Community publish dialog is community-ui's one, so it lives here
 // (@liveworkspace/ui/dialog-hero-art/community-publish).
 import { HERO_MOTION, HERO_PLACE, HERO_SVG, heroTexture, type HeroArt } from '../hero-art';
@@ -29,16 +29,6 @@ function card(x: number, y: number, w: number, h: number, fill: string) {
 
 const PIECES = (
   <>
-    {/* The likes it will gather: a heart rising from the edge, two sparkles over it. */}
-    <svg {...HERO_SVG} width="44" height="30" viewBox="0 0 44 30" className={HERO_PLACE.bottomLeft}>
-      <path
-        d="M20 36C8 28 4 21.5 4 16.5A7.5 7.5 0 0 1 20 12a7.5 7.5 0 0 1 16 4.5C36 21.5 32 28 20 36Z"
-        fill="var(--hero-wash)"
-        stroke="var(--hero-line)"
-      />
-      <path d={sparkle(38, 6.5, 4.5)} fill="var(--hero-mark)" />
-      <path d={sparkle(31.5, 2.75, 2.25)} fill="var(--hero-line)" />
-    </svg>
     {/* The gallery's shelf: two cards shown, the owner's rising onto it between them, over the place it will stand. */}
     <svg
       {...HERO_SVG}

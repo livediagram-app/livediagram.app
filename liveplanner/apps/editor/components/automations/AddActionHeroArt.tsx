@@ -1,6 +1,6 @@
 // The Add an Action picker's hero art (docs/specs/026-plan/automations.md "The rule builder"), drawn in the dialog
-// hero header's tokens: the Automations screen's dots fading toward the title, its own pieces. A tag rising from the
-// bottom left and a flag from the bottom right, and, where the header is wide enough (the centre piece), a hand of
+// hero header's tokens: the Automations screen's dots fading toward the title, its own pieces. A flag rising from the
+// bottom right, and, where the header is wide enough (the centre piece), a hand of
 // action tiles fanned out (a label, a flag, a letter, a sparkle), the one in front lifted with the accent's plus, its
 // ring spreading twice, motion allowing. The title mark is a card with a plus, an action to add.
 import type { ReactNode } from 'react';
@@ -39,11 +39,6 @@ function ActionTile({ x, turn, children }: { x: number; turn: number; children: 
 
 const PIECES = (
   <>
-    {/* A tag rising from the bottom left. */}
-    <svg {...HERO_SVG} width="40" height="22" viewBox="0 0 40 22" className={HERO_PLACE.bottomLeft}>
-      <path d="M6 24V10a3 3 0 0 1 3-3h12l11 11-9 9" fill="var(--hero-wash)" />
-      <circle cx="13" cy="13" r="2.5" fill="var(--hero-paper)" />
-    </svg>
     {/* A flag rising from the bottom right. */}
     <svg
       {...HERO_SVG}

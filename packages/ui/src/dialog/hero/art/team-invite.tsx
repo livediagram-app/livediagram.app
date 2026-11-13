@@ -1,5 +1,5 @@
 // Invite by Link's hero art (liveworkspace/docs/specs/004-index/one-explorer.md "Teams are run in the Explorer"): the
-// team dialogs' drawing (team.tsx), people gathered and one welcomed in through the open door, the newcomer's badge a
+// team dialogs' drawing (team.tsx), people gathered and one welcomed in, the newcomer's badge a
 // link rather than a plus: they came in by it.
 import type { HeroArt } from '../hero-art';
 import { teamHeroArt, teamPieces } from './team';

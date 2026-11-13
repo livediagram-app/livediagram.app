@@ -8,18 +8,16 @@ import { shareFormHeroArt } from './ShareFormHeroArt';
 
 // docs/specs/030-forms/forms.md "Publishing and the form link": the dialog hero header, the form handed out.
 describe('the Share Form hero art', () => {
-  it('spreads rings from the corner where the link reaches its two people, the form in the other', () => {
+  it('spreads rings from the corner where the link reaches its two people', () => {
     const { container } = render(<HeroBand art={shareFormHeroArt} />);
     const band = container.querySelector('[data-dialog-hero-art]') as HTMLElement;
     expect(band.getAttribute('data-dialog-hero-art')).toBe('share-form');
     expect(band.style.backgroundImage).toMatch(/radial-gradient/);
     const svgs = band.querySelectorAll(':scope > svg');
-    expect(svgs).toHaveLength(2);
+    // One corner, on the right, and no line along the foot: the title's side stays plain paper.
+    expect(svgs).toHaveLength(1);
+    expect(band.querySelector(':scope > span')).toBeNull();
     for (const svg of svgs) expect(svg.getAttribute('aria-hidden')).toBe('true');
-    // The line along the foot leaves a phone's compact band, as the corners do.
-    expect(String(band.querySelector(':scope > span')!.getAttribute('class'))).toContain(
-      'max-sm:hidden',
-    );
   });
 
   it('moves once, the link’s ring, twice and only where motion is welcome', () => {

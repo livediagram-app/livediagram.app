@@ -1,7 +1,6 @@
 // The Export dialog's hero art (each product's docs/specs/020-import-export/README.md "The dialogs' header"): the tab
-// leaving as files. A faint grid fades in from the title's side, the canvas the tab is drawn on; in the bottom left
-// the tab stands as a page rising from the band's edge; a dashed line runs along the foot from it to the bottom right,
-// where it arrives fanned out into format tiles: a picture (PNG), a vector path (SVG), and in front, in the accent,
+// leaving as files. A faint grid fades in from the title's side, the canvas the tab is drawn on; in the bottom right
+// the tab goes out fanned into format tiles: a picture (PNG), a vector path (SVG), and in front, in the accent,
 // the file going out, which bobs twice, motion allowing. The title mark is an arrow leaving a tray.
 // Every product's Export uses it, so it lives here (@liveworkspace/ui/dialog-hero-art/export).
 import { HERO_MOTION, HERO_PLACE, HERO_SVG, heroTexture, type HeroArt } from '../hero-art';
@@ -22,26 +21,6 @@ export const EXPORT_GLYPH = (
 
 const PIECES = (
   <>
-    {/* The tab, a page rising from the edge: its corner folded, a heading and three lines of what it holds. */}
-    <svg {...HERO_SVG} width="44" height="30" viewBox="0 0 44 30" className={HERO_PLACE.bottomLeft}>
-      <path
-        d="M10 4h18l8 8v24H6V8a4 4 0 0 1 4-4Z"
-        fill="var(--hero-plate)"
-        stroke="var(--hero-line)"
-      />
-      <path
-        d="M28 4v5a3 3 0 0 0 3 3h5"
-        fill="var(--hero-soft)"
-        stroke="var(--hero-line)"
-        strokeLinejoin="round"
-      />
-      <rect x="11" y="10" width="11" height="3" rx="1.5" fill="var(--hero-mark)" />
-      <rect x="11" y="16.5" width="20" height="2.5" rx="1.25" fill="var(--hero-line)" />
-      <rect x="11" y="21.5" width="15" height="2.5" rx="1.25" fill="var(--hero-line)" />
-      <rect x="11" y="26.5" width="18" height="2.5" rx="1.25" fill="var(--hero-line)" />
-    </svg>
-    {/* Its way out: a dashed line along the foot, from the page to the tiles, fading in from the page. */}
-    <span className="absolute bottom-[11px] left-[3.25rem] right-[6.6rem] h-[1.5px] bg-[linear-gradient(90deg,var(--hero-mark)_0_3px,transparent_3px_7px)] bg-[length:7px_1.5px] [mask-image:linear-gradient(90deg,transparent,black_24%)] opacity-70 max-sm:hidden" />
     {/* The formats, fanned out where the line arrives: a picture and a vector path behind, the file going out in front. */}
     <svg
       {...HERO_SVG}

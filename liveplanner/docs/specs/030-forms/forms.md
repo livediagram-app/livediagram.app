@@ -617,9 +617,8 @@ time the button shows it in a page load), `Started` `FormTour` (a press), `View`
 - **Share Form** (the header's Share on a Form tab, an Editor's) opens the **Share Form** dialog, separate from the
   project's Share dialog:
   - Its header is the [dialog hero header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), drawn as the form handed out: rings spreading from the bottom right,
-    where a link badge (its ring spreading twice, motion allowing) reaches the two people who will answer; in the
-    bottom left the form as a card, tilted, a title bar, two answers and a ticked box; a dashed line along the foot
-    from the form to the link. A form as the title mark. On a phone, where it is a sheet, the band runs up under the
+    where a link badge (its ring spreading twice, motion allowing) reaches the two people who will answer.
+    A form as the title mark. On a phone, where it is a sheet, the band runs up under the
     grab handle.
   - Its line: "Anyone with the link can answer, not see your plan."
   - Not yet published: a line on what publishing does ("Each response becomes a card on your board", or "a row in

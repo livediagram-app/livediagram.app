@@ -1,8 +1,7 @@
 // The Share dialog's hero art (livediagram/docs/specs/007-editor/editor-app.md "Layout, top to bottom", the header):
 // sharing as a connection. Faint rings spread from the bottom right, where a pass rises from the band's edge, tilted
-// as if just handed over, its link badge's ring spreading twice, the two it reaches beside it; in the bottom left the
-// one sharing, ringed in the accent; and a dashed line running along the foot from them to the pass. The title mark
-// is a link.
+// as if just handed over, its link badge's ring spreading twice, the two it reaches beside it. The title's side stays
+// plain paper. The title mark is a link.
 // Every modal's Share uses it, so it lives here (@liveworkspace/ui/dialog-hero-art/share).
 import { HERO_MOTION, HERO_PLACE, HERO_SVG, heroTexture, type HeroArt } from '../hero-art';
 
@@ -27,12 +26,6 @@ function person(x: number, fill: string, ring = 'none') {
 
 const PIECES = (
   <>
-    {/* The one sharing, ringed in the accent. */}
-    <svg {...HERO_SVG} width="40" height="28" viewBox="0 0 40 28" className={HERO_PLACE.bottomLeft}>
-      {person(20, 'var(--hero-line)', 'var(--hero-accent)')}
-    </svg>
-    {/* What joins them: a dashed line along the foot, from the one sharing to the pass, fading out at each end. */}
-    <span className="absolute bottom-[9px] left-[3.5rem] max-sm:hidden right-[7rem] h-[1.5px] bg-[linear-gradient(90deg,var(--hero-mark)_0_3px,transparent_3px_7px)] bg-[length:7px_1.5px] [mask-image:linear-gradient(90deg,transparent,black_18%,black_82%,transparent)] opacity-70" />
     {/* The pass, tilted as if just handed over (its link badge, a perforation, two lines of what it holds), and the
         two it reaches. */}
     <svg

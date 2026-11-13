@@ -246,7 +246,6 @@ export function buildEditorView(slices: {
     // What this session may do (docs/specs/013-workspace/share-roles.md): a Participant's content gestures.
     can: collaborationSlice.participant.can,
     participating: collaborationSlice.participant.participating,
-    linkActiveTabTo: tabsSlice.linkActiveTabTo,
     linkPickerOpenForId: interactionSlice.linkPickerOpenForId,
     linkPickerInitialMode: interactionSlice.linkPickerInitialMode,
     openLinkPicker: interactionSlice.openLinkPicker,

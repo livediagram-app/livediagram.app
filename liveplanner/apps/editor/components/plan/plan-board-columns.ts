@@ -50,6 +50,11 @@ export function boardColumnTemplate(
   const shut = (c: { id?: string }) => c.id !== undefined && collapsed.has(c.id);
   const strips = columns.filter(shut).length;
   // The body less each strip and its gap.
+  // Five slots or fewer fit: the open columns share the body as on the canvas. 100cqw is the body's width with no
+  // scrollbar taken off, so a slot measured from it would push the columns a vertical scrollbar's width past the body
+  // and show a sideways scrollbar over columns that fit (plan-board.md "Five slots across").
+  const slots = columns.reduce((n, c) => (shut(c) ? n : n + (c.width ?? 1)), 0);
+  const fits = !maximised || slots <= MAXIMISED_BOARD_SLOTS;
   const room = strips
     ? `(100cqw - ${strips * (COLLAPSED_COLUMN_PX + PLAN_COLUMN_GAP_PX)}px - ${gaps}px)`
     : `(100cqw - ${gaps}px)`;
@@ -58,7 +63,7 @@ export function boardColumnTemplate(
       if (shut(c)) return `${COLLAPSED_COLUMN_PX}px`;
       const w = c.width ?? 1;
       const floor = `${PLAN_COLUMN_MIN_PX * w}px`;
-      if (!maximised) return `minmax(${floor}, ${w}fr)`;
+      if (fits) return `minmax(${floor}, ${w}fr)`;
       // A slot is a fifth of the body (100cqw, the body is the size container) less its share of the gaps.
       const slot = `calc(${room} / ${MAXIMISED_BOARD_SLOTS} * ${w} + ${(w - 1) * PLAN_COLUMN_GAP_PX}px)`;
       return `minmax(max(${floor}, ${slot}), ${w}fr)`;

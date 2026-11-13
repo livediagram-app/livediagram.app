@@ -9,7 +9,7 @@ import { layoutGalleryHeroArt } from './LayoutGalleryHeroArt';
 // docs/specs/007-editor/pages-mode.md "An empty page offers its layouts": Choose a Layout's dialog wears the dialog
 // hero header, drawn as the gallery.
 describe('the layout gallery hero art', () => {
-  it('draws the corners at every size and the tiled frames only on a wide header', () => {
+  it('draws its corner at every size and the tiled frames only on a wide header', () => {
     const { container } = render(<HeroBand art={layoutGalleryHeroArt} />);
     const band = container.querySelector('[data-dialog-hero-art]') as HTMLElement;
     expect(band.getAttribute('data-dialog-hero-art')).toBe('layout-gallery');
@@ -20,7 +20,8 @@ describe('the layout gallery hero art', () => {
     expect(tiles.querySelectorAll('rect[rx="4"]')).toHaveLength(6);
     expect(tiles.querySelectorAll('rect[rx="1"]')).toHaveLength(8);
     const corners = [...band.children].filter((el) => el !== tiles);
-    expect(corners).toHaveLength(2);
+    // One corner, on the right: the title's side stays plain paper.
+    expect(corners).toHaveLength(1);
     for (const el of band.children) expect(el.getAttribute('aria-hidden')).toBe('true');
   });
 

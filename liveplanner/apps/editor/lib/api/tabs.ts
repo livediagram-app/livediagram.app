@@ -156,14 +156,4 @@ export const apiDeleteComment = calls.deleteComment;
 // Resolve or reopen a thread through the comment endpoints (docs/specs/024-agents/agent-presence.md "Comments").
 export const apiSetThreadResolved = calls.setThreadResolved;
 
-// Share a tab of `fromProjectId` into another of the caller's plans (docs/specs/006-project/tab-project-many-to-many.md).
-// After this returns both plans hold the tab, and an edit in either reaches the other. Answers the tab as the
-// target plan now holds it, so the caller can show it without a full plan refetch.
-export const apiLinkTab: (
-  ownerId: string,
-  projectId: string,
-  tabId: string,
-  fromProjectId: string,
-) => Promise<TabSummary> = calls.linkTab;
-
 export const apiDeleteTab = calls.deleteTab;

@@ -9,7 +9,7 @@ const plain: HeroArt = {
   name: 'test',
   glyph: <circle cx="10" cy="10" r="4" fill="var(--hero-accent)" />,
   texture: heroTexture('dots'),
-  pieces: <svg className={HERO_PLACE.bottomLeft} />,
+  pieces: <svg className={HERO_PLACE.bottomRight} />,
 };
 const withCentre: HeroArt = { ...plain, name: 'centred', centre: true };
 

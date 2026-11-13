@@ -17,7 +17,6 @@ export function EllipsisMenuButton({
   deleteWarning,
   canClearContent,
   locked,
-  otherProjects,
   folderNames,
   currentFolder,
   onMoveToFolder,
@@ -28,11 +27,8 @@ export function EllipsisMenuButton({
   onImport,
   canImport,
   onExport,
-  onCopyTo,
   onToggleLock,
   onDelete,
-  planTab,
-  selfId,
   connected,
 }: {
   open: boolean;
@@ -47,9 +43,6 @@ export function EllipsisMenuButton({
   deleteWarning?: string | undefined;
   canClearContent: boolean;
   locked: boolean;
-  // Viewer identity, forwarded to the menu's Add to Project thumbnails.
-  selfId: string;
-  otherProjects: { id: string; name: string; savedAt?: number }[];
   folderNames: string[];
   currentFolder: string | null;
   onMoveToFolder: (folderName: string) => void;
@@ -61,10 +54,8 @@ export function EllipsisMenuButton({
   // Whether the Import dialog has anything to press; absent, the tab's lock decides.
   canImport?: boolean;
   onExport: () => void;
-  onCopyTo: (targetProjectId: string) => void;
   onToggleLock: () => void;
   onDelete: () => void;
-  planTab?: boolean;
   // A connected tab: its own short menu (TabPortalMenu).
   connected?: ConnectedTabMenu | undefined;
 }) {
@@ -96,12 +87,8 @@ export function EllipsisMenuButton({
             onImport={onImport}
             {...(canImport === undefined ? {} : { canImport })}
             onExport={onExport}
-            onCopyTo={onCopyTo}
             onToggleLock={onToggleLock}
             locked={locked}
-            planTab={planTab}
-            selfId={selfId}
-            otherProjects={otherProjects}
             folderNames={folderNames}
             currentFolder={currentFolder}
             onMoveToFolder={onMoveToFolder}

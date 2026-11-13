@@ -105,3 +105,11 @@ export const powerUserModeMoved: MovedPage = moved(
   'Settings',
   'Power User Mode is gone: everyone gets the default interface, and every setting is in Settings.',
 );
+
+/** liveplanner's /help/tabs/add-to-project: Add to Plan is gone, and Using Tabs says what happens to tabs already shared. */
+export const addToPlanMoved: MovedPage = moved(
+  '/help/tabs/using-tabs/#tabs-in-more-than-one-plan',
+  'Using Tabs guide',
+  'Using Tabs',
+  'Add to Plan is gone: a tab belongs to one plan, and tabs already shared stay shared.',
+);

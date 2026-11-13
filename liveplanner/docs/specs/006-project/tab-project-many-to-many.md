@@ -2,8 +2,11 @@
 
 ## Status
 
-Shipped. One tab can sit in several of a person's plans at once: **Add to Plan** puts the active tab into
-another plan, and an edit to it in either reaches the other. Each plan's content lives in its own
+Shipped, with no way in from liveplanner any more. One tab can sit in several of a person's plans at once, and an
+edit to it in either reaches the other. liveplanner does not offer **Add to Plan** (owner, 2026-11-13): a plan's
+tabs show its cards, and a card's content is stored in the plan it came from, so a tab carried into another plan
+would not take its cards with it. A tab already shared into another plan before then stays shared and in step,
+so the mechanism below stays for it. Each plan's content lives in its own
 SQLite-backed Durable Object ([API app, Storage](../015-api/api.md#storage)), so every plan holding a shared tab
 keeps its own copy of it under the same tab id, and the plans keep their copies in step. The mechanism is
 shared with livediagram, livedocuments and livedesign (`@liveworkspace/index-app` `tab-shares.ts` and `tab-link.ts`);
@@ -59,7 +62,7 @@ way. `tabs` holds the body ([Per-tab storage](per-tab-storage.md)).
   holder that joined a moment ago hears of a write made by one that has not yet heard of it.
 - **What the tab holds, and what the plan holds.** A body is the tab: a Dashboard's layout, a Form's questions.
   A board's cards and a Sheet's cells are rows of the plan ([Plan](../026-plan/), [Sheets](../029-sheets/)), so
-  Add to Plan is not offered on a Board or Sheet tab. A Form's link and its responses are the plan's too
+  a tab showing them could never be carried across alone. A Form's link and its responses are the plan's too
   ([Forms](../030-forms/forms.md)): the Form in another plan takes responses once that plan publishes it. A Dashboard
   slot showing another of this plan's tabs reads as deleted in a plan without that tab. The sheet references a body
   makes are recorded in each holder as a local write's are.
@@ -89,16 +92,9 @@ caller, 404 when missing, 403 otherwise.
 
 ## Add to Plan
 
-The tab menu's **Add to Plan** row opens `AddTabToProjectDialog`, a filterable tile grid of the caller's other
-plans with their snapshot previews ([Project snapshots](project-snapshots.md)). Picking one calls
-`apiLinkTab` (`apps/editor/lib/api/tabs.ts`), the link route above with this plan as `from`. The route answers
-`{ tab }` as the target now holds it; a repeat answers the tab as it is. It is the caller's to make on both sides
-(`linkSharedTab`, `mayLinkTabs`): they must edit the target and `from` as their own, an edit grant from the index on
-each (the request's for the target, one fetched for `from`) that no share link gave and no tab scope narrows, and not
-from a workbench session; and `from` must hold the tab. So nobody links a tab they cannot edit, or into a plan
-they cannot edit: 403 otherwise, 404 for a tab or `from` that is not there, 400 with no `from` or `from` the target
-itself, 409 (`too_many_holders`) when the tab is already in 20 plans (`MAX_TAB_HOLDERS`). The row is offered for the plans `addToProjectTargets` lists
-(`apps/editor/lib/add-to-project-targets.ts`).
+Not offered (owner, 2026-11-13; see "Status"). The tab menu has no Add to Plan row and the editor no picker for it.
+The link route (`POST /api/projects/:id/tabs/:tabId/link`, `linkSharedTab`, `mayLinkTabs`) stays in the api for the
+platform's shared mechanism and the tabs shared before; nothing in liveplanner's editor calls it.
 
 ### Cost
 

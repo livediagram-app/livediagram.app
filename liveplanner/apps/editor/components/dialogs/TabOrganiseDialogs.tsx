@@ -1,31 +1,19 @@
 'use client';
 
-// The tab bar's two organise pickers as proper centred modals: "Add to
-// Folder" (docs/specs/006-project/tab-folders.md — file the tab into a one-level tab-bar folder) and
-// "Add to Project" (docs/specs/006-project/tab-project-many-to-many.md — link the tab into another project; the tab is
-// shared, not copied). They used to be cramped sub-views squeezed inside the
-// tab portal menu; the modal gives them the same tile-grid language as the
-// shared placement browser (docs/specs/013-workspace/folders.md), with room to breathe and a filter for
-// long project lists. Single-click commits — both are one-shot pickers.
+// The tab bar's organise picker as a proper centred modal: "Add to Folder" (docs/specs/006-project/tab-folders.md,
+// file the tab into a one-level tab-bar folder). It used to be a cramped sub-view squeezed inside the tab portal
+// menu; the modal gives it the same tile-grid language as the shared placement browser
+// (docs/specs/013-workspace/folders.md), with room to breathe. Single-click commits: it is a one-shot picker.
+// (Add to Plan is not offered: docs/specs/006-project/tab-project-many-to-many.md "Add to Plan".)
 
 import { lucideFolderX } from '@liveworkspace/icons/lucide';
-import { useState } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import {
   FolderPlaceIcon,
   NewFolderTile,
   PlacementCard,
 } from '@liveworkspace/workbench/components/placement/PlacementCard';
-import { ProjectThumbnail } from '@/components/panels/ProjectThumbnail';
-import {
-  CompactEmptyState,
-  DialogCloseButton,
-  NoMatches,
-  lucideGlyph,
-  useEscape,
-} from '@liveplanner/ui';
-import { ProjectIcon } from '@/components/primitives/explorer-icons';
-import { matches } from '@liveworkspace/icons';
+import { DialogCloseButton, lucideGlyph, useEscape } from '@liveplanner/ui';
 
 // Shared modal frame: header (title + sub + close) over a scrollable body.
 function OrganiseDialogFrame({
@@ -126,108 +114,6 @@ export function AddTabToFolderDialog({
           }}
         />
       </div>
-    </OrganiseDialogFrame>
-  );
-}
-
-// A destination-project tile: the project's snapshot preview (docs/specs/006-project/project-snapshots.md) over
-// its name, so the user picks by recognising the canvas rather than parsing
-// a list of near-identical "Untitled project" names. Styled to match the
-// PlacementCard tile grid, but its own component: the preview area is a
-// full-width box, not the icon-glyph slot the shared card centres.
-function ProjectPickCard({
-  ownerId,
-  project: liveDoc,
-  onPick,
-}: {
-  ownerId: string | null;
-  project: { id: string; name: string; savedAt?: number };
-  onPick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onPick}
-      className="flex flex-col gap-1.5 rounded-lg border border-slate-200 bg-white p-2 text-center transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 dark:hover:bg-slate-700/60"
-    >
-      <ProjectThumbnail
-        ownerId={ownerId}
-        projectId={liveDoc.id}
-        version={liveDoc.savedAt ?? 0}
-        className="h-16 w-full rounded border border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40"
-      />
-      <span className="w-full truncate text-xs font-medium text-slate-700 dark:text-slate-200">
-        {liveDoc.name || 'Untitled plan'}
-      </span>
-    </button>
-  );
-}
-
-// Add to Project (docs/specs/006-project/tab-project-many-to-many.md): pick the destination project the tab is LINKED
-// into (shared, not copied — one tab, live in both). A filter keeps long
-// libraries manageable; picking commits immediately and closes.
-export function AddTabToProjectDialog({
-  ownerId,
-  otherProjects,
-  onPick,
-  onClose,
-}: {
-  // Viewer identity for the authenticated thumbnail fetches.
-  ownerId: string | null;
-  otherProjects: { id: string; name: string; savedAt?: number }[];
-  onPick: (targetProjectId: string) => void;
-  onClose: () => void;
-}) {
-  const [query, setQuery] = useState('');
-  const visible = otherProjects.filter(
-    (d) => !query.trim() || matches(query, d.name || 'Untitled plan'),
-  );
-  return (
-    <OrganiseDialogFrame
-      title="Add to Plan"
-      sub="Link this tab into another plan. It stays one live tab: edits show in both places."
-      onClose={onClose}
-    >
-      <input
-        autoFocus
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Filter plans…"
-        aria-label="Filter plans"
-        className="mb-3 w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
-      />
-      {visible.length === 0 ? (
-        query.trim() ? (
-          <NoMatches
-            size="regular"
-            className="py-8"
-            things="projects"
-            query={query}
-            onClear={() => setQuery('')}
-          />
-        ) : (
-          <CompactEmptyState
-            className="py-8"
-            icon={<ProjectIcon />}
-            title="No other plans yet"
-            description="Make another plan to add this tab to it."
-          />
-        )
-      ) : (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {visible.map((d) => (
-            <ProjectPickCard
-              key={d.id}
-              ownerId={ownerId}
-              project={d}
-              onPick={() => {
-                onPick(d.id);
-                onClose();
-              }}
-            />
-          ))}
-        </div>
-      )}
     </OrganiseDialogFrame>
   );
 }

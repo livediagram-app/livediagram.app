@@ -1,7 +1,6 @@
 // The Import dialog's hero art (each product's docs/specs/020-import-export/README.md "The dialogs' header"): files
-// coming in. A faint grid of dots fades in from the title's side; in the bottom left the files it comes from, two
-// cards fanned and rising from the band's edge; a dashed line runs along the foot from them to the bottom right,
-// where a dashed frame waits, the place they land, an accent badge with an arrow down at its side and a file
+// coming in. A faint grid of dots fades in from the title's side; in the bottom right a dashed
+// frame waits, the place they land, an accent badge with an arrow down at its side and a file
 // dropping in over its edge, bobbing twice, motion allowing. The title mark is an arrow into a tray.
 // Every product's Import, and the import dialogs that open from it, use it, so it lives here
 // (@liveworkspace/ui/dialog-hero-art/import).
@@ -44,13 +43,6 @@ function file(x: number, y: number, fill: string) {
 
 const PIECES = (
   <>
-    {/* Where they come from: two files fanned, rising from the edge. */}
-    <svg {...HERO_SVG} width="44" height="30" viewBox="0 0 44 30" className={HERO_PLACE.bottomLeft}>
-      <g transform="rotate(-10 15 30)">{file(6, 7, 'var(--hero-soft)')}</g>
-      <g transform="rotate(6 27 30)">{file(18, 5, 'var(--hero-plate)')}</g>
-    </svg>
-    {/* Their way in: a dashed line along the foot, from the files to the frame. */}
-    <span className="absolute bottom-[11px] left-[3.25rem] right-[5.6rem] h-[1.5px] bg-[linear-gradient(90deg,var(--hero-mark)_0_3px,transparent_3px_7px)] bg-[length:7px_1.5px] [mask-image:linear-gradient(90deg,transparent,black_24%)] opacity-70 max-sm:hidden" />
     {/* The drop: a dashed frame rising from the edge, its badge, and a file dropping in over its edge. */}
     <svg
       {...HERO_SVG}

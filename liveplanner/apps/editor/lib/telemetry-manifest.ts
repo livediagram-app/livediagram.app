@@ -178,7 +178,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Duplicated',
   'Tab·Ended',
   'Tab·Imported',
-  'Tab·Linked',
   'Tab·Loaded',
   'Tab·Locked',
   'Tab·Moved',

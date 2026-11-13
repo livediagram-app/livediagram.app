@@ -128,7 +128,7 @@ export const categories: Category[] = [
     title: 'Tabs',
     description:
       'Keep a piece of work in one plan: its boards, sheets, forms and dashboards each on a tab, organised and moved between.',
-    articleCount: 8,
+    articleCount: 7,
     kind: 'feature',
   },
   {
@@ -847,14 +847,6 @@ export const articles: Article[] = [
     title: 'Locking a Tab',
     description: "Make a tab's whole canvas read-only so it cannot be changed by accident.",
     keywords: 'read only protect freeze prevent editing lock board unlock padlock',
-    category: 'Tabs',
-    categorySlug: 'tabs',
-  },
-  {
-    slug: 'add-to-project',
-    title: 'Add a Tab to Another Plan',
-    description: 'Add the active tab to another plan you own; both share the same live tab.',
-    keywords: 'reuse share tab sync across projects diagrams move copy live plans',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

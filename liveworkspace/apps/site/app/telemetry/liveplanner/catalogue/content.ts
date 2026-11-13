@@ -86,13 +86,6 @@ export const TABS_CLEARED = chart(
   { typeIn: (t) => t === null, rising: 'neutral' },
 );
 
-export const TABS_LINKED = chart(
-  'Tab',
-  'Linked',
-  'Tabs Linked',
-  'A tab linked into another project, so both projects share it and edits in either show in both.',
-);
-
 export const TABS_LOCKED = chart(
   'Tab',
   'Locked',
@@ -323,7 +316,6 @@ const TAB_CHANGES = [
   TAB_LOOKS_PICKED,
   TABS_ARRANGED,
   TABS_REORDERED,
-  TABS_LINKED,
   TABS_LOCKED,
   TABS_CLEARED,
 ];
@@ -332,7 +324,7 @@ export const TAB_ACTIONS: MetricStack = {
   stack: true,
   title: 'Tab Actions',
   blurb:
-    'Tabs opened, then everything done to one: made, renamed, deleted, duplicated, restyled, auto-arranged, reordered, linked into another project, locked and cleared.',
+    'Tabs opened, then everything done to one: made, renamed, deleted, duplicated, restyled, auto-arranged, reordered, locked and cleared.',
   headline: TAB_CHANGES,
   members: [
     TABS_LOADED,
@@ -346,7 +338,6 @@ export const TAB_ACTIONS: MetricStack = {
     TIDY_UP_OPENED,
     TABS_ARRANGED,
     TABS_REORDERED,
-    TABS_LINKED,
     TABS_LOCKED,
     TABS_CLEARED,
   ],

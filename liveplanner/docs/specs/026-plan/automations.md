@@ -867,8 +867,8 @@ Its header is the dialog hero header ([The dialog hero
 header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md)), the start screens' band drawn for
 rules: 100px tall from `sm`, a bolt as the title mark, then the title and its line, in the app's brand colours light
 or dark (a themed tab's accent where the tab retints them, as for the rest of the dialog). Behind them, hidden from
-screen readers and the pointer, a faint dot grid fading out toward the title, a cog rising from the bottom left and a
-looping arrow from the bottom right (both at every size), and, once the header is 56rem wide only, between the line
+screen readers and the pointer, a faint dot grid fading out toward the title, a
+looping arrow rising from the bottom right (at every size; the title's side stays plain), and, once the header is 56rem wide only, between the line
 (which stops short of it) and the header's buttons, a rule as a flow: a trigger's bolt, a condition's diamond and an
 action's check joined by a line, a dashed arrow looping back over them. The bolt's ring spreads twice, motion
 allowing. On a phone the header keeps its desktop look (100px, the mark, the title and its line).

@@ -448,6 +448,9 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   if (DIAGRAM_LINT_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredWorkshopEvent(category, action, type)) return true;
   if (category === 'Project' && action === 'Reverted') return true;
+  // Add to Plan (removed 2026-11-13, liveplanner/docs/specs/006-project/tab-project-many-to-many.md "Add to Plan"):
+  // a tab linked into another plan.
+  if (category === 'Tab' && action === 'Linked') return true;
   if (CUSTOM_THEMES.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (EXPLORER_RETIRED_FILTERS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isPagesModeEvent(`${category}|${action}|${type ?? ''}`)) return true;

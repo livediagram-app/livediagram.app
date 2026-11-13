@@ -17,7 +17,6 @@ export function tabBarProps(over: Partial<TabBarProps>): TabBarProps {
     tabs: TWO_TABS,
     activeId: 't1',
     activeTabHasContent: false,
-    otherProjects: [],
     participantsByTab: new Map(),
     selfId: 'me',
     selfRole: 'edit' as const,

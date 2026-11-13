@@ -18,9 +18,18 @@ describe('boardColumnTemplate', () => {
 
   it('gives a maximised slot a fifth of the body, a wide column its slots and gaps, the floor winning', () => {
     expect(MAXIMISED_BOARD_SLOTS).toBe(5);
-    const [one, two] = boardColumnTemplate([{}, { width: 2 }], 'maximised').split(') minmax');
+    // Six slots: more than fit, so each takes its share of five.
+    const [one, two] = boardColumnTemplate([{}, { width: 2 }, { width: 3 }], 'maximised').split(
+      ') minmax',
+    );
     expect(one).toBe('minmax(max(220px, calc((100cqw - 48px) / 5 * 1 + 0px)), 1fr');
-    expect(two).toBe('(max(440px, calc((100cqw - 48px) / 5 * 2 + 12px)), 2fr)');
+    expect(two).toBe('(max(440px, calc((100cqw - 48px) / 5 * 2 + 12px)), 2fr');
+  });
+
+  // 100cqw counts the body's vertical scrollbar, so slots measured from it overran into a sideways one.
+  it('lets a maximised board of five slots or fewer share the body as on the canvas', () => {
+    const columns = [{}, { width: 2 as const }, {}, {}];
+    expect(boardColumnTemplate(columns, 'maximised')).toBe(boardColumnTemplate(columns, 'canvas'));
   });
 
   // docs/specs/026-plan/plan-tabs.md "A board in a slot is simplified": compact, before slot-board.ts measures it.
@@ -49,12 +58,12 @@ describe('boardColumnTemplate', () => {
 
   it("measures a maximised board's five slots from what its strips leave", () => {
     const [strip, open] = boardColumnTemplate(
-      [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
+      [{ id: 'a' }, { id: 'b', width: 3 as const }, { id: 'c' }, { id: 'd', width: 3 as const }],
       'maximised',
       new Set(['a', 'c']),
     ).split(' minmax');
     expect(strip).toBe('40px');
-    expect(open).toBe('(max(220px, calc((100cqw - 104px - 48px) / 5 * 1 + 0px)), 1fr) 40px');
+    expect(open).toBe('(max(660px, calc((100cqw - 104px - 48px) / 5 * 3 + 24px)), 3fr) 40px');
   });
 
   it('draws every column open on a phone and in a slot, collapsed or not', () => {

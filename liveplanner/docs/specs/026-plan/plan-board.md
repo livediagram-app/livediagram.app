@@ -66,7 +66,7 @@ Stored on the element, shared by everyone, undone like any element edit:
   above the cluster's right edge; on a phone it is a bottom sheet; without the cluster on screen it is a centred
   dialog. Nothing dims, as each change applies live; a click outside, Escape or the close button closes it, and
   pressing Board again does too. Its header is the [dialog hero header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), drawn as the board's set-up: a faint grid
-  fading toward the title, two swimlanes in the bottom left, and in the bottom right three columns, the middle one
+  fading toward the title, and in the bottom right three columns, the middle one
   lifted and tilted out of its dashed slot as if being dragged, bobbing twice, motion allowing; the title mark is a
   board's columns, and its line "Start from a layout that suits your cards, then fine-tune any part of it." It holds **Create
   Form** (where the board can take one, as in its element menu: a form whose responses come to this board) beside
@@ -981,7 +981,8 @@ A board can be maximised to work on it without the rest of the canvas around it.
   its width (one column a screen, its neighbours peeking in at both edges), and the columns snap one at a time to
   the centre as they scroll sideways, except while a card is carried (the edge scroll moves them freely then). See
   "On a phone" for how the snapping keeps scrolling down smooth. A board of five slots or fewer fills the width as on the
-  canvas; one of more scrolls its columns (and their swimlanes with them) sideways under a fixed header, by
+  canvas (its columns share the body, never sized from the body's full width, which a vertical scrollbar would
+  overrun into a needless sideways one); one of more scrolls its columns (and their swimlanes with them) sideways under a fixed header, by
   scrollbar, trackpad or Shift and the wheel. A card dragged (mouse, pen or finger) near the left or right edge of the
   columns scrolls them sideways, faster the nearer the edge, stopping at the ends; a pointer that only hovers never
   scrolls them. Under reduced motion it still scrolls, at one gentle speed. On the canvas a board keeps its columns sharing its width.

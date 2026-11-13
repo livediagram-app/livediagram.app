@@ -1,7 +1,6 @@
 // The Settings dialog's hero art (each app's docs/specs/007-editor/user-preferences.md and liveworkspace.app's
 // liveworkspace/docs/specs/010-site/site.md "Settings"): the app, tuned to taste. A fine grid fades in from the
-// title's side, a control panel's; in the bottom left a mixer's three faders rise from the edge, each set to its
-// own level; in the bottom right two cogs mesh as they rise. Where the header is wide enough, a settings card sits
+// title's side, a control panel's; in the bottom right two cogs mesh as they rise. Where the header is wide enough, a settings card sits
 // between the title and the actions: a switch turned on, its ring spreading twice, over a slider half way along.
 // The title mark is a cog.
 // Every app's Settings and liveworkspace.app's draw it (the shared SettingsView), so it lives here
@@ -32,37 +31,11 @@ export const SETTINGS_GLYPH = (
   />
 );
 
-// A fader: its track rising out of the bottom edge and its cap set at `y`.
-function fader(x: number, y: number) {
-  return (
-    <g>
-      <rect x={x - 1.25} y="2" width="2.5" height="32" rx="1.25" fill="var(--hero-line)" />
-      <rect x={x - 1.25} y={y} width="2.5" height={34 - y} fill="var(--hero-mark)" />
-      <rect
-        x={x - 7}
-        y={y - 3.5}
-        width="14"
-        height="7"
-        rx="2.5"
-        fill="var(--hero-plate)"
-        stroke="var(--hero-mark)"
-        strokeWidth="1.25"
-      />
-    </g>
-  );
-}
-
 const BIG_COG = cogPath(10, 17, 22);
 const SMALL_COG = cogPath(7, 8.5, 12);
 
 const PIECES = (
   <>
-    {/* A mixer's three faders, each at its own level. */}
-    <svg {...HERO_SVG} width="62" height="30" viewBox="0 0 62 30" className={HERO_PLACE.bottomLeft}>
-      {fader(12, 17)}
-      {fader(31, 9)}
-      {fader(50, 21)}
-    </svg>
     {/* Two cogs meshing as they rise from the edge: the big one sitting back in the wash, the small one lifted. */}
     <svg
       {...HERO_SVG}

@@ -907,7 +907,7 @@ in livedocuments.
   size, rising in and lifting a little on hover), which opens the layout gallery on its own: a bottom
   sheet on a phone, a centred dialog on a desktop, with the card's title and line in the [dialog hero
   header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), drawn as the gallery itself: a faint
-  grid fading toward the title, a stack of layout frames rising in the bottom left, a sparkle for Surprise Me in the
+  grid fading toward the title, a sparkle for Surprise Me in the
   bottom right, and, where the dialog is wide enough, frames tiled three by two, one selected in the accent with its
   handles, bobbing twice (motion allowing); a layout's frame as the title mark. A press or Surprise Me
   places the layout and closes it. Opening it is tracked as `UI / Opened / EmptyPageInvite`.

@@ -1,7 +1,6 @@
 import { useButtonLabelsSetting } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import dynamic from 'next/dynamic';
 import { intoTabOf } from '@/components/dialogs/import/into-tab';
-import { hasPlanContent } from '@/hooks/plan/usePlanNeeded';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useState, type ReactNode } from 'react';
 import {
@@ -102,14 +101,6 @@ type TabBarProps = {
   // dialog then always has something to press, so the menu's Import… stays lit on a locked tab too.
   canImportFromTool?: boolean;
   onExportTab: () => void;
-  // The user's other projects (excluding the current one). Drives the
-  // "Add to Project" submenu in the tab ellipsis; savedAt versions the
-  // destination-picker thumbnails (docs/specs/006-project/project-snapshots.md).
-  otherProjects: { id: string; name: string; savedAt?: number }[];
-  // Copy the active tab into another project. Callee handles the
-  // round-trip to the API. Returns a promise so the menu can dismiss
-  // after the operation completes.
-  onCopyTabTo: (targetProjectId: string) => Promise<void> | void;
   // Flip tab.locked. Disables every mutator until toggled back on.
   // The lock icon appears on the tab itself + on every element.
   onToggleLockTab: () => void;
@@ -166,8 +157,6 @@ export function TabBar({
   onImportTab,
   canImportFromTool = false,
   onExportTab,
-  otherProjects,
-  onCopyTabTo,
   onToggleLockTab,
   onReorder,
   readOnly = false,
@@ -230,13 +219,8 @@ export function TabBar({
     deleteWarning: deleteTabWarning(tabs, tab.id),
     canClearContent: activeTabHasContent && !tab.locked,
     locked: tab.locked === true,
-    // A Plan tab's cards are its project's items: it is not added to another project
-    // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
-    planTab: hasPlanContent(tab.elements),
     // Import… opens the one Import dialog: lit while it has a row to press (plan-tabs.md "The Import dialog").
     canImport: canImportFromTool || !intoTabOf(tab).blocked,
-    selfId,
-    otherProjects,
     folderNames,
     currentFolder: tabFolderName(tab),
     onMoveToFolder: (name: string) => {
@@ -265,10 +249,6 @@ export function TabBar({
     },
     onExport: () => {
       onExportTab();
-      close();
-    },
-    onCopyTo: async (targetId: string) => {
-      await onCopyTabTo(targetId);
       close();
     },
     onToggleLock: () => {

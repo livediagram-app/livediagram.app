@@ -1,6 +1,5 @@
 // liveworkspace.app's Settings hero art (liveworkspace/docs/specs/010-site/site.md "Settings"): one account, every
-// app. The Settings grid fades in from the title's side; in the bottom left the apps' tiles rise from the edge, each
-// to its own height; in the bottom right the account rises, a cog on its shoulder. Where the header is wide enough,
+// app. The Settings grid fades in from the title's side; in the bottom right the account rises, a cog on its shoulder. Where the header is wide enough,
 // the account sits at the hub of four app tiles, each joined to it by a dashed line, its ring spreading twice: what
 // it sets here reaches them all. The title mark is the Settings cog.
 import {
@@ -50,12 +49,6 @@ function person(cx: number, cy: number, r: number, fill: string) {
 
 const PIECES = (
   <>
-    {/* The apps' tiles, each risen to its own height. */}
-    <svg {...HERO_SVG} width="70" height="30" viewBox="0 0 70 30" className={HERO_PLACE.bottomLeft}>
-      {tile(4, 14, 'var(--hero-soft)')}
-      {tile(26, 6, 'var(--hero-wash)')}
-      {tile(48, 18, 'var(--hero-line)')}
-    </svg>
     {/* The account, rising, a cog on its shoulder. */}
     <svg
       {...HERO_SVG}

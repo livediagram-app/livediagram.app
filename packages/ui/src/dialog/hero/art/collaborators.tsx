@@ -1,6 +1,5 @@
 // The Collaborators dialog's hero art (each app's docs/specs/012-collaboration/collaborator-enhancements.md): the
-// people in the room. The canvas's own dots fade in from the title's side; in the bottom left a cursor glides in on a
-// dashed trail, its name tag beside it; in the bottom right the presence stack rises from the edge, three avatars
+// people in the room. The canvas's own dots fade in from the title's side; in the bottom right the presence stack rises from the edge, three avatars
 // overlapping, the front one in the accent with its presence ring spreading twice, and another cursor pointing at it.
 // The title mark is two people.
 // Every app's Collaborators draws it, so it lives here (@liveworkspace/ui/dialog-hero-art/collaborators).
@@ -43,20 +42,6 @@ function avatar(cx: number, fill: string) {
 
 const PIECES = (
   <>
-    {/* A cursor gliding in on its dashed trail, its name tag beside it. */}
-    <svg {...HERO_SVG} width="72" height="30" viewBox="0 0 72 30" className={HERO_PLACE.bottomLeft}>
-      <path
-        d="M4 30C10 22 18 16 30 13"
-        fill="none"
-        stroke="var(--hero-mark)"
-        strokeWidth="1.25"
-        strokeDasharray="2.5 3.5"
-        strokeLinecap="round"
-      />
-      {cursor(33, 8, 'var(--hero-mark)')}
-      <rect x="46" y="17" width="24" height="10" rx="5" fill="var(--hero-wash)" />
-      <rect x="51" y="20.75" width="14" height="2.5" rx="1.25" fill="var(--hero-mark)" />
-    </svg>
     {/* The presence stack: three avatars overlapping, the front one in the accent, its ring spreading, and a cursor
         pointing at it. */}
     <svg

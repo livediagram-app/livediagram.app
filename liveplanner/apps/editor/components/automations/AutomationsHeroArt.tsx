@@ -1,6 +1,6 @@
 // The Automations screen's hero art (docs/specs/026-plan/automations.md "The Automations screen"), drawn in the dialog
 // hero header's tokens: a faint grid of dots fading out toward the title, so the words sit on plain paper; in the
-// bottom left a cog rising from the edge, in the bottom right a looping arrow; and, where the header is wide enough
+// bottom right a looping arrow; and, where the header is wide enough
 // (the centre piece, clear of the title's line and the buttons), a rule as a flow: a trigger's bolt, a condition's
 // diamond and an action's check joined by a line, a dashed arrow looping back over them. The bolt's ring spreads
 // twice, motion allowing. The title mark is a bolt, what sets a rule off.
@@ -12,30 +12,8 @@ import {
   type HeroArt,
 } from '@liveworkspace/ui/dialog-hero';
 
-// A cog's outline: eight teeth round a ring, centred on (0, 0), radius 15.
-const COG = Array.from({ length: 8 }, (_, i) => {
-  const a = (i * Math.PI) / 4;
-  const at = (r: number, d: number) =>
-    `${(r * Math.cos(a + d)).toFixed(2)} ${(r * Math.sin(a + d)).toFixed(2)}`;
-  return `L${at(11, -0.3)} L${at(15, -0.17)} L${at(15, 0.17)} L${at(11, 0.3)}`;
-})
-  .join(' ')
-  .replace(/^L/, 'M')
-  .concat(' Z');
-
 const PIECES = (
   <>
-    {/* A cog rising from the bottom left. */}
-    <svg
-      {...HERO_SVG}
-      width="40"
-      height="22"
-      viewBox="-20 -20 40 22"
-      className={HERO_PLACE.bottomLeft}
-    >
-      <path d={COG} fill="var(--hero-wash)" />
-      <circle r="5" fill="var(--hero-paper)" />
-    </svg>
     {/* A looping arrow rising from the bottom right. */}
     <svg
       {...HERO_SVG}

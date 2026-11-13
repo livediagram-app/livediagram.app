@@ -1,6 +1,5 @@
 // Configure Board's hero art (docs/specs/026-plan/plan-board.md "Configure"), drawn in the dialog hero header's
-// tokens: a board being set up. A faint grid fading toward the title; in the bottom left two swimlanes, a person at the
-// start of each and cards along them; in the bottom right three columns, the middle one lifted out of its dashed slot
+// tokens: a board being set up. A faint grid fading toward the title; in the bottom right three columns, the middle one lifted out of its dashed slot
 // and tilted, as if being dragged to a new place, bobbing twice, motion allowing. The title mark is a board's columns.
 import {
   HERO_MOTION,
@@ -18,42 +17,6 @@ export const BOARD_COLUMNS_GLYPH = (
     <rect x="13.5" y="2.5" width="4.5" height="12.5" rx="1.75" />
   </g>
 );
-
-// A swimlane: a soft bar with a person at its start and two cards along it.
-function lane(y: number) {
-  return (
-    <g>
-      <rect
-        x="2"
-        y={y}
-        width="92"
-        height="11"
-        rx="3.5"
-        fill="var(--hero-soft)"
-        stroke="var(--hero-faint)"
-      />
-      <circle cx="9" cy={y + 5.5} r="3" fill="var(--hero-line)" />
-      <rect
-        x="17"
-        y={y + 2.5}
-        width="22"
-        height="6"
-        rx="2"
-        fill="var(--hero-plate)"
-        stroke="var(--hero-line)"
-      />
-      <rect
-        x="43"
-        y={y + 2.5}
-        width="16"
-        height="6"
-        rx="2"
-        fill="var(--hero-plate)"
-        stroke="var(--hero-line)"
-      />
-    </g>
-  );
-}
 
 // A column rising from the bottom edge: its head, and two cards in it.
 function column(x: number, fill: string, head: string) {
@@ -85,11 +48,6 @@ function column(x: number, fill: string, head: string) {
 
 const PIECES = (
   <>
-    {/* Swimlanes: a row per person. */}
-    <svg {...HERO_SVG} width="96" height="30" viewBox="0 0 96 30" className={HERO_PLACE.bottomLeft}>
-      {lane(4)}
-      {lane(18)}
-    </svg>
     {/* Columns, the middle one being dragged out of its slot. It bobs up past the box, so the box lets it. */}
     <svg
       {...HERO_SVG}
