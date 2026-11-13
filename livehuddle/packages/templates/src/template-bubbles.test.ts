@@ -14,7 +14,7 @@ type Box = { x: number; y: number; width: number; height: number };
 
 // The bubble's room, canvas px: as wide as Insert Coin with a long best line under it (its 140 px cap, padding and
 // border), as tall as those two lines, lifted 6 px off the piece's top.
-export const BUBBLE_ROOM = { width: 160, height: 44, lift: 6 } as const;
+const BUBBLE_ROOM = { width: 160, height: 44, lift: 6 } as const;
 const BUBBLE_PIECES = new Set(['arcade-machine', 'reception-desk']);
 
 const bubbleOver = (p: Box): Box => ({
@@ -43,7 +43,10 @@ describe('the proximity bubbles in the templates (Work Tracker 615)', () => {
         .flatMap((p) =>
           signs
             .filter((s) => overlaps(bubbleOver(p), s))
-            .map((s) => `${name}: ${p.shape} at ${p.x},${p.y} under ${s.label ?? 'sign'} at ${s.x},${s.y}`),
+            .map(
+              (s) =>
+                `${name}: ${p.shape} at ${p.x},${p.y} under ${s.label ?? 'sign'} at ${s.x},${s.y}`,
+            ),
         );
     });
     expect(clashes).toEqual([]);
