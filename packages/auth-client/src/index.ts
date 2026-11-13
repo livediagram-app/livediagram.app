@@ -4,6 +4,7 @@ export {
   localKeySet,
   type AccountClaims,
   type GuestClaims,
+  type KeysFetcher,
   type PersonClaims,
   type VerifierOptions,
   remoteKeySet,

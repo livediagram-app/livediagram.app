@@ -43,12 +43,13 @@ the tables, configuration, logs and tests. Each feature has its own file:
    a path segment that won't percent-decode is `404`.
 2. `app/…` goes to `handleApp` (an app's key, or the Drive key for `/app/people/:id/drive`).
 3. `internal/merge`, `internal/events`, `internal/purge-person`, `internal/workbench-close`: accounts' `MERGE_KEY`.
+   `GET /jwks` (one segment) is answered here too, before any token is read.
 4. `callerOf`: a delegate header refused is `401`; the Drive mirror naming a guest is `403 forbidden`; no caller is
    `401 unauthorized`.
 5. An app acting for a person: on `items`, `trash`, `shared`, `inbox` (one segment) the query's `app` is
    forced to that app.
 6. The Drive mirror reaches only `items`, `trash` and `folders`, never `items/:id/share*` (`404`).
-7. `jwks`, `share/:code…`, `items…`, then the person routes (`folders`, `favourites`, `recent-hidden`,
+7. `share/:code…`, `items…`, then the person routes (`folders`, `favourites`, `recent-hidden`,
    `placement-defaults`, `shared`, `inbox`, `trash`), each `401` without a person.
 8. After the answer, the people whose personal items or folders changed are signalled to Drive (`waitUntil`).
 
@@ -65,7 +66,9 @@ the tables, configuration, logs and tests. Each feature has its own file:
 | Accounts                | `Bearer MERGE_KEY` (`isMergeCaller`)                                                                                   | none                                                                     |
 
 Every key comparison is `timingSafeEqual` (both sides hashed). A verifier is kept per issuer and audience list for
-the isolate.
+the isolate. Its key set is fetched through the `ACCOUNTS` service binding (`liveworkspace-accounts`, `-staging`), the
+public `${ACCOUNTS_URL}/api/auth/jwks` and its twin only when the binding is missing or throws
+(`@liveworkspace/auth-client` `keysFrom`).
 
 ### The access rule (`access.ts`, `rows.ts`)
 

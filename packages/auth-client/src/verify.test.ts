@@ -1,5 +1,5 @@
 import { createLocalJWKSet, exportJWK, generateKeyPair, SignJWT } from 'jose';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createPersonVerifier, createVerifier } from './verify';
 
 const ISSUER = 'https://liveworkspace.app/api/auth';
@@ -9,11 +9,13 @@ let privateKey: CryptoKey;
 let verify: ReturnType<typeof createVerifier>;
 let verifyPerson: ReturnType<typeof createPersonVerifier>;
 let keys: ReturnType<typeof createLocalJWKSet>;
+let publicJwks: { keys: Record<string, unknown>[] };
 
 beforeAll(async () => {
   const pair = await generateKeyPair('EdDSA', { crv: 'Ed25519' });
   privateKey = pair.privateKey;
   const jwk = { ...(await exportJWK(pair.publicKey)), kid: 'k1', alg: 'EdDSA' };
+  publicJwks = { keys: [jwk] };
   keys = createLocalJWKSet({ keys: [jwk] });
   verify = createVerifier({ issuer: ISSUER, audience: AUDIENCE, keys });
   verifyPerson = createPersonVerifier({
@@ -191,5 +193,63 @@ describe('the move to www.', () => {
     await expect(
       staging(await token(account, { iss: 'https://staging.liveworkspace.app/api/auth' })),
     ).resolves.toMatchObject({ userId: 'user_2abc' });
+  });
+});
+
+describe('keys through a service binding', () => {
+  const account = { email: 'a@example.com', email_verified: true, sub: 'user_bound' };
+  const jwksAnswer = () =>
+    new Response(JSON.stringify(publicJwks), { headers: { 'Content-Type': 'application/json' } });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('fetches the key set through the binding, never over the public route', async () => {
+    const routed = vi.fn(async () => {
+      throw new Error('the public route must not be asked');
+    });
+    vi.stubGlobal('fetch', routed);
+    const bound = vi.fn(async (_url: string) => jwksAnswer());
+    const check = createVerifier({
+      issuer: ISSUER,
+      audience: AUDIENCE,
+      keysFrom: { fetch: bound },
+    });
+    await expect(check(await token(account))).resolves.toMatchObject({ userId: 'user_bound' });
+    expect(bound).toHaveBeenCalledTimes(1);
+    expect(bound.mock.calls[0]![0]).toBe(`${ISSUER}/jwks`);
+    expect(routed).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the public route when the binding throws', async () => {
+    const routed = vi.fn(async () => jwksAnswer());
+    vi.stubGlobal('fetch', routed);
+    const bound = vi.fn(async () => {
+      throw new Error('no local dev session for liveworkspace-accounts');
+    });
+    const check = createVerifier({
+      issuer: ISSUER,
+      audience: AUDIENCE,
+      keysFrom: { fetch: bound },
+    });
+    await expect(check(await token(account))).resolves.toMatchObject({ userId: 'user_bound' });
+    expect(bound).toHaveBeenCalledTimes(1);
+    expect(routed).toHaveBeenCalledTimes(1);
+  });
+
+  it('refuses the token when neither the binding nor the route has the keys', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('down', { status: 503 })),
+    );
+    const check = createVerifier({
+      issuer: 'https://staging.liveworkspace.app/api/auth',
+      audience: AUDIENCE,
+      keysFrom: { fetch: async () => new Response('down', { status: 503 }) },
+    });
+    await expect(
+      check(await token(account, { iss: 'https://staging.liveworkspace.app/api/auth' })),
+    ).resolves.toBeNull();
   });
 });

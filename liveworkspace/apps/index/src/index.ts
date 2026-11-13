@@ -64,15 +64,10 @@ const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> =
 };
 
 async function route(ctx: RouteContext): Promise<Response> {
-  const { request, env, segments } = ctx;
+  const { request, segments } = ctx;
   const head = segments[0];
   const method = request.method;
 
-  if (head === 'jwks' && segments.length === 1 && method === 'GET') {
-    const keys = await publicKeys(env);
-    if (!keys) return fail(503, 'grants_unavailable');
-    return json(keys, { headers: { 'Cache-Control': `public, max-age=${JWKS_MAX_AGE_S}` } });
-  }
   if (head === 'share' && segments.length >= 2) return handleShareCode(ctx);
   // A connected tab, with its host's grant (connections.ts).
   if (head === 'connections') {
@@ -194,6 +189,12 @@ async function serve(request: Request, env: Env, ctx: ExecutionContext): Promise
   // Accounts' workbench service closing the rooms a pairing's sessions joined.
   if (segments[0] === 'internal' && segments[1] === 'workbench-close' && segments.length === 2) {
     return handleWorkbenchClose(request, env);
+  }
+  // The grant keys are public: answered before any token is read, so a slow accounts never holds them.
+  if (segments[0] === 'jwks' && segments.length === 1 && request.method === 'GET') {
+    const keys = await publicKeys(env);
+    if (!keys) return fail(503, 'grants_unavailable');
+    return json(keys, { headers: { 'Cache-Control': `public, max-age=${JWKS_MAX_AGE_S}` } });
   }
   const caller = await callerOf(request, env);
   if (caller === 'guest') return forbidden();

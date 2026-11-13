@@ -18,6 +18,9 @@ let accountsKey: CryptoKey;
 let accountsJwk: JWK;
 export let grantSecret: string;
 
+// Accounts' public key set, as its /jwks answers it (for a stand-in ACCOUNTS binding).
+export const accountsKeySet = () => ({ keys: [accountsJwk] });
+
 export type AppCall = { method: string; url: string; body: unknown; headers: Headers };
 
 export type Harness = {

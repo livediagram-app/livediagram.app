@@ -61,7 +61,7 @@ function verifierFor(env: Env): Verify | null {
   const key = `${issuer} ${list.join(',')}`;
   let verify = verifiers.get(key);
   if (!verify) {
-    verify = createPersonVerifier({ issuer, audience: list });
+    verify = createPersonVerifier({ issuer, audience: list, keysFrom: env.ACCOUNTS });
     verifiers.set(key, verify);
   }
   return verify;
