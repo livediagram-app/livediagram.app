@@ -494,18 +494,18 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 
 ## Testing
 
-| Area                                                                                                                                                                             | Files    | Pins                                                                                                    |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
-| `app/telemetry/**`                                                                                                                                                               | 51       | the telemetry dashboard: each app's emitters, series, funnels, rankings, retired events, shared views   |
-| `lib/explorer/**`                                                                                                                                                                | 15       | the Explorer's host: arrival, addresses, app sessions, telemetry                                        |
-| `lib/*.test.ts`                                                                                                                                                                  | 10       | sign-in helpers, session, redirects, settings, teams, apps                                              |
-| `lib/appearance/**`                                                                                                                                                              | 2        | the site's Appearance: each app's key on its address, the boot script, the store                        |
-| `lib/status`, `components/status`                                                                                                                                                | 4        | the status page                                                                                         |
-| `lib/drive`, `components/drive`                                                                                                                                                  | 2        | Drive connect pages and switch dialog                                                                   |
-| root guards (`appearance-guard`, `optical-guard`, `touch-target-guard`, `trusted-types-guard`, `motion-budget`, `asset-prefix`, `cache-headers`) and `e2e/trusted-types.spec.ts` | 8        | site-wide rules: themes, optics, touch targets, Trusted Types, motion, the asset prefix and its caching |
-| `packages/sites`, `packages/account-menu`, `packages/settings-ui`                                                                                                                | the rest | the shared pieces the site renders                                                                      |
+| Area                                                                                                                                                                                                | Files    | Pins                                                                                                                                   |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/telemetry/**`                                                                                                                                                                                  | 51       | the telemetry dashboard: each app's emitters, series, funnels, rankings, retired events, shared views                                  |
+| `lib/explorer/**`                                                                                                                                                                                   | 15       | the Explorer's host: arrival, addresses, app sessions, telemetry                                                                       |
+| `lib/*.test.ts`                                                                                                                                                                                     | 10       | sign-in helpers, session, redirects, settings, teams, apps                                                                             |
+| `lib/appearance/**`                                                                                                                                                                                 | 2        | the site's Appearance: each app's key on its address, the boot script, the store                                                       |
+| `lib/status`, `components/status`                                                                                                                                                                   | 4        | the status page                                                                                                                        |
+| `lib/drive`, `components/drive`                                                                                                                                                                     | 2        | Drive connect pages and switch dialog                                                                                                  |
+| root guards (`appearance-guard`, `dark-pair-guard`, `optical-guard`, `touch-target-guard`, `trusted-types-guard`, `motion-budget`, `asset-prefix`, `cache-headers`) and `e2e/trusted-types.spec.ts` | 9        | site-wide rules: themes, dark pairs across stylesheets, optics, touch targets, Trusted Types, motion, the asset prefix and its caching |
+| `packages/sites`, `packages/account-menu`, `packages/settings-ui`                                                                                                                                   | the rest | the shared pieces the site renders                                                                                                     |
 
-130 test files:
+131 test files:
 
 - `liveworkspace/apps/site/app/error.test.tsx`
 - `liveworkspace/apps/site/app/first-load-lazy.test.ts`
@@ -574,6 +574,7 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 - `liveworkspace/apps/site/appearance-guard.test.ts`
 - `liveworkspace/apps/site/asset-prefix.test.ts`
 - `liveworkspace/apps/site/cache-headers.test.ts`
+- `liveworkspace/apps/site/dark-pair-guard.test.ts`
 - `liveworkspace/apps/site/components/LazyPageError.test.tsx`
 - `liveworkspace/apps/site/components/drive/drive-switch-dialog.test.tsx`
 - `liveworkspace/apps/site/components/settings/site-settings-dialog.test.tsx`

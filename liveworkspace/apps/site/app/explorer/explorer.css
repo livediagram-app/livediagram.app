@@ -1,6 +1,9 @@
 @import 'tailwindcss/theme' layer(theme);
 @import 'tailwindcss/utilities' layer(utilities) source(none);
 @import '@liveworkspace/tailwind-config';
+/* The dark halves of the colour pairs this sheet would otherwise paint light over (dark-pairs.css, written by
+ * dark-pair-guard.test.ts; liveworkspace/docs/specs/010-site/site.md "Stylesheets"). */
+@import './dark-pairs.css';
 @import '@liveworkspace/explorer/explorer.css';
 /* The colours of the app the person came from (app-colours.css), shared with the Community page. */
 @import '../app-colours.css';
