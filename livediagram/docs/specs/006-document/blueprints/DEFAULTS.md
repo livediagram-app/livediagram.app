@@ -13,3 +13,4 @@ One row per default applied where a spec is silent or qualitative.
 | D7  | delta-saves   | How the digest is spelled                            | SHA-256 of the elements' `JSON.stringify`, lowercase hex: the image digest's own function (`sha256Hex`)              |
 | D8  | delta-saves   | How many ops a delta may carry                       | 500 (`TAB_DELTA_MAX_OPS`), refused `too_many_ops` past it                                                            |
 | D9  | delta-saves   | When a delta is too large to be worth it             | Its body over half the elements' JSON (`TAB_DELTA_MAX_SHARE`)                                                        |
+| D10 | delta-saves   | How many base copies the editor holds                | 16 tabs (`TAB_DELTA_BASES_MAX`), the least recently used out first                                                   |

@@ -59,12 +59,27 @@ fallback, never a tab.
 
 ## How the editor uses it
 
-Not sent yet: the api's door is built first, and the editor's autosave and unload flush follow (Work Tracker 661).
+The autosave sends deltas; the unload flush follows (Work Tracker 661, part 3).
+
+- The editor holds one **base copy** per tab: the elements exactly as the api stores them at a revision. It comes
+  from three places only:
+  - the tab's load: the elements as the api answered them, before the editor's own load fixes (a ragged table made
+    rectangular), with the revision beside them;
+  - a whole-tab save's answer: the elements it echoes, and its revision;
+  - a delta save's answer whose digest is the one sent: the store then holds exactly the elements the editor sent,
+    and they are the base copy at the answer's revision.
+
+  A base copy is never replaced by one for an older revision (a slower answer is ignored). It is dropped on a
+  refusal and on a delta answer whose digest differs, so the next save is whole. The editor holds base copies for
+  at most 16 tabs, the most recently used.
 
 - An Editor's save of a tab it holds a base copy for sends a delta when the delta is small: at most 500 ops and a
   body at most half the size of the elements sent whole. Otherwise, and for a new tab, it sends the whole tab.
 - A `409 delta_refused` is answered at once with the whole-tab save, in the same save. Any other failure is a failed
-  save, retried as today ([Per-tab storage](per-tab-storage.md#a-refused-save-stops-a-failed-save-doesnt)).
+  save, retried as today ([Per-tab storage](per-tab-storage.md#a-refused-save-stops-a-failed-save-doesnt)). The
+  whole save's own refusals (`409 empty_tab_overwrite_blocked`, `409 tab_busy`, `403`, `413`) reach the editor from
+  a delta exactly as from the whole save.
+- Only livediagram's editor sends deltas; the other editors' saves stay whole until their own cards turn it on.
 - The room relay and the own-write hold are unchanged: the ops are derived at the snapshot and relayed after the save
   lands, whichever way it went ([Collaboration race hardening](../012-collaboration/collab-race-hardening.md#saves)).
 - The unload flush sends a delta where it has one, so a large tab's last edits fit the keepalive budget (Work Tracker

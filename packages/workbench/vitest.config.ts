@@ -16,6 +16,7 @@ const HELD_AT_100 = [
   'src/components/canvas/arrow-view-parts.tsx',
   'src/lib/editor-search/build-search-results.ts',
   'src/lib/api/core.ts',
+  'src/lib/api/tab-delta-save.ts',
   'src/lib/api/xhr-fetch.ts',
   'src/components/start/StartPanel.tsx',
   'src/lib/canvas-backgrounds.ts',
