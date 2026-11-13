@@ -64,7 +64,7 @@ describe('A rule cuts text at its cap, never through an emoji', () => {
 
   it.each(straddling(ITEM_TITLE_MAX))("a new card's title", (text) => {
     const r = planned([{ kind: 'create_card', type: 'bug', title: '{{card.title}}' }], text);
-    whole(String(r.created[0]!.fields['title']), ITEM_TITLE_MAX);
+    whole(r.created[0]!.fields['title'] as string, ITEM_TITLE_MAX);
   });
 
   it.each(straddling(ITEM_CHECKLIST_TEXT_MAX))('a checklist item', (text) => {
@@ -87,7 +87,7 @@ describe('A rule cuts text at its cap, never through an emoji', () => {
 
   it.each(straddling(ITEM_TITLE_MAX))('a Set Field title', (text) => {
     const r = planned([{ kind: 'set_field', field: 'title', value: { text } }], 'Card');
-    whole(String(r.patch.set!['title']), ITEM_TITLE_MAX);
+    whole(r.patch.set!['title'] as string, ITEM_TITLE_MAX);
   });
 
   it.each(straddling(WEBHOOK_VALUE_MAX))('a webhook value', (text) => {

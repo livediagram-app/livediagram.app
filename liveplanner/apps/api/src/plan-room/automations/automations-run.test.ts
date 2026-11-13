@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { defaultCatalogue, type AutomationRun, type Item } from '@liveplanner/items';
+import {
+  defaultCatalogue,
+  type AutomationRun,
+  type Item,
+  type ItemTypeDef,
+} from '@liveplanner/items';
 import { endRepeatWorld } from '../test-repeat-world';
 import { exportProjectFile, readProjectFile } from '../project-file';
 import { rulesFromFile } from './automation-copy';
@@ -319,7 +324,7 @@ describe('copies, exports and deletes', () => {
   });
 
   it('a file read into a new plan leaves behind the rules a save would refuse', () => {
-    const types = [
+    const types: ItemTypeDef[] = [
       {
         id: 'task',
         label: 'Task',
@@ -328,8 +333,8 @@ describe('copies, exports and deletes', () => {
         color: '#2563eb',
         fields: ['title', 'status', 'f-ok', 'f-time'],
         custom: [
-          { id: 'f-ok', label: 'Approved', kind: 'checkbox' as const },
-          { id: 'f-time', label: 'Time Spent', kind: 'duration' as const, timeSpent: true },
+          { id: 'f-ok', label: 'Approved', kind: 'checkbox' },
+          { id: 'f-time', label: 'Time Spent', kind: 'duration', timeSpent: true },
         ],
       },
     ];
