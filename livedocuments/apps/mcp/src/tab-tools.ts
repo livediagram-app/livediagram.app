@@ -58,7 +58,8 @@ export function registerTabTools(server: McpServer, env: Env): void {
     const given = drawn?.elements;
     const valueIssue = given ? elementsIssue(given) : null;
     if (valueIssue) return errorResult(valueIssue);
-    const ended = given ? resolveArrowEnds(given, idsOf(given)) : null;
+    // Beside a template, an arrow may pin to one of its elements: the ends are checked against the tab it built.
+    const ended = given && !args.template ? resolveArrowEnds(given, idsOf(given)) : null;
     if (ended && 'error' in ended) return errorResult(ended.error);
     // Default the new tab's theme to the document's existing one so it matches the other tabs
     // rather than landing as a clashing brand-white tab; the model can still pass a theme.

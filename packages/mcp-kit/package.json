@@ -17,6 +17,7 @@
     "./request-scope": "./src/request-scope.ts",
     "./server-json": "./src/server-json.ts",
     "./tool-result": "./src/tool-result.ts",
+    "./template-elements": "./src/template-elements.ts",
     "./tool-scope": "./src/tool-scope.ts",
     "./eval/summary": "./eval/summary.mjs",
     "./eval/mcp-client": "./eval/mcp-client.mjs",

@@ -596,6 +596,9 @@ Each step is its own PR, and both products build and pass their tests after ever
      - `mcp-kit` (`tool-result`): the tools' text, view and error results, the bearer-token guard, `ToolInputError`,
        the behaviour annotations and the rule that a fixable mistake answers as a tool error. Each MCP's
        `tool-helpers.ts` and `tool-annotations.ts` re-export them beside its own links, `loadTab` and `registerTool`.
+     - `mcp-kit` (`template-elements`): the elements given beside a template on a create tool or `add_tab`, checked
+       and turned into the `add` ops the template's tab takes. Each MCP's `template-elements.ts` binds its own checks,
+       changeset client and tab route.
      - `api-kit`: the room's access closes, follows, multiplayer count and agent presence (each room hands in its
        trashed op), the image reference extractor, the telemetry relay's localhost check and the OpenAPI document
        types. About 4,600 lines of copies went; tool names, prompt text, CLI output and wire formats are unchanged.
