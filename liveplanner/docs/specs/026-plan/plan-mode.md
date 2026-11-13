@@ -167,6 +167,9 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
   Cards is always its last option**: a new board type goes before it (and before Archive, which sits just ahead of
   All Cards in the palette).
 - There is no empty-canvas card: Start Planning is every empty tab's start, and it cannot be closed.
+- **Describe a Plan** ([Describe a Plan](describe-a-plan.md)): for a signed-in Editor, a rail entry at the foot
+  above Connect File and Import that drafts a board's columns and card types from their own words with AI, shown as a
+  preview to change before Make Plan makes anything; a guest sees it with a sign-in nudge.
 - **A new tab opens on Start Planning**: adding a tab (the tab bar's **+**, the command palette's **Create New Tab**)
   makes a general tab carrying the active tab's look, straight to **Start Planning**. A new Project opens the same way
   ([New project route](../007-editor/new-project-route.md)).

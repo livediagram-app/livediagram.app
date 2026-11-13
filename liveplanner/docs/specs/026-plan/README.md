@@ -15,4 +15,5 @@ Follow the references below only as needed; never upfront.
 - ./items.md - when working on items and the item store: fields, item types, writes, access, live sync, undo, offline projects, copies, limits
 - ./github-pull-requests.md - when working on GitHub pull requests: the Pull Request field kind, how a card names its pull requests, the GitHub App and connection, pull request state on cards and the GitHub rules
 - ./automations.md - when working on Automations: rules with triggers, conditions and actions that act on cards, the Automations screen, the rule builder, the Audit Trail and the footer button
+- ./describe-a-plan.md - when working on Describe a Plan: a board's columns and card types drafted by AI from someone's words on Start Planning, the preview, who may and the per-account cap
 - ./blueprints/README.md - when implementing Plan mode, the Plan board or the item store: file-level contracts, constants, defaults and tests
