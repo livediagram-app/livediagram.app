@@ -82,7 +82,7 @@ async function drawn(page: Page) {
 }
 
 const results: Record<string, MainThreadReading & { cardsBuilt: number; runs: string }> = {};
-const report = async (page: Page, what: string, rate: number, reading: MainThreadReading) => {
+const record = async (page: Page, what: string, rate: number, reading: MainThreadReading) => {
   // How much of the board is built once it has settled: its cards, and its runs near of all.
   const cardsBuilt = await page.locator(CARD).count();
   const runs = `${await page.locator('[data-plan-run-near]').count()} of ${await page.locator('[data-plan-run]').count()}`;
@@ -140,11 +140,11 @@ test('a 2,000-card board imported, then opened', async ({ page, browser }) => {
   if (tracing) await browser.stopTracing();
   if (profiling)
     console.log((await stopCpuProfile(cdp, `${OUT}/big-board-import.cpuprofile`)).join('\n'));
-  await report(page, 'import 2000', rate, imported);
+  await record(page, 'import 2000', rate, imported);
   await expect(page.locator(CARD).first()).toContainText('Card');
 
   // Open: the plan reloaded, from navigation until the board has drawn. The probe starts with the page.
-  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+  await throttleCpu(page, 1);
   await page.waitForTimeout(3000);
   await page.addInitScript(() => {
     const w = window as unknown as {
@@ -165,7 +165,7 @@ test('a 2,000-card board imported, then opened', async ({ page, browser }) => {
       }
     }).observe({ type: 'longtask', buffered: true });
   });
-  const reloadCdp = await throttleCpu(page, rate);
+  await throttleCpu(page, rate);
   if (tracing) await startProbeTrace(browser, page, `${OUT}/big-board-open.trace.json`);
   await page.reload();
   await page.locator(CANVAS).waitFor();
@@ -174,6 +174,6 @@ test('a 2,000-card board imported, then opened', async ({ page, browser }) => {
   if (tracing) await browser.stopTracing();
   // The frame gap is read from the first frame, after the page's own boot (its script's first evaluation, which
   // every page pays): the long tasks above include the boot.
-  await report(page, 'open 2000', rate, opened);
-  await reloadCdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+  await record(page, 'open 2000', rate, opened);
+  await throttleCpu(page, 1);
 });
