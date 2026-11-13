@@ -123,6 +123,7 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
       'images',
       'oauth',
       'participants',
+      'plan-drafts',
       'preferences',
       'projects',
       'share',

@@ -8019,6 +8019,28 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ItemFieldId": {
+    "enum": [
+      "title",
+      "description",
+      "status",
+      "assignee",
+      "priority",
+      "color",
+      "labels",
+      "estimate",
+      "start",
+      "due",
+      "checklist",
+      "attachments",
+      "votes",
+      "comments",
+      "archived",
+      "flagged",
+      "example"
+    ],
+    "type": "string"
+  },
   "ItemFieldValue": {
     "anyOf": [
       {
@@ -10652,6 +10674,136 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "status",
       "name"
+    ],
+    "type": "object"
+  },
+  "PlanDraft": {
+    "additionalProperties": false,
+    "properties": {
+      "cardTypes": {
+        "items": {
+          "$ref": "#/components/schemas/PlanDraftType"
+        },
+        "type": "array"
+      },
+      "columns": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "title",
+      "columns",
+      "cardTypes"
+    ],
+    "type": "object"
+  },
+  "PlanDraftField": {
+    "additionalProperties": false,
+    "properties": {
+      "kind": {
+        "$ref": "#/components/schemas/PlanDraftFieldKind"
+      },
+      "name": {
+        "type": "string"
+      },
+      "options": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "name",
+      "kind"
+    ],
+    "type": "object"
+  },
+  "PlanDraftFieldKind": {
+    "enum": [
+      "text",
+      "longtext",
+      "number",
+      "currency",
+      "percent",
+      "duration",
+      "date",
+      "datetime",
+      "daterange",
+      "checkbox",
+      "link",
+      "email",
+      "phone",
+      "choice",
+      "multichoice",
+      "rating",
+      "person",
+      "labels",
+      "checklist"
+    ],
+    "type": "string"
+  },
+  "PlanDraftRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "prompt": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "prompt"
+    ],
+    "type": "object"
+  },
+  "PlanDraftResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "draft": {
+        "$ref": "#/components/schemas/PlanDraft"
+      }
+    },
+    "required": [
+      "draft"
+    ],
+    "type": "object"
+  },
+  "PlanDraftType": {
+    "additionalProperties": false,
+    "properties": {
+      "builtInFields": {
+        "items": {
+          "$ref": "#/components/schemas/ItemFieldId"
+        },
+        "type": "array"
+      },
+      "color": {
+        "type": "string"
+      },
+      "fields": {
+        "items": {
+          "$ref": "#/components/schemas/PlanDraftField"
+        },
+        "type": "array"
+      },
+      "glyph": {
+        "$ref": "#/components/schemas/PlanGlyphId"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "name",
+      "color",
+      "glyph",
+      "builtInFields",
+      "fields"
     ],
     "type": "object"
   },

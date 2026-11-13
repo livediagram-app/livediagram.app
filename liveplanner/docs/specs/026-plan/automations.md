@@ -664,6 +664,8 @@ it. A guest sees the sign-in gate the Automations screen already shows.
 
 - Each ask counts as **one of the plan's 100 AI steps a day** (above), and a plan drafts at most **20 rules a day**
   (UTC) whatever their asks, so drafting can never spend the day's AI steps on its own.
+- Describe a Plan, which drafts a board and card types on Start Planning before a plan's AI steps can apply, has its
+  own cap, **10 plans a day per account** ([Describe a Plan → Limits and cost](describe-a-plan.md#limits-and-cost)).
 - An ask has **15 seconds** and answers at most **1,500 tokens**. The ask's size is measured (`ai-draft.test.ts`,
   "measures the ask"): about **9,100 characters** (2,300 tokens) for a typical plan, **19,600** (4,900 tokens) for a
   plan past every cap, so a draft costs about **29 Neurons** typically and **86** at worst (twice that with its second
