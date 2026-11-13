@@ -64,6 +64,14 @@ Derived from [Workday pieces](../workday-pieces.md).
 RECEPTION_REACH`) holds your feet. A module store like the arcade's; a step re-renders nothing unless the answer
   changes. A walking click on an unturned desk (or Arcade Machine) walks to `walkPointFor(el, point)`: `FRONT_STAND`
   below its box under the click, clamped 12% in from its ends (`lib/avatar-click-intent.ts`).
+  With another standing character's feet within `FRONT_SPOT_GAP` (24 px) of that spot, the walk goes to
+  `frontWalkPoint(el, point, others, elements, fences)` (`lib/front-walk-point.ts`) instead: `freeFrontSpot`
+  (`packages/avatar/src/front-spot.ts`) steps 8 px at a time up to 96 px either way along the front (across for a
+  piece facing down or up, down the canvas for one facing a side), taking the first spot where `receptionAt` (or
+  `arcadeAt`) over every piece of the kind still names this piece, that is outside every footprint, clear of a wall's
+  `FENCE_REACH` and not across a wall from the spot, and `FRONT_SPOT_GAP` from everyone; with none, the in-reach spot
+  with the most room. A click on a standing peer whose point lies on a front piece walks there and sends no push.
+  Cost: once per click, the peers filtered to those within 120 px, at most 24 candidates.
 - **Hot Desk card**: free, the text on the drawing's card; held, `hotDeskCardY(box, grid, sitters)` raises a card to
   end where `seatPillBottom` would put a pill (in grid units), and FurnitureView draws no pill on a hot desk.
 - **Ringing**: the face calls `ringBell(deskId)`, which the canvas hook points at `send({ kind: 'avatar-bell', deskId

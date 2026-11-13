@@ -21,10 +21,11 @@ import {
   avatarClickIntent,
   avatarPressOutcome,
   elementClickKind,
+  isFrontPiece,
   isInPlacePress,
   pressPieceMain,
-  walkPointFor,
 } from '@/lib/avatar-click-intent';
+import { frontWalkPoint } from '@/lib/front-walk-point';
 import { elementAt, onPaintedText } from '@/lib/avatar-press-target';
 import { avatarDoorPress } from '@/lib/avatar-door-press';
 import type { Element as CanvasElement } from '@livehuddle/document';
@@ -133,6 +134,12 @@ export function useCanvasSurfaceGestures({
       avatar.readPos(),
     );
 
+  // The standing peers' feet, for a walk to a crowded front: a seated peer is on a seat, not at the front.
+  const standingPeerFeet = () =>
+    readPeerAvatars()
+      .filter((peer) => !peer.avatar.seatedOn)
+      .map((peer) => ({ x: peer.avatar.x, y: peer.avatar.y }));
+
   const focusCanvas = () => {
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
     node?.focus({ preventScroll: true });
@@ -237,9 +244,19 @@ export function useCanvasSurfaceGestures({
         const { clientX, clientY } = e;
         // Seated, the walk stands you up first (docs/specs/009-elements/chair.md "Any movement stands you up").
         const walk = () => {
+          // The piece under the click, from its footprint (the layer is pointer-inert).
+          const hit = elements
+            ? elementAt(
+                elements,
+                point,
+                (el) => el.type !== 'text' || onPaintedText(el.id, clientX, clientY),
+              )
+            : null;
           // Clicking someone ELSE's character walks over and pushes them
-          // (docs/specs/008-canvas/avatar-mode.md), rather than walking to the spot they're standing on.
-          const peer = peerAvatarAt(point);
+          // (docs/specs/008-canvas/avatar-mode.md), rather than walking to the spot they're standing on. One standing
+          // over an Arcade Machine or a Reception Desk is a click on the piece, which walks you to a free spot at its
+          // front (social-pieces.md "A crowded machine stays reachable").
+          const peer = isFrontPiece(hit) ? null : peerAvatarAt(point);
           if (peer) {
             // A seated character cannot be pushed (docs/specs/009-elements/chair.md "Sitting"): walk up to them only.
             const seated = readPeerAvatars().some((p) => p.id === peer.id && p.avatar.seatedOn);
@@ -259,17 +276,10 @@ export function useCanvasSurfaceGestures({
             avatar.walkTo(door.nearSide);
             return;
           }
-          // The piece under the click, from its footprint (the layer is pointer-inert): only a `walk` kind is
-          // walked to; a `use` piece does its main action (or opens in the reader when it has none right now, unless
-          // it is only a control that is not yours to press: then nothing), and a `read` element opens in the reader
-          // (docs/specs/008-canvas/avatar-mode.md "Clicking a piece"; lib/avatar-click-intent `avatarPressOutcome`).
-          const hit = elements
-            ? elementAt(
-                elements,
-                point,
-                (el) => el.type !== 'text' || onPaintedText(el.id, clientX, clientY),
-              )
-            : null;
+          // Only a `walk` kind is walked to; a `use` piece does its main action (or opens in the reader when it has
+          // none right now, unless it is only a control that is not yours to press: then nothing), and a `read`
+          // element opens in the reader (docs/specs/008-canvas/avatar-mode.md "Clicking a piece";
+          // lib/avatar-click-intent `avatarPressOutcome`).
           const kind = hit ? elementClickKind(hit) : null;
           // Pressing the main action is the test for having one: only a `use` piece's is pressed.
           const outcome = hit
@@ -279,8 +289,10 @@ export function useCanvasSurfaceGestures({
             if (outcome === 'read') onReadElement?.(hit.id);
             return;
           }
-          // A Reception Desk or an Arcade Machine walks you to its front, where arriving says hello (walkPointFor).
-          avatar.walkTo(walkPointFor(hit, point));
+          // A Reception Desk or an Arcade Machine walks you to its front, where arriving says hello (walkPointFor),
+          // beside whoever already stands there (frontWalkPoint).
+          const others = isFrontPiece(hit) ? standingPeerFeet() : [];
+          avatar.walkTo(frontWalkPoint(hit, point, others, elements ?? [], avatar.readFences()));
         };
         // A finger has no middle button or Space to pan with (docs/specs/008-canvas/avatar-mode.md "Walking"):
         // its drag pans, and only a press that never moved, a tap, walks.

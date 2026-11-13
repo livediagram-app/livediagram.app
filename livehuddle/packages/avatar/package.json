@@ -32,6 +32,7 @@
     "./corridor": "./src/corridor.ts",
     "./facing": "./src/facing.ts",
     "./fence": "./src/fence.ts",
+    "./front-spot": "./src/front-spot.ts",
     "./furniture-art": "./src/furniture-art.ts",
     "./hooks/avatarWalkTypes": "./src/hooks/avatarWalkTypes.ts",
     "./hooks/useAvatarActionKeys": "./src/hooks/useAvatarActionKeys.ts",

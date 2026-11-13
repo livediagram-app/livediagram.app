@@ -472,6 +472,8 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     placed: isActive,
     // The live position (the loop owns it), for handlers and the editor's Fit and zoom anchor; null outside the mode.
     readPos: () => (active ? posRef.current : null),
+    // The walls and footprints the walk keeps to, for a click that picks where to stand (a crowded front, front-spot.ts).
+    readFences: () => fences,
     standingOnId: isActive ? standingOnId : null,
     seatedOn,
     seatClaim,

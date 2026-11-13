@@ -201,6 +201,10 @@ export function elementClickKind(el: CanvasElement): AvatarClickKind {
 // sits you wherever on it you click, never to the floor behind or inside it (docs/specs/008-canvas/avatar-mode.md
 // "Clicking a piece").
 const FRONT_KINDS: ReadonlySet<string> = new Set(['reception-desk', 'arcade-machine']);
+/** Whether a click on `el` walks you to its front (an unrotated Reception Desk or Arcade Machine): walkPointFor's rule. */
+export function isFrontPiece(el: CanvasElement | null): boolean {
+  return !!el && el.type === 'shape' && FRONT_KINDS.has(el.shape) && (el.rotation ?? 0) % 360 === 0;
+}
 /** How far below a front piece's box its walk ends, in canvas px: clear of its footprint and inside its front strip. */
 export const FRONT_STAND = 16;
 /** How far in from a front piece's ends its walk ends, as a share of its width: on its front, never round its side. */
@@ -223,8 +227,7 @@ export function walkPointFor(
     const spot = lecternSpot({ ...el, chairFacing: pieceFacing(el) });
     return { x: spot.x, y: spot.y };
   }
-  if (!el || el.type !== 'shape' || !FRONT_KINDS.has(el.shape) || (el.rotation ?? 0) % 360 !== 0)
-    return point;
+  if (!isFrontPiece(el) || el?.type !== 'shape') return point;
   // The arcade's bubble and the Reception Desk's Welcome follow their turned front (useSocialPieces arcadeAt,
   // useWorkdayPieces receptionAt), so the walk ends there.
   const facing = pieceFacing(el);
