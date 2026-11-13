@@ -142,6 +142,50 @@ describe('Set Field', () => {
     });
   });
 
+  // A Checkbox field holds true or false, as the card's own tick writes it, never the text that set it.
+  const WITH_BOX = {
+    ...OUTLINE,
+    types: OUTLINE.types.map((t) =>
+      t.id === 'bug'
+        ? {
+            ...t,
+            fields: [...t.fields, 'f-ok'],
+            custom: [
+              ...(t.custom ?? []),
+              { id: 'f-ok', label: 'Signed Off', kind: 'checkbox' as const },
+            ],
+          }
+        : t,
+    ),
+  };
+
+  it('sets a Checkbox field on or off from its text, as true or false', () => {
+    const box = (text: string, card = bug()) =>
+      run([{ kind: 'set_field', field: 'f-ok', value: { text } }], card, { outline: WITH_BOX });
+    const on = done(box('true'));
+    expect(on.patch.set).toEqual({ 'f-ok': true });
+    expect(on.lines[0]!.text).toBe('Set Signed Off to Yes');
+    expect(done(box(' Yes ')).patch.set).toEqual({ 'f-ok': true });
+    expect(done(box('false', bug({ 'f-ok': true }))).patch.set).toEqual({ 'f-ok': false });
+    expect(done(box('No', bug({ 'f-ok': true }))).lines[0]!.text).toBe('Set Signed Off to No');
+    // A value filled in from another Checkbox reads as it shows (Yes or No).
+    expect(done(box('{{card.field.Signed Off}}', bug({ 'f-ok': true }))).lines[0]).toMatchObject({
+      already: true,
+    });
+    expect(failed(box('maybe'))).toBe('Signed Off is Yes or No, not "maybe"');
+  });
+
+  it('fails a person picked who has left as gone, a value filled in as naming nobody', () => {
+    const r = one({ kind: 'set_field', field: 'assignee', value: { text: 'p-left' } });
+    expect(r).toMatchObject({
+      failed: 'Nobody called "p-left" can be set',
+      gone: { kind: 'person', id: 'p-left' },
+    });
+    const filled = one({ kind: 'set_field', field: 'assignee', value: { text: '{{card.title}}' } });
+    expect(filled).toMatchObject({ failed: 'Nobody called "Login fails" can be set' });
+    expect('gone' in filled).toBe(false);
+  });
+
   it('clears the field when the filled text is empty', () => {
     const r = done(
       one(

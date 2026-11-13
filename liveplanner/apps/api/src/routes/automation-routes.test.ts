@@ -287,6 +287,39 @@ describe('the rules', () => {
     expect((await w.call('PUT', `/${made.id}`, trigger(['f-time']))).status).toBe(400);
   });
 
+  it('refuses a Set Field giving a Checkbox anything but Yes or No, naming the field and the step', async () => {
+    const put = await w.send('PUT', '/api/projects/A/item-types', {
+      itemTypes: {
+        version: defaultCatalogue().version,
+        types: [
+          {
+            id: 'task',
+            label: 'Task',
+            newTitle: 'New task',
+            glyph: 'task',
+            color: '#2563eb',
+            fields: ['title', 'status', 'f-ok'],
+            custom: [{ id: 'f-ok', label: 'Signed Off', kind: 'checkbox' }],
+          },
+        ],
+      },
+    });
+    expect(put.status).toBeLessThan(300);
+    const setting = (text: string) =>
+      ruleBody({
+        steps: [{ kind: 'flag' }, { kind: 'set_field', field: 'f-ok', value: { text } }],
+      });
+    const refused = await w.call('POST', '', setting('maybe'));
+    expect(refused.status).toBe(400);
+    expect(await refused.json()).toMatchObject({
+      error: 'automation_invalid',
+      path: 'steps.1.value',
+      message: 'Signed Off is a Checkbox: set it to Yes or No',
+    });
+    const made = await w.rule(setting('true'));
+    expect((await w.call('PUT', `/${made.id}`, setting('later'))).status).toBe(400);
+  });
+
   it('says what a rule names that the plan lacks', async () => {
     await w.rule({ steps: [{ kind: 'move', status: 'qa' }] });
     const [rule] = (await listOf()).rules;

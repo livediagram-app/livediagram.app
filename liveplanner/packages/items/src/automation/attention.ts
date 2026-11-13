@@ -15,8 +15,14 @@ import type {
   AutomationRuleBody,
 } from './types';
 import { stepActions } from './validate';
-import { goneLine } from './set-value';
-import { personOf, planHasField, unheardFields, type AutomationOutline } from './outline';
+import { fieldKind, goneLine, personNamed } from './set-value';
+import {
+  fieldDefOf,
+  personOf,
+  planHasField,
+  unheardFields,
+  type AutomationOutline,
+} from './outline';
 
 type Need = {
   kind: 'column' | 'type' | 'field' | 'person' | 'filter' | 'form' | 'webhook' | 'card';
@@ -51,7 +57,22 @@ function conditionNames(c: AutomationCondition): Need[] {
   }
 }
 
-function actionNames(a: AutomationAction | AutomationOutgoing | AutomationAi): Need[] {
+// The person a Set Field on a Person field (the Assignee too) picked: one its text names by id or name is there, any
+// other picked text is someone gone (by that text); a value filled in names whoever the card holds.
+function setPersonNames(
+  a: Extract<AutomationAction, { kind: 'set_field' }>,
+  o: AutomationOutline,
+): Need[] {
+  if (!('text' in a.value) || fieldKind(a.field, fieldDefOf(o, a.field)) !== 'person') return [];
+  const text = a.value.text.trim();
+  if (!text || text.includes('{{')) return [];
+  return [{ kind: 'person', id: personNamed(o.people, text)?.id ?? text }];
+}
+
+function actionNames(
+  a: AutomationAction | AutomationOutgoing | AutomationAi,
+  o: AutomationOutline,
+): Need[] {
   switch (a.kind) {
     case 'ai':
       return a.task === 'summarise' && a.field ? [{ kind: 'field', id: a.field }] : [];
@@ -61,6 +82,7 @@ function actionNames(a: AutomationAction | AutomationOutgoing | AutomationAi): N
       return [
         { kind: 'field', id: a.field },
         ...('from' in a.value ? [{ kind: 'field' as const, id: a.value.from }] : []),
+        ...setPersonNames(a, o),
       ];
     case 'clear_field':
       return [{ kind: 'field', id: a.field }];
@@ -97,7 +119,7 @@ function relatedNames(r: AutomationRelated): Need[] {
   return r.kind === 'linked' && r.field ? [{ kind: 'field', id: r.field }] : [];
 }
 
-function namesOf(rule: AutomationRuleBody): Need[] {
+function namesOf(rule: AutomationRuleBody, o: AutomationOutline): Need[] {
   const t = rule.trigger;
   const out: Need[] = [];
   if (t.kind === 'card_created' && t.status) out.push({ kind: 'column', id: t.status });
@@ -113,7 +135,7 @@ function namesOf(rule: AutomationRuleBody): Need[] {
     if (s.kind === 'for') out.push(...relatedNames(s.related));
     if (s.kind === 'if' || s.kind === 'for')
       for (const c of s.conditions) out.push(...conditionNames(c));
-    for (const a of stepActions(s)) out.push(...actionNames(a));
+    for (const a of stepActions(s)) out.push(...actionNames(a, o));
   }
   return out;
 }
@@ -148,7 +170,7 @@ export function ruleNeedItems(
 ): AutomationNeed[] {
   const seen = new Set<string>();
   const out: AutomationNeed[] = [];
-  for (const need of namesOf(rule)) {
+  for (const need of namesOf(rule, outline)) {
     const key = `${need.kind}:${need.id}`;
     if (seen.has(key) || present(need, outline, webhooks)) continue;
     seen.add(key);

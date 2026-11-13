@@ -23,6 +23,8 @@ import {
   ruleNameTaken,
   needLine,
   ruleNeedItems,
+  ruleSetsFields,
+  setFieldRefusal,
   typesOf,
   unheardFields,
   type AutomationEvent,
@@ -155,7 +157,8 @@ async function list(ctx: PlanRouteContext, g: Gated): Promise<Response> {
 }
 
 // The request's rule, checked, or the refusal. A Field Changed rule naming a field no write changes (Time Spent, a
-// Votes tally) would never run: refused, naming the field, with the plan's types read only for such a rule.
+// Votes tally) would never run, and a Set Field giving a Checkbox anything but Yes or No would write what it can't
+// hold: each refused, naming the field, with the plan's types read only for a rule that holds one.
 async function bodyOf(
   ctx: PlanRouteContext,
   projectId: string,
@@ -165,8 +168,9 @@ async function bodyOf(
   const read = readRuleBody(raw);
   if ('error' in read) return refuse(400, read.error, { path: read.path, message: read.message });
   const trigger = read.body.trigger;
+  if (trigger.kind !== 'field_changed' && !ruleSetsFields(read.body)) return read.body;
+  const types = typesOf((await readPlanHead(ctx.env, projectId)).itemTypes);
   if (trigger.kind === 'field_changed') {
-    const types = typesOf((await readPlanHead(ctx.env, projectId)).itemTypes);
     const [unheard] = unheardFields(types, trigger.fields);
     if (unheard)
       return refuse(400, 'automation_invalid', {
@@ -174,7 +178,8 @@ async function bodyOf(
         message: `Field Changed never hears ${unheard.name}: it changes without an edit, so the rule would never run`,
       });
   }
-  return read.body;
+  const set = setFieldRefusal(read.body, types);
+  return set ? refuse(400, 'automation_invalid', set) : read.body;
 }
 
 async function create(ctx: PlanRouteContext, g: Gated): Promise<Response> {

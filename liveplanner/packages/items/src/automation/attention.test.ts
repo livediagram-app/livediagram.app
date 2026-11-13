@@ -30,6 +30,26 @@ describe('ruleNeeds', () => {
     ).toEqual([]);
   });
 
+  it('names a person a Set Field on a Person field picked who has left, by the text it holds', () => {
+    const set = (field: string, text: string) =>
+      ({ kind: 'set_field', field, value: { text } }) as const;
+    expect(
+      ruleNeedItems(
+        ruleBody({
+          steps: [
+            set('assignee', 'p-sam'),
+            set('f-owner', 'ali'),
+            set('assignee', '{{person}}'),
+            set('assignee', ' '),
+            set('title', 'p-left'),
+            set('f-owner', 'p-left'),
+          ],
+        }),
+        OUTLINE,
+      ),
+    ).toEqual([{ kind: 'person', id: 'p-left' }]);
+  });
+
   it('names each thing gone once, in the order the rule names it', () => {
     const needs = ruleNeeds(
       ruleBody({

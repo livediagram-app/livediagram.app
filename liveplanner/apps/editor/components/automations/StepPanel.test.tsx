@@ -137,6 +137,79 @@ describe('StepPanel', () => {
     expect(screen.getByRole('textbox', { name: 'Text' })).toBeTruthy();
   });
 
+  it('sets the Assignee and a Person field to one of the plan’s people, and a Checkbox to Yes or No', () => {
+    const [first, ...rest] = outline().types;
+    const o = outline({
+      types: [
+        {
+          ...first!,
+          fields: [...first!.fields, 'f-who', 'f-ok'],
+          custom: [
+            ...(first!.custom ?? []),
+            { id: 'f-who', label: 'Reviewer', kind: 'person' },
+            { id: 'f-ok', label: 'Signed Off', kind: 'checkbox' },
+          ],
+        },
+        ...rest,
+      ],
+    });
+    const people = o.people;
+    render(
+      <Panel
+        o={o}
+        body={body({ steps: [{ kind: 'set_field', field: 'title', value: { text: 'Hi' } }] })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    pick('Field', 'assignee');
+    // Kept by id, shown by name, as Assign's pick is; never typed.
+    expect(latest.steps[0]).toEqual({
+      kind: 'set_field',
+      field: 'assignee',
+      value: { text: people[0]!.id },
+    });
+    expect(screen.queryByRole('textbox', { name: 'Text' })).toBeNull();
+    const setTo = screen.getByRole('combobox', { name: 'Set To' });
+    expect([...setTo.querySelectorAll('option')].map((x) => x.textContent)).toEqual([
+      'A Person',
+      'Another Field’s Value',
+    ]);
+    const person = screen.getByRole('combobox', { name: 'Person' });
+    expect([...person.querySelectorAll('option')].map((x) => x.textContent)).toEqual(
+      people.map((p) => p.name),
+    );
+    pick('Person', people[1]!.id);
+    expect(latest.steps[0]).toMatchObject({ value: { text: people[1]!.id } });
+    pick('Field', 'f-who');
+    expect(latest.steps[0]).toMatchObject({ field: 'f-who', value: { text: people[1]!.id } });
+    pick('Field', 'f-ok');
+    expect(latest.steps[0]).toMatchObject({ field: 'f-ok', value: { text: 'true' } });
+    const yesNo = screen.getByRole('combobox', { name: 'Value' });
+    expect([...yesNo.querySelectorAll('option')].map((x) => x.textContent)).toEqual(['Yes', 'No']);
+    expect(
+      [...screen.getByRole('combobox', { name: 'Set To' }).querySelectorAll('option')][0]!
+        .textContent,
+    ).toBe('Yes or No');
+    pick('Value', 'false');
+    expect(latest.steps[0]).toMatchObject({ value: { text: 'false' } });
+  });
+
+  it('shows a person picked who has left in words, and a name an agent wrote as it is', () => {
+    const steps = (text: string): AutomationRuleBody['steps'] => [
+      { kind: 'set_field', field: 'assignee', value: { text } },
+    ];
+    render(<Panel body={body({ steps: steps('user_left') })} part={{ part: 'step', index: 0 }} />);
+    expect(screen.getByRole('option', { name: 'Someone No Longer Here' })).toBeTruthy();
+    expect(screen.queryByText(/user_left/)).toBeNull();
+    cleanup();
+    const name = outline().people[0]!.name.toUpperCase();
+    render(<Panel body={body({ steps: steps(name) })} part={{ part: 'step', index: 0 }} />);
+    expect(screen.getByRole('option', { name })).toBeTruthy();
+    cleanup();
+    render(<Panel body={body({ steps: steps('') })} part={{ part: 'step', index: 0 }} />);
+    expect(screen.getByRole('option', { name: 'Pick a person' })).toBeTruthy();
+  });
+
   it('keeps a choice field’s text that is no choice, and a number it was saved with, shown', () => {
     render(
       <Panel

@@ -328,7 +328,8 @@ Each condition is one line in the builder, a chip sentence:
 
 A condition on a field the card's type lacks does not hold (it never errors). A condition naming a type, column,
 field, person or saved filter that is gone since does not hold, and the Rules list marks the rule **Needs Attention**
-with what is missing. So does a **Link Cards** step whose chosen card has since been deleted. The editor never shows
+with what is missing. So does a **Link Cards** step whose chosen card has since been deleted, and a **Set Field**
+whose picked person has left the plan (its run fails, "Someone is gone"). The editor never shows
 an id: the line says each kind of thing gone once, in words ("Needs Attention: A column is gone · Someone is gone",
 "2 fields are gone", "A card is gone"), and the rule's sentence and step cards read a gone pick as its panel does
 ("to a column no longer here", "Set a field no longer here", "Assign Someone No Longer Here"). Agents read the ids.
@@ -339,8 +340,10 @@ an id: the line says each kind of thing gone once, in words ("Needs Attention: A
 | ------------------------------- | ------------------------------------------------------------------------------------------------- |
 | **Move to Column**              | sets the card's status to a column its type uses (as the Status picker offers)                    |
 | **Set Field**                   | sets a field to a value: a literal, a value from the card, or a date (Today ± days); a field of   |
-|                                 | fixed values (Priority, a Choice field) to one of them, picked from its values (Flagged and the   |
-|                                 | Checklist are set by Flag, Unflag and Add a Checklist instead)                                    |
+|                                 | fixed values to one of them, picked: Priority and a Choice field to a value, the Assignee and a   |
+|                                 | Person field to one of the plan's people (kept by id, shown by name, as Assign's), a Checkbox to  |
+|                                 | Yes or No (a Checkbox given other text, a number, a day or a list is refused on save); Flagged    |
+|                                 | and the Checklist are set by Flag, Unflag and Add a Checklist instead                             |
 | **Clear Field**                 | empties a field                                                                                   |
 | **Assign**                      | assigns a chosen person, **whoever triggered the rule**, nobody, or **people in turn**: each run  |
 |                                 | the next of 2 to 10 chosen people, in order, round and round                                      |

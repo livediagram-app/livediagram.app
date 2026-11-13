@@ -28,6 +28,7 @@ import type {
 } from './types';
 import { isTimeTrigger } from './types';
 import { aiStepChip } from './ai-steps';
+import { checkboxOf, fieldKind, personNamed } from './set-value';
 
 // What the sentence reads a rule against. `tabs` names Form tabs and the boards' tabs; `filters` names saved filters
 // by their tab and id (savedFilterKey), as two boards may hold filters of the same id. Either may be absent where
@@ -297,6 +298,13 @@ function setChip(field: string, value: AutomationSetValue, outline: RuleSentence
   const text = value.text.trim();
   // Text holding values, or too long for a chip, is the builder's to show.
   if (!text || text.includes('{{') || text.length > SENTENCE_VALUE_MAX) return head;
+  // A person by name (picked by id), as Assign reads one; a Checkbox as Yes or No.
+  const def = outline.types.flatMap((t) => t.custom ?? []).find((f) => f.id === field);
+  const kind = fieldKind(field, def);
+  if (kind === 'person')
+    return `${head} ${personNamed(outline.people, text)?.name ?? 'Someone No Longer Here'}`;
+  const on = kind === 'checkbox' ? checkboxOf(text) : undefined;
+  if (on !== undefined) return `${head} ${on ? 'Yes' : 'No'}`;
   return `${head} ${valueWords(field, text)}`;
 }
 

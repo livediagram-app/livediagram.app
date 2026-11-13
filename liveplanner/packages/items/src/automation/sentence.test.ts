@@ -24,7 +24,15 @@ const OUTLINE: RuleSentenceOutline = {
       fields: ['title', 'priority', 'due'],
       custom: [{ id: 'f-done', label: 'Completed On', kind: 'date' }],
     },
-    { id: 'bug', label: 'Bug', fields: ['title', 'priority'] },
+    {
+      id: 'bug',
+      label: 'Bug',
+      fields: ['title', 'priority', 'f-who', 'f-ok'],
+      custom: [
+        { id: 'f-who', label: 'Reviewer', kind: 'person' },
+        { id: 'f-ok', label: 'Signed Off', kind: 'checkbox' },
+      ],
+    },
   ],
   statuses: new Map([
     ['todo', 'To Do'],
@@ -212,6 +220,22 @@ describe('actionChip', () => {
     [{ kind: 'set_field', field: 'estimate', value: { number: 8 } }, 'Set Estimate 8'],
     [{ kind: 'set_field', field: 'labels', value: { list: ['a', 'b'] } }, 'Set Labels a, b'],
     [{ kind: 'set_field', field: 'labels', value: { list: [] } }, 'Set Labels'],
+    // A person picked by id reads by name, as Assign's does; one who left as Assign's does too. A Checkbox, Yes or No.
+    [
+      { kind: 'set_field', field: 'assignee', value: { text: 'p-priya' } },
+      'Set Assignee Priya Shah',
+    ],
+    [
+      { kind: 'set_field', field: 'f-who', value: { text: 'marco ruiz' } },
+      'Set Reviewer Marco Ruiz',
+    ],
+    [
+      { kind: 'set_field', field: 'assignee', value: { text: 'p-left' } },
+      'Set Assignee Someone No Longer Here',
+    ],
+    [{ kind: 'set_field', field: 'f-ok', value: { text: 'true' } }, 'Set Signed Off Yes'],
+    [{ kind: 'set_field', field: 'f-ok', value: { text: 'false' } }, 'Set Signed Off No'],
+    [{ kind: 'set_field', field: 'f-ok', value: { text: 'odd' } }, 'Set Signed Off odd'],
     [
       { kind: 'set_field', field: 'due', value: { date: { today: -1 } } },
       'Set Due Date Today - 1 day',

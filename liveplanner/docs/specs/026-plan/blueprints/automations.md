@@ -29,7 +29,15 @@ packages/items/src/automation/
   validate-conditions.ts
                       readTrigger / readConditions: a rule's trigger and its conditions, read the same way
   outline.ts          AutomationOutline { types, statuses, people, savedFilters, formTabs }: the plan as rules read it
-  attention.ts        ruleNeeds(rule, outline) → string[]: what a rule names that the plan lacks
+  attention.ts        ruleNeeds(rule, outline) → string[]: what a rule names that the plan lacks (a Set Field on a
+                      Person field whose text names no one in the plan by id or name needs that person)
+  set-value.ts        setValueOf: the value a Set Field writes, read as its field's kind (fieldKind; Flagged and
+                      Archived read as a Checkbox, `checkboxOf`: Yes/No, true/false, On/Off, any case; a person by id
+                      or name, `personNamed`, a picked one who left failing with `gone`)
+  set-field-check.ts  setFieldRefusal(rule, types) → { path, message } | null: a Checkbox's Set Field given text
+                      that is no Yes or No (and no value filled in), a number, a day or a list, refused on save
+                      ("Signed Off is a Checkbox: set it to Yes or No", `automation_invalid` at `steps.N.value`);
+                      ruleSetsFields(rule), so the create and save routes read the plan's types only then
   values.ts           VALUE_NAMES, valuesIn(text), fillValues(text, ctx) and the {{now ± Nd}} day maths, in the
                       rule's time zone
   conditions.ts       holds(condition, ctx) → { ok, text }: one condition, with the line the Audit Trail shows
@@ -80,9 +88,12 @@ apps/editor/components/automations/
   RunLog.tsx, RunRow.tsx
   RuleBuilder.tsx             breadcrumb bar, step cards, add buttons, Rule Details accordion, Discard Changes?
   StepCard.tsx, StepPanel.tsx, step-panels/*.tsx   one panel per trigger, condition and action kind
-                              (FieldActionPanel: Set Field on Priority or a Choice field offers A Choice, a Select
-                              of its values (fieldChoices) stored as text, the first picked as the field is; Set
-                              Field lists neither Flagged nor Checklist, unless a step already holds one)
+                              (FieldActionPanel: a field of fixed values (fieldPick) offers its own Set To
+                              option and a Select of its values, stored as text, the first picked as the field
+                              is: Priority and a Choice field A Choice; the Assignee and a Person field A Person,
+                              the plan's people by name, kept by id (a name an agent wrote shown as it is, any
+                              other picked text "Someone No Longer Here"); a Checkbox Yes or No, kept as `true`
+                              or `false`. Set Field lists neither Flagged nor Checklist, unless a step holds one)
                               (panel-parts' ChipToggles and each single pick keep a gone pick shown, "no longer here")
   ValueInsert.tsx             the chip-rendered text field and its Insert a Value button (ValueInsertMenu.tsx)
   TestOnCard.tsx              the card finder and the dry-run result
