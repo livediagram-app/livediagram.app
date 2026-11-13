@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import type { CanvasTool } from '@/components/palette/palette.types';
 
 // The persistent Format painter tool's mode boundary (docs/specs/008-canvas/canvas-and-palette.md), lifted
 // out of useEditorState as one cohesive slice. Active while the
@@ -8,7 +7,8 @@ import type { CanvasTool } from '@/components/palette/palette.types';
 // Leaving the tool disarms the source and entering it starts clean. A
 // ref tracks the previous tool so the reset fires only on the
 // format-tool boundary.
-export function useFormatTool({
+// Generic over the editor's own tool union, which has 'format' and 'select' among its tools.
+export function useFormatTool<CanvasTool extends string>({
   canvasTool,
   setCanvasTool,
   setFormatSourceId,
@@ -22,7 +22,7 @@ export function useFormatTool({
   // The tool that was active when Format was entered, so wrapping up the
   // Format tool returns the user to what they were doing (docs/specs/008-canvas/canvas-and-palette.md) rather
   // than always dropping to Select.
-  const preFormatToolRef = useRef<CanvasTool>('select');
+  const preFormatToolRef = useRef<CanvasTool>('select' as CanvasTool);
   useEffect(() => {
     const wasFormat = prevCanvasToolRef.current === 'format';
     if (wasFormat !== formatToolActive) setFormatSourceId(null);
@@ -34,7 +34,7 @@ export function useFormatTool({
   // back to Select (the boundary effect above clears the armed source).
   const exitFormatTool = () => {
     const prev = preFormatToolRef.current;
-    setCanvasTool(prev === 'format' ? 'select' : prev);
+    setCanvasTool(prev === 'format' ? ('select' as CanvasTool) : prev);
   };
   return { formatToolActive, exitFormatTool };
 }

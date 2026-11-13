@@ -12,14 +12,7 @@ const { convert, track, pick, dismiss } = vi.hoisted(() => ({
   pick: { read: vi.fn(), hand: vi.fn() },
   dismiss: vi.fn(),
 }));
-vi.mock('@/lib/offline/offline-convert', async (orig) => ({
-  ...(await orig<typeof import('@/lib/offline/offline-convert')>()),
-  takeCloudOffline: convert.takeCloudOffline,
-}));
-vi.mock('@/lib/offline/offline-store', () => ({
-  offlineListDocuments: () => Promise.resolve([{ id: 'doc-1' }]),
-}));
-vi.mock('@liveworkspace/workbench/lib/offline/local-move-dismissal', () => ({
+vi.mock('../../lib/offline/local-move-dismissal', () => ({
   dismissLocalMove: dismiss,
 }));
 vi.mock('@liveworkspace/explorer', async (orig) => ({
@@ -27,11 +20,19 @@ vi.mock('@liveworkspace/explorer', async (orig) => ({
   readTemplatePick: pick.read,
   handTemplatePick: pick.hand,
 }));
-vi.mock('@/lib/telemetry', () => ({ track }));
 
-import { SyncStillSavingError } from '@/lib/offline/offline-convert';
-import { SYNC_SAVE_WAIT_MS } from './useSyncInPlace';
-import { useTakeOfflineInPlace } from './useTakeOfflineInPlace';
+import { createTakeOfflineInPlace } from './useTakeOfflineInPlace';
+
+// An editor's bindings, faked.
+class SyncStillSavingError extends Error {}
+const SYNC_SAVE_WAIT_MS = 5_000;
+const useTakeOfflineInPlace = createTakeOfflineInPlace({
+  SyncStillSavingError,
+  takeCloudOffline: (...args) => convert.takeCloudOffline(...args),
+  offlineListDocuments: () => Promise.resolve([{ id: 'doc-1' }]),
+  track,
+  SYNC_SAVE_WAIT_MS,
+});
 
 function setup(over: { ownerId?: string; unsaved?: () => boolean } = {}) {
   const order: string[] = [];

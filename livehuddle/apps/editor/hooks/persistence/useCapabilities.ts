@@ -1,23 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+// Which optional server features are available (@liveworkspace/workbench/hooks/persistence/useCapabilities), from
+// this editor's api.
+import { createCapabilities } from '@liveworkspace/workbench/hooks/persistence/useCapabilities';
 import { apiGetCapabilities } from '@/lib/api-client';
 
-// Fetches GET /api/capabilities once at mount and returns which
-// optional server features are available. Fails closed on any network
-// error — a missing or mis-configured api worker means no features.
-// The result is stable for the lifetime of the page; no polling needed
-// because capabilities are determined by deployment config, not runtime
-// state.
-export function useCapabilities(enabled = true): { emailEnabled: boolean } {
-  const [emailEnabled, setEmailEnabled] = useState(false);
-
-  useEffect(() => {
-    if (!enabled) return;
-    void apiGetCapabilities().then((caps) => {
-      setEmailEnabled(caps.emailEnabled ?? false);
-    });
-  }, [enabled]);
-
-  return { emailEnabled };
-}
+export const useCapabilities = createCapabilities(() => apiGetCapabilities());

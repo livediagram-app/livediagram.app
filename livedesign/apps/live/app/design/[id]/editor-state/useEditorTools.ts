@@ -5,7 +5,7 @@ import { useFormatConfig } from '@liveworkspace/workbench/hooks/canvas/useFormat
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { usePanelLayout } from '../usePanelLayout';
 import { useEditorDialogs } from '../useEditorDialogs';
-import { useFormatTool } from '../useFormatTool';
+import { useFormatTool } from '@liveworkspace/workbench/hooks/editor/useFormatTool';
 import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 

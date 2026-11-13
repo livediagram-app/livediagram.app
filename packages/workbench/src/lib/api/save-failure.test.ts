@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { ApiError, SessionTokenUnavailableError } from '@/lib/api-client';
+import { ApiError } from './api-error';
+import { SessionTokenUnavailableError } from './core';
 import { saveFailureStatus } from './save-failure';
 
-// What a failed autosave tells the author (docs/specs/006-design/per-tab-storage.md). Each kind of
+// What a failed autosave tells the author (docs/specs/006-document/per-tab-storage.md). Each kind of
 // failure has one honest status: a connection problem, a sign-in problem, or
 // a refusal. Production showed 401s reading as "Check your connection" on a
 // wired fibre line.

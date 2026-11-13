@@ -14,7 +14,7 @@ import {
   type AutosaveDeps,
   type AutosaveUnloadArgs,
 } from '@liveworkspace/workbench/hooks/persistence/useAutosaveCore';
-import { saveFailureStatus } from './save-failure';
+import { saveFailureStatus } from '@liveworkspace/workbench/lib/api/save-failure';
 import { isDocumentDeleted } from '@liveworkspace/workbench/lib/document-tombstones';
 import { isDocumentTrashedError } from '@/lib/document-trashed';
 import { computeTabSaveDiff } from './editor-page-helpers';

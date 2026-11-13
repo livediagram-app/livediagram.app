@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { pickerCandidates, rollPicker, spinFrameDelays, spinReel } from './picker';
-import type { Participant } from './identity';
+
+// An editor's Participant, cut down.
+type Participant = { id: string; name: string; color: string; status: 'online' };
 
 // A participant is identified by id, not by name — two people can share one.
 const person = (id: string, name: string): Participant => ({

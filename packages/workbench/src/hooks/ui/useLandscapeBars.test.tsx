@@ -1,19 +1,19 @@
 // @vitest-environment jsdom
-// The bars on a phone held sideways (docs/specs/007-editor/editor-app.md "A phone held sideways"): folded
+// The bars on a phone held sideways (docs/specs/007-editor/editor-app.md "A phone held sideways", live-app.md in livedesign): folded
 // on each load, shown and folded by the handle with its telemetry, shown by a rename asked for
 // elsewhere and while a tour is on screen.
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { setActiveTour } from '@/lib/tour-active';
-import { useLandscapeBars } from './useLandscapeBars';
+import { setActiveTour, useActiveTour } from '../../lib/tour-active';
+import { createLandscapeBars } from './useLandscapeBars';
 
-const track = vi.hoisted(() => vi.fn());
-vi.mock('@/lib/telemetry', () => ({ track }));
+const track = vi.fn();
+const useLandscapeBars = createLandscapeBars({ useActiveTour, track });
 
 afterEach(() => {
   cleanup();
   track.mockClear();
-  act(() => setActiveTour('welcome', false));
+  act(() => setActiveTour('pages', false));
 });
 
 describe('useLandscapeBars', () => {
@@ -62,9 +62,9 @@ describe('useLandscapeBars', () => {
 
   it('keeps the bars shown while a tour is on screen, and folds them after it', () => {
     const { result } = renderHook(() => useLandscapeBars([0, 0]));
-    act(() => setActiveTour('welcome', true));
+    act(() => setActiveTour('pages', true));
     expect(result.current.shown).toBe(true);
-    act(() => setActiveTour('welcome', false));
+    act(() => setActiveTour('pages', false));
     expect(result.current.shown).toBe(false);
   });
 

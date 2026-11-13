@@ -1,7 +1,7 @@
 // The card for the flat theme list (ThemeBrowser): a selectable ThemeCard (swatch + label + description).
 
 import { type ThemeDefinition } from '@/lib/themes';
-import { themeDescription } from '@/lib/themes-taxonomy';
+import { themeDescription } from '@liveworkspace/workbench/lib/themes-taxonomy';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 
 // A single selectable theme tile. Click selects; double-click is the
