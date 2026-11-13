@@ -26,6 +26,9 @@ import {
   isSvgShape,
 } from './face-finish-ink';
 
+// A write's marks: one element, or several (Array.isArray alone types a readonly list as any[]).
+const isMarkList = (m: Element | readonly Element[]): m is readonly Element[] => Array.isArray(m);
+
 // A face's own parts in its finish on the canvas. Under Marker (docs/specs/008-canvas/finish.md "Marker", "Faces: frames and shapes"):
 // once the face has settled, its frames (outlined HTML boxes) and its SVG shapes are read from the live DOM and
 // described to markerFacePart, the same rules and drawing the export runs over its markup (svgMarkerFace). Each
@@ -202,7 +205,7 @@ export function markerFaceTake(
         try {
           for (const write of writes) {
             const m = write();
-            if (m) marked.push(...(Array.isArray(m) ? m : [m as Element]));
+            if (m) marked.push(...(isMarkList(m) ? m : [m]));
           }
         } catch (error) {
           root.removeAttribute(TAKING_ATTR);
