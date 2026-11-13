@@ -22,7 +22,7 @@ name, kind, options? }[] }[] }`, names only, the shape the preview edits.
   caps; the checks below are what holds, not the schema.
 - `readPlanDraft(reply, prompt)`: `{ off: true }` for `not_a_plan`; `{ draft }` for a plan that reads; `{ refused: {
 path, message } }` otherwise. Every list is cut to one past its cap before it is walked and every text to twice its
-  limit before a pattern reads it (`draftText` from `automation/ai-draft.ts`: control characters, links the request
+  limit before a pattern reads it (`draftText` from `packages/items/src/automation/ai-draft.ts`: control characters, links the request
   lacks, via ai-steps' `dropForeignLinks`), so a hostile reply reads in linear time. A glyph Plan lacks becomes
   `star`; colours come from `PLAN_DRAFT_COLOURS` (the type colours, darkest left out) in turn; built-in fields by
   name or id, unknown ones dropped, Description and Assignee always kept; options dropped from kinds that hold none.
