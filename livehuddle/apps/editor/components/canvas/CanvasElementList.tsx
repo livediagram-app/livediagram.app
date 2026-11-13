@@ -1,4 +1,5 @@
 import { memo, type ComponentProps } from 'react';
+import { useShallowStable } from '@liveworkspace/workbench/hooks/ui/useShallowStable';
 import {
   exportFontFamily,
   isBoxed,
@@ -24,7 +25,9 @@ import { SelectableBoxedView } from './selection-aware-views';
 // entry or the document. Memoised: every prop is identity-stable across editor renders that change
 // nothing it draws, so a press or a release that renders the editor (a drag beginning or ending) does
 // not walk the board's element views (docs/specs/008-canvas/canvas-performance.md "A move re-renders
-// what moved").
+// what moved"); and each row is memoised on what it draws, so a commit that changes one element draws
+// that element's row and the rows of the stored arrows it moved, not the board's ("A drop redraws what
+// it reached").
 
 // Stable empty-array constant for the `remoteSelectors` prop on the
 // (very common) "no remote participants have this element selected"
@@ -78,23 +81,32 @@ type CanvasElementListProps = Pick<
   fontEpoch: number;
 };
 
+// What a row draws from beyond its element: its layer's opacity and, for a stored arrow, where its ends resolve on the
+// drawn board (four numbers, so a commit that leaves them where they were leaves the row alone). PreviewedElement
+// compares it field by field (docs/specs/008-canvas/canvas-performance.md "A drop redraws what it reached").
+export type ElementRow = {
+  layerOpacity: number;
+  fromX: number | undefined;
+  fromY: number | undefined;
+  toX: number | undefined;
+  toY: number | undefined;
+};
+
+// What every row reads alike: the list's props less the board and the preview store, which reach each row as its own
+// ElementRow and PreviewedElement's store. Held by value (useShallowStable), so it changes only when one of them does.
+type RowShared = Omit<
+  CanvasElementListProps,
+  'shownOrder' | 'previewStore' | 'attachPlane' | 'elementIndex'
+>;
+
 export const CanvasElementList = memo(function CanvasElementList({
   shownOrder,
   previewStore,
   attachPlane,
-  h,
-  boxedShared,
   elementIndex,
-  editingId,
-  editCursorAtEnd,
-  readOnly,
-  shiftDupGhostIds,
-  remoteSelectionsByElement,
-  canMove,
-  canResize,
-  tabFont,
-  tabFinish,
+  ...rest
 }: CanvasElementListProps) {
+  const shared = useShallowStable<RowShared>(rest);
   return (
     // The element plane (docs/specs/008-canvas/canvas-performance.md "The canvas's cursor stays off the
     // elements"): a cursor of its own (globals.css), so the canvas's cursor changing restyles this node and
@@ -108,53 +120,88 @@ export const CanvasElementList = memo(function CanvasElementList({
           key={listed.id}
           store={previewStore}
           element={listed}
-          draw={(element: Element, entry: PreviewEntry | undefined) => {
-            // Shift-duplicate ghost (docs/specs/008-canvas/shift-drag-duplicate.md): the dragged set renders
-            // translucent while its materialised copy holds the start
-            // position, multiplied over any per-layer opacity.
-            const ghostFactor = shiftDupGhostIds?.has(element.id) ? 0.45 : 1;
-            const effOpacity = ghostFactor * layerOpacity;
-            const remoteSelectors =
-              remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS;
-            // A retired arrow (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4):
-            // its dashed line and its placeholder card, its ends worked out now (or as a drag preview has them).
-            if (isRetiredArrow(element)) {
-              return (
-                <RetiredArrowView
-                  key={element.id}
-                  editingId={editingId}
-                  {...boxedShared}
-                  arrow={element}
-                  ends={entry?.ends ?? retiredArrowEnds(element, elementIndex)}
-                  onSelect={h.handleArrowSelect}
-                  layerOpacity={effOpacity < 1 ? effOpacity : undefined}
-                  remoteSelectors={remoteSelectors}
-                  isEditing={false}
-                  // The tab's font: an arrow carries none of its own that livehuddle reads.
-                  fontFamily={exportFontFamily({}, tabFont, tabFinish)}
-                />
-              );
-            }
-            if (!isBoxed(element)) return null;
-            return (
-              <SelectableBoxedView
-                key={element.id}
-                editingId={editingId}
-                {...boxedShared}
-                element={element}
-                layerOpacity={effOpacity < 1 ? effOpacity : undefined}
-                remoteSelectors={remoteSelectors}
-                isEditing={element.id === editingId}
-                editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
-                movable={!readOnly || canMove?.(element) === true}
-                resizable={!readOnly || canResize?.(element) === true}
-                // Under the Sketch finish, the handwriting font (docs/specs/008-canvas/finish.md).
-                fontFamily={exportFontFamily(element, tabFont, tabFinish)}
-              />
-            );
-          }}
+          row={rowOf(listed, layerOpacity, elementIndex)}
+          shared={shared}
+          draw={drawElement}
         />
       ))}
     </div>
   );
 });
+
+// One row's ElementRow. Its fields are what the row reads, as numbers; the object is new each render, and
+// PreviewedElement compares it field by field.
+function rowOf(listed: Element, layerOpacity: number, elementIndex: ElementIndex): ElementRow {
+  if (!isRetiredArrow(listed))
+    return { layerOpacity, fromX: undefined, fromY: undefined, toX: undefined, toY: undefined };
+  const { from, to } = retiredArrowEnds(listed, elementIndex);
+  return { layerOpacity, fromX: from.x, fromY: from.y, toX: to.x, toY: to.y };
+}
+
+function drawElement(
+  element: Element,
+  entry: PreviewEntry | undefined,
+  row: ElementRow,
+  {
+    h,
+    boxedShared,
+    editingId,
+    editCursorAtEnd,
+    readOnly,
+    shiftDupGhostIds,
+    remoteSelectionsByElement,
+    canMove,
+    canResize,
+    tabFont,
+    tabFinish,
+  }: RowShared,
+) {
+  const { layerOpacity } = row;
+  // Shift-duplicate ghost (docs/specs/008-canvas/shift-drag-duplicate.md): the dragged set renders
+  // translucent while its materialised copy holds the start
+  // position, multiplied over any per-layer opacity.
+  const ghostFactor = shiftDupGhostIds?.has(element.id) ? 0.45 : 1;
+  const effOpacity = ghostFactor * layerOpacity;
+  const remoteSelectors = remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS;
+  // A retired arrow (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4):
+  // its dashed line and its placeholder card, its ends worked out on the drawn board (or as a drag preview has them).
+  if (isRetiredArrow(element)) {
+    return (
+      <RetiredArrowView
+        key={element.id}
+        editingId={editingId}
+        {...boxedShared}
+        arrow={element}
+        ends={
+          entry?.ends ?? {
+            from: { x: row.fromX!, y: row.fromY! },
+            to: { x: row.toX!, y: row.toY! },
+          }
+        }
+        onSelect={h.handleArrowSelect}
+        layerOpacity={effOpacity < 1 ? effOpacity : undefined}
+        remoteSelectors={remoteSelectors}
+        isEditing={false}
+        // The tab's font: an arrow carries none of its own that livehuddle reads.
+        fontFamily={exportFontFamily({}, tabFont, tabFinish)}
+      />
+    );
+  }
+  if (!isBoxed(element)) return null;
+  return (
+    <SelectableBoxedView
+      key={element.id}
+      editingId={editingId}
+      {...boxedShared}
+      element={element}
+      layerOpacity={effOpacity < 1 ? effOpacity : undefined}
+      remoteSelectors={remoteSelectors}
+      isEditing={element.id === editingId}
+      editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
+      movable={!readOnly || canMove?.(element) === true}
+      resizable={!readOnly || canResize?.(element) === true}
+      // Under the Sketch finish, the handwriting font (docs/specs/008-canvas/finish.md).
+      fontFamily={exportFontFamily(element, tabFont, tabFinish)}
+    />
+  );
+}

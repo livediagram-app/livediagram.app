@@ -111,6 +111,17 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   recomputed. A preview frame renders neither the canvas nor the element layer: each element view
   reads its own part of the preview, so a frame's work follows what moved, not the board, and only
   what follows the moved selection (its chrome) reads the whole preview.
+- **A drop redraws what it reached.** A commit (a drop, a stroke, an edit) changes one element or a
+  few, and redraws those and what they reach, not the board. Each arrow's geometry is carried over
+  from the last board unless the change reaches it: a box it is pinned to, a box sharing a pin with
+  its other end (the converging fan), a box inside its route-behind reach where it was or where it
+  went, or a change to the arrow or to another arrow at its pins. A mind map's connectors, which a
+  finish routes from the map's shape, and the arrows at a fan with an end on another arrow are
+  derived every time, and a change of finish, or to an element whose extent is unknown, derives the
+  board. A label whose layout did not change keeps its render object. Each element's row in the
+  layer is memoised on what it draws (its element, its arrow's geometry and label, its opacity, and
+  the props every row shares), so a row nothing reached is not drawn again. Seeded tests check that
+  the carried-over geometry equals the geometry derived afresh after random edits.
 - **A move that only translates renders nothing.** When a gesture shifts elements without
   reshaping them (a move, of any number of elements), each of them is drawn where the project has
   it, shifted by one offset written to the page outside React, so a move frame renders no element

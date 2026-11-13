@@ -548,6 +548,23 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
   logs once (`[element-grid] bad query rect`).
 - `evaluateBudget` rejects a measurement missing its row's metric with `MissingMetric: <gesture>`.
 
+### Carried-over arrow geometry and rows
+
+`createArrowGeometryCache` (`@liveworkspace/workbench/lib/arrow-geometry-cache`) holds the last board's elements by id
+and each arrow's geometry. `geometryFor(elements, key, compute)` diffs the board by identity: a changed non-arrow
+element adds its old and new rect and its id; a changed, new or gone arrow adds its pins (old and new). It derives
+afresh the arrows pinned to a changed box, those pinned to the other end of one of those, those at a changed arrow's
+pins, those whose reach (`routeBehindQueryRect`) meets a changed rect, every arrow with an end on another arrow and the
+ones at its pins, and every `structural` arrow (`mindRoutable`: a default-look mind connector pinned at both ends). A
+new `key` (the tab finish) or an element with no rect derives the board. `components/canvas/drag-affected-arrows.ts`
+binds it for the layer (`arrowGeometryCache`); `Minimap.tsx` binds it for the picture's arrows (`minimapParts`),
+beside a box markup cache keyed by element and the render inputs. The layer diffs every element, drawn or not, since an arrow's ends resolve against all of them, and keys the cache on the tab's layers (and finish), so showing or hiding a layer derives the board.
+
+`CanvasElementList` hands each `PreviewedElement` an `ElementRow` (geometry, label render, the free arrow's board, depth,
+opacity) and one `RowShared` object held by `useShallowStable` (`@liveworkspace/workbench/hooks/ui/useShallowStable`);
+`PreviewedElement` is memoised on `samePreviewedRow`, comparing the row field by field. `useArrowLabelLayouts` keeps a
+label's render object while `sameLabelRender` holds.
+
 ## Data and persistence
 
 - Nothing is persisted: the gesture store, the grid, the settled elements and the zoom context
@@ -641,6 +658,8 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 | Whole-board passes linear and once               | `useArrowLabelLayouts.hook.test.tsx`: `draftLayout` stable across element changes                                                                                                                                                                                                                                           |
 | The canvas's cursor stays off the elements       | `CanvasElementsLayer.renders.test.tsx`: every element (boxed and arrow) sits in the one element plane; `app/canvas-motion.test.ts`: `globals.css` keeps the plane's `cursor: auto`                                                                                                                                          |
 | A move re-renders what moved                     | `CanvasElementsLayer.renders.test.tsx`: moving one element renders it; a preview frame renders no layer; `useLayerDragPreview.test.ts`; `useSnapGuideState.test.ts`: a guide set tells its readers only on a change; `element-layer-props.collab.test.tsx`                                                                  |
+| A drop redraws what it reached                   | `arrow-geometry-cache.test.ts`: carried-over geometry equals fresh after seeded edits (mind map included); `@liveworkspace/workbench` `arrow-geometry-cache.test.ts`: which arrows each change reaches; `CanvasElementsLayer.renders.test.tsx`: a moved box walks its slot and its arrow's only                             |
+| The Map draws what changed                       | `Minimap.build.test.ts`: the carried-over picture equals a fresh one after seeded edits; another surface draws every part again                                                                                                                                                                                             |
 | Gesture store semantics                          | `canvas-gesture.test.ts`                                                                                                                                                                                                                                                                                                    |
 | Reference board deterministic, mix as specced    | `reference-board.test.ts`                                                                                                                                                                                                                                                                                                   |
 | Budget evaluation and table                      | `budget.test.ts` (e2e-kit)                                                                                                                                                                                                                                                                                                  |

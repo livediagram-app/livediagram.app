@@ -3,7 +3,7 @@ import { createStateStore } from '@liveworkspace/workbench/lib/state-store';
 import { act, render } from '@testing-library/react';
 import { memo } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createPinnedArrow, createShape, type Element } from '@livediagram/document';
+import { createPinnedArrow, createShape, type Element, type Layer } from '@livediagram/document';
 
 // docs/specs/008-canvas/canvas-performance.md: an element view renders only for its own changes. A
 // Canvas render that changes no element, no selection and no zoom renders no element view; a zoom
@@ -57,11 +57,14 @@ vi.mock('./selection-aware-views', async (importOriginal) => {
 const slotRenders = { count: 0 };
 vi.mock('./PreviewedElement', async (importOriginal) => {
   const real = await importOriginal<typeof import('./PreviewedElement')>();
+  const { memo } = await import('react');
   return {
-    PreviewedElement: (props: Parameters<typeof real.PreviewedElement>[0]) => {
+    ...real,
+    // The real memo, counting the slots it lets through.
+    PreviewedElement: memo((props: Parameters<typeof real.PreviewedElementRow>[0]) => {
       slotRenders.count += 1;
-      return real.PreviewedElement(props);
-    },
+      return real.PreviewedElementRow(props);
+    }, real.samePreviewedRow),
   };
 });
 // The grips layer is re-created on every layer render, so its count is the layer's.
@@ -125,12 +128,18 @@ const STABLE = {
 // What one editor render hands the layer: the same data, every handler a fresh closure, the panel
 // action bags fresh objects, as the editor mints them per render.
 function layerProps(
-  over: { elements?: Element[]; zoom?: number; chartPalette?: readonly string[] } = {},
+  over: {
+    elements?: Element[];
+    zoom?: number;
+    chartPalette?: readonly string[];
+    tabLayers?: Layer[];
+  } = {},
 ) {
   const fresh = () => vi.fn();
   return {
     ...STABLE,
     elements: over.elements ?? BOARD,
+    ...(over.tabLayers ? { tabLayers: over.tabLayers } : {}),
     activeTabId: 't',
     viewportZoom: over.zoom ?? 1,
     chartPalette: over.chartPalette,
@@ -210,11 +219,31 @@ describe('element views render only for their own changes', () => {
     expect(slotRenders.count).toBe(0);
   });
 
-  it('walks the element slots again when an element changes', () => {
+  // docs/specs/008-canvas/canvas-performance.md "A drop redraws what it reached".
+  it('walks only the slot of an element that changes, when nothing else reads it', () => {
     const { rerender } = mount();
     const moved = BOARD.map((el) => (el.id === c.id ? { ...el, x: 40 } : el));
     rerender(<CanvasElementsLayer {...layerProps({ elements: moved })} />);
-    expect(slotRenders.count).toBe(BOARD.length);
+    expect(slotRenders.count).toBe(1);
+  });
+
+  it('redraws an arrow pinned to a box on a hidden layer when that box moves', () => {
+    const layers: Layer[] = [
+      { id: 'on', name: 'On' },
+      { id: 'off', name: 'Off', visible: false },
+    ];
+    const board = BOARD.map((el) => (el.id === b.id ? { ...el, layerId: 'off' } : el));
+    const { rerender } = mount(layerProps({ elements: board, tabLayers: layers }));
+    const moved = board.map((el) => (el.id === b.id ? { ...el, y: 300 } : el)) as Element[];
+    rerender(<CanvasElementsLayer {...layerProps({ elements: moved, tabLayers: layers })} />);
+    expect(renders.arrow.get(ab.id)).toBe(1);
+  });
+
+  it('walks the slots of a moved box and the arrow pinned to it', () => {
+    const { rerender } = mount();
+    const moved = BOARD.map((el) => (el.id === a.id ? { ...el, y: 60 } : el));
+    rerender(<CanvasElementsLayer {...layerProps({ elements: moved })} />);
+    expect(slotRenders.count).toBe(2);
   });
 
   it('renders no element view, and no arrow frame slot, for a zoom', () => {

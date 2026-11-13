@@ -1,20 +1,27 @@
 'use client';
 
-import { useDeferredValue, useMemo } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
+import { createArrowGeometryCache } from '@liveworkspace/workbench/lib/arrow-geometry-cache';
 import { MinimapMap, minimapPicture } from '@liveworkspace/workbench/components/canvas/MinimapMap';
 import {
   boundsOfPoints,
   endpointPosition,
+  finishArrowEnds,
   isBoxed,
+  resolveFinish,
+  routeBehindQueryRect,
   arrowLabelFontStack,
   arrowLabelPass,
   svgArrow,
   sketchBackdropIds,
   svgBoxed,
   svgShadowDefs,
+  type ArrowElement,
   type Element,
   type Point,
+  type Rect,
 } from '@livediagram/document';
+import { mindRoutable } from './drag-affected-arrows';
 import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
 import {
   resolveIconArtLoaded,
@@ -80,8 +87,117 @@ type MinimapProps = {
 // What the catalogue resolvers find before the catalogue chunk lands.
 const NO_ART = () => undefined;
 const NO_ELEMENTS: Element[] = [];
+
+// The picture's parts carried over from the last build (docs/specs/008-canvas/canvas-performance.md "The Map draws
+// what changed"): each element as drawn (its label left out) and each box's markup, by the element; each arrow's
+// markup, for the arrows no change reaches (the layer's arrow geometry cache, the same reads). A commit that moves
+// one box draws that box and the arrows it reached, not the board.
+type ArrowPart = { svg: string; reach: Rect };
+export function minimapParts() {
+  return {
+    plain: new WeakMap<Element, Element>(),
+    boxed: new WeakMap<Element, { key: string; svg: string }>(),
+    arrows: createArrowGeometryCache<Element, ArrowPart>({
+      isArrow: (el) => el.type === 'arrow',
+      ends: (arrow) => [(arrow as ArrowElement).from, (arrow as ArrowElement).to],
+      reach: (part) => part.reach,
+      structural: mindRoutable,
+    }),
+  };
+}
+
+// The Map's picture for `elements` (see Minimap), drawing afresh only the parts `parts` cannot carry over.
+export function minimapBuild(
+  parts: ReturnType<typeof minimapParts>,
+  elements: Element[],
+  {
+    tabFont,
+    tabFinish,
+    iconsLoaded,
+    surface,
+    chartPalette,
+  }: {
+    tabFont: string | undefined;
+    tabFinish: NonNullable<Parameters<typeof svgBoxed>[1]>['tabFinish'];
+    iconsLoaded: boolean;
+    surface: NonNullable<NonNullable<Parameters<typeof svgBoxed>[1]>['surface']>;
+    chartPalette: NonNullable<Parameters<typeof svgBoxed>[1]>['chartPalette'];
+  },
+) {
+  const drawn = elements.map((el) => {
+    let plain = parts.plain.get(el);
+    if (!plain) parts.plain.set(el, (plain = withoutLabel(el)));
+    return plain;
+  });
+  // What every part reads beyond its element: a part drawn under another is drawn again.
+  const key = `${tabFont}|${tabFinish}|${iconsLoaded}|${surface}|${JSON.stringify(chartPalette ?? null)}`;
+  const corners: Point[] = [];
+  const markup: string[] = [];
+  // The resolvers find nothing until the catalogue chunk lands, which
+  // re-runs the build with the glyphs.
+  const resolveIconArt = iconsLoaded ? resolveIconArtLoaded : NO_ART;
+  const resolveStickerArt = iconsLoaded ? resolveStickerArtLoaded : NO_ART;
+  // Laid out once a changed arrow draws (the knockouts it reads), not on every build.
+  let labels: ReturnType<typeof arrowLabelPass> | null = null;
+  const labelsOf = () =>
+    (labels ??= arrowLabelPass(drawn, {
+      fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont, tabFinish),
+    }));
+  // Boxed first (frames behind their contents), then arrows on top,
+  // matching the canvas z-order.
+  // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
+  const backdrops = sketchBackdropIds(drawn, tabFinish);
+  for (const el of framesFirst(drawn)) {
+    if (el.type === 'arrow') continue;
+    if (!isBoxed(el)) continue;
+    const boxKey = `${key}|${backdrops.has(el.id)}`;
+    let box = parts.boxed.get(el);
+    if (box?.key !== boxKey) {
+      box = {
+        key: boxKey,
+        svg: svgBoxed(el, {
+          resolveIconArt,
+          resolveStickerArt,
+          tabFont,
+          tabFinish,
+          sketchBackdrop: backdrops.has(el.id),
+          surface,
+          chartPalette,
+        }),
+      };
+      parts.boxed.set(el, box);
+    }
+    markup.push(box.svg);
+    corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
+  }
+  const arrows = parts.arrows.geometryFor(drawn, key, (el) => {
+    const arrow = el as ArrowElement;
+    const { from, to } = finishArrowEnds(arrow, drawn, resolveFinish(arrow.finish, tabFinish));
+    return {
+      svg: svgArrow(
+        arrow,
+        drawn,
+        surface,
+        tabFont,
+        labelsOf(),
+        'lvd-minimap-ko-',
+        undefined,
+        undefined,
+        tabFinish,
+      ),
+      reach: routeBehindQueryRect(from, to),
+    };
+  });
+  for (const el of drawn) {
+    if (el.type !== 'arrow') continue;
+    markup.push(arrows.get(el.id)!.svg);
+    corners.push(endpointPosition(el.from, drawn), endpointPosition(el.to, drawn));
+  }
+  // One image over the padded content box (MinimapMap's minimapPicture).
+  return minimapPicture(boundsOfPoints(corners), `${svgShadowDefs(elements)}${markup.join('')}`);
+}
 // An element as the Map draws it: its label left out (docs/specs/008-canvas/minimap.md "What it shows").
-function withoutLabel(el: Element): Element {
+export function withoutLabel(el: Element): Element {
   if (!('label' in el) && !('richText' in el)) return el;
   const {
     label: _label,
@@ -133,57 +249,11 @@ export function Minimap({
   // board a live copy doubled the page and slowed every gesture
   // (docs/specs/008-canvas/canvas-performance.md "The Map is one image"). It draws no labels: at the
   // Map's size they are a pixel or two tall, and laying them out was half the picture's cost.
-  const { picture, bounds } = useMemo(() => {
-    const drawn = elements.map(withoutLabel);
-    const corners: Point[] = [];
-    const parts: string[] = [];
-    // The resolvers find nothing until the catalogue chunk lands, which
-    // re-runs the build with the glyphs.
-    const resolveIconArt = iconsLoaded ? resolveIconArtLoaded : NO_ART;
-    const resolveStickerArt = iconsLoaded ? resolveStickerArtLoaded : NO_ART;
-    const labels = arrowLabelPass(drawn, {
-      fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont, tabFinish),
-    });
-    // Boxed first (frames behind their contents), then arrows on top —
-    // matching the canvas z-order.
-    // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
-    const backdrops = sketchBackdropIds(drawn, tabFinish);
-    for (const el of framesFirst(drawn)) {
-      if (el.type === 'arrow') continue;
-      if (!isBoxed(el)) continue;
-      parts.push(
-        svgBoxed(el, {
-          resolveIconArt,
-          resolveStickerArt,
-          tabFont,
-          tabFinish,
-          sketchBackdrop: backdrops.has(el.id),
-          surface,
-          chartPalette,
-        }),
-      );
-      corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
-    }
-    for (const el of drawn) {
-      if (el.type !== 'arrow') continue;
-      parts.push(
-        svgArrow(
-          el,
-          drawn,
-          surface,
-          tabFont,
-          labels,
-          'lvd-minimap-ko-',
-          undefined,
-          undefined,
-          tabFinish,
-        ),
-      );
-      corners.push(endpointPosition(el.from, drawn), endpointPosition(el.to, drawn));
-    }
-    // One image over the padded content box (MinimapMap's minimapPicture).
-    return minimapPicture(boundsOfPoints(corners), `${svgShadowDefs(elements)}${parts.join('')}`);
-  }, [elements, tabFont, tabFinish, iconsLoaded, surface, chartPalette]);
+  const [parts] = useState(minimapParts);
+  const { picture, bounds } = useMemo(
+    () => minimapBuild(parts, elements, { tabFont, tabFinish, iconsLoaded, surface, chartPalette }),
+    [elements, tabFont, tabFinish, iconsLoaded, surface, chartPalette, parts],
+  );
 
   if (!bounds) return null; // Nothing to map.
 

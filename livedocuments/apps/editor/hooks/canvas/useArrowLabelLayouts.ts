@@ -3,8 +3,9 @@
 // to each ArrowView.
 //
 // Labels see each other, so one element change can move any label; but most
-// changes move none. ArrowView's memo compares its render by value
-// (sameLabelRender), so an arrow whose label did not move does not re-render.
+// changes move none. A render equal by value (sameLabelRender) to the last pass's is that same object, so an
+// arrow whose label did not move gives its element row nothing new to draw
+// (docs/specs/008-canvas/canvas-performance.md "A drop redraws what it reached").
 
 import { useMemo, useState } from 'react';
 import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
@@ -68,6 +69,8 @@ export function useArrowLabelLayouts(
   const [heldOptions, setHeldOptions] = useState({ key: optionsKey, options });
   if (heldOptions.key !== optionsKey) setHeldOptions({ key: optionsKey, options });
   const stableOptions = heldOptions.key === optionsKey ? heldOptions.options : options;
+  // The last pass's renders, which an unchanged label keeps (a cache, so the pass stays a pure memo of its inputs).
+  const [held] = useState(() => new Map<ElementId, ArrowLabelRender>());
   const renders = useMemo(() => {
     const next = new Map<ElementId, ArrowLabelRender>();
     if (!hasArrows) return next;
@@ -82,10 +85,15 @@ export function useArrowLabelLayouts(
       if (el.type !== 'arrow') continue;
       const knockouts = pass.knockoutsOf(el.id);
       const layout = pass.layouts.get(el.id) ?? null;
-      if (layout || knockouts.length > 0) next.set(el.id, { layout, knockouts });
+      if (!layout && knockouts.length === 0) continue;
+      const render = { layout, knockouts };
+      const was = held.get(el.id);
+      next.set(el.id, was && sameLabelRender(was, render) ? was : render);
     }
+    held.clear();
+    for (const [id, render] of next) held.set(id, render);
     return next;
-  }, [elements, hasArrows, tabFont, tabFinish, fontEpoch, stableOptions]);
+  }, [elements, hasArrows, tabFont, tabFinish, fontEpoch, stableOptions, held]);
 
   // Lays out an arrow's label for text being typed, against the other labels
   // as placed, so the editor sits and wraps where the label will land.
