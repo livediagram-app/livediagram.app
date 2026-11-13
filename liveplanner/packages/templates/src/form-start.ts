@@ -81,8 +81,9 @@ export function responsesBoardSetup(
 ): PlanBoardSetup {
   if (starter.readyType === 'bug')
     return { ...freshBoardSetup('bug-triage', random, existing), title };
-  // Kanban's set-up, kept to the three columns a response passes through.
-  const kanban = freshBoardSetup('kanban', random, existing);
+  // Kanban's set-up, kept to the three columns a response passes through. Not its Task and Action: a board naming them
+  // hides the form's own type once the project has either (responsesBoardTab names the form's type).
+  const { addTypes: _kanbanTypes, ...kanban } = freshBoardSetup('kanban', random, existing);
   const column = (name: string) => kanban.columns.find((c) => c.name === name)!;
   const strip = ({ wipLimit: _w, ...c }: PlanColumn): PlanColumn => c;
   return {
@@ -141,7 +142,8 @@ export function typeResponsesBoardSetup(
 }
 
 // A new Board tab for a form's responses: "<Form> Responses", New, In Progress and Done (or, `forType` given with its
-// own statuses, those), in the Form tab's theme.
+// own statuses, those), in the Form tab's theme. Given `forType`, the board takes that type alone, whichever columns it
+// has (docs/specs/030-forms/forms.md "Columns follow the card type").
 export function responsesBoardTab(
   heading: string,
   formTab: Pick<Tab, 'theme'>,
@@ -152,9 +154,10 @@ export function responsesBoardTab(
 ): Tab {
   const title = `${heading} Responses`.slice(0, 80);
   const names = [...statusNames];
-  const setup =
+  const made =
     (forType && typeResponsesBoardSetup(forType, title, names, random)) ??
     responsesBoardSetup(starter, title, names, random);
+  const setup: PlanBoardSetup = forType ? { ...made, addTypes: [forType.typeId] } : made;
   const element = {
     ...createShape('plan-board', 0, 0),
     planBoard: setup,
@@ -254,7 +257,10 @@ export function planFormStart(input: {
     status =
       columnForType(target.setup.columns, type, undefined) ?? target.setup.columns[0]!.status;
   } else {
-    newBoardTab = responsesBoardTab(form.heading, formTab, input.statusNames, starter, random);
+    // Its columns the starter's; the form's type the one it takes.
+    newBoardTab = responsesBoardTab(form.heading, formTab, input.statusNames, starter, random, {
+      typeId: type.id,
+    });
     tabId = newBoardTab.id;
     status = boardsOf(newBoardTab)[0]!.setup.columns[0]!.status;
   }
