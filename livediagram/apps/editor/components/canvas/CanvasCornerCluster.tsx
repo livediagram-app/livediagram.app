@@ -1,7 +1,7 @@
 import { ViewZoomControls } from '@/components/canvas/view-readers';
 import { votesSpentBy } from '@livediagram/document';
 import { participantKey } from '@/lib/identity';
-import type { useVoteReviewOpener } from '@/hooks/canvas/useVoteReviewOpener';
+import type { useVoteReviewOpener } from '@liveworkspace/workbench/hooks/canvas/useVoteReviewOpener';
 import { OffscreenContentHint } from '@liveworkspace/workbench/components/canvas/OffscreenContentHint';
 import {
   SessionClusterStrip,

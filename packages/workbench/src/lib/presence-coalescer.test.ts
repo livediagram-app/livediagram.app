@@ -8,8 +8,8 @@ import {
 
 // The coalescer is the one part of the room that treats a packet as a sample
 // rather than an event: many arrive per frame and exactly one state commit
-// comes out. Everything interesting about it is in that gap — what accumulates,
-// what replaces, and what a tab switch resets — and none of it could be reached
+// comes out. Everything interesting about it is in that gap, what accumulates,
+// what replaces, and what a tab switch resets, and none of it could be reached
 // while it lived inside the connection effect's closure.
 
 // A hand-driven rAF: nothing runs until the test says so, which is what makes
@@ -93,7 +93,7 @@ describe('createPresenceCoalescer', () => {
     const h = setup();
     h.presence.cursor('peer', { tabId: 't1', x: 1, y: 0 });
     runFrame();
-    // Only cursors moved, so only that setter is called — a frame must not
+    // Only cursors moved, so only that setter is called, a frame must not
     // churn the laser map and re-render their consumers.
     expect(h.commits()).toBe(1);
   });
@@ -145,7 +145,7 @@ describe('createPresenceCoalescer', () => {
 
   it('carries the sender\u2019s pen through to the committed trail (docs/specs/008-canvas/laser-panel.md)', () => {
     // "Everyone sees your pen": the look travels with the samples. This is
-    // the whole feature — without it every peer renders DEFAULT_LASER_CONFIG
+    // the whole feature, without it every peer renders DEFAULT_LASER_CONFIG
     // and a presenter's bold amber comet is a thin default line elsewhere.
     const config = { width: 'bold', colour: 'amber' } as unknown as LaserTrail['config'];
     const h = setup();

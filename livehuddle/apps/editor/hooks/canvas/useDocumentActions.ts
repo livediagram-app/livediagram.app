@@ -7,7 +7,8 @@ import { getSessionSharePassword } from '@/lib/api-client';
 import { DOCUMENT_FAILURE } from '@/lib/write-failure-copy';
 
 export const useDocumentActions = createDocumentActions({
-  track,
+  trackDuplicated: () => track('Document', 'Duplicated', 'Copy'),
+  trackDeleted: () => track('Document', 'Deleted'),
   trashOpenDocument,
   getSessionSharePassword,
   DOCUMENT_FAILURE,

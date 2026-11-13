@@ -4,7 +4,7 @@ import { pickerCandidates, rollPicker, spinFrameDelays, spinReel } from './picke
 // An editor's Participant, cut down.
 type Participant = { id: string; name: string; color: string; status: 'online' };
 
-// A participant is identified by id, not by name — two people can share one.
+// A participant is identified by id, not by name, two people can share one.
 const person = (id: string, name: string): Participant => ({
   id,
   name,

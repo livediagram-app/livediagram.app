@@ -20,5 +20,7 @@ fixtures and stack, and imports these by subpath.
   (`budgetIssueTitle(product)`, `budgetIssueAction`, `budgetIssueComment`), and its I/O, dependency-free, which
   `.github/workflows/canvas-perf.yml` runs from each editor's folder before `pnpm install`:
   `node ../../../packages/e2e-kit/src/perf/nightly.mjs previous`, then `... report <product>`.
+- `scripts/icon-sheet-shoot.mjs`: the icon contact sheet's screenshots (dark, 2x) of the pages each editor's
+  `scripts/icon-sheet/sheet.run.tsx` wrote; every editor's `icons:sheet` runs it after its sheet.
 
 Every module but the optical audit's two is pure and unit-tested here; none imports a product.

@@ -30,7 +30,7 @@ const useTakeOfflineInPlace = createTakeOfflineInPlace({
   SyncStillSavingError,
   takeCloudOffline: (...args) => convert.takeCloudOffline(...args),
   offlineListDocuments: () => Promise.resolve([{ id: 'doc-1' }]),
-  track,
+  trackTakenOffline: () => track('Document', 'Moved', 'TakenOffline'),
   SYNC_SAVE_WAIT_MS,
 });
 

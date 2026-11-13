@@ -5,7 +5,7 @@ import { useOpenSettingsRequests } from '../ui/useOpenSettingsRequests';
 
 // Top-level modal/dialog visibility for the editor: Search, Settings, the Share dialog, the per-tab Export / Import dialogs, and the
 // Collaborators modal.
-// Pure open/closed UI flags with no document-data coupling — a self-
+// Pure open/closed UI flags with no document-data coupling, a self-
 // contained slice composed into useEditorState and spread into its
 // view-model.
 // Each editor binds it once, at module scope in its `app/document/[id]/useEditorDialogs.ts`, with its Canvas/Theme

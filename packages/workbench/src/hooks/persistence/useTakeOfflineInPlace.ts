@@ -9,7 +9,8 @@ export type TakeOfflineInPlaceDeps = {
   SyncStillSavingError: new () => Error;
   takeCloudOffline: (id: string, ownerId: string, shareCode: string | null) => Promise<unknown>;
   offlineListDocuments: () => Promise<readonly unknown[]>;
-  track: (category: 'Document', action: 'Moved', type: 'TakenOffline') => void;
+  // Counts the move (Document·Moved·TakenOffline), named by the editor so its telemetry manifest sees it.
+  trackTakenOffline: () => void;
   SYNC_SAVE_WAIT_MS: number;
 };
 
@@ -24,7 +25,7 @@ export function createTakeOfflineInPlace({
   SyncStillSavingError,
   takeCloudOffline,
   offlineListDocuments,
-  track,
+  trackTakenOffline,
   SYNC_SAVE_WAIT_MS,
 }: TakeOfflineInPlaceDeps) {
   return function useTakeOfflineInPlace(deps: {
@@ -59,7 +60,7 @@ export function createTakeOfflineInPlace({
     );
     latest.current.refreshDocumentList(ownerId);
     debugLog('[offline] taken offline in place');
-    track('Document', 'Moved', 'TakenOffline');
+    trackTakenOffline();
   };
 }
 }

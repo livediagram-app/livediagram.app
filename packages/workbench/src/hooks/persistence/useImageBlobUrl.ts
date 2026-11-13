@@ -85,7 +85,7 @@ export function createImageBlobUrl({ apiFetchImageBlobUrl, releaseImageBlobUrl }
   }, [key, ownerId, imageId, documentId, shareCode, maxEdge]);
 
   if (!imageId) return IDLE;
-  // Offline Mode (docs/specs/006-document/offline-mode.md): an embedded image IS its bytes — a base64
+  // Offline Mode (docs/specs/006-document/offline-mode.md): an embedded image IS its bytes, a base64
   // data URI in imageId. Nothing to fetch and nothing to revoke.
   if (imageId.startsWith('data:')) return { status: 'ready', src: imageId };
   return fetched?.key === key ? fetched.state : LOADING;

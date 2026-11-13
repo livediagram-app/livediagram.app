@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 // Offline Mode (docs/specs/006-document/offline-mode.md): reactive "is this item saved only in this
 // browser?". Drives the Offline header badge and hides server-only actions
 // (Share, sending a tab elsewhere). Seeds from the sync cache , warm once the
-// item has loaded through the offline dispatch — and confirms via the
+// item has loaded through the offline dispatch, and confirms via the
 // async check so a render before the cache loads still settles correctly, and again whenever the
 // item joins or leaves the store.
 // Each editor binds it once, at module scope in its `hooks/persistence/useIsOfflineDocument.ts`, to its offline store.

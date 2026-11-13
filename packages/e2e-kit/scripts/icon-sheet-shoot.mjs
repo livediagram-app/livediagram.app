@@ -1,4 +1,5 @@
-// Screenshots every page `sheet.run.tsx` wrote (dark, 2x) next to its HTML. Run via `pnpm icons:sheet`.
+// Screenshots every page an editor's icon contact sheet (its `scripts/icon-sheet/sheet.run.tsx`) wrote (dark, 2x) next to
+// its HTML. Each editor's `icons:sheet` runs it as `node ../../../packages/e2e-kit/scripts/icon-sheet-shoot.mjs`.
 import { readdirSync } from 'node:fs';
 import { chromium } from '@playwright/test';
 

@@ -15,7 +15,8 @@ type OpenEditor = {
 // context, telemetry, shared-tabs notice and its offline store's conversions (lib/offline/offline-convert).
 export type OfflineConversionDeps = {
   useOptionalEditorContext: () => OpenEditor | null;
-  track: (category: 'Document', action: 'Moved', type: 'SavedToCloud' | 'TakenOffline') => void;
+  // Counts the move (Document·Moved in the editor's telemetry), named by the editor so its telemetry manifest sees it.
+  trackMoved: (type: 'SavedToCloud' | 'TakenOffline') => void;
   fetchSharedTabsNotice: (ownerId: string, id: string, action: 'offline') => Promise<string | null>;
   ConversionInProgressError: abstract new (...args: never[]) => Error;
   conversionInProgress: (id: string) => boolean;
@@ -36,7 +37,7 @@ type ConvertedDocument = { id: string; name: string; shareCode?: string | null }
 
 export function createOfflineConversion({
   useOptionalEditorContext,
-  track,
+  trackMoved,
   fetchSharedTabsNotice,
   ConversionInProgressError,
   conversionInProgress,
@@ -58,7 +59,7 @@ function useOfflineConversions(ownerId: string | null) {
         await editor.syncToCloud();
       } else {
         await saveOfflineToCloud(liveDoc.id, ownerId);
-        track('Document', 'Moved', 'SavedToCloud');
+        trackMoved('SavedToCloud');
       }
     } catch (e) {
       // Stays offline. A conversion already running reports for itself.
@@ -93,7 +94,7 @@ function useOfflineConversions(ownerId: string | null) {
         (kept) => dismissLocalMove(ownerId, kept.length),
         () => {},
       );
-      track('Document', 'Moved', 'TakenOffline');
+      trackMoved('TakenOffline');
     } catch (e) {
       // Stays on the server (aborts roll the local copy back). A conversion already running
       // reports for itself.

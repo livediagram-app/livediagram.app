@@ -8,7 +8,7 @@
 // rather than read from Date.now() / a ref, keeping the functions pure.
 import { MAX_SELECTION_IDS } from '@livediagram/api-schema';
 import { participantKey, statusFromIdleMs, type Participant } from './identity';
-import type { LaserPoint } from './laser-buffer';
+import type { LaserPoint } from '@liveworkspace/workbench/lib/laser-buffer';
 import type { LaserConfig } from './laser-config';
 
 // Row shapes the builders below return. Module-private: only this file's own

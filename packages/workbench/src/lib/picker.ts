@@ -13,7 +13,7 @@ export type PickerPerson = { id: string; name: string };
 export const PICKER_SPIN_MS = 1600;
 
 // A candidate as the face draws it: the text that can be written to the
-// element, plus who it is when the source is the room — so a person spins past
+// element, plus who it is when the source is the room, so a person spins past
 // with their own avatar rather than as a line of text.
 export type PickerCandidate<Participant extends PickerPerson = PickerPerson> = {
   label: string;
@@ -21,7 +21,7 @@ export type PickerCandidate<Participant extends PickerPerson = PickerPerson> = {
 };
 
 // Who or what a picker can land on. Participants come from live presence at
-// press time — including yourself, because a picker that refuses to choose the
+// press time, including yourself, because a picker that refuses to choose the
 // only person in the room is a broken picker, and "who demos next" with one
 // person present has exactly one honest answer.
 export function pickerCandidates<Participant extends PickerPerson>(input: {
@@ -53,7 +53,7 @@ export function pickerCandidates<Participant extends PickerPerson>(input: {
 // as "nothing to pick from" rather than silently doing nothing.
 export function rollPicker<C extends PickerCandidate>(candidates: C[]): C | null {
   if (candidates.length === 0) return null;
-  // With one candidate the answer is that candidate — no theatre needed, but
+  // With one candidate the answer is that candidate, no theatre needed, but
   // the caller still spins so the room sees the roll happen.
   return randomPick(candidates) ?? null;
 }
@@ -71,7 +71,7 @@ export function spinReel<C extends PickerCandidate>(candidates: C[], result: C, 
 
 // When each frame lands, in ms from the press. The gaps GROW towards the end (a
 // quadratic ease-out), which is what makes it read as a wheel slowing to a stop
-// rather than a list flicked at a constant rate — the last few names are the
+// rather than a list flicked at a constant rate, the last few names are the
 // ones the room is actually watching.
 export function spinFrameDelays(frameCount: number, totalMs = PICKER_SPIN_MS): number[] {
   if (frameCount <= 0) return [];

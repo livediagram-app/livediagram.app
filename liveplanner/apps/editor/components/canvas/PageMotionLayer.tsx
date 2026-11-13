@@ -20,7 +20,7 @@ import {
   type MotionGrid,
   type MotionNode,
   type MotionWave,
-} from '@/lib/page-motion-parts';
+} from '@liveworkspace/page-background/motion-parts';
 
 type Vars = CSSProperties & Record<`--${string}`, string | number>;
 

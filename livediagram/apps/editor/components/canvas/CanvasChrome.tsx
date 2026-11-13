@@ -1,6 +1,6 @@
 import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { ES_LANES } from '@livediagram/document';
-import { useVoteReviewOpener } from '@/hooks/canvas/useVoteReviewOpener';
+import { useVoteReviewOpener } from '@liveworkspace/workbench/hooks/canvas/useVoteReviewOpener';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { TimelineLanesOverlay } from '@/components/canvas/TimelineLanesOverlay';

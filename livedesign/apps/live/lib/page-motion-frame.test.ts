@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ANIM_ORIGIN } from './page-motion-frame';
+import { ANIM_ORIGIN } from '@liveworkspace/page-background/motion-frame';
 
 // The opening poses restate this editor's app/motion-page.css as numbers
 // (@liveworkspace/page-background/motion-frame, whose own tests cover the poses): the origins a loop turns

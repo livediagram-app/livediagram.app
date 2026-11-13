@@ -41,7 +41,7 @@ export type PanelLayoutModule<Id extends string> = {
 // snap-candidate state that drives the corner guides.
 //
 // Layout is hydrated synchronously from localStorage at mount (no
-// flash) and re-read whenever it changes — our own writes fire a
+// flash) and re-read whenever it changes, our own writes fire a
 // same-tab `<product>:panel-layout-changed` event, and another tab's
 // write fires the native `storage` event. The drag state is transient
 // (never persisted).
@@ -132,11 +132,11 @@ export function createUsePanelDock<PanelId extends string>(
 
   const cornerStacks = useMemo(() => {
     // The stored arrays are already the resolved order, but a panel
-    // that's never been placed isn't in any array — fold those into
+    // that's never been placed isn't in any array, fold those into
     // their default corner so the render order matches resolvePlacement.
     // Without the fold, a panel id missing from a user's SAVED layout
     // (any panel shipped after they last dragged one) would never
-    // render on desktop — the corner containers draw only from these
+    // render on desktop, the corner containers draw only from these
     // stacks (docs/specs/007-editor/panel-docking.md's "adding a new panel never strands the UI").
     const stacks: Record<PanelCorner, PanelId[]> = {
       'top-left': [...layout.corners['top-left']],

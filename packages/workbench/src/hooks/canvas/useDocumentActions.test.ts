@@ -15,7 +15,8 @@ const track = vi.fn();
 const trashOpenDocument = vi.fn(async (_id: string, _name: string) => true);
 let sharePassword: string | null = null;
 const useDocumentActions = createDocumentActions({
-  track,
+  trackDuplicated: () => track('Document', 'Duplicated', 'Copy'),
+  trackDeleted: () => track('Document', 'Deleted'),
   trashOpenDocument,
   getSessionSharePassword: () => sharePassword,
   DOCUMENT_FAILURE: {

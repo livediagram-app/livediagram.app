@@ -1,5 +1,5 @@
 // Theme metadata (docs/specs/011-theme/canvas-and-theme-dialog.md "Colours panel"): the per-theme description blurbs
-// shown on the theme cards. Pure catalogue data plus its lookup, split out of each editor's themes.ts (the recolouring engine) — this
+// shown on the theme cards. Pure catalogue data plus its lookup, split out of each editor's themes.ts (the recolouring engine), this
 // is consumed by the theme-picker UI, not by element recolouring, so it stands
 // on its own.
 import type { ThemeId } from '@liveworkspace/element-model/themes';

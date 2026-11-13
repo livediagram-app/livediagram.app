@@ -19,7 +19,7 @@ export type CornerDockingDeps<PanelId extends string> = {
 // device-local panel layout + live drag/snap state (usePanelDock), the
 // dock layer / corner-stack measurement refs, and the per-panel wiring
 // builder the chrome host threads into each MovablePanel. Self-contained
-// — CanvasChrome mounts the returned refs on its dock layer / corner
+// CanvasChrome mounts the returned refs on its dock layer / corner
 // containers and calls panelWiringFor per panel.
 // Each editor binds the hook once, at module scope in its `hooks/ui/useCornerDocking.ts`.
 export function createUseCornerDocking<PanelId extends string>({
@@ -91,7 +91,7 @@ export function createUseCornerDocking<PanelId extends string>({
       position: { x: number; y: number } | null;
       onReset: () => void;
       // True when the panel actually sits away from its default corner
-      // (free, or docked elsewhere) — drives the "Reset position"
+      // (free, or docked elsewhere), drives the "Reset position"
       // enablement, greyed when already home.
       resettable: boolean;
       dock?: MovablePanelDockProps;

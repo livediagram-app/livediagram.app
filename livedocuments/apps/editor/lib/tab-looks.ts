@@ -4,7 +4,7 @@
 import { type BackgroundPattern, type Finish, type Tab } from '@livedocuments/document';
 import { createTabLooks } from '@liveworkspace/workbench/lib/tab-looks';
 import { withThemeApplied } from '@/lib/tab-theme-apply';
-import { SEASONAL_LOOKS, type Season } from '@/lib/seasonal-looks';
+import { SEASONAL_LOOKS, type Season } from '@liveworkspace/workbench/lib/seasonal-looks';
 
 export type TabLookId =
   | 'everyday'

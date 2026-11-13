@@ -6,7 +6,7 @@ import { RELATIVE_TICK_MS } from '@/lib/relative-time';
 
 // What presence statuses render from: each peer's last-seen instant and the clock they are read at.
 export type PresenceClock = { now: number; lastSeen: ReadonlyMap<string, number> };
-import type { LaserPoint } from '@/lib/laser-buffer';
+import type { LaserPoint } from '@liveworkspace/workbench/lib/laser-buffer';
 import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 import { createStateStore } from '@liveworkspace/workbench/lib/state-store';
 

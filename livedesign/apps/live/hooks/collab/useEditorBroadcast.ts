@@ -13,7 +13,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { RoomOutgoing } from '@livedesign/api-schema';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
+import { trimLaserBuffer, type LaserPoint } from '@liveworkspace/workbench/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
 
 export const BROADCAST_THROTTLE_MS = 33;

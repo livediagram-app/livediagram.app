@@ -5,7 +5,8 @@
 
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DockPanel } from './useDockPopovers';
+// An editor's dock panels, among them the Vote popover.
+type DockPanel = 'session-vote' | 'session-timer' | 'collaborate';
 import { useVoteReviewOpener } from './useVoteReviewOpener';
 
 afterEach(cleanup);

@@ -25,7 +25,7 @@ export type AccountBootstrapDeps = {
 // guest's work onto the account as it signs them in (the index's personMerged).
 //
 // Returns the relevant `useAuth` fields so callers don't need to also
-// destructure them — there's exactly one place those values come from
+// destructure them, there's exactly one place those values come from
 // per page.
 
 export type BootstrapResult = {
@@ -112,7 +112,7 @@ export function createUseAccountBootstrap({
   }, [user]);
 
   // Token provider registration. The signed-in user's email is no
-  // longer forwarded as a header — team-invite matching trusts only the
+  // longer forwarded as a header, team-invite matching trusts only the
   // verified `email` session-token claim server-side (docs/specs/013-workspace/teams.md).
   //
   // A LAYOUT effect on purpose. React runs a child's passive effects before

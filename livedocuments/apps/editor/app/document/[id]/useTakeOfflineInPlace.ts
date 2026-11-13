@@ -10,6 +10,6 @@ export const useTakeOfflineInPlace = createTakeOfflineInPlace({
   SyncStillSavingError,
   takeCloudOffline,
   offlineListDocuments,
-  track,
+  trackTakenOffline: () => track('Document', 'Moved', 'TakenOffline'),
   SYNC_SAVE_WAIT_MS,
 });

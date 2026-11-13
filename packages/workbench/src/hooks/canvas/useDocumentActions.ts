@@ -12,11 +12,14 @@ import { indexClient } from '../../lib/index-client';
 import type { useConfirm } from '../ui/useConfirm';
 import { useToast } from '../ui/useToast';
 
-// What each editor hands in, once, at module scope in its `hooks/canvas/useDocumentActions.ts`: its telemetry, its
+// What each editor hands in, once, at module scope in its `hooks/canvas/useDocumentActions.ts`: its counts, its
 // Trash step for the open item (lib/document-delete-undo), its session's share password (lib/api-client) and its
 // failure copy (lib/write-failure-copy).
 export type DocumentActionsBindings = {
-  track: (category: 'Document', action: 'Duplicated' | 'Deleted', type?: 'Copy') => void;
+  // Count a copy (Document·Duplicated·Copy) and a delete (Document·Deleted), named by the editor so its telemetry
+  // manifest sees them.
+  trackDuplicated: () => void;
+  trackDeleted: () => void;
   trashOpenDocument: (id: string, name: string) => Promise<boolean>;
   getSessionSharePassword: () => string | null;
   DOCUMENT_FAILURE: {
@@ -36,7 +39,8 @@ type DocumentActionsDeps = {
 };
 
 export function createDocumentActions({
-  track,
+  trackDuplicated,
+  trackDeleted,
   trashOpenDocument,
   getSessionSharePassword,
   DOCUMENT_FAILURE,
@@ -66,7 +70,7 @@ export function createDocumentActions({
         ? { code: sessionShareCode, password: getSessionSharePassword() }
         : null;
       const { item } = await indexClient.copyItem(documentId, {}, share);
-      track('Document', 'Duplicated', 'Copy');
+      trackDuplicated();
       window.location.assign(`${window.location.origin}/document/${encodeURIComponent(item.id)}`);
     } catch {
       // Let the person try again.
@@ -83,7 +87,7 @@ export function createDocumentActions({
       id === documentId
         ? await trashOpenDocument(id, documentName)
         : await indexClient.deleteItem(id).then(
-            () => (track('Document', 'Deleted'), true),
+            () => (trackDeleted(), true),
             () => false,
           );
     if (!ok) toast.error(DOCUMENT_FAILURE.delete(id === documentId ? documentName : undefined));

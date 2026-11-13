@@ -17,7 +17,7 @@ import { offlineListDocuments } from '@/lib/offline/offline-store';
 
 export const { useOfflineConversions, useOfflineConversion } = createOfflineConversion({
   useOptionalEditorContext,
-  track,
+  trackMoved: (type) => track('Document', 'Moved', type),
   fetchSharedTabsNotice,
   ConversionInProgressError,
   conversionInProgress,

@@ -11,7 +11,7 @@ export type LaserTrail = { tabId: string; points: LaserPoint[]; config?: LaserCo
 // 30 Hz per peer, and committing state per packet re-rendered the
 // whole editor tree per message (~90 renders/s with three peers,
 // while the local user is idle). Buffer them in refs and commit ONE
-// Map update per animation frame — the same rAF pattern the pan and
+// Map update per animation frame, the same rAF pattern the pan and
 // snap-guide paths use.
 //
 // One coalescer per room connection, created inside the effect so a
@@ -62,7 +62,7 @@ export function createPresenceCoalescer({
         const next = new Map(prev);
         for (const [id, incoming] of trails) {
           const existing = next.get(id);
-          // A tab switch resets the buffer for that participant —
+          // A tab switch resets the buffer for that participant,
           // otherwise a peer who lasered on tab A then started
           // lasering on tab B would briefly render an interpolated
           // line across the gap.
@@ -78,7 +78,7 @@ export function createPresenceCoalescer({
           //
           // This commit used to drop `config` on the floor. The op carried
           // it, the buffer parsed it, and then the trail that reached
-          // LaserOverlay had only { tabId, points } — so every peer fell
+          // LaserOverlay had only { tabId, points }, so every peer fell
           // back to DEFAULT_LASER_CONFIG and the feature was inert.
           next.set(id, {
             tabId: incoming.tabId,
