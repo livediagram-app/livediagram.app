@@ -8,6 +8,7 @@ import { isArchived, isTrashed } from '../board';
 import { blockingIndexOf, blocksFieldsOf } from '../blocked-by';
 import { childIndexOf, childrenOf } from '../calculated-fields';
 import { itemStatus, type Item } from '../item';
+import { itemStatusSince } from '../status-since';
 import type { ItemTypeDef } from '../item-types';
 import { linkedCardIds } from '../several-values';
 import { typeIn } from '../type-catalogue';
@@ -62,9 +63,15 @@ export function derivedTargets(
   switch (trigger.kind) {
     case 'column_limit': {
       if (!live(card) || itemStatus(card) !== trigger.status) return [];
-      const count = items.filter((i) => live(i) && itemStatus(i) === trigger.status).length;
-      // Exactly one past: the card that tipped it, once each time the column goes over.
-      return count === trigger.limit + 1 ? [card] : [];
+      const column = items.filter((i) => live(i) && itemStatus(i) === trigger.status);
+      if (column.length <= trigger.limit) return [];
+      // Exactly one past: the card that tipped it, once each time the column goes over. Several in before the wake
+      // (three into a column of one): the card that arrived one past the limit, by when each entered the column.
+      if (column.length === trigger.limit + 1) return [card];
+      const byArrival = column.sort(
+        (a, b) => itemStatusSince(a) - itemStatusSince(b) || a.key - b.key,
+      );
+      return byArrival[trigger.limit] === card ? [card] : [];
     }
     case 'card_unblocked': {
       // Archiving frees what it blocked only when it was still open: a done blocker unblocked them when it finished.

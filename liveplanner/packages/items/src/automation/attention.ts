@@ -14,7 +14,7 @@ import type {
   AutomationRuleBody,
 } from './types';
 import { stepActions } from './validate';
-import { personOf, planHasField, type AutomationOutline } from './outline';
+import { personOf, planHasField, unheardFields, type AutomationOutline } from './outline';
 
 type Need = {
   kind: 'column' | 'type' | 'field' | 'person' | 'filter' | 'form' | 'webhook' | 'card';
@@ -152,5 +152,9 @@ export function ruleNeeds(
     seen.add(key);
     out.push(`${WORDS[need.kind]} ${need.id} is gone`);
   }
+  // A field Field Changed can never hear (a rule saved before it became one, a field made Time Spent since).
+  if (rule.trigger.kind === 'field_changed')
+    for (const f of unheardFields(outline.types, rule.trigger.fields))
+      out.push(`Field Changed never hears ${f.name}`);
   return out;
 }

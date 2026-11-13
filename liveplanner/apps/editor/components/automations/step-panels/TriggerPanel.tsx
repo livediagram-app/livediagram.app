@@ -13,7 +13,11 @@ import {
   type AutomationTrigger,
 } from '@liveplanner/items';
 import { GithubTriggerFields } from '../github/GithubTriggerFields';
-import { RULE_BUILT_IN_FIELDS, outlineFields, type AutomationOutline } from '../automation-outline';
+import {
+  RULE_BUILT_IN_FIELDS,
+  fieldChangeFields,
+  type AutomationOutline,
+} from '../automation-outline';
 import { ChipToggles, PanelField, PanelNote, PanelSelect } from './panel-parts';
 import { IncomingWebhookPanel } from './IncomingWebhookPanel';
 import { TimeTriggerPanel } from './TimeTriggerPanel';
@@ -57,7 +61,8 @@ export function TriggerPanel({
   // How many conditions the rule has: a time rule with none is warned about.
   conditions: number;
 }) {
-  const fields = outlineFields(outline.types);
+  // Only the fields a write changes: Field Changed never hears Time Spent, a tally or a worked-out value.
+  const fields = fieldChangeFields(outline.types);
   const columns = outline.columns.map((c) => ({ value: c.status, label: c.name }));
   const statuses = columns.map((c) => c.value);
   // Field Changed's chips: the plan's fields, and a built-in one the rule names that no card type lists, by its name.

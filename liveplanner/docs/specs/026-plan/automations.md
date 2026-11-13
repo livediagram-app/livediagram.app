@@ -135,6 +135,12 @@ work. A rule does it every time, at once, and says that it did.
 | **Pull Request Closed**  | a linked pull request closes without merging                                                   | the rule's conditions             |
 | **Checks Finished**      | a linked pull request's checks turn Failing, or Passing (picked; Failing first)                | Failing or Passing, required      |
 
+- **Field Changed hears only fields a write changes.** Time Spent's entries and a Votes field's tally keep no history
+  by design, a Comments field's threads are its own, and a Calculated field is worked out, never stored: none of them
+  ever changes by a write, so Field Changed would never run on one. The builder leaves them out of its fields, and a
+  rule naming one is refused (`automation_invalid` at `trigger.fields.N`, "Field Changed never hears Time Spent: it
+  changes without an edit, so the rule would never run"). A rule saved before its field became one needs attention
+  ("Field Changed never hears Time Spent").
 - **Card Stuck** is a time trigger (below). It fires once for each stretch a card sits unchanged: the run id holds
   when the card last changed, so any change re-arms it.
 - **Card Unblocked, Related Cards Done and Column Over Limit** are worked out when the rule runs, from the plan's cards
@@ -142,7 +148,9 @@ work. A rule does it every time, at once, and says that it did.
   rule runs on the card it concerns, with Who Did It the person who made that move. Archiving or restoring a card
   starts only Card Archived and Card Restored. Changes that reach one moment before the rule runs (the last two
   blockers or children done in a group move, or one after the other; two cards dropped into a column together) run
-  it once: on the card they concern, and on one card for a column.
+  it once: on the card they concern, and on one card for a column. Several cards into a column before it runs
+  (three into a column whose limit is one) run Column Over Limit once, on the card that came in one past the limit,
+  by when each card entered the column (then the lower number).
 
 ### Time triggers
 
@@ -297,7 +305,9 @@ The Automations screen's way to the plan's GitHub connection, inside the dialog 
 - A Form Response also counts as Card Created: a rule on Card Created hears form cards too, a Form Response rule
   hears only them.
 - A card leaving the Trash is not Card Created; a card moved into or out of the Trash is not Card Moved; archiving is
-  not Card Moved. Undo of a person's own change triggers like the change it puts back.
+  not Card Moved. Undo of a person's own change triggers like the change it puts back, except a card put back
+  whole: an undo of a card's delete (or a redo of its making, or an offline plan's sync) restores a card, not a new
+  one, so it is not Card Created and starts no rule.
 - One write that changes several cards (a group move, a bulk edit) starts one run per card per rule.
 - Changes **Automation** made trigger other rules only when the changing rule lets them (above), and never the same
   rule again.
@@ -338,6 +348,7 @@ with what is missing. So does a **Link Cards** step whose chosen card has since 
 | **Send Email**                  | emails the assignee, whoever triggered it or a chosen person, with a subject and a short body     |
 |                                 | (values allowed) and a link to the card; only people with an account get it, and the email        |
 |                                 | [notification](../014-identity/profile-and-email-notifications.md) opt-out applies                |
+|                                 | ([Who a rule's email reaches](#who-a-rules-email-reaches))                                        |
 | **Send to Webhook**             | sends a signed JSON event to one of the plan's own-service webhooks: the rule, the card and a     |
 |                                 | message (values allowed)                                                                          |
 | **Post to Slack**               | posts the message, with an **Open in liveplanner** link, through one of the plan's Slack webhooks |
@@ -352,6 +363,7 @@ with what is missing. So does a **Link Cards** step whose chosen card has since 
 |                                 | at the card that started the rule; a field of several cards gains it, a single one is replaced    |
 | **Mention Someone**             | starts a thread on the card that @mentions the assignee, whoever triggered it or a chosen person, |
 |                                 | with a short message (values allowed); it reaches their Inbox and their mention email             |
+|                                 | ([Who a rule's email reaches](#who-a-rules-email-reaches))                                        |
 | **Resolve Threads**             | resolves every open comment thread on the card                                                    |
 | **Wait**                        | holds the rest of the rule for 1 hour to 30 days (below)                                          |
 | **For Related Cards**           | a branch: runs its own conditions and actions on each related card (below)                        |
@@ -381,6 +393,14 @@ step of the rule's top level only (never inside an If / Else or a branch), at mo
 - **Test on a Card** does not wait: it shows "Would wait 2 days, then:" and the steps after.
 - The engine holds each waiting run in the plan room's storage (the rule, the card, the step it waits at, the
   rule's version, when it goes on), and the room's alarm wakes for the earliest, as it does for time triggers.
+
+### Who a rule's email reaches
+
+A rule's Send Email and Mention Someone email reach the people a person's own notification would: the plan's
+owner, and the people of the plan's team as a person's own mention email picks them
+([comment mentions](../012-collaboration/comment-mentions.md), the platform's `teamTargets`). Someone removed from
+the team, or an Editor who came in through a share link, gets no rule email, though a card may still name them (the
+step is done; nothing is sent). A Mention Someone's thread is written all the same.
 
 ### Assign in turn
 

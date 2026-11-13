@@ -81,6 +81,14 @@ export function anonymiseTabReactions(text: string, hashed: string): Anonymised<
   return changed ? { value: JSON.stringify(next), changed } : { value: text, changed: false };
 }
 
+// The person's names as whole words, longest first (so a name holding a shorter one goes whole): never a run of
+// letters inside another word ("Al" in "Already") or a longer name ("Al" in "Alan").
+const regexEscape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function namePattern(names: ReadonlySet<string>): RegExp {
+  const alternatives = [...names].sort((a, b) => b.length - a.length).map(regexEscape);
+  return new RegExp(`(?<![\\p{L}\\p{N}_])(?:${alternatives.join('|')})(?![\\p{L}\\p{N}_])`, 'gu');
+}
+
 // An Audit Trail run's body (docs/specs/026-plan/automations.md "Runs, limits and loops") with the person's lines,
 // the trigger they made, naming Deleted account: the line's person, and their name in its text and the run's other
 // lines (an Assign or a Send Email to whoever triggered it). Unchanged when no line is theirs.
@@ -100,13 +108,12 @@ export function anonymiseRun(text: string, hashed: string): Anonymised<string> {
     if (line?.by?.id === hashed && typeof line.by.name === 'string' && line.by.name)
       names.add(line.by.name);
   if (!lines.some((l) => l?.by?.id === hashed)) return { value: text, changed: false };
+  const pattern = names.size > 0 ? namePattern(names) : null;
   const steps = lines.map((line) => {
     if (!line || typeof line !== 'object') return line;
     const said = line.text;
     const renamed =
-      typeof said === 'string'
-        ? [...names].reduce((t, name) => t.split(name).join(ANONYMISED_NAME), said)
-        : null;
+      typeof said === 'string' && pattern ? said.replace(pattern, ANONYMISED_NAME) : null;
     return {
       ...line,
       ...(renamed !== null ? { text: renamed } : {}),
