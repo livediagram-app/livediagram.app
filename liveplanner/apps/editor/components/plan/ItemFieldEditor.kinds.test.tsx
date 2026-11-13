@@ -123,8 +123,48 @@ describe('an Image field', () => {
     fireEvent.change(input, { target: { files: [file] } });
     expect(await screen.findByText('Uploading…')).toBeTruthy();
     await flush();
-    expect(api.upload).toHaveBeenCalledWith(SCOPE, file);
+    expect(api.upload).toHaveBeenCalledWith(SCOPE, file, {
+      onProgress: expect.any(Function),
+    });
     expect(c.onSave).toHaveBeenCalledWith('f-shot', 'img_1');
+  });
+
+  it('fills its ring by the bytes sent, said beside it, on the empty zone and over a picture it replaces', async () => {
+    let finish: (v: unknown) => void = () => {};
+    let progress: (share: number) => void = () => {};
+    api.upload.mockImplementation(
+      (_scope: unknown, _file: File, opts: { onProgress: (share: number) => void }) => {
+        progress = opts.onProgress;
+        return new Promise((resolve) => (finish = resolve));
+      },
+    );
+    api.url.mockResolvedValue('blob:shot');
+    const { container, unmount } = render(<ItemFieldEditor f="f-shot" ctx={ctx(make({}))} />);
+    const pickFile = () =>
+      fireEvent.change(container.querySelector('input[type="file"]')!, {
+        target: { files: [new File(['x'], 'shot.png', { type: 'image/png' })] },
+      });
+    pickFile();
+    expect(await screen.findByText('Uploading…')).toBeTruthy();
+    expect(container.querySelector('[data-upload-ring]')!.getAttribute('data-upload-ring')).toBe(
+      'turning',
+    );
+    act(() => progress(0.404));
+    expect(screen.getByText('Uploading 40%')).toBeTruthy();
+    expect(container.querySelector('[data-upload-ring]')!.getAttribute('data-upload-ring')).toBe(
+      '40',
+    );
+    await act(async () => finish({ image: { id: 'img_1' }, deduped: false }));
+    unmount();
+
+    const replacing = render(<ItemFieldEditor f="f-shot" ctx={ctx(make({ 'f-shot': 'img_1' }))} />);
+    fireEvent.change(replacing.container.querySelector('input[type="file"]')!, {
+      target: { files: [new File(['y'], 'next.png', { type: 'image/png' })] },
+    });
+    await flush();
+    act(() => progress(1));
+    expect(screen.getByText('Uploading 100%')).toBeTruthy();
+    await act(async () => finish({ image: { id: 'img_2' }, deduped: false }));
   });
 
   it('takes a dropped file, and says why an upload was refused', async () => {

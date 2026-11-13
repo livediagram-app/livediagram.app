@@ -19,7 +19,39 @@ beforeEach(() => {
   HTMLElement.prototype.animate = animate as unknown as HTMLElement['animate'];
   HTMLElement.prototype.getBoundingClientRect = boxes as unknown as () => DOMRect;
 });
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
+
+// A ResizeObserver stand-in: `resize()` tells every observer still watching that its element changed size.
+function stubResizeObserver() {
+  const watching = new Set<{ cb: () => void }>();
+  const disconnect = vi.fn();
+  class Observer {
+    entry = { cb: () => {} };
+    constructor(cb: () => void) {
+      this.entry.cb = cb;
+    }
+    observe() {
+      watching.add(this.entry);
+    }
+    disconnect() {
+      disconnect();
+      watching.delete(this.entry);
+    }
+  }
+  vi.stubGlobal('ResizeObserver', Observer);
+  return { resize: () => [...watching].forEach((w) => w.cb()), watching, disconnect };
+}
+
+// Every box 0 by 0 (a reload, before layout) until `sized()`.
+function unsized() {
+  let size = 0;
+  boxes.mockImplementation(() => ({ top: 0, bottom: size, left: 0, right: size }) as DOMRect);
+  return { sized: () => (size = 100) };
+}
 
 // The board's grid with `built` cards drawn (a busy board draws only its near runs') and `count` on the board.
 function Board({ ready, count, built = count }: { ready: boolean; count: number; built?: number }) {
@@ -51,6 +83,66 @@ describe('useCardFanIn', () => {
   it('fans in a board of exactly the bound', () => {
     render(<Board ready count={FAN_IN_MAX_BOARD_CARDS} built={100} />);
     expect(animate).toHaveBeenCalledTimes(80);
+  });
+
+  it('waits for a board measured at 0 by 0 to have a size, then fans its cards in once', () => {
+    const observers = stubResizeObserver();
+    const layout = unsized();
+    render(<Board ready count={4} />);
+    expect(animate).not.toHaveBeenCalled();
+    // A resize that leaves it 0 by 0 keeps waiting.
+    observers.resize();
+    expect(animate).not.toHaveBeenCalled();
+    layout.sized();
+    observers.resize();
+    expect(animate).toHaveBeenCalledTimes(4);
+    expect(observers.watching.size).toBe(0);
+    observers.resize();
+    expect(animate).toHaveBeenCalledTimes(4);
+  });
+
+  it('keeps the 80-card cap on a board that waited for its size', () => {
+    const observers = stubResizeObserver();
+    const layout = unsized();
+    render(<Board ready count={300} />);
+    layout.sized();
+    observers.resize();
+    expect(animate).toHaveBeenCalledTimes(80);
+  });
+
+  it('lets the cards just show when the board gets its size after the window', () => {
+    vi.useFakeTimers({ toFake: ['performance'] });
+    const observers = stubResizeObserver();
+    const layout = unsized();
+    render(<Board ready count={4} />);
+    vi.advanceTimersByTime(2001);
+    layout.sized();
+    observers.resize();
+    expect(animate).not.toHaveBeenCalled();
+  });
+
+  it('stops watching for a size when the board unmounts first', () => {
+    const observers = stubResizeObserver();
+    unsized();
+    const view = render(<Board ready count={4} />);
+    view.unmount();
+    expect(observers.disconnect).toHaveBeenCalled();
+    expect(observers.watching.size).toBe(0);
+  });
+
+  it('just shows a board with no size where the browser has no ResizeObserver', () => {
+    vi.stubGlobal('ResizeObserver', undefined);
+    unsized();
+    render(<Board ready count={4} />);
+    expect(animate).not.toHaveBeenCalled();
+  });
+
+  it('never watches for a size with reduced motion', () => {
+    const observers = stubResizeObserver();
+    unsized();
+    vi.stubGlobal('matchMedia', () => ({ matches: true }));
+    render(<Board ready count={4} />);
+    expect(observers.watching.size).toBe(0);
   });
 
   it('lets a board past the bound just show, reading no card’s place, opened or imported', () => {

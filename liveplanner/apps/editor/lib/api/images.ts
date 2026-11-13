@@ -97,14 +97,24 @@ const SERVER_FAILURES = new Set<string>([
   'images_unavailable',
 ]);
 
+/** How an upload is followed: `onProgress` is told the share of the picture's bytes sent so far (0 to 1) as they go,
+ *  so its ring fills by them; `signal` stops it. */
+export type ImageUploadOptions = {
+  onProgress?: (sent: number) => void;
+  signal?: AbortSignal;
+};
+
 /**
  * Uploads `file` for an Image field of the scope's plan and answers the stored picture (`deduped` when the person
- * had uploaded the same bytes before). Throws ImageUploadError, with the words to show, for every failure.
+ * had uploaded the same bytes before). Throws ImageUploadError, with the words to show, for every failure, except
+ * an upload stopped by `opts.signal`, which rejects with the signal's reason (nothing to say: the person stopped it).
  */
 export async function apiUploadImage(
   scope: ImagesScope,
   file: File,
+  opts: ImageUploadOptions = {},
 ): Promise<{ image: ImageSummary; deduped: boolean }> {
+  const { onProgress, signal } = opts;
   checkImageFile(file);
   const bytes = await file.arrayBuffer();
   const size = await imageSize(file);
@@ -120,13 +130,17 @@ export async function apiUploadImage(
     headers.set('X-Image-Height', String(size.height));
     // Percent-encoded: a header holds Latin-1 only, and Headers.set throws on anything past it.
     if (file.name) headers.set('X-Image-Original-Name', encodeURIComponent(file.name));
-    const res = await apiFetch(`${API_BASE}/images${planQuery(scope, local)}`, {
-      method: 'POST',
-      headers,
-      body: bytes,
-    });
+    const res = await apiFetch(
+      `${API_BASE}/images${planQuery(scope, local)}`,
+      { method: 'POST', headers, body: bytes, ...(signal ? { signal } : {}) },
+      // By bytes sent, which only an XMLHttpRequest reports (the funnel sends it so when asked).
+      onProgress
+        ? { uploadProgress: (sent, total) => onProgress(total > 0 ? Math.min(1, sent / total) : 0) }
+        : {},
+    );
     return await expectOk<{ image: ImageSummary; deduped: boolean }>(res, 'upload image');
   } catch (err) {
+    if (signal?.aborted) throw signal.reason;
     const code = err instanceof ApiError ? err.code : null;
     throw new ImageUploadError(
       code && SERVER_FAILURES.has(code) ? (code as ImageUploadFailure) : 'upload_failed',

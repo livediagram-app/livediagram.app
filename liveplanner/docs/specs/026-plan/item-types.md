@@ -828,7 +828,10 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     live card ("On #12 Website: £2,500"), or "No {Type} card to try it on yet". Preview sits straight under that
     line, above the chips, so on a 390 px phone it is in view above the footer's Add button without scrolling, with
     a two-line problem too (while it waits for a formula that works, its card's title shortens with an ellipsis so
-    the waiting words keep one line; a
+    the waiting words keep one line; on a 320 px phone, too narrow for the card's number, some of its title and the
+    waiting words on one line, the waiting words take a second line instead; there the sheet's body is shorter than
+    the formula, its problem and Preview, so each change to the formula or a menu above Preview scrolls the sheet
+    just enough to keep Preview clear of the footer, never on opening; a
     Rollup's and a Lookup's sit straight under their menus, above the line saying what they work out, for the same
     reason). Add {Name} waits until the formula
     works ("Write a formula that works": said to a screen reader on the button, but not drawn under it, since the
@@ -929,7 +932,8 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
   - **The control** (the card panel) of an **Image** field: with no picture, a dashed drop zone the width of its row,
     an image glyph and **Add an Image** ("PNG, JPEG, WebP or GIF, up to 10 MB" under it); pressing it (or Enter or
     Space) opens the file picker, and a file dropped on it uploads too. While it uploads it reads **Uploading…** with
-    a spinner and takes no other file. With a picture, the picture itself, fitted to the row's width and at most 12
+    a ring that fills by the bytes sent (**Uploading 40%** once the browser says how far it has got, below) and
+    takes no other file. With a picture, the picture itself, fitted to the row's width and at most 12
     rem (192 px) tall on a soft grey ground, and under it **Replace** and **Remove** (each an icon and its word); its
     accessible name is "{Field}: image". A picture that cannot be read (deleted at the service, or not shown to this
     person) draws a quiet broken-image tile saying "This image can't be shown", with Replace and Remove still there.
@@ -938,8 +942,9 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
     tile (a plus; while the field is empty the tile is the width of its row, "PNG, JPEG, WebP or GIF, up to 10 MB"
     under its name). Pressing Add Images opens the file picker for several files at once; files dropped on the grid
     or the tile upload too. Each file is checked before anything is sent (below) and gets its own tile at the end: a
-    still ring and "Waiting" until its turn, then a turning ring and its name while it uploads (the browser's fetch
-    reports no bytes sent, so the ring turns rather than fills); files upload one after another, and each joins the
+    still ring and "Waiting" until its turn, then a ring and its name while it uploads, the ring filling from the top,
+    clockwise, by the share of the file's bytes sent (it turns only until the browser first says how far it has
+    got, and stays full while the server stores the picture); files upload one after another, and each joins the
     list as it lands, in one
     write of the list read from the card as it is then (someone else may have added meanwhile). A file refused, or
     past the field's 20, is skipped and said under the grid ("photo.heic: Use a PNG, JPEG, WebP or GIF image.",

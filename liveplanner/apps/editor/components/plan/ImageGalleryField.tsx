@@ -30,6 +30,7 @@ import {
 } from './use-image-field-upload';
 import { useImageUrl, useSeen } from './use-image-url';
 import { openImageWhole } from './image-open';
+import { UploadRing, uploadPercent } from './UploadRing';
 
 const AddIcon = lucideGlyph(lucideImagePlus, 18);
 const BrokenIcon = lucideGlyph(lucideImage, 18);
@@ -313,40 +314,23 @@ function Thumbnail({
   );
 }
 
-// A file on its way, as a tile of its own: a still ring while it waits its turn, a turning one while it uploads.
+// A file on its way, as a tile of its own: a still ring while it waits its turn, then one filling by the bytes sent
+// while it uploads (turning until the browser first says how far it has got).
 function PendingTile({ pending }: { pending: PendingImage }) {
   const uploading = pending.state === 'uploading';
+  const known = uploading && pending.progress !== undefined;
   return (
     <li
-      aria-label={`${pending.name}, ${uploading ? 'uploading' : 'waiting to upload'}`}
+      aria-label={`${pending.name}, ${
+        !uploading
+          ? 'waiting to upload'
+          : known
+            ? `uploading, ${uploadPercent(pending.progress!)}%`
+            : 'uploading'
+      }`}
       className="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-lg bg-slate-50 px-1.5 ring-1 ring-inset ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700"
     >
-      <svg
-        aria-hidden
-        viewBox="0 0 24 24"
-        className={`h-6 w-6 ${uploading ? 'animate-spin motion-reduce:animate-none' : ''}`}
-      >
-        <circle
-          cx="12"
-          cy="12"
-          r="9"
-          fill="none"
-          strokeWidth="3"
-          className="stroke-slate-200 dark:stroke-slate-700"
-        />
-        {uploading ? (
-          <circle
-            cx="12"
-            cy="12"
-            r="9"
-            fill="none"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeDasharray="16 41"
-            className="stroke-brand-600 dark:stroke-brand-400"
-          />
-        ) : null}
-      </svg>
+      <UploadRing progress={uploading ? pending.progress : 0} />
       <span
         aria-hidden
         className="w-full truncate text-center text-[10px] leading-tight text-slate-500 dark:text-slate-400"

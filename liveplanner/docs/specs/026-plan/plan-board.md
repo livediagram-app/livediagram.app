@@ -1278,7 +1278,9 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
     cards out of view, cards added later and everyone with reduced motion simply show; so does every card on a board
     holding more than 500 (opened, or filled by an imported tab's whole plan), since finding where its cards land lays
     the whole board out in one go, longer the more it holds. It runs once per board as it
-    mounts, with no render of its own.
+    mounts, with no render of its own; when the board has no size yet as its cards arrive (a reload, before the
+    page is laid out), it waits for the board's first size, then runs (within the same 2 s, else the cards just
+    show).
   - **Drop gaps open and close**: the dashed gap a held card would land in is tinted in the focus colour and breathes
     softly (8% to 16% and back, with an inner glow, every 1.4 s) while it waits. It opens wherever it appears
     (from nothing to the card's height, from 92% wide, over 180 ms, with no overshoot), so the cards below give

@@ -17,6 +17,7 @@ import { IMAGE_ACCEPT, IMAGE_THUMB_EDGE, ImageUploadError, apiUploadImage } from
 import { track } from '@/lib/telemetry';
 import { usePlan } from './PlanContext';
 import { useImageUrl, useSeen } from './use-image-url';
+import { UploadRing, uploadPercent, uploadingWords } from './UploadRing';
 
 const AddIcon = lucideGlyph(lucideImagePlus, 20);
 const BrokenIcon = lucideGlyph(lucideImage, 18);
@@ -51,6 +52,8 @@ export function ImageFieldControl({
   const fileRef = useRef<HTMLInputElement>(null);
   const hintId = useId();
   const [uploading, setUploading] = useState(false);
+  // The share of the picture's bytes sent (0 to 1, in whole percents), once the browser says.
+  const [sent, setSent] = useState<number | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   const [over, setOver] = useState(false);
@@ -60,8 +63,12 @@ export function ImageFieldControl({
     if (!file || !scope || uploading) return;
     setError(null);
     setUploading(true);
+    setSent(undefined);
     try {
-      const { image } = await apiUploadImage(scope, file);
+      const { image } = await apiUploadImage(scope, file, {
+        // Whole percents, so React keeps the same value and draws nothing between them.
+        onProgress: (share) => setSent(uploadPercent(share) / 100),
+      });
       onSave(image.id);
       track('Plan', 'Added', 'CardImage');
     } catch (err) {
@@ -122,17 +129,14 @@ export function ImageFieldControl({
           }`}
         >
           {uploading ? (
-            <span
-              aria-hidden
-              className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-brand-600 motion-reduce:animate-none dark:border-slate-600 dark:border-t-brand-400"
-            />
+            <UploadRing progress={sent} className="h-5 w-5" />
           ) : (
             <span aria-hidden>
               <AddIcon />
             </span>
           )}
           <span className="text-[13px] font-medium">
-            {uploading ? 'Uploading…' : 'Add an Image'}
+            {uploading ? uploadingWords(sent) : 'Add an Image'}
           </span>
           <span id={hintId} className="text-[11px] text-slate-500 dark:text-slate-400">
             PNG, JPEG, WebP or GIF, up to 10 MB
@@ -183,11 +187,8 @@ export function ImageFieldControl({
         )}
         {uploading ? (
           <span className="absolute inset-0 flex items-center justify-center gap-2 bg-white/75 text-[12px] font-medium text-slate-700 dark:bg-slate-900/75 dark:text-slate-200">
-            <span
-              aria-hidden
-              className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-brand-600 motion-reduce:animate-none"
-            />
-            Uploading…
+            <UploadRing progress={sent} className="h-4 w-4" />
+            {uploadingWords(sent)}
           </span>
         ) : null}
       </div>

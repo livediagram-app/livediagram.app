@@ -197,17 +197,34 @@ describe('the card panel, for an Editor or a Participant', () => {
 
   it('shows each file as its own tile, waiting its turn, then uploading', async () => {
     let finish: (v: unknown) => void = () => {};
+    let progress: (share: number) => void = () => {};
     api.upload.mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
+      (_scope: unknown, _file: File, opts: { onProgress: (share: number) => void }) => {
+        progress = opts.onProgress;
+        return new Promise((resolve) => {
           finish = resolve;
-        }),
+        });
+      },
     );
     gallery([]);
     pick([file('first.png'), file('second.png')]);
     await flush();
+    const ring = (name: RegExp) =>
+      screen
+        .getByLabelText(name)
+        .querySelector('[data-upload-ring]')!
+        .getAttribute('data-upload-ring');
     expect(screen.getByLabelText('first.png, uploading')).toBeTruthy();
+    expect(ring(/^first/)).toBe('turning');
     expect(screen.getByLabelText('second.png, waiting to upload')).toBeTruthy();
+    expect(ring(/^second/)).toBe('0');
+    // The ring fills by the bytes sent, kept to whole percents: a share within the same percent draws nothing new.
+    act(() => progress(0.25));
+    expect(screen.getByLabelText('first.png, uploading, 25%')).toBeTruthy();
+    expect(ring(/^first/)).toBe('25');
+    act(() => progress(0.251));
+    act(() => progress(1));
+    expect(ring(/^first/)).toBe('100');
     await act(async () => finish({ image: { id: 'img-a' }, deduped: false }));
     await flush();
     expect(screen.queryByLabelText(/first\.png/)).toBeNull();

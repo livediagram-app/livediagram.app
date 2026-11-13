@@ -19,6 +19,7 @@ import { track } from '@/lib/telemetry';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { isOfflineId } from '@/lib/offline/offline-store';
 import { usePlanCard, usePlanLatest } from './PlanCardContext';
+import { uploadPercent } from './UploadRing';
 
 export const ATTACHMENTS_FULL = `A card holds up to ${ITEM_ATTACHMENTS_MAX} images.`;
 export const ATTACHMENTS_OFFLINE = 'Save this plan to your account to add images.';
@@ -32,6 +33,8 @@ export type AttachmentUpload = {
   blocked: string | null;
   // How many files are still uploading (0: none).
   uploading: number;
+  // The share of the bytes sent of the file going now (0 to 1), or undefined until the browser says.
+  progress: number | undefined;
   error: string | null;
   // Answers what went wrong, in words to show (null: every file landed).
   add: (files: readonly File[]) => Promise<string | null>;
@@ -53,6 +56,8 @@ export function useAttachmentUpload(
   const scope = usePlanCard()?.itemsScope ?? null;
   const offline = useIsOfflineProject(watchOffline ? (scope?.projectId ?? null) : null);
   const [uploading, setUploading] = useState(0);
+  // The share of the bytes sent of the file going now (0 to 1), once the browser says.
+  const [progress, setProgress] = useState<number | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   // The plan as it is now, read when the uploads end (the closure's would be stale by then).
@@ -78,7 +83,17 @@ export function useAttachmentUpload(
       setUploading(taken.length);
       for (const file of taken) {
         try {
-          const { image } = await apiUploadImage(scope, file);
+          setProgress(undefined);
+          let shown = -1;
+          const { image } = await apiUploadImage(scope, file, {
+            // Whole percents only, so a fast line draws the zone at most 100 times.
+            onProgress: (sent) => {
+              const percent = uploadPercent(sent);
+              if (percent === shown) return;
+              shown = percent;
+              setProgress(percent / 100);
+            },
+          });
           added.push({
             id: image.id,
             name: attachmentName(file.name || image.originalName || ''),
@@ -123,6 +138,7 @@ export function useAttachmentUpload(
     canAdd,
     blocked,
     uploading,
+    progress,
     error,
     add,
   };

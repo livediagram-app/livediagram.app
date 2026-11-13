@@ -19,6 +19,7 @@ import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { isOfflineId } from '@/lib/offline/offline-store';
 import { usePlanCard, usePlanLatest } from './PlanCardContext';
 import { ATTACHMENTS_OFFLINE } from './use-attachment-upload';
+import { uploadPercent } from './UploadRing';
 
 const IMAGE_UNAVAILABLE = "Image uploads aren't available here.";
 const IMAGE_NOT_SAVED = "The image couldn't be added to the card. Try again.";
@@ -27,8 +28,14 @@ const IMAGE_NOT_SAVED = "The image couldn't be added to the card. Try again.";
 export const imagesFullMessage = (label: string) =>
   `${label} holds up to ${IMAGE_FIELD_PICTURES_MAX}.`;
 
-/** A file on its way: waiting its turn, or uploading. */
-export type PendingImage = { key: number; name: string; state: 'waiting' | 'uploading' };
+/** A file on its way: waiting its turn, or uploading, with the share of its bytes sent (0 to 1, in whole percents)
+ *  once the browser says. */
+export type PendingImage = {
+  key: number;
+  name: string;
+  state: 'waiting' | 'uploading';
+  progress?: number;
+};
 
 export type ImageFieldUpload = {
   // Whether this person may add pictures here (a writer, a plan the server holds, a media service).
@@ -107,7 +114,18 @@ export function useImageFieldUpload(
         for (const job of taken) {
           setPending((p) => p.map((j) => (j.key === job.key ? { ...j, state: 'uploading' } : j)));
           try {
-            const { image } = await apiUploadImage(scope, fileOf.get(job.key)!);
+            let shown = -1;
+            const { image } = await apiUploadImage(scope, fileOf.get(job.key)!, {
+              // Whole percents only, so a fast line draws the tile at most 100 times.
+              onProgress: (sent) => {
+                const percent = uploadPercent(sent);
+                if (percent === shown) return;
+                shown = percent;
+                setPending((p) =>
+                  p.map((j) => (j.key === job.key ? { ...j, progress: percent / 100 } : j)),
+                );
+              },
+            });
             const latest = planRef.current;
             const card = latest?.items.get(itemId);
             const def = latest?.types
