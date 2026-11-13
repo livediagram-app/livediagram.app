@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react';
 import type { IconDef } from '../../lib/icon-types';
-import type { CategoryBrowser, BrowserCategory, PaletteIconButtonProps } from './category-browser-types';
+import type {
+  CategoryBrowser,
+  BrowserCategory,
+  PaletteIconButtonProps,
+} from './category-browser-types';
 
 // What an editor hands the Icons tab: its icon drag type (`ICON_DND_MIME` in its `lib/icons.ts`), its line-art
 // catalogue's categories, its palette IconButton and thumbnail, and its category browse.

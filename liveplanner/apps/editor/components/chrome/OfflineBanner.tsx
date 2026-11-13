@@ -4,7 +4,10 @@ import { useSyncExternalStore } from 'react';
 import { useOnline } from '@liveworkspace/workbench/hooks/ui/useOnline';
 import { useSaveFailing } from '@liveworkspace/workbench/lib/save-health';
 import { subscribeWaitingChanges, waitingChangeCount } from '@/lib/offline-queue/plan-queue';
-import { TopCenterBanner, TopCenterRow } from '@liveworkspace/workbench/components/chrome/TopCenter';
+import {
+  TopCenterBanner,
+  TopCenterRow,
+} from '@liveworkspace/workbench/components/chrome/TopCenter';
 
 const noneWaiting = () => 0;
 

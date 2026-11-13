@@ -12,21 +12,13 @@ describe('paletteFinishClass', () => {
   });
 
   it('wobbles full-colour art under Sketch but leaves its weight under Professional', () => {
-    for (const action of [
-      { type: 'sticker' },
-      { type: 'tech-icon' },
-    ] as const) {
+    for (const action of [{ type: 'sticker' }, { type: 'tech-icon' }] as const) {
       expect(paletteFinishClass('sketch', action)).toBe('palette-finish-sketch');
       expect(paletteFinishClass('professional', action)).toBe('');
     }
-    for (const action of [
-      { type: 'sticker' },
-      { type: 'tech-icon' },
-    ] as const)
+    for (const action of [{ type: 'sticker' }, { type: 'tech-icon' }] as const)
       expect(paletteFinishClass('marker', action)).toBe('');
-    expect(paletteFinishClass('marker', { type: 'icon' })).toBe(
-      'palette-finish-marker',
-    );
+    expect(paletteFinishClass('marker', { type: 'icon' })).toBe('palette-finish-marker');
     expect(paletteFinishClass('professional', { type: 'icon' })).toBe(
       'palette-finish-professional',
     );

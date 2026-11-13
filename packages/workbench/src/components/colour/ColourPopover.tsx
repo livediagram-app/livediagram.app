@@ -15,7 +15,9 @@ const COLOUR_POPOVER_WIDTH = COLOUR_PICKER_WIDTH + 2 * COLOUR_POPOVER_PADDING + 
 export type ColourPopoverDeps<P> = { ColourPicker: ComponentType<P> };
 
 /** The colour picker in a popover, made once per editor at module scope. */
-export function createColourPopover<P extends { label: string }>({ ColourPicker }: ColourPopoverDeps<P>) {
+export function createColourPopover<P extends { label: string }>({
+  ColourPicker,
+}: ColourPopoverDeps<P>) {
   function ColourPopover({
     anchor,
     onClose,

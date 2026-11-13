@@ -24,10 +24,7 @@ function isColourArt(action: TileAction): boolean {
 }
 
 /** The class a tile's glyph wrapper carries in a finish (globals.css); empty under Flexible. */
-export function paletteFinishClass(
-  finish: Finish | undefined,
-  action?: TileAction,
-): string {
+export function paletteFinishClass(finish: Finish | undefined, action?: TileAction): string {
   if (finish === 'sketch') return 'palette-finish-sketch';
   if (finish === 'marker' && !(action && isColourArt(action))) return 'palette-finish-marker';
   if (finish === 'professional' && !(action && isColourArt(action)))

@@ -98,8 +98,7 @@ export function BrowserChrome({ stroke }: { stroke: string }) {
 // (with the per-element override), matching how other boxed elements
 // pick their accent.
 // The svg a freehand stroke draws in.
-const FREEHAND_SVG_CLASS =
-  'pointer-events-none absolute inset-0 h-full w-full overflow-visible';
+const FREEHAND_SVG_CLASS = 'pointer-events-none absolute inset-0 h-full w-full overflow-visible';
 
 export function FreehandSvg({
   element,

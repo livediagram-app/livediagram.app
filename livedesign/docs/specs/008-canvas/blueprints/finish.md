@@ -203,7 +203,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 
 ### Canvas (`apps/live`)
 
-- `components/canvas/CanvasFinishContext.tsx`: `CanvasFinishProvider` (the active tab's finish, re-provided by each
+- `packages/workbench/src/components/canvas/CanvasFinishContext.tsx`: `CanvasFinishProvider` (the active tab's finish, re-provided by each
   `Canvas` for its own tab), `useTabFinish()` and `useElementFinish(own): Finish`, a context like
   `CanvasSurfaceContext` so memoised element views re-render on a tab finish change.
 - `describeVariant(..., surface, finish)`: Professional drops `shadow-sm` and the sticky peel and uses the
@@ -231,7 +231,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 - New arrows: `applyCollisionAvoidance(els, arrowId, tabFinish)` gives an untouched arrow
   `arrowStyle: finishNewArrowStyle(finish)` under Professional and skips the curve when `finishCurvesNewArrows` is
   false.
-- Palette: `components/palette/palette-tile-finish.ts` `paletteFinishClass(finish, action?)` (Sketch for every tile;
+- Palette: `packages/workbench/src/components/palette/palette-tile-finish.ts` `paletteFinishClass(finish, action?)` (Sketch for every tile;
   Professional and Marker for every tile but `tech-icon` and `sticker`); `IconButton` adds the class to the glyph wrapper from
   `useTabFinish()` when given the tile's `finishAction`, and `StickerPickerTab` wraps each sticker's art in it. `app/globals.css`: `.palette-finish-professional` (mitre joins, 1 px
   strokes, `rx: 0`) and `.palette-finish-sketch` (`filter: url(#lvd-sketch-tile)`) and `.palette-finish-marker` (round caps and joins, 2.75 px strokes at 0.88 (the default glyph line is close to 2.25, so 2.25 barely showed)
@@ -515,7 +515,7 @@ per command letter.
 | menu rows commit, preview, Follow Tab clears                 | `apps/live/components/palette/FinishSection.test.tsx`                                                    |
 | backdrops: what sits on a shape, order, finish, speed        | `../packages/element-model/src/sketch-backdrop.test.ts`                                                  |
 | Professional new arrows angled; avoidance per finish         | `apps/live/hooks/canvas/arrow-avoidance-apply.test.ts`                                                   |
-| which palette tiles take the finish                          | `apps/live/components/palette/palette-tile-finish.test.ts`                                               |
+| which palette tiles take the finish                          | `packages/workbench/src/components/palette/palette-tile-finish.test.ts`                                  |
 | applyFinishToEl                                              | `apps/live/lib/style-presets.test.ts`                                                                    |
 | preview draws each finish, stable, in the tab's font         | `apps/live/lib/finish-preview.test.ts`                                                                   |
 | dialog tab sets, previews, Apply to All clears               | `apps/live/components/dialogs/CanvasThemeDialog.test.tsx`, `apps/live/hooks/canvas/useTabCanvas.test.ts` |

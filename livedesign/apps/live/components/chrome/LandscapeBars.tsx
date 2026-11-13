@@ -2,7 +2,10 @@
 
 import type { ReactNode } from 'react';
 import { Glyph, Tooltip, atLeastInset } from '@livedesign/ui';
-import { TOOLBAR_CARD, TOOLBAR_CONTROL_REST } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
+import {
+  TOOLBAR_CARD,
+  TOOLBAR_CONTROL_REST,
+} from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 
 // A phone held sideways (docs/specs/007-editor/live-app.md "A phone held sideways"): the header and
 // the tab bar fold away there so the canvas fills the screen, and a handle at the canvas's top-right

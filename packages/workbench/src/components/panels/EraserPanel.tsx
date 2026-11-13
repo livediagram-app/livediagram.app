@@ -52,7 +52,9 @@ function BrushPreview({ config, trueRadius }: { config: EraserConfig; trueRadius
 // What an editor hands the panel: its ModePanel (the chrome every mode panel wears, typed on the editor's placement
 // props `P`) and its eraser's options and radius (its `lib/eraser-config`).
 export type EraserPanelDeps<P> = {
-  ModePanel: (props: P & { title: string; helpArticle: 'eraser'; children: ReactNode }) => ReactNode;
+  ModePanel: (
+    props: P & { title: string; helpArticle: 'eraser'; children: ReactNode },
+  ) => ReactNode;
   eraserRadius: (config: EraserConfig) => number;
   ERASER_MODES: readonly { id: EraserMode; label: string; hint: string }[];
   ERASER_SIZES: readonly { id: EraserSize; label: string }[];

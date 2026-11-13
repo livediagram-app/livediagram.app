@@ -9,7 +9,10 @@ import {
   type ImageElement,
   type ThemeDefinition,
 } from '@livediagram/document';
-import { CanvasSurfaceProvider, CanvasThemeProvider } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
+import {
+  CanvasSurfaceProvider,
+  CanvasThemeProvider,
+} from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { ImageElementView } from './ImageElementView';
 import { IMAGE_BACKING_INSET_PX, IMAGE_BACKING_INSET_VAR } from '@livediagram/document';
 import {

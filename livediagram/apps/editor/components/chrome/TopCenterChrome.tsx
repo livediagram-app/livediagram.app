@@ -6,7 +6,11 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@liveworkspace/workbench/components/chrome/ModeBanner';
 import { OfflineBanner } from '@liveworkspace/workbench/components/chrome/OfflineBanner';
 import { usePaletteStripBox } from '@liveworkspace/workbench/components/chrome/PaletteTray';
-import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@liveworkspace/workbench/components/chrome/TopCenter';
+import {
+  TopCenterBanner,
+  TopCenterRow,
+  TopCenterStack,
+} from '@liveworkspace/workbench/components/chrome/TopCenter';
 
 // Everything that floats at the top of the canvas: the follow-me pill,
 // the active editor-mode banner. (The session timer and the vote's status and

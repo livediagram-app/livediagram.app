@@ -26,7 +26,7 @@ describe('TopCenterStack', () => {
     expect(cls).not.toContain('sm:top-3');
   });
 
-  it('starts beneath the strip\'s tray when a message sits under the strip', () => {
+  it("starts beneath the strip's tray when a message sits under the strip", () => {
     const cls = classesOf('tray');
     expect(cls).toContain('top-[6.75rem]');
     expect(cls).not.toContain('sm:top-3');

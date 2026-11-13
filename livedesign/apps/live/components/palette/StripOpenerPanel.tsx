@@ -8,7 +8,11 @@ import { tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTil
 import { tileDragStart } from './palette-tile-drag';
 
 // What a category opener opens on the Toolbar strip, shared by the editors and bound to this one's tiles.
-export const StripOpenerPanel = createStripOpenerPanel<PaletteTileDef, PaletteTileActions, PendingDraw>({
+export const StripOpenerPanel = createStripOpenerPanel<
+  PaletteTileDef,
+  PaletteTileActions,
+  PendingDraw
+>({
   tileHandler,
   visibleTiles,
   tileDragStart,

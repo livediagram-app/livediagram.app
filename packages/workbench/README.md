@@ -60,6 +60,23 @@ its board's cover); a tool an editor lacks never matches, so its branch never ru
 pen routing, Isometric orbits) and livehuddle's (Avatar mode walks) interleave too much of their own to share and stay
 in those editors. Each Canvas focuses its surface on mount through `hooks/canvas/useFocusCanvasOnMount`.
 
+The palette and chrome components the editors carried in the same words are made the same way, each bound once at
+module scope in the editor's file at the old path, so its callers and its tree are as they were: the catalogue tabs
+(`components/palette/StickerPickerTab`, `IconPickerTab`, `TechPickerTab`, around the editor's drag types, IconButton,
+artwork and `PaletteCategoryBrowser`, typed in `category-browser-types`), the Tools rows and groups
+(`PaletteToolRows`, `PaletteTileGroup`) and the strip's opener panel (`StripOpenerPanel`), typed on the editor's own
+tiles, actions and pending draw; the mode panels (`components/panels/LaserPanel`, `SpotlightPanel`, `EraserPanel`,
+around the editor's `ModePanel` and its placement props); the theme card and list
+(`components/palette/theme-picker-cards`, `ThemeBrowser`), the colour popover (`components/colour/ColourPopover`,
+around the editor's `ColourPicker`) and the animation tile (`components/palette/AnimationPreviewTile`, around its
+`SizeButton`); the auth pages' cards (`components/chrome/auth-cards`, around the editor's Night Band frame and pitch,
+with the return-path rules beside them in `auth-routes`), the deferred-auth provider
+(`components/providers/auth-provider`, around the bridges the editor loads with `next/dynamic` itself), the settings
+test pane, the palette chrome hook, the canvas's view readers, the drag ghost and the search panel's sources. The
+Explorer's lazy load shares its loader (`components/panels/explorer-loader`) while each editor keeps its
+`next/dynamic` call. Telemetry stays in the editors: a component whose events the editor's telemetry scan counts (the
+Show Me tours, the strip's rail items, AreaErrorBoundary) is not moved.
+
 The Export Tab dialog's frame, format grid and image-preview load (`components/dialogs/export-tab-dialog`'s
 `exportTabDialogFrame` and `useExportPreviewImages`) are called by every editor's
 `components/dialogs/ExportTabDialog.tsx`, which keeps its own formats, panels, telemetry and copy. The frame is a plain

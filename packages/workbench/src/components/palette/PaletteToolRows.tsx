@@ -42,7 +42,13 @@ export function createPaletteToolRows<
   T extends ToolRowTile<unknown>,
   X extends { hasImage: boolean },
   D,
->({ tileActive, tileHandler, visibleTiles, tileDragStart, setPaletteDragPreview }: PaletteToolRowsDeps<T, X, D>) {
+>({
+  tileActive,
+  tileHandler,
+  visibleTiles,
+  tileDragStart,
+  setPaletteDragPreview,
+}: PaletteToolRowsDeps<T, X, D>) {
   function PaletteToolRow({
     def,
     actions,

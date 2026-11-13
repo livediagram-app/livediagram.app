@@ -19,11 +19,17 @@ import { usePaletteGroup } from './palette-group-state';
 // What an editor hands the group: its Tools rows (PaletteToolRows), typed on its own tile `T`, actions `X` and
 // pending draw `D`.
 export type PaletteTileGroupDeps<T, X, D> = {
-  PaletteToolRows: (props: { tiles: T[]; actions: X; pendingDraw: D | null | undefined }) => ReactNode;
+  PaletteToolRows: (props: {
+    tiles: T[];
+    actions: X;
+    pendingDraw: D | null | undefined;
+  }) => ReactNode;
 };
 
 /** A titled, collapsible group of tool rows, made once per editor at module scope. */
-export function createPaletteTileGroup<T, X, D>({ PaletteToolRows }: PaletteTileGroupDeps<T, X, D>) {
+export function createPaletteTileGroup<T, X, D>({
+  PaletteToolRows,
+}: PaletteTileGroupDeps<T, X, D>) {
   function PaletteTileGroup({
     title,
     blurb,

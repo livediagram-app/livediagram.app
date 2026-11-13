@@ -31,7 +31,10 @@ import {
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { MapSize } from '@/lib/user-preferences';
-import { useCanvasChartPalette, useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
+import {
+  useCanvasChartPalette,
+  useCanvasSurface,
+} from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useTabFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { selectionBoxColors } from '@/lib/selection-box';
 import { useSettledElements } from '@/hooks/canvas/useSettledElements';

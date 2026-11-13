@@ -33,7 +33,10 @@ import {
 import { pageSheetStyle } from '@/lib/page-paint';
 import { PageMotionLayer } from './PageMotionLayer';
 import { buildPageLayoutOver } from '@livedesign/templates';
-import { useCanvasChartPalette, useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
+import {
+  useCanvasChartPalette,
+  useCanvasSurface,
+} from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { WireframeDeviceSheet } from './WireframeDeviceSheet';
 import { useImageSources } from './page-image-access';
 

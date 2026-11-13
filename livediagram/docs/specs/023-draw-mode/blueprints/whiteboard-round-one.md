@@ -22,7 +22,7 @@ Scope, by file:
 | `apps/editor/components/canvas/whiteboard/LiveInk.tsx`              | The stroke being drawn, laid out as it lands, written to the DOM          |
 | `apps/editor/components/canvas/whiteboard/WhiteboardPenPreview.tsx` | Live ink and recognised shape, inside the canvas's transformed layer      |
 | `apps/editor/lib/recognition-flip.ts`                               | Alt or the chip flips the stroke being drawn between ink and a shape      |
-| `apps/editor/components/canvas/whiteboard/RecognitionChip.tsx`      | The Make shape / Keep drawing chip at a held-still pen or finger          |
+| `packages/workbench/src/components/canvas/whiteboard/RecognitionChip.tsx`      | The Make shape / Keep drawing chip at a held-still pen or finger          |
 | `packages/document/src/svg-render-shapes.ts`                        | `svgFreehandShape` honours `penWidth` on every stroke                     |
 | `packages/api-schema` + `apps/api/src/openapi`                      | `TabKind` enum regenerated; `Whiteboard` telemetry category               |
 | `packages/templates/src/templates.ts`                               | `'whiteboard'` template, descriptor, category, pattern, `opensIn`         |
@@ -327,7 +327,7 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
   `standardGroup('strong', board, 'name')` (Ink, Grey and the eight hued, by name; Ink maps to the
   pen's `null`), Custom colours from `useDocumentColours()` and + with `boardWarning`. The per-user Your
   colours list and its Remove menu are retired (`whiteboardYourColours` is dead).
-- `CustomColourEditor` (`components/colour/CustomColourEditor.tsx`): a saturation and brightness square (`role="slider"`, pointer drag with
+- `CustomColourEditor` (`packages/workbench/src/components/colour/CustomColourEditor.tsx`): a saturation and brightness square (`role="slider"`, pointer drag with
   capture, arrows 1%, Shift 10%, `aria-valuetext` "Saturation n%, brightness n%"), a hue range
   (0 to 359), a preview chip, a "Hex" field (valid `#rgb`/`#rrggbb` updates the square; Enter uses
   it), the eyedropper (`useEyeDropper`, only where supported) and **Use**. Opens on the custom colour

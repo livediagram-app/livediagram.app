@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react';
 import { TECH_PROVIDERS, searchTechIcons, type TechIconDef } from '../../lib/tech-icons';
-import type { CategoryBrowser, BrowserCategory, PaletteIconButtonProps } from './category-browser-types';
+import type {
+  CategoryBrowser,
+  BrowserCategory,
+  PaletteIconButtonProps,
+} from './category-browser-types';
 
 // What an editor hands the Technology tab: its tech-icon drag type (`TECH_ICON_DND_MIME` in its `lib/icons.ts`), its
 // palette IconButton, its brand-mark artwork and its category browse.

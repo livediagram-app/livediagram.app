@@ -36,7 +36,11 @@ export type AuthProviderDeps = {
 const WORKBENCH_ROUTE = '/embed/workbench';
 
 /** The app's deferred-auth provider, made once per editor at module scope. */
-export function createAuthProvider({ E2EAuthBridge, AccountsBridge, e2eSessionKey }: AuthProviderDeps) {
+export function createAuthProvider({
+  E2EAuthBridge,
+  AccountsBridge,
+  e2eSessionKey,
+}: AuthProviderDeps) {
   function AuthProvider({ children }: { children: ReactNode }) {
     const [authState, setAuthState] = useState(DEFERRED_AUTH_DEFAULT);
     const pathname = usePathname();

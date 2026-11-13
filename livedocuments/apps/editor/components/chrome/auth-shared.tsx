@@ -9,4 +9,8 @@ import { AccountPitch } from './auth-pitches';
 
 export * from '@liveworkspace/workbench/components/chrome/auth-routes';
 
-export const { AuthCard, RedirectingCard } = createAuthCards({ AuthStage, AUTH_TITLE, AccountPitch });
+export const { AuthCard, RedirectingCard } = createAuthCards({
+  AuthStage,
+  AUTH_TITLE,
+  AccountPitch,
+});

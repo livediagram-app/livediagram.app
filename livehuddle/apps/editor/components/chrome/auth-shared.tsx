@@ -11,7 +11,11 @@ import { AccountPitch } from './auth-pitches';
 
 export * from '@liveworkspace/workbench/components/chrome/auth-routes';
 
-export const { AuthCard, RedirectingCard } = createAuthCards({ AuthStage, AUTH_TITLE, AccountPitch });
+export const { AuthCard, RedirectingCard } = createAuthCards({
+  AuthStage,
+  AUTH_TITLE,
+  AccountPitch,
+});
 
 // Where the header's "Not now, keep going as a guest" link goes (docs/specs/014-identity/auth-and-guest-access.md
 // "The look: Night Band"): back to the page the visitor came from when that is safe, else the new-document flow.
