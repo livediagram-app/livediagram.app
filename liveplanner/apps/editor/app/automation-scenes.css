@@ -1,5 +1,5 @@
 /* The Automations template tiles' living previews (docs/specs/026-plan/automations.md "The Automations screen":
- * Templates). A content illustration (docs/specs/004-interface-design/motion.md "Where durations live"), so its
+ * Templates; the gallery pickers' tiles too, Add a Question's among them). A content illustration (docs/specs/004-interface-design/motion.md "Where durations live"), so its
  * durations live here. Each scene rests on the moment before its rule acts; hovering or focusing its tile
  * ([data-template], [data-picker-tile]) plays it forward, leaving plays it back. Parts:
  *   .ats-t    moves from --ats-r (rest) to --ats-p (played)

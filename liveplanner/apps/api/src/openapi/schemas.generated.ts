@@ -1340,7 +1340,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "string"
           },
           "to": {
-            "$ref": "#/components/schemas/AutomationRecipient"
+            "$ref": "#/components/schemas/AutomationEmailRecipient"
           }
         },
         "required": [
@@ -1907,6 +1907,28 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "picks"
     ],
     "type": "object"
+  },
+  "AutomationEmailRecipient": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/AutomationRecipient"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "addresses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "addresses"
+        ],
+        "type": "object"
+      }
+    ]
   },
   "AutomationFieldOp": {
     "enum": [
@@ -3969,6 +3991,43 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "threads"
+    ],
+    "type": "object"
+  },
+  "CardTypeRule": {
+    "additionalProperties": false,
+    "properties": {
+      "anyOf": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "fields": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "id": {
+        "type": "string"
+      },
+      "questionId": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "typeId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "questionId",
+      "anyOf",
+      "typeId",
+      "status"
     ],
     "type": "object"
   },
@@ -6578,12 +6637,65 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "typeId": {
         "type": "string"
+      },
+      "typeRules": {
+        "items": {
+          "$ref": "#/components/schemas/CardTypeRule"
+        },
+        "type": "array"
       }
     },
     "required": [
       "tabId",
       "typeId",
       "status"
+    ],
+    "type": "object"
+  },
+  "FormDraft": {
+    "additionalProperties": false,
+    "properties": {
+      "form": {
+        "$ref": "#/components/schemas/FormDefinition"
+      },
+      "respondsTo": {
+        "$ref": "#/components/schemas/FormDraftRespondsTo"
+      }
+    },
+    "required": [
+      "form",
+      "respondsTo"
+    ],
+    "type": "object"
+  },
+  "FormDraftRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "prompt": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "prompt"
+    ],
+    "type": "object"
+  },
+  "FormDraftRespondsTo": {
+    "enum": [
+      "board",
+      "sheet"
+    ],
+    "type": "string"
+  },
+  "FormDraftResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "draft": {
+        "$ref": "#/components/schemas/FormDraft"
+      }
+    },
+    "required": [
+      "draft"
     ],
     "type": "object"
   },

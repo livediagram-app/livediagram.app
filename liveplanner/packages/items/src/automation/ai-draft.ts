@@ -195,6 +195,9 @@ function cleanStep(s: Obj, own: string): void {
       t('text', AUTOMATION_TEXT_MAX, true);
       break;
     case 'email':
+      // Typed-in addresses are an Editor's to type (spec "Typed-in addresses"), never the model's to make up: a draft
+      // that names some emails the assignee instead, for the Editor to change.
+      if (isObj(s['to']) && 'addresses' in s['to']) s['to'] = { assignee: true };
       t('subject', AUTOMATION_SUBJECT_MAX);
       t('body', AUTOMATION_TEXT_MAX, true);
       break;

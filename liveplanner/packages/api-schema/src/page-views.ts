@@ -12,6 +12,8 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   // The guest handoff's way back, /auth/guest (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests").
   'auth',
   'embed',
+  // A rule email's unsubscribe page, /email-optout (docs/specs/026-plan/automations.md "Typed-in addresses").
+  'email-optout',
   // liveworkspace's Explorer, which the router proxies first (@liveworkspace/sites workspace-proxy); listed so a page
   // view there counts as the app's, and so it never falls through to marketing. The editor has no /explorer page.
   'explorer',

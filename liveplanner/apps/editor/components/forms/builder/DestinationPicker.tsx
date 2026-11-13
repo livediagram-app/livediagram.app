@@ -4,18 +4,21 @@
 // status every response is made in (New Board and New Card Type the last choice of each), and a sentence reading the
 // choice back; a pencil beside Card Type opens that type's editor. A choice that no longer holds (its board, column or
 // type gone) says so, and the form takes no responses until it is fixed. Column offers only the columns the card type
-// uses ("Columns follow the card type"); Add Questions for {Type}'s Fields and Set Automatically sit with it.
+// uses ("Columns follow the card type"); Add Questions for {Type}'s Fields, Add Fields for Questions, Card Type by
+// Answer and Set Automatically sit with it.
 import type { Tab } from '@liveplanner/project';
 import {
   DESTINATION_PROBLEM_TEXT,
   destinationProblem,
   destinationWarning,
   destinationWarningText,
+  questionsWantingFields,
   typeColumns,
   typeQuestionsToAdd,
+  typeRuleProblem,
   type FormDestination,
 } from '@liveplanner/forms';
-import { boardAddTypes, typeFieldLabel } from '@liveplanner/items';
+import { boardAddTypes, ITEM_TYPE_CUSTOM_MAX, typeFieldLabel } from '@liveplanner/items';
 import { PencilIcon, PlusIcon, Select, Tooltip } from '@liveplanner/ui';
 import { usePlan } from '@/components/plan/PlanContext';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
@@ -24,6 +27,9 @@ import { patchForm } from '@liveplanner/forms';
 import { useFormBuilder } from './form-builder-context';
 import { ExtraColumns } from './ExtraColumns';
 import { SetAutomatically } from './SetAutomatically';
+import { CardResponsePreview, SheetResponsePreview } from './ResponsePreview';
+import { CardTypeRules } from './CardTypeRules';
+import { ColumnChips } from './ChoiceChip';
 
 // The value of each select's last choice, New Board or New Card Type.
 const NEW = '__new';
@@ -129,6 +135,7 @@ function SheetDestination({ tabs }: { tabs: readonly Tab[] }) {
         </p>
       )}
       {current ? <ExtraColumns /> : null}
+      {current ? <SheetResponsePreview form={b.form} /> : null}
     </div>
   );
 }
@@ -140,7 +147,8 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
   const dest = b.form.destination;
   const boardTabs = tabs.filter((t) => t.kind === 'board');
   const destTab = boardTabs.find((t) => t.id === dest?.tabId);
-  const board = destTab ? boardsOf(destTab)[0]?.setup : undefined;
+  const destBoard = destTab ? boardsOf(destTab)[0] : undefined;
+  const board = destBoard?.setup;
   const takes = board ? boardAddTypes(board, b.types) : [];
   const problem = destinationProblem(
     dest,
@@ -149,6 +157,14 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
   );
   const set = (next: FormDestination) =>
     b.actions.changeForm((f) => patchForm(f, { destination: next }));
+  const setups = destTab ? boardsOf(destTab).map((x) => x.setup) : [];
+  // The card type rules that hold, each with its type, for the sentence and the preview's chips.
+  const ruled = (dest?.typeRules ?? []).flatMap((rule) => {
+    const t = b.types.find((x) => x.id === rule.typeId);
+    return t && !typeRuleProblem(rule, b.form, { types: b.types, boards: setups })
+      ? [{ rule, type: t }]
+      : [];
+  });
   const column = board?.columns.find((c) => c.status === dest?.status);
   // Only the columns the card type uses (forms.md "Columns follow the card type").
   const columns = board ? typeColumns(board.columns, b.type) : [];
@@ -161,6 +177,13 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
   const askNames = toAsk.map((f) =>
     f.kind === 'field' ? f.field.label : typeFieldLabel(type, f.kind),
   );
+  // The other way: questions whose answer lands in Description for want of a field (forms.md "Fields from the
+  // form's questions"), as many as the type has room for.
+  const room = type ? ITEM_TYPE_CUSTOM_MAX - (type.custom?.length ?? 0) : 0;
+  const wanting =
+    type && !problem && !b.locked
+      ? questionsWantingFields(b.form, type).slice(0, Math.max(0, room))
+      : [];
   return (
     <div className="flex flex-col gap-3">
       <SettingsField label="Board">
@@ -227,52 +250,32 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
         </div>
       </SettingsField>
       {b.canEdit && type && toAsk.length ? (
-        <Tooltip label={askNames.join(', ')}>
-          <button
-            type="button"
-            onClick={() => b.actions.addTypeQuestions()}
-            className="-mt-1 flex h-9 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 text-[13px] font-medium text-slate-600 transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-600 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10 dark:hover:text-brand-200"
-          >
-            <PlusIcon size={13} />
-            <span className="truncate">Add Questions for {type.label}’s Fields</span>
-            <span className="shrink-0 rounded-full bg-slate-100 px-1.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-              {toAsk.length}
-            </span>
-          </button>
-        </Tooltip>
+        <DashedAdd
+          label={`Add Questions for ${type.label}’s Fields`}
+          count={toAsk.length}
+          tip={askNames.join(', ')}
+          onClick={() => b.actions.addTypeQuestions()}
+        />
+      ) : null}
+      {b.canEdit && type && wanting.length ? (
+        <DashedAdd
+          label="Add Fields for Questions"
+          count={wanting.length}
+          tip={wanting.map((q) => q.prompt.trim() || 'Untitled question').join(', ')}
+          onClick={() => b.actions.addQuestionFields()}
+        />
       ) : null}
       <div>
         <p className="mb-1.5 px-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
           Column
         </p>
         <div role="radiogroup" aria-label="Column" className="flex flex-wrap gap-1.5">
-          {columns.map((c) => {
-            const on = c.status === dest?.status;
-            return (
-              <button
-                key={c.id}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                disabled={!b.canEdit}
-                onClick={() => dest && set({ ...dest, status: c.status })}
-                className={`flex h-8 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-[12px] font-medium transition disabled:cursor-default ${
-                  on
-                    ? 'border-brand-500 bg-brand-50 text-brand-800 dark:border-brand-400 dark:bg-brand-500/15 dark:text-brand-100'
-                    : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500'
-                }`}
-              >
-                {c.color ? (
-                  <span
-                    aria-hidden
-                    className="h-2 w-2 rounded-full"
-                    style={{ background: c.color }}
-                  />
-                ) : null}
-                <span className="text-optical-centre">{c.name || 'Untitled'}</span>
-              </button>
-            );
-          })}
+          <ColumnChips
+            columns={columns}
+            status={dest?.status}
+            disabled={!b.canEdit}
+            onPick={(status) => dest && set({ ...dest, status })}
+          />
           {!board ? (
             <span className="text-[12px] text-slate-500 dark:text-slate-400">
               Choose a board first.
@@ -301,11 +304,54 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
         </p>
       ) : (
         <p className="rounded-lg bg-slate-50 px-3 py-2 text-[13px] leading-relaxed text-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
-          Each response becomes a <strong>{b.type?.label}</strong> card in{' '}
-          <strong>{column?.name}</strong> on <strong>{destTab?.name}</strong>.
+          {ruled.length ? 'Otherwise, each' : 'Each'} response becomes a{' '}
+          <strong>{b.type?.label}</strong> card in <strong>{column?.name}</strong> on{' '}
+          <strong>{destTab?.name}</strong>.
         </p>
       )}
+      {/* Other card types by an answer (forms.md "Choosing the card type by an answer"). */}
+      {!problem && type ? <CardTypeRules boards={setups} takes={takes} /> : null}
+      {/* The card one response makes, as this board draws it (forms.md "What a Response Makes"). */}
+      {!problem && type && board && destBoard ? (
+        <CardResponsePreview
+          form={b.form}
+          type={type}
+          board={board}
+          element={destBoard.element}
+          rules={ruled}
+        />
+      ) : null}
       {!problem ? <SetAutomatically /> : null}
     </div>
+  );
+}
+
+// A dashed button under Card Type that brings one side to the other (questions for fields, or fields for questions),
+// its count beside it and a tooltip naming what it adds.
+function DashedAdd({
+  label,
+  count,
+  tip,
+  onClick,
+}: {
+  label: string;
+  count: number;
+  tip: string;
+  onClick: () => void;
+}) {
+  return (
+    <Tooltip label={tip}>
+      <button
+        type="button"
+        onClick={onClick}
+        className="-mt-1 flex h-9 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 text-[13px] font-medium text-slate-600 transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-600 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10 dark:hover:text-brand-200"
+      >
+        <PlusIcon size={13} />
+        <span className="truncate">{label}</span>
+        <span className="shrink-0 rounded-full bg-slate-100 px-1.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          {count}
+        </span>
+      </button>
+    </Tooltip>
   );
 }

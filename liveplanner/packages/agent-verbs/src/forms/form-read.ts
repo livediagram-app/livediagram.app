@@ -17,6 +17,8 @@ import {
   ruleQuestion,
   sheetDestinationProblem,
   sheetHeaders,
+  TYPE_RULE_PROBLEM_TEXT,
+  typeRuleProblem,
   type ClosedReason,
   type DestinationProblem,
   type FormDefinition,
@@ -24,7 +26,7 @@ import {
 } from '@liveplanner/forms';
 import type { ItemTypeDef } from '@liveplanner/items';
 import { readFixedOf, type ReadExtraColumn, type ReadFixedField } from './form-fixed';
-import type { BoardRef, SheetRef } from './form-world';
+import { rulePlaceOf, type BoardRef, type SheetRef } from './form-world';
 
 export type FormState = 'not_published' | 'accepting' | 'closed' | 'paused' | 'suspended';
 
@@ -59,6 +61,16 @@ export interface FormReading {
     | { to: 'sheet'; sheet: string }
     | { to: 'nowhere' };
   respondsToProblem?: string;
+  // Board forms: other card types by an answer, read in order (forms.md "Choosing the card type by an answer").
+  cardTypeRules?: {
+    id: string;
+    questionId: string;
+    when: string;
+    anyOf: string[];
+    cardType: string;
+    column: string;
+    broken?: string;
+  }[];
   sections: {
     id: string;
     place: number;
@@ -148,7 +160,11 @@ export function readFormOf(input: {
   const problems = [
     ...(problem ? [`Responses have nowhere to go: ${DESTINATION_PROBLEM_TEXT[problem]}`] : []),
     // Each in Share Form's words, naming the question or section it is about.
-    ...publishProblems(form, form.sheet ? undefined : type).map((p) => {
+    ...publishProblems(
+      form,
+      form.sheet ? undefined : type,
+      rulePlaceOf({ boards: allBoards, types }, form.destination?.tabId),
+    ).map((p) => {
       const text = publishProblemText(p);
       if ('questionId' in p) {
         const q = form.sections.flatMap((s) => s.questions).find((x) => x.id === p.questionId)!;
@@ -172,6 +188,9 @@ export function readFormOf(input: {
     unseen: link?.unseen ?? 0,
     respondsTo,
     ...(problem ? { respondsToProblem: DESTINATION_PROBLEM_TEXT[problem] } : {}),
+    ...(!form.sheet && form.destination?.typeRules
+      ? { cardTypeRules: readTypeRules(form, allBoards, types) }
+      : {}),
     sections: form.sections.map((s, i) => {
       const rule = s.showIf ? ruleQuestion(form, i, s.showIf) : null;
       return {
@@ -202,4 +221,29 @@ export function readFormOf(input: {
     },
     problems,
   };
+}
+
+// Each card type rule in words: "When <prompt> is <answers>", its type and column by name, and why it no longer
+// holds (the default type then takes its responses).
+function readTypeRules(
+  form: FormDefinition,
+  boards: readonly BoardRef[],
+  types: readonly ItemTypeDef[],
+): NonNullable<FormReading['cardTypeRules']> {
+  const place = rulePlaceOf({ boards, types }, form.destination?.tabId);
+  const onTab = boards.filter((b) => b.tabId === form.destination?.tabId);
+  return form.destination!.typeRules!.map((r) => {
+    const q = form.sections.flatMap((s) => s.questions).find((x) => x.id === r.questionId);
+    const problem = typeRuleProblem(r, form, place);
+    return {
+      id: r.id,
+      questionId: r.questionId,
+      when: `${q ? promptOf(q) : '(removed question)'} is ${r.anyOf.join(' or ')}`,
+      anyOf: [...r.anyOf],
+      cardType: types.find((t) => t.id === r.typeId)?.label ?? '(removed)',
+      column:
+        onTab.flatMap((b) => b.columns).find((c) => c.status === r.status)?.name ?? '(removed)',
+      ...(problem ? { broken: TYPE_RULE_PROBLEM_TEXT[problem] } : {}),
+    };
+  });
 }

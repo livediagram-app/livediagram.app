@@ -78,6 +78,7 @@ const formWith = (extra: Partial<FormDefinition> = {}): FormDefinition => ({
 
 let latest: FormDefinition;
 const addTypeQuestions = vi.fn();
+const addQuestionFields = vi.fn();
 const setDestinationBoard = vi.fn();
 
 function Harness({ start, tabs }: { start: FormDefinition; tabs: Tab[] }) {
@@ -88,6 +89,7 @@ function Harness({ start, tabs }: { start: FormDefinition; tabs: Tab[] }) {
   const actions = {
     changeForm: (fn: (f: FormDefinition) => FormDefinition) => setForm((f) => fn(f)),
     addTypeQuestions,
+    addQuestionFields,
     setResponsesTo: vi.fn(),
     newResponsesSheet: vi.fn(),
     newResponsesBoard: vi.fn(),
@@ -168,6 +170,41 @@ describe('questions from the card type’s fields', () => {
     expect(add.textContent).toContain('5');
     fireEvent.click(add);
     expect(addTypeQuestions).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('fields from the form’s questions', () => {
+  it('offers a field for each question going to Description for want of one', () => {
+    const start = formWith({
+      sections: [
+        {
+          id: 's-1',
+          title: '',
+          questions: [
+            { id: 'q-1', type: 'short', prompt: 'Name', goesTo: { to: 'title' } },
+            // The first Paragraph stays the card's Description.
+            { id: 'q-2', type: 'paragraph', prompt: 'Details' },
+            { id: 'q-3', type: 'date', prompt: 'Seen On' },
+            {
+              id: 'q-4',
+              type: 'short',
+              prompt: 'Lost',
+              goesTo: { to: 'field', fieldId: 'f-gone' },
+            },
+          ],
+        },
+      ],
+    });
+    render(<Harness start={start} tabs={[board(MIXED)]} />);
+    const add = screen.getByRole('button', { name: /Add Fields for Questions/ });
+    expect(add.textContent).toContain('2');
+    fireEvent.click(add);
+    expect(addQuestionFields).toHaveBeenCalledTimes(1);
+  });
+
+  it('is not offered when every answer has a place', () => {
+    render(<Harness start={formWith()} tabs={[board(MIXED)]} />);
+    expect(screen.queryByRole('button', { name: /Add Fields for Questions/ })).toBeNull();
   });
 });
 

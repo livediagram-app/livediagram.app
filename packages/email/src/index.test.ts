@@ -25,6 +25,26 @@ describe('sendEmail', () => {
     });
   });
 
+  it('adds RFC 8058 one-click List-Unsubscribe-Post when the link takes a POST', async () => {
+    const b = binding(async () => ({ messageId: 'm-3' }));
+    await sendEmail(b, {
+      from: 'a@b.app',
+      to: 'c@d.app',
+      subject: 's',
+      html: 'h',
+      unsubscribeUrl: 'https://b.app/api/email-optout/p/t',
+      oneClick: true,
+    });
+    expect(b.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: {
+          'List-Unsubscribe': '<https://b.app/api/email-optout/p/t>',
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+      }),
+    );
+  });
+
   it('leaves out the headers and text it was not given', async () => {
     const b = binding(async () => ({ messageId: 'm-2' }));
     await sendEmail(b, { from: 'a@b.app', to: 'c@d.app', subject: 's', html: 'h' });

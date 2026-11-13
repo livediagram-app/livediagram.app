@@ -84,9 +84,9 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
     press connects the file: the plan gains the connected tab, which takes the place of this empty tab unless it is
     the plan's only tab, and opens ready. Offered only to a signed-in Editor of a plan on the server, outside a
     tab-scoped link, an embed and a workbench.
-  - **Import**, for an Editor: directly below Connect File, in the same group at the rail's foot (under Connect File
-    when it shows, else alone under the hairline), drawn like its row in the panel's colours: the import glyph, then
-    **Import** on one line. On a phone it is the chip after Connect File, and the Tab order reaches it after Connect
+  - **Import**, for an Editor: directly above Connect File, in the same group at the rail's foot (under Describe a Plan
+    when it shows, and over Connect File, which stays the rail's last entry), drawn like its row in the panel's colours: the import glyph, then
+    **Import** on one line. On a phone it is the chip before Connect File, and the Tab order reaches it before Connect
     File. Choosing it opens the one [Import dialog](plan-tabs.md#the-import-dialog) on its list (nothing is placed;
     the tab stays empty until the import lands), so every way in stays in that dialog; there is no row per tool here.
     It is never chosen: the grid keeps what it shows. A Participant or Viewer sees no Import entry.
@@ -99,7 +99,7 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
     card-type chips), so a screen holds several.
     - **Recommended** ("The quickest ways to start, picked for most teams."): the Roadmap, Kanban and To-do List boards,
       the Overview dashboard, the Empty Sheet, and the Feedback form. Import is not among them: it is the rail's own
-      entry, below Connect File. A search still finds it, for an Editor, by "import", a tool's name (Trello, Asana,
+      entry, above Connect File. A search still finds it, for an Editor, by "import", a tool's name (Trello, Asana,
       Jira, Linear), "csv", "json", "migrate" and the like, as a card under its own **Import** heading ("Bring work in
       from Trello, Asana, Jira or Linear, or a file you exported."; a picture of the four tools' marks flowing into a
       board, no kind badge), which does what the rail entry does. It shows in no category.

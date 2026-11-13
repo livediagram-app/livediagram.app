@@ -3,7 +3,13 @@
 // it as a counted response, through the api; one with no link yet has nothing to count it on, so the editor makes the
 // card itself. The answers are checked as the api checks them.
 import type { ItemCreate, ItemTypeDef } from '@liveplanner/items';
-import { checkResponse, responseCard, type FormDefinition } from '@liveplanner/forms';
+import {
+  checkResponse,
+  chooseCardType,
+  responseCard,
+  type FormDefinition,
+  type RulePlace,
+} from '@liveplanner/forms';
 import type { FillState, SubmitOutcome } from '@/components/forms/respond/useFormFill';
 import type { PreviewSend } from '@/lib/api/forms';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -27,6 +33,7 @@ export async function sendPreview({
   state,
   sendToLink,
   offline = false,
+  place,
 }: {
   form: FormDefinition;
   tabId: string;
@@ -39,6 +46,8 @@ export async function sendPreview({
   sendToLink?: ((state: FillState) => Promise<PreviewSend>) | undefined;
   // The plan is kept only in this browser (offline mode): nothing reaches the api.
   offline?: boolean;
+  // The card types and the destination tab's boards, for the form's card type rules (none read without it).
+  place?: RulePlace | undefined;
 }): Promise<SubmitOutcome> {
   const checked = checkResponse(form, state);
   if (!checked.ok) return { kind: 'invalid', errors: checked.errors };
@@ -64,10 +73,20 @@ export async function sendPreview({
     debugLog('[forms] form.preview.no_destination', { problem });
     return { kind: 'failed', message: PREVIEW_NO_DESTINATION };
   }
-  const card = responseCard(form, tabId, checked.answers, type, null, true);
-  const made = await addItems([
-    { type: card.type, fields: card.fields, place: { status: form.destination.status } },
-  ]);
+  // The type and column a card type rule picks, as the api picks them (forms.md "Choosing the card type by an answer").
+  const chosen = place ? chooseCardType(form, checked.answers, place) : null;
+  const status = chosen?.status ?? form.destination.status;
+  const card = responseCard(
+    form,
+    tabId,
+    checked.answers,
+    chosen?.type ?? type,
+    null,
+    true,
+    undefined,
+    chosen?.rule ? { rule: chosen.rule, status } : undefined,
+  );
+  const made = await addItems([{ type: card.type, fields: card.fields, place: { status } }]);
   if (!made) {
     console.warn('[forms] form.preview.failed');
     return { kind: 'failed', message: PREVIEW_FAILED };

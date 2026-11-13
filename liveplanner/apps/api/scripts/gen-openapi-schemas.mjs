@@ -132,6 +132,8 @@ export const ROOT_TYPES = [
   'AutomationDraftResponse',
   'PlanDraftRequest',
   'PlanDraftResponse',
+  'FormDraftRequest',
+  'FormDraftResponse',
   'AutomationRunResponse',
   'AutomationRunsResponse',
   'AutomationSecretResponse',

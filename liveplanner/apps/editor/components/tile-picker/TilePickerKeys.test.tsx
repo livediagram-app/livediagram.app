@@ -3,8 +3,8 @@
 // tiles, walking past a full group's dimmed tiles (which take no focus) rather than stopping at them.
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { addActionHeroArt } from './AddActionHeroArt';
-import { StepPicker, type PickerSection } from './StepPicker';
+import { addActionHeroArt } from '@/components/automations/AddActionHeroArt';
+import { TilePicker, type PickerSection } from './TilePicker';
 
 afterEach(cleanup);
 
@@ -24,7 +24,7 @@ const at = (key: string) =>
 
 function Picker({ sections = SECTIONS }: { sections?: PickerSection<string>[] }) {
   return (
-    <StepPicker
+    <TilePicker
       title="Add an Action"
       line="What should this rule do to the card?"
       art={addActionHeroArt}
@@ -47,7 +47,7 @@ describe('the picker’s arrow keys', () => {
 
   it('walk past a full group’s tiles both ways, and stop at the last tile', () => {
     render(
-      <StepPicker
+      <TilePicker
         title="Add an Action"
         line="What should this rule do to the card?"
         art={addActionHeroArt}

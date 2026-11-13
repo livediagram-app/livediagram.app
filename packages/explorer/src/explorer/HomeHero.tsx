@@ -33,7 +33,7 @@ export const HERO_COPY = {
 const PILL_DOT = { emerald: 'bg-emerald-500', sky: 'bg-sky-500' } as const;
 
 const PILL =
-  'inline-flex h-8 items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 text-[13px] font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
+  'inline-flex h-8 max-w-full min-w-0 items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 text-[13px] font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
 
 export type HeroPill = {
   id: 'items' | 'inbox';
@@ -174,41 +174,47 @@ export function HomeHero({
       className="relative overflow-hidden border-b border-slate-200 dark:border-slate-800"
     >
       <HeroBackdrop kind={backdrop} />
-      <div className="relative mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-10 gap-y-8 px-4 pb-16 pt-9 sm:px-6 lg:pb-[5.75rem] lg:pt-12">
+      <div className="relative mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-10 gap-y-8 px-4 pb-16 pt-9 sm:px-6 lg:pb-[5.75rem]">
         <div className="flex min-w-0 flex-[999_1_32rem] flex-col gap-5">
-          {/* A phone: the corner has its own row, so the pills never push Help onto a line of its own (the
-              sections bar above the hero opens the sidebar). */}
-          <div className="-mb-2 flex items-center justify-end sm:hidden">
-            <HeroCorner onHide={onHide} />
-          </div>
-          {/* Holds a pill's height before the counts arrive, so nothing under it moves when they do. */}
-          <div className="flex min-h-8 flex-wrap items-center gap-2">
-            {pills.map((pill) =>
-              !pill.view ? (
-                <span key={pill.id} data-hero-pill={pill.id} className={PILL}>
-                  <span aria-hidden className={`size-[7px] rounded-full ${PILL_DOT[pill.tone]}`} />
-                  <span>{pill.label}</span>
-                </span>
-              ) : (
-                <a
-                  key={pill.id}
-                  href={viewHref(pill.view)}
-                  data-hero-pill={pill.id}
-                  onClick={(e) => {
-                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-                    e.preventDefault();
-                    navigate(pill.view!);
-                  }}
-                  className={`${PILL} transition hover:border-slate-300 dark:hover:border-slate-600 ${FOCUS_RING}`}
-                >
-                  <span aria-hidden className={`size-[7px] rounded-full ${PILL_DOT[pill.tone]}`} />
-                  <span>{pill.label}</span>
-                </a>
-              ),
-            )}
-            {/* Help and the close end the pills' row from `sm` to `lg`; from `lg` they stand at the hero's
-                top right, above the tiles; on a phone they have their own row above. */}
-            <span className="ml-auto hidden sm:inline-flex lg:hidden">
+          {/* The hero's top line: the pills on the left, level with Help and the close (the same top, centred on
+              them). Holds a pill's height before the counts arrive, so nothing under it moves when they do. */}
+          <div className="flex items-start gap-2">
+            {/* On a narrow phone the pills wrap or shrink beside the corner, never under it. */}
+            <div className="flex min-h-8 min-w-0 flex-1 flex-wrap items-center gap-2">
+              {pills.map((pill) =>
+                !pill.view ? (
+                  <span key={pill.id} data-hero-pill={pill.id} className={PILL}>
+                    <span
+                      aria-hidden
+                      className={`size-[7px] rounded-full ${PILL_DOT[pill.tone]}`}
+                    />
+                    <span className="truncate">{pill.label}</span>
+                  </span>
+                ) : (
+                  <a
+                    key={pill.id}
+                    href={viewHref(pill.view)}
+                    data-hero-pill={pill.id}
+                    onClick={(e) => {
+                      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0)
+                        return;
+                      e.preventDefault();
+                      navigate(pill.view!);
+                    }}
+                    className={`${PILL} transition hover:border-slate-300 dark:hover:border-slate-600 ${FOCUS_RING}`}
+                  >
+                    <span
+                      aria-hidden
+                      className={`size-[7px] rounded-full ${PILL_DOT[pill.tone]}`}
+                    />
+                    <span className="truncate">{pill.label}</span>
+                  </a>
+                ),
+              )}
+            </div>
+            {/* Help and the close end the top line below `lg`; from `lg` they stand at the hero's top right,
+                above the tiles, at the same height. */}
+            <span className="flex h-8 shrink-0 items-center lg:hidden">
               <HeroCorner onHide={onHide} />
             </span>
           </div>
@@ -227,7 +233,8 @@ export function HomeHero({
             {firstRun ? <WelcomeSearch /> : <SearchField size="hero" trailing={newItem} />}
           </div>
         </div>
-        <div className="absolute right-4 top-6 z-20 hidden sm:right-6 lg:block">
+        {/* Level with the pills: the band's top padding, a pill's height, centred. */}
+        <div className="absolute right-4 top-9 z-20 hidden h-8 items-center sm:right-6 lg:flex">
           <HeroCorner onHide={onHide} />
         </div>
         {kinds ? (

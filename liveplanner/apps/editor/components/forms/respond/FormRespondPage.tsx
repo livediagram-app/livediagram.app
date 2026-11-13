@@ -7,6 +7,7 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { useBrowserTabTitle } from '@/hooks/ui/useBrowserTabTitle';
 import dynamic from 'next/dynamic';
 import type { PublicFormResponse } from '@liveplanner/api-schema';
+import { readPrefill } from '@liveplanner/forms';
 import { formCodeFromPath } from '@/lib/form-path';
 import { loadPublicForm, sendFormResponse } from '@/lib/api/forms-public';
 import { FormCoverBand } from '../FormCoverBand';
@@ -25,7 +26,13 @@ type PageState =
   | { kind: 'loading' }
   | { kind: 'not_found' }
   | { kind: 'error' }
-  | { kind: 'ready'; code: string; data: PublicFormResponse };
+  | {
+      kind: 'ready';
+      code: string;
+      data: PublicFormResponse;
+      // The answers the address pre-fills (forms.md "Pre-filled answers"), read once as the form loads.
+      prefill?: Record<string, unknown>;
+    };
 
 export function FormRespondPage() {
   const [page, setPage] = useState<PageState>({ kind: 'loading' });
@@ -35,7 +42,14 @@ export function FormRespondPage() {
     void (code ? loadPublicForm(code) : Promise.resolve({ kind: 'not_found' as const })).then((r) =>
       setPage(
         r.kind === 'ok' && code
-          ? { kind: 'ready', code, data: r.data }
+          ? {
+              kind: 'ready',
+              code,
+              data: r.data,
+              ...(r.data.state === 'open'
+                ? { prefill: readPrefill(r.data.form, window.location.search) }
+                : {}),
+            }
           : r.kind === 'ok'
             ? { kind: 'not_found' }
             : r,
@@ -111,6 +125,7 @@ export function FormRespondPage() {
           <FormFill
             form={page.data.form}
             draftKey={`liveplanner:form:${page.code}`}
+            initial={page.prefill}
             footer={<FormFooter code={page.code} />}
             submit={async (state): Promise<SubmitOutcome> => {
               const r = await sendFormResponse(page.code, state);

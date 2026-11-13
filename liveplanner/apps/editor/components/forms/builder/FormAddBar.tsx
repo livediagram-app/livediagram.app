@@ -1,8 +1,8 @@
 'use client';
 
-// The add bar (docs/specs/030-forms/forms.md "The form card, top to bottom"): Add Question (a list of the question
-// types; the new question takes the selected one's type when Add Question itself is pressed) and Add Section (which
-// splits the form after the selected question). A new question lands after the selected one, selected and focused.
+// The add bar (docs/specs/030-forms/forms.md "The form card, top to bottom"): Add <Type> (the selected question's
+// type), its arrow opening the Add a Question gallery of every type (AddQuestionDialog), and Add Section (which splits
+// the form after the selected question). A new question lands after the selected one, selected and focused.
 import { useState } from 'react';
 import {
   QUESTION_TYPE_NAMES,
@@ -10,7 +10,7 @@ import {
   newFormPartId,
   type QuestionType,
 } from '@liveplanner/forms';
-import { ChevronDownIcon, PlusIcon, lucideGlyph } from '@liveplanner/ui';
+import { ChevronDownIcon, PlusIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideSeparatorHorizontal } from '@liveworkspace/icons/lucide';
 import {
   addQuestion,
@@ -19,16 +19,14 @@ import {
   canAddSection,
   questionById,
 } from '@liveplanner/forms';
-import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { track } from '@/lib/telemetry';
-import { QuestionTypeList } from './QuestionTypeMenu';
+import { AddQuestionDialog } from './AddQuestionDialog';
 import { useFormBuilder } from './form-builder-context';
 
 const SectionIcon = lucideGlyph(lucideSeparatorHorizontal, 16);
 
 export function FormAddBar() {
   const b = useFormBuilder();
-  const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(false);
   if (!b.canEdit) return null;
   const selected = questionById(b.form, b.selectedId);
@@ -56,18 +54,19 @@ export function FormAddBar() {
           <PlusIcon size={16} />
           Add {QUESTION_TYPE_NAMES[nextType]}
         </button>
-        <button
-          ref={setAnchor}
-          type="button"
-          aria-label="Add a question of another type"
-          aria-haspopup="listbox"
-          aria-expanded={open}
-          disabled={!canAddQuestion(b.form)}
-          onClick={() => setOpen((o) => !o)}
-          className={`${button} border-l border-slate-200 px-2.5 dark:border-slate-700`}
-        >
-          <ChevronDownIcon />
-        </button>
+        <Tooltip label="More Question Types">
+          <button
+            type="button"
+            aria-label="More Question Types"
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            disabled={!canAddQuestion(b.form)}
+            onClick={() => setOpen(true)}
+            className={`${button} border-l border-slate-200 px-2.5 dark:border-slate-700`}
+          >
+            <ChevronDownIcon />
+          </button>
+        </Tooltip>
         <span aria-hidden className="w-px bg-slate-200 dark:bg-slate-700" />
         <button
           type="button"
@@ -82,24 +81,14 @@ export function FormAddBar() {
           Add Section
         </button>
       </div>
-      {open && anchor ? (
-        <AnchoredPopover
-          anchor={anchor}
-          name="Add Question"
-          width={220}
+      {open ? (
+        <AddQuestionDialog
           onClose={() => setOpen(false)}
-        >
-          <div className="rounded-xl border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
-            <QuestionTypeList
-              value={null}
-              label="Add Question"
-              onPick={(t) => {
-                setOpen(false);
-                add(t);
-              }}
-            />
-          </div>
-        </AnchoredPopover>
+          onPick={(t) => {
+            setOpen(false);
+            add(t);
+          }}
+        />
       ) : null}
     </div>
   );

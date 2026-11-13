@@ -10,6 +10,7 @@ import {
   OTHER_ANSWER,
   answerErrorMessage,
   checkResponse,
+  chooseCardType,
   destinationType,
   promptOf,
   questionsOf,
@@ -22,7 +23,7 @@ import {
 import { itemsPath, tabPath } from '../verbs/shared';
 import { guarded, readingOf } from './form-calls';
 import { refuse, resolveQuestion, type FormRefusal } from './form-names';
-import type { BoardRef, FormWorld } from './form-world';
+import { rulePlaceOf, type BoardRef, type FormWorld } from './form-world';
 
 type FormTryDone = {
   ok: true;
@@ -133,7 +134,12 @@ export async function tryForm(
       });
     const sheet = form.sheet ? world.sheets.find((s) => s.sheetId === form.sheet!.sheetId) : null;
     const target = form.sheet ? null : boardWhere(world, form);
-    const type = destinationType(form.destination, world.types);
+    // The type and column the form's card type rules pick for these answers, as the api picks them.
+    const chosen = form.sheet
+      ? null
+      : chooseCardType(form, checked.answers, rulePlaceOf(world, form.destination?.tabId));
+    const type = chosen?.type ?? destinationType(form.destination, world.types);
+    const ruled = chosen?.rule ? { rule: chosen.rule, status: chosen.status } : undefined;
     const nowhere = refuse(
       'form_destination_missing',
       'A preview has nowhere to go until responses go to a board and column, or a sheet: set responds_to with change_form.',
@@ -172,20 +178,24 @@ export async function tryForm(
       const number = link?.link && sent.number > 0 ? sent.number : null;
       const title = form.sheet
         ? null
-        : titleOf(responseCard(form, tab.id, checked.answers, type!, number, true).fields);
+        : titleOf(
+            responseCard(form, tab.id, checked.answers, type!, number, true, undefined, ruled)
+              .fields,
+          );
       return done({ made: form.sheet ? 'row' : 'card', number, title, itemId: null });
     }
 
     // Unpublished, to a board: the card the editor's Preview makes itself, numbered by nothing, on a board the project
     // still has.
     if (!target) return nowhere;
-    const card = responseCard(form, tab.id, checked.answers, type!, null, true);
+    const card = responseCard(form, tab.id, checked.answers, type!, null, true, undefined, ruled);
     const { item } = await api.json<ItemResponse>(itemsPath(projectId), {
       method: 'POST',
       body: JSON.stringify({
         type: card.type,
         fields: card.fields,
-        place: { status: form.destination!.status },
+        // A board form with its card type has a choice (chooseCardType's default at least).
+        place: { status: chosen!.status },
       }),
     });
     return done({

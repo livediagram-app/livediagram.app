@@ -16,6 +16,8 @@ export type FormBuilderValue = {
   locked?: boolean;
   // How many problems stop it taking responses (FormProblems): Accepting Responses stays off while any remain.
   problemCount?: number;
+  // Each question's own problems, in words (publishProblems' with a questionId): its card wears a mark saying so.
+  questionProblems?: ReadonlyMap<string, readonly string[]>;
   actions: FormActions;
   selectedId: string | null;
   // `focus`: the question takes focus once drawn (one just added).

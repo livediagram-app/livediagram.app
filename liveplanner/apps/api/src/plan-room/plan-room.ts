@@ -104,6 +104,7 @@ import {
 } from './plan-room-sockets';
 import { webSocketMessage } from './plan-room-frames';
 import { answerHookCall, type HookAnswer, type HookCall } from './automations/automation-incoming';
+import { optOutAddress } from './automations/automation-addresses';
 import { answerGithubCall, type GithubRoomAnswer, type GithubRoomCall } from './github/github-room';
 import { localNamespace, roomHead, roomParticipantWrites, roomInternal } from './plan-room-wiring';
 import { dropSession, roomPeople, broadcastPresence } from './plan-room-presence';
@@ -554,6 +555,17 @@ export class PlanRoom extends DurableObject<Env> {
       call,
       Date.now(),
     );
+  }
+
+  // ---------- RPC: a rule email's unsubscribe (automations/automation-addresses.ts) ------------------------------
+
+  // One typed-in address's unsubscribe, by the token its email carried. An id nothing has written answers false and
+  // stays empty; a stored plan's schema is brought up to date first (V28 holds the tokens).
+  async emailOptOut(planId: string, token: string): Promise<boolean> {
+    if (!this.storedSchema()) return false;
+    this.bindPlan(planId);
+    ensureSchema(this);
+    return optOutAddress(this.state.storage.sql, token, Date.now());
   }
 
   // ---------- RPC: GitHub (github/github-room.ts) -------------------------------------------------------------------

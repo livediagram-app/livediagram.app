@@ -24,6 +24,8 @@ export type Email = {
   text?: string;
   /** Where to turn this kind of email off, sent as List-Unsubscribe so mail clients can offer it. */
   unsubscribeUrl?: string;
+  /** That link unsubscribes on a POST (RFC 8058 one-click): sent as List-Unsubscribe-Post too. */
+  oneClick?: boolean;
 };
 
 // The longest a send may wait, though the binding answers in well under a second. A sign-in code is sent while
@@ -43,7 +45,9 @@ export async function sendEmail(
     subject: email.subject,
     html: email.html,
     ...(email.text !== undefined && { text: email.text }),
-    ...(email.unsubscribeUrl && { headers: { 'List-Unsubscribe': `<${email.unsubscribeUrl}>` } }),
+    ...(email.unsubscribeUrl && {
+      headers: unsubscribeHeaders(email.unsubscribeUrl, email.oneClick),
+    }),
   });
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
@@ -58,6 +62,12 @@ export async function sendEmail(
     clearTimeout(timer);
   }
 }
+
+// List-Unsubscribe, and RFC 8058's List-Unsubscribe-Post when the link takes a one-click POST.
+const unsubscribeHeaders = (url: string, oneClick?: boolean): Record<string, string> => ({
+  'List-Unsubscribe': `<${url}>`,
+  ...(oneClick && { 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' }),
+});
 
 /** `Name <address>` as the binding takes it; a bare address stays as it is. Index scans, not a regex: the
  *  optional spaces around a name made a pattern backtrack quadratically on a long run of them. */

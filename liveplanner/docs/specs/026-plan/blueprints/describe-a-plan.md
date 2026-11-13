@@ -121,7 +121,7 @@ body: true })`; a `plan_draft_*` body with a `message` throws `PlanDraftRefusal(
   else goes to `expectOk`.
 - `DescribePlanDialog.tsx`: the shared `Dialog` (`size="xl"`, `phoneSheet`, a column at most 46rem or 90dvh tall),
   `DialogHeader` with the sparkle, `TextArea` (500, the count), `DESCRIBE_PLAN_EXAMPLES` as secondary `xs` Buttons,
-  `AiNote` ("Uses AI: you can describe 10 plans a day."). States: the words (idle, drafting with `busy` and the box
+  `AiNote` ("Uses AI: plans and forms share 10 drafts a day."). States: the words (idle, drafting with `busy` and the box
   read-only, said: a `role="alert"` amber line), the guest's nudge (`DESCRIBE_PLAN_SIGN_IN`, Sign In to
   `signInHref`), and the preview (a draft held in state, the heading focused). A stale answer (after Cancel or
   unmount) is dropped by an ask counter, as Describe a Rule's is. Problems from `planDraftProblems(draft, plan)`,

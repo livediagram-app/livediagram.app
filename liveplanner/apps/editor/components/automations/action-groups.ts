@@ -65,7 +65,7 @@ export const ACTION_LINES: Readonly<Record<AddKind, string>> = {
   flag: 'Flag the card for attention.',
   unflag: 'Take the card’s flag off.',
   assign: 'Assign a person, whoever triggered it, or people in turn.',
-  email: 'Email the assignee or a chosen person, with a link to the card.',
+  email: 'Email the assignee, a chosen person or typed-in addresses, with a link to the card.',
   comment: 'Start a thread on the card, written by Automation.',
   notify_webhook: 'Send a signed event to your own service.',
   notify_slack: 'Post a message with a link to a Slack channel.',

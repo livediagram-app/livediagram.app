@@ -3,6 +3,7 @@
 // One question as a respondent sees it (docs/specs/030-forms/forms.md "Filling in a form"): its prompt (a red
 // asterisk when required), help text, the answer control and, when its answer is wrong, the reason under it with a red
 // edge on the card. The builder draws an unselected question with this too, disabled.
+import type { ReactNode } from 'react';
 import { useId } from 'react';
 import {
   DROPDOWN_AFTER,
@@ -17,6 +18,15 @@ import { QuestionControl } from './QuestionControl';
 
 const AlertIcon = lucideGlyph(lucideCircleAlert, 16);
 
+// A single control is labelled by its prompt as a <label>; a group (choices, a rating) names itself by the prompt.
+export function labelsAsOne(question: PublicQuestion): boolean {
+  return (
+    !['single', 'multi', 'rating', 'checkbox'].includes(question.type) ||
+    (question.type === 'single' &&
+      (!!question.dropdown || (question.options?.length ?? 0) > DROPDOWN_AFTER))
+  );
+}
+
 export function QuestionView({
   question,
   value,
@@ -27,6 +37,7 @@ export function QuestionView({
   onBlur,
   disabled = false,
   domId,
+  aside,
 }: {
   question: PublicQuestion;
   value: unknown;
@@ -38,6 +49,8 @@ export function QuestionView({
   disabled?: boolean;
   // The card's id, for the error summary's links.
   domId?: string;
+  // Beside the prompt at its end, centred on its first line (the builder's problem mark).
+  aside?: ReactNode;
 }) {
   const base = useId();
   const promptId = `${base}-prompt`;
@@ -46,11 +59,7 @@ export function QuestionView({
   const controlId = `${base}-control`;
   const describedBy =
     [question.help ? helpId : null, error ? errorId : null].filter(Boolean).join(' ') || undefined;
-  // A single control is labelled by its prompt as a <label>; a group (choices, a rating) names itself by the prompt.
-  const single =
-    !['single', 'multi', 'rating', 'checkbox'].includes(question.type) ||
-    (question.type === 'single' &&
-      (question.dropdown || (question.options?.length ?? 0) > DROPDOWN_AFTER));
+  const single = labelsAsOne(question);
   const Prompt = single ? 'label' : 'p';
   return (
     <div
@@ -62,19 +71,22 @@ export function QuestionView({
           : 'form-ink border-slate-200 dark:border-slate-700/80'
       }`}
     >
-      <Prompt
-        id={promptId}
-        {...(single ? { htmlFor: controlId } : {})}
-        className="block text-[16px] font-medium leading-snug text-slate-900 dark:text-slate-50"
-      >
-        {promptOf(question)}
-        {question.required ? (
-          <span className="ml-1 text-red-600 dark:text-red-400" aria-hidden>
-            *
-          </span>
-        ) : null}
-        {question.required ? <span className="sr-only"> (required)</span> : null}
-      </Prompt>
+      <div className="flex items-start gap-3">
+        <Prompt
+          id={promptId}
+          {...(single ? { htmlFor: controlId } : {})}
+          className="block min-w-0 flex-1 text-[16px] font-medium leading-snug text-slate-900 dark:text-slate-50"
+        >
+          {promptOf(question)}
+          {question.required ? (
+            <span className="ml-1 text-red-600 dark:text-red-400" aria-hidden>
+              *
+            </span>
+          ) : null}
+          {question.required ? <span className="sr-only"> (required)</span> : null}
+        </Prompt>
+        {aside ? <span className="flex h-[22px] shrink-0 items-center">{aside}</span> : null}
+      </div>
       {question.help ? (
         <p
           id={helpId}

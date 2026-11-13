@@ -213,6 +213,51 @@ describe('readRuleBody', () => {
       'steps.0.to',
     ],
     [
+      'an email to no addresses',
+      withStep({ kind: 'email', to: { addresses: [] }, subject: 's', body: 'b' }),
+      'steps.0.to.addresses',
+    ],
+    [
+      'an email to 11 addresses',
+      withStep({
+        kind: 'email',
+        to: { addresses: Array.from({ length: 11 }, (_, i) => `p${i}@example.com`) },
+        subject: 's',
+        body: 'b',
+      }),
+      'steps.0.to.addresses',
+    ],
+    [
+      'an email to a bad address',
+      withStep({
+        kind: 'email',
+        to: { addresses: ['ana@example.com', 'not an address'] },
+        subject: 's',
+        body: 'b',
+      }),
+      'steps.0.to.addresses.1',
+    ],
+    [
+      'an email to an address a header would misread',
+      withStep({
+        kind: 'email',
+        to: { addresses: ['Ana <ana@example.com>'] },
+        subject: 's',
+        body: 'b',
+      }),
+      'steps.0.to.addresses.0',
+    ],
+    [
+      'an email to an address that is not text',
+      withStep({ kind: 'email', to: { addresses: [5] }, subject: 's', body: 'b' }),
+      'steps.0.to.addresses.0',
+    ],
+    [
+      'an email to addresses that are not text',
+      withStep({ kind: 'email', to: { addresses: 'ana@example.com' }, subject: 's', body: 'b' }),
+      'steps.0.to.addresses',
+    ],
+    [
       'an email subject too long',
       withStep({ kind: 'email', to: { trigger: true }, subject: 'x'.repeat(201), body: 'b' }),
       'steps.0.subject',
@@ -434,5 +479,38 @@ describe('the actions after Phase 3 and Wait', () => {
   it('refuses more than three Waits', () => {
     const steps = Array.from({ length: 4 }, () => ({ kind: 'wait', hours: 1 }));
     expect(pathOf(withRule({ steps }))).toBe('steps');
+  });
+});
+
+describe('Send Email to typed-in addresses', () => {
+  it('keeps 1 to 10 addresses, trimmed, lower case and each once', () => {
+    const r = readRuleBody(
+      withStep({
+        kind: 'email',
+        to: { addresses: [' Ana@Example.com ', 'ana@example.com', 'bo@example.org'] },
+        subject: 's',
+        body: 'b',
+      }),
+    );
+    expect('body' in r && r.body.steps[0]).toEqual({
+      kind: 'email',
+      to: { addresses: ['ana@example.com', 'bo@example.org'] },
+      subject: 's',
+      body: 'b',
+    });
+    const ten = Array.from({ length: 10 }, (_, i) => `p${i}@example.com`);
+    expect(
+      pathOf(withStep({ kind: 'email', to: { addresses: ten }, subject: 's', body: 'b' })),
+    ).toBe(null);
+  });
+
+  it('lets a time rule email addresses: nobody needs to be behind it', () => {
+    const r = readRuleBody(
+      withRule({
+        trigger: { kind: 'scheduled', every: 'day', at: '09:00' },
+        steps: [{ kind: 'email', to: { addresses: ['ana@example.com'] }, subject: 's', body: 'b' }],
+      }),
+    );
+    expect('body' in r).toBe(true);
   });
 });

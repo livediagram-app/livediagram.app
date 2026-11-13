@@ -8,7 +8,9 @@ The shared Explorer draws Home's hero ([`@liveworkspace/explorer`'s `HomeHero`](
 
 Top to bottom, left column:
 
-- **Status pills**, two, each a link with a coloured dot:
+- **Status pills**, two, each a link with a coloured dot, on the hero's top line: level with Help and the close
+  (the same top, centred on them), so the greeting starts right under them. On a narrow phone the pills wrap or
+  shrink beside the corner, never under it:
   - the person's documents: "1 document" / "N documents" (every space the person is in, in this app: My Work and each of their teams, each item counted once; not what was shared with them through a link), opening **My Work**, or for someone in a team, Search results narrowed to those spaces (`space:mine,team:…`); a
     green dot. The count is one request of up to 200 items, made only while the hero shows; past that it reads "200+ documents";
   - the Inbox: "Inbox is clear" when nothing open is assigned to the person, else "N open in your Inbox", the
@@ -45,7 +47,7 @@ own ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explor
 
 ## Hiding the banner
 
-Next to Help, wherever the hero puts it (a phone's row, the pills' row, the wide top right), sits a **close** (an ×
+Next to Help, wherever the hero puts it (the right end of the pills' row below `lg`, the wide top right from `lg`, level with the pills either way), sits a **close** (an ×
 button named and tooltipped "Hide Home Banner"). Pressing it hides the hero for good, as the synced `homeBanner`
 preference set to `false` ([User preferences](../007-editor/user-preferences.md)), on every device the person signs
 in on. It folds away as it does on leaving Home. **Settings > Explorer > Show Home Banner** turns it back on.

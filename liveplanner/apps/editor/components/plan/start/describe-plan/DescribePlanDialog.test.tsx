@@ -92,7 +92,7 @@ describe('Describe a Plan: the words', () => {
     fireEvent.click(button(DESCRIBE_PLAN_EXAMPLES[1]!.label));
     expect((box() as HTMLTextAreaElement).value).toBe(DESCRIBE_PLAN_EXAMPLES[1]!.text);
     expect(screen.getByText(`${DESCRIBE_PLAN_EXAMPLES[1]!.text.length} / 500`)).toBeTruthy();
-    expect(screen.getByText('Uses AI: you can describe 10 plans a day.')).toBeTruthy();
+    expect(screen.getByText('Uses AI: plans and forms share 10 drafts a day.')).toBeTruthy();
     fireEvent.keyDown(box(), { key: 'Enter', ctrlKey: true });
     expect(draft).toHaveBeenCalledWith(DESCRIBE_PLAN_EXAMPLES[1]!.text);
     await screen.findByText('Check Your Plan');

@@ -40,8 +40,13 @@ export function ruleQuestion(
   return rule.anyOf.some((a) => offered.includes(a)) ? q : null;
 }
 
-// Whether a rule's question has the answers it asks for. `answer` is the raw answer (a respondent's, unchecked).
-function holds(q: FormQuestion, rule: SectionRule, answer: unknown): boolean {
+// Whether a rule's question has the answers it asks for. `answer` is the raw answer (a respondent's, unchecked). A card
+// type rule (type-rules.ts) has the same shape and reads the same way.
+export function ruleHolds(
+  q: FormQuestion,
+  rule: Pick<SectionRule, 'anyOf'>,
+  answer: unknown,
+): boolean {
   if (q.type === 'checkbox')
     return rule.anyOf.includes(answer === true ? CHECKBOX_TICKED : CHECKBOX_UNTICKED);
   if (Array.isArray(answer)) return answer.some((a) => rule.anyOf.includes(a as string));
@@ -59,7 +64,7 @@ export function sectionsShown(
   const visible = new Set<string>();
   form.sections.forEach((s, i) => {
     const q = i > 0 && s.showIf ? ruleQuestion(form, i, s.showIf) : null;
-    const on = !q || (visible.has(q.id) && holds(q, s.showIf!, answers[q.id]));
+    const on = !q || (visible.has(q.id) && ruleHolds(q, s.showIf!, answers[q.id]));
     shown.push(on);
     if (on) for (const x of s.questions) visible.add(x.id);
   });

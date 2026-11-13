@@ -3,15 +3,18 @@
 // with the checks a card write passes (a column its type leaves out, a required field emptied, a Calculated field
 // set, the card's size), by Automation with the rule's name and history tag 'automation'. Then the card it makes (as
 // a Repeat makes its copies), the threads it starts (by Automation, through the thread store) and its emails
-// (account people alone, their opt-out honoured, in the background), its mentions and Resolve Threads. Each write is relayed to the room and carries
+// (account people alone, their opt-out honoured, in the background; typed-in addresses claimed against the day's
+// limit first, automation-addresses.ts), its mentions and Resolve Threads. Each write is relayed to the room and carries
 // the rule and chain, so the events it causes know where they came from.
 import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   ITEMS_MAX,
   ITEM_LABELS_MAX,
   ITEM_WRITE_RETRIES,
+  AUTOMATION_ADDRESS_EMAILS_PER_DAY,
   AUTOMATION_COLOR,
   AUTOMATION_PERSON_ID,
+  addressWords,
   applyMove,
   applyPatch,
   automationPerson,
@@ -29,6 +32,7 @@ import {
   typeIn,
   withDefaultStatuses,
   type AutomationRule,
+  type AutomationStepLine,
   type Item,
   type ItemPatch,
   type PlannedCard,
@@ -61,6 +65,8 @@ import type { PlanEnv } from '../../types';
 import { SYSTEM_ACTOR, insertThread, writeThread } from '../card-thread-store';
 import type { AutomationPlan } from './automation-plan';
 import type { HistorySource } from './automation-queue';
+import type { Sql } from './automation-store';
+import { claimAddresses, sendToAddresses, type AddressClaim } from './automation-addresses';
 
 export interface WriteDeps {
   env: PlanEnv;
@@ -72,9 +78,20 @@ export interface WriteDeps {
   // The plan's cards as they are now, from those the wake holds while the store's rev has not moved (the runner's
   // cardsNow); absent, read afresh.
   cards?: () => Promise<Item[]>;
+  // The room's own SQLite, where an email to typed-in addresses is claimed (automation-addresses.ts); absent, none is
+  // sent.
+  sql?: () => Sql;
 }
 
-export type WriteOutcome = { ok: true } | { ok: false; reason: string };
+// `notes`: lines the Audit Trail adds after the planned ones (an address that unsubscribed); `skipped`: a step the
+// day's limit on emails to typed-in addresses held back, which makes the run Skipped when nothing failed.
+export type WriteOutcome =
+  { ok: true; notes?: AutomationStepLine[]; skipped?: string } | { ok: false; reason: string };
+
+// Spec "Typed-in addresses": the Audit Trail's words when the day's limit, or a count that would not read, held an
+// email back.
+export const ADDRESSES_SPENT = `the plan's ${AUTOMATION_ADDRESS_EMAILS_PER_DAY} emails a day to typed-in addresses are spent`;
+export const ADDRESS_COUNT_UNREAD = "Not emailed: today's email count couldn't be read";
 
 // The rule's write as a card write would be refused, in words.
 function refusalOf(plan: AutomationPlan, next: Item, before: Item): string | null {
@@ -383,11 +400,79 @@ export async function applyPlannedRun(
     const out = await resolveThreads(deps, card);
     if (!out.ok) return out;
   }
-  for (const email of planned.emails)
+  const notes: AutomationStepLine[] = [];
+  let skipped: string | undefined;
+  for (const email of planned.emails) {
+    if (email.addresses) {
+      const held = emailAddresses(deps, plan, rule, card, email, email.addresses, url, notes);
+      skipped ??= held;
+      continue;
+    }
     deps.defer(
       sendOne(deps, plan, rule, card, email, url).catch((error: unknown) =>
         console.warn('[automations] email.failed', { error: String(error) }),
       ),
     );
-  return { ok: true };
+  }
+  return {
+    ok: true,
+    ...(notes.length ? { notes } : {}),
+    ...(skipped ? { skipped } : {}),
+  };
+}
+
+// An email to typed-in addresses: claimed on the room's SQLite now (so the Audit Trail can say what went), sent in
+// the background. Answers the reason when the day's limit, or a count that would not read, held any back; an
+// address that unsubscribed is a note, and the others still get theirs. Email off: nothing claimed, nothing sent.
+function emailAddresses(
+  deps: WriteDeps,
+  plan: AutomationPlan,
+  rule: AutomationRule,
+  card: Item,
+  email: PlannedEmail,
+  addresses: readonly string[],
+  url: string,
+  notes: AutomationStepLine[],
+): string | undefined {
+  if (!emailEnabled(deps.env)) return undefined;
+  let claim: AddressClaim;
+  try {
+    if (!deps.sql) throw new Error('no room storage');
+    claim = claimAddresses(deps.sql(), addresses, Date.now());
+  } catch (error) {
+    console.warn('[automations] email.count_failed', { error: String(error) });
+    notes.push({ kind: 'action', ok: false, text: ADDRESS_COUNT_UNREAD });
+    return ADDRESS_COUNT_UNREAD;
+  }
+  if (claim.unsubscribed.length)
+    notes.push({
+      kind: 'action',
+      ok: true,
+      text: `Not emailed: ${addressWords(claim.unsubscribed)} unsubscribed`,
+    });
+  if (claim.send.length)
+    deps.defer(
+      sendToAddresses(
+        deps.env,
+        deps.planId,
+        {
+          rule,
+          card,
+          planName: plan.name,
+          subject: email.subject || itemTitle(card),
+          body: email.body,
+          cardUrl: url,
+        },
+        claim.send,
+      ).catch((error: unknown) =>
+        console.warn('[automations] email.failed', { error: String(error) }),
+      ),
+    );
+  if (!claim.capped) return undefined;
+  const wanted = claim.send.length + claim.capped;
+  const reason = claim.send.length
+    ? `Emailed ${claim.send.length} of ${wanted} addresses: ${ADDRESSES_SPENT}`
+    : `Not emailed: ${ADDRESSES_SPENT}`;
+  notes.push({ kind: 'action', ok: false, text: reason });
+  return reason;
 }

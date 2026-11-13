@@ -35,6 +35,9 @@ type EmailMessage = {
   // a native unsubscribe affordance (we point it at the profile page rather than
   // a one-click POST endpoint, by design — docs/specs/014-identity/transactional-email.md).
   unsubscribeUrl?: string;
+  // That link unsubscribes on a POST (RFC 8058 one-click), sent as List-Unsubscribe-Post too: a rule's email to
+  // typed-in addresses (docs/specs/026-plan/automations.md "Typed-in addresses").
+  oneClick?: boolean;
 };
 
 // A send gives up after @liveworkspace/email's EMAIL_SEND_TIMEOUT_MS. Sends run in the daily email cron and in
@@ -54,6 +57,7 @@ export async function sendEmail(env: Env, msg: EmailMessage): Promise<{ sent: bo
       subject: msg.subject,
       html: msg.html,
       ...(msg.unsubscribeUrl && { unsubscribeUrl: msg.unsubscribeUrl }),
+      ...(msg.unsubscribeUrl && msg.oneClick && { oneClick: true }),
     });
   } catch (err) {
     // Email Service's refusal code (E_RECIPIENT_SUPPRESSED, ...) when it gave one; anything else (a timeout, a

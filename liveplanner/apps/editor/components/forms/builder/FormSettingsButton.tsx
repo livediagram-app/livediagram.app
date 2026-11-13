@@ -43,9 +43,14 @@ export function FormSettingsButton({
           aria-expanded={open !== false}
           data-dock-button
           onClick={() => (open === false ? onOpen(null) : onClose())}
-          className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+          className={`flex h-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2 text-[13px] font-medium transition ${
+            open !== false
+              ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+          }`}
         >
           <CogIcon aria-hidden />
+          Settings
         </button>
       </Tooltip>
       {open !== false && anchor ? (

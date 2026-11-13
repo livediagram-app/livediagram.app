@@ -82,7 +82,7 @@ function actionsOn(tabs: Tab[]) {
     }),
   );
   const form = () => readForm(now.find((t) => t.id === 'f')!.form)!;
-  return { actions: result.current, form, commits, tabs: () => now };
+  return { actions: result.current, form, commits, tabs: () => now, saveType };
 }
 
 describe('setDestinationType', () => {
@@ -225,6 +225,87 @@ describe('addTypeQuestions', () => {
     expect(questionsOf(form())).toHaveLength(2);
     actions.addTypeQuestions();
     expect(questionsOf(form())).toHaveLength(2);
+  });
+});
+
+// Fields from the form's questions (forms.md): + New Card Type and Add Fields for Questions.
+const asked = (extra: Partial<FormDefinition> = {}) =>
+  formTab({
+    sections: [
+      {
+        id: 's-1',
+        title: '',
+        questions: [
+          { id: 'q-name', type: 'short', prompt: 'Name', goesTo: { to: 'title' } },
+          { id: 'q-body', type: 'paragraph', prompt: 'Details' },
+          { id: 'q-team', type: 'single', prompt: 'Team', options: ['Web', 'Apps'] },
+          // Fits Bug's Severity, which a new type lacks.
+          {
+            id: 'q-sev',
+            type: 'single',
+            prompt: 'Severity',
+            options: ['Low'],
+            goesTo: { to: 'field', fieldId: 'f-sev' },
+          },
+        ],
+      },
+    ],
+    ...extra,
+  });
+
+describe('newCardType', () => {
+  it('makes the type with a field per question wanting one, and maps them in the same step', () => {
+    const { actions, form, commits, saveType } = actionsOn([asked(), board]);
+    actions.newCardType();
+    expect(saveType).toHaveBeenCalledTimes(1);
+    const made = saveType.mock.calls[0]![0] as ItemTypeDef;
+    expect(made.label).toBe('Intake');
+    expect(made.custom).toEqual([
+      { id: 'f-team', label: 'Team', kind: 'choice', options: ['Web', 'Apps'] },
+      { id: 'f-severity', label: 'Severity', kind: 'choice', options: ['Low'] },
+    ]);
+    expect(commits).toHaveLength(1);
+    expect(form().destination?.typeId).toBe(made.id);
+    // Title stays on Title and the first Paragraph on Description.
+    expect(questionsOf(form()).map((q) => q.goesTo)).toEqual([
+      { to: 'title' },
+      undefined,
+      { to: 'field', fieldId: 'f-team' },
+      { to: 'field', fieldId: 'f-severity' },
+    ]);
+  });
+
+  it('does nothing on a locked form', () => {
+    const { actions, commits, saveType } = actionsOn([{ ...asked(), locked: true }, board]);
+    actions.newCardType();
+    expect(saveType).not.toHaveBeenCalled();
+    expect(commits).toHaveLength(0);
+  });
+});
+
+describe('addQuestionFields', () => {
+  it('adds a field to the chosen type for each question wanting one, mapped in one step', () => {
+    const { actions, form, commits, saveType } = actionsOn([asked(), board]);
+    actions.addQuestionFields();
+    expect(saveType).toHaveBeenCalledTimes(1);
+    const made = saveType.mock.calls[0]![0] as ItemTypeDef;
+    expect(made.id).toBe('bug');
+    // Severity already fits Bug's field, so only Team gets one.
+    expect(made.custom!.map((f) => f.label)).toEqual(['Severity', 'Team']);
+    expect(commits).toHaveLength(1);
+    expect(form().destination?.typeId).toBe('bug');
+    expect(questionsOf(form())[2]!.goesTo).toEqual({ to: 'field', fieldId: 'f-team' });
+  });
+
+  it('does nothing when every answer has a place, or the form is locked', () => {
+    const plain = actionsOn([formTab({}), board]);
+    plain.actions.addQuestionFields();
+    expect(plain.saveType).not.toHaveBeenCalled();
+    expect(plain.commits).toHaveLength(0);
+    const locked = actionsOn([{ ...asked(), locked: true }, board]);
+    locked.actions.addQuestionFields();
+    expect(locked.saveType).not.toHaveBeenCalled();
+    expect(locked.commits).toHaveLength(0);
   });
 });
 

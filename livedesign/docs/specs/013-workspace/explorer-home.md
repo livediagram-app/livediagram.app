@@ -39,7 +39,9 @@ Its content sits in the Explorer's content width.
 
 Top to bottom, left column:
 
-- **Status pills**, two, each a link with a coloured dot:
+- **Status pills**, two, each a link with a coloured dot, on the hero's top line: level with Help and the close
+  (the same top, centred on them), so the greeting starts right under them. On a narrow phone the pills wrap or
+  shrink beside the corner, never under it:
   - the person's designs: "1 design" / "N designs" (every space the person is in: My Work and each of their
     teams, each design counted once; not what was shared with them through a link, nor this browser's designs in
     This Browser), opening **My Work**, or for someone in a team, Search results narrowed to those spaces
@@ -75,7 +77,7 @@ the hero has no menu button of its own.
 
 ## Hiding the banner
 
-Next to Help, wherever the hero puts it (a phone's row, the pills' row, the wide top right), sits a **close** (an ×
+Next to Help, wherever the hero puts it (the right end of the pills' row below `lg`, the wide top right from `lg`, level with the pills either way), sits a **close** (an ×
 button the size of Help, named and tooltipped "Hide Home Banner"). Pressing it hides the hero for good, as the
 synced `homeBanner` preference set to `false`
 ([User preferences](../007-editor/user-preferences.md)), on every device the person signs in on. It folds away as it

@@ -53,6 +53,19 @@ const FIXTURES: Record<string, unknown[][]> = {
       },
     ],
   ],
+  automationAddressEmail: [
+    [
+      {
+        subject: 'S <x>',
+        body: 'B\nline & two',
+        rule: 'R',
+        planName: 'P',
+        cardUrl: 'https://x/y?a=1&b=2',
+        unsubscribeUrl: 'https://x/api/email-optout/p/t',
+        unsubscribePage: 'https://x/email-optout?p=p&t=t',
+      },
+    ],
+  ],
   formSuspendedEmail: [[FORM]],
   mentionQuote: [['  a   b  '], ['word '.repeat(100)], ['x'.repeat(400)]],
 };
@@ -60,6 +73,7 @@ const FIXTURES: Record<string, unknown[][]> = {
 const EXPECTED: Record<string, string> = {
   accountDeletedEmail: '5333b9860bf5fae6cb5160923149384cc475bb4c5b33aca5f6bedb02b5151b17',
   actionAssignedEmail: 'dc95db5e1d00956f671a6244b456f1af84146cc8ff96b354beeafb5170d1f5a4',
+  automationAddressEmail: '5ad4e6c7336a3eb40e9fd05b2fd865e272e31caa6b147a829af4fd5c57dc9030',
   automationEmail: '41f7dd42b5b05aceb55b7b6dc1c95d5fbda3a64aec2181e8730d131a8efd958a',
   commentNotificationEmail: 'd1791defcf18b7dca7b58d4b143fc509af641339a032fb14328d1e1c48ab5481',
   firstShareEmail: 'c65e8a751b3e08bcd12ca05170a3a62f0ad42fdc4fb9e7a3228658b5d1d36737',

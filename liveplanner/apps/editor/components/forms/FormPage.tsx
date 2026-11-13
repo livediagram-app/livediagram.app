@@ -6,24 +6,28 @@
 // link draws it. The status bar holds Preview, the help link and the cog; the menu box, its name; the header's Share is
 // Share Form (lib/form-share-store.ts).
 import { useNow } from '@liveworkspace/workbench/hooks/ui/useNow';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { formLook, type Tab } from '@liveplanner/project';
+import { boardsOf } from '@liveplanner/templates';
 import { ITEMS_MAX } from '@liveplanner/items';
 import {
   closedBySettings,
   destinationType,
   publicForm,
+  publishProblemText,
   publishProblems,
   readForm,
   type FormDefinition,
+  type PublishProblem,
 } from '@liveplanner/forms';
 import { lucideGlyph, Tooltip } from '@liveplanner/ui';
 import { lucideEye } from '@liveworkspace/icons/lucide';
 import { CanvasCover } from '@/components/plan/MaximisedPlanLayer';
 import { DashboardMenuName } from '@/components/plan/dashboard/DashboardMenuName';
 import { setFormShareHost } from '@/lib/form-share-store';
-import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { setFormProblemsHost } from '@/lib/form-problems-store';
 import { usePlan } from '@/components/plan/PlanContext';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
 import type { FormActions } from '@/hooks/forms/useFormActions';
@@ -140,11 +144,26 @@ export function FormPage({
   const warnings = useMemo(() => (warning ? [warning] : []), [warning]);
   const type = destinationType(form.destination, types);
   // What else stops publishing (docs/specs/030-forms/forms.md "Publishing and the form link").
+  // The destination tab's boards, for the card type rules (forms.md "Choosing the card type by an answer").
+  // A form without rules reads no board for them.
+  const ruled = !form.sheet && !!form.destination?.typeRules;
+  const place = useMemo(
+    () => ({ types, boards: destTab && ruled ? boardsOf(destTab).map((x) => x.setup) : [] }),
+    [types, destTab, ruled],
+  );
   const notReady = useMemo(
-    () => publishProblems(form, form.sheet ? undefined : type),
-    [form, type],
+    () => publishProblems(form, form.sheet ? undefined : type, place),
+    [form, type, place],
   );
 
+  // Each question's own problems, for the mark on its card.
+  const questionProblems = useMemo(() => {
+    const by = new Map<string, string[]>();
+    for (const p of notReady)
+      if ('questionId' in p && p.questionId)
+        by.set(p.questionId, [...(by.get(p.questionId) ?? []), publishProblemText(p)]);
+    return by;
+  }, [notReady]);
   // Responses Go To or Settings, from wherever a fix is offered (out of Preview first).
   const openSettings = useCallback((section: FormSettingsSection | null) => {
     setPreview(false);
@@ -182,6 +201,7 @@ export function FormPage({
       openSettings,
       locked,
       problemCount: formProblemCount(problem, notReady),
+      questionProblems,
     }),
     [
       form,
@@ -196,6 +216,7 @@ export function FormPage({
       locked,
       problem,
       notReady,
+      questionProblems,
     ],
   );
   // The header's Share is this form's while an Editor has it open (lib/form-share-store.ts).
@@ -205,6 +226,30 @@ export function FormPage({
     setFormShareHost({ published, open: () => setShareOpen(true) });
     return () => setFormShareHost(null);
   }, [canEdit, published]);
+  // Show a problem's question or section, out of Preview first.
+  const showProblem = useCallback(
+    (p: PublishProblem) => {
+      setPreview(false);
+      if ('questionId' in p && p.questionId) select(p.questionId, true);
+      else if (p.kind === 'broken_rule')
+        document
+          .querySelector(`[data-form-section-id="${p.sectionId}"]`)
+          ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    },
+    [select],
+  );
+  // The bottom-right cluster's Problems, an Editor's (lib/form-problems-store.ts).
+  useEffect(() => {
+    if (!canEdit) return;
+    setFormProblemsHost({
+      problem,
+      notReady,
+      warnings,
+      onFixDestination: () => openSettings('destination'),
+      onShow: showProblem,
+    });
+    return () => setFormProblemsHost(null);
+  }, [canEdit, problem, notReady, warnings, openSettings, showProblem]);
   const previewButton = (
     <Tooltip label={preview ? 'Back to Editing (Esc)' : 'Preview the form as respondents see it'}>
       <button
@@ -222,6 +267,7 @@ export function FormPage({
       </button>
     </Tooltip>
   );
+  const phone = useIsMobileViewport();
   const shown = publicForm(form);
 
   return (
@@ -256,8 +302,8 @@ export function FormPage({
                         onFix={() => openSettings('destination')}
                         onOpenResponses={destTab ? () => openTab(destTab.id) : null}
                         destinationName={destTab?.name ?? null}
-                        problems={formProblemCount(problem, notReady, warnings)}
-                        onProblems={() => setShareOpen(true)}
+                        // In the top row where a palette sits, on a desktop; heading the column on a phone.
+                        top={phone ? null : canvas}
                         onNotTaking={(fix) => {
                           if (fix === 'share') setShareOpen(true);
                           else if (fix === 'responses') {
@@ -268,8 +314,6 @@ export function FormPage({
                           canEdit ? (
                             <>
                               {previewButton}
-                              {/* Learn about forms, beside the cog (as a board's help sits by its cog). */}
-                              <HelpArticleLink article="planForms" />
                               {/* The cog stays an Editor's while the form is locked: its Settings (closing it, its
                                   messages) still apply; Responses Go To is locked with the form. */}
                               {!preview ? (
@@ -325,6 +369,7 @@ export function FormPage({
                                       addItems: plan?.addItems,
                                       state,
                                       offline: !online,
+                                      place,
                                       // A published form counts it as a response; a Sheet's row is
                                       // always written by the api.
                                       sendToLink:
@@ -369,14 +414,10 @@ export function FormPage({
         toSheet={!!form.sheet}
         onSyncToCloud={onSyncToCloud}
         syncReady={syncReady}
+        form={shown}
         onShow={(p) => {
           setShareOpen(false);
-          setPreview(false);
-          if ('questionId' in p) select(p.questionId, true);
-          else if (p.kind === 'broken_rule')
-            document
-              .querySelector(`[data-form-section-id="${p.sectionId}"]`)
-              ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          showProblem(p);
         }}
       />
     </>

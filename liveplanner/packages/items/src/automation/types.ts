@@ -45,6 +45,12 @@ export const AUTOMATION_WAITING_RUNS_MAX = 500;
 // The triggers after Phase 3 (spec "Triggers"): Card Stuck's days and Column Over Limit's limit.
 export const AUTOMATION_STUCK_DAYS_MAX = 90;
 export const AUTOMATION_COLUMN_LIMIT_MAX = 500;
+// Send Email's typed-in addresses (spec "Typed-in addresses"): the most one step holds, and the emails a plan sends to
+// such addresses a UTC day, over every rule, each address one. 50 is the owner's choice (2026-11-13, "Cap and
+// unsubscribe"): a team's own notices to a few outside people fit in it many times over, while a plan can never be
+// turned into a bulk mailer from liveplanner's sending domain.
+export const AUTOMATION_EMAIL_ADDRESSES_MAX = 10;
+export const AUTOMATION_ADDRESS_EMAILS_PER_DAY = 50;
 
 // Who a rule's changes are by: `name` is the rule's name at the moment it ran, the history tag says it was a rule.
 export const AUTOMATION_PERSON_ID = 'automation';
@@ -201,6 +207,8 @@ export type AutomationAssignee =
   // People in turn: 2 to 10 person ids, in order; the rule keeps its place.
   | { rotate: string[] };
 export type AutomationRecipient = { assignee: true } | { trigger: true } | { person: string };
+// Send Email's: a person as above, or 1 to 10 typed-in addresses (lower case, each once; email-addresses.ts).
+export type AutomationEmailRecipient = AutomationRecipient | { addresses: string[] };
 
 export type AutomationAction =
   | { kind: 'move'; status: string }
@@ -222,7 +230,7 @@ export type AutomationAction =
       // A Card field on the new card that points back at the triggering card.
       linkField?: string;
     }
-  | { kind: 'email'; to: AutomationRecipient; subject: string; body: string }
+  | { kind: 'email'; to: AutomationEmailRecipient; subject: string; body: string }
   | { kind: 'set_type'; type: string }
   // `colour`: a #rrggbb, or null for none.
   | { kind: 'set_colour'; colour: string | null }

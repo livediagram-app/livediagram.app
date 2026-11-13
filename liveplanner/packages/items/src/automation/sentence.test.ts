@@ -258,6 +258,19 @@ describe('actionChip', () => {
     [{ kind: 'email', to: { person: 'p-marco' }, subject: 's', body: 'b' }, 'Email Marco Ruiz'],
     [{ kind: 'email', to: { trigger: true }, subject: 's', body: 'b' }, 'Email Who Did It'],
     [{ kind: 'email', to: { assignee: true }, subject: 's', body: 'b' }, 'Email Assignee'],
+    [
+      { kind: 'email', to: { addresses: ['ana@example.com'] }, subject: 's', body: 'b' },
+      'Email ana@example.com',
+    ],
+    [
+      {
+        kind: 'email',
+        to: { addresses: ['ana@example.com', 'bo@example.com', 'cy@example.com'] },
+        subject: 's',
+        body: 'b',
+      },
+      'Email ana@example.com and 2 More',
+    ],
   ];
   it.each(cases)('reads %j as %s', (a, words) => {
     expect(actionChip(a, OUTLINE)).toBe(words);

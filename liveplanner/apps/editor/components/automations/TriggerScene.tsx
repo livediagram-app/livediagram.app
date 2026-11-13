@@ -5,6 +5,7 @@
 // app/automation-scenes.css. Decoration only: aria-hidden.
 
 import type { ReactNode } from 'react';
+import { TileStage } from '@/components/tile-picker/tile-scene';
 import type { AutomationTriggerKind } from '@liveplanner/items';
 import { lucideGlyph } from '@liveplanner/ui';
 import { lucideClock, lucideWebhook } from '@liveworkspace/icons/lucide';
@@ -515,20 +516,8 @@ export function TriggerScene({
   const t = TONES[TRIGGER_GROUP_TONES[group]];
   const Scene = SCENES[kind];
   return (
-    <span
-      aria-hidden
-      className={`relative flex h-[72px] shrink-0 items-center justify-center gap-2 overflow-hidden border-b border-slate-100 bg-gradient-to-br px-4 dark:border-slate-800 ${t.wash}`}
-    >
-      <span
-        className={`pointer-events-none absolute inset-0 ${t.dots}`}
-        style={{
-          backgroundImage: 'radial-gradient(currentColor 1px, transparent 1.2px)',
-          backgroundSize: '10px 10px',
-          maskImage: 'linear-gradient(115deg, transparent 25%, #000 95%)',
-          WebkitMaskImage: 'linear-gradient(115deg, transparent 25%, #000 95%)',
-        }}
-      />
+    <TileStage tone={t}>
       <Scene tone={t} />
-    </span>
+    </TileStage>
   );
 }

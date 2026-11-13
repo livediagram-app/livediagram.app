@@ -50,19 +50,20 @@ const search = (value: string) =>
   fireEvent.change(screen.getByRole('textbox', { name: /Find a board/ }), { target: { value } });
 
 describe('Start Planning: Import on the rail', () => {
-  it('is the entry directly below Connect File, in its foot group, the last chip and Tab stop', () => {
+  it('is the entry directly above Connect File, in its foot group, Connect File the last chip and Tab stop', () => {
     mount(ROLES.editor);
     const connect = within(rail()).getByRole('button', { name: 'Connect File' });
     const entry = importEntry();
-    // One group at the rail's foot, Import after Connect File: the DOM order is the phone's chips' and the Tab order.
+    // One group at the rail's foot, Import before Connect File: the DOM order is the phone's chips' and the Tab order.
     expect(entry.parentElement).toBe(connect.parentElement);
-    expect(connect.nextElementSibling).toBe(entry);
-    expect(railIds().slice(-2)).toEqual(['connect', 'import']);
+    expect(entry.nextElementSibling).toBe(connect);
+    expect(railIds().slice(-2)).toEqual(['import', 'connect']);
     expect(entry.tabIndex).toBe(0);
-    // Drawn like Connect File's row: the glyph, then its name on one line; a rail gap under Connect File.
+    // Drawn like Connect File's row: the glyph, then its name on one line; heading the group here (no Describe a
+    // Plan), with Connect File a rail gap under it.
     expect(entry.textContent).toBe('Import');
     expect(entry.querySelector('svg')).not.toBeNull();
-    expect(entry.className).toContain('sm:mt-1');
+    expect(connect.className).toContain('sm:mt-1');
     expect(entry.getAttribute('aria-haspopup')).toBe('dialog');
   });
 

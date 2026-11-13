@@ -2,7 +2,7 @@
 // "The api"), for a signed-in person only: no plan exists on the server yet when Start Planning asks, so the count is
 // the account's (plan-draft-count.ts), PLAN_DRAFT_PER_DAY a UTC day. The person's words, alone, go to the AI actions'
 // model; its reply is read by @liveplanner/items readPlanDraft into a draft of names (with up to two starter rules,
-// each read by Describe a Rule's reader), or asked once more with the check's words. Nothing is made: the route writes only its count. Every refusal's message is fixed words, never the
+// each read by Describe a Rule's reader), or asked once more with the check's words (draft-asks.ts). Nothing is made: the route writes only its count. Every refusal's message is fixed words, never the
 // model's; the request and the reply are never logged.
 import {
   PLAN_DRAFT_CAPPED,
@@ -12,7 +12,6 @@ import {
   PLAN_DRAFT_PROMPT_MAX,
   PLAN_DRAFT_UNREADABLE,
   planDraftRequest,
-  readAiReply,
   readPlanDraft,
 } from '@liveplanner/items';
 import type {
@@ -20,14 +19,16 @@ import type {
   PlanDraftErrorBody,
   PlanDraftResponse,
 } from '@liveplanner/api-schema';
-import { aiClient, ask } from '../plan-room/automations/automation-ai';
+import { aiClient } from '../plan-room/automations/automation-ai';
+import { DRAFT_ASKS_MAX, askForDraft } from './draft-asks';
 import { spendPlanDraft } from '../plan-draft-count';
 import { json, methodNotAllowed, notFound, signInRequired } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
 import { readBody, type RouteContext } from './context';
 
-// The asks one draft may make: the first, and one more with the check's words.
-export const PLAN_DRAFT_ASKS_MAX = 2;
+// The asks one draft may make: the first, and one more with the check's words (draft-asks.ts, shared with Describe a
+// Form).
+export const PLAN_DRAFT_ASKS_MAX = DRAFT_ASKS_MAX;
 
 const refuse = (status: number, error: PlanDraftError, message: string, path?: string) =>
   json({ error, message, ...(path ? { path } : {}) } satisfies PlanDraftErrorBody, { status });
@@ -64,7 +65,6 @@ async function draftPlan(ctx: RouteContext): Promise<Response> {
   const env = ctx.env;
   const started = Date.now();
   const defer = (p: Promise<unknown>) => ctx.waitUntil?.(p);
-  let previous: { path: string; message: string } | undefined;
   // The refused path (a part's place, never the request's words) says which check a draft that didn't read failed.
   // A draft's starter rules: how many it kept and left out, never what they say.
   const done = (
@@ -72,8 +72,8 @@ async function draftPlan(ctx: RouteContext): Promise<Response> {
     asks: number,
     response: Response,
     rules?: { rules: number; rulesDropped: number },
+    refused?: string,
   ) => {
-    const refused = answer === 'unreadable' ? previous?.path : undefined;
     console.info('[plan-draft] draft', {
       answer,
       asks,
@@ -90,31 +90,33 @@ async function draftPlan(ctx: RouteContext): Promise<Response> {
     return done('failed', 0, refuse(503, 'plan_draft_unavailable', PLAN_DRAFT_FAILED));
   if (!spent) return done('capped', 0, refuse(429, 'plan_draft_capped', PLAN_DRAFT_CAPPED));
 
-  let asks = 0;
-  for (let n = 0; n < PLAN_DRAFT_ASKS_MAX; n++) {
-    asks += 1;
-    defer(reportServerEvent(env, 'Plan', 'Ran', 'PlanAiDraft'));
-    const asked = await ask(client, planDraftRequest(prompt, previous), env.AI_GATEWAY);
-    if (!asked.ok)
-      return done('failed', asks, refuse(503, 'plan_draft_unavailable', PLAN_DRAFT_FAILED));
-    const reply = readAiReply(asked.raw);
-    if (!reply) {
-      previous = { path: 'reply', message: 'the reply must be one JSON object' };
-      continue;
-    }
-    const out = readPlanDraft(reply, prompt);
-    if ('off' in out) {
-      defer(reportServerEvent(env, 'Plan', 'Ran', 'PlanAiOffTopic'));
-      return done('off_topic', asks, refuse(422, 'plan_draft_off_topic', PLAN_DRAFT_OFF_TOPIC));
-    }
-    if ('draft' in out) {
-      const answer: PlanDraftResponse = { draft: out.draft };
-      return done('drafted', asks, json(answer), {
-        rules: out.draft.rules?.length ?? 0,
-        rulesDropped: out.dropped ?? 0,
-      });
-    }
-    previous = out.refused;
+  const asked = await askForDraft({
+    client,
+    gateway: env.AI_GATEWAY,
+    request: (refused) => planDraftRequest(prompt, refused),
+    read: (reply) => readPlanDraft(reply, prompt),
+    onAsk: () => defer(reportServerEvent(env, 'Plan', 'Ran', 'PlanAiDraft')),
+  });
+  const { asks } = asked;
+  if (asked.answer === 'failed')
+    return done('failed', asks, refuse(503, 'plan_draft_unavailable', PLAN_DRAFT_FAILED));
+  if (asked.answer === 'off_topic') {
+    defer(reportServerEvent(env, 'Plan', 'Ran', 'PlanAiOffTopic'));
+    return done('off_topic', asks, refuse(422, 'plan_draft_off_topic', PLAN_DRAFT_OFF_TOPIC));
   }
-  return done('unreadable', asks, refuse(422, 'plan_draft_unreadable', PLAN_DRAFT_UNREADABLE));
+  if (asked.answer === 'drafted') {
+    const { draft, dropped } = asked.out;
+    const answer: PlanDraftResponse = { draft };
+    return done('drafted', asks, json(answer), {
+      rules: draft.rules?.length ?? 0,
+      rulesDropped: dropped ?? 0,
+    });
+  }
+  return done(
+    'unreadable',
+    asks,
+    refuse(422, 'plan_draft_unreadable', PLAN_DRAFT_UNREADABLE),
+    undefined,
+    asked.refused?.path,
+  );
 }

@@ -91,12 +91,17 @@ export default {
       }
     }
     // A form link's page (docs/specs/030-forms/forms.md): one placeholder file backs every /form/<code>, as
-    // /project/<id> is backed above.
-    if (isFormPath(url.pathname) && url.pathname !== FORM_PLACEHOLDER_PATH) {
+    // /project/<id> is backed above. Frameable, so a form can be embedded on a website (Share Form's Embed): the page
+    // carries no signed-in action and its requests send no credentials, so there is nothing to clickjack.
+    if (isFormPath(url.pathname)) {
+      if (url.pathname === FORM_PLACEHOLDER_PATH) {
+        return withSecurityHeaders(await env.ASSETS.fetch(request), { frameable: true });
+      }
       const rewritten = new URL(request.url);
       rewritten.pathname = FORM_PLACEHOLDER_PATH;
       return withSecurityHeaders(
         await env.ASSETS.fetch(new Request(rewritten.toString(), request)),
+        { frameable: true },
       );
     }
     // The workspace frame (docs/specs/013-workspace/workbench-embeds.md "Two scopes"): one static page backs every

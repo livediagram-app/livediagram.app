@@ -23,6 +23,7 @@ import {
 } from '@liveplanner/ui';
 import { lucideGripVertical } from '@liveworkspace/icons/lucide';
 import { Tooltip } from '@liveplanner/ui';
+import { keyLabel } from '@liveworkspace/workbench/lib/key-label';
 import {
   deleteQuestion,
   duplicateQuestion,
@@ -105,6 +106,11 @@ export function FormQuestionCard({
   const target = effectiveTarget(q, b.type);
   const mapped = target.to === 'field' ? target.field : undefined;
 
+  const problems = b.canEdit ? (b.questionProblems?.get(q.id) ?? []) : [];
+  const problemMark = problems.length ? (
+    <QuestionProblemMark problems={problems} onPick={() => b.select(q.id, true)} />
+  ) : null;
+
   if (!selected) {
     return (
       <div
@@ -147,6 +153,7 @@ export function FormQuestionCard({
             onChange={() => {}}
             onOther={() => {}}
             disabled
+            aside={problemMark}
           />
         </div>
         {/* A sheet takes every answer in a column of its own: nothing maps, so nothing breaks. */}
@@ -159,6 +166,20 @@ export function FormQuestionCard({
     );
   }
 
+  const duplicate = () => {
+    // The copy's id is made here, so it can be selected once the change lands.
+    const id = newId('q');
+    change((f) => duplicateQuestion(f, q.id, () => id).form);
+    b.select(id);
+  };
+  const remove = () => {
+    const next = neighbourOf(b.form, q.id);
+    // It fades away first; the questions under it then slide up (question-motion.ts).
+    leaveThen(cardRef.current, () => {
+      change((f) => deleteQuestion(f, q.id));
+      b.select(next);
+    });
+  };
   return (
     <div
       ref={cardRef}
@@ -167,6 +188,13 @@ export function FormQuestionCard({
         if (e.key === 'Escape') {
           e.stopPropagation();
           b.select(null);
+        } else if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === 'd') {
+          // Mod+D duplicates the question (and never bookmarks the page).
+          e.preventDefault();
+          duplicate();
+        } else if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'Backspace') {
+          e.preventDefault();
+          remove();
         } else if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
           // Options handle their own Alt+arrows.
           if ((e.target as HTMLElement).closest('[role="list"]')) return;
@@ -207,6 +235,9 @@ export function FormQuestionCard({
           >
             <TypeButtonFace type={q.type} />
           </QuestionTypeMenu>
+          {problemMark ? (
+            <span className="flex h-10 shrink-0 items-center max-sm:hidden">{problemMark}</span>
+          ) : null}
         </div>
         <DraftText
           value={q.help ?? ''}
@@ -286,10 +317,11 @@ export function FormQuestionCard({
             <AnswerGoesTo question={q} onChosen={() => setGoesTo(null)} />
           </FormSheet>
         ) : null}
-        <Tooltip label="Move Up">
+        <Tooltip label={`Move Up (${keyLabel('Alt-')}↑)`}>
           <button
             type="button"
-            aria-label="Move Up"
+            aria-label={`Move Up (${keyLabel('Alt-')}↑)`}
+            aria-keyshortcuts="Alt+ArrowUp"
             disabled={first}
             onClick={() => change((f) => moveQuestion(f, q.id, -1))}
             className={ICON_BUTTON}
@@ -297,10 +329,11 @@ export function FormQuestionCard({
             <ArrowUpIcon size={16} />
           </button>
         </Tooltip>
-        <Tooltip label="Move Down">
+        <Tooltip label={`Move Down (${keyLabel('Alt-')}↓)`}>
           <button
             type="button"
-            aria-label="Move Down"
+            aria-label={`Move Down (${keyLabel('Alt-')}↓)`}
+            aria-keyshortcuts="Alt+ArrowDown"
             disabled={last}
             onClick={() => change((f) => moveQuestion(f, q.id, 1))}
             className={ICON_BUTTON}
@@ -308,33 +341,23 @@ export function FormQuestionCard({
             <ArrowDownIcon size={16} />
           </button>
         </Tooltip>
-        <Tooltip label="Duplicate">
+        <Tooltip label={`Duplicate (${keyLabel('Mod-D')})`}>
           <button
             type="button"
-            aria-label="Duplicate"
-            onClick={() => {
-              // The copy's id is made here, so it can be selected once the change lands.
-              const id = newId('q');
-              change((f) => duplicateQuestion(f, q.id, () => id).form);
-              b.select(id);
-            }}
+            aria-label={`Duplicate (${keyLabel('Mod-D')})`}
+            aria-keyshortcuts="Control+D Meta+D"
+            onClick={duplicate}
             className={ICON_BUTTON}
           >
             <DuplicateIcon size={16} />
           </button>
         </Tooltip>
-        <Tooltip label="Delete">
+        <Tooltip label={`Delete question (${keyLabel('Mod-Shift-')}⌫)`}>
           <button
             type="button"
-            aria-label="Delete question"
-            onClick={() => {
-              const next = neighbourOf(b.form, q.id);
-              // It fades away first; the questions under it then slide up (question-motion.ts).
-              leaveThen(cardRef.current, () => {
-                change((f) => deleteQuestion(f, q.id));
-                b.select(next);
-              });
-            }}
+            aria-label={`Delete question (${keyLabel('Mod-Shift-')}⌫)`}
+            aria-keyshortcuts="Control+Shift+Backspace Meta+Shift+Backspace"
+            onClick={remove}
             className={ICON_BUTTON}
           >
             <TrashIcon size={16} />
@@ -353,5 +376,35 @@ export function FormQuestionCard({
         </SwitchRow>
       </div>
     </div>
+  );
+}
+
+// A question with a problem (an empty prompt, a choice with no options, an answer whose field is gone) wears an amber
+// exclamation mark at its card's top right (docs/specs/030-forms/forms.md "Publishing and the form link"): its tooltip
+// says what is wrong, and a press opens the question to fix it.
+function QuestionProblemMark({
+  problems,
+  onPick,
+}: {
+  problems: readonly string[];
+  onPick: () => void;
+}) {
+  const label = problems.join(' ');
+  return (
+    <Tooltip label={label}>
+      <button
+        type="button"
+        aria-label={`Problem: ${label}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onPick();
+        }}
+        className="relative z-[2] flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full bg-amber-500 text-[12px] font-bold leading-none text-white shadow-sm ring-2 ring-white transition hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-amber-300 dark:ring-slate-900"
+      >
+        <span aria-hidden className="text-optical-centre">
+          !
+        </span>
+      </button>
+    </Tooltip>
   );
 }

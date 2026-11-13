@@ -52,7 +52,7 @@ describe('publishProblems', () => {
     ]);
     // With no card type the destination's own check speaks; mappings are not judged.
     expect(publishProblems(form, undefined).map((p) => p.kind)).not.toContain('broken_mapping');
-    expect(Object.keys(PUBLISH_PROBLEM_TEXT)).toHaveLength(7);
+    expect(Object.keys(PUBLISH_PROBLEM_TEXT)).toHaveLength(8);
   });
 
   it('asks for a required question going to each required field, in a section every response sees', () => {

@@ -5,10 +5,11 @@
 // with the reason, while responses have nowhere to go or the form is not ready: each problem listed with Show). Published, it shows the link to copy or open, Accepting
 // Responses, and Delete Link, which asks first. On a project in This Browser it offers Sync Project first (the project
 // Share dialog's prompt), then carries straight on to publishing as the project stops being offline.
+// Published, More Ways to Share (closed, loaded on first open) offers a QR code, an embed code and a pre-filled link.
 import { useId, useState } from 'react';
 import { Button, SwitchRow } from '@liveplanner/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
-import type { DestinationProblem, PublishProblem } from '@liveplanner/forms';
+import type { DestinationProblem, PublicForm, PublishProblem } from '@liveplanner/forms';
 import { SyncProjectPrompt } from '@/components/dialogs/SyncProjectPrompt';
 // The editor's Dialog, so the modal guard counts it (shortcuts behind it go quiet, and the tours wait for it).
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -18,6 +19,7 @@ import { formUrlFor } from '@/lib/form-path';
 import { track } from '@/lib/telemetry';
 import { FormProblems, formProblemCount } from './FormProblems';
 import { shareFormHeroArt } from './ShareFormHeroArt';
+import { ShareFormMore } from './share/ShareFormMore';
 
 export function ShareFormDialog({
   open,
@@ -31,6 +33,7 @@ export function ShareFormDialog({
   toSheet = false,
   onSyncToCloud,
   syncReady = true,
+  form,
 }: {
   open: boolean;
   onClose: () => void;
@@ -47,6 +50,8 @@ export function ShareFormDialog({
   // A project in This Browser: syncs it in place (useSyncInPlace), once the reader is known (`syncReady`).
   onSyncToCloud?: () => Promise<void>;
   syncReady?: boolean;
+  // The form as respondents see it, for More Ways to Share (its heading, and its questions to pre-fill).
+  form?: PublicForm;
 }) {
   const titleId = useId();
   const [copied, setCopied] = useState(false);
@@ -139,6 +144,7 @@ export function ShareFormDialog({
                 onFixDestination={onFixDestination}
                 onShow={onShow}
               />
+              {form ? <ShareFormMore url={url} form={form} /> : null}
               <div className="flex justify-end">
                 <button
                   type="button"

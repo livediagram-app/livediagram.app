@@ -137,8 +137,11 @@ export function PlanBoardPicker({
   onForm,
   onImport,
   onDescribe,
+  onDescribeForm,
 }: {
   onPick: (preset: string) => void;
+  // Opens Describe a Form (Start Planning's Forms card, docs/specs/030-forms/describe-a-form.md); absent, no card.
+  onDescribeForm?: (() => void) | undefined;
   // Opens Describe a Plan (Start Planning's rail entry and search card); absent, neither.
   onDescribe?: (() => void) | undefined;
   // Opens the Import dialog (Start Planning's Import card); absent, no card.
@@ -186,6 +189,7 @@ export function PlanBoardPicker({
       onForm={onForm}
       onImport={onImport}
       onDescribe={onDescribe}
+      onDescribeForm={onDescribeForm}
     />
   );
 }

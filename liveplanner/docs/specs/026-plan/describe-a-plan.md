@@ -33,7 +33,7 @@ The name is **Describe a Plan**, apart from the marketing site's **Build with AI
   moves through and what each card should hold. You check the plan before anything is made.", a text box ("A hiring
   pipeline with Applied, Screen, Interview and Offer, and a Candidate card with Role, Salary Band and Interview Date"),
   its count ("120 / 500"), three example chips that fill the box (**Customer Onboarding**, **Grant Applications**,
-  **Home Renovation**), the line "Uses AI: you can describe 10 plans a day", then **Cancel** and **Draft Plan** (also
+  **Home Renovation**), the line "Uses AI: plans and forms share 10 drafts a day.", then **Cancel** and **Draft Plan** (also
   Ctrl or ⌘ Enter). Draft Plan is disabled while the box is empty.
 - While it drafts, the button reads **Drafting…** with a spinner and the box is read-only; Cancel stops waiting (the
   call still counts). It takes a few seconds.
@@ -101,7 +101,8 @@ What can't be drafted is said in the dialog, under the box, the text kept so it 
   what you’re planning, the stages work moves through and what each card holds, like the examples.";
 - a plan the model could not make readable, even on a second try: "Couldn’t draft a plan from that. Try saying it
   another way, or start from a template.";
-- the day's drafts spent: "You’ve described 10 plans today. Try again tomorrow, or start from a template.";
+- the day's drafts spent: "You’ve used today’s 10 AI drafts for plans and forms. Try again tomorrow, or start from a
+  template.";
 - no model, or one that errs or is slow: "AI isn’t set up here." or "The AI couldn’t answer just now. Try again in a
   moment.";
 - the ask not answered at all (offline, or an answer the editor can't read): "That didn't work. Check your connection
@@ -161,7 +162,8 @@ dialog's own words have.
 ## Limits and cost
 
 - A person describes at most **10 plans a day** (UTC) whatever their asks, counted per account wherever they ask, so
-  one account can never spend the deployment's AI on its own. Every call also rides the shared AI limits: the
+  one account can never spend the deployment's AI on its own. The 10 are shared with [Describe a
+  Form](../030-forms/describe-a-form.md): one AI budget per account, plans and forms together. Every call also rides the shared AI limits: the
   15-second wait, the AI Gateway's spend limit when `AI_GATEWAY` is set ([AI actions → Cost](automations.md#cost)),
   and the free 10,000 Neurons on the Workers Free plan.
 - An ask has **15 seconds** and answers at most **2,000 tokens**: a reply at every cap (12 columns, four types of

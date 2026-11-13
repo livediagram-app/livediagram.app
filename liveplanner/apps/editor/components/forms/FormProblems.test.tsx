@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { FormLinkState } from '@/hooks/forms/useFormLink';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import type { PublishProblem } from '@liveplanner/forms';
+import { setFormProblemsHost } from '@/lib/form-problems-store';
 import { FormProblems, formProblemCount } from './FormProblems';
-import { FormStatusBar } from './FormStatusBar';
+import { FormProblemsButton } from './FormProblemsButton';
 
 // A form's problems (docs/specs/030-forms/forms.md "Publishing and the form link"): every one listed together, and the
-// status bar's Problems with this Form, an Editor's, opening where they are.
+// bottom-right cluster's Problems, an Editor's, listing them in its popover.
 
 afterEach(cleanup);
 
@@ -40,34 +41,30 @@ describe('FormProblems', () => {
   });
 });
 
-describe('FormStatusBar problems', () => {
-  const link = { status: 'ready', link: { link: null, responses: 3 } } as unknown as FormLinkState;
-  const bar = (canEdit: boolean, problems: number, onProblems = vi.fn()) => {
-    render(
-      <FormStatusBar
-        link={link}
-        problem={null}
-        canEdit={canEdit}
-        onFix={() => {}}
-        problems={problems}
-        onProblems={onProblems}
-      />,
-    );
-    return onProblems;
-  };
+describe('FormProblemsButton', () => {
+  const host = (notReady: PublishProblem[]) =>
+    setFormProblemsHost({
+      problem: null,
+      notReady,
+      warnings: [],
+      onFixDestination: vi.fn(),
+      onShow: vi.fn(),
+    });
 
-  it('offers an Editor Problems with this Form, opening Share Form', () => {
-    const open = bar(true, 2);
-    fireEvent.click(screen.getByRole('button', { name: /Problems with this Form/ }));
-    expect(open).toHaveBeenCalledOnce();
+  it('offers Problems while the open form has any, its popover listing them', () => {
+    act(() => host([{ kind: 'no_questions' }]));
+    render(<FormProblemsButton />);
+    fireEvent.click(screen.getByRole('button', { name: /Problems with this Form: 1/ }));
+    expect(screen.getByText('Problems with this Form', { selector: 'p' })).toBeTruthy();
+    act(() => setFormProblemsHost(null));
   });
 
-  it('says nothing with no problems, or to someone who may not edit', () => {
-    bar(true, 0);
-    expect(screen.queryByRole('button', { name: /Problems with this Form/ })).toBeNull();
-    cleanup();
-    bar(false, 2);
-    expect(screen.queryByRole('button', { name: /Problems with this Form/ })).toBeNull();
+  it('says nothing with no problems, or with no Form page open', () => {
+    act(() => host([]));
+    const { container } = render(<FormProblemsButton />);
+    expect(container.textContent).toBe('');
+    act(() => setFormProblemsHost(null));
+    expect(container.textContent).toBe('');
   });
 });
 

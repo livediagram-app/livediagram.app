@@ -505,6 +505,119 @@ describe('responses (docs/specs/030-forms/forms.md "What a response makes")', ()
   });
 });
 
+describe('card type by an answer (docs/specs/030-forms/forms.md "Choosing the card type by an answer")', () => {
+  const withFeature = () => {
+    const catalogue = {
+      version: 1,
+      types: [
+        {
+          id: 'bug',
+          label: 'Bug',
+          newTitle: 'New bug',
+          glyph: 'bug',
+          color: '#0284c7',
+          fields: ['title', 'status', 'description', 'f-severity'],
+          custom: [
+            { id: 'f-severity', label: 'Severity', kind: 'choice', options: ['Low', 'High'] },
+          ],
+        },
+        {
+          id: 'feature',
+          label: 'Feature',
+          newTitle: 'New feature',
+          glyph: 'star',
+          color: '#16a34a',
+          fields: ['title', 'status', 'description', 'f-pitch'],
+          custom: [{ id: 'f-pitch', label: 'Pitch', kind: 'longtext' }],
+        },
+      ],
+    };
+    sql.sql
+      .prepare(`UPDATE plan SET item_types = ? WHERE id = 'd1'`)
+      .run(JSON.stringify(catalogue));
+    // The board takes both types.
+    const board = {
+      id: 'b1',
+      type: 'shape',
+      shape: 'plan-board',
+      x: 0,
+      y: 0,
+      width: 800,
+      height: 500,
+      planBoard: { ...presetSetup('bug-triage'), addTypes: ['bug', 'feature'] },
+    };
+    sql.sql
+      .prepare(`UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 'board'`)
+      .run(JSON.stringify({ kind: 'board', elements: [board] }));
+  };
+  const ruled = (rule: Record<string, unknown> = {}) =>
+    form({
+      destination: {
+        tabId: 'board',
+        typeId: 'bug',
+        status: 'new',
+        typeRules: [
+          {
+            id: 'r-1',
+            questionId: 'q-sev',
+            anyOf: ['High'],
+            typeId: 'feature',
+            status: 'new',
+            fields: { 'q-what': 'f-pitch' },
+            ...rule,
+          },
+        ],
+      },
+    });
+
+  it('files a response by the rule on the server, never by what the response sends', async () => {
+    withFeature();
+    writeForm(ruled());
+    const code = await publish();
+    expect(
+      (
+        await pub('POST', `${code}/responses`, {
+          answers: { 'q-sum': 'Dark mode', 'q-sev': 'High', 'q-what': 'Please' },
+        })
+      ).status,
+    ).toBe(201);
+    // Another answer takes the default type, whatever type or column the body names.
+    await pub('POST', `${code}/responses`, {
+      answers: { 'q-sum': 'Crash', 'q-sev': 'Low' },
+      typeId: 'feature',
+      status: 'done',
+    });
+    const made = (await items()).sort((a, b) => a.key - b.key);
+    expect(made.map((i) => i.type)).toEqual(['feature', 'bug']);
+    expect(made[0]!.fields).toMatchObject({
+      title: 'Dark mode',
+      status: 'new',
+      'f-pitch': 'Please',
+    });
+    expect(made[1]!.fields).toMatchObject({ title: 'Crash', status: 'new', 'f-severity': 'Low' });
+  });
+
+  it('refuses to publish a broken rule, and a rule broken later falls back to the default type', async () => {
+    withFeature();
+    writeForm(ruled({ questionId: 'q-gone' }));
+    const refused = await owner<{ error: string; problems: { kind: string }[] }>(
+      'POST',
+      'form-link',
+    );
+    expect(refused.status).toBe(409);
+    expect(refused.body.problems.map((p) => p.kind)).toContain('broken_type_rule');
+    writeForm(ruled());
+    const code = await publish();
+    // The rule's card type leaves the catalogue after publishing: responses keep arriving, as the default type.
+    writeForm(ruled({ typeId: 'gone' }));
+    expect(
+      (await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'Hi', 'q-sev': 'High' } }))
+        .status,
+    ).toBe(201);
+    expect((await items())[0]!.type).toBe('bug');
+  });
+});
+
 describe('responses to a Sheet (docs/specs/030-forms/forms.md "Responses to a Sheet")', () => {
   const SHEET = 'shtAAAAAA001';
   // The sheet on its Sheet tab, that tab in the project.

@@ -188,3 +188,36 @@ describe('Report This Form', () => {
     expect(screen.queryByRole('button', { name: 'Send Report' })).toBeNull();
   });
 });
+
+// docs/specs/030-forms/forms.md "Pre-filled answers": read once from the address, checked, never sent on their own.
+describe('pre-filled answers', () => {
+  it('starts with a valid answer from the address, and sends nothing on its own', async () => {
+    window.history.replaceState(null, '', `/form/${CODE}?q.q=From%20the%20link&q.nope=x`);
+    replies.push({ status: 200, body: OPEN });
+    render(<FormRespondPage />);
+    const box = await screen.findByLabelText<HTMLInputElement>(/^Thoughts/);
+    expect(box.value).toBe('From the link');
+    expect(calls).toHaveLength(1);
+    replies.push({ status: 201, body: { number: 4 } });
+    await submit();
+    expect((sentJson(calls[1]!.init) as { answers: unknown }).answers).toEqual({
+      q: 'From the link',
+    });
+  });
+
+  it('ignores a value its question refuses, and lets the draft win', async () => {
+    window.history.replaceState(null, '', `/form/${CODE}?q.q=${'x'.repeat(201)}`);
+    replies.push({ status: 200, body: OPEN });
+    render(<FormRespondPage />);
+    expect((await screen.findByLabelText<HTMLInputElement>(/^Thoughts/)).value).toBe('');
+    cleanup();
+    sessionStorage.setItem(
+      `liveplanner:form:${CODE}`,
+      JSON.stringify({ answers: { q: 'Typed here' }, other: {} }),
+    );
+    window.history.replaceState(null, '', `/form/${CODE}?q.q=From%20the%20link`);
+    replies.push({ status: 200, body: OPEN });
+    render(<FormRespondPage />);
+    expect((await screen.findByLabelText<HTMLInputElement>(/^Thoughts/)).value).toBe('Typed here');
+  });
+});

@@ -14,7 +14,14 @@ import {
 } from '@liveplanner/items';
 import type { AnswerValue } from './answers';
 import { effectiveTarget } from './mapping';
-import { promptOf, questionsOf, type FormDefinition, type FormQuestion } from './model';
+import {
+  promptOf,
+  questionsOf,
+  type CardTypeRule,
+  type FormDefinition,
+  type FormQuestion,
+} from './model';
+import { ruleTarget } from './type-rules';
 import { RATING_SCALE_DEFAULT } from './limits';
 import { fixedCardFields } from './fixed';
 
@@ -101,7 +108,8 @@ interface ResponseCard {
 // made the same way, titled "Preview: …" (its title answer, else the form's heading). `number` is the response number
 // it takes; null (a preview of a form with no link to count it) marks it as no response. The fields the destination
 // sets automatically are filled last, so they win over any answer, their dates read from `at` (when it is made: the
-// api's clock, never the respondent's).
+// api's clock, never the respondent's). `chosen` is the card type rule chooseCardType picked (type-rules.ts) and its
+// column: its answers go where the rule maps them on `type`, and the card takes its column.
 export function responseCard(
   form: FormDefinition,
   tabId: string,
@@ -110,6 +118,7 @@ export function responseCard(
   number: number | null,
   preview = false,
   at: number = Date.now(),
+  chosen?: { rule: CardTypeRule; status: string },
 ): ResponseCard {
   const fields: ItemFields = {};
   let title: string | undefined;
@@ -118,7 +127,7 @@ export function responseCard(
   for (const q of questionsOf(form)) {
     const value = answers.get(q.id);
     if (value === undefined) continue;
-    const target = effectiveTarget(q, type);
+    const target = chosen ? ruleTarget(q, chosen.rule, type) : effectiveTarget(q, type);
     if (target.to === 'title') {
       title = answerText(q, value);
     } else if (target.to === 'field' && target.field) {
@@ -150,7 +159,8 @@ export function responseCard(
     }
   }
   Object.assign(fields, fixedCardFields(form.destination?.fixed, type, at));
-  if (form.destination) fields['status'] = form.destination.status;
+  if (chosen) fields['status'] = chosen.status;
+  else if (form.destination) fields['status'] = form.destination.status;
   if (number !== null) fields[FROM_FORM_FIELD] = fromFormValue(tabId, number);
   return { type: type.id, fields };
 }

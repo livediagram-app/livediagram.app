@@ -40,9 +40,11 @@ export interface PlannedCard {
   fields: ItemFields;
 }
 
-// An email to send: the person it goes to (null: nobody, so none is sent), its subject and body, filled in.
+// An email to send: the person it goes to (null: nobody, so none is sent), or the typed-in addresses it goes to
+// (spec "Typed-in addresses"), its subject and body, filled in.
 export interface PlannedEmail {
   to: ItemPerson | null;
+  addresses?: string[];
   subject: string;
   body: string;
 }

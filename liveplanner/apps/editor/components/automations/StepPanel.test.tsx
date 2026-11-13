@@ -594,6 +594,25 @@ describe('StepPanel', () => {
     });
   });
 
+  it('emails typed-in addresses, as chips, and marks the one a refusal names', () => {
+    render(
+      <Panel
+        body={body({ steps: [{ kind: 'email', to: { assignee: true }, subject: '', body: '' }] })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    pick('To', 'addresses');
+    expect(latest.steps[0]).toMatchObject({ to: { addresses: [] } });
+    const field = screen.getByRole('textbox', { name: 'Addresses' });
+    fireEvent.change(field, { target: { value: 'Ana@Example.com' } });
+    fireEvent.keyDown(field, { key: 'Enter' });
+    expect(latest.steps[0]).toMatchObject({ to: { addresses: ['ana@example.com'] } });
+    // Back to a person: the addresses go.
+    pick('To', 'assignee');
+    expect(latest.steps[0]).toMatchObject({ to: { assignee: true } });
+    expect(screen.queryByRole('textbox', { name: 'Addresses' })).toBeNull();
+  });
+
   it('opens an If / Else and an action inside it', () => {
     const ifBody = body({
       steps: [{ kind: 'if', conditions: [], then: [{ kind: 'flag' }], else: [] }],

@@ -102,3 +102,20 @@ CREATE TABLE IF NOT EXISTS automation_fired (
 CREATE INDEX IF NOT EXISTS automation_fired_rule ON automation_fired (rule_id);
 CREATE INDEX IF NOT EXISTS automation_fired_at ON automation_fired (at);
 `;
+
+// The plan schema's step V28: Send Email's typed-in addresses (docs/specs/026-plan/automations.md "Typed-in
+// addresses"). `automation_email_addresses` holds each address the plan's rules have emailed, with the unguessable
+// token its unsubscribe link carries, and when it unsubscribed (null: it has not); at most 50 new ones a day, the
+// day's limit. `automation_email_days` counts the day's emails to such addresses (UTC midnight, ms), one row a day,
+// rows before yesterday deleted as a day's first email is counted (automation-addresses.ts).
+export const AUTOMATION_ADDRESSES_SCHEMA = `
+CREATE TABLE IF NOT EXISTS automation_email_addresses (
+  address         TEXT    PRIMARY KEY,
+  token           TEXT    NOT NULL UNIQUE,
+  unsubscribed_at INTEGER
+) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS automation_email_days (
+  day  INTEGER PRIMARY KEY,
+  sent INTEGER NOT NULL
+);
+`;

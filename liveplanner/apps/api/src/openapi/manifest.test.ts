@@ -28,6 +28,9 @@ function dispatchedSegments(): Set<string> {
   // An Incoming Webhook call, answered ahead of identity (docs/specs/026-plan/automations.md "Incoming Webhook").
   if (/segments\[1\] === 'hooks'\) return handleAutomationHook\(/.test(source))
     segments.add('hooks');
+  // A rule email's unsubscribe door, answered ahead of identity (docs/specs/026-plan/automations.md "Typed-in addresses").
+  if (/segments\[1\] === 'email-optout'\) return handleEmailOptOut\(/.test(source))
+    segments.add('email-optout');
   // liveplanner's GitHub App doors, answered ahead of identity (docs/specs/026-plan/github-pull-requests.md).
   if (/segments\[1\] === 'github'\) return handleGithub\(/.test(source)) segments.add('github');
   return segments;
@@ -119,6 +122,7 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
       'community',
       'events',
       'folders',
+      'form-drafts',
       'forms',
       'images',
       'oauth',

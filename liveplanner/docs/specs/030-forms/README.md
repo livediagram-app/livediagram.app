@@ -6,4 +6,5 @@ A **Form tab** is a Plan tab holding one form, built in place and shared as a pu
 becomes a card on a Board tab of the same project.
 
 - ./forms.md - when working on Form tabs: starters, building a form, question types, mapping answers to card fields, the Multiple Choice and Rating field kinds, publishing, the form link and its page, responses becoming cards, notifications, share roles, abuse limits
+- ./describe-a-form.md - when working on Describe a Form: a form's questions and where its responses go drafted by AI from someone's words, the preview, who may and the shared per-account cap
 - ./blueprints/README.md - when implementing a forms spec from its blueprint

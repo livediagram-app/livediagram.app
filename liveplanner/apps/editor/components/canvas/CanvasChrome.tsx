@@ -40,6 +40,7 @@ import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store'
 const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
 const NO_CLUSTER_INSET = { x: 0, y: 0 };
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
+import { FormProblemsButton } from '@/components/forms/FormProblemsButton';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { Fragment, useState, type Dispatch, type RefObject, type SetStateAction } from 'react';
@@ -433,6 +434,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
               />
             ) : null}
+            {/* An open Form tab's Problems, left of Style, while it has any (FormProblemsButton). */}
+            {!zenMode ? <FormProblemsButton /> : null}
             {/* Layers (docs/specs/006-project/layers.md) and the Theme & Canvas brush
               (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point; read-only sessions
               pass no handler), one strip in every mode: see LayersThemeStrip. */}

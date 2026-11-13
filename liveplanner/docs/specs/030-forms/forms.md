@@ -94,6 +94,9 @@ Blank Form makes no board, sheet or card type: its responses go nowhere until on
 [connect box](#responses-go-to-and-settings) above its title or Responses Go To, as a sheet may be wanted rather
 than a board.
 
+**Describe a Form**, a card after Blank Form (and a choice on an empty Form tab), drafts the form from
+someone's words with AI and shows it to check before anything is made ([Describe a Form](describe-a-form.md)).
+
 **As templates**: each starter is also a template (`<starter>-form`: Blank Form, Bug Report Form, Feedback Form,
 Feature Request Form, Event RSVP Form, Job Application Form, Contact Form; `packages/templates/src/form-templates.ts`),
 so a form is made from the template step, the landing page's gallery (its **Forms** category, Blank Form on Blank
@@ -132,10 +135,16 @@ opens it, in one undo step.
 ## Building a form
 
 An **Editor** builds the form **in place**, and everything about it is edited there, on a phone as on a desktop: no
-side panel. The Form tab shows the form as respondents will see it, centred in a column 640 px wide (full width less
-16 px gutters on a phone), on the tab theme's background. Above it sits the **status bar** (see
-[Hearing about responses](#hearing-about-responses)), which ends with **Preview** (**Back to Editing** while
-previewing), the help link and the form's **cog**.
+side panel. Until the form's responses have somewhere to go (no board and no sheet chosen), its questions are shown
+dimmed and cannot be selected, changed, moved or added to (no add bar; an empty form reads "Choose where responses go
+above, then add questions."): the connect box under the title is the one thing to do first. Its heading, description
+and Settings stay editable. The Form tab shows the form as respondents will see it, centred in a column 640 px wide (full width less
+16 px gutters on a phone), on the tab theme's background. The form's **status bar** (see
+[Hearing about responses](#hearing-about-responses)) is its palette: on a desktop it sits where every other tab's
+palette does, centred in the top row at the menu box's height (12 px down, at the toolbar's UI scale), drawn as the
+shared toolbar card (hairline border, soft shadow, 36 px controls, hairlines between its groups, as livehuddle's
+palette is); on a phone it heads the form's column. It ends with **Preview** (**Back to Editing** while previewing)
+and the form's **Settings** (the cog, named). It has no help link.
 
 - The answer controls the builder draws (unselected questions, and a selected one's control) are a picture of the
   form: they show a not-allowed cursor and take no input; a press on one selects its question. For a screen reader an
@@ -175,9 +184,18 @@ previewing), the help link and the form's **cog**.
   headed "Section 2 of 3". The first section's title and description are the form's heading and description. A later
   section's block ends with its rule's badge ([Showing a section only sometimes](#showing-a-section-only-sometimes)).
 - **Add bar**: under the selected question (or at the end when none is), a pill with **Add <Type>** (the selected
-  question's type, as people tend to ask runs of the same kind; Short Answer with none), an arrow listing every type,
-  and **Add Section**, which splits the form after the selected question (else adds an empty section at the end). The
-  new question is selected with its prompt focused. A later section's header has **Delete Section**: its questions
+  question's type, as people tend to ask runs of the same kind; Short Answer with none), an arrow (tooltip **More
+  Question Types**) opening the **Add a Question** gallery, and **Add Section**, which splits the form after the
+  selected question (else adds an empty section at the end). The new question is selected with its prompt focused.
+- **Add a Question gallery**: the dialog Add an Action uses (the dialog hero header with its own art, a form card
+  with a plus; a search; a rail of the groups from `sm`, chips on a phone, where it is a bottom sheet), every type as
+  a tile in five groups: **Text** (Short Answer, Paragraph), **Choices** (Single Choice, Multiple Choice, Checkbox),
+  **Ratings and Numbers** (Rating, Number), **Dates** (Date, Date and Time, Date Range) and **Contact Details**
+  (Email, Phone, Link). A tile is a small picture of the question being answered (playing on hover or focus; still
+  on touch and under reduced motion), the type's icon, its name and a line on what it collects. Picking one adds it
+  as **Add <Type>** would (after the selected question, selected and focused) and closes the gallery; Escape or the
+  close leaves it with nothing added. The arrow keys walk the tiles, Down from the search reaches the first and
+  Enter in the search adds the first match. A later section's header has **Delete Section**: its questions
   join the section before it.
 - **Drag** a question by its handle (six dots at its top, on hover, always on a touch screen, and on the selected
   card; mouse, pen or touch) to
@@ -223,9 +241,20 @@ The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a 
   responses go."). A Participant or Viewer never sees it.
 - **Responses Go To** (the destination): **Board** (the project's Board tabs, its last choice **+ New Board**: a
   Board tab after this one, "<Form> Responses", New, In Progress, Done), **Card Type** (the types that board takes,
-  its last choice **+ New Card Type**: a type named after the form, which a board confining its types also takes),
+  its last choice **+ New Card Type**: a type named after the form, which a board confining its types also takes,
+  made with [a field for each question](#fields-from-the-forms-questions)),
   **Column** (the board's columns, as chips); a pencil beside Card Type opens that type's editor (its fields), to shape it before mapping answers. A sentence under it reads the result back: "Each response becomes a
   **Bug** card in **New** on **Bugs**." A destination that no longer holds says why instead.
+- **What a Response Makes**: under that sentence (and under a Sheet's), a disclosure, closed by default, previews what
+  one response makes, live as the form is built: the card drawn exactly as its board draws it (the board's card face,
+  colours, card fields and size, the card type's display), filled with a sample answer to each question (a Rating 4 of
+  5, a Single Choice its first option, a Date a week away, an Email ana@example.com, a Short Answer one its wording
+  suggests or "Sample answer"); under the card, where each answer lands: Title, each mapped field with its value, the
+  fields set automatically, and **Description** with each unmapped answer as the real card writes it (its prompt in
+  bold, then the answer). A Sheet shows the row it adds instead: each column's header and its sample value. It is made
+  by the same code the api runs on a real response, so it never differs from what really happens. Hovering a line
+  marks the question that fills it, and hovering a question marks its line. Nothing shows while responses go nowhere
+  or the destination does not hold. An Editor's, as the panel is.
 - **Columns follow the card type** ([the statuses a type uses](../026-plan/item-types.md#the-statuses-a-type-uses)):
   **Column** offers only the board's columns whose status the chosen card type uses, so a response never lands in a
   status its type leaves out and misses the type's own boards. A legacy type (one stored before its list) uses every
@@ -279,9 +308,30 @@ The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a 
     for each of those fields only, at the end of the last section, as one undo step. Title counts as asked when a
     question goes to Title, and Description when any question's answer goes there.
   - Changing the card type later never deletes or rewrites a question: an answer whose field the new type lacks goes
-    to Description, its question saying so, as a [broken mapping](#mapping-where-an-answer-goes) does. Fields set
+    to Description, its question saying so, as a [broken mapping](#mapping-where-an-answer-goes) does, until
+    [Add Fields for Questions](#fields-from-the-forms-questions) gives it one. Fields set
     automatically keep only those the new type still has with the same value (one undo step brings the rest back).
     Choosing another board keeps them while the card type stays.
+
+- **Fields from the form's questions** (the other way): the questions a field could take are those whose answer goes
+  to Description without being sent there: unmapped, or a [broken mapping](#mapping-where-an-answer-goes) (its field
+  gone, or the card type changed). A question mapped to Title or to a field that holds keeps it, and the form's
+  first Paragraph going to Description stays there while the type has a Description field, so the card keeps its
+  body (as a type's Description becomes a Paragraph question going there).
+  - **+ New Card Type** makes its type with a custom field for each such question, in form order, each made as
+    [New Field "<Prompt>"](#mapping-where-an-answer-goes) makes one (the kind its question type makes, named after
+    the prompt and made unique, options and a Rating's scale and a Date Range's Include Time carried over), and maps
+    each question to its field, so every answer has a place on the card. Fields stop at the type's 12 custom fields;
+    the questions past that keep going to Description. The type and the mappings come as one step: Undo takes the
+    form back to its old type and mappings (the new type stays in the catalogue, as New Field's field does). A field
+    made this way is never Required: a required question in a section some responses skip would stop the form
+    publishing.
+  - **Choosing a card type that exists** never changes that type (other boards and forms share it). While some such
+    question goes to Description, Responses Go To offers **Add Fields for Questions** under Card Type, drawn and placed
+    as Add Questions for {Type}'s Fields is (a dashed button, the count beside it, a tooltip naming the questions),
+    while the type has room for a field. It adds a field to the chosen type for each such question, as + New
+    Card Type does, and maps each to its field, as one undo step. It is an Editor's, offered only while the form is
+    not locked, and never on a destination that does not hold.
 
 - **Filled in automatically** (fixed and automatic values; `destination.fixed`): under the column, **Set
   Automatically** (closed until opened) lists card fields every response's card gets without a question, and **+ Set
@@ -304,6 +354,70 @@ The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a 
   Message** (up to 500 characters, default "Thanks, your response has been recorded."), **Closed Message** (up to
   500 characters, default "This form is no longer accepting responses."). A form has no colour setting of its own: it
   wears its tab's [look](#look), changed from **Style** as ever.
+
+### Choosing the card type by an answer
+
+A board destination makes every response one card type by default. A request form often wants a type by answer
+("What type of request is this?": Bug makes a Bug card, Feature a Feature card), so a board destination may also hold
+**card type rules** (`destination.typeRules`):
+
+- **When it is offered** (progressive disclosure): under the sentence reading the destination back, **Card Type by
+  Answer** (closed until opened, as Set Automatically is; open at first while a rule is broken; its count the rules)
+  shows only while the destination holds, its board takes more than one card type, and the form has a Single Choice
+  (a dropdown included), Multiple Choice or Checkbox question with answers (or it already has rules, so a broken one
+  stays in view). Otherwise the destination reads exactly as before, one type, one column. A form with no rules is
+  stored as it always was. **+ Add Rule** makes one on the first such question, its first answer, and the first type
+  the board takes that has no rule yet.
+- **A rule** reads "When **<question>** is **<one or more answers>**, make a **<card type>** card in **<column>**".
+  It has the [section rule's](#showing-a-section-only-sometimes) shape (a question and the answers, any of, a
+  Multiple Choice matching when any pick is one of them, a Checkbox's Ticked or Not Ticked) and the same picker: a
+  select of the questions that fit (any section) and the answers as toggle chips (at least one). The card type is
+  one of the types the board takes other than the default and other than another rule's (one rule per type: a rule
+  takes several answers, so a type never needs two). Its column offers only the board's columns that type uses
+  ([Columns follow the card type](#responses-go-to-and-settings)), and choosing the type keeps the column while the
+  type uses it, else takes the board's first column it does. Up to 10 rules; **Remove Rule** (the row's cross) on
+  each. Unpicking a rule's last answer leaves it as it was (a rule keeps one answer). Choosing another board under
+  **Board** clears the rules (their types and columns were the old board's); Undo brings them back. Choosing another
+  default Card Type keeps them, but a rule on the new default type goes (its answers now make that type anyway).
+- **The default**: the destination's own Card Type and Column (the sentence then reads "Otherwise, each response
+  becomes a **Task** card in **New** on **Requests**.") cover every other answer: an unanswered question, an answer no rule names, a question in a section
+  the response did not show, and any rule that is broken.
+- **Order**: rules are read top to bottom and the first that matches wins (a Multiple Choice could match two).
+- **Each rule's mapping**: Title and Description are the form's (a question going to Title names every card, whatever
+  its type, and is not listed under a rule). Fields are per type, as a field belongs to its type: under each rule,
+  **Answers on <Type> cards** lists each question that can go to one of that type's fields, each a select of
+  Description (the default) and the type's fields that take it (by [the mapping table](#mapping-where-an-answer-goes);
+  a field another question uses there marked taken, and choosing it moves it). Changing a rule's type clears its
+  fields. The questions' own Answer Goes To
+  is the default type's, unchanged; it adds a line when rules exist: "For <Default> cards. Rules map their own
+  types' fields under Responses Go To."
+- **Set Automatically** belongs to the default type. On a rule's type a set value fills its field only where that
+  type has the field with that id and the value resolves (the built-ins Priority, Labels, Start and Due among them);
+  others are left off quietly.
+- **Broken rules fail visibly, never drop a response**: a rule whose question was deleted or no longer fits, none of
+  whose answers is still offered, whose card type was deleted or the board no longer takes, or whose column the board
+  no longer has, is skipped (the default type takes the response), its row in the editor turns amber saying why, and
+  **Problems with this Form** lists it ("A card type rule's question was removed: responses use the default card
+  type.", and the like), on its question's card too while the question is there. A rule's mapping to a field later
+  removed from its type goes to Description and is listed as a broken mapping, and a required field of a rule's type
+  no required question fills is listed as for the default type. They are publish problems (they hold back Publish
+  Form and turning Accepting Responses back on), but a form already taking responses keeps taking them with the
+  default type until they are fixed.
+- **Filed on the api**: the api picks the type, its column and its mapping from the stored form and the checked
+  answers on each response, by the same code as the builder's preview. A respondent never sends a type, a column or
+  a field: anything else in the body is ignored.
+- **What a Response Makes** previews the default type's card; with rules, a row of chips above it (the default and
+  each rule's type) switches the preview to that type's card, its sample answer chosen to match the rule.
+- **Agents**: read_form lists `cardTypeRules` (each `when` in words, "Request Type is Bug", its card type and column
+  by name, and `broken` with the reason), checks them among its problems, and try_form files its test card by them
+  as the api does. add_form and change_form keep a form's rules; rules are set in the editor for now (responds_to
+  to another board clears them, as Board does).
+- **Who**: an Editor sets rules; a Participant or Viewer sees nothing new (the cards arrive as any response's do).
+- **Through a deploy**: the rules ride on the stored form. An editor tab opened before the build that brought them
+  reads the form with its own older `readForm`, which drops `typeRules`, so its next edit to that form would save the
+  form without them; that tab is shown the new version prompt ([stale builds](../016-platform/stale-builds.md)) and
+  the rules can be added again. The responses meanwhile never fail: with no rules every response takes the default
+  type. From this build on, `readForm` keeps `typeRules`, so later additions to a rule round-trip through it.
 
 ### Look
 
@@ -533,6 +647,28 @@ time the button shows it in a page load), `Started` `FormTour` (a press), `View`
     read-only field with **Copy Link** (it reads "Copied" for a moment), **Open** (a new
     browser tab), **Accepting Responses** with the count so far, and **Delete Link**, which asks first ("Delete this
     link? People with it will see this form isn’t available. Publishing again makes a new link.").
+  - Published, under the link: **More Ways to Share**, a disclosure closed by default (nothing in it loads until it
+    opens), holding a three-way switch, **QR Code**, **Embed** and **Pre-filled Link**, each a panel drawn only while
+    picked. They exist only while the form has a live link; before that the dialog offers Publish Form alone.
+    - **QR Code**: the form link as a QR code (error correction M, a quiet zone of four modules), drawn black on
+      white in both halves so every phone camera reads it, made in the browser by a small library (`uqr`, MIT) loaded
+      only when the panel first opens. **Download PNG** (at least 1024 px square, each module whole pixels, named
+      `<form heading> QR Code.png`) and **Download SVG** (`… QR Code.svg`). Nothing is sent anywhere to make it. A
+      failed load says "We couldn’t make the QR code. Check your connection and try again." with **Try Again**.
+    - **Embed**: an `<iframe>` snippet for the form link, read-only, with **Copy Code** ("Copied" for a moment):
+      `<iframe src="<link>" title="<form heading>" width="100%" height="<h>" style="border:0;max-width:640px" loading="lazy"></iframe>`,
+      `<h>` 720 by default, with a **Height** choice of Short (520), Medium (720) and Tall (960). A line under it:
+      "Paste it into your website's HTML. The form scrolls inside the frame." The form link's page is the one page
+      of the editor that other sites may frame (the editor worker leaves out `X-Frame-Options` for `/form/…` only):
+      it carries no signed-in action, its requests send no cookies or tokens, so framing it reopens nothing the
+      deny guards. Every other page still refuses framing.
+    - **Pre-filled Link**: every question of the form, each with the control a respondent sees, to pick answers
+      people start with; **Copy Pre-filled Link** copies the form link with those answers (see
+      [Pre-filled answers](#filling-in-a-form)), and the link under the questions shows what will be copied. An
+      answer that would not pass the form's checks (an Other option, a wrong value) is left out of the link, and
+      "Pick answers above to fill them in for whoever opens the link." shows while nothing is picked. **Clear**
+      empties every pick. The picks live in the dialog alone and are gone once it closes.
+    - Only an Editor reaches Share Form, so only an Editor sees these.
   - A project kept on this device only (an offline project) cannot publish until it is synced, so Share Form offers
     the same move the project's Share dialog does ([Offline mode](../006-project/offline-mode.md#sharing-a-project-in-this-browser)):
     the shared sync prompt (`SyncProjectPrompt`, the one `ShareOfflineGate` draws) says **This Project Is in This Browser**,
@@ -593,6 +729,16 @@ no editor code loaded (its own small bundle).
   answers so far are stepped over and not counted ([Showing a section only sometimes](#showing-a-section-only-sometimes)).
 - **Answers are kept while filling in**: in the browser's session storage per form, so a reload or a wrong Back keeps
   what was typed; cleared on submit. **Submit Another Response** starts afresh.
+- **Pre-filled answers**: the form link may carry answers in its address, one parameter per question,
+  `?q.<questionId>=<value>` (a Multiple Choice repeats it once per pick, a Date Range gives it twice, start then end;
+  a tick box takes `true`; a Date `YYYY-MM-DD`, a Rating its number). The page reads them once, as the form opens,
+  through the same answer checks as a typed answer, and never trusts them: a parameter naming no question of the form,
+  a value its question would refuse (not an option, out of the scale, not a date, too long), an Other option and
+  anything for a question of another type are each ignored without a word, so a bad link still opens the form. A
+  Multiple Choice may carry fewer picks than its minimum (Next asks for the rest). A pre-filled answer is an ordinary
+  answer: shown in its control, changeable, checked again on Next and Submit, kept in the draft. Answers already kept
+  for this form in the browser win over the address. Nothing is ever sent on its own: the respondent still presses
+  Submit.
 - **Checking answers**: each field is checked when it loses focus (an empty one only on Next or Submit, so tabbing
   through is no mistake) and again on Next or Submit. A press of Back, Next or Submit keeps focus in the field, so its
   check never moves the button out from under the press (Next and Submit check it with the rest). An error shows under
@@ -723,14 +869,24 @@ board settings, for switching back.
 - **On the Form tab**: the **status bar** over the form: its state (**Not Published**, **Accepting Responses**,
   **Paused**, **Closed**, **Suspended**, or **Draft** for an offline project; a form switched on but past its Close
   On or at its Response Limit reads **Closed**, as its link is, and is not locked), the count ("14 responses · 3 new",
-  new to this reader), which opens the destination's tab (its tooltip names it), and, for an Editor while the form has
-  any problem, **Problems with this Form** with a warning triangle to the right of the count, which opens Share Form
-  where they are listed. The count is read when the tab opens and every 30 seconds while it is shown; a read still
+  new to this reader), which opens the destination's tab (its tooltip names it). For an Editor while the form has
+  any problem, the bottom-right cluster shows **Problems** (a warning triangle and its count) to the left of Style;
+  it opens a popover over it listing them under "Problems with this Form", one row each with a chevron; a press
+  anywhere on a row takes you to it (the question or section, or Responses Go To) and closes the popover. A form-level
+  one with nowhere to go (no questions yet) is plain text.
+- **Shortcuts on the open question**: Alt+Up and Alt+Down move it, Ctrl or ⌘ D duplicates it, Ctrl or ⌘ Shift
+  Backspace deletes it; each button's tooltip shows its keys ("Duplicate (⌘D)", "Alt+↑" spelled as this computer
+  does, `keyLabel`), and the buttons carry `aria-keyshortcuts`.
+- **A question with a problem** (no wording, a choice with no options, an answer whose field is gone) wears an amber
+  exclamation mark at the end of its title line, centred on it, an Editor's, selected or not (after the type menu while
+  it is open): its tooltip says what is wrong, and a press
+  opens the question to fix it. It goes once the problem does. The count is read when the tab opens and every 30 seconds while it is shown; a read still
   in flight when the person publishes, switches Accepting Responses or deletes the link is dropped, so the state
   they set never flips back to what that read saw.
-- **Not Taking Responses**: for an Editor, a form that has been published but takes no responses now shows a red
-  (danger) warning right after the count, before Problems with this Form (amber), so a paused form is never missed:
-  the warning triangle and **Not Taking Responses**, a button whose tooltip says why and what it opens. The reasons,
+- **Not Taking Responses**: for an Editor, a form that has been published but takes no responses now shows one red
+  (danger) state in the status bar's first place, in place of Closed, Paused or Suspended (never beside them), so a
+  paused form is never missed: the warning triangle and **Not Taking Responses**, at the palette's own size (13 px
+  medium), a button whose tooltip says why and what it opens. The reasons,
   first match wins (`formNotTakingReason`):
   - **Suspended** (the link was suspended after reports): "Its link was suspended after reports. Share Form publishes
     a new one." Opens Share Form.
@@ -776,6 +932,7 @@ board settings, for switching back.
 | See the response count, which opens the destination      | ✓                                      | ✓           | ✓      |
 | See Not Taking Responses, which opens its fix            | ✓                                      |             |        |
 | Sync a project in This Browser from Share Form           | ✓                                      |             |        |
+| More Ways to Share: QR code, embed code, pre-filled link | ✓                                      |             |        |
 | Fill in the form through its link                        | anyone with the link, signed in or not |             |        |
 
 A Participant or Viewer sees the form drawn as the form link draws it (working, but sending nothing and making no
@@ -931,6 +1088,9 @@ showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the 
 | Form     | Linked   | `ConnectNewBoard` / `ConnectNewSheet` / `ConnectChoose` | The connect box's three choices                       |
 | Form     | Shared   | `Link`                                                  | Publish Form                                          |
 | Form     | Shared   | `BoardCopy`                                             | Copy Form Link on a board's Form strip                |
+| Form     | Shared   | `QrPng` / `QrSvg`                                       | Download PNG / Download SVG on QR Code                |
+| Form     | Shared   | `Embed`                                                 | Copy Code on Embed                                    |
+| Form     | Shared   | `Prefilled`                                             | Copy Pre-filled Link                                  |
 | Form     | Toggled  | `Open` / `Closed`                                       | Accepting Responses flipped (before the change lands) |
 | Form     | Opened   | `NotTaking` + the reason (`NotTakingSwitchedOff`, ...)  | Not Taking Responses pressed                          |
 | Form     | Moved    | `SyncedToShare`                                         | Sync Project pressed in Share Form                    |
@@ -948,6 +1108,6 @@ Every chart is on the public dashboard's **Forms** stack.
 - Signing in to respond, one response per person, editing a response after submitting.
 - File uploads, logic that skips sections by an answer, quizzes and scores.
 - A responses summary of charts per question (a Dashboard over the board covers it for now).
-- A QR code of the form link, and importing questions from another form.
+- Importing questions from another form.
 - A cover image (a cover is a colour background): an image would join the image store's reference index.
 - Dragging a choice's options (Alt+Up and Alt+Down move them).

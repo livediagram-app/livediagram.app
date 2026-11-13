@@ -276,3 +276,40 @@ describe('tryForm', () => {
     });
   });
 });
+
+describe('tryForm and card type rules (docs/specs/030-forms/forms.md "Choosing the card type by an answer")', () => {
+  it('files its test card by the rule its answers pick, as the api does', async () => {
+    const plan = formPlan();
+    plan.boards[0] = { ...plan.boards[0]!, types: ['bug', 'task'] };
+    const form: FormDefinition = {
+      ...bugForm(),
+      destination: {
+        ...bugForm().destination!,
+        typeRules: [
+          {
+            id: 'r-1',
+            questionId: 'q-sev',
+            anyOf: ['High'],
+            typeId: 'task',
+            status: firstStatus(),
+          },
+        ],
+      },
+    };
+    const writes: { path: string; body: unknown }[] = [];
+    const client = fakeApi({
+      '/projects/doc/plan': plan,
+      '/projects/doc/tabs/form': { tab: formTabBody(form) },
+      '/projects/doc/tabs/form/form-link': UNPUBLISHED,
+      '/projects/doc/items': async (r: Request) => {
+        const body = (await r.json()) as { fields: Record<string, unknown> };
+        writes.push({ path: '/items', body });
+        return Response.json({ item: { id: 'item-1', fields: body.fields }, rev: 2 });
+      },
+    });
+    await tryForm(client, 'doc', undefined, { Summary: 'Dark mode', 'q-sev': 'High' });
+    await tryForm(client, 'doc', undefined, { Summary: 'Crash', 'q-sev': 'Low' });
+    expect(writes.map((w) => (w.body as { type: string }).type)).toEqual(['task', 'bug']);
+    expect((writes[0]!.body as { place: unknown }).place).toEqual({ status: firstStatus() });
+  });
+});
