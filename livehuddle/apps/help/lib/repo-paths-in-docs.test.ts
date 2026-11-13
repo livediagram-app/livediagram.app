@@ -93,7 +93,11 @@ function docFiles(): string[] {
 const TEXT_FILE = /\.(?:ts|tsx|mts|js|mjs|cjs|md|mdx|json|toml|ya?ml|css|sql|sh|example)$/;
 
 function trackedTextFiles(): string[] {
-  return execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' })
+  return execFileSync('git', ['ls-files'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  })
     .split('\n')
     .filter((f) => TEXT_FILE.test(f) && existsSync(`${ROOT}/${f}`));
 }
@@ -109,7 +113,11 @@ function trackedPaths(): Set<string> {
     const parts = f.split('/');
     for (let i = 1; i <= parts.length; i++) paths.add(parts.slice(0, i).join('/'));
   };
-  for (const f of execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split('\n'))
+  for (const f of execFileSync('git', ['ls-files'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  }).split('\n'))
     add(f);
   const top = execFileSync('git', ['rev-parse', '--show-toplevel'], {
     cwd: ROOT,
