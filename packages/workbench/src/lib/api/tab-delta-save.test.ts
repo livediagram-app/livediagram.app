@@ -65,6 +65,26 @@ describe('base copies', () => {
     expect(saves.base('d', 'c')?.rev).toBe(1);
   });
 
+  it("holds a whole save's echo with the editor's own objects wherever they match", () => {
+    const { saves } = setup();
+    const sent = many(3);
+    // The api stored e1 differently (a merge), and e3 the editor never sent.
+    const echoed: El[] = [
+      { id: 'e0', label: 'x' },
+      { id: 'e1', label: 'merged' },
+      { id: 'e2', label: 'x' },
+      { id: 'e3' },
+    ];
+    saves.holdEcho('d', 't', 4, echoed, sent);
+    const held = saves.base('d', 't')!;
+    expect(held.rev).toBe(4);
+    expect(held.elements).toEqual(echoed);
+    expect(held.elements[0]).toBe(sent[0]);
+    expect(held.elements[1]).toBe(echoed[1]);
+    expect(held.elements[2]).toBe(sent[2]);
+    expect(held.elements[3]).toBe(echoed[3]);
+  });
+
   it('holds sixteen tabs by default', () => {
     const { saves } = setup();
     for (let i = 0; i <= TAB_DELTA_BASES_MAX; i++) saves.hold('d', `t${i}`, 1, []);

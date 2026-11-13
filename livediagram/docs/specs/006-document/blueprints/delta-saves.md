@@ -80,6 +80,7 @@ export function createTabDeltaSaves<E extends { id: string }>(deps: {
   max?: number;
 }): {
   hold(itemId: string, tabId: string, rev: number, elements: E[]): void;
+  holdEcho(itemId: string, tabId: string, rev: number, echoed: E[], sent: readonly E[]): void;
   drop(itemId: string, tabId: string): void;
   base(itemId: string, tabId: string): { rev: number; elements: E[] } | null;
   send(args: {
@@ -125,7 +126,8 @@ The editor (`createTabCalls` with `delta`):
 2. `saveTab` (not offline) builds the headers once, then `send` with the wire tab (`tabForWire`). An answer is the
    save's revision; null goes on to the whole `PUT` with the same headers.
 3. The whole `PUT`'s answer: its `tab.rev` is the save's revision, and with `tab.elements` a list, they are held as
-   the base copy at that revision.
+   the base copy at that revision (`holdEcho`: each echoed element whose JSON is the sent element's is held as the
+   editor's own object, so the copy shares memory with the editor and the next diff skips it by reference).
 4. `hold` keeps the held copy when it is for a newer revision than the one offered, refreshes the tab as the most
    recently used, and evicts the least recently used past `TAB_DELTA_BASES_MAX`.
 
@@ -170,7 +172,14 @@ received body as an argument, and with `stored` its first attempt uses that read
 - The editor's added work: one `diffToElementOps` and one digest per save. The digest is taken only once the delta
   is worth sending. Memory: at most `TAB_DELTA_BASES_MAX` base copies; a load's and a confirmed delta's share the
   editor's element objects, a whole save's echo is one parsed copy of the tab (already parsed for its `rev`).
-- Measured in the browser on the local stack: see the PR of Work Tracker 661 part 2 and "Testing".
+- Measured on the local stack (the e2e stack, a 2,033-element Flowchart tab, one shape nudged): the whole save
+  sent 714,131 bytes, the delta 733 bytes. A forced `delta_refused` cost the 734-byte delta plus the same whole
+  save, and the next save was a delta again.
+- Planning a 2,033-element save measured 1.7 ms over a base sharing the editor's objects and 3.9 ms over a freshly
+  parsed one, against 1.0 ms to serialise the whole tab (median of 21, Node, a loaded machine).
+- With two editors saving the same tab, each one's base copy goes stale at the other's save: its next save is a
+  refused delta (about 1 KB) and then the whole tab, as every save was before. Peers advancing their base copies
+  from the room is left to a follow-up.
 
 ## Observability
 

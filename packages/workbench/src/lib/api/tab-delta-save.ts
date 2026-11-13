@@ -67,6 +67,23 @@ export function createTabDeltaSaves<E extends El>(deps: {
     if (bases.size > max) bases.delete(bases.keys().next().value as string);
   }
 
+  /** Hold a whole save's echo, each element the editor's own object where it is the same as stored: the copy then
+   *  costs no memory of its own, and the next diff skips those elements by reference. */
+  function holdEcho(
+    itemId: string,
+    tabId: string,
+    rev: number,
+    echoed: E[],
+    sent: readonly E[],
+  ): void {
+    const sentById = new Map(sent.map((el) => [el.id, el]));
+    const elements = echoed.map((el) => {
+      const mine = sentById.get(el.id);
+      return mine && JSON.stringify(mine) === JSON.stringify(el) ? mine : el;
+    });
+    hold(itemId, tabId, rev, elements);
+  }
+
   function drop(itemId: string, tabId: string): void {
     bases.delete(keyOf(itemId, tabId));
   }
@@ -113,5 +130,5 @@ export function createTabDeltaSaves<E extends El>(deps: {
     return { rev: answer.rev };
   }
 
-  return { hold, drop, base, send };
+  return { hold, holdEcho, drop, base, send };
 }

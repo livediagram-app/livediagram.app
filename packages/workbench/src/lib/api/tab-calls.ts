@@ -262,7 +262,13 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
     const echo = await savedEchoOf(res);
     // The echo is what the api stored, merges and all: the next delta's base copy.
     if (deltas && echo.rev !== null && echo.elements) {
-      deltas.hold(itemId, tab.id, echo.rev, echo.elements as DeltaElement[]);
+      deltas.holdEcho(
+        itemId,
+        tab.id,
+        echo.rev,
+        echo.elements as DeltaElement[],
+        (wire as { elements: DeltaElement[] }).elements,
+      );
     }
     return echo.rev;
   }
