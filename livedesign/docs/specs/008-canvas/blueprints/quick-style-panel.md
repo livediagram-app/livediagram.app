@@ -32,7 +32,7 @@ Scope, by file:
 | `apps/live/components/canvas/quick-style-rows.tsx`                               | `QuickRadioRow`, swatch and glyph options, roving focus                                                          |
 | `apps/live/lib/swatch-overrides.ts`                                              | Pure: apply to a row, the theme-keyed store (set, clear, caps), parse                                            |
 | `apps/live/hooks/canvas/useSwatchOverrides.ts`                                   | The active theme's overrides, read from and written to the synced preferences                                    |
-| `packages/workbench/src/components/canvas/SwatchOverridePopover.tsx`                          | The right-click popover: picker, hex field, Clear override                                                       |
+| `packages/workbench/src/components/canvas/SwatchOverridePopover.tsx`             | The right-click popover: picker, hex field, Clear override                                                       |
 | `apps/live/app/design/[id]/useEditorState.ts`                                    | Wires memory into the style hooks and the creation hooks; exposes the bar's view-model and `pages`               |
 | `apps/live/app/design/[id]/EditorView.tsx`                                       | Mounts `QuickStyleHost` (picks the page, renders the bar)                                                        |
 

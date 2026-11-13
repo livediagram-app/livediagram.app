@@ -12,7 +12,7 @@ Derived from [Colour picker](../colour-picker.md). Engineering detail only; desi
 | tone                 | `StandardTone = 'strong' \| 'soft'`                                                                                                                                                                 |
 | theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`packages/document/src/quick-swatches.ts`)                                                                                   |
 | Custom colours       | `Tab.customColours`, `customColoursOf` / `withCustomColour` (`packages/document`), `documentColours(...)` (`apps/editor/lib/document-colours.ts`), `useDocumentColours()` (`apps/editor/hooks/ui/`) |
-| custom colour editor | `CustomColourEditor` (`packages/workbench/src/components/colour/CustomColourEditor.tsx`)                                                                                                                       |
+| custom colour editor | `CustomColourEditor` (`packages/workbench/src/components/colour/CustomColourEditor.tsx`)                                                                                                            |
 | skins                | inline `ColourPicker`; row (`ColourRow`); `ColourSwatchButton`, `useColourWell`; all popovers are `ColourPopover`                                                                                   |
 | no colour            | a leading `ColourOption` with `none: true` (`noColour(id, label)`)                                                                                                                                  |
 

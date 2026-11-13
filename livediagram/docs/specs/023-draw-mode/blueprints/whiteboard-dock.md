@@ -29,7 +29,7 @@ Scope, by file (all under `apps/editor/` unless stated):
 | `lib/whiteboard-dock-prefs.ts`                                          | The dock's synced preferences: parse and write, the dock position                        |
 | `components/canvas/CanvasChrome.tsx`                                    | The dock; top corners and stack clear a top dock                                         |
 | `hooks/ui/useStripCrowdsCorners.ts`                                     | Whether a top bar (the strip or a top dock) reaches a top corner                         |
-| `packages/workbench/src/components/chrome/TopCenter.tsx`                                       | `TopCenterStack` `below`: under the strip or under a top dock                            |
+| `packages/workbench/src/components/chrome/TopCenter.tsx`                | `TopCenterStack` `below`: under the strip or under a top dock                            |
 | `components/dialogs/settings/settings-catalogue.ts`                     | Editor's Draw section: the Dock Position row                                             |
 | `hooks/canvas/useWhiteboardDockPrefs.ts`                                | Those preferences as state, written like every synced preference                         |
 | `hooks/canvas/useWhiteboard.ts`                                         | `pickShape`, `pickSearchedShape`, `openShapes` and the dock prefs                        |
