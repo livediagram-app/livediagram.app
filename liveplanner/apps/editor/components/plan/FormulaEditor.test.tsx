@@ -111,11 +111,49 @@ describe('FormulaEditor', () => {
     expect(status.textContent).toMatch(/^Unexpected ".{30,34}…" at 3$/);
     // While it waits, Preview's row keeps one line (the title truncates, the waiting words never wrap under it).
     const row = () => screen.getByLabelText('Preview').querySelector('p')!;
-    expect(row().className).not.toContain('flex-wrap');
+    expect(row().className.split(' ')).not.toContain('flex-wrap');
     expect(row().lastElementChild!.className).toContain('shrink-0');
+    // Under 19rem (a 320 px phone) the waiting words take a line of their own rather than cut the title to a
+    // sliver; the card's number always shows, and the title keeps room for its ellipsis.
+    expect(row().className).toContain('@max-[19rem]:flex-wrap');
+    expect(row().firstElementChild!.firstElementChild!.className).toContain('shrink-0');
+    expect(row().firstElementChild!.lastElementChild!.className).toContain('min-w-[1.5em]');
     // A value may wrap under a long title.
     type('2');
     expect(row().className).toContain('flex-wrap');
+  });
+
+  it('keeps Preview in view above the sheet’s footer as the formula is typed, not as the name is', () => {
+    withPlan([card('a', 3, { title: 'Acme', 'f-budget': 5000 })]);
+    const scrolled = vi.fn();
+    HTMLElement.prototype.scrollIntoView = scrolled;
+    const frames = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+      cb(0);
+      return 1;
+    });
+    const { unmount } = render(
+      <form>
+        <input aria-label="Name" />
+        <Harness start={{}} keep={false} />
+        <textarea aria-label="Notes after" />
+      </form>,
+    );
+    expect(scrolled).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Left' } });
+    fireEvent.change(screen.getByLabelText('Notes after'), { target: { value: 'x' } });
+    expect(scrolled).not.toHaveBeenCalled();
+    type('Budget *');
+    expect(scrolled).toHaveBeenCalledWith({ block: 'nearest' });
+    expect(scrolled.mock.contexts[0]).toBe(screen.getByLabelText('Preview'));
+    expect(screen.getByLabelText('Preview').className).toContain('scroll-mb-24');
+    fireEvent.change(screen.getByLabelText('Result'), { target: { value: 'percent' } });
+    expect(scrolled).toHaveBeenCalledTimes(2);
+    unmount();
+    frames.mockRestore();
+    // Outside a form (nothing to scroll past) it listens to nothing.
+    render(<Harness start={{}} keep={false} />);
+    type('1 +');
+    expect(scrolled).toHaveBeenCalledTimes(2);
   });
 
   it('shows a stored formula with names, checks it as typed, and keeps it with ids', () => {
