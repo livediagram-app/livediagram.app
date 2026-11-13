@@ -5,8 +5,8 @@ import { tileCaption } from '@liveworkspace/workbench/components/palette/tile-ca
 import { useModKeyHeld } from '@liveworkspace/workbench/hooks/ui/useModKeyHeld';
 import { createContext, useContext } from 'react';
 import { HoverCard, Tooltip } from '@livedesign/ui';
-import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
-import { paletteFinishClass } from './palette-tile-finish';
+import { useTabFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
+import { paletteFinishClass } from '@liveworkspace/workbench/components/palette/palette-tile-finish';
 import type { PaletteTileDef } from './palette-tile-defs';
 
 // The active tab theme's element colours, made available to every palette

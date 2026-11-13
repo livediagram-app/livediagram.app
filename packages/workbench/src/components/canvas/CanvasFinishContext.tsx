@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, type ReactNode } from 'react';
-import { finishFaceShadows, resolveFinish, type Finish } from '@livehuddle/document';
+import { finishFaceShadows, resolveFinish, type Finish } from '@liveworkspace/element-model/finish';
 
 // The tab's finish (docs/specs/008-canvas/finish.md): the drawing style every element without its own is
 // drawn in. A context for the same reasons as CanvasSurfaceContext: the element views are React.memo'd, and
@@ -33,7 +33,7 @@ export function useElementFinish(own: unknown): Finish {
 }
 
 // The finish of the element whose face is being drawn (docs/specs/008-canvas/finish.md "Faces"), provided by the
-// element's view (BoxedElementView): the face's own parts that draw a look
+// element's view (BoxedElementView, and in liveplanner a Plan body drawn over the canvas): the face's own parts that draw a look
 // inline, where the face stylesheet (app/face-finish.css) cannot reach it, read it here. Flexible outside a face.
 const FaceFinishContext = createContext<Finish>('flexible');
 

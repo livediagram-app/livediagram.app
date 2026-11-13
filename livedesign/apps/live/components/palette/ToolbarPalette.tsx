@@ -19,7 +19,7 @@ import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportW
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
-import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
+import { RAIL_LEAVE_MS, ToolbarStripRail } from '@liveworkspace/workbench/components/palette/ToolbarStripRail';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
 import { paletteLandingCategory } from './palette-layouts';
 import {

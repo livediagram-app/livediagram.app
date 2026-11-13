@@ -2,9 +2,11 @@
 // so every tile draws its glyph in the finish that element will land in, and the whole palette previews the tab.
 // Professional squares and thins a line glyph; Sketch wobbles every glyph through the shared sketch filter
 // (SketchFilterDefs); Marker draws a line glyph bold with round ends, a felt-tip's line. Full-colour art (technology
-// icons, stickers) keeps its weight under Professional and Marker, as on the canvas, and only wobbles under Sketch.
-import type { Finish } from '@livedesign/design';
-import type { PaletteTileDef } from './palette-tile-defs';
+// icons, stickers, where an editor has them) keeps its weight under Professional and Marker, as on the canvas, and only wobbles under Sketch.
+import type { Finish } from '@liveworkspace/element-model/finish';
+
+/** A tile's action, as far as its finish reads it (each editor's PaletteTileDef['action']). */
+type TileAction = { type: string };
 
 /** The id of the one SVG filter Sketch tiles are drawn through. */
 export const SKETCH_TILE_FILTER_ID = 'lvd-sketch-tile';
@@ -17,14 +19,14 @@ export function tileEnterAnimation(finish: Finish | undefined): string {
 }
 
 /** Whether a tile's glyph is full-colour art, which Professional leaves as drawn. */
-function isColourArt(action: PaletteTileDef['action']): boolean {
+function isColourArt(action: TileAction): boolean {
   return action.type === 'tech-icon' || action.type === 'sticker';
 }
 
 /** The class a tile's glyph wrapper carries in a finish (globals.css); empty under Flexible. */
 export function paletteFinishClass(
   finish: Finish | undefined,
-  action?: PaletteTileDef['action'],
+  action?: TileAction,
 ): string {
   if (finish === 'sketch') return 'palette-finish-sketch';
   if (finish === 'marker' && !(action && isColourArt(action))) return 'palette-finish-marker';

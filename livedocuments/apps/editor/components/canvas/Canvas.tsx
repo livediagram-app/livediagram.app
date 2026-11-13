@@ -1,7 +1,7 @@
 import { canvasIsBusy } from '@liveworkspace/workbench/lib/tab-style-ease';
 import dynamic from 'next/dynamic';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
-import { CanvasFinishProvider } from './CanvasFinishContext';
+import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { LongPressRing } from '@liveworkspace/workbench/components/primitives/LongPressRing';
 import {
   useViewportOf,

@@ -13,7 +13,7 @@ import {
   isPolygonOutline,
   polygonStrokePx,
 } from '@livedocuments/document';
-import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
+import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { useDrawingAnimation } from '@/components/canvas/drawing-animation';
 
 // Browser chrome rendered as fixed-pixel HTML rather than scaled SVG so

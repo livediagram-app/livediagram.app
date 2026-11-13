@@ -12,7 +12,7 @@ import { addToDocumentTargets } from '@/lib/add-to-document-targets';
 import { canvasSurface } from '@livehuddle/document';
 import { resolveTabBackdrop } from '@/lib/themes';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
-import { CanvasFinishProvider } from '@/components/canvas/CanvasFinishContext';
+import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { SketchFilterDefs } from '@/components/canvas/SketchFilterDefs';
 import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverlay';
 import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';

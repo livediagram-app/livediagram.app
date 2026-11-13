@@ -7,7 +7,7 @@ import {
   imageCornerPx,
   type ImageElement,
 } from '@livediagram/document';
-import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
+import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { useCanvasSurface, useCanvasTheme } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { ImageEmptyFace } from '@/components/canvas/ImageEmptyFace';
 import {

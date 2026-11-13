@@ -4,7 +4,7 @@
 // displacements, merged, so a glyph's lines wander and double like the canvas's two-pass strokes. Rendered once by the editor, never per
 // tile. Seeded, so every tile wobbles the same way on every load.
 import { SKETCH_FACE_FILTER } from '@livehuddle/document';
-import { SKETCH_TILE_FILTER_ID } from '@/components/palette/palette-tile-finish';
+import { SKETCH_TILE_FILTER_ID } from '@liveworkspace/workbench/components/palette/palette-tile-finish';
 
 export function SketchFilterDefs() {
   return (

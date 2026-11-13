@@ -37,10 +37,10 @@ import { PageCornerFold } from '@liveworkspace/workbench/components/canvas/PageC
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant } from '@/components/canvas/element-variant';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
+import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
-import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
+import { FaceFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';

@@ -1,27 +1,24 @@
 import type { ReactNode } from 'react';
 import type { StickerDef } from '@liveworkspace/icons';
 import { STICKER_CATEGORIES, stickersInCategory } from '../../lib/stickers';
+import { useTabFinish } from '../canvas/CanvasFinishContext';
 import type { BrowserCategory, CategoryBrowser } from './category-browser-types';
+import { paletteFinishClass } from './palette-tile-finish';
 
 // What an editor hands the Stickers tab: its sticker drag type (beside its ICON_DND_MIME in `lib/icons.ts`), its
-// sticker artwork, its category browse, and its tab finish with the class a tile wears in it
-// (palette-tile-finish.ts), so each tile is drawn as the sticker will land.
-export type StickerPickerDeps<F> = {
+// sticker artwork and its category browse.
+export type StickerPickerDeps = {
   dndMime: string;
   StickerArt: (props: { def: StickerDef; className?: string }) => ReactNode;
   PaletteCategoryBrowser: CategoryBrowser;
-  useTabFinish: () => F;
-  paletteFinishClass: (finish: F, action: { type: 'sticker'; stickerId: string }) => string;
 };
 
 /** The palette's Stickers tab and its browse groups, made once per editor at module scope. */
-export function createStickerPickerTab<F>({
+export function createStickerPickerTab({
   dndMime,
   StickerArt,
   PaletteCategoryBrowser,
-  useTabFinish,
-  paletteFinishClass,
-}: StickerPickerDeps<F>) {
+}: StickerPickerDeps) {
   // One sticker in the picker, drawn as the sticker it actually is — plate,
   // shadow and all — rather than as a glyph on a palette button (docs/specs/010-palette/stickers.md). The
   // tile IS the artwork, so what you click is exactly what lands.
@@ -32,10 +29,7 @@ export function createStickerPickerTab<F>({
   // way back. The picture is the answer; its name is the button's label.
   function StickerTile({ sticker, onAdd }: { sticker: StickerDef; onAdd: (id: string) => void }) {
     // Drawn in the tab's finish, as the sticker will land (palette-tile-finish.ts).
-    const finishClass = paletteFinishClass(useTabFinish(), {
-      type: 'sticker',
-      stickerId: sticker.id,
-    });
+    const finishClass = paletteFinishClass(useTabFinish(), { type: 'sticker' });
     // A badge pill takes two of the four columns: at one column's width its word
     // would be unreadable. The span lives on this wrapper, the grid's child.
     const wide = sticker.kind === 'badge';

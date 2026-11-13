@@ -17,7 +17,7 @@ import {
   stopPointer,
 } from '@/components/canvas/collab/qa/qa-parts';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
-import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
+import { useFaceShadow } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 
 // The face of an Action panel (docs/specs/012-collaboration/action-panel.md): a card on the canvas that carries a
 // LIST of assigned actions (docs/specs/012-collaboration/assigned-actions.md) and shows them in place.

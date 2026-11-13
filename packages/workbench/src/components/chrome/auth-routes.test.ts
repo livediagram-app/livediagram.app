@@ -7,7 +7,7 @@ import {
   POST_AUTH_SIGNIN_DEFAULT,
   messageOf,
   resolvePostAuthDestination,
-} from '@/components/chrome/auth-shared';
+} from './auth-routes';
 
 // resolvePostAuthDestination decides where the sign-in and sign-up
 // pages send a verified user. Routes are clean now (no `/live` prefix —

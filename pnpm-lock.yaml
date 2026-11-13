@@ -8046,9 +8046,15 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../api-schema
+      '@liveworkspace/auth-client':
+        specifier: workspace:*
+        version: link:../auth-client
       '@liveworkspace/brand':
         specifier: workspace:*
         version: link:../brand
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../community-ui
       '@liveworkspace/element-model':
         specifier: workspace:*
         version: link:../element-model

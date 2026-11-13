@@ -13,7 +13,7 @@ import {
   type SettingsRequest,
 } from '@liveworkspace/settings-ui';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { SettingsSignInLink } from './SettingsSignInLink';
+import { SettingsSignInLink } from '@liveworkspace/workbench/components/dialogs/settings/SettingsSignInLink';
 import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type {

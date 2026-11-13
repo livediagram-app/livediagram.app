@@ -28,7 +28,7 @@ import { captionBandAlignY, captionBandClass } from '@/components/primitives/ico
 import { useTextHug } from '@/components/canvas/useTextHug';
 import { describeVariant } from '@/components/canvas/element-variant';
 import { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
-import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
+import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
 import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';

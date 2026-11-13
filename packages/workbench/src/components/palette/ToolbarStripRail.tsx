@@ -11,8 +11,8 @@ import {
 import { STRIP_RAIL_SCROLL } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import { useEdgeDividers } from '@liveworkspace/workbench/components/palette/useEdgeDividers';
-import { tileEnterAnimation } from './palette-tile-finish';
-import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
+import { tileEnterAnimation } from '@liveworkspace/workbench/components/palette/palette-tile-finish';
+import { useTabFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 
 // The moving part of the Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): the tiles of the
 // current category plus its More button. Switching category can take the

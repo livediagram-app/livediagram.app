@@ -7,7 +7,7 @@ import type { QaNote } from '@livediagram/document';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import { HoverCard, Glyph, GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
-import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
+import { useFaceShadow } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 
 // The board's accent marks what is YOURS and what is LIVE. It is the tab
 // theme's colour, not the board's own: QaBoardFace sets `--qa-accent` from the

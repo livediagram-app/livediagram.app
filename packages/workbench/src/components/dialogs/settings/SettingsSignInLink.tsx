@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuthHrefs } from '@/components/chrome/auth-shared';
+import { useAuthHrefs } from '../../chrome/auth-routes';
 
 // The Sign In link every signed-out Settings message ends with
 // (docs/specs/007-editor/user-preferences.md): the guest identity card, Delete

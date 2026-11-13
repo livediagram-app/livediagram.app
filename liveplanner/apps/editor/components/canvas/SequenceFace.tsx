@@ -8,7 +8,7 @@ import {
   type SequenceLook,
   type ShapeElement,
 } from '@liveplanner/project';
-import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
+import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 
 /** Seconds of the Play wipe per message at Normal speed (docs/specs/009-elements/sequence-diagram.md "Animation"). */
 const SEQ_PLAY_S_PER_MESSAGE = 0.4;

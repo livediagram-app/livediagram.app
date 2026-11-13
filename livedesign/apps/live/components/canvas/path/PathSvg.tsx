@@ -9,7 +9,7 @@ import {
   type PathElement,
 } from '@livedesign/design';
 import { FREEHAND_SVG_CLASS, StrokeHitPath } from '@/components/canvas/boxed-element-overlays';
-import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
+import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 
 // A path element as the canvas draws it (docs/specs/023-draw-mode/path-tool.md; blueprint path-tool
 // "Rendering"): its curve in canvas px, in an svg with a viewBox the size of its box, so the canvas

@@ -15,7 +15,7 @@ import {
   VotePill,
   stopPointer,
 } from './qa-parts';
-import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
+import { useFaceShadow } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 
 function SpotButton({
   children,

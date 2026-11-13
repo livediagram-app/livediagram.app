@@ -13,12 +13,12 @@ import { TechIconGlyph } from '@/components/primitives/tech-icon-glyph';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { iconMakesRoomForLabel } from '@/components/primitives/icon-band';
 import { StickerView } from '@/components/canvas/StickerView';
-import { SKETCH_TILE_FILTER_ID } from '@/components/palette/palette-tile-finish';
+import { SKETCH_TILE_FILTER_ID } from '@liveworkspace/workbench/components/palette/palette-tile-finish';
 import { SketchArtPicture } from '@/components/canvas/SketchArtPicture';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView.types';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
+import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 
 type ShapeContentRouterProps = Pick<
   BoxedElementViewProps,

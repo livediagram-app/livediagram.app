@@ -15,7 +15,7 @@ import {
   isPolygonOutline,
   polygonStrokePx,
 } from '@livediagram/document';
-import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
+import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import type { SVGProps } from 'react';
 import { strokeHitWidth } from '@/lib/whiteboard-tool';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';

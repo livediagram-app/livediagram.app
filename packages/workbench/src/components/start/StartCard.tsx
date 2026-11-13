@@ -2,10 +2,19 @@
 
 // A start panel's card (StartPanel, docs/specs/007-editor/start-diagramming.md "The panel"): a picture of what it makes
 // over its name and line, larger than it draws elsewhere, in the tab's own colours (the palette), and the grid they sit
-// in. Shared by a start's groups and its search results.
+// in. Shared by a start's groups and its search results, a template's and a Community tile's alike.
 import type { ReactNode } from 'react';
 import { communityStartBadgeStyle } from '@liveworkspace/community-ui/start';
-import type { StartPalette } from './start-palette';
+
+/** The start's colours a card paints with (each editor's components/start/start-palette StartPalette). */
+type StartPalette = {
+  surface: string;
+  border: string;
+  column: string;
+  text: string;
+  muted: string;
+  focus: string;
+};
 
 export type StartPanelCard = {
   id: string;

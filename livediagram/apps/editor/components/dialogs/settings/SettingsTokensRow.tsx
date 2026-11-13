@@ -8,7 +8,7 @@ import { manageTokensUrl } from '@liveworkspace/workbench/lib/auth-config';
 import { useRelativeNow } from '@/lib/relative-time';
 import { SettingsSharedGlyph, useAccountTokensInPlace } from '@liveworkspace/settings-ui';
 import { SettingsRowShell } from '@liveworkspace/settings-ui';
-import { SettingsSignInLink } from './SettingsSignInLink';
+import { SettingsSignInLink } from '@liveworkspace/workbench/components/dialogs/settings/SettingsSignInLink';
 import { SettingsTokenPairings } from './SettingsTokenPairings';
 import type { SettingsTokensRowSpec } from './settings-catalogue';
 
