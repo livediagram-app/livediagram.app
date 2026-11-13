@@ -1,16 +1,31 @@
 import { describe, it, expect } from 'vitest';
-import type { Element } from './index';
-import {
-  applyElementOp,
-  applyElementOps,
-  diffToElementOps,
-  invertElementOps,
-  type ElementOp,
-  applyRoomElementOp,
-} from './element-ops';
+import { createElementOps, diffToElementOps, type ElementOp } from './element-ops';
 
-const el = (id: string, over: Partial<Element> = {}): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...over }) as Element;
+type Element = {
+  id: string;
+  type: string;
+  shape?: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  text?: string;
+  rev?: number;
+  votes?: string[];
+};
+
+const { applyElementOp, applyElementOps, invertElementOps, applyRoomElementOp } = createElementOps<Element>();
+
+const el = (id: string, over: Partial<Element> = {}): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  ...over,
+});
 
 describe('diffToElementOps', () => {
   it('emits an add with its z-index for a new element', () => {
@@ -146,12 +161,12 @@ describe('applyElementOps, batched', () => {
     width: 10,
     height: 10,
   });
-  const sequential = (elements: Element[], ops: ElementOp[]) =>
+  const sequential = (elements: Element[], ops: ElementOp<Element>[]) =>
     ops.reduce(applyElementOp, elements);
 
   it('equals applying each op in turn, through updates, adds, removes and reorders', () => {
     const elements = [box('a'), box('b'), box('c')];
-    const ops: ElementOp[] = [
+    const ops: ElementOp<Element>[] = [
       { kind: 'update', element: box('a', 1) },
       { kind: 'update', element: box('gone', 1) },
       { kind: 'add', element: box('d'), at: 1 },
@@ -168,7 +183,7 @@ describe('applyElementOps, batched', () => {
 
   it('writes every place of an id held twice, as the single op does', () => {
     const elements = [box('a'), box('a'), box('b')];
-    const ops: ElementOp[] = [{ kind: 'update', element: box('a', 7) }];
+    const ops: ElementOp<Element>[] = [{ kind: 'update', element: box('a', 7) }];
     expect(applyElementOps(elements, ops)).toEqual(sequential(elements, ops));
   });
 
@@ -238,5 +253,35 @@ describe('diff and apply converge', () => {
       expect(ops.reduce(applyElementOp, before), `seed ${seed}`).toEqual(after);
       expect(applyElementOps(before, ops), `seed ${seed}`).toEqual(after);
     }
+  });
+});
+
+// A product's merge (livediagram's Q&A board keeps the newer votes) decides how every incoming copy lands.
+describe('createElementOps with a merge', () => {
+  const keepNewerVotes = (current: Element, incoming: Element): Element =>
+    (incoming.rev ?? 0) >= (current.rev ?? 0)
+      ? incoming
+      : { ...incoming, rev: current.rev, votes: current.votes };
+  const merged = createElementOps<Element>(keepNewerVotes);
+  const live = [el('b', { rev: 5, votes: ['a', 'b', 'c'] })];
+  const stale = el('b', { rev: 4, votes: ['a'], x: 300 });
+
+  it('merges an update, a racing double-add and a batched update the same way', () => {
+    for (const [out] of [
+      merged.applyElementOp(live, { kind: 'update', element: stale }),
+      merged.applyElementOp(live, { kind: 'add', element: stale, at: 0 }),
+      merged.applyElementOps(live, [{ kind: 'update', element: stale }]),
+    ]) {
+      expect(out).toEqual({ ...stale, rev: 5, votes: ['a', 'b', 'c'] });
+    }
+  });
+
+  it('without a merge takes the incoming copy as it is', () => {
+    const [out] = applyElementOp(live, { kind: 'update', element: stale });
+    expect(out).toBe(stale);
+    const [added] = applyElementOp(live, { kind: 'add', element: stale, at: 0 });
+    expect(added).toBe(stale);
+    const [batched] = applyElementOps(live, [{ kind: 'update', element: stale }]);
+    expect(batched).toBe(stale);
   });
 });
