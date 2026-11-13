@@ -8,6 +8,7 @@ import { addForm, changeForm, readForm, shareForm, type FormCallResult } from '.
 import type { FormChange } from '../forms/form-changes';
 import { tryForm } from '../forms/form-try';
 import type { FormReading } from '../forms/form-read';
+import type { ReadExtraColumn, ReadFixedField } from '../forms/form-fixed';
 import type { QuestionInput } from '../forms/form-question';
 import { projectOf } from './shared';
 
@@ -30,6 +31,8 @@ const readingOutput = z.object({
   respondsTo: z.record(z.string(), z.string()),
   problems: z.array(z.string()),
   sections: z.array(z.unknown()),
+  setAutomatically: z.array(z.unknown()).optional(),
+  extraColumns: z.array(z.unknown()).optional(),
   lines: z.array(z.string()),
   made: z.array(z.string()),
 });
@@ -54,6 +57,8 @@ function outputOf(ctx: VerbContext, result: FormCallResult): ReadingOutput {
     respondsTo: r.respondsTo,
     problems: r.problems,
     sections: r.sections,
+    ...(r.setAutomatically ? { setAutomatically: r.setAutomatically } : {}),
+    ...(r.extraColumns ? { extraColumns: r.extraColumns } : {}),
     lines: result.lines,
     made: result.made,
   };
@@ -65,6 +70,14 @@ const respondsLine = (r: Record<string, string>) =>
     : r['to'] === 'sheet'
       ? `responses: rows in ${r['sheet']}`
       : 'responses: nowhere yet';
+
+// A value filled in automatically, as the builder reads it back.
+const fixedWords = (v: { value?: unknown; submitted?: { days: number; timeZone?: string } }) =>
+  v.submitted
+    ? `Submitted Date${v.submitted.days ? ` + ${v.submitted.days} days` : ''}${v.submitted.timeZone ? ` (${v.submitted.timeZone})` : ''}`
+    : Array.isArray(v.value)
+      ? v.value.join(', ')
+      : String(v.value);
 
 const textOf = (o: ReadingOutput) => [
   ...o.lines.map((l) => `~ ${l}`),
@@ -78,6 +91,12 @@ const textOf = (o: ReadingOutput) => [
         `  ${q.id}  ${q.type}${q.required ? '*' : ''}  ${q.prompt}${q.goesTo ? `  → ${q.goesTo}` : ''}`,
     ),
   ]),
+  ...((o.setAutomatically ?? []) as ReadFixedField[]).map(
+    (f) => `= ${f.field}: ${fixedWords(f)}${f.broken ? ' (broken)' : ''}`,
+  ),
+  ...((o.extraColumns ?? []) as ReadExtraColumn[]).map(
+    (c) => `+ column ${c.column}: ${fixedWords(c)}`,
+  ),
   ...o.problems.map((p) => `! ${p}`),
 ];
 
@@ -171,7 +190,7 @@ export const formChange = defineVerb({
   id: 'form.change',
   summary: 'Change a form',
   description:
-    "Applies change_form's changes from a JSON file (or stdin), in order, as one write: questions, sections and their rules, the heading and cover, settings and where responses go.",
+    "Applies change_form's changes from a JSON file (or stdin), in order, as one write: questions, sections and their rules, the heading and cover, settings, where responses go, and the card fields and sheet columns filled in automatically.",
   behaviour: 'destructive',
   input: z.object({
     project: projectArg,

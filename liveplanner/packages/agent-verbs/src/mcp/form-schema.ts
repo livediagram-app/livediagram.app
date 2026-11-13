@@ -3,6 +3,10 @@
 // come from @liveplanner/forms, so the tools and the builder agree.
 import { z } from 'zod';
 import {
+  FIXED_DAYS_MAX,
+  FIXED_FIELDS_MAX,
+  FIXED_TEXT_MAX,
+  SHEET_FIXED_MAX,
   FORM_DESCRIPTION_MAX,
   FORM_HEADING_MAX,
   FORM_RESPONSE_LIMIT_MAX,
@@ -176,6 +180,55 @@ const respondsTo = z
   })
   .describe('Where each response goes.');
 
+// Values filled in automatically (forms.md "Filled in automatically"): a board form's card fields and a sheet form's
+// extra columns, each a value or the submitted day.
+const submitted = z
+  .object({
+    days: z
+      .number()
+      .int()
+      .optional()
+      .describe(`Days after the response is submitted, 0 to ${FIXED_DAYS_MAX} (0 when left out).`),
+    timeZone: z
+      .string()
+      .optional()
+      .describe('The IANA zone the day is read in (Europe/London...); UTC when left out.'),
+  })
+  .describe('The day the response is submitted, plus days, written YYYY-MM-DD.');
+const setField = z
+  .object({
+    field: z
+      .string()
+      .describe(
+        'A card field of the form’s card type, by name or id: Priority, Labels, Start, Due, or a Choice, ' +
+          'Multiple Choice, Labels, Text, Long Text, Number, Currency or Date field. Not one a question’s answer goes to.',
+      ),
+    value: z
+      .union([z.string(), z.number(), z.array(z.string())])
+      .nullable()
+      .optional()
+      .describe(
+        `What every response’s card gets: a Choice field’s option, Multiple Choice options, labels (a list or ` +
+          `"a, b"), text up to ${FIXED_TEXT_MAX} characters, a number, or a priority (urgent, high, medium, low). ` +
+          'null stops setting the field.',
+      ),
+    submitted: submitted
+      .optional()
+      .describe('A date field (Start, Due or a custom Date): the submitted day, plus days.'),
+  })
+  .describe('A card field set on every response’s card without a question (Set Automatically).');
+const extraColumn = {
+  header: z.string().describe(`The column’s header, 1 to ${PROMPT_MAX} characters.`),
+  value: z
+    .union([z.string(), z.number()])
+    .optional()
+    .describe(`What every row gets: text up to ${FIXED_TEXT_MAX} characters, or a number.`),
+  submitted: submitted
+    .optional()
+    .describe('The submitted day, plus days (the default when value is left out).'),
+};
+const columnRef = z.string().describe('An extra column: its id, or its header.');
+
 const hex = z.string().describe('A hex colour such as #0f172a.');
 const cover = z
   .object({
@@ -233,6 +286,12 @@ const sectionInput = z.object({
   showIf: showIf.optional(),
   questions: z.array(question).describe('The section’s questions, in order.'),
 });
+
+// The submitted day as read_form shows it.
+const readSubmitted = {
+  days: z.number().describe('Days after the response is submitted.'),
+  timeZone: z.string().optional().describe('The zone the day is read in; UTC when absent.'),
+};
 
 // --- read_form --------------------------------------------------------------------------------------------------
 
@@ -325,6 +384,36 @@ export const readFormOutput = {
     )
     .describe('The pages of the form, in order.'),
   cover: z.record(z.string(), z.unknown()).optional().describe('The cover band’s colours.'),
+  setAutomatically: z
+    .array(
+      z.object({
+        field: z.string().describe('The card field’s name (its id when it was removed).'),
+        fieldId: z.string().describe('Its id, which set_field also takes.'),
+        value: z.unknown().optional().describe('The value every response’s card gets.'),
+        submitted: z
+          .object(readSubmitted)
+          .optional()
+          .describe('The submitted day plus days, read in timeZone (UTC when absent).'),
+        broken: z
+          .boolean()
+          .optional()
+          .describe('Its field was removed, changed, or lacks the option: left off cards.'),
+      }),
+    )
+    .optional()
+    .describe('Board forms: card fields set on every response without a question.'),
+  extraColumns: z
+    .array(
+      z.object({
+        id: z.string().describe('The column’s id, which set_column and delete_column take.'),
+        header: z.string().describe('Its header.'),
+        column: z.string().describe('The header as the sheet has it (made distinct).'),
+        value: z.unknown().optional().describe('The text or number every row gets.'),
+        submitted: z.object(readSubmitted).optional().describe('The submitted day plus days.'),
+      }),
+    )
+    .optional()
+    .describe('Sheet forms: columns every row fills without a question, after the questions’.'),
   settings: z
     .record(z.string(), z.unknown())
     .describe('closesAt (ISO), limit, and the confirmation and closed messages respondents see.'),
@@ -384,6 +473,18 @@ export const addFormShape = {
     .object(settings)
     .optional()
     .describe('When it closes, how many responses it takes, and its messages.'),
+  setAutomatically: z
+    .array(setField)
+    .max(FIXED_FIELDS_MAX)
+    .optional()
+    .describe('Board forms: card fields every response’s card gets without a question.'),
+  extraColumns: z
+    .array(z.object(extraColumn))
+    .max(SHEET_FIXED_MAX)
+    .optional()
+    .describe(
+      `Sheet forms: up to ${SHEET_FIXED_MAX} columns every row fills without a question, after the questions’.`,
+    ),
 };
 
 // --- change_form ------------------------------------------------------------------------------------------------
@@ -454,6 +555,21 @@ const change = z.discriminatedUnion('op', [
   }),
   z.object({ op: z.literal('settings'), ...settings }),
   respondsTo.extend({ op: z.literal('responds_to') }),
+  setField.extend({ op: z.literal('set_field') }),
+  z.object({ op: z.literal('add_column'), ...extraColumn }),
+  z.object({
+    op: z.literal('set_column'),
+    column: columnRef,
+    ...extraColumn,
+    header: extraColumn.header.optional(),
+    submitted: submitted.optional().describe('The submitted day, plus days, in place of a value.'),
+  }),
+  z.object({
+    op: z.literal('delete_column'),
+    column: columnRef.describe(
+      'The column the form stops filling; the sheet keeps it and its values.',
+    ),
+  }),
 ]);
 
 export const changeFormShape = {

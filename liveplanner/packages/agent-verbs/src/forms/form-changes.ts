@@ -43,6 +43,15 @@ import {
   type Named,
 } from './form-names';
 import {
+  addExtraColumn,
+  deleteExtraColumn,
+  setExtraColumn,
+  setFieldValue,
+  type ColumnInput,
+  type SetColumnInput,
+  type SetFieldInput,
+} from './form-fixed';
+import {
   applyQuestionSet,
   questionFrom,
   type QuestionInput,
@@ -95,7 +104,12 @@ export type FormChange =
       confirmation?: string | null;
       closedMessage?: string | null;
     }
-  | ({ op: 'responds_to' } & RespondsToInput);
+  | ({ op: 'responds_to' } & RespondsToInput)
+  // Values filled in automatically (form-fixed.ts): a board form's card fields, a sheet form's extra columns.
+  | ({ op: 'set_field' } & SetFieldInput)
+  | ({ op: 'add_column' } & ColumnInput)
+  | ({ op: 'set_column' } & SetColumnInput)
+  | { op: 'delete_column'; column: string };
 
 const tooLong = (what: string, max: number) =>
   refuse('too_long', `${what} holds at most ${max} characters.`);
@@ -429,6 +443,14 @@ function applyOne(d: FormDraft, c: FormChange): FormRefusal | null {
       const { op: _op, ...r } = c;
       return setRespondsTo(d, r);
     }
+    case 'set_field':
+      return setFieldValue(d, c);
+    case 'add_column':
+      return addExtraColumn(d, c);
+    case 'set_column':
+      return setExtraColumn(d, c);
+    case 'delete_column':
+      return deleteExtraColumn(d, c.column);
   }
 }
 

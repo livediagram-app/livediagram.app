@@ -280,6 +280,12 @@ export function setGoesTo(d: FormDraft, q: FormQuestion, goesTo: string): FormRe
       'Responses go nowhere yet: set respondsTo to a board before mapping answers to card fields.',
     );
   let field = type.custom?.find((f) => f.label.trim().toLowerCase() === where.toLowerCase());
+  // One source per field: a field set automatically takes no answer (forms.md "Filled in automatically").
+  if (field && d.form.destination!.fixed?.[field.id])
+    return refuse(
+      'field_set_automatically',
+      `${type.label}’s "${field.label}" is set automatically on every response: stop setting it (set_field with value null) to map an answer to it, or name another field.`,
+    );
   if (field && !MAPPABLE_KINDS[q.type].includes(field.kind))
     return refuse(
       'field_does_not_fit',

@@ -30,6 +30,7 @@ import {
   type SectionRuleInput,
 } from './form-changes';
 import { draftOf, setRespondsTo, type FormDraft, type RespondsToInput } from './form-draft';
+import { addExtraColumn, setFieldValue, type ColumnInput, type SetFieldInput } from './form-fixed';
 import { refuse, resolveFormTab, type FormRefusal } from './form-names';
 import type { QuestionInput } from './form-question';
 import { readFormOf, type FormReading } from './form-read';
@@ -142,6 +143,24 @@ interface AddFormInput {
   }[];
   respondsTo?: RespondsToInput;
   settings?: Omit<Extract<FormChange, { op: 'settings' }>, 'op'>;
+  // Set Automatically (a board form's card fields) and Extra Columns (a sheet form's), after the questions.
+  setAutomatically?: SetFieldInput[];
+  extraColumns?: ColumnInput[];
+}
+
+// Each entry of one of add_form's lists through its change_form change; a refusal names the list and its entry.
+function applyEach<T>(
+  d: FormDraft,
+  name: string,
+  list: readonly T[] | undefined,
+  apply: (d: FormDraft, entry: T) => FormRefusal | null,
+): FormRefusal | null {
+  for (const [i, entry] of (list ?? []).entries()) {
+    const refused = apply(d, entry);
+    if (refused)
+      return { ...refused, message: `${name} ${i + 1}: ${refused.message} Nothing was made.` };
+  }
+  return null;
 }
 
 function startFromStarter(
@@ -269,6 +288,10 @@ export async function addForm(
         const refused = applyFormChanges(d, [{ op: 'settings', ...input.settings }]);
         if (refused) return refused;
       }
+      const fixedRefused =
+        applyEach(d, 'setAutomatically', input.setAutomatically, setFieldValue) ??
+        applyEach(d, 'extraColumns', input.extraColumns, addExtraColumn);
+      if (fixedRefused) return fixedRefused;
       const tabTheme = d.formTab.theme ?? theme;
       const tab: Tab = {
         id: tabId,

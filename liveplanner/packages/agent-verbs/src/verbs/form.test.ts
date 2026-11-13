@@ -64,6 +64,72 @@ function ctxWith(input = '', planOf = plan) {
   return { ctx: contextOf(api, [], [], { readInput: async () => input }), writes };
 }
 
+describe('values filled in automatically', () => {
+  it('form change sets card fields and prints them after the questions', async () => {
+    const changes = JSON.stringify([
+      { op: 'set_field', field: 'Priority', value: 'High' },
+      { op: 'set_field', field: 'due', submitted: { days: 2, timeZone: 'UTC' } },
+      { op: 'set_field', field: 'Labels', value: ['web', 'api'] },
+    ]);
+    const { ctx } = ctxWith(changes);
+    const out = await formChange.run!(
+      ctx,
+      formChange.input.parse({ project: DOC_A, changes: '-' }),
+    );
+    expect(out.extraColumns).toBeUndefined();
+    const text = formChange.text!(out);
+    expect(text).toContain('= Priority: high');
+    expect(text).toContain('= Due Date: Submitted Date + 2 days (UTC)');
+    expect(text).toContain('= Labels: web, api');
+  });
+
+  it('form add fills a sheet’s extra columns from its JSON', async () => {
+    const given = JSON.stringify({
+      questions: [{ type: 'short', prompt: 'Name' }],
+      respondsTo: { to: 'sheet', sheet: 'Budget' },
+      extraColumns: [{ header: 'Source', value: 'Web' }],
+    });
+    const { ctx } = ctxWith(given);
+    const out = await formAdd.run!(ctx, formAdd.input.parse({ project: DOC_A, from: '-' }));
+    expect(out.setAutomatically).toBeUndefined();
+    expect(formAdd.text!(out)).toContain('+ column Source: Web');
+  });
+
+  it('prints a broken set field and a sheet’s extra columns', () => {
+    const base = {
+      projectId: DOC_A,
+      tabId: 'form',
+      heading: 'Survey',
+      state: 'not_published',
+      link: null,
+      responses: 0,
+      respondsTo: { to: 'sheet', sheet: 'Budget' },
+      problems: [],
+      sections: [],
+      lines: [],
+      made: [],
+    };
+    expect(
+      formGet.text!({
+        ...base,
+        setAutomatically: [
+          { field: 'Severity', fieldId: 'f-severity', value: 'Gone', broken: true },
+        ],
+        extraColumns: [
+          { id: 'x-aaaaaa', header: 'Filed', column: 'Filed', submitted: { days: 0 } },
+          { id: 'x-bbbbbb', header: 'Batch', column: 'Batch', value: 7 },
+        ],
+      }),
+    ).toEqual([
+      'Survey  not_published  0 responses',
+      'responses: rows in Budget',
+      '= Severity: Gone (broken)',
+      '+ column Filed: Submitted Date',
+      '+ column Batch: 7',
+    ]);
+  });
+});
+
 describe('form get', () => {
   it('prints the state, where responses go and each question with its id', async () => {
     const { ctx } = ctxWith();
