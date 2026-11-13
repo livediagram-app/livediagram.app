@@ -1,5 +1,5 @@
 import { DOCUMENT_FORMAT, isRoomOpRef, parseBuildId, type NudgeOp } from '@livehuddle/api-schema';
-import { opForTheWire, stampCommentAuthor } from '@livehuddle/document';
+import { opForTheWire, stampCommentAuthor, stampSenderName } from '@livehuddle/document';
 import { helloChangesRoster } from '@liveworkspace/api-kit/room-roster';
 import { followerIdsOf, followTargetOf } from '@liveworkspace/api-kit/room-follows';
 import { admitFrame, helloPresence, MAX_TAB_ID_LEN, resolveCatchup } from '../document-room-rules';
@@ -11,6 +11,7 @@ import type { ClientMessage, ParticipantPresence, ServerMessage } from '../types
 import { storedTabName } from './room-content-state';
 import { noteCallSession, relayNudge } from './room-call-sessions';
 import { noteAttendance } from './room-attendance';
+import { isVisitorSecret, visitorCollabKey } from '../visitor-key';
 import { relaySessionOf, scopeOf } from './room-sockets';
 import type { DocumentRoom } from './document-room';
 
@@ -75,10 +76,14 @@ export function roomMessage(
     // explicitly (not spread) and length-clamped so a hostile hello can't
     // smuggle arbitrary keys or oversize strings into the attachment:
     // see the size note on SessionAttachment.
-    const presence = helloPresence(msg.participant, session);
+    // A session with no identity takes its browser's key from its first hello (docs/specs/013-workspace/
+    // share-roles.md "The collab key"), so a reconnect is the same visitor; never one with an identity, and never
+    // a second time.
+    const keyed = withVisitorKey(session, (msg as { visitor?: unknown }).visitor);
+    const presence = helloPresence(msg.participant, keyed);
     const batches = (msg as { batches?: unknown }).batches === true;
     const leanAvatars = (msg as { leanAvatars?: unknown }).leanAvatars === true;
-    const hello = { ...session, presence, batches, leanAvatars } satisfies SessionAttachment;
+    const hello = { ...keyed, presence, batches, leanAvatars } satisfies SessionAttachment;
     ws.serializeAttachment(hello);
     room.presenceRelay.noteSession(ws, relaySessionOf(hello));
     // Who is in which tab, for its Attendance (docs/specs/012-collaboration/tab-attendance.md).
@@ -231,6 +236,9 @@ export function roomMessage(
       if (opKind === 'avatar-knock' && !room.knocks.allow(sender.id, Date.now())) return;
       // A ring of the bell, likewise one per sender per 5 seconds, then broadcast; each receiver checks its earshot.
       if (opKind === 'avatar-bell' && !room.bells.allow(sender.id, Date.now())) return;
+      // A game's moment, at most GAME_EVENT_CAP per sender per second (social-pieces.md "A cap per sender"): a fast
+      // rally is one or two a second, so only a flood meets it.
+      if (opKind === 'game-event' && !room.gameEvents.allow(sender.id, Date.now())) return;
       // A nudge (docs/specs/012-collaboration/nudge.md "The wire"): to its target alone, once per 2 minutes per
       // pair; inside that the sender alone is told how long is left. Never fanned out.
       if (opKind === 'nudge') {
@@ -262,12 +270,17 @@ export function roomMessage(
       // the author's owner id, a guest's credential. And a posted comment
       // carries the name of the session that sent it, the one on its
       // cursor, not whatever the frame claimed (docs/specs/012-collaboration/collab-race-hardening.md).
+      // So does a pinned note's author and a posted score's name (docs/specs/009-elements/social-pieces.md "The author
+      // is the sender's"), so nobody pins or posts under a colleague's name.
       // A scoped session's whole-tab op goes out under the stored name: it may not rename its tab
       // (docs/specs/013-workspace/tab-scoped-share-links.md "No rename from a scoped session").
       const scoped = scopedTabOp(msg.op, session.tabScope ?? null, (tabId) =>
         storedTabName(room, tabId),
       );
-      const op = stampCommentAuthor(opForTheWire(scoped), sender, session.reactionPerson ?? null);
+      const op = stampSenderName(
+        stampCommentAuthor(opForTheWire(scoped), sender, session.reactionPerson ?? null),
+        sender.name,
+      );
       const seq = room.sequenceMutation(sender.id, op, ws);
       // The relay skips the sender, so tell it the seq its op took: its own
       // ops are already applied, and a reconnect must not replay them. The
@@ -277,6 +290,14 @@ export function roomMessage(
       room.sendTo(ws, { kind: 'cursor', epoch: room.epoch, seq, ...ref });
     }
   }
+}
+
+// The session with its browser's collab key, when it has no identity, has said no hello yet and this hello carries a
+// visitor secret (visitor-key.ts); else the session as it is.
+function withVisitorKey(session: SessionAttachment, visitor: unknown): SessionAttachment {
+  if (!session.keyMinted || session.presence !== null || !isVisitorSecret(visitor)) return session;
+  const { keyMinted: _minted, ...rest } = session;
+  return { ...rest, collabKey: visitorCollabKey(visitor) };
 }
 
 // Answer a client's `sync` (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): given the last epoch+seq it

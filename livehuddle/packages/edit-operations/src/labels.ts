@@ -1,20 +1,20 @@
 // Labels (docs/specs/024-agents/blueprints/edit-operations.md "Fields and values", EO18, EO22): a
-// shape's label over LABEL_CAP_MAX keeps its heading and moves the whole text into its note; an arrow's is cut; any other element's label is its content and stays whole. A
-// shape whose label no longer fits grows around its centre, never shrinking.
+// shape's label over LABEL_CAP_MAX keeps its heading and the rest is cut, with nothing moved into a note (livehuddle
+// shows none, Work Tracker 737); any other element's label is its content and stays whole. A shape whose label no
+// longer fits grows around its centre, never shrinking.
 
-import { SHAPE_KINDS, capLabel, labelBoxSize, type Element } from '@livehuddle/document';
+import { LABEL_CAP_MAX, capLabel, labelBoxSize, type Element } from '@livehuddle/document';
 
-type LabelWrite = { label: string; note?: string; capped: boolean };
+type LabelWrite = { label: string; capped: boolean };
 
-// The label to store, and the note it ends with when the whole text moved there. `note` is the note
-// the element ends with otherwise.
-export function applyLabel(el: Element, text: string, note: string | undefined): LabelWrite {
+/** What a `label_capped` warning tells the agent after the heading it kept. */
+export const LABEL_CUT_ADVICE = `the rest was cut (a label holds ${LABEL_CAP_MAX} characters: put longer text in a text element or a sticky)`;
+
+// The label to store, and whether it was cut to its heading.
+export function applyLabel(el: Element, text: string): LabelWrite {
   if (el.type !== 'shape' && el.type !== 'arrow') return { label: text, capped: false };
   const { label, cut } = capLabel(text);
-  if (!cut) return { label, capped: false };
-  if (el.type === 'arrow') return { label, capped: true };
-  const whole = text.replace(/\s+/g, ' ').trim();
-  return { label, note: note ? `${whole}\n\n${note}` : whole, capped: true };
+  return { label, capped: cut };
 }
 
 export type Fit = { widened?: [number, number]; taller?: [number, number] };
@@ -26,9 +26,7 @@ export type Fit = { widened?: [number, number]; taller?: [number, number] };
 export function fitToLabel(before: Element, el: Element): { el: Element; fit: Fit } {
   if (el.type !== 'shape' || before.type !== 'shape' || el.fixedSize || el.textSize === 'scale')
     return { el, fit: {} };
-  // A retired kind (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") has no size of its own to
-  // fit: it keeps the box it was stored with.
-  if (!SHAPE_KINDS.has(el.shape) || !SHAPE_KINDS.has(before.shape)) return { el, fit: {} };
+  // A retired kind never gets here: `set` refuses one (Work Tracker 639), and `shape=` takes only kinds livehuddle has.
   const was = labelBoxSize(before.label, before.shape);
   const now = labelBoxSize(el.label, el.shape);
   const grown = (size: number, old: number, needed: number) =>

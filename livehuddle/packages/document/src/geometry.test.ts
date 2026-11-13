@@ -8,6 +8,8 @@ import {
   sendManyToBack,
   sendToBack,
   supportsBorder,
+  supportsBorderControls,
+  supportsFinish,
   supportsColours,
   supportsFillColor,
   type RetiredArrowElement,
@@ -127,6 +129,19 @@ describe('type predicates', () => {
     // stops a future refactor that "simplifies" the predicate to
     // `isBoxed || arrow` and silently changes the surfaced fields.
     expect(supportsColours({ ...shape('e'), type: 'image', imageId: null })).toBe(false);
+  });
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements" (Work Tracker 639): a placeholder offers no
+  // colours, border or finish.
+  it('offers no colours, border controls or finish on a retired element', () => {
+    for (const kind of ['pie-chart', 'lane', 'never-had'] as const) {
+      const retired = { ...shape('r'), shape: kind } as unknown as Element;
+      expect(supportsColours(retired), kind).toBe(false);
+      expect(supportsBorderControls(retired), kind).toBe(false);
+      expect(supportsFinish(retired), kind).toBe(false);
+    }
+    expect(supportsFinish(shape('live'))).toBe(true);
+    expect(supportsBorderControls(shape('live'))).toBe(true);
   });
 
   it('supportsBorder is true for shapes only', () => {

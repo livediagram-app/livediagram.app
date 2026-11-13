@@ -48,6 +48,7 @@ export function dropSession(room: DocumentRoom, ws: WebSocket): void {
     room.calls.forget(presenceId);
     room.knocks.forget(presenceId);
     room.bells.forget(presenceId);
+    room.gameEvents.forget(presenceId);
     void room.selections.drop(presenceId).catch(() => {});
   }
   // Their last connection on a tab gone ends their visit there (docs/specs/012-collaboration/tab-attendance.md).

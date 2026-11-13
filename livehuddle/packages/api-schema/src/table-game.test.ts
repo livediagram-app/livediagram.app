@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { parseGameEvent, parseGameInput } from './table-game';
+import {
+  createGameEventThrottle,
+  GAME_EVENT_CAP,
+  GAME_EVENT_WINDOW_MS,
+  parseGameEvent,
+  parseGameInput,
+} from './table-game';
 import { isPresenceOpKind } from './room-messages';
 
 // docs/specs/009-elements/social-pieces.md "The wire".
@@ -74,5 +80,32 @@ describe('parseGameEvent', () => {
   it('is presence: never ordered, logged or replayed', () => {
     expect(isPresenceOpKind('game-input')).toBe(true);
     expect(isPresenceOpKind('game-event')).toBe(true);
+  });
+});
+
+// social-pieces.md "A cap per sender" (Work Tracker 624).
+describe('createGameEventThrottle', () => {
+  it('passes up to the cap in a window, then nothing until the window runs out', () => {
+    const t = createGameEventThrottle();
+    const passed = Array.from({ length: 50 }, () => t.allow('a', 1000)).filter(Boolean);
+    expect(passed).toHaveLength(GAME_EVENT_CAP);
+    expect(t.allow('a', 1000 + GAME_EVENT_WINDOW_MS - 1)).toBe(false);
+    expect(t.allow('b', 1000)).toBe(true);
+    expect(t.allow('a', 1000 + GAME_EVENT_WINDOW_MS)).toBe(true);
+  });
+  it('lets a fast rally through untouched: a moment every 300 ms, and a miss with its serve', () => {
+    const t = createGameEventThrottle();
+    for (let at = 0; at < 60_000; at += 300) expect(t.allow('a', at)).toBe(true);
+    expect(t.allow('a', 60_000)).toBe(true);
+    expect(t.allow('a', 60_001)).toBe(true);
+  });
+  it('forgets a sender, and prunes stale senders past 256', () => {
+    const t = createGameEventThrottle(1, 1000);
+    expect(t.allow('a', 0)).toBe(true);
+    t.forget('a');
+    expect(t.allow('a', 0)).toBe(true);
+    for (let i = 0; i < 300; i += 1) t.allow(`s${i}`, 0);
+    expect(t.allow('late', 5000)).toBe(true);
+    expect(t.allow('s1', 5000)).toBe(true);
   });
 });

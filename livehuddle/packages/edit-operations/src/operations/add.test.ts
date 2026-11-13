@@ -93,4 +93,12 @@ describe('add with an element', () => {
       hint: 'see the format: livehuddle schema sticky',
     });
   });
+
+  // docs/specs/024-agents/edit-operations.md "No element notes" (Work Tracker 737).
+  it('refuses a whole element that carries a note', () => {
+    for (const extra of [{ note: 'Hidden' }, { noteRich: [{ text: 'Hidden' }] }])
+      expect(refused(run([{ op: 'add', element: { ...sticky, ...extra } }])).details[0]).toMatch(
+        /: livehuddle keeps no element notes$/,
+      );
+  });
 });

@@ -167,6 +167,60 @@ describe('applyReplace on an existing tab', () => {
       checkoutFlow().elements.find((el) => el.id === 'f2'),
     );
   });
+
+  // docs/specs/024-agents/edit-operations.md "Retired elements are left alone" (Work Tracker 639): a kept retired
+  // element comes back exactly as stored, whatever the copy sent says, with no text size or other default added.
+  it('keeps a stored retired element exactly as stored, whatever the copy sent', () => {
+    const pie = {
+      id: 'pie',
+      type: 'shape',
+      shape: 'pie-chart',
+      x: 600,
+      y: 0,
+      width: 320,
+      height: 220,
+      pieSlices: [{ label: 'Yes', value: 3 }],
+    } as unknown as Element;
+    const stored = { ...checkoutFlow(), elements: [...checkoutFlow().elements, pie] };
+    const sent = stored.elements.map((el) =>
+      el.id === 'pie' ? { ...pie, shape: 'pie-chart', label: 'Hijacked', pieSlices: [] } : el,
+    );
+    const outcome = applyReplace(stored, { elements: sent }, options);
+    expect(applied(outcome).tab.elements.find((el) => el.id === 'pie')).toBe(pie);
+    expect(JSON.stringify(applied(outcome).elementOps)).not.toContain('"pie"');
+    // A live element sent back as a kind livehuddle lacks is refused, as a new one is.
+    const turned = stored.elements.map((el) => (el.id === 'n3' ? { ...el, shape: 'square' } : el));
+    expect(refused(applyReplace(stored, { elements: turned }, options)).details).toEqual([
+      'n3 shape: shapes are no longer supported in livehuddle: add a sticky',
+    ]);
+  });
+
+  // docs/specs/024-agents/edit-operations.md "No element notes" (Work Tracker 737): a kept element keeps the note it
+  // stored, and a new one takes none.
+  it('keeps each kept note as stored and gives a new element none', () => {
+    const stored = {
+      ...checkoutFlow(),
+      elements: checkoutFlow().elements.map((el) =>
+        el.id === 'n3' ? { ...el, note: 'Ask for SSO' } : el,
+      ),
+    };
+    const sent = [
+      ...stored.elements.map((el) =>
+        el.id === 'n3'
+          ? { ...el, note: 'Rewritten' }
+          : el.id === 'n1'
+            ? { ...el, note: 'New' }
+            : el,
+      ),
+      { ...signpost('fresh', 'Fresh'), x: 900, note: 'Hidden', noteRich: [{ text: 'Hidden' }] },
+    ];
+    const { tab } = applied(applyReplace(stored, { elements: sent }, options));
+    const byId = (id: string) => tab.elements.find((el) => el.id === id) as Record<string, unknown>;
+    expect(byId('n3').note).toBe('Ask for SSO');
+    expect(byId('n1')).not.toHaveProperty('note');
+    expect(byId('fresh')).not.toHaveProperty('note');
+    expect(byId('fresh')).not.toHaveProperty('noteRich');
+  });
 });
 
 describe('applyReplace for a new tab', () => {

@@ -61,9 +61,21 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
 - **Values** use the document's vocabulary: `shape=plant` (a kind livehuddle has; any other is refused, part 5),
   `fill=green` (a theme slot: `theme`, the theme's own colour, or one of the six hues the quick style panel offers
   for that theme, which follow a theme change; a hex value is accepted with the warning `colour_overrides_theme`,
-  a sticky's colours excepted, which take the sticky palette's names), `text=sm`, `note="…"`, `line=angled`. A shape's
-  label over 40 characters keeps the heading and moves the full text into the note; an arrow's
-  label is cut; a sticky's or a text's label is its content and is kept whole. Every style key a
+  a sticky's colours excepted, which take the sticky palette's names), `text=sm`. A shape's
+  label over 40 characters keeps its heading and the rest is cut, with the warning `label_capped` saying so (put
+  longer text in a text element or a sticky); a sticky's or a text's label is its content and is kept whole.
+- **No element notes** (Work Tracker 737). livehuddle shows no element notes ([Not in
+  livehuddle](../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)), so an edit never writes
+  one: `note=` or `noteRich=` with a value is refused as `invalid_value` ("livehuddle keeps no element notes"), as
+  is an `add` of a whole element that carries one, and a capped label never moves into a note. `note=` with no value (an unset) still removes a note an element stored
+  from before, the one way left to clear it. A replace keeps each kept element's stored note as it was and gives a
+  new element none.
+- **Retired elements are left alone** (Work Tracker 639). A stored element of a kind livehuddle no longer has
+  ([Retired elements](../002-project-scope/not-in-livehuddle.md#retired-elements)) keeps its kind and every stored
+  field: `set` on one is refused as `invalid_value` ("<ref> is a Pie Chart, which livehuddle no longer has: it stays
+  as stored"), naming `move` and `rm` as what it takes, while a `set … all` that also matches live elements
+  passes it by and sets those; a replace that sends a kept one back stores it exactly as it
+  was, whatever the copy sent says. `move` and `rm` work on it as on any element. Every style key a
   [view](document-views.md) prints (`stroke=`, `text-color=`, `border=`, `font=` beside `fill=`, `text=`, `line=`)
   writes back unchanged.
 - **Closed vocabularies.** A stored field with a closed list of values (`textSize`, `textAlignX`, `textAlignY`,

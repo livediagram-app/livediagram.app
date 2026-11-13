@@ -59,7 +59,16 @@ DROP TABLE IF EXISTS drive_items;
 DROP TABLE IF EXISTS drive_connections;
 `;
 
-const STEPS: readonly string[] = [V1, V2];
+// The guests an account signed in from (merged-guests.ts; docs/specs/012-collaboration/tab-attendance.md "Closing an
+// account"): their collab keys, so closing the account anonymises their Attendance visits too.
+const V3 = `
+CREATE TABLE IF NOT EXISTS merged_guests (
+  key       TEXT    PRIMARY KEY,
+  merged_at INTEGER NOT NULL
+);
+`;
+
+const STEPS: readonly string[] = [V1, V2, V3];
 
 // Bring the person's SQLite up to date. Idempotent: the version row skips what already ran.
 export function migratePersonSchema(sql: DocumentSql): void {

@@ -1,7 +1,7 @@
 // Fields onto an element (docs/specs/024-agents/blueprints/edit-operations.md "Fields and values"):
-// the spec's aliases (`label note shape fill text line`) or any stored field of the element's type.
-// `null` unsets. Identity, live fields and prototype keys are refused. A shape's long label is capped
-// into its note once every field is written, so it moves into the note the element ends with.
+// the spec's aliases (`label shape fill text line`) or any stored field of the element's type.
+// `null` unsets. Identity, live fields and prototype keys are refused. A shape's long label is cut to its heading,
+// and an element note is never written: livehuddle shows none (Work Tracker 737), so `note=` only removes one.
 
 import type { EditRejection, EditWarning } from '@livehuddle/api-schema';
 import {
@@ -24,7 +24,7 @@ import {
 } from '@livehuddle/document';
 import { fillValue, isHexColour, resolveColourValue } from './colours';
 import { kindOf } from './element-text';
-import { applyLabel } from './labels';
+import { LABEL_CUT_ADVICE, applyLabel } from './labels';
 import { invalidValue, unknownField } from './rejections';
 import type { FieldValue, Fields } from './types';
 import { PROTOTYPE_KEYS } from './vocabulary';
@@ -34,7 +34,6 @@ import { iconsLike, isIconId } from '@liveworkspace/icons/search';
 // unchanged; `font` is a stored field name already.
 const FIELD_ALIASES = [
   'label',
-  'note',
   'shape',
   'fill',
   'stroke',
@@ -55,6 +54,11 @@ const LIVE_FIELDS: ReadonlySet<string> = new Set(LIVE_ELEMENT_FIELDS);
 const IDENTITY_FIELDS: ReadonlySet<string> = new Set(['id', 'type', 'addedBy']);
 const RAW_COLOURS: ReadonlySet<string> = new Set(['fillColor', 'strokeColor', 'textColor']);
 const LIVE_HINT = "comments go through the comment commands; assigned actions are people's";
+// livehuddle keeps no element notes (docs/specs/024-agents/edit-operations.md "No element notes", Work Tracker 737):
+// a write may only remove the one an element stored from before.
+export const NOTE_FIELDS: ReadonlySet<string> = new Set(['note', 'noteRich']);
+const NOTE_HINT =
+  'put the text in the label, or in a text element or sticky beside it; note= removes an old note';
 
 const hasField = (el: Element, field: string) => isElementFieldName(el.type, field);
 
@@ -63,7 +67,6 @@ export function aliasesOf(el: Element): Alias[] {
   return FIELD_ALIASES.filter((alias) => {
     switch (alias) {
       case 'label':
-      case 'note':
         return hasField(el, alias);
       case 'shape':
         return el.type === 'shape';
@@ -115,16 +118,19 @@ type Patch = Record<string, FieldValue | undefined>;
 const oneOf = (values: readonly string[], value: FieldValue) =>
   typeof value === 'string' && values.includes(value);
 
-// Writes `fields` onto `el`. `ref` names the element in warnings.
+// Writes `fields` onto `el`. `ref` names the element in warnings. `test` compares rather than writes (the `test`
+// operation), so a note is read as stored rather than refused.
 export function writeFieldsOnto<T extends Element>(
   el: T,
   fields: Fields,
   theme: ThemeDefinition,
   ref: string,
   operation: number,
+  { test = false }: { test?: boolean } = {},
 ): FieldsWrite<T> | EditRejection {
   const aliases = aliasesOf(el);
-  const stored = ELEMENT_FIELD_NAMES[el.type];
+  // The fields a refusal lists: every stored one but a note, which an edit never writes.
+  const stored = ELEMENT_FIELD_NAMES[el.type].filter((f) => !NOTE_FIELDS.has(f));
   const patch: Patch = {};
   const warnings: EditWarning[] = [];
   let label: string | null | undefined;
@@ -142,6 +148,8 @@ export function writeFieldsOnto<T extends Element>(
         'people change it, not edit operations',
         LIVE_HINT,
       );
+    if (NOTE_FIELDS.has(key) && value !== null && !test)
+      return invalidValue(operation, key, value, 'livehuddle keeps no element notes', NOTE_HINT);
     const alias = aliases.find((a) => a === key);
     if (alias) {
       const rejection = writeAlias(el, alias, value, theme, ref, operation, patch, warnings);
@@ -179,17 +187,14 @@ export function writeFieldsOnto<T extends Element>(
   }
   let capped = false;
   if (typeof label === 'string') {
-    const note = 'note' in patch ? patch.note : Reflect.get(el, 'note');
-    const write = applyLabel(el, label, typeof note === 'string' ? note : undefined);
+    const write = applyLabel(el, label);
     patch.label = write.label;
-    if (write.note !== undefined) patch.note = write.note;
     if (write.capped) {
       capped = true;
-      const where = el.type === 'arrow' ? 'the rest was cut' : 'the full text is in its note';
       warnings.push({
         code: 'label_capped',
         ref,
-        message: `${ref} label kept as ${JSON.stringify(write.label)}; ${where}`,
+        message: `${ref} label kept as ${JSON.stringify(write.label)}; ${LABEL_CUT_ADVICE}`,
       });
     }
   }
@@ -250,7 +255,6 @@ function writeAlias(
   const text = (rule: string) => invalidValue(operation, alias, value, rule);
   switch (alias) {
     case 'label':
-    case 'note':
       if (value !== null && typeof value !== 'string')
         return text('text, in quotes when it has spaces');
       patch[alias] = value;

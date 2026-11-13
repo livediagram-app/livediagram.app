@@ -39,6 +39,16 @@ export function handleInternalItems(
   env: Env,
   waitUntil: (promise: Promise<unknown>) => void = (p) => void p,
 ): Promise<Response> {
+  // The guests a closing account signed in from, read once for the request's up to a hundred canvases.
+  const guestKeys = new Map<string, Promise<string[]>>();
+  const guestKeysOf = (personId: string): Promise<string[]> => {
+    let keys = guestKeys.get(personId);
+    if (!keys) {
+      keys = personStore(env, personId).mergedGuestKeys();
+      guestKeys.set(personId, keys);
+    }
+    return keys;
+  };
   return handle(request, {
     key: env.INDEX_KEY,
     // The migration's name for this app's parts: livediagram's, carried by the fork until Offline Mode is cut.
@@ -96,8 +106,10 @@ export function handleInternalItems(
       // of the old site (`legacy`, docs/migration.md step 6) may merge into another guest: the same moves, since
       // every one of them is keyed by any owner id (the media owner of a guest is its hash, `mediaOwner`).
       personMerged: (guestId, intoId) => mergeGuest(env, guestId, intoId),
-      // Their name off each canvas of someone else's that names them.
-      anonymise: (id, personId) => documentRoom(env, id).anonymise(personId),
+      // Their name off each canvas of someone else's that names them, and their visits as the guests they signed in
+      // from (docs/specs/012-collaboration/tab-attendance.md "Closing an account").
+      anonymise: async (id, personId) =>
+        documentRoom(env, id).anonymise(personId, await guestKeysOf(personId)),
       // The canvas drawn, for liveworkspace's previews (document-room.ts `exportImage`), or its whole file, for the
       // Drive mirror (`exportFile`).
       export: (id, query) =>

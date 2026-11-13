@@ -1,6 +1,12 @@
 import { MAX_TAB_ID_LEN } from './document-room-rules';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_FORMAT, ROOM_FULL_CLOSE, ROOM_MAX_CONNECTIONS } from '@livehuddle/api-schema';
+import {
+  DOCUMENT_FORMAT,
+  GAME_EVENT_CAP,
+  GAME_EVENT_WINDOW_MS,
+  ROOM_FULL_CLOSE,
+  ROOM_MAX_CONNECTIONS,
+} from '@livehuddle/api-schema';
 import type { ParticipantPresence, RoomIncoming } from '@livehuddle/api-schema';
 import {
   MUTATION_OP_KINDS,
@@ -841,6 +847,70 @@ describe('DocumentRoom op-role enforcement', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  // A game's moments (docs/specs/009-elements/social-pieces.md "A cap per sender", Work Tracker 624): at most
+  // GAME_EVENT_CAP per sender per second, so a flood from one screen stops at the cap and a real rally never meets it.
+  describe('game-event cap', () => {
+    const moment = (seq: number) => ({
+      kind: 'op',
+      op: {
+        kind: 'game-event',
+        tabId: 't',
+        pieceId: 'table-1',
+        seat: 0,
+        game: 'ping-pong',
+        match: 'm1',
+        seq,
+        event: 'miss',
+        score: [0, 1],
+      },
+    });
+    const withClock = (run: () => void) => {
+      vi.useFakeTimers();
+      try {
+        vi.setSystemTime(new Date(1_000_000));
+        run();
+      } finally {
+        vi.useRealTimers();
+      }
+    };
+
+    it('relays at most the cap from one flooding sender, and the others still play', () => {
+      withClock(() => {
+        const { room } = newRoom();
+        const flooder = connect(room, 'flooder', 'participate');
+        const other = connect(room, 'other', 'edit');
+        const watcher = connect(room, 'watcher', 'view');
+        for (const c of [flooder, other, watcher]) c.ws.sent.length = 0;
+        for (let seq = 1; seq <= 100; seq += 1) sendFrame(room, flooder.ws, moment(seq));
+        expect(opsReceived(watcher.ws)).toHaveLength(GAME_EVENT_CAP);
+        sendFrame(room, other.ws, moment(1));
+        expect(opsReceived(watcher.ws)).toHaveLength(GAME_EVENT_CAP + 1);
+        vi.setSystemTime(new Date(1_000_000 + GAME_EVENT_WINDOW_MS));
+        sendFrame(room, flooder.ws, moment(101));
+        expect(opsReceived(watcher.ws)).toHaveLength(GAME_EVENT_CAP + 2);
+      });
+    });
+
+    it('lets a fast rally through untouched', () => {
+      withClock(() => {
+        const { room } = newRoom();
+        const left = connect(room, 'left', 'participate');
+        const right = connect(room, 'right', 'participate');
+        const watcher = connect(room, 'watcher', 'view');
+        for (const c of [left, right, watcher]) c.ws.sent.length = 0;
+        // A minute of the fastest rally (a strike from each end every 300 ms), then a miss and its serve together.
+        let seq = 0;
+        for (let at = 0; at < 60_000; at += 300) {
+          vi.setSystemTime(new Date(1_000_000 + at));
+          sendFrame(room, at % 600 === 0 ? left.ws : right.ws, moment((seq += 1)));
+        }
+        sendFrame(room, right.ws, moment((seq += 1)));
+        sendFrame(room, right.ws, moment((seq += 1)));
+        expect(opsReceived(watcher.ws)).toHaveLength(seq);
+      });
+    });
   });
 
   // A nudge (docs/specs/012-collaboration/nudge.md "The wire", "Share roles"): to its target alone, once per 2 minutes
@@ -2062,6 +2132,40 @@ describe('DocumentRoom collaboration ledger (docs/specs/012-collaboration/collab
       a: { by: 'e', seq: 1 },
       b: { by: 'e', seq: 2 },
     });
+  });
+
+  // docs/specs/009-elements/social-pieces.md "The author is the sender's", "Trust" (Work Tracker 624): a note and a
+  // score posted under someone else's name are stored, and relayed, under the sender's own.
+  it("stores and relays a pinned note's author and a posted score's name as the sender's, not the frame's", async () => {
+    const { room } = newRoom();
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), 'participate', false, null, null, null, 'adder-ann');
+    sendFrame(room, ws, { kind: 'hello', participant: { id: 'p', name: 'Ann', color: '#000' } });
+    const peer = editor(room);
+    peer.sent.length = 0;
+    const note = { id: 'n1', text: 'Lunch?', author: 'Their Boss', by: 'adder-ann', at: 1 };
+    const score = { id: 's1', name: 'Their Boss', score: 50, ms: 2000, by: 'adder-ann', at: 1 };
+    const delta = (elementId: string, d: unknown) => ({
+      kind: 'op',
+      op: { kind: 'el-delta', tabId: 't1', elementId, delta: d },
+    });
+    sendFrame(room, ws, delta('board', { kind: 'notice-pin', note }));
+    sendFrame(room, ws, delta('machine', { kind: 'arcade-score', score }));
+    const body = (await ledger(room)) as {
+      elements: Record<
+        string,
+        {
+          notes?: { pins: Record<string, { note: { author: string } }> };
+          arcade?: { scores: Record<string, { score: { name: string } }> };
+        }
+      >;
+    };
+    expect(body.elements.board!.notes!.pins.n1!.note.author).toBe('Ann');
+    expect(body.elements.machine!.arcade!.scores.s1!.score.name).toBe('Ann');
+    const relayed = receivedOf(peer, 'op').map(
+      (m) => (m.op as { delta: { note?: { author: string }; score?: { name: string } } }).delta,
+    );
+    expect(relayed.map((d) => d.note?.author ?? d.score?.name)).toEqual(['Ann', 'Ann']);
   });
 
   it('serves nothing to a cursor from another epoch', async () => {

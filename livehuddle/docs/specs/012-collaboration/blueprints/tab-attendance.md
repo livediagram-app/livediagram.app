@@ -5,7 +5,11 @@ Derived from [Tab attendance](../tab-attendance.md). Work Tracker #691.
 ## Domain and naming
 
 - **Visit** (`AttendanceVisit` on the wire, a `tab_attendance` row in storage): one person's stretch in one tab.
-- **Person key** (`person_key`): the session's collab key (`SessionAttachment.presence.key`), never an id.
+- **Person key** (`person_key`): the session's collab key (`SessionAttachment.presence.key`), never an id. A
+  session with no identity takes its key from its first hello's `visitor` secret (`visitorCollabKey`,
+  `apps/api/src/visitor-key.ts`): one key per browser (Work Tracker 730).
+- **Merged guest keys** (`merged_guests` in the account's person store): the collab keys of the guests an account
+  took over on sign-in, so closing the account anonymises their visits too.
 - **Open visit**: `left_at IS NULL`. **Closed visit**: `left_at` set.
 - **Tabs of a session** (`attendanceTabsOf`): its presence's `tabId` and `besideTabId`, those the document has, and
   for a tab-scoped session only its scope.
@@ -70,8 +74,22 @@ person_key = ? AND left_at IS NULL`.
   wake has its sockets and skips it.
 - **Upkeep**: `maintain` deletes closed visits past retention (`deleteOldVisits`). A join arms the upkeep as a content
   write does (`armUpkeep`), so a Space visited and never edited still sweeps.
-- **Anonymise**: `anonymiseDocument` adds `UPDATE tab_attendance SET person_key = 'anonymised', name = 'Deleted
-account', picture = NULL WHERE person_key = collabKeyFor(personId)`.
+- **Anonymise**: `anonymiseDocument(env, documentId, personId, guestKeys)` adds `UPDATE tab_attendance SET
+person_key = 'anonymised', name = 'Deleted account', picture = NULL WHERE person_key IN (collabKeyFor(personId),
+...guestKeys)`, the guest keys being those `isCollabKey` accepts, at most `MERGED_GUESTS_MAX` (32).
+- **Guest keys at sign-in** (`mergeGuest`, `db/account.ts`): before the guest's store is purged, the account's
+  person store `noteMergedGuests([collabKeyFor(guestId), ...guest store's own merged keys])` (a legacy guest that
+  merged into this guest passes its keys on). `INSERT OR IGNORE` with `merged_at`; past `MERGED_GUESTS_MAX` the
+  oldest go. Idempotent.
+- **Guest keys at close**: the internal door's `anonymise` reads `mergedGuestKeys()` from the account's store once
+  per request (memoised), and passes them to each document's `anonymise`. `PersonStore.purge()` (run first, by
+  `personClosed`) keeps `merged_guests` and arms an alarm `MERGED_GUESTS_KEEP_MS` (8 days) on; the alarm deletes
+  the store whole. A purge of a store with no merged guests deletes it whole at once, as before.
+- **A visitor's key**: in the hello handler (`room-message.ts`), when the session's key was minted at the upgrade
+  (`keyMinted`), it has said no hello yet, and the hello's `visitor` is a visitor secret (`isVisitorSecret`: 16 to
+  64 characters of `[0-9a-zA-Z-]`), the session's `collabKey` becomes `visitorCollabKey(secret)`: the first 32 hex
+  characters of SHA-256 (`sha256Fallback`, synchronous) of `livehuddle:collab:visitor:v1:<secret>`, and `keyMinted`
+  is cleared. The editor sends `ensureCollabSecret()` (`lib/local-identity.ts`) on every hello.
 
 ## Interfaces and contracts
 
@@ -149,7 +167,11 @@ leftAt: number | null }`. Newest first by `joined_at`, then id; at most `ATTENDA
 ## Testing
 
 - `db/tab-attendance.test.ts`: join, leave, reopen inside the grace and not after, cap, retention on join and on the
-  sweep, boot sweep, anonymise.
+  sweep, boot sweep, anonymise (the account's key and its merged guest keys, another person's left alone).
+- `document-room/room-attendance.test.ts`: two sockets of one no-identity browser (the same `visitor` secret) are one
+  visit; another browser's secret is another visitor; a hello's secret never replaces an identity's key.
+- `db/account.test.ts` / `person-store`: a merge records the guest's key; purge keeps merged keys and arms the
+  alarm; the alarm deletes them.
 - `document-room/room-attendance.test.ts`: two clients through a real room (hello, tab-focus, close): one visit per
   person over two devices, a reconnect inside the grace is one visit, a made-up tab writes nothing, a tab-scoped
   session records only its scope.

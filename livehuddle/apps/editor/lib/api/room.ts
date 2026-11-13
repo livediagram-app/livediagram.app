@@ -20,6 +20,7 @@ import {
 import { isCollabKey } from '@liveworkspace/api-schema/collab-key';
 import { opForTheWire } from '@livehuddle/document';
 import { splitPresenceFrame } from '../agent-presence-rows';
+import { ensureCollabSecret } from '../local-identity';
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import { startEditorTiming } from '../timing';
 import { wsUrl } from './core';
@@ -193,6 +194,9 @@ export function connectRoom(
           batches: true,
           // We read lean avatar packets, keeping each peer's last costume; the room fills them out for older editors.
           leanAvatars: true,
+          // This browser's secret: with no identity, the room keys us by it, so a reconnect is the same visitor
+          // (docs/specs/013-workspace/share-roles.md "The collab key"). It goes to the room alone, never in the URL.
+          visitor: ensureCollabSecret(),
           ...(facilitatorToken ? { facilitatorToken } : {}),
         } satisfies RoomOutgoing),
       );

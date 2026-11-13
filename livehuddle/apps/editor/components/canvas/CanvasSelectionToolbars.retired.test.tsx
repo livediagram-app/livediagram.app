@@ -30,9 +30,19 @@ const pie = {
   pieSlices: [{ label: 'Yes', value: 3 }],
 } as unknown as Element;
 const keep = { ...pie, id: 'keep', shape: 'rating', x: 600 } as unknown as Element;
+const desk = {
+  id: 'desk',
+  type: 'shape',
+  shape: 'desk',
+  x: 100,
+  y: 500,
+  width: 120,
+  height: 60,
+  label: 'Desk',
+} as unknown as Element;
 
-function renderToolbars(readOnly: boolean, onDeleteSelected: () => void) {
-  const elements = [pie, keep];
+function renderToolbars(readOnly: boolean, onDeleteSelected: () => void, selectedId = 'pie') {
+  const elements = [pie, keep, desk];
   const props = {
     elements,
     readOnly,
@@ -40,9 +50,13 @@ function renderToolbars(readOnly: boolean, onDeleteSelected: () => void) {
     onDuplicateSelected: vi.fn(),
     onDeleteSelected,
     onBeginEdit: vi.fn(),
+    onStartFormatPainter: vi.fn(),
+    onBringSelectedToFront: vi.fn(),
+    onSendSelectedToBack: vi.fn(),
+    onOpenElementContextMenu: vi.fn(),
   } as unknown as CanvasProps;
   const store = createSelectionStore();
-  store.setSelectedId('pie');
+  store.setSelectedId(selectedId);
   return render(
     <SelectionStoreProvider store={store}>
       <ViewportStoreProvider store={createViewportStore(0.25)}>
@@ -62,9 +76,9 @@ describe("the selection toolbar's Delete on a retired element", () => {
     const actions = buildSelectionActions({
       currentSelectionIds: () => selection,
       readSelection: () => ({ selectedId: 'pie', multiSelectedIds: new Set<string>() }),
-      activeTab: { id: 't', name: 'T', elements: [pie, keep] },
+      activeTab: { id: 't', name: 'T', elements: [pie, keep, desk] },
       commit: (map) => {
-        after = map([pie, keep]);
+        after = map([pie, keep, desk]);
       },
       setSelectedId: () => {},
       setEditingId: () => {},
@@ -74,13 +88,26 @@ describe("the selection toolbar's Delete on a retired element", () => {
     });
     renderToolbars(false, actions.deleteSelected);
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
-    expect(after).toEqual([keep]);
+    expect(after).toEqual([keep, desk]);
+  });
+
+  // Work Tracker 639: Delete is the only button on a placeholder's toolbar, where a live element has the rest.
+  it('is the only button an Editor sees on a placeholder', () => {
+    renderToolbars(false, vi.fn());
+    expect(
+      screen.getAllByRole('button').map((b) => b.getAttribute('aria-label') ?? b.textContent),
+    ).toEqual(['Delete']);
+    cleanup();
+    renderToolbars(false, vi.fn(), 'desk');
+    expect(screen.getAllByRole('button').length).toBeGreaterThan(1);
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeTruthy();
   });
 
   it('is not offered to a Participant or a Viewer (read-only)', () => {
     const onDelete = vi.fn();
     renderToolbars(true, onDelete);
     expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
+    expect(screen.queryAllByRole('button')).toEqual([]);
     expect(onDelete).not.toHaveBeenCalled();
   });
 });

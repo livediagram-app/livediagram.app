@@ -34,8 +34,9 @@ never said hello; a tab the document does not have; a tab outside a tab-scoped l
 
 - **Several devices or browser tabs** of the same person are one visit: joining is the first of their connections to
   show the tab, leaving is the last one going. People are told apart by collab key, which is the same for a person on
-  every device (it is derived from who they are). A link visitor with no identity has a key per connection, so each of
-  their connections is its own visit.
+  every device (it is derived from who they are). A link visitor with no identity has a key per browser (derived from
+  a secret their browser keeps, [Share roles, "The collab key"](../013-workspace/share-roles.md)), so a reconnect or
+  a second browser tab of theirs carries on the same visit rather than adding one.
 - **A reconnect is not a leave**: someone back in a tab within 2 minutes of leaving it (`ATTENDANCE_REJOIN_GRACE_MS`),
   a network blip, a reload, a quick hop to another tab and back, carries on the same visit rather than starting a new
   one. Their time away is counted in the visit.
@@ -73,6 +74,18 @@ When a person closes their account, the index tells each document that names the
 ([Closing an account](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)), and the document
 anonymises their visits as the team audit log does: the visit stays (so a meeting's head count stays true), its key
 becomes `anonymised`, its name "Deleted account" and its picture goes. Running it again changes nothing.
+
+> "Are a guest's visits from before they signed in linked to the account on sign-in, or purged with it?" Decided:
+> **purged with it** (Work Tracker 730). Linking would rewrite every document the guest visited at the moment they sign
+> in, which the sign-in cannot reach (it names no documents), and would put an account's name on visits made before
+> it existed. So a guest's visits keep the guest's key and name while the account is open, and go with the account.
+
+- **Visits made as a guest** before signing in are anonymised with the account's own. Signing in records, beside the
+  account, the collab keys of the guests it took over (each one-way, never a guest id), and closing the account
+  anonymises every visit under the account's key or any of those, on every document the index names. Those keys stay
+  only as long as the close needs them: 8 days after the account closes (a little past the index's week of retries),
+  then they go too.
+- Nothing about a guest's visit changes while the account is open: nobody who could not see it before sees it now.
 
 ## Where it shows
 

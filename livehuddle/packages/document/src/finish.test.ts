@@ -93,8 +93,10 @@ describe('finishHatches', () => {
 
 describe('supportsFinish', () => {
   it('takes shapes, text and stickies only', () => {
-    for (const type of ['shape', 'text', 'sticky'])
-      expect(supportsFinish({ type }), type).toBe(true);
+    for (const type of ['text', 'sticky']) expect(supportsFinish({ type }), type).toBe(true);
+    expect(supportsFinish({ type: 'shape', shape: 'desk' })).toBe(true);
+    // A retired kind takes none (Work Tracker 639).
+    expect(supportsFinish({ type: 'shape', shape: 'pie-chart' })).toBe(false);
     for (const type of [
       'arrow',
       'freehand',

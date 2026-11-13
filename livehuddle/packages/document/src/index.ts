@@ -498,6 +498,8 @@ export * from './tab-folders';
 export * from './timer-pieces';
 // The Arcade Machine's High Scores (docs/specs/009-elements/social-pieces.md "High Scores").
 export * from './arcade-scores';
+// The name a pinned note or a posted score carries: the sender's, as the room stamps it.
+export * from './sender-names';
 
 // The curated typefaces (docs/specs/004-interface-design/fonts.md): the catalogue, the id -> CSS stack
 // resolver, and the Google Fonts stylesheet href. Lives here rather than in

@@ -3,6 +3,7 @@
 export * from '@liveworkspace/element-model/colour-math';
 import type { CanvasSurface } from '@liveworkspace/element-model/colour-math';
 import { isMeetingPieceShape } from './meeting-pieces';
+import { isRetiredElement } from './retired-kinds';
 import {
   type BoxedElement,
   type Element,
@@ -322,6 +323,9 @@ export function supportsFillColor(element: Element): boolean {
 }
 
 export function supportsColours(element: Element): boolean {
+  // A retired element's placeholder draws none of its colours (docs/specs/002-project-scope/not-in-livehuddle.md
+  // "Retired elements", Work Tracker 639): it offers none to set.
+  if (isRetiredElement(element)) return false;
   // A sticker's colours are the sticker (docs/specs/010-palette/stickers.md): a green APPROVED that
   // could be recoloured violet would be a worse APPROVED, and there is no
   // fill or stroke on a die-cut plate to expose anyway.
@@ -482,7 +486,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
 ]);
 
 export function supportsBorderControls(element: Element): boolean {
-  if (!supportsBorder(element)) return false;
+  // Nor a border (Work Tracker 639).
+  if (!supportsBorder(element) || isRetiredElement(element)) return false;
   return !(element.type === 'shape' && SELF_PAINTING_SHAPES.has(element.shape));
 }
 

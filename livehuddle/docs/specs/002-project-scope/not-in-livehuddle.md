@@ -74,7 +74,11 @@ reads it cites them.
   - a deep link's `?open=action` or `?open=comments` (an email's or an old Inbox row's) opens the Space and selects
     the element, opening nothing;
   - a copy, a duplicate and a paste drop the element's comments, actions, link and note, so no copy adds one (a link
-    card's link is the card itself, and a retired annotation's note is its marker: those two keep theirs).
+    card's link is the card itself, and a retired annotation's note is its marker: those two keep theirs);
+  - an agent's edit writes no note (Work Tracker 737): `note=` or `noteRich=` with a value is refused, a shape's
+    label over 40 characters is cut to its heading with a warning rather than moved into the note, and `note=` on
+    its own is the one way left to remove a note stored from before
+    ([Edit operations](../024-agents/edit-operations.md) "No element notes").
 - **Gone from the canvas**: the Collaborate Panel and its Settings switch, the comment thread, note and action
   popovers, the Assign Action dialog, the element link picker, and the indicators on an element (a link, a note, an
   open action, unresolved comments) with their Settings. A stored link card keeps its own **Link** category.
@@ -86,8 +90,9 @@ reads it cites them.
   [One Explorer: Inbox](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#inbox)); every other
   app keeps its Inbox, and a test pins all four.
 - **Nothing is sent about them.** The canvas pushes no comment threads or actions to the index (the outbox drops a
-  tab's collab key unpushed), so livehuddle adds no Inbox rows; rows pushed before stay in the index until their
-  canvas is deleted. No mention or action-assigned email goes: the team notify routes answer `410 gone`.
+  tab's collab key unpushed), so livehuddle adds no Inbox rows. The rows it pushed before are cleared from the index
+  once by the index's cleanup ([One Explorer: Inbox](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#inbox),
+  Work Tracker 736), which the owner runs; until then they stay until their canvas is deleted. No mention or action-assigned email goes: the team notify routes answer `410 gone`.
 - **The API refuses new writes and keeps the reads.** Adding, replying to, deleting, resolving and reopening a comment
   (`/api/documents/:id/tabs/:tabId/comments…`) answer `410 comments_gone`; listing a canvas's threads
   (`GET /api/documents/:id/comments`) still answers what is stored. The write routes leave the OpenAPI document. The
@@ -537,9 +542,14 @@ deleted, any other shape kind livehuddle does not know, and an element of a reti
   with Delete, the context menu or a multi-selection removes one the usual way too. Because its face can hold this
   control, a screen reader meets the card as a named group, not a picture. A stored embed walks in Walk mode as a
   retired shape does.
-- **What it does.** It selects, moves, resizes, copies and deletes like any element, and takes
-  comments. It takes no typed label (double-clicking it opens nothing), has no settings or context-menu section of its
-  own, presses nothing and starts nothing. Agents read it by its stored kind.
+- **What it does.** It selects, moves, resizes, copies and deletes like any element. It takes no typed label
+  (double-clicking it opens nothing), has no settings or context-menu section of its own, presses nothing and starts
+  nothing. It offers no styling: no Colours, Border or Finish in its menu or a multi-selection's (`supportsColours`
+  and `supportsFinish` answer false for it), since a placeholder draws none of them. Selected, its selection
+  toolbar holds **Delete** alone for an Editor (no Edit Text, Turn, Duplicate, Format Painter, Bring Forward, Send
+  Backward or More); a Participant and a Viewer get no toolbar, as for any element (Work Tracker 639). Agents read it
+  by its stored kind, and their edits leave it as stored: `set` on one is refused, and a replace keeps it as it was
+  ([Edit operations](../024-agents/edit-operations.md)).
 - **Nothing new.** No palette entry, Search result, template, agent verb, CLI command or paste makes one; an agent that
   names a retired kind, or any kind livehuddle does not have, is refused ([The element engine](#the-element-engine),
   part 5). Until part 5 such a kind was coerced to a square, which is itself retired now.

@@ -2,6 +2,7 @@ import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/in
 import { DurableObject } from 'cloudflare:workers';
 import {
   BELL_THROTTLE_MS,
+  createGameEventThrottle,
   createKnockThrottle,
   createNudgeLedger,
   ROOM_PING,
@@ -299,6 +300,9 @@ export class DocumentRoom extends DurableObject<Env> {
   // Rings of a Reception Desk's bell pass one per sender per 5 seconds (docs/specs/009-elements/workday-pieces.md "The
   // wire"), the knock's throttle with its own window: memory only.
   readonly bells = createKnockThrottle(BELL_THROTTLE_MS);
+  // Game moments pass at most GAME_EVENT_CAP per sender per second (docs/specs/009-elements/social-pieces.md "A cap
+  // per sender"), well above a fast rally: memory only.
+  readonly gameEvents = createGameEventThrottle();
   // Nudges pass once per 2 minutes per sender and target (docs/specs/012-collaboration/nudge.md "The wire"): memory
   // only, keyed by stable identity so a second tab or a reconnect does not reopen the window.
   readonly nudges = createNudgeLedger();
@@ -544,8 +548,12 @@ export class DocumentRoom extends DurableObject<Env> {
     return rpc.joined(this, documentId, personId);
   }
 
-  anonymise(documentId: string, personId: string): Promise<number> {
-    return rpc.anonymise(this, documentId, personId);
+  anonymise(
+    documentId: string,
+    personId: string,
+    guestKeys: readonly string[] = [],
+  ): Promise<number> {
+    return rpc.anonymise(this, documentId, personId, guestKeys);
   }
 
   // ---------- RPC: a tab shared with other documents (tab-shares.ts) ----------------------------------------------

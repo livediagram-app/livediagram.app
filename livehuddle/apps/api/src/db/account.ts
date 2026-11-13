@@ -2,6 +2,7 @@
 // are the index's (liveworkspace/docs/specs/004-index/one-explorer.md): the index purges them when the account closes, and has each
 // canvas's Durable Object drop its content; it moves a guest's to the account when accounts merge them.
 
+import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
 import { forgetCommunityCopier, mergeCommunityCopier } from '../community-service';
 import { mediaClient, mediaOwner } from '../media';
 import { personStore } from '../person-client';
@@ -36,7 +37,9 @@ export async function deleteAccount(env: Env, ownerId: string): Promise<{ images
 
 // A guest who became an account (accounts merged them, with their settings and profile; the index moved their
 // canvases, folders, stars and History): what this app keeps for the guest becomes the account's. Their images in
-// the media service, their shape libraries, and their Community copies. Idempotent, so a retry moves nothing twice.
+// the media service, their shape libraries, and their Community copies. And the guest's collab key (with any guest
+// that merged into this one before), so closing the account anonymises their Attendance visits as a guest too
+// (docs/specs/012-collaboration/tab-attendance.md "Closing an account"). Idempotent, so a retry moves nothing twice.
 export async function mergeGuest(env: Env, guestId: string, userId: string): Promise<void> {
   // The images first, so a failure leaves the guest whole to merge again.
   const media = mediaClient(env);
@@ -44,6 +47,9 @@ export async function mergeGuest(env: Env, guestId: string, userId: string): Pro
     const merged = await media.mergeOwner(await mediaOwner(guestId), await mediaOwner(userId));
     if (!merged.ok) throw new Error(`media: merging the guest's images answered ${merged.status}`);
   }
+  // Before the guest's store is purged with its libraries: the keys it holds of guests merged into it go on too.
+  const earlier = await personStore(env, guestId).mergedGuestKeys();
+  await personStore(env, userId).noteMergedGuests([await collabKeyFor(guestId), ...earlier]);
   await migrateShapeLibraries(env, guestId, userId);
   await mergeCommunityCopier(env, guestId, userId);
 }

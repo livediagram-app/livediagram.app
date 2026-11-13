@@ -10,6 +10,7 @@ import { DEFAULT_ICON_WEIGHT, type IconWeight } from '@liveworkspace/model-core/
 import type { BorderStroke } from '@liveworkspace/model-core/border-style';
 import { DEFAULT_BORDER_STROKE } from '@liveworkspace/model-core/border-style';
 import { SELF_PAINTING_SHAPES } from './colors';
+import { isRetiredElement } from './retired-kinds';
 import type { Element } from './index';
 
 export type Finish = 'flexible' | 'professional' | 'sketch' | 'marker';
@@ -57,8 +58,10 @@ export function finishDrawsBodyByHand(finish: Finish, type: string): boolean {
 /** The element types that carry their own finish (the spec's "Where it is set"). */
 const FINISH_ELEMENT_TYPES: ReadonlySet<Element['type']> = new Set(['shape', 'text', 'sticky']);
 
-export function supportsFinish(el: { type: string }): boolean {
-  return FINISH_ELEMENT_TYPES.has(el.type as Element['type']);
+export function supportsFinish(el: { type: string; shape?: unknown }): boolean {
+  // A retired element's placeholder is drawn the same under every finish (docs/specs/002-project-scope/
+  // not-in-livehuddle.md "Retired elements", Work Tracker 639): it takes none, and a tab-wide change leaves it as stored.
+  return FINISH_ELEMENT_TYPES.has(el.type as Element['type']) && !isRetiredElement(el);
 }
 
 /** The finish an element is drawn in: its own, else its tab's, else Flexible. A stored value that is not
