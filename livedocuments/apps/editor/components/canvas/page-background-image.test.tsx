@@ -34,7 +34,7 @@ vi.mock('@/lib/telemetry', () => ({ track }));
 
 import { BackgroundSection } from './page-background-section';
 import { PageImageAccessProvider } from './page-image-access';
-import { CanvasSurfaceProvider } from './CanvasSurfaceContext';
+import { CanvasSurfaceProvider } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { pageImageFilters } from './page-background-image';
 
 afterEach(() => {

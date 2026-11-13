@@ -48,7 +48,7 @@ exit.
 ## Interfaces and contracts
 
 ```ts
-// apps/editor/components/canvas/slide-transition.ts
+// packages/workbench/src/components/canvas/slide-transition.ts
 export const SLIDE_TRANSITION_TYPES: readonly [
   'slide-in',
   'slide-forward',

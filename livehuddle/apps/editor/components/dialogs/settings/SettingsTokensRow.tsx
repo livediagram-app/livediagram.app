@@ -5,7 +5,7 @@ import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { manageTokensUrl } from '@liveworkspace/workbench/lib/auth-config';
 import { SettingsSharedGlyph } from '@liveworkspace/settings-ui';
 import { SettingsRowShell } from '@liveworkspace/settings-ui';
-import { SettingsSignInLink } from './SettingsSignInLink';
+import { SettingsSignInLink } from '@liveworkspace/workbench/components/dialogs/settings/SettingsSignInLink';
 import type { SettingsTokensRowSpec } from './settings-catalogue';
 
 // The API Tokens category's one row (docs/specs/015-api/public-api-and-tokens.md#36-management-the-settings-dialogs-api-tokens-category).

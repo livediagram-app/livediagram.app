@@ -9,7 +9,7 @@ import {
 } from '@/hooks/plan/maximised-plan';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
 import { setPlanCover } from '@/hooks/plan/plan-cover-store';
-import { CanvasMenu } from '@/components/canvas/canvas-menu-context';
+import { CanvasMenu } from '@liveworkspace/workbench/components/canvas/canvas-menu-context';
 import { MaximisableSlot } from './MaximisedPlanLayer';
 
 // docs/specs/026-plan/plan-board.md "Fill Tab" and "Maximised board": a filled or maximised board is drawn over the

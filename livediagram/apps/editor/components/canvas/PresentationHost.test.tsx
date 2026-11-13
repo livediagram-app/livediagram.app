@@ -39,8 +39,10 @@ vi.mock('@liveworkspace/workbench/lib/view-transition', () => ({
   startTypedTransition: transition,
 }));
 const settle = vi.hoisted(() => ({ ready: null as null | (() => void) }));
-vi.mock('./slide-transition', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('./slide-transition')>()),
+vi.mock('@liveworkspace/workbench/components/canvas/slide-transition', async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import('@liveworkspace/workbench/components/canvas/slide-transition')
+  >()),
   whenScreenSettles: (ready: () => void) => {
     settle.ready = ready;
     return () => {

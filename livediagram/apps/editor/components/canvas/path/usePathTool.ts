@@ -19,7 +19,7 @@ import { rubberBand } from '@/lib/path-draw';
 import { sharedNodeType, toWorld } from '@/lib/path-edit';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import type { PathEditKind } from '@/hooks/canvas/usePathCommits';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { usePathDrawGesture, type PathCommit } from './usePathDrawGesture';
 import { usePathEditGesture } from './usePathEditGesture';
 import type { PathDraftView } from './PathDraftLayer';

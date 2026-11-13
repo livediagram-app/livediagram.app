@@ -13,7 +13,7 @@ import {
   type ShapeElement,
 } from '@livedocuments/document';
 import { useMapGeometry } from '@/lib/map-geometry-loader';
-import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { MapDrawing } from '@/components/canvas/MapDrawing';
 
 export function MapView({

@@ -7,7 +7,7 @@ import {
   type CanvasSurface,
   type Element,
 } from '@livediagram/document';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import {
   ISO_DEPTH_PLANE_PX,
   ISO_TILT_DEG,

@@ -7,7 +7,7 @@ import {
   elementBounds,
   type Element,
 } from '@livedesign/design';
-import { useCanvasSurface } from './CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 
 // The focus rings of the agents present on the tab (docs/specs/024-agents/blueprints/agent-presence.md
 // "Presentation and UX", "Accessibility"): a static 2 px outline in the owner's colour, 4 px outside the element,

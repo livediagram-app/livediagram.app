@@ -12,7 +12,7 @@ import { tint } from '../collab-chrome';
 import { stopPointer } from '../collab-parts';
 import { MoodGlyph } from './MoodGlyph';
 import { MOOD_GRID } from '@liveworkspace/workbench/components/canvas/collab/temperature/mood-grid';
-import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
+import { useFaceShadow } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 
 export function MoodButtons({
   mine,

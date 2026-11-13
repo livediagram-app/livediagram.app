@@ -15,7 +15,7 @@ import {
   CanvasSurfaceProvider,
   CanvasThemeProvider,
   PageSurfacesProvider,
-} from './CanvasSurfaceContext';
+} from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { ImageElementView } from './ImageElementView';
 import {
   IMAGE_BROKEN_TONE,

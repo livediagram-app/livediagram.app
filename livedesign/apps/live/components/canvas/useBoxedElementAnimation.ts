@@ -15,7 +15,7 @@ import {
 } from '@livedesign/design';
 import { drawsShapeSvgOverlay } from '@/components/canvas/ShapeContentRouter';
 import { bodySetClass } from '@/lib/animation-classes';
-import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useArrivesWithBoard } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 
 // The looping-animation slice (docs/specs/008-canvas/canvas-and-palette.md), lifted out of BoxedElementView:

@@ -24,7 +24,7 @@ import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hov
 import { Tooltip } from '@livedocuments/ui';
 import { PreviewSliderRow } from '@liveworkspace/workbench/components/primitives/PreviewSliderRow';
 import { ScaleIcon } from './palette-icons';
-import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
+import { TOOLBAR_CONTROL_REST } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 
 /**
  * The slider's labelled breakpoints: the ends, then every 12 px from 12. Five labels, because the

@@ -13,7 +13,7 @@ import {
   usePaletteStripBox,
   useToolbarBox,
 } from '@liveworkspace/workbench/components/chrome/PaletteTray';
-import { TopCenterBanner } from '@/components/chrome/TopCenter';
+import { TopCenterBanner } from '@liveworkspace/workbench/components/chrome/TopCenter';
 import { useViewportHeight } from '@liveworkspace/workbench/hooks/ui/useViewportHeight';
 import { restoreEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';

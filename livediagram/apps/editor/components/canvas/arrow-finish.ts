@@ -7,7 +7,7 @@ import {
   type ArrowElement,
   type HandDrawnArrow,
 } from '@livediagram/document';
-import { useElementFinish } from './CanvasFinishContext';
+import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 
 // An arrow in its finish on the canvas (docs/specs/008-canvas/finish.md): Professional thins an arrow that
 // sets no width, Marker draws it at a marker's nib, and Sketch and Marker draw its line and its triangle / line heads

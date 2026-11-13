@@ -21,7 +21,7 @@ import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportW
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
-import { ToolbarStripRail } from './ToolbarStripRail';
+import { ToolbarStripRail } from '@liveworkspace/workbench/components/palette/ToolbarStripRail';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
 import { paletteLandingCategory } from './palette-layouts';
 import type { PaletteProps } from './palette.types';
@@ -48,7 +48,7 @@ import { useStripCrowded } from '@liveworkspace/workbench/components/palette/use
 import { SessionBrowse } from './session-category';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
-import { usePaletteKindMotion } from './usePaletteKindMotion';
+import { usePaletteKindMotion } from '@liveworkspace/workbench/components/palette/usePaletteKindMotion';
 
 // The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
 // top centre of the canvas, the way Excalidraw's tool bar works. Selection

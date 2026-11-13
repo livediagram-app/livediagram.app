@@ -11,8 +11,8 @@ import { useRegionCycle } from '@liveworkspace/workbench/hooks/ui/useRegionCycle
 import { useEffect } from 'react';
 import { canvasSurface } from '@livedocuments/document';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
-import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
-import { CanvasFinishProvider } from '@/components/canvas/CanvasFinishContext';
+import { CanvasSurfaceProvider } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
+import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { SketchFilterDefs } from '@/components/canvas/SketchFilterDefs';
 import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverlay';
 import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';

@@ -12,7 +12,7 @@ import {
   elementBounds,
   type Element,
 } from '@livedocuments/document';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useFindElementMarks, type FindMark } from '@/lib/find/find-highlight-store';
 
 // Clear of the element's own selection ring.

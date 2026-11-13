@@ -24,7 +24,9 @@ const deck = {
 vi.mock('@/app/document/[id]/EditorContext', () => ({
   useEditorContext: () => ({ slideDeck: deck, canvasTool: 'select', setCanvasTool: vi.fn() }),
 }));
-vi.mock('@/components/canvas/CanvasSurfaceContext', () => ({ useCanvasSurface: () => 'light' }));
+vi.mock('@liveworkspace/workbench/components/canvas/CanvasSurfaceContext', () => ({
+  useCanvasSurface: () => 'light',
+}));
 // The overlay's controls, reduced to what they ask of the host: a step either way, and a jump.
 vi.mock('@/components/canvas/PresentationOverlay', () => ({
   PresentationOverlay: ({
@@ -48,8 +50,10 @@ vi.mock('@liveworkspace/workbench/lib/view-transition', () => ({
   startTypedTransition: transition,
 }));
 const settle = vi.hoisted(() => ({ ready: null as null | (() => void) }));
-vi.mock('./slide-transition', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('./slide-transition')>()),
+vi.mock('@liveworkspace/workbench/components/canvas/slide-transition', async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import('@liveworkspace/workbench/components/canvas/slide-transition')
+  >()),
   whenScreenSettles: (ready: () => void) => {
     settle.ready = ready;
     return () => {

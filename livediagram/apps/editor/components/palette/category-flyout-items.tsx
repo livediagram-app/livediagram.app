@@ -8,8 +8,8 @@ import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
 import { tileActive, type PaletteTileActions } from './PaletteTileGrid';
 import { tileDragStart } from './palette-tile-drag';
 import { useTileGlyph } from './PaletteIconButton';
-import { tileEnterAnimation } from './palette-tile-finish';
-import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
+import { tileEnterAnimation } from '@liveworkspace/workbench/components/palette/palette-tile-finish';
+import { useTabFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { PointerWords } from '@liveworkspace/workbench/components/palette/PointerWords';
 
 // The category flyout's tiles (CategoryFlyout, CategoryFlyoutSide): a picture tile for the grid categories, a card

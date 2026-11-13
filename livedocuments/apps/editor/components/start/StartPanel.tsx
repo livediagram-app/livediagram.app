@@ -6,9 +6,9 @@
 // link for the start, which never closes: an empty tab holds no page until something is chosen ("A choice first"), so it is no sheet to drag, with no × or grab handle.
 import { createStartPanel } from '@liveworkspace/workbench/components/start/StartPanel';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { StartCardGrid, startTint } from './StartCard';
+import { StartCardGrid, startTint } from '@liveworkspace/workbench/components/start/StartCard';
 
-export type { StartPanelCard } from './StartCard';
+export type { StartPanelCard } from '@liveworkspace/workbench/components/start/StartCard';
 
 export const StartPanel = createStartPanel({
   app: 'livedocuments',

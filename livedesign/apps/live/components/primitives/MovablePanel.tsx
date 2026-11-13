@@ -7,7 +7,7 @@ import { createMovablePanel } from '@liveworkspace/workbench/components/primitiv
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import type { MovablePanelProps } from './MovablePanel.types';
-import { usePopoverTopClearance } from './usePopoverTopClearance';
+import { usePopoverTopClearance } from '@liveworkspace/workbench/components/primitives/usePopoverTopClearance';
 
 export type { MovablePanelDockProps } from './MovablePanel.types';
 

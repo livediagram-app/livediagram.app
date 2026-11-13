@@ -7,9 +7,9 @@ import type { StandardTone } from '@livedocuments/document';
 import { ColourPopover } from '@/components/colour/ColourPopover';
 import { SwatchChip } from '@/components/colour/ColourSwatch';
 import { standardGroup, standardOptions } from '@/components/colour/colour-options';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
-import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
+import { TOOLBAR_CONTROL_REST } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 
 // The theme-tinted palette tile + its tint context moved to
 // PaletteIconButton.tsx; re-exported so existing imports keep working.

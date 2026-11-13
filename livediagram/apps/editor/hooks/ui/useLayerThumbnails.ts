@@ -20,8 +20,11 @@ import {
   resolveStickerArtLoaded,
 } from '@liveworkspace/workbench/lib/icon-registry';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
-import { useCanvasChartPalette, useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
+import {
+  useCanvasChartPalette,
+  useCanvasSurface,
+} from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
+import { useTabFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 
 // Per-layer preview markup (docs/specs/006-document/layers.md), shared by the Layers panel rows and
 // the context menu's Move-to-layer tiles: the SAME headless renderer the

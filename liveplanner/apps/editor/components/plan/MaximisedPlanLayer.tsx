@@ -7,7 +7,7 @@
 // (a Gantt keeps its scale, window and collapsed lanes; a drag in flight survives), and PlanContext and the canvas
 // surface still reach it. While maximised, its presses stop at the slot so the canvas never selects or moves the
 // element underneath.
-import { useCanvasMenu } from '@/components/canvas/canvas-menu-context';
+import { useCanvasMenu } from '@liveworkspace/workbench/components/canvas/canvas-menu-context';
 import {
   useEffect,
   useLayoutEffect,
@@ -24,7 +24,7 @@ import {
   useMaximisedPlanClosing,
   type MaximisedKind,
 } from '@/hooks/plan/maximised-plan';
-import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
+import { useFaceFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';

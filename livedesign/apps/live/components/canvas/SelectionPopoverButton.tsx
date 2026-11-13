@@ -1,7 +1,7 @@
 // The selection toolbar's button and divider, shared by SelectionPopover and the per-element button
 // groups it hosts (FlowchartStepButtons).
 import { HoverCard } from '@livedesign/ui';
-import { TOOLBAR_DIVIDER } from '@/components/chrome/toolbar-surface';
+import { TOOLBAR_DIVIDER } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 
 export function Divider() {
   return <div aria-hidden className={TOOLBAR_DIVIDER} />;

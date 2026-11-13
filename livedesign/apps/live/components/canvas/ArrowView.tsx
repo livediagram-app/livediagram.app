@@ -27,7 +27,7 @@ import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';
 import { useArrowFinish } from './arrow-finish';
 import { BRAND_600 } from '@liveworkspace/workbench/components/canvas/arrow-handle-style';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
-import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import {
   arrowBehindMask,
   arrowMaskRegion,

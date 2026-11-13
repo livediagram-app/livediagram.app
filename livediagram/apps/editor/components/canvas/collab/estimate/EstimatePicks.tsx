@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import { QA_ACCENT, QA_ON_ACCENT, stopPointer } from '../qa/qa-parts';
-import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
+import { useFaceShadow } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 
 export function EstimatePicks({
   values,

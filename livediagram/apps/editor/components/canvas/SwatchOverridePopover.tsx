@@ -7,7 +7,7 @@
 
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { CustomColourEditor } from '@/components/colour/CustomColourEditor';
+import { CustomColourEditor } from '@liveworkspace/workbench/components/colour/CustomColourEditor';
 
 const GAP = 8;
 const MARGIN = 8;

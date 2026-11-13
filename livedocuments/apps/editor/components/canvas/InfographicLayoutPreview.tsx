@@ -31,7 +31,10 @@ import {
 import { pageSheetStyle } from '@/lib/page-paint';
 import { PageMotionLayer } from './PageMotionLayer';
 import { buildPageLayoutOver } from '@livedocuments/templates';
-import { useCanvasChartPalette, useCanvasSurface } from './CanvasSurfaceContext';
+import {
+  useCanvasChartPalette,
+  useCanvasSurface,
+} from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useImageSources } from './page-image-access';
 
 // How long a hovered layout takes to settle in, and the one it replaces (or the whole preview) to fade out.

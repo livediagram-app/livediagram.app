@@ -14,7 +14,7 @@ import { PlanTextScaleProvider } from './PlanTextScaleContext';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
-import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
+import { FaceFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { markResponseOpened, resetFreshResponses } from '@/components/forms/fresh-responses';
 import { FROM_FORM_FIELD } from '@liveplanner/forms';
 

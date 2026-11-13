@@ -11,7 +11,9 @@ const auth = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@liveworkspace/workbench/components/providers/deferred-auth', () => ({
   useDeferredAuth: () => auth.value,
 }));
-vi.mock('@/components/chrome/auth-shared', () => ({
+// The Sign In link reads its hrefs from the workbench's auth routes.
+vi.mock('@liveworkspace/workbench/components/chrome/auth-routes', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
   useAuthHrefs: () => ({ signInHref: '/sign-in/?redirect_url=%2Fexplorer' }),
 }));
 

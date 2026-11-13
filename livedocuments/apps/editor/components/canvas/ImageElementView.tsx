@@ -12,8 +12,11 @@ import {
   isImageMask,
   type ImageElement,
 } from '@livedocuments/document';
-import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
-import { useCanvasTheme, useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
+import {
+  useCanvasTheme,
+  useElementSurface,
+} from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { ImageEmptyFace } from '@/components/canvas/ImageEmptyFace';
 import {
   IMAGE_BROKEN_TONE,

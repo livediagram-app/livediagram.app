@@ -27,7 +27,7 @@ import { useTableCellInput } from '@/components/canvas/useTableCellInput';
 import { useTableAxisResize } from '@/components/canvas/useTableAxisResize';
 import { useTableAnimation } from '@/components/canvas/useTableAnimation';
 import { useTableCellSelection } from '@/components/canvas/useTableCellSelection';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // Build a CSS grid-template track list: an explicit `Npx` for each pinned

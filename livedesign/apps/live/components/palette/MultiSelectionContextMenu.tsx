@@ -69,7 +69,7 @@ import { ArrowPresetsSection, ShapePresetsSection, shapeSupportsPresets } from '
 import { MultiPlacementSections } from './MultiPlacementSections';
 import { MultiStyleSections } from './MultiStyleSections';
 import { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { inkSwatch, shownColour } from '@/components/palette/ink-row';
 
 type MultiSelectionContextMenuProps = {

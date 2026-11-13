@@ -16,7 +16,7 @@ import {
   retiredPlaceholderPlan,
   type ShapeElement,
 } from '@livediagram/document';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 
 export const RetiredElementFace = memo(function RetiredElementFace({
   element,

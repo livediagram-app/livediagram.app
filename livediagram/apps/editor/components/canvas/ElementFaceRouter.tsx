@@ -46,7 +46,7 @@ import { BoundaryFace } from '@/components/canvas/BoundaryFace';
 import { ConceptFace } from '@/components/canvas/ConceptFace';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { behaviourFace } from './behaviour-faces';
 
 // Tables are on few boards, so their face loads on demand; its code is fetched as the editor mounts

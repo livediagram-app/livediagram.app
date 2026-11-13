@@ -1,5 +1,5 @@
 import { WIREFRAME_TILES } from './palette-wireframe-tiles';
-import { tileCaption } from './tile-caption';
+import { tileCaption } from '@liveworkspace/workbench/components/palette/tile-caption';
 import {
   TOOL_GROUPS,
   type PaletteTileDef,

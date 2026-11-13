@@ -8,7 +8,7 @@ import { useMemo } from 'react';
 import { WHITEBOARD_INK, penColourCss } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { penCursor, type PenCursorVariant } from '@/lib/whiteboard-pen-cursor';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 
 export function useWhiteboardPenCursor(
   pendingDraw: PendingDraw | null,

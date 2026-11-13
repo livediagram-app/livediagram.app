@@ -203,7 +203,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 
 ### Canvas (`apps/editor`)
 
-- `components/canvas/CanvasFinishContext.tsx`: `CanvasFinishProvider` (the active tab's finish, re-provided by each
+- `packages/workbench/src/components/canvas/CanvasFinishContext.tsx`: `CanvasFinishProvider` (the active tab's finish, re-provided by each
   `Canvas` for its own tab), `useTabFinish()` and `useElementFinish(own): Finish`, a context like
   `CanvasSurfaceContext` so memoised element views re-render on a tab finish change.
 - `describeVariant(..., surface, finish)`: Professional drops `shadow-sm` and the sticky peel and uses the
@@ -236,7 +236,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 - New arrows: `applyCollisionAvoidance(els, arrowId, tabFinish)` gives an untouched arrow
   `arrowStyle: finishNewArrowStyle(finish)` under Professional and skips the curve when `finishCurvesNewArrows` is
   false.
-- Palette tiles: `components/palette/palette-tile-finish.ts` `paletteFinishClass(finish, action?)` and the
+- Palette tiles: `packages/workbench/src/components/palette/palette-tile-finish.ts` `paletteFinishClass(finish, action?)` and the
   `.palette-finish-*` classes in `app/globals.css` are defined, with their test, but no Plan surface draws a palette
   tile, so nothing applies them.
   `components/canvas/SketchFilterDefs.tsx` renders that filter once in `EditorView`: two `feTurbulence` +
@@ -522,7 +522,7 @@ per command letter.
 | menu rows commit, preview, Follow Tab clears                                         | `apps/editor/components/palette/FinishSection.test.tsx`                                                      |
 | backdrops: what sits on a shape, order, finish, speed                                | `../packages/element-model/src/sketch-backdrop.test.ts`                                                      |
 | Professional new arrows angled; avoidance per finish                                 | `apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                                     |
-| which palette tiles take the finish                                                  | `apps/editor/components/palette/palette-tile-finish.test.ts`                                                 |
+| which palette tiles take the finish                                                  | `packages/workbench/src/components/palette/palette-tile-finish.test.ts`                                      |
 | applyFinishToEl                                                                      | `apps/editor/lib/style-presets.test.ts`                                                                      |
 | preview draws each finish, stable, in the tab's font                                 | `apps/editor/lib/finish-preview.test.ts`                                                                     |
 | dialog tab sets, previews, Apply to All clears                                       | `apps/editor/components/dialogs/CanvasThemeDialog.test.tsx`, `apps/editor/hooks/canvas/useTabCanvas.test.ts` |

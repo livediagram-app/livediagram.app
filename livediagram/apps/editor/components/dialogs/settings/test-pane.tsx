@@ -1,40 +1,13 @@
 'use client';
 
-// For tests: one category of this editor's catalogue in the shared pane, bound as the dialog binds
-// it (settings-model.tsx), so a test can drive this editor's rows without the whole dialog.
-import {
-  SettingsCategoryPane as SharedPane,
-  SettingsUiKitProvider,
-} from '@liveworkspace/settings-ui';
-import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+// For tests: one category of this editor's catalogue in the shared pane, bound as the dialog binds it.
+import { createSettingsTestPane } from '@liveworkspace/workbench/components/dialogs/settings/test-pane';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { SettingsCategorySpec } from './settings-catalogue';
 import { SETTINGS_KIT } from './settings-kit';
 import { settingsModel } from './settings-model';
 
-export function SettingsCategoryPane({
-  category,
-  settings,
-  onChange,
-  focusRowKey = null,
-  focusSectionId = null,
-}: {
-  category: SettingsCategorySpec;
-  settings: UserPreferences;
-  onChange: (next: UserPreferences) => void;
-  focusRowKey?: string | null;
-  focusSectionId?: string | null;
-}) {
-  const isMobile = useIsMobileViewport();
-  const [model] = settingsModel([category], settings, onChange);
-  return (
-    <SettingsUiKitProvider kit={SETTINGS_KIT}>
-      <SharedPane
-        category={model!}
-        isMobile={isMobile}
-        focusRowKey={focusRowKey}
-        focusSectionId={focusSectionId}
-      />
-    </SettingsUiKitProvider>
-  );
-}
+export const SettingsCategoryPane = createSettingsTestPane<SettingsCategorySpec, UserPreferences>({
+  settingsModel,
+  kit: SETTINGS_KIT,
+});

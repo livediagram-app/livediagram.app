@@ -2,7 +2,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { QuickRadioRow } from './quick-style-rows';
-import { SwatchOverridePopover } from './SwatchOverridePopover';
+import { SwatchOverridePopover } from '@liveworkspace/workbench/components/canvas/SwatchOverridePopover';
 
 // docs/specs/008-canvas/quick-style-panel.md "Accessibility": each row is a named radio group; arrows
 // move and choose; one tab stop per row; titles are separate from the names.

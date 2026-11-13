@@ -12,7 +12,7 @@ import { canvasSurface } from '@liveplanner/project';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { CanvasPatternContext } from '@/components/canvas/canvas-pattern-context';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
-import { CanvasFinishProvider } from '@/components/canvas/CanvasFinishContext';
+import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { SketchFilterDefs } from '@/components/canvas/SketchFilterDefs';
 import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverlay';
 import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';

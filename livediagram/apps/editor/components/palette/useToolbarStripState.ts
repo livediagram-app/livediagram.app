@@ -8,7 +8,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { onToolbarSearchRequest } from '@liveworkspace/workbench/lib/toolbar-search-request';
 import type { useStripPopover } from '@liveworkspace/workbench/components/palette/ToolbarStripPopover';
 import { track } from '@/lib/telemetry';
-import { RAIL_LEAVE_MS } from './ToolbarStripRail';
+import { RAIL_LEAVE_MS } from '@liveworkspace/workbench/components/palette/ToolbarStripRail';
 import { catalogueStripGroups } from './catalogue-strip-groups';
 import { stripTilesFor } from './toolbar-strip-tiles';
 import type { usePaletteCatalogue } from './usePaletteCatalogue';

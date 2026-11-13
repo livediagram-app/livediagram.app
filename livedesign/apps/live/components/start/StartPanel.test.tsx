@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { contrastRatio, hexToRgb, type CanvasSurface } from '@livedesign/design';
-import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
+import { CanvasSurfaceProvider } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { startPalette } from './start-palette';
 import { StartFromTemplates } from './StartFromTemplates';
 
