@@ -131,6 +131,11 @@ large move rides as one layer").
   every frame of the 250 ms ease: on Company Campus (114 elements, about 2,500 nodes) a theme pick took about 270 ms to
   paint and held the page in long frames for 600 to 850 ms, the board changing in steps; snapping the parts paints it
   in about 40 ms with no long frame. The state change was already one commit, one undo step and one room op.
+- <a id="theme-pick-big-board"></a>**A theme pick on a big Space keeps the page answering.** On the reference Space
+  at 400 elements no frame of a pick in the Tab Style dialog takes more than about a tenth of a second on the
+  reference machine (it took about a quarter of a second). The new colours are worked out between frames while the
+  canvas keeps the old ones, then shown in one step; on a busy canvas only the canvas's own surface takes the ease,
+  never the rest of the page, and the toolbars do not measure themselves again while the canvas redraws.
 - **The Map redraws its content when a gesture ends**, not on every frame of it. During a drag,
   pan or stroke it keeps its last drawing and moves only its viewport rectangle; a remote edit
   redraws it at most once every 250 ms. Opening a board draws the board first; the Map's picture

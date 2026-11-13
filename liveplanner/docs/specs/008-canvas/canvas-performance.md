@@ -82,6 +82,11 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   on every frame of the 250 ms ease, so the long frames grow with the board: on the reference board at 160 elements a theme pick took about 95 ms to paint, and snapping the parts paints it in about 30 ms; at the reference laptop's speed (the CPU slowed four times) 60 elements held the page in long frames for about 220 ms, and snapping the parts brings that to about 80 ms, the pick's own render. A small
   board (20 elements or fewer) still eases every part. The threshold is the same in every editor that eases
   (livediagram, livedocuments, livedesign, liveplanner and livehuddle), one shared constant.
+- <a id="theme-pick-big-board"></a>**A theme pick on a big board keeps the page answering.** On the reference board
+  at 400 elements no frame of a pick in the Tab Style dialog takes more than about a tenth of a second on the
+  reference machine (it took about a quarter of a second). The new colours are worked out between frames while the
+  canvas keeps the old ones, then shown in one step; on a busy canvas only the canvas's own surface takes the ease,
+  never the rest of the page, and the toolbars do not measure themselves again while the canvas redraws.
 - **Questions about neighbours ask a spatial index.** Anything that asks, for each element, which
   other elements are near it (arrows passing behind boxes) queries one shared index of element
   bounds, updated for the elements that changed, so its per-frame cost follows the neighbourhood,

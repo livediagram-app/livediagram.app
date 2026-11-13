@@ -92,6 +92,11 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   on every frame of the 250 ms ease, so the long frames grow with the board: on the reference board at 400 elements a theme pick took about 260 ms to paint and held the page in long frames for about 520 ms; snapping the parts paints it in about 145 ms with about 175 ms of long frames, and at 100 elements it removes every long frame of the ease (about 70 ms). A small
   board (20 elements or fewer) still eases every part. The threshold is the same in every editor that eases
   (livediagram, livedocuments, livedesign, liveplanner and livehuddle), one shared constant.
+- <a id="theme-pick-big-board"></a>**A theme pick on a big board keeps the page answering.** On the reference board
+  at 400 elements no frame of a pick in the Tab Style dialog takes more than about a tenth of a second on the
+  reference machine (it took about a quarter of a second). The new colours are worked out between frames while the
+  canvas keeps the old ones, then shown in one step; on a busy canvas only the canvas's own surface takes the ease,
+  never the rest of the page, and the toolbars do not measure themselves again while the canvas redraws.
 - **The Map redraws its content when a gesture ends**, not on every frame of it. During a drag,
   pan or stroke it keeps its last drawing and moves only its viewport rectangle; a remote edit
   redraws it at most once every 250 ms. Opening a board draws the board first; the Map's picture
