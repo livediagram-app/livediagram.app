@@ -3226,6 +3226,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "kind": {
             "const": "pull_request_opened",
             "type": "string"
+          },
+          "repositories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -3239,6 +3245,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "kind": {
             "const": "pull_request_merged",
             "type": "string"
+          },
+          "repositories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -3252,6 +3264,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "kind": {
             "const": "pull_request_closed",
             "type": "string"
+          },
+          "repositories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -3265,6 +3283,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "kind": {
             "const": "pull_request_checks",
             "type": "string"
+          },
+          "repositories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "result": {
             "enum": [
