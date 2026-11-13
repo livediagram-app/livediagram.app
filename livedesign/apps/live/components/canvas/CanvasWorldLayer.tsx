@@ -1,6 +1,6 @@
 import dynamic from 'next/dynamic';
 import type { RefObject } from 'react';
-import { imageBackingInsetVar } from '@livedesign/design';
+import { imageBackingInsetAttribute } from '@livedesign/design';
 import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
 import { WhiteboardPenPreview } from '@/components/canvas/whiteboard/WhiteboardPenPreview';
 import {
@@ -127,13 +127,14 @@ export function CanvasWorldLayer({
           : undefined
       }
       data-path-cursor={pathTool.cursor ? '' : undefined}
+      // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The white under
+      // a picture"): an attribute the stylesheet reads for the pictures alone, so no picture re-renders on zoom and
+      // nothing else restyles; it changes only below 50%.
+      {...imageBackingInsetAttribute(viewportZoom)}
       style={{
         // Translate is in canvas-coords (applied first); scale is centred
         // on the wrapper so zooming keeps the viewport centre stable.
         transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
-        // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The white
-        // under a picture"): a CSS variable, so no picture re-renders on zoom; it changes only below 50%.
-        ...imageBackingInsetVar(viewportZoom),
         // Draw-mode cursor: every intent gets a custom inline-SVG
         // cursor (crosshair at the pointer tip plus a small glyph
         // hinting at what's about to land). Without this, tool

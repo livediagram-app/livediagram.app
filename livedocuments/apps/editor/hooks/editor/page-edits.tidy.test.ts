@@ -1,8 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pagesOf, type Element, type Tab } from '@livedocuments/document';
 import { track } from '@/lib/telemetry';
 import { clearLocalPreview, localPreview } from '@/lib/drag-preview';
 import { pageEdits } from './page-edits';
+import { resetTidyChecks, tidyAnswers } from './page-tidy-edits';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const tidyRuns = vi.hoisted(() => ({ count: 0 }));
@@ -58,6 +59,54 @@ const pageTab = (elements: Element[], page: Record<string, unknown> = {}): Tab =
 beforeEach(() => {
   vi.mocked(track).mockClear();
   clearLocalPreview();
+});
+
+describe('whether Tidy shows, answered by the worker', () => {
+  afterEach(() => resetTidyChecks());
+
+  it('keeps the last answer while the worker works, then shows its answer and tells the title bars', () => {
+    const asked: ((can: boolean) => void)[] = [];
+    resetTidyChecks({ check: (_els, _input, done) => (asked.push(done), undefined) });
+    const heard = vi.fn();
+    const stop = tidyAnswers.subscribe(heard);
+    const h = harness(pageTab([box('a', -200, -300), box('b', -188, -100)]));
+    // Nothing answered yet: no Tidy.
+    expect(h.edits().canTidy!('page-1')).toBe(false);
+    expect(h.edits().canTidy!('page-1')).toBe(false);
+    expect(asked).toHaveLength(1);
+    const before = tidyAnswers.version();
+    asked[0]!(true);
+    expect(heard).toHaveBeenCalledTimes(1);
+    expect(tidyAnswers.version()).toBe(before + 1);
+    expect(h.edits().canTidy!('page-1')).toBe(true);
+    // An edit on the page asks again, and shows the answer before meanwhile.
+    h.commitTabs((ts) =>
+      ts.map((t) => ({
+        ...t,
+        elements: t.elements.map((e) =>
+          e.id === 'a' ? ({ ...e, x: (e as { x: number }).x + 5 } as typeof e) : e,
+        ),
+      })),
+    );
+    expect(h.edits().canTidy!('page-1')).toBe(true);
+    expect(asked).toHaveLength(2);
+    // The first check answering late changes nothing: its board is gone.
+    asked[0]!(false);
+    expect(heard).toHaveBeenCalledTimes(1);
+    asked[1]!(false);
+    expect(h.edits().canTidy!('page-1')).toBe(false);
+    stop();
+    asked[1]!(true);
+    expect(heard).toHaveBeenCalledTimes(2);
+  });
+
+  it('asks nothing of the worker for a page a Tidy does not tidy', () => {
+    const check = vi.fn();
+    resetTidyChecks({ check });
+    const h = harness(pageTab([box('a', -200, -300)]));
+    expect(h.edits().canTidy!('page-9')).toBe(false);
+    expect(check).not.toHaveBeenCalled();
+  });
 });
 
 describe('whether Tidy shows', () => {

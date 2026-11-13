@@ -1,0 +1,25 @@
+/* The white under a picture, zoomed out (each product's docs/specs/009-elements/images.md "The white under a picture";
+ * @liveworkspace/element-model/image-backing): under a canvas layer whose inset is more than the default, each picture's
+ * frame takes it. The rules name the frames, so a step restyles them alone, not every node of the board.
+ * Generated from imageBackingInsetRules(); image-backing-css.test.ts checks it. */
+[data-image-inset='4'] [data-image-frame] {
+  --lw-image-backing-inset: 4px;
+}
+[data-image-inset='8'] [data-image-frame] {
+  --lw-image-backing-inset: 8px;
+}
+[data-image-inset='16'] [data-image-frame] {
+  --lw-image-backing-inset: 16px;
+}
+[data-image-inset='32'] [data-image-frame] {
+  --lw-image-backing-inset: 32px;
+}
+[data-image-inset='64'] [data-image-frame] {
+  --lw-image-backing-inset: 64px;
+}
+[data-image-inset='128'] [data-image-frame] {
+  --lw-image-backing-inset: 128px;
+}
+[data-image-inset='256'] [data-image-frame] {
+  --lw-image-backing-inset: 256px;
+}

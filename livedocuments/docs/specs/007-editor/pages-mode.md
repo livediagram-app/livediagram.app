@@ -798,6 +798,10 @@ offers no Tidy. A page already tidy, empty, or only a nudge nobody would see fro
 shows none, so the button is never offered for nothing, the cog's
 size with a tooltip ("Tidy: align and space what is on this page"), its glyph a broom. A page has no graph to lay out from, so it keeps the author's layout and straightens it.
 
+- **Decided beside the editor.** Whether a page would change is worked out in a worker each time what is on it
+  changes, never on the main thread: a drop on a page of a thousand elements spent about a second there deciding
+  its button (measured 2026-11-13, CPU throttled 3x). Until the answer comes back (a moment later) the button stays as
+  it was. Where a worker cannot start, the page works it out itself.
 - **Runs at once.** One tidier, so no popover: a press tidies the page, one edit, one undo. On a
   desktop pointer, hovering the button shows the tidied page in place (nothing written); leaving the button puts it back. A page already tidy says so in a
   toast ("This page is already tidy.") and writes nothing.

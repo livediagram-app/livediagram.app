@@ -8,22 +8,93 @@ import { pressLedger } from '../../lib/double-press';
 // that wear a head (docs/specs/008-canvas/canvas-and-palette.md). Plain functions, called inside each
 // ArrowView's render, so the per-element tree gains no component level.
 
-// The mask region + backdrop for route-behind and label knockouts. Deliberately vast
-// rather than fitted to the arrow: a curve can bow well outside its chord,
-// and a region that ends where the geometry does clips the drawing instead
-// of the boxes.
+// The vast mask region + backdrop for route-behind and label knockouts, for a line whose geometry
+// arrowMaskRegion cannot read: a curve can bow well outside its chord, and a region that ends where
+// the chord does clips the drawing instead of the boxes.
 export const ARROW_MASK_SPAN = { origin: -100000, size: 200000 } as const;
 
 /** One cut in the line: a box it runs behind, or a label's knockout, with its corner radius. */
 export type ArrowMaskHole = { x: number; y: number; width: number; height: number; rx: number };
 
-/** The `<mask>` that cuts `holes` out of the line, for the ArrowView to reference by `id`. */
-export function arrowBehindMask(id: string, holes: readonly ArrowMaskHole[]) {
+/** Where a mask paints, in canvas units. */
+export type ArrowMaskRegion = { x: number; y: number; width: number; height: number };
+
+// How far past its paths' control points an arrow's ink can reach, in stroke widths and canvas units: a head is its
+// marker size in stroke widths (12 at the largest, ARROWHEAD_SIZE_PX), the width flows swell the line to 2.2 times,
+// the selection halo adds 2, and a glow's drop-shadow blurs up to 5 px (canvas-motion.css), so 14 widths and 24 units
+// hold every one of them with room to spare.
+const MASK_PAD_WIDTHS = 14;
+const MASK_PAD_UNITS = 24;
+
+const isCommand = (t: string) => /^[A-Za-z]$/.test(t);
+
+/**
+ * The mask region one arrow needs (docs/specs/008-canvas/canvas-performance.md "A masked arrow paints its own box"):
+ * the box round every point of `paths` (the line, the sketch's strokes and heads), padded for heads, flows and the
+ * selection halo. Each path is the editor's own absolute `M L C Q Z` geometry (arrow-path.ts, hand-drawn.ts), and a
+ * Bézier stays inside its control points, so the box holds the whole curve. A mask's region is what the browser
+ * composites for it: the vast one made every arrow that runs behind a box cost a screen of raster on every repaint.
+ * Answers null (the vast region) for a path it cannot read: another command, or an odd count of numbers.
+ */
+export function arrowMaskRegion(
+  paths: readonly (string | undefined)[],
+  strokeWidth: number,
+): ArrowMaskRegion | null {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const d of paths) {
+    if (!d) continue;
+    let coords = 0;
+    for (const t of d.match(/[A-Za-z]|-?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?/g) ?? []) {
+      if (isCommand(t)) {
+        if (!'MLCQZ'.includes(t)) return null;
+        continue;
+      }
+      const v = Number(t);
+      if (coords % 2 === 0) {
+        minX = Math.min(minX, v);
+        maxX = Math.max(maxX, v);
+      } else {
+        minY = Math.min(minY, v);
+        maxY = Math.max(maxY, v);
+      }
+      coords++;
+    }
+    if (coords % 2 !== 0) return null;
+  }
+  // Every path held an even count of numbers, so a box with an x has a y.
+  if (minX === Infinity) return null;
+  const pad = MASK_PAD_UNITS + MASK_PAD_WIDTHS * Math.max(1, strokeWidth);
+  return {
+    x: minX - pad,
+    y: minY - pad,
+    width: maxX - minX + pad * 2,
+    height: maxY - minY + pad * 2,
+  };
+}
+
+const VAST_REGION: ArrowMaskRegion = {
+  x: ARROW_MASK_SPAN.origin,
+  y: ARROW_MASK_SPAN.origin,
+  width: ARROW_MASK_SPAN.size,
+  height: ARROW_MASK_SPAN.size,
+};
+
+/**
+ * The `<mask>` that cuts `holes` out of the line, for the ArrowView to reference by `id`, over `region`
+ * (arrowMaskRegion), or the vast one when that is null.
+ */
+export function arrowBehindMask(
+  id: string,
+  holes: readonly ArrowMaskHole[],
+  region: ArrowMaskRegion | null = null,
+) {
+  const r = region ?? VAST_REGION;
   return (
-    // White paints, black cuts. The backdrop is deliberately vast
-    // rather than the arrow's bbox: a curve can bow well outside the
-    // chord, and a mask that ends where the chord does would clip the
-    // bow instead of the boxes.
+    // White paints, black cuts. The backdrop covers the whole region, which holds the curve's bow (its control
+    // points), not only the chord: a mask that ended where the chord does would clip the bow instead of the boxes.
     <mask
       id={id}
       maskUnits="userSpaceOnUse"
@@ -33,19 +104,13 @@ export function arrowBehindMask(id: string, holes: readonly ArrowMaskHole[]) {
       // horizontal (or vertical) arrow has a zero-height bbox, so the
       // default region collapsed to a hairline and swallowed the
       // arrowhead (which sticks out above and below the line) along
-      // with part of the stroke. Same vast box as the backdrop below.
-      x={ARROW_MASK_SPAN.origin}
-      y={ARROW_MASK_SPAN.origin}
-      width={ARROW_MASK_SPAN.size}
-      height={ARROW_MASK_SPAN.size}
+      // with part of the stroke. Same box as the backdrop below.
+      x={r.x}
+      y={r.y}
+      width={r.width}
+      height={r.height}
     >
-      <rect
-        x={ARROW_MASK_SPAN.origin}
-        y={ARROW_MASK_SPAN.origin}
-        width={ARROW_MASK_SPAN.size}
-        height={ARROW_MASK_SPAN.size}
-        fill="white"
-      />
+      <rect x={r.x} y={r.y} width={r.width} height={r.height} fill="white" />
       {holes.map((h, i) => (
         <rect key={i} x={h.x} y={h.y} width={h.width} height={h.height} fill="black" rx={h.rx} />
       ))}

@@ -13,6 +13,7 @@ import { useRef, ViewTransition } from 'react';
 import { useFocusCanvasOnMount } from '@liveworkspace/workbench/hooks/canvas/useFocusCanvasOnMount';
 import { isAnimatedPattern } from '@livedocuments/document';
 import { canvasMainStyle, canvasWorldStyle } from './canvas-main-style';
+import { imageBackingInsetAttribute } from '@livedocuments/document';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { useNoCanvasTextSelection } from '@liveworkspace/workbench/hooks/canvas/useNoCanvasTextSelection';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
@@ -384,6 +385,10 @@ function CanvasView(props: CanvasProps) {
               } ${pendingDraw ? '' : cursorClass}`}
               // The same mode, said to the element plane's children, which take presses of their own (globals.css).
               data-elements-inert={canvasTool === 'spotlight' ? '' : undefined}
+              // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The
+              // white under a picture"): an attribute the stylesheet reads for the pictures alone, so no picture
+              // re-renders on zoom and nothing else restyles; it changes only below 50%.
+              {...imageBackingInsetAttribute(viewportZoom)}
               style={canvasWorldStyle(viewportZoom, viewportOffset, pendingDraw)}
             >
               {/* Pages mode's A4 pages, under every element (CanvasPages). */}

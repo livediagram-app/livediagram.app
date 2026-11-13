@@ -137,7 +137,7 @@ whitespace; a single word wider than the cap is not broken (D22).
   `center`, `dominant-baseline="central"` on the block's vertical centre.
 - The plate (`labelFill`) is the block rect, `rx = 4`.
 - The knockout is a black rounded rect (`rx = KNOCKOUT_RADIUS_PX`) in the arrow's mask, merged with
-  the route-behind holes into one mask. The mask region is the explicit vast span already used.
+  the route-behind holes into one mask. The mask region is the box round the arrow's path (`arrowMaskRegion`).
 
 ## Presentation and UX
 

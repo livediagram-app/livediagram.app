@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   ARROW_MASK_SPAN,
   arrowBehindMask,
+  arrowMaskRegion,
   arrowEndMarkers,
   arrowFlowStyle,
   arrowPressGuards,
@@ -35,6 +36,44 @@ describe('arrowBehindMask', () => {
     expect(rects.map((r) => r.getAttribute('fill'))).toEqual(['white', 'black', 'black']);
     expect(rects[1]!.getAttribute('rx')).toBe('5');
     expect(rects[2]!.getAttribute('x')).toBe('6');
+  });
+});
+
+describe('arrowMaskRegion', () => {
+  it('boxes every point of the paths, control points included, padded for the stroke', () => {
+    // A quadratic bowing to y = -200: its control point is outside the chord, and inside the box.
+    const r = arrowMaskRegion(['M 0 0 Q 50 -200 100 0', undefined, 'M 10 5 L 120 5'], 2)!;
+    const pad = 24 + 14 * 2;
+    expect(r).toEqual({ x: -pad, y: -200 - pad, width: 120 + pad * 2, height: 205 + pad * 2 });
+  });
+
+  it('pads by at least one stroke width, and reads exponents and bare decimals', () => {
+    const r = arrowMaskRegion(['M 1e2 .5 C 0 0 0 0 -3.5 4 Z'], 0)!;
+    expect(r.x).toBe(-3.5 - 38);
+    expect(r.width).toBe(103.5 + 76);
+    expect(r.y).toBe(-38);
+  });
+
+  it('answers null for no path, another command, or a stray number', () => {
+    expect(arrowMaskRegion([], 2)).toBeNull();
+    expect(arrowMaskRegion([undefined, '', ' ', 'Z'], 2)).toBeNull();
+    expect(arrowMaskRegion(['M 0 0 A 5 5 0 0 1 10 10'], 2)).toBeNull();
+    expect(arrowMaskRegion(['M 0 0 l 10 10'], 2)).toBeNull();
+    expect(arrowMaskRegion(['M 0 0 L 10'], 2)).toBeNull();
+  });
+
+  it('is the region the mask and its backdrop take', () => {
+    const { container } = render(
+      <svg>{arrowBehindMask('m2', [], { x: 1, y: 2, width: 30, height: 40 })}</svg>,
+    );
+    const mask = container.querySelector('mask')!;
+    const backdrop = mask.querySelector('rect')!;
+    for (const el of [mask, backdrop]) {
+      expect(el.getAttribute('x')).toBe('1');
+      expect(el.getAttribute('y')).toBe('2');
+      expect(el.getAttribute('width')).toBe('30');
+      expect(el.getAttribute('height')).toBe('40');
+    }
   });
 });
 

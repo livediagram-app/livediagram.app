@@ -6,6 +6,7 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
+    "./image-backing.css": "./src/styles/image-backing.css",
     "./bindings": "./src/bindings.ts",
     "./components/canvas/AnimationLayer": "./src/components/canvas/AnimationLayer.tsx",
     "./components/canvas/CanvasArrivalContext": "./src/components/canvas/CanvasArrivalContext.tsx",

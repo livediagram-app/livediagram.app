@@ -1,6 +1,7 @@
 // The guard of an infographic page's Tidy Up (docs/specs/007-editor/pages-mode.md "Tidy";
 // lib/page-tidy.ts): nothing comes to overlap what it did not.
 import { overlaps, sameRect, shift, type Block, type Rect } from './page-tidy-blocks';
+import { rectIndex } from './page-tidy-index';
 
 // Every rect in a block and inside it, the block's own first.
 export const rectsIn = (b: Block): Rect[] => [b.rect, ...b.children.flatMap(rectsIn)];
@@ -43,12 +44,16 @@ function deepOverlap(
   return found;
 }
 
+// A pair of blocks whose own rects do not overlap has no overlap within them either (deepOverlap's first check), so
+// each block is checked against the blocks a rect index answers near it (lib/page-tidy-index.ts), in index order: the
+// same pairs, in the same order, as every pair, without the n² of a page of a thousand cards.
 export function overlapsAt(blocks: Block[], obstacles: readonly Rect[]): Overlaps {
   const out: Overlaps = new Set();
   const deep = blocks.map(rectsIn);
+  const near = rectIndex(blocks.map((b) => b.rect));
   for (let i = 0; i < blocks.length; i++) {
-    for (let j = i + 1; j < blocks.length; j++)
-      deepOverlap(deep[i]!, deep[j]!, `${i}|${j}`, { out });
+    for (const j of near.query(blocks[i]!.rect))
+      if (j > i) deepOverlap(deep[i]!, deep[j]!, `${i}|${j}`, { out });
     obstacles.forEach((o, k) => deepOverlap(deep[i]!, [o], `${i}|o${k}`, { out }));
   }
   return out;
@@ -68,18 +73,29 @@ export function guard(blocks: Block[], obstacles: readonly Rect[], before: Overl
     again = false;
     const deep = blocks.map(rectsIn);
     const away = blocks.map(moved);
+    const near = rectIndex(blocks.map((b) => b.rect));
     const back = (i: number) => {
       sendBack(blocks[i]!);
       deep[i] = rectsIn(blocks[i]!);
+      near.move(i, blocks[i]!.rect);
       away[i] = 0;
       again = reverted = true;
     };
     for (let i = 0; i < blocks.length; i++) {
-      for (let j = i + 1; j < blocks.length; j++) {
+      // The blocks after i near it, ascending; asked again from where it got to when i itself goes back.
+      const after = (from: number) => near.query(blocks[i]!.rect).filter((j) => j > from);
+      let next = after(i);
+      for (let c = 0; c < next.length; c++) {
+        const j = next[c]!;
         if (away[i] === 0 && away[j] === 0) continue;
         if (!deepOverlap(deep[i]!, deep[j]!, `${i}|${j}`, { before })) continue;
         // The one that moved goes back, or the one that moved further.
-        back(away[i]! >= away[j]! ? i : j);
+        const who = away[i]! >= away[j]! ? i : j;
+        back(who);
+        if (who === i) {
+          next = after(j);
+          c = -1;
+        }
       }
       if (away[i] === 0) continue;
       for (let k = 0; k < obstacles.length; k++) {

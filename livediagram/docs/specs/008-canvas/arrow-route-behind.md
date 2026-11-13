@@ -97,14 +97,17 @@ to the visible path and the selection halo:
   animation class, and its markers. Splitting would mean re-deriving all three
   per segment.
 - The mask **region** (`x`/`y`/`width`/`height` on the `<mask>` itself) and its
-  white backdrop are both stated explicitly, and both vast. A mask with no
+  white backdrop are both stated explicitly, and both the box round the
+  arrow's own path: every point of it, control points included, so a curve
+  that bows well outside its chord still fits, padded for the heads, a flow's
+  swell or glow and the selection halo ([Canvas performance](canvas-performance.md)
+  "A masked arrow paints its own box"). A mask with no
   region defaults to `-10%`/`120%` **of the referencing element's bounding
   box**, and everything outside that region is masked away, so a straight
   horizontal or vertical arrow, whose bbox has zero height or width, collapsed
   the region to a hairline that swallowed the **arrowhead** (it sticks out
-  either side of the line) along with part of the stroke. The vast box also
-  covers the other direction: a curve can bow well outside its chord, and a
-  region fitted to the geometry would clip the bow instead of the boxes.
+  either side of the line) along with part of the stroke. The padding covers
+  that. A path whose geometry cannot be read keeps a vast region.
 - The mask is only minted when something actually cuts the arrow. Nothing in
   the way is the common case, and an empty mask is pure overhead.
 - **The hit band is NOT masked.** The arrow stays clickable across the gap, so

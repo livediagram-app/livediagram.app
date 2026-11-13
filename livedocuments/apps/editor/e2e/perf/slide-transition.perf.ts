@@ -120,9 +120,9 @@ async function openDeck(
   await page.goto(`/document/${id}`);
   await page.locator(CANVAS).waitFor({ timeout: 60_000 });
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Selection mode' }).click();
-  await page.getByText('Slide Deck', { exact: true }).first().click();
-  await page.getByRole('button', { name: /^Present \d+$/ }).click();
+  // The header's Present starts the open tab's show at its slide 1 (presentation-mode.md "The header's Present
+  // button"; the Slide Deck panel it once opened from is retired).
+  await page.getByRole('button', { name: 'Present', exact: true }).click();
   await page.waitForTimeout(1500);
   await cdp?.send('Emulation.setCPUThrottlingRate', { rate: throttle });
   return { ctx, page, cdp: cdp! };

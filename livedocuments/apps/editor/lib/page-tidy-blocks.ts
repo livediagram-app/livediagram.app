@@ -2,6 +2,7 @@
 // lib/page-tidy.ts): the page's elements as a forest, each element carrying what it wholly holds,
 // and the rect arithmetic the steps share.
 import { type BoxedElement, type ElementId } from '@livedocuments/document';
+import { rectIndex } from './page-tidy-index';
 
 // Below this, two values are the same (float noise from the layouts' own arithmetic).
 export const SAME = 0.05;
@@ -67,13 +68,16 @@ const isPinned = (el: BoxedElement, lockedIds: ReadonlySet<ElementId>) =>
 // A shape or sticky whose size may round without distorting it: not a square shape, not
 // aspect-locked. Text (it would rewrap), images and the rest keep theirs.
 // The forest of blocks: each element's parent is the smallest other (non-text) element wholly
-// holding it and strictly larger. O(n²) in the page's elements.
+// holding it and strictly larger.
+// A holder overlaps what it holds (grown by EPS), so each element looks only at the non-text elements a rect index answers
+// near it (lib/page-tidy-index.ts), in index order: the same parent as a scan of them all.
 export function blocksOf(els: BoxedElement[], lockedIds: ReadonlySet<ElementId>): Block[] {
   const rects = els.map(rectOf);
+  const near = rectIndex(els.map((el, i) => (el.type === 'text' ? null : rects[i]!)));
   const parent = els.map((_, i) => {
     let best = -1;
-    for (let j = 0; j < els.length; j++) {
-      if (j === i || els[j]!.type === 'text') continue;
+    for (const j of near.query(rects[i]!, EPS)) {
+      if (j === i) continue;
       if (area(rects[j]!) <= area(rects[i]!) + SAME || !contains(rects[j]!, rects[i]!)) continue;
       if (best < 0 || area(rects[j]!) < area(rects[best]!)) best = j;
     }

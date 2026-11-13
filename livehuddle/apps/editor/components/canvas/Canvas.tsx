@@ -1,5 +1,5 @@
 import { canvasIsBusy } from '@liveworkspace/workbench/lib/tab-style-ease';
-import { imageBackingInsetVar } from '@livehuddle/document';
+import { imageBackingInsetAttribute } from '@livehuddle/document';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { CanvasFinishProvider } from './CanvasFinishContext';
 import { LongPressRing } from '@liveworkspace/workbench/components/primitives/LongPressRing';
@@ -417,13 +417,14 @@ function CanvasView(props: CanvasProps) {
           } ${pendingDraw ? '' : cursorClass}`}
           // The same, said to the element plane's children, which take presses of their own (globals.css).
           data-elements-inert={canvasTool === 'avatar' ? '' : undefined}
+          // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The white under
+          // a picture"): an attribute the stylesheet reads for the pictures alone, so no picture re-renders on zoom and
+          // nothing else restyles; it changes only below 50%.
+          {...imageBackingInsetAttribute(viewportZoom)}
           style={{
             // Translate is in canvas-coords (applied first); scale is centred
             // on the wrapper so zooming keeps the viewport centre stable.
             transform: viewportTransform(view),
-            // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The white
-            // under a picture"): a CSS variable, so no picture re-renders on zoom; it changes only below 50%.
-            ...imageBackingInsetVar(viewportZoom),
             // Draw-mode cursor: every intent gets a custom inline-SVG
             // cursor (crosshair at the pointer tip plus a small glyph
             // hinting at what's about to land). Without this, tool

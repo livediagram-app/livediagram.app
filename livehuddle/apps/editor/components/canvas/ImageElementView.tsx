@@ -207,6 +207,8 @@ function ImageElementViewImpl({
     // picture moves inside its crop and never past it.
     <div
       className={`relative h-full w-full overflow-hidden rounded ${bodySetClass(element, 'media') ?? ''}`}
+      // The frame the zoomed-out inset rules name (@liveworkspace/workbench/image-backing.css).
+      data-image-frame=""
       style={{ ...radiusStyle, ...backingStyle.frame }}
     >
       {backingStyle.bands ? (
