@@ -196,7 +196,10 @@ not routed (the OpenAPI drift probe's clean 404), and every route is in the Open
   `authorId: 'automation'`, `authorName: 'Automation'`; it is written through the thread store, never the routes,
   so it starts no Comment Added rule.
 - Send Email resolves the recipient's account by hashing the owner, the team's joined members and `known_people`,
-  and honours the **assigned actions** email setting (`notifyActionAssigned`); a name typed onto a card has no
+  then sends only when `AutomationPlan.mayEmail(accountId)` holds: the owner, or one the plan's team people (the
+  `teamPeople` read `accountPeople` already makes) hold, picked by @liveworkspace/auth-client `teamTargets` as the
+  notifier's mention email picks them. Mention Someone's email takes the same check (its thread is written
+  regardless). It honours the **assigned actions** email setting (`notifyActionAssigned`); a name typed onto a card has no
   account and gets nothing. The template is `automationEmail` (`EmailKind` 'AutomationEmail').
 - Create Card needs a card type from the plan's catalogue: a plan whose types are not chosen fails the run with
   "Card type <id> is gone".
@@ -902,6 +905,14 @@ Threads and Wait (spec "Actions", "Wait").
 - **Shapes** (`types.ts`): `card_archived`, `card_restored`, `checklist_completed`, `threads_resolved`, `mentioned`
   (`people?`), `card_unblocked`, `related_done` (`related: 'children' | 'linked'`), `column_limit` (`status`, `limit`
   1 to 500) and the time trigger `stuck` (`days` 1 to 90, `at`, `statuses?`).
+- **A card put back** (`automation-queue.ts` `eventsOfWrites`): a create tagged `undo` (the create route's
+  `restores`, a bulk sync's `putBack`) makes no event, so an undo of a delete never starts Card Created (its rev is 1
+  again, so its run id would otherwise collide with the first making's, or run on a rule made since).
+- **Field Changed's fields** (`outline.ts` `changeNeverHeard`, `unheardFields`): a Time Spent Duration, a Votes,
+  Comments or Calculated field (or one with a `calculation`), and the built-in `votes` and `comments`. The create
+  and save routes (`bodyOf`) read the plan head's types only for a `field_changed` rule and refuse the first such
+  field, 400 `automation_invalid` at `trigger.fields.N`; `ruleNeeds` adds "Field Changed never hears {name}"; the
+  editor's When panel offers `fieldChangeFields` (outlineFields less those).
 - **Events** (`matches.ts`): `eventOfWrite` makes `archived` and `restored` events (the Trash stays quiet) and marks a
   `changed` or `moved` event `checklistDone` when the write ticks the last item. The thread routes queue `resolved`
   when a resolve leaves the card with no open thread (`SUM(open_comments) = 0` over its links), and a comment event
@@ -910,7 +921,9 @@ Threads and Wait (spec "Actions", "Wait").
   or archived while still open (a done blocker freed its cards when it finished) and answers the cards it blocks that have no open blocker left; Related Cards Done hears a card moving
   into a done column and answers the cards it belongs to (its parents, or the cards whose Card fields hold it) whose
   related cards are all done; Column Over Limit hears a card created in or moved into its column and answers that
-  card when the column now holds exactly limit + 1. The runner reads the plan's cards for such an event only when a
+  card when the column now holds exactly limit + 1, or, past that, when the card is the (limit + 1)th of the
+  column's live cards by `itemStatusSince` (then key): several in before one wake run it once, on the card that tipped
+  it. The runner reads the plan's cards for such an event only when a
   rule on hears one. Card Unblocked and Related Cards Done run the rule on each answered card under
   `d:${card.id}:${sha256(moment)}`, the moment (`derivedMoments`) being the card's blockers, children or linked cards
   as sorted `id@rev`, so two events read against the same cards make one run id. Column Over Limit runs under
