@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { dropLegacyDocks } from './legacy-docks';
-import type { Element } from './index';
+
+type Element = { id: string; type: string };
 
 const event = { id: 'e', type: 'sticky', x: 0, y: 0 } as unknown as Element;
 const docked = {

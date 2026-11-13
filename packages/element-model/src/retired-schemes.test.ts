@@ -1,8 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { migrateRetiredScheme, retiredSchemeOf } from './retired-schemes';
-import type { Element, Tab } from './index';
+import type { Element } from './element';
 
-// Retired colour schemes (docs/specs/011-theme/retired-schemes.md): a scheme leaves the catalogue by
+type Tab = {
+  id: string;
+  name: string;
+  elements: Element[];
+  theme?: string;
+  backgroundColor?: string;
+  patternColor?: string;
+  backgroundPattern?: string;
+};
+
+// Retired colour schemes (each product's retired-schemes spec): a scheme leaves the catalogue by
 // being migrated away on read, so an old canvas opens in the scheme that replaced it.
 
 const CHARCOAL = {
