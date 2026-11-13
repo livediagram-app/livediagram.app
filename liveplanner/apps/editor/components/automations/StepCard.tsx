@@ -2,10 +2,11 @@
 
 // One step of the rule in the builder (docs/specs/026-plan/automations.md "The rule builder"): its icon on a tinted
 // tile, its kind ("When", "If all of these", "Then"), what it does, and its ⋯ menu. Selecting it opens its panel. A
-// selected step wears the brand ring; the step a refusal names wears the problem ring and says why. A step a template
+// selected step wears the brand ring; the step a refusal names wears the problem ring and says why. Its button reads the
+// kind, described by what the step does. A step a template
 // left to pick says what ("Pick a field") until it is picked. StepJoin draws the line between two steps.
 
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import type { AutomationStep, AutomationVia } from '@liveplanner/items';
 import { STEP_KIND_TEXT, StepTile, type StepTone } from './automation-glyphs';
 
@@ -43,6 +44,8 @@ export function StepCard({
   // What the step does: chips, a sub-line.
   children: ReactNode;
 }) {
+  // The button names the step's kind ("Then"); what it does describes it, so each card reads apart.
+  const doesId = useId();
   const ring = fault
     ? 'border-red-400 ring-2 ring-red-100 dark:border-red-500/70 dark:ring-red-500/20'
     : selected
@@ -64,12 +67,16 @@ export function StepCard({
         <button
           type="button"
           aria-pressed={selected}
+          aria-describedby={doesId}
           onClick={onSelect}
           className={`text-left text-[11px] font-semibold uppercase leading-none tracking-wider after:absolute after:inset-0 after:rounded-xl ${STEP_KIND_TEXT[tone]}`}
         >
           {label}
         </button>
-        <div className="flex min-w-0 flex-col gap-1 text-[13px] text-slate-800 dark:text-slate-100">
+        <div
+          id={doesId}
+          className="flex min-w-0 flex-col gap-1 text-[13px] text-slate-800 dark:text-slate-100"
+        >
           {children}
         </div>
         {pick && !fault ? (

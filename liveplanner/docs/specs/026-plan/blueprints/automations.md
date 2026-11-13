@@ -895,7 +895,13 @@ Threads and Wait (spec "Actions", "Wait").
   their groups into it.
 - `trigger-groups.ts`: `TRIGGER_GROUPS` (card, time, tools), `TRIGGER_LINES` and `freshTrigger`; `TriggerScene.tsx`
   draws each trigger's picture (card triggers violet, time blue, tools emerald) from `scene-parts.tsx`.
-- `ChangeTriggerField` replaces the When panel's select: the trigger's tile, name, line and **Change**.
+- `ChangeTriggerField` replaces the When panel's select: the trigger's tile, name, line and **Change**. Its button,
+  and `ChangeActionField`'s, is named by `aria-label` ("Change Trigger", "Change Action") and described by the name
+  beside it, never by the field's `<label>` (which would name it "Trigger"); `LinkCardPanel`'s card button likewise
+  ("Pick a Card", "Change Card"), its chosen card "A card no longer here" when the plan lost it.
+- `StepCard`'s select button is described (`aria-describedby`) by the step's chips, so each "Then" reads apart.
+- `RunRow`'s chevron spreads its hit area over the row (`after:absolute after:inset-0`, as `StepCard` does), so a
+  click anywhere on the row opens it; its name says which run ("Expand run: <rule>, #<key>").
 
 ## The triggers after Phase 3
 

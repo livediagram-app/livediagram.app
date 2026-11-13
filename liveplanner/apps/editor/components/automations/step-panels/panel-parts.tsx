@@ -5,9 +5,55 @@
 // choice, and the select every single pick uses. Real labels and buttons throughout, so each is keyboard reachable.
 
 import { useId, type ReactNode } from 'react';
-import { CheckIcon, Select, TextInput, type SelectProps } from '@liveplanner/ui';
+import { Button, CheckIcon, Select, TextInput, type SelectProps } from '@liveplanner/ui';
 
 export const PANEL_SELECT = 'h-9 rounded-lg pl-2.5 pr-7 text-[13px]';
+
+// The Trigger and Action fields' row: the step's tile and name, and Change, which opens its picker. Change is named
+// "Change Trigger" (or Action) and described by the name beside it, never by the field's label, so a screen reader
+// hears the word on the button and what it changes ("Change Trigger, button, Card Moved").
+export function ChangeRow({
+  id,
+  noun,
+  icon,
+  name,
+  open,
+  onOpen,
+}: {
+  // The field's control id (PanelField's), so its label still points at the button.
+  id: string;
+  noun: 'Trigger' | 'Action';
+  icon: ReactNode;
+  name: string;
+  open: boolean;
+  onOpen: () => void;
+}) {
+  const nameId = useId();
+  return (
+    <div className="flex h-11 items-center gap-2.5 rounded-lg border border-slate-200 bg-white pl-2 pr-1.5 dark:border-slate-700 dark:bg-slate-900">
+      {icon}
+      <span
+        id={nameId}
+        className="min-w-0 flex-1 truncate text-[13px] font-medium text-slate-900 dark:text-slate-50"
+      >
+        {name}
+      </span>
+      <Button
+        id={id}
+        variant="secondary"
+        size="xs"
+        data-change-step=""
+        aria-label={`Change ${noun}`}
+        aria-describedby={nameId}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={onOpen}
+      >
+        Change
+      </Button>
+    </div>
+  );
+}
 
 export function PanelField({
   label,

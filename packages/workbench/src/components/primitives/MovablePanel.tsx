@@ -23,6 +23,7 @@ import { useUiScale } from '../providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '../../lib/ui-scale';
 import { cornerInsetStyle } from './movable-panel-scale';
 import { PopoverScrim } from './PopoverScrim';
+import { MOVABLE_PANEL_INSIDE } from './movable-panel-inside';
 
 export type { MovablePanelDockProps };
 
@@ -164,9 +165,12 @@ export function createMovablePanel<HelpKey extends string>({
       // explaining, so tapping its Next button must not dismiss that panel out
       // from under the highlight. A popover's own portalled menus and confirms
       // (a layer's row menu, Delete's confirm) are inside too, or choosing
-      // from one would close the popover under it. The scrim behind it closes it
-      // itself, on the click, so the press never reaches the canvas under it.
-      '[data-dock-button],[data-tour-popover],[data-menu-surface],[role="dialog"],[data-popover-scrim]',
+      // from one would close the popover under it. The confirm is an
+      // alertdialog (ConfirmPopover's `data-confirm-popover`), so it is named
+      // apart: without it the Trash's Delete Forever unmounted on the press and
+      // never deleted. The scrim behind it closes it itself, on the click, so
+      // the press never reaches the canvas under it.
+      MOVABLE_PANEL_INSIDE,
     );
 
     // Clamp a persisted free position back into the live viewport: a

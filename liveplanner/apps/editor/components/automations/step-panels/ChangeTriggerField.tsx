@@ -5,7 +5,6 @@
 
 import { useMemo, useState } from 'react';
 import { AUTOMATION_TRIGGER_NAMES, type AutomationTriggerKind } from '@liveplanner/items';
-import { Button } from '@liveplanner/ui';
 import { automationsHeroArt } from '../AutomationsHeroArt';
 import { StepTile } from '../automation-glyphs';
 import { StepPicker } from '../StepPicker';
@@ -14,7 +13,7 @@ import { useGithubConnection } from '../github/use-github-connection';
 import { TRIGGER_LINES, isTimeKind, offeredGroups } from '../trigger-groups';
 import type { AutomationsScope } from '../automations-client';
 import { TriggerScene } from '../TriggerScene';
-import { PanelField } from './panel-parts';
+import { ChangeRow, PanelField } from './panel-parts';
 
 // No plan: the connection is never read outside the Automations dialog.
 const NO_SCOPE: AutomationsScope = { ownerId: '', projectId: '', shareCode: null };
@@ -50,23 +49,14 @@ export function ChangeTriggerField({
     <PanelField label="Trigger" hint={TRIGGER_LINES[kind]}>
       {(id) => (
         <>
-          <div className="flex h-11 items-center gap-2.5 rounded-lg border border-slate-200 bg-white pl-2 pr-1.5 dark:border-slate-700 dark:bg-slate-900">
-            <StepTile tone="trigger" time={isTimeKind(kind)} size={24} />
-            <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-slate-900 dark:text-slate-50">
-              {AUTOMATION_TRIGGER_NAMES[kind]}
-            </span>
-            <Button
-              id={id}
-              variant="secondary"
-              size="xs"
-              data-change-step=""
-              aria-haspopup="dialog"
-              aria-expanded={open}
-              onClick={() => setOpen(true)}
-            >
-              Change
-            </Button>
-          </div>
+          <ChangeRow
+            id={id}
+            noun="Trigger"
+            icon={<StepTile tone="trigger" time={isTimeKind(kind)} size={24} />}
+            name={AUTOMATION_TRIGGER_NAMES[kind]}
+            open={open}
+            onOpen={() => setOpen(true)}
+          />
           {open ? (
             <StepPicker
               title="Pick a Trigger"
