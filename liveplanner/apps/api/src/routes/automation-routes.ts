@@ -221,9 +221,15 @@ async function create(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   return answerRule(ctx, g, rule, 201);
 }
 
-async function save(ctx: PlanRouteContext, g: Gated, held: AutomationRule): Promise<Response> {
+// The rule as it is now, after a request's awaits (its body, the plan's types, the card), which let another Editor's
+// write land: one deleted meanwhile is not found, and one turned off stays off.
+const stillHeld = (g: Gated, held: AutomationRule) => g.hook.store.get(held.id);
+
+async function save(ctx: PlanRouteContext, g: Gated, read: AutomationRule): Promise<Response> {
   const body = await bodyOf(ctx, g.projectId);
   if (body instanceof Response) return body;
+  const held = stillHeld(g, read);
+  if (!held) return notFoundRule();
   if (ruleNameTaken(body.name, g.hook.store.list(), held.id))
     return refuse(409, 'automation_name_taken', { path: 'name' });
   const rule: AutomationRule = {
@@ -236,9 +242,11 @@ async function save(ctx: PlanRouteContext, g: Gated, held: AutomationRule): Prom
   return answerRule(ctx, g, rule);
 }
 
-async function toggle(ctx: PlanRouteContext, g: Gated, held: AutomationRule): Promise<Response> {
+async function toggle(ctx: PlanRouteContext, g: Gated, read: AutomationRule): Promise<Response> {
   const raw = await readBody(ctx);
   if (raw instanceof Response) return raw;
+  const held = stillHeld(g, read);
+  if (!held) return notFoundRule();
   if (typeof raw['enabled'] !== 'boolean')
     return refuse(400, 'automation_invalid', {
       path: 'enabled',
@@ -355,17 +363,21 @@ async function test(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   return json({ run });
 }
 
-async function runNow(ctx: PlanRouteContext, g: Gated, held: AutomationRule): Promise<Response> {
-  if (held.trigger.kind !== 'manual' || !held.enabled) return refuse(409, 'automation_not_manual');
+async function runNow(ctx: PlanRouteContext, g: Gated, read: AutomationRule): Promise<Response> {
+  if (read.trigger.kind !== 'manual' || !read.enabled) return refuse(409, 'automation_not_manual');
   const raw = await readBody(ctx);
   if (raw instanceof Response) return raw;
   const card = await cardOf(ctx, g, raw);
   const deps = g.hook.deps();
   if (!card || !deps) return missingItem();
-  const today = runsToday(g.hook.sql(), Date.now());
+  // Turned off, changed away from Run from a Card or deleted while the card was read: it runs as it now stands.
+  const held = stillHeld(g, read);
+  if (!held) return notFoundRule();
+  if (held.trigger.kind !== 'manual' || !held.enabled) return refuse(409, 'automation_not_manual');
+  // The day's count is read as the run claims its row (runRule), after the card read above.
   const run = await runRule(
     deps,
-    { plan: null, today },
+    { plan: null, today: 0 },
     held,
     manualEvent(g, card.id, 'm', held.id),
   );

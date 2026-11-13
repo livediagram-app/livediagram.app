@@ -99,9 +99,15 @@ export async function draftRule(ctx: PlanRouteContext, g: Gated): Promise<Respon
 
   let asks = 0;
   for (let n = 0; n < DRAFT_ASKS_MAX; n++) {
-    // A second ask past the day's AI steps is not made: the draft didn't read.
-    if (n > 0 && aiToday(sql, Date.now()) >= AUTOMATION_AI_PER_DAY) break;
+    // The day's AI steps read again before each ask, with no await before it is counted: a rule's call made while the
+    // plan was read counts. A first ask past them is refused as the check above; a second is not made, the draft
+    // didn't read.
+    if (aiToday(sql, Date.now()) >= AUTOMATION_AI_PER_DAY) {
+      if (n === 0) return refuse(429, 'automation_ai_capped', AI_CAPPED);
+      break;
+    }
     countDraftAsk(sql, Date.now(), n > 0);
+    g.hook.store.aiAsks += 1;
     asks += 1;
     defer(reportServerEvent(env, 'Plan', 'Ran', 'AutomationAiDraft'));
     const asked = await ask(

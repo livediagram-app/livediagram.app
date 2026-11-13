@@ -422,7 +422,8 @@ step is done; nothing is sent). A Mention Someone's thread is written all the sa
 **People in turn** keeps its place per rule: the first run assigns the first person, the next the second, and after
 the last back to the first. A person who has left the plan is passed over, their turn with them (and the rule needs
 attention). A branch assigning in turn gives each related card the next person. A run that
-fails or matches nothing doesn't move the turn, and Test on a Card shows whose turn it is without taking it.
+fails or matches nothing doesn't move the turn, and Test on a Card shows whose turn it is without taking it. Two runs of
+the rule at once (two Run Rules) take the next two people, never one twice.
 
 ### Outgoing actions
 
@@ -498,6 +499,10 @@ own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel says 
   the rule's 20 actions.
 - It runs **after the run's card writes**, in step order, each one call, and reads the card as those writes left it;
   the run's outgoing messages go after. Its own writes are one more write each, by Automation.
+- **Someone editing the card meanwhile** keeps their change: a step's labels land on the card as it is when written,
+  so a label a person added or took off while the AI answered (or while the run read the card) stays as they left
+  it, and only the labels the step adds or takes off change. The same holds for Add Label, Remove Label and a Set
+  Field of Labels.
 - Its outcome is the step's line in the Audit Trail with the sparkle: "Summarised the card into a comment", "Set the
   card type to Bug", "Set priority High, added labels billing, urgent". A step that fails fails the run with its
   reason, as any action does, after the steps before it landed:
@@ -519,7 +524,9 @@ own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel says 
   counts, whatever it answered; Test on a Card and a step that never called (no model, the cap) count nothing.
 - Past it, the step is **skipped**: its line says "This plan has used its 100 AI steps today", nothing is asked, and
   the run is **Skipped** with that reason when nothing else failed. A skipped run never counts toward pausing.
-- The day's count is read from the Audit Trail (each called step's line is marked), once per wake.
+- The day's count is read from the Audit Trail (each called step's line is marked), again before each call, and a
+  call is marked on its run's row as it is asked, before its answer comes: a wake, a Run Rule and a Describe a Rule
+  asking at once never pass 100 between them.
 
 ### The model and what it is sent
 
@@ -710,7 +717,8 @@ hands focus back to the field, the caret after the value:
   its own changes. A change by a rule that does not let its changes trigger others starts nothing; a rule whose
   trigger and conditions it would have met logs a **Skipped** run ("Started by another rule's change").
 - **Per run**: at most **20 actions** and **1 created card**.
-- **Per plan per day** (UTC): at most **1,000 runs**. Only runs that did something, failed or were skipped count; a
+- **Per plan per day** (UTC): at most **1,000 runs**, counted afresh as each run starts (a run counts from then), so a
+  wake and Run Rules at once never pass it between them. Only runs that did something, failed or were skipped count; a
   **No Match** is logged and costs nothing, and so do the Audit Trail's own lines, which are no rule's run (a burst's
   "Too many changes at once", a time trigger's "Ran on 100 of 340 matching cards"). Past it, triggers are dropped until the next day, the Automations screen's meter reads full, a line says "Daily limit reached: rules run again
   tomorrow", and Run Rule answers that it cannot run now.
@@ -749,6 +757,9 @@ allowing. On a phone the header keeps its desktop look (100px, the mark, the tit
 - Three tabs: **Rules · n**, **Audit Trail** and **Templates**. On a phone the bar is 48 px tall, each tab a 44 px
   target with its label centred in it, the active tab's underline along the bar's foot.
 - A **Runs today** meter at the right of the tabs: "142 of 1,000" (No Match runs are not counted).
+- The rules are read each time the screen opens (what was read before shows meanwhile), so a rule another Editor
+  or an agent made, changed or deleted shows; there is no live push between two people's screens. A change made
+  while that read is under way is kept: the list is read once more after it, never left as the read had it.
 - **Rules**: a search box ("Find a rule"), **All Triggers** and **On and Off** filters (on a wide screen one row, all
   32 px tall; **All Triggers** lists GitHub's triggers only where Pick a Trigger offers them, or one a rule is
   already on), then one row per rule:
@@ -917,7 +928,10 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
 - Leaving with unsaved changes asks **Discard Changes?**. A save the api refuses keeps the builder open and marks
   the step at fault, in words, never a path: the api's message for agents leads with the part's path ("steps.2.text
   must be text of 1 to 2000 characters"), and the builder, which marks that part, says the rest as a sentence ("Must
-  be text of 1 to 2000 characters."). Text a step must hold is refused as "1 to N characters", text that may be
+  be text of 1 to 2000 characters."). A rule another Editor deleted since the builder opened is never saved back:
+  the save is refused ("This rule was deleted elsewhere."), and a save never turns on a rule another Editor turned
+  off meanwhile (its On / Off stays as last set). Two Editors saving one rule: the later save stands whole. Text a
+  step must hold is refused as "1 to N characters", text that may be
   empty as "up to N characters". A pick left empty says what to pick, by the part's name ("Pick a field.", "Pick a
   column.", "Pick a card type."), never a bare "Must name one."
 - A rule opened by its link (an Automation comment's) that the plan no longer has opens no builder: the screen says

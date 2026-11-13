@@ -53,6 +53,19 @@ export function claimRun(sql: Sql, id: string, ruleId: string, at: number): bool
   );
 }
 
+// A pending run's AI calls, `asked` of them, marked on its row as each is asked, before its answer comes: the day's
+// AI count (automation-ai.ts aiToday) reads every row's marked lines, pending ones too, so a call counts at once for
+// a Run Rule, a Describe a Rule or another run asking meanwhile. The settled row's lines replace these, the same calls
+// marked. A pending row's body is never listed.
+export function markAiAsked(sql: Sql, id: string, asked: number): void {
+  const steps = Array.from({ length: asked }, () => ({ ai: true }));
+  sql.exec(
+    `UPDATE automation_runs SET body = ? WHERE id = ? AND result = '${PENDING}'`,
+    JSON.stringify({ steps }),
+    id,
+  );
+}
+
 // A claimed run that never started after all (a chain stop whose conditions did not hold): its row goes, so it
 // counts against nothing.
 export function dropRun(sql: Sql, id: string): void {

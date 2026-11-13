@@ -83,7 +83,11 @@ export interface RunnerDeps extends WriteDeps {
 export type RunState = {
   plan: AutomationPlan | null;
   today: number;
+  // The room's claims (AutomationStore.claims) when `today` was last right; absent, `today` is read at the claim.
+  claims?: number;
   ai?: number;
+  // The room's AI asks (AutomationStore.aiAsks) when `ai` was last right.
+  aiAsks?: number;
   // The plan's cards as one event's derived triggers read them (runs between events change them).
   cards?: { event: string; items: Item[] };
   // The columns this wake's Column Over Limit rules ran on, each as its rule and the column's cards.
@@ -176,12 +180,20 @@ export async function runRule(
   const id = await runIdOf(event.id, rule.id);
   const at = Date.now();
   if (!opts.dry) {
+    // The day's count read again when another request claimed a run since this one last did (a Run Rule while this
+    // wake waited on a card read or an AI call), with no await before the claim: runs at once never pass the day
+    // between them, and a wake alone reads it once.
+    if (state.claims !== deps.store.claims) state.today = runsToday(sql, at);
     if (state.today >= AUTOMATION_RUNS_PER_DAY) return null;
     if (!claimRun(sql, id, rule.id, at)) return null;
+    deps.store.claims += 1;
+    state.claims = deps.store.claims;
   }
   const lines: AutomationStepLine[] = [];
   let card: AutomationRun['card'] = null;
   let turns = 0;
+  // The turns this run took while under way (AutomationStore.take), given back as it settles.
+  let taken = 0;
   let webhook: string | undefined;
   const resume = event.kind === 'resume';
   let waitsUntil: number | undefined;
@@ -202,6 +214,8 @@ export async function runRule(
       ...(resume && event.waited ? { afterWait: event.waited } : {}),
     };
     if (opts.dry) return run;
+    deps.store.giveBack(rule.id, taken);
+    taken = 0;
     settleRun(sql, run);
     // The run a Wait held went on: its own row is done (what it did before the Wait stays).
     if (resume && event.origin) settleWaiting(sql, event.origin, 'done');
@@ -243,6 +257,9 @@ export async function runRule(
     const url = cardless
       ? `${appBaseUrl(deps.env)}/project/${encodeURIComponent(deps.planId)}`
       : cardUrl(deps.env, deps.planId, item.id);
+    // A branch's related cards come from the plan as it is now (read before the turn, so no await falls between the
+    // turn's read and its taking).
+    const items = readsCards(rule) ? await listItems(deps.env, deps.planId) : null;
     const ctx = {
       card: item,
       outline: plan.outline,
@@ -256,8 +273,7 @@ export async function runRule(
       ...(event.webhook ? { webhook: event.webhook } : {}),
       ...(cardless ? { cardless: true } : {}),
       turn: opts.turn ?? (opts.dry ? 0 : deps.store.turn(rule.id)),
-      // A branch's related cards come from the plan as it is now.
-      ...(readsCards(rule) ? { items: await listItems(deps.env, deps.planId) } : {}),
+      ...(items ? { items } : {}),
     };
     const held = allHold(rule.conditions, ctx);
     for (const l of held.lines) lines.push({ kind: 'condition', ...l });
@@ -276,6 +292,10 @@ export async function runRule(
     lines.push(...planned.lines);
     // A failed step stops the run; the steps before it stay done (spec "Actions").
     const writes = 'failed' in planned ? planned.done : planned;
+    if (!opts.dry) {
+      taken = writes.turns;
+      deps.store.take(rule.id, taken);
+    }
     let failed = 'failed' in planned ? planned.failed : null;
     let gone = 'failed' in planned ? planned.gone : undefined;
     const related = writes.related.filter((r) => r.failed);
@@ -311,6 +331,8 @@ export async function runRule(
           card: item,
           source,
           dry,
+          runId: id,
+          room: deps.store,
           ...(deps.env.AI_GATEWAY ? { gateway: deps.env.AI_GATEWAY } : {}),
         },
         writes.ai ?? [],
@@ -430,7 +452,12 @@ export async function runAutomationWake(
   const sql = deps.sql();
   const rows = schedule.next(AUTOMATION_EVENTS_PER_WAKE + 1);
   const rules = deps.store.enabled();
-  const state: RunState = { plan: null, today: runsToday(sql, now), ...(tally ? { tally } : {}) };
+  const state: RunState = {
+    plan: null,
+    today: runsToday(sql, now),
+    claims: deps.store.claims,
+    ...(tally ? { tally } : {}),
+  };
   let ran = 0;
   let left = false;
   const started = Date.now();

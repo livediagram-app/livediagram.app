@@ -169,9 +169,14 @@ type AutomationEvent = {
 
 For each event, for each rule that is on, in `position` order, whose trigger matches:
 
-1. Budget: today's count (read once per wake) ≥ `AUTOMATION_RUNS_PER_DAY` → drop (no row; the meter says why).
-2. `runId = sha256(event.id + ':' + rule.id)` (@liveworkspace/model-core sha256); `INSERT OR IGNORE` the run row as
-   `pending`. Not inserted means it ran already: skip.
+1. `runId = sha256(event.id + ':' + rule.id)` (@liveworkspace/model-core sha256).
+2. Budget: today's count (`runsToday`, pending rows too; read once per wake, and again at a claim when the room's
+   `AutomationStore.claims` moved since this wake's or request's last claim) ≥ `AUTOMATION_RUNS_PER_DAY` → drop (no
+   row; the meter says why). Then `INSERT OR IGNORE` the run row as `pending` and `claims += 1`. Not inserted means it
+   ran already: skip. Read and claim are one synchronous step of the room, so a wake and a Run Rule interleaved at
+   their awaits (a card read, an AI call) never pass the day's budget between them, and a wake alone reads the count
+   once (measured: `runsToday` over a full day's log is about 2.5 ms a read in node's SQLite, so a read per claim
+   would cost a 1,250-check wake about 3 s).
 3. Chain: the event's `rule === rule.id` → nothing (never its own changes). Event by Automation from a rule with
    `chain: false`, or `chain >= AUTOMATION_CHAIN_MAX` → **skipped** with its reason, only if the conditions hold.
 4. Read the card; gone or trashed → **no_match** "The card is gone".
@@ -193,7 +198,8 @@ error logged.
 |                                         | and an action; else on)                                        | `automation_value_unknown`,         |
 |                                         |                                                                | 409 `automation_name_taken`,        |
 |                                         |                                                                | 409 `automation_rules_full`         |
-| `PUT    /automations/:ruleId`           | `AutomationRuleBody` → `{ rule }`                              | as POST, 404 `automation_not_found` |
+| `PUT    /automations/:ruleId`           | `AutomationRuleBody` → `{ rule }` (the rule read again after   | as POST, 404 `automation_not_found` |
+|                                         | the body's reads: deleted meanwhile → 404, its on / off kept)  |                                     |
 | `POST   /automations/:ruleId/toggle`    | `{ enabled }` → `{ rule }` (on clears `paused`, `failures`)    | 404                                 |
 | `POST   /automations/:ruleId/duplicate` | → `{ rule }` ("<name> copy", off)                              | 404, 409 full                       |
 | `DELETE /automations/:ruleId`           | → 204 (its runs stay in the log until they age out)            | 404                                 |
@@ -301,7 +307,9 @@ ALTER TABLE automation_rules ADD COLUMN turn INTEGER NOT NULL DEFAULT 0;        
 - **Branches**: `relatedCards` per branch, then each related card's conditions and actions through the same
   `planActions`, one write per card. The run's lines gain `{ kind: 'branch'; text; ok; cards: number }`.
 - **Rotate**: the run takes `turn % people.length` (skipping people who left), and on a done run writes `turn + 1`
-  in the batch that records the run.
+  in the batch that records the run. A run under way holds the turns it planned in memory
+  (`AutomationStore.take`, read and planned with no await between; `giveBack` as it settles), and `turn(id)` counts
+  them, so two Run Rules at once take the next two people.
 - **Notify**: after the card writes, the run's notify steps go in one `POST /app/items/:id/automation-sends`
   (index binding, the app's server credentials as card-moves uses), key `${runId}:${stepIndex}`, message filled by
   `values.ts`; each result marks its step done ("Queued for Launch Channel") or failed with the reason. The index
@@ -395,6 +403,10 @@ build):
   for the read (`fresh`, kept per scope, so a scope changed while open waits for its own) and for it to answer: a
   failed read shows Couldn't Load the Rules. A history line has only the rule's name: one the list lacks reads it again through
   `readAutomationsFor`, once per name per plan, so a rule really gone costs one read.
+- **A change answered during a read** (`use-automations.ts` `change`): the entry is marked `stale` when a read is
+  under way, and `readAutomations` reads again until a read started after the last change, so a list served before
+  a toggle, save or delete never lands over its answer. Each change folds into the scope it was made on (captured
+  when asked), whatever plan the hook shows by the time it is answered.
 - **Test on a Card** of a time rule runs on the chosen card as at its moment, without checking its due date.
 - **Measured** (`automations.perf.test.ts`): 2,000 cards and 50 overdue rules due at once (5 hearing every card, 45
   checking a condition that never holds): the wake's CPU time is 165 to 191 ms on an M-series Mac, against the
@@ -631,18 +643,26 @@ line }` on the run (`PlannedWrites.ai`, present only when a rule has one, so eve
   `AUTOMATION_AI_MODEL = '@cf/google/gemma-4-26b-a4b-it'`, `chat_template_kwargs: { enable_thinking: false }`,
   `AUTOMATION_AI_TIMEOUT_MS = 15_000` (a race with a timer, cleared after).
 - `aiToday(sql, now)`: `SELECT COUNT(*) FROM automation_runs r, json_each(r.body, '$.steps') s WHERE r.at >= <UTC
-midnight> AND s.value ->> '$.ai' = 1`, read once per wake into `RunState.ai` when a rule with an AI step runs. No
+midnight> AND s.value ->> '$.ai' = 1`, read into `RunState.ai` before a call when nothing is known yet or the
+  room's `AutomationStore.aiAsks` moved since (another request asked; about 11 ms a read over a full day's log), with
+  no await between the read and `markAiAsked(sql, runId, n)`
+  (automation-log.ts), which writes the pending run row's body as `{ steps: [n × { ai: true }] }` so the call counts
+  before its answer comes; the settled row replaces it with the run's lines, the same calls marked. Describe a Rule
+  checks the count before each ask, its first too, after its plan reads. No
   schema step: the Audit Trail keeps every run of the day (at most 1,000 counted runs, under its 2,000).
 - `runAiSteps(deps, input, planned, lines, offset)`: after `applyPlannedRun` and the branches, before `sendMessages`.
   Per step: dry → the "Would …" line; no binding → `AI_NOT_SET_UP`; `state.ai >= 100` → the step's line and the
   run's reason `AI_CAPPED`, result **skipped** unless something failed (a skipped run still advances Assign in Turn,
-  since its writes stand); else `state.ai += 1`, the card read again
+  since its writes stand); else the call marked (above), the card read again
   (`readItem`), its latest comments (`linksOfItem` home this plan, `readThreads`, newest 5 comments across them), the
   plan's labels (`listItems`, triage only), the call, `readAiReply`, the constraint, then the write:
   - summarise to a comment: `addComment(deps, rule, card, text, { ai: true })` (automation-writes.ts), the Comment
     carrying `ai: true` beside `automation`;
   - summarise to a field, card type set, triage: `patchCard(…, tag 'automation_ai')` with the run's `source`, so the
-    events it causes chain as the rule's do; a patch that changes nothing is "Already so";
+    events it causes chain as the rule's do (`patchCard` takes the card the patch was planned from and rebases a
+    `labels` write onto the card as read for the write: the labels the step added and took off, applied to what is
+    there now, `rebaseLabels`, so a person's label added meanwhile stays, as the run's own card writes and a
+    branch's do); a patch that changes nothing is "Already so";
   - card type comment: `addComment`, "Suggested card type: Bug".
     The line is `{ kind: 'action', ok, text, ai: true }`; the first failure is the run's reason.
 - Errors: `AI_NOT_SET_UP` "AI isn't set up here", `AI_FAILED` "The AI couldn't answer: try again later", `AI_SLOW`

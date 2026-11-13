@@ -36,6 +36,12 @@ export class AutomationStore {
   private readonly ready: () => boolean;
   // Called after the time triggers' schedule changed (the room's wake asks again).
   onSchedule: () => void = () => {};
+  // The runs claimed since the room woke, by any request: a run whose day's count was read before another claim
+  // reads it again (automation-runner.ts runRule), so a wake and a Run Rule at once never pass the day's budget.
+  claims = 0;
+  // The AI calls asked since the room woke, a rule's or Describe a Rule's: a count read before another ask is read
+  // again (automation-ai.ts runAiSteps).
+  aiAsks = 0;
 
   constructor(sql: () => Sql, ready: () => boolean) {
     this.sql = sql;
@@ -72,10 +78,26 @@ export class AutomationStore {
     return new Map(rows.map((r) => [r.rule_id, Number(r.next_at)]));
   }
 
-  // The rule's place in Assign in Turn's list.
+  // Turns runs under way have taken, by rule (in memory: a run settles before the room sleeps).
+  private readonly taken = new Map<string, number>();
+
+  // The rule's place in Assign in Turn's list, past the turns runs under way have taken, so two runs at once (two
+  // Run Rules) assign the next two people, never one twice.
   turn(id: string): number {
     const row = this.sql().exec('SELECT turn FROM automation_rules WHERE id = ?', id).toArray()[0];
-    return Number(row?.['turn'] ?? 0);
+    return Number(row?.['turn'] ?? 0) + (this.taken.get(id) ?? 0);
+  }
+
+  // A run under way takes `turns`, read and planned with no await between; it gives them back as it settles.
+  take(id: string, turns: number): void {
+    if (turns > 0) this.taken.set(id, (this.taken.get(id) ?? 0) + turns);
+  }
+
+  giveBack(id: string, turns: number): void {
+    if (turns <= 0) return;
+    const left = (this.taken.get(id) ?? 0) - turns;
+    if (left > 0) this.taken.set(id, left);
+    else this.taken.delete(id);
   }
 
   // A done run took `turns` turns: the next run starts that far on.
