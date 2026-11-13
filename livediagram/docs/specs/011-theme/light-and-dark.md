@@ -46,6 +46,9 @@ never rewritten. Named colours are a map read built once, since the parse runs f
 - Nothing stored changes when someone looks at a tab. The canvas and each element are **drawn** in the viewer's half:
   a stored colour that is one of the theme's colours, in either half, is drawn as the same role in the viewer's half;
   any other colour is a choice someone made and is drawn as it is.
+- **Text follows the text role.** A theme can paint two roles in one colour (Mono's outline and text are both
+  `#0f172a`). A stored text colour that is one of the theme's text colours is drawn as the half's text, never as the
+  outline or fill that shares it, so Mono's labels read near-white in the dark half, not the outline's slate.
 - **A box's text and fill are drawn as a pair.** Each colour is redrawn on its own, so a box whose fill is one of the
   theme's colours but whose text is someone's choice (a template's white box with slate text) would get the half's
   fill under the stored text. Where that would put the text on its fill below 4.5:1, and read worse than the stored
