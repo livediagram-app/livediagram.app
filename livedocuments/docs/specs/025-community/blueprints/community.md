@@ -18,7 +18,7 @@ browser side below, and the api's routes, which its own sections add.
 | `apps/editor/components/dialogs/community/ShareDialogWithCommunity.tsx`                               | The editor's Share dialog with the Community tab, loaded with the dialog (`EditorTabDialogs.tsx`)                                                            |
 | `apps/editor/components/chrome/CommunityBar.tsx`                                                      | The Community bar on a community link's view, loaded only then (`EditorView.tsx`)                                                                            |
 | `apps/editor/components/chrome/share-states.tsx`, `SharedBadge.tsx`, `VisibilityLegend.tsx`           | The `community` share state (Public), from `@liveworkspace/community-ui/badge`                                                                               |
-| `apps/editor/hooks/canvas/useAutoCopyParam.ts`                                                        | `?copy=1`: the Community's Make a Copy                                                                                                                       |
+| `../packages/workbench/src/hooks/canvas/useAutoCopyParam.ts`                                                        | `?copy=1`: the Community's Make a Copy                                                                                                                       |
 | `apps/editor/app/document/[id]/editor-realtime.ts`                                                    | `CommunitySession` (`sessionCommunity`): the post a community link opened, and the author's own document id                                                  |
 | `apps/editor/lib/api/share.ts`                                                                        | `apiLoadShared` asks `GET /api/share/<code>` for the post; `readCommunityShareInfo`                                                                          |
 | `packages/ui/src/ProductNav.tsx`, `SiteFooter.tsx`, `packages/ui/src/community/CommunityHelpLink.tsx` | The links: the Explorer footer's, the site footer's, and the help deep links bound to this site's telemetry                                                  |
@@ -132,7 +132,7 @@ emitters list both ids).
 
 - `apps/editor/lib/api/community.test.ts`: the owner client, words and the first-page refusal.
 - `apps/editor/app/document/[id]/editor-page-helpers.test.ts`: a community link opens as a view with no owner.
-- `apps/editor/hooks/canvas/useAutoCopyParam.test.tsx`: copies once, only on a Community link.
+- `../packages/workbench/src/hooks/canvas/useAutoCopyParam.test.tsx`: copies once, only on a Community link.
 - `apps/router/src/index.test.ts`: `/community*` forwarded and stripped.
 - `apps/help/lib/community-help.test.ts`: `COMMUNITY_HELP` names registered articles; the ui-labels check reads
   `@liveworkspace/community-ui`.

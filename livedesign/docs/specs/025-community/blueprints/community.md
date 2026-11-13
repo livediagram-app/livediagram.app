@@ -22,7 +22,7 @@ words; where the two differ, this one says so.
 | `apps/live/components/dialogs/community/ShareDialogWithCommunity.tsx`                                 | The live app's Share dialog with the Community tab, loaded with the dialog (`EditorTabDialogs.tsx`)                                                          |
 | `apps/live/components/chrome/CommunityBar.tsx`                                                        | The Community bar on a community link's view, loaded only then (`app/design/[id]/EditorView.tsx`)                                                            |
 | `apps/live/components/chrome/share-states.tsx`, `SharedBadge.tsx`, `VisibilityLegend.tsx`             | The `community` share state (Public), from `@liveworkspace/community-ui/badge`                                                                               |
-| `apps/live/hooks/canvas/useAutoCopyParam.ts`                                                          | `?copy=1`: the Community's Make a Copy                                                                                                                       |
+| `../packages/workbench/src/hooks/canvas/useAutoCopyParam.ts`                                                          | `?copy=1`: the Community's Make a Copy                                                                                                                       |
 | `apps/live/app/design/[id]/editor-realtime.ts`                                                        | `CommunitySession` (`sessionCommunity`): the post a community link opened, and the author's own design id                                                    |
 | `apps/live/app/design/[id]/seed-fetched-design.ts`                                                    | Seeds the post state from the design read (`LiveDoc.communityState`)                                                                                         |
 | `apps/live/lib/api/share.ts`                                                                          | `apiLoadShared` asks `GET /api/share/<code>` for the post; `readCommunityShareInfo`                                                                          |
@@ -164,7 +164,7 @@ Vitals app, and the `Community` CTA surface (`/community`, header slots only, [t
 
 - `apps/live/lib/api/community.test.ts`: the owner client, words and the first-page refusal.
 - `apps/live/app/design/[id]/editor-page-helpers.test.ts`: a community link opens as a view with no owner.
-- `apps/live/hooks/canvas/useAutoCopyParam.test.tsx`: copies once, only on a Community link.
+- `../packages/workbench/src/hooks/canvas/useAutoCopyParam.test.tsx`: copies once, only on a Community link.
 - `apps/router/src/index.test.ts`: `/community*` forwarded and stripped.
 - `apps/help/lib/community-help.test.ts`: `COMMUNITY_HELP` names registered articles.
 - `packages/api-schema/src/cta-sources.test.ts`: the `Community` surface and `/community` path.

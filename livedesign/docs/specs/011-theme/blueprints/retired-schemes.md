@@ -164,7 +164,7 @@ Derived from [Retired colour schemes, UML](../retired-schemes.md#uml). Scope, by
 | `packages/design/src/retired-themes.ts`           | `packages/design/src/retired-themes.ts` binds Autumn, Jewel and `RETIRED_UML` over the shared engine                             |
 | `packages/design/src/stored-tab.ts`               | `migrateStoredTab` runs `migrateRetiredTheme` on every read                                                                      |
 | `apps/live/lib/tab-looks.ts`                      | Textbook and Schematic wear `mono`; Textbook sits before Spectrum, Whiteboard after it                                           |
-| `apps/live/lib/themes-taxonomy.ts`                | `THEME_DESCRIPTIONS` is `Record<Exclude<ThemeId, 'uml'>, string>`: UML has no blurb                                              |
+| `../packages/workbench/src/lib/themes-taxonomy.ts`                | `THEME_DESCRIPTIONS` is `Record<Exclude<ThemeId, 'uml'>, string>`: UML has no blurb                                              |
 
 Behaviour, `migrateRetiredTheme(tab)`:
 

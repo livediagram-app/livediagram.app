@@ -286,7 +286,7 @@ Editor (`apps/editor`):
   when set, `useRoomConnection` gets `enabled: false`, the identity prompt is not opened, the visit is not recorded,
   and `apps/editor/components/chrome/CommunityBar.tsx` renders under the header with the author
   (the shared `CommunityAuthorBadge`).
-- `?copy=1` on `/document/shared` (`apps/editor/hooks/canvas/useAutoCopyParam.ts`): once the document hydrates with a
+- `?copy=1` on `/document/shared` (`../packages/workbench/src/hooks/canvas/useAutoCopyParam.ts`): once the document hydrates with a
   session share code, `makeCopy` runs once and the param is stripped.
 - There is no moderation page and no operator route.
 
@@ -489,7 +489,7 @@ page's api errors read `[community] api <status> <code>`. Telemetry per the spec
 | Community key fallback                     | liveworkspace/apps/site/components/community/lib/community-key.test.ts                                                                         |
 | Router forwards `/community`               | `apps/router/src/index.test.ts`                                                                                                                |
 | Optimistic like and rollback               | liveworkspace/apps/site/components/community/shared/LikeButton.test.tsx                                                                        |
-| Copy once from `?copy=1`                   | `apps/editor/hooks/canvas/useAutoCopyParam.test.tsx`                                                                                           |
+| Copy once from `?copy=1`                   | `../packages/workbench/src/hooks/canvas/useAutoCopyParam.test.tsx`                                                                                           |
 | Community section state, tag input         | packages/community-ui/src/share/*.test.ts(x)                                                                                                   |
 | Editor api client and error copy           | `apps/editor/lib/api/community.test.ts`                                                                                                        |
 | Network ranges (IPv4 /24, IPv6 /56)        | packages/community/src/network.test.ts                                                                                                         |

@@ -7,7 +7,7 @@ one browser-side path that turns those bytes into a stored image, so every calle
 the same way, under the same limits, with the same named outcomes.
 
 Its callers are [Image search](../009-elements/image-search.md): a picked Openverse result is
-downloaded in the browser and handed to the pipeline (`apps/editor/lib/image-search/pick.ts`), and
+downloaded in the browser and handed to the pipeline (`../packages/workbench/src/lib/image-search/pick.ts`), and
 [Word and PowerPoint import](office-import.md): every picture inside the file, read from the file's
 own parts (`apps/editor/lib/office-import/store-images.ts`). The session below is shaped for many images at once: it shares one concurrency limit, one offline budget and one
 short-circuit across them.
