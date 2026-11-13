@@ -16,6 +16,7 @@ import {
   nextMoment,
   timeCards,
   type AutomationEvent,
+  type AutomationTimeTriggerKind,
   type Item,
 } from '@liveplanner/items';
 import { listItems } from '../../db/items';
@@ -29,8 +30,16 @@ import type { AutomationTally } from './automation-telemetry';
 // A time rule left waiting for queue room tries again this soon.
 export const AUTOMATION_TIME_RETRY_MS = 1000;
 
-export const timeWaited = (ran: number, matched: number): string =>
-  `Ran on ${ran} of ${matched} matching cards: the rest wait for the next time`;
+// Past the cap (automations.md "Time triggers"): Overdue and Card Stuck keep the cards they ran on, so their next moments
+// reach the rest; a Scheduled or Due In moment never comes back for the cards it passed over.
+export const timeWaited = (
+  ran: number,
+  matched: number,
+  kind: AutomationTimeTriggerKind,
+): string =>
+  kind === 'overdue' || kind === 'stuck'
+    ? `Ran on ${ran} of ${matched} matching cards: the rest wait for the next time`
+    : `Ran on ${ran} of ${matched} matching cards: the rest were left out, at most 100 a time`;
 
 type Row = { rule_id: string; next_at: number };
 
@@ -114,7 +123,7 @@ export async function runTimeTriggers(
           card: null,
           at: now,
           result: 'skipped',
-          reason: timeWaited(found.cards.length, found.matched),
+          reason: timeWaited(found.cards.length, found.matched, rule.trigger.kind),
           tookMs: 0,
           steps: [],
         });

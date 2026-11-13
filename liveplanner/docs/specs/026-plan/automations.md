@@ -166,10 +166,13 @@ work. A rule does it every time, at once, and says that it did.
   runs once **for each card** its conditions match, as a card trigger runs for one card. Its conditions are the
   card filter ("Every Weekday at 9:00 for cards Overdue, not Done"); a time trigger with no conditions matches
   every card, which the builder warns about ("Runs on every card in the plan").
-- **At most 100 cards** a moment: past that, the 100 whose due dates come first (then the oldest) run and the Run
-  Log says "Ran on 100 of 340 matching cards: the rest wait for the next time". Each card's run counts toward the
-  plan's 1,000 a day. A card a Due In, Overdue or Card Stuck rule has already run on (for this due date, or this
-  stretch unchanged) is not one of them again, so the next moments reach the rest, never the same 100.
+- **At most 100 cards** a moment: past that, the 100 whose due dates come first (then the oldest) run. Each card's
+  run counts toward the plan's 1,000 a day. A card an Overdue or Card Stuck rule has already run on (for this due
+  date, or this stretch unchanged) is not one of them again, so the next moments reach the rest, never the same
+  100, and the Run Log says "Ran on 100 of 340 matching cards: the rest wait for the next time". A Scheduled or Due
+  In moment never comes back for the cards it passed over (the next Scheduled moment takes the first 100 again; a
+  card is N days from due on one day only), so its line says "Ran on 100 of 340 matching cards: the rest were left
+  out, at most 100 a time".
 - **Whose time it is**: the time zone of whoever last saved the rule, as a Repeat's setter's
   ([Repeating cards](items.md#repeating-cards)). A monthly day past the month's end is its last day (the 31st is 30
   April's 30th). A time a clock change skips runs at the first minute after it; a time a clock change repeats runs

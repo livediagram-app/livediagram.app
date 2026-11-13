@@ -121,12 +121,17 @@ describe('a Scheduled rule', () => {
     expect(nextAt(weekly.id)).toBeGreaterThan(Date.now());
   });
 
-  it('runs on the 100 due first and says how many waited', async () => {
+  it('runs on the 100 due first and says the rest were left out', async () => {
     for (let i = 0; i < 103; i += 1) await w.make('A', { title: `C${i}` });
     const rule = await daily();
     await wake(rule);
     const skipped = await runs('?result=skipped');
-    expect(skipped).toMatchObject([{ reason: timeWaited(100, 103), ruleName: 'Daily' }]);
+    expect(skipped).toMatchObject([
+      { reason: timeWaited(100, 103, 'scheduled'), ruleName: 'Daily' },
+    ]);
+    expect(timeWaited(100, 103, 'scheduled')).toBe(
+      'Ran on 100 of 103 matching cards: the rest were left out, at most 100 a time',
+    );
     const queued = plan().db.prepare('SELECT COUNT(*) AS n FROM automation_queue').get();
     // One wake ran the first 25; the other 75 wait for the next.
     expect(queued).toEqual({ n: 75 });
@@ -253,7 +258,12 @@ describe('Due In and Overdue', () => {
     await wake(rule);
     await drain();
     expect(await runs('?result=done&limit=200')).toHaveLength(100);
-    expect(await runs('?result=skipped')).toMatchObject([{ reason: timeWaited(100, 103) }]);
+    expect(await runs('?result=skipped')).toMatchObject([
+      { reason: timeWaited(100, 103, 'overdue') },
+    ]);
+    expect(timeWaited(100, 103, 'overdue')).toBe(
+      'Ran on 100 of 103 matching cards: the rest wait for the next time',
+    );
     await wake(rule);
     await drain();
     expect(await runs('?result=done&limit=200')).toHaveLength(103);
