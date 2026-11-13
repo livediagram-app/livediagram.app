@@ -14,6 +14,7 @@ import {
   type AutomationRule,
 } from '@liveplanner/items';
 import { stopWaits } from './automation-waits';
+import { forgetFired } from './automation-fired';
 
 export type Sql = Pick<SqlStorage, 'exec'>;
 
@@ -50,7 +51,12 @@ export class AutomationStore {
 
   // The rule's row in the time triggers' schedule, from the rule as it now is: its next moment after `now` for a
   // time trigger that is on, else none; and its Incoming Webhook secret dropped once it is not one.
-  private reschedule(rule: AutomationRule | null, id: string, now = Date.now()): void {
+  private reschedule(
+    rule: AutomationRule | null,
+    id: string,
+    now = Date.now(),
+    before?: AutomationRule | null,
+  ): void {
     const next =
       rule && rule.enabled && isTimeTrigger(rule.trigger)
         ? nextMoment(rule.trigger, rule.timeZone, now)
@@ -58,6 +64,8 @@ export class AutomationStore {
     // An Incoming Webhook secret lives only while the rule is there with that trigger (automation-incoming.ts).
     if (rule?.trigger.kind !== 'incoming_webhook')
       this.sql().exec('DELETE FROM automation_hooks WHERE rule_id = ?', id);
+    // The cards a time rule ran on are its trigger's: gone with the rule, or once its trigger is another kind.
+    if (!rule || (before && before.trigger.kind !== rule.trigger.kind)) forgetFired(this.sql(), id);
     if (next === null) this.sql().exec('DELETE FROM automation_schedule WHERE rule_id = ?', id);
     else
       this.sql().exec(
@@ -179,7 +187,7 @@ export class AutomationStore {
     // A Wait's held runs go on only for the rule as it was when they waited, and only while it stays on.
     if (!rule.enabled || before?.edited.at !== rule.edited.at) stopWaits(this.sql(), rule.id);
     this.load();
-    this.reschedule(rule, rule.id);
+    this.reschedule(rule, rule.id, Date.now(), before);
   }
 
   remove(id: string): boolean {

@@ -235,6 +235,64 @@ describe('Due In and Overdue', () => {
     expect(String(threads[0]!['comments'])).toContain('Late is overdue, says Automation');
   });
 
+  it('Overdue past 100 cards reaches the rest on the next wakes, never the same 100 again', async () => {
+    for (let i = 0; i < 103; i += 1)
+      await w.make('A', { title: `L${i}`, due: addDays(today(), -1 - (i % 3)) });
+    const rule = await w.rule({
+      name: 'Nudge',
+      trigger: { kind: 'overdue', at: clock(moment()) },
+      steps: [{ kind: 'flag' }],
+      timeZone: 'UTC',
+    });
+    const drain = async () => {
+      for (let i = 0; i < 5; i += 1) {
+        room().automations.schedule.at = Date.now();
+        await room().alarm();
+      }
+    };
+    await wake(rule);
+    await drain();
+    expect(await runs('?result=done&limit=200')).toHaveLength(100);
+    expect(await runs('?result=skipped')).toMatchObject([{ reason: timeWaited(100, 103) }]);
+    await wake(rule);
+    await drain();
+    expect(await runs('?result=done&limit=200')).toHaveLength(103);
+    expect(await runs('?result=skipped')).toHaveLength(1);
+    expect((await w.items('A')).every((i) => i.fields['flagged'] === true)).toBe(true);
+  });
+
+  it('Overdue never reminds a card again once its run has left the Audit Trail', async () => {
+    await w.make('A', { title: 'Late', due: addDays(today(), -1) });
+    const rule = await w.rule({
+      name: 'Nudge',
+      trigger: { kind: 'overdue', at: clock(moment()) },
+      steps: [{ kind: 'comment', text: 'Overdue' }],
+      timeZone: 'UTC',
+    });
+    await wake(rule);
+    expect(await runs()).toHaveLength(1);
+    // The run ages out (30 days, or 2,000 newer runs), as trimRuns drops it.
+    plan().db.exec('DELETE FROM automation_runs');
+    await wake(rule);
+    expect(await runs()).toHaveLength(0);
+    expect(plan().db.prepare('SELECT COUNT(*) AS n FROM card_threads').get()).toEqual({ n: 1 });
+    // What it ran on is its trigger's: kept through a save, forgotten with another trigger or the rule deleted.
+    const fired = () => plan().db.prepare('SELECT COUNT(*) AS n FROM automation_fired').get();
+    await w.call('PUT', `/${rule.id}`, { ...rule, name: 'Nudge again' });
+    expect(fired()).toEqual({ n: 1 });
+    await w.call('PUT', `/${rule.id}`, {
+      ...rule,
+      trigger: { kind: 'due_in', days: 1, at: '09:00' },
+    });
+    expect(fired()).toEqual({ n: 0 });
+    await wake(rule);
+    const other = await w.rule({ ...rule, name: 'Other' });
+    await wake(other);
+    expect(fired()).toEqual({ n: 1 });
+    await w.call('DELETE', `/${other.id}`);
+    expect(fired()).toEqual({ n: 0 });
+  });
+
   it('Due In runs on the cards due that many days on', async () => {
     const soon = await w.make('A', { title: 'Soon', due: addDays(today(), 2) });
     await w.make('A', { title: 'Later', due: addDays(today(), 3) });

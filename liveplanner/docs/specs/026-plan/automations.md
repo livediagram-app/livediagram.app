@@ -168,7 +168,8 @@ work. A rule does it every time, at once, and says that it did.
   every card, which the builder warns about ("Runs on every card in the plan").
 - **At most 100 cards** a moment: past that, the 100 whose due dates come first (then the oldest) run and the Run
   Log says "Ran on 100 of 340 matching cards: the rest wait for the next time". Each card's run counts toward the
-  plan's 1,000 a day.
+  plan's 1,000 a day. A card a Due In, Overdue or Card Stuck rule has already run on (for this due date, or this
+  stretch unchanged) is not one of them again, so the next moments reach the rest, never the same 100.
 - **Whose time it is**: the time zone of whoever last saved the rule, as a Repeat's setter's
   ([Repeating cards](items.md#repeating-cards)). A monthly day past the month's end is its last day (the 31st is 30
   April's 30th). A time a clock change skips runs at the first minute after it; a time a clock change repeats runs
@@ -178,7 +179,9 @@ work. A rule does it every time, at once, and says that it did.
   once, when it next wakes, and never every one between; a moment more than a day late is dropped.
 - **Due In and Overdue fire once per card per due date**: the run id holds the due date, so a card is reminded once
   for each due date it has. Moving the due date re-arms them: a new date can fire again; moving it back to one that
-  already fired does not. A card with no due date, or Done for Overdue, never matches.
+  already fired does not. A card with no due date, or Done for Overdue, never matches. However long ago it fired: the
+  plan keeps which cards each time rule has run on apart from the Audit Trail (the last 20,000), so a run aging out of
+  the Audit Trail never reminds the card again. Deleting the rule, or changing its trigger, forgets them.
 - A time trigger has no person behind it: **Who Did It** conditions are refused on one
   (`automation_condition_unsupported`), **Assign whoever triggered** and **Send Email to whoever triggered** too,
   and `{{person}}` reads "Automation". Its runs show "Automation · Every Weekday at 9:00" as their trigger line.

@@ -89,3 +89,16 @@ CREATE TABLE IF NOT EXISTS automation_ai_drafts (
 );
 CREATE INDEX IF NOT EXISTS automation_ai_drafts_at ON automation_ai_drafts (at);
 `;
+
+// The plan schema's step V26: the Due In, Overdue and Card Stuck event ids a wake has queued (docs/specs/026-plan/
+// automations.md "Time triggers"), apart from the Audit Trail, whose trim would otherwise let a card that still
+// matches run again. Indexed by rule for the wake's one read, and by when for the trim (automation-fired.ts).
+export const AUTOMATION_FIRED_SCHEMA = `
+CREATE TABLE IF NOT EXISTS automation_fired (
+  id      TEXT    PRIMARY KEY,
+  rule_id TEXT    NOT NULL,
+  at      INTEGER NOT NULL
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS automation_fired_rule ON automation_fired (rule_id);
+CREATE INDEX IF NOT EXISTS automation_fired_at ON automation_fired (at);
+`;

@@ -299,6 +299,12 @@ ALTER TABLE automation_rules ADD COLUMN turn INTEGER NOT NULL DEFAULT 0;        
   and status not a done column), sorts by due date then number, takes 100, and enqueues one event per card with id
   `t:${ruleId}:${localDay}:${at}:${cardId}` (scheduled) or `d:${ruleId}:${cardId}:${due}` (due_in, overdue), so
   `runId` makes each once ever. Past 100, one Skipped line says how many waited. Then `next_at = nextMoment(now)`.
+- `automation_fired` (step V26: `id` the event id, `rule_id`, `at`) keeps the `d:` and `k:` event ids a wake queued,
+  apart from the Audit Trail, whose trim (30 days, 2,000 runs) would otherwise let an Overdue or Card Stuck card that
+  still matches run again. `timeCards` leaves out the ids the rule has there before it takes 100, so cards past 100
+  are reached on the next moments rather than the same 100 every time. One read of the rule's ids per due rule a
+  wake; the newest 20,000 rows are kept (`AUTOMATION_FIRED_MAX`); a rule deleted, or its trigger kind changed, drops
+  its rows. Scheduled ids (`t:`) are never kept: a moment's day never comes again.
 - The event's `kind` is `time`, its `by` `automationPerson(rule.name)`, its `role` `system`, its `ruleId` the rule:
   the runner runs only that rule for it, skipping the trigger match (the scan did it) but not the conditions (a card
   changed since is checked again).

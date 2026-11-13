@@ -26,6 +26,7 @@ import {
   AUTOMATION_HOOKS_SCHEMA,
   AUTOMATION_WAITING_SCHEMA,
   AUTOMATION_AI_DRAFTS_SCHEMA,
+  AUTOMATION_FIRED_SCHEMA,
   AUTOMATIONS_SCHEMA,
   automationsV19,
 } from './automations/automation-schema';
@@ -500,6 +501,10 @@ BEGIN
 END;
 `;
 
+// Automations' time triggers (automations/automation-schema.ts): the cards each Due In, Overdue and Card Stuck rule
+// has run on, kept apart from the Audit Trail's trim.
+const V26 = AUTOMATION_FIRED_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -526,6 +531,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V23,
   V24,
   V25,
+  V26,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
