@@ -6,7 +6,7 @@
 // the shared primitives so the house style holds.
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, SelectionBox, Label } from '../primitives';
+import { Scene, Shape, SelectionBox, Label, stickyOnly } from '../primitives';
 
 // --- Shared bits -------------------------------------------------------------------------------
 
@@ -377,8 +377,10 @@ const PATTERNS = ['', '4 2', '0.1 3', '4 2 0.1 2', '7 2', '4 2 0.1 2 0.1 2'];
 // Radius: none, small, medium, large and full (a circle).
 const RADII = [0, 2, 4, 6, 7];
 
-/** The Border category: Strength, Pattern and Radius grids, beside the shape they style. */
+/** The Border category: Strength, Pattern and Radius grids, beside the shape they style. A help app with no
+ *  diagram shapes (`stickyOnly`) has no Radius grid, and the element beside it has square corners. */
 export function BorderSection() {
+  const radius = !stickyOnly();
   const mx = 16;
   const my = 14;
   const mw = 204;
@@ -387,8 +389,8 @@ export function BorderSection() {
   const col5 = (gw - 4 * 4) / 5;
   const col3 = (gw - 2 * 4) / 3;
   return (
-    <Scene w={420} h={230}>
-      <CategoryCard x={mx} y={my} w={mw} h={202} title="Border">
+    <Scene w={420} h={radius ? 230 : 188}>
+      <CategoryCard x={mx} y={my} w={mw} h={radius ? 202 : 160} title="Border">
         <GridCaption x={gx} y={my + 42}>
           Strength
         </GridCaption>
@@ -444,27 +446,31 @@ export function BorderSection() {
             </GridButton>
           );
         })}
-        <GridCaption x={gx} y={my + 160}>
-          Radius
-        </GridCaption>
-        {RADII.map((rx, i) => {
-          const bx = gx + i * (col5 + 4);
-          const by = my + 168;
-          return (
-            <GridButton key={i} x={bx} y={by} w={col5} on={i === 3}>
-              <rect
-                x={bx + col5 / 2 - 7}
-                y={by + 4}
-                width={14}
-                height={14}
-                rx={rx}
-                fill="none"
-                className={i === 3 ? 'stroke-brand-700' : 'stroke-slate-600'}
-                strokeWidth={1.4}
-              />
-            </GridButton>
-          );
-        })}
+        {radius && (
+          <>
+            <GridCaption x={gx} y={my + 160}>
+              Radius
+            </GridCaption>
+            {RADII.map((rx, i) => {
+              const bx = gx + i * (col5 + 4);
+              const by = my + 168;
+              return (
+                <GridButton key={i} x={bx} y={by} w={col5} on={i === 3}>
+                  <rect
+                    x={bx + col5 / 2 - 7}
+                    y={by + 4}
+                    width={14}
+                    height={14}
+                    rx={rx}
+                    fill="none"
+                    className={i === 3 ? 'stroke-brand-700' : 'stroke-slate-600'}
+                    strokeWidth={1.4}
+                  />
+                </GridButton>
+              );
+            })}
+          </>
+        )}
       </CategoryCard>
       {/* The selected shape: a thick, dashed border with large corners. */}
       <rect
@@ -472,13 +478,13 @@ export function BorderSection() {
         y={86}
         width={126}
         height={70}
-        rx={18}
+        rx={radius ? 18 : 0}
         className="fill-brand-50 stroke-brand-500"
         strokeWidth={4}
         strokeDasharray="10 6"
       />
       <Label x={325} y={122} anchor="middle" size={12} weight={500} tone="strong">
-        Checkout
+        {radius ? 'Checkout' : 'Agenda'}
       </Label>
       <SelectionBox x={256} y={80} w={138} h={82} />
     </Scene>

@@ -44,7 +44,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Canvas', 'Used', 'FormatPainter')).toBe(false);
     expect(isRetiredEvent('Element', 'Deleted', 'Key')).toBe(false);
     expect(isRetiredEvent('UI', 'Changed', 'FormatPainterCopy')).toBe(false);
-    expect(isRetiredEvent('Draw', 'Changed', 'PenWidth')).toBe(false);
+    expect(isRetiredEvent('Draw', 'Changed', 'PenWidth')).toBe(true);
   });
 
   // Work Tracker #625: element and tab locking left livehuddle; the facilitator's unlock is another feature.
@@ -84,8 +84,8 @@ describe('isRetiredEvent', () => {
       'TemplateModePlan',
     ])
       expect(isRetiredEvent('UI', 'Toggled', type)).toBe(true);
-    expect(isRetiredEvent('UI', 'Used', 'StartOtherMode')).toBe(false);
-    expect(isRetiredEvent('UI', 'Closed', 'NewDocument')).toBe(false);
+    expect(isRetiredEvent('UI', 'Used', 'StartOtherMode')).toBe(true);
+    expect(isRetiredEvent('UI', 'Closed', 'NewDocument')).toBe(true);
     expect(isRetiredEvent('Template', 'Used', 'Kanban')).toBe(false);
   });
 
@@ -95,7 +95,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Toggled', 'PagesModeOff')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOn')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOff')).toBe(true);
-    expect(isRetiredEvent('Editor', 'Changed', 'ModeDraw')).toBe(false);
+    expect(isRetiredEvent('Editor', 'Changed', 'ModeDraw')).toBe(true);
   });
 
   it('retires the in-editor AI assistant, not the photo import', () => {
@@ -105,7 +105,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('AI', 'Toggled', 'AiSuggestedPromptsOff')).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(true);
     expect(isRetiredEvent('Help', 'View', 'ai-tools')).toBe(true);
-    expect(isRetiredEvent('AI', 'Used', 'PhotoNotes')).toBe(false);
+    expect(isRetiredEvent('AI', 'Used', 'PhotoNotes')).toBe(true);
     expect(isRetiredEvent('AI', 'Used', 'PhotoDetectClassicalNoWorker')).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'connect-ai-mcp')).toBe(false);
   });
@@ -167,7 +167,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'View', 'ReceptionistTopicRooms')).toBe(false);
     expect(isRetiredEvent('UI', 'Toggled', 'AvatarTourSeenOff')).toBe(false);
     expect(isRetiredEvent('UI', 'View', 'PortalTourStepOpen')).toBe(false);
-    expect(isRetiredEvent('UI', 'Toggled', 'ElementToursSeenOff')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'ElementToursSeenOff')).toBe(true);
   });
 
   it('retires the Show Me tours of surfaces livehuddle lacks, not Share or Tab Style', () => {
@@ -193,7 +193,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Changed', 'FormatPainterCopy')).toBe(false);
     expect(isRetiredEvent('UI', 'Changed', 'Laser')).toBe(false);
     expect(isRetiredEvent('Tab', 'Changed', 'Renamed')).toBe(false);
-    expect(isRetiredEvent('Draw', 'Toggled', 'BreakShapeChip')).toBe(false);
+    expect(isRetiredEvent('Draw', 'Toggled', 'BreakShapeChip')).toBe(true);
   });
 
   // Work Tracker #714 (livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes").
@@ -233,7 +233,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Started', 'TabWindowTour')).toBe(true);
     expect(isRetiredEvent('Element', 'Changed', 'TabWindowTab')).toBe(true);
     expect(isRetiredEvent('Cli', 'Used', 'PageSet')).toBe(true);
-    expect(isRetiredEvent('Editor', 'Changed', 'ModeDiagram')).toBe(false);
+    expect(isRetiredEvent('Editor', 'Changed', 'ModeDiagram')).toBe(true);
     // The Slide Deck carried on past Pages mode, then left livehuddle with presenting.
     expect(isRetiredEvent('UI', 'Opened', 'SlideDeck')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'SlideHidden')).toBe(true);
@@ -250,7 +250,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Agent', 'Viewed', 'Pages')).toBe(true);
     // Still sent: the other export formats, the other slides and the agents' other views.
     expect(isRetiredEvent('Document', 'Exported', 'PNG')).toBe(false);
-    expect(isRetiredEvent('UI', 'Added', 'Slide')).toBe(false);
+    expect(isRetiredEvent('UI', 'Added', 'Slide')).toBe(true);
     expect(isRetiredEvent('Agent', 'Viewed', 'Outline')).toBe(false);
     expect(isRetiredEvent('Element', 'Changed', 'FormatPainter')).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'slide-deck')).toBe(false);
@@ -271,9 +271,9 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Mcp', 'Used', 'AddSheet')).toBe(true);
     expect(isRetiredEvent('Cli', 'Used', 'ItemAdd')).toBe(true);
     expect(isRetiredEvent('Help', 'View', 'plan-mode')).toBe(true);
-    expect(isRetiredEvent('Editor', 'Changed', 'ModeWorkshop')).toBe(false);
+    expect(isRetiredEvent('Editor', 'Changed', 'ModeWorkshop')).toBe(true);
     expect(isRetiredEvent('Tab', 'Changed', 'Locked')).toBe(false);
-    expect(isRetiredEvent('UI', 'Added', 'Slide')).toBe(false);
+    expect(isRetiredEvent('UI', 'Added', 'Slide')).toBe(true);
     expect(isRetiredEvent('UI', 'View', 'ElementTourStepPick')).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'editor-modes')).toBe(false);
   });
@@ -329,5 +329,19 @@ describe('dropRetiredEvents on a deployment with telemetry off', () => {
     const off = { enabled: false } as unknown as TelemetrySummary;
     expect(() => dropRetiredEvents(off)).not.toThrow();
     expect(dropRetiredEvents(off)).toBe(off);
+  });
+
+  // Work Tracker #602: what livehuddle's code no longer sends is retired by name, and the history rows stay.
+  it('retires what livehuddle no longer sends, not what it still does or keeps as history', () => {
+    expect(isRetiredEvent('Draw', 'Changed', 'PenColour')).toBe(true);
+    expect(isRetiredEvent('Home', 'Selected', 'Hero.Documents')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Started', 'CountdownTimer')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Imported', 'Drawio')).toBe(true);
+    expect(isRetiredEvent('Document', 'Duplicated', null)).toBe(true);
+    expect(isRetiredEvent('Document', 'Duplicated', 'Copy')).toBe(false);
+    expect(isRetiredEvent('UI', 'Changed', 'MapSize')).toBe(false);
+    expect(isRetiredEvent('UI', 'Changed', 'MapSizeShort')).toBe(false);
+    expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Activity')).toBe(false);
+    expect(isRetiredEvent('Element', 'Used', 'BringFocus')).toBe(false);
   });
 });

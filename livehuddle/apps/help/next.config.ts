@@ -8,6 +8,9 @@ import { withHelpSite } from '@liveworkspace/help-site/next-config';
 const config: NextConfig = withHelpSite({
   ...liveworkspaceNextConfig(),
   transpilePackages: ['@livehuddle/ui', '@liveworkspace/ui'],
+  // The shared figures draw stickies, not diagram shapes, and no Radius grid: livehuddle has neither
+  // (docs/specs/018-help/help-app.md).
+  env: { HELP_STICKY_ONLY: '1' },
 });
 
 export default config;

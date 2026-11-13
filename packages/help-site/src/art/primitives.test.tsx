@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
-import { BarTab, Scene } from './primitives';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { BarTab, Scene, Shape, stickyOnly } from './primitives';
+import { BorderSection } from './illustrations/colours-borders';
 
 // docs/specs/018-help/help-app.md "In-article illustrations": a figure is named by its caption, so its picture is
 // hidden from screen readers rather than an image with no alternative.
@@ -44,5 +45,49 @@ describe('BarTab', () => {
 
   it('draws its children inside the tab', () => {
     expect(draw({ children: <circle r={3} /> })).toContain('<circle');
+  });
+});
+
+// A help app with no diagram shapes (livehuddle) sets HELP_STICKY_ONLY: every Shape is a sticky note and the Border
+// figure has no Radius grid. The others leave it unset and draw as before.
+describe('sticky-only help apps', () => {
+  afterEach(() => vi.unstubAllEnvs());
+  const shape = (kind: 'circle' | 'diamond' | 'rect', accent = false) =>
+    renderToStaticMarkup(
+      <svg>
+        <Shape x={0} y={0} kind={kind} accent={accent} label="A" />
+      </svg>,
+    );
+
+  it('draws every kind as it is by default', () => {
+    expect(stickyOnly()).toBe(false);
+    expect(shape('circle')).toContain('<ellipse');
+    expect(shape('diamond')).toContain('<path');
+    expect(renderToStaticMarkup(<BorderSection />)).toContain('Radius');
+  });
+
+  it('draws a square sticky, with no border, whatever kind a scene names', () => {
+    vi.stubEnv('HELP_STICKY_ONLY', '1');
+    expect(stickyOnly()).toBe(true);
+    for (const kind of ['circle', 'diamond', 'rect'] as const) {
+      const html = shape(kind);
+      expect(html).not.toContain('<ellipse');
+      expect(html).not.toContain('<path');
+      expect(html).not.toContain('stroke-brand');
+      expect(html).not.toContain('rx=');
+      expect(html).toContain('fill-amber-100');
+    }
+    const accent = shape('rect', true);
+    expect(accent).toContain('fill-brand-200');
+    expect(accent).not.toContain('fill-white');
+  });
+
+  it('leaves the Radius grid out of the Border figure', () => {
+    vi.stubEnv('HELP_STICKY_ONLY', '1');
+    const html = renderToStaticMarkup(<BorderSection />);
+    expect(html).not.toContain('Radius');
+    expect(html).toContain('Strength');
+    expect(html).toContain('Pattern');
+    expect(html).toContain('Agenda');
   });
 });
