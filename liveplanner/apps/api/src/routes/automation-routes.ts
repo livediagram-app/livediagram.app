@@ -21,7 +21,8 @@ import {
   readRuleBody,
   ruleHasAction,
   ruleNameTaken,
-  ruleNeeds,
+  needLine,
+  ruleNeedItems,
   typesOf,
   unheardFields,
   type AutomationEvent,
@@ -111,6 +112,7 @@ function listed(
 ): AutomationListedRule {
   const s = stats.get(rule.id);
   const info = hooks.get(rule.id);
+  const attention = ruleNeedItems(rule, plan.outline);
   return {
     ...rule,
     ...(info ? { hook: info } : {}),
@@ -120,7 +122,8 @@ function listed(
       runsThisWeek: s?.runsThisWeek ?? 0,
       failuresInARow: hook.store.failures(rule.id),
     },
-    needs: ruleNeeds(rule, plan.outline),
+    needs: attention.map(needLine),
+    attention,
   };
 }
 

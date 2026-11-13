@@ -143,6 +143,8 @@ export function useAutomationOutline(): AutomationOutline {
       forms: fromTabs.forms,
       boards: fromTabs.boards,
       items,
+      // The editor never shows an id: a gone column, card type, field or Form tab reads in words.
+      goneWords: true,
     };
   }, [types, statusNames, phases, people, labels, fromTabs, items]);
 }

@@ -2032,6 +2032,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AutomationListedRule": {
     "additionalProperties": false,
     "properties": {
+      "attention": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationNeed"
+        },
+        "type": "array"
+      },
       "chain": {
         "type": "boolean"
       },
@@ -2101,6 +2107,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
+      "attention",
       "chain",
       "conditions",
       "edited",
@@ -2115,6 +2122,53 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "trigger"
     ],
     "type": "object"
+  },
+  "AutomationNeed": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "column",
+              "type",
+              "field",
+              "person",
+              "filter",
+              "form",
+              "webhook",
+              "card"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "unheard",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "name"
+        ],
+        "type": "object"
+      }
+    ]
   },
   "AutomationOrderRequest": {
     "additionalProperties": false,

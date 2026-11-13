@@ -6,6 +6,7 @@ import {
   AUTOMATION_AI_NAMES,
   AUTOMATION_NOTIFY_NAMES,
   AUTOMATION_STEP_NAMES,
+  PRIORITIES,
   type AutomationAction,
   type AutomationActionKind,
   type AutomationAi,
@@ -113,8 +114,11 @@ export function defaultAction(kind: AutomationActionKind, outline: Outline): Aut
   switch (kind) {
     case 'move':
       return { kind, status };
-    case 'set_field':
-      return { kind, field: firstField(outline, 'priority'), value: { text: '' } };
+    case 'set_field': {
+      // Priority starts on its first value (its panel picks one, never typed text).
+      const field = firstField(outline, 'priority');
+      return { kind, field, value: { text: field === 'priority' ? PRIORITIES[0] : '' } };
+    }
     case 'clear_field':
       return { kind, field: firstField(outline, 'due') };
     case 'assign':

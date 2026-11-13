@@ -2,7 +2,8 @@
 // [Card Moved] to [Done] then [Set Completed On] [Remove Label blocked]", as words and chips, and the names of each
 // trigger, condition and action the builder's step cards and panels read too. Names come from the plan's outline
 // (its card types, columns, people, tabs and saved filters); one the plan no longer has reads as its stored id, so a
-// rule needing attention still says what it names. Pure.
+// rule needing attention still says what it names to an agent. The editor, which never shows an id, sets `goneWords`:
+// then one reads as the step panels' gone picks do ("a column no longer here", "Someone No Longer Here"). Pure.
 
 import { automationDayWords } from './conditions';
 import { BUILT_IN_FIELD_NAMES, builtInFieldLabel } from '../built-in-field-labels';
@@ -39,7 +40,20 @@ export interface RuleSentenceOutline {
   filters?: ReadonlyMap<string, string>;
   // The plan's webhooks by id, named (the builder's list from the index); absent, a step's kept name reads.
   webhooks?: ReadonlyMap<string, string>;
+  // A column, card type, field or Form tab the plan no longer has reads in words, not as its stored id (the editor's).
+  goneWords?: boolean;
 }
+
+// What a gone column, card type, field or Form tab reads as, where `goneWords` asks.
+export const GONE_NAMES = {
+  column: 'a column no longer here',
+  type: 'a card type no longer here',
+  field: 'a field no longer here',
+  form: 'a form no longer here',
+} as const;
+
+const gone = (outline: RuleSentenceOutline, id: string, kind: keyof typeof GONE_NAMES): string =>
+  outline.goneWords ? GONE_NAMES[kind] : id;
 
 /** A saved filter's key in RuleSentenceOutline.filters: its board's tab and its id. */
 export const savedFilterKey = (tab: string, filter: string): string => `${tab}\u0000${filter}`;
@@ -210,11 +224,11 @@ export function sentenceOrList(names: readonly string[]): string {
 }
 
 export function outlineStatusName(status: string, outline: RuleSentenceOutline): string {
-  return outline.statuses.get(status) ?? status;
+  return outline.statuses.get(status) ?? gone(outline, status, 'column');
 }
 
 export function outlineTypeName(typeId: string, outline: RuleSentenceOutline): string {
-  return outline.types.find((t) => t.id === typeId)?.label ?? typeId;
+  return outline.types.find((t) => t.id === typeId)?.label ?? gone(outline, typeId, 'type');
 }
 
 export function outlinePersonName(personId: string, outline: RuleSentenceOutline): string {
@@ -222,10 +236,10 @@ export function outlinePersonName(personId: string, outline: RuleSentenceOutline
 }
 
 export function outlineTabName(tabId: string, outline: RuleSentenceOutline): string {
-  return outline.tabs?.get(tabId) ?? tabId;
+  return outline.tabs?.get(tabId) ?? gone(outline, tabId, 'form');
 }
 
-/** A built-in field's name as the plan's types agree on it, or a custom field's label, else the id. */
+/** A built-in field's name as the plan's types agree on it, or a custom field's label, else the id (or words). */
 export function outlineFieldName(fieldId: string, outline: RuleSentenceOutline): string {
   if (fieldId in BUILT_IN_FIELD_NAMES)
     return builtInFieldLabel(fieldId, outline.types as readonly ItemTypeDef[]);
@@ -233,7 +247,7 @@ export function outlineFieldName(fieldId: string, outline: RuleSentenceOutline):
     const custom = t.custom?.find((f) => f.id === fieldId);
     if (custom) return custom.label;
   }
-  return fieldId;
+  return gone(outline, fieldId, 'field');
 }
 
 /** A day a date condition or Set Field names: "Today", "Today + 3 days", "Today - 1 day", or the day itself. */

@@ -2,15 +2,22 @@
 
 // One rule in the Rules list (docs/specs/026-plan/automations.md "The Automations screen"): its switch, its name and
 // sentence, Last Run and This Week, and its ⋯ menu. A rule that paused itself is amber, with Paused, the reason and
-// Resume (and Fix Webhook, when a webhook it posts through stopped it); one naming something the plan lacks says what.
+// Resume (and Fix Webhook, when a webhook it posts through stopped it); one naming something the plan lacks says what,
+// in words and never by id ("A column is gone · Someone is gone").
 // A time rule that is on says its next moment under Last Run ("Next: Mon 9:00"). Clicking the name or sentence opens
 // the builder. On a phone the row stacks: the name, the sentence's trigger, "4 min ago · 38 runs this week", and the
 // switch at the right.
 
-import { ruleSentence, triggerParts, type RuleSentenceOutline } from '@liveplanner/items';
+import {
+  ruleSentence,
+  triggerParts,
+  type AutomationNeed,
+  type RuleSentenceOutline,
+} from '@liveplanner/items';
 import type { AutomationListedRule } from '@liveplanner/api-schema';
 import { Switch, lucideGlyph } from '@liveplanner/ui';
 import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
+import { needsWords } from './needs-words';
 import { SentenceChips } from './SentenceChips';
 import { RuleMenu } from './RuleMenu';
 import { lastRunWords, nextRunWords, runsWords } from './run-words';
@@ -63,8 +70,8 @@ function PausedNote({
   );
 }
 
-function NeedsNote({ needs }: { needs: readonly string[] }) {
-  if (needs.length === 0) return null;
+function NeedsNote({ attention }: { attention: readonly AutomationNeed[] }) {
+  if (attention.length === 0) return null;
   return (
     <span
       data-rule-needs=""
@@ -74,7 +81,7 @@ function NeedsNote({ needs }: { needs: readonly string[] }) {
         <AlertIcon aria-hidden />
       </span>
       <span>
-        <span className="font-semibold">Needs Attention:</span> {needs.join(' · ')}
+        <span className="font-semibold">Needs Attention:</span> {needsWords(attention)}
       </span>
     </span>
   );
@@ -153,7 +160,7 @@ export function RuleRow({
           ) : (
             <>
               <SentenceChips parts={triggerParts(rule.trigger, outline)} />
-              <NeedsNote needs={rule.needs} />
+              <NeedsNote attention={rule.attention} />
               <span className={`text-[12px] ${tone}`}>
                 {rule.stats.lastRunAt === null
                   ? 'Never run'
@@ -184,7 +191,7 @@ export function RuleRow({
       <div className="relative flex min-w-0 flex-col gap-1.5">
         <RuleName rule={rule} onOpen={actions.onOpen} />
         <SentenceChips parts={ruleSentence(rule, outline)} />
-        <NeedsNote needs={rule.needs} />
+        <NeedsNote attention={rule.attention} />
         <PausedNote
           rule={rule}
           onResume={() => actions.onToggle(true)}

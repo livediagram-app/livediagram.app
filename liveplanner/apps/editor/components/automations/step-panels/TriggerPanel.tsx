@@ -42,7 +42,7 @@ const LIMITS = [
 const GONE_COLUMN = 'A column no longer here';
 
 // A single pick the plan no longer has (a deleted column or Form tab) stays listed, so the select shows what the rule
-// holds rather than its first choice.
+// holds rather than its first choice: above the plan's own, as every panel's gone pick sits.
 const goneOption = (value: string | undefined, known: readonly string[], label: string) =>
   value && !known.includes(value) ? <option value={value}>{label}</option> : null;
 
@@ -107,12 +107,12 @@ export function TriggerPanel({
               }
             >
               <option value="">Any Column</option>
+              {goneOption(trigger.status, statuses, GONE_COLUMN)}
               {columns.map((c) => (
                 <option key={c.value} value={c.value}>
                   {c.label}
                 </option>
               ))}
-              {goneOption(trigger.status, statuses, GONE_COLUMN)}
             </PanelSelect>
           )}
         </PanelField>
@@ -132,16 +132,16 @@ export function TriggerPanel({
               }
             >
               <option value="">Any Form</option>
-              {outline.forms.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.name}
-                </option>
-              ))}
               {goneOption(
                 trigger.formTab,
                 outline.forms.map((f) => f.id),
                 'A form no longer here',
               )}
+              {outline.forms.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
+              ))}
             </PanelSelect>
           )}
         </PanelField>
@@ -229,12 +229,12 @@ export function TriggerPanel({
                 value={trigger.status}
                 onChange={(e) => onChange({ ...trigger, status: e.target.value })}
               >
+                {goneOption(trigger.status, statuses, GONE_COLUMN)}
                 {columns.map((c) => (
                   <option key={c.value} value={c.value}>
                     {c.label}
                   </option>
                 ))}
-                {goneOption(trigger.status, statuses, GONE_COLUMN)}
               </PanelSelect>
             )}
           </PanelField>

@@ -265,6 +265,31 @@ describe('the names', () => {
     expect(outlinePersonName('p-priya', OUTLINE)).toBe('Priya Shah');
     expect(outlineTabName('t-x', OUTLINE)).toBe('t-x');
   });
+
+  it('reads what the plan lost in words, never by id, where the outline asks (the editor)', () => {
+    const editor = { ...OUTLINE, goneWords: true };
+    const sentence = ruleSentence(
+      rule({
+        trigger: { kind: 'card_moved', to: ['review~wt6t'] },
+        conditions: [{ kind: 'type', types: ['epic'] }],
+        steps: [
+          { kind: 'assign', to: { person: 'user_gone' } },
+          { kind: 'set_field', field: 'estimate_gone', value: { text: 'High' } },
+          { kind: 'move', status: 'qa' },
+        ],
+      }),
+      editor,
+    );
+    const text = sentence.map((p) => ('word' in p ? p.word : p.chip)).join(' ');
+    expect(text).toBe(
+      'When Card Moved to a column no longer here if Card Type is a card type no longer here then ' +
+        'Assign Someone No Longer Here Set a field no longer here High Move to a column no longer here',
+    );
+    expect(outlineTabName('t-x', editor)).toBe('a form no longer here');
+    // Known names read as ever.
+    expect(outlineTabName('t-form', editor)).toBe('Intake Form');
+    expect(outlineFieldName('f-done', editor)).toBe('Completed On');
+  });
 });
 
 describe('the automation person', () => {

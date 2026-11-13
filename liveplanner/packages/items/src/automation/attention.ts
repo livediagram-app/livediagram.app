@@ -21,6 +21,10 @@ type Need = {
   id: string;
 };
 
+// One thing a rule needs, as data: something it names that is gone (by kind and stored id), or a field Field Changed
+// can never hear (by the plan's name). The editor words these without ids; ruleNeeds words them for agents.
+export type AutomationNeed = Need | { kind: 'unheard'; name: string };
+
 const WORDS: Readonly<Record<Need['kind'], string>> = {
   column: 'Column',
   type: 'Card type',
@@ -137,24 +141,39 @@ function present(need: Need, o: AutomationOutline, webhooks?: ReadonlySet<string
   }
 }
 
-// What the rule names that the plan lacks, a line each ("Column done is gone"). `webhooks`: the ids of the plan's
+// What the rule names that the plan lacks, in the order it names them, each once. `webhooks`: the ids of the plan's
 // webhooks, when the caller has them (absent, outgoing actions are not checked).
+export function ruleNeedItems(
+  rule: AutomationRuleBody,
+  outline: AutomationOutline,
+  webhooks?: ReadonlySet<string>,
+): AutomationNeed[] {
+  const seen = new Set<string>();
+  const out: AutomationNeed[] = [];
+  for (const need of namesOf(rule)) {
+    const key = `${need.kind}:${need.id}`;
+    if (seen.has(key) || present(need, outline, webhooks)) continue;
+    seen.add(key);
+    out.push(need);
+  }
+  // A field Field Changed can never hear (a rule saved before it became one, a field made Time Spent since).
+  if (rule.trigger.kind === 'field_changed')
+    for (const f of unheardFields(outline.types, rule.trigger.fields))
+      out.push({ kind: 'unheard', name: f.name });
+  return out;
+}
+
+/** A need as agents read it, by its stored id: "Column done is gone", "Field Changed never hears Time Spent". */
+export const needLine = (need: AutomationNeed): string =>
+  need.kind === 'unheard'
+    ? `Field Changed never hears ${need.name}`
+    : `${WORDS[need.kind]} ${need.id} is gone`;
+
+// What the rule names that the plan lacks, a line each ("Column done is gone"), for agents.
 export function ruleNeeds(
   rule: AutomationRuleBody,
   outline: AutomationOutline,
   webhooks?: ReadonlySet<string>,
 ): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const need of namesOf(rule)) {
-    const key = `${need.kind}:${need.id}`;
-    if (seen.has(key) || present(need, outline, webhooks)) continue;
-    seen.add(key);
-    out.push(`${WORDS[need.kind]} ${need.id} is gone`);
-  }
-  // A field Field Changed can never hear (a rule saved before it became one, a field made Time Spent since).
-  if (rule.trigger.kind === 'field_changed')
-    for (const f of unheardFields(outline.types, rule.trigger.fields))
-      out.push(`Field Changed never hears ${f.name}`);
-  return out;
+  return ruleNeedItems(rule, outline, webhooks).map(needLine);
 }

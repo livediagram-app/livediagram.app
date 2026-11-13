@@ -78,6 +78,7 @@ export function rule(over: Partial<AutomationListedRule> = {}): AutomationListed
     edited: { by: ANA, at: NOW - 86_400_000 * 3 },
     stats: { lastRunAt: NOW - 4 * 60_000, runsThisWeek: 38, failuresInARow: 0 },
     needs: [],
+    attention: [],
     ...over,
   };
 }

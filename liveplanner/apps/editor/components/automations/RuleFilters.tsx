@@ -1,15 +1,12 @@
 'use client';
 
 // The Rules tab's filters (docs/specs/026-plan/automations.md "The Automations screen"): Find a Rule, All Triggers and
-// On and Off. A wide screen keeps one row of compact fields; a phone lays them out for a thumb, the search across the
-// full width and under it the trigger select beside an All / On / Off segmented control, all 40 px tall with the same
-// radius, border and focus ring.
+// On and Off. A wide screen keeps one row of compact fields, all 32 px tall; a phone lays them out for a thumb, the
+// search across the full width and under it the trigger select beside an All / On / Off segmented control, all 40 px
+// tall with the same radius, border and focus ring. All Triggers lists the triggers the caller offers (GitHub's only
+// where the plan can use them, filterTriggerKinds).
 
-import {
-  AUTOMATION_TRIGGER_KINDS,
-  AUTOMATION_TRIGGER_NAMES,
-  type AutomationTriggerKind,
-} from '@liveplanner/items';
+import { AUTOMATION_TRIGGER_NAMES, type AutomationTriggerKind } from '@liveplanner/items';
 import { Select } from '@liveplanner/ui';
 import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
 import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
@@ -35,6 +32,7 @@ const PHONE_SELECT = 'h-10 rounded-lg pl-3 pr-8 text-[14px]';
 
 export function RuleFilters({
   phone,
+  kinds,
   query,
   onQuery,
   trigger,
@@ -43,6 +41,8 @@ export function RuleFilters({
   onOn,
 }: {
   phone: boolean;
+  // The triggers All Triggers lists, in order.
+  kinds: readonly AutomationTriggerKind[];
   query: string;
   onQuery: (next: string) => void;
   trigger: TriggerFilter;
@@ -58,7 +58,7 @@ export function RuleFilters({
       ariaLabel="Find a rule"
       clearAriaLabel="Clear Search"
       clearDescription="Show every rule again."
-      size={phone ? 'lg' : 'md'}
+      size={phone ? 'lg' : 'row'}
     />
   );
   const triggers = (
@@ -70,7 +70,7 @@ export function RuleFilters({
       selectClassName={phone ? PHONE_SELECT : FILTER_SELECT}
     >
       <option value="all">All Triggers</option>
-      {AUTOMATION_TRIGGER_KINDS.map((k) => (
+      {kinds.map((k) => (
         <option key={k} value={k}>
           {AUTOMATION_TRIGGER_NAMES[k]}
         </option>

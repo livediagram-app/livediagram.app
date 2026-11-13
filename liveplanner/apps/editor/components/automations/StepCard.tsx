@@ -2,9 +2,9 @@
 
 // One step of the rule in the builder (docs/specs/026-plan/automations.md "The rule builder"): its icon on a tinted
 // tile, its kind ("When", "If all of these", "Then"), what it does, and its ⋯ menu. Selecting it opens its panel. A
-// selected step wears the brand ring; the step a refusal names wears the problem ring and says why. Its button reads the
-// kind, described by what the step does. A step a template
-// left to pick says what ("Pick a field") until it is picked. StepJoin draws the line between two steps.
+// selected step wears the brand ring; the step a refusal names wears the problem ring and says why. Its button reads
+// the kind, described by what the step does. A step a template left to pick says what ("Pick a field") until it is
+// picked. StepJoin draws the line between two steps.
 
 import { useId, type ReactNode } from 'react';
 import type { AutomationStep, AutomationVia } from '@liveplanner/items';

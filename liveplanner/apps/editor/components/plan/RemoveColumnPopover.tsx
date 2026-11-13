@@ -35,7 +35,7 @@ export function RemoveColumnPopover({
   const [kind, setKind] = useState<'move' | 'trash'>(others.length > 0 ? 'move' : 'trash');
   const [to, setTo] = useState(others[0]?.status ?? '');
   const selectId = useId();
-  const cards = cardCount === 1 ? 'Its card' : `Its ${cardCount} cards`;
+  const cards = cardCount === 1 ? 'One card' : `Its ${cardCount} cards`;
   return (
     <AnchoredPopover
       anchor={anchor}

@@ -76,6 +76,101 @@ describe('StepPanel', () => {
     expect(screen.getByText(/listed under Run Rule/)).toBeTruthy();
   });
 
+  it('sets Priority and a Choice field to one of their values, picked, never typed', () => {
+    const [first, ...rest] = outline().types;
+    const o = outline({
+      types: [
+        {
+          ...first!,
+          fields: [...first!.fields, 'f-size'],
+          custom: [
+            ...(first!.custom ?? []),
+            { id: 'f-size', label: 'Size', kind: 'choice', options: ['S', 'M', 'L'] },
+          ],
+        },
+        ...rest,
+      ],
+    });
+    render(
+      <Panel
+        o={o}
+        body={body({ steps: [{ kind: 'set_field', field: 'title', value: { text: 'Hi' } }] })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    // Flagged and Checklist have their own actions.
+    const fieldNames = [
+      ...screen.getByRole('combobox', { name: 'Field' }).querySelectorAll('option'),
+    ];
+    expect(fieldNames.map((f) => f.textContent)).not.toContain('Flagged');
+    expect(fieldNames.map((f) => f.value)).not.toContain('checklist');
+    pick('Field', 'priority');
+    expect(latest.steps[0]).toEqual({
+      kind: 'set_field',
+      field: 'priority',
+      value: { text: 'urgent' },
+    });
+    expect(screen.queryByRole('textbox', { name: 'Text' })).toBeNull();
+    const setTo = screen.getByRole('combobox', { name: 'Set To' });
+    expect([...setTo.querySelectorAll('option')].map((x) => x.textContent)).toEqual([
+      'A Choice',
+      'Another Field’s Value',
+    ]);
+    const choice = screen.getByRole('combobox', { name: 'Choice' });
+    expect([...choice.querySelectorAll('option')].map((x) => x.textContent)).toEqual([
+      'Urgent',
+      'High',
+      'Medium',
+      'Low',
+    ]);
+    pick('Choice', 'high');
+    expect(latest.steps[0]).toMatchObject({ value: { text: 'high' } });
+    pick('Set To', 'from');
+    pick('Set To', 'text');
+    expect(latest.steps[0]).toMatchObject({ value: { text: 'urgent' } });
+    pick('Field', 'f-size');
+    expect(latest.steps[0]).toMatchObject({ field: 'f-size', value: { text: 'S' } });
+    pick('Choice', 'L');
+    expect(latest.steps[0]).toMatchObject({ value: { text: 'L' } });
+    // Back on a free field, text again.
+    pick('Field', 'title');
+    expect(screen.getByRole('textbox', { name: 'Text' })).toBeTruthy();
+  });
+
+  it('keeps a choice field’s text that is no choice, and a number it was saved with, shown', () => {
+    render(
+      <Panel
+        body={body({
+          steps: [{ kind: 'set_field', field: 'priority', value: { text: '{{card.priority}}' } }],
+        })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    expect(screen.getByRole('option', { name: '{{card.priority}}' })).toBeTruthy();
+    cleanup();
+    render(
+      <Panel
+        body={body({ steps: [{ kind: 'set_field', field: 'priority', value: { number: 2 } }] })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    expect(screen.getByRole('combobox', { name: 'Set To' })).toBe(
+      screen.getByDisplayValue('A Number'),
+    );
+    cleanup();
+    render(
+      <Panel
+        body={body({
+          steps: [{ kind: 'set_field', field: 'priority', value: { date: { today: 1 } } }],
+        })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    expect(screen.getByRole('combobox', { name: 'Set To' })).toBe(
+      screen.getByDisplayValue('A Day'),
+    );
+  });
+
   it('leaves out of Field Changed the fields no write changes', () => {
     const [first, ...rest] = outline().types;
     const timed = {
@@ -191,6 +286,13 @@ describe('StepPanel', () => {
     pick('Column', 'done');
     expect(latest.steps[0]).toEqual({ kind: 'move', status: 'done' });
     pickStep('set_field');
+    // A new Set Field starts on Priority, at its first value; a free field takes a number or a day.
+    expect(latest.steps[0]).toEqual({
+      kind: 'set_field',
+      field: 'priority',
+      value: { text: 'urgent' },
+    });
+    pick('Field', 'estimate');
     pick('Set To', 'number');
     fireEvent.change(screen.getByRole('spinbutton', { name: 'Number' }), {
       target: { value: '5' },

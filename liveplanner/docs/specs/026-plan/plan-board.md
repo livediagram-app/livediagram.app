@@ -193,7 +193,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   state and its cards stay, so another board's column for it still shows them (where none does, the cards read
   as No status, as any card of a state no board names). **Delete Status** (a bin) deletes the state: when it
   holds cards (out of the Trash, on any board) it first opens a popover anchored to it: "Delete {Name}?", "Its N
-  cards are in {Name}, on every board that shows it. Where should they go?", and two option cards, one picked:
+  cards are in {Name}, on every board that shows it. Where should they go?" (one card: "One card is in {Name}, on
+  every board that shows it. Where should it go?"), and two option cards, one picked:
   **Move to Another Column** (a menu of the board's other columns, the first picked; the default) or **Move to the
   Trash** ("You can restore them from the Trash."). **Delete Status** in it (a bin) moves the cards as picked,
   then removes the column, and the state's column from every other board in the project; **Cancel** or Escape

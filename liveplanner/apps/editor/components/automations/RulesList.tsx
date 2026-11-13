@@ -8,8 +8,10 @@ import { useMemo, useState } from 'react';
 import type { AutomationTriggerKind, RuleSentenceOutline } from '@liveplanner/items';
 import type { AutomationListedRule } from '@liveplanner/api-schema';
 import { NoMatches } from '@liveplanner/ui';
+import { useGithubAutomations } from './github/github-automations';
 import { RuleFilters, type OnFilter, type TriggerFilter } from './RuleFilters';
 import { RULE_GRID, RuleRow, type RuleRowActions } from './RuleRow';
+import { filterTriggerKinds } from './trigger-groups';
 
 export type { OnFilter } from './RuleFilters';
 
@@ -49,6 +51,13 @@ export function RulesList({
   const [trigger, setTrigger] = useState<TriggerFilter>('all');
   const [on, setOn] = useState<OnFilter>('all');
   const shown = useMemo(() => filterRules(rules, query, trigger, on), [rules, query, trigger, on]);
+  // GitHub's triggers only where the plan can use them, or a rule (or the filter) is on one.
+  const githubEnabled = useGithubAutomations()?.enabled ?? false;
+  const kinds = useMemo(() => {
+    const used = new Set<AutomationTriggerKind>(rules.map((r) => r.trigger.kind));
+    if (trigger !== 'all') used.add(trigger);
+    return filterTriggerKinds(githubEnabled, used);
+  }, [rules, trigger, githubEnabled]);
   const filters = (trigger === 'all' ? 0 : 1) + (on === 'all' ? 0 : 1);
   const clear = () => {
     setQuery('');
@@ -59,6 +68,7 @@ export function RulesList({
     <div className="flex min-h-0 flex-1 flex-col">
       <RuleFilters
         phone={phone}
+        kinds={kinds}
         query={query}
         onQuery={setQuery}
         trigger={trigger}

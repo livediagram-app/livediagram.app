@@ -44,7 +44,7 @@ packages/items/src/automation/
   *.test.ts           one per module; 100% branches (the package's thresholds)
 
 packages/api-schema/src/automations.ts
-                      AutomationsListResponse { rules: (AutomationRule & { stats, needs: string[] })[],
+                      AutomationsListResponse { rules: (AutomationRule & { stats, needs: string[], attention })[],
                         runsToday: number, runsPerDay: number },
                       AutomationRunsResponse { runs: AutomationRun[] }, AutomationRunResponse { run: AutomationRun },
                       AutomationRunResponse { run: AutomationRun }, error codes below
@@ -80,6 +80,9 @@ apps/editor/components/automations/
   RunLog.tsx, RunRow.tsx
   RuleBuilder.tsx             breadcrumb bar, step cards, add buttons, Rule Details accordion, Discard Changes?
   StepCard.tsx, StepPanel.tsx, step-panels/*.tsx   one panel per trigger, condition and action kind
+                              (FieldActionPanel: Set Field on Priority or a Choice field offers A Choice, a Select
+                              of its values (fieldChoices) stored as text, the first picked as the field is; Set
+                              Field lists neither Flagged nor Checklist, unless a step already holds one)
                               (panel-parts' ChipToggles and each single pick keep a gone pick shown, "no longer here")
   ValueInsert.tsx             the chip-rendered text field and its Insert a Value button (ValueInsertMenu.tsx)
   TestOnCard.tsx              the card finder and the dry-run result
@@ -362,7 +365,17 @@ build):
   actions' names; webhooks only when the caller passes the plan's webhook ids (`ruleNeeds(rule, outline, webhooks)`,
   the builder): the api's list does not, since the webhooks live in the index. A Link Cards step's chosen card is
   checked against `outline.cards`, the ids of the cards `readAutomationPlan` already read (no extra query); an outline
-  without them leaves chosen cards unchecked.
+  without them leaves chosen cards unchecked. `ruleNeedItems` answers the needs as data (`AutomationNeed`: a kind and
+  stored id, or `unheard` with the field's name); `ruleNeeds` words each by id (`needLine`) for agents. The api's list
+  sends both (`needs`, `attention`); the editor's RuleRow words `attention` with `needsWords` (needs-words.ts), each
+  kind once and counted, never an id. The editor's outline sets `goneWords`, so `outlineStatusName`, `outlineTypeName`,
+  `outlineFieldName` and `outlineTabName` read a gone one as `GONE_NAMES` ("a column no longer here") instead of its id.
+- **The rule link on an Automation line** (`AutomationAuthorName`): a comment passes its `automation.ruleId`, which
+  is always a link for an Editor, so a rule made or renamed since the list was read still opens; the screen reads the
+  list as it opens and, while that read (`readAutomations`, which hands a second asker the read under way) has not
+  settled, a rule id the list lacks shows the loading rows (`ruleWaiting`), never This Rule Was Deleted, which waits
+  for the read (`fresh`). A history line has only the rule's name: one the list lacks reads it again through
+  `readAutomationsFor`, once per name per plan, so a rule really gone costs one read.
 - **Test on a Card** of a time rule runs on the chosen card as at its moment, without checking its due date.
 - **Measured** (`automations.perf.test.ts`): 2,000 cards and 50 overdue rules due at once (5 hearing every card, 45
   checking a condition that never holds): the wake's CPU time is 165 to 191 ms on an M-series Mac, against the
@@ -1039,7 +1052,10 @@ Derived from the spec's "The rule builder on a phone", the screen's phone bullet
 dialog's `!useMediaQuery('(min-width: 640px)')`, as before; nothing below changes a desktop.
 
 - `ScreenTabs`: on a phone the bar is `h-12 items-stretch`, each tab `flex items-center` (44 px of it a target).
-- `RuleFilters.tsx` (out of `RulesList`): the desktop row as before; on a phone a column of the search (`SearchInput`
+- `RuleFilters.tsx` (out of `RulesList`): the desktop row, the search at `SearchInput`'s `size="row"` (32 px, 13 px
+  text, level with the `h-8` selects); its trigger options are `kinds`, which `RulesList` takes from
+  `filterTriggerKinds(githubEnabled, used)` (trigger-groups.ts: GitHub's kinds only where the deployment has the App,
+  as `offeredGroups`, or one a rule or the current filter is on); on a phone a column of the search (`SearchInput`
   at its `size="lg"`: 40 px, 14 px text) and a row of the trigger `Select` (`flex-1`, `PHONE_SELECT` = `h-10
 rounded-lg pl-3 pr-8 text-[14px]`) and `SegmentedRadio` (`size="lg"`, All / On / Off, `h-10`).
 - `AutomationsDialog`: on a phone, editing (`target.view === 'rule'`) keeps the rules screen mounted and renders the

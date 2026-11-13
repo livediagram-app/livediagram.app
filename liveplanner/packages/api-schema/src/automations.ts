@@ -2,6 +2,7 @@
 // shapes come from @liveplanner/items; these are the request and response bodies of `/api/projects/:id/automations`.
 
 import type {
+  AutomationNeed,
   AutomationRule,
   AutomationRuleBody,
   AutomationRuleStats,
@@ -10,6 +11,7 @@ import type {
 } from '@liveplanner/items';
 
 export type {
+  AutomationNeed,
   AutomationRule,
   AutomationRuleBody,
   AutomationRuleStats,
@@ -30,11 +32,13 @@ export interface AutomationHookSecret {
   usedAt: number | null;
 }
 
-// A rule as the Rules list shows it: its figures, and what it names that the plan lacks (Needs Attention). An
-// Incoming Webhook rule also carries `hook`: its address, and its secret's last 4 characters once made.
+// A rule as the Rules list shows it: its figures, and what it names that the plan lacks (Needs Attention): `needs` a
+// line each by stored id, for agents, and `attention` the same as data (kind and id), which the editor words without
+// ids. An Incoming Webhook rule also carries `hook`: its address, and its secret's last 4 characters once made.
 export type AutomationListedRule = AutomationRule & {
   stats: AutomationRuleStats;
   needs: string[];
+  attention: AutomationNeed[];
   hook?: AutomationHookInfo;
 };
 

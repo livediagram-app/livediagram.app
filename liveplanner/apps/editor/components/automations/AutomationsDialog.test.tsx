@@ -150,14 +150,38 @@ describe('the Rules list', () => {
   it('shows a paused rule’s reason with Resume, and a rule needing attention', async () => {
     list([
       rule({ paused: { reason: 'the webhook answered 410 Gone.', at: 1 }, enabled: false }),
-      rule({ id: 'r2', name: 'Triage', needs: ['the column Review'] }),
+      rule({
+        id: 'r2',
+        name: 'Triage',
+        trigger: { kind: 'card_moved', to: ['review~wt6t'] },
+        steps: [
+          { kind: 'assign', to: { person: 'user_gone1234' } },
+          { kind: 'set_field', field: 'estimate_gone', value: { text: 'High' } },
+        ],
+        needs: [
+          'Column review~wt6t is gone',
+          'Person user_gone1234 is gone',
+          'Field estimate_gone is gone',
+        ],
+        attention: [
+          { kind: 'column', id: 'review~wt6t' },
+          { kind: 'person', id: 'user_gone1234' },
+          { kind: 'field', id: 'estimate_gone' },
+        ],
+      }),
     ]);
     client.toggleRule.mockResolvedValue({ rule: rule() });
     wrap(<Harness />);
     expect(await screen.findByText(/the webhook answered 410 Gone/)).toBeTruthy();
-    expect(screen.getByText(/Needs Attention/).closest('p,div')!.textContent).toContain(
-      'the column Review',
+    // In words, never by id: the line and the sentence alike.
+    const row = document.querySelector('[data-rule-row="r2"]')!;
+    expect(row.querySelector('[data-rule-needs]')!.textContent).toBe(
+      'Needs Attention: A column is gone · Someone is gone · A field is gone',
     );
+    expect(row.querySelector('[data-rule-sentence]')!.textContent).toContain(
+      'a column no longer here',
+    );
+    expect(row.textContent).not.toMatch(/wt6t|user_gone|estimate_gone/);
     fireEvent.click(screen.getByRole('button', { name: 'Resume' }));
     await waitFor(() => expect(client.toggleRule).toHaveBeenCalledWith(SCOPE, 'r1', true));
     expect(track).toHaveBeenCalledWith('Plan', 'Toggled', 'AutomationOn');
