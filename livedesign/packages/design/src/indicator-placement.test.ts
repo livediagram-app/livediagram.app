@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+// The shared placement (@liveworkspace/element-model/indicator-placement) through livedesign's outlines; livedocuments
+// binds the same code to the same outlines.
 import type { BoxedElement } from './index';
 import {
   INDICATOR_MIDDLE_CLEARANCE_PX,
