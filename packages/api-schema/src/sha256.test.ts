@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sha256Hex } from './sha256';
+import { sha256Hex, sha256HexSync } from './sha256';
 
 // sha256Hex is the load-bearing primitive for image dedup (docs/specs/009-elements/images.md):
 // the live editor hashes bytes before POSTing them and stamps the
@@ -80,5 +80,15 @@ describe('sha256Hex', () => {
     const a = await sha256Hex(bytesOf('a'));
     const b = await sha256Hex(bytesOf('b'));
     expect(a).not.toBe(b);
+  });
+});
+
+describe('sha256HexSync', () => {
+  it('answers the same digest as sha256Hex, at once', async () => {
+    const bytes = new TextEncoder().encode('abc'.repeat(1000) + 'é');
+    expect(sha256HexSync(bytes)).toBe(await sha256Hex(bytes));
+    expect(sha256HexSync(new Uint8Array(0))).toBe(
+      'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    );
   });
 });

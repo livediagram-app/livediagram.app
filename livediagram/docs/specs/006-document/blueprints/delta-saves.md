@@ -72,8 +72,9 @@ export type TabDeltaPlan = { body: string; digest: string; ops: number };
 - `planTabDelta` answers null (save whole) when there is no base copy, the diff has more than `TAB_DELTA_MAX_OPS` ops,
   or the delta body is longer than `TAB_DELTA_MAX_SHARE` of the elements' JSON; otherwise the body to send, the
   digest of the current elements and the op count.
-- `planTabDeltaSync` answers exactly what `planTabDelta` answers, at once: the digest is `sha256Fallback` from
-  `@liveworkspace/model-core/sha256` (FIPS 180-4 in plain code), byte for byte Web Crypto's.
+- `planTabDeltaSync` answers exactly what `planTabDelta` answers, at once: the digest is `sha256HexSync`
+  (`../packages/api-schema/src/sha256.ts`, over `@liveworkspace/model-core/sha256`'s `sha256Fallback`, FIPS 180-4 in
+  plain code), byte for byte Web Crypto's.
 
 ```ts
 // @liveworkspace/workbench/lib/api/tab-delta-save

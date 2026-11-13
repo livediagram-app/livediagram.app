@@ -4,8 +4,7 @@
 // refused `409 delta_refused`, and the editor saves the tab whole. The envelope is every product's; the ops are each
 // product's own `diffToElementOps` and `applyElementOps`, which share these four shapes.
 
-import { sha256Fallback } from '@liveworkspace/model-core/sha256';
-import { sha256Hex } from './sha256';
+import { sha256Hex, sha256HexSync } from './sha256';
 
 /** The path segment after the tab id: `POST /api/<items>/<id>/tabs/<tabId>/delta`. */
 export const TAB_DELTA_SEGMENT = 'delta';
@@ -130,12 +129,6 @@ export function planTabDeltaSync<E extends { id: string }>(
 ): TabDeltaPlan | null {
   const draft = draftTabDelta(args);
   if (!draft) return null;
-  const digest = toHex(sha256Fallback(new TextEncoder().encode(draft.elementsJson)));
+  const digest = sha256HexSync(new TextEncoder().encode(draft.elementsJson));
   return { body: draft.body(digest), digest, ops: draft.ops };
-}
-
-function toHex(bytes: Uint8Array): string {
-  let out = '';
-  for (const v of bytes) out += (v < 16 ? '0' : '') + v.toString(16);
-  return out;
 }
