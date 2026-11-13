@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { elementsDigest } from '@liveworkspace/api-schema/tab-delta';
-import { applyElementOps, type Element, type ElementOp, type Tab } from '@livediagram/document';
-import { apiLoadTabRevisioned, apiSaveTab } from './tabs';
+import { elementsDigest, planTabDelta } from '@liveworkspace/api-schema/tab-delta';
+import {
+  applyElementOps,
+  diffToElementOps,
+  type Element,
+  type ElementOp,
+  type Tab,
+} from '@livediagram/document';
+import { apiLoadTabRevisioned, apiSaveTab, flushDocumentSavesBeacon } from './tabs';
 import { offlineSaveTab } from '../offline/offline-store';
 
 // The autosave's delta saves (docs/specs/006-document/delta-saves.md "How the editor uses it"), through the editor's
@@ -20,7 +26,7 @@ vi.mock('../offline/offline-store', async (importOriginal) => ({
 }));
 
 type Stored = { tab: Record<string, unknown> & { elements: Element[] }; rev: number };
-type Sent = { method: string; url: string; body: string; headers: Headers };
+type Sent = { method: string; url: string; body: string; headers: Headers; keepalive?: boolean };
 
 // The api's tab doors over one in-memory store, keyed by tab id.
 function fakeApi() {
@@ -37,11 +43,11 @@ function fakeApi() {
     store.set(tabId, { tab: stored, rev });
     return { stored, rev };
   };
-  const fetch = vi.fn(async (input: string, init: RequestInit = {}) => {
+  const answer = async (input: string, init: RequestInit = {}) => {
     const url = String(input);
     const method = init.method ?? 'GET';
     const body = typeof init.body === 'string' ? init.body : '';
-    sent.push({ method, url, body, headers: new Headers(init.headers) });
+    sent.push({ method, url, body, headers: new Headers(init.headers), keepalive: init.keepalive });
     const tabId = /\/tabs\/([^/]+)/.exec(url)![1]!;
     const held = store.get(tabId);
     if (method === 'GET') {
@@ -78,8 +84,23 @@ function fakeApi() {
     if ((await elementsDigest(elements)) !== delta.digest) return refuse('digest_mismatch');
     const { stored, rev } = write(tabId, delta.tab, elements);
     return Response.json({ rev, digest: await elementsDigest(stored.elements) });
+  };
+  // Every request in flight, so a test can wait for the unload flush's unawaited ones and what they send next.
+  const inflight: Promise<unknown>[] = [];
+  const fetch = vi.fn((input: string, init?: RequestInit) => {
+    const res = answer(input, init);
+    inflight.push(res);
+    return res;
   });
-  return { store, sent, next, fetch };
+  const settled = async () => {
+    let seen;
+    do {
+      seen = inflight.length;
+      await Promise.allSettled(inflight);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    } while (inflight.length !== seen);
+  };
+  return { store, sent, next, fetch, settled };
 }
 
 const box = (i: number, label = `Step ${i}`): Element =>
@@ -268,5 +289,116 @@ describe('a document in This Browser', () => {
     await apiSaveTab('owner', 'local-1', withLabel(tab, 1, 'one'));
     expect(api.sent).toEqual([]);
     expect(offlineSaveTab).toHaveBeenCalledTimes(2);
+  });
+});
+
+// The unload flush (docs/specs/006-document/delta-saves.md "Unload"): a delta within the keepalive budget, or as before.
+describe('the unload flush', () => {
+  const flush = (doc: string, tab: Tab) =>
+    flushDocumentSavesBeacon({
+      ownerId: 'owner',
+      documentId: doc,
+      shareCode: null,
+      changedTabs: [tab],
+      deletedIds: [],
+      loadedTabIds: new Set([tab.id]),
+      orderChanged: false,
+      nameChanged: false,
+      name: 'Doc',
+      tabs: [tab],
+      changesetSeen: new Map([[tab.id, 7]]),
+    });
+  const settled = () => api.settled();
+  const big = () => tabOf(Array.from({ length: 2000 }, (_, i) => box(i)));
+  const editedWhere = (tab: Tab, n: number, change: (el: Element) => Element): Tab => ({
+    ...tab,
+    elements: tab.elements.map((el, i) => (i < n ? change(el) : el)),
+  });
+
+  it('sends a one-shape edit on a 2,000-element tab as a keepalive delta, under 1 KB', async () => {
+    const doc = docId();
+    const tab = big();
+    await apiSaveTab('owner', doc, tab);
+    const edited = withLabel(tab, 1234, 'Step 1234, renamed');
+    flush(doc, edited);
+    await settled();
+    expect(kinds(api.sent)).toEqual(['PUT tab', 'POST delta']);
+    const [whole, delta] = api.sent;
+    // Before: the whole tab, far past the browser's 64 KB keepalive cap.
+    expect(bytes(whole!)).toBeGreaterThan(250_000);
+    expect(bytes(delta!)).toBeLessThan(1024);
+    expect(delta!.keepalive).toBe(true);
+    // The flush's own headers ride with it.
+    expect(delta!.headers.get('X-Allow-Empty')).toBe('1');
+    expect(delta!.headers.get('X-Changeset-Seen')).toBe('7');
+    expect(api.store.get('t1')!.tab.elements).toEqual(edited.elements);
+    // Landed with a matching digest: the next save is a delta over it.
+    await apiSaveTab('owner', doc, withLabel(edited, 3, 'after'));
+    expect(kinds(api.sent).at(-1)).toBe('POST delta');
+    expect(JSON.parse(api.sent.at(-1)!.body)).toMatchObject({ baseRev: 2 });
+  });
+
+  it('sends the tab whole, as before, with no base copy', async () => {
+    const doc = docId();
+    flush(doc, tabOf(Array.from({ length: 40 }, (_, i) => box(i))));
+    await settled();
+    expect(kinds(api.sent)).toEqual(['PUT tab']);
+    expect(api.sent[0]!.keepalive).toBe(true);
+  });
+
+  it('sends the tab whole when the diff is too large for a delta', async () => {
+    const doc = docId();
+    const tab = big();
+    await apiSaveTab('owner', doc, tab);
+    // 600 shapes renamed: past the 500-op cap.
+    flush(
+      doc,
+      editedWhere(tab, 600, (el) => ({ ...el, label: 'renamed' })),
+    );
+    await settled();
+    expect(kinds(api.sent)).toEqual(['PUT tab', 'PUT tab']);
+    // Past the keepalive budget, as before: a plain request.
+    expect(api.sent[1]!.keepalive).toBe(false);
+  });
+
+  it('sends the tab whole when the delta would not fit the keepalive budget', async () => {
+    const doc = docId();
+    const tab = big();
+    await apiSaveTab('owner', doc, tab);
+    // 400 labels rewritten long: a delta of about 130 KB, within the share cap but past the 60 KB budget.
+    const long = 'x'.repeat(200);
+    const edited = editedWhere(tab, 400, (el) => ({ ...el, label: long }));
+    const plan = await planTabDelta({
+      base: { rev: 1, elements: tab.elements },
+      tab: edited,
+      diff: diffToElementOps,
+    });
+    expect(plan!.body.length).toBeGreaterThan(60 * 1024);
+    flush(doc, edited);
+    await settled();
+    expect(kinds(api.sent)).toEqual(['PUT tab', 'PUT tab']);
+    expect(api.store.get('t1')!.tab.elements).toEqual(edited.elements);
+  });
+
+  it('a refused delta stores nothing, and the whole tab follows while the page lives on', async () => {
+    const doc = docId();
+    const tab = big();
+    await apiSaveTab('owner', doc, tab);
+    api.next.refuse = 'stale_base';
+    const edited = withLabel(tab, 5, 'last edit');
+    flush(doc, edited);
+    await settled();
+    expect(kinds(api.sent)).toEqual(['PUT tab', 'POST delta', 'PUT tab']);
+    expect(api.store.get('t1')!.tab.elements).toEqual(edited.elements);
+  });
+
+  it("another failure sends nothing more: the whole save's own refusals stand", async () => {
+    const doc = docId();
+    const tab = big();
+    await apiSaveTab('owner', doc, tab);
+    api.next.status = 409;
+    flush(doc, withLabel(tab, 5, 'last edit'));
+    await settled();
+    expect(kinds(api.sent)).toEqual(['PUT tab', 'POST delta']);
   });
 });

@@ -129,7 +129,8 @@ renders immediately rather than showing a spinner over real content.
 - What the debounce still holds goes out when the editor goes: on `beforeunload`, on `pagehide` (iOS, a discarded
   tab, the back-forward cache) and when the editor unmounts for another page of the app. Those writes stay alive
   past the page while they fit the browser's keepalive budget (64 KB in all, 60 KB used); the rest are sent as
-  plain requests, which land when the page lives on. Two events on the same way out send the content once.
+  plain requests, which land when the page lives on. A large tab's change goes as a delta when it can, so it fits
+  ([Delta saves](delta-saves.md#unload)). Two events on the same way out send the content once.
 - A text edit still open when the page goes (a label, an arrow label, a table cell, a one-line field) is part of
   what goes. It commits on blur, and a reload or a closed tab fires none, so on `beforeunload` and `pagehide` the
   flush first commits the open edit (`../packages/workbench/src/lib/open-edit.ts`, `useCommitOnLeave`), so a label typed and left open

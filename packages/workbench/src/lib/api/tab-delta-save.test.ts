@@ -231,3 +231,69 @@ describe('send', () => {
     expect(saves.base('d', 't')?.rev).toBe(1);
   });
 });
+
+describe('planUnload', () => {
+  beforeEach(() => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  const args = (elements: El[]) => ({
+    itemId: 'd',
+    tabId: 't',
+    url: '/api/documents/d/tabs/t',
+    tab: { elements },
+  });
+  const edited = () => many(20).map((e, i) => (i === 2 ? { ...e, label: 'new' } : e));
+
+  it('answers null with no base copy, or a delta not worth sending', () => {
+    const { saves } = setup();
+    expect(saves.planUnload(args(many(20)))).toBeNull();
+    saves.hold('d', 't', 1, many(2));
+    expect(saves.planUnload(args(many(2, 'changed')))).toBeNull();
+  });
+
+  it('plans the delta at once, with the digest the api checks, and sends nothing itself', async () => {
+    const { saves, fetch } = setup();
+    saves.hold('d', 't', 3, many(20));
+    const plan = saves.planUnload(args(edited()))!;
+    expect(plan.url).toBe('/api/documents/d/tabs/t/delta');
+    const body = JSON.parse(plan.body) as { baseRev: number; digest: string; ops: unknown[] };
+    expect(body.baseRev).toBe(3);
+    expect(body.ops).toEqual([{ kind: 'update', element: { id: 'e2', label: 'new' } }]);
+    expect(body.digest).toBe(await elementsDigest(edited()));
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('a landed delta with a matching digest is the next base copy', async () => {
+    const { saves } = setup();
+    saves.hold('d', 't', 3, many(20));
+    const elements = edited();
+    const plan = saves.planUnload(args(elements))!;
+    const digest = await elementsDigest(elements);
+    expect(await plan.settle(Response.json({ rev: 4, digest }))).toBe('saved');
+    expect(saves.base('d', 't')).toEqual({ rev: 4, elements });
+  });
+
+  it('a refusal drops the base copy and says to send the tab whole', async () => {
+    const { saves } = setup();
+    saves.hold('d', 't', 3, many(20));
+    const plan = saves.planUnload(args(edited()))!;
+    const refused = Response.json(
+      { error: 'delta_refused', reason: 'stale_base' },
+      { status: 409 },
+    );
+    expect(await plan.settle(refused)).toBe('refused');
+    expect(saves.base('d', 't')).toBeNull();
+  });
+
+  it("another failure is 'failed', quietly, and keeps the base copy", async () => {
+    const { saves, expectOkVoid } = setup();
+    saves.hold('d', 't', 3, many(20));
+    const plan = saves.planUnload(args(edited()))!;
+    const busy = Response.json({ error: 'tab_busy' }, { status: 409 });
+    expect(await plan.settle(busy)).toBe('failed');
+    expect(expectOkVoid).not.toHaveBeenCalled();
+    expect(saves.base('d', 't')?.rev).toBe(3);
+  });
+});
