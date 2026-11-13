@@ -15,6 +15,7 @@ import { elementsIssue } from './element-values';
 import { packFreehandPoints } from './freehand-points';
 import { imageResult } from './image-result';
 import { imageIdIssue } from './image-tools';
+import { addOperationsFor, addToTemplateTab, getTab } from './template-elements';
 import {
   baseFor,
   changesetErrorText,
@@ -27,11 +28,6 @@ import {
 } from './changeset-client';
 import { registerTool } from './tool-annotations';
 import { mcpAddTab, mcpUpdateDesign } from '@livedesign/agent-verbs/mcp';
-
-// A tab is built from a template or from elements: given both, the elements were dropped and the answer said nothing.
-export const TEMPLATE_OR_ELEMENTS =
-  'Provide "template" or "elements", not both: a template builds its own pages. Start from the ' +
-  'template, then change its pages with update_design.';
 
 export function registerTabTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpAddTab, async (args, extra) => {
@@ -47,8 +43,6 @@ export function registerTabTools(server: McpServer, env: Env): void {
         `Unknown template "${args.template}". ${closestTemplatesHint(args.template)}Valid kinds: ${validTemplateKinds()}.`,
       );
     }
-    // Both given: the template was built and the elements dropped without a word.
-    if (args.template && args.elements?.length) return errorResult(TEMPLATE_OR_ELEMENTS);
     if (!args.template && !args.elements) {
       return errorResult(
         'Invalid input. Provide "elements", or a "template" kind from list_templates. Check the ' +
@@ -60,7 +54,8 @@ export function registerTabTools(server: McpServer, env: Env): void {
     const given = drawn?.elements;
     const valueIssue = given ? elementsIssue(given) : null;
     if (valueIssue) return errorResult(valueIssue);
-    const ended = given ? resolveArrowEnds(given, idsOf(given)) : null;
+    // Beside a template, an arrow may pin to one of its elements: the ends are checked against the tab it built.
+    const ended = given && !args.template ? resolveArrowEnds(given, idsOf(given)) : null;
     if (ended && 'error' in ended) return errorResult(ended.error);
     // Default the new tab's theme to the design's existing one so it matches the other tabs
     // rather than landing as a clashing brand-white tab; the model can still pass a theme.
@@ -89,6 +84,22 @@ export function registerTabTools(server: McpServer, env: Env): void {
     } catch (err) {
       if (isChangesetRefusal(err)) return errorResult(changesetErrorText(err));
       throw err;
+    }
+    // Elements given beside a template are added to the tab it built, as update_design's add ops would.
+    if (args.template && args.elements?.length) {
+      const built = await getTab(env, token, args.designId, tabId);
+      const added = addOperationsFor(args.elements, built);
+      if ('error' in added)
+        return errorResult(`The tab was made, but its elements: ${added.error}`);
+      try {
+        answer = await addToTemplateTab(env, token, args.designId, tabId, built, added.operations);
+      } catch (err) {
+        if (isChangesetRefusal(err))
+          return errorResult(
+            `The tab was made, but its elements were refused: ${changesetErrorText(err)}`,
+          );
+        throw err;
+      }
     }
     // The result PNG: the tab as stored, read once more (CS36).
     const { tab } = await apiJson<TabResponse>(

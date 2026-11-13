@@ -66,6 +66,8 @@ import {
   mcpShareProject,
 } from '@liveplanner/agent-verbs/mcp';
 import { registerTabTools } from './tab-tools';
+import { changesetErrorText, isChangesetRefusal } from './changeset-client';
+import { DASHBOARD_ALONE, addOperationsFor, addToTemplateTab, getTab } from './template-elements';
 export { templateNote } from './tab-tools';
 
 export function registerTools(server: McpServer, env: Env): void {
@@ -127,6 +129,8 @@ export function registerTools(server: McpServer, env: Env): void {
     // Every template tab's elements: their Plan boards bring their card types
     // (docs/specs/026-plan/plan-templates.md "Card types a template uses").
     const templateElements: Tab['elements'] = [];
+    // Elements given beside a template, added to its first tab once the project exists.
+    const withTemplate: { tab: Tab; operations: unknown[] }[] = [];
     for (const [index, given] of inputTabs.entries()) {
       const tabId = crypto.randomUUID();
       // A template tab's name follows the templates' rule; any other unnamed tab is "Tab n".
@@ -135,6 +139,8 @@ export function registerTools(server: McpServer, env: Env): void {
         ...given,
         name: kindOf ? templateTabName(given.name, kindOf) : (given.name ?? `Tab ${index + 1}`),
       };
+      if (t.dashboard && (t.template || t.elements?.length))
+        return errorResult(`Tab "${t.name}": ${DASHBOARD_ALONE}`);
       // Template tab (docs/specs/015-api/mcp-server.md §4.5): materialise the curated scaffold
       // instead of expecting elements.
       if (t.template) {
@@ -154,6 +160,11 @@ export function registerTools(server: McpServer, env: Env): void {
           () => crypto.randomUUID(),
           t.theme ?? args.theme,
         );
+        if (t.elements?.length) {
+          const added = addOperationsFor(t.elements, made[0]!);
+          if ('error' in added) return errorResult(`Tab "${t.name}": ${added.error}`);
+          withTemplate.push({ tab: made[0]!, operations: added.operations });
+        }
         tabs.push(...made);
         for (const m of made) templateElements.push(...m.elements);
         continue;
@@ -221,6 +232,22 @@ export function registerTools(server: McpServer, env: Env): void {
         ...(args.markUsed !== undefined ? { markUsed: args.markUsed } : {}),
       }),
     });
+    // The elements given beside a template go onto its first tab as update_project's add ops would
+    // (docs/specs/015-api/mcp-server.md §4.3), so a Board or Sheet template holds them rather than dropping them.
+    let shown: Tab = tabs[0]!;
+    for (const { tab, operations } of withTemplate) {
+      const stored = await getTab(env, token, id, tab.id);
+      try {
+        await addToTemplateTab(env, token, id, tab.id, stored, operations);
+      } catch (err) {
+        if (isChangesetRefusal(err))
+          return errorResult(
+            `The plan was made (${id}), but its elements for tab "${tab.name}" were refused: ${changesetErrorText(err)}`,
+          );
+        throw err;
+      }
+      if (tab.id === shown.id) shown = await getTab(env, token, id, tab.id);
+    }
     const tabIds = tabs.map((t) => t.id);
     return imageResult(
       {
@@ -233,7 +260,7 @@ export function registerTools(server: McpServer, env: Env): void {
         url: deepLink(env, id),
         ...dashboardLeftOffNote(leftOff),
       },
-      tabs[0]!,
+      shown,
       { env, token },
     );
   });

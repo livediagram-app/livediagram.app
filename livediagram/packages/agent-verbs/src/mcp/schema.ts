@@ -330,7 +330,8 @@ const templateField = z
       'kind from list_templates (e.g. "swot", "flowchart", "gantt"). The server ' +
       'materialises its curated layout ("layout" is ignored for a template tab) and paints ' +
       'it with the chosen theme. Personalise the placeholder labels afterwards with ' +
-      'update_document mode "ops". Provide template OR elements, not both.',
+      'update_document mode "ops". Elements given with a template are added to its tab, in canvas coordinates as ' +
+      'update_document would add them (an arrow may pin to a template element); a graph or Mermaid is refused beside one.',
   );
 
 const themeField = z

@@ -45,7 +45,8 @@ const templateField = z
       'kind from list_templates (e.g. "blank-logo", "logo-design", "wireframe-mobile-app"). The server ' +
       'builds its pages ("layout" is ignored for a template tab) and paints ' +
       'them with the chosen theme. Replace the sample text afterwards with ' +
-      'update_design mode "ops". Provide template OR elements, not both.',
+      'update_design mode "ops". Elements given with a template are added to its first page, in canvas coordinates ' +
+      'as update_design would add them (read_design view "pages" shows where each page sits).',
   );
 
 // A theme id the server knows: an unknown one (a typo, a label such as "Ocean") was taken silently as

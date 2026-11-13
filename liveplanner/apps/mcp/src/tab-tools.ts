@@ -29,6 +29,7 @@ import {
   submitChangeset,
 } from './changeset-client';
 import { registerTool } from './tool-annotations';
+import { DASHBOARD_ALONE, addOperationsFor, addToTemplateTab, getTab } from './template-elements';
 import { mcpAddTab, mcpUpdateProject } from '@liveplanner/agent-verbs/mcp';
 
 // add_tab takes a template's first tab only (docs/specs/015-api/mcp-server.md §4.5): said in the answer when the
@@ -58,6 +59,8 @@ export function registerTabTools(server: McpServer, env: Env): void {
         `Unknown template "${args.template}". ${closestTemplatesHint(args.template)}Valid kinds: ${validTemplateKinds()}.`,
       );
     }
+    if (args.dashboard && (args.template || args.elements?.length))
+      return errorResult(DASHBOARD_ALONE);
     // A Dashboard (docs/specs/026-plan/plan-agents.md "Making a dashboard"): the project's tabs and card types by name.
     let dashboard: Record<string, unknown> | undefined;
     let leftOff = 0;
@@ -102,6 +105,22 @@ export function registerTabTools(server: McpServer, env: Env): void {
     } catch (err) {
       if (isChangesetRefusal(err)) return errorResult(changesetErrorText(err));
       throw err;
+    }
+    // Elements given beside a template are added to the tab it built, as update_project's add ops would.
+    if (args.template && args.elements?.length) {
+      const built = await getTab(env, token, args.projectId, tabId);
+      const added = addOperationsFor(args.elements, built);
+      if ('error' in added)
+        return errorResult(`The tab was made, but its elements: ${added.error}`);
+      try {
+        answer = await addToTemplateTab(env, token, args.projectId, tabId, built, added.operations);
+      } catch (err) {
+        if (isChangesetRefusal(err))
+          return errorResult(
+            `The tab was made, but its elements were refused: ${changesetErrorText(err)}`,
+          );
+        throw err;
+      }
     }
     // The result PNG: the tab as stored, read once more (CS36).
     const { tab } = await apiJson<TabResponse>(

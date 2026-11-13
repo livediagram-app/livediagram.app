@@ -253,7 +253,12 @@ of `elements`: the server materialises the hand-tuned scaffold from
 `@livediagram/templates` ([§4.5](#45-list_templates)), keeping its curated
 layout (`layout` is ignored for a template tab) and applying that template's
 canvas overrides; the model then personalises labels via `update_document`'s
-`ops` mode. A tab's `name` is optional: an unnamed template tab takes the template's title, as the editor names one
+`ops` mode. A template tab may also carry `elements`: once the document exists they are added to the template's
+tab as `update_document`'s `add` ops would add them, in canvas coordinates, so they land beside the scaffold (an
+arrow may pin to one of its elements), never silently dropped. They are checked like any other tab's elements
+before anything is written; if the api then refuses them the answer says the document was made and why. A
+template tab given a `graph` or `mermaid` is refused, naming the tab, since a template builds its own boxes and
+arrows. `add_tab` does the same. A tab's `name` is optional: an unnamed template tab takes the template's title, as the editor names one
 (`templateTabName`, [The tab's name](../007-editor/templates-by-mode.md#the-tabs-name)), and any other unnamed tab is
 "Tab n". The MCP:
 

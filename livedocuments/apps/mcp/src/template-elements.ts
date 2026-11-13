@@ -8,24 +8,20 @@ import { apiJson } from './api';
 import { baseFor, submitChangeset, mcpOpsToEditOperations } from './changeset-client';
 import { elementsIssue } from './element-values';
 import { packFreehandPoints } from './freehand-points';
+import { templateAddOperations } from '@liveworkspace/mcp-kit/template-elements';
 
 // The add operations for the elements, checked as every other element input is, or what is wrong with
-// them. Checked against the tab the template built, so an arrow may pin to one of its elements.
+// them. Checked against the tab the template built, so an arrow may pin to one of its elements
+// (@liveworkspace/mcp-kit/template-elements holds the flow every product shares).
 export function addOperationsFor(
   elements: readonly unknown[],
   built: Tab,
 ): { operations: unknown[] } | { error: string } {
-  const drawn = packFreehandPoints([...elements]);
-  if ('error' in drawn) return { error: drawn.error };
-  const valueIssue = elementsIssue(drawn.elements);
-  if (valueIssue) return { error: valueIssue };
-  const operations = mcpOpsToEditOperations(
-    drawn.elements.map((element) => ({ op: 'add' as const, element: element as never })),
-    built,
-  );
-  if (typeof operations === 'string')
-    return { error: operations.replace(/^ops\[(\d+)\]/, 'elements[$1]') };
-  return { operations };
+  return templateAddOperations(elements, built, {
+    pack: packFreehandPoints,
+    issue: elementsIssue,
+    toOperations: mcpOpsToEditOperations,
+  });
 }
 
 // Adds them to the stored tab in one changeset, based on the tab as it is now.

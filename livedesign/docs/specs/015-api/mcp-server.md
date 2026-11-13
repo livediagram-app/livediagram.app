@@ -254,9 +254,13 @@ of `elements`; the server materialises the hand-tuned scaffold from
 `@livedesign/templates` ([§4.5](#45-list_templates)), keeping its curated
 layout (`layout` is ignored for a template tab) and applying that template's
 canvas overrides; the model then personalises labels via `update_design`'s
-`ops` mode. A tab (on `create_design` or `add_tab`) given both a `template` and
-elements is refused, naming the tab, rather than built from the template with
-its elements dropped. A `theme` (the design's or a tab's) must be one of the
+`ops` mode. A template tab may also carry `elements`: once the design exists they
+are added to the template's first tab as `update_design`'s `add` ops would add
+them, in canvas coordinates, so they land on its pages beside the template's own
+(an arrow may pin to one of its elements), never silently dropped. They are
+checked like any other tab's elements before anything is written; if the api
+then refuses them the answer says the design was made and why. `add_tab` does
+the same. A `theme` (the design's or a tab's) must be one of the
 theme ids the description lists; an unknown one is refused by the input check
 rather than taken silently as the Default scheme. The MCP:
 
