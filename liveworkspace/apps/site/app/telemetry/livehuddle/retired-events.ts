@@ -353,6 +353,178 @@ function isCollabEvent(category: string, action: string, type: string | null): b
   return COLLAB_UI.has(key) || COLLAB_UI_PREFIX.test(key);
 }
 
+// Events livehuddle's code no longer sends (Work Tracker #602): the vocabulary still accepts them, and their
+// explanation sentences are kept, but nothing in the editor, the api or the shared packages emits them, so each is
+// retired by name here and the dashboard drops it. Most came with the fork from livediagram (Draw mode, the home
+// page, tables, arrows, the importers, the element tours of the diagram kinds); the rest are leftovers of features
+// livehuddle let go. event-explanation.test.ts holds the line: every exact explanation key is an event the scan finds
+// being sent (computed-emitters.ts names each computed site's values) or one of these.
+
+// Draw mode's pens, fills, backgrounds, cursors, recognition and shape search (the Draw mode left, and its mode switch with it).
+const UNSENT_DRAW_MODE = new Set([
+  'Canvas|Used|Highlighter',
+  'Draw|Changed|BackgroundDots',
+  'Draw|Changed|BackgroundGrid',
+  'Draw|Changed|BackgroundPlain',
+  'Draw|Changed|CursorCrosshair',
+  'Draw|Changed|CursorDot',
+  'Draw|Changed|FillColour',
+  'Draw|Changed|FillMissed',
+  'Draw|Changed|PenColour',
+  'Draw|Changed|PenReset',
+  'Draw|Changed|PenWidth',
+  'Draw|Changed|ShapePinned',
+  'Draw|Changed|ShapeUnpinned',
+  'Draw|Changed|SnapColours',
+  'Draw|Created|NewTab',
+  'Draw|Created|Template',
+  'Draw|Selected|Fill',
+  'Draw|Selected|Main',
+  'Draw|Selected|Path',
+  'Draw|Selected|Second',
+  'Draw|Selected|ShapeSearch',
+  'Draw|Selected|Third',
+  'Draw|Toggled|BreakShapeChip',
+  'Draw|Toggled|BreakShapeKey',
+  'Draw|Toggled|RecogniseOnceChip',
+  'Draw|Toggled|RecogniseOnceKey',
+  'Draw|Toggled|RecognitionOff',
+  'Draw|Toggled|RecognitionOn',
+  'Editor|Changed|ModeDiagram',
+  'Editor|Changed|ModeDraw',
+  'Editor|Changed|ModeWorkshop',
+  'UI|Changed|HighlighterColour',
+  'UI|Changed|HighlighterWidth',
+]);
+
+// The Timer and Stopwatch session tools, the Vote and the Poll (the pieces are livehuddle's now, and send Element events).
+const UNSENT_SESSION_TOOLS = new Set([
+  'Element|Removed|Vote',
+  'Tab|Changed|TimerExtended',
+  'Tab|Changed|TimerReset',
+  'Tab|Cleared|Vote',
+  'Tab|Ended|CountdownTimer',
+  'Tab|Ended|Poll',
+  'Tab|Ended|StopwatchTimer',
+  'Tab|Ended|Vote',
+  'Tab|Ended|VoteReview',
+  'Tab|Started|CountdownTimer',
+  'Tab|Started|Poll',
+  'Tab|Started|PrivateVote',
+  'Tab|Started|StopwatchTimer',
+  'Tab|Started|Vote',
+  'Tab|Toggled|TimerPaused',
+  'Tab|Toggled|TimerResumed',
+]);
+
+// Table, arrow, mind map, entity and imported-board events (tables, arrows and the importers left).
+const UNSENT_DIAGRAM_LEAVINGS = new Set([
+  'Element|Created|RelatedEntity',
+  'Element|Deleted|TableColumn',
+  'Element|Deleted|TableRow',
+  'Element|Imported|Excalidraw',
+  'Element|Linked|ArrowPoint',
+  'Element|Reordered|TableColumn',
+  'Element|Reordered|TableRow',
+  'Element|Selected|MindBranch',
+  'Element|Toggled|TableHeaderColumn',
+  'Element|Toggled|TableHeaderRow',
+  'Element|Toggled|TableZebra',
+  'Tab|Aligned|FlowchartDown',
+  'Tab|Aligned|FlowchartRight',
+  'Tab|Aligned|Mindmap',
+  'Tab|Aligned|Tree',
+  'Tab|Imported|Drawio',
+  'Tab|Imported|Excalidraw',
+  'Tab|Imported|ExcalidrawPng',
+  'Tab|Imported|ExcalidrawSvg',
+  'Tab|Imported|MicrosoftWhiteboard',
+]);
+
+// The home page's hero and Jump Back In rows, and the Welcome card (the home page went into the Explorer).
+const UNSENT_HOME_PAGE = new Set([
+  'Home|Selected|Hero.Documents',
+  'Home|Selected|Hero.Inbox',
+  'Home|Selected|Hero.NewDocument',
+  'Home|Selected|JumpBackIn.MostUsed',
+  'Home|Selected|JumpBackIn.Recent',
+  'Home|Selected|JumpBackIn.SeeMore',
+  'UI|Closed|NewDocument',
+  'UI|Closed|SignInBanner',
+  'UI|Selected|SignInBanner',
+  'UI|Used|StartOtherMode',
+]);
+
+// Everything else livehuddle's code no longer sends: docks and panels, the Isometric view, the Activity row, team folders and invites, workbench sessions, the minimap's bare size and the other leftovers.
+const UNSENT_OTHER_UNSENT = new Set([
+  'AI|Used|PhotoNotes',
+  'Agent|Viewed|Lint',
+  'Canvas|Used|Dock',
+  'Canvas|Used|DockAdd',
+  'Canvas|Used|Isometric',
+  'Canvas|Used|TimelineLanesOff',
+  'Canvas|Used|TimelineLanesOn',
+  'Canvas|Used|Undock',
+  'Document|Duplicated|',
+  'Document|Moved|',
+  'Element|Grouped|',
+  'Element|Ungrouped|',
+  'Element|Used|ReactionPad',
+  'Element|Used|Video',
+  'Error|Warning|AiQuota.BrowserReader',
+  'Explorer|Selected|Kind',
+  'Folder|Deleted|Team',
+  'Folder|Moved|Team',
+  'Folder|Renamed|Team',
+  'Session|Opened|Workbench',
+  'Session|Opened|WorkbenchWorkspace',
+  'Team|Removed|Rejected',
+  'Token|Linked|Workbench',
+  'Trash|Opened|Settings',
+  'UI|Added|Slide',
+  'UI|Copied|TeamInviteLink',
+  'UI|Ended|TourDeclined',
+  'UI|Removed|Slide',
+  'UI|Searched|BehaviourSearch',
+  'UI|Selected|Sidebar.TrashDropDocument',
+  'UI|Selected|Sidebar.TrashDropFolder',
+  'UI|Toggled|HiddenLayersExport',
+  'UI|Toggled|IsometricExport',
+  'UI|Toggled|MinimalPanelsOff',
+  'UI|Toggled|MinimalPanelsOn',
+]);
+
+// The element tours of the diagram kinds (the Boundary, Chart, Chevrons, Cycle, Diagram Key, Entity, Flowchart,
+// Funnel, Hub, Lane, Layer Stack, Mind Map, Onion, Org Chart, Pyramid, Sankey, Sequence, Stack and Timeline tours):
+// each token's Started, step views, Offer, Completed, Skipped and Seen switches. The Portal tour is the one livehuddle
+// has (element-tour-kinds.ts), so it carries on.
+const DIAGRAM_ELEMENT_TOUR =
+  /^(Boundary|Chart|Chevrons|Cycle|DiagramKey|Entity|Flowchart|Funnel|Hub|Lane|LayerStack|MindMap|Onion|OrgChart|Pyramid|Sankey|Sequence|Stack|Timeline)Tour|^ElementToursSeen/;
+
+// Sentences kept as history, not retired (docs/specs/017-telemetry/telemetry.md "Retired features"): nothing sends
+// these now, but their stored rows still read on a chart or in Search, so the dashboard keeps showing them. The bare
+// `MapSize` is what the Minimap Size row sent before it named the option picked (its counts stay under the bare token),
+// and `Activity` is the Inbox row's old name.
+export const KEPT_AS_HISTORY = new Set([
+  'UI|Changed|MapSize',
+  'UI|Selected|Sidebar.Activity',
+  'UI|Selected|ExplorerPanel.Activity',
+]);
+
+const UNSENT_SETS = [
+  UNSENT_DRAW_MODE,
+  UNSENT_SESSION_TOOLS,
+  UNSENT_DIAGRAM_LEAVINGS,
+  UNSENT_HOME_PAGE,
+  UNSENT_OTHER_UNSENT,
+];
+
+function isUnsentEvent(category: string, action: string, type: string | null): boolean {
+  const key = `${category}|${action}|${type ?? ''}`;
+  if (UNSENT_SETS.some((set) => set.has(key))) return true;
+  return category === 'UI' && DIAGRAM_ELEMENT_TOUR.test(type ?? '');
+}
+
 export function isInheritedEvent(category: string, action: string, type: string | null): boolean {
   const t = type ?? '';
   if (isLeftLivehuddleEvent(category, action, type)) return true;
@@ -368,6 +540,7 @@ export function isInheritedEvent(category: string, action: string, type: string 
 
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (isRetiredExplorerEvent(category, action, type)) return true;
+  if (isUnsentEvent(category, action, type)) return true;
   if (isCollabEvent(category, action, type)) return true;
   if (AGENT_DOOR_CATEGORIES.has(category)) return true;
   if (isInheritedEvent(category, action, type)) return true;

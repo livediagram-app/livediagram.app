@@ -6,12 +6,13 @@ import {
 } from '@livehuddle/api-schema';
 import { REPO, SCAN_ROOTS, SKIP } from './scan-roots';
 import { COMPUTED, scanEmitters } from '../emitter-scan';
-import { sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
+import { platformEmitters, sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
 import { articleTitle } from '../_shared/event-vocab';
 import { BY_ACTION, EXACT } from './event-explanations';
 import * as CATALOGUE from './metric-catalogue';
 import { LIVEHUDDLE as APP } from './config';
-import { isInheritedEvent } from './retired-events';
+import { isInheritedEvent, isRetiredEvent, KEPT_AS_HISTORY } from './retired-events';
+import { COMPUTED_EMITTERS } from './computed-emitters';
 
 const eventExplanation = APP.explain;
 
@@ -77,6 +78,55 @@ describe('eventExplanation', () => {
       return isInheritedEvent(category, action, type || null);
     });
     expect(inherited).toEqual([]);
+  });
+
+  // Work Tracker #602: about 350 sentences described events the vocabulary accepts but livehuddle's code no longer
+  // sends (Draw mode, the home page, tables, the diagram element tours). Each is retired by name in retired-events.ts
+  // (its sentence kept as history, the dashboard dropping the event), so every sentence on the dashboard is for an
+  // event livehuddle sends or a named retirement.
+  it('explains only events livehuddle sends or has retired', { timeout: 30_000 }, () => {
+    const sent = new Set<string>();
+    // A computed site whose values are samples (an article slug, a page path, a Settings category) can send keys no
+    // list names, so its category and action are not held to the exact keys.
+    const open = new Set<string>();
+    // Plus what liveworkspace's own Workers send in this app's name (emails, the Community, the Explorer's rows).
+    const everything = [...EMITS, ...platformEmitters(isValidTelemetryEvent, 'Document')];
+    for (const e of everything) {
+      if (typeof e.category !== 'string' || typeof e.action !== 'string') continue;
+      if (e.type !== COMPUTED) {
+        sent.add(`${e.category}|${e.action}|${e.type ?? ''}`);
+        continue;
+      }
+      const site = COMPUTED_EMITTERS[`${e.path} ${e.category}·${e.action}`];
+      if (site?.open) open.add(`${e.category}|${e.action}`);
+      for (const type of site?.values ?? []) sent.add(`${e.category}|${e.action}|${type ?? ''}`);
+    }
+    const stale = Object.keys(EXACT).filter((key) => {
+      const [category = '', action = '', type = ''] = key.split('|');
+      return (
+        !sent.has(key) &&
+        !open.has(`${category}|${action}`) &&
+        !KEPT_AS_HISTORY.has(key) &&
+        !isRetiredEvent(category, action, type || null)
+      );
+    });
+    expect(stale).toEqual([]);
+  });
+
+  it('keeps a history sentence only for an event that is no longer sent', () => {
+    for (const key of KEPT_AS_HISTORY) {
+      expect(key in EXACT, key).toBe(true);
+      expect(isRetiredEvent(...(key.split('|') as [string, string, string]))).toBe(false);
+    }
+  });
+
+  it('keeps the Portal tour, the one element tour livehuddle has, and retires the diagram ones', () => {
+    expect(isRetiredEvent('UI', 'Started', 'PortalTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'View', 'PortalTourStepOutro')).toBe(false);
+    expect(isRetiredEvent('UI', 'Started', 'SequenceTour')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'DiagramKeyTourStepKey')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'SankeyTourOffer')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'ElementToursSeenOn')).toBe(true);
   });
 
   it('keeps the copy free of jargon and code names', () => {

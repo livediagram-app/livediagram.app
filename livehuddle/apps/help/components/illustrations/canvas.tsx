@@ -24,8 +24,8 @@ export function CanvasOverview() {
       <Shape x={40} y={92} w={84} h={48} kind="rect" label="Start" />
       <Shape x={172} y={92} w={84} h={48} kind="diamond" />
       <Shape x={172} y={172} w={84} h={44} kind="rect" accent label="Done" />
-      <Arrow from={[124, 116]} to={[172, 116]} />
-      <Arrow from={[214, 140]} to={[214, 172]} />
+      <Arrow connector from={[124, 116]} to={[172, 116]} />
+      <Arrow connector from={[214, 140]} to={[214, 172]} />
       {/* Left of Done, so the name tag sits clear of its edge. */}
       <Cursor x={112} y={168} name="You" />
     </Scene>
@@ -86,7 +86,7 @@ export function PanAndZoom() {
     <Scene w={420} h={220}>
       <Shape x={70} y={54} w={76} h={44} label="A" />
       <Shape x={232} y={108} w={76} h={44} accent label="B" />
-      <Arrow from={[146, 76]} to={[232, 130]} kind="elbow" />
+      <Arrow connector from={[146, 76]} to={[232, 130]} kind="elbow" />
       {/* Zoom controls, bottom-right */}
       <Panel x={300} y={168} w={104} h={34}>
         <g transform="translate(0 0)">

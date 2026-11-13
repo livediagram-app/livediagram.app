@@ -14,12 +14,12 @@ export const metadata = helpMetadata({
 
 <ArticleLayout
   title="Colours, Borders and Opacity"
-  description="Recolour an element, style its border and corners, and fade it, one element or a whole selection at a time."
+  description="Recolour an element, style its border, and fade it, one element or a whole selection at a time."
   categoryTitle="Canvas"
   categorySlug="canvas"
 >
 
-Every element starts in your tab's [theme](/help/canvas/themes/) colours, so a new board already looks coherent. When one element needs to stand apart (a warning in red, a dashed box for something planned, a pill-shaped button, a faded background note), its colours, border and opacity are all in its right-click menu. Open the menu by right-clicking the element (a long press on a touch screen), or press the **⋯** button on its selection toolbar. Colours and Border live under **Style**, which opens beside the menu; Opacity lives under **Arrange**, at the top of the menu.
+Every element starts in your tab's [theme](/help/canvas/themes/) colours, so a new board already looks coherent. When one element needs to stand apart (a warning in red, a dashed outline for something planned, a faded background note), its colours, border and opacity are all in its right-click menu. Open the menu by right-clicking the element (a long press on a touch screen), or press the **⋯** button on its selection toolbar. Colours and Border live under **Style**, which opens beside the menu; Opacity lives under **Arrange**, at the top of the menu.
 
 These controls are for Editors. Viewers and Participants don't get the element menu, so they see your colours but can't change them.
 
@@ -60,16 +60,15 @@ Open **Style**, then **Border**. Grids of small preview tiles set the outline, a
 - **Strength**: no border (a faint dashed outline), then thin, medium, thick and extra thick. New shapes start at medium.
 - **Pattern**: solid, dashed, dotted, dash-dot, long dash and dash-dot-dot.
 
-<Figure caption="The Border category's Strength, Pattern and Radius grids, with a thick dashed border and large corners on the selected shape.">
+<Figure caption="The Border category's Strength and Pattern grids, with a thick dashed border on the selected element.">
   <BorderSection />
 </Figure>
 
 ### Which Elements Have a Border
 
 - **Strength and Pattern** are offered on shapes.
-- **Radius** and **Accent Edge** are offered on none of the elements livehuddle adds: the rectangle and stadium they were for are gone, and the Space pieces draw their own corners.
 - **No Border category** on text elements, sticky notes (a note's **Border** colour row still draws an edge), images, stickers, icons, and the elements that draw their own faces: portals, chairs and the other Space pieces.
-- **Shapes saved before livehuddle dropped them** (a square, circle, diamond or another diagram shape, a chart, a table) show as a placeholder that keeps its look as it was saved, with no style controls; an Editor can delete it.
+- **Elements livehuddle no longer has** (anything a space saved before they were dropped) show as a placeholder that keeps its look as it was saved, with no style controls; an Editor can delete it.
 
 A few elements skip Colours too: images and stickers keep their own colours.
 
@@ -84,7 +83,6 @@ Select several elements and open the menu: its **Style** section has **Colours**
 - Each row and grid applies to **every selected element that supports it**: a background colour skips text elements, and a border strength skips sticky notes.
 - The values shown are read from the first element that has them.
 - **Colours** shows **Text**, **Background** and **Border** as the selection allows.
-- **Radius** appears when at least one selected element can round its corners, and sets those that can.
 - **Opacity** sets every selected element to the same value.
 - **Reset to Theme** resets every selected element's colours in one step.
 

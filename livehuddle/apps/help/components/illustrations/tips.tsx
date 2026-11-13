@@ -67,7 +67,7 @@ export function CommandPalette() {
       <Strip x={78} y={16} />
       <Shape x={60} y={104} w={84} h={46} kind="rect" label="Start" />
       <Shape x={268} y={104} w={84} h={46} kind="rect" accent label="Ship" />
-      <Arrow from={[144, 127]} to={[268, 127]} />
+      <Arrow connector from={[144, 127]} to={[268, 127]} />
     </Scene>
   );
 }

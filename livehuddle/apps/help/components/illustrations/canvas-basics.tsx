@@ -41,8 +41,8 @@ export function CanvasPaletteOverview() {
       <Shape x={60} y={72} w={76} h={42} label="Start" />
       <Shape x={176} y={66} w={60} h={54} kind="diamond" />
       <Shape x={168} y={146} w={76} h={36} accent label="Done" />
-      <Arrow from={[136, 93]} to={[176, 93]} />
-      <Arrow from={[206, 120]} to={[206, 146]} />
+      <Arrow connector from={[136, 93]} to={[176, 93]} />
+      <Arrow connector from={[206, 120]} to={[206, 146]} />
       {/* Bottom-right cluster: Undo and Redo, the paintbrush, then the zoom controls. */}
       <g transform="translate(32 0)">
         <rect
@@ -143,7 +143,7 @@ export function MultiSelectionBar() {
       <Shape x={72} y={120} w={70} h={42} />
       <Shape x={176} y={116} w={70} h={50} kind="circle" />
       <Shape x={282} y={120} w={70} h={42} kind="diamond" />
-      <Arrow from={[142, 141]} to={[176, 141]} />
+      <Arrow connector from={[142, 141]} to={[176, 141]} />
       {[
         [72, 120, 70, 42],
         [176, 116, 70, 50],

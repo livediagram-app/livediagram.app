@@ -344,7 +344,7 @@ in its vocabulary and have a chart (`metric-emitters.test.ts`, `computed-emitter
 event has an explanation (`event-explanation.test.ts`). An event of a removed feature goes in the app's
 `retired-events.ts`, and the dashboard drops it before any chart (`_shared/retired-events.ts`). livehuddle's checks also
 run the other way round: every chart must count something its source can still send ("every chart has a sender"), so a
-feature that leaves takes its charts with it.
+feature that leaves takes its charts with it. They run the other way for sentences too: every exact explanation key must be an event the emitter scan finds being sent (a computed site's values, in `computed-emitters.ts`, count; a site that only samples an open set, such as help slugs, exempts its category and action) or a named retirement in `retired-events.ts`, or an entry in its `KEPT_AS_HISTORY` list for rows that still read (Work Tracker 602).
 
 The scan (`emitter-scan.ts`) reads a `track('A', 'B', 'C')` call and its forwarding helpers, a shared package's bound
 track called on its bindings with the category written out (`avatarBindings.track('UI', 'Changed', 'AvatarStatus')`),

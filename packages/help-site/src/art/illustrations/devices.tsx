@@ -33,8 +33,8 @@ function MiniFlow({
         accent
         label={showLabels ? 'Done' : undefined}
       />
-      <Arrow from={[70, 38]} to={[110, 38]} />
-      <Arrow from={[142, 56]} to={[142, 84]} />
+      <Arrow connector from={[70, 38]} to={[110, 38]} />
+      <Arrow connector from={[142, 56]} to={[142, 84]} />
     </g>
   );
 }

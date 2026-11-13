@@ -14,8 +14,8 @@ export function OpenCanvas() {
       <Shape x={48} y={70} w={88} h={48} kind="rect" label="Start" />
       <Shape x={180} y={70} w={88} h={48} kind="diamond" />
       <Shape x={180} y={150} w={88} h={44} kind="rect" accent label="Done" />
-      <Arrow from={[136, 94]} to={[180, 94]} />
-      <Arrow from={[224, 118]} to={[224, 150]} />
+      <Arrow connector from={[136, 94]} to={[180, 94]} />
+      <Arrow connector from={[224, 118]} to={[224, 150]} />
 
       {/* The blocked-out sign-in gate */}
       <g transform="translate(300 58)">
@@ -108,7 +108,7 @@ export function OpenSource() {
       </Label>
       <Shape x={288} y={90} w={36} h={24} kind="rect" label="A" />
       <Shape x={352} y={90} w={36} h={24} kind="circle" accent />
-      <Arrow from={[324, 102]} to={[352, 102]} tone="muted" />
+      <Arrow connector from={[324, 102]} to={[352, 102]} tone="muted" />
       <TextBar x={292} y={130} w={92} tone="accent" />
 
       {/* MIT licence tag */}

@@ -8,6 +8,13 @@ import { Label, DiscText } from './primitives-text';
 type ShapeKind =
   'rect' | 'circle' | 'diamond' | 'cylinder' | 'hexagon' | 'stadium' | 'parallelogram' | 'triangle';
 
+/** True in a help app that has no diagram shapes (livehuddle sets `HELP_STICKY_ONLY=1` in its Next config): every
+ *  `Shape` then draws a sticky note, and the Border figure leaves out its Radius grid. Read at call time so a test can
+ *  switch it. */
+export function stickyOnly(): boolean {
+  return process.env.HELP_STICKY_ONLY === '1';
+}
+
 /** A canvas node. `accent` fills it brand; otherwise white with a brand
  *  border, matching how a placed shape looks on the real canvas. */
 export function Shape({
@@ -45,45 +52,58 @@ export function Shape({
     strokeDasharray: dashed ? '5 4' : undefined,
   };
   let body: ReactNode;
-  switch (kind) {
-    case 'circle':
-      body = <ellipse cx={cx} cy={cy} rx={w / 2} ry={h / 2} {...common} />;
-      break;
-    case 'diamond':
-      body = <path d={`M${cx} ${y} L${x + w} ${cy} L${cx} ${y + h} L${x} ${cy} Z`} {...common} />;
-      break;
-    case 'cylinder':
-      body = (
-        <path
-          d={`M${x} ${y + 7} a${w / 2} 7 0 0 1 ${w} 0 v${h - 14} a${w / 2} 7 0 0 1 ${-w} 0 Z M${x} ${y + 7} a${w / 2} 7 0 0 0 ${w} 0`}
-          {...common}
-        />
-      );
-      break;
-    case 'hexagon': {
-      const i = w * 0.22;
-      body = (
-        <path
-          d={`M${x + i} ${y} H${x + w - i} L${x + w} ${cy} L${x + w - i} ${y + h} H${x + i} L${x} ${cy} Z`}
-          {...common}
-        />
-      );
-      break;
+  const sticky = stickyOnly();
+  if (sticky) {
+    // A sticky note: square corners, a pastel fill and no border, as the canvas draws one by default.
+    body = (
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={h}
+        className={fill ?? (accent ? 'fill-brand-200' : 'fill-amber-100')}
+      />
+    );
+  } else
+    switch (kind) {
+      case 'circle':
+        body = <ellipse cx={cx} cy={cy} rx={w / 2} ry={h / 2} {...common} />;
+        break;
+      case 'diamond':
+        body = <path d={`M${cx} ${y} L${x + w} ${cy} L${cx} ${y + h} L${x} ${cy} Z`} {...common} />;
+        break;
+      case 'cylinder':
+        body = (
+          <path
+            d={`M${x} ${y + 7} a${w / 2} 7 0 0 1 ${w} 0 v${h - 14} a${w / 2} 7 0 0 1 ${-w} 0 Z M${x} ${y + 7} a${w / 2} 7 0 0 0 ${w} 0`}
+            {...common}
+          />
+        );
+        break;
+      case 'hexagon': {
+        const i = w * 0.22;
+        body = (
+          <path
+            d={`M${x + i} ${y} H${x + w - i} L${x + w} ${cy} L${x + w - i} ${y + h} H${x + i} L${x} ${cy} Z`}
+            {...common}
+          />
+        );
+        break;
+      }
+      case 'stadium':
+        body = <rect x={x} y={y} width={w} height={h} rx={h / 2} {...common} />;
+        break;
+      case 'parallelogram': {
+        const s = w * 0.18;
+        body = <path d={`M${x + s} ${y} H${x + w} L${x + w - s} ${y + h} H${x} Z`} {...common} />;
+        break;
+      }
+      case 'triangle':
+        body = <path d={`M${cx} ${y} L${x + w} ${y + h} H${x} Z`} {...common} />;
+        break;
+      default:
+        body = <rect x={x} y={y} width={w} height={h} rx={7} {...common} />;
     }
-    case 'stadium':
-      body = <rect x={x} y={y} width={w} height={h} rx={h / 2} {...common} />;
-      break;
-    case 'parallelogram': {
-      const s = w * 0.18;
-      body = <path d={`M${x + s} ${y} H${x + w} L${x + w - s} ${y + h} H${x} Z`} {...common} />;
-      break;
-    }
-    case 'triangle':
-      body = <path d={`M${cx} ${y} L${x + w} ${y + h} H${x} Z`} {...common} />;
-      break;
-    default:
-      body = <rect x={x} y={y} width={w} height={h} rx={7} {...common} />;
-  }
   return (
     <g>
       {body}
@@ -92,7 +112,7 @@ export function Shape({
           x={cx}
           y={cy + 1}
           anchor="middle"
-          tone={labelTone ?? (accent ? 'onAccent' : 'strong')}
+          tone={labelTone ?? (accent && !sticky ? 'onAccent' : 'strong')}
           size={12}
           weight={500}
         >
@@ -115,6 +135,7 @@ export function Arrow({
   head = true,
   width = 2.5,
   colour,
+  connector = false,
 }: {
   from: [number, number];
   to: [number, number];
@@ -124,8 +145,11 @@ export function Arrow({
   head?: boolean;
   width?: number;
   colour?: { stroke: string; fill: string };
+  /** Joins two elements, as a connector does: not drawn in a help app with no diagram shapes (`stickyOnly`). */
+  connector?: boolean;
 }) {
   const id = useId().replace(/:/g, '');
+  if (connector && stickyOnly()) return null;
   const [x1, y1] = from;
   const [x2, y2] = to;
   const strokeCls = colour?.stroke ?? (tone === 'accent' ? 'stroke-brand-400' : 'stroke-slate-300');
