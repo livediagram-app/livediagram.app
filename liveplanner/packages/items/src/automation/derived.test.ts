@@ -4,6 +4,7 @@ import type { ItemTypeDef } from '../item-types';
 import { item, SAM } from '../test-items';
 import { derivedMoments, derivedTargets, isDerivedTrigger } from './derived';
 import type { AutomationEvent } from './matches';
+import { AUTOMATION_DERIVED_CARDS_MAX } from './types';
 
 // docs/specs/026-plan/automations.md "Triggers": Card Unblocked, Related Cards Done and Column Over Limit, worked out
 // from the plan's cards when another card moves or is archived.
@@ -44,6 +45,25 @@ describe('derived triggers', () => {
     expect(isDerivedTrigger({ kind: 'related_done', related: 'linked' })).toBe(true);
     expect(isDerivedTrigger({ kind: 'column_limit', status: 'doing', limit: 2 })).toBe(true);
     expect(isDerivedTrigger({ kind: 'card_moved' })).toBe(false);
+  });
+
+  it('runs on at most 100 cards a move, the first by their number', () => {
+    const a = task('A', { status: 'done' });
+    const blocked = Array.from({ length: AUTOMATION_DERIVED_CARDS_MAX + 50 }, (_, i) =>
+      task(`B${i}`, { 'f-blocked': [a.id] }),
+    );
+    // The plan's cards in no set order: the answer is in number order all the same.
+    const items = [a, ...blocked.slice().reverse()];
+    const out = derivedTargets(
+      { kind: 'card_unblocked' },
+      moved(a, 'doing', 'done'),
+      items,
+      TYPES,
+      isDone,
+    );
+    expect(out.map((c) => c.key)).toEqual(
+      blocked.slice(0, AUTOMATION_DERIVED_CARDS_MAX).map((c) => c.key),
+    );
   });
 
   it('answers nothing for a card the plan no longer holds', () => {

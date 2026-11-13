@@ -40,7 +40,7 @@ import {
   type AutomationRun,
   type AutomationStepLine,
 } from '@liveplanner/items';
-import { listItems, readItem } from '../../db/items';
+import { getItemsRev, listItems, readItem } from '../../db/items';
 import type { Item } from '@liveplanner/items';
 import { appBaseUrl } from '../../email/client';
 import { cardUrl, readAutomationPlan, type AutomationPlan } from './automation-plan';
@@ -90,6 +90,9 @@ export type RunState = {
   aiAsks?: number;
   // The plan's cards as one event's derived triggers read them (runs between events change them).
   cards?: { event: string; items: Item[] };
+  // The plan's cards as a branch or Link Cards last read them, at the store's rev then: read again only once a write
+  // raised it, so a wake of 25 triggers past 50 such rules reads the plan's cards once, not 1,250 times.
+  planCards?: { rev: number; items: Item[] };
   // The columns this wake's Column Over Limit rules ran on, each as its rule and the column's cards.
   tipped?: Set<string>;
   // A wake's counts (automation-telemetry.ts); absent for Test on a Card and Run Rule, which the browser counts.
@@ -155,6 +158,15 @@ const relatedFailure = (related: readonly { card: { key: number }; failed?: stri
   `Failed on ${related.map((r) => `#${r.card.key}`).join(', ')}: ${related[0]!.failed!}`;
 
 export type RunOptions = { dry?: boolean; turn?: number };
+
+// The plan's cards as they are now: the ones `state` holds while the store's rev has not moved (every card write
+// raises it, db/items.ts), else read afresh.
+async function cardsNow(deps: RunnerDeps, state: RunState): Promise<Item[]> {
+  const rev = await getItemsRev(deps.env, deps.planId);
+  if (state.planCards?.rev !== rev)
+    state.planCards = { rev, items: await listItems(deps.env, deps.planId) };
+  return state.planCards.items;
+}
 
 // Whether a rule's steps read the plan's cards: a branch's related cards, or a Link Cards (the card it links, and a
 // Blocked By loop).
@@ -259,7 +271,7 @@ export async function runRule(
       : cardUrl(deps.env, deps.planId, item.id);
     // A branch's related cards come from the plan as it is now (read before the turn, so no await falls between the
     // turn's read and its taking).
-    const items = readsCards(rule) ? await listItems(deps.env, deps.planId) : null;
+    const items = readsCards(rule) ? await cardsNow(deps, state) : null;
     const ctx = {
       card: item,
       outline: plan.outline,

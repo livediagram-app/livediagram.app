@@ -1003,8 +1003,10 @@ Threads and Wait (spec "Actions", "Wait").
   related cards are all done; Column Over Limit hears a card created in or moved into its column and answers that
   card when the column now holds exactly limit + 1, or, past that, when the card is the (limit + 1)th of the
   column's live cards by `itemStatusSince` (then key): several in before one wake run it once, on the card that tipped
-  it. The runner reads the plan's cards for such an event only when a
-  rule on hears one. Card Unblocked and Related Cards Done run the rule on each answered card under
+  it. Answered cards go in number order, at most `AUTOMATION_DERIVED_CARDS_MAX` (100), so a blocker of 2,000 cards
+  runs each rule on 100, not 2,000 (`automations.perf.test.ts`). The runner reads the plan's cards for such an event
+  only when a rule on hears one; a branch or Link Cards reads them through `cardsNow`, again only once the store's
+  `items_rev` has moved, so a wake of 25 triggers past 50 such rules reads them once while nothing writes. Card Unblocked and Related Cards Done run the rule on each answered card under
   `d:${card.id}:${sha256(moment)}`, the moment (`derivedMoments`) being the card's blockers, children or linked cards
   as sorted `id@rev`, so two events read against the same cards make one run id. Column Over Limit runs under
   `${event.id}>${card.id}`, once per wake per rule and set of card ids in the column (`RunState.tipped`): every event a
@@ -1150,7 +1152,9 @@ overscroll-contain`, and a foot holding **Done** (`useDialogDismiss`, so it slid
   `valueInsertGroups(branch, fields, incoming)` and `filterValueGroups(groups, query)`. Webhook Field… swaps the list
   for `WebhookPathForm` (the old `WebhookFieldInsert` field, with Insert and Back). The field keeps the selection it
   had (a textarea keeps `selectionStart` / `selectionEnd` through a blur), so `insertValue` lands at the caret; a
-  field never focused inserts at the end. Focus returns to the field after the insert, its caret past the value.
+  field never focused inserts at the end. Focus returns to the field after the insert, its caret past the value. A
+  phone's sheet closing sets `quiet` on `ValueInsertButton` (its `HoverCard` `disabled`) until the button's blur, as
+  the sheet's focus return reads as keyboard focus (`:focus-visible`) after Escape.
 - `phone-board.ts`: `offColumnCard(card, view)` (the card's middle more than half its width from the view's middle)
   and `centreCardColumn(itemId, body, columnAttr)`; `PlanBoardView`'s open on a tap (the drag's `onClick` and the
   read-only press) calls it first when `look.columns === 'phone'`. It reads two rects on the tap, nothing per card.

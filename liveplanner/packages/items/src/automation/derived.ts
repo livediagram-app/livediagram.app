@@ -13,7 +13,7 @@ import type { ItemTypeDef } from '../item-types';
 import { linkedCardIds } from '../several-values';
 import { typeIn } from '../type-catalogue';
 import type { AutomationEvent } from './matches';
-import type { AutomationTrigger } from './types';
+import { AUTOMATION_DERIVED_CARDS_MAX, type AutomationTrigger } from './types';
 
 export type DerivedTrigger = Extract<
   AutomationTrigger,
@@ -49,8 +49,21 @@ function pointsAt(
   return out;
 }
 
-/** The cards a derived trigger runs on for `event`, in number order: none when it does not fire. */
+/** The cards a derived trigger runs on for `event`, in number order, at most AUTOMATION_DERIVED_CARDS_MAX: none when
+ *  it does not fire. A blocker of 2,000 cards would otherwise run each of 50 rules 2,000 times in one wake. */
 export function derivedTargets(
+  trigger: DerivedTrigger,
+  event: AutomationEvent,
+  items: readonly Item[],
+  types: readonly ItemTypeDef[],
+  isDone: IsDone,
+): Item[] {
+  return allTargets(trigger, event, items, types, isDone)
+    .sort((a, b) => a.key - b.key)
+    .slice(0, AUTOMATION_DERIVED_CARDS_MAX);
+}
+
+function allTargets(
   trigger: DerivedTrigger,
   event: AutomationEvent,
   items: readonly Item[],
@@ -107,7 +120,7 @@ export function derivedTargets(
           if (linked.some((l) => l.id === card.id) && linked.every(done)) out.push(holder);
         }
       }
-      return out.sort((a, b) => a.key - b.key);
+      return out;
     }
   }
 }

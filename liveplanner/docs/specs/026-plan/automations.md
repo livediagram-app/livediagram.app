@@ -155,7 +155,8 @@ work. A rule does it every time, at once, and says that it did.
   blockers or children done in a group move, or one after the other; two cards dropped into a column together) run
   it once: on the card they concern, and on one card for a column. Several cards into a column before it runs
   (three into a column whose limit is one) run Column Over Limit once, on the card that came in one past the limit,
-  by when each card entered the column (then the lower number).
+  by when each card entered the column (then the lower number). One move runs Card Unblocked or Related Cards Done on
+  at most **100 cards**, the first by their number, as a branch's related cards are.
 
 ### Time triggers
 
@@ -379,7 +380,8 @@ waits for ("Set a field Today", "to a column"), beside the step's "Pick a field"
 |                                 | at the card that started the rule; a field of several cards gains it, a single one is replaced    |
 | **Mention Someone**             | starts a thread on the card that @mentions the assignee, whoever triggered it or a chosen person, |
 |                                 | with a short message (values allowed); it reaches their Inbox and their mention email             |
-|                                 | ([Who a rule's email reaches](#who-a-rules-email-reaches))                                        |
+|                                 | ([Who a rule's email reaches](#who-a-rules-email-reaches)); the comment, @mention and all, keeps  |
+|                                 | within a comment's 2,000 characters, the message cut to fit                                       |
 | **Resolve Threads**             | resolves every open comment thread on the card                                                    |
 | **Wait**                        | holds the rest of the rule for 1 hour to 30 days (below)                                          |
 | **For Related Cards**           | a branch: runs its own conditions and actions on each related card (below)                        |
@@ -674,7 +676,8 @@ Value**) holding a search ("Find a value") and the values in groups: **This Card
 Triggering Card** (inside a For Related Cards branch), **Card Fields** (each field of the card by name, the old Any
 Field…) and, in an Incoming Webhook rule, **Webhook Field…**, which turns the popover to a line for the path with
 Insert and Back. Up and Down walk the values from the search, Enter inserts the one marked, Escape closes; typing
-narrows every group, and nothing matching says so. Choosing one puts the value at the caret (over a selection) and
+narrows every group, and nothing matching says so. On a phone, Escape hands focus back to the button without its
+hover card, which would sit over the step's fields, until focus leaves it. Choosing one puts the value at the caret (over a selection) and
 hands focus back to the field, the caret after the value:
 
 | Value                          | Is                                                     |

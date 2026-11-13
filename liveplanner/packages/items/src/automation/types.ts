@@ -21,6 +21,8 @@ export const AUTOMATION_CREATED_PER_RUN = 1;
 // Phase 2 (spec "Time triggers", "For Related Cards", "Outgoing actions", "Assign in turn").
 export const AUTOMATION_TIME_CARDS_MAX = 100;
 export const AUTOMATION_BRANCH_CARDS_MAX = 100;
+// Card Unblocked and Related Cards Done (spec "Triggers"): the cards one move runs the rule on, the first by number.
+export const AUTOMATION_DERIVED_CARDS_MAX = 100;
 export const AUTOMATION_BRANCH_ACTIONS_MAX = 10;
 export const AUTOMATION_OUTGOING_MAX = 5;
 export const AUTOMATION_ROTATE_MIN = 2;
