@@ -1,6 +1,6 @@
 // The Add a Question gallery's hero art (docs/specs/030-forms/forms.md "The form card, top to bottom"), drawn in the
-// dialog hero header's tokens: Share Form's dots fading toward the title, its own pieces. An answer box with its caret
-// rising from the bottom left and a row of stars from the bottom right, and, where the header is wide enough (the
+// dialog hero header's tokens: Share Form's dots fading toward the title, its own pieces. A row of stars rising
+// from the bottom right, and, where the header is wide enough (the
 // centre piece), a hand of question tiles fanned out (a radio, a ticked box, a star, a calendar), the one in front
 // lifted with the accent's plus, its ring spreading twice, motion allowing. The title mark is a form with a plus, a
 // question to add.
@@ -42,12 +42,6 @@ function QuestionTile({ x, turn, children }: { x: number; turn: number; children
 
 const PIECES = (
   <>
-    {/* An answer box rising from the bottom left, its caret after a line typed. */}
-    <svg {...HERO_SVG} width="56" height="22" viewBox="0 0 56 22" className={HERO_PLACE.bottomLeft}>
-      <rect x="4" y="6" width="48" height="20" rx="5" fill="var(--hero-wash)" />
-      <path d="M11 14h18" stroke="var(--hero-paper)" strokeWidth="3" strokeLinecap="round" />
-      <path d="M34 10v8" stroke="var(--hero-mark)" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
     {/* Three stars rising from the bottom right. */}
     <svg
       {...HERO_SVG}

@@ -1,6 +1,6 @@
 // Choose a Layout's hero art (docs/specs/007-editor/pages-mode.md "An empty page offers its layouts"), drawn in the
 // dialog hero header's tokens: the gallery itself, as the Start screen tiles its frames. A faint grid fading toward
-// the title; in the bottom left a stack of layout frames fanned out; in the bottom right Surprise Me's sparkles; and,
+// the title; in the bottom right Surprise Me's sparkles; and,
 // once the header is wide enough, frames tiled three by two, one selected in the accent with its handles, bobbing
 // twice, motion allowing. The title mark is a layout's frame.
 import type { ReactNode } from 'react';
@@ -140,12 +140,6 @@ const TILES: { kind: Layout; x: number; y: number }[] = [
 
 const PIECES = (
   <>
-    {/* A stack of frames, fanned. */}
-    <svg {...HERO_SVG} width="72" height="30" viewBox="0 0 72 30" className={HERO_PLACE.bottomLeft}>
-      <g transform="rotate(9 44 30)">{frame('columns', 22, 6, 'var(--hero-soft)')}</g>
-      <g transform="rotate(-5 30 30)">{frame('split', 12, 5)}</g>
-      {frame('hero', 4, 8)}
-    </svg>
     {/* Surprise Me: sparkles. */}
     <svg
       {...HERO_SVG}

@@ -3,7 +3,7 @@
 // lanes band: four soft lanes the band's full height, and in the bottom right a card mid-drag over the dashed slot it
 // will drop into, bobbing twice. Setup Sheet is a grid of cells fading toward the title, a block of cells rising in
 // the bottom right with its header row filled and one cell ringed in the accent with its fill handle, its ring
-// spreading twice, and a row of column heads in the bottom left. Motion only where it is welcome.
+// spreading twice. Motion only where it is welcome.
 import {
   HERO_MOTION,
   HERO_PLACE,
@@ -103,30 +103,6 @@ const COLS = [4, 26, 48, 70];
 
 const SHEET_PIECES = (
   <>
-    {/* Column heads: the sheet's first row, each a soft tab with its name drawn as a bar. */}
-    <svg {...HERO_SVG} width="72" height="30" viewBox="0 0 72 30" className={HERO_PLACE.bottomLeft}>
-      {[4, 26, 48].map((x, i) => (
-        <g key={x}>
-          <rect
-            x={x}
-            y="14"
-            width={CELL_W - 2}
-            height="20"
-            rx="4"
-            fill="var(--hero-wash)"
-            stroke="var(--hero-line)"
-          />
-          <rect
-            x={x + 4}
-            y="19"
-            width={i === 1 ? 8 : 11}
-            height="2.5"
-            rx="1.25"
-            fill="var(--hero-mark)"
-          />
-        </g>
-      ))}
-    </svg>
     {/* A block of cells, one ringed with its fill handle. */}
     <svg
       {...HERO_SVG}

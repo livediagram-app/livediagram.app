@@ -581,8 +581,7 @@ page of this site (`components/AccountControl.tsx`), and in the Explorer by its 
 the browser on to the Explorer with the panel open ([Your account](#your-account-account)).
 
 - **The header.** The panel wears the [dialog hero header](../004-index/dialog-hero-header.md), drawn here with
-  liveworkspace.app's own art: one account, every app. A grid fades in from the title's side; in the bottom left
-  the apps' tiles rise from the edge, each to its own height; in the bottom right the account rises with a cog on its
+  liveworkspace.app's own art: one account, every app. A grid fades in from the title's side; in the bottom right the account rises with a cog on its
   shoulder; and where the header is wide enough, the account sits at the hub of four app tiles, a dashed line to
   each, its ring spreading twice. The title mark is the Settings cog. The title is **Settings**, and its line names
   the side shown: opened for an app, "How liveplanner works for you", and under **All** (or opened for no app) "Your

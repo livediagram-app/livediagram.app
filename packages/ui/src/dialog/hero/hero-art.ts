@@ -74,7 +74,7 @@ export function heroTexture(
 }
 
 /**
- * Where pieces stand. Corners rise from the band's bottom edge (at most 96 x 30) and show from `sm`: on a phone the
+ * Where pieces stand. The corner piece rises from the band's bottom right edge (at most 96 x 30) and show from `sm`: on a phone the
  * header is 56px and its mark, title and buttons fill the row, so any corner would sit under one of them, and the
  * band shows its texture alone. The centre piece shows only once the header is 56rem wide
  * (`@4xl`, a container query: dialogs differ in width), right-anchored at `--hero-centre-end` (12.5rem; set it on the
@@ -82,8 +82,8 @@ export function heroTexture(
  * is capped at 26rem there.
  */
 export const HERO_PLACE = {
-  // Hidden on a phone: the 56px row leaves no corner clear of the mark, the title or the buttons.
-  bottomLeft: 'absolute bottom-0 left-2 max-sm:hidden',
+  // Only on the right: the title's side stays plain paper, so the mark, the title and its line stand alone. Hidden on
+  // a phone: the 56px row leaves no corner clear of the title or the buttons.
   bottomRight: 'absolute bottom-0 right-3 max-sm:hidden',
   centre:
     'absolute right-[var(--hero-centre-end,12.5rem)] top-1/2 hidden -translate-y-1/2 @4xl:block',

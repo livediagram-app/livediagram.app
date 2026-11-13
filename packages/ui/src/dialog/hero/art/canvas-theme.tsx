@@ -1,7 +1,7 @@
 // The Tab Style dialog's hero art (each app's docs/specs/011-theme/canvas-and-theme-dialog.md): a tab's look, picked
 // and fine-tuned. Faint rings spread from the bottom right like a colour wheel's, where a fan of swatch chips rises
-// from the edge, the front one in the accent, lifting out of the fan twice; in the bottom left a brush sweeps a
-// stroke of paint along the foot. The title mark is a palette.
+// from the edge, the front one in the accent, lifting out of the fan twice. The
+// title's side stays plain paper. The title mark is a palette.
 // Every app's Tab Style draws it, so it lives here (@liveworkspace/ui/dialog-hero-art/canvas-theme).
 import { HERO_MOTION, HERO_PLACE, HERO_SVG, heroTexture, type HeroArt } from '../hero-art';
 
@@ -44,29 +44,6 @@ function chip(deg: number, fill: string, className?: string) {
 
 const PIECES = (
   <>
-    {/* A brush sweeping a stroke of paint along the foot. */}
-    <svg {...HERO_SVG} width="76" height="30" viewBox="0 0 76 30" className={HERO_PLACE.bottomLeft}>
-      <path
-        d="M4 25c9-7 17 3 27-1s13-7 19-4"
-        fill="none"
-        stroke="var(--hero-wash)"
-        strokeWidth="6"
-        strokeLinecap="round"
-      />
-      <g transform="rotate(-38 56 17)">
-        <path d="M44 14.5h7v5h-7c-2.5 0-4-1-5-2.5 1-1.5 2.5-2.5 5-2.5Z" fill="var(--hero-mark)" />
-        <rect x="51" y="14" width="6" height="6" rx="1" fill="var(--hero-line)" />
-        <rect
-          x="57"
-          y="14.75"
-          width="18"
-          height="4.5"
-          rx="2.25"
-          fill="var(--hero-plate)"
-          stroke="var(--hero-line)"
-        />
-      </g>
-    </svg>
     {/* A fan of swatch chips, the front one in the accent lifting out of it. */}
     <svg
       {...HERO_SVG}

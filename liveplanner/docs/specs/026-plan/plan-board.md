@@ -66,7 +66,7 @@ Stored on the element, shared by everyone, undone like any element edit:
   above the cluster's right edge; on a phone it is a bottom sheet; without the cluster on screen it is a centred
   dialog. Nothing dims, as each change applies live; a click outside, Escape or the close button closes it, and
   pressing Board again does too. Its header is the [dialog hero header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), drawn as the board's set-up: a faint grid
-  fading toward the title, two swimlanes in the bottom left, and in the bottom right three columns, the middle one
+  fading toward the title, and in the bottom right three columns, the middle one
   lifted and tilted out of its dashed slot as if being dragged, bobbing twice, motion allowing; the title mark is a
   board's columns, and its line "Start from a layout that suits your cards, then fine-tune any part of it." It holds **Create
   Form** (where the board can take one, as in its element menu: a form whose responses come to this board) beside
