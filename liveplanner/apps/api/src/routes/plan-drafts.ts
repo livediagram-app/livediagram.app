@@ -1,13 +1,13 @@
 // Describe a Plan, `POST /api/plan-drafts` (docs/specs/026-plan/describe-a-plan.md; blueprint describe-a-plan.md
 // "The api"), for a signed-in person only: no plan exists on the server yet when Start Planning asks, so the count is
 // the account's (plan-draft-count.ts), PLAN_DRAFT_PER_DAY a UTC day. The person's words, alone, go to the AI actions'
-// model; its reply is read by @liveplanner/items readPlanDraft into a draft of names, or asked once more with the
-// check's words. Nothing is made: the route writes only its count. Every refusal's message is fixed words, never the
+// model; its reply is read by @liveplanner/items readPlanDraft into a draft of names (with up to two starter rules,
+// each read by Describe a Rule's reader), or asked once more with the check's words. Nothing is made: the route writes only its count. Every refusal's message is fixed words, never the
 // model's; the request and the reply are never logged.
 import {
-  AI_DRAFT_FAILED,
-  AI_NOT_SET_UP,
   PLAN_DRAFT_CAPPED,
+  PLAN_DRAFT_FAILED,
+  PLAN_DRAFT_NOT_SET_UP,
   PLAN_DRAFT_OFF_TOPIC,
   PLAN_DRAFT_PROMPT_MAX,
   PLAN_DRAFT_UNREADABLE,
@@ -59,23 +59,35 @@ async function draftPlan(ctx: RouteContext): Promise<Response> {
       'prompt',
     );
   const client = aiClient(ctx.env);
-  if (!client) return refuse(503, 'plan_draft_unavailable', AI_NOT_SET_UP);
+  if (!client) return refuse(503, 'plan_draft_unavailable', PLAN_DRAFT_NOT_SET_UP);
 
   const env = ctx.env;
   const started = Date.now();
   const defer = (p: Promise<unknown>) => ctx.waitUntil?.(p);
   let previous: { path: string; message: string } | undefined;
   // The refused path (a part's place, never the request's words) says which check a draft that didn't read failed.
-  const done = (answer: Answer, asks: number, response: Response) => {
+  // A draft's starter rules: how many it kept and left out, never what they say.
+  const done = (
+    answer: Answer,
+    asks: number,
+    response: Response,
+    rules?: { rules: number; rulesDropped: number },
+  ) => {
     const refused = answer === 'unreadable' ? previous?.path : undefined;
-    console.info('[plan-draft] draft', { answer, asks, tookMs: Date.now() - started, refused });
+    console.info('[plan-draft] draft', {
+      answer,
+      asks,
+      tookMs: Date.now() - started,
+      refused,
+      ...rules,
+    });
     return response;
   };
 
   // One draft counted, before the first ask; its second ask rides it.
   const spent = await spendPlanDraft(env, accountId, started);
   if (spent === 'unavailable')
-    return done('failed', 0, refuse(503, 'plan_draft_unavailable', AI_DRAFT_FAILED));
+    return done('failed', 0, refuse(503, 'plan_draft_unavailable', PLAN_DRAFT_FAILED));
   if (!spent) return done('capped', 0, refuse(429, 'plan_draft_capped', PLAN_DRAFT_CAPPED));
 
   let asks = 0;
@@ -84,7 +96,7 @@ async function draftPlan(ctx: RouteContext): Promise<Response> {
     defer(reportServerEvent(env, 'Plan', 'Ran', 'PlanAiDraft'));
     const asked = await ask(client, planDraftRequest(prompt, previous), env.AI_GATEWAY);
     if (!asked.ok)
-      return done('failed', asks, refuse(503, 'plan_draft_unavailable', AI_DRAFT_FAILED));
+      return done('failed', asks, refuse(503, 'plan_draft_unavailable', PLAN_DRAFT_FAILED));
     const reply = readAiReply(asked.raw);
     if (!reply) {
       previous = { path: 'reply', message: 'the reply must be one JSON object' };
@@ -97,7 +109,10 @@ async function draftPlan(ctx: RouteContext): Promise<Response> {
     }
     if ('draft' in out) {
       const answer: PlanDraftResponse = { draft: out.draft };
-      return done('drafted', asks, json(answer));
+      return done('drafted', asks, json(answer), {
+        rules: out.draft.rules?.length ?? 0,
+        rulesDropped: out.dropped ?? 0,
+      });
     }
     previous = out.refused;
   }

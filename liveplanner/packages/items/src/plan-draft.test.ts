@@ -141,6 +141,21 @@ describe('the ask', () => {
             options: Array.from({ length: PLAN_DRAFT_OPTIONS_MAX }, (_, k) => `Option ${k}`),
           })),
         })),
+        // Two starter rules of three steps, each comment at the 120 characters the instructions ask.
+        rules: Array.from({ length: 2 }, (_, i) => ({
+          name: `A Starter Rule Named ${i}`,
+          trigger: {
+            kind: 'card_moved',
+            from: ['Stage Name Number 0'],
+            to: ['Stage Name Number 1'],
+          },
+          conditions: [{ kind: 'type', types: ['Card Type 0'] }],
+          steps: [
+            { kind: 'set_field', field: 'A Field Called 0', value: { text: 'Option 0' } },
+            { kind: 'comment', text: 'c'.repeat(120) },
+            { kind: 'add_label', label: 'Needs Review' },
+          ],
+        })),
       },
     };
     const chars = JSON.stringify(full).length;
