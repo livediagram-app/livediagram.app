@@ -20,7 +20,7 @@ export function RefreshButton({ busy, onRefresh }: { busy: boolean; onRefresh: (
         data-automations-refresh=""
         busy={busy}
         onClick={onRefresh}
-        className="touch-target relative size-7 shrink-0 cursor-pointer px-0"
+        className="touch-target relative size-7 shrink-0 cursor-pointer !px-0"
       >
         <RefreshIcon
           size={14}
