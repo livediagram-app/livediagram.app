@@ -336,8 +336,9 @@ Editor's Clear High Scores, copies starting empty, the answers flush's no-op and
   `ReaderShell` titled **Moon Mail** reading **Loading…**, so nothing of the game is in the editor's first load
   (`apps/editor/app/arcade-lazy.test.ts` walks the static imports from the editor's entries and finds none of it).
 - **The shell**: `ReaderShell` with `widthClassName="max-w-[360px]"`, `initialFocus="container"` (so Space never
-  presses Close) and `onBackdrop`: a run playing pauses, anything else closes. `useModalGuard(true)` while open, so
-  `walkInputBlocked()` holds every walking input, the editor's shortcuts and the tours stand aside.
+  presses Close) and `onBackdrop`: a run playing pauses, anything else closes. The shell's `useModalGuard(true)` (every
+  reader's) holds the panel open in the guard, so `walkInputBlocked()` holds every walking input, the editor's shortcuts
+  and the tours stand aside.
 - **Who plays**: `useOptionalEditorContext()`, read only in the panel. `can.level` `edit` or `participate` plays; `view`
   or no editor shows `HighScores` alone with **Viewers See the Scores**. The signing key is `signingKeyOf(editor)`
   (`useNoteSigner.ts`): a Participant's adder key, an Editor's adder key or participant key. The tab is

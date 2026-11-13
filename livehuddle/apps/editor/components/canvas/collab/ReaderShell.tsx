@@ -9,6 +9,7 @@
 // (docs/specs/009-elements/screen-and-room-sign.md "Screen") and the reading pieces' reader share it.
 import { useRef, type ReactNode } from 'react';
 import { lucideX } from '@liveworkspace/icons/lucide';
+import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import {
   DialogCloseButton,
   DialogFooter,
@@ -64,6 +65,9 @@ export function ReaderShell({
   const panel = useRef<HTMLDivElement>(null);
   useFocusTrap(panel, true, initialFocus);
   useEscape(onClose, { capture: true, stopPropagation: true });
+  // While open a reader holds the keyboard: walkInputBlocked() reads the guard, so no arrow or W/A/S/D walks the
+  // character behind it and the editor's shortcuts stand aside. Fields inside it still type.
+  useModalGuard(true);
   return (
     <Portal>
       {/* React events bubble out of a portal to the element it was opened from: kept here, so a press in the reader
