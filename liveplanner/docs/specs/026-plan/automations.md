@@ -373,7 +373,8 @@ waits for ("Set a field Today", "to a column"), beside the step's "Pick a field"
 | **Restore From Archive**        | brings an archived card back                                                                      |
 | **Copy Card**                   | adds a copy of the card (its type, title and fields), in its column or a chosen one               |
 | **Add a Checklist**             | adds 1 to 20 unticked items (values allowed) to the card's checklist; an item already on it, by   |
-|                                 | its text, is not added twice                                                                      |
+|                                 | its text, is not added twice; an item is cut to 200 characters once its values are filled in, as  |
+|                                 | a person's checklist item is                                                                      |
 | **Link Cards**                  | points one of the card's Card fields (a Blocked By field too) at a chosen card, or, in a branch,  |
 |                                 | at the card that started the rule; a field of several cards gains it, a single one is replaced    |
 | **Mention Someone**             | starts a thread on the card that @mentions the assignee, whoever triggered it or a chosen person, |

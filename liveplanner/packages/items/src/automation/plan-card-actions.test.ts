@@ -4,6 +4,7 @@ import type { AutomationAction, AutomationStep } from './types';
 import { BUG, NOTE, OUTLINE, bug, ctxFor } from './test-fixtures';
 import type { ItemTypeDef } from '../item-types';
 import type { Item, ItemFieldValue } from '../item';
+import { validateFields } from '../fields';
 
 // docs/specs/026-plan/automations.md "Actions" (Change Card Type, Copy Card, Add a Checklist, Link Cards) and
 // "Wait": the actions after Phase 3 planned, pure.
@@ -116,6 +117,14 @@ describe('Add a Checklist', () => {
     const again = done(run([{ kind: 'add_checklist', items: ['ship'] }], had, { outline }));
     expect(again.patch).toEqual({});
     expect(again.lines[0]).toMatchObject({ text: 'Add 0 checklist items', already: true });
+  });
+
+  it('cuts an item its values make long, so a person can still tick the checklist', () => {
+    const card = note({ title: `${'d'.repeat(199)} and more` });
+    const r = done(run([{ kind: 'add_checklist', items: ['{{card.title}}'] }], card, { outline }));
+    const rows = r.patch.set!['checklist'] as { text: string }[];
+    expect(rows[0]!.text).toBe('d'.repeat(199));
+    expect(validateFields({ checklist: rows }, 'patch').ok).toBe(true);
   });
 
   it('fails a card with no Checklist, and one past the checklist limit', () => {

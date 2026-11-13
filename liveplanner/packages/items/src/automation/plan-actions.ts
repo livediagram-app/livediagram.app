@@ -15,7 +15,12 @@ import {
   type ItemFields,
   type ItemPerson,
 } from '../item';
-import { ITEM_CHECKLIST_MAX, ITEM_LABELS_MAX, ITEM_TITLE_MAX } from '../limits';
+import {
+  ITEM_CHECKLIST_MAX,
+  ITEM_CHECKLIST_TEXT_MAX,
+  ITEM_LABELS_MAX,
+  ITEM_TITLE_MAX,
+} from '../limits';
 import { colourFieldOf } from '../item-colour';
 import { blockingCycleOf, isBlocksField } from '../blocked-by';
 import { linkedCardIds } from '../several-values';
@@ -304,7 +309,11 @@ function addChecklist(a: Extract<AutomationAction, { kind: 'add_checklist' }>, w
   const texts = new Set(had.map((r) => r.text.trim().toLowerCase()));
   const rows = [...had];
   for (const item of a.items) {
-    const text = fillValues(item, { ...w.values, card: plan.card }).trim();
+    // Cut as a person's item is: a value filled in (a description, a webhook's) may run past it.
+    const text = fillValues(item, { ...w.values, card: plan.card })
+      .trim()
+      .slice(0, ITEM_CHECKLIST_TEXT_MAX)
+      .trimEnd();
     if (!text || texts.has(text.toLowerCase())) continue;
     texts.add(text.toLowerCase());
     rows.push({ text, done: false });

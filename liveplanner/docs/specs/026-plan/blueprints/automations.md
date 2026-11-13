@@ -933,7 +933,7 @@ Threads and Wait (spec "Actions", "Wait").
   only, Copy Card counting as the run's one new card.
 - **Planning** (`plan-actions.ts`): Change Card Type sets the patch's `type` (`Plan.retype`) after checking the column
   suits it; Set Colour writes the type's colour field (`colourFieldOf`); Add a Checklist appends the rows the card
-  lacks by text; Link Cards writes the Card field and refuses a Blocked By loop (`blockingCycleOf`, so a rule with one
+  lacks by text, each filled in and cut to `ITEM_CHECKLIST_TEXT_MAX`; Link Cards writes the Card field and refuses a Blocked By loop (`blockingCycleOf`, so a rule with one
   reads the plan's cards); Copy Card plans a `PlannedCard` of the card's type and fields; Mention Someone and Resolve
   Threads plan `mentions` and `resolve`. A Wait ends the plan with `wait: {hours, from}`; `planActions(…, {from})`
   goes on from a step and `{through: true}` (Test on a Card) plans past every Wait.
