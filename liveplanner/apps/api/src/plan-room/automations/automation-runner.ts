@@ -224,6 +224,7 @@ export async function runRule(
   // The run's writes keep the cards `state` holds in step (noteWrite), so a branch after them reads none afresh.
   const writer: RunnerDeps = {
     ...deps,
+    cards: () => cardsNow(deps, state),
     relay: (items, rev) => {
       deps.relay(items, rev);
       noteWrite(state, items, rev);

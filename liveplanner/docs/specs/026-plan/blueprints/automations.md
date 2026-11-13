@@ -1012,7 +1012,9 @@ Threads and Wait (spec "Actions", "Wait").
   card writes go into the cards held through its relay (`noteWrite`), each only when it landed one rev past them (no
   write from elsewhere between), so a wake whose every run writes still reads them once (7,530 ms to 690 ms of CPU
   for 1,000 writing branch runs over 2,000 cards); any other write leaves them at their rev, and the next branch reads
-  afresh. Card Unblocked and Related Cards Done run the rule on each answered card under
+  afresh. A move's place at the end of its new column (`patchCard`) comes from the same cards (`WriteDeps.cards`), so a
+  branch moving 100 related cards reads the plan's cards once, not 100 times (910 ms to 85 ms of CPU over 2,000
+  cards). Card Unblocked and Related Cards Done run the rule on each answered card under
   `d:${card.id}:${sha256(moment)}`, the moment (`derivedMoments`) being the card's blockers, children or linked cards
   as sorted `id@rev`, so two events read against the same cards make one run id. Column Over Limit runs under
   `${event.id}>${card.id}`, once per wake per rule and set of card ids in the column (`RunState.tipped`): every event a

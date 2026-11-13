@@ -68,6 +68,9 @@ export interface WriteDeps {
   relay: (items: Item[], rev: number) => void;
   // Work that may outlive the run (a thread's relay, an email).
   defer: (p: Promise<unknown>) => void;
+  // The plan's cards as they are now, from those the wake holds while the store's rev has not moved (the runner's
+  // cardsNow); absent, read afresh.
+  cards?: () => Promise<Item[]>;
 }
 
 export type WriteOutcome = { ok: true } | { ok: false; reason: string };
@@ -106,7 +109,8 @@ export function rebaseLabels(patch: ItemPatch, base: Item, now: Item): ItemPatch
 }
 
 // The one write to the triggering card: the patch, as a move when it changes the column (so the card goes to the
-// end of its new column, as a drop would put it). `card`: the card the patch was planned from, its labels rebased
+// end of its new column, as a drop would put it, from the cards the wake holds: a branch moving 100 cards reads the
+// plan's cards once, not 100 times). `card`: the card the patch was planned from, its labels rebased
 // onto the card as it is when written (rebaseLabels).
 // `tag`: the history line's, 'automation_ai' for an AI step's write.
 export async function patchCard(
@@ -137,7 +141,7 @@ export async function patchCard(
               ...(patch.clear ? { clear: patch.clear } : {}),
               ...(patch.type ? { type: patch.type } : {}),
             },
-            await listItems(deps.env, deps.planId),
+            await (deps.cards?.() ?? listItems(deps.env, deps.planId)),
             { now, by },
           )
         : applyPatch(before, patch, { now, by });
