@@ -103,7 +103,7 @@ describe('StepPanel', () => {
       ...screen.getByRole('combobox', { name: 'Field' }).querySelectorAll('option'),
     ];
     expect(fieldNames.map((f) => f.textContent)).not.toContain('Flagged');
-    expect(fieldNames.map((f) => (f as HTMLOptionElement).value)).not.toContain('checklist');
+    expect(fieldNames.map((f) => f.value)).not.toContain('checklist');
     pick('Field', 'priority');
     expect(latest.steps[0]).toEqual({
       kind: 'set_field',
@@ -154,8 +154,8 @@ describe('StepPanel', () => {
         part={{ part: 'step', index: 0 }}
       />,
     );
-    expect((screen.getByRole('combobox', { name: 'Set To' }) as HTMLSelectElement).value).toBe(
-      'number',
+    expect(screen.getByRole('combobox', { name: 'Set To' })).toBe(
+      screen.getByDisplayValue('A Number'),
     );
     cleanup();
     render(
@@ -166,8 +166,8 @@ describe('StepPanel', () => {
         part={{ part: 'step', index: 0 }}
       />,
     );
-    expect((screen.getByRole('combobox', { name: 'Set To' }) as HTMLSelectElement).value).toBe(
-      'date',
+    expect(screen.getByRole('combobox', { name: 'Set To' })).toBe(
+      screen.getByDisplayValue('A Day'),
     );
   });
 
