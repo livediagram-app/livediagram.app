@@ -1,6 +1,7 @@
-import { FONT } from '@/components/art-tokens';
+// The hero art's sans, as each product's components/art-tokens.ts names it.
+const FONT = 'ui-sans-serif, system-ui, sans-serif';
 
-// A collaborator's cursor in the hero art: the arrow and its name badge, drawn at the origin (the caller's <g>
+// A collaborator's cursor in a product's hero art (livedesign keeps its own, set on the cap band): the arrow and its name badge, drawn at the origin (the caller's <g>
 // places and animates it). The badge sizes to its label: the compact one fits initials, a wider one a name.
 export function CursorMark({
   colour,

@@ -1,7 +1,7 @@
 import type { StyledPrim } from '@liveworkspace/icons';
 import { lucideHeart, lucideLayers, lucideStar, lucideUsers } from '@liveworkspace/icons/lucide';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
-import { CursorMark } from '@/components/hero-cursor';
+import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor';
 import {
   CONTENT,
   HAIRLINE,

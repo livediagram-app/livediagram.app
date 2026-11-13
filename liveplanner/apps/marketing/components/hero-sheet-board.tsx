@@ -1,5 +1,5 @@
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
-import { CursorMark } from '@/components/hero-cursor';
+import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor';
 
 // The hero's Sheets window (docs/specs/019-marketing/marketing-site.md "Hero"): a budget Sheet in Plan mode
 // (docs/specs/029-sheets/sheet.md) filling its tab. Its header row and lines land row by row; you select Total's

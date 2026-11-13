@@ -1,6 +1,6 @@
 import { capBandBaselineY } from '@liveworkspace/icons';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
-import { CursorMark } from '@/components/hero-cursor';
+import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor';
 
 // The Collaborate window (docs/specs/019-marketing/marketing-site.md "Story beats"): two people on
 // one page at once. A one-page brief lands; you write its headline while a teammate arrives, selects

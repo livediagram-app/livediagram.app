@@ -1,5 +1,5 @@
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
-import { CursorMark } from '@/components/hero-cursor';
+import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor';
 
 // The Dashboards scene (docs/specs/019-marketing/marketing-site.md "Feature scenes"): a product launch's
 // Dashboard tab (docs/specs/026-plan/plan-tabs.md) filling its tab, rows of live slots side by side. Its slots

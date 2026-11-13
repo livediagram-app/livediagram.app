@@ -1,6 +1,6 @@
 import { capBandBaselineY } from '@liveworkspace/icons';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
-import { CursorMark } from '@/components/hero-cursor';
+import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor';
 
 // The collaboration scene (docs/specs/019-marketing/marketing-site.md "Feature scenes"): a sprint board
 // (docs/specs/026-plan/plan-board.md) with three people on it at once. The columns and their twelve cards
