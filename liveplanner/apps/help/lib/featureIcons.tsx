@@ -130,6 +130,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M16.5 9.5l-4 6h3.5l-1 5 4.5-6.5h-3.5z" />
     </Glyph>
   ),
+  // A note of words with a sparkle at its corner, beside the board's columns it becomes: a plan drafted from words.
+  'describe-a-plan': (
+    <Glyph>
+      <rect x="3" y="4" width="9" height="11" rx="1.5" />
+      <path d="M5.5 8h4M5.5 11h2.5" />
+      <path d="M8.5 1.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z" />
+      <path d="M15 9h6v11h-6zM18 9v11M15 13h3" />
+      <path d="M12 17.5h1.5" />
+    </Glyph>
+  ),
   // A pull request's branch, two commits joined into a third, over a card's corner: code linked to a card.
   'connect-github': (
     <Glyph>

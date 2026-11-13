@@ -19,6 +19,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'card-activity': '#be185d',
   automations: '#7c3aed',
   'connect-github': '#334155',
+  'describe-a-plan': '#9333ea',
   'plan-tour': '#0284c7',
   dashboards: '#0ea5e9',
   forms: '#7c3aed',
