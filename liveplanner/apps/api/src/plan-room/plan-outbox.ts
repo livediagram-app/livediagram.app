@@ -9,7 +9,8 @@
 // write, so no write path can forget one and a save makes no network call. The room's alarm drains it on idle,
 // at most once a minute per plan (plan-room.ts FLUSH_MIN_GAP_MS), then deletes the keys it pushed. A key written
 // again meanwhile has a new id and stays for the next drain. A key whose push fails stays and waits a minute,
-// doubling to an hour; one refused for good, or failed 12 times, is parked (@liveworkspace/index-app outbox.ts).
+// doubling to an hour; one refused for good, or failed 12 times, is parked (@liveworkspace/index-app outbox.ts),
+// and a drain the index answers in full lets it back in for one more try, at most once a day (outbox-parked.ts).
 
 import {
   collabIndexRowsFromElements,
@@ -24,6 +25,7 @@ import {
   editedOf,
   readOutbox,
   settleOutbox,
+  tendParkedOutbox,
 } from '@liveworkspace/index-app';
 import {
   COLLAB_CARDS_TAB,
@@ -290,6 +292,15 @@ export async function drainOutbox(
       failed.push({ ids: imageKeys, error });
     }
   }
-  await settleOutbox(env.PLAN_DB, PLAN_OUTBOX, planId, all, { done, failed }, now);
+  const { parked } = await settleOutbox(
+    env.PLAN_DB,
+    PLAN_OUTBOX,
+    planId,
+    all,
+    { done, failed },
+    now,
+  );
+  // Parked keys bounded, and let back in for one more try after a drain the index answered in full.
+  await tendParkedOutbox(env.PLAN_DB, PLAN_OUTBOX, planId, { done, failed, parked }, now);
   return { keys: done.length, pushes, more: outcome.more };
 }
