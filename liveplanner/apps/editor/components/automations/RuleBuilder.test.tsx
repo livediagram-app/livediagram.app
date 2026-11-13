@@ -17,7 +17,14 @@ const toast = vi.hoisted(() => ({ info: vi.fn(), success: vi.fn(), error: vi.fn(
 vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const api = { save: vi.fn(), toggle: vi.fn(), test: vi.fn() };
-function Builder({ saved = rule() as ReturnType<typeof rule> | null, initial = saved ?? rule() }) {
+type Saved = ReturnType<typeof rule>;
+function Builder({
+  saved = rule(),
+  initial = saved ?? rule(),
+}: {
+  saved?: Saved | null;
+  initial?: Saved;
+}) {
   return (
     <RuleBuilder
       rule={saved}
