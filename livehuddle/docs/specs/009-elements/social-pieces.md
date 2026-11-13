@@ -291,6 +291,10 @@ Machine's, Work Tracker #529, reuses them): they name the piece and a seat, and 
   for as long as you stand there; nobody else sees your bubble. With a score on the machine's table the bubble adds
   its best below: **Best 1,240 · Ann** (the name cut short to fit). A score posted or a clear made anywhere in the
   Space changes it at once.
+- **Clear of a room's status card** (Work Tracker 615): the bubble rises up to 50 px above the cabinet, 160 px wide
+  centred on it, so no template stands a [Room Sign](screen-and-room-sign.md) there: the Startup HQ Games Room's
+  machines stand 100 px into the room, below the sign on its back wall. The Reception Desk's Welcome bubble keeps the
+  same room. `packages/templates/src/template-bubbles.test.ts` checks every tab of every template.
 - A click anywhere on the cabinet walks you to its front, 16 px below it under the click (`walkPointFor` in
   `apps/editor/lib/avatar-click-intent.ts`), never onto the floor behind its screen. A cabinet turned to face another
   way ([Turning furniture](furniture-facing.md)) has its front there: a click walks you 16 px beyond its base on

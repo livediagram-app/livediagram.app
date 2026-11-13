@@ -325,9 +325,11 @@ const HQ_ROOMS: CampusRoom[] = [
       // A Dartboard on the back wall, left of the way in (docs/specs/009-elements/social-pieces.md).
       { kind: 'dartboard', x: 100, y: 36 },
       { kind: 'ping-pong-table', x: 60, y: 160 },
-      { kind: 'arcade-machine', x: 320, y: 60 },
-      { kind: 'arcade-machine', x: 400, y: 60 },
-      { kind: 'jukebox', x: 410, y: 230 },
+      // The machines stand forward of the back wall, so their Insert Coin bubbles rise clear of the Room Sign on its
+      // face beside the door (Work Tracker 615, template-bubbles.test.ts); the jukebox below them, by the side wall.
+      { kind: 'arcade-machine', x: 320, y: 100 },
+      { kind: 'arcade-machine', x: 400, y: 100 },
+      { kind: 'jukebox', x: 410, y: 250 },
       { kind: 'plant', x: 20, y: 50 },
     ],
   },

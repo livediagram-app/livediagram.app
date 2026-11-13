@@ -126,6 +126,16 @@ export const LayersGlyph = lucideGlyph(lucideLayers, MENU_ICON_PX);
 export const AnimationMenuGlyph = lucideGlyph(lucideRadio, MENU_ICON_PX);
 // The "Tools" / "Session" / "Scale" rows: a wrench (sliders are Settings).
 export const ToolsMenuGlyph = lucideGlyph(lucideWrench, MENU_ICON_PX);
+// The room menu's "Walls" section (docs/specs/009-elements/office.md "Glass walls"): a run of bricks, the wall itself,
+// on the 24-unit grid as the Lucide glyphs are; its Solid and Glass tiles draw the two wall styles.
+export function WallsMenuGlyph() {
+  return (
+    <Glyph size={MENU_ICON_PX} units={24}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 9.33h18M3 14.67h18M12 4v5.33M7.5 9.33v5.34M16.5 9.33v5.34M12 14.67V20" />
+    </Glyph>
+  );
+}
 // The "Style" flyout row (docs/specs/008-canvas/canvas-and-palette.md): a paintbrush, distinct from
 // the Colours child's palette and the Presets child's wand.
 export const StyleMenuGlyph = lucideGlyph(lucidePaintbrush, MENU_ICON_PX);

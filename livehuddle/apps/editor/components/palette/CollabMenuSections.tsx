@@ -28,7 +28,7 @@ import {
 import { Glyph } from '@livehuddle/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
-import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { ToolsMenuGlyph, WallsMenuGlyph } from '@/components/palette/context-menu-icons';
 
 // Each kind contributes exactly ONE section to the Tools group: a chair has Chair and nothing else.
 // `MenuFlyoutSection` promotes a lone section into the host menu (docs/specs/008-canvas/canvas-and-palette.md),
@@ -155,7 +155,7 @@ export function RoomWallsMenuSection({
 }) {
   const walls = target ? roomWallsOf(target) : 'solid';
   return (
-    <MenuAccordionSection title="Walls" icon={<ToolsMenuGlyph />} {...sectionProps('room-walls')}>
+    <MenuAccordionSection title="Walls" icon={<WallsMenuGlyph />} {...sectionProps('room-walls')}>
       <MenuTileGrid cols={2}>
         {ROOM_WALLS.map((w) => (
           <MenuTile
