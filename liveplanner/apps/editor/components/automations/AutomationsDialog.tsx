@@ -44,7 +44,8 @@ import { RuleBuilder } from './RuleBuilder';
 import { RuleDrawer } from './RuleDrawer';
 import { RulesEmpty } from './RulesEmpty';
 import { RulesList } from './RulesList';
-import { RunLog } from './RunLog';
+import { RefreshButton, REFRESH_FAILED } from './RefreshButton';
+import { RunLog, type RunLogReload } from './RunLog';
 import { RunsMeter } from './RunsMeter';
 import { localZone, useMinuteClock } from './screen-clock';
 import { ScreenTabs, screenPanelId, screenTabId } from './ScreenTabs';
@@ -104,6 +105,10 @@ export function AutomationsDialog({
       live = false;
     };
   }, [scope]);
+  // Refresh (beside the meter): the list and the open Audit Trail read again, one press at a time. It only reads, so
+  // a rule open in the builder keeps its unsaved changes (the builder reads its rule once, as it mounts).
+  const runsReload = useRef<RunLogReload | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const outline = useAutomationOutline();
   const plan = usePlan();
   const toast = useToast();
@@ -257,8 +262,23 @@ export function AutomationsDialog({
     fromTemplate?.body ??
     newRuleBody(nextRuleName(rules.map((r) => r.name)), zone);
 
+  const refresh = () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    void Promise.all([readAutomations(scope), runsReload.current?.() ?? true]).then(
+      ([rulesRead, runsRead]) => {
+        setRefreshing(false);
+        if (!rulesRead || !runsRead) toast.error(REFRESH_FAILED);
+      },
+    );
+  };
   const meter = api.data ? (
-    <RunsMeter used={api.data.runsToday} max={api.data.runsPerDay} stacked={phone} />
+    <div className={`flex items-center ${phone ? 'gap-2' : 'gap-1.5'}`}>
+      <div className={phone ? 'min-w-0 flex-1' : undefined}>
+        <RunsMeter used={api.data.runsToday} max={api.data.runsPerDay} stacked={phone} />
+      </div>
+      <RefreshButton busy={refreshing} onRefresh={refresh} />
+    </div>
   ) : null;
 
   const body = (() => {
@@ -321,6 +341,7 @@ export function AutomationsDialog({
           phone={phone}
           initialRule={target.ruleId}
           onOpenCard={openCard}
+          reloadRef={runsReload}
         />
       );
     if (target.view === 'templates')

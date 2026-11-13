@@ -774,9 +774,18 @@ allowing. On a phone the header keeps its desktop look (100px, the mark, the tit
   open tab: Left and Right move to the next tab and open it (wrapping), Home and End to the first and last, and the
   open tab names its panel.
 - A **Runs today** meter at the right of the tabs, beside the tab list rather than in it: "142 of 1,000" (No Match runs are not counted).
+- A **Refresh** button right beside the meter (at its right, on a phone too, where the meter is stacked at the
+  screen's foot): the refresh glyph alone, named Refresh by its tooltip and to screen readers, the quiet (ghost)
+  icon button. It reads again everything the screen shows: the rules list (each rule's Last Run, This Week, next
+  run and what it needs), Runs today, and the Audit Trail's runs for its filters when that tab is open. While it
+  reads, the glyph turns (still with reduced motion) and the button is busy (it ignores a press, keeping focus), so
+  one read is under way at a time; what is shown stays until the new answer replaces it, never a blank or skeleton
+  flash. A read that fails keeps what was shown and says "Couldn't refresh. Check your connection and try again."
+  as a brief toast. It reads only: a rule open in the builder keeps its unsaved changes.
 - The rules are read each time the screen opens (what was read before shows meanwhile), so a rule another Editor
-  or an agent made, changed or deleted shows; there is no live push between two people's screens. A change made
-  while that read is under way is kept: the list is read once more after it, never left as the read had it.
+  or an agent made, changed or deleted shows; there is no live push between two people's screens (Refresh reads
+  them again on demand). A change made while that read is under way is kept: the list is read once more after it,
+  never left as the read had it.
 - **Rules**: a search box ("Find a rule"), **All Triggers** and **On and Off** filters (on a wide screen one row, all
   32 px tall; **All Triggers** lists GitHub's triggers only where Pick a Trigger offers them, or one a rule is
   already on), then one row per rule:

@@ -67,7 +67,7 @@ describe('a change answered while the list is read', () => {
     client.listAutomations.mockReturnValueOnce(before.promise);
     client.listAutomations.mockResolvedValueOnce({ rules: [rule(false)] });
     client.toggleRule.mockResolvedValueOnce({ rule: rule(false) });
-    let reading!: Promise<void>;
+    let reading!: Promise<boolean>;
     act(() => {
       reading = readAutomations(SCOPE);
     });

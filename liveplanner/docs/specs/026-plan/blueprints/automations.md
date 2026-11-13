@@ -88,6 +88,7 @@ apps/api/src/routes/automation-routes.ts   the routes below; gate: whole-plan ed
 apps/editor/components/automations/
   AutomationsButton.tsx       the footer button (in ChromeControls between Search and Settings), amber dot
   AutomationsDialog.tsx       the screen: tabs, meter, Rules and Audit Trail views, phone sheet
+  RefreshButton.tsx           Refresh beside the meter: reads the list and the open Audit Trail again
   RulesList.tsx, RuleRow.tsx, RulesEmpty.tsx
   RunLog.tsx, RunRow.tsx
   RuleBuilder.tsx             breadcrumb bar, step cards, add buttons, Rule Details accordion, Discard Changes?
@@ -412,6 +413,16 @@ build):
   for the read (`fresh`, kept per scope, so a scope changed while open waits for its own) and for it to answer: a
   failed read shows Couldn't Load the Rules. A history line has only the rule's name: one the list lacks reads it again through
   `readAutomationsFor`, once per name per plan, so a rule really gone costs one read.
+- **Refresh** (`RefreshButton.tsx`, beside `RunsMeter` in the dialog's `meter`, so it stands at the tabs' right
+  on a wide screen and in the phone's foot): a ghost `Button` (`size-7`, `touch-target`, `px-0`) holding `RefreshIcon`,
+  in `Tooltip` "Refresh" with `aria-label="Refresh"`. A press runs `readAutomations(scope)` (which resolves `true`
+  unless the read settled as `error`, and hands the read under way to a second asker) together with the open Audit
+  Trail's `reloadRef` (`RunLog` registers it while mounted: it reads `listRuns` for its current filters and
+  replaces the runs only if the filters are unchanged, resolving `false` on a failure and leaving the runs as
+  they were). Until both settle the button is `busy` and the glyph `animate-spin motion-reduce:animate-none`; a
+  `false` toasts `REFRESH_FAILED` ("Couldn't refresh. Check your connection and try again."). Neither read
+  publishes `loading` over a `ready` list or swaps the runs for the skeleton, so nothing blanks. It never touches
+  the builder: the builder reads its rule once, as it mounts.
 - **A change answered during a read** (`use-automations.ts` `change`): the entry is marked `stale` when a read is
   under way, and `readAutomations` reads again until a read started after the last change, so a list served before
   a toggle, save or delete never lands over its answer. Each change folds into the scope it was made on (captured
