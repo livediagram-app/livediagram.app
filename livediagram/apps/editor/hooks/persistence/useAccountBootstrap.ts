@@ -10,7 +10,8 @@ import { inboxSnapshot } from '@/lib/offline/inbox-snapshot';
 // (docs/specs/014-identity/auth-and-guest-access.md), bound to this editor's api client and stores.
 export const useAccountBootstrap = createUseAccountBootstrap({
   useWorkbenchSession,
-  registerTokenProvider,
-  clearGuestToken,
-  inboxSnapshot,
+  // Read at call time, so a test that mocks one of these modules in part still loads this one.
+  registerTokenProvider: (provider) => registerTokenProvider(provider),
+  clearGuestToken: () => clearGuestToken(),
+  inboxSnapshot: { setAccount: (id) => inboxSnapshot.setAccount(id) },
 });
