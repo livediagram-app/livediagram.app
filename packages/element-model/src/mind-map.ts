@@ -311,7 +311,7 @@ export function mindMapFor<E extends ModelElement>(deps: MindMapDeps<E>) {
   function growMindChild(
     elements: Element[],
     parent: ShapeElement,
-    // The node the user grew FROM, when that isn't the parent — pressing Enter
+    // The node the user grew FROM, when that isn't the parent: pressing Enter
     // on a child makes a sibling, and the size should match the sibling you were
     // standing on, not its parent.
     sizeFrom: ShapeElement = parent,
@@ -337,7 +337,7 @@ export function mindMapFor<E extends ModelElement>(deps: MindMapDeps<E>) {
   }
 
   /**
-   * Build a sibling of `node` — i.e. another child of its parent.
+   * Build a sibling of `node`, i.e. another child of its parent.
    *
    * A root has no parent to attach to, so `Enter` on one makes another ROOT,
    * offset below. Returning no arrow is the signal for that.

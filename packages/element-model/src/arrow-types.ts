@@ -34,7 +34,7 @@ export const ALL_ANCHORS: readonly Anchor[] = [
 export type ArrowElementOf<Link> = {
   id: ElementId;
   type: 'arrow';
-  // Layer membership (each product's layers spec) — see ShapeElement.layerId.
+  // Layer membership (each product's layers spec): see ShapeElement.layerId.
   layerId?: string;
   from: Endpoint;
   to: Endpoint;
