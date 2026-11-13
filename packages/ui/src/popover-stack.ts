@@ -23,7 +23,17 @@ function onKeyDown(e: KeyboardEvent): void {
   const top = layers.at(-1);
   if (!top) return;
   top.onKey(e);
-  if (e.key === 'Tab' && !e.defaultPrevented) wrapTab(e, top.panel.current);
+  if (e.key !== 'Tab' || e.defaultPrevented) return;
+  // Decided once the key has been through the page (the window's own bubble, after every handler under it), so a
+  // control in the popover that takes Tab itself (a grid moving between cells) keeps it.
+  const panel = top.panel.current;
+  window.addEventListener(
+    'keydown',
+    (after) => {
+      if (after === e && !e.defaultPrevented) wrapTab(e, panel);
+    },
+    { once: true },
+  );
 }
 
 // Keeps Tab inside the panel holding focus: from its last control (or anything after it, a scrolling list the browser

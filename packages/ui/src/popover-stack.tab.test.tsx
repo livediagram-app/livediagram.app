@@ -123,14 +123,38 @@ describe('Tab in the top popover', () => {
       });
       return (
         <div ref={ref}>
-          <button type="button">Only</button>
+          <button type="button">First</button>
+          <button type="button">Last</button>
         </div>
       );
     }
     render(<Taker />);
-    const only = screen.getByRole('button', { name: 'Only' });
-    only.focus();
+    const last = screen.getByRole('button', { name: 'Last' });
+    last.focus();
     tab();
-    expect(document.activeElement).toBe(only);
+    expect(document.activeElement).toBe(last);
+  });
+
+  it('leaves Tab to a control in the popover that takes it (a grid moving between cells)', () => {
+    function Grid() {
+      const ref = useRef<HTMLDivElement>(null);
+      usePopoverLayer(ref, () => {});
+      return (
+        <div ref={ref}>
+          <button type="button">First</button>
+          <input
+            aria-label="Cell"
+            onKeyDown={(e) => {
+              if (e.key === 'Tab') e.preventDefault();
+            }}
+          />
+        </div>
+      );
+    }
+    render(<Grid />);
+    const cell = screen.getByRole('textbox', { name: 'Cell' });
+    cell.focus();
+    tab();
+    expect(document.activeElement).toBe(cell);
   });
 });
