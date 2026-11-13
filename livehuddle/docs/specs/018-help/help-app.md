@@ -264,7 +264,7 @@ the same surface recurs rather than redrawn.
 **livehuddle's figures draw only what livehuddle has.** The shared kit draws a diagram's shapes (rectangle, circle,
 diamond and the rest), which livehuddle no longer has. livehuddle's help app sets `HELP_STICKY_ONLY=1` in its
 `next.config.ts`, and then the kit's `Shape` draws a sticky note whatever kind a scene names (square corners, a pastel
-fill, no border), and the Border figure leaves out the Radius grid. The other products' help apps leave the variable
+fill, no border), an `Arrow` marked `connector` (one that joins two elements) is not drawn, and the Border figure leaves out the Radius grid. Dashed gesture trails and arrows between steps of the interface stay. The other products' help apps leave the variable
 unset, so their figures are unchanged. A test pins both modes, and another that no livehuddle article names a retired
 element kind.
 

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { BarTab, Scene, Shape, stickyOnly } from './primitives';
+import { Arrow, BarTab, Scene, Shape, stickyOnly } from './primitives';
 import { BorderSection } from './illustrations/colours-borders';
 
 // docs/specs/018-help/help-app.md "In-article illustrations": a figure is named by its caption, so its picture is
@@ -89,5 +89,19 @@ describe('sticky-only help apps', () => {
     expect(html).toContain('Strength');
     expect(html).toContain('Pattern');
     expect(html).toContain('Agenda');
+  });
+
+  it('draws a connector between elements only where shapes exist, and always a trail or step arrow', () => {
+    const draw = (connector: boolean) =>
+      renderToStaticMarkup(
+        <svg>
+          <Arrow from={[0, 0]} to={[40, 0]} connector={connector} />
+        </svg>,
+      );
+    expect(draw(true)).toContain('<path');
+    expect(draw(false)).toContain('<path');
+    vi.stubEnv('HELP_STICKY_ONLY', '1');
+    expect(draw(true)).toBe('<svg></svg>');
+    expect(draw(false)).toContain('<path');
   });
 });

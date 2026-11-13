@@ -15,7 +15,7 @@ export function CollaborationArt() {
         <Button x={324} y={18} w={56} h={20} label="Share" variant="primary" />
       </Card>
 
-      <Arrow from={[124, 86]} to={[170, 112]} kind="elbow" />
+      <Arrow connector from={[124, 86]} to={[170, 112]} kind="elbow" />
       <Shape x={36} y={66} w={88} h={40} label="Research" />
       <Shape x={172} y={94} w={96} h={40} accent label="Prototype" />
       <Shape

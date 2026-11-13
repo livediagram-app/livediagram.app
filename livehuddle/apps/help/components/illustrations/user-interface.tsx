@@ -53,7 +53,7 @@ export function PanelLayout() {
       </Panel>
       <Shape x={146} y={68} w={74} h={38} label="Start" />
       <Shape x={146} y={134} w={74} h={38} accent label="Ship" />
-      <Arrow from={[183, 106]} to={[183, 134]} />
+      <Arrow connector from={[183, 106]} to={[183, 134]} />
       <Panel x={12} y={150} w={92} h={58} title="MAP">
         <rect x={36} y={182} width={14} height={8} rx={2} className="fill-slate-300" />
         <rect x={36} y={194} width={14} height={8} rx={2} className="fill-slate-300" />

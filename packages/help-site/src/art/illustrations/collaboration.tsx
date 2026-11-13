@@ -202,7 +202,7 @@ export function EmbeddedWork({ product }: { product: string }) {
       />
       <Shape x={48} y={74} w={64} h={36} kind="rect" label="Web" />
       <Shape x={176} y={74} w={72} h={36} kind="cylinder" label="DB" />
-      <Arrow from={[114, 92]} to={[172, 92]} />
+      <Arrow connector from={[114, 92]} to={[172, 92]} />
       {/* Bottom-left: Open in the product, then the tab switcher. */}
       <rect x={38} y={154} width={128} height={20} rx={10} className="fill-slate-100" />
       <Label x={50} y={165} size={10} weight={600} tone="body">

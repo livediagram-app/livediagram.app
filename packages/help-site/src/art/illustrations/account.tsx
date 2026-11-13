@@ -60,8 +60,8 @@ export function GuestIdentity({ product }: { product: string }) {
       </Label>
       <Shape x={70} y={138} w={64} h={40} kind="rect" label="A" />
       <Shape x={146} y={138} w={64} h={40} kind="diamond" />
-      <Arrow from={[155, 106]} to={[120, 138]} kind="curved" tone="muted" />
-      <Arrow from={[170, 106]} to={[178, 138]} kind="curved" tone="muted" />
+      <Arrow connector from={[155, 106]} to={[120, 138]} kind="curved" tone="muted" />
+      <Arrow connector from={[170, 106]} to={[178, 138]} kind="curved" tone="muted" />
       {/* No sign-in needed */}
       <rect
         x={262}

@@ -57,9 +57,9 @@ export function CanvasArt() {
       </Card>
 
       {/* The flow. */}
-      <Arrow from={[102, 112]} to={[127, 112]} />
-      <Arrow from={[194, 112]} to={[223, 80]} kind="elbow" />
-      <Arrow from={[194, 112]} to={[223, 146]} kind="elbow" />
+      <Arrow connector from={[102, 112]} to={[127, 112]} />
+      <Arrow connector from={[194, 112]} to={[223, 80]} kind="elbow" />
+      <Arrow connector from={[194, 112]} to={[223, 146]} kind="elbow" />
       <Shape x={30} y={95} w={72} h={34} kind="stadium" label="Start" />
       <Shape x={130} y={83} w={64} h={58} kind="diamond" label="Ready?" />
       <Shape x={226} y={62} w={84} h={36} accent label="Ship it" />

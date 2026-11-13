@@ -135,6 +135,7 @@ export function Arrow({
   head = true,
   width = 2.5,
   colour,
+  connector = false,
 }: {
   from: [number, number];
   to: [number, number];
@@ -144,8 +145,11 @@ export function Arrow({
   head?: boolean;
   width?: number;
   colour?: { stroke: string; fill: string };
+  /** Joins two elements, as a connector does: not drawn in a help app with no diagram shapes (`stickyOnly`). */
+  connector?: boolean;
 }) {
   const id = useId().replace(/:/g, '');
+  if (connector && stickyOnly()) return null;
   const [x1, y1] = from;
   const [x2, y2] = to;
   const strokeCls = colour?.stroke ?? (tone === 'accent' ? 'stroke-brand-400' : 'stroke-slate-300');
