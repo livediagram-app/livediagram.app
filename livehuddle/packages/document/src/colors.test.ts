@@ -167,10 +167,10 @@ describe('supportsFillColor', () => {
 
   it('stays on for the shapes that do paint one', () => {
     expect(supportsFillColor(shape('focus-button'))).toBe(true);
-    // A frame's fill defaults to transparent but is real once picked.
-    expect(supportsFillColor(shape('frame'))).toBe(true);
-    // The progress track is drawn FROM fillColor, self-painting or not.
-    expect(supportsFillColor(shape('progress-bar'))).toBe(true);
+    // A stored frame or progress bar is a retired element now: its placeholder paints no fill of its own, so it
+    // offers none (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements", Work Tracker 639).
+    expect(supportsFillColor(shape('frame'))).toBe(false);
+    expect(supportsFillColor(shape('progress-bar'))).toBe(false);
   });
 });
 

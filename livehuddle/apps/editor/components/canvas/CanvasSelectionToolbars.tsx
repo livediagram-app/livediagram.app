@@ -69,6 +69,10 @@ export function CanvasSelectionToolbars({
     onOpenElementContextMenu,
     onOpenMultiContextMenu,
   } = props;
+  // An Editor's toolbar on a retired element's placeholder holds Delete alone (docs/specs/002-project-scope/
+  // not-in-livehuddle.md "What it does", Work Tracker 639): it takes no text, turn, copy, look or layer step there,
+  // and its menu's Arrange and Size stay a right-click away.
+  const editable = !readOnly && !!selected && !isRetiredElement(selected);
   return (
     <>
       {/* SelectionPopover rides on a sibling wrapper that mirrors
@@ -111,7 +115,7 @@ export function CanvasSelectionToolbars({
             // text can be added. Enters inline edit mode (same path as
             // double-click); kinds with no label carry no button.
             onEditText={
-              !readOnly && selected && elementSupportsText(selected)
+              editable && elementSupportsText(selected)
                 ? () => props.onBeginEdit(selected.id)
                 : undefined
             }
@@ -119,32 +123,32 @@ export function CanvasSelectionToolbars({
             // A piece of furniture's quarter turns (docs/specs/009-elements/furniture-facing.md "Turning a placed piece"),
             // an Editor's, on a piece that turns.
             onTurn={
-              !readOnly &&
+              editable &&
               props.onTurnSelected &&
-              selected?.type === 'shape' &&
+              selected.type === 'shape' &&
               turnsWithFacing(selected.shape)
                 ? props.onTurnSelected
                 : undefined
             }
-            onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
+            onDuplicate={editable ? onDuplicateSelected : undefined}
             // The Format painter's one way in (docs/specs/008-canvas/canvas-and-palette.md "Format painter"): this
             // element's look, painted onto the next ones pressed.
             // Not from a retired element, which lends no look (useElementHelpers' paint guard).
             onFormatPainter={
-              !readOnly && selected && !isRetiredElement(selected) && props.onStartFormatPainter
+              editable && props.onStartFormatPainter
                 ? () => props.onStartFormatPainter?.(selected.id)
                 : undefined
             }
             // Intra-layer z-order (docs/specs/006-document/layers.md): stack within the element's own
             // band. The element menu's Bring to Front moves LAYERS; these
             // are the missing nudge for two things on the same one.
-            onBringToFront={readOnly || !selected ? undefined : props.onBringSelectedToFront}
-            onSendToBack={readOnly || !selected ? undefined : props.onSendSelectedToBack}
+            onBringToFront={editable ? props.onBringSelectedToFront : undefined}
+            onSendToBack={editable ? props.onSendSelectedToBack : undefined}
             onDelete={readOnly ? undefined : onDeleteSelected}
             onOpenContextMenu={
-              readOnly
+              !editable
                 ? undefined
-                : selected && onOpenElementContextMenu
+                : onOpenElementContextMenu
                   ? (x, y) => {
                       // Open from the element's top-right corner (same as a
                       // right-click, via elementMenuAnchor), NOT under the
