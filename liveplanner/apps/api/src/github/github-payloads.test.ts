@@ -16,7 +16,16 @@ describe('readPullRequest', () => {
       state: 'open',
       headSha: 'abcdef1',
       updatedAt: Date.parse('2026-11-12T10:00:00Z'),
+      // GitHub said nothing of it: private.
+      private: true,
     });
+  });
+
+  it('reads a repository public only when GitHub says private is false', () => {
+    expect(readPullRequest(prPayload({ private: false }))!.private).toBe(false);
+    expect(readPullRequest(prPayload({ private: true }))!.private).toBe(true);
+    expect(readCheckSuite(suitePayload({ private: false }))!.private).toBe(false);
+    expect(readCheckSuite(suitePayload())).toMatchObject({ private: true });
   });
 
   it('reads draft, closed and merged (by the flag or its time)', () => {

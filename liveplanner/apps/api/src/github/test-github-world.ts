@@ -87,7 +87,7 @@ export const repo = (id: number, fullName = `acme/repo-${id}`, isPrivate = false
 
 export const connection = (
   installationId: number,
-  repos: { id: number; chosen?: boolean }[],
+  repos: { id: number; chosen?: boolean; private?: boolean }[],
 ): GithubConnection => ({
   installationId,
   account: 'acme',
@@ -96,7 +96,7 @@ export const connection = (
   repositories: repos.map((r) => ({
     id: r.id,
     fullName: `acme/repo-${r.id}`,
-    private: false,
+    private: r.private ?? false,
     chosen: r.chosen ?? true,
   })),
 });

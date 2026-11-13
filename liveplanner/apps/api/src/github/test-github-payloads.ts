@@ -16,12 +16,18 @@ export type PrPayload = {
   sha?: string;
   at?: string;
   fullName?: string;
+  // GitHub's `repository.private`; absent here (never from GitHub), which a plan reads as private.
+  private?: boolean;
 };
 
 export const prPayload = (o: PrPayload = {}) => ({
   action: o.action ?? 'opened',
   installation: { id: o.installationId ?? 7 },
-  repository: { id: o.repoId ?? 11, full_name: o.fullName ?? `acme/repo-${o.repoId ?? 11}` },
+  repository: {
+    id: o.repoId ?? 11,
+    full_name: o.fullName ?? `acme/repo-${o.repoId ?? 11}`,
+    ...(o.private !== undefined ? { private: o.private } : {}),
+  },
   pull_request: {
     number: o.number ?? 42,
     title: o.title ?? 'Private title',
@@ -44,11 +50,12 @@ export const suitePayload = (
     status?: string;
     conclusion?: string | null;
     at?: string;
+    private?: boolean;
   } = {},
 ) => ({
   action: o.status === 'completed' || o.status === undefined ? 'completed' : 'requested',
   installation: { id: o.installationId ?? 7 },
-  repository: { id: o.repoId ?? 11 },
+  repository: { id: o.repoId ?? 11, ...(o.private !== undefined ? { private: o.private } : {}) },
   check_suite: {
     id: o.suiteId ?? 1,
     head_sha: o.sha ?? 'abc1234',

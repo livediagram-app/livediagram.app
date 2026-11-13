@@ -313,6 +313,8 @@ export async function runRule(
       urlOf: (id: string) => cardUrl(deps.env, deps.planId, id),
       ...(event.webhook ? { webhook: event.webhook } : {}),
       ...(cardless ? { cardless: true } : {}),
+      // A GitHub run's pull request, for its values (a Wait's held event keeps it).
+      ...(event.pull ? { github: event.pull } : {}),
       turn: opts.turn ?? (opts.dry ? 0 : deps.store.turn(rule.id)),
       ...(items ? { items } : {}),
     };

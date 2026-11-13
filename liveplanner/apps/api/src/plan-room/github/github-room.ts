@@ -38,12 +38,19 @@ function names(c: GithubConnection | null, d: GithubDelivery): c is GithubConnec
 }
 
 // What a delivery's work hands the room, each awaited before the call answers: new states. (The rules it queues land
-// their cards through the runner, as any rule's do.)
-function roomDeps(env: PlanEnv, planId: string, pending: Promise<void>[]): PullDeps {
+// their cards through the runner, as any rule's do.) `repositoryPrivate`: what the plan's kept list says of the
+// delivery's repository.
+function roomDeps(
+  env: PlanEnv,
+  planId: string,
+  pending: Promise<void>[],
+  repositoryPrivate: boolean | undefined,
+): PullDeps {
   return {
     env,
     planId,
     send: (op: PullRequestsRoomOp) => void pending.push(relayPullRequests(env, planId, op)),
+    ...(repositoryPrivate !== undefined ? { repositoryPrivate } : {}),
   };
 }
 
@@ -105,7 +112,8 @@ async function actOn(
       await rewriteLinks(links, planId, linksOf(before), linksOf(await readConnection(db, planId)));
   } else {
     const pending: Promise<void>[] = [];
-    const deps = roomDeps(env, planId, pending);
+    const kept = before?.repositories.find((r) => r.id === d.repositoryIds[0]);
+    const deps = roomDeps(env, planId, pending, kept?.private);
     if (d.pullRequest) await actOnPullRequest(deps, d.id, d.action, d.pullRequest, now);
     else if (d.checkSuite) await actOnCheckSuite(deps, d.id, d.checkSuite, now);
     await Promise.all(pending);
