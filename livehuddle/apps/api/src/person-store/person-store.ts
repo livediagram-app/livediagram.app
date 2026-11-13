@@ -127,7 +127,7 @@ export class PersonStore extends DurableObject<Env> {
   }
 
   // The kept guest keys' time is up: the store goes whole.
-  async alarm(): Promise<void> {
+  override async alarm(): Promise<void> {
     await this.ctx.storage.deleteAll();
     this.ready = false;
   }
