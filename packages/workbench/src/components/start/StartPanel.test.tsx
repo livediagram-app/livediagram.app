@@ -324,6 +324,30 @@ describe('the start panel', () => {
     expect(screen.getByText('Sync').closest('footer')!.className).not.toContain('empty:hidden');
   });
 
+  it('draws the foot’s lead entries above Connect File, and alone where it is not offered', () => {
+    const onPick = vi.fn();
+    const lead = [{ id: 'describe', name: 'Describe', icon: <Icon />, onPick }];
+    const foot = [{ id: 'import', name: 'Import', icon: <Icon />, onPick: vi.fn() }];
+    const order = () =>
+      [...document.querySelectorAll('nav [data-rail]')]
+        .map((b) => b.getAttribute('data-rail'))
+        .filter((id) => id === 'describe' || id === 'connect' || id === 'import');
+    const two = [...lead, { id: 'second', name: 'Second Entry', icon: <Icon />, onPick }];
+    const { unmount } = render(
+      <Sheet {...base({ connect: () => <p>Connect list</p>, footLead: two, footActions: foot })} />,
+    );
+    expect(order()).toEqual(['describe', 'connect', 'import']);
+    // A rail gap between lead entries, none above the first.
+    expect(screen.getByRole('button', { name: /^Second Entry/ }).className).toContain('sm:mt-1');
+    expect(screen.getByRole('button', { name: /^Describe/ }).className).not.toContain('sm:mt-1');
+    fireEvent.click(screen.getByRole('button', { name: /^Describe/ }));
+    expect(onPick).toHaveBeenCalled();
+    unmount();
+    render(<Sheet {...base({ footLead: lead, footActions: foot })} />);
+    expect(order()).toEqual(['describe', 'import']);
+    expect(screen.getByRole('button', { name: /^Import/ }).className).toContain('sm:mt-1');
+  });
+
   it('is no sheet where it never closes: no handle, no ×, its own foot and footer', () => {
     vi.stubGlobal('matchMedia', () => ({ matches: true }));
     const { container } = render(
