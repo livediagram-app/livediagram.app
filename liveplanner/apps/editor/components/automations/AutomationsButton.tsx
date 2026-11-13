@@ -55,7 +55,7 @@ export function AutomationsButton({ labelled = false }: { labelled?: boolean }) 
               labelled ? '' : 'absolute -right-1 -top-1 ring-2 ring-white dark:ring-slate-900'
             } ${
               paused
-                ? 'bg-amber-500 text-white'
+                ? 'bg-amber-500 text-amber-950'
                 : 'bg-slate-900/[0.08] text-slate-600 dark:bg-white/10 dark:text-slate-300'
             }`}
           >

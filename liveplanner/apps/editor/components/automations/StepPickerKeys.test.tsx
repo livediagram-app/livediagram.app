@@ -68,3 +68,20 @@ describe('the picker’s arrow keys', () => {
     expect(document.activeElement).toBe(at('flag'));
   });
 });
+
+describe('the group chips on a phone', () => {
+  it('keep a dark border on hover in dark mode, never the light one', () => {
+    vi.stubGlobal('matchMedia', (q: string) => ({
+      matches: q.includes('max-width'),
+      media: q,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    render(<Picker />);
+    const chips = [...document.querySelectorAll<HTMLButtonElement>('[role=group] button')];
+    expect(chips.length).toBe(4);
+    for (const chip of chips.filter((c) => c.getAttribute('aria-pressed') === 'false'))
+      expect(chip.className).toContain('dark:hover:border-slate-600');
+    vi.unstubAllGlobals();
+  });
+});
