@@ -282,8 +282,13 @@ in two or more of `livediagram/`, `liveplanner/`, `livedocuments/`, `livedesign/
 compares them with the committed baseline, `.github/scripts/duplicate-baseline.txt` (the copies that
 existed when it came in, one group per line). It leaves out generated files, each workspace's tool configs
 (`oxlint.config.ts`, `vitest.config.ts` and the like, a few lines over the shared config packages that every
-new package carries) and a product's thin binding, a file whose only statements are
-`export … from '@liveworkspace/…'`, since that is how a move ends.
+new package carries) and a product's thin binding, since that is how a move ends. A binding is either a
+file whose only statements are `export … from '@liveworkspace/…'`, or a door that hands the product's own
+modules to a shared factory (`export const usePanelDock = createUsePanelDock(panelLayout)`): its text can
+match in two products while each binds different code. A door holds only imports, re-exports, types,
+calls assigned to a `const`, bare calls and functions whose body is one `return` of a call, each call to an
+imported name and at least one to a `@liveworkspace/*` one, with no control flow, classes, JSX, operators or
+block bodies, so a copied data table or helper never counts as one.
 
 - **It fails** when a group appears that the baseline doesn't hold, or a baseline group gains a copy, and
   names the files: move the module to a package instead of copying it.
@@ -293,7 +298,7 @@ new package carries) and a product's thin binding, a file whose only statements 
   product) needs that `--update` too.
 - **The baseline only shrinks:** `--update` refuses to write while there is a new group or a new copy.
 - It reads blob hashes from the index (`git ls-files -s`) and opens one copy per identical group, to spot
-  a binding: about 0.1 seconds on the whole repository (1,300 files in 450 groups). Its tests run with
+  a binding: about 0.15 seconds on the whole repository (1,340 files in 420 groups). Its tests run with
   `node --test .github/scripts/*.test.mjs`.
 
 ## File size
