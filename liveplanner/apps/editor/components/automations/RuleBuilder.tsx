@@ -356,6 +356,8 @@ export function RuleBuilder({
   // An Incoming Webhook rule's parts read this: its address and secret are the saved rule's, as listed.
   const isIncoming = body.trigger.kind === 'incoming_webhook';
   const cardless = isIncoming && runsWithoutCard(body);
+  // A GitHub rule's text offers the pull request's values.
+  const isGithub = isGithubTrigger(body.trigger);
   const incoming = useMemo<IncomingRule>(
     () => ({
       incoming: isIncoming,
@@ -363,8 +365,9 @@ export function RuleBuilder({
       hook: rule?.trigger.kind === 'incoming_webhook' ? rule.hook : undefined,
       cardless,
       now,
+      github: isGithub,
     }),
-    [isIncoming, rule, cardless, now],
+    [isIncoming, rule, cardless, now, isGithub],
   );
 
   return (

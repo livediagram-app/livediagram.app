@@ -41,7 +41,7 @@ import { useCardMorph } from './useCardMorph';
 import { useItemRepeat } from './ItemRepeatLine';
 import { useRunRule } from '@/components/automations/use-run-rule';
 import { useCardThreadsContext } from './threads/CardThreadsContext';
-import { useSetByAutomation } from '@/components/automations/set-by-automation';
+import { useAutomationHistory } from '@/components/automations/set-by-automation';
 import { SetByAutomationChip } from '@/components/automations/SetByAutomationChip';
 import { LinkedCardsTab, linkedCardCount } from './LinkedCardsTab';
 import { BlockedBySections } from './BlockedBy';
@@ -232,7 +232,8 @@ function ItemPanelContent({
   const runRules = useRunRule(item.id);
   // Set by Automation: the fields whose latest change was a rule's, read while a rule made the card's last change.
   const historyScope = useCardThreadsContext()?.threads.scope ?? null;
-  const setByAutomation = useSetByAutomation(historyScope, item);
+  const automationHistory = useAutomationHistory(historyScope, item);
+  const setByAutomation = automationHistory.setBy;
   const tabs = tabsOf(type);
   const offered = new Set<string>(type.fields);
   // The fields in no tab, then any built-in field the item holds a value in that its type does not
@@ -372,7 +373,7 @@ function ItemPanelContent({
     </div>
   );
 
-  const meta = <ItemMeta item={item} now={now} />;
+  const meta = <ItemMeta item={item} now={now} editedByGithub={automationHistory.github} />;
   // Its required custom fields, marked after their names (docs/specs/026-plan/item-types.md "Required fields").
   const requiredIds = new Set(requiredCustomFieldsOf(type).map((r) => r.id));
 

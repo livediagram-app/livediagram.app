@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, dayLabel, type Item } from '@liveplanner/items';
 import { ItemPanel } from './ItemPanel';
+import { ItemMeta } from './ItemPanelLayout';
 
 const viewport = vi.hoisted(() => ({ mobile: false }));
 vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
@@ -169,6 +170,27 @@ describe('the item panel’s authorship', () => {
     const footer = created.closest('footer')!;
     expect(footer.hasAttribute('data-item-meta')).toBe(true);
     expect(footer.closest('aside')!.lastElementChild).toBe(footer);
+  });
+
+  // Work Tracker 768 (docs/specs/026-plan/automations.md "On cards"): a GitHub-triggered rule's edit names GitHub and
+  // the rule, on GitHub's mark; any other rule's keeps the bolt and the rule's name.
+  it('names GitHub and the rule, on GitHub’s mark, after a GitHub-triggered run', () => {
+    const task = {
+      ...item('t', 1, 'task'),
+      updatedBy: { id: 'automation', name: 'Done on Merge', color: '#7c3aed' },
+    };
+    const { rerender } = render(<ItemMeta item={task} now={Date.now()} editedByGithub />);
+    const row = () => screen.getByText(/^Edited by/).closest('[data-item-meta-row]')!;
+    expect(row().textContent).toMatch(/^Edited by GitHub · Done on Merge/);
+    expect(row().querySelector('[data-github-disc] svg')).toBeTruthy();
+    expect(row().querySelector('[data-automation-disc]')).toBeNull();
+    rerender(<ItemMeta item={task} now={Date.now()} />);
+    expect(row().textContent).toMatch(/^Edited by Done on Merge/);
+    expect(row().querySelector('[data-automation-disc]')).toBeTruthy();
+    // A person's edit after it is theirs, whatever the history said before.
+    const person = { ...task, updatedBy: { id: 'q', name: 'Robin Lee', color: '#16a34a' } };
+    rerender(<ItemMeta item={person} now={Date.now()} editedByGithub />);
+    expect(row().textContent).toMatch(/^RLEdited by Robin Lee/);
   });
 
   it('says the day it was made and how long since its last edit', () => {

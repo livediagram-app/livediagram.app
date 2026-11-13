@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fieldsSetByAutomation } from './set-by-automation';
+import { fieldsSetByAutomation, newestByGithub } from './set-by-automation';
 
 const by = { name: 'Wrap Up', color: '#7c3aed' };
 
@@ -42,5 +42,21 @@ describe('fieldsSetByAutomation', () => {
       { at: 1, by, tag: 'automation_ai', changes: [{ kind: 'set', field: 'priority' }] },
     ]);
     expect([...fields]).toEqual(['priority']);
+  });
+});
+
+// Work Tracker 768: the footer names GitHub when the newest entry is a GitHub-triggered rule's.
+describe('newestByGithub', () => {
+  it('reads the newest entry alone', () => {
+    const entry = (tag?: 'automation' | 'automation_github') => ({
+      at: 1,
+      by,
+      ...(tag ? { tag } : {}),
+      changes: [{ kind: 'flagged' as const }],
+    });
+    expect(newestByGithub([entry('automation_github'), entry('automation')])).toBe(true);
+    expect(newestByGithub([entry('automation'), entry('automation_github')])).toBe(false);
+    expect(newestByGithub([entry()])).toBe(false);
+    expect(newestByGithub([])).toBe(false);
   });
 });

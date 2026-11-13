@@ -53,6 +53,10 @@ The **GitHub** group in **Pick a Trigger** holds four triggers:
 
 The rule runs once on each card the pull request links, with any conditions and actions. Each GitHub event runs a rule once, even if GitHub sends it again, and an event that arrives late never moves a card backwards.
 
+When the plan hears more than one repository, the trigger's **Repositories** chips keep the rule to the ones you press. Press none and it hears every repository the plan hears.
+
+A GitHub rule's comments and messages can name the pull request: **Insert a Value** has a **Pull Request** group with its **Title**, **Number** and **Link** (`Merged: {{pull_request.title}}`). A private repository's title only goes out in Slack, Teams and webhook messages; in a comment, an email or anything else the plan keeps, it reads the pull request's short name (acme/web#42) instead.
+
 ### Start From a Template
 
 The quickest way in: **New Rule**, then **Start From a Template**, then the **GitHub** chip. Six ready-made rules wait there:
@@ -81,11 +85,11 @@ A GitHub rule on a plan that isn't connected, or was disconnected, never runs, s
 2. Add **Move to Column**, pick **Done**, then add **Add Comment** if the team likes a note ("Merged on GitHub").
 3. Save the rule.
 
-What these rules do is by **GitHub** on the card: its [Activity](/help/plan/card-activity/) shows GitHub's mark and the rule's name ("GitHub · Done When It Merges"), and the Audit Trail says which pull request started each run. Nobody is behind these runs, so a GitHub rule can't check or assign **Who Did It**.
+What these rules do is by **GitHub** on the card: its [Activity](/help/plan/card-activity/) and the card's footer show GitHub's mark and the rule's name ("Edited by GitHub · Done When It Merges"), and the Audit Trail says which pull request started each run. Nobody is behind these runs, so a GitHub rule can't check or assign **Who Did It**.
 
 ## Privacy
 
-Anyone who can see a card sees its linked pull requests' short names, states and titles, a public share link's visitors included. The view says so when you pick a private repository. Nothing else from GitHub reaches the plan: no body, commit, author or check name. A Community post shows none of it.
+Anyone who can see a card sees its linked pull requests' short names, states and titles, a public share link's visitors included. The view says so when you pick a private repository. Nothing else from GitHub reaches the plan: no body, commit, author or check name. A Community post shows none of it. A rule never copies a private repository's pull request titles into the plan, so they leave with the states when you disconnect.
 
 ## Disconnect
 
