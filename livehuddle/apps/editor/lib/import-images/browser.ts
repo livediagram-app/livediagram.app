@@ -6,8 +6,8 @@
 import { sha256Hex } from '@livehuddle/api-schema';
 import { apiUploadImage } from '../api/images';
 import { isOfflineIdSync } from '../offline/offline-store';
-import { createImportImageSession } from './session';
-import type { DecodedImage, ImageCodec, ImportImageSession } from './types';
+import { createImportImageSession } from '@liveworkspace/workbench/lib/import-images/session';
+import type { DecodedImage, ImageCodec, ImportImageSession } from '@liveworkspace/workbench/lib/import-images/types';
 import {
   createWebpEncoder,
   type WasmWebpEncode,

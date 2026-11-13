@@ -3,23 +3,24 @@
 Derived from [Import image pipeline](../import-image-pipeline.md). The spec decides; this file only
 adds engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
-Scope, by file (all under `apps/live/lib/import-images/`):
+Scope, by file (under `apps/live/lib/import-images/`, except those marked `workbench`, which are in
+`../packages/workbench/src/lib/import-images/`):
 
 | File              | Role                                                                                           |
 | ----------------- | ---------------------------------------------------------------------------------------------- |
-| `constants.ts`    | Every number the pipeline uses, named                                                          |
-| `types.ts`        | Sources, hints, outcomes, failures, requests, the report                                       |
-| `source.ts`       | `readImportImageSource`: a source to bytes + MIME type, or a failure                           |
-| `policy.ts`       | `planImageEncoding`, `fallbackOutputType`: the pure encoding decisions                         |
-| `prepare.ts`      | `prepareImportImage`: decode, plan, encode, pick, cap, through an injected `ImageCodec`        |
-| `upload-error.ts` | `failureFromUploadError`: an upload rejection to a named failure                               |
-| `session.ts`      | `createImportImageSession`: concurrency, offline budget, short-circuit, logging                |
+| `constants.ts`    | (workbench) Every number the pipeline uses, named                                                          |
+| `types.ts`        | (workbench) Sources, hints, outcomes, failures, requests, the report                                       |
+| `source.ts`       | (workbench) `readImportImageSource`: a source to bytes + MIME type, or a failure                           |
+| `policy.ts`       | (workbench) `planImageEncoding`, `fallbackOutputType`: the pure encoding decisions                         |
+| `prepare.ts`      | (workbench) `prepareImportImage`: decode, plan, encode, pick, cap, through an injected `ImageCodec`        |
+| `upload-error.ts` | (workbench) `failureFromUploadError`: an upload rejection to a named failure                               |
+| `session.ts`      | (workbench) `createImportImageSession`: concurrency, offline budget, short-circuit, logging                |
 | `attach.ts`       | `attachImportImages`: key dedupe, element patching, progress, the report                       |
-| `report.ts`       | `emptyImportImageReport`, `describeImportImageReport`: tallies and the dialog copy             |
-| `webp.ts`         | `createWebpEncoder`: canvas WebP, else the on-demand WASM encoder, detection remembered        |
+| `report.ts`       | (workbench) `emptyImportImageReport`, `describeImportImageReport`: tallies and the dialog copy             |
+| `webp.ts`         | (workbench) `createWebpEncoder`: canvas WebP, else the on-demand WASM encoder, detection remembered        |
 | `browser.ts`      | `browserImageCodec`, `createBrowserImportImageSession`: the DOM codec + the api/offline wiring |
 | `index.ts`        | Public surface for callers (everything but the browser wiring)                                 |
-| `test-fakes.ts`   | Fake codec and typed image blobs for the unit tests; imported by tests only                    |
+| `test-fakes.ts`   | (workbench) Fake codec and typed image blobs for the unit tests; imported by tests only                    |
 
 Only `browser.ts` touches the DOM or the network; every other module runs in Node under Vitest.
 

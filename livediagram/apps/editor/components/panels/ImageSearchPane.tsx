@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { Button, NoMatches, TextInput } from '@livediagram/ui';
 import { useImageSearch } from '@/hooks/ui/useImageSearch';
-import { licenceLabel, tileLabelFor, type OpenverseImage } from '@/lib/image-search/openverse';
+import { licenceLabel, tileLabelFor, type OpenverseImage } from '@liveworkspace/workbench/lib/image-search/openverse';
 import type { PickedImage } from '@/lib/upload-image';
-import type { PickStage } from '@/lib/image-search/pick';
+import type { PickStage } from '@liveworkspace/workbench/lib/image-search/pick';
 import {
   PlaceholderArt,
   PickOverlay,

@@ -5,8 +5,8 @@
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { OpenverseImage } from '@/lib/image-search/openverse';
-import type { PickOutcome, PickStage } from '@/lib/image-search/pick';
+import type { OpenverseImage } from '@liveworkspace/workbench/lib/image-search/openverse';
+import type { PickOutcome, PickStage } from '@liveworkspace/workbench/lib/image-search/pick';
 
 const search = vi.hoisted(() => ({
   resolve: null as null | ((v: unknown) => void),
@@ -16,7 +16,7 @@ const pick = vi.hoisted(() => ({
   resolve: null as null | ((v: PickOutcome) => void),
 }));
 
-vi.mock('@/lib/image-search/search', () => ({
+vi.mock('@liveworkspace/workbench/lib/image-search/search', () => ({
   searchOpenverse: vi.fn(
     () =>
       new Promise((r) => {
@@ -27,8 +27,8 @@ vi.mock('@/lib/image-search/search', () => ({
 vi.mock('@/lib/import-images/browser', () => ({
   createBrowserImportImageSession: () => ({ store: vi.fn() }),
 }));
-vi.mock('@/lib/image-search/pick', async (orig) => ({
-  ...(await orig<typeof import('@/lib/image-search/pick')>()),
+vi.mock('@liveworkspace/workbench/lib/image-search/pick', async (orig) => ({
+  ...(await orig<typeof import('@liveworkspace/workbench/lib/image-search/pick')>()),
   storeSearchResult: vi.fn(
     (_r: unknown, _s: unknown, _f: unknown, _fb: unknown, onStage: (s: PickStage) => void) =>
       new Promise<PickOutcome>((r) => {

@@ -1,5 +1,4 @@
 import { sha256Hex, sniffImageType, type ImageSummary } from '@livedocuments/api-schema';
-import type { ImageCredit } from '@livedocuments/document';
 import { ApiError, apiUploadImage } from './api-client';
 import { isOfflineIdSync } from './offline/offline-store';
 import {
@@ -40,15 +39,8 @@ export const UPLOAD_MAX_BYTES = MAX_IMAGE_BYTES;
 
 type UploadResult = { image: ImageSummary; deduped: boolean };
 
-// What the image picker hands back, from any of its tabs: the stored image and,
-// for an Image search pick, the credit it carries (docs/specs/009-elements/image-search.md).
-export type PickedImage = {
-  id: string;
-  width: number;
-  height: number;
-  originalName?: string;
-  credit?: ImageCredit;
-};
+// What the image picker hands back (@liveworkspace/workbench/lib/image-search/pick).
+export type { PickedImage } from '@liveworkspace/workbench/lib/image-search/pick';
 
 // Thrown for any user-facing validation / upload failure. The
 // `message` is safe to render verbatim in the UI (the picker shows

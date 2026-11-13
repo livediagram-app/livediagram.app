@@ -26,7 +26,7 @@ import { MenuSliderRow } from '@liveworkspace/workbench/components/primitives/Me
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
 import { apiFetchImageBlobUrl, releaseImageBlobUrl } from '@/lib/api-client';
 import { DISPLAY_EDGE_TILE } from '@liveworkspace/workbench/lib/image-display';
-import type { OpenverseFilters } from '@/lib/image-search/openverse';
+import type { OpenverseFilters } from '@liveworkspace/workbench/lib/image-search/openverse';
 import { pageImageCssUrl, pageImageOverlayCss } from '@/lib/page-image-paint';
 import { sampleImageTone } from '@liveworkspace/workbench/lib/page-image-tone';
 import { track } from '@/lib/telemetry';

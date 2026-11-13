@@ -398,7 +398,7 @@ must read `Imported from Excalidraw`, which the tests assert.
 | SVG v1 / v2 payloads                                                 | `apps/editor/lib/excalidraw-embedded.test.ts`                                                                        |
 | No scene / corrupt scene messages                                    | `apps/editor/lib/excalidraw-embedded.test.ts`                                                                        |
 | JSON passthrough                                                     | `apps/editor/lib/excalidraw-embedded.test.ts`                                                                        |
-| Report copy                                                          | `apps/editor/lib/import-images/report.test.ts`                                                                       |
+| Report copy                                                          | `../packages/workbench/src/lib/import-images/report.test.ts`                                                                       |
 | Images stored as WebP, report, focus                                 | `apps/editor/e2e/import-images.spec.ts`                                                                              |
 | Full gallery: placeholders + sentence                                | `apps/editor/e2e/import-images.spec.ts` (403 via route)                                                              |
 | Real PNG export imports its content                                  | `apps/editor/e2e/import-images.spec.ts`                                                                              |

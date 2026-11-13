@@ -6,7 +6,7 @@ import type {
   ImportImageRequest,
   ImportImageSession,
   ImportImageSource,
-} from './types';
+} from '@liveworkspace/workbench/lib/import-images/types';
 
 const img = (id: string): Element => ({
   id,

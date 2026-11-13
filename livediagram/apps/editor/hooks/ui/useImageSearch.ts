@@ -2,15 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/telemetry';
-import { OpenverseSearchError, type OpenverseImage } from '@/lib/image-search/openverse';
-import { searchOpenverse } from '@/lib/image-search/search';
-import { pickFailureMessage, storeSearchResult, type PickStage } from '@/lib/image-search/pick';
+import { OpenverseSearchError, type OpenverseImage } from '@liveworkspace/workbench/lib/image-search/openverse';
+import { searchOpenverse } from '@liveworkspace/workbench/lib/image-search/search';
+import { pickFailureMessage, storeSearchResult, type PickStage } from '@liveworkspace/workbench/lib/image-search/pick';
 import type { PickedImage } from '@/lib/upload-image';
 import {
   IMAGE_SEARCH_THUMBNAIL_FALLBACK,
   pickWarningType,
   searchWarningType,
-} from '@/lib/image-search/telemetry';
+} from '@liveworkspace/workbench/lib/image-search/telemetry';
 
 // State of the image picker's Search tab (docs/specs/009-elements/blueprints/image-search.md
 // "Behaviour and state"): the submitted query, the pages loaded so far, the

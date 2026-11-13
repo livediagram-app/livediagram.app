@@ -9,7 +9,7 @@ export {
   emptyImportImageReport,
   importImagePlaceholderCount,
   importImageReportTotal,
-} from './report';
+} from '@liveworkspace/workbench/lib/import-images/report';
 export {
   type ImportImageFailure,
   type ImportImageOutcome,
@@ -18,4 +18,4 @@ export {
   type ImportImageRequest,
   type ImportImageSession,
   type ImportImageSource,
-} from './types';
+} from '@liveworkspace/workbench/lib/import-images/types';
