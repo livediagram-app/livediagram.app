@@ -33,6 +33,7 @@
     "./request-failure": "./src/request-failure.ts",
     "./responses": "./src/responses.ts",
     "./room-access": "./src/room-access.ts",
+    "./room-access-client": "./src/room-access-client.ts",
     "./room-agent-presence": "./src/room-agent-presence.ts",
     "./room-alarm": "./src/room-alarm.ts",
     "./room-client": "./src/room-client.ts",
