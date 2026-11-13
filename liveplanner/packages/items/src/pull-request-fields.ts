@@ -84,6 +84,15 @@ export function parsePullRequestUrl(text: unknown): PullRequestRef | undefined {
   return number === undefined ? undefined : { owner, repo, number };
 }
 
+/** A repository's `owner/name` as written (trimmed), or undefined when it names none. */
+export function parseRepositoryName(text: unknown): string | undefined {
+  if (typeof text !== 'string') return undefined;
+  const s = text.trim();
+  const slash = s.indexOf('/');
+  if (slash < 0 || s.indexOf('/', slash + 1) >= 0) return undefined;
+  return isOwner(s.slice(0, slash)) && isRepo(s.slice(slash + 1)) ? s : undefined;
+}
+
 /** A pull request's canonical address, as a Pull Request field stores it. */
 export const pullRequestUrl = (ref: PullRequestRef): string =>
   `https://${HOST}/${ref.owner}/${ref.repo}/${PULL_STEP}/${ref.number}`;

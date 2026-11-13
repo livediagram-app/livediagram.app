@@ -9,6 +9,7 @@ import {
   AUTOMATION_STUCK_DAYS_MAX,
   AUTOMATION_TEXT_MAX,
   AUTOMATION_TRIGGER_KINDS,
+  GITHUB_TRIGGER_REPOSITORIES_MAX,
   type AutomationCondition,
   type AutomationFieldOp,
   type AutomationTrigger,
@@ -28,6 +29,7 @@ import {
   whole,
   type Obj,
 } from './validate-read';
+import { parseRepositoryName } from '../pull-request-fields';
 
 const FIELD_OPS: ReadonlySet<string> = new Set<AutomationFieldOp>([
   'is',
@@ -72,6 +74,25 @@ function readScheduled(t: Obj): AutomationTrigger {
   return { kind: 'scheduled', every: every as 'day' | 'weekday', at };
 }
 
+// A GitHub trigger's repositories: absent or an empty list, every one; else 1 to 20 `owner/name`s, each once by case.
+function readRepositories(v: unknown): string[] | undefined {
+  if (v === undefined) return undefined;
+  const path = 'trigger.repositories';
+  if (!Array.isArray(v) || v.length > GITHUB_TRIGGER_REPOSITORIES_MAX)
+    refuse(path, `${path} must be a list of up to ${GITHUB_TRIGGER_REPOSITORIES_MAX}`);
+  const seen = new Set<string>();
+  const out: string[] = [];
+  (v as unknown[]).forEach((r, i) => {
+    const name =
+      parseRepositoryName(r) ??
+      refuse(`${path}.${i}`, `${path}.${i} must be a repository, as owner/name`);
+    if (seen.has(name.toLowerCase())) return;
+    seen.add(name.toLowerCase());
+    out.push(name);
+  });
+  return out.length ? out : undefined;
+}
+
 export function readTrigger(v: unknown): AutomationTrigger {
   const t = obj(v, 'trigger');
   const kind = t['kind'];
@@ -107,13 +128,22 @@ export function readTrigger(v: unknown): AutomationTrigger {
       };
     case 'overdue':
       return { kind: 'overdue', at: clock(t['at'], 'trigger.at') };
-    case 'pull_request_checks':
+    case 'pull_request_checks': {
       if (t['result'] !== 'failing' && t['result'] !== 'passing')
         refuse('trigger.result', 'trigger.result must be failing or passing');
-      return { kind: 'pull_request_checks', result: t['result'] as 'failing' | 'passing' };
+      const repositories = readRepositories(t['repositories']);
+      return {
+        kind: 'pull_request_checks',
+        result: t['result'] as 'failing' | 'passing',
+        ...(repositories ? { repositories } : {}),
+      };
+    }
     case 'pull_request_opened':
     case 'pull_request_merged':
-    case 'pull_request_closed':
+    case 'pull_request_closed': {
+      const repositories = readRepositories(t['repositories']);
+      return { kind: kind as 'pull_request_opened', ...(repositories ? { repositories } : {}) };
+    }
     case 'incoming_webhook':
     case 'card_archived':
     case 'card_restored':

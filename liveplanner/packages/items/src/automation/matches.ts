@@ -6,7 +6,12 @@
 import type { Item, ItemPerson } from '../item';
 import type { ItemHistoryChange } from '../item-history';
 import type { AutomationTrigger, AutomationTriggerKind } from './types';
-import { githubHears, type GithubHeard } from './github-triggers';
+import {
+  githubHears,
+  githubHearsRepository,
+  type GithubHeard,
+  type PullRequestValues,
+} from './github-triggers';
 import type { WebhookValues } from './webhook-paths';
 import type { AutomationRole } from './conditions';
 
@@ -63,9 +68,10 @@ export interface AutomationEvent {
   checklistDone?: true;
   // A comment's: the person ids it @mentions.
   mentioned?: string[];
-  // A GitHub delivery's: what the pull request did, and its short name (`acme/web#42`).
+  // A GitHub delivery's: what the pull request did, its short name (`acme/web#42`), and what its values read.
   github?: GithubHeard;
   pr?: string;
+  pull?: PullRequestValues;
   at: number;
 }
 
@@ -235,7 +241,10 @@ export function triggerMatches(
     case 'pull_request_closed':
     case 'pull_request_checks':
       return (
-        event.kind === 'github' && event.github !== undefined && githubHears(trigger, event.github)
+        event.kind === 'github' &&
+        event.github !== undefined &&
+        githubHears(trigger, event.github) &&
+        githubHearsRepository(trigger, event.pull?.repository)
       );
   }
 }

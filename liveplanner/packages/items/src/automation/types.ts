@@ -102,11 +102,12 @@ export type AutomationTrigger =
   // A time trigger: cards unchanged for `days`, outside done columns (in `statuses`, when named).
   | { kind: 'stuck'; days: number; at: AutomationClock; statuses?: string[] }
   // A linked GitHub pull request (github-triggers.ts; docs/specs/026-plan/github-pull-requests.md "GitHub triggers").
-  | { kind: 'pull_request_opened' }
-  | { kind: 'pull_request_merged' }
-  | { kind: 'pull_request_closed' }
+  // `repositories`: only a pull request of one of them (`owner/name`, any case); absent, every one the plan hears.
+  | { kind: 'pull_request_opened'; repositories?: string[] }
+  | { kind: 'pull_request_merged'; repositories?: string[] }
+  | { kind: 'pull_request_closed'; repositories?: string[] }
   // Its checks changed into Failing, or into Passing.
-  | { kind: 'pull_request_checks'; result: 'failing' | 'passing' };
+  | { kind: 'pull_request_checks'; result: 'failing' | 'passing'; repositories?: string[] };
 
 export type AutomationTriggerKind = AutomationTrigger['kind'];
 export const AUTOMATION_TRIGGER_KINDS: readonly AutomationTriggerKind[] = [
@@ -141,6 +142,8 @@ export const GITHUB_TRIGGER_KINDS = [
   'pull_request_checks',
 ] as const satisfies readonly AutomationTriggerKind[];
 export type GithubTriggerKind = (typeof GITHUB_TRIGGER_KINDS)[number];
+// The repositories one GitHub trigger may name: every one a plan may hear (github-pull-requests.md REPOSITORIES_MAX).
+export const GITHUB_TRIGGER_REPOSITORIES_MAX = 20;
 export const isGithubKind = (kind: AutomationTriggerKind): kind is GithubTriggerKind =>
   (GITHUB_TRIGGER_KINDS as readonly string[]).includes(kind);
 export const isGithubTrigger = (
@@ -424,6 +427,19 @@ export const AUTOMATION_BRANCH_VALUE_LABELS: Record<AutomationBranchValueName, s
   'trigger.key': 'Trigger Number',
   'trigger.url': 'Trigger Link',
 };
+// The values only a GitHub rule's text may hold: the pull request that started it (github-triggers.ts).
+export const AUTOMATION_PULL_REQUEST_VALUE_NAMES = [
+  'pull_request.title',
+  'pull_request.number',
+  'pull_request.url',
+] as const;
+export type AutomationPullRequestValueName = (typeof AUTOMATION_PULL_REQUEST_VALUE_NAMES)[number];
+export const AUTOMATION_PULL_REQUEST_VALUE_LABELS: Record<AutomationPullRequestValueName, string> =
+  {
+    'pull_request.title': 'Pull Request Title',
+    'pull_request.number': 'Pull Request Number',
+    'pull_request.url': 'Pull Request Link',
+  };
 // Insert a Value's chip labels, by name.
 export const AUTOMATION_VALUE_LABELS: Record<AutomationValueName, string> = {
   'card.title': 'Card Title',

@@ -3,6 +3,7 @@
 // trigger hears it, and the Audit Trail's words for it. Pure: the api works out the before and after, this names them.
 
 import type { PullRequestChecks, PullRequestState } from '../pull-request-state';
+import { pullRequestUrl, type PullRequestRef } from '../pull-request-fields';
 import type { AutomationTrigger, GithubTriggerKind } from './types';
 
 /** What a delivery says a pull request did. */
@@ -66,3 +67,42 @@ const WORDS: Readonly<Record<GithubHeard, string>> = {
 /** The Audit Trail's first line: "GitHub: acme/web#42 merged" ("a pull request" when it has no name). */
 export const githubTriggerWords = (heard: GithubHeard, pr?: string): string =>
   `GitHub: ${pr || 'a pull request'} ${WORDS[heard]}`;
+
+type GithubTrigger = Extract<AutomationTrigger, { kind: GithubTriggerKind }>;
+
+/** Whether a GitHub trigger hears a pull request of `repository` (`owner/name`): it names none, or names that one, any
+ *  case. An event with no repository (Test on a Card's) is heard, as if one of the named ones had done it. */
+export function githubHearsRepository(trigger: GithubTrigger, repository?: string): boolean {
+  const named = trigger.repositories;
+  if (!named?.length || repository === undefined) return true;
+  const key = repository.toLowerCase();
+  return named.some((r) => r.toLowerCase() === key);
+}
+
+/** The pull request a GitHub run's values read (`{{pull_request.…}}`), carried on its event: its repository, number,
+ *  title, address, and whether its repository is private (spec automations.md "A private repository's title"). */
+export type PullRequestValues = {
+  repository: string;
+  number: number;
+  title: string;
+  url: string;
+  private: boolean;
+};
+
+/** A delivery's pull request as its run's values read it. */
+export const pullRequestValues = (
+  ref: PullRequestRef,
+  title: string,
+  isPrivate: boolean,
+): PullRequestValues => ({
+  repository: `${ref.owner}/${ref.repo}`,
+  number: ref.number,
+  title,
+  url: pullRequestUrl(ref),
+  private: isPrivate,
+});
+
+/** `{{pull_request.title}}`: the title; a private repository's short name (`acme/web#42`) unless the text is an
+ *  outgoing message's, so nothing a plan keeps, a share link opens or an email carries ever holds a private title. */
+export const pullRequestTitleValue = (pull: PullRequestValues, outgoing: boolean): string =>
+  pull.private && !outgoing ? `${pull.repository}#${pull.number}` : pull.title;

@@ -412,7 +412,12 @@ export function readRuleBody(v: unknown): { body: AutomationRuleBody } | RuleRef
     const trigger = readTrigger(r['trigger']);
     const conditions = readConditions(r['conditions'] ?? [], 'conditions');
     if (!Array.isArray(r['steps'])) refuse('steps', 'steps must be a list');
-    const place: ValuePlace = trigger.kind === 'incoming_webhook' ? { webhook: true } : {};
+    const place: ValuePlace =
+      trigger.kind === 'incoming_webhook'
+        ? { webhook: true }
+        : isGithubTrigger(trigger)
+          ? { github: true }
+          : {};
     const steps = (r['steps'] as unknown[]).map((s, i) => readStep(s, `steps.${i}`, place));
     if (countActions(steps) > AUTOMATION_ACTIONS_MAX)
       refuse('steps', `a rule holds up to ${AUTOMATION_ACTIONS_MAX} actions`);

@@ -30,10 +30,14 @@ export const RULE_TRIGGER_FORMAT =
   'limit; once each time it goes over); ' +
   '{"kind":"incoming_webhook"} (another tool calls the rule’s own address with its secret, made once the rule is ' +
   'saved; the call names the cards, and its JSON body’s values read as {{webhook.<name>}}, up to 5 names deep); ' +
-  '{"kind":"pull_request_opened"}; {"kind":"pull_request_merged"}; {"kind":"pull_request_closed"}; ' +
-  '{"kind":"pull_request_checks","result":"failing"|"passing"} (a GitHub pull request the card links, by a Pull ' +
-  'Request or Link field or by naming the card, opened ready for review, merged, closed unmerged, or its checks ' +
-  'turned failing or passing; heard only once the plan is connected to GitHub, which a person does in the app). ' +
+  '{"kind":"pull_request_opened","repositories"?:["owner/name"]}; {"kind":"pull_request_merged",...}; ' +
+  '{"kind":"pull_request_closed",...}; ' +
+  '{"kind":"pull_request_checks","result":"failing"|"passing","repositories"?:["owner/name"]} (a GitHub pull ' +
+  'request the card links, by a Pull Request or Link field or by naming the card, opened ready for review, merged, ' +
+  'closed unmerged, or its checks turned failing or passing; heard only once the plan is connected to GitHub, which a ' +
+  'person does in the app; repositories, up to 20, keeps it to those, absent every one the plan hears; its text may ' +
+  'hold {{pull_request.title}}, {{pull_request.number}} and {{pull_request.url}}, a private repository’s title ' +
+  'reading its short name outside a notify message). ' +
   'A time trigger (scheduled, due_in, overdue, stuck) runs once for each card its conditions match (every card with none), ' +
   'up to 100 a moment, at the time in the rule’s timeZone, and has nobody behind it: no who condition, no ' +
   '"trigger" assignee or recipient (nor does an incoming_webhook or a GitHub trigger).';
