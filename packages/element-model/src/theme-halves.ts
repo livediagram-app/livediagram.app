@@ -121,6 +121,11 @@ function slots(theme: ThemeDefinition): (string | null | undefined)[] {
   return out;
 }
 
+// The text slots among slots(): one in every three up to the backdrop's pair, since each paint is fill, stroke, text.
+function isTextSlot(i: number, count: number): boolean {
+  return i < count - 2 && i % 3 === 2;
+}
+
 const MAPS = new WeakMap<
   ThemeDefinition,
   Partial<Record<Appearance, ReadonlyMap<string, string>>>
@@ -143,6 +148,12 @@ export function themeColourMap(
       if (!from || !to) return;
       const key = from.toLowerCase();
       if (!map.has(key)) map.set(key, to);
+      // A text slot is keyed by its role too: a colour two roles share (Mono's outline and text) maps a label to the
+      // half's text, not to whichever slot claimed the bare colour first.
+      if (isTextSlot(i, source.length)) {
+        const byRole = textRoleKey(from);
+        if (!map.has(byRole)) map.set(byRole, to);
+      }
     });
   }
   // Then the theme's colour presets (Soft, Tinted, a branch card, ...), each mapped to the same preset in the
@@ -177,6 +188,11 @@ function presetColourKey(presetId: string, colour: string): string {
   return `${presetId}|${colour.toLowerCase()}`;
 }
 
+// A theme text colour in the map, keyed by its role ('>' never appears in a colour or a preset id).
+function textRoleKey(colour: string): string {
+  return `text>${colour.toLowerCase()}`;
+}
+
 // The element colour fields a theme paints (any element kind), which a viewer's half redraws.
 const VIEWED_FIELDS = ['fillColor', 'strokeColor', 'textColor', 'arrowheadColor'] as const;
 
@@ -197,6 +213,7 @@ export function viewElementInTheme<T extends object>(
     if (typeof value !== 'string') continue;
     const to =
       (typeof preset === 'string' ? map.get(presetColourKey(preset, value)) : undefined) ??
+      (field === 'textColor' ? map.get(textRoleKey(value)) : undefined) ??
       map.get(value.toLowerCase());
     if (to && to !== value) (patch ??= {})[field] = to;
   }

@@ -120,3 +120,58 @@ describe('viewElementInTheme cost', () => {
     expect(Math.min(...runs)).toBeLessThan(cpuBudgetMs(20));
   });
 });
+
+// docs/specs/011-theme/light-and-dark.md "Text follows the text role": Mono paints its outline and its text in one
+// colour, so a bare colour lookup drew the label as the dark half's outline (#a5b1cb) instead of its near-white text.
+describe('a colour two roles share', () => {
+  const mono = THEMES.find((t) => t.id === 'mono')!;
+  const dark = themeHalf(mono, 'dark');
+  const light = themeHalf(mono, 'light');
+
+  it('draws a Mono label in the dark half as the text, near-white, and its outline as the outline', () => {
+    const el = { fillColor: '#ffffff', strokeColor: '#0f172a', textColor: '#0f172a' };
+    const drawn = viewElementInTheme(el, themeColourMap(mono, 'dark'));
+    expect(drawn.textColor).toBe(dark.elementText);
+    expect(drawn.strokeColor).toBe(dark.elementStroke);
+    expect(drawn.textColor).not.toBe(drawn.strokeColor);
+    expect(isLightColor(drawn.textColor)).toBe(true);
+    expect(contrastRatio(drawn.textColor, drawn.fillColor)).toBeGreaterThanOrEqual(7);
+  });
+
+  it('draws a Mono text element and an arrow in the dark half by their roles', () => {
+    const map = themeColourMap(mono, 'dark');
+    expect(viewElementInTheme({ type: 'text', textColor: '#0F172A' }, map).textColor).toBe(
+      dark.elementText,
+    );
+    expect(viewElementInTheme({ strokeColor: '#0f172a', arrowheadColor: '#0f172a' }, map)).toEqual({
+      strokeColor: dark.elementStroke,
+      arrowheadColor: dark.elementStroke,
+    });
+  });
+
+  it('leaves Mono in the light half as it is written', () => {
+    const el = { fillColor: '#ffffff', strokeColor: '#0f172a', textColor: '#0f172a' };
+    expect(light.elementText).toBe('#0f172a');
+    expect(light.elementStroke).toBe('#0f172a');
+    expect(viewElementInTheme(el, themeColourMap(mono, 'light'))).toBe(el);
+    // A label drawn from the dark half comes back to the written ink.
+    const fromDark = { ...el, strokeColor: dark.elementStroke!, textColor: dark.elementText! };
+    expect(viewElementInTheme(fromDark, themeColourMap(mono, 'light')).textColor).toBe('#0f172a');
+  });
+
+  it('draws every theme label at the text floor on its fill in the other half', () => {
+    for (const theme of THEMES) {
+      for (const appearance of ['light', 'dark'] as const) {
+        const half = themeHalf(theme, appearance);
+        if (!theme.elementText || !theme.elementFill) continue;
+        const el = { fillColor: theme.elementFill, textColor: theme.elementText };
+        const drawn = viewElementInTheme(el, themeColourMap(theme, appearance));
+        expect(drawn.textColor, `${theme.id} ${appearance}`).toBe(half.elementText);
+        expect(
+          contrastRatio(drawn.textColor, drawn.fillColor),
+          `${theme.id} ${appearance}`,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+});
