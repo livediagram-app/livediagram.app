@@ -774,7 +774,11 @@ component on the page and in every editor's panel:
   Tracker #714). Its Explorer, on its own address and in its editor's panel, shows no Inbox row in the sidebar, no
   section or count on the rail, no Inbox pill on Home, and never fetches `/inbox` (`useInbox` with `enabled` false). A
   remembered Inbox section, or an `/explorer/inbox` address, opens Home instead. The other apps keep the Inbox as
-  below.
+  below. The Inbox rows livehuddle pushed before it stopped (its comment threads, with the people in and mentioned in
+  them, and its actions) are cleared once, by a cleanup only a person runs (`liveworkspace/apps/index/scripts/
+  livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads`, `collab_thread_people` and
+  `collab_actions` rows whose `app` is livehuddle and nothing else, emits no event, and changes nothing a second
+  time.
 
 - **The list.** Every row newest first, under **Today**, **Earlier This Week** (the six days before) and **Older**.
   A card thread read through two items (shared between plans) is one row: its newest copy.

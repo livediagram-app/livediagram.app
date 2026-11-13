@@ -86,8 +86,9 @@ reads it cites them.
   [One Explorer: Inbox](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#inbox)); every other
   app keeps its Inbox, and a test pins all four.
 - **Nothing is sent about them.** The canvas pushes no comment threads or actions to the index (the outbox drops a
-  tab's collab key unpushed), so livehuddle adds no Inbox rows; rows pushed before stay in the index until their
-  canvas is deleted. No mention or action-assigned email goes: the team notify routes answer `410 gone`.
+  tab's collab key unpushed), so livehuddle adds no Inbox rows. The rows it pushed before are cleared from the index
+  once by the index's cleanup ([One Explorer: Inbox](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#inbox),
+  Work Tracker 736), which the owner runs; until then they stay until their canvas is deleted. No mention or action-assigned email goes: the team notify routes answer `410 gone`.
 - **The API refuses new writes and keeps the reads.** Adding, replying to, deleting, resolving and reopening a comment
   (`/api/documents/:id/tabs/:tabId/comments…`) answer `410 comments_gone`; listing a canvas's threads
   (`GET /api/documents/:id/comments`) still answers what is stored. The write routes leave the OpenAPI document. The
