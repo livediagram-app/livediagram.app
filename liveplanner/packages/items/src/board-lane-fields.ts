@@ -18,6 +18,7 @@ import { calculatedResultOf, hasResult } from './calculated-result';
 import { calculatedReaderOf, type IsDoneStatus } from './calculated-fields';
 import type { FormulaResult } from './formula/limits';
 import { percentText, percentValue } from './percent-fields';
+import { isRisk, riskLabel } from './risk-fields';
 import { type CustomFieldDef, linkTypesOf, type ItemTypeDef } from './item-types';
 import {
   STAMP_FIELDS,
@@ -51,7 +52,16 @@ export interface LaneHead {
 
 // How a field lane groups (docs/specs/026-plan/plan-board.md "Swimlanes by a field").
 export type LaneFieldKind =
-  'choice' | 'checkbox' | 'number' | 'percent' | 'date' | 'text' | 'labels' | 'card' | 'person';
+  | 'choice'
+  | 'risk'
+  | 'checkbox'
+  | 'number'
+  | 'percent'
+  | 'date'
+  | 'text'
+  | 'labels'
+  | 'card'
+  | 'person';
 export interface LaneField {
   id: string;
   label: string;
@@ -89,6 +99,8 @@ const STAMP_LANE_FIELDS: readonly LaneField[] = STAMP_FIELDS.map((id) => ({
 }));
 const GROUPING_KINDS = new Set<string>([
   'choice',
+  // A row per level, in order (docs/specs/026-plan/item-types.md "Risk").
+  'risk',
   'checkbox',
   'number',
   // A share groups as a Number, a row per share (docs/specs/026-plan/item-types.md "Percent").
@@ -184,6 +196,8 @@ export function laneValue(
   if (field.kind === 'checkbox') return v === true;
   if (field.kind === 'number') return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
   if (field.kind === 'percent') return typeof v === 'number' ? percentValue(v) : undefined;
+  // A stored level; anything else reads as no level.
+  if (field.kind === 'risk') return isRisk(v) ? v : undefined;
   if (typeof v !== 'string') return undefined;
   const s = field.kind === 'text' ? v.trim() : v;
   return s ? s : undefined;
@@ -289,7 +303,9 @@ export function fieldLane(
         : 'No'
       : field.kind === 'percent' && typeof value === 'number'
         ? percentText(value)
-        : String(value);
+        : field.kind === 'risk'
+          ? (riskLabel(value) ?? String(value))
+          : String(value);
   return { key: `f:${JSON.stringify(value)}`, label, value, ...base };
 }
 

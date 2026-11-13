@@ -32,6 +32,7 @@ import { PULL_REQUEST_HINT, pullRequestValueOf } from './pull-request-fields';
 import { isBuiltInFieldId, PLAN_TYPE_COLOURS, slugOf } from './type-catalogue';
 import { itemSummary } from './views';
 import { REPEAT_FIELD } from './repeat';
+import { RISK_HINT, riskOf } from './risk-fields';
 
 export type NameRefusalCode =
   | 'status_unknown'
@@ -296,7 +297,16 @@ export function resolveFields(
     // A picture is uploaded in the card panel, never named (docs/specs/026-plan/item-types.md "Image fields").
     if (field.kind === 'image')
       return refuse('value_invalid', `${field.label} is an image: add one in the card panel.`);
-    if (field.kind === 'choice' && typeof value === 'string') {
+    // A level by its name or id, any case (docs/specs/026-plan/item-types.md "Risk"); stored as its id.
+    if (field.kind === 'risk') {
+      const level = riskOf(value);
+      if (!level)
+        return refuse(
+          'choice_unknown',
+          `"${String(value)}" is not ${withArticle(field.label)} level. ${RISK_HINT}.`,
+        );
+      out[key] = level;
+    } else if (field.kind === 'choice' && typeof value === 'string') {
       const option = choiceOption(field.options ?? [], value);
       if (!option)
         return refuse(

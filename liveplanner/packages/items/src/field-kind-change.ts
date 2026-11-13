@@ -17,7 +17,7 @@ import type { CustomFieldDef, CustomFieldKind, ItemTypeDef } from './item-types'
 import { inheritingTypesOf } from './type-inheritance';
 import { ITEM_LABELS_MAX, ITEM_LABEL_MAX, ITEM_UNKNOWN_STRING_MAX } from './limits';
 import { richFieldOf } from './rich-text-field';
-import { RISKS, RISK_LABELS, riskLabel, riskOf } from './risk-fields';
+import { RISK_OPTIONS, riskLabel, riskOf } from './risk-fields';
 import { holdsSeveral, storedCardIds, storedPeople } from './several-values';
 import { holdsSeveralImages, storedImageIds } from './image-values';
 import type { ItemPatchOf } from './store';
@@ -296,7 +296,7 @@ export function optionsFromValues(
     out.push(t);
   };
   // A Risk starts its Choice with the four levels, in order (item-types.md "Risk").
-  const first = from.kind === 'risk' ? RISKS.map((r) => RISK_LABELS[r]) : (from.options ?? []);
+  const first = from.kind === 'risk' ? RISK_OPTIONS : (from.options ?? []);
   for (const o of first) add(o);
   for (const v of values) {
     if (out.length >= CUSTOM_CHOICE_OPTIONS_MAX) break;

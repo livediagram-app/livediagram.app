@@ -14,6 +14,9 @@ export const RISK_LABELS: Readonly<Record<Risk, string>> = {
 
 export const RISK_HINT = 'Pick Critical, High, Medium or Low';
 
+// The four names in order, as a Choice of them lists its options (a form's question, a Choice made from a Risk).
+export const RISK_OPTIONS: readonly string[] = RISKS.map((r) => RISK_LABELS[r]);
+
 export function isRisk(v: unknown): v is Risk {
   return typeof v === 'string' && (RISKS as readonly string[]).includes(v);
 }

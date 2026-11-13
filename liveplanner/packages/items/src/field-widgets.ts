@@ -34,7 +34,7 @@ export type FieldShape =
   | { kind: 'number'; unit: 'number' | 'currency' | 'duration' | 'votes' }
   | { kind: 'number'; unit: 'percent' }
   | { kind: 'number'; unit: 'rating'; scale: number }
-  | { kind: 'category'; from: 'choice' | 'multichoice' | 'labels' | 'person' | 'text' }
+  | { kind: 'category'; from: 'choice' | 'multichoice' | 'risk' | 'labels' | 'person' | 'text' }
   | { kind: 'ticked'; from: 'checkbox' | 'checklist' }
   | { kind: 'date'; from: 'date' | 'datetime' | 'daterange' };
 
@@ -63,6 +63,8 @@ export function fieldShapeOf(field: CustomFieldDef): FieldShape | undefined {
       return { kind: 'number', unit: 'rating', scale: field.scale ?? RATING_SCALE_DEFAULT };
     case 'choice':
     case 'multichoice':
+    // Cards per level, in the levels' order and colours (item-types.md "Risk").
+    case 'risk':
     case 'labels':
     case 'person':
       return { kind: 'category', from: field.kind };

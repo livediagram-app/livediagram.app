@@ -8,6 +8,7 @@ import { statusTitleCase } from './status-title-case';
 import type { IsDoneStatus } from './calculated-fields';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { PRIORITIES, PRIORITY_LABELS, isPriority } from './fields';
+import { RISKS } from './risk-fields';
 import type { PlanBoardSetup, SwimlaneBy } from './board-model';
 import {
   NO_LANE,
@@ -153,12 +154,14 @@ function laneSort(
 const byText = (a: unknown, b: unknown) =>
   String(a).localeCompare(String(b), undefined, { sensitivity: 'base' });
 
-// Choice: option order, then others A to Z. Checkbox: Yes first. Number: lowest first. Date: earliest first
+// Choice: option order, then others A to Z. Risk: Critical first. Checkbox: Yes first. Number: lowest first. Date: earliest first
 // (ISO strings sort as dates). Text and labels: A to Z ignoring case.
 function fieldLaneOrder(field: LaneField, a: unknown, b: unknown): number {
   if (field.kind === 'checkbox') return Number(b === true) - Number(a === true);
   if (field.kind === 'number' || field.kind === 'percent') return Number(a) - Number(b);
   if (field.kind === 'date') return String(a) < String(b) ? -1 : String(a) > String(b) ? 1 : 0;
+  if (field.kind === 'risk')
+    return RISKS.indexOf(a as (typeof RISKS)[number]) - RISKS.indexOf(b as (typeof RISKS)[number]);
   if (field.kind === 'choice') {
     const opts = field.options ?? [];
     const ia = opts.indexOf(String(a));
@@ -246,10 +249,18 @@ export function boardLanes(
   ) {
     laneMap.set(NO_LANE, lanesOf(by, { fields: {} } as Item, items, types, statusNames, field)[0]!);
   }
-  // Every option of a Choice, and both Yes and No, are rows to drop into, cards or not.
-  if (field?.kind === 'choice' || (field?.kind === 'checkbox' && !field.readOnly)) {
+  // Every option of a Choice, every level of a Risk, and both Yes and No, are rows to drop into, cards or not.
+  if (
+    field?.kind === 'choice' ||
+    field?.kind === 'risk' ||
+    (field?.kind === 'checkbox' && !field.readOnly)
+  ) {
     const values: (string | boolean)[] =
-      field.kind === 'checkbox' ? [true, false] : [...(field.options ?? [])];
+      field.kind === 'checkbox'
+        ? [true, false]
+        : field.kind === 'risk'
+          ? [...RISKS]
+          : [...(field.options ?? [])];
     for (const v of values) {
       const lane = fieldLane(field, v);
       if (!laneMap.has(lane.key)) laneMap.set(lane.key, lane);

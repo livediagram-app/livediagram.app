@@ -14,6 +14,7 @@ import { percentValue } from './percent-fields';
 import { durationMinutes } from './duration-fields';
 import { readInstant } from './date-time-fields';
 import { readRange } from './date-range-fields';
+import { riskRank } from './risk-fields';
 import { statusKey } from './status-names';
 import { STAMP_FIELD_LABELS, isStampField, itemStampTime } from './card-stamps';
 
@@ -55,6 +56,8 @@ export const BOARD_SORT_KINDS: readonly CustomFieldKind[] = [
   'daterange',
   'rating',
   'choice',
+  // By level, Critical highest (docs/specs/026-plan/item-types.md "Risk").
+  'risk',
 ];
 
 // The kind a custom field sorts as: a moment and a range sort as dates do.
@@ -62,7 +65,15 @@ const sortKindOf = (kind: CustomFieldKind): BoardSortKind =>
   kind === 'datetime' || kind === 'daterange' ? 'date' : (kind as BoardSortKind);
 
 export type BoardSortKind =
-  'priority' | 'number' | 'currency' | 'percent' | 'duration' | 'date' | 'rating' | 'choice';
+  | 'priority'
+  | 'number'
+  | 'currency'
+  | 'percent'
+  | 'duration'
+  | 'date'
+  | 'rating'
+  | 'choice'
+  | 'risk';
 
 // A Formula, Rollup or Lookup sorts as its result reads (docs/specs/026-plan/item-types.md "Formula fields", "Rollup
 // and Lookup fields"): these results only.
@@ -140,9 +151,9 @@ export function boardSortLabel(kind: BoardSortKind | undefined, dir: BoardSortDi
   return asc ? 'Lowest First' : 'Highest First';
 }
 
-// The direction a field starts on when picked: the most pressing first for Priority and Rating, else the first.
+// The direction a field starts on when picked: the most pressing first for Priority, Risk and Rating, else the first.
 export function defaultBoardSortDir(kind: BoardSortKind | undefined): BoardSortDir {
-  return kind === 'priority' || kind === 'rating' ? 'desc' : 'asc';
+  return kind === 'priority' || kind === 'risk' || kind === 'rating' ? 'desc' : 'asc';
 }
 
 // A stored sort read back: at most BOARD_SORT_LEVELS_MAX levels, each a built-in or a custom field id, once each,
@@ -209,6 +220,8 @@ function readerFor(
     const read = formulaKind === 'date' ? day : num;
     return (item) => read(calculated(def, item));
   }
+  // Low reads lowest, Critical highest; no level, or a stray value, none.
+  if (def.kind === 'risk') return (item) => riskRank(item.fields[field]);
   if (def.kind === 'choice') {
     const options = def.options ?? [];
     return (item) => {

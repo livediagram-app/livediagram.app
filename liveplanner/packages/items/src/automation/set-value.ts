@@ -9,6 +9,7 @@ import type { CustomFieldDef } from '../item-types';
 import { ITEM_TITLE_MAX } from '../limits';
 import { isPriority, knownFieldKind } from '../fields';
 import { isDay } from '../repeat-dates';
+import { riskOf } from '../risk-fields';
 import type { AutomationGone, AutomationSetValue } from './types';
 import type { AutomationOutline } from './outline';
 import { dayFrom, fillValues, type ValueContext } from './values';
@@ -119,6 +120,8 @@ export function setValueOf(input: SetValueInput): ItemFieldValue | undefined {
     const p = text.toLowerCase();
     return isPriority(p) ? p : fail(`${name} has no "${text}"`);
   }
+  // A level by its name or id, any case (docs/specs/026-plan/item-types.md "Risk").
+  if (kind === 'risk') return riskOf(text) ?? fail(`${name} has no "${text}"`);
   if (kind === 'person') {
     const p = personNamed(input.outline.people, text);
     if (p) return p;
