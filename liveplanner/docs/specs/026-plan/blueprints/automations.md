@@ -79,6 +79,8 @@ apps/editor/components/automations/
   RulesList.tsx, RuleRow.tsx, RulesEmpty.tsx
   RunLog.tsx, RunRow.tsx
   RuleBuilder.tsx             breadcrumb bar, step cards, add buttons, Rule Details accordion, Discard Changes?
+  refusal-words.ts            a refusal as the builder says it: fixed words per code, else the api's message less
+                              the leading path it names, as a sentence (refusalWords)
   StepCard.tsx, StepPanel.tsx, step-panels/*.tsx   one panel per trigger, condition and action kind
                               (FieldActionPanel: Set Field on Priority or a Choice field offers A Choice, a Select
                               of its values (fieldChoices) stored as text, the first picked as the field is; Set

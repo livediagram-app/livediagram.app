@@ -893,7 +893,10 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
 - **Test on a Card** picks a card (the card finder) and runs the rule as it stands in the builder, unsaved, without
   changing anything: the result shows as an Audit Trail row with its steps, each action saying what it would do.
 - Leaving with unsaved changes asks **Discard Changes?**. A save the api refuses keeps the builder open and marks
-  the step at fault.
+  the step at fault, in words, never a path: the api's message for agents leads with the part's path ("steps.2.text
+  must be text of 1 to 2000 characters"), and the builder, which marks that part, says the rest as a sentence ("Must
+  be text of 1 to 2000 characters."). Text a step must hold is refused as "1 to N characters", text that may be
+  empty as "up to N characters".
 - A rule opened by its link (an Automation comment's) that the plan no longer has opens no builder: the screen says
   **This Rule Was Deleted**, "It's no longer in this plan. Its runs stay in the Audit Trail until they age out.", with
   **Back to Rules**.

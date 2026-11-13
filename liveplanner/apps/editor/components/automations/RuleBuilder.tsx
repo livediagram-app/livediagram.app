@@ -47,24 +47,11 @@ import { RuleDetails } from './RuleDetails';
 import { RuleSteps, type StepsActions } from './RuleSteps';
 import { defaultCondition, defaultStep } from './step-defaults';
 import { StepPanel } from './StepPanel';
+import { refusalWords } from './refusal-words';
 import { TestOnCard } from './TestOnCard';
 import type { AutomationsApi } from './use-automations';
 
 type Fault = { path: string; message: string };
-
-const REFUSAL_WORDS: Readonly<Record<string, string>> = {
-  automation_name_taken: 'Another rule here has this name. Pick another.',
-  automation_rules_full: 'This plan has 50 rules, the most it can hold. Delete one to add another.',
-  automation_value_unknown:
-    'This names a value rules don’t know. Pick one from Insert a Value in the field.',
-  automation_not_found: 'This rule was deleted elsewhere.',
-  automation_condition_unsupported:
-    'This trigger has nobody behind it: nothing here can name whoever triggered it.',
-  automation_step_unsupported:
-    'This step can’t go here: a branch or an If / Else holds no outgoing action, AI action, Wait, branch or If.',
-};
-
-const refusalMessage = (r: AutomationRefusal) => REFUSAL_WORDS[r.code] ?? r.message;
 
 export function RuleBuilder({
   rule,
@@ -149,7 +136,7 @@ export function RuleBuilder({
 
   const refused = (r: AutomationRefusal) => {
     const path = r.path ?? (r.code === 'automation_name_taken' ? 'name' : '');
-    setFault({ path, message: refusalMessage(r) });
+    setFault({ path, message: refusalWords(r) });
     const part = path ? partAt(body, path) : null;
     if (part) {
       setSelected(part);
@@ -192,7 +179,7 @@ export function RuleBuilder({
       debugLog('[automations] toggle.failed', { error: String(error) });
       toast.error(
         error instanceof AutomationRefusal
-          ? refusalMessage(error)
+          ? refusalWords(error)
           : 'The rule didn’t change. Try again.',
       );
     } finally {

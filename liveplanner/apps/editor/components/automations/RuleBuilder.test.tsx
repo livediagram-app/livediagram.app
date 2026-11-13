@@ -17,11 +17,11 @@ const toast = vi.hoisted(() => ({ info: vi.fn(), success: vi.fn(), error: vi.fn(
 vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const api = { save: vi.fn(), toggle: vi.fn(), test: vi.fn() };
-function Builder({ saved = rule() as ReturnType<typeof rule> | null }) {
+function Builder({ saved = rule() as ReturnType<typeof rule> | null, initial = saved ?? rule() }) {
   return (
     <RuleBuilder
       rule={saved}
-      initial={saved ?? rule()}
+      initial={initial}
       outline={outline()}
       api={api}
       person="Ana Costa"
@@ -72,6 +72,20 @@ describe('RuleBuilder', () => {
     api.save.mockRejectedValueOnce(new AutomationRefusal(409, { error: 'automation_rules_full' }));
     fireEvent.click(screen.getByRole('button', { name: 'Save Rule' }));
     await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('50 rules'));
+  });
+
+  it('says a step’s refusal in words, without the path the api names', async () => {
+    render(<Builder saved={null} initial={rule({ steps: [{ kind: 'comment', text: '' }] })} />);
+    api.save.mockRejectedValueOnce(
+      new AutomationRefusal(400, {
+        error: 'automation_invalid',
+        path: 'steps.0.text',
+        message: 'steps.0.text must be text of 1 to 2000 characters',
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Save Rule' }));
+    expect(await screen.findAllByText('Must be text of 1 to 2000 characters.')).not.toHaveLength(0);
+    expect(screen.queryByText(/steps\.0/)).toBeNull();
   });
 
   it('opens Rule Details to let a rule’s changes trigger others', () => {
