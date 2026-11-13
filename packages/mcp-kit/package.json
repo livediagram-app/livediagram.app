@@ -23,7 +23,8 @@
     "./eval/mcp-client": "./eval/mcp-client.mjs",
     "./eval/diagram-tasks": "./eval/diagram-tasks.mjs",
     "./testing/test-client": "./src/testing/test-client.ts",
-    "./eval/score": "./eval/score.mjs"
+    "./eval/score": "./eval/score.mjs",
+    "./eval/task-bank": "./eval/task-bank.mjs"
   },
   "scripts": {
     "lint": "oxlint",
