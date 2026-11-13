@@ -351,7 +351,13 @@ export function SearchField({
   };
 
   return (
-    <div className={`${look.wrap}${className ? ` ${className}` : ''}`}>
+    // A search landmark: the bar and the hero sit outside the Explorer's main, and a host may give it no header, so
+    // without one the field was content no landmark held (axe "region") and a landmark list had no way to it.
+    <div
+      role="search"
+      aria-label="Search your work"
+      className={`${look.wrap}${className ? ` ${className}` : ''}`}
+    >
       <div
         className={`flex items-center overflow-x-auto [scrollbar-width:none] ${look.box}`}
         onMouseDown={(e) => {
