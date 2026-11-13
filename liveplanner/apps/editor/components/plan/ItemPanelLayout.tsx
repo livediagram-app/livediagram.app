@@ -156,6 +156,12 @@ export function ItemMeta({
             lead={<PersonDisc person={github ? GITHUB_PERSON : editor} />}
             at={edited}
             when={edited !== undefined ? relativeSince(edited, now) : ''}
+            // A rule's name runs long ("Done When the Pull Request Merges"): the whole line on hover.
+            full={
+              editor.id === AUTOMATION_PERSON_ID
+                ? `Edited by ${github ? 'GitHub · ' : ''}${editor.name}`
+                : undefined
+            }
           >
             Edited by{' '}
             {github ? (
@@ -183,6 +189,7 @@ export function ItemMeta({
             // A form's response says when on its own row.
             at={response ? undefined : made}
             when={made !== undefined ? stampDayLabel(made) : ''}
+            full={maker.id === AUTOMATION_PERSON_ID ? `Created by ${maker.name}` : undefined}
           >
             Created by <span className={META_NAME}>{maker.name}</span>
           </MetaRow>
@@ -195,24 +202,28 @@ export function ItemMeta({
 const META_NAME = 'font-medium text-slate-700 dark:text-slate-200';
 const FormGlyph = lucideGlyph(lucideClipboardList, 14);
 
-// One footer row: a disc (or a glyph), the words, and when at the row's end, the exact moment on hover.
+// One footer row: a disc (or a glyph), the words, and when at the row's end, the exact moment on hover. `full`: the
+// words whole, in a tooltip, for a row whose name may be cut (a rule's).
 function MetaRow({
   lead,
   children,
   at,
   when,
+  full,
 }: {
   lead: ReactNode;
   children: ReactNode;
   at: number | undefined;
   when: string;
+  full?: string | undefined;
 }) {
+  const words = <span className="min-w-0 flex-1 truncate">{children}</span>;
   return (
     <div data-item-meta-row="" className="flex min-h-7 items-center gap-2">
       <span className="flex size-5 shrink-0 items-center justify-center text-slate-400">
         {lead}
       </span>
-      <span className="min-w-0 flex-1 truncate">{children}</span>
+      {full ? <Tooltip label={full}>{words}</Tooltip> : words}
       {at !== undefined ? (
         <Tooltip label={stampMomentLabel(at)}>
           <time

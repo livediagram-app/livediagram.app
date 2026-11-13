@@ -193,6 +193,19 @@ describe('the item panel’s authorship', () => {
     expect(row().textContent).toMatch(/^RLEdited by Robin Lee/);
   });
 
+  it('shows a rule’s whole name on hover, where the footer cuts it', async () => {
+    const task = {
+      ...item('t', 1, 'task'),
+      updatedBy: { id: 'automation', name: 'Done When the Pull Request Merges', color: '#7c3aed' },
+    };
+    render(<ItemMeta item={task} now={Date.now()} editedByGithub />);
+    const words = screen.getByText(/^Edited by/);
+    fireEvent.pointerEnter(words, { pointerType: 'mouse' });
+    expect((await screen.findByRole('tooltip')).textContent).toBe(
+      'Edited by GitHub · Done When the Pull Request Merges',
+    );
+  });
+
   it('says the day it was made and how long since its last edit', () => {
     const made = new Date(2026, 9, 3, 14, 2).getTime();
     const task = {

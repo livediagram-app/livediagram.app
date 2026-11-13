@@ -35,6 +35,7 @@ const FOCUSABLE =
   'input, select, textarea, button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export type AnchoredSide = 'below' | 'above';
+export type AnchoredAlign = 'start' | 'end';
 
 export type AnchoredPlace = {
   left: number;
@@ -49,14 +50,18 @@ export type AnchoredPlace = {
 
 // Where the panel goes. Its side is chosen once, when it opens (`side` absent): under the anchor, or above it when
 // only above has room for it; after that the side is kept (`side` given), whatever the panel grows to, so picking
-// something that adds a row never flips it across the anchor. The left edge is clamped on-screen.
+// something that adds a row never flips it across the anchor. `align`: the panel's left edge on the anchor's (start,
+// the default), or its right edge on the anchor's (end: an anchor at a field's right end, so the panel stays over the
+// field rather than past its dialog). The left edge is clamped on-screen.
 export function placeAnchored(
-  anchor: { left: number; top: number; bottom: number },
+  anchor: { left: number; right?: number; top: number; bottom: number },
   size: { width: number; height: number },
   viewport: { width: number; height: number },
   side?: AnchoredSide,
+  align: AnchoredAlign = 'start',
 ): AnchoredPlace {
-  const left = Math.max(EDGE, Math.min(anchor.left, viewport.width - size.width - EDGE));
+  const start = align === 'end' ? (anchor.right ?? anchor.left) - size.width : anchor.left;
+  const left = Math.max(EDGE, Math.min(start, viewport.width - size.width - EDGE));
   const roomBelow = viewport.height - (anchor.bottom + GAP) - EDGE;
   const roomAbove = anchor.top - GAP - EDGE;
   const chosen: AnchoredSide =
@@ -100,6 +105,7 @@ export function AnchoredPopover({
   initialFocus = 'first',
   pointer = false,
   scrim = false,
+  align = 'start',
   children,
 }: {
   anchor: HTMLElement;
@@ -122,6 +128,8 @@ export function AnchoredPopover({
   pointer?: boolean;
   // Dim everything behind it (its dialog too), so it stands out; a press on the dim layer is a press outside.
   scrim?: boolean;
+  // Which edge lines up with the anchor's (placeAnchored): the left (start) or the right (end).
+  align?: AnchoredAlign;
   children: ReactNode;
 }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -155,7 +163,7 @@ export function AnchoredPopover({
             size,
             viewport,
           )
-        : placeAnchored(anchor.getBoundingClientRect(), size, viewport, side.current);
+        : placeAnchored(anchor.getBoundingClientRect(), size, viewport, side.current, align);
       side.current = next.side;
       setPos(next);
       if (pointer && !beside) setArrowX(pointerX(anchor.getBoundingClientRect(), next.left, w));
@@ -172,7 +180,7 @@ export function AnchoredPopover({
       window.removeEventListener('resize', place);
       window.removeEventListener('scroll', place, true);
     };
-  }, [anchor, width, beside, pointer]);
+  }, [anchor, width, beside, pointer, align]);
 
   useEffect(() => {
     if (initialFocus === 'none') return;

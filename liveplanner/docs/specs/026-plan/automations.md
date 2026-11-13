@@ -271,7 +271,8 @@ Finished**). Their engineering and their guarantees (once per delivery, never ba
   hears more than one (or the rule names some). None pressed (the default, and every rule saved before) hears every repository the plan hears; with some pressed, a pull request of
   any other repository starts nothing. A trigger names up to 20 (`REPOSITORIES_MAX`) by `owner/name`, any case,
   each once. A named repository the plan no longer hears stays as a pressed chip, "acme/old · Not Heard", so it can be
-  unpicked; while it is named the rule never hears it. The Rules list's sentence ends "in acme/web" (or "in acme/web or
+  unpicked; while it is named the rule never hears it. Changing the trigger from one GitHub trigger to another (Pull
+  Request Merged to Checks Finished) keeps the picks; changing it to any other trigger drops them. The Rules list's sentence ends "in acme/web" (or "in acme/web or
   acme/api"). Test on a Card runs as if one of the named repositories' pull requests had done it.
 - **Pull request values.** A GitHub rule's text may hold the pull request's values ([Values](#values)):
   `{{pull_request.title}}`, `{{pull_request.number}}` and `{{pull_request.url}}`, under **Insert a Value**'s
@@ -753,7 +754,8 @@ it. A guest sees the sign-in gate the Automations screen already shows.
 Text a rule writes (a comment, a title, a field value, an email) can hold values, picked from **Insert a Value** in
 the builder and shown there as chips. **Insert a Value** is a button inside the field itself, at its top right (a
 `{ }` mark with the hover card "Insert a Value", a pointer, a 44 px target on a touch screen), never a list dumped
-under it. It opens a popover beside the field (on a phone, a sheet over the step's drawer, titled **Insert a
+under it. It opens a popover beside the field, 320 px wide, its right edge on the button's so it opens leftward over
+the field and stays inside the dialog, each value's name kept whole while its `{{…}}` token gives way first (on a phone, a sheet over the step's drawer, titled **Insert a
 Value**) holding a search ("Find a value") and the values in groups: **This Card** (the fixed values), **The
 Triggering Card** (inside a For Related Cards branch), **Card Fields** (each field of the card by name, the old Any
 Field…) and, in an Incoming Webhook rule, **Webhook Field…**, which turns the popover to a line for the path with
@@ -1098,7 +1100,8 @@ above, unchanged.
   with the bolt; a GitHub-triggered rule's, "Edited by **GitHub** · Move on Merge" with GitHub's mark on its dark disc,
   as its History rows draw it. Which it was is the card's newest history entry's tag (`automation_github`), read only
   while the card's last edit was Automation's: the read Set by Automation already makes, so it costs nothing more.
-  Until that read answers, the footer shows the bolt and the rule.
+  Until that read answers, the footer shows the bolt and the rule. A rule's name the footer cuts ("Done When t…") shows
+  whole in the row's tooltip ("Edited by GitHub · Done When the Pull Request Merges").
 - A change Automation made reads in the card's **History** with the bolt glyph: "**Automation** set Completed On to
   11 Nov 2026 · Done Means Wrapped Up · 10:42" ([History](items.md#history)), and a field whose latest change in
   the history read was a rule's shows a small **Set by Automation** chip beside its value in the item panel.

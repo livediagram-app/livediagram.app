@@ -91,6 +91,7 @@ export function TriggerPanel({
               kind,
               fields.map((f) => f.id),
               outline.columns.map((c) => c.status),
+              trigger,
             ),
           )
         }

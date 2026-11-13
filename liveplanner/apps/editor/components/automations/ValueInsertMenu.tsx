@@ -160,12 +160,15 @@ export function ValueInsertList({
                         : 'text-slate-700 dark:text-slate-200'
                     }`}
                   >
-                    <span className="min-w-0 truncate font-medium">{o.label}</span>
+                    {/* The label keeps its width (up to most of the row); the token gives way first. */}
+                    <span className="min-w-0 max-w-[75%] shrink-0 truncate font-medium">
+                      {o.label}
+                    </span>
                     {o.kind === 'value' ? (
                       // On the marked row's violet wash slate 500 falls short of 4.5:1 (axe); 600 holds it.
                       <span
                         data-value-token=""
-                        className={`min-w-0 shrink truncate font-mono text-[11px] ${on ? 'text-slate-600 dark:text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}
+                        className={`min-w-0 flex-1 truncate text-right font-mono text-[11px] ${on ? 'text-slate-600 dark:text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}
                       >
                         {`{{${o.name}}}`}
                       </span>
@@ -254,7 +257,9 @@ export function ValueInsertMenu({
     <AnchoredPopover
       anchor={anchor}
       name={VALUE_INSERT_TITLE}
-      width={300}
+      width={320}
+      // The button sits at the field's right end: the panel opens leftward over the field, inside its dialog.
+      align="end"
       pointer
       onClose={onClose}
       onEscape={() => {

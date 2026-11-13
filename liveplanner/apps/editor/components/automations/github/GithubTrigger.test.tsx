@@ -12,7 +12,7 @@ import { outline, pickerTile } from '../test-fixtures';
 import { GithubAutomationsContext, type GithubAutomations } from './github-automations';
 import { heardRepositories, repositoryChoices, withRepositories } from './GithubTriggerFields';
 import { valueInsertGroups } from '../value-insert-options';
-import { offeredGroups } from '../trigger-groups';
+import { freshTrigger, offeredGroups } from '../trigger-groups';
 import { resetGithubForTests } from './use-github-connection';
 
 const client = vi.hoisted(() => ({ readGithub: vi.fn(), startGithubConnect: vi.fn() }));
@@ -257,6 +257,36 @@ describe('A GitHub trigger’s repositories and values', () => {
     render(<Panel trigger={{ kind: 'pull_request_opened' }} />);
     expect(await screen.findByText('Hears acme/web on acme.')).toBeTruthy();
     expect(screen.queryByText('Repositories')).toBeNull();
+  });
+
+  it('keeps the picks from one GitHub trigger to another, and drops them leaving GitHub', () => {
+    const merged: AutomationTrigger = { kind: 'pull_request_merged', repositories: ['acme/api'] };
+    expect(freshTrigger('pull_request_checks', [], [], merged)).toEqual({
+      kind: 'pull_request_checks',
+      result: 'failing',
+      repositories: ['acme/api'],
+    });
+    expect(freshTrigger('pull_request_opened', [], [], merged)).toEqual({
+      kind: 'pull_request_opened',
+      repositories: ['acme/api'],
+    });
+    expect(freshTrigger('card_created', [], [], merged)).toEqual({ kind: 'card_created' });
+    expect(freshTrigger('pull_request_opened', [], [], { kind: 'pull_request_merged' })).toEqual({
+      kind: 'pull_request_opened',
+    });
+  });
+
+  it('keeps the picks as Pick a Trigger changes the GitHub trigger', async () => {
+    client.readGithub.mockResolvedValue(connected(['acme/web', 'acme/api']));
+    render(<Panel trigger={{ kind: 'pull_request_merged', repositories: ['acme/api'] }} />);
+    await screen.findByText('Repositories');
+    fireEvent.click(document.querySelector('[data-change-step]')!);
+    fireEvent.click(pickerTile('pull_request_checks')!);
+    expect(latest).toEqual({
+      kind: 'pull_request_checks',
+      result: 'failing',
+      repositories: ['acme/api'],
+    });
   });
 
   it('works out the choices and the trigger', () => {

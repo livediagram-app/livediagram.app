@@ -3,6 +3,7 @@
 
 import {
   AUTOMATION_TRIGGER_KINDS,
+  isGithubTrigger,
   type AutomationTrigger,
   type AutomationTriggerKind,
 } from '@liveplanner/items';
@@ -101,8 +102,21 @@ export const isTimeKind = (kind: AutomationTriggerKind): boolean =>
   kind === 'scheduled' || kind === 'due_in' || kind === 'overdue' || kind === 'stuck';
 
 /** A trigger's first form: Field Changed on the plan's first field, Column Over Limit on its first column past 5,
- *  Related Cards Done on children, a time at 9:00, the rest as they are. */
+ *  Related Cards Done on children, a time at 9:00, the rest as they are. From one GitHub trigger to another (`from`),
+ *  the repositories it names stay (automations.md "GitHub triggers"). */
 export function freshTrigger(
+  kind: AutomationTriggerKind,
+  fields: readonly string[],
+  columns: readonly string[],
+  from?: AutomationTrigger,
+): AutomationTrigger {
+  const fresh = firstForm(kind, fields, columns);
+  if (!from || !isGithubTrigger(from) || !isGithubTrigger(fresh) || !from.repositories?.length)
+    return fresh;
+  return { ...fresh, repositories: from.repositories };
+}
+
+function firstForm(
   kind: AutomationTriggerKind,
   fields: readonly string[],
   columns: readonly string[],
