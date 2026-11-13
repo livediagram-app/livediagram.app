@@ -5,6 +5,7 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
+    "./bin": "./src/bin.ts",
     "./cli-error": "./src/cli-error.ts",
     "./config-file": "./src/config-file.ts",
     "./credentials": "./src/credentials.ts",
