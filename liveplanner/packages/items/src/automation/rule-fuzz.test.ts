@@ -340,16 +340,12 @@ const wire = (v: unknown): unknown => (v === undefined ? undefined : JSON.parse(
 // Whether `path` (`steps.2.then.0.text`) names a part `body` holds; `rule` is the body itself.
 function pathIn(body: unknown, path: string): boolean {
   if (path === 'rule') return true;
+  const keys = path.split('.');
   let at: unknown = body;
-  for (const key of path.split('.')) {
+  for (const [i, key] of keys.entries()) {
     if (typeof at !== 'object' || at === null) return false;
-    if (!Object.hasOwn(at, key)) {
-      // A part the read requires but the body lacks is named by its own path: its holder must be there.
-      return (
-        path.split('.').slice(0, -1).join('.') === '' ||
-        pathIn(body, path.split('.').slice(0, -1).join('.'))
-      );
-    }
+    // A part the read requires but the body lacks is named by its own path: only the last key may be missing.
+    if (!Object.hasOwn(at, key)) return i === keys.length - 1;
     at = (at as Record<string, unknown>)[key];
   }
   return true;
@@ -403,6 +399,8 @@ describe('generated rule bodies', () => {
 
   it('validation never throws, and a refusal names a part the body holds', () => {
     for (const raw of bodies) {
+      // An agent's body is named before it is read: whatever it holds, naming never throws.
+      expect(() => namedRuleBody(raw, NAMES)).not.toThrow();
       const read = readRuleBody(raw);
       if ('body' in read) {
         accepted.push(read.body);

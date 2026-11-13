@@ -283,6 +283,9 @@ describe('the rules', () => {
       path: 'trigger.fields.1',
       message: expect.stringContaining('Field Changed never hears Time Spent') as string,
     });
+    // A list naming a field twice is kept once, yet the path names the field where the body holds it.
+    const twice = await w.call('POST', '', trigger(['f-left', 'f-left', 'f-time']));
+    expect(await twice.json()).toMatchObject({ path: 'trigger.fields.2' });
     const made = await w.rule(trigger(['f-left']));
     expect((await w.call('PUT', `/${made.id}`, trigger(['f-time']))).status).toBe(400);
   });

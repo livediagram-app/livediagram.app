@@ -159,6 +159,12 @@ async function list(ctx: PlanRouteContext, g: Gated): Promise<Response> {
 // The request's rule, checked, or the refusal. A Field Changed rule naming a field no write changes (Time Spent, a
 // Votes tally) would never run, and a Set Field giving a Checkbox anything but Yes or No would write what it can't
 // hold: each refused, naming the field, with the plan's types read only for a rule that holds one.
+// The fields a request's Field Changed trigger named, as sent (readRuleBody checked it is a list).
+const rawFields = (raw: Record<string, unknown>): unknown[] => {
+  const t = raw['trigger'] as Record<string, unknown>;
+  return t['fields'] as unknown[];
+};
+
 async function bodyOf(
   ctx: PlanRouteContext,
   projectId: string,
@@ -174,7 +180,8 @@ async function bodyOf(
     const [unheard] = unheardFields(types, trigger.fields);
     if (unheard)
       return refuse(400, 'automation_invalid', {
-        path: `trigger.fields.${trigger.fields.indexOf(unheard.id)}`,
+        // The body's own place for it: the read keeps each field once, so its index may differ.
+        path: `trigger.fields.${rawFields(raw).indexOf(unheard.id)}`,
         message: `Field Changed never hears ${unheard.name}: it changes without an edit, so the rule would never run`,
       });
   }
