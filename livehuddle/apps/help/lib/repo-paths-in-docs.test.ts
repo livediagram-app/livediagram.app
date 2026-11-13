@@ -91,7 +91,7 @@ function docFiles(): string[] {
 // Without them each call finds the repository from its own cwd, as it does in CI.
 const GIT_ENV = Object.fromEntries(
   Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')),
-);
+) as NodeJS.ProcessEnv;
 
 // Everything git tracks, read as text. Specs are referenced from code comments,
 // OpenAPI descriptions, tests and markdown alike, so the reference checks below
