@@ -47,7 +47,7 @@ import { RulesList } from './RulesList';
 import { RunLog } from './RunLog';
 import { RunsMeter } from './RunsMeter';
 import { localZone, useMinuteClock } from './screen-clock';
-import { ScreenTabs } from './ScreenTabs';
+import { ScreenTabs, screenPanelId, screenTabId } from './ScreenTabs';
 import { TemplatesGallery } from './TemplatesGallery';
 import { DescribeRuleDialog } from './DescribeRuleDialog';
 import { DraftedNote } from './DraftedNote';
@@ -110,6 +110,9 @@ export function AutomationsDialog({
   const now = useMinuteClock();
   const phone = !useMediaQuery('(min-width: 640px)');
   const titleId = useId();
+  const tabsId = useId();
+  // The open tab: a rule's builder and the GitHub view sit under Rules.
+  const screenTab = target.view === 'rule' || target.view === 'github' ? 'rules' : target.view;
   const [busy, setBusy] = useState<ReadonlySet<string>>(new Set());
   const [dirty, setDirty] = useState(false);
   const [leaving, setLeaving] = useState<(() => void) | null>(null);
@@ -404,13 +407,19 @@ export function AutomationsDialog({
         className={githubEnabled ? '[--hero-centre-end:18rem]' : undefined}
       />
       <ScreenTabs
-        current={target.view === 'rule' || target.view === 'github' ? 'rules' : target.view}
+        idPrefix={tabsId}
+        current={screenTab}
         rules={api.data ? rules.length : null}
         phone={phone}
         meter={meter}
         onTab={(tab) => onTarget({ view: tab })}
       />
-      <div role="tabpanel" className="flex min-h-0 flex-1 flex-col">
+      <div
+        role="tabpanel"
+        id={screenPanelId(tabsId)}
+        aria-labelledby={screenTabId(tabsId, screenTab)}
+        className="flex min-h-0 flex-1 flex-col"
+      >
         {/* The plan spent its runs for the day (spec "Runs, limits and loops"): the meter is full and says why. */}
         {api.data && api.data.runsToday >= api.data.runsPerDay ? (
           <p

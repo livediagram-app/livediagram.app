@@ -747,8 +747,10 @@ action's check joined by a line, a dashed arrow looping back over them. The bolt
 allowing. On a phone the header keeps its desktop look (100px, the mark, the title and its line).
 
 - Three tabs: **Rules · n**, **Audit Trail** and **Templates**. On a phone the bar is 48 px tall, each tab a 44 px
-  target with its label centred in it, the active tab's underline along the bar's foot.
-- A **Runs today** meter at the right of the tabs: "142 of 1,000" (No Match runs are not counted).
+  target with its label centred in it, the active tab's underline along the bar's foot. The bar is one Tab stop, the
+  open tab: Left and Right move to the next tab and open it (wrapping), Home and End to the first and last, and the
+  open tab names its panel.
+- A **Runs today** meter at the right of the tabs, beside the tab list rather than in it: "142 of 1,000" (No Match runs are not counted).
 - **Rules**: a search box ("Find a rule"), **All Triggers** and **On and Off** filters (on a wide screen one row, all
   32 px tall; **All Triggers** lists GitHub's triggers only where Pick a Trigger offers them, or one a rule is
   already on), then one row per rule:
