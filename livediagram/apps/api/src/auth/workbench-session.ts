@@ -15,7 +15,8 @@ export type WorkbenchReach =
   | { scope: 'workspace'; documentId: null; folderId: string | null };
 
 export const { resolveWorkbenchSession, noteWorkbenchRoom } = createWorkbenchSessions({
-  credentials: accountCredentials,
+  // Read at call time, so a test's mock of ./accounts is the one asked.
+  credentials: (env: Parameters<typeof accountCredentials>[0]) => accountCredentials(env),
   reach: (s): WorkbenchReach =>
     s.scope === 'item'
       ? { scope: 'document', documentId: s.itemId!, folderId: null }

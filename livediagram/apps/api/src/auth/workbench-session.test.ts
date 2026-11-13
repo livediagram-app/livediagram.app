@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { AccountsUnavailable } from '../db/api-tokens';
 import { resolveWorkbenchSession } from './workbench-session';
 
 // Sessions are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the api asks accounts about each with its client
@@ -88,5 +89,13 @@ describe('resolveWorkbenchSession', () => {
       ok: true,
       workbench: { scope: 'workspace', documentId: null, folderId: 'fold1' },
     });
+  });
+
+  it('is unavailable, in this api’s error, when accounts fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    stubAccounts(() => new Response(null, { status: 503 }));
+    await expect(resolveWorkbenchSession(ENV, secret())).rejects.toBeInstanceOf(
+      AccountsUnavailable,
+    );
   });
 });
