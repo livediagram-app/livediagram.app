@@ -91,7 +91,10 @@ export function StepPreview({
         <div className="flex min-w-0 flex-col gap-0.5 text-[13px]">
           <span className="font-semibold text-slate-900 dark:text-slate-50">
             Automation{' '}
-            <span className="font-normal text-slate-500 dark:text-slate-400">· {via ?? rule}</span>
+            {/* Slate 600, not 500: on the violet wash 500 is 4.34:1, under the 4.5:1 small text needs (axe). */}
+            <span data-preview-via="" className="font-normal text-slate-600 dark:text-slate-300">
+              · {via ?? rule}
+            </span>
           </span>
           <span className="whitespace-pre-wrap break-words text-slate-700 dark:text-slate-200">
             {filled}
