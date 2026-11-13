@@ -89,12 +89,7 @@ function IsoColumn({ el, surface }: { el: BoxedElement; surface: CanvasSurface }
     );
   // A clipped silhouette clips its shadows away too, so its copies are children.
   return (
-    <div
-      data-iso-column=""
-      data-ride-id={el.id}
-      className="absolute"
-      style={place}
-    >
+    <div data-iso-column="" data-ride-id={el.id} className="absolute" style={place}>
       {WALL_STEPS_DEEPEST_FIRST.map(({ depthPx, brightness }) => (
         <div
           key={depthPx}
