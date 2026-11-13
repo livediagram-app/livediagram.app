@@ -338,7 +338,9 @@ an id: the line says each kind of thing gone once, in words ("Needs Attention: A
 | Action                          | Does                                                                                              |
 | ------------------------------- | ------------------------------------------------------------------------------------------------- |
 | **Move to Column**              | sets the card's status to a column its type uses (as the Status picker offers)                    |
-| **Set Field**                   | sets a field to a value: a literal, a value from the card, or a date (Today ± days)               |
+| **Set Field**                   | sets a field to a value: a literal, a value from the card, or a date (Today ± days); a field of   |
+|                                 | fixed values (Priority, a Choice field) to one of them, picked from its values (Flagged and the   |
+|                                 | Checklist are set by Flag, Unflag and Add a Checklist instead)                                    |
 | **Clear Field**                 | empties a field                                                                                   |
 | **Assign**                      | assigns a chosen person, **whoever triggered the rule**, nobody, or **people in turn**: each run  |
 |                                 | the next of 2 to 10 chosen people, in order, round and round                                      |

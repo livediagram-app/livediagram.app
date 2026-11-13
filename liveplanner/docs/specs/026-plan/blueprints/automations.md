@@ -80,6 +80,9 @@ apps/editor/components/automations/
   RunLog.tsx, RunRow.tsx
   RuleBuilder.tsx             breadcrumb bar, step cards, add buttons, Rule Details accordion, Discard Changes?
   StepCard.tsx, StepPanel.tsx, step-panels/*.tsx   one panel per trigger, condition and action kind
+                              (FieldActionPanel: Set Field on Priority or a Choice field offers A Choice, a Select
+                              of its values (fieldChoices) stored as text, the first picked as the field is; Set
+                              Field lists neither Flagged nor Checklist, unless a step already holds one)
                               (panel-parts' ChipToggles and each single pick keep a gone pick shown, "no longer here")
   ValueInsert.tsx             the chip-rendered text field and its Insert a Value button (ValueInsertMenu.tsx)
   TestOnCard.tsx              the card finder and the dry-run result
