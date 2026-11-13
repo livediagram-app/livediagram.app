@@ -10692,6 +10692,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "rules": {
+        "items": {
+          "$ref": "#/components/schemas/PlanDraftRule"
+        },
+        "type": "array"
+      },
       "title": {
         "type": "string"
       }
@@ -10770,6 +10776,41 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "draft"
+    ],
+    "type": "object"
+  },
+  "PlanDraftRule": {
+    "additionalProperties": false,
+    "description": "A starter rule as the draft holds it: named as the draft names its columns, card types and custom fields (a built-in field by its id), and whether Make Plan makes it on.",
+    "properties": {
+      "conditions": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationCondition"
+        },
+        "type": "array"
+      },
+      "name": {
+        "type": "string"
+      },
+      "on": {
+        "type": "boolean"
+      },
+      "steps": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationStep"
+        },
+        "type": "array"
+      },
+      "trigger": {
+        "$ref": "#/components/schemas/AutomationTrigger"
+      }
+    },
+    "required": [
+      "name",
+      "on",
+      "trigger",
+      "conditions",
+      "steps"
     ],
     "type": "object"
   },

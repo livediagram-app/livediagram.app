@@ -142,31 +142,37 @@ function nameAll(list: unknown, each: (o: Json) => void): void {
 
 /** `body` with what it names by name put back to the plan's ids; a copy, the input untouched. */
 export function namedRuleBody<T>(body: T, names: RuleNames): T {
+  return ruleWithRefs(body, namersOf(names));
+}
+
+const same: Namer = (ref) => ref;
+
+/** What a rule refers to, by kind: a column (status), a card type, a field, a person or a tab. */
+export type RuleRefKind = keyof Namers;
+
+/** `body` with every ref of a kind put through its map (a kind the maps lack kept as it is): the one walk under
+ *  namedRuleBody's naming, a copy's new tab ids and Describe a Plan's renames. A copy, the input untouched. */
+export function ruleWithRefs<T>(
+  body: T,
+  maps: Partial<Record<RuleRefKind, (ref: string) => string>>,
+): T {
   if (!isObject(body)) return body;
   const out = structuredClone(body) as Json;
-  const n = namersOf(names);
+  const n: Namers = {
+    status: maps.status ?? same,
+    type: maps.type ?? same,
+    field: maps.field ?? same,
+    person: maps.person ?? same,
+    tab: maps.tab ?? same,
+  };
   if (isObject(out['trigger'])) nameTrigger(out['trigger'], n);
   nameAll(out['conditions'], (c) => nameCondition(c, n));
   nameAll(out['steps'], (s) => nameStep(s, n));
   return out as T;
 }
 
-const same: Namer = (ref) => ref;
-
 /** `body` with the tabs it names (a Form Response's Form tab, a saved filter's board tab) put through `tabIds`, as a
  *  plan's copy or file gives its tabs new ids; a tab the map lacks is kept. A copy, the input untouched. */
 export function ruleWithTabIds<T>(body: T, tabIds: ReadonlyMap<string, string>): T {
-  if (!isObject(body)) return body;
-  const out = structuredClone(body) as Json;
-  const n: Namers = {
-    status: same,
-    type: same,
-    field: same,
-    person: same,
-    tab: (ref) => tabIds.get(ref) ?? ref,
-  };
-  if (isObject(out['trigger'])) nameTrigger(out['trigger'], n);
-  nameAll(out['conditions'], (c) => nameCondition(c, n));
-  nameAll(out['steps'], (s) => nameStep(s, n));
-  return out as T;
+  return ruleWithRefs(body, { tab: (ref) => tabIds.get(ref) ?? ref });
 }

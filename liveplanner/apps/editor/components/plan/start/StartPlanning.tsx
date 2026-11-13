@@ -126,6 +126,7 @@ function toCard(item: StartItem, palette: PlanPalette, showKind: boolean): Start
     name: item.name,
     line: item.line,
     picture: <Picture item={item} palette={palette} />,
+    ...(item.bestFor ? { bestFor: item.bestFor } : {}),
     ...(badge ? { badge } : {}),
     ...(kind ? { ariaKind: KIND_NAMES[item.kind] } : {}),
     ...(item.tabs ? { tag: `${item.tabs} ${item.tabs === 1 ? 'Tab' : 'Tabs'}` } : {}),

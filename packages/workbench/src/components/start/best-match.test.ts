@@ -29,6 +29,23 @@ describe('liftBestMatch', () => {
     expect(liftBestMatch(groups, '  ')).toEqual({ best: [], groups });
   });
 
+  it('leads a card for one of its bestFor words typed whole, as an exact name', () => {
+    const describe = { id: 'describe', name: 'Describe a Plan', bestFor: ['ai', 'my own'] };
+    const found = [
+      { cards: [card('mail', 'Email Triage'), card('aim', 'Aims and Goals')] },
+      { cards: [describe] },
+    ];
+    // Leading a name that merely begins with it, though that card's group comes first.
+    expect(liftBestMatch(found, 'AI').best.map((c) => c.id)).toEqual(['describe', 'aim']);
+    expect(liftBestMatch(found, 'my-own').best.map((c) => c.id)).toEqual(['describe']);
+    // Only typed whole: a word's start is no match, and a name's own start still is.
+    expect(liftBestMatch(found, 'a').best.map((c) => c.id)).toEqual(['aim']);
+    expect(liftBestMatch(found, 'aims').best.map((c) => c.id)).toEqual(['aim']);
+    // Two of a rank keep the groups' order.
+    const two = [{ cards: [describe, { ...describe, id: 'other' }] }];
+    expect(liftBestMatch(two, 'ai').best.map((c) => c.id)).toEqual(['describe', 'other']);
+  });
+
   it('lists a card in two groups once', () => {
     const twice = [{ cards: [card('a', 'Flowchart')] }, { cards: [card('a', 'Flowchart')] }];
     expect(liftBestMatch(twice, 'flow').best).toHaveLength(1);

@@ -17,8 +17,9 @@ export type StartPanelPaletteBase = {
   focus: string;
 };
 
-// What the panel reads off a card (the editor's own card type carries more, for its grid).
-export type StartPanelCardBase = { id: string; name: string };
+// What the panel reads off a card (the editor's own card type carries more, for its grid). `bestFor`: words that, typed
+// whole, lead it under Best Match as its exact name would (best-match.ts).
+export type StartPanelCardBase = { id: string; name: string; bestFor?: readonly string[] };
 
 export type StartPanelCategory<C extends string> = {
   id: C;

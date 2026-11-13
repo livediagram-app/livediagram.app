@@ -42,7 +42,7 @@ describe('planDraftProblems', () => {
     expect(planDraftProblems(draft())).toEqual([]);
   });
 
-  it('says each name left empty or given twice at its place', () => {
+  it('says each name left empty, and both of a name given twice, at their places', () => {
     const d = draft();
     d.title = ' ';
     d.columns = ['Applied', '', 'applied '];
@@ -51,12 +51,15 @@ describe('planDraftProblems', () => {
     d.cardTypes[0]!.fields[1]!.options = ['A', ' ', 'a'];
     expect(planDraftProblems(d, EMPTY)).toEqual([
       { path: 'title', message: 'Give the board a name.' },
+      { path: 'columns.0', message: 'Two columns are called “Applied”.' },
       { path: 'columns.1', message: 'Give this column a name.' },
-      { path: 'columns.2', message: 'Two columns are called “applied”.' },
+      { path: 'columns.2', message: 'Two columns are called “Applied”.' },
       { path: 'cardTypes.0.name', message: 'Give this card type a name.' },
-      { path: 'cardTypes.0.fields.1.name', message: 'Two fields are called “role”.' },
+      { path: 'cardTypes.0.fields.0.name', message: 'Two fields are called “Role”.' },
+      { path: 'cardTypes.0.fields.1.name', message: 'Two fields are called “Role”.' },
+      { path: 'cardTypes.0.fields.1.options.0', message: 'Two options are called “A”.' },
       { path: 'cardTypes.0.fields.1.options.1', message: 'Give this option a name.' },
-      { path: 'cardTypes.0.fields.1.options.2', message: 'Two options are called “a”.' },
+      { path: 'cardTypes.0.fields.1.options.2', message: 'Two options are called “A”.' },
     ]);
   });
 
@@ -71,7 +74,8 @@ describe('planDraftProblems', () => {
     const d = draft();
     d.cardTypes.push({ ...d.cardTypes[0]!, name: 'candidate' });
     expect(planDraftProblems(d)).toEqual([
-      { path: 'cardTypes.1.name', message: 'Two card types are called “candidate”.' },
+      { path: 'cardTypes.0.name', message: 'Two card types are called “Candidate”.' },
+      { path: 'cardTypes.1.name', message: 'Two card types are called “Candidate”.' },
     ]);
   });
 
@@ -166,6 +170,18 @@ describe('the preview’s cost', () => {
           kind: 'choice' as const,
           options: Array.from({ length: 8 }, (_, k) => `Option ${k}`),
         })),
+      })),
+      // Two starter rules of three steps, each read against the draft on every check.
+      rules: Array.from({ length: 2 }, (_, i) => ({
+        name: `Rule ${i}`,
+        on: true,
+        trigger: { kind: 'card_moved', from: ['Stage 0'], to: ['Stage 1'] },
+        conditions: [{ kind: 'type', types: ['Kind 0'] }],
+        steps: [
+          { kind: 'set_field', field: 'Field 0', value: { text: 'Option 1' } },
+          { kind: 'move', status: 'Stage 2' },
+          { kind: 'flag' },
+        ],
       })),
     };
     const roomForFour: ItemTypeCatalogue = {

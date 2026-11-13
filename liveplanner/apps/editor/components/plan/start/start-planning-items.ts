@@ -41,6 +41,8 @@ export type StartItem = {
   tabs?: number;
   // Words people look for it by, beyond its name and line (START_KEYWORDS).
   keywords?: readonly string[];
+  // Words that, typed whole, lead it under Best Match as its name would.
+  bestFor?: readonly string[];
 } & (
   | { kind: 'board'; preset: PlanBoardPresetId }
   | { kind: 'sheet'; start: PlacedSheetStart | null }
@@ -264,6 +266,9 @@ export const IMPORT_ITEM: StartItem = {
   ],
 };
 
+// The words that lead Describe a Plan under a search's Best Match (start-panel.md "A title match leads").
+export const DESCRIBE_BEST_FOR: readonly string[] = ['ai', 'generate', 'my own', 'own words'];
+
 // The one Describe a Plan card, a search's (docs/specs/026-plan/describe-a-plan.md "Where it starts"): found by what
 // asking for a plan of your own is called. The rail's Describe a Plan entry does what it does.
 export const DESCRIBE_ITEM: StartItem = {
@@ -272,6 +277,9 @@ export const DESCRIBE_ITEM: StartItem = {
   name: 'Describe a Plan',
   line: 'Say what you’re planning and AI drafts the board’s columns and card types for you to check.',
   keywords: ['describe', 'ai', 'custom', 'generate', 'my own', 'own words', 'draft', 'write'],
+  // Typed whole, these lead it under Best Match as its name would ("ai" is in many a word, so a plain match would list
+  // it last, after Email and Maintenance).
+  bestFor: DESCRIBE_BEST_FOR,
 };
 
 // The sheet starts, in Start Planning's order: the empty sheet, the card table (only with cards), then every sheet

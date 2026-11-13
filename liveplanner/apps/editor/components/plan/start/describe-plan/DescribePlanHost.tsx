@@ -3,7 +3,9 @@
 // Describe a Plan in the editor (docs/specs/026-plan/describe-a-plan.md; blueprint describe-a-plan.md "Editor"): the
 // dialog bound to this plan. Who is asking (signed in, or a guest who sees the nudge), the plan's card types and the
 // statuses its boards name (what the preview checks against), and Make Plan: the types the plan lacks added as one
-// change, then the board placed as Start Planning places one, filling this tab. Loaded with its own chunk when chosen.
+// change, then the board placed as Start Planning places one, filling this tab, then the starter rules left in made
+// through Automations (only where Automations is open to this person: a plan saved to an account). Loaded with its own
+// chunk when chosen.
 
 import { useEffect, useMemo } from 'react';
 import {
@@ -14,16 +16,23 @@ import {
   type PlanDraftPlan,
 } from '@liveplanner/items';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
+import { useAutomationsAccess } from '@/components/automations/AutomationsContext';
+import { readAutomations } from '@/components/automations/use-automations';
 import { authHrefWithReturn } from '@/components/chrome/auth-shared';
+import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
 import { DescribePlanDialog } from './DescribePlanDialog';
 import { draftPlan } from './plan-draft-client';
+import { STARTER_RULES_FAILED, makeStarterRules } from './starter-rules-client';
 
 // Make Plan's words when the plan's cards or types are not there to make it with.
 export const DESCRIBE_PLAN_NOT_READY = 'This plan isn’t ready yet. Try again in a moment.';
 
 export function DescribePlanHost({ onClose }: { onClose: () => void }) {
   const ctx = useEditorContext();
+  // Automations for this person on this plan: null on a plan in This Browser, where the rules can't be made.
+  const automations = useAutomationsAccess();
+  const toast = useToast();
   const plan = ctx.plan?.context;
   const types = plan?.types;
   const stored = plan?.itemTypes.catalogue;
@@ -42,7 +51,8 @@ export function DescribePlanHost({ onClose }: { onClose: () => void }) {
 
   const make = (draft: PlanDraft): string | null => {
     if (!plan) return DESCRIBE_PLAN_NOT_READY;
-    const made = planFromDraft(draft, context);
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const made = planFromDraft(draft, context, Math.random, timeZone);
     if (!made.ok) return made.message;
     // The types first, so the board finds them when it lands and brings none of its own.
     if (made.newTypes.length > 0) plan.itemTypes.addTypes(made.newTypes);
@@ -51,6 +61,12 @@ export function DescribePlanHost({ onClose }: { onClose: () => void }) {
       ctx.dropPaletteItem('plan-board', c.x, c.y, { planBoard: made.setup }),
     );
     track('Plan', 'Created', 'PlanDraft');
+    const scope = automations?.scope;
+    if (scope && made.rules.length > 0)
+      void makeStarterRules(scope, made.rules, () => track('Plan', 'Created', 'PlanDraftRule'))
+        .catch(() => toast.error(STARTER_RULES_FAILED))
+        // The Rules list and the footer's count read the rules made.
+        .finally(() => void readAutomations(scope));
     onClose();
     return null;
   };
@@ -66,6 +82,7 @@ export function DescribePlanHost({ onClose }: { onClose: () => void }) {
       draft={(prompt) => draftPlan(ctx.selfParticipant.id, prompt)}
       plan={context}
       planTypes={context.catalogue?.types ?? []}
+      rulesMade={!!automations}
       onMake={make}
       onClose={onClose}
     />

@@ -976,6 +976,14 @@ export const PLAN_DESCRIBE_MADE = chart(
   { types: ['PlanDraft'] },
 );
 
+export const PLAN_DESCRIBE_RULES_MADE = chart(
+  'Plan',
+  'Created',
+  'Starter Rules Made from a Description',
+  'An Automations rule made with Make Plan from the starter rules Describe a Plan drafted with a plan.',
+  { types: ['PlanDraftRule'] },
+);
+
 export const PLAN_AUTOMATION_DRAFTS_OPENED = chart(
   'Plan',
   'Created',
@@ -1416,6 +1424,7 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_AUTOMATION_DRAFTS_OPENED,
   PLAN_DESCRIBE_DRAFTS,
   PLAN_DESCRIBE_MADE,
+  PLAN_DESCRIBE_RULES_MADE,
   PLAN_AUTOMATION_SECRETS_MADE,
   PLAN_AUTOMATION_SECRETS_REGENERATED,
   PLAN_AUTOMATION_SECRETS_COPIED,

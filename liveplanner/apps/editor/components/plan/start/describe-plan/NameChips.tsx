@@ -42,10 +42,16 @@ export function NameChips({
     fresh?.select();
     added.current = null;
   }, [names.length]);
-  const said = names.flatMap((_, i) => {
-    const p = problemAt(i);
-    return p ? [p] : [];
-  });
+  // Each different problem in the row, once: two chips of one name both ring and the words are said once, so neither
+  // hides behind the other's focus ring; a second kind of problem (an empty chip too) is said under it.
+  const said = [
+    ...new Set(
+      names.flatMap((_, i) => {
+        const p = problemAt(i);
+        return p ? [p] : [];
+      }),
+    ),
+  ];
   const small = size === 'sm';
   return (
     <div className="flex flex-col gap-1.5">
@@ -103,7 +109,9 @@ export function NameChips({
           </button>
         ) : null}
       </div>
-      {said[0] ? <ProblemText>{said[0]}</ProblemText> : null}
+      {said.map((p) => (
+        <ProblemText key={p}>{p}</ProblemText>
+      ))}
     </div>
   );
 }

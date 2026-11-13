@@ -11,6 +11,7 @@ import {
   PLAN_DRAFT_OFF_TOPIC,
   type PlanDraft,
   type PlanDraftPlan,
+  type PlanDraftRule,
 } from '@liveplanner/items';
 import type { PlanDraftResponse } from '@liveplanner/api-schema';
 import {
@@ -20,6 +21,7 @@ import {
   DescribePlanDialog,
 } from './DescribePlanDialog';
 import { PlanDraftRefusal } from './plan-draft-client';
+import { STARTER_RULES_LEFT_OUT, STARTER_RULES_LINE } from './PlanDraftRules';
 
 const drafted = (): PlanDraft => ({
   title: 'Hiring Pipeline',
@@ -45,6 +47,7 @@ function mount(
     signedIn?: boolean;
     draft?: (prompt: string) => Promise<PlanDraftResponse>;
     plan?: PlanDraftPlan;
+    rulesMade?: boolean;
     onMake?: (d: PlanDraft) => string | null;
   } = {},
 ) {
@@ -59,6 +62,7 @@ function mount(
       draft={draft}
       plan={plan}
       planTypes={plan.catalogue?.types ?? []}
+      rulesMade={opts.rulesMade ?? true}
       onMake={onMake}
       onClose={onClose}
     />,
@@ -168,10 +172,18 @@ describe('Describe a Plan: Check Your Plan', () => {
     fireEvent.change(screen.getByRole('textbox', { name: 'Column 2' }), {
       target: { value: 'applied' },
     });
-    expect(screen.getByText('Two columns are called “applied”.')).toBeTruthy();
+    // Both chips of the name are marked, and the words said once under the row.
+    expect(screen.getAllByText('Two columns are called “Applied”.')).toHaveLength(1);
+    for (const name of ['Column 1', 'Column 2'])
+      expect(screen.getByRole('textbox', { name }).getAttribute('aria-invalid')).toBe('true');
+    fireEvent.change(screen.getByRole('textbox', { name: 'Column 3' }), { target: { value: '' } });
+    expect(screen.getByText('Give this column a name.')).toBeTruthy();
+    fireEvent.change(screen.getByRole('textbox', { name: 'Column 3' }), {
+      target: { value: 'Interview' },
+    });
     fireEvent.change(screen.getByDisplayValue('Hiring Pipeline'), { target: { value: ' ' } });
     expect(screen.getByText('Give the board a name.')).toBeTruthy();
-    expect(screen.getByText('Fix the 2 marked problems to make the plan.')).toBeTruthy();
+    expect(screen.getByText('Fix the 3 marked problems to make the plan.')).toBeTruthy();
     expect(button('Make Plan').hasAttribute('disabled')).toBe(true);
     fireEvent.click(button('Make Plan'));
     expect(onMake).not.toHaveBeenCalled();
@@ -255,5 +267,88 @@ describe('Describe a Plan: Check Your Plan', () => {
     expect(screen.getByText('This plan isn’t ready yet. Try again in a moment.')).toBeTruthy();
     fireEvent.click(button('Back'));
     await waitFor(() => expect((box() as HTMLTextAreaElement).value).toBe('a hiring pipeline'));
+  });
+});
+
+describe('Describe a Plan: Starter Rules', () => {
+  const rule: PlanDraftRule = {
+    name: 'Stamp Offer Date',
+    on: true,
+    trigger: { kind: 'card_moved', to: ['Offer'] },
+    conditions: [],
+    steps: [{ kind: 'set_field', field: 'Role', value: { text: 'Offered' } }],
+  };
+  const withRules = async (opts: Parameters<typeof mount>[0] = {}) =>
+    toPreview({
+      draft: async () => ({
+        draft: {
+          ...drafted(),
+          rules: [
+            rule,
+            {
+              ...rule,
+              name: 'Flag New Cards',
+              trigger: { kind: 'card_created' },
+              steps: [{ kind: 'flag' }],
+            },
+          ],
+        },
+      }),
+      ...opts,
+    });
+
+  it('lists each rule with its switch, name and sentence, and Make Plan hands up what was changed', async () => {
+    const { onMake } = await withRules();
+    const section = screen.getByRole('region', { name: 'Starter Rules' });
+    expect(within(section).getByText(STARTER_RULES_LINE)).toBeTruthy();
+    const first = within(section).getByRole('region', { name: 'Starter rule Stamp Offer Date' });
+    expect(within(first).getByText('Offer')).toBeTruthy();
+    fireEvent.click(within(first).getByRole('switch', { name: 'Make Stamp Offer Date on' }));
+    fireEvent.change(within(first).getByRole('textbox', { name: 'Rule 1 name' }), {
+      target: { value: 'Mark Offers' },
+    });
+    fireEvent.click(within(section).getByRole('button', { name: 'Remove Flag New Cards' }));
+    fireEvent.click(button('Make Plan'));
+    expect(onMake.mock.calls[0]![0].rules).toEqual([{ ...rule, name: 'Mark Offers', on: false }]);
+  });
+
+  it('follows a column renamed into the rules, and says a rule whose column was removed', async () => {
+    const { onMake } = await withRules();
+    fireEvent.change(screen.getByRole('textbox', { name: 'Column 4' }), {
+      target: { value: 'Offered' },
+    });
+    const first = screen.getByRole('region', { name: 'Starter rule Stamp Offer Date' });
+    expect(within(first).getByText('Offered')).toBeTruthy();
+    fireEvent.change(
+      within(screen.getByRole('region', { name: 'Card type Candidate' })).getAllByRole('textbox', {
+        name: 'Field name',
+      })[0]!,
+      {
+        target: { value: 'Position' },
+      },
+    );
+    fireEvent.click(button('Remove Offered'));
+    expect(
+      within(first).getByText('This rule names the column “Offered”, which this plan won’t have.'),
+    ).toBeTruthy();
+    expect(button('Make Plan').hasAttribute('disabled')).toBe(true);
+    fireEvent.click(within(first).getByRole('button', { name: 'Remove Stamp Offer Date' }));
+    fireEvent.click(button('Make Plan'));
+    expect(onMake.mock.calls[0]![0].rules).toHaveLength(1);
+  });
+
+  it('leaves the rules out on a plan where they can’t be made, never holding Make Plan for them', async () => {
+    const { onMake } = await withRules({ rulesMade: false });
+    const section = screen.getByRole('region', { name: 'Starter Rules' });
+    expect(within(section).getByText(STARTER_RULES_LEFT_OUT)).toBeTruthy();
+    expect(within(section).queryByRole('switch')).toBeNull();
+    fireEvent.click(button('Remove Offer'));
+    fireEvent.click(button('Make Plan'));
+    expect(onMake.mock.calls[0]![0].rules).toEqual([]);
+  });
+
+  it('shows no section for a draft with no rules', async () => {
+    await toPreview();
+    expect(screen.queryByRole('region', { name: 'Starter Rules' })).toBeNull();
   });
 });
