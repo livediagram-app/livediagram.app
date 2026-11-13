@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, type Element } from '@livehuddle/document';
 import { fenceSegments } from '@livehuddle/avatar/collision';
-import type { AvatarSceneElement } from '@livehuddle/avatar/scene';
 import { FRONT_SPOT_GAP } from '@livehuddle/avatar/front-spot';
 import { arcadeAt } from '@/components/canvas/collab/useSocialPieces';
 import { receptionAt } from './office/useWorkdayPieces';
@@ -9,15 +8,16 @@ import { walkPointFor } from './avatar-click-intent';
 import { frontWalkPoint } from './front-walk-point';
 
 // docs/specs/009-elements/social-pieces.md "A crowded machine stays reachable" (Work Tracker 635).
+type Boxed = Element & { x: number; y: number; width: number; height: number };
 const machine = (id: string, x: number, chairFacing?: 'e') =>
   ({
     ...createShape('arcade-machine', x, 0),
     id,
     ...(chairFacing ? { chairFacing } : {}),
-  }) as Element;
-const fencesOf = (els: Element[]) => fenceSegments(els as unknown as AvatarSceneElement[]);
+  }) as Boxed;
+const fencesOf = (els: Element[]) => fenceSegments(els);
 const shapes = (els: Element[]) => els.filter((e) => e.type === 'shape') as never[];
-const click = (el: Element) => ({ x: el.x + el.width / 2, y: el.y + el.height / 2 });
+const click = (el: Boxed) => ({ x: el.x + el.width / 2, y: el.y + el.height / 2 });
 
 describe('frontWalkPoint', () => {
   it('is walkPointFor with nobody in the way, and for a piece without a front', () => {
@@ -61,7 +61,7 @@ describe('frontWalkPoint', () => {
   });
 
   it('keeps a busy Reception Desk reachable', () => {
-    const d = { ...createShape('reception-desk', 0, 0), id: 'd' } as Element;
+    const d = { ...createShape('reception-desk', 0, 0), id: 'd' } as Boxed;
     const els = [d];
     const first = walkPointFor(d, click(d));
     const second = frontWalkPoint(d, click(d), [first], els, fencesOf(els));

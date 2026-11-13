@@ -2,10 +2,10 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { FENCE_REACH } from '../collision';
 import { DEFAULT_AVATAR_CONFIG } from '../config';
 import { officeFootprints } from '../office-geometry';
 import type { AvatarPoint } from '../walk';
+import { SPAWN_BODY } from '../spawn-point';
 import { useAvatarWalk } from './useAvatarWalk';
 
 // A new character never appears inside a footprint (docs/specs/009-elements/fence.md "What does not walk", Work
@@ -56,10 +56,10 @@ describe('useAvatarWalk entry spawn', () => {
     const at = result.current.readPos()!;
     const [water] = officeFootprints(pool);
     expect(inside(at, water!)).toBe(false);
-    // Straight below, the front of the pool, just clear of the water's reach.
+    // Straight below, the front of the pool, a Regular body's height clear of the water, so the body is never drawn
+    // over its lower edge (Work Tracker 706).
     expect(at.x).toBeCloseTo(160, 0);
-    expect(at.y).toBeGreaterThanOrEqual(water!.y + water!.height + FENCE_REACH);
-    expect(at.y).toBeLessThan(water!.y + water!.height + FENCE_REACH + 10);
+    expect(at.y).toBe(water!.y + water!.height + SPAWN_BODY);
   });
 
   it('puts one asked onto a plant’s pot beside the pot, and leaves one on free floor where it was asked', () => {

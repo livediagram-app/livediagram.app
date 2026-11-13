@@ -117,6 +117,10 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // the one `targetRef` holds, and where the walk is going in the end (the click), which sitting and arriving ask.
   const legsRef = useRef<AvatarPoint[]>([]);
   const destRef = useRef<AvatarPoint | null>(null);
+  // Where the last click-walk was going, kept past its end (the feet often arrive on a seat as the walk ends) until
+  // the keys steer, a push or a teleport moves the character, or a seat is chosen by it: the seat a click on a bench
+  // aims at (docs/specs/009-elements/chair.md "Which seat", Work Tracker 706).
+  const aimRef = useRef<AvatarPoint | null>(null);
   // The route grid, built when someone walks after the walls changed (never per frame, never while nobody walks).
   const navRef = useRef<{
     fences: readonly FenceSegment[];
@@ -245,6 +249,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     targetRef.current = route[0]!;
     legsRef.current = route.slice(1);
     destRef.current = point;
+    aimRef.current = point;
     arriveRef.current = onArrive ?? null;
   };
 
@@ -260,6 +265,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     if (!Number.isFinite(len) || len === 0) return;
     heldRef.current = { ...NO_KEYS_HELD };
     arriveRef.current = null;
+    aimRef.current = null;
     // Direct, never routed: a push is a stumble, not a walk somewhere.
     stopWalk();
     targetRef.current = {
@@ -344,6 +350,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // portal doesn't immediately trigger it again.
   const teleportTo = (point: AvatarPoint, arrivedPortalId?: string) => {
     stopWalk();
+    aimRef.current = null;
     heldRef.current = { ...NO_KEYS_HELD };
     posRef.current = point;
     setPos(point);
@@ -378,6 +385,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     // directions.
     onSteer: () => {
       stopWalk();
+      aimRef.current = null;
       // An arrow key stands you up and walks on (docs/specs/009-elements/chair.md "Any movement stands you up"); keys
       // typed into a field never reach here (useAvatarKeys' isTypingTarget guard).
       standUp();
@@ -453,6 +461,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     posRef,
     facingRef,
     destRef,
+    aimRef,
     targetRef,
     lastUnderFeetRef,
     arrivedPortalRef,

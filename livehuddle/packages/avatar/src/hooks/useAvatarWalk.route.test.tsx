@@ -113,6 +113,8 @@ describe('useAvatarWalk finding the way', () => {
     expect(onWalkIntoChair).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'c2' }),
       expect.anything(),
+      // Aimed at the click, the seat it walked to (chair.md "Which seat").
+      { x: 324, y: 144 },
     );
   });
 });

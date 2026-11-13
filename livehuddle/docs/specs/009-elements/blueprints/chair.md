@@ -68,21 +68,23 @@ Banned synonyms: "seat" for the element (the seat is a part of it), "occupancy" 
 Per character: **standing** or **seated on `<chairId>`**. Held in `seatedRef` / `seatedOn` state
 in `useAvatarWalk`; published on every avatar presence packet.
 
-| From     | Event                                    | Guard            | To                           |
-| -------- | ---------------------------------------- | ---------------- | ---------------------------- |
-| standing | feet arrive on a chair (frontmost, D124) | a seat is free   | seated on the nearest free   |
-| standing | feet arrive on a chair (frontmost, D124) | every seat taken | standing, beside the piece   |
-| seated   | a peer's earlier claim on the same seat  | `claimBeats`     | standing, beside the seat    |
-| seated   | a peer's push                            |                  | unchanged (`shove` refuses)  |
-| seated   | arrival on another chair                 |                  | unchanged (D125)             |
-| seated   | `walkTo` onto the piece it sits on       |                  | unchanged (`walkTo` returns) |
-| seated   | any other `walkTo` (click, tap, a route) |                  | standing, walking there      |
-| seated   | any arrow key (`onSteer`)                |                  | standing                     |
-| seated   | leaving Avatar mode                      |                  | standing                     |
-| seated   | disconnect, tab change (peer's view)     |                  | gone with presence           |
+| From     | Event                                    | Guard            | To                                                    |
+| -------- | ---------------------------------------- | ---------------- | ----------------------------------------------------- |
+| standing | feet arrive on a chair (frontmost, D124) | a seat is free   | seated on the free nearest the click (keys: the feet) |
+| standing | feet arrive on a chair (frontmost, D124) | every seat taken | standing, beside the piece                            |
+| seated   | a peer's earlier claim on the same seat  | `claimBeats`     | standing, beside the seat                             |
+| seated   | a peer's push                            |                  | unchanged (`shove` refuses)                           |
+| seated   | arrival on another chair                 |                  | unchanged (D125)                                      |
+| seated   | `walkTo` onto the piece it sits on       |                  | unchanged (`walkTo` returns)                          |
+| seated   | any other `walkTo` (click, tap, a route) |                  | standing, walking there                               |
+| seated   | any arrow key (`onSteer`)                |                  | standing                                              |
+| seated   | leaving Avatar mode                      |                  | standing                                              |
+| seated   | disconnect, tab change (peer's view)     |                  | gone with presence                                    |
 
-1. **Sit.** `Canvas` passes `onWalkIntoChair(element, feet)` for any `isSeatingShape` kind:
-   `seatOnArrival(element, feet, peers)` (`@livehuddle/avatar/seat-claims`) picks the nearest seat no peer's
+1. **Sit.** `Canvas` passes `onWalkIntoChair(element, feet, aim)` for any `isSeatingShape` kind:
+   `seatOnArrival(element, feet, peers, aim)` (`@livehuddle/avatar/seat-claims`) picks the seat nearest `aim` (the
+   click-walk's destination, `destRef ?? targetRef`, which `sitsOnEntry` already holds inside the piece; absent for a
+   walk in by keys, when it is the feet) that no peer's
    presence holds (`takenSeats`: a peer's `seat.index`, or for a packet without `seat` the seat nearest its feet),
    with its facing, the seat's own (a meeting table's) or `CHAIR_SITTER_FACING[seatingFacing(element)]`, then
    `sitOn(id, seat, seat.facing, seat.index)`. With every seat taken it answers `{ stopAt }`, a point `BESIDE_GAP`

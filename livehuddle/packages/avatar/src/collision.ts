@@ -40,7 +40,12 @@ export function fenceStalled(moved: number, step: number): boolean {
 }
 
 // `solid`: the footprint a scenery edge outlines (office.md), which a character can be inside of, unlike a line.
-export type FenceSegment = { a: FencePoint; b: FencePoint; solid?: Rect };
+// `water`: that footprint is water (a Swimming Pool's, a Pond's), which a new character appears a body clear of
+// (spawn-point.ts).
+export type FenceSegment = { a: FencePoint; b: FencePoint; solid?: Rect; water?: true };
+
+/** The pieces whose footprint is water: a character drawn over its lower edge reads as standing in it. */
+export const WATER_KINDS: ReadonlySet<string> = new Set(['swimming-pool', 'pond']);
 
 /** How far inside a box a point is: its distance to the nearest side, negative outside. */
 function depthIn(p: FencePoint, box: Rect): number {
@@ -94,8 +99,10 @@ export function fenceSegments(elements: readonly AvatarSceneElement[]): FenceSeg
     else if (el.shape === 'office-pod') out.push(...podWalls(el));
     else {
       // Each box of its footprint (a car park's cars and kerb, venue-pieces.md) is its own solid.
+      const water = WATER_KINDS.has(el.shape);
       for (const footprint of officeFootprints(el))
-        for (const edge of boxEdges(footprint)) out.push({ ...edge, solid: footprint });
+        for (const edge of boxEdges(footprint))
+          out.push(water ? { ...edge, solid: footprint, water } : { ...edge, solid: footprint });
     }
   }
   return out;

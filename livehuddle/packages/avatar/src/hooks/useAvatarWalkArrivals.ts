@@ -25,6 +25,7 @@ export function useAvatarWalkArrivals<E extends AvatarSceneElement>({
   posRef,
   facingRef,
   destRef,
+  aimRef,
   targetRef,
   lastUnderFeetRef,
   arrivedPortalRef,
@@ -47,6 +48,7 @@ export function useAvatarWalkArrivals<E extends AvatarSceneElement>({
   posRef: RefObject<AvatarPoint | null>;
   facingRef: RefObject<AvatarFacing>;
   destRef: RefObject<AvatarPoint | null>;
+  aimRef: RefObject<AvatarPoint | null>;
   targetRef: RefObject<AvatarPoint | null>;
   lastUnderFeetRef: RefObject<string | null>;
   arrivedPortalRef: RefObject<string | null>;
@@ -54,7 +56,7 @@ export function useAvatarWalkArrivals<E extends AvatarSceneElement>({
   setFacing: (facing: AvatarFacing) => void;
   publishIdle: (at: AvatarPoint, faceTo?: AvatarFacing) => void;
   onWalkIntoPortal?: (element: SceneShapeOf<E>) => void;
-  onWalkIntoChair?: (element: SceneShapeOf<E>, feet: AvatarPoint) => void;
+  onWalkIntoChair?: (element: SceneShapeOf<E>, feet: AvatarPoint, aim?: AvatarPoint) => void;
   onWalkIntoReactionPad?: (element: SceneShapeOf<E>) => void;
   onWalkIntoDrink?: (element: SceneShapeOf<E>) => void;
 }) {
@@ -127,7 +129,12 @@ export function useAvatarWalkArrivals<E extends AvatarSceneElement>({
       // A Podium's walk ends on its speaker spot, which can lie just outside its box (lectern.ts catchArea).
       sitsOnEntry(catchArea(el), destRef.current ?? targetRef.current)
     ) {
-      onWalkIntoChair?.(el, posRef.current);
+      // The seat taken is the one nearest where the click that walked here landed (the walk's aim, inside the piece),
+      // or, walked in by keys (no aim), the one nearest where the feet arrived (chair.md "Which seat").
+      const aim = aimRef.current;
+      aimRef.current = null;
+      const box = catchArea(el);
+      onWalkIntoChair?.(el, posRef.current, aim && sitsOnEntry(box, aim) ? aim : undefined);
     }
     // Reaction pad (livediagram/docs/specs/009-elements/reaction-pad.md). Fires on ARRIVAL like the others, so standing
     // on a pad throws one burst rather than one per frame; stepping off and

@@ -536,6 +536,12 @@ the pointer).
 - The packet is deliberately tiny: feet position (to a hundredth of a canvas px), facing, walking flag and step frame, the hop height, wave frame, seat, drink, status and reaction only while they are set, and the costume tokens (with the optional `hairColour`) only when a peer may not have them yet ([A busy room](#a-busy-room), "The costume rides only when it is needed"). It goes out at the **same ~30 Hz throttle as the cursor**, stepped down in a room of more than 10 ([A busy room](#a-busy-room)) (a packet a window holds back is sent as the window ends, so the last one said, a status picked or the step a walk ends on, is never the one dropped), from the same gates (hydrated, a document id, and either a share link or a team document). The costume is **optional on the wire**: a receiver keeps the last costume it saw for each peer, runs it through the same field-by-field parser as storage, and falls back to the default character only for a peer whose costume it has never been sent.
 - It is **ephemeral presence, not a mutation**: `avatar` is in the room's `PRESENCE_OP_KINDS`, so it relays unordered, from any role (**including view-role**: an audience member walking around a canvas someone linked them to is as harmless as their cursor), is never persisted, and is never replayed to a reconnecting client.
 - **Leaving the mode publishes `avatar: null`**, which deletes the entry on every peer, and a peer who disconnects is pruned with the rest of their presence, so nobody is left standing on a canvas after they've gone.
+- **Cursors while walking** (Work Tracker 706, #708): a peer who has a character on the tab shows **no mouse cursor
+  and no name pill** there, for everyone: their character already shows who and where they are, and a cursor with
+  its name beside it doubled every person. A peer with no character on the tab (an Editor building, a peer on another
+  tab's character) keeps their cursor, so Participants and Viewers, who always walk, still see an Editor at work. The
+  cursor layer reads who walks there as a by-value key (`walkerKey`, `lib/presence-rows.ts`), so a step re-renders
+  no cursor.
 - **A character standing still repeats itself, but only to someone who can see it.** A walk is published as it goes; a character standing still republishes an idle snapshot every three seconds (`AVATAR_HEARTBEAT_MS`), so whoever arrives after it stopped still sees it, the worst case being a presenter standing still while they talk. The heartbeat is skipped while you are alone in the room (the roster holds nobody else) and while the tab is hidden, because each beat wakes the room's Durable Object: a lone walker left in Avatar mode cost about 480 requests and 3,600 GB-s of room time every 8 hours, and kept the room from ever hibernating. One beat goes out at once when someone joins (the roster grows, whether or not the tab is visible) and when the tab comes back into view with someone in the room, so a newcomer still sees a character that is standing still, even after the room hibernated and forgot it. A socket that reconnects (a new presence id the room knows nothing of) says the character's latest place again at once, at rest, hidden tab or not, so a walker who stepped away from the tab neither vanishes for everyone nor drops out of the call's hearing check. `useAvatarWalk` takes the roster's size as `peers`; an editor that does not know it leaves it unset and keeps the plain heartbeat.
 - Peers' characters are **scoped to the tab** they were published on and are drawn with **their own presence colour on the shirt plus a small name chip** above the head, so a room of walkers stays legible. Your own character has no chip (you know who you are).
 - **Seated neighbours' chips never cover each other** (Work Tracker #597). People sitting side by side (a sofa, a
@@ -544,7 +550,12 @@ the pointer).
   over its own head as the row allows, with a small gap between chips (`spreadNameChips`, chair-sitters.ts). Your own
   status chip, when you wear one, takes its place in the row. A walking character's chip stays over its head: it
   moves on at once, so nothing is spread for it. The spread is in canvas px, so it holds at any zoom, on a phone as on
-  a desktop.
+  a desktop. Each chip is spread at its **measured width** (Work Tracker 706): the character measures its chip once
+  per name and status, and again when the web fonts land, so neighbours stand exactly the gap apart for short, long and
+  wide-glyph names alike; a chip not yet measured takes an estimate from its length (`chip-widths.ts`).
+- **People on one pad** (Work Tracker 706). Everyone arriving by an Avatar Pad lands on its core, so two or more
+  people standing still on one pad spread their chips the same way, and none covers another. A walker on the pad keeps
+  its chip over its head.
 - Peer characters render **whether or not you are in Avatar mode yourself**: someone else walking you through their canvas is worth seeing from the Select tool.
 - **You can push each other.** Clicking a peer's character (in Avatar mode) walks yours over to them and, on arrival, sends an `avatar-push` op naming them plus a unit direction. Only that participant acts on it, by sliding their own character a short way (70 canvas px) along the direction, so a push is a **request to the owner**, never a remote write, and someone who has already left the mode simply ignores it. **A seated character cannot be pushed** ([Chair](../009-elements/chair.md) "Sitting"): clicking one walks you up beside them and sends nothing, and the owner ignores any push that reaches them while they sit. Same presence trust level as `avatar`: unordered, any role, never logged, never replayed. It is not throttled, because it is an event rather than a sample. A push whose ids are not short strings, or whose direction is not two finite numbers (not both zero), reaches nobody: the room drops it and addresses only the checked copy, its direction made a unit vector, and a receiver ignores any direction that is not finite, so a hand-made push can never send a character off the canvas.
 - A presenter still sees nobody else's character ([Presentation mode](../012-collaboration/presentation-mode.md)).
@@ -661,7 +672,10 @@ of that for other statuses"). They come in three groups, **Availability** (can p
   always whole. Yours sits above your head, where your chip would be, as the dot and the status ("Focusing") on a
   quiet chip. The visible words are the status's own label, so the chip and the palette never disagree.
 - **For the session only**: it is never stored, so an "In a Meeting" set yesterday does not greet anyone today.
-  Leaving the mode clears it, like the character itself.
+- **Kept through Edit** (Work Tracker 706, #710): a switch to Edit and back to walking shows your status again on
+  your character and to everyone, with nothing to pick again. While you have no character it is not shown and not
+  published (presence carries no character to wear it), so a Do Not Disturb kept through Edit mutes no call meanwhile.
+  It clears only when you pick **None**, or when you leave the Space (closing the document or the tab).
 - A screen reader hears a peer's status with their name ("Sam, Focusing"), and your own as yours ("Your status:
   Focusing"), as visually hidden text beside the character, which is itself hidden from assistive tech. A long name
   in the chip ends in an ellipsis, and the chip and the Zz always draw over the character, faded or not.

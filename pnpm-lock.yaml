@@ -4437,6 +4437,9 @@ importers:
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
       oxlint:
         specifier: ^1.90.0
         version: 1.90.0(oxlint-tsgolint@7.0.2005)

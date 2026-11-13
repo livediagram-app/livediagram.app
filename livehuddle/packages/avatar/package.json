@@ -10,6 +10,7 @@
     "./bindings": "./src/bindings.ts",
     "./booth": "./src/booth.ts",
     "./chair-sitters": "./src/chair-sitters.ts",
+    "./chip-widths": "./src/chip-widths.ts",
     "./collision": "./src/collision.ts",
     "./components/AvatarMessagePopover": "./src/components/AvatarMessagePopover.tsx",
     "./components/AvatarPadArrivals": "./src/components/AvatarPadArrivals.tsx",

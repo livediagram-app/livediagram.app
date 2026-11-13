@@ -12,6 +12,8 @@ import { useAvatarPose } from '@livehuddle/avatar/hooks/useAvatarPose';
 import { poseFeet } from '@livehuddle/avatar/pose';
 import { avatarStatusLabel, parseAvatarStatus } from '@livehuddle/avatar/status';
 import { seatedChipShifts, type ChipBearer } from '@livehuddle/avatar/chair-sitters';
+import { useChipWidthOf } from '@livehuddle/avatar/chip-widths';
+import { avatarPads, padUnderFeet } from '@livehuddle/avatar/pad';
 import { isDrinkKind } from '@livehuddle/avatar/office-geometry';
 import { headPoint } from '@livehuddle/avatar/speech';
 import { avatarScale, peerAvatarConfig } from '@livehuddle/avatar/config';
@@ -161,37 +163,59 @@ export function CanvasCharactersLayer({
   });
   // Do Not Disturb quiets the join and leave chimes and the nudge too (join-and-leave-sounds.md "Settings").
   useQuietForDoNotDisturb(avatarStatus === 'dnd');
-  // Seated neighbours' chips spread so none covers another (docs/specs/008-canvas/avatar-mode.md "Seated neighbours'
-  // chips never cover each other"): everyone sitting, and your own status chip while you sit and wear one.
-  const selfSeatedAt = inMode && avatar.seatedOn ? feet : null;
+  // Neighbours' chips spread so none covers another (docs/specs/008-canvas/avatar-mode.md "Seated neighbours' chips
+  // never cover each other", "People on one pad"): everyone sitting or standing still on an Avatar Pad, and your own
+  // status chip while you sit or stand on one wearing it, each at its measured width (chip-widths.ts).
+  const pads = useMemo(() => avatarPads(walkElements), [walkElements]);
+  const selfSeated = !!avatar.seatedOn;
+  const selfOnPad = inMode && feet !== null && !selfSeated && padUnderFeet(pads, feet) !== null;
+  const selfChipAt = inMode && (selfSeated || selfOnPad) ? feet : null;
+  // Each chip's measured width, a new reader as chips are measured, so the spread runs again with the new widths.
+  const chipWidthOf = useChipWidthOf();
   const chipShifts = useMemo(() => {
-    // Only the seated take part, so a room of walkers parses nothing more per frame.
+    // Only the seated and those still on a pad take part, so a room of walkers parses nothing more per frame.
     const bearers: ChipBearer[] = [];
     for (const peer of remoteAvatars) {
-      if (!peer.avatar.seatedOn) continue;
+      const seated = !!peer.avatar.seatedOn;
+      const onPad =
+        !seated &&
+        !peer.avatar.walking &&
+        padUnderFeet(pads, { x: peer.avatar.x, y: peer.avatar.y }) !== null;
+      if (!seated && !onPad) continue;
       const status = parseAvatarStatus(peer.avatar.status);
       bearers.push({
         key: peer.id,
         x: peer.avatar.x,
         y: peer.avatar.y,
         scale: avatarScale(peerAvatarConfig(peer.avatar.config).size),
-        seated: true,
+        seated,
+        onPad,
         name: peer.name,
         status: status ? avatarStatusLabel(status) : null,
       });
     }
-    if (selfSeatedAt && avatarStatus)
+    if (selfChipAt && avatarStatus)
       bearers.push({
         key: SELF_CHIP,
-        x: selfSeatedAt.x,
-        y: selfSeatedAt.y,
+        x: selfChipAt.x,
+        y: selfChipAt.y,
         scale: selfScale,
-        seated: true,
+        seated: selfSeated,
+        onPad: selfOnPad,
         name: '',
         status: avatarStatusLabel(avatarStatus),
       });
-    return seatedChipShifts(bearers);
-  }, [remoteAvatars, selfSeatedAt, avatarStatus, selfScale]);
+    return seatedChipShifts(bearers, chipWidthOf);
+  }, [
+    remoteAvatars,
+    selfChipAt,
+    avatarStatus,
+    selfScale,
+    pads,
+    selfSeated,
+    selfOnPad,
+    chipWidthOf,
+  ]);
   // Where the camera and screen bubbles were laid out, so speech bubbles rise clear of them.
   const callBubbleRects = useCallBubbleRects();
 

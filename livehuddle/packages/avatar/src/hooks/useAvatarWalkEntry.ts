@@ -13,7 +13,12 @@ import { padEntry } from '../pad';
 import type { SeatClaim } from '../seat-claims';
 import { avatarBindings } from '../bindings';
 import type { NavGrid } from '../pathing';
-import { viewportOffsetCentredOn, type AvatarFacing, type AvatarPoint } from '../walk';
+import {
+  AVATAR_HEIGHT,
+  viewportOffsetCentredOn,
+  type AvatarFacing,
+  type AvatarPoint,
+} from '../walk';
 import type { Dispatch, RefObject, SetStateAction } from 'react';
 import type { StateStore } from '@liveworkspace/workbench/lib/state-store';
 import type { AvatarSnapshot, HeldDrink, PlayingReaction, WalkRects } from './avatarWalkTypes';
@@ -138,10 +143,13 @@ export function useAvatarWalkEntry<E extends AvatarSceneElement>({
     // Put down clear of the fences and room walls it lands beside (docs/specs/009-elements/fence.md "What does not
     // walk"): a spawn inside a wall's reach otherwise opened held there, where a click past the wall did nothing
     // (Work Tracker #437). One put down in a wall itself stays, free to walk off either side. One that would appear inside
-    // a footprint (a pool's water, a plant's pot) appears on the nearest free floor instead (Work Tracker #610).
+    // a footprint (a pool's water, a plant's pot) appears on the nearest free floor instead (Work Tracker #610), a body's
+    // height below any water.
     const reach = fenceReachFor(avatarScale(config.size));
+    // A body's height clear below water (a pool, a pond), at the character's size (Work Tracker 706).
+    const body = AVATAR_HEIGHT * avatarScale(config.size);
     const place = (point: AvatarPoint) => {
-      const clear = freeSpawnPoint(point, fences, reach);
+      const clear = freeSpawnPoint(point, fences, reach, body);
       posRef.current = clear;
       setPos(clear);
       setFacing('down');
@@ -182,7 +190,7 @@ export function useAvatarWalkEntry<E extends AvatarSceneElement>({
     const current = posRef.current;
     if (!(current && onScreen(current))) place(centre);
     // The remembered spot stays, unless a wall or a piece was put beside it or on it while the mode was off.
-    else if (freeSpawnPoint(current, fences, reach) !== current) place(current);
+    else if (freeSpawnPoint(current, fences, reach, body) !== current) place(current);
   });
   useEffect(() => {
     enterOrLeave(active);

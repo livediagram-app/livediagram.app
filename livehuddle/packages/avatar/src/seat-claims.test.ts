@@ -127,6 +127,62 @@ describe('seatOnArrival', () => {
   });
 });
 
+// chair.md "Which seat: the one you clicked" (Work Tracker 706, #709).
+describe('seatOnArrival with a click to aim at', () => {
+  const bench = { id: 'b', x: 0, y: 0, width: 160, height: 64, shape: 'bench' as const };
+  const pod = { id: 'p', x: 0, y: 0, width: 160, height: 120, shape: 'office-pod' as const };
+  const ends = (el: typeof bench | typeof pod | typeof sofa) => {
+    const seats = seatPoints(el);
+    const byX = seats.map((s, i) => ({ ...s, i })).sort((a, b) => a.x - b.x);
+    return { first: byX[0]!, last: byX[byX.length - 1]! };
+  };
+
+  it.each([
+    ['bench', bench],
+    ['sofa', sofa],
+    ['office pod', pod],
+  ] as const)('sits on the end of a %s you clicked, wherever the feet came in', (_, el) => {
+    const { first, last } = ends(el);
+    // Walked in at the left end, clicked the right one: the right one.
+    const feet = { x: first.x, y: first.y };
+    expect(seatOnArrival(el, feet, [], { x: last.x, y: last.y })).toMatchObject({
+      sit: { index: last.i },
+    });
+    expect(
+      seatOnArrival(el, { x: last.x, y: last.y }, [], { x: first.x, y: first.y }),
+    ).toMatchObject({
+      sit: { index: first.i },
+    });
+  });
+
+  it('keeps nearest where it arrived for a walk in by keys (no aim)', () => {
+    const { first } = ends(bench);
+    expect(seatOnArrival(bench, { x: first.x, y: first.y }, [])).toMatchObject({
+      sit: { index: first.i },
+    });
+  });
+
+  it('sits a taken seat’s clicker on the free seat nearest the click; a full piece stops beside, by the feet', () => {
+    const { first, last } = ends(bench);
+    const seats = seatPoints(bench);
+    const aim = { x: last.x, y: last.y };
+    const arrival = seatOnArrival(bench, { x: first.x, y: first.y }, [sitter('b', last.i, 1)], aim);
+    expect(arrival).toHaveProperty('sit');
+    const chosen = 'sit' in arrival ? arrival.sit.index : -1;
+    expect(chosen).not.toBe(last.i);
+    // No other free seat lies nearer the click.
+    for (const [i, s] of seats.entries())
+      if (i !== last.i)
+        expect(Math.hypot(s.x - aim.x, s.y - aim.y)).toBeGreaterThanOrEqual(
+          Math.hypot(seats[chosen]!.x - aim.x, seats[chosen]!.y - aim.y),
+        );
+    const full = seats.map((_, i) => sitter('b', i, 1));
+    expect(seatOnArrival(bench, { x: 2, y: 30 }, full, aim)).toEqual({
+      stopAt: { x: -BESIDE_GAP, y: 30 },
+    });
+  });
+});
+
 describe('seatToYield', () => {
   const own = { index: 0, at: 100, tie: 0.5 };
   const yielded = besideBox(sofa, left!);

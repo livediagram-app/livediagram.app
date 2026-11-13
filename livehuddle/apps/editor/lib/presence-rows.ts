@@ -136,17 +136,21 @@ export function buildParticipantsByTab(input: {
 }
 
 // Remote cursor rows joined with presence (fresh colour + name) and
-// filtered to the active tab, dropping self + off-canvas (null) cursors.
+// filtered to the active tab, dropping self + off-canvas (null) cursors, and the cursor of a peer who walks a
+// character on the tab (`walkers`): their character already shows them, so a cursor and its name pill beside it
+// doubled every person (docs/specs/008-canvas/avatar-mode.md "Cursors while walking", Work Tracker 706).
 export function buildRemoteCursorRows(
   remoteCursors: Map<string, { tabId: string; x: number; y: number } | null>,
   livePresenceById: Map<string, Participant>,
   selfId: string,
   activeId: string,
+  walkers?: ReadonlySet<string>,
 ): CursorRow[] {
   const rows: CursorRow[] = [];
   for (const [id, pos] of remoteCursors) {
     if (!pos) continue;
     if (id === selfId) continue;
+    if (walkers?.has(id)) continue;
     if (pos.tabId !== activeId) continue;
     const p = livePresenceById.get(id);
     if (!p) continue;
@@ -160,6 +164,26 @@ export function buildRemoteCursorRows(
     });
   }
   return rows;
+}
+
+/**
+ * The peers with a character on the active tab, as a key that changes only when one appears or goes (sorted ids, one
+ * per line), so the cursor layer can read it from the avatar store without rendering for a step. A peer whose tab
+ * focus moved on left their last packet behind and has no character here (buildRemoteAvatarRows' rule).
+ */
+export function walkerKey(
+  remoteAvatars: ReadonlyMap<string, { tabId: string } | null | undefined>,
+  activeId: string,
+  tabFocus?: ReadonlyMap<string, string>,
+): string {
+  const ids: string[] = [];
+  for (const [id, entry] of remoteAvatars) {
+    if (!entry || entry.tabId !== activeId) continue;
+    const focus = tabFocus?.get(id);
+    if (focus !== undefined && focus !== entry.tabId) continue;
+    ids.push(id);
+  }
+  return ids.sort().join('\n');
 }
 
 // Peer Avatar-mode characters to draw (docs/specs/008-canvas/avatar-mode.md), joined with presence so each

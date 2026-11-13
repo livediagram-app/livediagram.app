@@ -105,7 +105,8 @@ export type UseAvatarWalkOptions<E extends AvatarSceneElement> = {
   // Chair (docs/specs/009-elements/chair.md): the character walked onto a chair, a desk or a sofa.
   // Fired once on ARRIVAL, like the portal above, with where the feet were when they got there (a
   // sofa seats you on the cushion nearest that point).
-  onWalkIntoChair?: (element: SceneShapeOf<E>, feet: AvatarPoint) => void;
+  // `aim`: where the click that walked here landed on the piece (none for a walk in by keys): its nearest free seat.
+  onWalkIntoChair?: (element: SceneShapeOf<E>, feet: AvatarPoint, aim?: AvatarPoint) => void;
   // Reaction pad (livediagram/docs/specs/009-elements/reaction-pad.md): the character walked onto a pad. Same arrival
   // hook as the portal and the chair, so a pad costs no third mechanism.
   onWalkIntoReactionPad?: (element: SceneShapeOf<E>) => void;

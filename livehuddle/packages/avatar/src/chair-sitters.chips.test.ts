@@ -170,4 +170,64 @@ describe('seatedChipShifts', () => {
     ]);
     expect(sized.size).toBe(0);
   });
+
+  // Work Tracker 706: measured widths (chip-widths.ts) put neighbours exactly NAME_CHIP_GAP apart, where the estimate
+  // left wider gaps, for short, long and wide-glyph names alike.
+  it.each([
+    ['short', ['Al', 'Bo'], [34, 36]],
+    ['long', ['Clever Walrus', 'Brilliant Hedgehog'], [108, 120]],
+    ['wide-glyph', ['WWWW MMMM', 'Ⓜ️ 漢字かな'], [96, 88]],
+  ] as const)(
+    'sits %s names on neighbouring seats NAME_CHIP_GAP apart at their measured widths',
+    (_, n, w) => {
+      const measured = new Map<string, number>([
+        [n[0], w[0]],
+        [n[1], w[1]],
+      ]);
+      const widthOf = (name: string | null | undefined) => measured.get(name ?? '') ?? 0;
+      const bearers = [
+        { key: 'a', x: 0, y: 100, seated: true, name: n[0] },
+        { key: 'b', x: 20, y: 100, seated: true, name: n[1] },
+      ];
+      const shifts = seatedChipShifts(bearers, widthOf);
+      const a = 0 + (shifts.get('a') ?? 0);
+      const b = 20 + (shifts.get('b') ?? 0);
+      expect(b - w[1] / 2 - (a + w[0] / 2)).toBeCloseTo(NAME_CHIP_GAP, 9);
+    },
+  );
+
+  // avatar-mode.md "People on one pad": everyone arrives on the pad's core, so their chips spread too.
+  it('spreads the chips of people standing still on one Avatar Pad, never overlapping', () => {
+    const onPad = ['Calm Tiger', 'Clever Walrus', 'Brave Otter'].map((name, i) => ({
+      key: name,
+      x: 100,
+      y: 200 + i,
+      seated: false,
+      onPad: true,
+      name,
+    }));
+    const shifts = seatedChipShifts(onPad);
+    const placed = onPad
+      .map((b) => ({ x: b.x + (shifts.get(b.key) ?? 0), width: nameChipWidth(b.name, null) }))
+      .sort((p, q) => p.x - q.x);
+    for (let i = 1; i < placed.length; i++)
+      expect(
+        placed[i]!.x - placed[i]!.width / 2 - (placed[i - 1]!.x + placed[i - 1]!.width / 2),
+      ).toBeGreaterThanOrEqual(NAME_CHIP_GAP - 1e-9);
+  });
+
+  it('spreads a pad of 200 people cheaply', () => {
+    const crowd = Array.from({ length: 200 }, (_, i) => ({
+      key: `p${i}`,
+      x: 100 + (i % 7),
+      y: 200 + (i % 5),
+      seated: false,
+      onPad: true,
+      name: `Person ${i}`,
+    }));
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 20; i++) seatedChipShifts(crowd);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(60));
+  });
 });

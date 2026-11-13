@@ -42,7 +42,7 @@ Derived from [Workday pieces](../workday-pieces.md).
   `pieceStatusOf` of the kind you sit on (null when standing or the piece is gone), and `pickedOn` the `seatedOn` you
   had when you last picked. `useSeatStatus` keeps `own` and `pickedOn`; on a change of `seatedOn` it resets
   `pickedOn` to null (adjusted during render), so a pick made while seated outlives that seat as `own` but a later
-  seat shows its piece again. The walk publishes the shown status; leaving the mode clears `own` (useAvatarStatus).
+  seat shows its piece again. The walk publishes the shown status; out of the mode `useAvatarStatus` returns none and keeps `own` for the walk back (Work Tracker 706).
   Because `useAvatarWalk` returns `seatedOn` and takes `status`, `useCanvasAvatar` keeps the seat it read last render
   in state (one render's lag, adjusted during render, not an effect).
 - **Standing pose**: the canvas draws a sitter `seated` only when the piece it holds is not a standing seat

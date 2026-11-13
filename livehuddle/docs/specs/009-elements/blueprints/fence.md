@@ -81,7 +81,11 @@ Invariants:
   places the character through `clearOfFences`: off each fence whose reach it is inside but not within
   `FENCE_ON_LINE` of, to the side its feet were on; left where it is when a nudge would cross another fence or
   `FENCE_CLEAR_ROUNDS` nudges do not clear it. A footprint's edges never nudge a point inside its box (the nudge would push it
-  deeper); it walks out under I3a.
+  deeper); it walks out under I3a. `freeSpawnPoint(p, fences, reach, body)` (spawn-point.ts) runs first: a water
+  footprint's edges carry `water: true` (`WATER_KINDS`: `swimming-pool`, `pond`), and a spot within `body`
+  (`AVATAR_HEIGHT x avatarScale(size)`, default `SPAWN_BODY`) under one, the body's half-width either side, is not
+  free. A spot in or under water takes `(p.x, water bottom + body)` unless the rings, searched only out to the water's
+  bottom edge plus the reach, find free floor nearer (Work Tracker 706).
 - **I5:** no walk ends within `FENCE_ON_LINE` of a line: it is under every size's reach, so only a spawn or an
   edit (a fence or room moved onto a character) puts one there.
 

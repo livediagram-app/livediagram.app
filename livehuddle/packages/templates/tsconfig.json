@@ -2,6 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2023", "DOM"],
+    // The arrival-table test reads avatar-pad.md with `node:fs`; the source never touches the filesystem.
+    "types": ["node"],
     "noEmit": true
   },
   "include": ["src/**/*.ts"],

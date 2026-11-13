@@ -103,8 +103,14 @@ there).
   paddle's and stand nobody up ([Social pieces](social-pieces.md#controls)); every other move still does.
 - **A taken seat is not sat in.** Walking into a chair somebody is already sitting in does not seat
   you: your character **stops beside it**, just outside the piece on the side it came from, and
-  stays standing. A piece with more than one seat (a sofa, a meeting table) seats you on the **free
-  seat nearest where you arrived**, and stops you beside it only when every seat is taken.
+  stays standing. A piece with more than one seat (a sofa, a bench, a meeting table, an Office Pod) seats you on a
+  free seat, and stops you beside it only when every seat is taken.
+- **Which seat: the one you clicked** (Work Tracker 706, #709). A click on a piece with several seats sits you on the
+  **seat nearest the click** when it is free, so a click on either end of a bench, a sofa or an Office Pod sits you
+  at that end, wherever your walk came in from. A taken seat sits you on the **free seat nearest the click**; a full
+  piece stops you beside it, off the edge nearest your feet. A walk in **by keys** (no click to aim at) keeps the
+  free seat nearest where you arrived. (Until #709 a click also sat you nearest where you arrived, which on a long
+  bench walked you round to the near end whichever end you clicked.)
 - **There is no Stand button.** Standing up is implied by moving, on a desktop and a touch screen alike, so the
   seated character carries no press of its own and a double-click means nothing more than a click.
 - A seated character can still **wave and react** ([Avatar mode](../008-canvas/avatar-mode.md)). Sitting removes
@@ -166,8 +172,8 @@ Two more pieces of furniture seat a character exactly as a chair does, beside it
   the desk at the back and the chair in front: `chairFacing` `'s'`, the sitter facing up the canvas
   with their back to the room.
 - **Sofa** (shape kind `sofa`): a two-seater, a long back, two arms and two cushions. It has **two
-  seat points**, and a character walking in sits on the one **nearest where it arrived**: walk in
-  from the left, take the left cushion. A new sofa faces the reader (`'n'`).
+  seat points**, and a character sits on the one **you clicked** (walked in by keys, the one nearest where it
+  arrived: walk in from the left, take the left cushion; "Which seat" above). A new sofa faces the reader (`'n'`).
 
 Both share the chair's rules unchanged: the same `chairFacing` field and **Desk** / **Sofa**
 menu section (the Chair section, titled for the furniture it is on), arrival seating through the

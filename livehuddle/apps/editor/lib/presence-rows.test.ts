@@ -7,6 +7,7 @@ import {
   buildRemoteCursorRows,
   buildRemoteSelectionsByElement,
   resolveOwnerBadge,
+  walkerKey,
 } from './presence-rows';
 
 const p = (id: string, over: Partial<Participant> = {}): Participant => ({
@@ -201,6 +202,40 @@ describe('buildRemoteCursorRows', () => {
     ]);
     const rows = buildRemoteCursorRows(cursors, byId(self, a, p('c')), 'me', 't1');
     expect(rows).toEqual([{ id: 'a', name: 'A', color: '#123456', x: 5, y: 6 }]);
+  });
+
+  // docs/specs/008-canvas/avatar-mode.md "Cursors while walking" (Work Tracker 706): a peer with a character on the tab
+  // shows no cursor or name pill; an Editor building, with none, keeps theirs, so walkers still see them at work.
+  it('drops the cursor of a peer who walks a character on the tab, and keeps an Editor building', () => {
+    const cursors = new Map([
+      ['walker', { tabId: 't1', x: 1, y: 1 }],
+      ['editor', { tabId: 't1', x: 5, y: 6 }],
+    ]);
+    const avatars = new Map([
+      ['walker', { tabId: 't1' }],
+      // A character left behind on another tab is not on this one.
+      ['editor', { tabId: 't2' }],
+    ]);
+    const key = walkerKey(avatars, 't1');
+    expect(key).toBe('walker');
+    const rows = buildRemoteCursorRows(
+      cursors,
+      byId(self, p('walker'), p('editor')),
+      'me',
+      't1',
+      new Set(key.split('\n')),
+    );
+    expect(rows.map((r) => r.id)).toEqual(['editor']);
+  });
+
+  it('keys the walkers by value: sorted, and none whose tab focus moved on', () => {
+    const avatars = new Map([
+      ['b', { tabId: 't1' }],
+      ['a', { tabId: 't1' }],
+      ['rode-away', { tabId: 't1' }],
+    ]);
+    expect(walkerKey(avatars, 't1', new Map([['rode-away', 't2']]))).toBe('a\nb');
+    expect(walkerKey(new Map(), 't1')).toBe('');
   });
 });
 

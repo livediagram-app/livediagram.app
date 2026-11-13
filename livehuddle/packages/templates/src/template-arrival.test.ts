@@ -17,8 +17,10 @@ function arrivalRows(markdown: string): string[] {
     (line) => line.startsWith('| Space ') && line.includes('Where everyone arrives'),
   );
   const rows: string[] = [];
-  for (let i = head + 2; head >= 0 && i < lines.length && lines[i].startsWith('|'); i++) {
-    rows.push(lines[i].split('|')[1].trim());
+  for (let i = head + 2; head >= 0 && i < lines.length; i++) {
+    const line = lines[i] ?? '';
+    if (!line.startsWith('|')) break;
+    rows.push((line.split('|')[1] ?? '').trim());
   }
   return rows;
 }

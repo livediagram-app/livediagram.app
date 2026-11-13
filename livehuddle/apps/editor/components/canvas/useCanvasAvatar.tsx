@@ -201,15 +201,16 @@ export function useCanvasAvatar({
     // the seat point so it sits ON the chair rather than wherever it arrived.
     // A desk or a sofa does the same (docs/specs/009-elements/chair.md "Desk and sofa"): a sofa seats
     // the character on the free cushion nearest where it walked in.
-    onWalkIntoChair: (element, feet) => {
+    onWalkIntoChair: (element, feet, aim) => {
       if (!seatsACharacter(element.shape)) return;
-      // The nearest seat nobody holds, facing away from the back (a meeting table's seats each face the table,
-      // docs/specs/009-elements/office.md "Meeting Table"); every seat taken stops us beside the piece
-      // (docs/specs/009-elements/chair.md "Sitting").
+      // The seat nobody holds nearest the click (or the feet, walked in by keys), facing away from the back (a meeting
+      // table's seats each face the table, docs/specs/009-elements/office.md "Meeting Table"); every seat taken stops
+      // us beside the piece (docs/specs/009-elements/chair.md "Sitting", "Which seat").
       const arrival = seatOnArrival(
         { ...element, shape: element.shape },
         feet,
         readPeerAvatarRows(peers).map((peer) => peer.avatar),
+        aim,
       );
       if ('stopAt' in arrival) avatarRef.current?.stepAside(arrival.stopAt);
       else avatarRef.current?.sitOn(element.id, arrival.sit, arrival.sit.facing, arrival.sit.index);
