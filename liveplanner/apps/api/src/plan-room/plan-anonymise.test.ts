@@ -321,6 +321,33 @@ describe('anonymisePlan', () => {
     expect(await anonymisePlan(db.env, 'P', 'user_gone')).toBe(0);
   });
 
+  it('renames the person as whole words only, never letters inside another word or a longer name', () => {
+    const run = {
+      steps: [
+        { kind: 'trigger', text: 'Al moved it', by: { id: 'h1', name: 'Al' } },
+        { text: 'Assign Al' },
+        { text: 'Already assigned Alan, not Al.' },
+        { text: 'Mention (Al) and Al-Smith' },
+      ],
+    };
+    const out = anonymiseRun(JSON.stringify(run), 'h1');
+    expect(out.changed).toBe(true);
+    expect((JSON.parse(out.value) as typeof run).steps.map((l) => l.text)).toEqual([
+      `${ANONYMISED_NAME} moved it`,
+      `Assign ${ANONYMISED_NAME}`,
+      `Already assigned Alan, not ${ANONYMISED_NAME}.`,
+      `Mention (${ANONYMISED_NAME}) and ${ANONYMISED_NAME}-Smith`,
+    ]);
+    // A name with characters a pattern reads specially is matched as written.
+    const odd = anonymiseRun(
+      JSON.stringify({ steps: [{ text: 'J. (Jo) moved it', by: { id: 'h1', name: 'J. (Jo)' } }] }),
+      'h1',
+    );
+    expect((JSON.parse(odd.value) as typeof run).steps[0]!.text).toBe(
+      `${ANONYMISED_NAME} moved it`,
+    );
+  });
+
   it('leaves a run it cannot read, or one with no line of theirs, as it is', () => {
     for (const text of ['{not json h1', '{"id": "h1"}', '{"steps": [null, {"text": "h1"}]}'])
       expect(anonymiseRun(text, 'h1')).toEqual({ value: text, changed: false });
