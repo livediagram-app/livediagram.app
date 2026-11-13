@@ -44,51 +44,54 @@ export type ImageBlobUrlDeps = {
   releaseImageBlobUrl: (url: string) => void;
 };
 
-export function createImageBlobUrl({ apiFetchImageBlobUrl, releaseImageBlobUrl }: ImageBlobUrlDeps) {
+export function createImageBlobUrl({
+  apiFetchImageBlobUrl,
+  releaseImageBlobUrl,
+}: ImageBlobUrlDeps) {
   return function useImageBlobUrl(
-  ownerId: string,
-  imageId: string | null,
-  // `maxEdge`: the longest side to show it at (image-display.ts); this device's display size when
-  // absent, a gallery tile's for the picker.
-  opts: { documentId: string; shareCode?: string | null; maxEdge?: number } = { documentId: '' },
-): ImageBlobState {
-  const { documentId, maxEdge } = opts;
-  const shareCode = opts.shareCode ?? null;
-  const key = [ownerId, imageId, documentId, shareCode, maxEdge].join('\0');
-  const [fetched, setFetched] = useState<Fetched | null>(null);
+    ownerId: string,
+    imageId: string | null,
+    // `maxEdge`: the longest side to show it at (image-display.ts); this device's display size when
+    // absent, a gallery tile's for the picker.
+    opts: { documentId: string; shareCode?: string | null; maxEdge?: number } = { documentId: '' },
+  ): ImageBlobState {
+    const { documentId, maxEdge } = opts;
+    const shareCode = opts.shareCode ?? null;
+    const key = [ownerId, imageId, documentId, shareCode, maxEdge].join('\0');
+    const [fetched, setFetched] = useState<Fetched | null>(null);
 
-  useEffect(() => {
-    // Nothing to fetch: no image, or an Offline Mode data URI.
-    if (!imageId || imageId.startsWith('data:')) return;
-    let cancelled = false;
-    let activeUrl: string | null = null;
-    apiFetchImageBlobUrl(ownerId, imageId, { documentId, shareCode, maxEdge })
-      .then((url) => {
-        if (cancelled) {
-          if (url) releaseImageBlobUrl(url);
-          return;
-        }
-        if (!url) {
-          setFetched({ key, state: { status: 'broken' } });
-          return;
-        }
-        activeUrl = url;
-        setFetched({ key, state: { status: 'ready', src: url } });
-      })
-      .catch(() => {
-        if (!cancelled) setFetched({ key, state: { status: 'broken' } });
-      });
-    return () => {
-      cancelled = true;
-      if (activeUrl) releaseImageBlobUrl(activeUrl);
-    };
-  }, [key, ownerId, imageId, documentId, shareCode, maxEdge]);
+    useEffect(() => {
+      // Nothing to fetch: no image, or an Offline Mode data URI.
+      if (!imageId || imageId.startsWith('data:')) return;
+      let cancelled = false;
+      let activeUrl: string | null = null;
+      apiFetchImageBlobUrl(ownerId, imageId, { documentId, shareCode, maxEdge })
+        .then((url) => {
+          if (cancelled) {
+            if (url) releaseImageBlobUrl(url);
+            return;
+          }
+          if (!url) {
+            setFetched({ key, state: { status: 'broken' } });
+            return;
+          }
+          activeUrl = url;
+          setFetched({ key, state: { status: 'ready', src: url } });
+        })
+        .catch(() => {
+          if (!cancelled) setFetched({ key, state: { status: 'broken' } });
+        });
+      return () => {
+        cancelled = true;
+        if (activeUrl) releaseImageBlobUrl(activeUrl);
+      };
+    }, [key, ownerId, imageId, documentId, shareCode, maxEdge]);
 
-  if (!imageId) return IDLE;
-  // Offline Mode (docs/specs/006-document/offline-mode.md): an embedded image IS its bytes, a base64
-  // data URI in imageId. Nothing to fetch and nothing to revoke.
-  if (imageId.startsWith('data:')) return { status: 'ready', src: imageId };
-  return fetched?.key === key ? fetched.state : LOADING;
+    if (!imageId) return IDLE;
+    // Offline Mode (docs/specs/006-document/offline-mode.md): an embedded image IS its bytes, a base64
+    // data URI in imageId. Nothing to fetch and nothing to revoke.
+    if (imageId.startsWith('data:')) return { status: 'ready', src: imageId };
+    return fetched?.key === key ? fetched.state : LOADING;
   };
 }
 

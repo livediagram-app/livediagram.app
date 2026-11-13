@@ -27,7 +27,10 @@ import { useCallback, useState } from 'react';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
-import { STRIP_SELECTOR, useStripCrowdsCorners } from '@liveworkspace/workbench/hooks/ui/useStripCrowdsCorners';
+import {
+  STRIP_SELECTOR,
+  useStripCrowdsCorners,
+} from '@liveworkspace/workbench/hooks/ui/useStripCrowdsCorners';
 import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
 import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { panelEnabled } from '@/lib/user-preferences';

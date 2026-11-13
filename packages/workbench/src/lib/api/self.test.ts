@@ -6,7 +6,8 @@ type Participant = { id: string; name: string; color: string; status: 'online' |
 
 // The shared participant calls every editor binds (each editor's lib/api/self.ts), over a fake api core.
 function setup(overrides: Partial<SelfApiCore> = {}) {
-  const calls: { method: string; url: string; headers: HeadersInit | undefined; body?: unknown }[] = [];
+  const calls: { method: string; url: string; headers: HeadersInit | undefined; body?: unknown }[] =
+    [];
   let answer: unknown = { participant: { id: 'p-1', name: 'Swift Otter', color: '#0ea5e9' } };
   const core: SelfApiCore = {
     apiBase: '/api',
@@ -35,7 +36,12 @@ afterEach(() => vi.useRealTimers());
 describe('the participant the page already knows', () => {
   it('answers a load straight after a save without a request', async () => {
     const { api, calls, gets } = setup();
-    await api.apiSaveSelf({ id: 'p-save', name: 'Brave Heron', color: '#22c55e', status: 'online' });
+    await api.apiSaveSelf({
+      id: 'p-save',
+      name: 'Brave Heron',
+      color: '#22c55e',
+      status: 'online',
+    });
     expect(calls[0]).toMatchObject({ method: 'PUT', url: '/api/participants/p-save' });
     expect(JSON.parse(String(calls[0]!.body))).toEqual({ name: 'Brave Heron', color: '#22c55e' });
     const self = await api.apiLoadSelf('p-save');

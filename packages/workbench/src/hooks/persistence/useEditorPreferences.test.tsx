@@ -18,7 +18,8 @@ const fetchUserPreferences = vi.fn<(ownerId: string) => Promise<UserPreferences 
 const { useEditorPreferences, useCachedPreferences } = createEditorPreferences<UserPreferences>({
   STORAGE_KEY,
   PREFERENCES_CHANGED_EVENT,
-  readUserPreferences: () => JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? '{}'),
+  readUserPreferences: () =>
+    JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? '{}') as UserPreferences,
   fetchUserPreferences: (ownerId) => fetchUserPreferences(ownerId),
   autoRebindArrowsEnabled: (prefs) => prefs.autoRebindArrows !== false,
 });

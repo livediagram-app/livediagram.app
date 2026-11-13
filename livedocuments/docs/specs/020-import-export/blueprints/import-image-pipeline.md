@@ -9,16 +9,16 @@ Scope, by file (under `apps/editor/lib/import-images/`, except those marked `wor
 | File              | Role                                                                                                |
 | ----------------- | --------------------------------------------------------------------------------------------------- |
 | `constants.ts`    | (workbench) Every number the pipeline uses, named                                                   |
-| `types.ts`        | (workbench) Sources, hints, outcomes, failures, the codec                                                       |
-| `source.ts`       | (workbench) `readImportImageSource`: a source to bytes + MIME type, or a failure                                |
-| `policy.ts`       | (workbench) `planImageEncoding`, `fallbackOutputType`: the pure encoding decisions                              |
-| `prepare.ts`      | (workbench) `prepareImportImage`: decode, plan, encode, pick, cap, through an injected `ImageCodec`             |
-| `upload-error.ts` | (workbench) `failureFromUploadError`: an upload rejection to a named failure                                    |
-| `session.ts`      | (workbench) `createImportImageSession`: concurrency, offline budget, short-circuit, logging                     |
+| `types.ts`        | (workbench) Sources, hints, outcomes, failures, the codec                                           |
+| `source.ts`       | (workbench) `readImportImageSource`: a source to bytes + MIME type, or a failure                    |
+| `policy.ts`       | (workbench) `planImageEncoding`, `fallbackOutputType`: the pure encoding decisions                  |
+| `prepare.ts`      | (workbench) `prepareImportImage`: decode, plan, encode, pick, cap, through an injected `ImageCodec` |
+| `upload-error.ts` | (workbench) `failureFromUploadError`: an upload rejection to a named failure                        |
+| `session.ts`      | (workbench) `createImportImageSession`: concurrency, offline budget, short-circuit, logging         |
 | `webp.ts`         | (workbench) `createWebpEncoder`: canvas WebP, else the on-demand WASM encoder, detection remembered |
 | `browser.ts`      | `browserImageCodec`, `createBrowserImportImageSession`: the DOM codec + the api/offline wiring      |
 | `index.ts`        | Public surface for callers (everything but the browser wiring)                                      |
-| `test-fakes.ts`   | (workbench) Fake codec and typed image blobs for the unit tests; imported by tests only                         |
+| `test-fakes.ts`   | (workbench) Fake codec and typed image blobs for the unit tests; imported by tests only             |
 
 Only `browser.ts` touches the DOM or the network; every other module runs in Node under Vitest.
 

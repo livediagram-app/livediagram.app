@@ -35,7 +35,10 @@ import { StripMorph } from '@/components/palette/StripMorph';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import { atLeastInset } from '@livehuddle/ui';
-import { STRIP_SELECTOR, useStripCrowdsCorners } from '@liveworkspace/workbench/hooks/ui/useStripCrowdsCorners';
+import {
+  STRIP_SELECTOR,
+  useStripCrowdsCorners,
+} from '@liveworkspace/workbench/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { CallDock } from '@/components/calls/CallDock';
 import { clusterRowLayout } from '@/components/calls/call-dock-row';

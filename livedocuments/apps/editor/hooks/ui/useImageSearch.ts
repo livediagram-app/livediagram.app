@@ -8,7 +8,11 @@ import {
   type OpenverseImage,
 } from '@liveworkspace/workbench/lib/image-search/openverse';
 import { searchOpenverse } from '@liveworkspace/workbench/lib/image-search/search';
-import { pickFailureMessage, storeSearchResult, type PickStage } from '@liveworkspace/workbench/lib/image-search/pick';
+import {
+  pickFailureMessage,
+  storeSearchResult,
+  type PickStage,
+} from '@liveworkspace/workbench/lib/image-search/pick';
 import type { PickedImage } from '@/lib/upload-image';
 import {
   IMAGE_SEARCH_THUMBNAIL_FALLBACK,

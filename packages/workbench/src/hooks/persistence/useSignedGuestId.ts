@@ -9,20 +9,20 @@ import { useEffect, useState } from 'react';
 // Each editor binds it once, at module scope in its `hooks/persistence/useSignedGuestId.ts`, to its lib/guest-identity.
 export function createSignedGuestId(ensureGuestIdentity: () => Promise<{ id: string }>) {
   return function useSignedGuestId(
-  authLoaded: boolean,
-  accountUserId: string | null | undefined,
-): string | null {
-  const [guestId, setGuestId] = useState<string | null>(null);
-  useEffect(() => {
-    if (!authLoaded || accountUserId) return;
-    let cancelled = false;
-    void ensureGuestIdentity().then((identity) => {
-      if (!cancelled) setGuestId(identity.id);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [authLoaded, accountUserId]);
-  return accountUserId ? null : guestId;
-}
+    authLoaded: boolean,
+    accountUserId: string | null | undefined,
+  ): string | null {
+    const [guestId, setGuestId] = useState<string | null>(null);
+    useEffect(() => {
+      if (!authLoaded || accountUserId) return;
+      let cancelled = false;
+      void ensureGuestIdentity().then((identity) => {
+        if (!cancelled) setGuestId(identity.id);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [authLoaded, accountUserId]);
+    return accountUserId ? null : guestId;
+  };
 }

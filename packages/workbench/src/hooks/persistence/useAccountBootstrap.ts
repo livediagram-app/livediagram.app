@@ -75,81 +75,81 @@ export function createUseAccountBootstrap({
   inboxSnapshot,
 }: AccountBootstrapDeps): () => BootstrapResult {
   return function useAccountBootstrap(): BootstrapResult {
-  const workbench = useWorkbenchSession();
-  const auth = useDeferredAuth();
-  const held = workbench !== null || auth === DEFERRED_AUTH_PENDING;
-  const { getToken, isSignedIn, authLoaded: sessionLoaded, userId: accountUserId, user } = auth;
+    const workbench = useWorkbenchSession();
+    const auth = useDeferredAuth();
+    const held = workbench !== null || auth === DEFERRED_AUTH_PENDING;
+    const { getToken, isSignedIn, authLoaded: sessionLoaded, userId: accountUserId, user } = auth;
 
-  // If the session hasn't reported its state within 5 s, treat it as
-  // guest rather than hanging the canvas indefinitely. Corporate proxies
-  // (e.g. Zscaler) sometimes hold connections open for tens of seconds
-  // before failing, which blocks rendering. When the
-  // timer fires isSignedIn is still undefined so the token provider stays
-  // null and the guest token is used. If the session eventually loads
-  // after the timeout, isSignedIn updates and the token provider effect
-  // below re-runs, switching subsequent API calls to the JWT path.
-  const [timedOut, setTimedOut] = useState(false);
-  useEffect(() => {
-    if (sessionLoaded || held) return;
-    const id = window.setTimeout(() => setTimedOut(true), 5000);
-    return () => window.clearTimeout(id);
-  }, [sessionLoaded, held]);
-  // The guest token is spent once signed in (see above).
-  useEffect(() => {
-    if (held || !isSignedIn || !accountUserId) return;
-    clearGuestToken();
-  }, [held, isSignedIn, accountUserId]);
-  const authLoaded = sessionLoaded || timedOut;
+    // If the session hasn't reported its state within 5 s, treat it as
+    // guest rather than hanging the canvas indefinitely. Corporate proxies
+    // (e.g. Zscaler) sometimes hold connections open for tens of seconds
+    // before failing, which blocks rendering. When the
+    // timer fires isSignedIn is still undefined so the token provider stays
+    // null and the guest token is used. If the session eventually loads
+    // after the timeout, isSignedIn updates and the token provider effect
+    // below re-runs, switching subsequent API calls to the JWT path.
+    const [timedOut, setTimedOut] = useState(false);
+    useEffect(() => {
+      if (sessionLoaded || held) return;
+      const id = window.setTimeout(() => setTimedOut(true), 5000);
+      return () => window.clearTimeout(id);
+    }, [sessionLoaded, held]);
+    // The guest token is spent once signed in (see above).
+    useEffect(() => {
+      if (held || !isSignedIn || !accountUserId) return;
+      clearGuestToken();
+    }, [held, isSignedIn, accountUserId]);
+    const authLoaded = sessionLoaded || timedOut;
 
-  // First+Last takes precedence so we always present the form the
-  // user picked at sign-up. Falls back to fullName and finally the
-  // username so we never show a blank pill for an account that does
-  // exist.
-  const accountDisplayName = useMemo(() => {
-    if (!user) return null;
-    const fl = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
-    return fl || user.fullName || user.username || null;
-  }, [user]);
+    // First+Last takes precedence so we always present the form the
+    // user picked at sign-up. Falls back to fullName and finally the
+    // username so we never show a blank pill for an account that does
+    // exist.
+    const accountDisplayName = useMemo(() => {
+      if (!user) return null;
+      const fl = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+      return fl || user.fullName || user.username || null;
+    }, [user]);
 
-  // Token provider registration. The signed-in user's email is no
-  // longer forwarded as a header, team-invite matching trusts only the
-  // verified `email` session-token claim server-side (docs/specs/013-workspace/teams.md).
-  //
-  // A LAYOUT effect on purpose. React runs a child's passive effects before
-  // its parent's, and the render that flips `isSignedIn` is the same one that
-  // hands children the account id as their owner (an Explorer
-  // provider, say). With a plain useEffect, that child's first
-  // fetch went out before the provider existed, so apiHeaders threw
-  // SessionTokenUnavailableError (an account id has no guest token to fall back on). Every layout effect runs before any
-  // passive one, so the provider is in place by the time a child fetches.
-  //
-  // Registered, not set: the page, AuthControls and the Settings rows each
-  // mount this hook, and one of them unmounting must leave the others'
-  // Bearer in place (see registerTokenProvider).
-  useLayoutEffect(() => {
-    if (held || !isSignedIn) return;
-    return registerTokenProvider((opts) => getToken(opts));
-  }, [held, isSignedIn, getToken]);
+    // Token provider registration. The signed-in user's email is no
+    // longer forwarded as a header, team-invite matching trusts only the
+    // verified `email` session-token claim server-side (docs/specs/013-workspace/teams.md).
+    //
+    // A LAYOUT effect on purpose. React runs a child's passive effects before
+    // its parent's, and the render that flips `isSignedIn` is the same one that
+    // hands children the account id as their owner (an Explorer
+    // provider, say). With a plain useEffect, that child's first
+    // fetch went out before the provider existed, so apiHeaders threw
+    // SessionTokenUnavailableError (an account id has no guest token to fall back on). Every layout effect runs before any
+    // passive one, so the provider is in place by the time a child fetches.
+    //
+    // Registered, not set: the page, AuthControls and the Settings rows each
+    // mount this hook, and one of them unmounting must leave the others'
+    // Bearer in place (see registerTokenProvider).
+    useLayoutEffect(() => {
+      if (held || !isSignedIn) return;
+      return registerTokenProvider((opts) => getToken(opts));
+    }, [held, isSignedIn, getToken]);
 
-  // 3. Who the Inbox's This Browser snapshot is for, once settled (lib/offline/inbox-snapshot.ts): the page on this
-  // address lists those rows only to them.
-  const settledAccount = workbench
-    ? workbench.person.id
-    : held || !authLoaded
-      ? undefined
-      : (accountUserId ?? null);
-  useEffect(() => {
-    if (settledAccount !== undefined) inboxSnapshot.setAccount(settledAccount);
-  }, [settledAccount]);
+    // 3. Who the Inbox's This Browser snapshot is for, once settled (lib/offline/inbox-snapshot.ts): the page on this
+    // address lists those rows only to them.
+    const settledAccount = workbench
+      ? workbench.person.id
+      : held || !authLoaded
+        ? undefined
+        : (accountUserId ?? null);
+    useEffect(() => {
+      if (settledAccount !== undefined) inboxSnapshot.setAccount(settledAccount);
+    }, [settledAccount]);
 
-  if (workbench) return workbenchResult(workbench);
-  if (held) return HELD;
-  return {
-    isSignedIn,
-    authLoaded,
-    sessionAnswered: sessionLoaded,
-    accountUserId,
-    accountDisplayName,
+    if (workbench) return workbenchResult(workbench);
+    if (held) return HELD;
+    return {
+      isSignedIn,
+      authLoaded,
+      sessionAnswered: sessionLoaded,
+      accountUserId,
+      accountDisplayName,
+    };
   };
-}
 }

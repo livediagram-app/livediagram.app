@@ -13,10 +13,10 @@ Scope, by file:
 | `packages/design/src/element-types.ts`                                      | `ImageElement.credit`                                                   |
 | `packages/design/src/validate.ts`                                           | Image branch calls `isImageCredit` on `credit`                          |
 | `apps/live/lib/upload-image.ts`                                             | `PickedImage`: what every picker tab hands back                         |
-| `../packages/workbench/src/lib/image-search/openverse.ts`                                   | Pure: `openverseSearchUrl`, `parseOpenverseSearch`, `creditFor`         |
+| `../packages/workbench/src/lib/image-search/openverse.ts`                   | Pure: `openverseSearchUrl`, `parseOpenverseSearch`, `creditFor`         |
 | `apps/live/lib/image-search/search.ts`                                      | `searchOpenverse`: one page over an injected `fetch`, typed errors      |
 | `apps/live/lib/image-search/telemetry.ts`                                   | `searchWarningType`, `pickWarningType`: failure → `Error·Warning` token |
-| `../packages/workbench/src/lib/image-search/pick.ts`                                        | `storeSearchResult`: download (full, else thumbnail) and store          |
+| `../packages/workbench/src/lib/image-search/pick.ts`                        | `storeSearchResult`: download (full, else thumbnail) and store          |
 | `../packages/workbench/src/lib/image-search/read-capped.ts`                 | `readCapped`: read a body, refusing past a byte cap                     |
 | `apps/live/hooks/ui/useImageSearch.ts`                                      | Search tab state: query, pages, status, picking                         |
 | `apps/live/components/panels/ImageSearchPane.tsx`                           | The Search tab's form, grid, states and footer credit                   |
@@ -252,13 +252,13 @@ dropped as stale sends nothing.
 | Parse keeps valid results, drops broken ones, rejects junk   | `apps/live/lib/image-search/openverse.test.ts`                   |
 | Credit text, licence labels, no landing URL → no credit      | `apps/live/lib/image-search/openverse.test.ts`                   |
 | 429 → rate-limited; 500, network, bad JSON → failed          | `apps/live/lib/image-search/search.test.ts`                      |
-| Full image stored; CORS / non-image / unsupported → thumb    | `../packages/workbench/src/lib/image-search/pick.test.ts`                        |
-| Gallery-full is final; both downloads fail → download-failed | `../packages/workbench/src/lib/image-search/pick.test.ts`                        |
+| Full image stored; CORS / non-image / unsupported → thumb    | `../packages/workbench/src/lib/image-search/pick.test.ts`        |
+| Gallery-full is final; both downloads fail → download-failed | `../packages/workbench/src/lib/image-search/pick.test.ts`        |
 | Warning token per search kind and pick failure               | `apps/live/lib/image-search/telemetry.test.ts`                   |
-| Thumbnail fallback reported once, not on a direct store      | `../packages/workbench/src/lib/image-search/pick.test.ts`                        |
-| Over the source cap: refused, no thumbnail, nothing stored   | `../packages/workbench/src/lib/image-search/pick.test.ts`                        |
+| Thumbnail fallback reported once, not on a direct store      | `../packages/workbench/src/lib/image-search/pick.test.ts`        |
+| Over the source cap: refused, no thumbnail, nothing stored   | `../packages/workbench/src/lib/image-search/pick.test.ts`        |
 | Cap by Content-Length, mid-stream cancel, under-cap join     | `../packages/workbench/src/lib/image-search/read-capped.test.ts` |
-| Stages: downloading, saving; again for the thumbnail         | `../packages/workbench/src/lib/image-search/pick.test.ts`                        |
+| Stages: downloading, saving; again for the thumbnail         | `../packages/workbench/src/lib/image-search/pick.test.ts`        |
 | Placeholders while searching; a tile's until it loads        | `apps/live/components/panels/ImageSearchPane.test.tsx`           |
 | Picked tile busy, stage copy, others disabled, hand-off      | `apps/live/components/panels/ImageSearchPane.test.tsx`           |
 | `credit` validation accepts good, rejects bad text / URLs    | `packages/design/src/validate.test.ts`                           |

@@ -156,15 +156,15 @@ See [DEFAULTS.md](DEFAULTS.md), rows D7 and D8.
 
 Derived from [Retired colour schemes, UML](../retired-schemes.md#uml). Scope, by file:
 
-| File                                              | Role                                                                                                                             |
-| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/element-model/src/retired-themes.ts`    | `bindRetiredThemes(retired, deps?)`, the role-by-role rewrite; `UML_AS_RETIRED`, frozen                                          |
-| `packages/element-model/src/retired-uml.ts`       | `RETIRED_THEME_IDS` (`uml`), `THEMES` (the shared catalogue less UML), `RETIRED_THEMES` (`uml` to `mono`), `migrateRetiredTheme` |
-| `packages/design/src/themes-data.ts`, `themes.ts` | Re-export `THEMES` (and `RETIRED_THEME_IDS`) from `retired-uml` over the shared modules                                          |
-| `packages/design/src/retired-themes.ts`           | `packages/design/src/retired-themes.ts` binds Autumn, Jewel and `RETIRED_UML` over the shared engine                             |
-| `packages/design/src/stored-tab.ts`               | `migrateStoredTab` runs `migrateRetiredTheme` on every read                                                                      |
-| `apps/live/lib/tab-looks.ts`                      | Textbook and Schematic wear `mono`; Textbook sits before Spectrum, Whiteboard after it                                           |
-| `../packages/workbench/src/lib/themes-taxonomy.ts`                | `THEME_DESCRIPTIONS` is `Record<Exclude<ThemeId, 'uml'>, string>`: UML has no blurb                                              |
+| File                                               | Role                                                                                                                             |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/element-model/src/retired-themes.ts`     | `bindRetiredThemes(retired, deps?)`, the role-by-role rewrite; `UML_AS_RETIRED`, frozen                                          |
+| `packages/element-model/src/retired-uml.ts`        | `RETIRED_THEME_IDS` (`uml`), `THEMES` (the shared catalogue less UML), `RETIRED_THEMES` (`uml` to `mono`), `migrateRetiredTheme` |
+| `packages/design/src/themes-data.ts`, `themes.ts`  | Re-export `THEMES` (and `RETIRED_THEME_IDS`) from `retired-uml` over the shared modules                                          |
+| `packages/design/src/retired-themes.ts`            | `packages/design/src/retired-themes.ts` binds Autumn, Jewel and `RETIRED_UML` over the shared engine                             |
+| `packages/design/src/stored-tab.ts`                | `migrateStoredTab` runs `migrateRetiredTheme` on every read                                                                      |
+| `apps/live/lib/tab-looks.ts`                       | Textbook and Schematic wear `mono`; Textbook sits before Spectrum, Whiteboard after it                                           |
+| `../packages/workbench/src/lib/themes-taxonomy.ts` | `THEME_DESCRIPTIONS` is `Record<Exclude<ThemeId, 'uml'>, string>`: UML has no blurb                                              |
 
 Behaviour, `migrateRetiredTheme(tab)`:
 

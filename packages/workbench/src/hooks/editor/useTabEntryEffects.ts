@@ -21,68 +21,68 @@ import { useCallback, useEffect, useEffectEvent, useRef, useState, type RefObjec
 // (lib/legacy-editor-path's `isEditorPath`).
 export function createTabEntryEffects(isEditorPath: (pathname: string) => boolean) {
   return function useTabEntryEffects({
-  hydrated,
-  activeId,
-  elementCount,
-  tabLoaded,
-  fitToScreen,
-  skipFitForTabRef,
-}: {
-  hydrated: boolean;
-  activeId: string | null;
-  // The active tab's element count: an entry onto an empty tab claims it without fitting.
-  elementCount: number;
-  // The active tab's content is authoritative (hydrated, fetched, or created locally). Until it is,
-  // an empty placeholder is not the tab's real content, so the entry waits.
-  tabLoaded: boolean;
-  fitToScreen: () => void;
-  // A tab whose entry has already been positioned by its caller, so this
-  // one must not fit it. Consumed (and cleared) on the entry it names.
-  skipFitForTabRef?: RefObject<string | null>;
-}) {
-  // fitToScreen reads live state; the fit is re-evaluated only on hydration / tab-id / load /
-  // element-count transitions (and explicit requests), so it is called through an effect event.
-  const fit = useEffectEvent(() => fitToScreen());
-  useEffect(() => {
-    if (!hydrated || !activeId || typeof window === 'undefined') return;
-    const url = new URL(window.location.href);
-    // An address that names no item (the new route's "Unknown addresses") has no tab to pin.
-    if (!isEditorPath(url.pathname)) return;
-    if (url.hash === `#t=${activeId}`) return;
-    url.hash = `t=${activeId}`;
-    window.history.replaceState({}, '', url.toString());
-  }, [hydrated, activeId]);
+    hydrated,
+    activeId,
+    elementCount,
+    tabLoaded,
+    fitToScreen,
+    skipFitForTabRef,
+  }: {
+    hydrated: boolean;
+    activeId: string | null;
+    // The active tab's element count: an entry onto an empty tab claims it without fitting.
+    elementCount: number;
+    // The active tab's content is authoritative (hydrated, fetched, or created locally). Until it is,
+    // an empty placeholder is not the tab's real content, so the entry waits.
+    tabLoaded: boolean;
+    fitToScreen: () => void;
+    // A tab whose entry has already been positioned by its caller, so this
+    // one must not fit it. Consumed (and cleared) on the entry it names.
+    skipFitForTabRef?: RefObject<string | null>;
+  }) {
+    // fitToScreen reads live state; the fit is re-evaluated only on hydration / tab-id / load /
+    // element-count transitions (and explicit requests), so it is called through an effect event.
+    const fit = useEffectEvent(() => fitToScreen());
+    useEffect(() => {
+      if (!hydrated || !activeId || typeof window === 'undefined') return;
+      const url = new URL(window.location.href);
+      // An address that names no item (the new route's "Unknown addresses") has no tab to pin.
+      if (!isEditorPath(url.pathname)) return;
+      if (url.hash === `#t=${activeId}`) return;
+      url.hash = `t=${activeId}`;
+      window.history.replaceState({}, '', url.toString());
+    }, [hydrated, activeId]);
 
-  const lastFittedTabRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!hydrated) return;
-    if (skipFitForTabRef?.current && skipFitForTabRef.current === activeId) {
-      // Already aimed somewhere deliberate. Claim the entry so a later
-      // lazy load of this tab's elements doesn't re-arm the fit either.
-      skipFitForTabRef.current = null;
+    const lastFittedTabRef = useRef<string | null>(null);
+    useEffect(() => {
+      if (!hydrated) return;
+      if (skipFitForTabRef?.current && skipFitForTabRef.current === activeId) {
+        // Already aimed somewhere deliberate. Claim the entry so a later
+        // lazy load of this tab's elements doesn't re-arm the fit either.
+        skipFitForTabRef.current = null;
+        lastFittedTabRef.current = activeId;
+        return;
+      }
+      if (lastFittedTabRef.current === activeId) return;
+      if (!tabLoaded) return;
       lastFittedTabRef.current = activeId;
-      return;
-    }
-    if (lastFittedTabRef.current === activeId) return;
-    if (!tabLoaded) return;
-    lastFittedTabRef.current = activeId;
-    if (elementCount === 0) return;
-    // Defer to the next frame so the canvas wrapper has its final
-    // measured size before fitToScreen reads getBoundingClientRect.
-    const handle = window.requestAnimationFrame(fit);
-    return () => window.cancelAnimationFrame(handle);
-  }, [hydrated, activeId, tabLoaded, elementCount, skipFitForTabRef]);
+      if (elementCount === 0) return;
+      // Defer to the next frame so the canvas wrapper has its final
+      // measured size before fitToScreen reads getBoundingClientRect.
+      const handle = window.requestAnimationFrame(fit);
+      return () => window.cancelAnimationFrame(handle);
+    }, [hydrated, activeId, tabLoaded, elementCount, skipFitForTabRef]);
 
-  // A fit asked for alongside a content change. State, not a direct call, so the fit runs after the
-  // render that carries the new content (the request batches with the commit that makes it).
-  const [fitRequest, setFitRequest] = useState(0);
-  useEffect(() => {
-    if (fitRequest === 0) return;
-    const handle = window.requestAnimationFrame(fit);
-    return () => window.cancelAnimationFrame(handle);
-  }, [fitRequest]);
-  const requestFit = useCallback(() => setFitRequest((n) => n + 1), []);
+    // A fit asked for alongside a content change. State, not a direct call, so the fit runs after the
+    // render that carries the new content (the request batches with the commit that makes it).
+    const [fitRequest, setFitRequest] = useState(0);
+    useEffect(() => {
+      if (fitRequest === 0) return;
+      const handle = window.requestAnimationFrame(fit);
+      return () => window.cancelAnimationFrame(handle);
+    }, [fitRequest]);
+    const requestFit = useCallback(() => setFitRequest((n) => n + 1), []);
 
-  return { requestFit };
-}
+    return { requestFit };
+  };
 }

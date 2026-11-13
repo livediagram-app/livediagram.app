@@ -21,23 +21,23 @@ export function createLandscapeBars({
   track: (category: 'UI', action: 'Toggled', type: 'LandscapeBarsOn' | 'LandscapeBarsOff') => void;
 }) {
   return function useLandscapeBars(revealKeys: readonly (string | number)[]): {
-  shown: boolean;
-  toggle: () => void;
-} {
-  const [chosen, setChosen] = useState(false);
-  const key = revealKeys.join('|');
-  const [lastKey, setLastKey] = useState(key);
-  if (key !== lastKey) {
-    setLastKey(key);
-    setChosen(true);
-  }
-  const tourShowing = useActiveTour() !== null;
-  const shown = chosen || tourShowing;
-  const toggle = () => {
-    const next = !shown;
-    track('UI', 'Toggled', next ? 'LandscapeBarsOn' : 'LandscapeBarsOff');
-    setChosen(next);
+    shown: boolean;
+    toggle: () => void;
+  } {
+    const [chosen, setChosen] = useState(false);
+    const key = revealKeys.join('|');
+    const [lastKey, setLastKey] = useState(key);
+    if (key !== lastKey) {
+      setLastKey(key);
+      setChosen(true);
+    }
+    const tourShowing = useActiveTour() !== null;
+    const shown = chosen || tourShowing;
+    const toggle = () => {
+      const next = !shown;
+      track('UI', 'Toggled', next ? 'LandscapeBarsOn' : 'LandscapeBarsOff');
+      setChosen(next);
+    };
+    return { shown, toggle };
   };
-  return { shown, toggle };
-}
 }

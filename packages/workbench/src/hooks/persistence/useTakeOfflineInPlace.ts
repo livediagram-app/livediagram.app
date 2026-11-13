@@ -29,38 +29,38 @@ export function createTakeOfflineInPlace({
   SYNC_SAVE_WAIT_MS,
 }: TakeOfflineInPlaceDeps) {
   return function useTakeOfflineInPlace(deps: {
-  documentId: string | null;
-  ownerId: string;
-  hasUnsavedChanges: () => boolean;
-  setDocumentServerStored: (stored: boolean) => void;
-  refreshDocumentList: (ownerId: string) => void;
-}): () => Promise<void> {
-  const latest = useLatest(deps);
-  return async () => {
-    const { documentId, ownerId, hasUnsavedChanges } = latest.current;
-    if (!documentId || ownerId === 'self') return;
-    const deadline = Date.now() + SYNC_SAVE_WAIT_MS;
-    while (hasUnsavedChanges()) {
-      if (Date.now() > deadline) throw new SyncStillSavingError();
-      await new Promise((r) => setTimeout(r, SAVE_POLL_MS));
-    }
-    latest.current.setDocumentServerStored(false);
-    try {
-      await takeCloudOffline(documentId, ownerId, null);
-    } catch (e) {
-      latest.current.setDocumentServerStored(true);
-      throw e;
-    }
-    // A template picked now has no server folder to go to.
-    if (readTemplatePick()?.itemId === documentId) handTemplatePick(null);
-    // Kept here on purpose: the move prompt after signing in never offers it back (local-move-dismissal.ts).
-    await offlineListDocuments().then(
-      (kept) => dismissLocalMove(ownerId, kept.length),
-      () => {},
-    );
-    latest.current.refreshDocumentList(ownerId);
-    debugLog('[offline] taken offline in place');
-    trackTakenOffline();
+    documentId: string | null;
+    ownerId: string;
+    hasUnsavedChanges: () => boolean;
+    setDocumentServerStored: (stored: boolean) => void;
+    refreshDocumentList: (ownerId: string) => void;
+  }): () => Promise<void> {
+    const latest = useLatest(deps);
+    return async () => {
+      const { documentId, ownerId, hasUnsavedChanges } = latest.current;
+      if (!documentId || ownerId === 'self') return;
+      const deadline = Date.now() + SYNC_SAVE_WAIT_MS;
+      while (hasUnsavedChanges()) {
+        if (Date.now() > deadline) throw new SyncStillSavingError();
+        await new Promise((r) => setTimeout(r, SAVE_POLL_MS));
+      }
+      latest.current.setDocumentServerStored(false);
+      try {
+        await takeCloudOffline(documentId, ownerId, null);
+      } catch (e) {
+        latest.current.setDocumentServerStored(true);
+        throw e;
+      }
+      // A template picked now has no server folder to go to.
+      if (readTemplatePick()?.itemId === documentId) handTemplatePick(null);
+      // Kept here on purpose: the move prompt after signing in never offers it back (local-move-dismissal.ts).
+      await offlineListDocuments().then(
+        (kept) => dismissLocalMove(ownerId, kept.length),
+        () => {},
+      );
+      latest.current.refreshDocumentList(ownerId);
+      debugLog('[offline] taken offline in place');
+      trackTakenOffline();
+    };
   };
-}
 }

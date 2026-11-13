@@ -9,9 +9,17 @@
 // in-dialog search uses.
 import type { SettingSearchItem } from './types';
 
-type SettingsRow = { key: string; label: string; description: string; section?: string; keywords?: string };
+type SettingsRow = {
+  key: string;
+  label: string;
+  description: string;
+  section?: string;
+  keywords?: string;
+};
 
-export function buildSettingsSearchItems<Category extends { id: string; rows: readonly SettingsRow[] }>(
+export function buildSettingsSearchItems<
+  Category extends { id: string; rows: readonly SettingsRow[] },
+>(
   categories: readonly Category[],
   categoryPath: (category: Category) => string,
 ): SettingSearchItem[] {

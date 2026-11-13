@@ -3,7 +3,11 @@
 // back to Openverse's thumbnail, and hand the bytes to the import image
 // pipeline, which resizes, dedupes and uploads (or embeds offline).
 
-import type { ImportImageFailure, ImportImageOutcome, ImportImageSource } from '../import-images/types';
+import type {
+  ImportImageFailure,
+  ImportImageOutcome,
+  ImportImageSource,
+} from '../import-images/types';
 import { IMPORT_IMAGE_MAX_SOURCE_BYTES } from '../import-images/constants';
 import type { ImageCredit } from '@liveworkspace/model-core/image-credit';
 import { creditFor, galleryNameFor, type OpenverseImage } from './openverse';

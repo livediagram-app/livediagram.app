@@ -19,27 +19,29 @@ export function createIsOfflineDocument({
   subscribeOfflineIds: (listener: (id: string) => void) => () => void;
 }) {
   return function useIsOfflineDocument(documentId: string | null): boolean {
-  const [offline, setOffline] = useState(() => (documentId ? isOfflineIdSync(documentId) : false));
-  // No item is never offline: reset during render, not a frame later.
-  const [checkedId, setCheckedId] = useState(documentId);
-  if (documentId !== checkedId) {
-    setCheckedId(documentId);
-    if (!documentId) setOffline(false);
-  }
-  useEffect(() => {
-    if (!documentId) return;
-    let live = true;
-    const check = () => void isOfflineId(documentId).then((v) => live && setOffline(v));
-    check();
-    // A conversion (Sync in place, Take Offline) flips it with no reload.
-    const stop = subscribeOfflineIds((id) => {
-      if (id === documentId) check();
-    });
-    return () => {
-      live = false;
-      stop();
-    };
-  }, [documentId]);
-  return offline;
-}
+    const [offline, setOffline] = useState(() =>
+      documentId ? isOfflineIdSync(documentId) : false,
+    );
+    // No item is never offline: reset during render, not a frame later.
+    const [checkedId, setCheckedId] = useState(documentId);
+    if (documentId !== checkedId) {
+      setCheckedId(documentId);
+      if (!documentId) setOffline(false);
+    }
+    useEffect(() => {
+      if (!documentId) return;
+      let live = true;
+      const check = () => void isOfflineId(documentId).then((v) => live && setOffline(v));
+      check();
+      // A conversion (Sync in place, Take Offline) flips it with no reload.
+      const stop = subscribeOfflineIds((id) => {
+        if (id === documentId) check();
+      });
+      return () => {
+        live = false;
+        stop();
+      };
+    }, [documentId]);
+    return offline;
+  };
 }

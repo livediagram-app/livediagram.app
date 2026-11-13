@@ -11,7 +11,10 @@ import {
   type RoomHandlers,
 } from '@/lib/api-client';
 import { keepDesignGrantFresh, designGrant } from '@/lib/api/design-grants';
-import { createPresenceCoalescer, type PresenceCoalescer } from '@liveworkspace/workbench/lib/presence-coalescer';
+import {
+  createPresenceCoalescer,
+  type PresenceCoalescer,
+} from '@liveworkspace/workbench/lib/presence-coalescer';
 import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
 import { presenceRows, syncRoomPresence } from '@liveworkspace/workbench/lib/room-presence';

@@ -11,15 +11,15 @@ import { useEffect, useState } from 'react';
 // Each editor binds it once, at module scope in its `hooks/persistence/useCapabilities.ts`, to its api client.
 export function createCapabilities(apiGetCapabilities: () => Promise<{ emailEnabled?: boolean }>) {
   return function useCapabilities(enabled = true): { emailEnabled: boolean } {
-  const [emailEnabled, setEmailEnabled] = useState(false);
+    const [emailEnabled, setEmailEnabled] = useState(false);
 
-  useEffect(() => {
-    if (!enabled) return;
-    void apiGetCapabilities().then((caps) => {
-      setEmailEnabled(caps.emailEnabled ?? false);
-    });
-  }, [enabled]);
+    useEffect(() => {
+      if (!enabled) return;
+      void apiGetCapabilities().then((caps) => {
+        setEmailEnabled(caps.emailEnabled ?? false);
+      });
+    }, [enabled]);
 
-  return { emailEnabled };
-}
+    return { emailEnabled };
+  };
 }

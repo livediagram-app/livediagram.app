@@ -7,7 +7,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // failure opens it again.
 
 const { convert, track, pick, dismiss } = vi.hoisted(() => ({
-  convert: { takeCloudOffline: vi.fn() },
+  convert: {
+    takeCloudOffline:
+      vi.fn<(id: string, ownerId: string, shareCode: string | null) => Promise<unknown>>(),
+  },
   track: vi.fn(),
   pick: { read: vi.fn(), hand: vi.fn() },
   dismiss: vi.fn(),
@@ -30,7 +33,7 @@ const useTakeOfflineInPlace = createTakeOfflineInPlace({
   SyncStillSavingError,
   takeCloudOffline: (...args) => convert.takeCloudOffline(...args),
   offlineListDocuments: () => Promise.resolve([{ id: 'doc-1' }]),
-  trackTakenOffline: () => track('Document', 'Moved', 'TakenOffline'),
+  trackTakenOffline: () => void track('Document', 'Moved', 'TakenOffline'),
   SYNC_SAVE_WAIT_MS,
 });
 

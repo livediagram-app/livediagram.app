@@ -6,7 +6,9 @@ import { SessionTokenUnavailableError } from './core';
 // problem, retried on the next edit because the session can come back; a 413
 // is a tab over the row cap, saved again only by an edit; the rest (network,
 // 5xx, anything thrown) is a failure worth retrying. Each a status the editor header's SaveStatus names.
-export function saveFailureStatus(err: unknown): 'forbidden' | 'unauthenticated' | 'error' | 'tooLarge' {
+export function saveFailureStatus(
+  err: unknown,
+): 'forbidden' | 'unauthenticated' | 'error' | 'tooLarge' {
   if (err instanceof ApiError && err.status === 403) return 'forbidden';
   if (err instanceof ApiError && err.status === 413) return 'tooLarge';
   if (err instanceof ApiError && err.status === 401) return 'unauthenticated';

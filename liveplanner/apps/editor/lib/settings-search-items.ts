@@ -7,4 +7,7 @@ import {
 } from '@/components/dialogs/settings/settings-catalogue';
 
 /** The built settings catalogue passed to the SearchPanel. Static, built once. */
-export const SETTINGS_SEARCH_ITEMS = buildSettingsSearchItems(SETTINGS_CATEGORIES, settingsCategoryPath);
+export const SETTINGS_SEARCH_ITEMS = buildSettingsSearchItems(
+  SETTINGS_CATEGORIES,
+  settingsCategoryPath,
+);

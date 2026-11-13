@@ -4,10 +4,7 @@
 
 import { MAX_IMAGE_BYTES } from '@liveworkspace/api-schema/image-limits';
 import { sniffImageType } from '@liveworkspace/api-schema/image-sniff';
-import {
-  IMPORT_IMAGE_JPEG_QUALITY,
-  IMPORT_IMAGE_WEBP_QUALITY,
-} from './constants';
+import { IMPORT_IMAGE_JPEG_QUALITY, IMPORT_IMAGE_WEBP_QUALITY } from './constants';
 import { fallbackOutputType, planImageEncoding } from './policy';
 import type {
   DecodedImage,

@@ -25,50 +25,57 @@ export type ImageGallery = {
   pick: (image: ImageSummary) => Promise<PickedImage | null>;
 };
 
-export function createImageGallery({ apiListImages, apiFetchImageDataUrl, isOfflineIdSync }: ImageGalleryDeps) {
-  return function useImageGallery(ownerId: string, documentId: string, enabled = true): ImageGallery {
-  const [gallery, setGallery] = useState<ImageSummary[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+export function createImageGallery({
+  apiListImages,
+  apiFetchImageDataUrl,
+  isOfflineIdSync,
+}: ImageGalleryDeps) {
+  return function useImageGallery(
+    ownerId: string,
+    documentId: string,
+    enabled = true,
+  ): ImageGallery {
+    const [gallery, setGallery] = useState<ImageSummary[] | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!enabled) return;
-    let live = true;
-    apiListImages(ownerId)
-      .then((list) => {
-        if (!live) return;
-        if (list === null) {
-          setError('Image uploads are not enabled on this deployment.');
-          setGallery([]);
-          return;
+    useEffect(() => {
+      if (!enabled) return;
+      let live = true;
+      apiListImages(ownerId)
+        .then((list) => {
+          if (!live) return;
+          if (list === null) {
+            setError('Image uploads are not enabled on this deployment.');
+            setGallery([]);
+            return;
+          }
+          setGallery(list);
+        })
+        .catch(() => {
+          if (live) setError('Could not load your gallery.');
+        });
+      return () => {
+        live = false;
+      };
+    }, [ownerId, enabled]);
+
+    // Gallery picks re-home for offline items (docs/specs/006-document/offline-mode.md): a bare gallery id
+    // inside an offline item would break once the server's 30-day unused-image cleanup reaps it (nothing
+    // server-side references it), so the bytes are fetched and embedded as a data URI instead, exactly like Take
+    // Offline does for existing references.
+    const pick = useCallback(
+      async (image: ImageSummary): Promise<PickedImage | null> => {
+        if (!isOfflineIdSync(documentId)) return image;
+        const href = await apiFetchImageDataUrl(ownerId, image.id).catch(() => null);
+        if (!href) {
+          setError('Could not load that image for offline use. Check your connection.');
+          return null;
         }
-        setGallery(list);
-      })
-      .catch(() => {
-        if (live) setError('Could not load your gallery.');
-      });
-    return () => {
-      live = false;
-    };
-  }, [ownerId, enabled]);
+        return { ...image, id: href };
+      },
+      [ownerId, documentId],
+    );
 
-  // Gallery picks re-home for offline items (docs/specs/006-document/offline-mode.md): a bare gallery id
-  // inside an offline item would break once the server's 30-day unused-image cleanup reaps it (nothing
-  // server-side references it), so the bytes are fetched and embedded as a data URI instead, exactly like Take
-  // Offline does for existing references.
-  const pick = useCallback(
-    async (image: ImageSummary): Promise<PickedImage | null> => {
-      if (!isOfflineIdSync(documentId)) return image;
-      const href = await apiFetchImageDataUrl(ownerId, image.id).catch(() => null);
-      if (!href) {
-        setError('Could not load that image for offline use. Check your connection.');
-        return null;
-      }
-      return { ...image, id: href };
-    },
-    [ownerId, documentId],
-  );
-
-  return { gallery, setGallery, error, setError, pick };
-}
+    return { gallery, setGallery, error, setError, pick };
   };
 }

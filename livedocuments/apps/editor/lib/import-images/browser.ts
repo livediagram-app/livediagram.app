@@ -7,7 +7,11 @@ import { sha256Hex } from '@livedocuments/api-schema';
 import { apiUploadImage } from '../api/images';
 import { isOfflineIdSync } from '../offline/offline-store';
 import { createImportImageSession } from '@liveworkspace/workbench/lib/import-images/session';
-import type { DecodedImage, ImageCodec, ImportImageSession } from '@liveworkspace/workbench/lib/import-images/types';
+import type {
+  DecodedImage,
+  ImageCodec,
+  ImportImageSession,
+} from '@liveworkspace/workbench/lib/import-images/types';
 import {
   createWebpEncoder,
   type WasmWebpEncode,

@@ -7,7 +7,13 @@ describe('buildSettingsSearchItems', () => {
       {
         id: 'account/notifications',
         rows: [
-          { key: 'email', label: 'Email', description: 'Mail me', section: 'Mail', keywords: 'inbox' },
+          {
+            key: 'email',
+            label: 'Email',
+            description: 'Mail me',
+            section: 'Mail',
+            keywords: 'inbox',
+          },
           { key: 'push', label: 'Push', description: 'Ping me' },
         ],
       },

@@ -12,8 +12,7 @@ export type PanelLayout<Id extends string> = {
   free: Partial<Record<Id, { x: number; y: number }>>;
 };
 export type ResolvedPlacement =
-  | { mode: 'corner'; corner: PanelCorner }
-  | { mode: 'free'; pos: { x: number; y: number } };
+  { mode: 'corner'; corner: PanelCorner } | { mode: 'free'; pos: { x: number; y: number } };
 export type CornerStackExtents = Partial<Record<PanelCorner, number>>;
 
 // What the hook reads of an editor's `lib/panel-layout`: its ids, their home corners, its storage names, and the
@@ -101,113 +100,117 @@ export function createUsePanelDock<PanelId extends string>(
   } = panels;
   type Layout = PanelLayout<PanelId>;
   return function usePanelDock(): PanelDock<PanelId> {
-  const [layout, setLayout] = useState<Layout>(() => readPanelLayout());
-  const [drag, setDrag] = useState<PanelDragState<PanelId> | null>(null);
-  // The zoom controls the bottom-right corner clears are drawn at the UI
-  // scale (docs/specs/007-editor/ui-scale.md).
-  const scale = useUiScale('cornerButtons');
+    const [layout, setLayout] = useState<Layout>(() => readPanelLayout());
+    const [drag, setDrag] = useState<PanelDragState<PanelId> | null>(null);
+    // The zoom controls the bottom-right corner clears are drawn at the UI
+    // scale (docs/specs/007-editor/ui-scale.md).
+    const scale = useUiScale('cornerButtons');
 
-  // Re-read on any external change (another tab's `storage` event) and
-  // on our own same-tab writes (the custom event). Idempotent: a write
-  // we just made re-reads the same value, so React bails on the set.
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const refresh = () => setLayout(readPanelLayout());
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY) refresh();
+    // Re-read on any external change (another tab's `storage` event) and
+    // on our own same-tab writes (the custom event). Idempotent: a write
+    // we just made re-reads the same value, so React bails on the set.
+    useEffect(() => {
+      if (typeof window === 'undefined') return;
+      const refresh = () => setLayout(readPanelLayout());
+      const onStorage = (e: StorageEvent) => {
+        if (e.key === STORAGE_KEY) refresh();
+      };
+      window.addEventListener(PANEL_LAYOUT_CHANGED_EVENT, refresh);
+      window.addEventListener('storage', onStorage);
+      return () => {
+        window.removeEventListener(PANEL_LAYOUT_CHANGED_EVENT, refresh);
+        window.removeEventListener('storage', onStorage);
+      };
+    }, []);
+
+    // Persist + update in-memory in one step.
+    const commit = useCallback((next: Layout) => {
+      setLayout(next);
+      writePanelLayout(next);
+    }, []);
+
+    const cornerStacks = useMemo(() => {
+      // The stored arrays are already the resolved order, but a panel
+      // that's never been placed isn't in any array, fold those into
+      // their default corner so the render order matches resolvePlacement.
+      // Without the fold, a panel id missing from a user's SAVED layout
+      // (any panel shipped after they last dragged one) would never
+      // render on desktop, the corner containers draw only from these
+      // stacks (docs/specs/007-editor/panel-docking.md's "adding a new panel never strands the UI").
+      const stacks: Record<PanelCorner, PanelId[]> = {
+        'top-left': [...layout.corners['top-left']],
+        'top-right': [...layout.corners['top-right']],
+        'bottom-left': [...layout.corners['bottom-left']],
+        'bottom-right': [...layout.corners['bottom-right']],
+      };
+      const placed = new Set<PanelId>([
+        ...stacks['top-left'],
+        ...stacks['top-right'],
+        ...stacks['bottom-left'],
+        ...stacks['bottom-right'],
+        ...(Object.keys(layout.free) as PanelId[]),
+      ]);
+      for (const id of PANEL_IDS) {
+        if (!placed.has(id)) stacks[DEFAULT_PANEL_CORNER[id]].push(id);
+      }
+      return stacks;
+    }, [layout]);
+
+    const placementOf = useCallback((panel: PanelId) => resolvePlacement(layout, panel), [layout]);
+
+    const isDragging = useCallback((panel: PanelId) => drag?.panelId === panel, [drag]);
+
+    const beginDrag = useCallback((panel: PanelId) => {
+      setDrag({ panelId: panel, candidate: null, height: 0 });
+    }, []);
+
+    const updateDrag = useCallback(
+      (panel: PanelId, geom: PanelDragGeometry, extents?: CornerStackExtents) => {
+        const candidate = nearestSnapCorner(geom, extents, scale);
+        setDrag((prev) => {
+          // Only the panel that owns the drag updates the candidate; guard
+          // against stale geometry from a panel that isn't dragging.
+          if (!prev || prev.panelId !== panel) return prev;
+          if (prev.candidate === candidate && prev.height === geom.height) return prev;
+          return { panelId: panel, candidate, height: geom.height };
+        });
+      },
+      [scale],
+    );
+
+    const endDrag = useCallback(
+      (
+        panel: PanelId,
+        geom: PanelDragGeometry,
+        extents?: CornerStackExtents,
+      ): PanelCorner | null => {
+        const candidate = nearestSnapCorner(geom, extents, scale);
+        commit(
+          candidate
+            ? dockPanel(layout, panel, candidate)
+            : freePanel(layout, panel, { x: geom.x, y: geom.y }),
+        );
+        setDrag(null);
+        return candidate;
+      },
+      [commit, layout, scale],
+    );
+
+    const resetPanel = useCallback(
+      (panel: PanelId) => commit(resetPanelPlacement(layout, panel)),
+      [commit, layout],
+    );
+
+    return {
+      layout,
+      cornerStacks,
+      drag,
+      placementOf,
+      isDragging,
+      beginDrag,
+      updateDrag,
+      endDrag,
+      resetPanel,
     };
-    window.addEventListener(PANEL_LAYOUT_CHANGED_EVENT, refresh);
-    window.addEventListener('storage', onStorage);
-    return () => {
-      window.removeEventListener(PANEL_LAYOUT_CHANGED_EVENT, refresh);
-      window.removeEventListener('storage', onStorage);
-    };
-  }, []);
-
-  // Persist + update in-memory in one step.
-  const commit = useCallback((next: Layout) => {
-    setLayout(next);
-    writePanelLayout(next);
-  }, []);
-
-  const cornerStacks = useMemo(() => {
-    // The stored arrays are already the resolved order, but a panel
-    // that's never been placed isn't in any array, fold those into
-    // their default corner so the render order matches resolvePlacement.
-    // Without the fold, a panel id missing from a user's SAVED layout
-    // (any panel shipped after they last dragged one) would never
-    // render on desktop, the corner containers draw only from these
-    // stacks (docs/specs/007-editor/panel-docking.md's "adding a new panel never strands the UI").
-    const stacks: Record<PanelCorner, PanelId[]> = {
-      'top-left': [...layout.corners['top-left']],
-      'top-right': [...layout.corners['top-right']],
-      'bottom-left': [...layout.corners['bottom-left']],
-      'bottom-right': [...layout.corners['bottom-right']],
-    };
-    const placed = new Set<PanelId>([
-      ...stacks['top-left'],
-      ...stacks['top-right'],
-      ...stacks['bottom-left'],
-      ...stacks['bottom-right'],
-      ...(Object.keys(layout.free) as PanelId[]),
-    ]);
-    for (const id of PANEL_IDS) {
-      if (!placed.has(id)) stacks[DEFAULT_PANEL_CORNER[id]].push(id);
-    }
-    return stacks;
-  }, [layout]);
-
-  const placementOf = useCallback((panel: PanelId) => resolvePlacement(layout, panel), [layout]);
-
-  const isDragging = useCallback((panel: PanelId) => drag?.panelId === panel, [drag]);
-
-  const beginDrag = useCallback((panel: PanelId) => {
-    setDrag({ panelId: panel, candidate: null, height: 0 });
-  }, []);
-
-  const updateDrag = useCallback(
-    (panel: PanelId, geom: PanelDragGeometry, extents?: CornerStackExtents) => {
-      const candidate = nearestSnapCorner(geom, extents, scale);
-      setDrag((prev) => {
-        // Only the panel that owns the drag updates the candidate; guard
-        // against stale geometry from a panel that isn't dragging.
-        if (!prev || prev.panelId !== panel) return prev;
-        if (prev.candidate === candidate && prev.height === geom.height) return prev;
-        return { panelId: panel, candidate, height: geom.height };
-      });
-    },
-    [scale],
-  );
-
-  const endDrag = useCallback(
-    (panel: PanelId, geom: PanelDragGeometry, extents?: CornerStackExtents): PanelCorner | null => {
-      const candidate = nearestSnapCorner(geom, extents, scale);
-      commit(
-        candidate
-          ? dockPanel(layout, panel, candidate)
-          : freePanel(layout, panel, { x: geom.x, y: geom.y }),
-      );
-      setDrag(null);
-      return candidate;
-    },
-    [commit, layout, scale],
-  );
-
-  const resetPanel = useCallback(
-    (panel: PanelId) => commit(resetPanelPlacement(layout, panel)),
-    [commit, layout],
-  );
-
-  return {
-    layout,
-    cornerStacks,
-    drag,
-    placementOf,
-    isDragging,
-    beginDrag,
-    updateDrag,
-    endDrag,
-    resetPanel,
   };
-}
 }

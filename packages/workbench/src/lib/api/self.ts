@@ -1,6 +1,11 @@
 // Participant / account calls: load self, save self, account self-deletion. Each editor binds them once, in its
 // `lib/api/self.ts`, to its api core (`createApiCore`) and its Participant type.
-import { accountDeletionOf, deletionCodeSentOf, type AccountDeletion, type DeletionCodeSent } from '../account-deletion';
+import {
+  accountDeletionOf,
+  deletionCodeSentOf,
+  type AccountDeletion,
+  type DeletionCodeSent,
+} from '../account-deletion';
 import { dedupeInFlight } from '../dedupe';
 import { SessionTokenUnavailableError, type ApiHeadersOptions } from './core';
 

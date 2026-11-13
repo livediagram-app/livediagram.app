@@ -46,78 +46,78 @@ export function createOfflineConversion({
   takeCloudOffline,
   offlineListDocuments,
 }: OfflineConversionDeps) {
-function useOfflineConversions(ownerId: string | null) {
-  const confirm = useConfirm();
-  const toast = useToast();
-  const editor = useOptionalEditorContext();
-  const isOpen = (id: string) => editor?.documentId === id;
-  const syncToCloud = async (liveDoc: ConvertedDocument, close: () => void = () => {}) => {
-    if (!ownerId || conversionInProgress(liveDoc.id)) return;
-    close();
-    try {
-      if (editor && isOpen(liveDoc.id)) {
-        await editor.syncToCloud();
-      } else {
-        await saveOfflineToCloud(liveDoc.id, ownerId);
-        trackMoved('SavedToCloud');
+  function useOfflineConversions(ownerId: string | null) {
+    const confirm = useConfirm();
+    const toast = useToast();
+    const editor = useOptionalEditorContext();
+    const isOpen = (id: string) => editor?.documentId === id;
+    const syncToCloud = async (liveDoc: ConvertedDocument, close: () => void = () => {}) => {
+      if (!ownerId || conversionInProgress(liveDoc.id)) return;
+      close();
+      try {
+        if (editor && isOpen(liveDoc.id)) {
+          await editor.syncToCloud();
+        } else {
+          await saveOfflineToCloud(liveDoc.id, ownerId);
+          trackMoved('SavedToCloud');
+        }
+      } catch (e) {
+        // Stays offline. A conversion already running reports for itself.
+        if (!(e instanceof ConversionInProgressError)) toast.error(syncFailureMessage(e));
       }
-    } catch (e) {
-      // Stays offline. A conversion already running reports for itself.
-      if (!(e instanceof ConversionInProgressError)) toast.error(syncFailureMessage(e));
-    }
-  };
+    };
 
-  const takeOffline = async (liveDoc: ConvertedDocument, close: () => void = () => {}) => {
-    if (!ownerId || conversionInProgress(liveDoc.id)) return;
-    close();
-    // A shared tab stays in its other items and forks here (docs/specs/006-document/offline-mode.md).
-    const notice = await fetchSharedTabsNotice(ownerId, liveDoc.id, 'offline');
-    const ok = await confirm({
-      title: `Take “${liveDoc.name}” Offline?`,
-      message: [
-        'This removes it from your account and every other device. It will exist only in this browser, with no backup.',
-        notice,
-      ]
-        .filter(Boolean)
-        .join(' '),
-      confirmLabel: 'Take Offline',
-    });
-    if (!ok) return;
-    try {
-      if (editor && isOpen(liveDoc.id)) {
-        await editor.takeOfflineInPlace();
-        return;
+    const takeOffline = async (liveDoc: ConvertedDocument, close: () => void = () => {}) => {
+      if (!ownerId || conversionInProgress(liveDoc.id)) return;
+      close();
+      // A shared tab stays in its other items and forks here (docs/specs/006-document/offline-mode.md).
+      const notice = await fetchSharedTabsNotice(ownerId, liveDoc.id, 'offline');
+      const ok = await confirm({
+        title: `Take “${liveDoc.name}” Offline?`,
+        message: [
+          'This removes it from your account and every other device. It will exist only in this browser, with no backup.',
+          notice,
+        ]
+          .filter(Boolean)
+          .join(' '),
+        confirmLabel: 'Take Offline',
+      });
+      if (!ok) return;
+      try {
+        if (editor && isOpen(liveDoc.id)) {
+          await editor.takeOfflineInPlace();
+          return;
+        }
+        await takeCloudOffline(liveDoc.id, ownerId, liveDoc.shareCode ?? null);
+        // Kept here on purpose: the move prompt after signing in never offers it back (local-move-dismissal.ts).
+        await offlineListDocuments().then(
+          (kept) => dismissLocalMove(ownerId, kept.length),
+          () => {},
+        );
+        trackMoved('TakenOffline');
+      } catch (e) {
+        // Stays on the server (aborts roll the local copy back). A conversion already running
+        // reports for itself.
+        if (e instanceof ConversionInProgressError) return;
+        toast.error('Couldn’t take this offline. It stays safe on the server.');
       }
-      await takeCloudOffline(liveDoc.id, ownerId, liveDoc.shareCode ?? null);
-      // Kept here on purpose: the move prompt after signing in never offers it back (local-move-dismissal.ts).
-      await offlineListDocuments().then(
-        (kept) => dismissLocalMove(ownerId, kept.length),
-        () => {},
-      );
-      trackMoved('TakenOffline');
-    } catch (e) {
-      // Stays on the server (aborts roll the local copy back). A conversion already running
-      // reports for itself.
-      if (e instanceof ConversionInProgressError) return;
-      toast.error('Couldn’t take this offline. It stays safe on the server.');
-    }
-  };
+    };
 
-  return { syncToCloud, takeOffline };
-}
+    return { syncToCloud, takeOffline };
+  }
 
-// The same, for one item's row.
-function useOfflineConversion(
-  liveDoc: ConvertedDocument,
-  ownerId: string | null,
-  close: () => void,
-) {
-  const { syncToCloud, takeOffline } = useOfflineConversions(ownerId);
-  return {
-    syncToCloud: () => syncToCloud(liveDoc, close),
-    takeOffline: () => takeOffline(liveDoc, close),
-  };
-}
+  // The same, for one item's row.
+  function useOfflineConversion(
+    liveDoc: ConvertedDocument,
+    ownerId: string | null,
+    close: () => void,
+  ) {
+    const { syncToCloud, takeOffline } = useOfflineConversions(ownerId);
+    return {
+      syncToCloud: () => syncToCloud(liveDoc, close),
+      takeOffline: () => takeOffline(liveDoc, close),
+    };
+  }
 
-return { useOfflineConversions, useOfflineConversion };
+  return { useOfflineConversions, useOfflineConversion };
 }
