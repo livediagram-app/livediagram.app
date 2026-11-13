@@ -17,30 +17,57 @@
  *  above on any screen (2 px at 0.5 zoom is 1 CSS px, at least 1 device pixel). */
 export const IMAGE_BACKING_INSET_PX = 2;
 
-/** The CSS variable the canvas's zoomed layer sets to the inset its zoom needs (imageBackingInsetVar); a frame
- *  outside any canvas (a thumbnail, a preview) falls back to IMAGE_BACKING_INSET_PX. */
+/** The CSS variable each picture's frame reads for its inset; outside any canvas (a thumbnail, a preview) it is unset
+ *  and the frame falls back to IMAGE_BACKING_INSET_PX. */
 export const IMAGE_BACKING_INSET_VAR = '--lw-image-backing-inset';
 
+/** The attribute the canvas's zoomed layer carries, its inset in canvas px (imageBackingInsetAttribute), and the one
+ *  each picture's frame carries: the editor's stylesheet (@liveworkspace/workbench/styles/image-backing.css) sets the
+ *  variable on the frames under a layer whose inset is more than IMAGE_BACKING_INSET_PX, one rule a step. An
+ *  attribute and a rule that names the frames, not the variable on the layer: a variable set on the layer is
+ *  inherited by every node under it, so each step restyled the whole board (6,086 nodes and about 120 ms a step on
+ *  the reference board), where the rule restyles the frames alone. */
+export const IMAGE_BACKING_INSET_ATTRIBUTE = 'data-image-inset';
+export const IMAGE_FRAME_ATTRIBUTE = 'data-image-frame';
+
+/** The largest inset, in canvas px: a device pixel down to a zoom of 1/256 (the canvas stops at 1/20). */
+export const IMAGE_BACKING_INSET_MAX_PX = 256;
+
+/** The insets above IMAGE_BACKING_INSET_PX the stylesheet has a rule for, smallest first. */
+export const IMAGE_BACKING_INSET_STEPS: readonly number[] = Array.from(
+  { length: Math.log2(IMAGE_BACKING_INSET_MAX_PX / IMAGE_BACKING_INSET_PX) },
+  (_, i) => IMAGE_BACKING_INSET_PX * 2 ** (i + 1),
+);
+
 /** The inset at this zoom on this screen, in canvas px: IMAGE_BACKING_INSET_PX while that is a device pixel or more
- *  (zoom times device pixel ratio of 0.5 and up), else the next power of two at or above one device pixel. Stepped,
- *  so zooming out changes it only at a few thresholds and zooming above half a device pixel per canvas px never does:
- *  each change restyles every picture under the canvas (about 3.5 ms with 600 pictures, measured 2026-11-11). */
+ *  (zoom times device pixel ratio of 0.5 and up), else the next power of two at or above one device pixel, up to
+ *  IMAGE_BACKING_INSET_MAX_PX. Stepped, so zooming out changes it only at a few thresholds and zooming above half a
+ *  device pixel per canvas px never does. */
 export function imageBackingInsetPx(zoom: number, devicePixelRatio: number): number {
   const devicePxPerCanvasPx = zoom * devicePixelRatio;
   if (!(devicePxPerCanvasPx > 0) || devicePxPerCanvasPx * IMAGE_BACKING_INSET_PX >= 1) {
     return IMAGE_BACKING_INSET_PX;
   }
-  return 2 ** Math.ceil(Math.log2(1 / devicePxPerCanvasPx));
+  return Math.min(IMAGE_BACKING_INSET_MAX_PX, 2 ** Math.ceil(Math.log2(1 / devicePxPerCanvasPx)));
 }
 
-/** The style the canvas's zoomed layer spreads in, so every picture under it takes the inset its zoom needs from
- *  CSS alone: no picture re-renders on zoom, and the value is the same string at every zoom above the threshold. */
-export function imageBackingInsetVar(
+/** The attribute the canvas's zoomed layer spreads in (IMAGE_BACKING_INSET_ATTRIBUTE), so every picture under it
+ *  takes the inset its zoom needs from CSS alone: no picture re-renders on zoom, and the value is the same string at
+ *  every zoom above the threshold. */
+export function imageBackingInsetAttribute(
   zoom: number,
   // This screen's, where there is one (a value read, never a layout read), else 1.
   devicePixelRatio: number = (globalThis as { devicePixelRatio?: number }).devicePixelRatio ?? 1,
-): Record<typeof IMAGE_BACKING_INSET_VAR, string> {
-  return { [IMAGE_BACKING_INSET_VAR]: `${imageBackingInsetPx(zoom, devicePixelRatio)}px` };
+): Record<typeof IMAGE_BACKING_INSET_ATTRIBUTE, string> {
+  return { [IMAGE_BACKING_INSET_ATTRIBUTE]: String(imageBackingInsetPx(zoom, devicePixelRatio)) };
+}
+
+/** The stylesheet's rules, one a step (what @liveworkspace/workbench/styles/image-backing.css holds; its test checks). */
+export function imageBackingInsetRules(): string {
+  return IMAGE_BACKING_INSET_STEPS.map(
+    (px) =>
+      `[${IMAGE_BACKING_INSET_ATTRIBUTE}='${px}'] [${IMAGE_FRAME_ATTRIBUTE}] {\n  ${IMAGE_BACKING_INSET_VAR}: ${px}px;\n}`,
+  ).join('\n');
 }
 
 /** The white itself. */

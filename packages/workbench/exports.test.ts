@@ -12,9 +12,12 @@ const pkg = JSON.parse(readFileSync(join(here, 'package.json'), 'utf8')) as {
   exports: Record<string, string>;
 };
 
-const modules = (readdirSync(src, { recursive: true }) as string[])
-  .map((path) => relative(src, join(src, path)).split(sep).join('/'))
-  .filter((path) => /\.tsx?$/.test(path) && !/\.test\.tsx?$/.test(path));
+const files = (readdirSync(src, { recursive: true }) as string[]).map((path) =>
+  relative(src, join(src, path)).split(sep).join('/'),
+);
+const modules = files.filter((path) => /\.tsx?$/.test(path) && !/\.test\.tsx?$/.test(path));
+// A stylesheet an editor imports (styles/image-backing.css) keeps its extension in its subpath.
+const stylesheets = files.filter((path) => path.endsWith('.css'));
 
 describe('workbench exports', () => {
   it('has no barrel', () => {
@@ -22,10 +25,11 @@ describe('workbench exports', () => {
     expect(pkg.exports['.']).toBeUndefined();
   });
 
-  it('gives every module its own subpath, named after its path', () => {
-    const expected = Object.fromEntries(
-      modules.sort().map((path) => [`./${path.replace(/\.tsx?$/, '')}`, `./src/${path}`]),
-    );
+  it('gives every module and stylesheet its own subpath, named after its path', () => {
+    const expected = Object.fromEntries([
+      ...modules.sort().map((path) => [`./${path.replace(/\.tsx?$/, '')}`, `./src/${path}`]),
+      ...stylesheets.sort().map((path) => [`./${path}`, `./src/${path}`]),
+    ]);
     expect(pkg.exports).toEqual(expected);
   });
 });

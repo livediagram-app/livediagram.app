@@ -2,10 +2,13 @@ import { describe, expect, it } from 'vitest';
 import {
   IMAGE_BACKING_COLOUR,
   IMAGE_BACKING_INSET_PX,
+  IMAGE_BACKING_INSET_MAX_PX,
+  IMAGE_BACKING_INSET_STEPS,
   IMAGE_BACKING_INSET_VAR,
   containedPictureRect,
+  imageBackingInsetAttribute,
   imageBackingInsetPx,
-  imageBackingInsetVar,
+  imageBackingInsetRules,
   imageBackingStyle,
 } from './image-backing';
 
@@ -43,17 +46,30 @@ describe('imageBackingInsetPx', () => {
     expect(imageBackingInsetPx(1, 0)).toBe(2);
   });
 
-  it('hands the canvas the variable the frames read', () => {
-    expect(imageBackingInsetVar(1, 2)).toEqual({ [IMAGE_BACKING_INSET_VAR]: '2px' });
-    expect(imageBackingInsetVar(0.3, 1)).toEqual({ '--lw-image-backing-inset': '4px' });
+  it('stops at the largest inset', () => {
+    expect(imageBackingInsetPx(0.001, 1)).toBe(IMAGE_BACKING_INSET_MAX_PX);
+  });
+
+  it('hands the canvas the attribute the frames are styled by', () => {
+    expect(imageBackingInsetAttribute(1, 2)).toEqual({ 'data-image-inset': '2' });
+    expect(imageBackingInsetAttribute(0.3, 1)).toEqual({ 'data-image-inset': '4' });
     // With no ratio given, this screen's, else 1.
     const g = globalThis as { devicePixelRatio?: number };
     const before = g.devicePixelRatio;
     g.devicePixelRatio = 2;
-    expect(imageBackingInsetVar(0.3)).toEqual({ [IMAGE_BACKING_INSET_VAR]: '2px' });
+    expect(imageBackingInsetAttribute(0.3)).toEqual({ 'data-image-inset': '2' });
     delete g.devicePixelRatio;
-    expect(imageBackingInsetVar(0.3)).toEqual({ [IMAGE_BACKING_INSET_VAR]: '4px' });
+    expect(imageBackingInsetAttribute(0.3)).toEqual({ 'data-image-inset': '4' });
     if (before !== undefined) g.devicePixelRatio = before;
+  });
+
+  it('has a rule for every inset above the default, setting the variable on the frames only', () => {
+    expect(IMAGE_BACKING_INSET_STEPS).toEqual([4, 8, 16, 32, 64, 128, 256]);
+    const rules = imageBackingInsetRules();
+    expect(rules).toContain(
+      `[data-image-inset='4'] [data-image-frame] {\n  ${IMAGE_BACKING_INSET_VAR}: 4px;\n}`,
+    );
+    expect(rules.match(/\{/g)).toHaveLength(IMAGE_BACKING_INSET_STEPS.length);
   });
 });
 

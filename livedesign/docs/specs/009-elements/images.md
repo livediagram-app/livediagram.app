@@ -118,8 +118,9 @@ an edge the picture also reaches, a zoom that puts the edge between screen pixel
 edge pixels over part-white ones, and a picture that fills its box on a dark background (a logo on its own background)
 would wear a faint light frame. The white stays at least one device pixel in from the edge at every zoom: 2 px does
 that at 50% zoom and above on any screen, and further out the canvas widens it to the next power of two that does (4 px
-below 50% on a 1x screen, 8 px below 25%, and so on; `imageBackingInsetPx`). The canvas's zoomed layer sets it as one
-CSS variable, so no picture re-renders as the zoom changes and the pictures restyle only at those few steps; a frame
+below 50% on a 1x screen, 8 px below 25%, and so on; `imageBackingInsetPx`). The canvas's zoomed layer marks its step, and
+a stylesheet rule hands it to the pictures under it alone, so no picture re-renders as the zoom changes and at those
+few steps the pictures restyle and nothing else does (a variable on the layer restyled every node of the board); a frame
 outside a canvas keeps 2 px. The rim it leaves under a transparent edge shows what lies behind, one or two screen
 pixels at most, too thin to read as a gap. A picture
 whose size is not stored learns it when it loads; until then its white is inset all round. The frame's corner radius

@@ -151,6 +151,8 @@ always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a r
   commits since the last successful run, then how many more: from 2026-10-16 to 2026-11-11 every night was
   red because the list ran to 2,219 commits (190 KB, past GitHub's 65,536-character body) and the slide
   transition bench in livediagram and livedocuments opened its deck with no base URL.
+  The issue is written whenever the probe wrote its rows, even when a bench beside it fails (that still fails the
+  job): from 2026-11-12 livedocuments had no issue because its slide transition bench waited on a retired panel.
 - **Cache prune** (`cache-prune.yml`): after CI or E2E on `main`, deletes the superseded caches (see
   [Cache pruning](#cache-pruning)).
 - **Lucide re-vendor** (`lucide-revendor.yml`): on pull requests that change `packages/icons/package.json`.

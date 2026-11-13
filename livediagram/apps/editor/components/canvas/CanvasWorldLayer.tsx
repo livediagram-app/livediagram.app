@@ -1,6 +1,6 @@
 import type { RefObject } from 'react';
 import { useMemo } from 'react';
-import { imageBackingInsetVar } from '@livediagram/document';
+import { imageBackingInsetAttribute } from '@livediagram/document';
 import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
 import { WhiteboardPenPreview } from '@/components/canvas/whiteboard/WhiteboardPenPreview';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
@@ -139,6 +139,10 @@ export function CanvasWorldLayer({
           : undefined
       }
       data-path-cursor={pathTool.cursor ? '' : undefined}
+      // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The white under
+      // a picture"): an attribute the stylesheet reads for the pictures alone, so no picture re-renders on zoom and
+      // nothing else restyles; it changes only below 50%.
+      {...imageBackingInsetAttribute(viewportZoom)}
       style={{
         // Translate is in canvas-coords (applied first); scale is centred
         // on the wrapper so zooming keeps the viewport centre stable.
@@ -151,9 +155,6 @@ export function CanvasWorldLayer({
         // swinging off-screen. preserve-3d lets the depth layer's
         // translateZ stack read as real extruded height.
         transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)${isoFragment}`,
-        // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The white
-        // under a picture"): a CSS variable, so no picture re-renders on zoom; it changes only below 50%.
-        ...imageBackingInsetVar(viewportZoom),
         ...(canvasTool === 'isometric' ? { transformStyle: 'preserve-3d' as const } : null),
         // Draw-mode cursor: every intent gets a custom inline-SVG
         // cursor (crosshair at the pointer tip plus a small glyph

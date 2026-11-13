@@ -30,6 +30,7 @@ import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import {
   arrowBehindMask,
+  arrowMaskRegion,
   arrowEndMarkers,
   arrowFlowStyle,
   arrowPressGuards,
@@ -233,6 +234,11 @@ function ArrowViewImpl({
   const headMarker = sketchedHeads ? undefined : markerUrl;
   const startMarker = sketchedHeads ? undefined : startMarkerUrl;
   const strokeWidth = isSelected ? baseStrokeWidth + 0.5 : baseStrokeWidth;
+  // The mask paints only the box this arrow's ink can reach (docs/specs/008-canvas/canvas-performance.md "A masked
+  // arrow paints its own box").
+  const maskRegion = behindMaskId
+    ? arrowMaskRegion([pathD, sketch?.line, sketch?.lineOver, sketch?.heads], strokeWidth)
+    : null;
   const hitCursor = 'pointer';
   // The line bends where it is grabbed, so an editable line says so.
   const bendCursor = isLocked || readOnly ? hitCursor : 'grab';
@@ -268,7 +274,7 @@ function ArrowViewImpl({
           color={ownHeadColor}
         />
       ) : null}
-      {behindMaskId ? arrowBehindMask(behindMaskId, maskHoles) : null}
+      {behindMaskId ? arrowBehindMask(behindMaskId, maskHoles, maskRegion) : null}
       {isSelected ? (
         <path
           d={pathD}

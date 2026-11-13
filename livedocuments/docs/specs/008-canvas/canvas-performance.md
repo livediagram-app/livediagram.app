@@ -59,6 +59,13 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   110 ms a frame at an iPad's size with 20 pages and 2,000 elements (measured in livedesign, which
   shares the title bar: a one-element drag went from 3.4 s of frames over 50 ms to 0.1 s without it). Such a card is near-opaque instead
   (`bg-white/95`), which looks the same.
+- **A masked arrow paints its own box.** An arrow that breaks round a box or a label draws through a mask
+  ([Arrow route-behind](arrow-route-behind.md)), and the mask's region is the box round the arrow's own path (its
+  control points, so a bowed curve fits), padded for its heads, a flow's swell or glow and the selection halo. The
+  browser composites a mask over its whole region: when every mask was 200,000 units square, each such arrow cost a
+  screen of raster on every repaint, and moving one end of one repainted the whole screen. On the reference board at
+  fit that was two thirds of a full repaint (59 of 90 ms without a GPU); fitted, a full repaint costs 28 ms. A path it
+  cannot read keeps the vast region.
 - **A pan or zoom renders the canvas, not the editor.** The view (pan offset and zoom) is held in
   one viewport store per editor, not as the editor's render state. A wheel tick, a pinch frame, a
   pan or a glide renders what shows the view (the canvas and its counter-scaled parts, the zoom
@@ -121,7 +128,10 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   that depend on them re-render each frame, and nothing derived from the rest of the board is
   recomputed. A preview frame renders neither the canvas nor the element layer: each element view
   reads its own part of the preview, so a frame's work follows what moved, not the board, and only
-  what follows the moved selection (its chrome) reads the whole preview.
+  what follows the moved selection (its chrome) reads the whole preview. What every element view takes from the
+  layer (its handlers, the image context) keeps its identity through a pickup, a move and a drop: a crop handler
+  made afresh with each change to the elements re-rendered all 700 boxes on the reference board three times a drag
+  (measured 2026-11-13; a drop went from about 1280 ms at 3x CPU, with the Tidy check, to about 230 ms).
 - **A move that only translates renders nothing.** When a gesture shifts elements without
   reshaping them (a move, of any number of elements), each of them is drawn where the document has
   it, shifted by one offset written to the page outside React, so a move frame renders no element

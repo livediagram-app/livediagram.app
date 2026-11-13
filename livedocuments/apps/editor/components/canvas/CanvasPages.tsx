@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { tidyAnswers } from '@/hooks/editor/page-tidy-edits';
 import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableCallbacks';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useTabStyleOpen } from '@/lib/tab-style-opener';
@@ -95,6 +96,8 @@ export function CanvasPages({
   // The pages with nothing on them, for their Use a Layout invite (docs/specs/007-editor/pages-mode.md "An empty
   // page offers a layout, quietly"): one pass over the elements as they settle (not every frame of a drag), O(n log
   // p), only while someone may edit.
+  // A Tidy check answered by its worker (page-tidy-edits.ts canTidy) shows or hides that page's Tidy.
+  useSyncExternalStore(tidyAnswers.subscribe, tidyAnswers.version, tidyAnswers.version);
   const settled = useSettledElements(view.elements ?? NO_ELEMENTS);
   const emptyPages = useMemo(() => {
     if (!edit) return null;

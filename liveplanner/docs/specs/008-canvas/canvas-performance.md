@@ -53,6 +53,13 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   border-image computed from its recipe ([Canvas and palette](canvas-and-palette.md) "Sticky notes
   read as paper"); it takes no pointer, so a click or a drop beside a note reaches the board. A filter a person chooses for one element (an element shadow, the Sketch finish)
   stays a filter.
+- **A masked arrow paints its own box.** An arrow that breaks round a box or a label draws through a mask
+  ([Arrow route-behind](arrow-route-behind.md)), and the mask's region is the box round the arrow's own path (its
+  control points, so a bowed curve fits), padded for its heads, a flow's swell or glow and the selection halo. The
+  browser composites a mask over its whole region: when every mask was 200,000 units square, each such arrow cost a
+  screen of raster on every repaint, and moving one end of one repainted the whole screen. On the reference board at
+  fit that was two thirds of a full repaint (59 of 90 ms without a GPU); fitted, a full repaint costs 28 ms. A path it
+  cannot read keeps the vast region.
 - **A pan or zoom renders the canvas, not the editor.** The view (pan offset and zoom) is held in
   one viewport store per editor, not as the editor's render state. A wheel tick, a pinch frame, a
   pan or a glide renders what shows the view (the canvas and its counter-scaled parts, the zoom

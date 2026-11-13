@@ -110,8 +110,11 @@ jobs:
         if: steps.previous.outputs.skip != 'true'
         run: pnpm --filter ${{ matrix.editor }} perf:canvas
 
+      # Reports whenever the canvas probe wrote its rows, even when another perf spec in the run failed: one broken
+      # spec beside it (livedocuments' slide transitions, 2026-11-12) left the budget unreported for days. The job
+      # still fails on that spec.
       - name: Report
-        if: steps.previous.outputs.skip != 'true'
+        if: always() && steps.previous.outputs.skip != 'true' && hashFiles(format('{0}/test-results/perf/canvas-perf.json', matrix.dir)) != ''
         working-directory: ${{ matrix.dir }}
         env:
           GITHUB_TOKEN: ${{ github.token }}

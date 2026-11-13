@@ -250,6 +250,35 @@ describe('onCommitImageCrop', () => {
     ).toBeUndefined();
   });
 
+  // docs/specs/008-canvas/canvas-performance.md: every element view takes the image context, so a new commit (one
+  // with each change to the elements) must not make a new one, and the crop still goes through the newest commit.
+  it('keeps the image context through a new commit, and crops through the newest', () => {
+    const first = vi.fn();
+    const latest = vi.fn();
+    const hook = renderHook(
+      ({ commit }: { commit: (map: (els: Element[]) => Element[]) => void }) =>
+        useEditorImages({
+          editsBlocked: false,
+          isReadOnly: false,
+          embedMode: false,
+          getViewportCenter: () => ({ x: 0, y: 0 }),
+          elements: () => [],
+          commit,
+          setSelectedId: vi.fn(),
+          documentId: 'doc-1',
+          ownerId: 'user_1',
+          sessionShareCode: null,
+        }),
+      { initialProps: { commit: first } },
+    );
+    const before = hook.result.current.imageContext;
+    hook.rerender({ commit: latest });
+    expect(hook.result.current.imageContext).toBe(before);
+    act(() => hook.result.current.imageContext!.onCommitImageCrop!('pic', result));
+    expect(first).not.toHaveBeenCalled();
+    expect(latest).toHaveBeenCalledOnce();
+  });
+
   it('never crops a locked image, nor what is not an image', () => {
     const h = cropHook({ locked: true });
     act(() => h.result.current.imageContext!.onCommitImageCrop!('pic', result));
