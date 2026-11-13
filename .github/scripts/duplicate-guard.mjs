@@ -178,9 +178,9 @@ export function isFactoryBinding(text) {
     return /\)$/.test(s) && bound(s);
   });
   const callsShared = [...shared].some((name) =>
-    new RegExp(`(?<![\\w$.])${name.replace(/\$/g, '\\$')}(?:\\.[\\w$]+)*\\s*(?:<[^()]*>)?\\(`).test(
-      code,
-    ),
+    new RegExp(
+      `(?<![\\w$.])${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\.[\\w$]+)*\\s*(?:<[^()]*>)?\\(`,
+    ).test(code),
   );
   return ok && (callsShared || onlyTypes);
 }

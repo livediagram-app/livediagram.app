@@ -15,7 +15,8 @@ export function tileCaption(label: string, override?: string): string {
   if (override) return override;
   const base = label
     .replace(/^add\s+/i, '')
-    .replace(/\s*\([^)]*\)/g, '')
+    .replace(/\([^)]*\)/g, '')
+    .replace(/\s+/g, ' ')
     .trim();
   return headlineCase(base);
 }
