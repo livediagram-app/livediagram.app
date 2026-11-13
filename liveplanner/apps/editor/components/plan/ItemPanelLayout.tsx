@@ -9,6 +9,8 @@ import type { ReactNode } from 'react';
 import { Tooltip, lucideGlyph, relativeSince } from '@liveplanner/ui';
 import { lucideClipboardList } from '@liveworkspace/icons/lucide';
 import {
+  AUTOMATION_PERSON_ID,
+  GITHUB_PERSON,
   dayLabel,
   itemStampPerson,
   itemStampTime,
@@ -125,14 +127,24 @@ export function ItemDetailsRow({
 
 // Who last edited the card and who made it (made last, at the very bottom), and when: a quiet footer pinned to the bottom of Details (its parent is a
 // flex column; docs/specs/026-plan/plan-board.md "Look", items.md "Created and Last Edited"), each row left out when
-// the card holds no one for it, never a guess.
-export function ItemMeta({ item, now }: { item: Item; now: number }) {
+// the card holds no one for it, never a guess. `editedByGithub`: the card's history says a GitHub-triggered rule made
+// its last edit, so the row names GitHub and the rule with GitHub's mark (automations.md "On cards").
+export function ItemMeta({
+  item,
+  now,
+  editedByGithub = false,
+}: {
+  item: Item;
+  now: number;
+  editedByGithub?: boolean;
+}) {
   const response = readFromForm(item.fields[FROM_FORM_FIELD]);
   const maker = itemStampPerson(item, 'createdBy');
   const made = itemStampTime(item, 'createdAt');
   const editor = itemStampPerson(item, 'updatedBy');
   const edited = itemStampTime(item, 'updatedAt');
   if (!maker && !response && !editor) return null;
+  const github = editedByGithub && editor?.id === AUTOMATION_PERSON_ID;
   return (
     <footer
       data-item-meta=""
@@ -141,11 +153,24 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
       <div className="flex flex-col gap-0.5 border-t border-slate-200/80 pt-3 dark:border-slate-700/80">
         {editor ? (
           <MetaRow
-            lead={<PersonDisc person={editor} />}
+            lead={<PersonDisc person={github ? GITHUB_PERSON : editor} />}
             at={edited}
             when={edited !== undefined ? relativeSince(edited, now) : ''}
+            // A rule's name runs long ("Done When the Pull Request Merges"): the whole line on hover.
+            full={
+              editor.id === AUTOMATION_PERSON_ID
+                ? `Edited by ${github ? 'GitHub · ' : ''}${editor.name}`
+                : undefined
+            }
           >
-            Edited by <span className={META_NAME}>{editor.name}</span>
+            Edited by{' '}
+            {github ? (
+              <>
+                <span className={META_NAME}>GitHub</span> · {editor.name}
+              </>
+            ) : (
+              <span className={META_NAME}>{editor.name}</span>
+            )}
           </MetaRow>
         ) : null}
         {response ? (
@@ -164,6 +189,7 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
             // A form's response says when on its own row.
             at={response ? undefined : made}
             when={made !== undefined ? stampDayLabel(made) : ''}
+            full={maker.id === AUTOMATION_PERSON_ID ? `Created by ${maker.name}` : undefined}
           >
             Created by <span className={META_NAME}>{maker.name}</span>
           </MetaRow>
@@ -176,24 +202,28 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
 const META_NAME = 'font-medium text-slate-700 dark:text-slate-200';
 const FormGlyph = lucideGlyph(lucideClipboardList, 14);
 
-// One footer row: a disc (or a glyph), the words, and when at the row's end, the exact moment on hover.
+// One footer row: a disc (or a glyph), the words, and when at the row's end, the exact moment on hover. `full`: the
+// words whole, in a tooltip, for a row whose name may be cut (a rule's).
 function MetaRow({
   lead,
   children,
   at,
   when,
+  full,
 }: {
   lead: ReactNode;
   children: ReactNode;
   at: number | undefined;
   when: string;
+  full?: string | undefined;
 }) {
+  const words = <span className="min-w-0 flex-1 truncate">{children}</span>;
   return (
     <div data-item-meta-row="" className="flex min-h-7 items-center gap-2">
       <span className="flex size-5 shrink-0 items-center justify-center text-slate-400">
         {lead}
       </span>
-      <span className="min-w-0 flex-1 truncate">{children}</span>
+      {full ? <Tooltip label={full}>{words}</Tooltip> : words}
       {at !== undefined ? (
         <Tooltip label={stampMomentLabel(at)}>
           <time

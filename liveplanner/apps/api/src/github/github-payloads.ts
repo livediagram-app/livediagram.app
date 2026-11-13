@@ -22,6 +22,9 @@ export type DeliveredPullRequest = {
   state: PullRequestState;
   headSha: string;
   updatedAt: number;
+  // Whether GitHub says its repository is private: true unless the delivery says `false` (a run's values keep a
+  // private repository's title out of the plan, automations.md "A private repository's title").
+  private: boolean;
 };
 
 export type DeliveredCheckSuite = {
@@ -30,10 +33,14 @@ export type DeliveredCheckSuite = {
   headSha: string;
   checks: PullRequestChecks;
   updatedAt: number;
+  private: boolean;
 };
 
 const field = (value: unknown, key: string): unknown =>
   typeof value === 'object' && value !== null ? Reflect.get(value, key) : undefined;
+
+// A repository's `private`, failing closed: only an explicit `false` reads public.
+const privateOf = (repo: unknown): boolean => field(repo, 'private') !== false;
 
 const textOf = (value: unknown, max: number): string =>
   typeof value === 'string' ? value.slice(0, max) : '';
@@ -84,6 +91,7 @@ export function readPullRequest(payload: unknown): DeliveredPullRequest | null {
     state: stateOf(pr),
     headSha,
     updatedAt,
+    private: privateOf(repo),
   };
 }
 
@@ -106,5 +114,12 @@ export function readCheckSuite(payload: unknown): DeliveredCheckSuite | null {
       : typeof conclusion === 'string' && PASSING.has(conclusion)
         ? 'passing'
         : 'failing';
-  return { repoId, suiteId, headSha, checks, updatedAt };
+  return {
+    repoId,
+    suiteId,
+    headSha,
+    checks,
+    updatedAt,
+    private: privateOf(field(payload, 'repository')),
+  };
 }

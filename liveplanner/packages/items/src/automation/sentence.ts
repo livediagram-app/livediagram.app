@@ -465,6 +465,12 @@ export function triggerParts(
       break;
     case 'pull_request_checks':
       parts.push({ word: 'as' }, { chip: trigger.result === 'failing' ? 'Failing' : 'Passing' });
+      narrow('in', trigger.repositories ?? []);
+      break;
+    case 'pull_request_opened':
+    case 'pull_request_merged':
+    case 'pull_request_closed':
+      narrow('in', trigger.repositories ?? []);
       break;
     default:
       break;

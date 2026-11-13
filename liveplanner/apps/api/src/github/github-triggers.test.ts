@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   defaultCatalogue,
   itemStatus,
+  pullRequestValues,
   type AutomationRun,
   type AutomationTrigger,
   type Item,
@@ -175,7 +176,14 @@ describe('a rule on a GitHub trigger', () => {
     expect(await runs()).toHaveLength(1);
     // Even queued twice (a delivery that slipped past the seen ids), one run.
     const env = w.planEnv('A');
-    await queueGithubRuns(env, 'merged', 'acme/repo-11#42', [c.id], 'd1', Date.now());
+    await queueGithubRuns(
+      env,
+      'merged',
+      pullRequestValues({ owner: 'acme', repo: 'repo-11', number: 42 }, 'Fix', false),
+      [c.id],
+      'd1',
+      Date.now(),
+    );
     await room().alarm();
     expect(await runs()).toHaveLength(1);
   });
@@ -283,5 +291,111 @@ describe('a GitHub rule on a plan not connected', () => {
       attention: [{ kind: 'github' }],
     });
     expect(rules.find((r) => r.name === 'Plain')!.attention).toEqual([]);
+  });
+});
+
+// Work Tracker 762 and 763 (docs/specs/026-plan/automations.md "GitHub triggers"): a GitHub rule's text names the pull
+// request; a private repository's title never lands in the plan, so no share link reads it; a pull request's values
+// reach only plans connected to its repository; a trigger may name the repositories it hears.
+describe('pull request values and repositories', () => {
+  const VALUES = 'Merged {{pull_request.number}}: {{pull_request.title}} {{pull_request.url}}';
+  const commentOn = (text: string) =>
+    w.rule({
+      name: 'Say Merged',
+      trigger: { kind: 'pull_request_merged' },
+      steps: [{ kind: 'comment', text }],
+    });
+  const merged = (o: PrPayload = {}) =>
+    pr({ action: 'closed', state: 'closed', merged: true, title: 'Ship the importer', ...o });
+  type Threads = { threads: { comments: { text: string }[] }[] };
+  const commentsAs = async (who: 'owner' | 'viewer', id: string) =>
+    (await (await w.as(who, 'GET', `/threads?item=${id}`)).json<Threads>()).threads.flatMap((t) =>
+      t.comments.map((c) => c.text),
+    );
+  const stored = () =>
+    w.plans
+      .get('A')!
+      .db.prepare('SELECT comments FROM card_threads')
+      .all()
+      .map((r) => String(r['comments']));
+
+  it('fills the title, number and link of a public repository’s pull request', async () => {
+    await commentOn(VALUES);
+    const c = await linked();
+    await merged({ private: false });
+    await room().alarm();
+    expect(await commentsAs('owner', c.id)).toEqual([`Merged #42: Ship the importer ${URL42}`]);
+  });
+
+  it('never writes a private repository’s title into the plan, so a share link never reads it', async () => {
+    await w.seed('A', connection(7, [{ id: 11, private: true }]));
+    await commentOn(VALUES);
+    const c = await linked();
+    await merged({ private: true });
+    await room().alarm();
+    expect(stored().join('')).not.toContain('Ship the importer');
+    expect(await commentsAs('viewer', c.id)).toEqual([`Merged #42: acme/repo-11#42 ${URL42}`]);
+  });
+
+  it('counts a repository private when GitHub says so though the plan’s list says public', async () => {
+    await commentOn('{{pull_request.title}}');
+    const c = await linked();
+    await merged({ private: true });
+    await room().alarm();
+    expect(await commentsAs('owner', c.id)).toEqual(['acme/repo-11#42']);
+  });
+
+  it('counts a repository private when the delivery says nothing of it', async () => {
+    await commentOn('{{pull_request.title}}');
+    const c = await linked();
+    await merged();
+    await room().alarm();
+    expect(await commentsAs('owner', c.id)).toEqual(['acme/repo-11#42']);
+  });
+
+  it('never reaches a plan on the installation that has not chosen the repository', async () => {
+    w = await githubWorld(['A', 'B']);
+    await w.seed('A', connection(7, [{ id: 11, chosen: false }, { id: 12 }]));
+    await w.seed('B', connection(7, [{ id: 11 }]));
+    await commentOn('{{pull_request.title}}');
+    const c = await w.make('A', { title: 'Named' });
+    expect((await merged({ private: false, title: `Fix A #${c.key}` })).status).toBe(202);
+    await room().alarm();
+    expect(stored()).toEqual([]);
+    expect(await runs()).toEqual([]);
+  });
+
+  it('hears only the repositories a trigger names, any case', async () => {
+    await w.seed('A', connection(7, [{ id: 11 }, { id: 12 }]));
+    await moveOn({ kind: 'pull_request_merged', repositories: ['ACME/repo-12'] }, 'done');
+    const c = await linked('doing');
+    await merged({ private: false });
+    await room().alarm();
+    expect(itemStatus(await card(c.id))).toBe('doing');
+    const res = await w.send('POST', '/api/projects/A/items', {
+      type: 'task',
+      fields: { title: 'Other', 'f-pr': 'https://github.com/acme/repo-12/pull/7' },
+      place: { status: 'doing' },
+    });
+    const other = (await res.json<{ item: Item }>()).item;
+    await merged({ repoId: 12, number: 7, private: false });
+    await room().alarm();
+    expect(itemStatus(await card(other.id))).toBe('done');
+  });
+
+  it('refuses the values outside a GitHub rule, and a repository that is not owner/name', async () => {
+    const save = (trigger: unknown, text: string) =>
+      w.call('POST', '', {
+        name: 'Bad',
+        trigger,
+        conditions: [],
+        steps: [{ kind: 'comment', text }],
+        chain: false,
+        timeZone: 'Europe/London',
+      });
+    expect((await save({ kind: 'card_created' }, '{{pull_request.title}}')).status).toBe(400);
+    expect((await save({ kind: 'pull_request_opened', repositories: ['nope'] }, 'x')).status).toBe(
+      400,
+    );
   });
 });

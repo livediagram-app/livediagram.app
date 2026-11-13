@@ -233,8 +233,15 @@ comment, and turns either off, with the Audit Trail saying what each did.
   delivery's and the card's, so GitHub's redelivery runs nothing twice. A delivery older than the state the plan holds
   ([Out of order](#pull-request-state-on-cards)) starts no rule, so a late "opened" never follows a "merged". Checks
   Finished fires when the pull request's checks change into Failing (or Passing), not on each suite that agrees.
+- **Which repositories**: a trigger may name some of the repositories the plan hears (none named: every one), so a
+  plan connected to several runs a rule for one alone ([Automations](automations.md#github-triggers)).
+- **Its values**: a GitHub rule's text may hold `{{pull_request.title}}`, `{{pull_request.number}}` and
+  `{{pull_request.url}}`. A private repository's title fills in only in the outgoing messages (Slack, Teams, Your Own
+  Service); in anything the plan keeps or emails, it reads the short name, so no copy of it outlives the live state
+  ([What a share link sees](#who-may-do-what)).
 - **By GitHub**: a GitHub-triggered rule's writes are by **GitHub** in card history (GitHub's mark, "GitHub · Move on
-  Merge"), and its Who Did It (`{{person}}`) reads "GitHub". Nobody is behind it, so it can't check Who Did It or
+  Merge"), the item panel's footer reads "Edited by GitHub · Move on Merge" with the same mark, and its Who Did It
+  (`{{person}}`) reads "GitHub". Nobody is behind it, so it can't check Who Did It or
   assign or email whoever triggered it, as a time trigger can't.
 - **Templates**: the Templates gallery's **GitHub** category holds six ready-made GitHub rules
   ([Automations](automations.md#the-automations-screen)): to Review when a pull request opens, to Done when it merges,
@@ -259,7 +266,9 @@ on the whole plan.
 a public share link's visitor and a Viewer included: that is the warning connecting a private repository gives. A link
 to one tab sees the states of its tab's cards' pull requests alone. A Community visitor sees none: a Community post
 shows the plan's cards, never what GitHub holds. Nothing else of GitHub reaches a reader: no body, commit, author or
-check name.
+check name. A rule never copies a private repository's title into the plan: its `{{pull_request.title}}` reads the
+short name in a comment, a card or an email, so the title shows only while the live state does, and leaves with it on a
+disconnect.
 
 ## Agents
 

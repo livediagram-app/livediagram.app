@@ -15,6 +15,7 @@ import {
 } from './types';
 import type { ConditionContext } from './conditions';
 import type { ValueContext } from './values';
+import type { PullRequestValues } from './github-triggers';
 import type { PlannedAi } from './ai-steps';
 import type { WebhookValues } from './webhook-paths';
 
@@ -31,6 +32,8 @@ export interface PlanActionsContext extends ConditionContext {
   // An Incoming Webhook run: the values its call gave; and whether it runs with no card (incoming.ts).
   webhook?: WebhookValues;
   cardless?: boolean;
+  // A GitHub run: the pull request its values read (github-triggers.ts).
+  github?: PullRequestValues;
 }
 
 // The card a Create Card makes: its type, its column (absent: the type's Default State) and fields.
@@ -210,6 +213,7 @@ export const walkOf = (card: Item, run: Run, ctx: PlanActionsContext, prefix = '
     timeZone: ctx.timeZone,
     ...(ctx.webhook ? { webhook: ctx.webhook } : {}),
     ...(ctx.cardless ? { cardless: true } : {}),
+    ...(ctx.github ? { github: ctx.github } : {}),
   };
   return { plan, ctx, type, values };
 };

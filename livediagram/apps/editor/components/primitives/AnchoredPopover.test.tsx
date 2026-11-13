@@ -23,6 +23,16 @@ describe('placeAnchored', () => {
     ).toEqual({ left: 100, side: 'below', top: 136, maxHeight: view.height - 136 - EDGE });
   });
 
+  it('lines its right edge up with the anchor’s when aligned to the end, still on-screen', () => {
+    const anchor = { left: 600, right: 630, top: 100, bottom: 130 };
+    const size = { width: 300, height: 200 };
+    expect(placeAnchored(anchor, size, view, undefined, 'end').left).toBe(330);
+    expect(placeAnchored({ ...anchor, right: 100 }, size, view, undefined, 'end').left).toBe(EDGE);
+    expect(
+      placeAnchored({ left: 600, top: 100, bottom: 130 }, size, view, undefined, 'end').left,
+    ).toBe(300);
+  });
+
   it('opens above when only above has room, held by its bottom edge, left edge on-screen', () => {
     const at = placeAnchored(
       { left: 900, top: 700, bottom: 730 },

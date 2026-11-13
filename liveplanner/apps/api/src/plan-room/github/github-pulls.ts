@@ -9,7 +9,7 @@ import {
   heardOfPull,
   parsePullRequestUrl,
   pullRequestKey,
-  pullRequestText,
+  pullRequestValues,
   typesOf,
   type ItemTypeDef,
   type PullRequestStatus,
@@ -27,7 +27,15 @@ export type PullDeps = {
   planId: string;
   // Hands new states to the room.
   send: (op: PullRequestsRoomOp) => void;
+  // Whether the plan's kept list says the delivery's repository is private (absent: it can't say, so private).
+  repositoryPrivate?: boolean;
 };
+
+// Private when either GitHub's delivery or the plan's kept list says so, or the list can't say: a repository made
+// private since it connected never has its titles copied into the plan (automations.md "A private repository's
+// title").
+const isPrivate = (deps: PullDeps, delivered: boolean): boolean =>
+  delivered || deps.repositoryPrivate !== false;
 
 async function sendStates(deps: PullDeps, keys: readonly string[]): Promise<PullRequestStatus[]> {
   const upserts = await statusesOf(deps.env.PLAN_DB, keys);
@@ -61,7 +69,8 @@ export async function actOnPullRequest(
     ...(await fieldCardIds(env, planId, typesOf(head.itemTypes), pr.ref)),
     ...mentioned,
   ];
-  return queueGithubRuns(env, heard, pullRequestText(pr.ref), linked, deliveryId, now);
+  const pull = pullRequestValues(pr.ref, pr.title, isPrivate(deps, pr.private));
+  return queueGithubRuns(env, heard, pull, linked, deliveryId, now);
 }
 
 /** A `check_suite` delivery acted on: its result kept, the pull requests at its commit sent again, and each whose
@@ -92,7 +101,8 @@ export async function actOnCheckSuite(
     if (!heard || !ref) continue;
     types ??= await planTypes(env, planId);
     const linked = [...(await fieldCardIds(env, planId, types, ref)), ...(status.cards ?? [])];
-    queued += await queueGithubRuns(env, heard, pullRequestText(ref), linked, deliveryId, now);
+    const pull = pullRequestValues(ref, status.title, isPrivate(deps, suite.private));
+    queued += await queueGithubRuns(env, heard, pull, linked, deliveryId, now);
   }
   return queued;
 }

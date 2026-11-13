@@ -10,8 +10,9 @@ import type { AutomationRuleBody, AutomationTrigger } from '@liveplanner/items';
 import { TriggerPanel } from '../step-panels/TriggerPanel';
 import { outline, pickerTile } from '../test-fixtures';
 import { GithubAutomationsContext, type GithubAutomations } from './github-automations';
-import { heardRepositories } from './GithubTriggerFields';
-import { offeredGroups } from '../trigger-groups';
+import { heardRepositories, repositoryChoices, withRepositories } from './GithubTriggerFields';
+import { valueInsertGroups } from '../value-insert-options';
+import { freshTrigger, offeredGroups } from '../trigger-groups';
 import { resetGithubForTests } from './use-github-connection';
 
 const client = vi.hoisted(() => ({ readGithub: vi.fn(), startGithubConnect: vi.fn() }));
@@ -209,5 +210,103 @@ describe('A GitHub trigger’s panel', () => {
     expect(heardRepositories(['a/b'])).toBe('a/b');
     expect(heardRepositories(['a/b', 'a/c'])).toBe('a/b and a/c');
     expect(heardRepositories(['a/b', 'a/c', 'a/d'])).toBe('a/b, a/c and 1 more');
+  });
+});
+
+// Work Tracker 763 and 762 (automations.md "GitHub triggers"): a trigger keeps to some of the repositories the plan
+// hears; a GitHub rule's text offers the pull request's values.
+describe('A GitHub trigger’s repositories and values', () => {
+  const chip = (name: string) => screen.getByRole('button', { name: new RegExp(`^${name}`) });
+
+  it('picks repositories as chips, none meaning every one, and keeps them as Checks Turn changes', async () => {
+    client.readGithub.mockResolvedValue(connected(['acme/web', 'acme/api']));
+    render(<Panel trigger={{ kind: 'pull_request_checks', result: 'failing' }} />);
+    expect(await screen.findByText('Repositories')).toBeTruthy();
+    expect(screen.getByText('None picked: every repository this plan hears.')).toBeTruthy();
+    fireEvent.click(chip('acme/api'));
+    expect(latest).toEqual({
+      kind: 'pull_request_checks',
+      result: 'failing',
+      repositories: ['acme/api'],
+    });
+    expect(chip('acme/api').getAttribute('aria-pressed')).toBe('true');
+    fireEvent.change(screen.getByRole('combobox', { name: 'Checks Turn' }), {
+      target: { value: 'passing' },
+    });
+    expect(latest).toMatchObject({ result: 'passing', repositories: ['acme/api'] });
+    fireEvent.click(chip('acme/api'));
+    expect(latest).toEqual({ kind: 'pull_request_checks', result: 'passing' });
+  });
+
+  it('shows a named repository the plan no longer hears, pressed, to unpick', async () => {
+    client.readGithub.mockResolvedValue(connected(['acme/web']));
+    render(
+      <Panel trigger={{ kind: 'pull_request_merged', repositories: ['ACME/WEB', 'acme/old'] }} />,
+    );
+    expect(
+      (await screen.findByRole('button', { name: /^acme\/web/ })).getAttribute('aria-pressed'),
+    ).toBe('true');
+    const gone = chip('acme/old · Not Heard');
+    expect(gone.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(gone);
+    expect(latest).toEqual({ kind: 'pull_request_merged', repositories: ['acme/web'] });
+  });
+
+  it('offers no chips when the plan hears one repository and the rule names none', async () => {
+    client.readGithub.mockResolvedValue(connected(['acme/web']));
+    render(<Panel trigger={{ kind: 'pull_request_opened' }} />);
+    expect(await screen.findByText('Hears acme/web on acme.')).toBeTruthy();
+    expect(screen.queryByText('Repositories')).toBeNull();
+  });
+
+  it('keeps the picks from one GitHub trigger to another, and drops them leaving GitHub', () => {
+    const merged: AutomationTrigger = { kind: 'pull_request_merged', repositories: ['acme/api'] };
+    expect(freshTrigger('pull_request_checks', [], [], merged)).toEqual({
+      kind: 'pull_request_checks',
+      result: 'failing',
+      repositories: ['acme/api'],
+    });
+    expect(freshTrigger('pull_request_opened', [], [], merged)).toEqual({
+      kind: 'pull_request_opened',
+      repositories: ['acme/api'],
+    });
+    expect(freshTrigger('card_created', [], [], merged)).toEqual({ kind: 'card_created' });
+    expect(freshTrigger('pull_request_opened', [], [], { kind: 'pull_request_merged' })).toEqual({
+      kind: 'pull_request_opened',
+    });
+  });
+
+  it('keeps the picks as Pick a Trigger changes the GitHub trigger', async () => {
+    client.readGithub.mockResolvedValue(connected(['acme/web', 'acme/api']));
+    render(<Panel trigger={{ kind: 'pull_request_merged', repositories: ['acme/api'] }} />);
+    await screen.findByText('Repositories');
+    fireEvent.click(document.querySelector('[data-change-step]')!);
+    fireEvent.click(pickerTile('pull_request_checks')!);
+    expect(latest).toEqual({
+      kind: 'pull_request_checks',
+      result: 'failing',
+      repositories: ['acme/api'],
+    });
+  });
+
+  it('works out the choices and the trigger', () => {
+    expect(repositoryChoices(['acme/web'], ['Acme/Web', 'x/y'])).toEqual([
+      { value: 'acme/web', label: 'acme/web' },
+      { value: 'x/y', label: 'x/y · Not Heard' },
+    ]);
+    expect(withRepositories({ kind: 'pull_request_opened', repositories: ['a/b'] }, [])).toEqual({
+      kind: 'pull_request_opened',
+    });
+  });
+
+  it('offers the Pull Request values only in a GitHub rule', () => {
+    const ids = (github: boolean) => valueInsertGroups(false, [], false, github).map((g) => g.id);
+    expect(ids(true)).toEqual(['card', 'pull_request']);
+    expect(ids(false)).toEqual(['card']);
+    expect(valueInsertGroups(false, [], false, true)[1]!.options.map((o) => o.label)).toEqual([
+      'Pull Request Title',
+      'Pull Request Number',
+      'Pull Request Link',
+    ]);
   });
 });

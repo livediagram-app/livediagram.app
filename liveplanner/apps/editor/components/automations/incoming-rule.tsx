@@ -17,6 +17,9 @@ export type IncomingRule = {
   cardless: boolean;
   // The builder's clock, for when the secret was made and last used.
   now: number;
+  // Whether the rule is on a GitHub trigger: Insert a Value then offers the pull request's values (automations.md
+  // "GitHub triggers").
+  github?: boolean;
 };
 
 const NONE: IncomingRule = {

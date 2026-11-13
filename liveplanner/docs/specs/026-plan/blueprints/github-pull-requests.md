@@ -473,3 +473,50 @@ action from the existing vocabulary, every type a fixed token.
 | The view's states, the chooser, Disconnect's confirm, the return hash, roles             | `apps/editor/components/automations/github/GithubView.test.tsx`    |
 | The GitHub group only when enabled; a trigger's panel                                    | `apps/editor/components/automations/github/GithubTrigger.test.tsx` |
 | The return hash, the draft round trip and its telemetry                                  | `apps/editor/components/automations/github/github-hash.test.tsx`   |
+
+## Part 5: repositories, values and the footer (Work Tracker 762, 763, 768)
+
+### packages/items
+
+- `types.ts`: each GitHub trigger takes `repositories?: string[]` (`owner/name`, 1 to `GITHUB_TRIGGER_REPOSITORIES_MAX`,
+  20); `AUTOMATION_PULL_REQUEST_VALUE_NAMES` (`pull_request.title`, `.number`, `.url`) with their labels.
+- `github-triggers.ts`: `githubHearsRepository(trigger, repository)` (none named, or no repository on the event, as
+  Test on a Card's: heard; otherwise the name, any case); `pullRequestValues(pr, title, isPrivate)` builds the
+  event's `pull` (`{ repository, number, title, url, private }`).
+- `validate-conditions.ts` reads `repositories` (trimmed, `owner/name`, unique by case); `sentence.ts` ends "in
+  acme/web"; `rule-format.ts` tells agents both.
+- `values.ts`: `ValuePlace.github` (a GitHub rule's text) knows the three names; `ValueContext.github` holds the
+  event's `pull`, and `ValueContext.outgoing` marks an outgoing message's text, the one place a private repository's
+  title fills in (else its short name). `plan-walk.ts` carries the event's `pull` from `PlanActionsContext`;
+  `plan-actions.ts`' `notify` fills with `outgoing`.
+- `matches.ts`: `AutomationEvent.pull`; a GitHub trigger hears an event only when `githubHearsRepository` does.
+
+### apps/api
+
+- `github-payloads.ts`: a delivered pull request's and check suite's `private` (GitHub's `repository.private`, true
+  unless it says `false`).
+- `github-room.ts` → `github-pulls.ts`: whether the repository is private, from the delivery or the connection's kept
+  list (either; unknown is private), passed to `queueGithubRuns(env, heard, pull, …)`, which puts `pull` on each event.
+  A delivery reaches only a plan whose connection names its installation and chose its repository (`names`), so
+  `pull` is only ever on that plan's queue.
+- `automation-runner.ts` hands `event.pull` to the run's context; a Wait's held event keeps it.
+
+### apps/editor
+
+- `GithubTriggerFields.tsx`: **Repositories** (`ChipToggles`, the plan's heard repositories plus any named one no
+  longer heard, "· Not Heard"), kept as Checks Finished's result changes.
+- `value-insert-options.ts`: the **Pull Request** group in a GitHub rule (`IncomingRule.github`, set by `RuleBuilder`).
+- `set-by-automation.ts` `useAutomationHistory` answers the Set by Automation fields and whether the newest entry is
+  GitHub's (`automation_github`), from the one history read; `ItemMeta` draws "Edited by GitHub · {rule}" with
+  `PersonDisc` of `GITHUB_PERSON`. `PersonDisc` and the Activity tab's `GithubDisc` draw `GithubMarkIcon`, not the pull
+  request glyph.
+
+### Testing (part 5)
+
+| Rule                                                                                                                                 | Test                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| Repositories read, refused, named in the sentence; heard only from a named one                                                       | `packages/items/src/automation/github-triggers.test.ts`            |
+| The pull request values fill; a private title reads the short name outside outgoing messages                                         | `packages/items/src/automation/github-values.test.ts`              |
+| A private repository's title never lands in a comment; another plan on the installation gets no run; a named repository filters runs | `apps/api/src/github/github-triggers.test.ts`                      |
+| The Repositories chips; the Pull Request group only in a GitHub rule                                                                 | `apps/editor/components/automations/github/GithubTrigger.test.tsx` |
+| The footer names GitHub and the rule with GitHub's mark                                                                              | `apps/editor/components/plan/ItemPanel.navigation.test.tsx`        |

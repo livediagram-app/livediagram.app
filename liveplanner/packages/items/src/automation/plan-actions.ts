@@ -369,7 +369,11 @@ function notify(s: AutomationOutgoing, index: number, w: Walk) {
     via: s.via,
     webhook: s.webhook,
     ...(s.name ? { name: s.name } : {}),
-    text: cutText(fillValues(s.text, { ...w.values, card: w.plan.card }), AUTOMATION_TEXT_MAX),
+    // An outgoing message: the one text a private repository's pull request title fills (values.ts `outgoing`).
+    text: cutText(
+      fillValues(s.text, { ...w.values, card: w.plan.card, outgoing: true }),
+      AUTOMATION_TEXT_MAX,
+    ),
     line: run.lines.length,
   });
   w.plan.line(notifyChip(s));

@@ -8,6 +8,7 @@ import {
   RULE_MOVES_MAX,
   type AutomationEvent,
   type GithubHeard,
+  type PullRequestValues,
 } from '@liveplanner/items';
 import type { PlanEnv } from '../../types';
 import { enqueueStatement } from '../automations/automation-queue';
@@ -16,17 +17,20 @@ import { enqueueStatement } from '../automations/automation-queue';
 export const hearsGithub = (env: Pick<PlanEnv, 'AUTOMATIONS'>): boolean =>
   env.AUTOMATIONS?.kinds.has('github') === true;
 
-/** The runs `heard` starts on `cardIds` (at most RULE_MOVES_MAX), queued; answers how many went in. */
+/** The runs `heard` starts on `cardIds` (at most RULE_MOVES_MAX), queued; answers how many went in. `pull` rides
+ *  each event for the run's `{{pull_request.…}}` values: only this plan's queue holds it, as only a plan connected to
+ *  the repository is handed the delivery (github-room.ts `names`). */
 export async function queueGithubRuns(
   env: Pick<PlanEnv, 'PLAN_DB' | 'AUTOMATIONS'>,
   heard: GithubHeard,
-  pr: string,
+  pull: PullRequestValues,
   cardIds: readonly string[],
   deliveryId: string,
   now: number,
 ): Promise<number> {
   const hook = env.AUTOMATIONS;
   if (!hook?.kinds.has('github') || cardIds.length === 0) return 0;
+  const pr = `${pull.repository}#${pull.number}`;
   const events: AutomationEvent[] = [...new Set(cardIds)]
     .slice(0, RULE_MOVES_MAX)
     .map((cardId) => ({
@@ -37,6 +41,7 @@ export async function queueGithubRuns(
       role: 'system',
       github: heard,
       pr,
+      pull,
       at: now,
     }));
   try {

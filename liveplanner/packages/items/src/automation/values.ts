@@ -8,17 +8,25 @@ import { PRIORITY_LABELS, isPriority } from '../fields';
 import { addDays, isDay, localDay } from '../repeat-dates';
 import { dayNumber, dayParts, MONTH_SHORT } from '../plan-view-dates';
 import { zonedParts } from '../date-time-fields';
-import { AUTOMATION_BRANCH_VALUE_NAMES, AUTOMATION_VALUE_NAMES, type AutomationDay } from './types';
+import {
+  AUTOMATION_BRANCH_VALUE_NAMES,
+  AUTOMATION_PULL_REQUEST_VALUE_NAMES,
+  AUTOMATION_VALUE_NAMES,
+  type AutomationDay,
+} from './types';
+import { pullRequestTitleValue, type PullRequestValues } from './github-triggers';
 import { fieldOfName, statusName, type AutomationOutline } from './outline';
 import { webhookPathOf, type WebhookValues } from './webhook-paths';
 
 export const VALUE_NAMES = AUTOMATION_VALUE_NAMES;
 const FIXED: ReadonlySet<string> = new Set(AUTOMATION_VALUE_NAMES);
 const BRANCH: ReadonlySet<string> = new Set(AUTOMATION_BRANCH_VALUE_NAMES);
+const PULL_REQUEST: ReadonlySet<string> = new Set(AUTOMATION_PULL_REQUEST_VALUE_NAMES);
 
 // Where a text is written: a branch's text may also name the card that started the rule (`{{trigger.title}}`), and
-// an Incoming Webhook rule's the call's body (`{{webhook.<path>}}`).
-export type ValuePlace = { branch?: boolean; webhook?: boolean };
+// an Incoming Webhook rule's the call's body (`{{webhook.<path>}}`), and a GitHub rule's the pull request
+// (`{{pull_request.title}}`).
+export type ValuePlace = { branch?: boolean; webhook?: boolean; github?: boolean };
 
 const VALUE = /\{\{([^{}]*)\}\}/g;
 const SHIFT = /^now\s*([+-])\s*(\d{1,4})\s*d$/;
@@ -44,6 +52,7 @@ export const isKnownValue = (name: string, place: ValuePlace = {}): boolean =>
   SHIFT.test(name) ||
   fieldNameOf(name) !== null ||
   (place.branch === true && BRANCH.has(name)) ||
+  (place.github === true && PULL_REQUEST.has(name)) ||
   (place.webhook === true && webhookPathOf(name) !== null);
 
 // The first value a text holds that the builder does not know, or null.
@@ -103,6 +112,11 @@ export interface ValueContext {
   webhook?: WebhookValues;
   // A run with no card (an Incoming Webhook call that named none): every `card.…` value reads nothing.
   cardless?: boolean;
+  // A GitHub run: the pull request that started it (absent, as Test on a Card's: its values read nothing).
+  github?: PullRequestValues;
+  // The text is an outgoing message's (Slack, Teams, Your Own Service): the one place a private repository's title
+  // fills in (spec "A private repository's title").
+  outgoing?: boolean;
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -158,6 +172,12 @@ function valueOf(name: string, ctx: ValueContext, iso: boolean): string {
       return ctx.trigger ? `#${ctx.trigger.card.key}` : '';
     case 'trigger.url':
       return ctx.trigger?.url ?? '';
+    case 'pull_request.title':
+      return ctx.github ? pullRequestTitleValue(ctx.github, ctx.outgoing === true) : '';
+    case 'pull_request.number':
+      return ctx.github ? `#${ctx.github.number}` : '';
+    case 'pull_request.url':
+      return ctx.github?.url ?? '';
     case 'now.date':
       return day(todayIn(ctx.now, ctx.timeZone));
     case 'now': {

@@ -6,8 +6,7 @@
 
 import { AutomationDisc } from '@/components/automations/automation-glyphs';
 import type { ReactNode } from 'react';
-import { GlyphDisc, IDENTITY_FILL, Tooltip, identityVars, lucideGlyph } from '@liveplanner/ui';
-import { lucideGitPullRequest } from '@liveworkspace/icons/lucide';
+import { GithubMarkIcon, GlyphDisc, IDENTITY_FILL, Tooltip, identityVars } from '@liveplanner/ui';
 import { PHASE_COLOURS } from '@liveplanner/plan-art';
 import { initialsOf } from '@liveplanner/project';
 import { formatRelativeTimeCompact } from '@/lib/relative-time';
@@ -27,9 +26,7 @@ export const conversationRailClass = (kind: 'through' | 'end' | 'into') =>
     kind === 'through' ? 'bottom-0' : kind === 'end' ? 'h-[26px]' : 'h-[22px]'
   }`;
 
-const PullRequestGlyph = lucideGlyph(lucideGitPullRequest, 12);
-
-// GitHub as an author: its dark disc with the pull request mark, ringed as a person's disc is.
+// GitHub as an author: its dark disc with GitHub's own mark, ringed as a person's disc is.
 export function GithubDisc({ size = 24 }: { size?: 24 | 28 }) {
   return (
     <span
@@ -37,7 +34,7 @@ export function GithubDisc({ size = 24 }: { size?: 24 | 28 }) {
       data-github-disc=""
       className={`relative z-[1] inline-flex shrink-0 items-center justify-center rounded-full bg-[#1f2328] text-white ring-[3px] ring-white dark:bg-slate-100 dark:text-[#1f2328] dark:ring-slate-900 ${size === 24 ? 'size-6' : 'size-7'}`}
     >
-      <PullRequestGlyph size={size === 24 ? 12 : 14} weight={2} />
+      <GithubMarkIcon size={size === 24 ? 14 : 16} aria-hidden />
     </span>
   );
 }
