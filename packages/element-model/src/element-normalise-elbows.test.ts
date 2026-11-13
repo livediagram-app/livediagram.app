@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { normaliseElements } from './element-normalise';
-import type { ArrowElement, Element } from './index';
+import { normaliseElements } from './testing/normalise';
+import type { ArrowElement, Element } from './element';
 
 // docs/specs/015-api/mcp-server.md "Every element takes the presentation defaults": raw arrows draw as graph input's.
 
