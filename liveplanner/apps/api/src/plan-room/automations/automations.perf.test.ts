@@ -166,9 +166,9 @@ describe('Automations cost', () => {
     const wake = await cpuMsOfAsync(() => room().alarm());
     const db = w.plans.get('A')!.db;
     // Every run up to the day's 1,000 wrote the card.
-    expect(db.prepare("SELECT COUNT(*) AS n FROM automation_runs WHERE result = 'done'").get()).toEqual(
-      { n: 1000 },
-    );
+    expect(
+      db.prepare("SELECT COUNT(*) AS n FROM automation_runs WHERE result = 'done'").get(),
+    ).toEqual({ n: 1000 });
     expect(wake).toBeLessThan(cpuBudgetMs(1500));
   }, 60_000);
 
