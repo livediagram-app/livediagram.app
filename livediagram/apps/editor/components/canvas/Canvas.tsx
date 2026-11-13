@@ -413,6 +413,7 @@ function CanvasView(props: CanvasProps) {
             viewportZoom={viewportZoom}
             viewportOffset={viewportOffset}
             isoFragment={isoFragment}
+            isoAngles={{ azimuth: isoCamera.azimuth, elevation: isoCamera.elevation }}
             hasArrows={hasArrows}
             arrowLabels={arrowLabels}
             selectionInput={selectionInput}

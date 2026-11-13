@@ -264,6 +264,26 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - Tests: `../packages/workbench/src/lib/tab-style-ease.test.ts` (the threshold), `app/canvas-motion.test.ts` (the
   busy gate on the parts rule, the surface rule ungated, and `Canvas` marking the surface).
 
+### A theme pick on a big board
+
+- Measured (`e2e/perf/theme-pick.perf.ts`, a production build, the reference board, the reference speed of about 3x
+  throttle, A/B against main on one machine): livediagram at 400 elements, longest task 232-251 ms before, 83-89 ms
+  after; at 1,000, 436-485 ms before, 255-259 ms after. liveplanner at 400, 111-118 ms before, 72-83 ms after. The
+  task was one click: every element view re-rendering in its new colours (the colours really change, so each renders
+  once), a forced style recalc inside the commit, and a whole-page restyle as the ease class went on and off `:root`.
+- `easedStyleChange(fn)` (`../packages/workbench/src/lib/tab-style-ease.ts`): each `CanvasThemeDialog` pick calls
+  `easeNextStyleChange()` then runs `fn` inside `startTransition`, so the elements re-render between frames and
+  commit once.
+- `easeNextStyleChange()` on a busy canvas (a `[data-canvas-root][data-canvas-busy]` in the page) sets
+  `SURFACE_EASE_ATTR` (`data-style-easing`) on that surface, not the `lvd-style-transition` class on `:root`: a class
+  on the root invalidated every node of the page (the toolbars, the dialog). `globals.css` adds
+  `[data-canvas-root][data-style-easing]` to the surface ease rule. A pick while it eases extends the ease.
+- `styleChangeInFlight()` is true while an ease runs; `SnapWidth` skips its every-render measure then (its
+  `getBoundingClientRect` forced the style recalc inside the commit). It measures again on its resize observer.
+- Tests: `tab-style-ease.test.ts` (busy surface attribute, root class otherwise, `easedStyleChange`,
+  `styleChangeInFlight`), `SnapWidth.test.tsx` (no read while a style change draws), `app/canvas-motion.test.ts`
+  (the surface attribute in the ease rule).
+
 ### A closed panel draws nothing of the board
 
 - `LayersPanel` stays mounted once opened (`useCanvasChromePanels`: `layersOpened`), and passes

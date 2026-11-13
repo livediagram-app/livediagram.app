@@ -2,8 +2,9 @@
 // docs/specs/026-plan/plan-board.md "Cards out of view wait": opening a busy board builds only the cards near the
 // view. A 2,000-card board's tab switch built every card's DOM (2.5 to 3.0 s in jsdom, the far ones then hidden);
 // it now builds the runs near the view and a placeholder for each far run, inside a CPU budget (not wall-clock:
-// docs/specs/003-system-architecture/testing.md).
-import { cleanup, render } from '@testing-library/react';
+// docs/specs/003-system-architecture/testing.md). The near runs' cards are built after the board's own commit, as a
+// transition ("A big board's first draw"): the board's first task builds no card.
+import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { ITEM_TYPES, presetSetup, type Item } from '@liveplanner/items';
@@ -126,7 +127,7 @@ const BUSY_CARDS = 2000;
 const MOUNT_BUDGET_MS = 1000;
 
 describe('Opening a busy board', () => {
-  it(`builds only the cards near the view (${BUSY_CARDS} cards)`, () => {
+  it(`builds only the cards near the view (${BUSY_CARDS} cards)`, async () => {
     const tree = (
       <SelectionStoreProvider store={createSelectionStore()}>
         <PlanProvider value={plan(BUSY_CARDS)}>
@@ -139,6 +140,9 @@ describe('Opening a busy board', () => {
     const ms = cpuMsOf(() => {
       r = render(tree);
     });
+    // The board's own commit: placeholders only, every card waits for the transition that follows.
+    expect(counts.face).toBe(0);
+    await act(async () => {});
     const runs = r!.container.querySelectorAll('[data-plan-run]');
     const near = r!.container.querySelectorAll('[data-plan-run][data-plan-run-near]');
     const cards = r!.container.querySelectorAll('[data-plan-card]').length;

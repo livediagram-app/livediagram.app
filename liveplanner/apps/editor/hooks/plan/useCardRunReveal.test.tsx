@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/plan-board.md "Cards out of view wait" (blueprint plan-board.md "Far runs"): a busy board builds
-// only its runs near the view; a run arriving near is built before the frame, one leaving drops its cards and keeps
+// only its runs near the view; a run arriving near is built before the frame (a board's worth at once as a transition), one leaving drops its cards and keeps
 // its height, a card about to take focus is built first, and without IntersectionObserver every run is built.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PlanCardRun } from '@/components/plan/PlanCardRun';
 import {
   RUN_NEAR_ATTR,
+  RUN_REVEAL_TRANSITION,
   RunRevealContext,
   cardOrRunSelector,
   focusPlanCard,
@@ -19,6 +20,9 @@ import {
 import { cardsToMeasure } from './usePlanCardFlip';
 
 afterEach(cleanup);
+
+// The near runs a commit found are drawn once its layout effects have run (a microtask later).
+const settle = () => act(async () => {});
 
 const box = (top: number, height: number, left = 0, width = 200) =>
   ({
@@ -121,9 +125,10 @@ describe('PlanCardRun with useCardRunReveal', () => {
     vi.restoreAllMocks();
   });
 
-  it('builds the runs near the view before the first frame, and observes every run', () => {
+  it('builds the runs near the view before the first frame, and observes every run', async () => {
     const io = fakeIntersectionObserver();
     const { container } = render(<Board tops={[0, 400, 900, 1200, 3000]} />);
+    await settle();
     for (const t of [0, 400, 900]) {
       expect(runAt(container, t).hasAttribute(RUN_NEAR_ATTR)).toBe(true);
       expect(built(container, t)).toBe(true);
@@ -138,19 +143,22 @@ describe('PlanCardRun with useCardRunReveal', () => {
     expect(io.options?.root).toBe(container.querySelector('[data-plan-body]'));
   });
 
-  it('builds a run React adds near the view at once, and lets a removed run go', () => {
+  it('builds a run React adds near the view at once, and lets a removed run go', async () => {
     const io = fakeIntersectionObserver();
     const { container, rerender } = render(<Board tops={[0, 3000]} />);
+    await settle();
     rerender(<Board tops={[0, 300, 4000]} />);
+    await settle();
     expect(built(container, 300)).toBe(true);
     expect(built(container, 4000)).toBe(false);
     expect(io.unobserve).toHaveBeenCalledTimes(1);
     expect(io.observe).toHaveBeenCalledTimes(4);
   });
 
-  it('drops a run’s cards as it leaves the view, keeping its height, and builds them as it comes back', () => {
+  it('drops a run’s cards as it leaves the view, keeping its height, and builds them as it comes back', async () => {
     const io = fakeIntersectionObserver();
     const { container } = render(<Board tops={[0]} />);
+    await settle();
     const run = runAt(container, 0);
     Object.defineProperty(run, 'offsetHeight', { configurable: true, value: 412 });
     act(() => io.fire([{ target: run, isIntersecting: false }]));
@@ -164,18 +172,21 @@ describe('PlanCardRun with useCardRunReveal', () => {
     expect(run.style.getPropertyValue('--run-h')).toBe('');
   });
 
-  it('tells the board each run whose cards it built', () => {
+  it('tells the board each run whose cards it built', async () => {
     fakeIntersectionObserver();
     const onDrawn = vi.fn();
     const { container } = render(<Board tops={[0, 3000]} onDrawn={onDrawn} />);
+    await settle();
     expect(onDrawn).toHaveBeenCalledTimes(1);
     expect(onDrawn).toHaveBeenCalledWith(runAt(container, 0));
   });
 
-  it('keeps its runs across a re-render, and lets go of everything on unmount', () => {
+  it('keeps its runs across a re-render, and lets go of everything on unmount', async () => {
     const io = fakeIntersectionObserver();
     const { container, rerender, unmount } = render(<Board tops={[0, 3000]} />);
+    await settle();
     rerender(<Board tops={[0, 3000]} />);
+    await settle();
     expect(built(container, 0)).toBe(true);
     expect(built(container, 3000)).toBe(false);
     unmount();
@@ -223,9 +234,10 @@ describe('focusPlanCard, markNear and cardsToMeasure', () => {
     vi.restoreAllMocks();
   });
 
-  it('builds a far card’s run and then focuses it; a built card at once; others are let be', () => {
+  it('builds a far card’s run and then focuses it; a built card at once; others are let be', async () => {
     fakeIntersectionObserver();
     const { container } = render(<Board tops={[0, 3000]} />);
+    await settle();
     act(() => focusPlanCard(container, 'c3000', { preventScroll: true }));
     expect(document.activeElement).toBe(container.querySelector('[data-plan-card="c3000"]'));
     focusPlanCard(container, 'c0');
@@ -235,9 +247,10 @@ describe('focusPlanCard, markNear and cardsToMeasure', () => {
     expect(() => focusPlanCard(container, null)).not.toThrow();
   });
 
-  it('finds a card, or the far run naming it', () => {
+  it('finds a card, or the far run naming it', async () => {
     fakeIntersectionObserver();
     const { container } = render(<Board tops={[0, 3000]} />);
+    await settle();
     expect(container.querySelector(cardOrRunSelector('c0'))?.hasAttribute('data-plan-card')).toBe(
       true,
     );
@@ -245,11 +258,12 @@ describe('focusPlanCard, markNear and cardsToMeasure', () => {
     expect(container.querySelector(cardOrRunSelector('c30'))).toBeNull();
   });
 
-  it('markNear builds a far run, and does nothing to one no board drew', () => {
+  it('markNear builds a far run, and does nothing to one no board drew', async () => {
     const io = fakeIntersectionObserver();
     const { container } = render(<Board tops={[3000]} />);
     const run = runAt(container, 3000);
-    act(() => markNear(run));
+    markNear(run);
+    await settle();
     expect(built(container, 3000)).toBe(true);
     // Still known as near: going far again drops its cards.
     Object.defineProperty(run, 'offsetHeight', { configurable: true, value: 90 });
@@ -258,12 +272,40 @@ describe('focusPlanCard, markNear and cardsToMeasure', () => {
     expect(() => markNear(document.createElement('div'))).not.toThrow();
   });
 
-  it('cardsToMeasure reads the near runs’ cards and asks a near run not yet built to build', () => {
+  it('cardsToMeasure reads the near runs’ cards and asks a near run not yet built to build', async () => {
     fakeIntersectionObserver();
     const { container } = render(<Board tops={[0, 3000]} />);
+    await settle();
     const body = container.querySelector<HTMLElement>('[data-body]')!;
     expect(cardsToMeasure(body).map((c) => c.dataset.planCard)).toEqual(['c0']);
+    await settle();
     expect(built(container, 3000)).toBe(false);
+  });
+
+  it('draws a board’s worth of near runs together as a transition, once its commit is done', async () => {
+    fakeIntersectionObserver();
+    const tops = Array.from({ length: RUN_REVEAL_TRANSITION + 2 }, (_, i) => i * 40);
+    const { container } = render(<Board tops={tops} />);
+    // Not in the board's own commit: the runs hold their places, empty.
+    expect(built(container, 0)).toBe(false);
+    await settle();
+    for (const t of tops) expect(built(container, t)).toBe(true);
+  });
+
+  it('draws a few near runs before the frame, asks once per run, and forgets a run gone before it is drawn', async () => {
+    fakeIntersectionObserver();
+    const { container, rerender } = render(<Board tops={[0, 3000]} />);
+    const far = runAt(container, 3000);
+    // Asked twice in one commit: drawn once.
+    markNear(far);
+    markNear(far);
+    rerender(<Board tops={[3000]} />);
+    await settle();
+    expect(built(container, 3000)).toBe(true);
+    const { container: gone, unmount } = render(<Board tops={[0]} />);
+    expect(built(gone, 0)).toBe(false);
+    unmount();
+    await expect(settle()).resolves.toBeUndefined();
   });
 });
 

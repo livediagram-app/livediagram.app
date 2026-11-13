@@ -3,6 +3,7 @@
 // centred parent) stay on the pixel grid and render sharp.
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { easeNextStyleChange } from '../../lib/tab-style-ease';
 import { SnapWidth } from './SnapWidth';
 
 beforeAll(() => {
@@ -65,5 +66,22 @@ describe('SnapWidth', () => {
     // display: none (a strip hidden while another stands in) measures 0 with no boxes.
     measureAs(0, 0);
     expect(snapped({ matchParentParity: true })).toBe('');
+  });
+
+  // docs/specs/008-canvas/canvas-performance.md "A theme pick on a big board": a render while a Tab Style change is
+  // drawn reads no rect (it would restyle the whole recoloured canvas inside the commit); one after it does.
+  it('reads no rect on a render while a Tab Style change is drawn', () => {
+    vi.useFakeTimers();
+    measureAs(61.39, 1440);
+    const view = render(<SnapWidth>label</SnapWidth>);
+    const rect = vi.mocked(HTMLElement.prototype.getBoundingClientRect);
+    rect.mockClear();
+    easeNextStyleChange();
+    view.rerender(<SnapWidth>label again</SnapWidth>);
+    expect(rect).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(300);
+    view.rerender(<SnapWidth>label once more</SnapWidth>);
+    expect(rect).toHaveBeenCalled();
+    vi.useRealTimers();
   });
 });

@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { cssZoomOf } from '../../lib/ui-scale';
+import { styleChangeInFlight } from '../../lib/tab-style-ease';
 
 // Rounds a content-sized box UP to a whole-pixel width, so whatever sits
 // after it (or inside a centred parent) lands on the pixel grid.
@@ -64,9 +65,12 @@ export function SnapWidth({
   }, [matchParentParity]);
   // And again on every render of the box, in the same commit: content its host re-rendered (a strip's names
   // going, a strip just shown) is measured before anything else in that frame reads where the box sits, where
-  // the observer alone reports it later in the frame. One rect read, only when the host renders.
+  // the observer alone reports it later in the frame. One rect read, only when the host renders. Not while a Tab Style
+  // change is drawn: it restyles the canvas, never this box's content, and the read would make the browser restyle
+  // every recoloured element of a big canvas inside React's commit and again for the frame (docs/specs/008-canvas/
+  // canvas-performance.md "A theme pick on a big board"); the observer still hears a real size change before paint.
   useLayoutEffect(() => {
-    measureRef.current?.();
+    if (!styleChangeInFlight()) measureRef.current?.();
   });
 
   return (

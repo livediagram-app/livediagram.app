@@ -742,6 +742,7 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
    canvasIsBusy in the same module; docs/specs/008-canvas/canvas-performance.md) only the surface eases: easing every
    part of every element restyled thousands of nodes each frame and held the page in long frames. */
 :root.lvd-style-transition [data-canvas-root],
+[data-canvas-root][data-style-easing],
 :root.lvd-style-transition [data-canvas-root]:not([data-canvas-busy]) * {
   transition-property: background-color, border-color, color, fill, stroke, opacity;
   transition-duration: 250ms;
