@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Verb } from '@liveplanner/agent-verbs';
 import { fieldsOf, flagOf } from '@liveworkspace/cli-kit/fields';
-import { GLOBAL_FLAGS } from './globals';
+import { GLOBAL_FLAGS } from '@liveworkspace/cli-kit/globals';
 import { route } from './route';
 
 // The spec's command table (docs/specs/015-api/cli.md "Commands", blueprint "Testing"): every command it lists

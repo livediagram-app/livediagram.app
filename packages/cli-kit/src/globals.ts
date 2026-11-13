@@ -1,9 +1,11 @@
-// The flags every command takes, wherever they stand (docs/specs/015-api/blueprints/cli.md "Global flags");
-// every other word is the command's.
+// The flags every product CLI's command takes, wherever they stand (each product's
+// docs/specs/015-api/blueprints/cli.md "Global flags"); every other word is the command's.
 
-import { CliError } from '../output/cli-error';
-import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
-import type { PrintMode } from '../output/print';
+import { CliError } from './cli-error';
+import { EXIT } from './exit-codes';
+
+/** How a command prints: JSON (optionally only some fields), quiet, or text. Each CLI's output/print.ts reads it. */
+export type PrintMode = { json: boolean; fields?: string[]; quiet: boolean };
 
 export type Globals = {
   host?: string;
