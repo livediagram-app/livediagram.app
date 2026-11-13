@@ -90,9 +90,17 @@ export function AutomationsDialog({
 }) {
   const api = useAutomations(scope);
   // Each opening reads the list again, so Last Run, This Week and Runs today are fresh (the list read for the footer's
-  // dot, or by an earlier opening, keeps showing meanwhile). A read already under way is not repeated.
+  // dot, or by an earlier opening, keeps showing meanwhile). A read already under way is not repeated. `fresh` once this
+  // opening's read settles: until then a rule the list lacks may be one made since, never yet called deleted.
+  const [fresh, setFresh] = useState(false);
   useEffect(() => {
-    void readAutomations(scope);
+    let live = true;
+    void readAutomations(scope).then(() => {
+      if (live) setFresh(true);
+    });
+    return () => {
+      live = false;
+    };
   }, [scope]);
   const outline = useAutomationOutline();
   const plan = usePlan();
@@ -227,7 +235,9 @@ export function AutomationsDialog({
   const fromDraft = editing && !editing.ruleId && editing.draft ? drafted : null;
   const editingRule = editing?.ruleId ? (rules.find((r) => r.id === editing.ruleId) ?? null) : null;
   // A rule opened by its id (a comment's link to it) that the plan no longer has: said so, never a blank new rule.
-  const ruleGone = !!editing?.ruleId && !!api.data && !editingRule;
+  const ruleGone = !!editing?.ruleId && !!api.data && !editingRule && fresh;
+  // One the list lacks before this opening's read lands: wait for it (a rule made since the list was read).
+  const ruleWaiting = !!editing?.ruleId && !editingRule && !fresh;
   const fromTemplate =
     editing && !editing.ruleId && editing.template
       ? templateStart(editing.template, outline, rules, zone)
@@ -268,7 +278,7 @@ export function AutomationsDialog({
           }
         />
       );
-    if (!api.data)
+    if (!api.data || ruleWaiting)
       return (
         <div role="status" aria-label="Loading rules" className="flex flex-col gap-2 px-5 py-4">
           {[0.7, 0.55, 0.62].map((o, i) => (
@@ -438,7 +448,7 @@ export function AutomationsDialog({
               trailing={<DialogCloseButton onClick={close} />}
             />
           </>
-        ) : editing && api.data && !ruleGone && !phone ? (
+        ) : editing && api.data && !ruleGone && !ruleWaiting && !phone ? (
           <>
             {/* The builder's breadcrumb stands where the header was; the dialog keeps its name for screen readers. */}
             <h2 id={titleId} className="sr-only">
@@ -450,7 +460,7 @@ export function AutomationsDialog({
           listScreen
         )}
         {/* On a phone the builder is a drawer over the rules, which stay behind it ("The rule builder on a phone"). */}
-        {editing && api.data && !ruleGone && phone ? (
+        {editing && api.data && !ruleGone && !ruleWaiting && phone ? (
           <RuleDrawer
             title={editing.ruleId ? 'Edit Rule' : 'New Rule'}
             onClose={backToRules}

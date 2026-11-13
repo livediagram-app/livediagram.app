@@ -96,7 +96,10 @@ export function CommentRow({
           className={`flex items-baseline gap-1.5 ${comfortable ? 'text-[13px]' : 'text-[11px]'}`}
         >
           {automation ? (
-            <AutomationAuthorName rule={comment.automation?.rule ?? comment.authorName} />
+            <AutomationAuthorName
+              rule={comment.automation?.rule ?? comment.authorName}
+              ruleId={comment.automation?.ruleId}
+            />
           ) : (
             <span className="truncate font-medium text-slate-900 dark:text-slate-50">
               {comment.authorName}

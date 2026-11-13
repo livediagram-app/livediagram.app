@@ -367,6 +367,12 @@ build):
   sends both (`needs`, `attention`); the editor's RuleRow words `attention` with `needsWords` (needs-words.ts), each
   kind once and counted, never an id. The editor's outline sets `goneWords`, so `outlineStatusName`, `outlineTypeName`,
   `outlineFieldName` and `outlineTabName` read a gone one as `GONE_NAMES` ("a column no longer here") instead of its id.
+- **The rule link on an Automation line** (`AutomationAuthorName`): a comment passes its `automation.ruleId`, which
+  is always a link for an Editor, so a rule made or renamed since the list was read still opens; the screen reads the
+  list as it opens and, while that read (`readAutomations`, which hands a second asker the read under way) has not
+  settled, a rule id the list lacks shows the loading rows (`ruleWaiting`), never This Rule Was Deleted, which waits
+  for the read (`fresh`). A history line has only the rule's name: one the list lacks reads it again through
+  `readAutomationsFor`, once per name per plan, so a rule really gone costs one read.
 - **Test on a Card** of a time rule runs on the chosen card as at its moment, without checking its due date.
 - **Measured** (`automations.perf.test.ts`): 2,000 cards and 50 overdue rules due at once (5 hearing every card, 45
   checking a condition that never holds): the wake's CPU time is 165 to 191 ms on an M-series Mac, against the

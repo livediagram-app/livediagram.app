@@ -38,7 +38,14 @@ export type AutomationsState = {
 
 const IDLE: AutomationsState = { status: 'idle', data: null };
 
-type Entry = { state: AutomationsState; listeners: Set<() => void>; reading: boolean };
+type Entry = {
+  state: AutomationsState;
+  listeners: Set<() => void>;
+  // The read under way, which a second ask waits on rather than repeating.
+  reading: Promise<void> | null;
+  // The rules (by name) a reader looked for and missed, each read for once (readAutomationsFor).
+  missed: Set<string>;
+};
 
 const entries = new Map<string, Entry>();
 
@@ -48,7 +55,7 @@ function entryOf(scope: AutomationsScope): Entry {
   const key = keyOf(scope);
   let entry = entries.get(key);
   if (!entry) {
-    entry = { state: IDLE, listeners: new Set(), reading: false };
+    entry = { state: IDLE, listeners: new Set(), reading: null, missed: new Set() };
     entries.set(key, entry);
   }
   return entry;
@@ -59,21 +66,33 @@ function publish(entry: Entry, state: AutomationsState): void {
   for (const l of entry.listeners) l();
 }
 
-/** Reads the list (once at a time); a read already under way is not repeated. */
-export async function readAutomations(scope: AutomationsScope): Promise<void> {
+/** Reads the list (once at a time); a read already under way is not repeated, and settles when that one does. */
+export function readAutomations(scope: AutomationsScope): Promise<void> {
   const entry = entryOf(scope);
-  if (entry.reading) return;
-  entry.reading = true;
+  if (entry.reading) return entry.reading;
   if (entry.state.status !== 'ready') publish(entry, { status: 'loading', data: entry.state.data });
-  try {
-    publish(entry, { status: 'ready', data: await listAutomations(scope) });
-  } catch (error) {
-    const refused = error instanceof AutomationRefusal && error.code === 'automations_need_editor';
-    debugLog('[automations] list.failed', { refused, error: String(error) });
-    publish(entry, { status: refused ? 'refused' : 'error', data: entry.state.data });
-  } finally {
-    entry.reading = false;
-  }
+  entry.reading = (async () => {
+    try {
+      publish(entry, { status: 'ready', data: await listAutomations(scope) });
+    } catch (error) {
+      const refused =
+        error instanceof AutomationRefusal && error.code === 'automations_need_editor';
+      debugLog('[automations] list.failed', { refused, error: String(error) });
+      publish(entry, { status: refused ? 'refused' : 'error', data: entry.state.data });
+    } finally {
+      entry.reading = null;
+    }
+  })();
+  return entry.reading;
+}
+
+/** Reads the list again for a rule a reader names that it lacks (one made since it was read, by another Editor or an
+ *  agent): once per name per plan, so a rule really gone never reads it twice. */
+export function readAutomationsFor(scope: AutomationsScope, name: string): void {
+  const entry = entryOf(scope);
+  if (entry.missed.has(name)) return;
+  entry.missed.add(name);
+  void readAutomations(scope);
 }
 
 // A change the api answered, folded into the list.

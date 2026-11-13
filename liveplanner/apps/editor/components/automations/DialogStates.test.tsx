@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
 import { AutomationsDialog } from './AutomationsDialog';
 import type { AutomationsTarget } from './AutomationsContext';
-import { forgetAutomations } from './use-automations';
+import { forgetAutomations, readAutomations } from './use-automations';
 import { ANA, outline, rule, run } from './test-fixtures';
 
 const client = vi.hoisted(() => ({
@@ -63,6 +63,28 @@ describe('the Automations screen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Back to Rules' }));
     expect(await screen.findByText('Done Means Wrapped Up')).toBeTruthy();
     expect(client.createRule).not.toHaveBeenCalled();
+  });
+
+  it('opens a rule made since the list was read, never calling it deleted while the list is read again', async () => {
+    // The list read earlier (the footer's dot) lacks the rule a comment links to; this opening's read has it.
+    client.listAutomations.mockResolvedValueOnce({
+      rules: [rule()],
+      runsToday: 1,
+      runsPerDay: 1000,
+    });
+    await readAutomations(SCOPE);
+    let answer: (v: unknown) => void = () => {};
+    client.listAutomations.mockReturnValueOnce(new Promise((r) => (answer = r)));
+    render(<Harness initial={{ view: 'rule', ruleId: 'r-new' }} />);
+    expect(await screen.findByRole('status', { name: 'Loading rules' })).toBeTruthy();
+    expect(screen.queryByText('This Rule Was Deleted')).toBeNull();
+    answer({
+      rules: [rule(), rule({ id: 'r-new', name: 'Made Later' })],
+      runsToday: 1,
+      runsPerDay: 1000,
+    });
+    expect(await screen.findByDisplayValue('Made Later')).toBeTruthy();
+    expect(screen.queryByText('This Rule Was Deleted')).toBeNull();
   });
 
   it('says rules run again tomorrow once the day’s runs are spent, and not before', async () => {
