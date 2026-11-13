@@ -84,7 +84,9 @@ apps/editor/components/automations/
   StepCard.tsx, StepPanel.tsx, step-panels/*.tsx   one panel per trigger, condition and action kind
                               (FieldActionPanel: Set Field on Priority or a Choice field offers A Choice, a Select
                               of its values (fieldChoices) stored as text, the first picked as the field is; Set
-                              Field lists neither Flagged nor Checklist, unless a step already holds one)
+                              Field lists neither Flagged nor Checklist, unless a step already holds one;
+                              Set Field, Clear Field and From Field offer fieldChangeFields, the fields a
+                              write changes, plus the one a step holds)
                               (panel-parts' ChipToggles and each single pick keep a gone pick shown, "no longer here")
   ValueInsert.tsx             the chip-rendered text field and its Insert a Value button (ValueInsertMenu.tsx)
   TestOnCard.tsx              the card finder and the dry-run result
@@ -933,7 +935,9 @@ Threads and Wait (spec "Actions", "Wait").
   Comments or Calculated field (or one with a `calculation`), and the built-in `votes` and `comments`. The create
   and save routes (`bodyOf`) read the plan head's types only for a `field_changed` rule and refuse the first such
   field, 400 `automation_invalid` at `trigger.fields.N`; `ruleNeeds` adds "Field Changed never hears {name}"; the
-  editor's When panel offers `fieldChangeFields` (outlineFields less those).
+  editor's When panel offers `fieldChangeFields` (outlineFields less those), as do Set Field's and Clear Field's
+  panels; the run (`plan-actions.ts` `setField`) fails a Set or Clear Field on one, "{name} is never set by a rule"
+  ("cleared"), after a Calculated field's own "{name} is worked out, never set".
 - **Events** (`matches.ts`): `eventOfWrite` makes `archived` and `restored` events (the Trash stays quiet) and marks a
   `changed` or `moved` event `checklistDone` when the write ticks the last item. The thread routes queue `resolved`
   when a resolve leaves the card with no open thread (`SUM(open_comments) = 0` over its links), and a comment event

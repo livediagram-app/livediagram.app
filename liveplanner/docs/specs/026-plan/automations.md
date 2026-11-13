@@ -141,6 +141,11 @@ work. A rule does it every time, at once, and says that it did.
   rule naming one is refused (`automation_invalid` at `trigger.fields.N`, "Field Changed never hears Time Spent: it
   changes without an edit, so the rule would never run"). A rule saved before its field became one needs attention
   ("Field Changed never hears Time Spent").
+- **Set Field and Clear Field write only fields a write changes**, the same ones: Time Spent's entries, a Votes
+  tally, a Comments field's threads and a Calculated value are never a rule's to write, and a value a rule wrote
+  there would be one the field cannot read. The builder leaves them out of both actions' fields and of Another
+  Field's Value (a step that holds one still shows it), and a run that reaches one fails: "Votes is never set by a
+  rule" ("never cleared" for Clear Field); a Calculated field keeps "Score is worked out, never set".
 - **Card Stuck** is a time trigger (below). It fires once for each stretch a card sits unchanged: the run id holds
   when the card last changed, so any change re-arms it.
 - **Card Unblocked, Related Cards Done and Column Over Limit** are worked out when the rule runs, from the plan's cards
