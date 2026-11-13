@@ -34,6 +34,7 @@ import type { CropResult } from '@/lib/image-crop-math';
 import { isDataImageId } from '@/lib/offline/offline-images';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { PickedImage } from '@/lib/upload-image';
 
 type ImageDescriptor = PickedImage;
@@ -143,9 +144,13 @@ export function useEditorImages(deps: EditorImagesDeps) {
 
   // Done on a crop (docs/specs/009-elements/picture-crop-and-mask.md): the box moves to the frame and keeps the part
   // of the picture under it, one undo step. A locked image keeps its place, so it is never cropped.
+  // `commit` is new with each change to the elements, so it is read at its newest: through the imageContext below, a
+  // fresh crop handler re-rendered every element on the board at a pickup, a move and a drop (700 at a time on the
+  // reference board, docs/specs/008-canvas/canvas-performance.md).
+  const commitRef = useLatest(commit);
   const commitImageCrop = useCallback(
     (elementId: string, result: CropResult) => {
-      commit((els) =>
+      commitRef.current((els) =>
         els.map((el) => {
           if (el.id !== elementId || el.type !== 'image' || el.locked) return el;
           const { crop: _old, ...rest } = el;
@@ -161,7 +166,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
         }),
       );
     },
-    [commit],
+    [commitRef],
   );
 
   // Memoised so BoxedElementView's React.memo (commit e8e34f9)
