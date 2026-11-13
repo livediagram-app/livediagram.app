@@ -249,7 +249,13 @@ of `elements`: the server materialises the hand-tuned scaffold from
 `@liveplanner/templates` ([§4.5](#45-list_templates)), keeping its curated
 layout and applying that template's
 canvas overrides; the model then personalises labels via `update_project`'s
-`ops` mode. The MCP:
+`ops` mode. A template tab may also carry `elements`: once the project exists they are added to the template's
+first tab as `update_project`'s `add` ops would add them, at the `x` and `y` given, so a Board or Sheet template's
+tab holds them beside its own, never silently dropped. They are checked like any other tab's elements before
+anything is written; if the api then refuses them the answer says the project was made and why. Every template's
+first tab is a Board, Sheet or plain tab, never a Dashboard (a Dashboard is built whole from its rows and could not
+hold them), and a test keeps it so. A `dashboard` makes the whole tab, so one given with a `template` or `elements`
+is refused, naming the tab, before anything is written. `add_tab` does the same. The MCP:
 
 1. **Validates** each tab's `elements` with `isValidTab` (reject `400`-style with
    a clear message naming the offending tab).

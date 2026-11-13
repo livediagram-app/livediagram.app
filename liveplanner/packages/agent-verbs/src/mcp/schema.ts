@@ -225,7 +225,8 @@ const templateField = z
   .describe(
     'Start from a hand-tuned template scaffold instead of providing elements: a template ' +
       'kind from list_templates (e.g. "kanban", "project-planner", "bug-triage"). The server ' +
-      'builds it and paints it with the chosen theme. Provide template OR elements, not both.',
+      'builds it and paints it with the chosen theme. Elements given with a template are added to its first tab as ' +
+      'update_project would add them. A dashboard is given alone, never with a template or elements.',
   );
 
 const themeField = z
