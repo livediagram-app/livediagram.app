@@ -41,6 +41,12 @@ groups and separators, so a slider inside one is invisible or garbled to a scree
   `aria-controls`; the submenu is a `menu` named by its header or its trigger.
 - A menu's trigger carries `aria-haspopup="menu"`, `aria-expanded` and, while open, `aria-controls`
   naming the menu.
+- A command menu portalled to the page's body (every `PortalMenu`, the Explorer's ⋯ menus, the table row and
+  column menus, the locked element menu) stands in a named
+  `region` of its own, named as given, else as its trigger is: a body-level menu belongs to no landmark, so axe's
+  "region" rule found its items outside one and a landmark list had no way to it. A control menu needs none: it is a
+  `dialog`, which counts as one. A menu drawn in place (a submenu, the zoom presets, the account menu) sits in its
+  host's landmark already.
 
 ### Keyboard
 

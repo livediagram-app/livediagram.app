@@ -104,6 +104,20 @@ below. When it fits on neither side (a long menu from a card halfway down a shor
 last row is on screen, over its trigger; one taller than the window keeps to the window and scrolls. A menu never
 runs off the page, so every verb on it can be reached.
 
+Every ⋯ menu is portalled to the page's body, outside every landmark, so each stands in a named region of its own
+(named as the menu is, "Actions for <name>"): axe's "region" rule finds nothing outside a landmark and a screen
+reader's landmark list reaches the open menu. The search field is a search landmark ("Search your work") for the same
+reason: the bar's and the hero's sit outside the Explorer's main, and a host may give the Explorer no header of its own.
+
+The Details view is a table to assistive technology, following the WAI-ARIA sortable table pattern: a table named
+"Folders and <kind>" (folders and plans), a header row of column headers (Name, Type, Comments, Access, Size,
+Created, Updated, and the ⋯ column, named Actions for a screen reader and blank on screen), each holding its sort
+button, the sorted one carrying `aria-sort`; then a row group of one row per folder or item, its name cell the row's
+header and every other a cell. A column hidden at the pane's width is hidden from both its header and its cells.
+Its rows are windowed, so each says where it stands (`aria-rowindex`, the header row being 1) and the table how
+many there are (`aria-rowcount`: every row while the list is whole, -1 while more are still to load). Nothing on
+screen changes: the roles sit on the same grid of boxes.
+
 Creating is aware of where the person came from: New from liveplanner makes a Plan, from livediagram a
 Canvas, and so on. On liveworkspace.app in no app, where the list shows every app, New (the hero's and the pane's
 Create) is a menu of every app's kind, each with its logo and its app's name; New Folder sits beside them where the
