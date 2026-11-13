@@ -24,6 +24,10 @@ const ids = (els: readonly Element[]) => els.map((e) => e.id);
 
 afterEach(() => resetDragPreviewForTests());
 
+// A collaborator's message reaches the store's subscribers on the next frame (D130).
+const nextFrame = () =>
+  act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+
 describe('the local preview', () => {
   it('holds what a gesture changed, by identity', () => {
     const movedB = { ...b, x: 250 };
@@ -85,7 +89,7 @@ describe('useDragPreview', () => {
     expect(result.current).toBeNull();
   });
 
-  it('resolves peer patches against the elements drawn, beneath the local preview', () => {
+  it('resolves peer patches against the elements drawn, beneath the local preview', async () => {
     const { result } = renderHook(() => useDragPreview('t', doc));
     act(() =>
       setPeerPreview('p1', 't', [
@@ -94,6 +98,7 @@ describe('useDragPreview', () => {
         { id: 'gone', x: 1 },
       ]),
     );
+    await nextFrame();
     expect(result.current!.changed.get(c.id)).toEqual({ ...c, x: 8 });
     expect(result.current!.changed.has('gone')).toBe(false);
     const localB = { ...b, x: 9 };
@@ -121,12 +126,43 @@ describe('useDragPreview', () => {
   });
 });
 
+// docs/specs/008-canvas/drag-preview.md "A collaborator draws a peer's preview the same way": at most once a frame,
+// from the latest message (D130).
+describe("a collaborator's messages", () => {
+  it('are read at once, and drawn once a frame from the latest', async () => {
+    let renders = 0;
+    const { result } = renderHook(() => {
+      renders++;
+      return useDragPreview('t', doc);
+    });
+    const before = renders;
+    act(() => {
+      for (let x = 1; x <= 10; x++) setPeerPreview('p1', 't', [{ id: b.id, x }]);
+    });
+    expect(dragPreviewFor('t', doc)!.changed.get(b.id)).toEqual({ ...b, x: 10 });
+    expect(renders).toBe(before);
+    await nextFrame();
+    expect(renders).toBe(before + 1);
+    expect(result.current!.changed.get(b.id)).toEqual({ ...b, x: 10 });
+  });
+
+  it('clear at once, taking a frame still due with them', async () => {
+    const { result } = renderHook(() => useDragPreview('t', doc));
+    act(() => setPeerPreview('p1', 't', [{ id: b.id, x: 7 }]));
+    act(() => clearPeerPreview('p1'));
+    expect(result.current).toBeNull();
+    await nextFrame();
+    expect(result.current).toBeNull();
+  });
+});
+
 describe('several readers', () => {
-  it('gives each reader a stable preview, whatever elements each draws', () => {
+  it('gives each reader a stable preview, whatever elements each draws', async () => {
     const other: Element[] = [a, b];
     const first = renderHook(() => useDragPreview('t', doc));
     const second = renderHook(() => useDragPreview('t', other));
     act(() => setPeerPreview('p1', 't', [{ id: b.id, x: 7 }]));
+    await nextFrame();
     const one = first.result.current;
     const two = second.result.current;
     first.rerender();

@@ -192,7 +192,9 @@ arrowLinks, stackedIds)` (on a board without arrows, which has no `elementIndex`
 { dx, dy, ids?, patches } }`, with no top-level `patches` (so an older editor's
   `parseDragPreviewPatches` drops it whole). `ids` goes on the gesture's first ride, when the set
   differs from the last named, after a patch message, and when `DRAG_PREVIEW_RIDE_IDS_MS` has passed
-  since it was last named. More than `DRAG_PREVIEW_MAX_ELEMENTS` patches, more than
+  since it was last named. While the preview lasts unchanged, the latest message is sent again every
+  `DRAG_PREVIEW_RIDE_IDS_MS` (a held drag; a ride names its ids on it), so it outlives
+  `PEER_PREVIEW_EXPIRY_MS` on every collaborator (D130). More than `DRAG_PREVIEW_MAX_ELEMENTS` patches, more than
   `DRAG_PREVIEW_MAX_RIDE_IDS` ids, or nothing riding → nothing is sent for that frame; collaborators
   see the result on release.
 - A boxed patch carries `x`, `y`, `width`, `height`, `rotation`; an arrow patch `from`, `to`,
@@ -201,7 +203,9 @@ arrowLinks, stackedIds)` (on a board without arrows, which has no `elementIndex`
   presence id whose role (kept from the latest presence list) is `edit`, parses the patches
   (`parseDragPreviewPatches`), or the ride (`parseDragPreviewRide`) when the op has one, and sets
   that peer's preview (`setPeerPreview(presenceId, tabId, patches, ride?)`: a ride without `ids`
-  keeps the ids that peer last named on that tab, and before any moves nothing); on `end` (a landed `end` keeps the preview,
+  keeps the ids that peer last named on that tab, and before any moves nothing). `setPeerPreview` records it at once
+  (`dragPreviewFor` reads it straight away) but tells the store's subscribers on the next animation frame, once for
+  every message that arrived before it (D130); a clear tells them at once. On `end` (a landed `end` keeps the preview,
   re-arming the expiry, until the peer's real change), on that peer leaving or the
   room closing, on any element or tab op from that peer (D74), or `PEER_PREVIEW_EXPIRY_MS` after its
   last message, clears it. A sender whose role is not `edit` is dropped and logged once. The room
@@ -370,4 +374,4 @@ changed ids)` (`@livediagram/document`) has its endpoint spread placed from the 
 
 ## Defaults ledger
 
-D71 to D74, D123, D124 and D126 to D128 in [DEFAULTS.md](DEFAULTS.md).
+D71 to D74, D123, D124, D126 to D128 and D130 in [DEFAULTS.md](DEFAULTS.md).
