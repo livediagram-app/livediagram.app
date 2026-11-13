@@ -375,6 +375,10 @@ describe('the rule builder', () => {
     const chips = () =>
       [...document.querySelectorAll('[data-step-card]')].map((c) => c.textContent);
     expect(chips()[1]).toContain('Archive');
+    // Focus stays with the step that moved, in its new place, not the one that took its old one.
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'More for Flag' })),
+    );
     fireEvent.click(screen.getByRole('button', { name: 'More for Flag' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
     expect(chips().filter((t) => t?.includes('Flag'))).toHaveLength(2);

@@ -900,7 +900,11 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
 - To a screen reader each step card's button reads its kind and what it does ("Then", described by "Assign Ana
   Costa"), and a panel's **Change** reads "Change Trigger" or "Change Action", described by the current one, so the
   name heard holds the word on the button.
-- A step's ⋯ menu: Move Up, Move Down, Duplicate, Delete.
+- A step's ⋯ menu: Move Up, Move Down, Duplicate, Delete. After a move, focus stays on the moved step's ⋯ in its new
+  place.
+- Set Field's field changed to one of another kind starts its value afresh, as a new Set Field does (a field of fixed
+  values on its first one, any other empty): Priority's Low never carries to Labels or Estimate. A field of the same
+  kind keeps the value (a choice field only one of its own options).
 - **Rule Details** (an accordion, closed): **Let this rule's changes trigger other rules** with "Off keeps rules
   from setting each other off. Chains stop after 5 rules.", and "Runs as Automation, with an Editor's access, for
   changes anyone with edit or participate access makes."

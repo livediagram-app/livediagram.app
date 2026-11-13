@@ -1111,7 +1111,10 @@ rounded-lg pl-3 pr-8 text-[14px]`) and `SegmentedRadio` (`size="lg"`, All / On /
   the shell's tile and title as its header beside `DialogCloseButton`, the body `min-h-0 flex-1 overflow-y-auto
 overscroll-contain`, and a foot holding **Done** (`useDialogDismiss`, so it slides out like the close). `RuleBuilder` holds `stepOpen`:
   set by a pick (`actions.select`), an add (a Duplicate from the step's menu too) and a refusal's `partAt`; never by
-  the first render's trigger selection, and cleared by Move Up and Move Down.
+  the first render's trigger selection, and cleared by Move Up and Move Down. A move also sets `moved` (the part in
+  its new place): `RuleSteps` draws cards by position, so the closing menu's focus return lands on whichever step
+  took the old place; the `StepMenu` whose part is `moved` focuses its ⋯ in an effect (after that return) and clears
+  it. Set Field's first value and a field switched to another kind both come from `startText` (field-pick.ts).
   The drawer takes the refusal's message as `fault` while the selected part is the one at fault (`samePart`), drawn
   as a `role="alert"` line at the top of its body.
 - `ValueInsert.tsx`: `ValueTextField` draws `ValueInsertButton` inside the field's box (`absolute right-1.5 top-1.5`, the

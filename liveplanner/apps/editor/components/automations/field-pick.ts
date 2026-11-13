@@ -71,3 +71,9 @@ export function fieldPick(
   }
   return null;
 }
+
+/** The text a Set Field on `field` starts on: a field of fixed values its first one, any other empty. */
+export const startText = (
+  field: OutlineField | undefined,
+  outline: Pick<AutomationOutline, 'types' | 'people'>,
+): string => fieldPick(field, outline)?.choices[0]?.value ?? '';

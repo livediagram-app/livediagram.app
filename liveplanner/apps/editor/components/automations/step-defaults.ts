@@ -15,8 +15,8 @@ import {
   type AutomationVia,
   type AutomationWait,
 } from '@liveplanner/items';
-import { outlineFields, type AutomationOutline } from './automation-outline';
-import { fieldPick, OWN_ACTION_FIELDS } from './field-pick';
+import { fieldChangeFields, outlineFields, type AutomationOutline } from './automation-outline';
+import { OWN_ACTION_FIELDS, startText } from './field-pick';
 
 export const ACTION_KINDS: readonly AutomationActionKind[] = [
   'move',
@@ -105,20 +105,20 @@ export const CONDITION_KINDS: readonly AutomationCondition['kind'][] = [
 
 type Outline = Pick<AutomationOutline, 'types' | 'columns' | 'labels' | 'boards'>;
 
-const firstField = (outline: Outline, prefer: string) => {
-  const fields = outlineFields(outline.types);
+// The first field, `prefer` where the plan has it; `writable`: only one a write changes (Clear Field's).
+const firstField = (outline: Outline, prefer: string, writable = false) => {
+  const fields = (writable ? fieldChangeFields : outlineFields)(outline.types);
   return (fields.find((f) => f.id === prefer) ?? fields[0])?.id ?? prefer;
 };
 
-// Set Field's first field (Priority where the plan has it, never one left to its own action) and its first value: a
-// field of fixed values starts on its first one, so a person, choice or checkbox field never starts on text its save
-// refuses.
+// Set Field's first field (Priority where the plan has it, never one left to its own action nor one no write changes)
+// and its first value: a field of fixed values starts on its first one, so a person, choice or checkbox field never
+// starts on text its save refuses.
 function firstSetField(outline: Outline & Partial<Pick<AutomationOutline, 'people'>>) {
-  const fields = outlineFields(outline.types).filter((f) => !OWN_ACTION_FIELDS.has(f.id));
+  const fields = fieldChangeFields(outline.types).filter((f) => !OWN_ACTION_FIELDS.has(f.id));
   const field = fields.find((f) => f.id === 'priority') ?? fields[0];
   if (!field) return { field: 'priority', text: PRIORITIES[0] };
-  const pick = fieldPick(field, { types: outline.types, people: outline.people ?? [] });
-  return { field: field.id, text: pick?.choices[0]?.value ?? '' };
+  return { field: field.id, text: startText(field, { types: outline.types, people: outline.people ?? [] }) };
 }
 
 export function defaultAction(
@@ -134,7 +134,7 @@ export function defaultAction(
       return { kind, field, value: { text } };
     }
     case 'clear_field':
-      return { kind, field: firstField(outline, 'due') };
+      return { kind, field: firstField(outline, 'due', true) };
     case 'assign':
       return { kind, to: { trigger: true } };
     case 'add_label':

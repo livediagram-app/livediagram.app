@@ -297,6 +297,34 @@ describe('StepPanel', () => {
     );
   });
 
+  it('starts Set Field afresh when the field changes kind, never carrying Priority’s value to Labels', () => {
+    render(
+      <Panel
+        body={body({
+          steps: [{ kind: 'set_field', field: 'priority', value: { text: 'low' } }],
+        })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    pick('Field', 'labels');
+    expect(latest.steps[0]).toEqual({ kind: 'set_field', field: 'labels', value: { text: '' } });
+    pick('Field', 'priority');
+    expect(latest.steps[0]).toMatchObject({ value: { text: 'urgent' } });
+    pick('Field', 'estimate');
+    expect(latest.steps[0]).toMatchObject({ field: 'estimate', value: { text: '' } });
+    // The same kind keeps what it holds.
+    pick('Field', 'start');
+    fireEvent.change(screen.getByRole('textbox', { name: 'Text' }), {
+      target: { value: '2026-11-20' },
+    });
+    pick('Field', 'due');
+    expect(latest.steps[0]).toEqual({
+      kind: 'set_field',
+      field: 'due',
+      value: { text: '2026-11-20' },
+    });
+  });
+
   it('leaves out of Field Changed the fields no write changes', () => {
     const [first, ...rest] = outline().types;
     const timed = {
@@ -455,8 +483,9 @@ describe('StepPanel', () => {
     expect(latest.steps[0]).toMatchObject({ value: { from: 'due' } });
     pick('Set To', 'text');
     fireEvent.change(screen.getByRole('textbox', { name: 'Text' }), { target: { value: 'Hi' } });
+    // A field of another kind (Estimate's number to Title's text) starts afresh.
     pick('Field', 'title');
-    expect(latest.steps[0]).toEqual({ kind: 'set_field', field: 'title', value: { text: 'Hi' } });
+    expect(latest.steps[0]).toEqual({ kind: 'set_field', field: 'title', value: { text: '' } });
     pickStep('clear_field');
     pick('Field', 'labels');
     expect(latest.steps[0]).toEqual({ kind: 'clear_field', field: 'labels' });

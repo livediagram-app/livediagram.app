@@ -106,6 +106,8 @@ export function RuleBuilder({
   const [selected, setSelected] = useState<RulePart | null>({ part: 'trigger' });
   // A phone's step drawer: opened by a pick, an add or a refusal, never by the first selection.
   const [stepOpen, setStepOpen] = useState(false);
+  // The step a Move Up or Move Down just moved: its ⋯ takes focus once it is drawn in its new place.
+  const [moved, setMoved] = useState<RulePart | null>(null);
   const [fault, setFault] = useState<Fault | null>(null);
   const [saving, setSaving] = useState(false);
   const [toggling, setToggling] = useState(false);
@@ -195,8 +197,13 @@ export function RuleBuilder({
     edit: (part, edit) => {
       const next = editPart(body, part, edit);
       change(next.body, next.part);
-      // A move keeps the steps in sight (a phone's drawer stays closed); a duplicate is an added step, and opens.
-      if (edit === 'up' || edit === 'down') setStepOpen(false);
+      // A move keeps the steps in sight (a phone's drawer stays closed), focus on the moved step's ⋯ (the cards are
+      // drawn by position, so the menu's own focus return lands on whichever step took its place); a duplicate is an
+      // added step, and opens.
+      if (edit === 'up' || edit === 'down') {
+        setStepOpen(false);
+        setMoved(next.part);
+      }
     },
     addCondition: (kind, ifStep) => {
       const next = addCondition(body, defaultCondition(kind, outline), ifStep);
@@ -302,6 +309,8 @@ export function RuleBuilder({
         fault={stepFault && fault ? { part: stepFault, message: fault.message } : null}
         actions={actions}
         picks={pickMarks}
+        moved={moved}
+        onMovedFocused={() => setMoved(null)}
       />
       <RuleDetails chain={body.chain} onChain={(chain) => change({ ...body, chain })} />
     </div>
@@ -379,6 +388,8 @@ export function RuleBuilder({
                   fault={stepFault && fault ? { part: stepFault, message: fault.message } : null}
                   actions={actions}
                   picks={pickMarks}
+                  moved={moved}
+                  onMovedFocused={() => setMoved(null)}
                 />
               </div>
               <PhoneRuleFoot
