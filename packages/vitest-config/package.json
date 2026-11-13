@@ -25,6 +25,10 @@
     "./sent-request": {
       "types": "./sent-request.d.ts",
       "default": "./sent-request.js"
+    },
+    "./axe": {
+      "types": "./axe.d.ts",
+      "default": "./axe.js"
     }
   },
   "scripts": {
@@ -42,5 +46,8 @@
   },
   "devDependencies": {
     "vitest": "^5.1.0"
+  },
+  "dependencies": {
+    "axe-core": "4.10.3"
   }
 }

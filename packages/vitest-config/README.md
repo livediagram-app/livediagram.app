@@ -62,3 +62,6 @@ shard adds `--shard=n/3`).
   inline `<script>`'s source as a browser would, against stub globals.
 - `@liveworkspace/vitest-config/sent-request`: `sentJson`, `sentText`, `sentForm` and `sentUrl`,
   which read what a stubbed `fetch` was sent.
+- `@liveworkspace/vitest-config/axe`: `axeViolations(options?)`, axe-core over the rendered document in jsdom, as
+  `rule: target` strings (empty when clean). It leaves out colour contrast and the whole-page rules a component test
+  cannot meet; render the component inside a `<main>` so the "region" rule judges only what the component portals.
