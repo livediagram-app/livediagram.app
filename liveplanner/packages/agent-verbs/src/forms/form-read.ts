@@ -23,6 +23,7 @@ import {
   type FormQuestion,
 } from '@liveplanner/forms';
 import type { ItemTypeDef } from '@liveplanner/items';
+import { readFixedOf, type ReadExtraColumn, type ReadFixedField } from './form-fixed';
 import type { BoardRef, SheetRef } from './form-world';
 
 export type FormState = 'not_published' | 'accepting' | 'closed' | 'paused' | 'suspended';
@@ -68,6 +69,9 @@ export interface FormReading {
     questions: ReadQuestion[];
   }[];
   cover?: FormDefinition['cover'];
+  // Board forms: the card fields every response's card gets without a question. Sheet forms: the extra columns.
+  setAutomatically?: ReadFixedField[];
+  extraColumns?: ReadExtraColumn[];
   settings: { closesAt?: string; limit?: number; confirmation: string; closedMessage: string };
   problems: string[];
 }
@@ -152,6 +156,8 @@ export function readFormOf(input: {
       }
       if ('sectionId' in p)
         return `${text} (section ${form.sections.findIndex((s) => s.id === p.sectionId) + 1})`;
+      // A broken set value names its field's id, which set_field takes to clear it.
+      if (p.kind === 'broken_fixed') return `${text} (${p.fieldId})`;
       return text;
     }),
   ];
@@ -187,6 +193,7 @@ export function readFormOf(input: {
       };
     }),
     ...(form.cover ? { cover: form.cover } : {}),
+    ...readFixedOf(form, type),
     settings: {
       ...(form.closesAt !== undefined ? { closesAt: new Date(form.closesAt).toISOString() } : {}),
       ...(form.limit !== undefined ? { limit: form.limit } : {}),

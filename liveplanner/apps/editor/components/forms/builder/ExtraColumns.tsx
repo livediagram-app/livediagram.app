@@ -80,9 +80,10 @@ export function ExtraColumns() {
                 removeLabel={`Remove ${c.header}`}
                 disabled={!b.canEdit}
               >
+                {/* Wider on a phone, whose 16 px field text needs the room for "Submitted Date". */}
                 <div className="flex items-center gap-2">
                   <Select
-                    className="w-36 shrink-0"
+                    className="w-36 shrink-0 max-sm:w-44"
                     selectClassName="text-[13px]"
                     aria-label={`${c.header}: what it holds`}
                     value={kind}

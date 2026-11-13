@@ -130,7 +130,9 @@ add_form makes one (from a starter or questions, in a plan of its own when
 no projectId is given), change_form changes it, read_form reads it with its
 link, state and anything stopping it being published, share_form publishes,
 closes or deletes its link, and try_form fills it in as a test response. Asked for a form, survey, sign-up or RSVP, make a
-form; its responses are read with list_items (cards) or read_sheet (rows).`;
+form; its responses are read with list_items (cards) or read_sheet (rows). A form can also set card fields every
+response's card gets without a question (set_field, setAutomatically) and give a sheet's rows extra columns
+(add_column, extraColumns); read_form shows both.`;
 
 // --- Tool input shapes (ZodRawShape). Element arrays are permissive; isValidTab
 // is the real guard, so there's no second schema to drift. ---

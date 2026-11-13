@@ -127,6 +127,96 @@ describe('setDestinationType', () => {
   });
 });
 
+describe('setDestinationBoard', () => {
+  const other: Tab = { ...board, id: 'b2', name: 'Other' };
+  const sheetTab: Tab = { id: 's', name: 'Sheet', kind: 'sheet', elements: [] };
+
+  it('takes the board’s first type, its first column that type uses, then the questions as a step of its own', () => {
+    const { actions, form, commits } = actionsOn([
+      formTab({ destination: undefined }),
+      {
+        ...board,
+        elements: [
+          { ...createShape('plan-board', 0, 0), planBoard: { ...setup, addTypes: ['work'] } },
+        ],
+      },
+    ]);
+    actions.setDestinationBoard('b');
+    expect(commits).toHaveLength(2);
+    // The first step chooses the board alone, so Undo takes the questions back and leaves it chosen.
+    const first = readForm(commits[0]!.find((t) => t.id === 'f')!.form)!;
+    expect(first.destination).toEqual({ tabId: 'b', typeId: 'work', status: 'review' });
+    expect(questionsOf(first)).toEqual([]);
+    expect(questionsOf(form()).map((q) => q.prompt)).toEqual(['Title', 'Description', 'Severity']);
+  });
+
+  it('keeps the type and its set values while the board takes it', () => {
+    const { actions, form } = actionsOn([formTab({}), board, other]);
+    actions.setDestinationBoard('b2');
+    expect(form().destination).toMatchObject({
+      tabId: 'b2',
+      typeId: 'bug',
+      status: 'new',
+      fixed: { 'f-sev': { value: 'High' } },
+    });
+    // Severity is set automatically, so no question asks it.
+    expect(questionsOf(form()).map((q) => q.prompt)).toEqual(['Title', 'Description']);
+  });
+
+  it('drops set values when the type changes with the board', () => {
+    const onlyWork: Tab = {
+      ...other,
+      elements: [
+        { ...createShape('plan-board', 0, 0), planBoard: { ...setup, addTypes: ['work'] } },
+      ],
+    };
+    const { actions, form } = actionsOn([formTab({}), board, onlyWork]);
+    actions.setDestinationBoard('b2');
+    expect(form().destination).toEqual(
+      expect.objectContaining({ tabId: 'b2', typeId: 'work', status: 'review' }),
+    );
+    expect(form().destination).not.toHaveProperty('fixed');
+  });
+
+  it('never adds to a form that has questions', () => {
+    const q = { id: 'q-1', type: 'short' as const, prompt: 'Name' };
+    const { actions, form, commits } = actionsOn([
+      formTab({ sections: [{ id: 's-1', title: '', questions: [q] }] }),
+      board,
+      other,
+    ]);
+    actions.setDestinationBoard('b2');
+    expect(commits).toHaveLength(1);
+    expect(questionsOf(form())).toEqual([q]);
+  });
+
+  it('adds no questions when the board takes no type', () => {
+    const { actions, form, commits } = actionsOn([
+      formTab({ destination: undefined }),
+      {
+        ...board,
+        elements: [{ ...createShape('plan-board', 0, 0), planBoard: { ...setup, addTypes: [] } }],
+      },
+    ]);
+    actions.setDestinationBoard('b');
+    // One step (the board), and no questions: there is no type to ask about.
+    expect(commits).toHaveLength(1);
+    expect(questionsOf(form())).toEqual([]);
+  });
+
+  it('ignores a tab that is no board, or holds none', () => {
+    const { actions, commits } = actionsOn([
+      formTab({}),
+      sheetTab,
+      { ...other, id: 'empty', elements: [] },
+    ]);
+    actions.setDestinationBoard('s');
+    actions.setDestinationBoard('empty');
+    actions.setDestinationBoard('missing');
+    expect(commits).toHaveLength(0);
+  });
+});
+
 describe('addTypeQuestions', () => {
   it('adds the unasked fields in one step', () => {
     const { actions, form, commits } = actionsOn([formTab({}), board]);

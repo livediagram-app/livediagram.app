@@ -156,6 +156,83 @@ describe('addForm', () => {
   });
 });
 
+describe('addForm’s values filled in automatically', () => {
+  it('sets card fields on a board form and extra columns on a sheet form, after the questions', async () => {
+    const { client } = api();
+    const board = await addForm(
+      client,
+      {
+        projectId: 'doc',
+        name: 'Intake',
+        questions: [{ type: 'short', prompt: 'Summary', goesTo: 'Title' }],
+        respondsTo: { to: 'board', board: 'Bugs' },
+        setAutomatically: [
+          { field: 'Severity', value: 'high' },
+          { field: 'Due Date', submitted: { days: 7 } },
+        ],
+      },
+      'mcp',
+    );
+    expect(board.ok && board.reading.setAutomatically).toEqual([
+      { field: 'Due Date', fieldId: 'due', submitted: { days: 7 } },
+      { field: 'Severity', fieldId: 'f-severity', value: 'High' },
+    ]);
+    const sheet = await addForm(
+      client,
+      {
+        projectId: 'doc',
+        name: 'Survey',
+        questions: [{ type: 'short', prompt: 'Name' }],
+        respondsTo: { to: 'sheet', sheet: 'Budget' },
+        extraColumns: [{ header: 'Source', value: 'Web' }, { header: 'Filed' }],
+      },
+      'mcp',
+    );
+    expect(
+      sheet.ok && sheet.reading.extraColumns?.map((c) => [c.column, c.value ?? c.submitted]),
+    ).toEqual([
+      ['Source', 'Web'],
+      ['Filed', { days: 0 }],
+    ]);
+  });
+
+  it('names the entry it refuses, and makes nothing', async () => {
+    const { client, writes } = api();
+    const r = await addForm(
+      client,
+      {
+        projectId: 'doc',
+        questions: [{ type: 'short', prompt: 'Name' }],
+        respondsTo: { to: 'board', board: 'Bugs' },
+        setAutomatically: [
+          { field: 'Severity', value: 'Low' },
+          { field: 'Nope', value: 'x' },
+        ],
+      },
+      'mcp',
+    );
+    expect(r).toMatchObject({
+      ok: false,
+      code: 'field_not_settable',
+      message: expect.stringMatching(/^setAutomatically 2: .* Nothing was made\.$/),
+    });
+    const cols = await addForm(
+      client,
+      {
+        projectId: 'doc',
+        questions: [{ type: 'short', prompt: 'Name' }],
+        extraColumns: [{ header: 'A' }],
+      },
+      'mcp',
+    );
+    expect(cols).toMatchObject({
+      code: 'columns_on_board',
+      message: expect.stringMatching(/^extraColumns 1: /),
+    });
+    expect(writes).toEqual([]);
+  });
+});
+
 describe('changeForm', () => {
   it('writes the form through its route at the revision read', async () => {
     const { client, writes } = api();

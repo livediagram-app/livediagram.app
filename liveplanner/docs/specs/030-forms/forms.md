@@ -231,8 +231,9 @@ The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a 
   status its type leaves out and misses the type's own boards. A legacy type (one stored before its list) uses every
   status but those it left out, so it keeps offering every column. Choosing a board, or a card type, keeps the
   column while the type uses it and otherwise takes the board's first column the type uses. When none of the board's
-  columns is one the type uses, Column says so ("None of {Board}'s columns is a {Type} state. Add one to the board, or
-  choose another board.") and **Problems with this Form** lists it.
+  columns is one the type uses, Column offers no chips and the box under it says so, once ("None of {Board}'s columns
+  is a {Type} state. Add one to the board, or choose another board."; no second line beside the empty chips), and
+  **Problems with this Form** lists it.
   - **+ New Board** for a type with its own statuses makes the responses board from them: one column per status, in
     the type's order, each named (and coloured) as the project's boards name it, the board taking that type alone. A
     type without its own list (a legacy one) gets New, In Progress and Done, as before.
@@ -243,8 +244,11 @@ The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a 
     checks it.
 - **Questions from the card type's fields**: picking a card type under **Card Type** while the form has no questions
   adds one question per field a respondent can fill, in the type's field order, each already mapped to its field, as
-  one undo step of its own (Undo takes the questions away and leaves the type chosen). The fields and the questions
-  they become:
+  one undo step of its own (Undo takes the questions away and leaves the type chosen). Choosing a board under
+  **Board** while the form has no questions does the same for the card type it picks (the one kept, or the board's
+  first), so a board picked first gets questions as a type picked does; Undo takes the questions away and leaves the
+  board chosen. A form with questions never gains any from a board or type pick. The fields and the questions they
+  become:
 
   | Field               | Question                                             |
   | ------------------- | ---------------------------------------------------- |
@@ -694,6 +698,11 @@ board settings, for switching back.
   (plus 0 to 365 days, read as a board's is, in the zone of the browser that set it, else UTC; written YYYY-MM-DD).
   They take their columns after the questions', remembered by column (`columns`, the extra column's id) as a
   question's are. The api writes them into the row it plans, never the respondent's browser.
+- **A removed column keeps its data**: an extra column removed from the form, like a deleted question, leaves its
+  column in the sheet as it is, its header and every value earlier rows hold. The form forgets the column (it drops
+  from `columns`), so later rows leave it empty; the form never deletes a sheet's column or anything people's
+  responses wrote. An extra column added again under the same header finds that column by its header, as a question
+  with no remembered column does.
 
 ## Hearing about responses
 
@@ -810,7 +819,10 @@ with the ones there are. Question types go by their ids (`short`, `paragraph`, `
   where responses go (the board, card type and column, or the sheet, by name; or nowhere, and why), its settings
   (Close On as an ISO time, the limit, the two messages), its **state** (`draft` for a project kept on a device,
   `not_published`, `accepting`, `closed` with why, `paused`, `suspended`), the response count, the **form link**
-  (an Editor's only, as the api hands out the code) and its **problems** in Share Form's words. With `image`, a
+  (an Editor's only, as the api hands out the code) and its **problems** in Share Form's words. A board form lists
+  its **setAutomatically** fields (`{ field, fieldId, value? | submitted?, broken? }`, `broken` when the value no
+  longer resolves, the problem `broken_fixed` naming the field and its id), a sheet form its **extraColumns**
+  (`{ id, header, column, value? | submitted? }`, `column` the header as written in the sheet). With `image`, a
   picture of the form as respondents see it on its tab's look.
 - **`add_form`** (write): a new Form tab after the project's last tab, from a **starter** (`bug-report`, `feedback`,
   `feature-request`, `rsvp`, `job-application`, `contact`; everything Start Planning makes with it) or from
@@ -833,6 +845,10 @@ with the ones there are. Question types go by their ids (`short`, `paragraph`, `
     choice field; a new choice or rating field is drawn on the card face, as a starter's are. A first section's
     description given to `add_form` is the form's description, and a title given it is said not to show. A Close On
     time with no offset is UTC. Each problem `read_form` lists names its question or section.
+    **Set Automatically** and **Extra Columns** come with it: `setAutomatically` (board forms) is a list of
+    `{ field, value? | submitted? }`, each a `set_field` change, and `extraColumns` (sheet forms) a list of
+    `{ header, value? | submitted? }`, each an `add_column` change, applied after the questions and where responses
+    go; a refusal names its entry (`setAutomatically 2: ...`) and nothing is made.
     `read_form`'s picture flows a long form into a second column, a section heading never ending a column without its
     first question, and says how many questions it could not fit.
 - **`change_form`** (destructive, as it deletes): up to 50 changes in order, applied as one write and one undo step
@@ -842,11 +858,29 @@ with the ones there are. Question types go by their ids (`short`, `paragraph`, `
   as Add Section does; else an empty section at the end), `set_section` `{ section, title?, description?,
 showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the section before), `set_form`
   `{ heading?, description?, cover?, theme? }` (the theme is the Form tab's, which the form's look follows), `settings` `{ closesAt?, limit?, confirmation?, closedMessage? }` (null
-  clears one) and `responds_to` (as `add_form`'s). Each is checked as the builder checks it (limits, unique options,
+  clears one), `responds_to` (as `add_form`'s), and the values filled in automatically:
+  - `set_field` `{ field, value?, submitted? }` (board forms, [Set Automatically](#responses-go-to-and-settings)):
+    the card field by name (or id) gets `value` on every response's card (a Choice field's option, Multiple Choice
+    options, labels as a list or a comma-separated text, text up to 500 characters, a number, a priority: urgent,
+    high, medium or low), or a Date field (Start, Due, a custom Date) `submitted: { days?, timeZone? }` (the
+    submitted day plus 0 to 365 days, read in the IANA `timeZone` given, else UTC). `value: null` stops setting it
+    (a field since removed from the type is named by its id). Refused: a field that takes no set value (with the ones
+    that do), a field a question's answer goes to (one source per field), a value of the wrong kind or an option the
+    field lacks (with its options), a sheet form (`fixed_on_sheet`: use `add_column`), more than 20 fields. A
+    question's `goesTo` is refused for a field set automatically.
+  - `add_column` `{ header, value?, submitted? }`, `set_column` `{ column, header?, value?, submitted? }` and
+    `delete_column` `{ column }` (sheet forms, [Extra Columns](#responses-to-a-sheet)): a column by its id or header;
+    its value a text (up to 500), a number, or `submitted` as above (the default for a new column, as Add Column
+    makes it). Up to 10; a board form is refused (`columns_on_board`: use `set_field`). Deleting one leaves its column
+    and values in the sheet, as the builder does.
+
+  Older agents that send none of these are untouched: every field is optional and a form's set values and extra
+  columns stay as they are. Each is checked as the builder checks it (limits, unique options,
   a mapping that fits, a rule on an earlier choice), and a refusal writes nothing and names the change. A sheet
   form's sheet gains a header for each question it lacks one for, after its last header (bold, its width fitted), as a response would
   write it; it is read for this only when the form now asks for a header it did not. `read_form` names each
   question's sheet column (`column`) on a sheet form.
+
 - **`share_form`** (write): `publish` (makes the form link; on a closed form, opens it again), `close`, or
   `delete_link`. A form its own Settings close (past its Close On, or at its Response Limit) stays closed after a
   publish, so the answer says so and names the setting to change with `change_form` (`closesAt`, `limit`), never
