@@ -118,6 +118,19 @@ describe('Field', () => {
     );
   });
 
+  it('names a priority by its label, as the rule sentence does', () => {
+    expect(
+      holds({ kind: 'field', field: 'priority', op: 'is', value: 'high' }, ctx({ priority: 'medium' }))
+        .text,
+    ).toBe('Priority is High (Medium)');
+    expect(
+      holds(
+        { kind: 'field', field: 'priority', op: 'is', value: ['urgent', 'low'] },
+        ctx({ priority: 'low' }),
+      ).text,
+    ).toBe('Priority is Urgent, Low (Low)');
+  });
+
   it('compares empty and not empty, a false flag as empty', () => {
     expect(holds({ kind: 'field', field: 'due', op: 'empty' }, ctx()).text).toBe(
       'Deadline is empty (empty)',

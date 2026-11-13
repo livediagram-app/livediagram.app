@@ -10,6 +10,7 @@ import { resolveSavedFilter } from '../saved-filters';
 import { dayNumber } from '../plan-view-dates';
 import { zonedDay } from '../date-time-fields';
 import { isEmptyFieldValue } from '../required-fields';
+import { isPriority, PRIORITY_LABELS } from '../fields';
 import { typeIn } from '../type-catalogue';
 import type {
   AutomationCondition,
@@ -82,11 +83,13 @@ export function automationDayWords(day: AutomationDay): string {
   return `Today ${day.today > 0 ? '+' : '-'} ${n} day${n === 1 ? '' : 's'}`;
 }
 
-// A condition's value as words.
-function valueWords(value: FieldValue): string {
+// A condition's value as words, a priority by its label as the rule's sentence reads it ("Priority is High").
+function valueWords(field: string, value: FieldValue): string {
   if (value === undefined) return '';
   if (typeof value === 'object' && !Array.isArray(value)) return automationDayWords(value);
-  return Array.isArray(value) ? value.join(', ') : String(value);
+  const word = (v: string | number) =>
+    field === 'priority' && typeof v === 'string' && isPriority(v) ? PRIORITY_LABELS[v] : String(v);
+  return Array.isArray(value) ? value.map(word).join(', ') : word(value);
 }
 
 // The strings a value matches against, lowercased: a person by id and name, a list by each entry.
@@ -215,7 +218,7 @@ export function holds(c: AutomationCondition, ctx: ConditionContext): ConditionL
     case 'field': {
       const type = typeIn(o.types, card.type);
       const name = fieldName(o, c.field, type);
-      const value = valueWords(c.value);
+      const value = valueWords(c.field, c.value);
       const words = `${name} ${FIELD_OP_WORDS[c.op]}${value ? ` ${value}` : ''}`;
       if (!planHasField(o, c.field)) return goneLine(words, { kind: 'field', id: c.field });
       if (!typeHasField(type, c.field))
