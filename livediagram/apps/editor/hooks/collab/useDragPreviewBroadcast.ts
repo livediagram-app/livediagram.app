@@ -5,7 +5,8 @@
 // presence, at most every DRAG_PREVIEW_SEND_MS, then an end message. A gesture changing more than
 // DRAG_PREVIEW_MAX_ELEMENTS elements sends the one offset most of them ride instead (a ride), with the ids
 // riding it now and then; one whose other elements are still too many sends nothing, and collaborators see it
-// on release.
+// on release. A preview held still is sent again every DRAG_PREVIEW_RIDE_IDS_MS, so it outlives a collaborator's
+// PEER_PREVIEW_EXPIRY_MS (D130).
 
 import { useEffect, useEffectEvent, type RefObject } from 'react';
 import { elementIndexFor, isBoxed, type Element } from '@livediagram/document';
@@ -30,7 +31,8 @@ import { ridingElements, type RideOffset } from '@liveworkspace/workbench/lib/dr
 // The cursor's rate (docs/specs/015-api/api.md).
 export const DRAG_PREVIEW_SEND_MS = 33;
 // docs/specs/008-canvas/blueprints/DEFAULTS.md D128: how often a ride names its ids again though they have not
-// changed, so a collaborator who joins mid-gesture, or missed the first message, sees the move within it.
+// changed, so a collaborator who joins mid-gesture, or missed the first message, sees the move within it. Also how
+// often a preview held still is sent again (D130).
 export const DRAG_PREVIEW_RIDE_IDS_MS = 1000;
 
 // The ride for a very large move: the offset most changed elements ride from where the gesture found them, the
@@ -89,6 +91,12 @@ export function useDragPreviewBroadcast(deps: {
     let sentTab: string | null = null;
     let lastSent = 0;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    // Sends the latest preview again while the dragger holds still (D130).
+    let hold: ReturnType<typeof setTimeout> | null = null;
+    const stopHold = () => {
+      if (hold) clearTimeout(hold);
+      hold = null;
+    };
     // The ids the last ride named, and when.
     let rideIds: ReadonlySet<string> | null = null;
     let rideIdsAt = 0;
@@ -131,15 +139,22 @@ export function useDragPreviewBroadcast(deps: {
           patches: [...overlay.changed.values()].map(patchOf),
         };
       }
+      stopHold();
       if (!op) return;
       sentTab = overlay.tabId;
       send(op);
+      hold = setTimeout(() => {
+        hold = null;
+        const latest = localPreview();
+        if (latest && latest.tabId === activeId && !timer) sendNow(latest);
+      }, DRAG_PREVIEW_RIDE_IDS_MS);
     };
     const onChange = () => {
       const overlay = localPreview();
       if (!overlay || overlay.tabId !== activeId) {
         if (timer) clearTimeout(timer);
         timer = null;
+        stopHold();
         rideIds = null;
         if (sentTab)
           send({
@@ -165,6 +180,7 @@ export function useDragPreviewBroadcast(deps: {
     return () => {
       unsubscribe();
       if (timer) clearTimeout(timer);
+      stopHold();
       if (sentTab) send({ kind: 'drag-preview', tabId: sentTab, end: true });
     };
   }, [live, activeId]);

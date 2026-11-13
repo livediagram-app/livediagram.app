@@ -291,8 +291,12 @@ for (const n of [62, 300]) {
     for (let i = 1; i <= 15; i++)
       await ownerPage.mouse.move(r.x + r.width / 2 + i * 10, r.y + r.height / 2);
 
+    // The owner now holds still. Their preview is sent again every second while held, so it never expires on the
+    // collaborator's screen, and the collaborator draws only the latest message each frame (D130): what is left is
+    // the peer's first Isometric frame of 300 boxes, measured at about 0.7 s at 20x CPU throttle, so the suite's default
+    // wait leaves room on a loaded runner.
     await expect
-      .poll(async () => (await topAndSides(peerPage, HELD)).top, { timeout: 5_000 })
+      .poll(async () => (await topAndSides(peerPage, HELD)).top)
       .toBeGreaterThan(start.top + 20);
     const mid = await topAndSides(peerPage, HELD);
     expect(mid.sides).toBeCloseTo(mid.top, 2);

@@ -37,8 +37,31 @@ let merged = new Map<string, WeakMap<readonly Element[], DragOverlay | null>>();
 const listeners = createListeners();
 
 function changedNow(): void {
+  if (peerFrame !== null) cancelFrame(peerFrame);
+  peerFrame = null;
   merged = new Map();
   listeners.notify();
+}
+
+// A collaborator's message is recorded at once but drawn on the next frame, once for all that arrived before it
+// (docs/specs/008-canvas/drag-preview.md "A collaborator draws a peer's preview the same way", D130): a device too
+// slow to draw each one skips to the latest instead of replaying every step. A local change or a clear tells
+// subscribers at once, and takes any frame still due with it.
+let peerFrame: number | null = null;
+const nextFrame = (fn: () => void): number =>
+  typeof requestAnimationFrame === 'function'
+    ? requestAnimationFrame(fn)
+    : (setTimeout(fn, 16) as unknown as number);
+const cancelFrame = (id: number): void => {
+  if (typeof cancelAnimationFrame === 'function') cancelAnimationFrame(id);
+  else clearTimeout(id);
+};
+function peerChangedSoon(): void {
+  merged = new Map();
+  peerFrame ??= nextFrame(() => {
+    peerFrame = null;
+    listeners.notify();
+  });
 }
 
 // The overlay that turns `doc` into `next`, by identity: one linear pass per tick. `doc` is the board the gesture
@@ -118,7 +141,7 @@ export function setPeerPreview(
     patches,
     ride: ride && ids ? { dx: ride.dx, dy: ride.dy, ids } : null,
   });
-  changedNow();
+  peerChangedSoon();
 }
 
 // An element moved by a ride's offset: a box's position, an arrow's free ends (its pinned ends follow their boxes).

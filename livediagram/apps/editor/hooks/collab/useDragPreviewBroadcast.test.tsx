@@ -63,6 +63,29 @@ describe('useDragPreviewBroadcast', () => {
     expect(ops(sent).at(-1)).toEqual({ kind: 'drag-preview', tabId: 't', end: true });
   });
 
+  it('sends a preview held still again every second, until it ends (D130)', () => {
+    const sent = setup();
+    act(() => setLocalPreview('t', [{ ...a, x: 10 }, b, ab], doc));
+    expect(sent).toHaveLength(1);
+    act(() => {
+      vi.advanceTimersByTime(DRAG_PREVIEW_RIDE_IDS_MS - 1);
+    });
+    expect(sent).toHaveLength(1);
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(ops(sent)).toEqual([ops(sent)[0], ops(sent)[0]]);
+    act(() => {
+      vi.advanceTimersByTime(DRAG_PREVIEW_RIDE_IDS_MS);
+    });
+    expect(sent).toHaveLength(3);
+    act(() => clearLocalPreview());
+    act(() => {
+      vi.advanceTimersByTime(DRAG_PREVIEW_RIDE_IDS_MS * 3);
+    });
+    expect(ops(sent).slice(3)).toEqual([{ kind: 'drag-preview', tabId: 't', end: true }]);
+  });
+
   it("sends an arrow's geometry only", () => {
     const sent = setup();
     const bent = { ...ab, curveOffset: { dx: 0, dy: 30 }, label: 'not sent' };
@@ -158,6 +181,21 @@ describe('a very large move', () => {
       vi.advanceTimersByTime(DRAG_PREVIEW_SEND_MS);
     });
     act(() => setLocalPreview('t', moved(1, 1), board));
+    expect(rideOf(ops(sent).at(-1)).ids).toHaveLength(N + 1);
+  });
+
+  it('names the ids when it sends a ride held still again', () => {
+    const sent = setup();
+    act(() => setLocalPreview('t', moved(5, 3), board));
+    act(() => {
+      vi.advanceTimersByTime(DRAG_PREVIEW_SEND_MS);
+    });
+    act(() => setLocalPreview('t', moved(6, 3), board));
+    expect(rideOf(ops(sent).at(-1)).ids).toBeUndefined();
+    act(() => {
+      vi.advanceTimersByTime(DRAG_PREVIEW_RIDE_IDS_MS);
+    });
+    expect(rideOf(ops(sent).at(-1))).toMatchObject({ dx: 6, dy: 3 });
     expect(rideOf(ops(sent).at(-1)).ids).toHaveLength(N + 1);
   });
 
