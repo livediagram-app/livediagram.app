@@ -555,7 +555,7 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
       Risk), starting on Medium.
     - Tracker import (`tracker-type.ts`, `tracker-plan.ts`): a plan's Risk field takes an import's Choice or Text
       extra of the same name, each value through `riskOf`, and a value naming no level is left off the card.
-    - Automations' Set Value (`automation/set-value.ts`): a `risk` field takes text naming a level (`riskOf`), any
+    - Automations' Set Value (`packages/items/src/automation/set-value.ts`): a `risk` field takes text naming a level (`riskOf`), any
       other is refused `{Field} has no "{text}"`, as a Priority's is.
     - `canBeRequired('risk')` is true, and an empty Risk is no level.
     - The editor's exhaustive kind maps take the new kinds: `BoardSortOptions` `SORT_KIND_GLYPHS.risk` and
