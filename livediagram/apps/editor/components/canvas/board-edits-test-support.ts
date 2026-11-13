@@ -60,7 +60,7 @@ export function edit(els: Element[], rand: () => number, step: number): Element[
     // The mind map: a node moved, or the root's flow switched (every connector in it reroutes).
     if (rand() < 0.5) {
       const id = `m-${Math.floor(rand() * 3)}`;
-      return els.map((e) => (e.id === id && isBoxed(e) ? ({ ...e, y: e.y + 140 } as Element) : e));
+      return els.map((e) => (e.id === id && isBoxed(e) ? { ...e, y: e.y + 140 } : e));
     }
     return els.map((e) =>
       e.id === 'm-root'
@@ -79,15 +79,13 @@ export function edit(els: Element[], rand: () => number, step: number): Element[
     const moved = new Set([pick(boxes).id, ...(rand() < 0.3 ? [pick(boxes).id] : [])]);
     return els.map((e) =>
       moved.has(e.id) && isBoxed(e)
-        ? ({ ...e, x: e.x + (rand() - 0.5) * 600, y: e.y + (rand() - 0.5) * 600 } as Element)
+        ? { ...e, x: e.x + (rand() - 0.5) * 600, y: e.y + (rand() - 0.5) * 600 }
         : e,
     );
   }
   if (kind < 0.6) {
     const id = pick(boxes).id;
-    return els.map((e) =>
-      e.id === id && isBoxed(e) ? ({ ...e, width: e.width * 1.8 } as Element) : e,
-    );
+    return els.map((e) => (e.id === id && isBoxed(e) ? { ...e, width: e.width * 1.8 } : e));
   }
   if (kind < 0.7)
     return [...els, { ...createShape('square', rand() * 3000, rand() * 2000), id: `new-${step}` }];
@@ -133,6 +131,6 @@ export function edit(els: Element[], rand: () => number, step: number): Element[
 
 // The reference board with a mind map beside it.
 export const editBoard = (seed: number, size: number): Element[] => [
-  ...(buildReferenceBoard(seed, size) as Element[]),
+  ...buildReferenceBoard(seed, size),
   ...mindMap(),
 ];

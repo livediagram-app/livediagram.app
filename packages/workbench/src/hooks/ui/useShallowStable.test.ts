@@ -6,8 +6,8 @@ import { useShallowStable } from './useShallowStable';
 describe('useShallowStable', () => {
   it('keeps the object while every field is the same, and takes a new one when a field changes or comes or goes', () => {
     const f = () => 1;
-    const { result, rerender } = renderHook((v: object) => useShallowStable(v), {
-      initialProps: { a: 1, f } as object,
+    const { result, rerender } = renderHook<object, object>((v) => useShallowStable(v), {
+      initialProps: { a: 1, f },
     });
     const first = result.current;
     rerender({ a: 1, f });

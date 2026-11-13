@@ -115,7 +115,7 @@ describe('createArrowGeometryCache', () => {
     expect(run(added).derived).toEqual(['a2', 'a4', 'a9']);
     expect(run(els).derived).toEqual(['a2', 'a4']);
     // An arrow with a free end changed: just its pinned end's fan.
-    const loose = [...els, arrow('a8', { kind: 'free' } as DragArrowEnd, pin('A'))];
+    const loose = [...els, arrow('a8', { kind: 'free' }, pin('A'))];
     run(loose);
     expect(run(loose.map((e) => (e.id === 'a8' ? { ...e } : e))).derived).toEqual(['a1', 'a8']);
   });
@@ -138,8 +138,8 @@ describe('createArrowGeometryCache', () => {
     const els: El[] = [
       ...board().filter((e) => e.id !== 'a4'),
       arrow('a4', pin('F'), pin('G'), true),
-      arrow('a5', { kind: 'on-arrow', arrowId: 'a3' } as DragArrowEnd, pin('E')),
-      arrow('a6', { kind: 'free' } as DragArrowEnd, pin('E')),
+      arrow('a5', { kind: 'on-arrow', arrowId: 'a3' }, pin('E')),
+      arrow('a6', { kind: 'free' }, pin('E')),
     ];
     run(els);
     // Nothing near them changes, yet a4 (structural), a5 (rides a3), a3 and a6 (share E with a5) are derived again.

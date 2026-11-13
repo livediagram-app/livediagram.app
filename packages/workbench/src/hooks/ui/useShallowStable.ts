@@ -8,10 +8,11 @@
 import { useState } from 'react';
 
 export function useShallowStable<T extends object>(value: T): T {
-  const [held] = useState<{ last: T | null }>(() => ({ last: null }));
-  const last = held.last;
+  // The last object handed out, in a holder kept for the component's life (a render-time memo, like useMemo's).
+  const [held] = useState(() => new Map<'last', T>());
+  const last = held.get('last');
   if (last && sameFields(last, value)) return last;
-  held.last = value;
+  held.set('last', value);
   return value;
 }
 

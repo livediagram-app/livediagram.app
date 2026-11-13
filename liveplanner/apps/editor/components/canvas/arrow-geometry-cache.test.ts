@@ -58,7 +58,7 @@ describe('arrowGeometryCache', () => {
 
   it('derives every arrow afresh for a new key', () => {
     const cache = arrowGeometryCache();
-    const els = buildReferenceBoard(3, 120) as Element[];
+    const els = buildReferenceBoard(3, 120);
     const a = cache.geometryFor(els, 'flexible', fresh(els, 'flexible'));
     const b = cache.geometryFor(els, 'sketch', fresh(els, 'sketch'));
     const id = [...a.keys()][0]!;

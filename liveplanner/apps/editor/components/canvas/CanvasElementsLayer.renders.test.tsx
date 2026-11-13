@@ -217,7 +217,7 @@ describe('element views render only for their own changes', () => {
       { id: 'on', name: 'On' },
       { id: 'off', name: 'Off', visible: false },
     ];
-    const board = BOARD.map((el) => (el.id === b.id ? { ...el, layerId: 'off' } : el)) as Element[];
+    const board = BOARD.map((el) => (el.id === b.id ? { ...el, layerId: 'off' } : el));
     const { rerender } = mount(layerProps({ elements: board, tabLayers: layers }));
     const moved = board.map((el) => (el.id === b.id ? { ...el, y: 300 } : el)) as Element[];
     rerender(<CanvasElementsLayer {...layerProps({ elements: moved, tabLayers: layers })} />);

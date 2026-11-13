@@ -65,14 +65,12 @@ export function edit(els: Element[], rand: () => number, step: number): Element[
     if (rand() < 0.5)
       return els.map((e) =>
         e.id === 'pg-card' && isBoxed(e)
-          ? ({ ...e, x: e.x === p1!.rect.x + 20 ? p1!.rect.x + 400 : p1!.rect.x + 20 } as Element)
+          ? { ...e, x: e.x === p1!.rect.x + 20 ? p1!.rect.x + 400 : p1!.rect.x + 20 }
           : e,
       );
     const page = [p1, p2, p3][Math.floor(rand() * 3)]!;
     return els.map((e) =>
-      e.id === 'pg-box' && isBoxed(e)
-        ? ({ ...e, x: page.rect.x + 120, y: page.rect.y + 400 } as Element)
-        : e,
+      e.id === 'pg-box' && isBoxed(e) ? { ...e, x: page.rect.x + 120, y: page.rect.y + 400 } : e,
     );
   }
   const boxes = els.filter((e) => isBoxed(e) && e.type !== 'freehand' && !e.id.startsWith('pg-'));
@@ -83,15 +81,13 @@ export function edit(els: Element[], rand: () => number, step: number): Element[
     const moved = new Set([pick(boxes).id, ...(rand() < 0.3 ? [pick(boxes).id] : [])]);
     return els.map((e) =>
       moved.has(e.id) && isBoxed(e)
-        ? ({ ...e, x: e.x + (rand() - 0.5) * 600, y: e.y + (rand() - 0.5) * 600 } as Element)
+        ? { ...e, x: e.x + (rand() - 0.5) * 600, y: e.y + (rand() - 0.5) * 600 }
         : e,
     );
   }
   if (kind < 0.6) {
     const id = pick(boxes).id;
-    return els.map((e) =>
-      e.id === id && isBoxed(e) ? ({ ...e, width: e.width * 1.8 } as Element) : e,
-    );
+    return els.map((e) => (e.id === id && isBoxed(e) ? { ...e, width: e.width * 1.8 } : e));
   }
   if (kind < 0.7)
     return [...els, { ...createShape('square', rand() * 3000, rand() * 2000), id: `new-${step}` }];
