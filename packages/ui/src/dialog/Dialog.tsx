@@ -9,6 +9,7 @@ import {
   type ViewTransitionClassPerType,
 } from 'react';
 import { Portal } from '../Portal';
+import { useBackCloses } from '../useBackCloses';
 import { useEscape } from '../useEscape';
 import { useFocusTrap, type FocusTrapInitial } from '../useFocusTrap';
 import { SHEET_EXIT_MAX_MS, sheetExitTransition, useSheetDrag } from '../useSheetDrag';
@@ -92,6 +93,9 @@ export type DialogProps = {
   // Asked before the dialog closes by its backdrop, Escape, a phone sheet's swipe or a close inside it: false keeps it
   // open (the host asks about unsaved changes instead), and a phone sheet springs back rather than sliding away.
   beforeClose?: () => boolean;
+  // A phone sheet that holds work: the browser's Back closes it as a swipe would (asking `beforeClose` first) rather
+  // than leaving the page (docs/specs/007-editor/editor-app.md "Back closes a sheet that holds work").
+  closeOnBack?: boolean;
   children: ReactNode;
 };
 
@@ -167,6 +171,7 @@ export function Dialog({
   initialFocus = 'first',
   resizeTransition,
   beforeClose,
+  closeOnBack = false,
   children,
 }: DialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -188,6 +193,7 @@ export function Dialog({
     if (beforeClose && !beforeClose()) return;
     then();
   };
+  useBackCloses(open && closeOnBack && slides, () => requestClose(onClose));
   const closeOnEscapeRef = useRef(closeOnEscape);
   useLayoutEffect(() => {
     closeOnEscapeRef.current = closeOnEscape;

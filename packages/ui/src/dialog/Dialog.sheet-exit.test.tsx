@@ -165,3 +165,62 @@ describe('a card on a wide screen', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 });
+
+describe('Back on a sheet that holds work', () => {
+  // The browser's Back: the entry under the sheet's goes current (its state without the sheet's), then popstate.
+  const pressBack = () =>
+    act(() => {
+      window.history.replaceState(null, '');
+      window.dispatchEvent(new PopStateEvent('popstate', { state: null }));
+    });
+
+  function backSheet(beforeClose?: () => boolean) {
+    const onClose = vi.fn();
+    render(
+      <Dialog
+        open
+        onClose={onClose}
+        ariaLabel="Rule"
+        phoneSheet="tall"
+        closeOnBack
+        beforeClose={beforeClose}
+      >
+        <p>Steps</p>
+      </Dialog>,
+    );
+    return { onClose, panel: screen.getByRole('dialog') };
+  }
+
+  it('slides out on Back instead of leaving the page', () => {
+    const { onClose, panel } = backSheet();
+    pressBack();
+    expect(panel.style.transform).toBe('translateY(calc(100% + 24px))');
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('asks first on Back, and stays open while it asks', () => {
+    const beforeClose = vi.fn(() => false);
+    const { onClose, panel } = backSheet(beforeClose);
+    pressBack();
+    expect(beforeClose).toHaveBeenCalledTimes(1);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(onClose).not.toHaveBeenCalled();
+    expect(panel.style.transform).toBe('');
+  });
+
+  it('leaves Back to the page on a wide screen, where it is a card', () => {
+    stubPhone(false);
+    window.history.replaceState(null, '');
+    const push = vi.spyOn(window.history, 'pushState');
+    const { onClose } = backSheet();
+    expect(push).not.toHaveBeenCalled();
+    pressBack();
+    expect(onClose).not.toHaveBeenCalled();
+    push.mockRestore();
+  });
+});

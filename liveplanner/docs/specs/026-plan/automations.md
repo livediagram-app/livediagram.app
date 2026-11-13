@@ -338,6 +338,8 @@ whose picked person has left the plan (its run fails, "Someone is gone"). The ed
 an id: the line says each kind of thing gone once, in words ("Needs Attention: A column is gone · Someone is gone",
 "2 fields are gone", "A card is gone"), and the rule's sentence and step cards read a gone pick as its panel does
 ("to a column no longer here", "Set a field no longer here", "Assign Someone No Longer Here"). Agents read the ids.
+A pick never made (a template's field the plan has none like, left for you) is not gone: it reads as the pick it
+waits for ("Set a field Today", "to a column"), beside the step's "Pick a field".
 
 ## Actions
 
@@ -903,8 +905,10 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
 - A step's ⋯ menu: Move Up, Move Down, Duplicate, Delete. After a move, focus stays on the moved step's ⋯ in its new
   place.
 - Set Field's field changed to one of another kind starts its value afresh, as a new Set Field does (a field of fixed
-  values on its first one, any other empty): Priority's Low never carries to Labels or Estimate. A field of the same
-  kind keeps the value (a choice field only one of its own options).
+  values on its first one, a date on A Day, Today, a number on 0, any other empty): Priority's Low never carries to
+  Labels or Estimate, and a Due Date never starts on empty Text the save would refuse. A field of the same kind keeps
+  the value (a choice field only one of its own options), and so does a step with no field picked yet whose value fits
+  the field picked (a template's Today on a date field).
 - **Rule Details** (an accordion, closed): **Let this rule's changes trigger other rules** with "Off keeps rules
   from setting each other off. Chains stop after 5 rules.", and "Runs as Automation, with an Editor's access, for
   changes anyone with edit or participate access makes."
@@ -914,7 +918,8 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
   the step at fault, in words, never a path: the api's message for agents leads with the part's path ("steps.2.text
   must be text of 1 to 2000 characters"), and the builder, which marks that part, says the rest as a sentence ("Must
   be text of 1 to 2000 characters."). Text a step must hold is refused as "1 to N characters", text that may be
-  empty as "up to N characters".
+  empty as "up to N characters". A pick left empty says what to pick, by the part's name ("Pick a field.", "Pick a
+  column.", "Pick a card type."), never a bare "Must name one."
 - A rule opened by its link (an Automation comment's) that the plan no longer has opens no builder: the screen says
   **This Rule Was Deleted**, "It's no longer in this plan. Its runs stay in the Audit Trail until they age out.", with
   **Back to Rules**, once a read of the list has answered without it. A read that fails says **Couldn't Load the
@@ -928,22 +933,25 @@ above, unchanged.
 - **The rule drawer.** New Rule, a template, Describe a Rule's draft and opening a rule raise the builder as a sheet
   over the Automations screen (which stays behind it, dimmed), as tall as a sheet goes, with the grab handle, the
   safe area at its foot, its middle scrolling between a fixed top and foot. Swiping it down, tapping the dim behind
-  it or Escape goes back to the rules; with unsaved changes each asks **Discard Changes?** first, and the drawer
-  springs back while it asks, so no edit is lost silently.
+  it, Escape or the browser's Back (Android's, an iPhone's swipe) goes back to the rules, never off the plan; with
+  unsaved changes each asks **Discard Changes?** first, and the drawer springs back while it asks, so no edit is
+  lost silently ([editor-app.md](../007-editor/editor-app.md) "Back closes a sheet that holds work"). Kept editing,
+  focus stays in the drawer; a rule saved from a template, whose card has left the list, goes back to the rules
+  with focus on the Automations screen.
 - **Its header.** A top row of a back chevron ("Automations", a 44 px target, back to the rules) and the rule's
   state at the right: the On / Off switch with its word beside it ("On", "Off"), or an **Off** pill ("Not Saved")
   for a rule not saved yet. Under it the rule's name as an editable title on its own line, 18 px semibold, wrapping
   to as many lines as it needs (Enter does not break it), then "Edited by … · when" in small type.
 - **Its foot**, pinned to the bottom over the safe area: **Rule Details** as a closed bar (its accordion, opening
-  upward over the steps, its body scrolling when tall), then **Test on a Card** and **Save Rule** side by side, equal
-  width, 44 px tall. A saved rule with nothing changed reads **Saved** with a tick, so the button says why it
+  upward over the steps, its body scrolling when tall), then **Test on a Card** and **Save Rule** (or **Saved**) side
+  by side, equal width, 44 px tall. A saved rule with nothing changed reads **Saved** with a tick, so the button says why it
   does nothing, instead of a faded Save Rule.
 - **The step drawer.** Picking a step (the When trigger, an If condition, an action, a branch, a Wait, every kind)
   or adding one (a Duplicate too) opens its fields in a second sheet stacked over the rule drawer, not under the steps
   (Move Up and Move Down leave it closed, the steps in sight): its own grab
   handle, the step's tile and name as its title, a close and a **Done** at its foot, its fields scrolling inside.
-  Swipe it down, tap the dim behind it, press Escape, close or Done to go back to the steps; the step stays
-  selected. It sits above the on-screen keyboard rather than jumping under it. A save the api refuses opens the
+  Swipe it down, tap the dim behind it, press Escape or the browser's Back, close or Done to go back to the steps;
+  the step stays selected. It sits above the on-screen keyboard rather than jumping under it. A save the api refuses opens the
   step at fault in it, the refusal's words at the top of its fields (the step's card, which says them, is behind it).
 - Every drawer slides out to the bottom as it closes ([editor-app.md](../007-editor/editor-app.md) "Menus are
   bottom sheets on a phone").

@@ -116,8 +116,12 @@ describe('the rule builder on a phone', () => {
   it('reads Saved for a saved rule with nothing changed', async () => {
     render(<Harness initial={{ view: 'rule', ruleId: 'r1' }} />);
     await screen.findByRole('textbox', { name: 'Rule name' });
-    expect(screen.getByRole('status').textContent).toBe('Saved');
+    const saved = screen.getByRole('status');
+    expect(saved.textContent).toBe('Saved');
     expect(screen.queryByRole('button', { name: 'Save Rule' })).toBeNull();
+    // As wide as Test on a Card: two equal columns, not two flex-1 boxes that a button's padding widens.
+    expect(saved.parentElement!.className).toContain('grid-cols-2');
+    expect(saved.className).not.toContain('flex-1');
   });
 
   it('shows a new rule Off and Not Saved', async () => {

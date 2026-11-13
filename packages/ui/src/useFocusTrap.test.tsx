@@ -235,6 +235,122 @@ describe('useFocusTrap', () => {
     expect(document.activeElement).toBe(screen.getByRole('dialog'));
   });
 
+  // Two modals stacked as the Automations screen and its rule drawer are, each with its own trap.
+  function Layer({ label, children }: { label: string; children: React.ReactNode }) {
+    const ref = useRef<HTMLDivElement>(null);
+    useFocusTrap(ref);
+    return (
+      <div ref={ref} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1}>
+        {children}
+      </div>
+    );
+  }
+
+  it('hands focus to the modal still open beneath when what opened the closing one is gone', () => {
+    function Stack() {
+      const [template, setTemplate] = useState(true);
+      const [drawer, setDrawer] = useState(false);
+      return (
+        <>
+          <Layer label="Automations">
+            {template ? (
+              <button type="button" onClick={() => setDrawer(true)}>
+                Stamp the Finish Date
+              </button>
+            ) : null}
+          </Layer>
+          {drawer ? (
+            <Layer label="Rule">
+              <button type="button" onClick={() => setTemplate(false)}>
+                Save Rule
+              </button>
+              <button type="button" onClick={() => setDrawer(false)}>
+                Back
+              </button>
+            </Layer>
+          ) : null}
+        </>
+      );
+    }
+    render(<Stack />);
+    const template = screen.getByRole('button', { name: 'Stamp the Finish Date' });
+    template.focus();
+    fireEvent.click(template);
+    // Saving takes the template card out of the list beneath.
+    fireEvent.click(screen.getByRole('button', { name: 'Save Rule' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(document.activeElement).toBe(screen.getByRole('dialog', { name: 'Automations' }));
+  });
+
+  it('hands focus to the modal beneath when the closing one began with nothing focused', () => {
+    function Stack() {
+      const [asking, setAsking] = useState(false);
+      return (
+        <>
+          <Layer label="Rule">
+            <button type="button" onClick={() => setAsking(true)}>
+              Leave
+            </button>
+          </Layer>
+          {asking ? (
+            <Layer label="Discard Changes?">
+              <button type="button" onClick={() => setAsking(false)}>
+                Keep Editing
+              </button>
+            </Layer>
+          ) : null}
+        </>
+      );
+    }
+    render(<Stack />);
+    // A tap on the dim focuses nothing: the confirm opens from <body>.
+    (document.activeElement as HTMLElement | null)?.blur();
+    fireEvent.click(screen.getByRole('button', { name: 'Leave' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Keep Editing' }));
+    expect(document.activeElement).toBe(screen.getByRole('dialog', { name: 'Rule' }));
+  });
+
+  it('leaves a control swapped out in the top modal to that modal, never one beneath', async () => {
+    function Stack() {
+      const [saved, setSaved] = useState(false);
+      const [count, setCount] = useState(0);
+      return (
+        <>
+          <Layer label="Automations">
+            {count ? (
+              <ul>
+                <li>Stamp the Finish Date</li>
+              </ul>
+            ) : (
+              <p>No Rules Yet</p>
+            )}
+          </Layer>
+          <Layer label="Rule">
+            {saved ? (
+              <span role="status">Saved</span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setSaved(true);
+                  setCount(1);
+                }}
+              >
+                Save Rule
+              </button>
+            )}
+          </Layer>
+        </>
+      );
+    }
+    render(<Stack />);
+    const save = screen.getByRole('button', { name: 'Save Rule' });
+    save.focus();
+    fireEvent.click(save);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(document.activeElement).toBe(screen.getByRole('dialog', { name: 'Rule' }));
+  });
+
   it('focuses the container when asked, and Shift+Tab from it wraps to the last control', () => {
     function ContainerModal() {
       const ref = useRef<HTMLDivElement>(null);

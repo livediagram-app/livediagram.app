@@ -89,7 +89,8 @@ apps/editor/components/automations/
   RunLog.tsx, RunRow.tsx
   RuleBuilder.tsx             breadcrumb bar, step cards, add buttons, Rule Details accordion, Discard Changes?
   refusal-words.ts            a refusal as the builder says it: fixed words per code, else the api's message less
-                              the leading path it names, as a sentence (refusalWords)
+                              the leading path it names, as a sentence (refusalWords); an empty pick ("must name
+                              one") as what to pick, by the path's last part ("Pick a field.")
   StepCard.tsx, StepPanel.tsx, step-panels/*.tsx   one panel per trigger, condition and action kind
                               (FieldActionPanel: a field of fixed values (fieldPick) offers its own Set To
                               option and a Select of its values, stored as text, the first picked as the field
@@ -385,7 +386,8 @@ build):
   stored id, or `unheard` with the field's name); `ruleNeeds` words each by id (`needLine`) for agents. The api's list
   sends both (`needs`, `attention`); the editor's RuleRow words `attention` with `needsWords` (needs-words.ts), each
   kind once and counted, never an id. The editor's outline sets `goneWords`, so `outlineStatusName`, `outlineTypeName`,
-  `outlineFieldName` and `outlineTabName` read a gone one as `GONE_NAMES` ("a column no longer here") instead of its id.
+  `outlineFieldName` and `outlineTabName` read a gone one as `GONE_NAMES` ("a column no longer here") instead of its id,
+  and an empty id (a pick never made) as `UNPICKED_NAMES` ("a field"), never as gone.
 - **The rule link on an Automation line** (`AutomationAuthorName`): a comment passes its `automation.ruleId`, which
   is always a link for an Editor, so a rule made or renamed since the list was read still opens; the screen reads the
   list as it opens and, while that read (`readAutomations`, which hands a second asker the read under way) has not
@@ -1100,21 +1102,24 @@ rounded-lg pl-3 pr-8 text-[14px]`) and `SegmentedRadio` (`size="lg"`, All / On /
 - `AutomationsDialog`: on a phone, editing (`target.view === 'rule'`) keeps the rules screen mounted and renders the
   builder in `RuleDrawer.tsx`: the shared `Dialog` with `phoneSheet="tall"` (its height the full sheet's, the top bar
   and the notch kept clear, `PHONE_SHEET_TALL`), an sr-only title (New Rule or Edit Rule), `beforeClose` = the dirty guard (returns false and opens Discard Changes? when
-  dirty). Discarding unmounts the drawer straight away (the question was the exit).
+  dirty), and `closeOnBack` (`useBackCloses`, @liveworkspace/ui: an entry in the browser's history while open, so Back
+  dismisses it as a swipe would). Discarding unmounts the drawer straight away (the question was the exit).
 - `RuleBuilder` with `phone`: `PhoneRuleChrome.tsx` holds `PhoneRuleHeader` (back chevron, the shared `Switch`
   labelled with its visible word On or Off, or the Off · Not Saved pill for an unsaved rule; the name in `RuleNameField`, a one-row `textarea` that grows with its text, Enter
   ignored, newlines folded to spaces), the steps scrolling, and `PhoneRuleFoot` (Rule Details, then the two buttons
-  as `Button size="md"` `flex-1 h-11`; a saved rule with nothing changed shows **Saved** with a check, a `role="status"`, in Save Rule's place).
+  as `Button size="md"` `h-11` in a two-column grid, so Saved, which has no button's padding, is as wide; a saved rule with nothing changed shows **Saved** with a check, a `role="status"`, in Save Rule's place).
 - `RuleDetails` takes `placement="foot"`: the accordion's bar sits in the foot and its body opens above the bar,
   `max-h-[40dvh] overflow-y-auto`.
-- `StepDrawer.tsx`: on a phone `StepPanel` renders its shell into the shared `Dialog` (`phoneSheet`, `size="lg"`) with
+- `StepDrawer.tsx`: on a phone `StepPanel` renders its shell into the shared `Dialog` (`phoneSheet`, `closeOnBack`, `size="lg"`) with
   the shell's tile and title as its header beside `DialogCloseButton`, the body `min-h-0 flex-1 overflow-y-auto
 overscroll-contain`, and a foot holding **Done** (`useDialogDismiss`, so it slides out like the close). `RuleBuilder` holds `stepOpen`:
   set by a pick (`actions.select`), an add (a Duplicate from the step's menu too) and a refusal's `partAt`; never by
   the first render's trigger selection, and cleared by Move Up and Move Down. A move also sets `moved` (the part in
   its new place): `RuleSteps` draws cards by position, so the closing menu's focus return lands on whichever step
   took the old place; the `StepMenu` whose part is `moved` focuses its ⋯ in an effect (after that return) and clears
-  it. Set Field's first value and a field switched to another kind both come from `startText` (field-pick.ts).
+  it. Set Field's first value comes from `startText` (field-pick.ts); a field switched to another kind from
+  `startValue` (a date's Today, a number's 0, else `startText`), and one picked where none was keeps a value that
+  fits it (`fitsField`).
   The drawer takes the refusal's message as `fault` while the selected part is the one at fault (`samePart`), drawn
   as a `role="alert"` line at the top of its body.
 - `ValueInsert.tsx`: `ValueTextField` draws `ValueInsertButton` inside the field's box (`absolute right-1.5 top-1.5`, the
