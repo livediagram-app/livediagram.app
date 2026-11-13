@@ -573,7 +573,11 @@ PAGE_IMAGE_BLUR_MAX (0.04) * min(width, height)` page px. The panel's **Blur** i
   `clamp(round(pageLong * 3 / sigma), 96, 1024)` px (`BLUR_COPY_MIN` / `BLUR_COPY_MAX`), blur by
   `sigma` scaled to the copy with `boxBlurRgba` (three passes per axis, box radii from
   `boxRadiiForSigma`, edges clamped), JPEG 0.86 to a blob URL; an LRU of 8 unheld copies (`BLUR_CACHE_SIZE`)
-  keyed by source, page size and rounded sigma, an evicted one's blob URL revoked; one copy made at a time. Export:
+  keyed by source, page size and rounded sigma, an evicted one's blob URL revoked; one copy made at a time.
+  Measured (#681, Playwright Chromium, a 6000x4000 JPEG on a 1920x1080 slide, each copy from a fresh blob URL so the
+  picture decodes again, three runs each, long tasks by `PerformanceObserver`): on the page, sigma 43 and 6, the
+  longest task 52 to 59 ms at CPU 1x and 204 to 217 ms at CPU 4x; in the worker 0 long tasks at both, the copy ready
+  in 49 to 91 ms (1x) and 56 to 128 ms (4x). Export:
   `pageImageSvg` wraps the `<image>` in `<g filter="url(#{id}-blur)">` with
   `<filter x=0 y=0 width=1 height=1 color-interpolation-filters="sRGB"><feGaussianBlur
 stdDeviation=sigma/><feComponentTransfer><feFuncA type="table" tableValues="1 1"/></feComponentTransfer></filter>`,
