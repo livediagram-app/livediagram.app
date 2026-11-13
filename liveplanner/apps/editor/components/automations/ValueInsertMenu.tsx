@@ -257,7 +257,7 @@ export function ValueInsertMenu({
     <AnchoredPopover
       anchor={anchor}
       name={VALUE_INSERT_TITLE}
-      width={320}
+      width={340}
       // The button sits at the field's right end: the panel opens leftward over the field, inside its dialog.
       align="end"
       pointer

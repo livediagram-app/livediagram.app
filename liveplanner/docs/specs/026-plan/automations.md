@@ -754,7 +754,7 @@ it. A guest sees the sign-in gate the Automations screen already shows.
 Text a rule writes (a comment, a title, a field value, an email) can hold values, picked from **Insert a Value** in
 the builder and shown there as chips. **Insert a Value** is a button inside the field itself, at its top right (a
 `{ }` mark with the hover card "Insert a Value", a pointer, a 44 px target on a touch screen), never a list dumped
-under it. It opens a popover beside the field, 320 px wide, its right edge on the button's so it opens leftward over
+under it. It opens a popover beside the field, 340 px wide, its right edge on the button's so it opens leftward over
 the field and stays inside the dialog, each value's name kept whole while its `{{…}}` token gives way first (on a phone, a sheet over the step's drawer, titled **Insert a
 Value**) holding a search ("Find a value") and the values in groups: **This Card** (the fixed values), **The
 Triggering Card** (inside a For Related Cards branch), **Card Fields** (each field of the card by name, the old Any
