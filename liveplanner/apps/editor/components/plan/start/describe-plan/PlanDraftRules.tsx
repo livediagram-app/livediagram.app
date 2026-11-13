@@ -130,7 +130,8 @@ function RuleCard({
           value={rule.name}
           maxLength={AUTOMATION_NAME_MAX}
           onChange={(e) => onChange({ ...rule, name: e.target.value })}
-          className={`min-w-0 flex-1 font-semibold ${rule.on ? '' : 'text-slate-500 dark:text-slate-400'}`}
+          // Greyed when off: important, as TextInput's own text colour would otherwise win the cascade.
+          className={`min-w-0 flex-1 font-semibold ${rule.on ? '' : 'text-slate-500! dark:text-slate-400!'}`}
         />
         <Tooltip label={`Remove ${name}`}>
           <Button
